@@ -980,7 +980,8 @@ class UploaderAuthorization(Authorization):
         any record whose MAC address matches theirs, but not anyone
         else's record.
         '''
-        if hasattr(bundle.request, 'GET') and 'mac_address' in bundle.request.GET:
+        if hasattr(bundle.request, 'GET') and \
+                'mac_address' in bundle.request.GET:
             return object_list
         return []
 
@@ -1009,7 +1010,7 @@ class UploaderAuthorization(Authorization):
     def update_detail(self, object_list, bundle):
         '''
         Uploaders should only be able to update
-        the uploader record whose MAC address 
+        the uploader record whose MAC address
         matches theirs (if it exists).
         '''
         return bundle.data['mac_address'] == bundle.obj.mac_address
@@ -1025,13 +1026,14 @@ class UploaderRegistrationRequestAuthorization(Authorization):
     '''Authorisation class for Tastypie.
     '''
     def read_list(self, object_list, bundle):
-        ''' 
+        '''
         Uploaders should be able to read their own registration
         request, i.e. any request associated with an uploader
         whose MAC address matches theirs, but they shouldn't
         be able to read anyone else's upload registration request.
         '''
-        if hasattr(bundle.request, 'GET') and 'uploader__mac_address' in bundle.request.GET:
+        if hasattr(bundle.request, 'GET') and \
+                'uploader__mac_address' in bundle.request.GET:
             return object_list
         return []
 
@@ -1053,7 +1055,7 @@ class UploaderRegistrationRequestAuthorization(Authorization):
         updating their upload registration request
         record.  It is updated on approval, but
         only by a Django administrator.
-       
+
         '''
         return False
 
@@ -1081,7 +1083,7 @@ class UploaderResource(MyTardisModelResource):
         bundle.data['updated_time'] = datetime.now()
         ip = get_ip(bundle.request)
         if ip is not None:
-           bundle.data['wan_ip_address'] = ip
+            bundle.data['wan_ip_address'] = ip
         bundle = super(UploaderResource, self).obj_create(bundle, **kwargs)
         return bundle
 
@@ -1089,7 +1091,7 @@ class UploaderResource(MyTardisModelResource):
         bundle.data['updated_time'] = datetime.now()
         ip = get_ip(bundle.request)
         if ip is not None:
-           bundle.data['wan_ip_address'] = ip
+            bundle.data['wan_ip_address'] = ip
         bundle = super(UploaderResource, self).obj_update(bundle, **kwargs)
         return bundle
 
@@ -1103,11 +1105,13 @@ class UploaderRegistrationRequestResource(MyTardisModelResource):
     uploader = fields.ForeignKey(
         'tardis.tardis_portal.api.UploaderResource', 'uploader')
     approved_staging_host = fields.ForeignKey(
-        'tardis.tardis_portal.api.UploaderStagingHostResource', 'approved_staging_host',
+        'tardis.tardis_portal.api.UploaderStagingHostResource',
+        'approved_staging_host',
         null=True, blank=True, default=None)
 
     class Meta(MyTardisModelResource.Meta):
         authentication = Authentication()
+        # authorization = Authorization()
         authorization = UploaderRegistrationRequestAuthorization()
         queryset = UploaderRegistrationRequest.objects.all()
         filtering = {
@@ -1118,11 +1122,13 @@ class UploaderRegistrationRequestResource(MyTardisModelResource):
         always_return_data = True
 
     def obj_create(self, bundle, **kwargs):
-        bundle = super(UploaderRegistrationRequestResource, self).obj_create(bundle, **kwargs)
+        bundle = super(UploaderRegistrationRequestResource, self)\
+            .obj_create(bundle, **kwargs)
         return bundle
 
     def hydrate(self, bundle):
-        bundle = super(UploaderRegistrationRequestResource, self).hydrate(bundle)
+        bundle = super(UploaderRegistrationRequestResource, self)\
+            .hydrate(bundle)
         bundle.data['request_time'] = datetime.now()
         return bundle
 
