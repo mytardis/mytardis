@@ -45,6 +45,8 @@ class SquashFSStorage(Storage):
     settings:
     SQUASHFS_MOUNT_ROOT = '/mnt/squashfs'
     SQUASHFS_MOUNT_CMD = "/usr/local/bin/squashfuse"
+
+    datafile_id only works for block storage
     """
 
     squashmount_root = getattr(settings,
@@ -54,14 +56,20 @@ class SquashFSStorage(Storage):
                               'SQUASHFSMOUNT_CMD',
                               '/usr/local/bin/squashfuse')
 
-    def __init__(self, sq_filename=None, sq_basepath=None):
-        if sq_filename is None or sq_basepath is None:
-            raise Exception('provide squash file name and path')
-        self.sq_filename = sq_filename
-        self.location = os.path.join(self.squashmount_root,
-                                     sq_filename)
-        self.squashfile = os.path.join(sq_basepath, sq_filename)
-        self._mount()
+    def __init__(self, sq_filename=None, sq_basepath=None, datafile_id=None):
+        if sq_filename is not None and sq_basepath is not None:
+            self.sq_filename = sq_filename
+            self.location = os.path.join(self.squashmount_root,
+                                         sq_filename)
+            self.squashfile = os.path.join(sq_basepath, sq_filename)
+            self._mount()
+        elif datafile_id is not None:
+            df = DataFile.objects.get(id=datafile_id)
+            self.location = os.path.join(self.squashmount_root, df.filename)
+            self.squashfile = df.default_dfo.get_full_path()
+            self._mount()
+        else:
+            raise Exception('provide squash file name and path or datafile id')
 
     @property
     def _mounted(self):
