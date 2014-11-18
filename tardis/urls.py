@@ -268,6 +268,7 @@ from tardis.tardis_portal.api import UploaderResource
 from tardis.tardis_portal.api import UploaderStagingHostResource
 from tardis.tardis_portal.api import UploaderRegistrationRequestResource
 from tardis.tardis_portal.api import FacilityResource
+from tardis.tardis_portal.api import InstrumentResource
 from tastypie.api import Api
 v1_api = Api(api_name='v1')
 v1_api.register(DatasetParameterSetResource())
@@ -291,6 +292,7 @@ v1_api.register(UploaderResource())
 v1_api.register(UploaderStagingHostResource())
 v1_api.register(UploaderRegistrationRequestResource())
 v1_api.register(FacilityResource())
+v1_api.register(InstrumentResource())
 api_urls = patterns(
     '',
     (r'^', include(v1_api.urls)),

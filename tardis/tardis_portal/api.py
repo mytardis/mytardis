@@ -47,6 +47,7 @@ from tardis.tardis_portal.models.uploader import UploaderStagingHost
 from tardis.tardis_portal.models.uploader import UploaderRegistrationRequest
 from tardis.tardis_portal.models.facility import Facility
 from tardis.tardis_portal.models.facility import facilities_managed_by
+from tardis.tardis_portal.models.instrument import Instrument
 
 from tastypie import fields
 from tastypie.authentication import Authentication
@@ -193,6 +194,15 @@ class ACLAuthorization(Authorization):
             facilities = facilities_managed_by(bundle.request.user) 
             return [facility for facility in object_list
                     if facility in facilities]
+        elif type(bundle.obj) == Instrument:
+            facilities = facilities_managed_by(bundle.request.user) 
+            instrument_list = []
+            for facility in facilities:
+                instruments = Instrument.objects.filter(facility=facility)
+                for instrument in instruments:
+                    instrument_list.append(instrument)
+            return [instrument for instrument in object_list
+                    if instrument in instrument_list]
         else:
             return []
 
@@ -236,6 +246,12 @@ class ACLAuthorization(Authorization):
             return True
         elif type(bundle.obj) == StorageBox:
             return bundle.request.user.is_authenticated()
+        elif type(bundle.obj) == Facility:
+            facilities = facilities_managed_by(bundle.request.user) 
+            return bundle.obj in facilities
+        elif type(bundle.obj) == Instrument:
+            facilities = facilities_managed_by(bundle.request.user) 
+            return bundle.obj.facility in facilities
         raise NotImplementedError(type(bundle.obj))
 
     def create_list(self, object_list, bundle):
@@ -335,6 +351,12 @@ class ACLAuthorization(Authorization):
             ])
         elif type(bundle.obj) == ObjectACL:
             return bundle.request.user.has_perm('tardis_portal.add_objectacl')
+        elif type(bundle.obj) == Facility:
+            facilities = facilities_managed_by(bundle.request.user) 
+            return bundle.obj in facilities
+        elif type(bundle.obj) == Instrument:
+            facilities = facilities_managed_by(bundle.request.user) 
+            return bundle.obj.facility in facilities
         raise NotImplementedError(type(bundle.obj))
 
     def update_list(self, object_list, bundle):
@@ -1192,3 +1214,18 @@ class FacilityResource(MyTardisModelResource):
             'manager_group': ALL_WITH_RELATIONS,
             'name': ('exact', ),
         }
+        always_return_data = True
+
+
+class InstrumentResource(MyTardisModelResource):
+    facility = fields.ForeignKey(FacilityResource, 'facility',
+                                 null=True, full=True)
+
+    class Meta(MyTardisModelResource.Meta):
+        queryset = Instrument.objects.all()
+        filtering = {
+            'id': ('exact', ),
+            'facility': ALL_WITH_RELATIONS,
+            'name': ('exact', ),
+        }
+        always_return_data = True
