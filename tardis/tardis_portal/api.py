@@ -13,6 +13,7 @@ from django.conf import settings
 from django.conf.urls.defaults import url
 from django.contrib.auth.models import AnonymousUser
 from django.contrib.auth.models import User
+from django.contrib.auth.models import Group
 from django.core.serializers import json
 from django.core.servers.basehttp import FileWrapper
 from django.http import HttpResponse
@@ -44,6 +45,7 @@ from tardis.tardis_portal.staging import get_sync_root
 from tardis.tardis_portal.models.uploader import Uploader
 from tardis.tardis_portal.models.uploader import UploaderStagingHost
 from tardis.tardis_portal.models.uploader import UploaderRegistrationRequest
+from tardis.tardis_portal.models.facility import Facility
 
 from tastypie import fields
 from tastypie.authentication import Authentication
@@ -186,6 +188,8 @@ class ACLAuthorization(Authorization):
                     if exp in experiments:
                         objacl_list.append(objacl)
             return objacl_list
+        elif type(bundle.obj) == Facility:
+            return object_list
         else:
             return []
 
@@ -396,7 +400,21 @@ def lookup_by_unique_id_only(resource):
     return lookup_kwargs_with_identifiers
 
 
+class GroupResource(ModelResource):
+    class Meta:
+        queryset = Group.objects.all()
+        authentication = default_authentication
+        authorization = ACLAuthorization()
+        filtering = {
+            'id': ('exact',),
+            'name': ('exact',),
+        }
+
+
 class UserResource(ModelResource):
+    groups = fields.ManyToManyField(GroupResource, 'groups',
+                                    null=True, full=True)
+
     class Meta:
         authentication = default_authentication
         authorization = ACLAuthorization()
@@ -1158,3 +1176,16 @@ class UploaderRegistrationRequestResource(MyTardisModelResource):
         if not hasattr(bundle.obj, 'approved_staging_host'):
             bundle.obj.approved_staging_host = None
         super(UploaderRegistrationRequestResource, self).save_related(bundle)
+
+
+class FacilityResource(MyTardisModelResource):
+    manager_group = fields.ForeignKey(GroupResource, 'manager_group',
+                                      null=True, full=True)
+
+    class Meta(MyTardisModelResource.Meta):
+        queryset = Facility.objects.all()
+        filtering = {
+            'id': ('exact', ),
+            'manager_group': ALL_WITH_RELATIONS,
+            'name': ('exact', ),
+        }

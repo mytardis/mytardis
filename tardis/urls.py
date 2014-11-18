@@ -262,10 +262,12 @@ from tardis.tardis_portal.api import ReplicaResource
 from tardis.tardis_portal.api import SchemaResource
 from tardis.tardis_portal.api import StorageBoxResource
 from tardis.tardis_portal.api import UserResource
+from tardis.tardis_portal.api import GroupResource
 from tardis.tardis_portal.api import ObjectAclResource
 from tardis.tardis_portal.api import UploaderResource
 from tardis.tardis_portal.api import UploaderStagingHostResource
 from tardis.tardis_portal.api import UploaderRegistrationRequestResource
+from tardis.tardis_portal.api import FacilityResource
 from tastypie.api import Api
 v1_api = Api(api_name='v1')
 v1_api.register(DatasetParameterSetResource())
@@ -283,10 +285,12 @@ v1_api.register(ReplicaResource())
 v1_api.register(SchemaResource())
 v1_api.register(StorageBoxResource())
 v1_api.register(UserResource())
+v1_api.register(GroupResource())
 v1_api.register(ObjectAclResource())
 v1_api.register(UploaderResource())
 v1_api.register(UploaderStagingHostResource())
 v1_api.register(UploaderRegistrationRequestResource())
+v1_api.register(FacilityResource())
 api_urls = patterns(
     '',
     (r'^', include(v1_api.urls)),
