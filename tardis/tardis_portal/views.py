@@ -37,6 +37,7 @@ views.py
 
 """
 import time
+import re
 
 from tardis.tardis_portal.auth.decorators import \
     has_experiment_write, has_dataset_write
@@ -562,7 +563,8 @@ def view_experiment(request, experiment_id,
         namespaces = [ps.schema.namespace
                       for ps in experiment.getParameterSets()]
         for ns, view_fn in settings.EXPERIMENT_VIEWS:
-            if ns in namespaces:
+            ns_match = next((n for n in namespaces if re.match(ns, n)), None)
+            if ns_match:
                 x = view_fn.split(".")
                 mod_name, fn_name = (".".join(x[:-1]), x[-1])
                 try:
