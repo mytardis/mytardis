@@ -46,6 +46,7 @@ from tardis.tardis_portal.models.uploader import Uploader
 from tardis.tardis_portal.models.uploader import UploaderStagingHost
 from tardis.tardis_portal.models.uploader import UploaderRegistrationRequest
 from tardis.tardis_portal.models.facility import Facility
+from tardis.tardis_portal.models.facility import facilities_managed_by
 
 from tastypie import fields
 from tastypie.authentication import Authentication
@@ -189,7 +190,9 @@ class ACLAuthorization(Authorization):
                         objacl_list.append(objacl)
             return objacl_list
         elif type(bundle.obj) == Facility:
-            return object_list
+            facilities = facilities_managed_by(bundle.request.user) 
+            return [facility for facility in object_list
+                    if facility in facilities]
         else:
             return []
 
