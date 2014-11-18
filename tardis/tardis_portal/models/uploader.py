@@ -1,13 +1,41 @@
 from django.db import models
 
+from .instrument import Instrument
+
 
 class Uploader(models.Model):
     '''
-    Represents a PC whose user(s) have expressed interest in 
-    uploading to this MyTardis instance - either a PC attached
-    to a data-collection instrument, or an end-user's machine.
-    The upload method (once approved) could be RSYNC over SSH
-    to a staging area.
+    Represents a PC whose user(s) have expressed interest in
+    uploading to this MyTardis instance - either a PC attached to
+    a data-collection instrument, or an end-user's machine.  The
+    upload method (once approved) could be RSYNC over SSH to a
+    staging area.  See also the UploaderRegistrationRequest model.
+
+    To be more accurate, an uploader represents a MyTardis-upload
+    program instance which is installed on a PC and is running on
+    a specific network interface on that PC.  If the MyTardis-upload
+    program is run on a different interface (e.g. WiFi vs Ethernet),
+    then a separate uploader record should be created by the
+    MyTardis-upload program, and any requests for registering the
+    uploader for access to a staging area will need to be resubmitted
+    for the different network device.  Using a MAC addresss to
+    ensure uniqueness may seem unnecessarily complicated, compared
+    to having just one uploader record per PC, but there is no
+    guarantee that a MyTardis upload PC will have a fixed IP address
+    or anything else which can be used to identify it uniquely.
+
+    The Uploader model employs an unusual authorization mechanism in
+    the TastyPie API.  A new uploader record can be created without
+    any explicit authorization, but then it can only be retreived or
+    updated if its MAC address is included in the query.  A MyTardis
+    upload application can create an Uploader record immediately
+    upon launch without waiting for the user to authenticate.  Then
+    even if the user fails to enter valid MyTardis credentials into
+    the MyTardis upload application, the MyTardis administrator will
+    still have some basic information about the attempted MyTardis
+    upload configuration, which can be used to help the user to
+    resolve any problems they may be having with configuring
+    MyTardis uploads.
 
     Some field values within each uploader record (e.g. IP address)
     may change after this uploader has been approved.  The MyTardis
@@ -19,6 +47,22 @@ class Uploader(models.Model):
     name = models.CharField(max_length=64)
     contact_name = models.CharField(max_length=64)
     contact_email = models.CharField(max_length=64)
+
+    '''
+    The uploader-instrument many-to-many relationship below deserves
+    some explanation.  In the first instance, the Uploader model is
+    designed to represent a MyTardis-upload program running on an
+    instrument computer.  In that case, each uploader record created
+    from an instrument computer should be associated with exactly one
+    instrument record.  However it is envisaged that MyTardis-upload
+    programs could also be run from PCs which manage data from
+    multiple instruments.  Conversely, one instrument could be
+    associated with multiple uploaders such as multiple network
+    interfaces (Ethernet and WiFi) on the same instrument PC or a
+    cluster of upload PCs sharing the task of uploading data from a
+    single instrument.
+    '''
+    instruments = models.ManyToManyField("Instrument", blank=True, null=True)
 
     user_agent_name = models.CharField(max_length=64)
     user_agent_version = models.CharField(max_length=32)
@@ -40,15 +84,16 @@ class Uploader(models.Model):
     data_path = models.CharField(max_length=64)
     default_user = models.CharField(max_length=64)
 
-    interface = models.CharField(max_length=64, default="", blank=False) 
-    mac_address = models.CharField(max_length=64, unique=True, blank=False) 
+    interface = models.CharField(max_length=64, default="", blank=False)
+    mac_address = models.CharField(max_length=64, unique=True, blank=False)
     ipv4_address = models.CharField(max_length=16)
     ipv6_address = models.CharField(max_length=64)
     subnet_mask = models.CharField(max_length=16)
 
     hostname = models.CharField(max_length=64)
 
-    # The wan_ip_address is populated in TastyPie by looking in request.META. It could be IPv4 or IPv6
+    # The wan_ip_address is populated in TastyPie by looking in request.META
+    # It could be IPv4 or IPv6
     wan_ip_address = models.CharField(max_length=64)
 
     created_time = models.DateTimeField()
@@ -66,12 +111,13 @@ class UploaderStagingHost(models.Model):
     '''
     Represents a file server (usually accessible via RSYNC over SSH)
     which allows "uploaders" to write to MyTardis's staging area.
+    The boolean fields can remind the MyTardis administrator of the
+    firewall(s) which need to be updated to authorize an uploader
+    to access this staging host (via RSYNC over SSH or SCP etc.).
     '''
 
-    host = models.CharField(default="", max_length=64)  # Could be hostname or IP address
+    host = models.CharField(default="", max_length=64)
 
-    # What needs to be updated before a new uploader can begin
-    # using RSYNC over SSH to upload to this host?
     uses_hosts_allow = models.BooleanField()
     uses_iptables_firewall = models.BooleanField()
     uses_external_firewall = models.BooleanField()
@@ -99,8 +145,11 @@ class UploaderRegistrationRequest(models.Model):
     request_time = models.DateTimeField(null=True, blank=True)
 
     approved = models.BooleanField()
-    approved_staging_host = models.ForeignKey(UploaderStagingHost, null=True, blank=True, default=None)
-    approved_username = models.CharField(max_length=32, null=True, blank=True, default=None)
+    approved_staging_host = models.ForeignKey(UploaderStagingHost,
+                                              null=True, blank=True,
+                                              default=None)
+    approved_username = models.CharField(max_length=32, null=True,
+                                         blank=True, default=None)
     approver_comments = models.TextField(null=True, blank=True, default=None)
     approval_expiry = models.DateField(null=True, blank=True, default=None)
     approval_time = models.DateTimeField(null=True, blank=True, default=None)
@@ -116,6 +165,5 @@ class UploaderRegistrationRequest(models.Model):
         WiFi etc.) with different MAC addresses.
 
         '''
-        return self.uploader.name + " | " + self.uploader.mac_address + " | " + self.requester_name + " | " + str(self.request_time)
-
-
+        return self.uploader.name + " | " + self.uploader.mac_address + \
+            " | " + self.requester_name + " | " + str(self.request_time)

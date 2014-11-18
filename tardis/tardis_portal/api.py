@@ -191,11 +191,11 @@ class ACLAuthorization(Authorization):
                         objacl_list.append(objacl)
             return objacl_list
         elif type(bundle.obj) == Facility:
-            facilities = facilities_managed_by(bundle.request.user) 
+            facilities = facilities_managed_by(bundle.request.user)
             return [facility for facility in object_list
                     if facility in facilities]
         elif type(bundle.obj) == Instrument:
-            facilities = facilities_managed_by(bundle.request.user) 
+            facilities = facilities_managed_by(bundle.request.user)
             instrument_list = []
             for facility in facilities:
                 instruments = Instrument.objects.filter(facility=facility)
@@ -247,10 +247,10 @@ class ACLAuthorization(Authorization):
         elif type(bundle.obj) == StorageBox:
             return bundle.request.user.is_authenticated()
         elif type(bundle.obj) == Facility:
-            facilities = facilities_managed_by(bundle.request.user) 
+            facilities = facilities_managed_by(bundle.request.user)
             return bundle.obj in facilities
         elif type(bundle.obj) == Instrument:
-            facilities = facilities_managed_by(bundle.request.user) 
+            facilities = facilities_managed_by(bundle.request.user)
             return bundle.obj.facility in facilities
         raise NotImplementedError(type(bundle.obj))
 
@@ -352,10 +352,10 @@ class ACLAuthorization(Authorization):
         elif type(bundle.obj) == ObjectACL:
             return bundle.request.user.has_perm('tardis_portal.add_objectacl')
         elif type(bundle.obj) == Facility:
-            facilities = facilities_managed_by(bundle.request.user) 
+            facilities = facilities_managed_by(bundle.request.user)
             return bundle.obj in facilities
         elif type(bundle.obj) == Instrument:
-            facilities = facilities_managed_by(bundle.request.user) 
+            facilities = facilities_managed_by(bundle.request.user)
             return bundle.obj.facility in facilities
         raise NotImplementedError(type(bundle.obj))
 
@@ -1036,6 +1036,34 @@ class ObjectAclResource(MyTardisModelResource):
         }
 
 
+class FacilityResource(MyTardisModelResource):
+    manager_group = fields.ForeignKey(GroupResource, 'manager_group',
+                                      null=True, full=True)
+
+    class Meta(MyTardisModelResource.Meta):
+        queryset = Facility.objects.all()
+        filtering = {
+            'id': ('exact', ),
+            'manager_group': ALL_WITH_RELATIONS,
+            'name': ('exact', ),
+        }
+        always_return_data = True
+
+
+class InstrumentResource(MyTardisModelResource):
+    facility = fields.ForeignKey(FacilityResource, 'facility',
+                                 null=True, full=True)
+
+    class Meta(MyTardisModelResource.Meta):
+        queryset = Instrument.objects.all()
+        filtering = {
+            'id': ('exact', ),
+            'facility': ALL_WITH_RELATIONS,
+            'name': ('exact', ),
+        }
+        always_return_data = True
+
+
 class UploaderAuthorization(Authorization):
     '''Authorisation class for Tastypie.
     '''
@@ -1132,8 +1160,11 @@ class UploaderRegistrationRequestAuthorization(Authorization):
 
 
 class UploaderResource(MyTardisModelResource):
+    instruments = fields.ManyToManyField(InstrumentResource, 'instruments',
+                                         null=True, full=True)
+
     class Meta(MyTardisModelResource.Meta):
-        authentication = Authentication()
+        authentication = default_authentication
         authorization = UploaderAuthorization()
         queryset = Uploader.objects.all()
         filtering = {
@@ -1201,31 +1232,3 @@ class UploaderRegistrationRequestResource(MyTardisModelResource):
         if not hasattr(bundle.obj, 'approved_staging_host'):
             bundle.obj.approved_staging_host = None
         super(UploaderRegistrationRequestResource, self).save_related(bundle)
-
-
-class FacilityResource(MyTardisModelResource):
-    manager_group = fields.ForeignKey(GroupResource, 'manager_group',
-                                      null=True, full=True)
-
-    class Meta(MyTardisModelResource.Meta):
-        queryset = Facility.objects.all()
-        filtering = {
-            'id': ('exact', ),
-            'manager_group': ALL_WITH_RELATIONS,
-            'name': ('exact', ),
-        }
-        always_return_data = True
-
-
-class InstrumentResource(MyTardisModelResource):
-    facility = fields.ForeignKey(FacilityResource, 'facility',
-                                 null=True, full=True)
-
-    class Meta(MyTardisModelResource.Meta):
-        queryset = Instrument.objects.all()
-        filtering = {
-            'id': ('exact', ),
-            'facility': ALL_WITH_RELATIONS,
-            'name': ('exact', ),
-        }
-        always_return_data = True
