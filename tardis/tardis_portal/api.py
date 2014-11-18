@@ -398,6 +398,11 @@ class ACLAuthorization(Authorization):
             return False
         elif type(bundle.obj) == Schema:
             return False
+        elif type(bundle.obj) == Facility:
+            return False
+        elif type(bundle.obj) == Instrument:
+            facilities = facilities_managed_by(bundle.request.user)
+            return bundle.obj.facility in facilities
         raise NotImplementedError(type(bundle.obj))
 
     def delete_list(self, object_list, bundle):
