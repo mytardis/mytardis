@@ -7,9 +7,8 @@
 
 {% block content %}
 {% with request|check_if_facility_manager as facility_manager %}
-<script type="text/javascript" src="/static/angular/angular.min.js"></script>
 <script type="text/javascript" src="/static/js/facility_view.js"></script>
-<div id="content" ng-app="facility_view" ng-controller="FacilityCtrl">
+<div id="content" ng-controller="FacilityCtrl">
 {% verbatim %}
 <div class="row-fluid">
     <div class="span12">

@@ -349,6 +349,11 @@ $('#modal-metadata .submit-button').live('click', function() {
   <h4>Dataset</h4>
   {% if has_write_permissions %}
   <div class="pull-right">
+    <a class="prepare_to_publish btn btn-mini btn-info"
+       title="Prepare To Publish">
+      <i class="icon-share"></i>
+      Prepare to Publish
+    </a>
     <a class="btn btn-warning btn-mini" title="Edit Dataset"
        href="{{ dataset.get_edit_url }}">
       <i class="icon-pencil"></i>

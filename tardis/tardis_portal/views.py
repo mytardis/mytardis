@@ -639,6 +639,11 @@ def view_experiment(request, experiment_id,
     return HttpResponse(render_response_index(request, template_name, c))
 
 
+@authz.experiment_access_required
+def view_publication(request, experiment_id):
+    return HttpResponse(render_response_index(request, 'tardis_portal/view_publication.html'))
+
+
 def _add_protocols_and_organizations(request, collection_object, c):
     """Add the protocol, format and organization details for
     archive requests.  Since the MacOSX archiver can't cope with

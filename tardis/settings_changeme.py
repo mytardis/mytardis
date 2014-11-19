@@ -1,3 +1,4 @@
+
 import djcelery
 from datetime import timedelta
 from os import path
@@ -240,6 +241,7 @@ INSTALLED_APPS = (
     'tardis.template.loaders',
     'tardis.tardis_portal',
     'tardis.tardis_portal.templatetags',
+    'tardis.apps.publication_forms',
     'registration',
     'south',
     'django_jasmine',
@@ -594,3 +596,31 @@ RAPID_CONNECT_CONFIG['aud'] = 'https://example.com/rc/'
 '''Public facing URL that accepts the HTTP/HTTPS POST request from
 Rapid Connect.
 '''
+
+### Publication form settings ###
+PUBLICATION_SCHEMA_NAMESPACE_ROOT = 'http://www.tardis.edu.au/schemas/publication/'
+
+# Any experiment with this schema is treated as a draft publication
+# This schema will be created automatically if not present
+PUBLICATION_DRAFT_SCHEMA_NAMESPACE = PUBLICATION_SCHEMA_NAMESPACE_ROOT+'draft'
+
+
+# Form mappings
+# PUBLICATION_FORM_MAPPINGS is a list of dictionaries that contain the following parameters:
+# dataset_schema: the namespace of the schema that triggers this form to be used
+# publication_schema: the namspace of the schema that should be added to the publication
+# form_template: a URL to the form template (usually static HTML)
+# validation_function: a function to verify that the form contains valid data
+#PUBLICATION_FORM_MAPPINGS = [{'dataset_schema': 'http://example.com/a_dataset_schema',
+#                              'publication_schema': 'http://example.com/a_publication_schema',
+#                              'form_template': '/static/publication-form/form-template.html'}]
+# Note: dataset_schema is treated as a regular expression
+
+PUBLICATION_FORM_MAPPINGS = [{'dataset_schema': r'^http://synchrotron.org.au/mx/',
+                              'publication_schema': 'http://synchrotron.org.au/pub/mx/',
+                              'form_template': '/static/publication-form/mx-pdb-template.html'},
+                             {'dataset_schema': r'^http://synchrotron.org.au/mx/',
+                              'publication_schema': 'http://synchrotron.org.au/pub/mx/dataset/',
+                              'form_template': '/static/publication-form/mx-dataset-description-template.html'}]
+
+#EXPERIMENT_VIEWS = [(r'^'+PUBLICATION_SCHEMA_NAMESPACE_ROOT, 'tardis.tardis_portal.views.view_publication')]

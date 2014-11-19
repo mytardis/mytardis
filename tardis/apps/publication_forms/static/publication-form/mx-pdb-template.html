@@ -1,0 +1,20 @@
+<tardis-form my-model="formData.extraInfo[$index]" schema="formTemplate.name" class="well form-horizontal">
+  <h3>MX crystallographic information</h3>
+  <p>
+    If your data has been submitted to the Protein Data Bank, please provide the structure's PDB ID here.
+    You may also elect to have your data released only after your structure is available on PDB.org by
+    checking &#8220;Embargo&#8221;.
+  </p>
+  <div class="control-group">
+    <label class="control-label">PDB ID</label>
+    <div class="controls">
+      <input tardis-form-field parameter-name="pdb-id" type="text" />
+    </div>
+  </div>
+  <div class="control-group">
+    <label class="control-label">Embargo</label>
+    <div class="controls">
+      <input tardis-form-field parameter-name="embargo" type="checkbox" />
+    </div>
+  </div>
+</tardis-form>

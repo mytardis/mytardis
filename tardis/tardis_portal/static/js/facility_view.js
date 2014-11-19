@@ -1,7 +1,3 @@
-(function() {
-
-  var app = angular.module('facility_view', []);
-
   // Capitalises the first letter (adapted from http://codepen.io/WinterJoey/pen/sfFaK)
   app.filter('capitalise', function() {
       return function(input, all) {
@@ -252,5 +248,3 @@
     initialiseFacilitiesData();
 
   });
-
-})();
