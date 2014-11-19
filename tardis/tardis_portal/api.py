@@ -772,7 +772,37 @@ class StorageBoxResource(MyTardisModelResource):
         queryset = StorageBox.objects.all()
 
 
+class FacilityResource(MyTardisModelResource):
+    manager_group = fields.ForeignKey(GroupResource, 'manager_group',
+                                      null=True, full=True)
+
+    class Meta(MyTardisModelResource.Meta):
+        queryset = Facility.objects.all()
+        filtering = {
+            'id': ('exact', ),
+            'manager_group': ALL_WITH_RELATIONS,
+            'name': ('exact', ),
+        }
+        always_return_data = True
+
+
+class InstrumentResource(MyTardisModelResource):
+    facility = fields.ForeignKey(FacilityResource, 'facility',
+                                 null=True, full=True)
+
+    class Meta(MyTardisModelResource.Meta):
+        queryset = Instrument.objects.all()
+        filtering = {
+            'id': ('exact', ),
+            'facility': ALL_WITH_RELATIONS,
+            'name': ('exact', ),
+        }
+        always_return_data = True
+
+
 class DatasetResource(MyTardisModelResource):
+    instrument = fields.ForeignKey(InstrumentResource, 'instrument',
+                                   null=True, full=True)
     experiments = fields.ToManyField(
         ExperimentResource, 'experiments', related_name='datasets')
     parameter_sets = fields.ToManyField(
@@ -790,6 +820,7 @@ class DatasetResource(MyTardisModelResource):
         queryset = Dataset.objects.all()
         filtering = {
             'id': ('exact', ),
+            'instrument': ALL_WITH_RELATIONS,
             'experiments': ALL_WITH_RELATIONS,
             'description': ('exact', ),
             'directory': ('exact', ),
@@ -1039,34 +1070,6 @@ class ObjectAclResource(MyTardisModelResource):
             'pluginId': ('exact', ),
             'entityId': ('exact', ),
         }
-
-
-class FacilityResource(MyTardisModelResource):
-    manager_group = fields.ForeignKey(GroupResource, 'manager_group',
-                                      null=True, full=True)
-
-    class Meta(MyTardisModelResource.Meta):
-        queryset = Facility.objects.all()
-        filtering = {
-            'id': ('exact', ),
-            'manager_group': ALL_WITH_RELATIONS,
-            'name': ('exact', ),
-        }
-        always_return_data = True
-
-
-class InstrumentResource(MyTardisModelResource):
-    facility = fields.ForeignKey(FacilityResource, 'facility',
-                                 null=True, full=True)
-
-    class Meta(MyTardisModelResource.Meta):
-        queryset = Instrument.objects.all()
-        filtering = {
-            'id': ('exact', ),
-            'facility': ALL_WITH_RELATIONS,
-            'name': ('exact', ),
-        }
-        always_return_data = True
 
 
 class UploaderAuthorization(Authorization):
