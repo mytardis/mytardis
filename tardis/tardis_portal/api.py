@@ -835,6 +835,11 @@ class DatasetResource(MyTardisModelResource):
                 name='api_get_datafiles_for_dataset'),
         ]
 
+    def obj_create(self, bundle, **kwargs):
+        bundle = super(DatasetResource, self).obj_create(bundle, **kwargs)
+        bundle.obj.storage_boxes.add(StorageBox.get_default_storage())
+        return bundle
+
     def get_datafiles(self, request, **kwargs):
         file_path = kwargs.get('file_path', None)
         dataset_id = kwargs['pk']
