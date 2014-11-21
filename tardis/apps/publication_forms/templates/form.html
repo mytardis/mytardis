@@ -12,13 +12,17 @@
   </div>
   <div ng-show="loadingData" class="alert alert-info"><img src="/static/publication-form/spinner.gif" />Hang tight, loading data...</div>
   <div ng-include="current_page.url"></div>
-  <ul class="pager">
+  <div class="alert alert-info" ng-show="isLastPage()">
+    <strong>Almost done,</strong> but make sure all details are correct.
+    Once submitted, you cannot make changes.
+  </div>
+  <ul class="pager" ng-hide="isComplete()">
     <li class="previous">
       <a href="#" ng-click="previousPage()">Previous</a>
     </li>
-    <li>{{ currentPageIdx + 1 }} of {{ totalPages }}</li>
+    <li>{{ currentPageIdx + 1 }} of {{ totalPages - 1 }}</li>
     <li class="next">
-      <a href="#" ng-click="nextPage()">Next</a>
+      <a href="#" ng-click="nextPage()"><span ng-hide="isLastPage()">Next</span><span ng-show="isLastPage()">Finish</span></a>
     </li>
   </ul>
 </div>
@@ -34,13 +38,24 @@
     <div class="row-fluid">
       <div class="span12">
 	<label>Publication title</label>
-	<input type="text" placeholder="Something snappy..." ng-model="formData.publicationTitle" ng-change="setTitle(formData.publicationTitle)" style="width:100%;" class="input-xlarge" />
+	<input type="text"
+	       placeholder="Something snappy..."
+	       ng-model="formData.publicationTitle"
+	       ng-change="setTitle(formData.publicationTitle)"
+	       style="width:100%;"
+	       class="input-xlarge" />
       </div>
     </div>
     <div class="row-fluid">
       <div class="span12">
 	<label>Description</label>
-	<textarea placeholder="Describe your data..." ng-model="formData.publicationDescription" ng-change="setDescription(formData.publicationDescription)" style="width:100%" class="input-xlarge" rows="3" ></textarea>
+	<textarea placeholder="Describe your publication..."
+		  ng-model="formData.publicationDescription"
+		  ng-change="setDescription(formData.publicationDescription)"
+		  style="width:100%"
+		  class="input-xlarge"
+		  rows="3" >
+	</textarea>
       </div>
     </div>
     <div class="row-fluid">
@@ -48,7 +63,7 @@
         <label>Select experiment</label>
 	<select ng-model="selectedExperiment" ng-options="e.title for e in experiments" ng-change="updateDatasets()"></select>
         <label>Select datasets</label>
-	<select multiple ng-dblclick="addDatasets(selectedExperiment, selectedDatasets)"
+	<select multiple ng-dblclick="addDatasets(selectedExperiment, selectedDatasets); selectedDatasets = [];"
 		ng-model="selectedDatasets"
 		ng-options="d.description for d in selectedExperiment.datasets | removeMatchingDatasets : formData.addedDatasets"></select>
         <a href="#" class="btn" ng-click="addDatasets(selectedExperiment, selectedDatasets)"><i class="icon-plus"></i> Add dataset</a>
@@ -80,6 +95,18 @@
   {{ formData.extraInfo | json }}
 </script>
 <script type="text/ng-template" id="form_page4.html">
-  PAGE 4
+  <h3>This form will contain...</h3>
+  <ul>
+    <li>finding agency and grant information</li>
+    <li>publication license (e.g. CC-BY)</li>
+    <li>additional embargo information</li>
+  </ul>
+</script>
+<script type="text/ng-template" id="form_page5.html">
+  <p><strong>Done!</strong> Your publication has been submitted and will be accessible
+  according to any embargo criteria and approval.</p>
+  <div class="well">Your publication has been assigned the following DOI: 10.xxxxxxx/xxxxxx</div>
+  <p>You may use this DOI to cite the publication now, however it will only become active once
+  your publication is live.</p>
 </script>
 {% endverbatim %}

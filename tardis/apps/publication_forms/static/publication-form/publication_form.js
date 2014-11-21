@@ -174,6 +174,14 @@ app.controller('publicationFormCtrl', function ($scope, $log, $http, ngDialog, $
 
     }
 
+    var finalSubmissionValidator = function(onSuccess, onError) {
+
+	$scope.formData.action = "submit";
+
+	saveFormState(onSuccess, onError);
+
+    }
+
     // A list of available pages of the form, along with a function used to validate the form content
     $scope.form_pages = [{title: 'Ready to publish?',
 			  url: 'form_page1.html',
@@ -186,6 +194,9 @@ app.controller('publicationFormCtrl', function ($scope, $log, $http, ngDialog, $
 			  validationFunction: extraInformationValidator},
                          {title: 'Attribution and licensing',
 			  url: 'form_page4.html',
+			  validationFunction: finalSubmissionValidator},
+			 {title: 'Submission complete',
+			  url: 'form_page5.html',
 			  validationFunction: noValidation}];
 
     // Keep track of the current page
@@ -247,7 +258,7 @@ app.controller('publicationFormCtrl', function ($scope, $log, $http, ngDialog, $
 
     // Advance to the next page of the form
     $scope.nextPage = function() {
-	if ($scope.currentPageIdx + 1 < $scope.form_pages.length && !$scope.loadingData) {
+	if ($scope.currentPageIdx < $scope.form_pages.length - 1 && !$scope.loadingData) {
 	    $scope.errorMessages = [];
 	    $scope.infoMessage = "";
 	    $scope.current_page.validationFunction(function() { // On success...
@@ -266,6 +277,14 @@ app.controller('publicationFormCtrl', function ($scope, $log, $http, ngDialog, $
             $scope.currentPageIdx--;
             $scope.current_page = $scope.form_pages[$scope.currentPageIdx];
 	}
+    }
+
+    $scope.isComplete = function() {
+	return $scope.currentPageIdx == ($scope.form_pages.length - 1);
+    }
+
+    $scope.isLastPage = function() { // Actually, second last page
+	return $scope.currentPageIdx == ($scope.form_pages.length - 2);
     }
 
     // Set the publication title

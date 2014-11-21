@@ -11,10 +11,10 @@
       <input tardis-form-field parameter-name="pdb-id" type="text" />
     </div>
   </div>
-  <div class="control-group">
+  <div class="control-group" ng-init="s = 'http://www.tardis.edu.au/schemas/publication/'">
     <label class="control-label">Embargo</label>
-    <div class="controls">
-      <input tardis-form-field parameter-name="embargo" type="checkbox" />
+    <tardis-form my-model="formData.extraInfo[$index+'.1']" schema="s" class="controls">
+      <input tardis-form-field parameter-name="pdb-embargo" type="checkbox" />
     </div>
   </div>
 </tardis-form>

@@ -16,6 +16,7 @@ from tardis.tardis_portal.models import Dataset
 from tardis.tardis_portal.staging import get_staging_url_and_size
 from tardis.tardis_portal.email import email_user
 
+from tardis.apps.publication_forms.tasks import update_publication_records
 
 # Ensure filters are loaded
 try:
@@ -130,3 +131,7 @@ def create_staging_datafile(filepath, username, dataset_id):
 @task(name="tardis_portal.email_user_task", ignore_result=True)
 def email_user_task(subject, template_name, context, user):
     email_user(subject, template_name, context, user)
+
+@task(name="tardis_portal.update_publication_records", ignore_result=True)
+def update_publication_records_task():
+    update_publication_records()

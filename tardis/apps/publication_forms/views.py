@@ -50,7 +50,7 @@ def process_form(request):
 
     # Get the form state database object
     form_state_parameter = ExperimentParameter.objects.get(name__name='form_state',
-            name__schema__namespace=settings.PUBLICATION_DRAFT_SCHEMA_NAMESPACE,
+            name__schema__namespace=settings.PUBLICATION_DRAFT_SCHEMA,
             parameterset__experiment=publication)
 
     # Check if the form state needs to be loaded (i.e. a publication draft is resumed)
@@ -94,7 +94,7 @@ def process_form(request):
     elif form_state['action'] == 'update-extra-info':
         # Clear any current parameter sets
         for parameter_set in publication.getParameterSets():
-            if parameter_set.schema.namespace != settings.PUBLICATION_DRAFT_SCHEMA_NAMESPACE:
+            if parameter_set.schema.namespace != settings.PUBLICATION_DRAFT_SCHEMA:
                 parameter_set.delete()
 
         # Loop through form data and create associates parameter sets
@@ -123,11 +123,20 @@ def process_form(request):
                         parameter.save()
                     except ParameterName.DoesNotExist:
                         pass
+    elif form_state['action'] == 'submit':
+        # any final form validation should occur here
+        # and specific error messages can be returned
+        # to the browser before the publication's draft
+        # status is removed.
+        ExperimentParameterSet.objects.get(schema__namespace=settings.PUBLICATION_DRAFT_SCHEMA,
+                                           experiment=publication).delete()
 
-    # Clear the form action and save the state
-    form_state['action'] = ''
-    form_state_parameter.string_value = json.dumps(form_state)
-    form_state_parameter.save()
+    # The form state is lost upon submit
+    if form_state['action'] != 'submit':
+        # Clear the form action and save the state
+        form_state['action'] = ''
+        form_state_parameter.string_value = json.dumps(form_state)
+        form_state_parameter.save()
 
     return HttpResponse(json.dumps(form_state), mimetype="appication/json")
 
@@ -185,21 +194,19 @@ def create_draft_publication(user, publication_title, publication_description):
                     aclOwnershipType=ObjectACL.OWNER_OWNED)
     acl.save()
 
-    # Attach a "draft publication" schema
-    try:
-        draft_publication_schema = Schema.objects.get(
-            namespace=settings.PUBLICATION_DRAFT_SCHEMA_NAMESPACE)
-    except Schema.DoesNotExist:
-        # Sets up the schema if it doesn't already exist.
-        draft_publication_schema = Schema(namespace=settings.PUBLICATION_DRAFT_SCHEMA_NAMESPACE,
-                                          name='Draft Publication',
-                                          hidden=True)
-        draft_publication_schema.save()
-        ParameterName(schema=draft_publication_schema,name="form_state",
-                      full_name="form_state").save()
+    publication_schema = Schema.objects.get(
+        namespace=settings.PUBLICATION_SCHEMA_ROOT)
+
+    # Add a empty parameterset to flag this as a publication
+    ExperimentParameterSet(schema=publication_schema,
+                           experiment=experiment).save()
+
+
+    draft_publication_schema = Schema.objects.get(
+        namespace=settings.PUBLICATION_DRAFT_SCHEMA)
 
     # Attach schema and blank form_state parameter
-    parameter_name = ParameterName.objects.get(schema=draft_publication_schema, name="form_state")
+    parameter_name = ParameterName.objects.get(schema=draft_publication_schema, name='form_state')
     parameterset = ExperimentParameterSet(schema=draft_publication_schema,
                                           experiment=experiment)
     parameterset.save()
