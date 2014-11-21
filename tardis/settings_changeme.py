@@ -1,3 +1,4 @@
+
 import djcelery
 from datetime import timedelta
 from os import path
@@ -27,7 +28,10 @@ DATABASES = {
 }
 
 # Celery queue
-BROKER_URL = 'django://'
+# BROKER_URL = 'django://'
+BROKER_URL = 'amqp://guest@localhost//'
+CELERY_RESULT_BACKEND = 'amqp'
+
 '''
 use django:, add kombu.transport.django to INSTALLED_APPS
 or use redis: install redis separately and add the following to a
@@ -240,6 +244,7 @@ INSTALLED_APPS = (
     'tardis.template.loaders',
     'tardis.tardis_portal',
     'tardis.tardis_portal.templatetags',
+    'tardis.apps.publication_forms',
     'registration',
     'south',
     'django_jasmine',
@@ -420,6 +425,10 @@ CELERYBEAT_SCHEDULE = {
         "task": "tardis_portal.verify_dfos",
         "schedule": timedelta(seconds=300)
     },
+    "update-publication-records": {
+        "task": "tardis_portal.update_publication_records",
+        "schedule": timedelta(seconds=20)
+    },
 }
 
 djcelery.setup_loader()
@@ -594,3 +603,38 @@ RAPID_CONNECT_CONFIG['aud'] = 'https://example.com/rc/'
 '''Public facing URL that accepts the HTTP/HTTPS POST request from
 Rapid Connect.
 '''
+
+### Publication form settings ###
+PUBLICATION_SCHEMA_ROOT = 'http://www.tardis.edu.au/schemas/publication/'
+
+# Any experiment with this schema is treated as a draft publication
+# This schema will be created automatically if not present
+PUBLICATION_DRAFT_SCHEMA = PUBLICATION_SCHEMA_ROOT+'draft/'
+
+
+# Form mappings
+# PUBLICATION_FORM_MAPPINGS is a list of dictionaries that contain the following parameters:
+# dataset_schema: the namespace of the schema that triggers this form to be used
+# publication_schema: the namspace of the schema that should be added to the publication
+# form_template: a URL to the form template (usually static HTML)
+#PUBLICATION_FORM_MAPPINGS = [{'dataset_schema': 'http://example.com/a_dataset_schema',
+#                              'publication_schema': 'http://example.com/a_publication_schema',
+#                              'form_template': '/static/publication-form/form-template.html'}]
+# Note: dataset_schema is treated as a regular expression
+
+# The PDB publication schema is used for any experiments that reference a PDB structure
+# It is defined here as a setting because it is used both for the publication form
+# and for fetching data from PDB.org and must always match.
+PDB_PUBLICATION_SCHEMA_ROOT = 'http://synchrotron.org.au/pub/mx/pdb/'
+PDB_SEQUENCE_PUBLICATION_SCHEMA = PDB_PUBLICATION_SCHEMA_ROOT+'sequence/'
+PDB_CITATION_PUBLICATION_SCHEMA = PDB_PUBLICATION_SCHEMA_ROOT+'citation/'
+PDB_REFRESH_INTERVAL = timedelta(days=7)
+
+PUBLICATION_FORM_MAPPINGS = [{'dataset_schema': r'^http://synchrotron.org.au/mx/',
+                              'publication_schema': PDB_PUBLICATION_SCHEMA_ROOT,
+                              'form_template': '/static/publication-form/mx-pdb-template.html'},
+                             {'dataset_schema': r'^http://synchrotron.org.au/mx/',
+                              'publication_schema': 'http://synchrotron.org.au/pub/mx/dataset/',
+                              'form_template': '/static/publication-form/mx-dataset-description-template.html'}]
+
+#EXPERIMENT_VIEWS = [(r'^'+PUBLICATION_SCHEMA_NAMESPACE_ROOT, 'tardis.tardis_portal.views.view_publication')]

@@ -37,6 +37,7 @@ views.py
 
 """
 import time
+import re
 
 from tardis.tardis_portal.auth.decorators import \
     has_experiment_write, has_dataset_write
@@ -378,15 +379,30 @@ def facility_overview(request):
 
 @never_cache
 @login_required
-def fetch_facility_data(request):
+def fetch_facility_data_count(request, facility_id):
+    '''
+    returns the total number of datasets for pagination in json format
+    '''
+
+    dataset_object_count = Dataset.objects.filter(
+        instrument__facility__manager_group__user=request.user,
+        instrument__facility__id=facility_id
+    ).count()
+    return HttpResponse(json.dumps({"facility_data_count": dataset_object_count}),
+                        mimetype='application/json')
+
+
+@never_cache
+@login_required
+def fetch_facility_data(request, facility_id, start_index, end_index):
     '''
     json facility datasets
     '''
-    # In lieu of proper pagination, only the 500 most recent datasets are
-    # fetched
+
     dataset_objects = Dataset.objects.filter(
-        instrument__facility__manager_group__user=request.user
-    ).order_by('-id')[:500]
+        instrument__facility__manager_group__user=request.user,
+        instrument__facility__id=facility_id
+    ).order_by('-id')[start_index:end_index]
 
     def datetime_to_us(dt):
         '''
@@ -402,7 +418,7 @@ def fetch_facility_data(request):
     for dataset in dataset_objects:
         instrument = dataset.instrument
         facility = instrument.facility
-        parent_experiment = dataset.experiments.get()
+        parent_experiment = dataset.experiments.all()[:1].get()
         datafile_objects = DataFile.objects.filter(dataset=dataset)
         owner = parent_experiment.created_by
         datafiles = []
@@ -547,7 +563,8 @@ def view_experiment(request, experiment_id,
         namespaces = [ps.schema.namespace
                       for ps in experiment.getParameterSets()]
         for ns, view_fn in settings.EXPERIMENT_VIEWS:
-            if ns in namespaces:
+            ns_match = next((n for n in namespaces if re.match(ns, n)), None)
+            if ns_match:
                 x = view_fn.split(".")
                 mod_name, fn_name = (".".join(x[:-1]), x[-1])
                 try:
@@ -620,6 +637,11 @@ def view_experiment(request, experiment_id,
 
     c['apps'] = zip(appurls, appnames)
     return HttpResponse(render_response_index(request, template_name, c))
+
+
+@authz.experiment_access_required
+def view_publication(request, experiment_id):
+    return HttpResponse(render_response_index(request, 'tardis_portal/view_publication.html'))
 
 
 def _add_protocols_and_organizations(request, collection_object, c):

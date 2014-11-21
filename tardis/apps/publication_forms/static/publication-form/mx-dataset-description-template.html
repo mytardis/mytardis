@@ -1,0 +1,25 @@
+<div class="well">
+  <h3>Dataset description</h3>
+  <p>Please provide a description for each MX dataset included.</p>
+  <div ng-repeat="ds in formTemplate.datasets"
+       ng-init="f = $parent.$index; formData.extraInfo[f+'.'+$index]['dataset'] = ds.description;">
+    <h4>{{ ds.description }}</h4>
+    <tardis-form my-model="formData.extraInfo[f+'.'+$index]" schema="formTemplate.name">
+      <label>Dataset type:</label><select tardis-form-field parameter-name="description" style="width:100%" >
+	<option value="">(not specified)</option>
+	<option value="SAD/MAD peak">SAD/MAD peak</option>
+	<option value="MAD inflection point">MAD inflection point</option>
+	<option value="MAD high energy remote">MAD high energy remote</option>
+	<option value="MAD low energy remote">MAD low energy remote</option>
+	<option value="Refinement dataset">Refinement dataset</option>
+	<option value="Wedge/partial">Wedge/partial</option>
+      </select>
+      <textarea tardis-form-field parameter-name="additional-information"
+		rows="3"
+		style="width:100%;"
+		placeholder="Additional information about this dataset (e.g. heavy atom type and number of sites if used for anomalous or isomorphic phasing; number of images if used as a partial wedge of data to build a dataset; any other information that might be relevant.)" >
+      </textarea>
+    </tardis-form>
+    <hr ng-hide="$last" />
+  </div>
+</div>

@@ -18,7 +18,12 @@
 {% mustachejs "tardis_portal/badges/size" %}
 
 <script type="text/javascript">
-
+var experiment_id={{ experiment.id }};
+var is_publication={{ experiment.is_publication }};
+var is_publication_draft={{ experiment.is_publication_draft }};
+</script>
+<script type="text/javascript" src="/static/publication-form/publication_form.js"></script>
+<script type="text/javascript">
     var toggle_files = function(loadCallback) {
         var $this = $(this);
         var $datafile_info_container = $this.parents('.dataset_datafiles').find('.datafile_list');
@@ -230,11 +235,22 @@ $('#modal-metadata .submit-button').click(function() {
 </script>
 
 <div class="page-header">
-  <h4>Experiment</h4>
+  <h4>
+    {% if experiment.is_publication %}
+    Publication{% if experiment.is_publication_draft %}<small style="font-style:italic;"> draft</small>{% endif %}
+    {% else %}Experiment
+    {% endif %}
+  </h4>
   {% if has_write_permissions and not experiment.public %}
-  <div class="pull-right">
+  <div class="pull-right" ng-controller="publicationFormCtrl">
+    <a class="prepare_to_publish btn btn-mini btn-info"
+       title="Prepare To Publish" ng-click="openPublicationForm()" ng-show="isPublicationDraft || !isPublication">
+      <i class="icon-share"></i>
+      <span ng-hide="isPublication">Create publication</span>
+      <span ng-show="isPublicationDraft">Resume draft publication</span>
+    </a>
     <a class="btn btn-mini btn-warning" title="Edit Experiment"
-       href="{{ experiment.get_edit_url }}">
+       href="{{ experiment.get_edit_url }}" ng-hide="isPublication">
       <i class="icon-pencil"></i>
       Edit Experiment
     </a>

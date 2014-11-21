@@ -1,0 +1,112 @@
+{% verbatim %}
+<div ng-controller="publicationFormCtrl">
+  <h2>{{ current_page.title }}</h2>
+  <div class="alert alert-error" ng-show="errorMessages.length">
+    <strong>Oops!</strong> Processing error:
+    <ul ng-repeat="message in errorMessages">
+      <li>{{ message }}</li>
+    </ul>
+  </div>
+  <div class="alert alert-info" ng-show="infoMessage.length">
+    {{ infoMessage }}
+  </div>
+  <div ng-show="loadingData" class="alert alert-info"><img src="/static/publication-form/spinner.gif" />Hang tight, loading data...</div>
+  <div ng-include="current_page.url"></div>
+  <div class="alert alert-info" ng-show="isLastPage()">
+    <strong>Almost done,</strong> but make sure all details are correct.
+    Once submitted, you cannot make changes.
+  </div>
+  <ul class="pager" ng-hide="isComplete()">
+    <li class="previous">
+      <a href="#" ng-click="previousPage()">Previous</a>
+    </li>
+    <li>{{ currentPageIdx + 1 }} of {{ totalPages - 1 }}</li>
+    <li class="next">
+      <a href="#" ng-click="nextPage()"><span ng-hide="isLastPage()">Next</span><span ng-show="isLastPage()">Finish</span></a>
+    </li>
+  </ul>
+</div>
+
+<script type="text/ng-template" id="form_page1.html">
+  <p>Ready to make your data public? Great!</p>
+</script>
+<script type="text/ng-template" id="form_page2.html">
+  <p><strong>Select your data!</strong> Below is all the data
+  you've generated. Select the datasets you want to include in
+  this publication.</p>
+  <form class="well">
+    <div class="row-fluid">
+      <div class="span12">
+	<label>Publication title</label>
+	<input type="text"
+	       placeholder="Something snappy..."
+	       ng-model="formData.publicationTitle"
+	       ng-change="setTitle(formData.publicationTitle)"
+	       style="width:100%;"
+	       class="input-xlarge" />
+      </div>
+    </div>
+    <div class="row-fluid">
+      <div class="span12">
+	<label>Description</label>
+	<textarea placeholder="Describe your publication..."
+		  ng-model="formData.publicationDescription"
+		  ng-change="setDescription(formData.publicationDescription)"
+		  style="width:100%"
+		  class="input-xlarge"
+		  rows="3" >
+	</textarea>
+      </div>
+    </div>
+    <div class="row-fluid">
+      <div class="span6">
+        <label>Select experiment</label>
+	<select ng-model="selectedExperiment" ng-options="e.title for e in experiments" ng-change="updateDatasets()"></select>
+        <label>Select datasets</label>
+	<select multiple ng-dblclick="addDatasets(selectedExperiment, selectedDatasets); selectedDatasets = [];"
+		ng-model="selectedDatasets"
+		ng-options="d.description for d in selectedExperiment.datasets | removeMatchingDatasets : formData.addedDatasets"></select>
+        <a href="#" class="btn" ng-click="addDatasets(selectedExperiment, selectedDatasets)"><i class="icon-plus"></i> Add dataset</a>
+      </div>
+      <div class="span6">
+        <h3>Added datasets</h3>
+        <table class="table table-striped">
+          <thead>
+	    <td>Experiment</td>
+	    <td>Description</td>
+	    <td></td>
+	  </thead>
+          <tr ng-repeat="entry in formData.addedDatasets">
+	    <td>{{ entry.experiment }}</td>
+	    <td>{{ entry.dataset.description }}</td>
+	    <td><a href="#"><i class="icon-minus" ng-click="removeDataset(entry)"></i></a></td>
+	  </tr>
+        </table>
+      </div>
+    </div>
+  </form>
+  <div class="alert alert-info">Clicking next will save your selection so you can come back later</div>
+</script>
+<script type="text/ng-template" id="form_page3.html">
+  <p>The following extra information is required based on your dataset selection:</p>
+  <div ng-repeat="formTemplate in formData.disciplineSpecificFormTemplates">
+    <div ng-include="formTemplate.template"></div>
+  </div>
+  {{ formData.extraInfo | json }}
+</script>
+<script type="text/ng-template" id="form_page4.html">
+  <h3>This form will contain...</h3>
+  <ul>
+    <li>finding agency and grant information</li>
+    <li>publication license (e.g. CC-BY)</li>
+    <li>additional embargo information</li>
+  </ul>
+</script>
+<script type="text/ng-template" id="form_page5.html">
+  <p><strong>Done!</strong> Your publication has been submitted and will be accessible
+  according to any embargo criteria and approval.</p>
+  <div class="well">Your publication has been assigned the following DOI: 10.xxxxxxx/xxxxxx</div>
+  <p>You may use this DOI to cite the publication now, however it will only become active once
+  your publication is live.</p>
+</script>
+{% endverbatim %}

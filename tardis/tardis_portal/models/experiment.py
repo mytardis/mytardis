@@ -77,6 +77,14 @@ class Experiment(models.Model):
         from .hooks import publish_public_expt_rifcs
         publish_public_expt_rifcs(self)
 
+    def is_publication_draft(self):
+        return self.experimentparameterset_set.filter(
+            schema__namespace=settings.PUBLICATION_DRAFT_SCHEMA).count()
+
+    def is_publication(self):
+        return self.experimentparameterset_set.filter(
+            schema__namespace__startswith=settings.PUBLICATION_SCHEMA_ROOT).count()
+
     def getParameterSets(self, schemaType=None):
         """Return the experiment parametersets associated with this
         experiment.
