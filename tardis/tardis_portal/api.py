@@ -1207,6 +1207,8 @@ class UploaderResource(MyTardisModelResource):
 
 class UploaderStagingHostResource(MyTardisModelResource):
     class Meta(MyTardisModelResource.Meta):
+        authentication = Authentication()
+        authorization = UploaderRegistrationRequestAuthorization()
         queryset = UploaderStagingHost.objects.all()
 
 
@@ -1216,11 +1218,10 @@ class UploaderRegistrationRequestResource(MyTardisModelResource):
     approved_staging_host = fields.ForeignKey(
         'tardis.tardis_portal.api.UploaderStagingHostResource',
         'approved_staging_host',
-        null=True, blank=True, default=None)
+        full = True, null=True, blank=True, default=None)
 
     class Meta(MyTardisModelResource.Meta):
         authentication = Authentication()
-        # authorization = Authorization()
         authorization = UploaderRegistrationRequestAuthorization()
         queryset = UploaderRegistrationRequest.objects.all()
         filtering = {
