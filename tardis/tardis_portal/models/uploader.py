@@ -165,5 +165,7 @@ class UploaderRegistrationRequest(models.Model):
         WiFi etc.) with different MAC addresses.
 
         '''
-        return self.uploader.name + " | " + self.uploader.mac_address + \
-            " | " + self.requester_name + " | " + str(self.request_time)
+        return self.uploader.name + " | " + \
+            self.uploader.interface + " | " + \
+            self.uploader.mac_address + " | " + \
+            self.requester_name + " | " + str(self.request_time)
