@@ -19,6 +19,7 @@ import errno
 import os
 import subprocess
 
+from celery import task
 from datetime import datetime
 from magic import Magic
 
@@ -30,7 +31,10 @@ from django.db.models import Q
 from django.utils._os import safe_join
 from django.utils.importlib import import_module
 
-from tardis.tardis_portal.models import Dataset, DataFile, DataFileObject
+from tardis.tardis_portal.models import (
+    Dataset, DataFile, DataFileObject,
+    DatafileParameterSet
+)
 from tardis.tardis_portal.util import generate_file_checksums
 
 import logging
@@ -137,6 +141,42 @@ class SquashFSStorage(Storage):
             return os.path.join(split_path[1:])
         else:
             return dfo.uri
+
+
+@task
+def parse_new_squashfiles():
+    parsers = getattr(settings, 'SQUASHFS_PARSERS', {})
+    for ns, parse_module in parsers.iteritems():
+        unparsed_files = DatafileParameterSet.objects.filter(
+            schema__namespace=ns,
+            datafileparameter__name__name='parse_status'
+        ).exclude(
+            datafileparameter__string_value='complete'
+        ).exclude(
+            datafileparameter__string_value='running'
+        ).values_list('datafile_id', flat=True)
+
+        for sq_file_id in unparsed_files:
+            parse_squashfs_file.delay(sq_file_id, parse_module, ns)
+
+
+@task
+def parse_squashfs_file(squashfs_file_id, parse_module, ns):
+    '''
+    the status check doesn't provide complete protection against duplicate
+    parsing, but should be fine when the interval between runs
+    '''
+    squashfile = DataFile.objects.get(squashfs_file_id)
+    status = squashfile.datafileparameterset_set.get(
+        schema__namespace=ns
+    ).datafileparameter_set.get(
+        name__name='parse_status')
+    if status.string_value in ['complete', 'running']:
+        return
+    status.string_value = 'running'
+    status.save()
+    parser = import_module(parse_module)
+
 
 
 def dj_storage_walk(dj_storage, top='.', topdown=True, onerror=None,
