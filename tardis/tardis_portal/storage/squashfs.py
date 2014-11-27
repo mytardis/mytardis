@@ -145,6 +145,13 @@ class SquashFSStorage(Storage):
 
 @task
 def parse_new_squashfiles():
+    '''
+    settings variable SQUASH_PARSERS contains a dictionary of Datafile schemas
+    and Python module load strings.
+
+    The Python module loaded must contain a function 'parse_squash_file',
+    which will do the work.
+    '''
     parsers = getattr(settings, 'SQUASHFS_PARSERS', {})
     for ns, parse_module in parsers.iteritems():
         unparsed_files = DatafileParameterSet.objects.filter(
@@ -176,7 +183,13 @@ def parse_squashfs_file(squashfs_file_id, parse_module, ns):
     status.string_value = 'running'
     status.save()
     parser = import_module(parse_module)
-
+    try:
+        parser.parse_squashfs_file(squashfile)
+        status.string_value = 'complete'
+    except:
+        status.string_value = 'parse failed'
+    finally:
+        status.save()
 
 
 def dj_storage_walk(dj_storage, top='.', topdown=True, onerror=None,
