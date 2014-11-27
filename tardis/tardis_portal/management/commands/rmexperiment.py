@@ -15,7 +15,7 @@ from optparse import make_option
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction, DEFAULT_DB_ALIAS
 from tardis.tardis_portal.models import Experiment, Dataset, DataFile
-from tardis.tardis_portal.models import Author_Experiment, ObjectACL
+from tardis.tardis_portal.models import ExperimentAuthor, ObjectACL
 from tardis.tardis_portal.models import ExperimentParameterSet, ExperimentParameter
 from tardis.tardis_portal.models import DatasetParameterSet
 from tardis.tardis_portal.models import DatafileParameterSet
@@ -60,7 +60,7 @@ class Command(BaseCommand):
         # Fetch other stuff to be printed and deleted.
         acls = ObjectACL.objects.filter(content_type=exp.get_ct(),
                                         object_id=exp.id)
-        authors = Author_Experiment.objects.filter(experiment=exp)
+        authors = ExperimentAuthor.objects.filter(experiment=exp)
         epsets = ExperimentParameterSet.objects.filter(experiment=exp)
 
         confirmed = options.get('confirmed', False)

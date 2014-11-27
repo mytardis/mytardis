@@ -210,10 +210,12 @@ class Experiment(models.Model):
         return None
 
 
-class Author_Experiment(models.Model):
+class ExperimentAuthor(models.Model):
 
     experiment = models.ForeignKey(Experiment)
     author = models.CharField(max_length=255)
+    institution = models.CharField(max_length=255)
+    email = models.CharField(max_length=255)
     order = models.PositiveIntegerField()
     url = models.URLField(
         max_length=2000,
@@ -221,7 +223,7 @@ class Author_Experiment(models.Model):
         help_text="URL identifier for the author")
 
     def save(self, *args, **kwargs):
-        super(Author_Experiment, self).save(*args, **kwargs)
+        super(ExperimentAuthor, self).save(*args, **kwargs)
         try:
             from .hooks import publish_public_expt_rifcs
             publish_public_expt_rifcs(self.experiment)
