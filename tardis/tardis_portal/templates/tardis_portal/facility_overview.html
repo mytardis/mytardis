@@ -89,7 +89,7 @@
         <div class="row-fluid">
             <form class="well form-inline"><strong>Filter by: </strong>
                 <input type="text" class="input-small" placeholder="user name"
-                       ng-model="search_owner.owner.name">
+                       ng-model="search_owner.owner">
                 <input type="text" class="input-small" placeholder="experiment"
                        ng-model="search_experiment.parent_experiment.title">
                 <input type="text" class="input-small" placeholder="instrument"
@@ -110,7 +110,7 @@
                     <th></th>
                 </tr>
                 <tr ng-repeat-start="dataset in datasets | filter:search_owner:strict | filter:search_experiment:strict | filter:search_instrument:strict">
-                    <td>{{dataset.owner.name}}</td>
+                    <td>{{dataset.owner}}</td>
                     <td><a href="/experiment/view/{{dataset.parent_experiment.id}}/" target="_blank">{{dataset.parent_experiment.title}}</a></td>
                     <td>{{dataset.description}}</td>
                     <td>{{dataset.instrument.name}}</td>
@@ -162,7 +162,7 @@
                     <th style="text-align:center" colspan="5">{{datasetByInstrument.instrument.name}}</th>
                 </tr>
                 <tr ng-repeat-start="dataset in datasetByInstrument.datasets | filter:search_owner:strict | filter:search_experiment:strict">
-                    <td>{{dataset.owner.name}}</td>
+                    <td>{{dataset.owner}}</td>
                     <td><a href="/experiment/view/{{dataset.parent_experiment.id}}/" target="_blank">{{dataset.parent_experiment.title}}</a></td>
                     <td>{{dataset.description}}</td>
                     <td>{{dataset.parent_experiment.created_time | date:'dd-MM-yyyy hh:mm'}}</td>
@@ -210,7 +210,7 @@
                 </tr>
                 <tbody ng-repeat="datasetByUser in dataByUser | filter:search_owner:strict">
                 <tr>
-                    <th style="text-align:center" colspan="5">{{datasetByUser.owner.name}}</th>
+                    <th style="text-align:center" colspan="5">{{datasetByUser.owner}}</th>
                 </tr>
                 <tr ng-repeat-start="dataset in datasetByUser.datasets | filter:search_experiment:strict | filter:search_instrument:strict">
                     <td><a href="/experiment/view/{{dataset.parent_experiment.id}}/" target="_blank">{{dataset.parent_experiment.title}}</a></td>
