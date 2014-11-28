@@ -404,7 +404,8 @@ def fetch_facility_data(request):
         facility = instrument.facility
         parent_experiment = dataset.experiments.get()
         datafile_objects = DataFile.objects.filter(dataset=dataset)
-        owner = parent_experiment.created_by
+        owners = parent_experiment.get_owners()
+        print(owners)
         datafiles = []
         dataset_size = 0
         for datafile in datafile_objects:
@@ -427,10 +428,7 @@ def fetch_facility_data(request):
             "institution": parent_experiment.institution_name,
             "datafiles": datafiles,
             "size": dataset_size,
-            "owner": {
-                "id": owner.id,
-                "name": owner.username,
-            },
+            "owner": '; '.join([o.username for o in owners]),
             "instrument": {
                 "id": instrument.id,
                 "name": instrument.name,
