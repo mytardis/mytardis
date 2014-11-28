@@ -421,7 +421,10 @@ def fetch_facility_data(request, facility_id, start_index, end_index):
         parent_experiment = dataset.experiments.all()[:1].get()
         datafile_objects = DataFile.objects.filter(dataset=dataset)
         owners = parent_experiment.get_owners()
+<<<<<<< Updated upstream
         print(owners)
+=======
+>>>>>>> Stashed changes
         datafiles = []
         dataset_size = 0
         for datafile in datafile_objects:
