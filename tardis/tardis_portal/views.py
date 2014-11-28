@@ -420,7 +420,6 @@ def fetch_facility_data(request, facility_id, start_index, end_index):
         parent_experiment = dataset.experiments.all()[:1].get()
         datafile_objects = DataFile.objects.filter(dataset=dataset)
         owners = parent_experiment.get_owners()
-        print(owners)
         datafiles = []
         dataset_size = 0
         for datafile in datafile_objects:
@@ -443,7 +442,7 @@ def fetch_facility_data(request, facility_id, start_index, end_index):
             "institution": parent_experiment.institution_name,
             "datafiles": datafiles,
             "size": dataset_size,
-            "owner": '; '.join([o.username for o in owners]),
+            "owner": ', '.join([o.username for o in owners]),
             "instrument": {
                 "id": instrument.id,
                 "name": instrument.name,
