@@ -443,7 +443,7 @@ def fetch_facility_data(request, facility_id, start_index, end_index):
             "institution": parent_experiment.institution_name,
             "datafiles": datafiles,
             "size": dataset_size,
-            "owner": '; '.join([o.username for o in owners]),
+            "owner": ', '.join([o.username for o in owners]),
             "instrument": {
                 "id": instrument.id,
                 "name": instrument.name,
