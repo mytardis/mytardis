@@ -95,7 +95,7 @@
     }
     // Check if filters are active
     $scope.filtersActive = function() {
-      if (typeof $scope.search_owner !== 'undefined' && $scope.search_owner.owner.name) {
+      if (typeof $scope.search_owner !== 'undefined' && $scope.search_owner.owner) {
         return true;
       } else if (typeof $scope.search_experiment !== 'undefined' && $scope.search_experiment.parent_experiment.title) {
         return true;
