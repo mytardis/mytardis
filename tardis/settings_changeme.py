@@ -607,6 +607,10 @@ Rapid Connect.
 ### Publication form settings ###
 PUBLICATION_SCHEMA_ROOT = 'http://www.tardis.edu.au/schemas/publication/'
 
+# This schema holds bibliographic details including authors and
+# acknowledgements
+PUBLICATION_DETAILS_SCHEMA = PUBLICATION_SCHEMA_ROOT + 'details/'
+
 # Any experiment with this schema is treated as a draft publication
 # This schema will be created automatically if not present
 PUBLICATION_DRAFT_SCHEMA = PUBLICATION_SCHEMA_ROOT+'draft/'

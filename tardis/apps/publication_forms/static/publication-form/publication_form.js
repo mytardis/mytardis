@@ -63,7 +63,7 @@ app.directive('tardisFormField', function($compile, $log) {
 });
 
 // Publication form controller
-app.controller('publicationFormCtrl', function ($scope, $log, $http, ngDialog, $window) {
+app.controller('publicationFormCtrl', function ($scope, $log, $http, ngDialog, $window, $timeout, $filter) {
 
     // Opens the publication form modal dialogue
     $scope.openPublicationForm = function () {
@@ -94,8 +94,22 @@ app.controller('publicationFormCtrl', function ($scope, $log, $http, ngDialog, $
     $scope.formData.publicationTitle = ""; // Initialise publication title
     $scope.formData.publicationDescription = ""; // Initialise publication description
     $scope.formData.extraInfo = {}; // Stores discipline specific metadata
+    $scope.formData.authors = []; // Stores the authors of the publication
+    $scope.formData.acknowledgements = ""; // Acknowledgements stored here
+    $scope.formData.selectedLicenseIdx = 0; // Selected license array index
     $scope.formData.action = ""; // specifies what action is required on form update
 
+    $scope.exampleAcknowledgements = [{'agency':'Australian Synchrotron facility',
+				       'text':'This research was undertaken on the [insert beamline name] beamline at the Australian Synchrotron, Victoria, Australia.'},
+				      {'agency':'Science and Industry Endowment Fund',
+				       'text':'This work is supported by the Science and Industry Endowment Fund.'},
+				      {'agency':'Multi-modal Australian ScienceS Imaging and Visulaisation Environment',
+				       'text':'This work was supported by the Multi-modal Australian ScienceS Imaging and Visulaisation Environment (MASSIVE) (www.massive.org.au).'},
+				      {'agency':'Australian National Beamline Facility',
+				       'text':'This research was undertaken at the Australian National Beamline Facility at the Photon Factory in Japan, operated by the Australian Synchrotron.  We acknowledge the Australian Research Council for financial support and the High Energy Accelerator Research Organisation (KEK) in Tsukuba, Japan, for operations support.'},
+				      {'agency':'International Synchrotron Access Program',
+				       'text':'We acknowledge travel funding provided by the International Synchrotron Access Program (ISAP) managed by the Australian Synchrotron and funded by the Australian Government.'}];
+    
     // Save the form state, creating a new publication if necessary
     // and call onComplete when saving is complete. The server should
     // return an experiment ID that represents the new/updated publication.
@@ -141,6 +155,8 @@ app.controller('publicationFormCtrl', function ($scope, $log, $http, ngDialog, $
     }
     var datasetSelectionValidator = function(onSuccess, onError) {
 
+	extraInfoHelpers = []; // This list of helper functions must be cleared in case the discipline specific form info changes
+
 	$scope.formData.action = "update-dataset-selection";
 
 	if ($scope.formData.publicationTitle.trim().length == 0) {
@@ -166,11 +182,25 @@ app.controller('publicationFormCtrl', function ($scope, $log, $http, ngDialog, $
 	}
     }
 
+
+    var extraInfoHelpers = []; // array of functions that evaluate to true if there are no errors
+                               // extraInfoHelpers are registered elsewhere
     var extraInformationValidator = function(onSuccess, onError) {
 
-	$scope.formData.action = "update-extra-info";
+	errors = false;
 
-	saveFormState(onSuccess, onError);
+	for (var i = 0; i < extraInfoHelpers.length; i++) {
+	    if (!extraInfoHelpers[i]()) {
+		errors = true;
+	    }
+	}
+	
+	if (errors) {
+	    onError();
+	} else {
+	    $scope.formData.action = "update-extra-info";
+	    saveFormState(onSuccess, onError);
+	}
 
     }
 
@@ -178,8 +208,22 @@ app.controller('publicationFormCtrl', function ($scope, $log, $http, ngDialog, $
 
 	$scope.formData.action = "submit";
 
-	saveFormState(onSuccess, onError);
+	errors = false;
+	if ($scope.formData.authors.length == 0) {
+	    $scope.errorMessages.push("You must add at least one author.");
+	    errors = true;
+	}
 
+	if (typeof $scope.formData.embargo === 'undefined' || $scope.formData.embargo == null) {
+	    $scope.errorMessages.push("Release date cannot be blank.");
+	    errors = true;
+	}
+
+	if (errors) {
+	    onError();
+	} else {
+	    saveFormState(onSuccess, onError);
+	}
     }
 
     // A list of available pages of the form, along with a function used to validate the form content
@@ -296,4 +340,110 @@ app.controller('publicationFormCtrl', function ($scope, $log, $http, ngDialog, $
         $scope.formData.publicationDescription = description;
     }
 
+    // Add author to publication
+    $scope.addAuthorEntry = function(authorName, authorInstitution) {
+	if (typeof $scope.authorName === 'undefined' ||
+	    typeof $scope.authorInstitution === 'undefined' ||
+	    typeof $scope.authorEmail === 'undefined' ||
+	    $scope.authorName.trim().length == 0 ||
+	    $scope.authorInstitution.trim().length == 0 ||
+	    $scope.authorEmail.trim().length == 0) {
+	    $scope.errorMessages = ['Author name, institution and email cannot be blank.'];
+	    return
+	} else if ($scope.authorEmail.indexOf('@') == -1) {
+	    $scope.errorMessages = ['Invalid email address'];
+	    return
+	} else {
+	    $scope.errorMessages = [];
+	}
+	$scope.formData.authors = $scope.formData.authors.concat({'name':$scope.authorName,
+								  'institution':$scope.authorInstitution,
+								  'email':$scope.authorEmail});
+	$scope.authorName = "";
+	$scope.authorInstitution = "";
+	$scope.authorEmail = "";
+    }
+
+    // Remove author from publication
+    $scope.removeAuthorEntry = function(idx) {
+	$scope.formData.authors.splice(idx,1);
+    }
+
+    // Copy acknowledgement text to acknowledgement field
+    $scope.copyAcknowledgement = function(text) {
+	if ($scope.formData.acknowledgements.indexOf(text) == -1) {
+	    if ($scope.formData.acknowledgements.length > 0) {
+		$scope.formData.acknowledgements += " ";
+	    }
+	    $scope.formData.acknowledgements += text;
+	}
+    }
+
+    $scope.$watch('formData.selectedLicenseIdx', function(newVal, oldVal) {
+	if (typeof $scope.formData.licenses !== 'undefined') {
+	    $scope.formData.selectedLicenseId = $scope.formData.licenses[newVal].id;
+	}
+    });
+
+    $scope.saveAndClose = function() {
+	saveFormState(function() { // On success
+	    $scope.closeThisDialog();
+	}
+		      , function() {} // On error
+		     );
+    }
+
+
+    $scope.setEmbargoToToday = function() {
+	$scope.formData.embargo = new Date();
+    }
+    // Ensures that the embargo date is a Date object
+    $scope.$watch('formData.embargo', function(newVal,oldVal) {
+	if (typeof newVal === 'string') {
+	    $scope.formData.embargo = new Date(newVal);
+	}
+    });
+    
+    // #### PDB HELPER ####
+    $scope.requirePDBHelper = function() {
+	extraInfoHelpers.push(function() {
+	    if (typeof $scope.pdbOK === 'undefined' || $scope.pdbOK == false) {
+		$scope.errorMessages.push("PDB ID invalid or not given");
+		return false;
+	    } else {
+		return true;
+	    }
+	});
+    }
+    $scope.pdbSearching = false;
+    $scope.pdbSearchComplete = false;
+    $scope.$watch('formData.pdbInfo', function(newVal, oldVal) {
+	if (typeof newVal !== 'undefined') {
+	    $scope.pdbSearchComplete = Object.keys(newVal).length;
+	    $scope.pdbOK = (newVal.status != 'UNKNOWN')
+	} else if (typeof $scope.pdbOK !== 'undefined' || $scope.hasPDB) {
+	    delete $scope.pdbOK // unset the variable so the form validator can continue
+	}
+    });
+
+    
+    var pdbSearchTimeout;
+    $scope.performPDBSearch = function(pdbId) {
+	$scope.pdbSearching = true;
+	$scope.pdbSearchComplete = false;
+	$scope.pdbOK = false;
+	if (pdbSearchTimeout) {
+	    $timeout.cancel(pdbSearchTimeout);
+	}
+	
+	pdbSearchTimeout = $timeout(function() {
+	    $http.get('/apps/publication-forms/helper/pdb/'+pdbId+'/').success(
+		function(data) {
+		    $scope.pdbSearching = false;
+		    $scope.pdbSearchComplete = true;
+		    $scope.formData.pdbInfo = data;
+		}
+	    )
+	}, 1000);
+    }
 });

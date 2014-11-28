@@ -14,15 +14,16 @@
   <div ng-include="current_page.url"></div>
   <div class="alert alert-info" ng-show="isLastPage()">
     <strong>Almost done,</strong> but make sure all details are correct.
-    Once submitted, you cannot make changes.
+    Once submitted, you cannot make changes.<br/>
+    Not ready yet? <a href="#" ng-click="saveAndClose()">Save and finish later.</a>
   </div>
   <ul class="pager" ng-hide="isComplete()">
     <li class="previous">
-      <a href="#" ng-click="previousPage()">Previous</a>
+      <a href="#" ng-click="previousPage()">Back</a>
     </li>
     <li>{{ currentPageIdx + 1 }} of {{ totalPages - 1 }}</li>
     <li class="next">
-      <a href="#" ng-click="nextPage()"><span ng-hide="isLastPage()">Next</span><span ng-show="isLastPage()">Finish</span></a>
+      <a href="#" ng-click="nextPage()"><span ng-hide="isLastPage()">Save and continue</span><span ng-show="isLastPage()">Finish</span></a>
     </li>
   </ul>
 </div>
@@ -92,15 +93,77 @@
   <div ng-repeat="formTemplate in formData.disciplineSpecificFormTemplates">
     <div ng-include="formTemplate.template"></div>
   </div>
-  {{ formData.extraInfo | json }}
 </script>
 <script type="text/ng-template" id="form_page4.html">
-  <h3>This form will contain...</h3>
-  <ul>
-    <li>finding agency and grant information</li>
-    <li>publication license (e.g. CC-BY)</li>
-    <li>additional embargo information</li>
-  </ul>
+  <div class="well">
+    <h3>Authors</h3>
+    <table class="table table-striped table-bordered">
+      <thead>
+	<tr>
+	  <td>Name</td><td>Institution</td><td>Email</td><td></td>
+	</tr>
+	<tbody>
+	  <tr ng-repeat="author in formData.authors">
+	    <td>{{ author.name }}</td><td>{{ author.institution }}</td><td>{{ author.email }}</td>
+	    <td><a href="#"><i class="icon-minus" ng-click="removeAuthorEntry($index)"></i></a></td>
+	  </tr>
+	  <tr>
+	    <td>
+	      <input type="text" ng-model="$parent.authorName" placeholder="Author name" style="width:10em;" />
+	    </td>
+	    <td>
+	      <input type="text" ng-model="$parent.authorInstitution" placeholder="Institution" style="width:12em;" />
+	    </td>
+	    <td>
+	      <input type="text" ng-model="$parent.authorEmail" placeholder="Email" style="width:12em;" /></td>
+	    <td>
+	      <a href="#">
+		<i class="icon-plus"
+		   ng-click="addAuthorEntry(authorName, authorInstitution)"></i>
+	      </a>
+	    </td>
+	  </tr>
+	</tbody>
+      </thead>
+    </table>
+  </div>
+  <div class="well">
+    <h3>Acknowledgements</h3>
+    <div class="well">
+      <h4>Example acknowledgements</h4>
+      <select ng-model="exampleAcknowledgement" ng-options="ack.agency for ack in exampleAcknowledgements" style="width:100%;"></select>
+      <div class="small">
+	<span ng-show="exampleAcknowledgement.text">{{ exampleAcknowledgement.text }}</span>
+	<span ng-hide="exampleAcknowledgement.text">Select an option from the list above for example text.</span>
+      </div>
+      <a class="btn btn-info"
+	 ng-show="exampleAcknowledgement"
+	 ng-click="copyAcknowledgement(exampleAcknowledgement.text)">Copy text <i class="icon-chevron-down"></i></a>
+    </div>
+    <textarea placeholder="Acknowledge funding agencies, facilities and other contributors here."
+	      style="width:100%;"
+	      rows="5"
+	      ng-model="formData.acknowledgements">
+    </textarea>
+  </div>
+  <div class="well">
+    <h3>Select a license</h3>
+    <ul style="display: inline; list-style-type: none;">
+      <li ng-repeat="l in formData.licenses"><label><input type="radio" name="license" ng-model="$parent.formData.selectedLicenseIdx" value="{{ $index }}" /> <img ng-src="{{l.image}}" title="{{l.name}}" alt="{{l.name}}" /></label></li>
+    </ul>
+    <div>
+      <h4>{{ formData.licenses[formData.selectedLicenseIdx].name }}</h4>
+      {{ formData.licenses[formData.selectedLicenseIdx].description }}
+      <a href="{{ formData.licenses[formData.selectedLicenseIdx].url }}" target="_blank">Read the full license here.</a>
+    </div>
+  </div>
+  <div class="well">
+    <h3>Release date</h3>
+    <p>
+      What is the earliest date that this publication may be released, subject to any additional restrictions?
+    </p>
+    <input type="date" ng-model="formData.embargo"><a class="btn btn-primary btn-mini" ng-click="setEmbargoToToday()">today</a>
+  </div>
 </script>
 <script type="text/ng-template" id="form_page5.html">
   <p><strong>Done!</strong> Your publication has been submitted and will be accessible

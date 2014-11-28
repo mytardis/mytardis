@@ -33,12 +33,32 @@ class Command(BaseCommand):
                       name='pdb-embargo',
                       full_name='pdb-embargo',
                       data_type=ParameterName.STRING,
-                      order=1).save()
+                      immutable=True,
+                      order=2).save()
         ParameterName(schema=schema,
                       name='pdb-last-sync',
                       full_name='pdb-last-sync',
                       data_type=ParameterName.DATETIME,
-                      order=1).save()
+                      immutable=True,
+                      order=3).save()
+        ParameterName(schema=schema,
+                      name='author-name',
+                      full_name='author-name',
+                      data_type=ParameterName.STRING,
+                      immutable=True,
+                      order=4).save()
+        ParameterName(schema=schema,
+                      name='institution',
+                      full_name='institution',
+                      data_type=ParameterName.STRING,
+                      immutable=True,
+                      order=5).save()
+        ParameterName(schema=schema,
+                      name='email',
+                      full_name='email',
+                      data_type=ParameterName.STRING,
+                      immutable=True,
+                      order=6).save()
         
 
     def _setup_PUBLICATION_DRAFT_SCHEMA(self, namespace):
@@ -168,6 +188,23 @@ class Command(BaseCommand):
                       data_type=ParameterName.URL,
                       immutable=True,
                       order=6).save()
+
+    def _setup_PUBLICATION_DETAILS_SCHEMA(self, namespace):
+        schema = Schema(namespace=namespace, name='Publication Details', hidden=False, immutable=True)
+        schema.save()
+        ParameterName(schema=schema,
+                      name='doi',
+                      full_name='DOI',
+                      data_type=ParameterName.STRING,
+                      immutable=True,
+                      order=1).save()
+        ParameterName(schema=schema,
+                      name='acknowledgements',
+                      full_name='Acknowledgements',
+                      data_type=ParameterName.STRING,
+                      immutable=True,
+                      order=2).save()
+        
         
     def handle(self, *args, **options):
         self.stdout.write('Checking for required django settings...')
@@ -175,6 +212,7 @@ class Command(BaseCommand):
         settings_ok = True
         required_schemas = ['PUBLICATION_SCHEMA_ROOT',
                             'PUBLICATION_DRAFT_SCHEMA',
+                            'PUBLICATION_DETAILS_SCHEMA',
                             'PDB_PUBLICATION_SCHEMA_ROOT',
                             'PDB_SEQUENCE_PUBLICATION_SCHEMA',
                             'PDB_CITATION_PUBLICATION_SCHEMA']
@@ -184,8 +222,8 @@ class Command(BaseCommand):
                 self.stdout.write('* Could not find setting: '+setting)
                 settings_ok = False
 
-                if not settings_ok:
-                    raise CommandError('All required settings not present. Aborting!')
+        if not settings_ok:
+            raise CommandError('All required settings not present. Aborting!')
         
         self.stdout.write("All settings seem OK.")
 
@@ -195,7 +233,7 @@ class Command(BaseCommand):
             if not hasattr(settings, setting):
                 self.stdout.write('Warning: '+setting+' setting not found. You might encounter problems later!')
 
-        self.stdout.write('Setting up schemas...')
+        self.stdout.write('Setting up schemas:')
 
         for schema in required_schemas:
             if self._schema_exists(getattr(settings, schema)):

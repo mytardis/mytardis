@@ -1,6 +1,8 @@
 
 import json
 import re
+import StarFile
+import dateutil.parser
 
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.cache import never_cache
@@ -11,9 +13,12 @@ from django.conf import settings
 
 from tardis.tardis_portal.shortcuts import render_response_index
 from tardis.tardis_portal.models import Experiment, Dataset, ObjectACL,\
-    Schema, ParameterName, ExperimentParameterSet, ExperimentParameter
+    Schema, ParameterName, ExperimentParameterSet, ExperimentParameter,\
+    License
 from tardis.tardis_portal.auth.localdb_auth import django_user
 from tardis.tardis_portal.managers import ExperimentManager
+
+from utils import PDBCifHelper, check_pdb_status, get_unreleased_pdb_info
 
 @login_required
 def index(request):
@@ -83,6 +88,7 @@ def process_form(request):
         for dataset in datasets:
             dataset.experiments.add(publication)
 
+        ### Get data for the next page ###
         # Construct the disclipline-specific form based on the selected datasets
         selected_forms = select_forms(datasets)
         if 'disciplineSpecificFormTemplates' in form_state:
@@ -123,11 +129,68 @@ def process_form(request):
                         parameter.save()
                     except ParameterName.DoesNotExist:
                         pass
+        
+        ### Get data for the next page ###
+        licenses = License.objects.filter(is_active=True, allows_distribution=True)
+        licenses_json = []
+        for license in licenses:
+            l = {}
+            l['id'] = license.id
+            l['name'] = license.name
+            l['url'] = license.url
+            l['description'] = license.internal_description
+            l['image'] = license.image_url
+            licenses_json.append(l)
+        form_state['licenses'] = licenses_json
+
+        # Select the first license as default
+        if 'selectedLicenseId' not in form_state:
+            form_state['selectedLicenseId'] = licenses_json[0]['id']
+
     elif form_state['action'] == 'submit':
         # any final form validation should occur here
         # and specific error messages can be returned
         # to the browser before the publication's draft
         # status is removed.
+
+        # Construct list of authors
+        for author in form_state['authors']:
+            ExperimentAuthor(experiment=publication,
+                             author=author['name'],
+                             institution=author['institution'],
+                             email=author['email']).save()
+            
+        # Attach the publication details schema
+        pub_details_schema = Schema.objects.get(namespace=settings.PUBLICATION_DETAILS_SCHEMA)
+        pub_details_parameter_set = ExperimentParameterSet(schema=pub_details_schema,
+                                                           experiment=publication)
+        pub_details_parameter_set.save()
+
+        # Add the acknowledgements
+        acknowledgements_parameter_name = ParameterName.objects.get(schema=pub_details_schema,
+                                                                    name='acknowledgements')
+        ExperimentParameter(name=acknowledgements_parameter_name,
+                            parameterset=pub_details_parameter_set,
+                            string_value=form_state['acknowledgements']).save()
+
+        # --- Obtain a DOI here ---
+        doi='doi placeholder'
+        doi_parameter_name = ParameterName.objects.get(schema=pub_details_schema,
+                                                       name='doi')
+        ExperimentParameter(name=doi_parameter_name,
+                            parameterset=pub_details_parameter_set,
+                            string_value=doi).save()
+
+        # Set the release date if in the future
+        
+
+        # Set the license
+        publication.license = License.objects.get(pk=form_state['selectedLicenseId'],
+                                                  is_active=True,
+                                                  allows_distribution=True)
+        publication.save()
+
+        # Remove the draft status
         ExperimentParameterSet.objects.get(schema__namespace=settings.PUBLICATION_DRAFT_SCHEMA,
                                            experiment=publication).delete()
 
@@ -242,3 +305,28 @@ def fetch_experiments_and_datasets(request):
             experiment_json['datasets'] = dataset_json
             json_response.append(experiment_json)
     return HttpResponse(json.dumps(json_response), mimetype="appication/json")
+
+def pdb_helper(request, pdb_id):
+    try:
+        # Do this if the PDB is already released...
+        pdb = PDBCifHelper(pdb_id)
+        citations = pdb.get_citations()
+        authors = ', '.join(citations[0]['authors'])
+        title = citations[0]['title']
+        result = {
+            'title':title,
+            'authors':authors,
+            'status':'RELEASED'
+        }
+    except StarFile.StarError:
+        # If it's not released, check if it's a valid PDB ID
+        status = check_pdb_status(pdb_id)
+        if status == 'UNRELEASED':
+            result = get_unreleased_pdb_info(pdb_id)
+            result['status'] = 'UNRELEASED'
+        else:
+            result = {'title':'',
+                      'authors':'',
+                      'status':'UNKNOWN'}
+
+    return HttpResponse(json.dumps(result), mimetype="application/json")

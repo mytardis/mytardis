@@ -1,5 +1,6 @@
 import CifFile
 import urllib
+from BeautifulSoup import BeautifulSoup
 
 class CifHelper:
     def __init__(self, cif_url):
@@ -111,3 +112,26 @@ class PDBCifHelper(CifHelper):
             sequences.append(seq)
 
         return sequences
+
+def check_pdb_status(pdb_id):
+    status_page = urllib.urlopen('http://www.rcsb.org/pdb/rest/idStatus?structureId='+
+                                 urllib.quote(pdb_id.upper())).read()
+    soup = BeautifulSoup(status_page)
+    if soup.record:
+        pdb_status = soup.record['status']
+    else:
+        pdb_status = 'INVALID'
+
+    return pdb_status
+
+def get_unreleased_pdb_info(pdb_id):
+    info_page = urllib.urlopen('http://www.rcsb.org/pdb/rest/getUnreleased?structureId='+
+                               urllib.quote(pdb_id.upper())).read()
+    soup = BeautifulSoup(info_page)
+
+    info = {}
+
+    info['title'] = soup.record.title.string
+    info['authors'] = soup.record.authors.string
+
+    return info
