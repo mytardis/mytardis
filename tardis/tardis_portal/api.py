@@ -932,7 +932,7 @@ class DataFileResource(MyTardisModelResource):
             # new path
             sbox = dataset.get_staging_storage_box()
             if sbox is None:
-                raise NotImplementedError
+                raise NotFound("Couldn't find a staging storage box.")
             dfo = DataFileObject(
                 datafile=bundle.obj,
                 storage_box=sbox)
