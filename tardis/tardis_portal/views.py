@@ -378,15 +378,30 @@ def facility_overview(request):
 
 @never_cache
 @login_required
-def fetch_facility_data(request):
+def fetch_facility_data_count(request, facility_id):
+    '''
+    returns the total number of datasets for pagination in json format
+    '''
+
+    dataset_object_count = Dataset.objects.filter(
+        instrument__facility__manager_group__user=request.user,
+        instrument__facility__id=facility_id
+    ).count()
+    return HttpResponse(json.dumps({"facility_data_count": dataset_object_count}),
+                        mimetype='application/json')
+
+
+@never_cache
+@login_required
+def fetch_facility_data(request, facility_id, start_index, end_index):
     '''
     json facility datasets
     '''
-    # In lieu of proper pagination, only the 500 most recent datasets are
-    # fetched
+
     dataset_objects = Dataset.objects.filter(
-        instrument__facility__manager_group__user=request.user
-    ).order_by('-id')[:500]
+        instrument__facility__manager_group__user=request.user,
+        instrument__facility__id=facility_id
+    ).order_by('-id')[start_index:end_index]
 
     def datetime_to_us(dt):
         '''
@@ -402,7 +417,7 @@ def fetch_facility_data(request):
     for dataset in dataset_objects:
         instrument = dataset.instrument
         facility = instrument.facility
-        parent_experiment = dataset.experiments.get()
+        parent_experiment = dataset.experiments.all()[:1].get()
         datafile_objects = DataFile.objects.filter(dataset=dataset)
         owners = parent_experiment.get_owners()
         print(owners)
@@ -428,7 +443,7 @@ def fetch_facility_data(request):
             "institution": parent_experiment.institution_name,
             "datafiles": datafiles,
             "size": dataset_size,
-            "owner": '; '.join([o.username for o in owners]),
+            "owner": ', '.join([o.username for o in owners]),
             "instrument": {
                 "id": instrument.id,
                 "name": instrument.name,
