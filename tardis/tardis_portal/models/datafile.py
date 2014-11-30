@@ -341,6 +341,11 @@ class DataFileObject(models.Model):
                                    .save(self._get_identifier(), file_object)
         self.save()
 
+    @property
+    def size(self):
+        return self.storage_box.get_initialised_storage_instance().size(
+                    self._get_identifier())
+
     def delete(self):
         super(DataFileObject, self).delete()
 
@@ -363,6 +368,15 @@ class DataFileObject(models.Model):
                          (self.id, self.uri))
             return False
 
+        df_size = self.datafile.size
+        if df_size is None or df_size == '':
+            self.datafile.size = self.size
+            self.datafile.save()
+        elif int(df_size) != self.size:
+            logger.error('DataFileObject with id %d did not verify. '
+                         'File sizes did not match' % self.id)
+            return False
+
         md5, sha512, size, mimetype_buffer = generate_file_checksums(
             self.file_object, tempfile)
         df_md5 = self.datafile.md5sum
@@ -370,30 +384,22 @@ class DataFileObject(models.Model):
         if df_sha512 is None or df_sha512 == '':
             if md5 != df_md5:
                 logger.error('DataFileObject with id %d did not verify. '
-                             'MD5 sums did not match')
+                             'MD5 sums did not match' % self.id)
                 return False
             self.datafile.sha512sum = sha512
             self.datafile.save()
         elif df_md5 is None or df_md5 == '':
             if sha512 != df_sha512:
                 logger.error('DataFileObject with id %d did not verify. '
-                             'SHA512 sums did not match')
+                             'SHA512 sums did not match' % self.id)
                 return False
             self.datafile.md5sum = md5
             self.datafile.save()
         else:
             if not (md5 == df_md5 and sha512 == df_sha512):
                 logger.error('DataFileObject with id %d did not verify. '
-                             'Checksums did not match')
+                             'Checksums did not match' % self.id)
                 return False
-        df_size = self.datafile.size
-        if df_size is None or df_size == '':
-            self.datafile.size = size
-            self.datafile.save()
-        elif int(df_size) != size:
-            logger.error('DataFileObject with id %d did not verify. '
-                         'File size did not match')
-            return False
 
         self.verified = True
         self.last_verified_time = datetime.now()
