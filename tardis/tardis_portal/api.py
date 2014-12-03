@@ -353,10 +353,16 @@ class ACLAuthorization(Authorization):
             return bundle.request.user.has_perm('tardis_portal.add_objectacl')
         elif type(bundle.obj) == Facility:
             facilities = facilities_managed_by(bundle.request.user)
-            return bundle.obj in facilities
+            return all([
+                bundle.request.user.has_perm('tardis_portal.add_facility'),
+                bundle.obj in facilities
+            ])
         elif type(bundle.obj) == Instrument:
             facilities = facilities_managed_by(bundle.request.user)
-            return bundle.obj.facility in facilities
+            return all([
+                bundle.request.user.has_perm('tardis_portal.add_instrument'),
+                bundle.obj.facility in facilities
+            ])
         raise NotImplementedError(type(bundle.obj))
 
     def update_list(self, object_list, bundle):
@@ -926,7 +932,7 @@ class DataFileResource(MyTardisModelResource):
             # new path
             sbox = dataset.get_staging_storage_box()
             if sbox is None:
-                raise NotImplementedError
+                raise NotFound("Couldn't find a staging storage box.")
             dfo = DataFileObject(
                 datafile=bundle.obj,
                 storage_box=sbox)
