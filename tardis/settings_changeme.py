@@ -300,15 +300,15 @@ AUTHENTICATION_BACKENDS = (
 
 # Email Configuration
 
-EMAIL_PORT = 587
+#EMAIL_PORT = 587
 
-EMAIL_HOST = 'smtp.gmail.com'
+#EMAIL_HOST = 'smtp.gmail.com'
 
-EMAIL_HOST_USER = 'bob@bobmail.com'
+#EMAIL_HOST_USER = 'bob@bobmail.com'
 
-EMAIL_HOST_PASSWORD = 'bob'
+#EMAIL_HOST_PASSWORD = 'bob'
 
-EMAIL_USE_TLS = True
+#EMAIL_USE_TLS = True
 
 # Post Save Filters
 # POST_SAVE_FILTERS = [
@@ -605,6 +605,8 @@ Rapid Connect.
 '''
 
 ### Publication form settings ###
+PUBLICATION_OWNER_GROUP='publication-admin'
+
 PUBLICATION_SCHEMA_ROOT = 'http://www.tardis.edu.au/schemas/publication/'
 
 # This schema holds bibliographic details including authors and

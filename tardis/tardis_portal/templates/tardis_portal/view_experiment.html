@@ -260,7 +260,7 @@ $('#modal-metadata .submit-button').click(function() {
     <span property="dc:title">{{ experiment.title }}</span>
     <br/>
     <small>
-    {% for author in experiment.author_experiment_set.all %}{% capture as creator_span %}
+    {% for author in experiment.experimentauthor_set.all %}{% capture as creator_span %}
     <span property="dc:creator" style="white-space: nowrap;">
       {{ author.author }}</span>{% endcapture %}{% if not forloop.first %},
       {% endif %}

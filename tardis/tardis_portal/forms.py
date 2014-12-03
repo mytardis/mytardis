@@ -409,7 +409,7 @@ class ExperimentForm(forms.ModelForm):
 
         # fix up experiment form
         if instance and not data:
-                authors = instance.author_experiment_set.all()
+                authors = instance.experimentauthor_set.all()
                 self.initial['authors'] = ', '.join([self._format_author(a)
                                                      for a in authors])
 
@@ -483,7 +483,7 @@ class ExperimentForm(forms.ModelForm):
 
         # fix up experiment form
         if self.instance:
-            authors = self.instance.author_experiment_set.all()
+            authors = self.instance.experimentauthor_set.all()
             for author in authors:
                 author.delete()
 

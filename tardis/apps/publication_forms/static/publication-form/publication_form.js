@@ -96,7 +96,6 @@ app.controller('publicationFormCtrl', function ($scope, $log, $http, ngDialog, $
     $scope.formData.extraInfo = {}; // Stores discipline specific metadata
     $scope.formData.authors = []; // Stores the authors of the publication
     $scope.formData.acknowledgements = ""; // Acknowledgements stored here
-    $scope.formData.selectedLicenseIdx = 0; // Selected license array index
     $scope.formData.action = ""; // specifies what action is required on form update
 
     $scope.exampleAcknowledgements = [{'agency':'Australian Synchrotron facility',
@@ -379,9 +378,15 @@ app.controller('publicationFormCtrl', function ($scope, $log, $http, ngDialog, $
 	}
     }
 
-    $scope.$watch('formData.selectedLicenseIdx', function(newVal, oldVal) {
+    $scope.$watch('formData.selectedLicenseId', function(newVal, oldVal) {
 	if (typeof $scope.formData.licenses !== 'undefined') {
-	    $scope.formData.selectedLicenseId = $scope.formData.licenses[newVal].id;
+	    for (var i in $scope.formData.licenses) {
+		var license = $scope.formData.licenses[i];
+		if (license['id'] == newVal) {
+		    $scope.formData.selectedLicense = license;
+		    break;
+		}
+	    }
 	}
     });
 

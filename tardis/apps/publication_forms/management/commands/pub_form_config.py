@@ -6,6 +6,7 @@ Set up publication form schemas
 from django.core.management.base import BaseCommand, CommandError
 from django.conf import settings
 from django.db import DatabaseError
+from django.contrib.auth.models import User, Group
 
 from tardis.tardis_portal.models import Schema, ParameterName
 
@@ -42,35 +43,18 @@ class Command(BaseCommand):
                       immutable=True,
                       order=3).save()
         ParameterName(schema=schema,
-                      name='author-name',
-                      full_name='author-name',
-                      data_type=ParameterName.STRING,
-                      immutable=True,
-                      order=4).save()
-        ParameterName(schema=schema,
-                      name='institution',
-                      full_name='institution',
-                      data_type=ParameterName.STRING,
-                      immutable=True,
-                      order=5).save()
-        ParameterName(schema=schema,
-                      name='email',
-                      full_name='email',
-                      data_type=ParameterName.STRING,
-                      immutable=True,
-                      order=6).save()
-        
-
-    def _setup_PUBLICATION_DRAFT_SCHEMA(self, namespace):
-        schema = Schema(namespace=namespace, name='Draft Publication', hidden=True, immutable=True)
-        schema.save()
-        ParameterName(schema=schema,
                       name='form_state',
                       full_name='form_state',
                       data_type=ParameterName.STRING,
                       immutable=True,
-                      order=1).save()
+                      order=4).save()
 
+
+    def _setup_PUBLICATION_DRAFT_SCHEMA(self, namespace):
+        schema = Schema(namespace=namespace, name='Draft Publication', hidden=True, immutable=True)
+        schema.save()
+
+        
     def _setup_PDB_PUBLICATION_SCHEMA_ROOT(self, namespace):
         schema = Schema(namespace=namespace, name='Protein Data Bank', hidden=False, immutable=True)
         schema.save()
@@ -210,16 +194,19 @@ class Command(BaseCommand):
         self.stdout.write('Checking for required django settings...')
 
         settings_ok = True
-        required_schemas = ['PUBLICATION_SCHEMA_ROOT',
-                            'PUBLICATION_DRAFT_SCHEMA',
-                            'PUBLICATION_DETAILS_SCHEMA',
-                            'PDB_PUBLICATION_SCHEMA_ROOT',
-                            'PDB_SEQUENCE_PUBLICATION_SCHEMA',
-                            'PDB_CITATION_PUBLICATION_SCHEMA']
+        required_settings = [('PUBLICATION_OWNER_GROUP', 'All publications are owned by this group')]
+        required_schemas = [('PUBLICATION_SCHEMA_ROOT', 'A hidden schema that contians data required to manage the publication'),
+                            ('PUBLICATION_DRAFT_SCHEMA', 'Stores the form state and is deleted once the form is completed'),
+                            ('PUBLICATION_DETAILS_SCHEMA', 'Contains standard bibliographic details, such as DOI and acknowledgements'),
+                            ('PDB_PUBLICATION_SCHEMA_ROOT', 'Standard protein crystallographic parameters'),
+                            ('PDB_SEQUENCE_PUBLICATION_SCHEMA', 'Protein sequence data that might repeat depending on how many entities are present'),
+                            ('PDB_CITATION_PUBLICATION_SCHEMA', 'Citation data that is extracted from the PDB record')]
         
-        for setting in required_schemas:
+        for setting,description in required_settings + required_schemas:
             if not hasattr(settings, setting):
                 self.stdout.write('* Could not find setting: '+setting)
+                if description:
+                    self.stdout.write(' -- ' + description)
                 settings_ok = False
 
         if not settings_ok:
@@ -227,15 +214,17 @@ class Command(BaseCommand):
         
         self.stdout.write("All settings seem OK.")
 
-        recommended_settings = ['PUBLICATION_FORM_MAPPINGS',
-                                'PDB_REFRESH_INTERVAL']
-        for setting in recommended_settings:
+        recommended_settings = [('PUBLICATION_FORM_MAPPINGS', ''),
+                                ('PDB_REFRESH_INTERVAL', '')]
+        for setting,description in recommended_settings:
             if not hasattr(settings, setting):
                 self.stdout.write('Warning: '+setting+' setting not found. You might encounter problems later!')
+                if description:
+                    self.stdout.write(' -- '+description)
 
         self.stdout.write('Setting up schemas:')
 
-        for schema in required_schemas:
+        for schema,description in required_schemas:
             if self._schema_exists(getattr(settings, schema)):
                 self.stdout.write('Schema '+schema+' exists, skipping.')
             else:
@@ -243,4 +232,17 @@ class Command(BaseCommand):
                 getattr(self,'_setup_'+schema)(getattr(settings, schema))
                 self.stdout.write('Done.')
 
+        self.stdout.write('Checking if the publication owner group exists... ', ending='')
+        try:
+            Group.objects.get(name=settings.PUBLICATION_OWNER_GROUP)
+            self.stdout.write('It does.')
+        except Group.DoesNotExist:
+            self.stdout.write('It doesnt, so creating.')
+            pub_owner_group = Group(name=settings.PUBLICATION_OWNER_GROUP)
+            pub_owner_group.save()
+            self.stdout.write('Group created. Adding all superusers... ', ending='')
+            superusers = User.objects.filter(is_superuser=True)
+            pub_owner_group.user_set.add(*superusers)
+            self.stdout.write('Superusers added.')
+        
         self.stdout.write('Setup complete.')

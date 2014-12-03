@@ -84,34 +84,37 @@ class PDBCifHelper(CifHelper):
         return citations
         
     def get_sequence_info(self):
-        seqs_id = self.as_list(self['_entity_src_gen.entity_id'])
-        seqs_org = self.as_list(self['_entity_src_gen.pdbx_gene_src_scientific_name'])
-        seqs_exp_sys = self.as_list(self['_entity_src_gen.pdbx_host_org_scientific_name'])
+        try:
+            seqs_id = self.as_list(self['_entity_src_gen.entity_id'])
+            seqs_org = self.as_list(self['_entity_src_gen.pdbx_gene_src_scientific_name'])
+            seqs_exp_sys = self.as_list(self['_entity_src_gen.pdbx_host_org_scientific_name'])
 
-        seqs_code_id = self.as_list(self['_entity_poly.entity_id'])
-        seqs_code = self.as_list(self['_entity_poly.pdbx_seq_one_letter_code'])
+            seqs_code_id = self.as_list(self['_entity_poly.entity_id'])
+            seqs_code = self.as_list(self['_entity_poly.pdbx_seq_one_letter_code'])
 
-        seqs_name_id = self.as_list(self['_entity_name_com.entity_id'])
-        seqs_name = self.as_list(self['_entity_name_com.name'])
+            seqs_name_id = self.as_list(self['_entity_name_com.entity_id'])
+            seqs_name = self.as_list(self['_entity_name_com.name'])
 
-        sequences = []
-        for seq_id, seq_org, seq_exp_sys in zip(seqs_id, seqs_org, seqs_exp_sys):
-            seq = {'organism': seq_org,
-                   'expression_system': seq_exp_sys}
+            sequences = []
+            for seq_id, seq_org, seq_exp_sys in zip(seqs_id, seqs_org, seqs_exp_sys):
+                seq = {'organism': seq_org,
+                       'expression_system': seq_exp_sys}
 
-            for seq_name_id, seq_name in zip(seqs_name_id, seqs_name):
-                if seq_name_id == seq_id:
-                    seq['name'] = seq_name
-                    break
+                for seq_name_id, seq_name in zip(seqs_name_id, seqs_name):
+                    if seq_name_id == seq_id:
+                        seq['name'] = seq_name
+                        break
 
-            for seq_code_id, seq_code in zip(seqs_code_id, seqs_code):
-                if seq_code_id == seq_id:
-                    seq['sequence'] = seq_code #.replace(' ', '').replace('\n','')
-                    break
+                for seq_code_id, seq_code in zip(seqs_code_id, seqs_code):
+                    if seq_code_id == seq_id:
+                        seq['sequence'] = seq_code #.replace(' ', '').replace('\n','')
+                        break
 
-            sequences.append(seq)
+                sequences.append(seq)
 
-        return sequences
+                return sequences
+        except KeyError:
+            return []
 
 def check_pdb_status(pdb_id):
     status_page = urllib.urlopen('http://www.rcsb.org/pdb/rest/idStatus?structureId='+

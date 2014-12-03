@@ -148,13 +148,13 @@
   </div>
   <div class="well">
     <h3>Select a license</h3>
-    <ul style="display: inline; list-style-type: none;">
-      <li ng-repeat="l in formData.licenses"><label><input type="radio" name="license" ng-model="$parent.formData.selectedLicenseIdx" value="{{ $index }}" /> <img ng-src="{{l.image}}" title="{{l.name}}" alt="{{l.name}}" /></label></li>
-    </ul>
-    <div>
-      <h4>{{ formData.licenses[formData.selectedLicenseIdx].name }}</h4>
-      {{ formData.licenses[formData.selectedLicenseIdx].description }}
-      <a href="{{ formData.licenses[formData.selectedLicenseIdx].url }}" target="_blank">Read the full license here.</a>
+    <div class="alert" ng-show="formData.selectedLicenseId == -1">No licenses have been configured.</div>
+    <select ng-model="formData.selectedLicenseId" ng-options="l.id as l.name for l in formData.licenses" style="width:100%"></select>
+    <div ng-hide="formData.selectedLicenseId == -1">
+      <h4>{{ formData.selectedLicense.name }}</h4>
+      <img ng-src="{{formData.selectedLicense.image}}" title="{{formData.selectedLicense.name}}" alt="{{formData.selectedLicense.name}}" />
+      {{ formData.selectedLicense.description }}
+      <a href="{{ formData.selectedLicense.url }}" target="_blank">Read the full license here.</a>
     </div>
   </div>
   <div class="well">
@@ -167,9 +167,7 @@
 </script>
 <script type="text/ng-template" id="form_page5.html">
   <p><strong>Done!</strong> Your publication has been submitted and will be accessible
-  according to any embargo criteria and approval.</p>
-  <div class="well">Your publication has been assigned the following DOI: 10.xxxxxxx/xxxxxx</div>
-  <p>You may use this DOI to cite the publication now, however it will only become active once
-  your publication is live.</p>
+    according to any embargo criteria and approval.
+  </p>
 </script>
 {% endverbatim %}

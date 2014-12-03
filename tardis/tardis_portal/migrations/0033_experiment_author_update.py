@@ -9,27 +9,70 @@ class Migration(SchemaMigration):
 
     def forwards(self, orm):
         db.rename_table(u'tardis_portal_author_experiment', u'tardis_portal_experimentauthor')
-        
+
         db.add_column(u'tardis_portal_experimentauthor', 'institution',
-                      self.gf('django.db.models.fields.CharField')(max_length=255))
+                      self.gf('django.db.models.fields.CharField')(max_length=255, blank=True))
         db.add_column(u'tardis_portal_experimentauthor', 'email',
-                      self.gf('django.db.models.fields.CharField')(max_length=255))
-        
+                      self.gf('django.db.models.fields.CharField')(max_length=255, blank=True))
+
         if not db.dry_run:
             orm['contenttypes.contenttype'].objects.filter(
                 app_label='tardis_portal', model='author_experiment'
             ).update(model='experimentauthor')
-        
+
 
     def backwards(self, orm):
         db.delete_column(u'tardis_portal_experimentauthor', 'institution')
         db.delete_column(u'tardis_portal_experimentauthor', 'email')
-        db.rename_table(u'tardis_portal_author_experiment', u'tardis_portal_experimentauthor')
-        
+        db.rename_table(u'tardis_portal_experimentauthor', u'tardis_portal_author_experiment')
+
         if not db.dry_run:
             orm['contenttypes.contenttype'].objects.filter(
                 app_label='tardis_portal', model='experimentauthor'
             ).update(model='author_experiment')
+
+#    def forwards(self, orm):
+#        # Removing unique constraint on 'Author_Experiment', fields ['experiment', 'author']
+#        db.delete_unique(u'tardis_portal_author_experiment', ['experiment_id', 'author'])
+#
+#        # Deleting model 'Author_Experiment'
+#        db.delete_table(u'tardis_portal_author_experiment')
+#
+#        # Adding model 'ExperimentAuthor'
+#        db.create_table(u'tardis_portal_experimentauthor', (
+#            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+#            ('experiment', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['tardis_portal.Experiment'])),
+#            ('author', self.gf('django.db.models.fields.CharField')(max_length=255)),
+#            ('institution', self.gf('django.db.models.fields.CharField')(max_length=255, blank=True)),
+#            ('email', self.gf('django.db.models.fields.CharField')(max_length=255, blank=True)),
+#            ('order', self.gf('django.db.models.fields.PositiveIntegerField')()),
+#            ('url', self.gf('django.db.models.fields.URLField')(max_length=2000, blank=True)),
+#        ))
+#        db.send_create_signal('tardis_portal', ['ExperimentAuthor'])
+#
+#        # Adding unique constraint on 'ExperimentAuthor', fields ['experiment', 'author']
+#        db.create_unique(u'tardis_portal_experimentauthor', ['experiment_id', 'author'])
+
+
+#    def backwards(self, orm):
+#        # Removing unique constraint on 'ExperimentAuthor', fields ['experiment', 'author']
+#        db.delete_unique(u'tardis_portal_experimentauthor', ['experiment_id', 'author'])
+
+#        # Adding model 'Author_Experiment'
+#        db.create_table(u'tardis_portal_author_experiment', (
+#            ('experiment', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['tardis_portal.Experiment'])),
+#            ('author', self.gf('django.db.models.fields.CharField')(max_length=255)),
+#            ('url', self.gf('django.db.models.fields.URLField')(max_length=2000, blank=True)),
+#            ('order', self.gf('django.db.models.fields.PositiveIntegerField')()),
+#            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+#        ))
+#        db.send_create_signal('tardis_portal', ['Author_Experiment'])
+#
+#        # Adding unique constraint on 'Author_Experiment', fields ['experiment', 'author']
+#        db.create_unique(u'tardis_portal_author_experiment', ['experiment_id', 'author'])
+#
+#        # Deleting model 'ExperimentAuthor'
+#        db.delete_table(u'tardis_portal_experimentauthor')
 
 
     models = {
@@ -158,10 +201,10 @@ class Migration(SchemaMigration):
         'tardis_portal.experimentauthor': {
             'Meta': {'ordering': "['order']", 'unique_together': "(('experiment', 'author'),)", 'object_name': 'ExperimentAuthor'},
             'author': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
-            'email': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
+            'email': ('django.db.models.fields.CharField', [], {'max_length': '255', 'blank': 'True'}),
             'experiment': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['tardis_portal.Experiment']"}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'institution': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
+            'institution': ('django.db.models.fields.CharField', [], {'max_length': '255', 'blank': 'True'}),
             'order': ('django.db.models.fields.PositiveIntegerField', [], {}),
             'url': ('django.db.models.fields.URLField', [], {'max_length': '2000', 'blank': 'True'})
         },
@@ -301,7 +344,7 @@ class Migration(SchemaMigration):
         'tardis_portal.token': {
             'Meta': {'object_name': 'Token'},
             'experiment': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['tardis_portal.Experiment']"}),
-            'expiry_date': ('django.db.models.fields.DateField', [], {'default': 'datetime.datetime(2014, 12, 27, 0, 0)'}),
+            'expiry_date': ('django.db.models.fields.DateField', [], {'default': 'datetime.datetime(2014, 12, 31, 0, 0)'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'token': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '30'}),
             'user': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['auth.User']"})

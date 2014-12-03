@@ -36,11 +36,13 @@ class Experiment(models.Model):
     """
 
     PUBLIC_ACCESS_NONE = 1
+    PUBLIC_ACCESS_EMBARGO = 25
     PUBLIC_ACCESS_METADATA = 50
     PUBLIC_ACCESS_FULL = 100
 
     PUBLIC_ACCESS_CHOICES = (
         (PUBLIC_ACCESS_NONE, 'No public access (hidden)'),
+        (PUBLIC_ACCESS_EMBARGO, 'Ready to be released pending embargo expiry'),
         (PUBLIC_ACCESS_METADATA, 'Public Metadata only (no data file access)'),
         (PUBLIC_ACCESS_FULL, 'Public'),
     )
@@ -191,7 +193,7 @@ class Experiment(models.Model):
         if not hasattr(self, 'id'):
             return False
 
-        if self.public_access != self.PUBLIC_ACCESS_NONE:
+        if self.public_access >= self.PUBLIC_ACCESS_METADATA:
             return True
 
     def _has_change_perm(self, user_obj):
@@ -214,8 +216,10 @@ class ExperimentAuthor(models.Model):
 
     experiment = models.ForeignKey(Experiment)
     author = models.CharField(max_length=255)
-    institution = models.CharField(max_length=255)
-    email = models.CharField(max_length=255)
+    institution = models.CharField(max_length=255,
+                                   blank=True)
+    email = models.CharField(max_length=255,
+                             blank=True)
     order = models.PositiveIntegerField()
     url = models.URLField(
         max_length=2000,

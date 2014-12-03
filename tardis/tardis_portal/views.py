@@ -892,8 +892,8 @@ def dataset_json(request, experiment_id=None, dataset_id=None):
             if can_update():
                 return HttpResponseMethodNotAllowed(allow="GET PUT")
             return HttpResponseMethodNotAllowed(allow="GET")
-        # Cannot remove if this is the last experiment
-        if not can_delete() or dataset.experiments.count() < 2:
+        # Cannot remove if this is the last experiment or if it is being removed from a publication
+        if not can_delete() or dataset.experiments.count() < 2 or experiment.is_publication():
             return HttpResponseForbidden()
         dataset.experiments.remove(experiment)
         dataset.save()
