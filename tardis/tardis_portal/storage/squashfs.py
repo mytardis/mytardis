@@ -97,6 +97,7 @@ class SquashFSStorage(Storage):
         tries mounting squashfs file once,
         then raises whichever error is raised by open(filename)
         '''
+        self._mount()
         return File(open(self.path(name), mode))
 
     def exists(self, name):
@@ -186,26 +187,48 @@ def parse_new_squashfiles():
             parse_squashfs_file.delay(sq_file_id, parse_module, ns)
 
 
+def get_parse_status(squash_datafile, ns):
+    from tardis.tardis_portal.models import DatafileParameter
+    try:
+        status = squash_datafile.datafileparameterset_set.get(
+            schema__namespace=ns
+        ).datafileparameter_set.get(
+            name__name='parse_status')
+    except DatafileParameter.DoesNotExist:
+        from tardis.tardis_portal.models import (Schema, ParameterName)
+        schema = Schema.objects.get(type=Schema.DATAFILE,
+                                    namespace=ns)
+        pn, created = ParameterName.objects.get_or_create(
+            name='parse_status',
+            schema=schema,
+            data_type=ParameterName.STRING)
+        ps = squash_datafile.datafileparameterset_set.get(schema=schema)
+        status = DatafileParameter(parameterset=ps,
+                                   name=pn,
+                                   string_value='new')
+        status.save()
+    return status
+
+
 @task
 def parse_squashfs_file(squashfs_file_id, parse_module, ns):
     '''
     the status check doesn't provide complete protection against duplicate
     parsing, but should be fine when the interval between runs
     '''
-    squashfile = DataFile.objects.get(squashfs_file_id)
-    status = squashfile.datafileparameterset_set.get(
-        schema__namespace=ns
-    ).datafileparameter_set.get(
-        name__name='parse_status')
+    squashfile = DataFile.objects.get(id=squashfs_file_id)
+    status = get_parse_status(squashfile, ns)
     if status.string_value in ['complete', 'running']:
         return
     status.string_value = 'running'
     status.save()
     parser = import_module(parse_module)
+
     try:
         parser.parse_squashfs_file(squashfile, ns)
         status.string_value = 'complete'
     except:
         status.string_value = 'parse failed'
+        raise
     finally:
         status.save()
