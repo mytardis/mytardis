@@ -28,9 +28,10 @@ DATABASES = {
 }
 
 # Celery queue
-# BROKER_URL = 'django://'
-BROKER_URL = 'amqp://guest@localhost//'
-CELERY_RESULT_BACKEND = 'amqp'
+BROKER_URL = 'django://'
+# BROKER_URL = 'amqp://guest@localhost//'
+# CELERY_RESULT_BACKEND = 'amqp'
+CELERY_RESULT_BACKEND='djcelery.backends.database:DatabaseBackend'
 
 '''
 use django:, add kombu.transport.django to INSTALLED_APPS
@@ -300,9 +301,9 @@ AUTHENTICATION_BACKENDS = (
 
 # Email Configuration
 
-#EMAIL_PORT = 587
+EMAIL_PORT = 25
 
-#EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_HOST = 'localhost'
 
 #EMAIL_HOST_USER = 'bob@bobmail.com'
 
@@ -644,3 +645,9 @@ PUBLICATION_FORM_MAPPINGS = [{'dataset_schema': r'^http://synchrotron.org.au/mx/
                               'form_template': '/static/publication-form/mx-dataset-description-template.html'}]
 
 #EXPERIMENT_VIEWS = [(r'^'+PUBLICATION_SCHEMA_NAMESPACE_ROOT, 'tardis.tardis_portal.views.view_publication')]
+
+# Put your API_ID for the Monash DOI minting service here:
+MODC_DOI_API_ID = ''
+MODC_DOI_DEFINITION = 'https://vera186.its.monash.edu.au/modc/ws/MintDoiService.wsdl'
+MODC_DOI_ENDPOINT = 'https://vera186.its.monash.edu.au/modc/ws/'
+MODC_DOI_MINT_URL_ROOT = 'http://www.monash.edu.au/'

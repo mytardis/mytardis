@@ -1,35 +1,53 @@
 <tardis-form my-model="formData.extraInfo[$index]" schema="formTemplate.name" class="well form-horizontal">
-  <h3>MX crystallographic information</h3>
-  <p>
-    If your data has been submitted to the Protein Data Bank, please provide the structure's PDB ID here.
-    {{ disciplineSpecificValidation }}
-  </p>
-  <div class="control-group" ng-init="requirePDBHelper()">
-    <label class="control-label">PDB ID</label>
-    <div class="controls">
-      <input tardis-form-field parameter-name="pdb-id" type="text"
-	     ng-change="performPDBSearch(formData.extraInfo[$index]['pdb-id']); formData.extraInfo[$index]['pdb-id']=formData.extraInfo[$index]['pdb-id'].toUpperCase()" /><img src="/static/publication-form/spinner.gif" ng-show="pdbSearching" />
+    <h3>MX crystallographic information</h3>
+
+    <p>
+        If your data has been submitted to the Protein Data Bank, please provide the structure's PDB ID here.
+        {{ disciplineSpecificValidation }}
+    </p>
+
+    <div class="control-group" ng-init="requirePDBHelper()">
+        <label class="control-label">PDB ID</label>
+
+        <div class="controls">
+            <input tardis-form-field parameter-name="pdb-id" type="text"
+                   ng-change="performPDBSearch(formData.extraInfo[$index]['pdb-id']); formData.extraInfo[$index]['pdb-id']=formData.extraInfo[$index]['pdb-id'].toUpperCase()"/><img
+                src="/static/publication-form/spinner.gif" ng-show="pdbSearching"/>
+        </div>
     </div>
-  </div>
-  <div class="control-group" ng-init="s = 'http://www.tardis.edu.au/schemas/publication/'"
-       ng-show="formData.pdbInfo.status == 'UNRELEASED'">
-    <label class="control-label">Embargo</label>
-    <tardis-form my-model="formData.extraInfo[$index+'.1']" schema="s" class="controls">
-      <input tardis-form-field parameter-name="pdb-embargo" type="checkbox" />
-      <p class="help-block">
-	As the PDB is currently restricted, you may choose to release this publication
-	at such time as the PDB is released.
-      </p>
-  </div>
-  <div class="alert" ng-show="pdbSearchComplete"
-       ng-class="{'alert-error': formData.pdbInfo.status == 'UNKNOWN', 'alert-success': formData.pdbInfo.status != 'UNKNOWN'}">
-    <p><strong ng-show="formData.pdbInfo.status == 'UNKNOWN'">PDB ID appears to be invalid</strong></p>
-    <p><strong ng-show="formData.pdbInfo.status != 'UNKNOWN'">PDB ID looks okay</strong></p>
-    <table class="table table-bordered">
-      <tr><td>PDB ID</td><td>{{ formData.extraInfo[$index]['pdb-id'] }}</td></tr>
-      <tr><td>Status</td><td>{{ formData.pdbInfo.status }}</td></tr>
-      <tr><td>Title</td><td>{{ formData.pdbInfo.title }}</td></tr>
-      <tr><td>Authors</td><td>{{ formData.pdbInfo.authors }}</td></tr>
-    </table>
-  </div>
+    <div class="control-group" ng-init="s = 'http://www.tardis.edu.au/schemas/publication/'"
+         ng-show="formData.pdbInfo.status == 'UNRELEASED'">
+        <label class="control-label">Embargo</label>
+        <tardis-form my-model="formData.extraInfo[$index+'.1']" schema="s" class="controls">
+            <input tardis-form-field parameter-name="pdb-embargo" type="checkbox"/>
+
+            <p class="help-block">
+                As the PDB is currently restricted, you may choose to release this publication
+                at such time as the PDB is released.
+            </p>
+    </div>
+    <div class="alert" ng-show="pdbSearchComplete"
+         ng-class="{'alert-error': formData.pdbInfo.status == 'UNKNOWN', 'alert-success': formData.pdbInfo.status != 'UNKNOWN'}">
+        <p><strong ng-show="formData.pdbInfo.status == 'UNKNOWN'">PDB ID appears to be invalid</strong></p>
+
+        <p><strong ng-show="formData.pdbInfo.status != 'UNKNOWN'">PDB ID looks okay</strong></p>
+        <table class="table table-bordered">
+            <tr>
+                <td>PDB ID</td>
+                <td>{{ formData.extraInfo[$index]['pdb-id'] }}</td>
+            </tr>
+            <tr>
+                <td>Status</td>
+                <td>{{ formData.pdbInfo.status }}</td>
+            </tr>
+            <tr>
+                <td>Title</td>
+                <td>{{ formData.pdbInfo.title }}</td>
+            </tr>
+            <tr>
+                <td>Authors</td>
+                <td>{{ formData.pdbInfo.authors }}</td>
+            </tr>
+        </table>
+    </div>
 </tardis-form>

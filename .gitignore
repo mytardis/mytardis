@@ -17,6 +17,7 @@ docs/doctrees/
 docs/html/
 docs/make.bat
 docs/Makefile
+.idea/
 .noseids
 .project
 .settings/

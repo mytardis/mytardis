@@ -12,13 +12,13 @@ from tardis.tardis_portal.models import Schema, ParameterName
 
 
 class Command(BaseCommand):
-
     def _schema_exists(self, namespace):
         try:
             return Schema.objects.filter(namespace=namespace).exists()
         except DatabaseError as e:
             self.stdout.write('Database error encountered!')
-            self.stdout.write('Make sure to run from tardis root (e.g. ./bin/django create_pub_schemas) and ensure your database is properly configured')
+            self.stdout.write(
+                'Make sure to run from tardis root (e.g. ./bin/django create_pub_schemas) and ensure your database is properly configured')
             raise e
 
     def _setup_PUBLICATION_SCHEMA_ROOT(self, namespace):
@@ -54,7 +54,7 @@ class Command(BaseCommand):
         schema = Schema(namespace=namespace, name='Draft Publication', hidden=True, immutable=True)
         schema.save()
 
-        
+
     def _setup_PDB_PUBLICATION_SCHEMA_ROOT(self, namespace):
         schema = Schema(namespace=namespace, name='Protein Data Bank', hidden=False, immutable=True)
         schema.save()
@@ -188,48 +188,50 @@ class Command(BaseCommand):
                       data_type=ParameterName.STRING,
                       immutable=True,
                       order=2).save()
-        
-        
+
+
     def handle(self, *args, **options):
         self.stdout.write('Checking for required django settings...')
 
         settings_ok = True
         required_settings = [('PUBLICATION_OWNER_GROUP', 'All publications are owned by this group')]
-        required_schemas = [('PUBLICATION_SCHEMA_ROOT', 'A hidden schema that contians data required to manage the publication'),
-                            ('PUBLICATION_DRAFT_SCHEMA', 'Stores the form state and is deleted once the form is completed'),
-                            ('PUBLICATION_DETAILS_SCHEMA', 'Contains standard bibliographic details, such as DOI and acknowledgements'),
-                            ('PDB_PUBLICATION_SCHEMA_ROOT', 'Standard protein crystallographic parameters'),
-                            ('PDB_SEQUENCE_PUBLICATION_SCHEMA', 'Protein sequence data that might repeat depending on how many entities are present'),
-                            ('PDB_CITATION_PUBLICATION_SCHEMA', 'Citation data that is extracted from the PDB record')]
-        
-        for setting,description in required_settings + required_schemas:
+        required_schemas = [
+            ('PUBLICATION_SCHEMA_ROOT', 'A hidden schema that contians data required to manage the publication'),
+            ('PUBLICATION_DRAFT_SCHEMA', 'Stores the form state and is deleted once the form is completed'),
+            ('PUBLICATION_DETAILS_SCHEMA', 'Contains standard bibliographic details, such as DOI and acknowledgements'),
+            ('PDB_PUBLICATION_SCHEMA_ROOT', 'Standard protein crystallographic parameters'),
+            ('PDB_SEQUENCE_PUBLICATION_SCHEMA',
+             'Protein sequence data that might repeat depending on how many entities are present'),
+            ('PDB_CITATION_PUBLICATION_SCHEMA', 'Citation data that is extracted from the PDB record')]
+
+        for setting, description in required_settings + required_schemas:
             if not hasattr(settings, setting):
-                self.stdout.write('* Could not find setting: '+setting)
+                self.stdout.write('* Could not find setting: ' + setting)
                 if description:
                     self.stdout.write(' -- ' + description)
                 settings_ok = False
 
         if not settings_ok:
             raise CommandError('All required settings not present. Aborting!')
-        
+
         self.stdout.write("All settings seem OK.")
 
         recommended_settings = [('PUBLICATION_FORM_MAPPINGS', ''),
                                 ('PDB_REFRESH_INTERVAL', '')]
-        for setting,description in recommended_settings:
+        for setting, description in recommended_settings:
             if not hasattr(settings, setting):
-                self.stdout.write('Warning: '+setting+' setting not found. You might encounter problems later!')
+                self.stdout.write('Warning: ' + setting + ' setting not found. You might encounter problems later!')
                 if description:
-                    self.stdout.write(' -- '+description)
+                    self.stdout.write(' -- ' + description)
 
         self.stdout.write('Setting up schemas:')
 
-        for schema,description in required_schemas:
+        for schema, description in required_schemas:
             if self._schema_exists(getattr(settings, schema)):
-                self.stdout.write('Schema '+schema+' exists, skipping.')
+                self.stdout.write('Schema ' + schema + ' exists, skipping.')
             else:
-                self.stdout.write('Setting up '+schema+'... ', ending='')
-                getattr(self,'_setup_'+schema)(getattr(settings, schema))
+                self.stdout.write('Setting up ' + schema + '... ', ending='')
+                getattr(self, '_setup_' + schema)(getattr(settings, schema))
                 self.stdout.write('Done.')
 
         self.stdout.write('Checking if the publication owner group exists... ', ending='')
@@ -244,5 +246,5 @@ class Command(BaseCommand):
             superusers = User.objects.filter(is_superuser=True)
             pub_owner_group.user_set.add(*superusers)
             self.stdout.write('Superusers added.')
-        
+
         self.stdout.write('Setup complete.')

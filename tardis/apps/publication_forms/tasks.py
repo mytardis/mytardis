@@ -1,15 +1,12 @@
-import StarFile
-
 from datetime import datetime
 
+import StarFile
+
 from django.conf import settings
-
-from tardis.tardis_portal.models import Schema, Experiment, Dataset,\
-    ExperimentParameter, ExperimentParameterSet,\
-    DatasetParameter, DatasetParameterSet,\
+from tardis.tardis_portal.models import Schema, Experiment, ExperimentParameter, ExperimentParameterSet, \
     ParameterName
-
 from utils import PDBCifHelper
+
 
 def update_publication_records():
     populate_pdb_pub_records()
@@ -20,8 +17,8 @@ def has_pdb_embargo(publication):
     try:
         has_embargo = ExperimentParameter.objects.get(name__name='pdb-embargo',
                                                       name__schema__namespace=settings.PUBLICATION_SCHEMA_ROOT,
-                                                      parameterset__experiment=publication)\
-                                                 .string_value.lower() == 'true'
+                                                      parameterset__experiment=publication) \
+                          .string_value.lower() == 'true'
     except ExperimentParameter.DoesNotExist:
         has_embargo = False
 
@@ -32,16 +29,15 @@ def get_release_date(publication):
     try:
         release_date = ExperimentParameter.objects.get(name__name='embargo',
                                                        name__schema__namespace=settings.PUBLICATION_SCHEMA_ROOT,
-                                                       parameterset__experiment=publication)\
-                                                  .datetime_value
+                                                       parameterset__experiment=publication) \
+            .datetime_value
     except ExperimentParameter.DoesNotExist:
         release_date = datetime.now()
 
     return release_date
 
-    
-def process_embargos():
 
+def process_embargos():
     # Restricted publications are defined as those having public access
     # levels less than PUBLIC_ACCESS_PENDING_AUTH and the PUBLICATION_SCHEMA_ROOT
     # schema, but not in draft.
@@ -49,9 +45,9 @@ def process_embargos():
     PUB_SCHEMA_DRAFT = settings.PUBLICATION_DRAFT_SCHEMA
     restricted_publications = Experiment.objects.filter(
         experimentparameterset__schema__namespace=PUB_SCHEMA,
-        public_access=Experiment.PUBLIC_ACCESS_EMBARGO)\
-                                                .exclude(
-        experimentparameterset__schema__namespace=PUB_SCHEMA_DRAFT)
+        public_access=Experiment.PUBLIC_ACCESS_EMBARGO) \
+        .exclude(
+        experimentparameterset__schema__namespace=PUB_SCHEMA_DRAFT).distinct()
 
     for pub in restricted_publications:
         # Check the pdb-embargo record. pdb_pass is true if there
@@ -68,18 +64,19 @@ def process_embargos():
         if embargo_expired and pdb_pass:
             pub.public_access = Experiment.PUBLIC_ACCESS_FULL
             pub.save()
-            
-        # TODO: Activate/update the DOI as required.
-    
-    
+
+            # TODO: Activate/update the DOI as required.
+
+
 def populate_pdb_pub_records():
     PUB_SCHEMA = settings.PUBLICATION_SCHEMA_ROOT
     PUB_SCHEMA_DRAFT = settings.PUBLICATION_DRAFT_SCHEMA
     PDB_SCHEMA = settings.PDB_PUBLICATION_SCHEMA_ROOT
-    publications = Experiment.objects\
-                    .filter(experimentparameterset__schema__namespace=PDB_SCHEMA)\
-                    .filter(experimentparameterset__schema__namespace=PUB_SCHEMA)\
-                    .exclude(experimentparameterset__schema__namespace=PUB_SCHEMA_DRAFT)
+    publications = Experiment.objects \
+        .filter(experimentparameterset__schema__namespace=PDB_SCHEMA) \
+        .filter(experimentparameterset__schema__namespace=PUB_SCHEMA) \
+        .exclude(experimentparameterset__schema__namespace=PUB_SCHEMA_DRAFT)\
+        .distinct()
 
     last_update_parameter_name = ParameterName.objects.get(name='pdb-last-sync',
                                                            schema__namespace=PUB_SCHEMA)
@@ -113,20 +110,6 @@ def populate_pdb_pub_records():
             # we definitely need to update the data and create a last
             # update entry
             needs_update = True
-
-            # Check if there are currently any publication parameter sets
-            # attached.
-            pub_parameter_set = ExperimentParameterSet.objects.filter(schema__namespace=PUB_SCHEMA,
-                                                                      experiment=pub)
-            # If not, create one...
-            if pub_parameter_set.count() == 0:
-                parameter_set = ExperimentParameterSet(schema=Schema.objects.get(namespace=PUB_SCHEMA),
-                                                       experiment=pub)
-                pub_parameter_set.save()
-            # If so, use the first (and in theory, only) one ...
-            else:
-                pub_parameter_set = pub_parameter_set[0]
-
             pdb_last_update_parameter = None
 
 
@@ -185,20 +168,24 @@ def populate_pdb_pub_records():
                     add_if_missing(cit_parameter_set, 'authors', string_value='; '.join(citation['authors']))
                     add_if_missing(cit_parameter_set, 'journal', string_value=citation['journal'])
                     add_if_missing(cit_parameter_set, 'volume', string_value=citation['volume'])
-                    add_if_missing(cit_parameter_set, 'page-range', string_value='-'.join([citation['page_first'], citation['page_last']]))
-                    add_if_missing(cit_parameter_set, 'doi', string_value='http://dx.doi.org/'+citation['doi'])
+                    add_if_missing(cit_parameter_set, 'page-range',
+                                   string_value='-'.join([citation['page_first'], citation['page_last']]))
+                    add_if_missing(cit_parameter_set, 'doi', string_value='http://dx.doi.org/' + citation['doi'])
 
                 # 6. Remove the PDB embargo if set, since the update has occurred
                 # and therefore the PDB must have been relased.
                 try:
                     ExperimentParameter.objects.get(name__name='pdb-embargo',
-                                                    parameterset__schema__namespace=settings.PUBLICATION_SCHEMA_ROOT)\
-                                               .delete()
+                                                    parameterset__schema__namespace=settings.PUBLICATION_SCHEMA_ROOT) \
+                        .delete()
                 except ExperimentParameter.DoesNotExist:
                     pass
 
                 # 7. Set the last update parameter to be now
-                if pdb_last_update_parameter == None:
+                if pdb_last_update_parameter is None:
+                    pub_parameter_set = ExperimentParameterSet(schema=Schema.objects.get(namespace=PUB_SCHEMA),
+                                                       experiment=pub)
+                    pub_parameter_set.save()
                     pdb_last_update_parameter = ExperimentParameter(name=last_update_parameter_name,
                                                                     parameterset=pub_parameter_set,
                                                                     datetime_value=datetime.now())
@@ -207,4 +194,4 @@ def populate_pdb_pub_records():
                 pdb_last_update_parameter.save()
 
             except StarFile.StarError:
-                continue # PDB is either unavailable or invalid (maybe notify the user somehow?)
+                continue  # PDB is either unavailable or invalid (maybe notify the user somehow?)

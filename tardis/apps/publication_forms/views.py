@@ -1,31 +1,28 @@
-
 import json
 import re
-import StarFile
+
 import dateutil.parser
+import StarFile
 
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.cache import never_cache
-from django.http import HttpResponse, HttpResponseRedirect,\
-    HttpResponseForbidden
-from django.template import Context
+from django.http import HttpResponse, HttpResponseForbidden
 from django.conf import settings
 from django.contrib.auth.models import Group
 from django.core.mail import send_mail
-
 from tardis.tardis_portal.shortcuts import render_response_index
-from tardis.tardis_portal.models import Experiment, Dataset, ObjectACL,\
-    Schema, ParameterName, ExperimentParameterSet, ExperimentParameter,\
+from tardis.tardis_portal.models import Experiment, Dataset, ObjectACL, \
+    Schema, ParameterName, ExperimentParameterSet, ExperimentParameter, \
     ExperimentAuthor, License
 from tardis.tardis_portal.auth.localdb_auth import django_user, django_group
-from tardis.tardis_portal.managers import ExperimentManager
-
+from tardis.tardis_portal.auth import decorators as authz
 from utils import PDBCifHelper, check_pdb_status, get_unreleased_pdb_info
+
 
 @login_required
 def index(request):
     if request.method == 'GET':
-        return HttpResponse(render_response_index(request,'form.html'))
+        return HttpResponse(render_response_index(request, 'form.html'))
     else:
         return process_form(request)
 
@@ -37,7 +34,8 @@ def process_form(request):
     form_state = json.loads(request.body)
 
     def validation_error():
-        return HttpResponse(json.dumps({'error':'Invalid form data was submitted (server-side validation failed)'}), mimetype="appication/json")
+        return HttpResponse(json.dumps({'error': 'Invalid form data was submitted (server-side validation failed)'}),
+                            mimetype="application/json")
 
     # Check if the form data contains a publication ID
     # If it does, then this publication needs to be updated
@@ -46,7 +44,7 @@ def process_form(request):
         if not form_state['publicationTitle'].strip():
             return validation_error()
         publication = create_draft_publication(request.user, form_state['publicationTitle'],
-                                                            form_state['publicationDescription'])
+                                               form_state['publicationDescription'])
         form_state['publication_id'] = publication.id
     else:
         publication = get_draft_publication(request.user, form_state['publication_id'])
@@ -57,8 +55,8 @@ def process_form(request):
 
     # Get the form state database object
     form_state_parameter = ExperimentParameter.objects.get(name__name='form_state',
-            name__schema__namespace=settings.PUBLICATION_SCHEMA_ROOT,
-            parameterset__experiment=publication)
+                                                           name__schema__namespace=settings.PUBLICATION_SCHEMA_ROOT,
+                                                           parameterset__experiment=publication)
 
     # Check if the form state needs to be loaded (i.e. a publication draft is resumed)
     # no database changes are made if the form is resumed
@@ -67,7 +65,7 @@ def process_form(request):
         return HttpResponse(json.dumps(form_state), mimetype="application/json")
 
     if form_state['action'] == 'update-dataset-selection':
-        # Update the publiation title/description if changed. Must not be blank.
+        # Update the publication title/description if changed. Must not be blank.
         if not form_state['publicationTitle'].strip() or not form_state['publicationDescription'].strip():
             return validation_error()
 
@@ -104,8 +102,8 @@ def process_form(request):
         # to the publication draft schema or containing the form_state
         # parameter
         for parameter_set in publication.getParameterSets():
-            if parameter_set.schema.namespace != settings.PUBLICATION_DRAFT_SCHEMA and\
-               parameter_set.schema.namespace != settings.PUBLICATION_SCHEMA_ROOT:
+            if parameter_set.schema.namespace != settings.PUBLICATION_DRAFT_SCHEMA and \
+                            parameter_set.schema.namespace != settings.PUBLICATION_SCHEMA_ROOT:
                 parameter_set.delete()
             elif parameter_set.schema.namespace == settings.PUBLICATION_SCHEMA_ROOT:
                 try:
@@ -117,31 +115,31 @@ def process_form(request):
 
         # Loop through form data and create associates parameter sets
         # Any unrecognised fields or schemas are ignored!
-        for form_id,form in form_state['extraInfo'].iteritems():
-            try: # Ignore form if no schema exists with this name
+        for form_id, form in form_state['extraInfo'].iteritems():
+            try:  # Ignore form if no schema exists with this name
                 schema = Schema.objects.get(namespace=form['schema'])
             except Schema.DoesNotExist:
                 continue
             parameter_set = ExperimentParameterSet(schema=schema, experiment=publication)
             parameter_set.save()
-            for key,value in form.iteritems():
+            for key, value in form.iteritems():
                 if key != 'schema':
-                    try: # Ignore field if parameter name (key) doesn't match
+                    try:  # Ignore field if parameter name (key) doesn't match
                         parameter_name = ParameterName.objects.get(schema=schema, name=key)
                         if parameter_name.isNumeric():
                             parameter = ExperimentParameter(name=parameter_name,
                                                             parameterset=parameter_set,
                                                             numerical_value=float(value))
                         elif parameter_name.isLongString() or parameter_name.isString() or \
-                        parameter_name.isURL() or parameter_name.isLink() or \
-                        parameter_name.isFilename():
+                                parameter_name.isURL() or parameter_name.isLink() or \
+                                parameter_name.isFilename():
                             parameter = ExperimentParameter(name=parameter_name,
                                                             parameterset=parameter_set,
                                                             string_value=str(value))
                         parameter.save()
                     except ParameterName.DoesNotExist:
                         pass
-        
+
         ### Get data for the next page ###
         licenses = License.objects.filter(is_active=True, allows_distribution=True)
         licenses_json = []
@@ -159,9 +157,9 @@ def process_form(request):
         if licenses_json:
             if 'selectedLicenseId' not in form_state:
                 form_state['selectedLicenseId'] = licenses_json[0]['id']
-        else: # No licenses configured...
+        else:  # No licenses configured...
             form_state['selectedLicenseId'] = -1
-                
+
 
     elif form_state['action'] == 'submit':
         # any final form validation should occur here
@@ -177,11 +175,11 @@ def process_form(request):
                              institution=author['institution'],
                              email=author['email'],
                              order=authorOrder).save()
-            ++authorOrder
-        
+            authorOrder += 1
+
         institutions = '; '.join(set([author['institution'] for author in form_state['authors']]))
         publication.institution_name = institutions
-            
+
         # Attach the publication details schema
         pub_details_schema = Schema.objects.get(namespace=settings.PUBLICATION_DETAILS_SCHEMA)
         pub_details_parameter_set = ExperimentParameterSet(schema=pub_details_schema,
@@ -196,7 +194,7 @@ def process_form(request):
                             string_value=form_state['acknowledgements']).save()
 
         # --- Obtain a DOI here ---
-        doi='(doi will go here)'
+        doi = '(doi will go here)'
         doi_parameter_name = ParameterName.objects.get(schema=pub_details_schema,
                                                        name='doi')
         ExperimentParameter(name=doi_parameter_name,
@@ -222,7 +220,7 @@ def process_form(request):
                                                       allows_distribution=True)
         except License.DoesNotExist:
             publication.license = License.get_none_option_license()
-            
+
         publication.save()
 
         # Remove the draft status
@@ -239,13 +237,11 @@ A publication has been submitted by %s and requires approval by a publication ad
 You may view the publication here: %s
 
 This publication will not be publicly accessible until all embargo conditions are met following approval.
-To approve this publication, increase the public access level from "No public access (hidden)" to "Ready to be released pending embargo expiry" via the admin interface.
-
-This publication record may be accessed in the admin interface directly here: %s
+To approve this publication, please access the publication approvals interface here: %s
 ''' % (request.user.username,
-       request.build_absolute_uri('/experiment/view/'+str(publication.id)+'/'),
-       request.build_absolute_uri('/admin/tardis_portal/experiment/'+str(publication.id)+'/'))
-        
+       request.build_absolute_uri('/experiment/view/' + str(publication.id) + '/'),
+       request.build_absolute_uri('/apps/publication-forms/approvals/'))
+
         send_mail('[TARDIS] Publication requires authorisation',
                   message_content,
                   'store.star.help@monash.edu',
@@ -261,7 +257,7 @@ This publication record may be accessed in the admin interface directly here: %s
 
 
 def select_forms(datasets):
-    default_form = [{'name':'default','template':'/static/publication-form/default-form.html'}]
+    default_form = [{'name': 'default', 'template': '/static/publication-form/default-form.html'}]
 
     if not hasattr(settings, 'PUBLICATION_FORM_MAPPINGS'):
         return default_form
@@ -279,16 +275,16 @@ def select_forms(datasets):
                     # This allows the frontend to request dataset-specific information
                     # as well as generall information.
                     if not any(f['name'] == mapping['publication_schema'] for f in forms):
-                        forms.append({'name':mapping['publication_schema'],
-                                      'template':mapping['form_template'],
-                                      'datasets':[{'id':dataset.id,
-                                                   'description':dataset.description}]})
+                        forms.append({'name': mapping['publication_schema'],
+                                      'template': mapping['form_template'],
+                                      'datasets': [{'id': dataset.id,
+                                                    'description': dataset.description}]})
                     else:
                         idx = next(index for (index, f) in enumerate(forms)
                                    if f['name'] == mapping['publication_schema'])
-                        forms[idx]['datasets'].append({'id':dataset.id,
-                                                       'description':dataset.description})
-                                
+                        forms[idx]['datasets'].append({'id': dataset.id,
+                                                       'description': dataset.description})
+
     if not forms:
         return default_form
     else:
@@ -334,7 +330,7 @@ def create_draft_publication(user, publication_title, publication_description):
     publication_root_schema = Schema.objects.get(
         namespace=settings.PUBLICATION_SCHEMA_ROOT)
     publication_root_parameter_set = ExperimentParameterSet(schema=publication_schema,
-                                                           experiment=experiment)
+                                                            experiment=experiment)
     publication_root_parameter_set.save()
     form_state_param_name = ParameterName.objects.get(schema=publication_root_schema, name='form_state')
     ExperimentParameter(name=form_state_param_name, parameterset=publication_root_parameter_set).save()
@@ -346,12 +342,12 @@ def get_draft_publication(user, publication_id):
     for exp in Experiment.safe.owned(user):
         if exp.id == publication_id and exp.is_publication_draft():
             return exp
-        
+
     for group in user.groups.all():
         for exp in Experiment.safe.owned_by_group(group):
             if exp.id == publication_id and exp.is_publication_draft():
                 return exp
-    
+
     return None
 
 
@@ -362,16 +358,16 @@ def fetch_experiments_and_datasets(request):
     json_response = []
     for experiment in experiments:
         if not experiment.is_publication():
-            experiment_json = {'id':experiment.id,
-                               'title':experiment.title,
-                               'institution_name':experiment.institution_name,
-                               'description':experiment.description}
+            experiment_json = {'id': experiment.id,
+                               'title': experiment.title,
+                               'institution_name': experiment.institution_name,
+                               'description': experiment.description}
             datasets = Dataset.objects.filter(experiments=experiment)
             dataset_json = []
             for dataset in datasets:
-                dataset_json.append({'id':dataset.id,
-                                     'description':dataset.description,
-                                     'directory':dataset.directory})
+                dataset_json.append({'id': dataset.id,
+                                     'description': dataset.description,
+                                     'directory': dataset.directory})
             experiment_json['datasets'] = dataset_json
             json_response.append(experiment_json)
     return HttpResponse(json.dumps(json_response), mimetype="appication/json")
@@ -385,9 +381,9 @@ def pdb_helper(request, pdb_id):
         authors = ', '.join(citations[0]['authors'])
         title = citations[0]['title']
         result = {
-            'title':title,
-            'authors':authors,
-            'status':'RELEASED'
+            'title': title,
+            'authors': authors,
+            'status': 'RELEASED'
         }
     except StarFile.StarError:
         # If it's not released, check if it's a valid PDB ID
@@ -396,41 +392,135 @@ def pdb_helper(request, pdb_id):
             result = get_unreleased_pdb_info(pdb_id)
             result['status'] = 'UNRELEASED'
         else:
-            result = {'title':'',
-                      'authors':'',
-                      'status':'UNKNOWN'}
+            result = {'title': '',
+                      'authors': '',
+                      'status': 'UNKNOWN'}
 
     return HttpResponse(json.dumps(result), mimetype="application/json")
 
+
+@login_required
+@authz.require_publication_admin
+def approval_view(request):
+    if request.method == 'GET':
+        return HttpResponse(render_response_index(request, 'publication_approval.html'))
+    else:
+        return approval_ajax(request)
+
+
+def approval_ajax(request):
+    # Decode the form data
+    json_request = json.loads(request.body)
+
+    # wrapper to return json
+    def response(obj):
+        return HttpResponse(json.dumps(obj), mimetype="application/json")
+
+    def json_get_publications_awaiting_approval():
+        pubs = []
+        for pub in get_publications_awaiting_approval():
+            pubs.append({
+                'id': pub.id,
+                'title': pub.title,
+                'description': pub.description,
+                'authors': '; '.join([ author.author for author in ExperimentAuthor.objects.filter(experiment=pub)])
+            })
+        return pubs
+
+    if 'action' in json_request:
+        if json_request['action'] == 'approve':
+            pub_id = json_request['id']
+            message = json_request['message']
+            try:
+                approve_publication(Experiment.objects.get(pk=pub_id), message)
+            except Experiment.DoesNotExist:
+                pass
+        elif json_request['action'] == 'revert':
+            pub_id = json_request['id']
+            message = json_request['message']
+            try:
+                revert_publication_to_draft(Experiment.objects.get(pk=pub_id), message)
+            except Experiment.DoesNotExist:
+                pass
+        elif json_request['action'] == 'reject':
+            pub_id = json_request['id']
+            message = json_request['message']
+            try:
+                reject_publication(Experiment.objects.get(pk=pub_id), message)
+            except Experiment.DoesNotExist:
+                pass
+
+    return response(json_get_publications_awaiting_approval())
 
 def get_publications_awaiting_approval():
     PUB_SCHEMA = settings.PUBLICATION_SCHEMA_ROOT
     PUB_SCHEMA_DRAFT = settings.PUBLICATION_DRAFT_SCHEMA
     pubs = Experiment.objects.filter(public_access=Experiment.PUBLIC_ACCESS_NONE,
-                                     experimentparameterset__schema__namespace=PUB_SCHEMA)\
-                             .exclude(experimentparameterset__schema__namespace=PUB_SCHEMA_DRAFT)
+                                       experimentparameterset__schema__namespace=PUB_SCHEMA)\
+        .exclude(experimentparameterset__schema__namespace=PUB_SCHEMA_DRAFT).distinct()
+    return pubs
 
-def approve_publication(publication):
-    if publication.is_publication() and not publication.is_publication_draft():
+
+def send_mail_to_authors(publication, subject, message):
+    email_addresses = [author.email for author in ExperimentAuthor.objects.filter(experiment=publication)]
+    send_mail(subject, message, 'store.star.help@monash.edu', email_addresses, fail_silently=True)
+
+
+def approve_publication(publication, message=None):
+    if publication.is_publication() and not publication.is_publication_draft()\
+            and publication.public_access == Experiment.PUBLIC_ACCESS_NONE:
         # Change the access level
         publication.public_access = Experiment.PUBLIC_ACCESS_EMBARGO
 
         # Delete the form state (and containing parameter set)
         ExperimentParameterSet.objects.get(experimentparameter__name__name='form_state',
                                            experiment=publication).delete()
-        
+
         publication.save()
+
+        email_message='''Hello!
+Your publication, %s, has been approved for release and will appear online following any embargo conditions.
+''' % publication.title
+
+        if message:
+            email_message += ''' ---
+%s''' % message
+
+        send_mail_to_authors(publication, '[TARDIS] Publication approved', email_message)
+
         return True
-    
+
     return False
 
-def revert_publication_to_draft(publication):
+
+def reject_publication(publication, message=None):
+    if publication.is_publication() and not publication.is_publication_draft()\
+            and publication.public_access == Experiment.PUBLIC_ACCESS_NONE:
+
+        email_message='''Hello!
+Your publication, %s, is unable to be released. Please contact your system administrator for further information.
+''' % publication.title
+
+        if message:
+            email_message += ''' ---
+%s''' % message
+
+        send_mail_to_authors(publication, '[TARDIS] Publication rejected', email_message)
+
+        publication.delete()
+
+        return True
+    return False
+
+
+def revert_publication_to_draft(publication, message=None):
     # Anything with the form_state parameter can be reverted to draft
     try:
-        # Check that the publication is currently finalised
-        if not publication.is_publication_draft():
+        # Check that the publication is currently finalised but not released
+        if publication.is_publication_draft() and publication.is_publication()\
+                and publication.public_access == Experiment.PUBLIC_ACCESS_NONE:
             return False
-        
+
         # Check that form_state exists (raises an exception if not)
         ExperimentParameter.objects.get(name__name='form_state',
                                         name__schema__namespace=settings.PUBLICATION_SCHEMA_ROOT,
@@ -446,7 +536,38 @@ def revert_publication_to_draft(publication):
         ExperimentParameterSet(schema=draft_publication_schema,
                                experiment=publication).save()
 
+        # Delete all metadata except for the form_state
+        # Clear any current parameter sets except for those belonging
+        # to the publication draft schema or containing the form_state
+        # parameter
+        for parameter_set in publication.getParameterSets():
+            if parameter_set.schema.namespace != settings.PUBLICATION_DRAFT_SCHEMA and \
+                            parameter_set.schema.namespace != settings.PUBLICATION_SCHEMA_ROOT:
+                parameter_set.delete()
+            elif parameter_set.schema.namespace == settings.PUBLICATION_SCHEMA_ROOT:
+                try:
+                    ExperimentParameter.objects.get(name__name='form_state',
+                                                    name__schema__namespace=settings.PUBLICATION_SCHEMA_ROOT,
+                                                    parameterset=parameter_set)
+                except ExperimentParameter.DoesNotExist:
+                    parameter_set.delete()
+
+        # Send notification emails -- must be done before authors are deleted
+        email_message='''Hello!
+Your publication, %s, has been reverted to draft and may now be amended.
+''' % publication.title
+
+        if message:
+            email_message += ''' ---
+%s''' % message
+
+        send_mail_to_authors(publication, '[TARDIS] Publication reverted to draft', email_message)
+
+
+        # Delete all author records
+        ExperimentAuthor.objects.filter(experiment=publication).delete()
+
         return True
-    
+
     except ExperimentParameter.DoesNotExist:
         return False

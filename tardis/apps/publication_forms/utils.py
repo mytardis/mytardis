@@ -1,6 +1,8 @@
-import CifFile
 import urllib
+
+import CifFile
 from BeautifulSoup import BeautifulSoup
+
 
 class CifHelper:
     def __init__(self, cif_url):
@@ -15,19 +17,20 @@ class CifHelper:
     def as_list(self, obj):
         return obj if self._is_list(obj) else [obj]
 
+
 class PDBCifHelper(CifHelper):
     def __init__(self, pdb_id):
-        CifHelper.__init__(self, 'http://pdb.org/pdb/files/'+urllib.quote(pdb_id)+'.cif')
+        CifHelper.__init__(self, 'http://pdb.org/pdb/files/' + urllib.quote(pdb_id) + '.cif')
         self.pdb_id = pdb_id
 
-    def __getitem__(self,key):
+    def __getitem__(self, key):
         return CifHelper.get_cif_file_object(self)[self.pdb_id][key]
 
     def get_pdb_id(self):
         return self['_entry.id']
 
     def get_pdb_url(self):
-        return 'http://pdb.org/pdb/search/structidSearch.do?structureId='+urllib.quote(self.get_pdb_id())
+        return 'http://pdb.org/pdb/search/structidSearch.do?structureId=' + urllib.quote(self.get_pdb_id())
 
     def get_obs_r_value(self):
         return float(self['_refine.ls_R_factor_obs'])
@@ -48,7 +51,8 @@ class PDBCifHelper(CifHelper):
         angle_a = self['_cell.angle_alpha']
         angle_b = self['_cell.angle_beta']
         angle_c = self['_cell.angle_gamma']
-        return '(a = %s, b = %s, c = %s),(a = %s, b = %s, c = %s)' % (length_a, length_b, length_c, angle_a, angle_b, angle_c)
+        return '(a = %s, b = %s, c = %s),(a = %s, b = %s, c = %s)' % (
+        length_a, length_b, length_c, angle_a, angle_b, angle_c)
 
     def get_citations(self):
         ids = self.as_list(self['_citation.id'])
@@ -64,7 +68,7 @@ class PDBCifHelper(CifHelper):
 
         citations = []
         for pub_id, title, journal, volume, page_first, page_last, year, doi in \
-            zip(ids, titles, journals, volumes, pages_first, pages_last, years, dois):
+                zip(ids, titles, journals, volumes, pages_first, pages_last, years, dois):
             citation = {'_id': pub_id,
                         'title': title,
                         'journal': journal,
@@ -73,7 +77,7 @@ class PDBCifHelper(CifHelper):
                         'page_last': page_last,
                         'year': year,
                         'doi': doi}
-            
+
             authors = []
             for auth_pub_id, auth_name in zip(author_citation_ids, author_citation_names):
                 if auth_pub_id == pub_id:
@@ -82,7 +86,7 @@ class PDBCifHelper(CifHelper):
             citations.append(citation)
 
         return citations
-        
+
     def get_sequence_info(self):
         try:
             seqs_id = self.as_list(self['_entity_src_gen.entity_id'])
@@ -107,7 +111,7 @@ class PDBCifHelper(CifHelper):
 
                 for seq_code_id, seq_code in zip(seqs_code_id, seqs_code):
                     if seq_code_id == seq_id:
-                        seq['sequence'] = seq_code #.replace(' ', '').replace('\n','')
+                        seq['sequence'] = seq_code  # .replace(' ', '').replace('\n','')
                         break
 
                 sequences.append(seq)
@@ -116,8 +120,9 @@ class PDBCifHelper(CifHelper):
         except KeyError:
             return []
 
+
 def check_pdb_status(pdb_id):
-    status_page = urllib.urlopen('http://www.rcsb.org/pdb/rest/idStatus?structureId='+
+    status_page = urllib.urlopen('http://www.rcsb.org/pdb/rest/idStatus?structureId=' +
                                  urllib.quote(pdb_id.upper())).read()
     soup = BeautifulSoup(status_page)
     if soup.record:
@@ -127,8 +132,9 @@ def check_pdb_status(pdb_id):
 
     return pdb_status
 
+
 def get_unreleased_pdb_info(pdb_id):
-    info_page = urllib.urlopen('http://www.rcsb.org/pdb/rest/getUnreleased?structureId='+
+    info_page = urllib.urlopen('http://www.rcsb.org/pdb/rest/getUnreleased?structureId=' +
                                urllib.quote(pdb_id.upper())).read()
     soup = BeautifulSoup(info_page)
 
