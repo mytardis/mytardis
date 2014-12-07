@@ -135,9 +135,14 @@ class UploaderRegistrationRequest(models.Model):
     Represents a request to register a new instrument PC with this
     MyTardis instance and allow it to act as an "uploader".
     The upload method could be RSYNC over SSH to a staging area for example.
+
+    We could constrain these requests to be unique per uploader record,
+    but we allow an uploader to make requests using multiple key pairs,
+    which could represent different user accounts on the uploader PC,
+    each having its own ~/.ssh/MyData private key.
     '''
 
-    uploader = models.ForeignKey(Uploader, unique=True)
+    uploader = models.ForeignKey(Uploader)
 
     requester_name = models.CharField(max_length=64)
     requester_email = models.CharField(max_length=64)
@@ -158,6 +163,7 @@ class UploaderRegistrationRequest(models.Model):
     class Meta:
         app_label = 'tardis_portal'
         verbose_name_plural = 'UploaderRegistrationRequests'
+        unique_together = ['uploader', 'requester_key_fingerprint']
 
     def __unicode__(self):
         '''
