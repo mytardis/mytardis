@@ -143,7 +143,6 @@ class UploaderRegistrationRequest(models.Model):
     requester_email = models.CharField(max_length=64)
     requester_public_key = models.TextField()
     requester_key_fingerprint = models.CharField(max_length=64)
-    requester_key_type = models.CharField(max_length=8)
     request_time = models.DateTimeField(null=True, blank=True)
 
     approved = models.BooleanField()
