@@ -75,6 +75,9 @@ class SquashFSStorage(Storage):
         else:
             raise Exception('provide squash file name and path or datafile id')
 
+    def __del__(self):
+        self._umount()
+
     @property
     def _mounted(self):
         mount_list = subprocess.check_output(['mount'], shell=False)
@@ -91,6 +94,12 @@ class SquashFSStorage(Storage):
                 raise
         subprocess.call([self.squashmount_cmd,
                          self.squashfile, self.location])
+        return self._mounted
+
+    def _umount(self):
+        if self._mounted:
+            subprocess.call(['fusermount', '-u', self.location])
+        return self._mounted
 
     def _open(self, name, mode='rb'):
         '''
