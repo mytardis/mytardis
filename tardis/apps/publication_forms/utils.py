@@ -1,8 +1,11 @@
 import urllib
-
 import CifFile
-from BeautifulSoup import BeautifulSoup
 
+from django.core.mail import send_mail
+
+from tardis.tardis_portal.models import ExperimentAuthor
+
+from BeautifulSoup import BeautifulSoup
 
 class CifHelper:
     def __init__(self, cif_url):
@@ -144,3 +147,8 @@ def get_unreleased_pdb_info(pdb_id):
     info['authors'] = soup.record.authors.string
 
     return info
+
+
+def send_mail_to_authors(publication, subject, message):
+    email_addresses = [author.email for author in ExperimentAuthor.objects.filter(experiment=publication)]
+    send_mail(subject, message, 'store.star.help@monash.edu', email_addresses, fail_silently=True)

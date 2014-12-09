@@ -16,7 +16,8 @@ from tardis.tardis_portal.models import Experiment, Dataset, ObjectACL, \
     ExperimentAuthor, License
 from tardis.tardis_portal.auth.localdb_auth import django_user, django_group
 from tardis.tardis_portal.auth import decorators as authz
-from utils import PDBCifHelper, check_pdb_status, get_unreleased_pdb_info
+from doi import DOI_minter
+from utils import PDBCifHelper, check_pdb_status, get_unreleased_pdb_info, send_mail_to_authors
 
 
 @login_required
@@ -461,11 +462,6 @@ def get_publications_awaiting_approval():
     return pubs
 
 
-def send_mail_to_authors(publication, subject, message):
-    email_addresses = [author.email for author in ExperimentAuthor.objects.filter(experiment=publication)]
-    send_mail(subject, message, 'store.star.help@monash.edu', email_addresses, fail_silently=True)
-
-
 def approve_publication(publication, message=None):
     if publication.is_publication() and not publication.is_publication_draft()\
             and publication.public_access == Experiment.PUBLIC_ACCESS_NONE:
@@ -473,14 +469,32 @@ def approve_publication(publication, message=None):
         publication.public_access = Experiment.PUBLIC_ACCESS_EMBARGO
 
         # Delete the form state (and containing parameter set)
-        ExperimentParameterSet.objects.get(experimentparameter__name__name='form_state',
-                                           experiment=publication).delete()
+        try:
+            ExperimentParameterSet.objects.get(experimentparameter__name__name='form_state',
+                                               experiment=publication).delete()
+        except ExperimentParameterSet.DoesNotExist:
+            pass
 
         publication.save()
+
+        doi = None
+        try:
+            doi_param = ExperimentParameter.objects.get(name__name='doi',
+                                                        name__schema__namespace=settings.PUBLICATION_DETAILS_SCHEMA,
+                                                        parameterset__experiment=publication)
+            doi = DOI_minter().mint(publication.id, 'experiment/view/'+str(publication.id)+'/')
+            doi_param.string_value = doi
+            doi_param.save()
+        except ExperimentParameter.DoesNotExist:
+            pass
 
         email_message='''Hello!
 Your publication, %s, has been approved for release and will appear online following any embargo conditions.
 ''' % publication.title
+
+        if doi is not None:
+            email_message += '''A DOI has been assigned to this publication (%s) and will become active once your publication is released.
+You may use cite using this DOI immediately.''' % doi
 
         if message:
             email_message += ''' ---

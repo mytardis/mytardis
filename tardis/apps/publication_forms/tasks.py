@@ -5,7 +5,8 @@ import StarFile
 from django.conf import settings
 from tardis.tardis_portal.models import Schema, Experiment, ExperimentParameter, ExperimentParameterSet, \
     ParameterName
-from utils import PDBCifHelper
+from tardis.apps.publication_forms.doi import DOI_minter
+from utils import PDBCifHelper, send_mail_to_authors
 
 
 def update_publication_records():
@@ -48,7 +49,6 @@ def process_embargos():
         public_access=Experiment.PUBLIC_ACCESS_EMBARGO) \
         .exclude(
         experimentparameterset__schema__namespace=PUB_SCHEMA_DRAFT).distinct()
-
     for pub in restricted_publications:
         # Check the pdb-embargo record. pdb_pass is true if there
         # are no pdb restrictions.
@@ -63,9 +63,21 @@ def process_embargos():
 
         if embargo_expired and pdb_pass:
             pub.public_access = Experiment.PUBLIC_ACCESS_FULL
-            pub.save()
+            doi = None
+            try:
+                doi = ExperimentParameter.objects.get(name__name='doi',
+                                                      name__schema__namespace=settings.PUBLICATION_DETAILS_SCHEMA,
+                                                      parameterset__experiment=pub).string_value
+            except ExperimentParameter.DoesNotExist:
+                pass
 
-            # TODO: Activate/update the DOI as required.
+            email_message = '''Hello,
+Your publication, %s, is now public!''' % pub.title
+            if doi:
+                email_message += 'You may view your publication here: http://dx.doi.org/%s' % doi
+
+            send_mail_to_authors(pub, '[TARDIS] Publication released', email_message)
+            pub.save()
 
 
 def populate_pdb_pub_records():

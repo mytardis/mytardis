@@ -744,11 +744,10 @@ class DataFileResource(MyTardisModelResource):
         if 'attached_file' in bundle.data:
             # have POSTed file
             newfile = bundle.data['attached_file'][0]
-
             if 'md5sum' not in bundle.data and 'sha512sum' not in bundle.data:
                 from tardis.tardis_portal.util import generate_file_checksums
                 md5, sha512, size, _ = generate_file_checksums(
-                    newfile)
+                    newfile, leave_open=True)
                 bundle.data['md5sum'] = md5
 
             bundle.data['replicas'] = [{'file_object': newfile}]
@@ -867,6 +866,9 @@ class ReplicaResource(MyTardisModelResource):
 
         bundle.obj.save()
         if 'file_object' in bundle.data:
+            #print(bundle.data['file_object'].temporary_file_path())
+            #import os
+            #print(os.path.size(bundle.data['file_object'].temporary_file_path()))
             bundle.obj.file_object = bundle.data['file_object']
             bundle.data['file_object'].close()
             del(bundle.data['file_object'])

@@ -3,7 +3,7 @@ import djcelery
 from datetime import timedelta
 from os import path
 
-DEBUG = False
+DEBUG = True
 
 TEMPLATE_DEBUG = DEBUG
 
@@ -428,7 +428,7 @@ CELERYBEAT_SCHEDULE = {
     },
     "update-publication-records": {
         "task": "tardis_portal.update_publication_records",
-        "schedule": timedelta(seconds=20)
+        "schedule": timedelta(seconds=10)
     },
 }
 

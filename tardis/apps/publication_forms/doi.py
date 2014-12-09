@@ -6,14 +6,16 @@ from suds.client import Client
 from tardis.tardis_portal.models import Experiment, ExperimentAuthor
 
 
-class DOIMinter():
+class DOI_minter():
 
     def __init__(self):
         self.api = Client(settings.MODC_DOI_DEFINITION,
                           location=settings.MODC_DOI_ENDPOINT)
         self.api_id = settings.MODC_DOI_API_ID
+	print(self.api_id)
+        self.url_root = settings.MODC_DOI_MINT_URL_ROOT
 
-    def mint(self, experiment_id, url, publisher="Monash University"):
+    def mint(self, experiment_id, uri, publisher="Monash University"):
         pub = Experiment.objects.get(pk=experiment_id)
 
         resource = {}
@@ -25,6 +27,6 @@ class DOIMinter():
         resource['publicationYear'] = date.today().year + 1
         resource['publisher'] = publisher
 
-        response = self.api.service.MintDoi(self.api_id, resource, url)
+        response = self.api.service.MintDoi(self.api_id, resource, self.url_root+uri)
 
         return response.doi
