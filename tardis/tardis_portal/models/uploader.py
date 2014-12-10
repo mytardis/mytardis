@@ -166,13 +166,8 @@ class UploaderRegistrationRequest(models.Model):
         unique_together = ['uploader', 'requester_key_fingerprint']
 
     def __unicode__(self):
-        '''
-        A single "uploader" (usually an instrument PC) may send multiple
-        registration requests for different network interfaces (Ethernet,
-        WiFi etc.) with different MAC addresses.
-
-        '''
         return self.uploader.name + " | " + \
             self.uploader.interface + " | " + \
-            self.uploader.mac_address + " | " + \
-            self.requester_name + " | " + str(self.request_time)
+            self.requester_key_fingerprint + " | " + \
+            self.requester_name + " | " + \
+            str(self.request_time)
