@@ -65,6 +65,7 @@ from django.contrib.auth.decorators import login_required, permission_required
 from django.core.urlresolvers import reverse
 from django.core.paginator import Paginator, InvalidPage, EmptyPage
 from django.core.exceptions import PermissionDenied
+from django.core.mail import EmailMessage
 from django.forms.models import model_to_dict
 from django.views.decorators.http import require_POST
 from django.views.decorators.cache import never_cache
@@ -3385,3 +3386,18 @@ def rcauth(request):
         del request.session['jws']
         django_logout(request)
         raise PermissionDenied  # Error: Security cookie has expired
+
+
+def feedback(request):
+    if request.method == 'POST':
+        feedback_data = json.loads(request.POST['data'])
+        message = feedback_data[0]['Issue']
+        img_base64 = feedback_data[1]
+        img = img_base64.replace('data:image/png;base64,', '').decode('base64')
+        admin_emails = [v for k,v in settings.ADMINS]
+        email = EmailMessage('[TARDIS] User feedback', message, 'store.star.help@monash.edu', admin_emails)
+        email.attach('screenshot.png', img, 'image/png')
+        email.send()
+        return HttpResponse('OK')
+    else:
+        return redirect('/')

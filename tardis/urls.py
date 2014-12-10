@@ -184,7 +184,8 @@ ajax_urls = patterns(
     (r'^experiment/(?P<experiment_id>\d+)/dataset-transfer$',
      'experiment_dataset_transfer'),
     (r'^license/list$', 'retrieve_licenses'),
-    (r'^json/', include(json_urls))
+    (r'^json/', include(json_urls)),
+    (r'^feedback/', 'feedback'),
 )
 
 download_urls = patterns(
