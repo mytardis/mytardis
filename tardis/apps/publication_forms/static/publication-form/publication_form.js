@@ -97,7 +97,9 @@ app.controller('publicationFormCtrl', function ($scope, $log, $http, ngDialog, $
     $scope.formData.publicationTitle = ""; // Initialise publication title
     $scope.formData.publicationDescription = ""; // Initialise publication description
     $scope.formData.extraInfo = {}; // Stores discipline specific metadata
-    $scope.formData.authors = []; // Stores the authors of the publication
+    $scope.formData.authors = [{'name':'',
+				'institution':'',
+				'email':''}]; // Stores the authors of the publication
     $scope.formData.acknowledgements = ""; // Acknowledgements stored here
     $scope.formData.action = ""; // specifies what action is required on form update
 
@@ -225,6 +227,31 @@ app.controller('publicationFormCtrl', function ($scope, $log, $http, ngDialog, $
             $scope.errorMessages.push("You must add at least one author.");
             errors = true;
         }
+
+	var tmpAuthors = [];
+	for (var a in $scope.formData.authors) {
+	    var author = $scope.formData.authors[a];
+	    var x = 0;
+	    if (typeof author.email === 'undefined' || author.email.trim().length == 0) {
+		x++;
+	    }
+	    if (typeof author.name === 'undefined' || author.name.trim().length == 0) {
+		x++;
+	    }
+	    if (typeof author.institution === 'undefined' || author.institution.trim().length == 0) {
+		x++;
+	    }
+	    if (x == 0) {
+		tmpAuthors.push(author);
+	    } else if (x < 3) {
+		errors = true;
+		$scope.errorMessages.push("Invalid author entries.");
+		break;
+	    }
+	}
+	if (!errors) {
+	    $scope.formData.authors = tmpAuthors;
+	}
 
         if (typeof $scope.formData.embargo === 'undefined' || $scope.formData.embargo == null) {
             $scope.errorMessages.push("Release date cannot be blank.");
@@ -365,29 +392,11 @@ app.controller('publicationFormCtrl', function ($scope, $log, $http, ngDialog, $
     }
 
     // Add author to publication
-    $scope.addAuthorEntry = function (authorName, authorInstitution) {
-        if (typeof $scope.authorName === 'undefined' ||
-            typeof $scope.authorInstitution === 'undefined' ||
-            typeof $scope.authorEmail === 'undefined' ||
-            $scope.authorName.trim().length == 0 ||
-            $scope.authorInstitution.trim().length == 0 ||
-            $scope.authorEmail.trim().length == 0) {
-            $scope.errorMessages = ['Author name, institution and email cannot be blank.'];
-            return
-        } else if ($scope.authorEmail.indexOf('@') == -1) {
-            $scope.errorMessages = ['Invalid email address'];
-            return
-        } else {
-            $scope.errorMessages = [];
-        }
-        $scope.formData.authors = $scope.formData.authors.concat({
-                                                                     'name': $scope.authorName,
-                                                                     'institution': $scope.authorInstitution,
-                                                                     'email': $scope.authorEmail
-                                                                 });
-        $scope.authorName = "";
-        $scope.authorInstitution = "";
-        $scope.authorEmail = "";
+    $scope.addAuthorEntry = function () {
+	$log.info($scope.formData)
+	$scope.formData.authors.push({'name':'',
+				      'institution':'',
+				      'email':''})
     }
 
     // Remove author from publication

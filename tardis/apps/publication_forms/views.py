@@ -141,7 +141,7 @@ def process_form(request):
                     except ParameterName.DoesNotExist:
                         pass
 
-        ### Get data for the next page ###
+        ### --- Get data for the next page --- ###
         licenses = License.objects.filter(is_active=True, allows_distribution=True)
         licenses_json = []
         for license in licenses:
@@ -161,6 +161,12 @@ def process_form(request):
         else:  # No licenses configured...
             form_state['selectedLicenseId'] = -1
 
+        # Set a default author (current user) if no previously saved data
+        # By default, the form sends a list of authors of one element with blank fields
+        if len(form_state['authors']) == 1 and not form_state['authors'][0]['name']:
+            form_state['authors'] = [{'name':request.user.first_name+" "+request.user.last_name,
+                                      'institution':'',
+                                      'email':request.user.email}]
 
     elif form_state['action'] == 'submit':
         # any final form validation should occur here
@@ -170,7 +176,7 @@ def process_form(request):
 
         # Construct list of authors
         authorOrder = 1
-        for author in reversed(form_state['authors']):
+        for author in form_state['authors']:
             ExperimentAuthor(experiment=publication,
                              author=author['name'],
                              institution=author['institution'],
@@ -194,8 +200,8 @@ def process_form(request):
                             parameterset=pub_details_parameter_set,
                             string_value=form_state['acknowledgements']).save()
 
-        # --- Obtain a DOI here ---
-        doi = '(doi will go here)'
+        # DOIs are generated during approval, so this is just a placeholder.
+        doi = '---'
         doi_parameter_name = ParameterName.objects.get(schema=pub_details_schema,
                                                        name='doi')
         ExperimentParameter(name=doi_parameter_name,
@@ -248,6 +254,11 @@ To approve this publication, please access the publication approvals interface h
                   'store.star.help@monash.edu',
                   pub_admin_email_addresses,
                   fail_silently=True)
+
+        message_content = '''Hello!
+Your publication, %s, has been submitted and is awaiting approval by an administrator.
+You will receive a notification once his has occurred.''' % publication.title
+        send_mail_to_authors(publication, '[TARDIS] Publication submitted', message_content)
 
     # Clear the form action and save the state
     form_state['action'] = ''

@@ -23,7 +23,7 @@ class CifHelper:
 
 class PDBCifHelper(CifHelper):
     def __init__(self, pdb_id):
-        CifHelper.__init__(self, 'http://pdb.org/pdb/files/' + urllib.quote(pdb_id) + '.cif')
+        CifHelper.__init__(self, 'http://www.pdb.org/pdb/files/' + urllib.quote(pdb_id) + '.cif')
         self.pdb_id = pdb_id
 
     def __getitem__(self, key):
@@ -33,7 +33,7 @@ class PDBCifHelper(CifHelper):
         return self['_entry.id']
 
     def get_pdb_url(self):
-        return 'http://pdb.org/pdb/search/structidSearch.do?structureId=' + urllib.quote(self.get_pdb_id())
+        return 'http://www.pdb.org/pdb/search/structidSearch.do?structureId=' + urllib.quote(self.get_pdb_id())
 
     def get_obs_r_value(self):
         return float(self['_refine.ls_R_factor_obs'])
