@@ -1,16 +1,17 @@
 {% load static from staticfiles %}
 {% block js_libraries %}
 {# See js/lib/README.rst for more info #}
+<script type="text/javascript" src="{% static 'js/lib/jquery-1.10.2.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/lib/jquery-migrate-1.2.1.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/lib/jquery-ui-1.10.3.custom.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/lib/jquery.cookie.js' %}"></script>
+
 <!-- angular and related scripts -->
 <script type="text/javascript" src="{% static 'angular/angular.min.js' %}"></script>
 <script type="text/javascript" src="{% static 'angular/ngDialog.min.js' %}"></script>
 <script type="text/javascript" src="{% static 'js/angular-mytardis.js' %}"></script>
 
-<script type="text/javascript" src="{% static 'js/lib/jquery-1.10.2.min.js' %}"></script>
-<script type="text/javascript" src="{% static 'js/lib/jquery-migrate-1.2.1.min.js' %}"></script>
 <script type="text/javascript" src="{% static 'js/lib/jstree/jquery.jstree.js' %}"></script>
-<script type="text/javascript" src="{% static 'js/lib/jquery-ui-1.10.3.custom.min.js' %}"></script>
-<script type="text/javascript" src="{% static 'js/lib/jquery.cookie.js' %}"></script>
 <script type="text/javascript" src="{% static 'js/lib/flash_detect_min.js' %}"></script>
 <script type="text/javascript" src="{% static 'js/lib/async.min.js' %}"></script>
 <script type="text/javascript" src="{% static 'js/lib/underscore-min.js' %}"></script>
@@ -30,10 +31,6 @@
 <script src="{% static 'backbone-forms/jquery-ui-editors.js' %}"></script>
 <script src="{% static 'backbone-forms/templates/bootstrap.js' %}"></script>
 
-<!-- feedback.js -->
-<script src="{% static 'js/html2canvas.js' %}"></script>
-<script src="{% static 'js/feedback.js' %}"></script>
-
 {# Supplied by django-mustachejs #}
 <script type="text/javascript" src="{% static 'mustache/js/mustache-0.3.0.js' %}"></script>
 {% endblock %}
@@ -44,7 +41,6 @@
 <link type="text/css" href="{% static 'css/ngDialog-theme-plain.min.css' %}" rel="stylesheet" />
 <link type="text/css" href="{% static 'css/ngDialog-theme-default.css' %}" rel="stylesheet" />
 <link type="text/css" href="{% static 'publication-form/publication_form.css' %}" rel="stylesheet" />
-<link type="text/css" href="{% static 'css/feedback.css' %}" rel="stylesheet" />
 
 <!-- Twitter Bootstrap: http://twitter.github.com/bootstrap/ -->
 <link href="{% static 'bootstrap/css/bootstrap.css' %}" rel="stylesheet">
