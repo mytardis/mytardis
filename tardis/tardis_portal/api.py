@@ -1233,6 +1233,7 @@ class UploaderRegistrationRequestResource(MyTardisModelResource):
         filtering = {
             'id': ('exact', ),
             'approved': ('exact', ),
+            'requester_key_fingerprint': ('exact', ),
             'uploader': ALL_WITH_RELATIONS,
             'requester_key_fingerprint': ('exact', ),
         }
