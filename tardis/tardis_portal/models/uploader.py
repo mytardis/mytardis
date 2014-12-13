@@ -71,7 +71,7 @@ class Uploader(models.Model):
     os_platform = models.CharField(max_length=64)
     os_system = models.CharField(max_length=64)
     os_release = models.CharField(max_length=32)
-    os_version = models.CharField(max_length=32)
+    os_version = models.CharField(max_length=128)
     os_username = models.CharField(max_length=64)
 
     machine = models.CharField(max_length=64)
