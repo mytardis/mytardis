@@ -1234,6 +1234,7 @@ class UploaderRegistrationRequestResource(MyTardisModelResource):
             'id': ('exact', ),
             'approved': ('exact', ),
             'uploader': ALL_WITH_RELATIONS,
+            'requester_key_fingerprint': ('exact', ),
         }
         always_return_data = True
 
