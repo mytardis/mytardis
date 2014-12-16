@@ -69,6 +69,7 @@ app.controller('publicationFormCtrl', function ($scope, $log, $http, ngDialog, $
 
     // Opens the publication form modal dialogue
     $scope.openPublicationForm = function () {
+	delete publication_id; // Ensure this is undefined when the form loads
         ngDialog.open({
                           template: '/apps/publication-forms/form/',
                           preCloseCallback: function () {
