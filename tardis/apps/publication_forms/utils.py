@@ -2,6 +2,7 @@ import urllib
 import CifFile
 
 from django.core.mail import send_mail
+from django.conf import settings
 
 from tardis.tardis_portal.models import ExperimentAuthor
 

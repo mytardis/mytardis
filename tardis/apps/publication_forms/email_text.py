@@ -19,7 +19,7 @@ You will receive a notification once his has occurred.''' % pub_title
 def email_pub_approved(pub_title, message=None, doi=None):
     email_message='''Hello!
 Your publication, %s, has been approved for release and will appear online following any embargo conditions.
-''' % publication.title
+''' % pub_title
 
     if doi is not None:
         email_message += '''A DOI has been assigned to this publication (%s) and will become active once your publication is released.
@@ -35,7 +35,7 @@ You may use cite using this DOI immediately.''' % doi
 def email_pub_rejected(pub_title, message=None):
     email_message='''Hello!
 Your publication, %s, is unable to be released. Please contact your system administrator for further information.
-''' % publication.title
+''' % pub_title
 
     if message:
         email_message += ''' ---
@@ -47,7 +47,7 @@ Your publication, %s, is unable to be released. Please contact your system admin
 def email_pub_reverted_to_draft(pub_title, message=None):
     email_message='''Hello!
 Your publication, %s, has been reverted to draft and may now be amended.
-''' % publication.title
+''' % pub_title
 
     if message:
         email_message += ''' ---
@@ -58,7 +58,7 @@ Your publication, %s, has been reverted to draft and may now be amended.
 
 def email_pub_released(pub_title, doi=None):
     email_message = '''Hello,
-Your publication, %s, is now public!''' % pub.title
+Your publication, %s, is now public!''' % pub_title
     if doi:
         email_message += 'You may view your publication here: http://dx.doi.org/%s' % doi
     return email_message
