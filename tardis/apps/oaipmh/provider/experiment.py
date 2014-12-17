@@ -235,7 +235,7 @@ class RifCsExperimentProvider(AbstractExperimentProvider):
                     for ps in ExperimentParameterSet.objects\
                                                 .filter(experiment=experiment,
                                                         schema__namespace=ns)]
-        collectors = experiment.author_experiment_set.exclude(url='')
+        collectors = experiment.experimentauthor_set.exclude(url='')
         return Metadata({
             '_writeMetadata': self._get_experiment_writer_func(),
             'id': experiment.id,
