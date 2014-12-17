@@ -151,4 +151,4 @@ def get_unreleased_pdb_info(pdb_id):
 
 def send_mail_to_authors(publication, subject, message):
     email_addresses = [author.email for author in ExperimentAuthor.objects.filter(experiment=publication)]
-    send_mail(subject, message, 'store.star.help@monash.edu', email_addresses, fail_silently=True)
+    send_mail(subject, message, settings.PUBLICATION_NOTIFICATION_SENDER_EMAIL, email_addresses, fail_silently=True)

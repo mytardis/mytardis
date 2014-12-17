@@ -7,6 +7,7 @@ from tardis.tardis_portal.models import Schema, Experiment, ExperimentParameter,
     ParameterName
 from tardis.apps.publication_forms.doi import DOI_minter
 from utils import PDBCifHelper, send_mail_to_authors
+from email_text import email_pub_released
 
 
 def update_publication_records():
@@ -71,10 +72,7 @@ def process_embargos():
             except ExperimentParameter.DoesNotExist:
                 pass
 
-            email_message = '''Hello,
-Your publication, %s, is now public!''' % pub.title
-            if doi:
-                email_message += 'You may view your publication here: http://dx.doi.org/%s' % doi
+            email_message = email_pub_released(pub.title, doi)
 
             send_mail_to_authors(pub, '[TARDIS] Publication released', email_message)
             pub.save()

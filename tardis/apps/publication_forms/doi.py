@@ -12,7 +12,6 @@ class DOI_minter():
         self.api = Client(settings.MODC_DOI_DEFINITION,
                           location=settings.MODC_DOI_ENDPOINT)
         self.api_id = settings.MODC_DOI_API_ID
-	print(self.api_id)
         self.url_root = settings.MODC_DOI_MINT_URL_ROOT
 
     def mint(self, experiment_id, uri, publisher="Monash University"):

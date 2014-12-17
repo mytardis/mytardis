@@ -18,7 +18,8 @@ from tardis.tardis_portal.auth.localdb_auth import django_user, django_group
 from tardis.tardis_portal.auth import decorators as authz
 from doi import DOI_minter
 from utils import PDBCifHelper, check_pdb_status, get_unreleased_pdb_info, send_mail_to_authors
-
+from email_text import email_pub_requires_authorisation,\
+    email_pub_awaiting_approval, email_pub_approved, email_pub_rejected, email_pub_reverted_to_draft
 
 @login_required
 def index(request):
@@ -272,25 +273,19 @@ def process_form(request):
         pub_admin_email_addresses = [user.email
                                      for user in Group.objects.get(name=settings.PUBLICATION_OWNER_GROUP).user_set.all()
                                      if user.email]
-        message_content = '''Hello!
-A publication has been submitted by %s and requires approval by a publication administrator.
-You may view the publication here: %s
-
-This publication will not be publicly accessible until all embargo conditions are met following approval.
-To approve this publication, please access the publication approvals interface here: %s
-''' % (request.user.username,
-       request.build_absolute_uri('/experiment/view/' + str(publication.id) + '/'),
-       request.build_absolute_uri('/apps/publication-forms/approvals/'))
+        message_content = email_pub_requires_authorisation(request.user.username,
+                                                           request.build_absolute_uri(
+                                                               '/experiment/view/' + str(publication.id) + '/'),
+                                                           request.build_absolute_uri(
+                                                               '/apps/publication-forms/approvals/'))
 
         send_mail('[TARDIS] Publication requires authorisation',
                   message_content,
-                  'store.star.help@monash.edu',
+                  settings.PUBLICATION_NOTIFICATION_SENDER_EMAIL,
                   pub_admin_email_addresses,
                   fail_silently=True)
 
-        message_content = '''Hello!
-Your publication, %s, has been submitted and is awaiting approval by an administrator.
-You will receive a notification once his has occurred.''' % publication.title
+        message_content = email_pub_awaiting_approval(publication.title)
         send_mail_to_authors(publication, '[TARDIS] Publication submitted', message_content)
 
     # Clear the form action and save the state
@@ -532,17 +527,7 @@ def approve_publication(publication, message=None):
         except ExperimentParameter.DoesNotExist:
             pass
 
-        email_message='''Hello!
-Your publication, %s, has been approved for release and will appear online following any embargo conditions.
-''' % publication.title
-
-        if doi is not None:
-            email_message += '''A DOI has been assigned to this publication (%s) and will become active once your publication is released.
-You may use cite using this DOI immediately.''' % doi
-
-        if message:
-            email_message += ''' ---
-%s''' % message
+        email_message = email_pub_approved(publication.title, message, doi)
 
         send_mail_to_authors(publication, '[TARDIS] Publication approved', email_message)
 
@@ -555,13 +540,7 @@ def reject_publication(publication, message=None):
     if publication.is_publication() and not publication.is_publication_draft()\
             and publication.public_access == Experiment.PUBLIC_ACCESS_NONE:
 
-        email_message='''Hello!
-Your publication, %s, is unable to be released. Please contact your system administrator for further information.
-''' % publication.title
-
-        if message:
-            email_message += ''' ---
-%s''' % message
+        email_message = email_pub_rejected(publication.title, message)
 
         send_mail_to_authors(publication, '[TARDIS] Publication rejected', email_message)
 
@@ -611,13 +590,7 @@ def revert_publication_to_draft(publication, message=None):
                     parameter_set.delete()
 
         # Send notification emails -- must be done before authors are deleted
-        email_message='''Hello!
-Your publication, %s, has been reverted to draft and may now be amended.
-''' % publication.title
-
-        if message:
-            email_message += ''' ---
-%s''' % message
+        email_message = email_pub_reverted_to_draft(publication.title, message)
 
         send_mail_to_authors(publication, '[TARDIS] Publication reverted to draft', email_message)
 

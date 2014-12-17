@@ -606,6 +606,8 @@ Rapid Connect.
 '''
 
 ### Publication form settings ###
+PUBLICATION_NOTIFICATION_SENDER_EMAIL = 'store.star.help@monash.edu'
+
 PUBLICATION_OWNER_GROUP='publication-admin'
 
 PUBLICATION_SCHEMA_ROOT = 'http://www.tardis.edu.au/schemas/publication/'
