@@ -246,6 +246,7 @@ INSTALLED_APPS = (
     'tardis.tardis_portal',
     'tardis.tardis_portal.templatetags',
     'tardis.apps.publication_forms',
+#    'tardis.apps.oaipmh',
     'registration',
     'south',
     'django_jasmine',
@@ -650,6 +651,9 @@ PUBLICATION_FORM_MAPPINGS = [{'dataset_schema': r'^http://synchrotron.org.au/mx/
 
 # Put your API_ID for the Monash DOI minting service here:
 MODC_DOI_API_ID = ''
-MODC_DOI_DEFINITION = 'https://vera186.its.monash.edu.au/modc/ws/MintDoiService.wsdl'
+MODC_DOI_API_PASSWORD = ''
+MODC_DOI_MINT_DEFINITION = 'https://vera186.its.monash.edu.au/modc/ws/MintDoiService.wsdl'
+MODC_DOI_ACTIVATE_DEFINITION = 'https://vera186.its.monash.edu.au/modc/ws/ActivateDoiService.wsdl'
+MODC_DOI_DEACTIVATE_DEFINITION = 'https://vera186.its.monash.edu.au/modc/ws/DeactivateDoiService.wsdl'
 MODC_DOI_ENDPOINT = 'https://vera186.its.monash.edu.au/modc/ws/'
 MODC_DOI_MINT_URL_ROOT = 'http://www.monash.edu.au/'

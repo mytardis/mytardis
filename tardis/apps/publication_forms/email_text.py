@@ -58,7 +58,8 @@ Your publication, %s, has been reverted to draft and may now be amended.
 
 def email_pub_released(pub_title, doi=None):
     email_message = '''Hello,
-Your publication, %s, is now public!''' % pub_title
+Your publication, %s, is now public!
+''' % pub_title
     if doi:
         email_message += 'You may view your publication here: http://dx.doi.org/%s' % doi
     return email_message

@@ -5,7 +5,7 @@ import StarFile
 from django.conf import settings
 from tardis.tardis_portal.models import Schema, Experiment, ExperimentParameter, ExperimentParameterSet, \
     ParameterName
-from tardis.apps.publication_forms.doi import DOI_minter
+from tardis.apps.publication_forms.doi import DOI
 from utils import PDBCifHelper, send_mail_to_authors
 from email_text import email_pub_released
 
@@ -66,13 +66,15 @@ def process_embargos():
             pub.public_access = Experiment.PUBLIC_ACCESS_FULL
             doi = None
             try:
-                doi = ExperimentParameter.objects.get(name__name='doi',
-                                                      name__schema__namespace=settings.PUBLICATION_DETAILS_SCHEMA,
-                                                      parameterset__experiment=pub).string_value
+                doi_value = ExperimentParameter.objects.get(name__name='doi',
+                                                            name__schema__namespace=settings.PUBLICATION_DETAILS_SCHEMA,
+                                                            parameterset__experiment=pub).string_value
+                doi = DOI(doi_value)
+                doi.activate()
             except ExperimentParameter.DoesNotExist:
                 pass
 
-            email_message = email_pub_released(pub.title, doi)
+            email_message = email_pub_released(pub.title, doi_value)
 
             send_mail_to_authors(pub, '[TARDIS] Publication released', email_message)
             pub.save()

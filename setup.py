@@ -53,6 +53,7 @@ setup(
         'paramiko',
         'pwgen',
 	'suds',
+        'suds-passworddigest',
     ],
     dependency_links=[
         'https://github.com/grischa/django-tastypie/tarball/testing-mytardis-deployment#egg=django-tastypie-0.9.16-tzfix',  # noqa

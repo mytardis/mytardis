@@ -16,7 +16,7 @@ from tardis.tardis_portal.models import Experiment, Dataset, ObjectACL, \
     ExperimentAuthor, License
 from tardis.tardis_portal.auth.localdb_auth import django_user, django_group
 from tardis.tardis_portal.auth import decorators as authz
-from doi import DOI_minter
+from doi import DOI
 from utils import PDBCifHelper, check_pdb_status, get_unreleased_pdb_info, send_mail_to_authors
 from email_text import email_pub_requires_authorisation,\
     email_pub_awaiting_approval, email_pub_approved, email_pub_rejected, email_pub_reverted_to_draft
@@ -153,7 +153,7 @@ def process_form(request):
                                                           experimentparameterset__schema=synch_epn_schema)\
                                                   .exclude(pk=publication.pk)\
                                                   .distinct()
-            for exp in synch_experiments:
+            for exp in [s for s in synch_experiments if not s.is_publication()]:
                 epn = ExperimentParameter.objects.get(name__name='EPN',
                                                       name__schema=synch_epn_schema,
                                                       parameterset__experiment=exp).string_value
@@ -521,8 +521,9 @@ def approve_publication(publication, message=None):
             doi_param = ExperimentParameter.objects.get(name__name='doi',
                                                         name__schema__namespace=settings.PUBLICATION_DETAILS_SCHEMA,
                                                         parameterset__experiment=publication)
-            doi = DOI_minter().mint(publication.id, 'experiment/view/'+str(publication.id)+'/')
-            doi_param.string_value = doi
+            doi = DOI()
+            doi_param.string_value = doi.mint(publication.id, 'experiment/view/'+str(publication.id)+'/')
+            doi.deactivate()
             doi_param.save()
         except ExperimentParameter.DoesNotExist:
             pass
