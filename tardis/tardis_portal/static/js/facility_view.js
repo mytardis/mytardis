@@ -189,10 +189,12 @@
       return result;
     }
 
-    // Group facilities data by user
+    // Group facilities data by instrument
     function groupByInstrument(data) {
-      // Sort by user ID
-      data.sort(function(a,b) {a.instrument.id - b.instrument.id});
+      // Sort by instrument ID
+      data.sort(function(a,b) {
+	  return a.instrument.id - b.instrument.id;
+      });
 
       var result = [];
       var tmp = {"instrument":data[0].instrument};
