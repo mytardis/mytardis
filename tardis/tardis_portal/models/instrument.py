@@ -15,7 +15,7 @@ class Instrument(models.Model):
         unique_together = ['name', 'facility']
 
     def __unicode__(self):
-        return self.name
+        return '%s, %s' % (self.name, self.facility.name)
 
     def getParameterSets(self, schemaType=None):
         '''Return the instrument parametersets associated with this
