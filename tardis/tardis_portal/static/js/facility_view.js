@@ -158,13 +158,21 @@
     // Group facilities data by user
     function groupByUser(data) {
       // Sort by user ID
-      data.sort(function(a,b) {a.owner.id - b.owner.id});
+	data.sort(function(a,b) {
+	    if (a.owner < b.owner) {
+		return -1;
+	    } else if (a.owner > b.owner) {
+		return 1;
+	    } else {
+		return 0;
+	    }
+	});
       
       var result = [];
       var tmp = {"owner":data[0].owner};
       tmp['datasets']=[];
       for (var i = 0; i < data.length; i++) {
-        if (tmp.owner.id !== data[i].owner.id) {
+        if (tmp.owner !== data[i].owner) {
           result.push(tmp);
           tmp = {"owner":data[i].owner};
           tmp['datasets'] = [];

@@ -114,7 +114,7 @@
                     <td><a href="/experiment/view/{{dataset.parent_experiment.id}}/" target="_blank">{{dataset.parent_experiment.title}}</a></td>
                     <td>{{dataset.description}}</td>
                     <td>{{dataset.instrument.name}}</td>
-                    <td>{{dataset.parent_experiment.created_time | date:'dd-MM-yyyy hh:mm'}}</td>
+                    <td>{{dataset.parent_experiment.created_time | date:'yyyy-MM-dd h:mma'}}</td>
                     <td>
                         <a class="btn btn-small btn-info" ng-click="toggleFileList(dataset.id)">
                             <i class="icon-list-alt"></i>
@@ -137,7 +137,7 @@
                                 <td>{{file.filename}}</td>
                                 <td>{{file.size | filesize}}</td>
                                 <td>
-                                    <span ng-show="file.created_time">{{file.created_time | date:'dd-MM-yyyy hh:mm'}}</span>
+                                    <span ng-show="file.created_time">{{file.created_time | date:'yyyy-MM-dd h:mma'}}</span>
                                     <span ng-hide="file.created_time">unknown</span>
                                 </td>
                             </tr>
@@ -165,7 +165,7 @@
                     <td>{{dataset.owner}}</td>
                     <td><a href="/experiment/view/{{dataset.parent_experiment.id}}/" target="_blank">{{dataset.parent_experiment.title}}</a></td>
                     <td>{{dataset.description}}</td>
-                    <td>{{dataset.parent_experiment.created_time | date:'dd-MM-yyyy hh:mm'}}</td>
+                    <td>{{dataset.parent_experiment.created_time | date:'yyyy-MM-dd h:mma'}}</td>
                     <td>
                         <a class="btn btn-small btn-info" ng-click="toggleFileList(dataset.id)">
                             <i class="icon-list-alt"></i>
@@ -188,7 +188,7 @@
                                 <td>{{file.filename}}</td>
                                 <td>{{file.size | filesize}}</td>
                                 <td>
-                                    <span ng-show="file.created_time">{{file.created_time | date:'dd-MM-yyyy hh:mm'}}</span>
+                                    <span ng-show="file.created_time">{{file.created_time | date:'yyyy-MM-dd h:mma'}}</span>
                                     <span ng-hide="file.created_time">unknown</span>
                                 </td>
                             </tr>
@@ -216,7 +216,7 @@
                     <td><a href="/experiment/view/{{dataset.parent_experiment.id}}/" target="_blank">{{dataset.parent_experiment.title}}</a></td>
                     <td>{{dataset.description}}</td>
                     <td>{{dataset.instrument.name}}</td>
-                    <td>{{dataset.parent_experiment.created_time | date:'dd-MM-yyyy hh:mm'}}</td>
+                    <td>{{dataset.parent_experiment.created_time | date:'yyyy-MM-dd h:mma'}}</td>
                     <td>
                         <a class="btn btn-small btn-info" ng-click="toggleFileList(dataset.id)">
                             <i class="icon-list-alt"></i>
@@ -239,7 +239,7 @@
                                 <td>{{file.filename}}</td>
                                 <td>{{file.size | filesize}}</td>
                                 <td>
-                                    <span ng-show="file.created_time">{{file.created_time | date:'dd-MM-yyyy hh:mm'}}</span>
+                                    <span ng-show="file.created_time">{{file.created_time | date:'yyyy-MM-dd h:mma'}}</span>
                                     <span ng-hide="file.created_time">unknown</span>
                                 </td>
                             </tr>
