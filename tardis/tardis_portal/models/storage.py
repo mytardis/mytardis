@@ -82,7 +82,7 @@ class StorageBox(models.Model):
             except StorageBox.DoesNotExist:
                 return StorageBox.create_local_box(location)
         try:
-            return StorageBox.objects.all()[0]
+            return StorageBox.objects.all().order_by('id')[0]
         except (DatabaseError, IndexError):
             default_location = getattr(settings, "DEFAULT_STORAGE_BASE_DIR",
                                        '/var/lib/mytardis/store')
