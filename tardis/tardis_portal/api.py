@@ -548,7 +548,7 @@ class ExperimentResource(MyTardisModelResource):
     def dehydrate(self, bundle):
         exp = bundle.obj
         authors = [{'name': a.author, 'url': a.url}
-                   for a in exp.author_experiment_set.all()]
+                   for a in exp.experimentauthor_set.all()]
         bundle.data['authors'] = authors
         lic = exp.license
         if lic is not None:
