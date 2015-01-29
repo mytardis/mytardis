@@ -120,9 +120,15 @@
                             <i class="icon-list-alt"></i>
                             <span ng-hide="isFileListVisible(dataset.id)">Show</span><span
                                 ng-show="isFileListVisible(dataset.id)">Hide</span> file list
-                        </a> <span class="badge" ng-class="(!dataset.datafiles.length)?'badge-important':''"><ng-pluralize
-                            count="dataset.datafiles.length"
-                            when="{'0': 'no files', 'one': '1 file', 'other': '{} files'}"></ng-pluralize> / {{dataset.size | filesize}}</span>
+                        </a> <span class="badge" ng-class="(dataset.verified_datafiles_count<dataset.datafiles.length||!dataset.datafiles.length)?'badge-important':''">
+                                 <ng-pluralize count="dataset.verified_datafiles_count"
+                                     when="{'0': 'no verified files', 'one': '1 verified file', 'other': '{} verified files'}"></ng-pluralize>
+                                 ({{dataset.verified_datafiles_size | filesize}})
+                                     / 
+                                 <ng-pluralize count="dataset.datafiles.length"
+                                     when="{'0': 'no files', 'one': '1 file', 'other': '{} files'}"></ng-pluralize>
+                                 ({{dataset.size | filesize}})
+                             </span>
                     </td>
                 </tr>
                 <tr ng-repeat-end ng-show="isFileListVisible(dataset.id)">
@@ -132,6 +138,7 @@
                                 <th>File name</th>
                                 <th>Size</th>
                                 <th>Created</th>
+                                <th>Verified?</th>
                             </tr>
                             <tr ng-repeat="file in dataset.datafiles">
                                 <td>{{file.filename}}</td>
@@ -140,6 +147,7 @@
                                     <span ng-show="file.created_time">{{file.created_time | date:'yyyy-MM-dd h:mma'}}</span>
                                     <span ng-hide="file.created_time">unknown</span>
                                 </td>
+                                <td>{{ file.verified }}</td>
                             </tr>
                         </table>
                     </td>
@@ -183,6 +191,7 @@
                                 <th>File name</th>
                                 <th>Size</th>
                                 <th>Created</th>
+                                <th>Verified?</th>
                             </tr>
                             <tr ng-repeat="file in dataset.datafiles">
                                 <td>{{file.filename}}</td>
@@ -191,6 +200,7 @@
                                     <span ng-show="file.created_time">{{file.created_time | date:'yyyy-MM-dd h:mma'}}</span>
                                     <span ng-hide="file.created_time">unknown</span>
                                 </td>
+                                <td>{{ file.verified }}</td>
                             </tr>
                         </table>
                     </td>
@@ -234,6 +244,7 @@
                                 <th>File name</th>
                                 <th>Size</th>
                                 <th>Created</th>
+                                <th>Verified?</th>
                             </tr>
                             <tr ng-repeat="file in dataset.datafiles">
                                 <td>{{file.filename}}</td>
@@ -242,6 +253,7 @@
                                     <span ng-show="file.created_time">{{file.created_time | date:'yyyy-MM-dd h:mma'}}</span>
                                     <span ng-hide="file.created_time">unknown</span>
                                 </td>
+                                <td>{{ file.verified }}</td>
                             </tr>
                         </table>
                     </td>

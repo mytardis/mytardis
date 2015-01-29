@@ -6,6 +6,7 @@ from django.db import models
 from django.db.models import Q
 from django.core.files import File
 from django.core.urlresolvers import reverse
+from django.core.exceptions import ObjectDoesNotExist
 
 from celery.contrib.methods import task
 
@@ -55,6 +56,9 @@ class DataFile(models.Model):
     @property
     def file_object(self):
         dfos = DataFileObject.objects.filter(datafile=self)
+        if len(dfos) == 0:
+            raise ObjectDoesNotExist('No DataFileObject exists for datafile '
+                                     '"%s"' % str(self))
         return self.file_objects.get(
             storage_box=dfos[0].storage_box).file_object
 
@@ -260,7 +264,8 @@ class DataFile(models.Model):
 
     @property
     def verified(self):
-        return all([obj.verified for obj in self.file_objects.all()])
+        return all([obj.verified for obj in self.file_objects.all()]) \
+            and len(self.file_objects.all()) > 0
 
     def verify(self, reverify=False):
         return all([obj.verify() for obj in self.file_objects.all()

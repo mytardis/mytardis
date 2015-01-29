@@ -64,6 +64,7 @@ from django.contrib.auth.decorators import login_required, permission_required
 from django.core.urlresolvers import reverse
 from django.core.paginator import Paginator, InvalidPage, EmptyPage
 from django.core.exceptions import PermissionDenied
+from django.core.exceptions import ObjectDoesNotExist
 from django.forms.models import model_to_dict
 from django.views.decorators.http import require_POST
 from django.views.decorators.cache import never_cache
@@ -422,13 +423,38 @@ def fetch_facility_data(request, facility_id, start_index, end_index):
         owners = parent_experiment.get_owners()
         datafiles = []
         dataset_size = 0
+        verified_datafiles_count = 0
+        verified_datafiles_size = 0
         for datafile in datafile_objects:
+            if datafile.verified:
+                verified = "Yes"
+		verified_datafiles_count += 1
+                verified_datafiles_size += int(datafile.size)
+            else:
+                verified = "No"
+                try:
+                    if datafile.file_object and \
+                            datafile.file_object.size < int(datafile.size):
+                        verified = "No (%s of %s bytes uploaded)" \
+                            % ('{:,}'.format(datafile.file_object.size),
+                               '{:,}'.format(int(datafile.size)))
+                except ObjectDoesNotExist:
+                    # No DataFileObject exists for this datafile.
+	            verified = "No (0 of %s bytes uploaded)" \
+                        % '{:,}'.format(int(datafile.size))
+                except IOError, e:
+                    if 'No such file or directory' in str(e):
+                        verified = "No (0 of %s bytes uploaded)" \
+                            % '{:,}'.format(int(datafile.size))
+                    else:
+                        raise
             datafiles.append({
                 "id": datafile.id,
                 "filename": datafile.filename,
                 "size": int(datafile.size),
                 "created_time": datetime_to_us(datafile.created_time),
-                "modification_time": datetime_to_us(datafile.modification_time)
+                "modification_time": datetime_to_us(datafile.modification_time),
+                "verified": verified,
             })
             dataset_size = dataset_size + int(datafile.size)
         obj = {
@@ -442,6 +468,8 @@ def fetch_facility_data(request, facility_id, start_index, end_index):
             "institution": parent_experiment.institution_name,
             "datafiles": datafiles,
             "size": dataset_size,
+            "verified_datafiles_count": verified_datafiles_count,
+            "verified_datafiles_size": verified_datafiles_size,
             "owner": ', '.join([o.username for o in owners]),
             "instrument": {
                 "id": instrument.id,
