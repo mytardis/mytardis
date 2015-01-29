@@ -170,4 +170,5 @@ class UploaderRegistrationRequest(models.Model):
             self.uploader.interface + " | " + \
             self.requester_key_fingerprint + " | " + \
             self.requester_name + " | " + \
-            str(self.request_time)
+            str(self.request_time) + " | " + \
+            ("Approved" if self.approved else "Not approved")
