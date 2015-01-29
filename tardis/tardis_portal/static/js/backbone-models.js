@@ -243,10 +243,10 @@ var MyTardis = (function(){
 		    Mustache.TEMPLATES['tardis_portal/badges/datafile_count'],
 		    {
 			'title': _.sprintf(
-			    "Contains %s file%s",
-			    this.file_count,
-			    this.file_count == 1 ? '' : 's'),
-			'count': this.file_count
+			    "Contains %s verified file%s",
+			    this.verified_file_count,
+			    this.verified_file_count == 1 ? '' : 's'),
+			'count': this.verified_file_count
 		    },
 		    Mustache.TEMPLATES
 		);
@@ -257,8 +257,8 @@ var MyTardis = (function(){
 		    Mustache.TEMPLATES['tardis_portal/badges/size'],
 		    {
 			'title': _.sprintf("Dataset size is ",
-					   this.size_human_readable),
-			'label': this.size_human_readable
+					   this.verified_size_human_readable),
+			'label': this.verified_size_human_readable
 		    },
 		    Mustache.TEMPLATES
 		);

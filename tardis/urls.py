@@ -155,7 +155,7 @@ ajax_urls = patterns(
     (r'^dataset_metadata/(?P<dataset_id>\d+)/$', 'retrieve_dataset_metadata'),
     (r'^experiment_metadata/(?P<experiment_id>\d+)/$',
         'retrieve_experiment_metadata'),
-    (r'^datafile_list/(?P<dataset_id>\d+)/$', 'retrieve_datafile_list'),
+    (r'^verified_datafile_list/(?P<dataset_id>\d+)/$', 'retrieve_verified_datafile_list'),
     (r'^user_list/$', 'retrieve_user_list'),
     (r'^group_list/$', 'retrieve_group_list'),
     (r'^group_list_by_user/$', 'retrieve_group_list_by_user'),

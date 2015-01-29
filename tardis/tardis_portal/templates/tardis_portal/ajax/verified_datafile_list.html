@@ -1,28 +1,28 @@
 {% load capture %}
 {% capture as paginator_block %}
-{% if datafiles.paginator.num_pages > 1 %}
+{% if verified_datafiles.paginator.num_pages > 1 %}
   <div class="pagination">
     <ul style="margin-left: auto; margin-right: auto; display: table;">
-      {% if datafiles.has_previous %}
+      {% if verified_datafiles.has_previous %}
       <li>
-        <a class="pagelink" href="/ajax/datafile_list/{{dataset.id}}/?page={{ datafiles.previous_page_number }}&{{params}}">&laquo;</a>
+        <a class="pagelink" href="/ajax/verified_datafile_list/{{dataset.id}}/?page={{ verified_datafiles.previous_page_number }}&{{params}}">&laquo;</a>
       </li>
       {% else %}
       <li class="disabled"><a href="#">&laquo;</a></li>
       {% endif %}
 
-      {% for pagenum in datafiles.paginator.page_range %}
-      <li{% if datafiles.number == pagenum %} class="active"{% endif %}>
+      {% for pagenum in verified_datafiles.paginator.page_range %}
+      <li{% if verified_datafiles.number == pagenum %} class="active"{% endif %}>
         <a class="pagelink"
-           href="/ajax/datafile_list/{{dataset.id}}/?page={{pagenum}}&{{params}}">
+           href="/ajax/verified_datafile_list/{{dataset.id}}/?page={{pagenum}}&{{params}}">
            {{pagenum}}
         </a>
       </li>
       {% endfor %}
 
-      {% if datafiles.has_next %}
+      {% if verified_datafiles.has_next %}
       <li>
-        <a class="pagelink" href="/ajax/datafile_list/{{dataset.id}}/?page={{ datafiles.next_page_number }}&{{params}}">&raquo;</a>
+        <a class="pagelink" href="/ajax/verified_datafile_list/{{dataset.id}}/?page={{ verified_datafiles.next_page_number }}&{{params}}">&raquo;</a>
       </li>
       {% else %}
       <li class="disabled"><a href="#">&raquo;</a></li>
@@ -35,7 +35,7 @@
 
 {{ paginator_block }}
 
-<p id="filename-search" class="js-required" data-action="/ajax/datafile_list/{{dataset.id}}/" data-method="GET" style="padding: 5px 0 5px 10px; border: 1px solid #DDDDDD;">
+<p id="filename-search" class="js-required" data-action="/ajax/verified_datafile_list/{{dataset.id}}/" data-method="GET" style="padding: 5px 0 5px 10px; border: 1px solid #DDDDDD;">
   <input id="filename-search-text" style="width: 95%; font-size: 120%; margin-top: 5px;"
       title='Enter part or all of a filename, then press enter. e.g. Enter "175" to show only files containing "175" in their filename.'
       placeholder='Search: Enter part or all of a filename, then press enter.'
@@ -67,7 +67,7 @@ Select: <a class="dataset_selector_all btn btn-mini">All</a> / <a class="dataset
 </thead>
 {% endif %}
 <tbody>
-{% for datafile in datafiles.object_list %}
+{% for datafile in verified_datafiles.object_list %}
 <tr class="datafile search_match_file">
   <td>
     {% if has_download_permissions %}
@@ -104,7 +104,7 @@ Select: <a class="dataset_selector_all btn btn-mini">All</a> / <a class="dataset
             data-createdDate = '{{ datafile.created_time|date:"d-m-Y" }}'
             data-imgId = "{{ datafile.id }}"
             data-fileName = "{{ datafile.filename }}"
-            data-imgAmount = "{{ datafiles.object_list|length }}"
+            data-imgAmount = "{{ verified_datafiles.object_list|length }}"
 		    style="display: block; margin-left: 0; margin-right: 0;"
 		    onerror="$(this).hide()"
             id= "imgIcon-{{ forloop.counter }}"

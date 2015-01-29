@@ -35,17 +35,17 @@ def dataset_tiles(experiment, include_thumbnails):
                 'count': count,
             })
 
-        def dataset_size_badge(self):
-            if hasattr(self, 'size'):
-                return dataset_size_badge(size=self.size)
+        def dataset_verified_size_badge(self):
+            if hasattr(self, 'verified_size'):
+                return dataset_verified_size_badge(size=self.verified_size)
             ds = Dataset.objects.get(id=self.id)
-            return dataset_size_badge(ds)
+            return dataset_verified_size_badge(ds)
 
-        def dataset_datafiles_badge(self):
-            if hasattr(self, 'datafiles'):
-                return dataset_datafiles_badge(count=len(self.datafiles))
+        def dataset_verified_datafiles_badge(self):
+            if hasattr(self, 'verified_datafiles'):
+                return dataset_verified_datafiles_badge(count=len(self.verified_datafiles))
             ds = Dataset.objects.get(id=self.id)
-            return dataset_datafiles_badge(ds)
+            return dataset_verified_datafiles_badge(ds)
 
 
     class DatasetsInfo(object):
@@ -70,24 +70,24 @@ def dataset_experiments_badge(dataset):
     })
 
 @register.filter
-def dataset_datafiles_badge(dataset=None, count=None):
+def dataset_verified_datafiles_badge(dataset=None, count=None):
     """
     Displays an badge with the number of datafiles for this experiment
     """
     if count is None:
-        count = dataset.datafile_set.count()
+        count = len(dataset.get_verified_datafiles())
     return render_mustache('tardis_portal/badges/datafile_count', {
-        'title': "%d file%s" % (count, pluralize(count)),
+        'title': "%d verified file%s" % (count, pluralize(count)),
         'count': count,
     })
 
 @register.filter
-def dataset_size_badge(dataset=None, size=None):
+def dataset_verified_size_badge(dataset=None, size=None):
     """
-    Displays an badge with the total size of the files in this experiment
+    Displays an badge with the total size of the verified files in this dataset
     """
     if size is None:
-        size = filesizeformat(dataset.get_size())
+        size = filesizeformat(dataset.get_verified_size())
     else:
         size = filesizeformat(size)
     return render_mustache('tardis_portal/badges/size', {

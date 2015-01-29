@@ -131,6 +131,12 @@ class Experiment(models.Model):
         from .datafile import DataFile
         return DataFile.objects.filter(dataset__experiments=self)
 
+    def get_verified_datafiles(self):
+        from .datafile import DataFile
+        return [df for df in
+                DataFile.objects.filter(dataset__experiments=self)
+                if df.verified]
+
     def get_download_urls(self):
         urls = {}
         view = 'tardis.tardis_portal.download.streaming_download_experiment'
