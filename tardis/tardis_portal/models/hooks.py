@@ -29,10 +29,10 @@ def publish_public_expt_rifcs(experiment):
 
 @receiver(post_save, sender=ExperimentAuthor)
 @receiver(post_delete, sender=ExperimentAuthor)
-def post_save_author_experiment(sender, **kwargs):
-    author_experiment = kwargs['instance']
+def post_save_experimentauthor(sender, **kwargs):
+    experimentauthor = kwargs['instance']
     try:
-        publish_public_expt_rifcs(author_experiment.experiment)
+        publish_public_expt_rifcs(experimentauthor.experiment)
     except Experiment.DoesNotExist:
         # If for some reason the experiment is missing, then ignore update
         pass

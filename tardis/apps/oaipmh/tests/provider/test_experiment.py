@@ -34,10 +34,10 @@ def _create_experiment(user, bad):
                             created_by=user)
     experiment.public_access = Experiment.PUBLIC_ACCESS_METADATA
     experiment.save()
-    experiment.author_experiment_set.create(order=0,
+    experiment.experimentauthor_set.create(order=0,
                                             author="John Cleese",
                                             url="http://nla.gov.au/nla.party-1")
-    experiment.author_experiment_set.create(order=1,
+    experiment.experimentauthor_set.create(order=1,
                                             author="Michael Palin",
                                             url="http://nla.gov.au/nla.party-2")
     psm = ParameterSetManager(parentObject=experiment, schema=SCHEMA_URI)

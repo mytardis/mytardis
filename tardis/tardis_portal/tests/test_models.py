@@ -106,7 +106,7 @@ class ModelTestCase(TestCase):
                                        order=50)
         ae3.save()
 
-        authors = exp.author_experiment_set.all()
+        authors = exp.experimentauthor_set.all()
 
         # confirm that there are 2 authors
         self.assertEqual(len(authors), 3)

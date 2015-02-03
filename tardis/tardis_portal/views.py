@@ -701,7 +701,7 @@ def experiment_description(request, experiment_id):
                 {'name': experiment.title,
                  'link': experiment.get_absolute_url()}]
 
-    c['authors'] = experiment.author_experiment_set.all()
+    c['authors'] = experiment.experimentauthor_set.all()
 
     c['datafiles'] = \
         DataFile.objects.filter(dataset__experiments=experiment_id)
@@ -1374,7 +1374,7 @@ def search_quick(request):
                 experiments.filter(
                     institution_name__icontains=request.GET['quicksearch']) | \
                 experiments.filter(
-                    author_experiment__author__name__icontains=request.GET[
+                    experimentauthor__author__name__icontains=request.GET[
                         'quicksearch']) | \
                 experiments.filter(
                     pdbid__pdbid__icontains=request.GET['quicksearch'])
@@ -1490,7 +1490,7 @@ def __getFilteredExperiments(request, searchFilterData):
 
     if searchFilterData['creator'] != '':
         experiments = experiments.filter(
-            author_experiment__author__icontains=searchFilterData['creator'])
+            experimentauthor__author__icontains=searchFilterData['creator'])
 
     date = searchFilterData['date']
     if date is not None:
