@@ -370,3 +370,15 @@ def upload_auth(f):
     wrap.__doc__ = f.__doc__
     wrap.__name__ = f.__name__
     return wrap
+
+
+def require_publication_admin(f):
+    def wrap(request, *args, **kwargs):
+        if not request.user.groups.filter(name=settings.PUBLICATION_OWNER_GROUP).exists():
+            return return_response_error(request)
+        return f(request, *args, **kwargs)
+
+    wrap.__doc__ = f.__doc__
+    wrap.__name__ = f.__name__
+
+    return wrap

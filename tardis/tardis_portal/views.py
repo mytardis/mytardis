@@ -37,6 +37,7 @@ views.py
 
 """
 import time
+import re
 
 from tardis.tardis_portal.auth.decorators import \
     has_experiment_write, has_dataset_write
@@ -64,6 +65,7 @@ from django.contrib.auth.decorators import login_required, permission_required
 from django.core.urlresolvers import reverse
 from django.core.paginator import Paginator, InvalidPage, EmptyPage
 from django.core.exceptions import PermissionDenied
+from django.core.mail import EmailMessage
 from django.forms.models import model_to_dict
 from django.views.decorators.http import require_POST
 from django.views.decorators.cache import never_cache
@@ -560,7 +562,8 @@ def view_experiment(request, experiment_id,
         namespaces = [ps.schema.namespace
                       for ps in experiment.getParameterSets()]
         for ns, view_fn in settings.EXPERIMENT_VIEWS:
-            if ns in namespaces:
+            ns_match = next((n for n in namespaces if re.match(ns, n)), None)
+            if ns_match:
                 x = view_fn.split(".")
                 mod_name, fn_name = (".".join(x[:-1]), x[-1])
                 try:
@@ -633,6 +636,11 @@ def view_experiment(request, experiment_id,
 
     c['apps'] = zip(appurls, appnames)
     return HttpResponse(render_response_index(request, template_name, c))
+
+
+@authz.experiment_access_required
+def view_publication(request, experiment_id):
+    return HttpResponse(render_response_index(request, 'tardis_portal/view_publication.html'))
 
 
 def _add_protocols_and_organizations(request, collection_object, c):
@@ -886,8 +894,8 @@ def dataset_json(request, experiment_id=None, dataset_id=None):
             if can_update():
                 return HttpResponseMethodNotAllowed(allow="GET PUT")
             return HttpResponseMethodNotAllowed(allow="GET")
-        # Cannot remove if this is the last experiment
-        if not can_delete() or dataset.experiments.count() < 2:
+        # Cannot remove if this is the last experiment or if it is being removed from a publication
+        if not can_delete() or dataset.experiments.count() < 2 or experiment.is_publication():
             return HttpResponseForbidden()
         dataset.experiments.remove(experiment)
         dataset.save()
@@ -3379,3 +3387,18 @@ def rcauth(request):
         del request.session['jws']
         django_logout(request)
         raise PermissionDenied  # Error: Security cookie has expired
+
+
+def feedback(request):
+    if request.method == 'POST':
+        feedback_data = json.loads(request.POST['data'])
+        message = feedback_data[0]['Issue']
+        img_base64 = feedback_data[1]
+        img = img_base64.replace('data:image/png;base64,', '').decode('base64')
+        admin_emails = [v for k,v in settings.ADMINS]
+        email = EmailMessage('[TARDIS] User feedback', message, 'store.star.help@monash.edu', admin_emails)
+        email.attach('screenshot.png', img, 'image/png')
+        email.send()
+        return HttpResponse('OK')
+    else:
+        return redirect('/')

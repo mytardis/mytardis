@@ -36,11 +36,13 @@ class Experiment(models.Model):
     """
 
     PUBLIC_ACCESS_NONE = 1
+    PUBLIC_ACCESS_EMBARGO = 25
     PUBLIC_ACCESS_METADATA = 50
     PUBLIC_ACCESS_FULL = 100
 
     PUBLIC_ACCESS_CHOICES = (
         (PUBLIC_ACCESS_NONE, 'No public access (hidden)'),
+        (PUBLIC_ACCESS_EMBARGO, 'Ready to be released pending embargo expiry'),
         (PUBLIC_ACCESS_METADATA, 'Public Metadata only (no data file access)'),
         (PUBLIC_ACCESS_FULL, 'Public'),
     )
@@ -76,6 +78,14 @@ class Experiment(models.Model):
         super(Experiment, self).save(*args, **kwargs)
         from .hooks import publish_public_expt_rifcs
         publish_public_expt_rifcs(self)
+
+    def is_publication_draft(self):
+        return self.experimentparameterset_set.filter(
+            schema__namespace=settings.PUBLICATION_DRAFT_SCHEMA).count()
+
+    def is_publication(self):
+        return self.experimentparameterset_set.filter(
+            schema__namespace__startswith=settings.PUBLICATION_SCHEMA_ROOT).count()
 
     def getParameterSets(self, schemaType=None):
         """Return the experiment parametersets associated with this
@@ -183,7 +193,7 @@ class Experiment(models.Model):
         if not hasattr(self, 'id'):
             return False
 
-        if self.public_access != self.PUBLIC_ACCESS_NONE:
+        if self.public_access >= self.PUBLIC_ACCESS_METADATA:
             return True
 
     def _has_change_perm(self, user_obj):
@@ -202,10 +212,14 @@ class Experiment(models.Model):
         return None
 
 
-class Author_Experiment(models.Model):
+class ExperimentAuthor(models.Model):
 
     experiment = models.ForeignKey(Experiment)
     author = models.CharField(max_length=255)
+    institution = models.CharField(max_length=255,
+                                   blank=True)
+    email = models.CharField(max_length=255,
+                             blank=True)
     order = models.PositiveIntegerField()
     url = models.URLField(
         max_length=2000,
@@ -213,7 +227,7 @@ class Author_Experiment(models.Model):
         help_text="URL identifier for the author")
 
     def save(self, *args, **kwargs):
-        super(Author_Experiment, self).save(*args, **kwargs)
+        super(ExperimentAuthor, self).save(*args, **kwargs)
         try:
             from .hooks import publish_public_expt_rifcs
             publish_public_expt_rifcs(self.experiment)

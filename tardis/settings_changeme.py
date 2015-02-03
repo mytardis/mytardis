@@ -1,8 +1,9 @@
+
 import djcelery
 from datetime import timedelta
 from os import path
 
-DEBUG = False
+DEBUG = True
 
 TEMPLATE_DEBUG = DEBUG
 
@@ -28,6 +29,10 @@ DATABASES = {
 
 # Celery queue
 BROKER_URL = 'django://'
+# BROKER_URL = 'amqp://guest@localhost//'
+# CELERY_RESULT_BACKEND = 'amqp'
+CELERY_RESULT_BACKEND='djcelery.backends.database:DatabaseBackend'
+
 '''
 use django:, add kombu.transport.django to INSTALLED_APPS
 or use redis: install redis separately and add the following to a
@@ -240,6 +245,8 @@ INSTALLED_APPS = (
     'tardis.template.loaders',
     'tardis.tardis_portal',
     'tardis.tardis_portal.templatetags',
+    'tardis.apps.publication_forms',
+#    'tardis.apps.oaipmh',
     'registration',
     'south',
     'django_jasmine',
@@ -295,15 +302,15 @@ AUTHENTICATION_BACKENDS = (
 
 # Email Configuration
 
-EMAIL_PORT = 587
+EMAIL_PORT = 25
 
-EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_HOST = 'localhost'
 
-EMAIL_HOST_USER = 'bob@bobmail.com'
+#EMAIL_HOST_USER = 'bob@bobmail.com'
 
-EMAIL_HOST_PASSWORD = 'bob'
+#EMAIL_HOST_PASSWORD = 'bob'
 
-EMAIL_USE_TLS = True
+#EMAIL_USE_TLS = True
 
 # Post Save Filters
 # POST_SAVE_FILTERS = [
@@ -419,6 +426,10 @@ CELERYBEAT_SCHEDULE = {
     "verify-files": {
         "task": "tardis_portal.verify_dfos",
         "schedule": timedelta(seconds=300)
+    },
+    "update-publication-records": {
+        "task": "tardis_portal.update_publication_records",
+        "schedule": timedelta(seconds=10)
     },
 }
 
@@ -594,3 +605,55 @@ RAPID_CONNECT_CONFIG['aud'] = 'https://example.com/rc/'
 '''Public facing URL that accepts the HTTP/HTTPS POST request from
 Rapid Connect.
 '''
+
+### Publication form settings ###
+PUBLICATION_NOTIFICATION_SENDER_EMAIL = 'store.star.help@monash.edu'
+
+PUBLICATION_OWNER_GROUP='publication-admin'
+
+PUBLICATION_SCHEMA_ROOT = 'http://www.tardis.edu.au/schemas/publication/'
+
+# This schema holds bibliographic details including authors and
+# acknowledgements
+PUBLICATION_DETAILS_SCHEMA = PUBLICATION_SCHEMA_ROOT + 'details/'
+
+# Any experiment with this schema is treated as a draft publication
+# This schema will be created automatically if not present
+PUBLICATION_DRAFT_SCHEMA = PUBLICATION_SCHEMA_ROOT+'draft/'
+
+
+# Form mappings
+# PUBLICATION_FORM_MAPPINGS is a list of dictionaries that contain the following parameters:
+# dataset_schema: the namespace of the schema that triggers this form to be used
+# publication_schema: the namspace of the schema that should be added to the publication
+# form_template: a URL to the form template (usually static HTML)
+#PUBLICATION_FORM_MAPPINGS = [{'dataset_schema': 'http://example.com/a_dataset_schema',
+#                              'publication_schema': 'http://example.com/a_publication_schema',
+#                              'form_template': '/static/publication-form/form-template.html'}]
+# Note: dataset_schema is treated as a regular expression
+
+# The PDB publication schema is used for any experiments that reference a PDB structure
+# It is defined here as a setting because it is used both for the publication form
+# and for fetching data from PDB.org and must always match.
+PDB_PUBLICATION_SCHEMA_ROOT = 'http://synchrotron.org.au/pub/mx/pdb/'
+PDB_SEQUENCE_PUBLICATION_SCHEMA = PDB_PUBLICATION_SCHEMA_ROOT+'sequence/'
+PDB_CITATION_PUBLICATION_SCHEMA = PDB_PUBLICATION_SCHEMA_ROOT+'citation/'
+PDB_REFRESH_INTERVAL = timedelta(days=7)
+
+PUBLICATION_FORM_MAPPINGS = [{'dataset_schema': r'^http://synchrotron.org.au/mx/',
+                              'publication_schema': PDB_PUBLICATION_SCHEMA_ROOT,
+                              'form_template': '/static/publication-form/mx-pdb-template.html'},
+                             {'dataset_schema': r'^http://synchrotron.org.au/mx/',
+                              'publication_schema': 'http://synchrotron.org.au/pub/mx/dataset/',
+                              'form_template': '/static/publication-form/mx-dataset-description-template.html'}]
+
+#EXPERIMENT_VIEWS = [(r'^'+PUBLICATION_SCHEMA_NAMESPACE_ROOT, 'tardis.tardis_portal.views.view_publication')]
+
+# Put your API_ID for the Monash DOI minting service here:
+MODC_DOI_API_ID = ''
+MODC_DOI_API_PASSWORD = ''
+MODC_DOI_MINT_DEFINITION = 'https://vera186.its.monash.edu.au/modc/ws/MintDoiService.wsdl'
+MODC_DOI_ACTIVATE_DEFINITION = 'https://vera186.its.monash.edu.au/modc/ws/ActivateDoiService.wsdl'
+MODC_DOI_DEACTIVATE_DEFINITION = 'https://vera186.its.monash.edu.au/modc/ws/DeactivateDoiService.wsdl'
+MODC_DOI_ENDPOINT = 'https://vera186.its.monash.edu.au/modc/ws/'
+MODC_DOI_MINT_URL_ROOT = 'http://www.monash.edu.au/'

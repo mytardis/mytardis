@@ -350,10 +350,10 @@ class DatasetForm(forms.ModelForm):
         model = models.Dataset
         exclude = ('experiments', 'immutable')
 
-class Author_Experiment(forms.ModelForm):
+class ExperimentAuthor(forms.ModelForm):
 
     class Meta:
-        model = models.Author_Experiment
+        model = models.ExperimentAuthor
         exclude = ('experiment', )
 
 
@@ -409,7 +409,7 @@ class ExperimentForm(forms.ModelForm):
 
         # fix up experiment form
         if instance and not data:
-                authors = instance.author_experiment_set.all()
+                authors = instance.experimentauthor_set.all()
                 self.initial['authors'] = ', '.join([self._format_author(a)
                                                      for a in authors])
 
@@ -449,7 +449,7 @@ class ExperimentForm(forms.ModelForm):
                 try:
                     author_str, url = url_match.group(1, 2)
                     # Check that it really is a URL
-                    url = Author_Experiment().fields['url'].clean(url)
+                    url = ExperimentAuthor().fields['url'].clean(url)
                     return {'order': order,
                             'author': author_str.strip(),
                             'url': url}
@@ -469,12 +469,12 @@ class ExperimentForm(forms.ModelForm):
                 o_ae = self.author_experiments[data['order']]
                 # Update the author form for that position with the new data
                 self.author_experiments[data['order']] = \
-                    Author_Experiment(data=data,
+                    ExperimentAuthor(data=data,
                                       instance=o_ae.instance)
             except IndexError:
                 # Or create an author for that position
-                o_ae = Author_Experiment(data=data,
-                                         instance=models.Author_Experiment())
+                o_ae = ExperimentAuthor(data=data,
+                                         instance=models.ExperimentAuthor())
                 self.author_experiments.append(o_ae)
 
     def save(self, commit=True):
@@ -483,7 +483,7 @@ class ExperimentForm(forms.ModelForm):
 
         # fix up experiment form
         if self.instance:
-            authors = self.instance.author_experiment_set.all()
+            authors = self.instance.experimentauthor_set.all()
             for author in authors:
                 author.delete()
 
