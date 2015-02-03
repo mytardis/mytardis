@@ -5,7 +5,7 @@ from django.dispatch import receiver
 from tardis.tardis_portal.tasks import verify_dfo
 
 from .datafile import DataFileObject
-from .experiment import Experiment, Author_Experiment
+from .experiment import Experiment, ExperimentAuthor
 from .parameters import ExperimentParameter, ExperimentParameterSet
 
 import logging
@@ -27,12 +27,12 @@ def publish_public_expt_rifcs(experiment):
                      % experiment.id)
 
 
-@receiver(post_save, sender=Author_Experiment)
-@receiver(post_delete, sender=Author_Experiment)
-def post_save_author_experiment(sender, **kwargs):
-    author_experiment = kwargs['instance']
+@receiver(post_save, sender=ExperimentAuthor)
+@receiver(post_delete, sender=ExperimentAuthor)
+def post_save_experimentauthor(sender, **kwargs):
+    experimentauthor = kwargs['instance']
     try:
-        publish_public_expt_rifcs(author_experiment.experiment)
+        publish_public_expt_rifcs(experimentauthor.experiment)
     except Experiment.DoesNotExist:
         # If for some reason the experiment is missing, then ignore update
         pass

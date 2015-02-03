@@ -81,7 +81,7 @@ class ModelTestCase(TestCase):
                                 )
         exp.save()
 
-        models.Author_Experiment(experiment=exp,
+        models.ExperimentAuthor(experiment=exp,
                                  author='nigel',
                                  order=0).save()
 
@@ -91,22 +91,22 @@ class ModelTestCase(TestCase):
                                 )
         exp.save()
 
-        ae1 = models.Author_Experiment(experiment=exp,
+        ae1 = models.ExperimentAuthor(experiment=exp,
                                        author='steve',
                                        order=100)
         ae1.save()
 
-        ae2 = models.Author_Experiment(experiment=exp,
+        ae2 = models.ExperimentAuthor(experiment=exp,
                                        author='russell',
                                        order=1)
         ae2.save()
 
-        ae3 = models.Author_Experiment(experiment=exp,
+        ae3 = models.ExperimentAuthor(experiment=exp,
                                        author='uli',
                                        order=50)
         ae3.save()
 
-        authors = exp.author_experiment_set.all()
+        authors = exp.experimentauthor_set.all()
 
         # confirm that there are 2 authors
         self.assertEqual(len(authors), 3)

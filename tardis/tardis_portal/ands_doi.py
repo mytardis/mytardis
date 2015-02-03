@@ -158,6 +158,6 @@ class DOIXMLProvider(object):
         c['title'] = ex.title
         c['institution_name'] = ex.institution_name
         c['publication_year'] = date.today().year
-        c['creator_names'] = [a.author for a in ex.author_experiment_set.all()]
+        c['creator_names'] = [a.author for a in ex.experimentauthor_set.all()]
         doi_xml = render_to_string(template, context_instance=c)
         return doi_xml

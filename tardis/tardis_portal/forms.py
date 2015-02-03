@@ -350,10 +350,10 @@ class DatasetForm(forms.ModelForm):
         model = models.Dataset
         exclude = ('experiments', 'immutable')
 
-class Author_Experiment(forms.ModelForm):
+class ExperimentAuthor(forms.ModelForm):
 
     class Meta:
-        model = models.Author_Experiment
+        model = models.ExperimentAuthor
         exclude = ('experiment', )
 
 
@@ -382,13 +382,13 @@ class ExperimentForm(forms.ModelForm):
         def save_m2m(self):
             """
             {'experiment': experiment,
-            'author_experiments': author_experiments,
+            'experiment_authors': experiment_authors,
             'authors': authors,
             'datasets': datasets,
             'datafiles': datafiles}
             """
             self.data['experiment'].save()
-            for ae in self.data['author_experiments']:
+            for ae in self.data['experiment_authors']:
                 ae.experiment = self.data['experiment']
                 print ae
                 ae.save()
@@ -409,18 +409,18 @@ class ExperimentForm(forms.ModelForm):
 
         # fix up experiment form
         if instance and not data:
-                authors = instance.author_experiment_set.all()
+                authors = instance.experimentauthor_set.all()
                 self.initial['authors'] = ', '.join([self._format_author(a)
                                                      for a in authors])
 
-        self.author_experiments = []
+        self.experiment_authors = []
 
         if data:
             self._update_authors(data)
 
         self.fields['authors'] = \
             MultiValueCommaSeparatedField([author.fields['author'] for
-                                        author in self.author_experiments],
+                                        author in self.experiment_authors],
                 widget=CommaSeparatedInput(attrs={
                     'placeholder': "eg. Howard W. Florey, Brian Schmidt "+
                                    "(http://nla.gov.au/nla.party-1480342)"}),
@@ -449,7 +449,7 @@ class ExperimentForm(forms.ModelForm):
                 try:
                     author_str, url = url_match.group(1, 2)
                     # Check that it really is a URL
-                    url = Author_Experiment().fields['url'].clean(url)
+                    url = ExperimentAuthor().fields['url'].clean(url)
                     return {'order': order,
                             'author': author_str.strip(),
                             'url': url}
@@ -466,16 +466,16 @@ class ExperimentForm(forms.ModelForm):
         for data in self._parse_authors(data):
             try:
                 # Get the current author for that position
-                o_ae = self.author_experiments[data['order']]
+                o_ae = self.experiment_authors[data['order']]
                 # Update the author form for that position with the new data
-                self.author_experiments[data['order']] = \
-                    Author_Experiment(data=data,
+                self.experiment_authors[data['order']] = \
+                    ExperimentAuthor(data=data,
                                       instance=o_ae.instance)
             except IndexError:
                 # Or create an author for that position
-                o_ae = Author_Experiment(data=data,
-                                         instance=models.Author_Experiment())
-                self.author_experiments.append(o_ae)
+                o_ae = ExperimentAuthor(data=data,
+                                         instance=models.ExperimentAuthor())
+                self.experiment_authors.append(o_ae)
 
     def save(self, commit=True):
         # remove m2m field before saving
@@ -483,21 +483,21 @@ class ExperimentForm(forms.ModelForm):
 
         # fix up experiment form
         if self.instance:
-            authors = self.instance.author_experiment_set.all()
+            authors = self.instance.experimentauthor_set.all()
             for author in authors:
                 author.delete()
 
         experiment = super(ExperimentForm, self).save(commit)
 
         authors = []
-        author_experiments = []
+        experiment_authors = []
 
-        for ae in self.author_experiments:
+        for ae in self.experiment_authors:
             o_ae = ae.save(commit=commit)
-            author_experiments.append(o_ae)
+            experiment_authors.append(o_ae)
 
         return self.FullExperiment({'experiment': experiment,
-                                    'author_experiments': author_experiments,
+                                    'experiment_authors': experiment_authors,
                                     'authors': authors})
 
     def is_valid(self):
@@ -515,7 +515,7 @@ class ExperimentForm(forms.ModelForm):
             return not bool(self.errors)
 
         # TODO since this is a compound field, this should merge the errors
-        for ae in self.author_experiments:
+        for ae in self.experiment_authors:
             for name, error in ae.errors.items():
                 if isinstance(ae.fields[name], ModelChoiceField):
                     continue
