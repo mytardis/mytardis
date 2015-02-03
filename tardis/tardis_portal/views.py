@@ -387,8 +387,9 @@ def fetch_facility_data_count(request, facility_id):
         instrument__facility__manager_group__user=request.user,
         instrument__facility__id=facility_id
     ).count()
-    return HttpResponse(json.dumps({"facility_data_count": dataset_object_count}),
-                        mimetype='application/json')
+    return HttpResponse(
+        json.dumps({'facility_data_count': dataset_object_count}),
+        mimetype='application/json')
 
 
 @never_cache
