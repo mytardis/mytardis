@@ -18,11 +18,14 @@ class Command(BaseCommand):
         except DatabaseError as e:
             self.stdout.write('Database error encountered!')
             self.stdout.write(
-                'Make sure to run from tardis root (e.g. ./bin/django create_pub_schemas) and ensure your database is properly configured')
+                'Make sure to run from tardis root (e.g. ./bin/django '
+                'create_pub_schemas) and ensure your database is '
+                'properly configured')
             raise e
 
     def _setup_PUBLICATION_SCHEMA_ROOT(self, namespace):
-        schema = Schema(namespace=namespace, name='Publication', hidden=True, immutable=True)
+        schema = Schema(namespace=namespace, name='Publication', hidden=True,
+                        immutable=True)
         schema.save()
         ParameterName(schema=schema,
                       name='embargo',
@@ -49,14 +52,14 @@ class Command(BaseCommand):
                       immutable=True,
                       order=4).save()
 
-
     def _setup_PUBLICATION_DRAFT_SCHEMA(self, namespace):
-        schema = Schema(namespace=namespace, name='Draft Publication', hidden=True, immutable=True)
+        schema = Schema(namespace=namespace, name='Draft Publication',
+                        hidden=True, immutable=True)
         schema.save()
 
-
     def _setup_PDB_PUBLICATION_SCHEMA_ROOT(self, namespace):
-        schema = Schema(namespace=namespace, name='Protein Data Bank', hidden=False, immutable=True)
+        schema = Schema(namespace=namespace, name='Protein Data Bank',
+                        hidden=False, immutable=True)
         schema.save()
         ParameterName(schema=schema,
                       name='pdb-id',
@@ -109,7 +112,8 @@ class Command(BaseCommand):
                       order=7).save()
 
     def _setup_PDB_SEQUENCE_PUBLICATION_SCHEMA(self, namespace):
-        schema = Schema(namespace=namespace, name='Sequence Data', hidden=False, immutable=True)
+        schema = Schema(namespace=namespace, name='Sequence Data',
+                        hidden=False, immutable=True)
         schema.save()
         ParameterName(schema=schema,
                       name='expression-system',
@@ -134,7 +138,8 @@ class Command(BaseCommand):
                       order=3).save()
 
     def _setup_PDB_CITATION_PUBLICATION_SCHEMA(self, namespace):
-        schema = Schema(namespace=namespace, name='Citation', hidden=False, immutable=True)
+        schema = Schema(namespace=namespace, name='Citation', hidden=False,
+                        immutable=True)
         schema.save()
         ParameterName(schema=schema,
                       name='title',
@@ -174,7 +179,8 @@ class Command(BaseCommand):
                       order=6).save()
 
     def _setup_PUBLICATION_DETAILS_SCHEMA(self, namespace):
-        schema = Schema(namespace=namespace, name='Publication Details', hidden=False, immutable=True)
+        schema = Schema(namespace=namespace, name='Publication Details',
+                        hidden=False, immutable=True)
         schema.save()
         ParameterName(schema=schema,
                       name='doi',
@@ -189,20 +195,29 @@ class Command(BaseCommand):
                       immutable=True,
                       order=2).save()
 
-
     def handle(self, *args, **options):
         self.stdout.write('Checking for required django settings...')
 
         settings_ok = True
-        required_settings = [('PUBLICATION_OWNER_GROUP', 'All publications are owned by this group')]
+        required_settings = [('PUBLICATION_OWNER_GROUP',
+                              'All publications are owned by this group')]
         required_schemas = [
-            ('PUBLICATION_SCHEMA_ROOT', 'A hidden schema that contians data required to manage the publication'),
-            ('PUBLICATION_DRAFT_SCHEMA', 'Stores the form state and is deleted once the form is completed'),
-            ('PUBLICATION_DETAILS_SCHEMA', 'Contains standard bibliographic details, such as DOI and acknowledgements'),
-            ('PDB_PUBLICATION_SCHEMA_ROOT', 'Standard protein crystallographic parameters'),
+            ('PUBLICATION_SCHEMA_ROOT',
+             'A hidden schema that contians data required to manage the '
+             'publication'),
+            ('PUBLICATION_DRAFT_SCHEMA',
+             'Stores the form state and is deleted once the form is '
+             'completed'),
+            ('PUBLICATION_DETAILS_SCHEMA',
+             'Contains standard bibliographic details, such as DOI and '
+             'acknowledgements'),
+            ('PDB_PUBLICATION_SCHEMA_ROOT',
+             'Standard protein crystallographic parameters'),
             ('PDB_SEQUENCE_PUBLICATION_SCHEMA',
-             'Protein sequence data that might repeat depending on how many entities are present'),
-            ('PDB_CITATION_PUBLICATION_SCHEMA', 'Citation data that is extracted from the PDB record')]
+             'Protein sequence data that might repeat depending on how many '
+             'entities are present'),
+            ('PDB_CITATION_PUBLICATION_SCHEMA',
+             'Citation data that is extracted from the PDB record')]
 
         for setting, description in required_settings + required_schemas:
             if not hasattr(settings, setting):
@@ -220,7 +235,9 @@ class Command(BaseCommand):
                                 ('PDB_REFRESH_INTERVAL', '')]
         for setting, description in recommended_settings:
             if not hasattr(settings, setting):
-                self.stdout.write('Warning: ' + setting + ' setting not found. You might encounter problems later!')
+                self.stdout.write(
+                    'Warning: ' + setting +
+                    ' setting not found. You might encounter problems later!')
                 if description:
                     self.stdout.write(' -- ' + description)
 
@@ -234,7 +251,8 @@ class Command(BaseCommand):
                 getattr(self, '_setup_' + schema)(getattr(settings, schema))
                 self.stdout.write('Done.')
 
-        self.stdout.write('Checking if the publication owner group exists... ', ending='')
+        self.stdout.write('Checking if the publication owner group exists... ',
+                          ending='')
         try:
             Group.objects.get(name=settings.PUBLICATION_OWNER_GROUP)
             self.stdout.write('It does.')
@@ -242,7 +260,8 @@ class Command(BaseCommand):
             self.stdout.write('It doesnt, so creating.')
             pub_owner_group = Group(name=settings.PUBLICATION_OWNER_GROUP)
             pub_owner_group.save()
-            self.stdout.write('Group created. Adding all superusers... ', ending='')
+            self.stdout.write('Group created. Adding all superusers... ',
+                              ending='')
             superusers = User.objects.filter(is_superuser=True)
             pub_owner_group.user_set.add(*superusers)
             self.stdout.write('Superusers added.')

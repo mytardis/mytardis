@@ -3,7 +3,8 @@ from datetime import datetime
 import StarFile
 
 from django.conf import settings
-from tardis.tardis_portal.models import Schema, Experiment, ExperimentParameter, ExperimentParameterSet, \
+from tardis.tardis_portal.models import Schema, Experiment, \
+    ExperimentParameter, ExperimentParameterSet, \
     ParameterName
 from tardis.apps.publication_forms.doi import DOI
 from utils import PDBCifHelper, send_mail_to_authors
@@ -17,10 +18,11 @@ def update_publication_records():
 
 def has_pdb_embargo(publication):
     try:
-        has_embargo = ExperimentParameter.objects.get(name__name='pdb-embargo',
-                                                      name__schema__namespace=settings.PUBLICATION_SCHEMA_ROOT,
-                                                      parameterset__experiment=publication) \
-                          .string_value.lower() == 'true'
+        has_embargo = ExperimentParameter.objects.get(
+            name__name='pdb-embargo',
+            name__schema__namespace=settings.PUBLICATION_SCHEMA_ROOT,
+            parameterset__experiment=publication
+        ).string_value.lower() == 'true'
     except ExperimentParameter.DoesNotExist:
         has_embargo = False
 
@@ -29,10 +31,10 @@ def has_pdb_embargo(publication):
 
 def get_release_date(publication):
     try:
-        release_date = ExperimentParameter.objects.get(name__name='embargo',
-                                                       name__schema__namespace=settings.PUBLICATION_SCHEMA_ROOT,
-                                                       parameterset__experiment=publication) \
-            .datetime_value
+        release_date = ExperimentParameter.objects.get(
+            name__name='embargo',
+            name__schema__namespace=settings.PUBLICATION_SCHEMA_ROOT,
+            parameterset__experiment=publication).datetime_value
     except ExperimentParameter.DoesNotExist:
         release_date = datetime.now()
 
@@ -41,8 +43,8 @@ def get_release_date(publication):
 
 def process_embargos():
     # Restricted publications are defined as those having public access
-    # levels less than PUBLIC_ACCESS_PENDING_AUTH and the PUBLICATION_SCHEMA_ROOT
-    # schema, but not in draft.
+    # levels less than PUBLIC_ACCESS_PENDING_AUTH and the
+    # PUBLICATION_SCHEMA_ROOT schema, but not in draft.
     PUB_SCHEMA = settings.PUBLICATION_SCHEMA_ROOT
     PUB_SCHEMA_DRAFT = settings.PUBLICATION_DRAFT_SCHEMA
     restricted_publications = Experiment.objects.filter(
@@ -66,9 +68,10 @@ def process_embargos():
             pub.public_access = Experiment.PUBLIC_ACCESS_FULL
             doi = None
             try:
-                doi_value = ExperimentParameter.objects.get(name__name='doi',
-                                                            name__schema__namespace=settings.PUBLICATION_DETAILS_SCHEMA,
-                                                            parameterset__experiment=pub).string_value
+                doi_value = ExperimentParameter.objects.get(
+                    name__name='doi',
+                    name__schema__namespace=settings.PUBLICATION_DETAILS_SCHEMA,
+                    parameterset__experiment=pub).string_value
                 doi = DOI(doi_value)
                 doi.activate()
             except ExperimentParameter.DoesNotExist:
@@ -76,7 +79,8 @@ def process_embargos():
 
             email_message = email_pub_released(pub.title, doi_value)
 
-            send_mail_to_authors(pub, '[TARDIS] Publication released', email_message)
+            send_mail_to_authors(pub, '[TARDIS] Publication released',
+                                 email_message)
             pub.save()
 
 
@@ -90,14 +94,18 @@ def populate_pdb_pub_records():
         .exclude(experimentparameterset__schema__namespace=PUB_SCHEMA_DRAFT)\
         .distinct()
 
-    last_update_parameter_name = ParameterName.objects.get(name='pdb-last-sync',
-                                                           schema__namespace=PUB_SCHEMA)
+    last_update_parameter_name = ParameterName.objects.get(
+        name='pdb-last-sync',
+        schema__namespace=PUB_SCHEMA)
 
-    def add_if_missing(parameterset, name, string_value=None, numerical_value=None, datetime_value=None):
+    def add_if_missing(parameterset, name, string_value=None,
+                       numerical_value=None, datetime_value=None):
         try:
-            param = ExperimentParameter.objects.get(name__name=name, parameterset=parameterset)
+            param = ExperimentParameter.objects.get(
+                name__name=name, parameterset=parameterset)
         except ExperimentParameter.DoesNotExist:
-            param_name = ParameterName.objects.get(name=name, schema=parameterset.schema)
+            param_name = ParameterName.objects.get(
+                name=name, schema=parameterset.schema)
             param = ExperimentParameter(name=param_name,
                                         parameterset=parameterset)
             param.string_value = string_value
@@ -115,7 +123,8 @@ def populate_pdb_pub_records():
                 parameterset__experiment=pub
             )
             last_update = pdb_last_update_parameter.datetime_value
-            needs_update = last_update + settings.PDB_REFRESH_INTERVAL < datetime.now()
+            needs_update = last_update + settings.PDB_REFRESH_INTERVAL \
+                < datetime.now()
 
         except ExperimentParameter.DoesNotExist:
             # if the PDB last update time parameter doesn't exist,
@@ -124,15 +133,15 @@ def populate_pdb_pub_records():
             needs_update = True
             pdb_last_update_parameter = None
 
-
         # If an update needs to happen...
         if needs_update:
             # 1. get the PDB info
             pdb_parameter_set = ExperimentParameterSet.objects.get(
                 schema__namespace=settings.PDB_PUBLICATION_SCHEMA_ROOT,
                 experiment=pub)
-            pdb = ExperimentParameter.objects.get(name__name='pdb-id',
-                                                  parameterset=pdb_parameter_set)
+            pdb = ExperimentParameter.objects.get(
+                name__name='pdb-id',
+                parameterset=pdb_parameter_set)
             pdb_id = pdb.string_value
             # 1a. cosmetic change of case for PDB ID, if entered incorrectly
             if pdb_id != pdb_id.upper():
@@ -144,12 +153,18 @@ def populate_pdb_pub_records():
                 pdb = PDBCifHelper(pdb_id)
 
                 # 3. insert all standard pdb parameters
-                add_if_missing(pdb_parameter_set, 'url', string_value=pdb.get_pdb_url())
-                add_if_missing(pdb_parameter_set, 'resolution', numerical_value=pdb.get_resolution())
-                add_if_missing(pdb_parameter_set, 'r-value', numerical_value=pdb.get_obs_r_value())
-                add_if_missing(pdb_parameter_set, 'r-free', numerical_value=pdb.get_free_r_value())
-                add_if_missing(pdb_parameter_set, 'space-group', string_value=pdb.get_spacegroup())
-                add_if_missing(pdb_parameter_set, 'unit-cell', string_value=pdb.get_unit_cell())
+                add_if_missing(pdb_parameter_set, 'url',
+                               string_value=pdb.get_pdb_url())
+                add_if_missing(pdb_parameter_set, 'resolution',
+                               numerical_value=pdb.get_resolution())
+                add_if_missing(pdb_parameter_set, 'r-value',
+                               numerical_value=pdb.get_obs_r_value())
+                add_if_missing(pdb_parameter_set, 'r-free',
+                               numerical_value=pdb.get_free_r_value())
+                add_if_missing(pdb_parameter_set, 'space-group',
+                               string_value=pdb.get_spacegroup())
+                add_if_missing(pdb_parameter_set, 'unit-cell',
+                               string_value=pdb.get_unit_cell())
 
                 # 4. insert sequence info (lazy checking)
                 pdb_seq_parameter_sets = ExperimentParameterSet.objects.filter(
@@ -163,9 +178,12 @@ def populate_pdb_pub_records():
                                 namespace=settings.PDB_SEQUENCE_PUBLICATION_SCHEMA),
                             experiment=pub)
                         seq_parameter_set.save()
-                        add_if_missing(seq_parameter_set, 'organism', string_value=seq['organism'])
-                        add_if_missing(seq_parameter_set, 'expression-system', string_value=seq['expression_system'])
-                        add_if_missing(seq_parameter_set, 'sequence', string_value=seq['sequence'])
+                        add_if_missing(seq_parameter_set, 'organism',
+                                       string_value=seq['organism'])
+                        add_if_missing(seq_parameter_set, 'expression-system',
+                                       string_value=seq['expression_system'])
+                        add_if_missing(seq_parameter_set, 'sequence',
+                                       string_value=seq['sequence'])
 
                 # 5. insert/update citation info (aggressive)
                 ExperimentParameterSet.objects.filter(
@@ -173,19 +191,28 @@ def populate_pdb_pub_records():
                     experiment=pub).delete()
                 for citation in pdb.get_citations():
                     cit_parameter_set = ExperimentParameterSet(
-                        schema=Schema.objects.get(namespace=settings.PDB_CITATION_PUBLICATION_SCHEMA),
+                        schema=Schema.objects.get(
+                            namespace=settings.PDB_CITATION_PUBLICATION_SCHEMA),
                         experiment=pub)
                     cit_parameter_set.save()
-                    add_if_missing(cit_parameter_set, 'title', string_value=citation['title'])
-                    add_if_missing(cit_parameter_set, 'authors', string_value='; '.join(citation['authors']))
-                    add_if_missing(cit_parameter_set, 'journal', string_value=citation['journal'])
-                    add_if_missing(cit_parameter_set, 'volume', string_value=citation['volume'])
+                    add_if_missing(cit_parameter_set, 'title',
+                                   string_value=citation['title'])
+                    add_if_missing(cit_parameter_set, 'authors',
+                                   string_value='; '.join(citation['authors']))
+                    add_if_missing(cit_parameter_set, 'journal',
+                                   string_value=citation['journal'])
+                    add_if_missing(cit_parameter_set, 'volume',
+                                   string_value=citation['volume'])
                     add_if_missing(cit_parameter_set, 'page-range',
-                                   string_value='-'.join([citation['page_first'], citation['page_last']]))
-                    add_if_missing(cit_parameter_set, 'doi', string_value='http://dx.doi.org/' + citation['doi'])
+                                   string_value='-'.join(
+                                       [citation['page_first'],
+                                        citation['page_last']]))
+                    add_if_missing(cit_parameter_set, 'doi',
+                                   string_value='http://dx.doi.org/' +
+                                   citation['doi'])
 
-                # 6. Remove the PDB embargo if set, since the update has occurred
-                # and therefore the PDB must have been relased.
+                # 6. Remove the PDB embargo if set, since the update has
+                # occurred and therefore the PDB must have been relased.
                 try:
                     ExperimentParameter.objects.get(name__name='pdb-embargo',
                                                     parameterset__schema__namespace=settings.PUBLICATION_SCHEMA_ROOT) \
@@ -195,15 +222,19 @@ def populate_pdb_pub_records():
 
                 # 7. Set the last update parameter to be now
                 if pdb_last_update_parameter is None:
-                    pub_parameter_set = ExperimentParameterSet(schema=Schema.objects.get(namespace=PUB_SCHEMA),
-                                                       experiment=pub)
+                    pub_parameter_set = ExperimentParameterSet(
+                        schema=Schema.objects.get(namespace=PUB_SCHEMA),
+                        experiment=pub)
                     pub_parameter_set.save()
-                    pdb_last_update_parameter = ExperimentParameter(name=last_update_parameter_name,
-                                                                    parameterset=pub_parameter_set,
-                                                                    datetime_value=datetime.now())
+                    pdb_last_update_parameter = ExperimentParameter(
+                        name=last_update_parameter_name,
+                        parameterset=pub_parameter_set,
+                        datetime_value=datetime.now())
                 else:
                     pdb_last_update_parameter.datetime_value = datetime.now()
                 pdb_last_update_parameter.save()
 
             except StarFile.StarError:
-                continue  # PDB is either unavailable or invalid (maybe notify the user somehow?)
+                # PDB is either unavailable or invalid
+                # (maybe notify the user somehow?)
+                continue

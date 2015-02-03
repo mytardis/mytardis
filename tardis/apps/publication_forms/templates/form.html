@@ -161,11 +161,11 @@
 	      ng-model="formData.acknowledgements">
     </textarea>
     <h3>Select a license</h3>
-    
+
     <div class="alert" ng-show="formData.selectedLicenseId == -1">No licenses have been configured.</div>
     <select ng-model="formData.selectedLicenseId" ng-options="l.id as l.name for l in formData.licenses"
             style="width:100%"></select>
-    
+
     <div ng-hide="formData.selectedLicenseId == -1" class="well">
       <h4>{{ formData.selectedLicense.name }}</h4>
       <img ng-src="{{formData.selectedLicense.image}}" title="{{formData.selectedLicense.name}}"

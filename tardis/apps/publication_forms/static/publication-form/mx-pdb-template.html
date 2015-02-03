@@ -11,8 +11,7 @@
 
         <div class="controls">
             <input tardis-form-field parameter-name="pdb-id" type="text"
-                   ng-change="performPDBSearch(formData.extraInfo[$index]['pdb-id']); formData.extraInfo[$index]['pdb-id']=formData.extraInfo[$index]['pdb-id'].toUpperCase()"/><img
-                src="/static/publication-form/spinner.gif" ng-show="pdbSearching"/>
+                   ng-change="performPDBSearch(formData.extraInfo[$index]['pdb-id']); formData.extraInfo[$index]['pdb-id']=formData.extraInfo[$index]['pdb-id'].toUpperCase()"/><img src="/static/publication-form/spinner.gif" ng-show="pdbSearching"/>
         </div>
     </div>
     <div class="control-group" ng-init="s = 'http://www.tardis.edu.au/schemas/publication/'"

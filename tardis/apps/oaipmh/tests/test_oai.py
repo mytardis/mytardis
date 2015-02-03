@@ -33,11 +33,11 @@ def _create_test_data():
     experiment.license = license_
     experiment.save()
     experiment.experimentauthor_set.create(order=0,
-                                            author="John Cleese",
-                                            url="http://nla.gov.au/nla.party-1")
+                                           author="John Cleese",
+                                           url="http://nla.gov.au/nla.party-1")
     experiment.experimentauthor_set.create(order=1,
-                                            author="Michael Palin",
-                                            url="http://nla.gov.au/nla.party-2")
+                                           author="Michael Palin",
+                                           url="http://nla.gov.au/nla.party-2")
     acl = ObjectACL(content_object=experiment,
                     pluginId='django_user',
                     entityId=str(user.id),

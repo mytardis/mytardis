@@ -8,7 +8,8 @@ from tardis.tardis_portal.models import ExperimentAuthor
 
 from BeautifulSoup import BeautifulSoup
 
-class CifHelper:
+
+class CifHelper(object):
     def __init__(self, cif_url):
         self.cf = CifFile.ReadCif(cif_url)
 
@@ -24,17 +25,20 @@ class CifHelper:
 
 class PDBCifHelper(CifHelper):
     def __init__(self, pdb_id):
-        CifHelper.__init__(self, 'http://www.pdb.org/pdb/files/' + urllib.quote(pdb_id) + '.cif')
+        super(PDBCifHelper, self).__init__(
+            'http://www.pdb.org/pdb/files/' + urllib.quote(pdb_id) + '.cif')
         self.pdb_id = pdb_id
 
     def __getitem__(self, key):
-        return CifHelper.get_cif_file_object(self)[self.pdb_id][key]
+        return super(PDBCifHelper, self).get_cif_file_object()[
+            self.pdb_id][key]
 
     def get_pdb_id(self):
         return self['_entry.id']
 
     def get_pdb_url(self):
-        return 'http://www.pdb.org/pdb/search/structidSearch.do?structureId=' + urllib.quote(self.get_pdb_id())
+        return 'http://www.pdb.org/pdb/search/structidSearch.do?structureId=' \
+            + urllib.quote(self.get_pdb_id())
 
     def get_obs_r_value(self):
         return float(self['_refine.ls_R_factor_obs'])
@@ -56,7 +60,7 @@ class PDBCifHelper(CifHelper):
         angle_b = self['_cell.angle_beta']
         angle_c = self['_cell.angle_gamma']
         return '(a = %s, b = %s, c = %s),(a = %s, b = %s, c = %s)' % (
-        length_a, length_b, length_c, angle_a, angle_b, angle_c)
+            length_a, length_b, length_c, angle_a, angle_b, angle_c)
 
     def get_citations(self):
         ids = self.as_list(self['_citation.id'])
@@ -67,12 +71,14 @@ class PDBCifHelper(CifHelper):
         pages_last = self.as_list(self['_citation.page_last'])
         years = self.as_list(self['_citation.year'])
         dois = self.as_list(self['_citation.pdbx_database_id_DOI'])
-        author_citation_ids = self.as_list(self['_citation_author.citation_id'])
+        author_citation_ids = self.as_list(
+            self['_citation_author.citation_id'])
         author_citation_names = self.as_list(self['_citation_author.name'])
 
         citations = []
         for pub_id, title, journal, volume, page_first, page_last, year, doi in \
-                zip(ids, titles, journals, volumes, pages_first, pages_last, years, dois):
+            zip(ids, titles, journals, volumes,
+                pages_first, pages_last, years, dois):
             citation = {'_id': pub_id,
                         'title': title,
                         'journal': journal,
@@ -83,7 +89,8 @@ class PDBCifHelper(CifHelper):
                         'doi': doi}
 
             authors = []
-            for auth_pub_id, auth_name in zip(author_citation_ids, author_citation_names):
+            for auth_pub_id, auth_name in zip(
+                    author_citation_ids, author_citation_names):
                 if auth_pub_id == pub_id:
                     authors.append(auth_name)
             citation['authors'] = authors
@@ -94,17 +101,21 @@ class PDBCifHelper(CifHelper):
     def get_sequence_info(self):
         try:
             seqs_id = self.as_list(self['_entity_src_gen.entity_id'])
-            seqs_org = self.as_list(self['_entity_src_gen.pdbx_gene_src_scientific_name'])
-            seqs_exp_sys = self.as_list(self['_entity_src_gen.pdbx_host_org_scientific_name'])
+            seqs_org = self.as_list(
+                self['_entity_src_gen.pdbx_gene_src_scientific_name'])
+            seqs_exp_sys = self.as_list(
+                self['_entity_src_gen.pdbx_host_org_scientific_name'])
 
             seqs_code_id = self.as_list(self['_entity_poly.entity_id'])
-            seqs_code = self.as_list(self['_entity_poly.pdbx_seq_one_letter_code'])
+            seqs_code = self.as_list(
+                self['_entity_poly.pdbx_seq_one_letter_code'])
 
             seqs_name_id = self.as_list(self['_entity_name_com.entity_id'])
             seqs_name = self.as_list(self['_entity_name_com.name'])
 
             sequences = []
-            for seq_id, seq_org, seq_exp_sys in zip(seqs_id, seqs_org, seqs_exp_sys):
+            for seq_id, seq_org, seq_exp_sys in zip(
+                    seqs_id, seqs_org, seqs_exp_sys):
                 seq = {'organism': seq_org,
                        'expression_system': seq_exp_sys}
 
@@ -115,7 +126,8 @@ class PDBCifHelper(CifHelper):
 
                 for seq_code_id, seq_code in zip(seqs_code_id, seqs_code):
                     if seq_code_id == seq_id:
-                        seq['sequence'] = seq_code  # .replace(' ', '').replace('\n','')
+                        seq['sequence'] = seq_code
+                        # .replace(' ', '').replace('\n','')
                         break
 
                 sequences.append(seq)
@@ -126,8 +138,9 @@ class PDBCifHelper(CifHelper):
 
 
 def check_pdb_status(pdb_id):
-    status_page = urllib.urlopen('http://www.rcsb.org/pdb/rest/idStatus?structureId=' +
-                                 urllib.quote(pdb_id.upper())).read()
+    status_page = urllib.urlopen(
+        'http://www.rcsb.org/pdb/rest/idStatus?structureId=' +
+        urllib.quote(pdb_id.upper())).read()
     soup = BeautifulSoup(status_page)
     if soup.record:
         pdb_status = soup.record['status']
@@ -138,8 +151,9 @@ def check_pdb_status(pdb_id):
 
 
 def get_unreleased_pdb_info(pdb_id):
-    info_page = urllib.urlopen('http://www.rcsb.org/pdb/rest/getUnreleased?structureId=' +
-                               urllib.quote(pdb_id.upper())).read()
+    info_page = urllib.urlopen(
+        'http://www.rcsb.org/pdb/rest/getUnreleased?structureId=' +
+        urllib.quote(pdb_id.upper())).read()
     soup = BeautifulSoup(info_page)
 
     info = {}
@@ -151,5 +165,8 @@ def get_unreleased_pdb_info(pdb_id):
 
 
 def send_mail_to_authors(publication, subject, message):
-    email_addresses = [author.email for author in ExperimentAuthor.objects.filter(experiment=publication)]
-    send_mail(subject, message, settings.PUBLICATION_NOTIFICATION_SENDER_EMAIL, email_addresses, fail_silently=True)
+    email_addresses = [author.email for author in
+                       ExperimentAuthor.objects.filter(experiment=publication)]
+    send_mail(subject, message,
+              settings.PUBLICATION_NOTIFICATION_SENDER_EMAIL,
+              email_addresses, fail_silently=True)
