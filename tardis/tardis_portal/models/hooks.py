@@ -2,8 +2,6 @@ from django.conf import settings
 from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
 
-from tardis.tardis_portal.tasks import verify_dfo
-
 from .datafile import DataFileObject
 from .experiment import Experiment, ExperimentAuthor
 from .parameters import ExperimentParameter, ExperimentParameterSet
@@ -12,7 +10,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-### RIF-CS hooks ###
+# ## RIF-CS hooks ## #
 def publish_public_expt_rifcs(experiment):
     try:
         providers = settings.RIFCS_PROVIDERS
@@ -57,8 +55,8 @@ def post_save_experiment(sender, **kwargs):
     publish_public_expt_rifcs(experiment)
 
 
-@receiver(post_save, sender=Experiment)  # THIS MUST BE DEFINED BEFORE
-                                         # GENERATING RIF-CS
+# THIS MUST BE DEFINED BEFORE GENERATING RIF-CS
+@receiver(post_save, sender=Experiment)
 def ensure_doi_exists(sender, **kwargs):
     experiment = kwargs['instance']
     if settings.DOI_ENABLE and \
@@ -68,7 +66,7 @@ def ensure_doi_exists(sender, **kwargs):
         doi_service = DOIService(experiment)
         doi_service.get_or_mint_doi(doi_url)
 
-### ApiKey hooks
+# ## ApiKey hooks
 if getattr(settings, 'AUTOGENERATE_API_KEY', False):
     from django.contrib.auth.models import User
     from tastypie.models import create_api_key

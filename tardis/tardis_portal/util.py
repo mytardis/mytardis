@@ -114,20 +114,20 @@ def render_public_access_badge(experiment):
             'private': True,
         })
     elif experiment.public_access == experiment.PUBLIC_ACCESS_NONE and\
-    experiment.is_publication() and not experiment.is_publication_draft():
+       experiment.is_publication() and not experiment.is_publication_draft():
         return render_mustache('tardis_portal/badges/public_access', {
             'title': 'No public access, awaiting approval',
             'label': '[PUBLICATION] Awaiting approval',
             'private': True,
         })
     elif experiment.public_access == experiment.PUBLIC_ACCESS_NONE and\
-    experiment.is_publication_draft():
+       experiment.is_publication_draft():
         return render_mustache('tardis_portal/badges/public_access', {
             'title': 'No public access',
             'label': '[PUBLICATION] Draft',
             'private': True,
         })
-        
+
     if experiment.public_access == experiment.PUBLIC_ACCESS_EMBARGO:
         return render_mustache('tardis_portal/badges/public_access', {
             'title': 'Under embargo and awaiting release',

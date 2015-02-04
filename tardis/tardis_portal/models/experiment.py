@@ -85,7 +85,8 @@ class Experiment(models.Model):
 
     def is_publication(self):
         return self.experimentparameterset_set.filter(
-            schema__namespace__startswith=settings.PUBLICATION_SCHEMA_ROOT).count()
+            schema__namespace__startswith=settings.PUBLICATION_SCHEMA_ROOT
+        ).count() > 0
 
     def getParameterSets(self, schemaType=None):
         """Return the experiment parametersets associated with this
@@ -217,13 +218,13 @@ class ExperimentAuthor(models.Model):
     experiment = models.ForeignKey(Experiment)
     author = models.CharField(max_length=255)
     institution = models.CharField(max_length=255,
-                                   blank=True)
+                                   blank=True, null=True)
     email = models.CharField(max_length=255,
-                             blank=True)
+                             blank=True, null=True)
     order = models.PositiveIntegerField()
     url = models.URLField(
         max_length=2000,
-        blank=True,
+        blank=True, null=True,
         help_text="URL identifier for the author")
 
     def save(self, *args, **kwargs):

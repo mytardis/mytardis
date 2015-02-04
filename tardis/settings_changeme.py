@@ -654,9 +654,6 @@ Rapid Connect.
 #      'form_template':
 #      '/static/publication-form/mx-dataset-description-template.html'}]
 
-# EXPERIMENT_VIEWS = [(r'^' + PUBLICATION_SCHEMA_NAMESPACE_ROOT,
-#                      'tardis.tardis_portal.views.view_publication')]
-
 # Put your API_ID for the Monash DOI minting service here. For other DOI
 # minting, please contact the developers
 # MODC_DOI_API_ID = ''

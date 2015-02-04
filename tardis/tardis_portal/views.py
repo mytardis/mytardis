@@ -638,11 +638,6 @@ def view_experiment(request, experiment_id,
     return HttpResponse(render_response_index(request, template_name, c))
 
 
-@authz.experiment_access_required
-def view_publication(request, experiment_id):
-    return HttpResponse(render_response_index(request, 'tardis_portal/view_publication.html'))
-
-
 def _add_protocols_and_organizations(request, collection_object, c):
     """Add the protocol, format and organization details for
     archive requests.  Since the MacOSX archiver can't cope with
@@ -894,8 +889,10 @@ def dataset_json(request, experiment_id=None, dataset_id=None):
             if can_update():
                 return HttpResponseMethodNotAllowed(allow="GET PUT")
             return HttpResponseMethodNotAllowed(allow="GET")
-        # Cannot remove if this is the last experiment or if it is being removed from a publication
-        if not can_delete() or dataset.experiments.count() < 2 or experiment.is_publication():
+        # Cannot remove if this is the last experiment or if it is being
+        # removed from a publication
+        if (not can_delete() or dataset.experiments.count() < 2 or
+           experiment.is_publication()):
             return HttpResponseForbidden()
         dataset.experiments.remove(experiment)
         dataset.save()
@@ -3395,8 +3392,9 @@ def feedback(request):
         message = feedback_data[0]['Issue']
         img_base64 = feedback_data[1]
         img = img_base64.replace('data:image/png;base64,', '').decode('base64')
-        admin_emails = [v for k,v in settings.ADMINS]
-        email = EmailMessage('[TARDIS] User feedback', message, 'store.star.help@monash.edu', admin_emails)
+        admin_emails = [v for k, v in settings.ADMINS]
+        email = EmailMessage('[TARDIS] User feedback', message,
+                             'store.star.help@monash.edu', admin_emails)
         email.attach('screenshot.png', img, 'image/png')
         email.send()
         return HttpResponse('OK')

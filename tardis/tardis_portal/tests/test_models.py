@@ -37,7 +37,6 @@ http://docs.djangoproject.com/en/dev/topics/testing/
 """
 from django.conf import settings
 from django.test import TestCase
-import os
 
 
 class ModelTestCase(TestCase):
@@ -82,8 +81,8 @@ class ModelTestCase(TestCase):
         exp.save()
 
         models.ExperimentAuthor(experiment=exp,
-                                 author='nigel',
-                                 order=0).save()
+                                author='nigel',
+                                order=0).save()
 
         exp = models.Experiment(title='test exp1',
                                 institution_name='monash',
@@ -92,18 +91,18 @@ class ModelTestCase(TestCase):
         exp.save()
 
         ae1 = models.ExperimentAuthor(experiment=exp,
-                                       author='steve',
-                                       order=100)
+                                      author='steve',
+                                      order=100)
         ae1.save()
 
         ae2 = models.ExperimentAuthor(experiment=exp,
-                                       author='russell',
-                                       order=1)
+                                      author='russell',
+                                      order=1)
         ae2.save()
 
         ae3 = models.ExperimentAuthor(experiment=exp,
-                                       author='uli',
-                                       order=50)
+                                      author='uli',
+                                      order=50)
         ae3.save()
 
         authors = exp.experimentauthor_set.all()

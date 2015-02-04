@@ -183,7 +183,7 @@ class ExperimentManager(OracleSafeManager):
             (Q(objectacls__expiryDate__gte=datetime.today())
              | Q(objectacls__expiryDate__isnull=True))
         return query
-    
+
     def owned_by_user(self, user):
         """
         Return all experiments which are owned by a particular user id
