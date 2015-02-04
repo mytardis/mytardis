@@ -123,7 +123,7 @@ class ModelTestCase(TestCase):
             datafile.save()
             dfo = DataFileObject(
                 datafile=datafile,
-                storage_box=dataset.get_default_storage_box(),
+                storage_box=datafile.get_default_storage_box(),
                 uri=url)
             dfo.save()
             return datafile
@@ -147,7 +147,7 @@ class ModelTestCase(TestCase):
             settings.REQUIRE_DATAFILE_CHECKSUMS = False
             df_file = _build(dataset, 'file.txt', 'path/file.txt', '')
             self.assertEqual(df_file.filename, 'file.txt')
-            self.assertEqual(df_file.default_dfo.uri,
+            self.assertEqual(df_file.file_objects.all()[0].uri,
                              'path/file.txt')
             self.assertEqual(df_file.dataset, dataset)
             self.assertEqual(df_file.size, '')
@@ -156,7 +156,7 @@ class ModelTestCase(TestCase):
 
             df_file = _build(dataset, 'file1.txt', 'path/file1.txt', 'vbl')
             self.assertEqual(df_file.filename, 'file1.txt')
-            self.assertEqual(df_file.default_dfo.uri,
+            self.assertEqual(df_file.file_objects.all()[0].uri,
                              'path/file1.txt')
             self.assertEqual(df_file.dataset, dataset)
             self.assertEqual(df_file.size, '')
