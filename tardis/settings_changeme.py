@@ -249,8 +249,8 @@ INSTALLED_APPS = (
     'mustachejs',
     'tastypie',
     # these optional apps, may require extra settings
-    # 'tardis.apps.publication_forms',
-    # 'tardis.apps.oaipmh',
+    'tardis.apps.publication_forms',
+    'tardis.apps.oaipmh',
 )
 
 JASMINE_TEST_DIRECTORY = path.abspath(path.join(path.dirname(__file__),

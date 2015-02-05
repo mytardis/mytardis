@@ -2,7 +2,7 @@ import json
 import re
 
 import dateutil.parser
-import StarFile
+import CifFile.StarFile as StarFile
 
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.cache import never_cache
@@ -10,18 +10,20 @@ from django.http import HttpResponse, HttpResponseForbidden
 from django.conf import settings
 from django.contrib.auth.models import Group
 from django.core.mail import send_mail
+from tardis.tardis_portal.shortcuts import return_response_error
 from tardis.tardis_portal.shortcuts import render_response_index
 from tardis.tardis_portal.models import Experiment, Dataset, ObjectACL, \
     Schema, ParameterName, ExperimentParameterSet, ExperimentParameter, \
     ExperimentAuthor, License
 from tardis.tardis_portal.auth.localdb_auth import django_user, django_group
-from tardis.tardis_portal.auth import decorators as authz
 from doi import DOI
 from utils import PDBCifHelper, check_pdb_status, get_unreleased_pdb_info, \
     send_mail_to_authors
 from email_text import email_pub_requires_authorisation, \
     email_pub_awaiting_approval, email_pub_approved, email_pub_rejected, \
     email_pub_reverted_to_draft
+
+from . import default_settings
 
 
 @login_required
@@ -66,7 +68,9 @@ def process_form(request):
     # Get the form state database object
     form_state_parameter = ExperimentParameter.objects.get(
         name__name='form_state',
-        name__schema__namespace=settings.PUBLICATION_SCHEMA_ROOT,
+        name__schema__namespace=getattr(
+            settings, 'PUBLICATION_SCHEMA_ROOT',
+            default_settings.PUBLICATION_SCHEMA_ROOT),
         parameterset__experiment=publication)
 
     # Check if the form state needs to be loaded (i.e. a publication draft
@@ -107,7 +111,7 @@ def process_form(request):
         for dataset in datasets:
             dataset.experiments.add(publication)
 
-        ### Get data for the next page ###
+        # ## Get data for the next page ## #
         # Construct the disclipline-specific form based on the
         # selected datasets
         selected_forms = select_forms(datasets)
@@ -116,24 +120,28 @@ def process_form(request):
             # (i.e. datasets have changed)
             if json.dumps(selected_forms) != json.dumps(
                     form_state['disciplineSpecificFormTemplates']):
-                form_state['extraInfo'] = {};
+                form_state['extraInfo'] = {}
         form_state['disciplineSpecificFormTemplates'] = selected_forms
 
     elif form_state['action'] == 'update-extra-info':
         # Clear any current parameter sets except for those belonging
         # to the publication draft schema or containing the form_state
         # parameter
+        schema_root = getattr(settings, 'PUBLICATION_SCHEMA_ROOT',
+                              default_settings.PUBLICATION_SCHEMA_ROOT)
+        schema_draft = getattr(settings, 'PUBLICATION_DRAFT_SCHEMA',
+                               default_settings.PUBLICATION_DRAFT_SCHEMA)
         for parameter_set in publication.getParameterSets():
             if parameter_set.schema.namespace != \
-               settings.PUBLICATION_DRAFT_SCHEMA and \
+               schema_draft and \
                parameter_set.schema.namespace != \
-               settings.PUBLICATION_SCHEMA_ROOT:
+               schema_root:
                 parameter_set.delete()
-            elif parameter_set.schema.namespace == settings.PUBLICATION_SCHEMA_ROOT:
+            elif parameter_set.schema.namespace == schema_root:
                 try:
                     ExperimentParameter.objects.get(
                         name__name='form_state',
-                        name__schema__namespace=settings.PUBLICATION_SCHEMA_ROOT,
+                        name__schema__namespace=schema_root,
                         parameterset=parameter_set)
                 except ExperimentParameter.DoesNotExist:
                     parameter_set.delete()
@@ -266,7 +274,8 @@ def process_form(request):
 
         # Attach the publication details schema
         pub_details_schema = Schema.objects.get(
-            namespace=settings.PUBLICATION_DETAILS_SCHEMA)
+            namespace=getattr(settings, 'PUBLICATION_DETAILS_SCHEMA',
+                              default_settings.PUBLICATION_DETAILS_SCHEMA))
         pub_details_parameter_set = ExperimentParameterSet(
             schema=pub_details_schema,
             experiment=publication)
@@ -292,7 +301,8 @@ def process_form(request):
         # Set the release date
         release_date = dateutil.parser.parse(form_state['embargo'])
         pub_schema_root = Schema.objects.get(
-            namespace=settings.PUBLICATION_SCHEMA_ROOT)
+            namespace=getattr(settings, 'PUBLICATION_SCHEMA_ROOT',
+                              default_settings.PUBLICATION_SCHEMA_ROOT))
         pub_schema_root_parameter_set = ExperimentParameterSet(
             schema=pub_schema_root,
             experiment=publication)
@@ -317,7 +327,9 @@ def process_form(request):
 
         # Remove the draft status
         ExperimentParameterSet.objects.get(
-            schema__namespace=settings.PUBLICATION_DRAFT_SCHEMA,
+            schema__namespace=getattr(
+                settings, 'PUBLICATION_DRAFT_SCHEMA',
+                default_settings.PUBLICATION_DRAFT_SCHEMA),
             experiment=publication).delete()
 
         # Send emails about publication in draft
@@ -325,7 +337,8 @@ def process_form(request):
         pub_admin_email_addresses = [
             user.email
             for user in Group.objects.get(
-                    name=settings.PUBLICATION_OWNER_GROUP).user_set.all()
+                name=getattr(settings, 'PUBLICATION_OWNER_GROUP',
+                             'publication-admin')).user_set.all()
             if user.email]
         message_content = email_pub_requires_authorisation(
             request.user.username,
@@ -336,7 +349,9 @@ def process_form(request):
 
         send_mail('[TARDIS] Publication requires authorisation',
                   message_content,
-                  settings.PUBLICATION_NOTIFICATION_SENDER_EMAIL,
+                  getattr(
+                      settings, 'PUBLICATION_NOTIFICATION_SENDER_EMAIL',
+                      default_settings.PUBLICATION_NOTIFICATION_SENDER_EMAIL),
                   pub_admin_email_addresses,
                   fail_silently=True)
 
@@ -359,7 +374,8 @@ def select_forms(datasets):
     if not hasattr(settings, 'PUBLICATION_FORM_MAPPINGS'):
         return default_form
 
-    FORM_MAPPINGS = settings.PUBLICATION_FORM_MAPPINGS
+    FORM_MAPPINGS = getattr(settings, 'PUBLICATION_FORM_MAPPINGS',
+                            default_settings.PUBLICATION_FORM_MAPPINGS)
     forms = []
     for dataset in datasets:
         parametersets = dataset.getParameterSets()
@@ -413,8 +429,12 @@ def create_draft_publication(user, publication_title, publication_description):
 
     ObjectACL(content_object=experiment,
               pluginId=django_group,
-              entityId=str(Group.objects.get(
-                  name=settings.PUBLICATION_OWNER_GROUP).id),
+              entityId=str(
+                  Group.objects.get_or_create(
+                      name=getattr(
+                          settings, 'PUBLICATION_OWNER_GROUP',
+                          default_settings.PUBLICATION_OWNER_GROUP))[0]
+                  .id),
               canRead=True,
               canWrite=True,
               canDelete=True,
@@ -422,17 +442,20 @@ def create_draft_publication(user, publication_title, publication_description):
               aclOwnershipType=ObjectACL.OWNER_OWNED).save()
 
     publication_schema = Schema.objects.get(
-        namespace=settings.PUBLICATION_SCHEMA_ROOT)
+        namespace=getattr(settings, 'PUBLICATION_SCHEMA_ROOT',
+                          default_settings.PUBLICATION_SCHEMA_ROOT))
 
     # Attach draft schema
     draft_publication_schema = Schema.objects.get(
-        namespace=settings.PUBLICATION_DRAFT_SCHEMA)
+        namespace=getattr(settings, 'PUBLICATION_DRAFT_SCHEMA',
+                          default_settings.PUBLICATION_DRAFT_SCHEMA))
     ExperimentParameterSet(schema=draft_publication_schema,
                            experiment=experiment).save()
 
     # Attach root schema and blank form_state parameter
     publication_root_schema = Schema.objects.get(
-        namespace=settings.PUBLICATION_SCHEMA_ROOT)
+        namespace=getattr(settings, 'PUBLICATION_SCHEMA_ROOT',
+                          default_settings.PUBLICATION_SCHEMA_ROOT))
     publication_root_parameter_set = ExperimentParameterSet(
         schema=publication_schema,
         experiment=experiment)
@@ -506,8 +529,23 @@ def pdb_helper(request, pdb_id):
     return HttpResponse(json.dumps(result), mimetype="application/json")
 
 
+def require_publication_admin(f):
+    def wrap(request, *args, **kwargs):
+        if not request.user.groups.filter(
+                name=getattr(
+                    settings, 'PUBLICATION_OWNER_GROUP',
+                    default_settings.PUBLICATION_OWNER_GROUP)).exists():
+            return return_response_error(request)
+        return f(request, *args, **kwargs)
+
+    wrap.__doc__ = f.__doc__
+    wrap.__name__ = f.__name__
+
+    return wrap
+
+
 @login_required
-@authz.require_publication_admin
+@require_publication_admin
 def approval_view(request):
     if request.method == 'GET':
         return HttpResponse(render_response_index(
@@ -565,12 +603,14 @@ def approval_ajax(request):
 
 
 def get_publications_awaiting_approval():
-    PUB_SCHEMA = settings.PUBLICATION_SCHEMA_ROOT
-    PUB_SCHEMA_DRAFT = settings.PUBLICATION_DRAFT_SCHEMA
+    pub_schema = getattr(settings, 'PUBLICATION_SCHEMA_ROOT',
+                         default_settings.PUBLICATION_SCHEMA_ROOT)
+    pub_schema_draft = getattr(settings, 'PUBLICATION_DRAFT_SCHEMA',
+                               default_settings.PUBLICATION_DRAFT_SCHEMA)
     pubs = Experiment.objects.filter(
         public_access=Experiment.PUBLIC_ACCESS_NONE,
-        experimentparameterset__schema__namespace=PUB_SCHEMA).exclude(
-            experimentparameterset__schema__namespace=PUB_SCHEMA_DRAFT
+        experimentparameterset__schema__namespace=pub_schema).exclude(
+            experimentparameterset__schema__namespace=pub_schema_draft
         ).distinct()
     return pubs
 
@@ -595,7 +635,9 @@ def approve_publication(publication, message=None):
         try:
             doi_param = ExperimentParameter.objects.get(
                 name__name='doi',
-                name__schema__namespace=settings.PUBLICATION_DETAILS_SCHEMA,
+                name__schema__namespace=getattr(
+                    settings, 'PUBLICATION_DETAILS_SCHEMA',
+                    default_settings.PUBLICATION_DETAILS_SCHEMA),
                 parameterset__experiment=publication)
             doi = DOI()
             doi_param.string_value = doi.mint(
@@ -641,7 +683,9 @@ def revert_publication_to_draft(publication, message=None):
         # Check that form_state exists (raises an exception if not)
         ExperimentParameter.objects.get(
             name__name='form_state',
-            name__schema__namespace=settings.PUBLICATION_SCHEMA_ROOT,
+            name__schema__namespace=getattr(
+                settings, 'PUBLICATION_SCHEMA_ROOT',
+                default_settings.PUBLICATION_SCHEMA_ROOT),
             parameterset__experiment=publication)
 
         # Reduce access level to none
@@ -650,7 +694,8 @@ def revert_publication_to_draft(publication, message=None):
 
         # Add the draft schema
         draft_publication_schema = Schema.objects.get(
-            namespace=settings.PUBLICATION_DRAFT_SCHEMA)
+            namespace=getattr(settings, 'PUBLICATION_DRAFT_SCHEMA',
+                              default_settings.PUBLICATION_DRAFT_SCHEMA))
         ExperimentParameterSet(schema=draft_publication_schema,
                                experiment=publication).save()
 
@@ -660,15 +705,21 @@ def revert_publication_to_draft(publication, message=None):
         # parameter
         for parameter_set in publication.getParameterSets():
             if parameter_set.schema.namespace != \
-               settings.PUBLICATION_DRAFT_SCHEMA and \
-               parameter_set.schema.namespace != \
-               settings.PUBLICATION_SCHEMA_ROOT:
+               getattr(settings, 'PUBLICATION_DRAFT_SCHEMA',
+                       default_settings.PUBLICATION_DRAFT_SCHEMA) and \
+               parameter_set.schema.namespace != getattr(
+                   settings, 'PUBLICATION_SCHEMA_ROOT',
+                   default_settings.PUBLICATION_SCHEMA_ROOT):
                 parameter_set.delete()
-            elif parameter_set.schema.namespace == settings.PUBLICATION_SCHEMA_ROOT:
+            elif parameter_set.schema.namespace == getattr(
+                    settings, 'PUBLICATION_SCHEMA_ROOT',
+                    default_settings.PUBLICATION_SCHEMA_ROOT):
                 try:
                     ExperimentParameter.objects.get(
                         name__name='form_state',
-                        name__schema__namespace=settings.PUBLICATION_SCHEMA_ROOT,
+                        name__schema__namespace=getattr(
+                            settings, 'PUBLICATION_SCHEMA_ROOT',
+                            default_settings.PUBLICATION_SCHEMA_ROOT),
                         parameterset=parameter_set)
                 except ExperimentParameter.DoesNotExist:
                     parameter_set.delete()

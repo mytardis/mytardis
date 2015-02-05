@@ -198,7 +198,6 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         self.stdout.write('Checking for required django settings...')
 
-        settings_ok = True
         required_settings = [('PUBLICATION_OWNER_GROUP',
                               'All publications are owned by this group')]
         required_schemas = [
@@ -219,25 +218,15 @@ class Command(BaseCommand):
             ('PDB_CITATION_PUBLICATION_SCHEMA',
              'Citation data that is extracted from the PDB record')]
 
-        for setting, description in required_settings + required_schemas:
-            if not hasattr(settings, setting):
-                self.stdout.write('* Could not find setting: ' + setting)
-                if description:
-                    self.stdout.write(' -- ' + description)
-                settings_ok = False
-
-        if not settings_ok:
-            raise CommandError('All required settings not present. Aborting!')
-
-        self.stdout.write("All settings seem OK.")
-
         recommended_settings = [('PUBLICATION_FORM_MAPPINGS', ''),
                                 ('PDB_REFRESH_INTERVAL', '')]
-        for setting, description in recommended_settings:
+        for setting, description in (required_settings + required_schemas +
+                                     recommended_settings):
             if not hasattr(settings, setting):
                 self.stdout.write(
                     'Warning: ' + setting +
-                    ' setting not found. You might encounter problems later!')
+                    ' setting not found. Using defaults for now, but you '
+                    'might encounter problems later!')
                 if description:
                     self.stdout.write(' -- ' + description)
 
@@ -253,12 +242,14 @@ class Command(BaseCommand):
 
         self.stdout.write('Checking if the publication owner group exists... ',
                           ending='')
+        pub_group = getattr(settings, 'PUBLICATION_OWNER_GROUP',
+                            'publication-admin')
         try:
-            Group.objects.get(name=settings.PUBLICATION_OWNER_GROUP)
+            Group.objects.get(name=pub_group)
             self.stdout.write('It does.')
         except Group.DoesNotExist:
             self.stdout.write('It doesnt, so creating.')
-            pub_owner_group = Group(name=settings.PUBLICATION_OWNER_GROUP)
+            pub_owner_group = Group(name=pub_group)
             pub_owner_group.save()
             self.stdout.write('Group created. Adding all superusers... ',
                               ending='')

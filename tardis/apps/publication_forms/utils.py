@@ -6,7 +6,7 @@ from django.conf import settings
 
 from tardis.tardis_portal.models import ExperimentAuthor
 
-from BeautifulSoup import BeautifulSoup
+from bs4 import BeautifulSoup
 
 
 class CifHelper(object):

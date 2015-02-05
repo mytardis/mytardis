@@ -47,6 +47,10 @@ class Experiment(models.Model):
         (PUBLIC_ACCESS_FULL, 'Public'),
     )
 
+    PUBLICATION_SCHEMA_ROOT = 'http://www.tardis.edu.au/schemas/publication/'
+    PUBLICATION_DETAILS_SCHEMA = PUBLICATION_SCHEMA_ROOT + 'details/'
+    PUBLICATION_DRAFT_SCHEMA = PUBLICATION_SCHEMA_ROOT + 'draft/'
+
     url = models.URLField(max_length=255,
                           null=True, blank=True)
     approved = models.BooleanField()
@@ -81,11 +85,15 @@ class Experiment(models.Model):
 
     def is_publication_draft(self):
         return self.experimentparameterset_set.filter(
-            schema__namespace=settings.PUBLICATION_DRAFT_SCHEMA).count()
+            schema__namespace=getattr(settings, 'PUBLICATION_DRAFT_SCHEMA',
+                                      self.PUBLICATION_DRAFT_SCHEMA)
+        ).count() > 0
 
     def is_publication(self):
         return self.experimentparameterset_set.filter(
-            schema__namespace__startswith=settings.PUBLICATION_SCHEMA_ROOT
+            schema__namespace__startswith=getattr(
+                settings, 'PUBLICATION_SCHEMA_ROOT',
+                self.PUBLICATION_SCHEMA_ROOT)
         ).count() > 0
 
     def getParameterSets(self, schemaType=None):

@@ -19,8 +19,8 @@
 
 <script type="text/javascript">
 var experiment_id={{ experiment.id }};
-var is_publication={{ experiment.is_publication }};
-var is_publication_draft={{ experiment.is_publication_draft }};
+var is_publication='{{ experiment.is_publication }}' === 'True';
+var is_publication_draft='{{ experiment.is_publication_draft }}' === 'True';
 </script>
 <script type="text/javascript" src="/static/publication-form/publication_form.js"></script>
 <script type="text/javascript">
