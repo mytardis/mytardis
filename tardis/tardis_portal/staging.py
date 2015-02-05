@@ -117,8 +117,8 @@ def stage_dfo(dfo):
             tf.file.flush()
             dfo.storage_box = StorageBox.get_default_storage()
             dfo.uri = None
+            dfo._cached_file_object = None
             dfo.file_object = tf
-            logger.debug("dfo.uri = " + dfo.uri)
             dfo.save()
             return True
         else:
