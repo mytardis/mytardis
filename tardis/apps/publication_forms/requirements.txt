@@ -1,0 +1,3 @@
+PyCifRW==4.1
+suds
+suds_passworddigest
