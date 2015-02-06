@@ -8,13 +8,17 @@ from suds_passworddigest.token import UsernameDigestToken
 
 from tardis.tardis_portal.models import Experiment, ExperimentAuthor
 
+from . import default_settings
+
 
 class DOI():
 
     def __init__(self, doi=None):
         self.doi = doi
-        self.api_id = settings.MODC_DOI_API_ID
-        self.url_root = settings.MODC_DOI_MINT_URL_ROOT
+        self.api_id = getattr(settings, 'MODC_DOI_API_ID',
+                              default_settings.MODC_DOI_API_ID)
+        self.url_root = getattr(settings, 'MODC_DOI_MINT_URL_ROOT',
+                                default_settings.MODC_DOI_MINT_URL_ROOT)
 
     def _init_client(self, wsdl_definition, endpoint):
         client = Client(wsdl_definition, location=endpoint)
@@ -28,8 +32,11 @@ class DOI():
         return client
 
     def mint(self, experiment_id, uri, publisher="Monash University"):
-        client = self._init_client(settings.MODC_DOI_MINT_DEFINITION,
-                                   settings.MODC_DOI_ENDPOINT)
+        client = self._init_client(
+            getattr(settings, 'MODC_DOI_MINT_DEFINITION',
+                    default_settings.MODC_DOI_MINT_DEFINITION),
+            getattr(settings, 'MODC_DOI_ENDPOINT',
+                    default_settings.MODC_DOI_ENDPOINT))
 
         pub = Experiment.objects.get(pk=experiment_id)
 
@@ -55,8 +62,10 @@ class DOI():
             doi = self.doi
 
             client = self._init_client(
-                settings.MODC_DOI_ACTIVATE_DEFINITION,
-                settings.MODC_DOI_ENDPOINT)
+                getattr(settings, 'MODC_DOI_ACTIVATE_DEFINITION',
+                        default_settings.MODC_DOI_ACTIVATE_DEFINITION),
+                getattr(settings, 'MODC_DOI_ENDPOINT',
+                        default_settings.MODC_DOI_ENDPOINT))
         print("activating %s" % doi)
         response = client.service.ActivateDoi(self.api_id, doi=doi)
         return response
@@ -65,8 +74,11 @@ class DOI():
         if doi is None:
             doi = self.doi
 
-            client = self._init_client(settings.MODC_DOI_DEACTIVATE_DEFINITION,
-                                       settings.MODC_DOI_ENDPOINT)
+            client = self._init_client(
+                getattr(settings, 'MODC_DOI_DEACTIVATE_DEFINITION',
+                        default_settings.MODC_DOI_DEACTIVATE_DEFINITION),
+                getattr(settings, 'MODC_DOI_ENDPOINT',
+                        default_settings.MODC_DOI_ENDPOINT))
         print("deactivating %s" % doi)
         response = client.service.DeactivateDoi(self.api_id, doi=doi)
         return response
