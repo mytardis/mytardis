@@ -36,6 +36,9 @@ PDB_PUBLICATION_SCHEMA_ROOT = 'http://synchrotron.org.au/pub/mx/pdb/'
 PDB_SEQUENCE_PUBLICATION_SCHEMA = PDB_PUBLICATION_SCHEMA_ROOT+'sequence/'
 PDB_CITATION_PUBLICATION_SCHEMA = PDB_PUBLICATION_SCHEMA_ROOT+'citation/'
 
+# Used by the Australian Synchrotron for MX datasets
+MX_PUBLICATION_DATASET_SCHEMA = 'http://synchrotron.org.au/pub/mx/dataset/'
+
 from datetime import timedelta
 PDB_REFRESH_INTERVAL = timedelta(days=7)
 
@@ -44,7 +47,7 @@ PUBLICATION_FORM_MAPPINGS = [
      'publication_schema': PDB_PUBLICATION_SCHEMA_ROOT,
      'form_template': '/static/publication-form/mx-pdb-template.html'},
     {'dataset_schema': r'^http://synchrotron.org.au/mx/',
-     'publication_schema': 'http://synchrotron.org.au/pub/mx/dataset/',
+     'publication_schema': MX_PUBLICATION_DATASET_SCHEMA,
      'form_template':
      '/static/publication-form/mx-dataset-description-template.html'}]
 

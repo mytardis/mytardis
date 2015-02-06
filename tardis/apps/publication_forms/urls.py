@@ -1,5 +1,7 @@
 from django.conf.urls.defaults import patterns
 
+from pub_form_config import PubFormConfig
+
 urlpatterns = patterns(
     '',
     (r'^form/$', 'tardis.apps.publication_forms.views.index'),
@@ -9,3 +11,6 @@ urlpatterns = patterns(
      'tardis.apps.publication_forms.views.pdb_helper'),
     (r'^approvals/$', 'tardis.apps.publication_forms.views.approval_view'),
 )
+
+# one-time settings check
+PubFormConfig().do_setup()

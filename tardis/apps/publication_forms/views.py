@@ -181,7 +181,7 @@ def process_form(request):
         # Search for beamline/EPN information associated with each dataset
         # and add to the publication.
         try:
-            synch_epn_schema=Schema.objects.get(
+            synch_epn_schema = Schema.objects.get(
                 namespace='http://www.tardis.edu.au/schemas/as/'
                 'experiment/2010/09/21')
             datasets = Dataset.objects.filter(experiments=publication)
@@ -265,6 +265,7 @@ def process_form(request):
                              author=author['name'],
                              institution=author['institution'],
                              email=author['email'],
+                             url='',
                              order=authorOrder).save()
             authorOrder += 1
 

@@ -1,5 +1,6 @@
 import urllib
 import CifFile
+import default_settings
 
 from django.core.mail import send_mail
 from django.conf import settings
@@ -168,5 +169,6 @@ def send_mail_to_authors(publication, subject, message):
     email_addresses = [author.email for author in
                        ExperimentAuthor.objects.filter(experiment=publication)]
     send_mail(subject, message,
-              settings.PUBLICATION_NOTIFICATION_SENDER_EMAIL,
+              getattr(settings, 'PUBLICATION_NOTIFICATION_SENDER_EMAIL',
+                       default_settings.PUBLICATION_NOTIFICATION_SENDER_EMAIL),
               email_addresses, fail_silently=True)
