@@ -1,23 +1,32 @@
+"""
+WSGI config for testing project.
 
+This module contains the WSGI application used by Django's development server
+and any production WSGI deployments. It should expose a module-level variable
+named ``application``. Django's ``runserver`` and ``runfcgi`` commands discover
+this application via the ``WSGI_APPLICATION`` setting.
+
+Usually you will have the standard Django WSGI application here, but it also
+might make sense to replace the whole Django WSGI application with a custom one
+that later delegates to the Django one. For example, you could introduce WSGI
+middleware here, or combine a Django application with an application of another
+framework.
+
+"""
 import os
 
-os.environ['DJANGO_SETTINGS_MODULE'] = 'tardis.settings'
+# We defer to a DJANGO_SETTINGS_MODULE already in the environment. This breaks
+# if running multiple sites in the same mod_wsgi process. To fix this, use
+# mod_wsgi daemon mode with each site in its own daemon process, or use
+# os.environ["DJANGO_SETTINGS_MODULE"] = "testing.settings"
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "tardis.settings")
 
-import django.core.handlers.wsgi
-application = django.core.handlers.wsgi.WSGIHandler()
-# for in-web page debugging. Highly insecure, only use temporarily
-from django.conf import settings
-if settings.DEBUG:
-    from django.views import debug
-    try:
-        from django_extensions.management.technical_response import \
-            null_technical_500_response
-    except ImportError:
-        def null_technical_500_response(request, exc_type, exc_value, tb):
-            raise exc_type, exc_value, tb
-    debug.technical_500_response = null_technical_500_response
-    try:
-        from werkzeug.debug import DebuggedApplication
-        application = DebuggedApplication(application, evalex=True)
-    except ImportError:
-        print "Werkzeug is not installed"
+# This application object is used by any WSGI server configured to use this
+# file. This includes Django's development server, if the WSGI_APPLICATION
+# setting points here.
+from django.core.wsgi import get_wsgi_application
+application = get_wsgi_application()
+
+# Apply WSGI middleware here.
+# from helloworld.wsgi import HelloWorldApplication
+# application = HelloWorldApplication(application)

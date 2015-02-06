@@ -18,6 +18,7 @@ setup(
     packages=find_packages(),
     namespace_packages=['tardis'],
     install_requires=[
+        'setuptools>=8.0',
         'lxml==3.2.1',
         'pyparsing==1.5.7',  # held back by rdflib and rdfextras
         'feedparser==5.1.3',
@@ -55,6 +56,7 @@ setup(
         'six>=1.5',
         'suds',
         'suds-passworddigest',
+        'PyCifRW>=4',
     ],
     dependency_links=[
         'https://github.com/grischa/django-tastypie/tarball/testing-mytardis-deployment#egg=django-tastypie-0.9.16-tzfix',  # noqa

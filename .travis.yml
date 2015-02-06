@@ -1,6 +1,6 @@
 language: python
 python:
-  - "2.6"
+  - "2.7"
 # command to install dependencies
 install:
  - curl -s "http://git.fedorahosted.org/cgit/mailcap.git/plain/mime.types" > mime.types
