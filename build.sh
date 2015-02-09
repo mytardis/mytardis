@@ -29,5 +29,5 @@ python mytardis.py runserver
 # os x:
 open http://127.0.0.1:8000/
 
-# build docs
-# (cd docs; sphinx .)
+# build docs into docs (sphinx-build inputfolder outputfolder)
+sphinx-build docs docs
