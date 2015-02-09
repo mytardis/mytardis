@@ -167,7 +167,7 @@ class OracleSafeIndex(RealTimeSearchIndex):
         return self.model._default_manager.all().defer(None)
 
 class GetDatasetFileParameters(SearchIndex.__metaclass__):
-    def __new__(cls, name, bases, attrs):
+    def __new__(mcs, name, bases, attrs):
 
         # dynamically add all the searchable parameter fields
         try:
@@ -178,7 +178,7 @@ class GetDatasetFileParameters(SearchIndex.__metaclass__):
         except DatabaseError:
             pass
 
-        return super(GetDatasetFileParameters, cls).__new__(cls, name, bases, attrs)
+        return super(GetDatasetFileParameters, mcs).__new__(mcs, name, bases, attrs)
 
 class DatasetFileIndex(RealTimeSearchIndex):
 
