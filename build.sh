@@ -8,7 +8,7 @@ exit
 # sudo apt-get install python-pip git libxml2-dev libxslt1-dev python-dev zlib1g-dev python-wand
 # sudo apt-get install python-virtualenv virtualenvwrapper python-psycopg2 python-yaml ipython
 # sudo apt-get install python-anyjson python-bs4 python-billiard python-feedparser python-html5lib
-# sudo apt-get install python-httplib2 python-pystache python-crypto pylint python-flexmock
+# sudo apt-get install python-httplib2 python-pystache python-crypto python-flexmock
 
 . virtualenvwrapper.sh
 # . /usr/share/virtualenvwrapper/virtualenvwrapper.sh

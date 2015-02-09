@@ -33,6 +33,7 @@ nose
 nosexcover
 paramiko==1.15.2 #apt: 1.10.1
 pwgen==0.4
+pylint
 pyoai==2.4.4
 pyparsing==1.5.7 #apt: 2.0.1
 pysolr==2.1.0-beta #apt: 2.0.15
