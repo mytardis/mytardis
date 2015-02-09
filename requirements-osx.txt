@@ -2,3 +2,4 @@ psycopg2
 pystache
 mock
 beautifulsoup4
+flexmock
