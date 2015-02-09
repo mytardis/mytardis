@@ -5,8 +5,9 @@ import sys
 
 if __name__ == "__main__":
     custom_settings = 'tardis.settings'
+    custom_settings_file = custom_settings.replace('.', '/') + '.py'
     demo_settings = 'tardis.settings_changeme'
-    if os.path.isfile(custom_settings):
+    if os.path.isfile(custom_settings_file):
         os.environ.setdefault("DJANGO_SETTINGS_MODULE", custom_settings)
     else:
         os.environ.setdefault("DJANGO_SETTINGS_MODULE", demo_settings)
