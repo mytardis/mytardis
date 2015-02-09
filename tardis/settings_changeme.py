@@ -2,7 +2,8 @@ import djcelery
 from datetime import timedelta
 from os import path
 
-DEBUG = False
+# MUST change this to False for any serious use.
+DEBUG = True
 
 TEMPLATE_DEBUG = DEBUG
 

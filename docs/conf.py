@@ -15,14 +15,16 @@
 # serve to show the default.
 
 import sys, os
-from tardis import test_settings as settings
-from django.core.management import setup_environ
-setup_environ(settings)
 
 # If your extensions (or modules documented by autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 sys.path.append(os.path.abspath('..'))
+
+from tardis import test_settings as settings
+from django.core.management import setup_environ
+setup_environ(settings)
+
 
 # General configuration
 # ---------------------
