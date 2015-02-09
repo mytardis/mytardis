@@ -116,7 +116,6 @@ def process_embargos():
 
 @transaction.commit_on_success
 def populate_pdb_pub_records():
-    print("running update")
     PUB_SCHEMA = getattr(settings, 'PUBLICATION_SCHEMA_ROOT',
                          default_settings.PUBLICATION_SCHEMA_ROOT)
     PUB_SCHEMA_DRAFT = getattr(settings, 'PUBLICATION_DRAFT_SCHEMA',
@@ -285,7 +284,6 @@ def populate_pdb_pub_records():
                 pdb_last_update_parameter.save()
 
             except CifFile.StarError:
-                print("error")
                 # PDB is either unavailable or invalid
                 # (maybe notify the user somehow?)
                 continue
