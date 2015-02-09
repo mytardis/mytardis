@@ -28,7 +28,6 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-from django.core.exceptions import PermissionDenied
 from django.contrib.auth.decorators import login_required
 from django.contrib.sessions.models import Session
 from django.http import HttpResponse
@@ -36,8 +35,10 @@ from django.http import HttpResponseRedirect
 from django.db.models import Q
 from django.conf import settings
 
-from tardis.tardis_portal.models import Experiment, Dataset, DataFile, GroupAdmin, User
+from tardis.tardis_portal.models import Experiment, Dataset, DataFile, \
+    GroupAdmin, User
 from tardis.tardis_portal.shortcuts import return_response_error
+
 
 def get_accessible_experiments(request):
     return Experiment.safe.all(request.user)
@@ -49,7 +50,7 @@ def get_accessible_experiments_for_dataset(request, dataset_id):
     # probably a much cleverer way of writing this with safe
     experiment_dataset_access = []
     for experiment in experiments:
-        experiment_dataset = Experiment.objects.filter(\
+        experiment_dataset = Experiment.objects.filter(
             id=experiment.id,
             datasets__in=[dataset_id])
         if experiment_dataset.count():
@@ -61,7 +62,7 @@ def get_accessible_experiments_for_dataset(request, dataset_id):
 def get_shared_experiments(request):
     experiments = Experiment.safe.owned_and_shared(request.user)
 
-    #exclude owned experiments
+    # exclude owned experiments
     owned = get_owned_experiments(request)
     experiments = experiments.exclude(id__in=[o.id for o in owned])
     return experiments
@@ -87,7 +88,8 @@ def get_accessible_datafiles_for_user(request):
 
 
 def has_experiment_ownership(request, experiment_id):
-    return Experiment.safe.owned(request.user).filter(pk=experiment_id).exists()
+    return Experiment.safe.owned(request.user).filter(
+        pk=experiment_id).exists()
 
 
 def has_experiment_access(request, experiment_id):
@@ -101,6 +103,7 @@ def has_experiment_access(request, experiment_id):
 def has_experiment_write(request, experiment_id):
     return has_write_permissions(request, experiment_id)
 
+
 def has_experiment_download_access(request, experiment_id):
 
     if Experiment.safe.owned_and_shared(request.user) \
@@ -112,10 +115,12 @@ def has_experiment_download_access(request, experiment_id):
         exp = Experiment.objects.get(id=experiment_id)
         return Experiment.public_access_implies_distribution(exp.public_access)
 
+
 def has_dataset_ownership(request, dataset_id):
     dataset = Dataset.objects.get(id=dataset_id)
     return any(has_experiment_ownership(request, experiment.id)
                for experiment in dataset.experiments.all())
+
 
 def has_dataset_access(request, dataset_id):
     dataset = Dataset.objects.get(id=dataset_id)
@@ -123,12 +128,14 @@ def has_dataset_access(request, dataset_id):
     return any(has_experiment_access(request, experiment.id)
                for experiment in dataset.experiments.all())
 
+
 def has_dataset_write(request, dataset_id):
     dataset = Dataset.objects.get(id=dataset_id)
     if dataset.immutable:
         return False
     return any(has_experiment_write(request, experiment.id)
                for experiment in dataset.experiments.all())
+
 
 def has_dataset_download_access(request, dataset_id):
     dataset = Dataset.objects.get(id=dataset_id)
@@ -147,6 +154,7 @@ def has_datafile_access(request, datafile_id):
 def has_datafile_download_access(request, datafile_id):
     dataset = Dataset.objects.get(datafile=datafile_id)
     return has_dataset_download_access(request, dataset.id)
+
 
 def has_read_or_owner_ACL(request, experiment_id):
     """
@@ -261,10 +269,12 @@ def experiment_access_required(f):
     wrap.__name__ = f.__name__
     return wrap
 
+
 def experiment_download_required(f):
 
     def wrap(request, *args, **kwargs):
-        if not has_experiment_download_access(request, kwargs['experiment_id']):
+        if not has_experiment_download_access(
+                request, kwargs['experiment_id']):
             return return_response_error(request)
         return f(request, *args, **kwargs)
 
@@ -321,6 +331,7 @@ def write_permissions_required(f):
     wrap.__doc__ = f.__doc__
     wrap.__name__ = f.__name__
     return wrap
+
 
 def dataset_write_permissions_required(f):
     def wrap(request, *args, **kwargs):

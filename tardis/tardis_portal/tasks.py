@@ -16,7 +16,6 @@ from tardis.tardis_portal.models import Dataset
 from tardis.tardis_portal.staging import get_staging_url_and_size
 from tardis.tardis_portal.email import email_user
 
-
 # Ensure filters are loaded
 try:
     from tardis.tardis_portal.filters import FilterInitMiddleware
@@ -130,3 +129,15 @@ def create_staging_datafile(filepath, username, dataset_id):
 @task(name="tardis_portal.email_user_task", ignore_result=True)
 def email_user_task(subject, template_name, context, user):
     email_user(subject, template_name, context, user)
+
+
+# this should really be defined in the app, need to check if celery picks
+# up tasks in apps
+try:
+    from tardis.apps.publication_forms.tasks import update_publication_records
+
+    @task(name="tardis_portal.update_publication_records", ignore_result=True)
+    def update_publication_records_task():
+        update_publication_records()
+except ImportError:
+    pass

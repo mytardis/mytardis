@@ -61,5 +61,6 @@ New contributors are welcome, however all developers should review the
 Code Health Status
 ------------------
 
-.. image:: https://travis-ci.org/mytardis/mytardis.png?branch=master
-   :target: https://travis-ci.org/mytardis/mytardis
+.. image:: https://semaphoreapp.com/api/v1/projects/5d21cc89-645b-4793-bd78-cf525a0dcce2/345561/shields_badge.svg
+   :target: https://semaphoreapp.com/mytardis/mytardis
+   :alt: Semaphore build status

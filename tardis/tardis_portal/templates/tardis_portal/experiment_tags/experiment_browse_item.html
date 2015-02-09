@@ -13,7 +13,7 @@
     </a>
     <br />
     <small>
-    {% for author in experiment.author_experiment_set.all %}{% if not forloop.first %},
+    {% for author in experiment.experimentauthor_set.all %}{% if not forloop.first %},
       {% endif %}
       <span property="dc:author">{{ author.author }}</span>{% endfor %}
     </small>

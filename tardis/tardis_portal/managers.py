@@ -12,7 +12,8 @@ from django.db.models import Q
 from django.core.exceptions import PermissionDenied
 from django.contrib.auth.models import User, Group
 
-from tardis.tardis_portal.auth.localdb_auth import django_user
+from tardis.tardis_portal.auth.localdb_auth import django_user,\
+    django_group
 from tardis.tardis_portal.models import ObjectACL
 
 
@@ -172,6 +173,17 @@ class ExperimentManager(OracleSafeManager):
              | Q(objectacls__expiryDate__isnull=True))
         return query
 
+    def _query_owned_by_group(self, group, group_id=None):
+        # build the query to filter the ACL table
+        query = Q(objectacls__pluginId=django_group,
+                  objectacls__entityId=str(group_id or group.id),
+                  objectacls__isOwner=True) &\
+            (Q(objectacls__effectiveDate__lte=datetime.today())
+             | Q(objectacls__effectiveDate__isnull=True)) &\
+            (Q(objectacls__expiryDate__gte=datetime.today())
+             | Q(objectacls__expiryDate__isnull=True))
+        return query
+
     def owned_by_user(self, user):
         """
         Return all experiments which are owned by a particular user id
@@ -181,6 +193,13 @@ class ExperimentManager(OracleSafeManager):
 
         """
         query = self._query_owned(user)
+        return super(ExperimentManager, self).get_query_set().filter(query)
+
+    def owned_by_group(self, group):
+        """
+        Return all experiments that are owned by a particular group
+        """
+        query = self._query_owned_by_group(group)
         return super(ExperimentManager, self).get_query_set().filter(query)
 
     def owned_by_user_id(self, userId):

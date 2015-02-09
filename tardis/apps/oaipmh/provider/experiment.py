@@ -13,7 +13,7 @@ from oaipmh.server import Server, oai_dc_writer, NS_XSI
 import pytz
 
 from tardis.tardis_portal.ParameterSetManager import ParameterSetManager
-from tardis.tardis_portal.models import Author_Experiment, Experiment,\
+from tardis.tardis_portal.models import ExperimentAuthor, Experiment,\
     ExperimentParameterSet, ExperimentParameter, License, User
 from tardis.tardis_portal.util import get_local_time, get_utc_time
 
@@ -235,7 +235,7 @@ class RifCsExperimentProvider(AbstractExperimentProvider):
                     for ps in ExperimentParameterSet.objects\
                                                 .filter(experiment=experiment,
                                                         schema__namespace=ns)]
-        collectors = experiment.author_experiment_set.exclude(url='')
+        collectors = experiment.experimentauthor_set.exclude(url='')
         return Metadata({
             '_writeMetadata': self._get_experiment_writer_func(),
             'id': experiment.id,

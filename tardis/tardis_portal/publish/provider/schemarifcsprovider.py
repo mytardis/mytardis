@@ -73,7 +73,7 @@ class SchemaRifCsProvider(rifcsprovider.RifCsProvider):
            return "%s/experiment/view/%s/" % (server_url, experiment.id)
 
     def get_investigator_list(self, experiment):
-        authors = [a.author for a in experiment.author_experiment_set.all()]
+        authors = [a.author for a in experiment.experimentauthor_set.all()]
         return "* " + "\n* ".join(authors)
 
     def get_sample_description_list(self, experiment):

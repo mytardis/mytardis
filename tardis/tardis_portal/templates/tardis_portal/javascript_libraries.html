@@ -3,9 +3,15 @@
 {# See js/lib/README.rst for more info #}
 <script type="text/javascript" src="{% static 'js/lib/jquery-1.10.2.min.js' %}"></script>
 <script type="text/javascript" src="{% static 'js/lib/jquery-migrate-1.2.1.min.js' %}"></script>
-<script type="text/javascript" src="{% static 'js/lib/jstree/jquery.jstree.js' %}"></script>
 <script type="text/javascript" src="{% static 'js/lib/jquery-ui-1.10.3.custom.min.js' %}"></script>
 <script type="text/javascript" src="{% static 'js/lib/jquery.cookie.js' %}"></script>
+
+<!-- angular and related scripts -->
+<script type="text/javascript" src="{% static 'angular/angular.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'angular/ngDialog.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/angular-mytardis.js' %}"></script>
+
+<script type="text/javascript" src="{% static 'js/lib/jstree/jquery.jstree.js' %}"></script>
 <script type="text/javascript" src="{% static 'js/lib/flash_detect_min.js' %}"></script>
 <script type="text/javascript" src="{% static 'js/lib/async.min.js' %}"></script>
 <script type="text/javascript" src="{% static 'js/lib/underscore-min.js' %}"></script>
@@ -31,6 +37,10 @@
 
 {% block css_libraries %}
 <link type="text/css" href="{% static 'css/lib/smoothness/jquery-ui-1.8.18.custom.css' %}" rel="stylesheet" />
+<link type="text/css" href="{% static 'css/ngDialog.min.css' %}" rel="stylesheet" />
+<link type="text/css" href="{% static 'css/ngDialog-theme-plain.min.css' %}" rel="stylesheet" />
+<link type="text/css" href="{% static 'css/ngDialog-theme-default.css' %}" rel="stylesheet" />
+<link type="text/css" href="{% static 'publication-form/publication_form.css' %}" rel="stylesheet" />
 
 <!-- Twitter Bootstrap: http://twitter.github.com/bootstrap/ -->
 <link href="{% static 'bootstrap/css/bootstrap.css' %}" rel="stylesheet">
