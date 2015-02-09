@@ -40,7 +40,7 @@ PDB_CITATION_PUBLICATION_SCHEMA = PDB_PUBLICATION_SCHEMA_ROOT+'citation/'
 MX_PUBLICATION_DATASET_SCHEMA = 'http://synchrotron.org.au/pub/mx/dataset/'
 
 from datetime import timedelta
-PDB_REFRESH_INTERVAL = timedelta(days=7)
+PDB_REFRESH_INTERVAL = timedelta(seconds=60)
 
 PUBLICATION_FORM_MAPPINGS = [
     {'dataset_schema': r'^http://synchrotron.org.au/mx/',
@@ -53,6 +53,7 @@ PUBLICATION_FORM_MAPPINGS = [
 
 # Put your API_ID for the Monash DOI minting service here. For other DOI
 # minting, please contact the developers
+MODC_DOI_ENABLED = False  # Change me to true if you use this service
 MODC_DOI_API_ID = ''
 MODC_DOI_API_PASSWORD = ''
 MODC_DOI_MINT_DEFINITION = 'https://doiserver/modc/ws/MintDoiService.wsdl'

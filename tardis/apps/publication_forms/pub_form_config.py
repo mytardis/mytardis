@@ -252,8 +252,8 @@ class PubFormConfig():
                                      recommended_settings):
             if not hasattr(settings, setting):
                 logger.info(setting + ' setting not found. Using defaults'
-                               ' for now, but you might encounter problems'
-                               ' later! (%s)' % description)
+                            ' for now, but you might encounter problems'
+                            ' later! (%s)' % description)
 
         for schema, description in required_schemas:
             if self._schema_exists(getattr(settings, schema,
@@ -261,8 +261,9 @@ class PubFormConfig():
                 logger.info('Schema ' + schema + ' exists, skipping.')
             else:
                 logger.info('Setting up schema: ' + schema)
-                getattr(self, '_setup_' + schema)(getattr(settings, schema,
-                                            getattr(default_settings, schema)))
+                getattr(self, '_setup_' + schema)(
+                    getattr(settings, schema,
+                            getattr(default_settings, schema)))
 
         pub_group = getattr(settings, 'PUBLICATION_OWNER_GROUP',
                             'publication-admin')

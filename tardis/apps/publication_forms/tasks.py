@@ -1,26 +1,46 @@
 from datetime import datetime
 
-import StarFile
+import CifFile
+import CifFile.StarFile as StarFile
 
 from django.conf import settings
+from django.core.cache import cache
+from django.db import transaction
+
 from tardis.tardis_portal.models import Schema, Experiment, \
     ExperimentParameter, ExperimentParameterSet, \
     ParameterName
 from tardis.apps.publication_forms.doi import DOI
 from utils import PDBCifHelper, send_mail_to_authors
 from email_text import email_pub_released
+from . import default_settings
+
+LOCK_EXPIRE = 60 * 5  # Lock expires in 5 minutes
 
 
 def update_publication_records():
-    populate_pdb_pub_records()
-    process_embargos()
+
+    # Locking functions to ensure only one worker operates
+    # on publication records at a time.
+    lock_id = 'pub-update-lock'
+    acquire_lock = lambda: cache.add(lock_id, 'true', LOCK_EXPIRE)
+    release_lock = lambda: cache.delete(lock_id)
+
+    if (acquire_lock()):
+        try:
+            populate_pdb_pub_records()
+            process_embargos()
+        finally:
+            release_lock()
 
 
 def has_pdb_embargo(publication):
     try:
         has_embargo = ExperimentParameter.objects.get(
             name__name='pdb-embargo',
-            name__schema__namespace=settings.PUBLICATION_SCHEMA_ROOT,
+            name__schema__namespace=getattr(settings,
+                                            'PUBLICATION_SCHEMA_ROOT',
+                                            default_settings.PUBLICATION_SCHEMA_ROOT),
             parameterset__experiment=publication
         ).string_value.lower() == 'true'
     except ExperimentParameter.DoesNotExist:
@@ -33,7 +53,9 @@ def get_release_date(publication):
     try:
         release_date = ExperimentParameter.objects.get(
             name__name='embargo',
-            name__schema__namespace=settings.PUBLICATION_SCHEMA_ROOT,
+            name__schema__namespace=getattr(settings,
+                                            'PUBLICATION_SCHEMA_ROOT',
+                                            default_settings.PUBLICATION_SCHEMA_ROOT),
             parameterset__experiment=publication).datetime_value
     except ExperimentParameter.DoesNotExist:
         release_date = datetime.now()
@@ -41,12 +63,15 @@ def get_release_date(publication):
     return release_date
 
 
+@transaction.commit_on_success
 def process_embargos():
     # Restricted publications are defined as those having public access
     # levels less than PUBLIC_ACCESS_PENDING_AUTH and the
     # PUBLICATION_SCHEMA_ROOT schema, but not in draft.
-    PUB_SCHEMA = settings.PUBLICATION_SCHEMA_ROOT
-    PUB_SCHEMA_DRAFT = settings.PUBLICATION_DRAFT_SCHEMA
+    PUB_SCHEMA = getattr(settings, 'PUBLICATION_SCHEMA_ROOT',
+                         default_settings.PUBLICATION_SCHEMA_ROOT)
+    PUB_SCHEMA_DRAFT = getattr(settings, 'PUBLICATION_DRAFT_SCHEMA',
+                               default_settings.PUBLICATION_DRAFT_SCHEMA)
     restricted_publications = Experiment.objects.filter(
         experimentparameterset__schema__namespace=PUB_SCHEMA,
         public_access=Experiment.PUBLIC_ACCESS_EMBARGO) \
@@ -67,15 +92,20 @@ def process_embargos():
         if embargo_expired and pdb_pass:
             pub.public_access = Experiment.PUBLIC_ACCESS_FULL
             doi = None
-            try:
-                doi_value = ExperimentParameter.objects.get(
-                    name__name='doi',
-                    name__schema__namespace=settings.PUBLICATION_DETAILS_SCHEMA,
-                    parameterset__experiment=pub).string_value
-                doi = DOI(doi_value)
-                doi.activate()
-            except ExperimentParameter.DoesNotExist:
-                pass
+            doi_value = None
+            if getattr(settings, 'MODC_DOI_ENABLED',
+                       default_settings.MODC_DOI_ENABLED):
+                try:
+                    doi_value = ExperimentParameter.objects.get(
+                        name__name='doi',
+                        name__schema__namespace=getattr(settings,
+                                                        'PUBLICATION_DETAILS_SCHEMA',
+                                                        default_settings.PUBLICATION_DETAILS_SCHEMA),
+                        parameterset__experiment=pub).string_value
+                    doi = DOI(doi_value)
+                    doi.activate()
+                except ExperimentParameter.DoesNotExist:
+                    pass
 
             email_message = email_pub_released(pub.title, doi_value)
 
@@ -84,10 +114,15 @@ def process_embargos():
             pub.save()
 
 
+@transaction.commit_on_success
 def populate_pdb_pub_records():
-    PUB_SCHEMA = settings.PUBLICATION_SCHEMA_ROOT
-    PUB_SCHEMA_DRAFT = settings.PUBLICATION_DRAFT_SCHEMA
-    PDB_SCHEMA = settings.PDB_PUBLICATION_SCHEMA_ROOT
+    print("running update")
+    PUB_SCHEMA = getattr(settings, 'PUBLICATION_SCHEMA_ROOT',
+                         default_settings.PUBLICATION_SCHEMA_ROOT)
+    PUB_SCHEMA_DRAFT = getattr(settings, 'PUBLICATION_DRAFT_SCHEMA',
+                               default_settings.PUBLICATION_DRAFT_SCHEMA)
+    PDB_SCHEMA = getattr(settings, 'PDB_PUBLICATION_SCHEMA_ROOT',
+                         default_settings.PDB_PUBLICATION_SCHEMA_ROOT)
     publications = Experiment.objects \
         .filter(experimentparameterset__schema__namespace=PDB_SCHEMA) \
         .filter(experimentparameterset__schema__namespace=PUB_SCHEMA) \
@@ -123,7 +158,10 @@ def populate_pdb_pub_records():
                 parameterset__experiment=pub
             )
             last_update = pdb_last_update_parameter.datetime_value
-            needs_update = last_update + settings.PDB_REFRESH_INTERVAL \
+            needs_update = last_update + \
+                getattr(settings,
+                        'PDB_REFRESH_INTERVAL',
+                        default_settings.PDB_REFRESH_INTERVAL) \
                 < datetime.now()
 
         except ExperimentParameter.DoesNotExist:
@@ -137,7 +175,9 @@ def populate_pdb_pub_records():
         if needs_update:
             # 1. get the PDB info
             pdb_parameter_set = ExperimentParameterSet.objects.get(
-                schema__namespace=settings.PDB_PUBLICATION_SCHEMA_ROOT,
+                schema__namespace=getattr(settings,
+                                          'PDB_PUBLICATION_SCHEMA_ROOT',
+                                          default_settings.PDB_PUBLICATION_SCHEMA_ROOT),
                 experiment=pub)
             pdb = ExperimentParameter.objects.get(
                 name__name='pdb-id',
@@ -168,14 +208,19 @@ def populate_pdb_pub_records():
 
                 # 4. insert sequence info (lazy checking)
                 pdb_seq_parameter_sets = ExperimentParameterSet.objects.filter(
-                    schema__namespace=settings.PDB_SEQUENCE_PUBLICATION_SCHEMA,
+                    schema__namespace=getattr(settings,
+                                              'PDB_SEQUENCE_PUBLICATION_SCHEMA',
+                                              default_settings.PDB_SEQUENCE_PUBLICATION_SCHEMA),
                     experiment=pub)
                 if pdb_seq_parameter_sets.count() == 0:
                     # insert seqences
                     for seq in pdb.get_sequence_info():
                         seq_parameter_set = ExperimentParameterSet(
                             schema=Schema.objects.get(
-                                namespace=settings.PDB_SEQUENCE_PUBLICATION_SCHEMA),
+                                namespace=getattr(settings,
+                                                  'PDB_SEQUENCE_PUBLICATION_SCHEMA',
+                                                  default_settings.PDB_SEQUENCE_PUBLICATION_SCHEMA)
+                            ),
                             experiment=pub)
                         seq_parameter_set.save()
                         add_if_missing(seq_parameter_set, 'organism',
@@ -187,12 +232,17 @@ def populate_pdb_pub_records():
 
                 # 5. insert/update citation info (aggressive)
                 ExperimentParameterSet.objects.filter(
-                    schema__namespace=settings.PDB_CITATION_PUBLICATION_SCHEMA,
+                    schema__namespace=getattr(settings,
+                                              'PDB_CITATION_PUBLICATION_SCHEMA',
+                                              default_settings.PDB_CITATION_PUBLICATION_SCHEMA),
                     experiment=pub).delete()
                 for citation in pdb.get_citations():
                     cit_parameter_set = ExperimentParameterSet(
                         schema=Schema.objects.get(
-                            namespace=settings.PDB_CITATION_PUBLICATION_SCHEMA),
+                            namespace=getattr(settings,
+                                              'PDB_CITATION_PUBLICATION_SCHEMA',
+                                              default_settings.PDB_CITATION_PUBLICATION_SCHEMA)
+                        ),
                         experiment=pub)
                     cit_parameter_set.save()
                     add_if_missing(cit_parameter_set, 'title',
@@ -215,7 +265,7 @@ def populate_pdb_pub_records():
                 # occurred and therefore the PDB must have been relased.
                 try:
                     ExperimentParameter.objects.get(name__name='pdb-embargo',
-                                                    parameterset__schema__namespace=settings.PUBLICATION_SCHEMA_ROOT) \
+                                                    parameterset__schema__namespace=getattr(settings, 'PUBLICATION_SCHEMA_ROOT', default_settings.PUBLICATION_SCHEMA_ROOT)) \
                         .delete()
                 except ExperimentParameter.DoesNotExist:
                     pass
@@ -234,7 +284,8 @@ def populate_pdb_pub_records():
                     pdb_last_update_parameter.datetime_value = datetime.now()
                 pdb_last_update_parameter.save()
 
-            except StarFile.StarError:
+            except CifFile.StarError:
+                print("error")
                 # PDB is either unavailable or invalid
                 # (maybe notify the user somehow?)
                 continue

@@ -2,6 +2,7 @@ import json
 import re
 
 import dateutil.parser
+import CifFile
 import CifFile.StarFile as StarFile
 
 from django.contrib.auth.decorators import login_required
@@ -291,13 +292,15 @@ def process_form(request):
                             string_value=form_state['acknowledgements']).save()
 
         # DOIs are generated during approval, so this is just a placeholder.
-        doi = '---'
-        doi_parameter_name = ParameterName.objects.get(
-            schema=pub_details_schema,
-            name='doi')
-        ExperimentParameter(name=doi_parameter_name,
-                            parameterset=pub_details_parameter_set,
-                            string_value=doi).save()
+        if getattr(settings, 'MODC_DOI_ENABLED',
+                   default_settings.MODC_DOI_ENABLED):
+            doi = '---'
+            doi_parameter_name = ParameterName.objects.get(
+                schema=pub_details_schema,
+                name='doi')
+            ExperimentParameter(name=doi_parameter_name,
+                                parameterset=pub_details_parameter_set,
+                                string_value=doi).save()
 
         # Set the release date
         release_date = dateutil.parser.parse(form_state['embargo'])
@@ -339,7 +342,8 @@ def process_form(request):
             user.email
             for user in Group.objects.get(
                 name=getattr(settings, 'PUBLICATION_OWNER_GROUP',
-                             'publication-admin')).user_set.all()
+                             default_settings.PUBLICATION_OWNER_GROUP))
+            .user_set.all()
             if user.email]
         message_content = email_pub_requires_authorisation(
             request.user.username,
@@ -372,7 +376,8 @@ def select_forms(datasets):
     default_form = [{'name': 'default',
                      'template': '/static/publication-form/default-form.html'}]
 
-    if not hasattr(settings, 'PUBLICATION_FORM_MAPPINGS'):
+    if not hasattr(settings, 'PUBLICATION_FORM_MAPPINGS')\
+       and not hasattr(default_settings, 'PUBLICATION_FORM_MAPPINGS'):
         return default_form
 
     FORM_MAPPINGS = getattr(settings, 'PUBLICATION_FORM_MAPPINGS',
@@ -516,7 +521,7 @@ def pdb_helper(request, pdb_id):
             'authors': authors,
             'status': 'RELEASED'
         }
-    except StarFile.StarError:
+    except CifFile.StarError:
         # If it's not released, check if it's a valid PDB ID
         status = check_pdb_status(pdb_id)
         if status == 'UNRELEASED':
@@ -581,7 +586,8 @@ def approval_ajax(request):
             pub_id = json_request['id']
             message = json_request['message']
             try:
-                approve_publication(Experiment.objects.get(pk=pub_id), message)
+                approve_publication(request, Experiment.objects.get(pk=pub_id),
+                                    message)
             except Experiment.DoesNotExist:
                 pass
         elif json_request['action'] == 'revert':
@@ -616,7 +622,7 @@ def get_publications_awaiting_approval():
     return pubs
 
 
-def approve_publication(publication, message=None):
+def approve_publication(request, publication, message=None):
     if publication.is_publication() and not publication.is_publication_draft()\
             and publication.public_access == Experiment.PUBLIC_ACCESS_NONE:
         # Change the access level
@@ -633,22 +639,28 @@ def approve_publication(publication, message=None):
         publication.save()
 
         doi = None
-        try:
-            doi_param = ExperimentParameter.objects.get(
-                name__name='doi',
-                name__schema__namespace=getattr(
-                    settings, 'PUBLICATION_DETAILS_SCHEMA',
-                    default_settings.PUBLICATION_DETAILS_SCHEMA),
-                parameterset__experiment=publication)
-            doi = DOI()
-            doi_param.string_value = doi.mint(
-                publication.id, 'experiment/view/' + str(publication.id) + '/')
-            doi.deactivate()
-            doi_param.save()
-        except ExperimentParameter.DoesNotExist:
-            pass
+        url = request.build_absolute_uri('/experiment/view/' +
+                                         str(publication.id) + '/')
+        if getattr(settings, 'MODC_DOI_ENABLED',
+                   default_settings.MODC_DOI_ENABLED):
+            try:
+                doi_param = ExperimentParameter.objects.get(
+                    name__name='doi',
+                    name__schema__namespace=getattr(
+                        settings, 'PUBLICATION_DETAILS_SCHEMA',
+                        default_settings.PUBLICATION_DETAILS_SCHEMA),
+                    parameterset__experiment=publication)
+                doi = DOI()
+                doi_param.string_value = doi.mint(
+                    publication.id, 'experiment/view/' + str(publication.id) +
+                    '/')
+                doi.deactivate()
+                doi_param.save()
+            except ExperimentParameter.DoesNotExist:
+                pass
 
-        email_message = email_pub_approved(publication.title, message, doi)
+        email_message = email_pub_approved(publication.title, message, doi,
+                                           url)
 
         send_mail_to_authors(publication, '[TARDIS] Publication approved',
                              email_message)

@@ -22,12 +22,12 @@ administrator.
 You will receive a notification once his has occurred.''' % pub_title
 
 
-def email_pub_approved(pub_title, message=None, doi=None):
+def email_pub_approved(pub_title, message=None, doi=None, url=None):
     email_message = '''\
 Hello!
 Your publication, %s, has been approved for release and will appear online \
-following any embargo conditions.
-''' % pub_title
+following any embargo conditions. You may view your publication here: %s
+''' % (pub_title, url)
 
     if doi is not None:
         email_message += '''A DOI has been assigned to this publication (%s) \

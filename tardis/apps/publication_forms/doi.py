@@ -66,7 +66,6 @@ class DOI():
                         default_settings.MODC_DOI_ACTIVATE_DEFINITION),
                 getattr(settings, 'MODC_DOI_ENDPOINT',
                         default_settings.MODC_DOI_ENDPOINT))
-        print("activating %s" % doi)
         response = client.service.ActivateDoi(self.api_id, doi=doi)
         return response
 
@@ -79,7 +78,6 @@ class DOI():
                         default_settings.MODC_DOI_DEACTIVATE_DEFINITION),
                 getattr(settings, 'MODC_DOI_ENDPOINT',
                         default_settings.MODC_DOI_ENDPOINT))
-        print("deactivating %s" % doi)
         response = client.service.DeactivateDoi(self.api_id, doi=doi)
         return response
 

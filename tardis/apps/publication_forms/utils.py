@@ -170,5 +170,5 @@ def send_mail_to_authors(publication, subject, message):
                        ExperimentAuthor.objects.filter(experiment=publication)]
     send_mail(subject, message,
               getattr(settings, 'PUBLICATION_NOTIFICATION_SENDER_EMAIL',
-                       default_settings.PUBLICATION_NOTIFICATION_SENDER_EMAIL),
+                      default_settings.PUBLICATION_NOTIFICATION_SENDER_EMAIL),
               email_addresses, fail_silently=True)
