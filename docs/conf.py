@@ -54,8 +54,8 @@ copyright = u'2013, MyTardis Development Team'
 # built documents.
 #
 # The short X.Y version.
-import pkg_resources  # part of setuptools
-version = pkg_resources.require("MyTardis")[0].version
+import tardis
+version = tardis.__version__
 
 # The full version, including alpha/beta/rc tags.
 
