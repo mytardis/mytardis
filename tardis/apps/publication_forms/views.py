@@ -3,9 +3,9 @@ import re
 
 import dateutil.parser
 import CifFile
-import CifFile.StarFile as StarFile
 
 from django.contrib.auth.decorators import login_required
+from django.core.urlresolvers import reverse
 from django.views.decorators.cache import never_cache
 from django.http import HttpResponse, HttpResponseForbidden
 from django.conf import settings
@@ -167,8 +167,10 @@ def process_form(request):
                                 name=parameter_name,
                                 parameterset=parameter_set,
                                 numerical_value=float(value))
-                        elif parameter_name.isLongString() or parameter_name.isString() or \
-                                parameter_name.isURL() or parameter_name.isLink() or \
+                        elif parameter_name.isLongString() or \
+                                parameter_name.isString() or \
+                                parameter_name.isURL() or \
+                                parameter_name.isLink() or \
                                 parameter_name.isFilename():
                             parameter = ExperimentParameter(
                                 name=parameter_name,
@@ -188,9 +190,8 @@ def process_form(request):
             datasets = Dataset.objects.filter(experiments=publication)
             synch_experiments = Experiment.objects.filter(
                 datasets__in=datasets,
-                experimentparameterset__schema=synch_epn_schema)\
-                                                  .exclude(pk=publication.pk)\
-                                                  .distinct()
+                experimentparameterset__schema=synch_epn_schema).exclude(
+                    pk=publication.pk).distinct()
             for exp in [s for s in
                         synch_experiments if not s.is_publication()]:
                 epn = ExperimentParameter.objects.get(
@@ -348,7 +349,8 @@ def process_form(request):
         message_content = email_pub_requires_authorisation(
             request.user.username,
             request.build_absolute_uri(
-                '/experiment/view/' + str(publication.id) + '/'),
+                reverse('tardis.tardis_portal.views.view_experiment',
+                        args=(publication.id, ))),
             request.build_absolute_uri(
                 '/apps/publication-forms/approvals/'))
 
@@ -639,8 +641,9 @@ def approve_publication(request, publication, message=None):
         publication.save()
 
         doi = None
-        url = request.build_absolute_uri('/experiment/view/' +
-                                         str(publication.id) + '/')
+        url = request.build_absolute_uri(
+            reverse('tardis.tardis_portal.views.view_experiment',
+                    args=(publication.id, )))
         if getattr(settings, 'MODC_DOI_ENABLED',
                    default_settings.MODC_DOI_ENABLED):
             try:
@@ -652,8 +655,9 @@ def approve_publication(request, publication, message=None):
                     parameterset__experiment=publication)
                 doi = DOI()
                 doi_param.string_value = doi.mint(
-                    publication.id, 'experiment/view/' + str(publication.id) +
-                    '/')
+                    publication.id,
+                    reverse('tardis.tardis_portal.views.view_experiment',
+                            args=(publication.id, )))
                 doi.deactivate()
                 doi_param.save()
             except ExperimentParameter.DoesNotExist:

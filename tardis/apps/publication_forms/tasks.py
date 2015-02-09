@@ -1,7 +1,6 @@
 from datetime import datetime
 
 import CifFile
-import CifFile.StarFile as StarFile
 
 from django.conf import settings
 from django.core.cache import cache
@@ -38,9 +37,10 @@ def has_pdb_embargo(publication):
     try:
         has_embargo = ExperimentParameter.objects.get(
             name__name='pdb-embargo',
-            name__schema__namespace=getattr(settings,
-                                            'PUBLICATION_SCHEMA_ROOT',
-                                            default_settings.PUBLICATION_SCHEMA_ROOT),
+            name__schema__namespace=getattr(
+                settings,
+                'PUBLICATION_SCHEMA_ROOT',
+                default_settings.PUBLICATION_SCHEMA_ROOT),
             parameterset__experiment=publication
         ).string_value.lower() == 'true'
     except ExperimentParameter.DoesNotExist:
@@ -53,9 +53,10 @@ def get_release_date(publication):
     try:
         release_date = ExperimentParameter.objects.get(
             name__name='embargo',
-            name__schema__namespace=getattr(settings,
-                                            'PUBLICATION_SCHEMA_ROOT',
-                                            default_settings.PUBLICATION_SCHEMA_ROOT),
+            name__schema__namespace=getattr(
+                settings,
+                'PUBLICATION_SCHEMA_ROOT',
+                default_settings.PUBLICATION_SCHEMA_ROOT),
             parameterset__experiment=publication).datetime_value
     except ExperimentParameter.DoesNotExist:
         release_date = datetime.now()
@@ -98,9 +99,10 @@ def process_embargos():
                 try:
                     doi_value = ExperimentParameter.objects.get(
                         name__name='doi',
-                        name__schema__namespace=getattr(settings,
-                                                        'PUBLICATION_DETAILS_SCHEMA',
-                                                        default_settings.PUBLICATION_DETAILS_SCHEMA),
+                        name__schema__namespace=getattr(
+                            settings,
+                            'PUBLICATION_DETAILS_SCHEMA',
+                            default_settings.PUBLICATION_DETAILS_SCHEMA),
                         parameterset__experiment=pub).string_value
                     doi = DOI(doi_value)
                     doi.activate()
@@ -174,9 +176,10 @@ def populate_pdb_pub_records():
         if needs_update:
             # 1. get the PDB info
             pdb_parameter_set = ExperimentParameterSet.objects.get(
-                schema__namespace=getattr(settings,
-                                          'PDB_PUBLICATION_SCHEMA_ROOT',
-                                          default_settings.PDB_PUBLICATION_SCHEMA_ROOT),
+                schema__namespace=getattr(
+                    settings,
+                    'PDB_PUBLICATION_SCHEMA_ROOT',
+                    default_settings.PDB_PUBLICATION_SCHEMA_ROOT),
                 experiment=pub)
             pdb = ExperimentParameter.objects.get(
                 name__name='pdb-id',
@@ -207,19 +210,21 @@ def populate_pdb_pub_records():
 
                 # 4. insert sequence info (lazy checking)
                 pdb_seq_parameter_sets = ExperimentParameterSet.objects.filter(
-                    schema__namespace=getattr(settings,
-                                              'PDB_SEQUENCE_PUBLICATION_SCHEMA',
-                                              default_settings.PDB_SEQUENCE_PUBLICATION_SCHEMA),
+                    schema__namespace=getattr(
+                        settings,
+                        'PDB_SEQUENCE_PUBLICATION_SCHEMA',
+                        default_settings.PDB_SEQUENCE_PUBLICATION_SCHEMA),
                     experiment=pub)
                 if pdb_seq_parameter_sets.count() == 0:
                     # insert seqences
                     for seq in pdb.get_sequence_info():
+                        seq_ps_namespace = getattr(
+                            settings,
+                            'PDB_SEQUENCE_PUBLICATION_SCHEMA',
+                            default_settings.PDB_SEQUENCE_PUBLICATION_SCHEMA)
                         seq_parameter_set = ExperimentParameterSet(
                             schema=Schema.objects.get(
-                                namespace=getattr(settings,
-                                                  'PDB_SEQUENCE_PUBLICATION_SCHEMA',
-                                                  default_settings.PDB_SEQUENCE_PUBLICATION_SCHEMA)
-                            ),
+                                namespace=seq_ps_namespace),
                             experiment=pub)
                         seq_parameter_set.save()
                         add_if_missing(seq_parameter_set, 'organism',
@@ -231,17 +236,18 @@ def populate_pdb_pub_records():
 
                 # 5. insert/update citation info (aggressive)
                 ExperimentParameterSet.objects.filter(
-                    schema__namespace=getattr(settings,
-                                              'PDB_CITATION_PUBLICATION_SCHEMA',
-                                              default_settings.PDB_CITATION_PUBLICATION_SCHEMA),
+                    schema__namespace=getattr(
+                        settings,
+                        'PDB_CITATION_PUBLICATION_SCHEMA',
+                        default_settings.PDB_CITATION_PUBLICATION_SCHEMA),
                     experiment=pub).delete()
                 for citation in pdb.get_citations():
+                    cit_ps_namespace = getattr(
+                        settings,
+                        'PDB_CITATION_PUBLICATION_SCHEMA',
+                        default_settings.PDB_CITATION_PUBLICATION_SCHEMA)
                     cit_parameter_set = ExperimentParameterSet(
-                        schema=Schema.objects.get(
-                            namespace=getattr(settings,
-                                              'PDB_CITATION_PUBLICATION_SCHEMA',
-                                              default_settings.PDB_CITATION_PUBLICATION_SCHEMA)
-                        ),
+                        schema=Schema.objects.get(namespace=cit_ps_namespace),
                         experiment=pub)
                     cit_parameter_set.save()
                     add_if_missing(cit_parameter_set, 'title',
@@ -263,9 +269,12 @@ def populate_pdb_pub_records():
                 # 6. Remove the PDB embargo if set, since the update has
                 # occurred and therefore the PDB must have been relased.
                 try:
-                    ExperimentParameter.objects.get(name__name='pdb-embargo',
-                                                    parameterset__schema__namespace=getattr(settings, 'PUBLICATION_SCHEMA_ROOT', default_settings.PUBLICATION_SCHEMA_ROOT)) \
-                        .delete()
+                    ExperimentParameter.objects.get(
+                        name__name='pdb-embargo',
+                        parameterset__schema__namespace=getattr(
+                            settings,
+                            'PUBLICATION_SCHEMA_ROOT',
+                            default_settings.PUBLICATION_SCHEMA_ROOT)).delete()
                 except ExperimentParameter.DoesNotExist:
                     pass
 
