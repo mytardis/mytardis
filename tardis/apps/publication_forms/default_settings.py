@@ -40,7 +40,7 @@ PDB_CITATION_PUBLICATION_SCHEMA = PDB_PUBLICATION_SCHEMA_ROOT+'citation/'
 MX_PUBLICATION_DATASET_SCHEMA = 'http://synchrotron.org.au/pub/mx/dataset/'
 
 from datetime import timedelta
-PDB_REFRESH_INTERVAL = timedelta(seconds=60)
+PDB_REFRESH_INTERVAL = timedelta(days=7)
 
 PUBLICATION_FORM_MAPPINGS = [
     {'dataset_schema': r'^http://synchrotron.org.au/mx/',
