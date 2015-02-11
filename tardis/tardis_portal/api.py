@@ -857,12 +857,10 @@ class ReplicaResource(MyTardisModelResource):
                 bundle.obj.storage_box = StorageBox.objects.get(
                     name=bundle.data['location'])
             except StorageBox.DoesNotExist:
-                bundle.obj.storage_box = datafile\
-                          .dataset.get_default_storage_box()
+                bundle.obj.storage_box = datafile.get_default_storage_box()
             del(bundle.data['location'])
         else:
-            bundle.obj.storage_box = datafile\
-                      .dataset.get_default_storage_box()
+            bundle.obj.storage_box = datafile.get_default_storage_box()
 
         bundle.obj.save()
         if 'file_object' in bundle.data:

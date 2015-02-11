@@ -79,7 +79,7 @@ class ParameterSetManagerTestCase(TestCase):
 
         self.dfo = DataFileObject(
             datafile=self.datafile,
-            storage_box=self.datafile.dataset.get_default_storage_box(),
+            storage_box=self.datafile.get_default_storage_box(),
             uri="1/testfile.txt")
         self.dfo.save()
 

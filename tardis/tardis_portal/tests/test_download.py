@@ -120,7 +120,7 @@ class DownloadTestCase(TestCase):
         datafile.save()
         dfo = DataFileObject(
             datafile=datafile,
-            storage_box=datafile.dataset.get_default_storage_box(),
+            storage_box=datafile.get_default_storage_box(),
             uri=url)
         dfo.save()
         return DataFile.objects.get(pk=datafile.pk)
