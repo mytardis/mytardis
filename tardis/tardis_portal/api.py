@@ -64,6 +64,8 @@ from tastypie.serializers import Serializer
 from tastypie.utils import trailing_slash
 from tastypie.contrib.contenttypes.fields import GenericForeignKeyField
 
+import logging
+logger = logging.getLogger(__name__)
 
 class PrettyJSONSerializer(Serializer):
     json_indent = 2
@@ -147,6 +149,9 @@ class ACLAuthorization(Authorization):
             return [exp for exp in experiments if exp in object_list]
         elif bundle.request.user.is_authenticated() and \
                 type(bundle.obj) == User:
+            return object_list
+        elif bundle.request.user.is_authenticated() and \
+                type(bundle.obj) == Group:
             return object_list
         elif type(bundle.obj) == ExperimentParameterSet:
             experiments = Experiment.safe.all(bundle.request.user)
@@ -240,6 +245,8 @@ class ACLAuthorization(Authorization):
             public_user = bundle.obj.experiment_set.filter(
                 public_access__gt=1).count() > 0
             return public_user or authenticated
+        elif type(bundle.obj) == Group:
+            return bundle.request.user.is_authenticated()
         elif type(bundle.obj) == Schema:
             return True
         elif type(bundle.obj) == ParameterName:
@@ -696,9 +703,9 @@ class ExperimentResource(MyTardisModelResource):
                 return experiment
 
         '''
-        Responds to instrument/owner/date query for instrument app.
-        The initial owner of the experiment will be the facility manager
-        account, e.g. "mmi", and then the experiment will be made accessible
+        Responds to instrument/owner/date query for MyData.
+        The initial owner of the experiment will be the facility role account,
+        e.g. "testfacility", and then the experiment will be made accessible
         to the real "owner", whose username will be recorded as an experiment
         parameter.  This query can be used to retrieve an experiment using the
         instrument, owner, and collection date.
@@ -716,12 +723,6 @@ class ExperimentResource(MyTardisModelResource):
             exp_schema = Schema.objects.get(
                 namespace='http://tardis.edu.au'
                 '/schemas/experimentInstrument')
-
-            instrument_pn = ParameterName.objects.get(schema=exp_schema,
-                                                      name='instrument')
-            owner_pn = ParameterName.objects.get(schema=exp_schema,
-                                                 name='owner')
-            date_pn = ParameterName.objects.get(schema=exp_schema, name='date')
 
             exp_psets = ExperimentParameterSet.objects\
                 .filter(schema=exp_schema)
@@ -745,6 +746,50 @@ class ExperimentResource(MyTardisModelResource):
                     experiment_id = exp_pset.experiment.id
                     exp_list = Experiment.objects.filter(pk=experiment_id)
                     if exp_list[0] in Experiment.safe.all(bundle.request.user):
+                        return exp_list
+
+            return []
+
+        '''
+        Responds to instrument/owner/title query for MyData.
+        The initial owner of the experiment will be the facility role account,
+        e.g. "testfacility", and then the experiment will be made accessible
+        to the real "owner", whose username will be recorded as an experiment
+        parameter.  This query can be used to retrieve an experiment using the
+        instrument, owner, and experiment title.
+
+        '''
+        if hasattr(bundle.request, 'GET') and \
+                'instrument' in bundle.request.GET and \
+                'owner' in bundle.request.GET and \
+                'title' in bundle.request.GET:
+
+            instrument = bundle.request.GET['instrument']
+            owner = bundle.request.GET['owner']
+            title = bundle.request.GET['title']
+
+            exp_schema = Schema.objects.get(
+                namespace='http://tardis.edu.au'
+                '/schemas/experimentInstrument')
+
+            exp_psets = ExperimentParameterSet.objects\
+                .filter(schema=exp_schema)
+            for exp_pset in exp_psets:
+                exp_params = ExperimentParameter.objects\
+                    .filter(parameterset=exp_pset)
+                matched_instrument = False
+                matched_owner = False
+                for exp_param in exp_params:
+                    if exp_param.name.name == "instrument" and \
+                            exp_param.string_value == instrument:
+                        matched_instrument = True
+                    if exp_param.name.name == "owner" and \
+                            exp_param.string_value == owner:
+                        matched_owner = True
+                if matched_instrument and matched_owner:
+                    experiment_id = exp_pset.experiment.id
+                    exp_list = Experiment.objects.filter(pk=experiment_id)
+                    if exp_list[0] in Experiment.safe.all(bundle.request.user).filter(title=title):
                         return exp_list
 
             return []
@@ -1083,6 +1128,9 @@ class ObjectAclResource(MyTardisModelResource):
         }
 
 
+# FIXME: MyData no longer needs special Auth for Uploaders,
+# i.e. MyData should already have authenticated succesfully
+# to MyTardis by the time it creates an Uploader record.
 class UploaderAuthorization(Authorization):
     '''Authorisation class for Tastypie.
     '''
@@ -1203,11 +1251,16 @@ class UploaderResource(MyTardisModelResource):
         return bundle
 
     def obj_update(self, bundle, **kwargs):
+        # Workaround for
+        # https://github.com/toastdriven/django-tastypie/issues/390 :
+        if hasattr(bundle, "obj_update_done"):
+            return
         bundle.data['updated_time'] = datetime.now()
         ip = get_ip(bundle.request)
         if ip is not None:
             bundle.data['wan_ip_address'] = ip
         bundle = super(UploaderResource, self).obj_update(bundle, **kwargs)
+        bundle.obj_update_done = True
         return bundle
 
 
