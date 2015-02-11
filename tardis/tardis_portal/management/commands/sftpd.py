@@ -21,9 +21,9 @@ class Command(BaseCommand):
                     action='store',
                     type='int',
                     dest='port',
-                    default=getattr(settings, 'SFTPD_PORT', 2200),
+                    default=getattr(settings, 'SFTP_PORT', 2200),
                     help='Port to listen on, default: 2200'),
     )
 
     def handle(self, *args, **kwargs):
-        sftp.start_server(host=kwargs['host'])
+        sftp.start_server(host=kwargs['host'], port=kwargs['port'])
