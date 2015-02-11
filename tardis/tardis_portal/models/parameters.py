@@ -220,6 +220,9 @@ def _getParameter(parameter):
         return value
 
     elif parameter.name.isLongString():
+        if parameter.string_value.strip().startswith("<table>") and \
+                parameter.string_value.strip().endswith("</table>"):
+            return mark_safe(parameter.string_value)
         return parameter.string_value
 
     elif parameter.name.isString():
