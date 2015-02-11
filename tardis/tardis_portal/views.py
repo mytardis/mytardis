@@ -417,9 +417,14 @@ def fetch_facility_data(request, facility_id, start_index, end_index):
     for dataset in dataset_objects:
         instrument = dataset.instrument
         facility = instrument.facility
-        parent_experiment = dataset.experiments.all()[:1].get()
+        try:
+            parent_experiment = dataset.experiments.all()[:1].get()
+        except ObjectDoesNotExist:
+            logger.warning("Not listing dataset id %d in Facility Overview" % dataset.id)
+            continue
         datafile_objects = DataFile.objects.filter(dataset=dataset)
         owners = parent_experiment.get_owners()
+        groups = parent_experiment.get_groups()
         datafiles = []
         dataset_size = 0
         verified_datafiles_count = 0
@@ -470,6 +475,7 @@ def fetch_facility_data(request, facility_id, start_index, end_index):
             "verified_datafiles_count": verified_datafiles_count,
             "verified_datafiles_size": verified_datafiles_size,
             "owner": ', '.join([o.username for o in owners]),
+            "group": ', '.join([g.name for g in groups]),
             "instrument": {
                 "id": instrument.id,
                 "name": instrument.name,
