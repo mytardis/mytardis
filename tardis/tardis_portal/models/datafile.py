@@ -145,7 +145,7 @@ class DataFile(models.Model):
 
     def get_view_url(self):
         import re
-        viewable_mimetype_patterns = ('image/.*', 'text/.*')
+        viewable_mimetype_patterns = ('image/.*', 'text/.*', 'application/pdf')
         if not any(re.match(p, self.get_mimetype())
                    for p in viewable_mimetype_patterns):
             return None
