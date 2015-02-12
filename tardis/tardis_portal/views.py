@@ -425,6 +425,11 @@ def fetch_facility_data(request, facility_id, start_index, end_index):
         datafile_objects = DataFile.objects.filter(dataset=dataset)
         owners = parent_experiment.get_owners()
         groups = parent_experiment.get_groups()
+        created_time = datetime_to_us(parent_experiment.created_time)
+        if len(datafile_objects) > 0:
+            created_time = \
+                datetime_to_us(dataset.datafile_set
+                               .order_by('created_time')[0].created_time)
         datafiles = []
         dataset_size = 0
         verified_datafiles_count = 0
@@ -463,6 +468,7 @@ def fetch_facility_data(request, facility_id, start_index, end_index):
             dataset_size = dataset_size + int(datafile.size)
         obj = {
             "id": dataset.id,
+            "created_time": created_time,
             "parent_experiment": {
                 "id": parent_experiment.id,
                 "title": parent_experiment.title,
