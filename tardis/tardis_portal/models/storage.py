@@ -6,6 +6,8 @@ from django.db import models
 from django.db.utils import DatabaseError
 import django.core.files.storage as django_storage
 
+from celery.contrib.methods import task
+
 import logging
 logger = logging.getLogger(__name__)
 
@@ -64,6 +66,16 @@ class StorageBox(models.Model):
     class Meta:
         app_label = 'tardis_portal'
         verbose_name_plural = 'storage boxes'
+
+    @task(name="tardis_portal.storage_box.copy_files", ignore_result=True)
+    def copy_files(self, dest_box=None):
+        for dfo in self.file_objects.all():
+            dfo.copy_file(dest_box)
+
+    @task(name="tardis_portal.storage_box.move_files", ignore_result=True)
+    def move_files(self, dest_box=None):
+        for dfo in self.file_objects.all():
+            dfo.move_file(dest_box)
 
     @classmethod
     def get_default_storage(cls, location=None, user=None):

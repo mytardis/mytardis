@@ -2,10 +2,15 @@ from os import path
 from datetime import datetime
 
 from django.conf import settings
-from django.db import models
-from django.db.models import Q
+from django.core.files import File
 from django.core.files import File
 from django.core.urlresolvers import reverse
+from django.core.urlresolvers import reverse
+from django.db import models
+from django.db import transaction
+from django.db.models import Q
+from django.db.models.signals import pre_delete
+from django.dispatch import receiver
 
 from celery.contrib.methods import task
 
@@ -303,11 +308,19 @@ class DataFileObject(models.Model):
     verified = models.BooleanField(default=False)
     last_verified_time = models.DateTimeField(blank=True, null=True)
 
-    _cached_file_object = None
-
     class Meta:
         app_label = 'tardis_portal'
         unique_together = ['datafile', 'storage_box']
+
+    def __unicode__(self):
+        try:
+            return 'Box: %(storage_box)s, URI: %(uri)s, verified: %(v)s' % {
+                'storage_box': str(self.storage_box),
+                'uri': self.uri,
+                'v': str(self.verified)
+            }
+        except:
+            return 'undefined'
 
     def _get_identifier(self):
         '''
@@ -327,11 +340,9 @@ class DataFileObject(models.Model):
                 dfo.save()
             return dfo.uri
 
-        inst = self.storage_box.get_initialised_storage_instance()
-        uri = None
-        if hasattr(inst, 'build_identifier'):
-            uri = inst.build_identifier(self)
-        return uri or default_identifier(self)
+        build_identifier = getattr(self._storage, 'build_identifier',
+                                   default_identifier)
+        return build_identifier(self)
 
     def get_save_location(self):
         return self.storage_box.get_save_location(self)
@@ -343,10 +354,10 @@ class DataFileObject(models.Model):
         standard python file object for reading and copy the contents of an
         existing file_object into the storage backend.
         '''
-        if self._cached_file_object is None or self._cached_file_object.closed:
-            self._cached_file_object = self\
-                .storage_box.get_initialised_storage_instance().open(
-                    self._get_identifier())
+        cached_file_object = getattr(self, '_cached_file_object', None)
+        if cached_file_object is None or cached_file_object.closed:
+            cached_file_object = self._storage.open(self._get_identifier())
+            self._cached_file_object = cached_file_object
         return self._cached_file_object
 
     @file_object.setter
@@ -358,17 +369,59 @@ class DataFileObject(models.Model):
             file_object = File(file_object)
             file_object.open()
         file_object.seek(0)
-        self.uri = self.storage_box.get_initialised_storage_instance()\
-                                   .save(self._get_identifier(), file_object)
+        self.uri = self._storage.save(self._get_identifier(), file_object)
         self.save()
 
     @property
-    def size(self):
-        return self.storage_box.get_initialised_storage_instance().size(
-                    self._get_identifier())
+    def _storage(self):
+        cached_storage = getattr(self, '_cached_storage', None)
+        if cached_storage is None:
+            cached_storage = self.storage_box\
+                                 .get_initialised_storage_instance()
+            self._cached_storage = cached_storage
+        return self._cached_storage
 
-    def delete(self):
-        super(DataFileObject, self).delete()
+    @task(name='tardis_portal.dfo.copy_file', ignore_result=True)
+    def copy_file(self, dest_box=None, verify=True):
+        '''
+        copies file to new storage box
+        checks for existing copy
+        triggers async verification if not disabled
+        '''
+        if dest_box is None:
+            dest_box = StorageBox.get_default_storage()
+        existing = self.datafile.file_objects.filter(storage_box=dest_box)
+        if existing.count() > 0:
+            if not existing[0].verified and verify:
+                existing[0].verify.delay()
+            return existing[0]
+        try:
+            with transaction.commit_on_success():
+                copy = DataFileObject(
+                    datafile=self.datafile,
+                    storage_box=dest_box)
+                copy.save()
+                copy.file_object = self.file_object
+        except Exception as e:
+            logger.error(
+                'file move failed for dfo id: %s, with error: %s' %
+                (self.id, str(e)))
+            return False
+        if verify:
+            copy.verify.delay()
+        return copy
+
+    @task(name='tardis_portal.dfo.move_file', ignore_result=True)
+    def move_file(self, dest_box=None):
+        '''
+        moves a file
+        copies first, then synchronously verifies
+        deletes file if copy is true copy and has been verified
+        '''
+        copy = self.copy_file(dest_box=dest_box, verify=False)
+        if copy and copy.id != self.id and (copy.verified or copy.verify()):
+            self.delete()
+        return copy
 
     @task(name="tardis_portal.verify_dfo_method", ignore_result=True)  # noqa # too complex
     def verify(self):  # too complex # noqa
@@ -410,5 +463,18 @@ class DataFileObject(models.Model):
         return True
 
     def get_full_path(self):
-        return self.storage_box.get_initialised_storage_instance().path(
-            self.uri)
+        return self._storage.path(self.uri)
+
+
+@receiver(pre_delete, sender=DataFileObject, dispatch_uid='dfo_delete')
+def delete_dfo(sender, instance, **kwargs):
+    if instance.datafile.file_objects.count() > 1:
+        try:
+            instance._storage.delete(instance.uri)
+        except NotImplementedError:
+            logger.info('deletion not supported on storage box %s, '
+                        'for dfo id %s' % (str(instance.storage_box),
+                                           str(instance.id)))
+    else:
+        logger.debug('Did not delete file dfo.id '
+                     '%s, because it was the last copy' % instance.id)
