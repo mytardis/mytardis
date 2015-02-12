@@ -120,6 +120,8 @@ def stage_dfo(dfo):
             dfo._cached_file_object = None
             dfo.file_object = tf
             dfo.save()
+            # Trigger post-save filter:
+            dfo.datafile.save()
             return True
         else:
             return False
