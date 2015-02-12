@@ -209,6 +209,13 @@ class ParameterName(models.Model):
     def getUniqueShortName(self):
         return self.name + '_' + str(self.id)
 
+    def get_choices(self):
+        """Return list of choices derived from comma separated string.
+        rtype: list(str)
+        """
+        if self.choices != "":
+            return [choice.strip() for choice in str(self.choices).split(",")]
+
 
 def _getParameter(parameter):
 

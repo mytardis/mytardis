@@ -143,6 +143,7 @@ datafile_urls = patterns(
 json_urls = patterns(
     'tardis.tardis_portal.views',
     (r'^dataset/(?P<dataset_id>\d+)$', 'dataset_json'),
+    (r'^parametername/(?P<schema_id>\d+)/$', 'parametername_json'),
     (r'^experiment/(?P<experiment_id>\d+)/dataset/$',
      'experiment_datasets_json'),
     (r'^experiment/(?P<experiment_id>\d+)/dataset/(?P<dataset_id>\d+)$',

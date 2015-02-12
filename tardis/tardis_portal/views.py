@@ -834,6 +834,29 @@ def experiment_datasets(request, experiment_id):
         template_name='tardis_portal/ajax/experiment_datasets.html')
 
 
+def parametername_json(request, schema_id=None):
+    try:
+        schema = Schema.objects.get(id=schema_id)
+    except Schema.DoesNotExist:
+        return HttpResponseNotFound()
+
+    paramname_id = request.GET['paramname']
+
+    parameternames = ParameterName.objects.filter(
+        schema__namespace=schema.namespace, name=paramname_id)
+
+    if parameternames:
+        choices = parameternames[0].get_choices()
+        if choices:
+            pn_choices = dict()
+            for c in choices:
+                pn_choices[c] = c
+            return HttpResponse(json.dumps(pn_choices),
+                                mimetype='application/json')
+        else:
+            return HttpResponse(status=204)
+
+
 @never_cache  # too complex # noqa
 @authz.dataset_access_required
 def dataset_json(request, experiment_id=None, dataset_id=None):

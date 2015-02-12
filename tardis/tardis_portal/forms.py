@@ -744,8 +744,17 @@ def create_parameterset_edit_form(parameterset, request=None):
             units = ""
             if parameter_name.units:
                 units = " (" + parameter_name.units + ")"
+                choices = parameter_name.get_choices()
                 # if not valid, spit back as exact
-                if parameter_name.isNumeric():
+                if choices:
+                    c = [("", "")] + zip(choices, choices)
+                    fields[key] = \
+                        forms.ChoiceField(label=parameter_name.full_name + units,
+                                          required=False,
+                                          choices=c,
+                                          initial=value,
+                                          )
+                elif parameter_name.isNumeric():
                     fields[key] = \
                         forms.DecimalField(label=parameter_name.full_name + units,
                                            required=False,
@@ -784,7 +793,18 @@ def create_parameterset_edit_form(parameterset, request=None):
 
             form_id = form_id.replace('/', '_s47_')
 
-            if dfp.name.isNumeric():
+            choices = dfp.name.get_choices()
+
+            if choices:
+                # Add an empty string to the start of the list to have an
+                # empty position in the choice box.
+                c = [("", "")] + zip(choices, choices)
+                fields[form_id] = \
+                    forms.ChoiceField(label=dfp.name.full_name + units,
+                                      required=False,
+                                      choices=c,
+                                      initial=dfp.string_value)
+            elif dfp.name.isNumeric():
                 fields[form_id] = \
                     forms.DecimalField(label=dfp.name.full_name + units,
                                        required=False,
@@ -851,8 +871,17 @@ def create_datafile_add_form(schema, parentObject, request=None):
                 if parameter_name.units:
                     units = " (" + parameter_name.units + ")"
 
+                choices = parameter_name.get_choices()
                 # if not valid, spit back as exact
-                if parameter_name.isNumeric():
+                if choices:
+                    c = [("", "")] + zip(choices, choices)
+                    fields[key] = \
+                        forms.ChoiceField(label=parameter_name.full_name + units,
+                                          required=False,
+                                          choices=c,
+                                          initial=value,
+                                          )
+                elif parameter_name.isNumeric():
                     fields[key] = \
                         forms.DecimalField(label=parameter_name.full_name + units,
                                            required=False,
@@ -893,7 +922,15 @@ def create_datafile_add_form(schema, parentObject, request=None):
 
             form_id = form_id.replace('/', '_s47_')
 
-            if dfp.isNumeric():
+            choices = dfp.get_choices()
+
+            if choices:
+                c = [("", "")] + zip(choices, choices)
+                fields[form_id] = \
+                    forms.ChoiceField(label=dfp.full_name + units,
+                                      required=False,
+                                      choices=c)
+            elif dfp.isNumeric():
                 fields[form_id] = \
                 forms.DecimalField(label=dfp.full_name + units,
                 required=False)

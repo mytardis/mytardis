@@ -32,10 +32,16 @@
         return new_name + "__" + i;
     }
 
-    function get_form_input_html(label, name, use_textarea)
+    function get_form_input_html(label, name, use_textarea, options)
     {
         var widget;
-        if (use_textarea) {
+        if (options) {
+            widget = '<select name="' + name + '">'
+            for (opt in options) {
+                widget += '<option value="' + opt + '">' + options[opt] + '</option>'
+            }
+            widget += '</select>'
+        } else if (use_textarea) {
             widget = '<textarea ' + 'name="' + name + '" id="' + name + '"/>';
         } else {
             widget = '<input type="text" name="' + name + '" value="" id="' + name + '" />';
@@ -59,16 +65,38 @@
         return false;
     });
 
-    $('#add_new_parameter').live('click', function(){
+    $('#add_new_parameter').live('click', function(e){
+        e.preventDefault();
+
+        var $this = $(this);
+        var $jqm_content_div = $this.closest('.modal-body');
+        var schema_id = $("#schemaselect").val() ? $("#schemaselect").val() : $("#schemaselect").attr("schema-id");
+        var parent_object_id = $this.parent().attr('data-parent_object_id');
+
         // assuming whenever add_new_parameter is clicked an option is selected
         var $selected_option = $("#parameternameselect > option:selected");
+
+        var href = "/ajax/json/parametername/" + schema_id + "/?paramname="
+                        + encodeURIComponent($selected_option.val());
         var is_long = $selected_option.attr('data-longstring');
         var new_element_name = get_new_parameter_name($selected_option.val());
 
         if($selected_option.text())
         {
-            $("#parameternameselect").before(get_form_input_html($selected_option.text(), new_element_name, is_long));
-            $("#" + new_element_name).focus();
+            $.ajax({
+                type: 'GET',
+                url: href,
+                success: function(data) {
+                    if(!jQuery.isEmptyObject(data)) {
+                        $("#parameternameselect").before(get_form_input_html($selected_option.text(), new_element_name, is_long, data));
+                        $("#" + new_element_name).focus();
+                    } else {
+                        $("#parameternameselect").before(get_form_input_html($selected_option.text(), new_element_name, is_long));
+                        $("#" + new_element_name).focus();
+                    }
+                },
+                async: false
+            });
         }
         else
         {
