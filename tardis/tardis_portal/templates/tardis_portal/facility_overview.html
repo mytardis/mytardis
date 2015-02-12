@@ -230,7 +230,7 @@
                 </tr>
                 <tbody ng-repeat="datasetByUser in dataByUser | filter:search_owner:strict">
                 <tr>
-                    <th style="text-align:center" colspan="5">{{datasetByUser.owner}}</th>
+                    <th style="text-align:center" colspan="5">{{datasetByUser.ownerGroup}}</th>
                 </tr>
                 <tr ng-repeat-start="dataset in datasetByUser.datasets | filter:search_experiment:strict | filter:search_instrument:strict">
                     <td><a href="/experiment/view/{{dataset.parent_experiment.id}}/" target="_blank">{{dataset.parent_experiment.title}}</a></td>
