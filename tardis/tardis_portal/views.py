@@ -129,19 +129,20 @@ logger = logging.getLogger(__name__)
 
 def get_dataset_info(dataset, include_thumbnail=False, exclude=None):  # too complex # noqa
     obj = model_to_dict(dataset)
-    if exclude is None or 'verified_datafiles' not in exclude or 'verified_file_count' \
+    if exclude is None or 'datafiles' not in exclude or 'file_count' \
        not in exclude:
-        verified_datafiles = [df.id for df in dataset.get_verified_datafiles()]
-        if exclude is None or 'verified_datafiles' not in exclude:
-            obj['verified_datafiles'] = verified_datafiles
-        if exclude is None or 'verified_file_count' not in exclude:
-            obj['verified_file_count'] = len(verified_datafiles)
+        datafiles = list(
+            dataset.datafile_set.values_list('id', flat=True))
+        if exclude is None or 'datafiles' not in exclude:
+            obj['datafiles'] = datafiles
+        if exclude is None or 'file_count' not in exclude:
+            obj['file_count'] = len(datafiles)
 
     obj['url'] = dataset.get_absolute_url()
 
-    if exclude is None or 'verified_size' not in exclude:
-        obj['verified_size'] = dataset.get_verified_size()
-        obj['verified_size_human_readable'] = filesizeformat(obj['verified_size'])
+    if exclude is None or 'size' not in exclude:
+        obj['size'] = dataset.get_size()
+        obj['size_human_readable'] = filesizeformat(obj['size'])
 
     if include_thumbnail:
         try:
@@ -820,12 +821,12 @@ def view_dataset(request, dataset_id):
                                  'error-msg: %s' % (repr(view_fn), e))
                     continue
 
-    def get_verified_datafiles_page():
+    def get_datafiles_page():
         # pagination was removed by someone in the interface but not here.
         # need to fix.
         pgresults = 100
 
-        paginator = Paginator(dataset.get_verified_datafiles(), pgresults)
+        paginator = Paginator(dataset.datafile_set.all(), pgresults)
 
         try:
             page = int(request.GET.get('page', '1'))
@@ -843,7 +844,7 @@ def view_dataset(request, dataset_id):
 
     c = Context({
         'dataset': dataset,
-        'verified_datafiles': get_verified_datafiles_page(),
+        'datafiles': get_datafiles_page(),
         'parametersets': dataset.getParameterSets()
                                 .exclude(schema__hidden=True),
         'has_download_permissions':
@@ -1244,9 +1245,9 @@ def retrieve_parameters(request, datafile_id):
 
 @never_cache  # too complex # noqa
 @authz.dataset_access_required
-def retrieve_verified_datafile_list(
+def retrieve_datafile_list(
         request, dataset_id,
-        template_name='tardis_portal/ajax/verified_datafile_list.html'):
+        template_name='tardis_portal/ajax/datafile_list.html'):
 
     params = {}
 
@@ -1288,16 +1289,11 @@ def retrieve_verified_datafile_list(
 
         params['filename'] = filename_search
 
-    verified_dataset_results = list()
-    for df in dataset_results:
-        if df.verified:
-            verified_dataset_results.append(df)
-
     # pagination was removed by someone in the interface but not here.
     # need to fix.
     pgresults = 100
 
-    paginator = Paginator(verified_dataset_results, pgresults)
+    paginator = Paginator(dataset_results, pgresults)
 
     try:
         page = int(request.GET.get('page', '1'))
@@ -1307,9 +1303,9 @@ def retrieve_verified_datafile_list(
     # If page request (9999) is out of range, deliver last page of results.
 
     try:
-        verified_datafiles = paginator.page(page)
+        datafiles = paginator.page(page)
     except (EmptyPage, InvalidPage):
-        verified_datafiles = paginator.page(paginator.num_pages)
+        datafiles = paginator.page(paginator.num_pages)
 
     is_owner = False
     has_download_permissions = authz.has_dataset_download_access(request,
@@ -1325,7 +1321,7 @@ def retrieve_verified_datafile_list(
     params = urlencode(params)
 
     c = Context({
-        'verified_datafiles': verified_datafiles,
+        'datafiles': datafiles,
         'paginator': paginator,
         'immutable': immutable,
         'dataset': Dataset.objects.get(id=dataset_id),
@@ -2634,26 +2630,21 @@ def stats(request):
     # using count() is more efficient than using len() on a query set
     cursor = connection.cursor()
     if cursor.db.vendor == 'postgresql':
-        cursor.execute("SELECT SUM(size::bigint) FROM tardis_portal_datafile "
-                       "JOIN tardis_portal_datafileobject ON "
-                       "(tardis_portal_datafile.id="
-                       "tardis_portal_datafileobject.datafile_id AND "
-                       "tardis_portal_datafileobject.verified=True)")
-        verified_datafiles_size = int(cursor.fetchone()[0])
+        cursor.execute("SELECT SUM(size::bigint) FROM tardis_portal_datafile")
+        datafiles_size = int(cursor.fetchone()[0])
     else:
         dfs = DataFile.objects.all()
-        verified_datafiles_size = long(0)
+        datafiles_size = long(0)
         for df in dfs:
-            if df.verified:
-                try:
-                    verified_datafiles_size += long(df.size)
-                except:
-                    pass
+            try:
+                datafiles_size += long(df.size)
+            except:
+                pass
     c = Context({
         'experiment_count': Experiment.objects.all().count(),
         'dataset_count': Dataset.objects.all().count(),
-        'datafile_count': len([df for df in DataFile.objects.all() if df.verified]),
-        'datafile_size': verified_datafiles_size,
+        'datafile_count': len([df for df in DataFile.objects.all()]),
+        'datafile_size': datafiles_size,
     })
     return HttpResponse(render_response_index(request,
                         'tardis_portal/stats.html', c))

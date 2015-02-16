@@ -65,7 +65,7 @@
 		    {{ exp|experiment_public_access_badge }}
 		  </li>
 		  <li class="pull-right">
-		    {{ exp|experiment_verified_datafiles_badge }}
+		    {{ exp|experiment_datafiles_badge }}
 		  </li>
 		  <li class="pull-right">
 		    {{ exp|experiment_datasets_badge }}
@@ -160,7 +160,7 @@
 			 href="{% url 'tardis.tardis_portal.views.view_experiment' exp.id %}">{{ exp.title }}</a></strong>
 	      <ul class="nav nav-pills badgelist">
 		<li class="pull-right">
-		  {{ exp|experiment_verified_datafiles_badge }}
+		  {{ exp|experiment_datafiles_badge }}
 		</li>
 		<li class="pull-right">
 		  {{ exp|experiment_datasets_badge }}

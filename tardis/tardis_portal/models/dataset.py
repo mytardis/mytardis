@@ -159,20 +159,3 @@ class Dataset(models.Model):
                 # still zero, add default
                 self.storage_boxes.add(StorageBox.get_default_storage())
         return self.storage_boxes.all()[0]  # use first() with Django 1.6+
-
-    def get_verified_datafiles(self):
-        return [df for df in self.datafile_set.all() if df.verified]
-
-    def get_verified_datafile_count(self):
-        return len(self.get_verified_datafiles())
-
-    def get_verified_size(self):
-        dfs = self.datafile_set.all()
-        verified_size = long(0)
-        for df in dfs:
-            if df.verified:
-                try:
-                    verified_size += long(df.size)
-                except:
-                    pass
-        return verified_size
