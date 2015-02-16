@@ -76,6 +76,6 @@ Code analysis (just testing this out at the moment):
    
 Code coverage
    
-.. image:: https://coveralls.io/repos/mytardis/mytardis/badge.svg
-  :target: https://coveralls.io/r/mytardis/mytardis
+.. image:: https://coveralls.io/repos/mytardis/mytardis/badge.svg?branch=develop
+  :target: https://coveralls.io/r/mytardis/mytardis?branch=develop
   :alt: Coveralls Badge
