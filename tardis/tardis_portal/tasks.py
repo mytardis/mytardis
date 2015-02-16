@@ -55,6 +55,8 @@ def verify_dfo(dfo_id, only_local=False, reverify=False):
                 stage_dfo(dfo)
             else:
                 dfo.verify()
+                # Trigger post-save filter:
+                dfo.datafile.save()
 
 
 @task(name="tardis_portal.create_staging_datafiles", ignore_result=True)  # too complex # noqa
