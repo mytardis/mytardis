@@ -70,7 +70,7 @@ class SquashFSStorage(Storage):
         elif datafile_id is not None:
             df = DataFile.objects.get(id=datafile_id)
             self.location = os.path.join(self.squashmount_root, df.filename)
-            self.squashfile = df.default_dfo.get_full_path()
+            self.squashfile = df.file_objects.all()[0].get_full_path()
             self._mount()
         else:
             raise Exception('provide squash file name and path or datafile id')
