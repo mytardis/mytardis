@@ -75,7 +75,7 @@ Select: <a class="dataset_selector_all btn btn-mini">All</a> / <a class="dataset
     {% endif %}
   </td>
   <td>
-    {% if has_download_permissions and datafile.get_view_url %}
+    {% if has_download_permissions and datafile.get_view_url and datafile.verified %}
       <a  class="filelink datafile_name"
           href="{{ datafile.get_view_url }}"
           title="View"
