@@ -283,7 +283,8 @@ class DataFile(models.Model):
 
     @property
     def verified(self):
-        return all([obj.verified for obj in self.file_objects.all()])
+        return all([obj.verified for obj in self.file_objects.all()]) \
+            and len(self.file_objects.all()) > 0
 
     def verify(self, reverify=False):
         return all([obj.verify() for obj in self.file_objects.all()
@@ -360,6 +361,11 @@ class DataFileObject(models.Model):
         self.uri = self.storage_box.get_initialised_storage_instance()\
                                    .save(self._get_identifier(), file_object)
         self.save()
+
+    @property
+    def size(self):
+        return self.storage_box.get_initialised_storage_instance().size(
+                    self._get_identifier())
 
     def delete(self):
         super(DataFileObject, self).delete()

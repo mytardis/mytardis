@@ -425,13 +425,33 @@ def fetch_facility_data(request, facility_id, start_index, end_index):
         owners = parent_experiment.get_owners()
         datafiles = []
         dataset_size = 0
+        verified_datafiles_count = 0
+        verified_datafiles_size = 0
         for datafile in datafile_objects:
+            if datafile.verified:
+                verified = "Yes"
+                verified_datafiles_count += 1
+                verified_datafiles_size += int(datafile.size)
+            else:
+                verified = "No"
+                try:
+                    file_object_size = \
+                        datafile.file_object.size \
+                        if datafile.file_object else 0
+                    if file_object_size < int(datafile.size):
+                        verified = "No (%s of %s bytes uploaded)" \
+                            % ('{:,}'.format(file_object_size),
+                               '{:,}'.format(int(datafile.size)))
+                except IOError, e:
+                    verified = "No (0 of %s bytes uploaded)" \
+                        % '{:,}'.format(int(datafile.size))
             datafiles.append({
                 "id": datafile.id,
                 "filename": datafile.filename,
                 "size": int(datafile.size),
                 "created_time": datetime_to_us(datafile.created_time),
-                "modification_time": datetime_to_us(datafile.modification_time)
+                "modification_time": datetime_to_us(datafile.modification_time),
+                "verified": verified,
             })
             dataset_size = dataset_size + int(datafile.size)
         obj = {
@@ -445,6 +465,8 @@ def fetch_facility_data(request, facility_id, start_index, end_index):
             "institution": parent_experiment.institution_name,
             "datafiles": datafiles,
             "size": dataset_size,
+            "verified_datafiles_count": verified_datafiles_count,
+            "verified_datafiles_size": verified_datafiles_size,
             "owner": ', '.join([o.username for o in owners]),
             "instrument": {
                 "id": instrument.id,
