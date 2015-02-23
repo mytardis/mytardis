@@ -322,7 +322,7 @@ class DataFileObject(models.Model):
                                          dfo.datafile.dataset.id)]
                 if dfo.datafile.directory is not None:
                     path_parts += [dfo.datafile.directory]
-                path_parts += [dfo.datafile.filename]
+                path_parts += [dfo.datafile.filename.strip()]
                 dfo.uri = path.join(*path_parts)
                 dfo.save()
             return dfo.uri
