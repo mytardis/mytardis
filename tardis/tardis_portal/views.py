@@ -3221,7 +3221,8 @@ def rcauth(request):
     try:
         # Verifies signature and expiry time
         verified_jwt = jwt.decode(request.POST['assertion'],
-                                  settings.RAPID_CONNECT_CONFIG['secret'])
+                                  settings.RAPID_CONNECT_CONFIG['secret'],
+                                  audience=settings.RAPID_CONNECT_CONFIG['aud'])
 
         # Check for a replay attack using the jti value.
         jti = verified_jwt['jti']
