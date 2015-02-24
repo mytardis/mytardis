@@ -500,7 +500,7 @@ def public_data(request):
     list of public experiments
     '''
     c = Context({
-        'public_experiments': Experiment.safe.public(),
+        'public_experiments': Experiment.safe.public().order_by('-update_time'),
     })
     return HttpResponse(render_response_index(
         request, 'tardis_portal/public_data.html', c))
