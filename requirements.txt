@@ -26,6 +26,7 @@ gunicorn
 gevent
 iso8601==0.1.4 #apt: 0.1.10
 isodate==0.5.1 #apt: 0.4.6
+pyjwt==0.4.3
 kombu==3.0.24 #apt: 3.0.7
 lxml==3.2.1 #apt: 3.3.3
 mimeparse==0.1.3 #apt: 0.1.4
