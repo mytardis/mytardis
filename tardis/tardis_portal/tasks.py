@@ -22,6 +22,10 @@ try:
     FilterInitMiddleware()
 except Exception:
     pass
+
+# For ApiKey hooks:
+import tardis.tardis_portal.models.hooks
+
 try:
     from tardis.tardis_portal.logging_middleware import LoggingMiddleware
     LoggingMiddleware()
