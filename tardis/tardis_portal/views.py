@@ -121,7 +121,7 @@ from django.contrib.auth import logout as django_logout
 
 from django.views.decorators.csrf import csrf_exempt
 import django.contrib.auth as djauth
-from tardis.tardis_portal.auth import jwt
+import jwt
 import pwgen
 from tardis.tardis_portal.models.jti import JTI
 
@@ -3354,8 +3354,10 @@ def rcauth(request):
 
     try:
         # Verifies signature and expiry time
-        verified_jwt = jwt.decode(request.POST['assertion'],
-                                  settings.RAPID_CONNECT_CONFIG['secret'])
+        verified_jwt = jwt.decode(
+            request.POST['assertion'],
+            settings.RAPID_CONNECT_CONFIG['secret'],
+            audience=settings.RAPID_CONNECT_CONFIG['aud'])
 
         # Check for a replay attack using the jti value.
         jti = verified_jwt['jti']
@@ -3389,6 +3391,20 @@ def rcauth(request):
                 'first_name': first_name,
                 'last_name': request.session['attributes']['surname'],
             }
+
+            # Check for an email collision.
+            edupersontargetedid = request.session['attributes'][
+                'edupersontargetedid']
+            for matching_user in UserProfile.objects.filter(
+                    user__email=user_args['email']):
+                if matching_user.rapidConnectEduPersonTargetedID != \
+                   edupersontargetedid:
+                    del request.session['attributes']
+                    del request.session['jwt']
+                    del request.session['jws']
+                    django_logout(request)
+                    raise PermissionDenied
+
             user = auth_service.get_or_create_user(user_args)
             if user is not None:
                 user.backend = 'django.contrib.auth.backends.ModelBackend'
