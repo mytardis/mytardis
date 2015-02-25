@@ -378,6 +378,14 @@ class Parameter(models.Model):
             return 'Unitialised %sParameter' % self.parameter_type
 
     def set_value(self, value):
+        """
+        Sets the parameter value, converting into the appropriate data type.
+        Deals with date/time strings that are timezone naive or aware, based
+        on the USE_TZ setting.
+
+        :param value: a string (or string-like) representing the value
+        :return:
+        """
         if self.name.isNumeric():
             self.numerical_value = float(value)
         elif self.name.isDateTime():
