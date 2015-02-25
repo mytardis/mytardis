@@ -276,7 +276,7 @@ class UncachedTarStream(TarFile):
         for df, name in self.mapped_file_objs:
             fileobj = df.file_object
             self._check('aw')
-            tarinfo = tarfile.TarInfo(name)
+            tarinfo = self.tarinfo(name)
             tarinfo.size = int(df.get_size())
             # tarinfo = copy.copy(tarinfo)
             buf = tarinfo.tobuf(self.format, self.encoding, self.errors)
