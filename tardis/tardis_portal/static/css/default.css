@@ -1,3 +1,10 @@
+html{
+  height: 100%;
+}
+body {
+  min-height: 100%;
+}
+
 /* Inset brand in nav bar */
 .navbar .brand a {
   color: #0097E2;

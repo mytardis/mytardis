@@ -122,9 +122,11 @@ dataset_urls = patterns(
 )
 iiif_urls = patterns(
     'tardis.tardis_portal.iiif',
-    url(r'^(?P<datafile_id>\d+)/(?P<region>[^\/]+)/(?P<size>[^\/]+)/(?P<rotation>[\d\.]+)/(?P<quality>\w+)$',  # noqa
+    url(r'^(?P<datafile_id>\d+)/(?P<region>[^\/]+)/(?P<size>[^\/]+)/'
+        r'(?P<rotation>[\d\.]+)/(?P<quality>\w+)$',
         'download_image'),
-    url(r'^(?P<datafile_id>\d+)/(?P<region>[^\/]+)/(?P<size>[^\/]+)/(?P<rotation>[\d\.]+)/(?P<quality>\w+).(?P<format>\w+)$',  # noqa
+    url(r'^(?P<datafile_id>\d+)/(?P<region>[^\/]+)/(?P<size>[^\/]+)/'
+        r'(?P<rotation>[\d\.]+)/(?P<quality>\w+).(?P<format>\w+)$',
         'download_image'),
     url(r'^(?P<datafile_id>\d+)/info.(?P<format>\w+)$', 'download_info'),
     )
@@ -184,7 +186,8 @@ ajax_urls = patterns(
     (r'^experiment/(?P<experiment_id>\d+)/dataset-transfer$',
      'experiment_dataset_transfer'),
     (r'^license/list$', 'retrieve_licenses'),
-    (r'^json/', include(json_urls))
+    (r'^json/', include(json_urls)),
+    (r'^feedback/', 'feedback'),
 )
 
 download_urls = patterns(
@@ -223,7 +226,10 @@ group_urls = patterns(
 facility_urls = patterns(
     'tardis.tardis_portal.views',
     (r'^overview/$', 'facility_overview'),
-    (r'^fetch_data/$', 'fetch_facility_data'),
+    (r'^fetch_data/(?P<facility_id>\d+)/count/', 'fetch_facility_data_count'),
+    (r'^fetch_data/(?P<facility_id>\d+)/'
+     r'(?P<start_index>\d+)/(?P<end_index>\d+)/$',
+     'fetch_facility_data'),
     (r'^fetch_facilities_list/$', 'fetch_facilities_list'),
     )
 

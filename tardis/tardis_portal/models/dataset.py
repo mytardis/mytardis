@@ -25,16 +25,12 @@ class Dataset(models.Model):
     :attribute instrument: the foreign key to the instrument that generated
         this data
     :attribute description: description of this dataset
-    :attribute storage_box: link to one or many storage boxes of some type.
-        storage boxes have to be the same for all files of a dataset
     """
 
     experiments = models.ManyToManyField(Experiment, related_name='datasets')
     description = models.TextField(blank=True)
     directory = DirectoryField(blank=True, null=True)
     immutable = models.BooleanField(default=False)
-    storage_boxes = models.ManyToManyField(
-        StorageBox, related_name='datasets', blank=True)
     instrument = models.ForeignKey(Instrument, null=True, blank=True)
     objects = OracleSafeManager()
 
@@ -137,22 +133,7 @@ class Dataset(models.Model):
             return False
         return self._has_any_perm(user_obj)
 
-    def get_most_reliable_storage_box(self):
-        return self.storage_boxes.latest('copies')
-
-    def get_staging_storage_box(self):
-        boxes = self.storage_boxes.filter(attributes__key="staging",
-                                          attributes__value="True") or [None]
-        return boxes[0]
-
-    def get_default_storage_box(self):
-        if self.storage_boxes.count() == 0:
-            logger.debug('storage box for dataset %d not set explicitly. fix!'
-                         % self.id)
-            for df in self.datafile_set.all().iterator():
-                for dfo in df.file_objects.all().iterator():
-                    self.storage_boxes.add(dfo.storage_box)
-            if self.storage_boxes.count() == 0:
-                # still zero, add default
-                self.storage_boxes.add(StorageBox.get_default_storage())
-        return self.storage_boxes.all()[0]  # use first() with Django 1.6+
+    def get_all_storage_boxes_used(self):
+        boxes = StorageBox.objects.filter(
+            file_objects__datafile__dataset=self)
+        return boxes

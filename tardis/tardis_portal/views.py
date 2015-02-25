@@ -37,6 +37,7 @@ views.py
 
 """
 import time
+import re
 
 from tardis.tardis_portal.auth.decorators import \
     has_experiment_write, has_dataset_write
@@ -64,6 +65,7 @@ from django.contrib.auth.decorators import login_required, permission_required
 from django.core.urlresolvers import reverse
 from django.core.paginator import Paginator, InvalidPage, EmptyPage
 from django.core.exceptions import PermissionDenied
+from django.core.mail import EmailMessage
 from django.forms.models import model_to_dict
 from django.views.decorators.http import require_POST
 from django.views.decorators.cache import never_cache
@@ -119,7 +121,7 @@ from django.contrib.auth import logout as django_logout
 
 from django.views.decorators.csrf import csrf_exempt
 import django.contrib.auth as djauth
-from tardis.tardis_portal.auth import jwt
+import jwt
 import pwgen
 from tardis.tardis_portal.models.jti import JTI
 
@@ -378,15 +380,31 @@ def facility_overview(request):
 
 @never_cache
 @login_required
-def fetch_facility_data(request):
+def fetch_facility_data_count(request, facility_id):
+    '''
+    returns the total number of datasets for pagination in json format
+    '''
+
+    dataset_object_count = Dataset.objects.filter(
+        instrument__facility__manager_group__user=request.user,
+        instrument__facility__id=facility_id
+    ).count()
+    return HttpResponse(
+        json.dumps({'facility_data_count': dataset_object_count}),
+        mimetype='application/json')
+
+
+@never_cache
+@login_required
+def fetch_facility_data(request, facility_id, start_index, end_index):
     '''
     json facility datasets
     '''
-    # In lieu of proper pagination, only the 500 most recent datasets are
-    # fetched
+
     dataset_objects = Dataset.objects.filter(
-        instrument__facility__manager_group__user=request.user
-    ).order_by('-id')[:500]
+        instrument__facility__manager_group__user=request.user,
+        instrument__facility__id=facility_id
+    ).order_by('-id')[start_index:end_index]
 
     def datetime_to_us(dt):
         '''
@@ -402,18 +420,38 @@ def fetch_facility_data(request):
     for dataset in dataset_objects:
         instrument = dataset.instrument
         facility = instrument.facility
-        parent_experiment = dataset.experiments.get()
+        parent_experiment = dataset.experiments.all()[:1].get()
         datafile_objects = DataFile.objects.filter(dataset=dataset)
-        owner = parent_experiment.created_by
+        owners = parent_experiment.get_owners()
         datafiles = []
         dataset_size = 0
+        verified_datafiles_count = 0
+        verified_datafiles_size = 0
         for datafile in datafile_objects:
+            if datafile.verified:
+                verified = "Yes"
+                verified_datafiles_count += 1
+                verified_datafiles_size += int(datafile.size)
+            else:
+                verified = "No"
+                try:
+                    file_object_size = \
+                        datafile.file_object.size \
+                        if datafile.file_object else 0
+                    if file_object_size < int(datafile.size):
+                        verified = "No (%s of %s bytes uploaded)" \
+                            % ('{:,}'.format(file_object_size),
+                               '{:,}'.format(int(datafile.size)))
+                except IOError, e:
+                    verified = "No (0 of %s bytes uploaded)" \
+                        % '{:,}'.format(int(datafile.size))
             datafiles.append({
                 "id": datafile.id,
                 "filename": datafile.filename,
                 "size": int(datafile.size),
                 "created_time": datetime_to_us(datafile.created_time),
-                "modification_time": datetime_to_us(datafile.modification_time)
+                "modification_time": datetime_to_us(datafile.modification_time),
+                "verified": verified,
             })
             dataset_size = dataset_size + int(datafile.size)
         obj = {
@@ -427,10 +465,9 @@ def fetch_facility_data(request):
             "institution": parent_experiment.institution_name,
             "datafiles": datafiles,
             "size": dataset_size,
-            "owner": {
-                "id": owner.id,
-                "name": owner.username,
-            },
+            "verified_datafiles_count": verified_datafiles_count,
+            "verified_datafiles_size": verified_datafiles_size,
+            "owner": ', '.join([o.username for o in owners]),
             "instrument": {
                 "id": instrument.id,
                 "name": instrument.name,
@@ -463,7 +500,7 @@ def public_data(request):
     list of public experiments
     '''
     c = Context({
-        'public_experiments': Experiment.safe.public(),
+        'public_experiments': Experiment.safe.public().order_by('-update_time'),
     })
     return HttpResponse(render_response_index(
         request, 'tardis_portal/public_data.html', c))
@@ -547,7 +584,8 @@ def view_experiment(request, experiment_id,
         namespaces = [ps.schema.namespace
                       for ps in experiment.getParameterSets()]
         for ns, view_fn in settings.EXPERIMENT_VIEWS:
-            if ns in namespaces:
+            ns_match = next((n for n in namespaces if re.match(ns, n)), None)
+            if ns_match:
                 x = view_fn.split(".")
                 mod_name, fn_name = (".".join(x[:-1]), x[-1])
                 try:
@@ -680,7 +718,7 @@ def experiment_description(request, experiment_id):
                 {'name': experiment.title,
                  'link': experiment.get_absolute_url()}]
 
-    c['authors'] = experiment.author_experiment_set.all()
+    c['authors'] = experiment.experimentauthor_set.all()
 
     c['datafiles'] = \
         DataFile.objects.filter(dataset__experiments=experiment_id)
@@ -873,8 +911,10 @@ def dataset_json(request, experiment_id=None, dataset_id=None):
             if can_update():
                 return HttpResponseMethodNotAllowed(allow="GET PUT")
             return HttpResponseMethodNotAllowed(allow="GET")
-        # Cannot remove if this is the last experiment
-        if not can_delete() or dataset.experiments.count() < 2:
+        # Cannot remove if this is the last experiment or if it is being
+        # removed from a publication
+        if (not can_delete() or dataset.experiments.count() < 2 or
+           experiment.is_publication()):
             return HttpResponseForbidden()
         dataset.experiments.remove(experiment)
         dataset.save()
@@ -1353,7 +1393,7 @@ def search_quick(request):
                 experiments.filter(
                     institution_name__icontains=request.GET['quicksearch']) | \
                 experiments.filter(
-                    author_experiment__author__name__icontains=request.GET[
+                    experimentauthor__author__name__icontains=request.GET[
                         'quicksearch']) | \
                 experiments.filter(
                     pdbid__pdbid__icontains=request.GET['quicksearch'])
@@ -1469,7 +1509,7 @@ def __getFilteredExperiments(request, searchFilterData):
 
     if searchFilterData['creator'] != '':
         experiments = experiments.filter(
-            author_experiment__author__icontains=searchFilterData['creator'])
+            experimentauthor__author__icontains=searchFilterData['creator'])
 
     date = searchFilterData['date']
     if date is not None:
@@ -3314,8 +3354,10 @@ def rcauth(request):
 
     try:
         # Verifies signature and expiry time
-        verified_jwt = jwt.decode(request.POST['assertion'],
-                                  settings.RAPID_CONNECT_CONFIG['secret'])
+        verified_jwt = jwt.decode(
+            request.POST['assertion'],
+            settings.RAPID_CONNECT_CONFIG['secret'],
+            audience=settings.RAPID_CONNECT_CONFIG['aud'])
 
         # Check for a replay attack using the jti value.
         jti = verified_jwt['jti']
@@ -3349,6 +3391,20 @@ def rcauth(request):
                 'first_name': first_name,
                 'last_name': request.session['attributes']['surname'],
             }
+
+            # Check for an email collision.
+            edupersontargetedid = request.session['attributes'][
+                'edupersontargetedid']
+            for matching_user in UserProfile.objects.filter(
+                    user__email=user_args['email']):
+                if matching_user.rapidConnectEduPersonTargetedID != \
+                   edupersontargetedid:
+                    del request.session['attributes']
+                    del request.session['jwt']
+                    del request.session['jws']
+                    django_logout(request)
+                    raise PermissionDenied
+
             user = auth_service.get_or_create_user(user_args)
             if user is not None:
                 user.backend = 'django.contrib.auth.backends.ModelBackend'
@@ -3366,3 +3422,19 @@ def rcauth(request):
         del request.session['jws']
         django_logout(request)
         raise PermissionDenied  # Error: Security cookie has expired
+
+
+def feedback(request):
+    if request.method == 'POST':
+        feedback_data = json.loads(request.POST['data'])
+        message = feedback_data[0]['Issue']
+        img_base64 = feedback_data[1]
+        img = img_base64.replace('data:image/png;base64,', '').decode('base64')
+        admin_emails = [v for k, v in settings.ADMINS]
+        email = EmailMessage('[TARDIS] User feedback', message,
+                             'store.star.help@monash.edu', admin_emails)
+        email.attach('screenshot.png', img, 'image/png')
+        email.send()
+        return HttpResponse('OK')
+    else:
+        return redirect('/')

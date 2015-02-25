@@ -1,7 +1,3 @@
-(function() {
-
-  var app = angular.module('facility_view', []);
-
   // Capitalises the first letter (adapted from http://codepen.io/WinterJoey/pen/sfFaK)
   app.filter('capitalise', function() {
       return function(input, all) {
@@ -9,7 +5,46 @@
       }
   });
 
+  // Filter to produce nice file size formatting (adapted from https://gist.github.com/yrezgui/5653591)
+  app.filter('filesize', function () {
+    var units = [
+      'bytes',
+      'KB',
+      'MB',
+      'GB',
+      'TB',
+      'PB'
+    ];
+
+    return function( bytes, precision ) {
+      if ( isNaN( parseFloat( bytes )) || ! isFinite( bytes ) ) {
+        return '?';
+      }
+
+      var unit = 0;
+
+      while ( bytes >= 1024 ) {
+        bytes /= 1024;
+        unit ++;
+      }
+
+      return bytes.toFixed( + precision ) + ' ' + units[ unit ];
+    };
+  });
+
+
   app.controller('FacilityCtrl', function($scope, $http, $interval, $log, $filter) {
+
+    // Whether to show the "no data" alert
+    $scope.showDataUnvailableAlert = function() {
+      if ($scope.loading) {
+        return false;
+      } else if (typeof $scope.datasets !== 'undefined') {
+        return $scope.datasets.length === 0;
+      } else {
+        return true;
+      }
+    }
 
     // Whether to show the facility selector
     $scope.showFacilitySelector = function() {
@@ -19,7 +54,8 @@
     $scope.selectFacility = function(id, name) {
       $scope.selectedFacility = id;
       $scope.selectedFacilityName = name;
-      sortAndFilterData($scope.datasets, id);
+      $scope.currentFetchLimit = $scope.defaultFetchLimit;
+      $scope.fetchFacilityData(0, $scope.currentFetchLimit);
     };
     // Check which facility is selected
     $scope.isFacilitySelected = function(id) {
@@ -59,13 +95,26 @@
     }
     // Check if filters are active
     $scope.filtersActive = function() {
-      if (typeof $scope.search_owner !== 'undefined' && $scope.search_owner.owner.name) {
+      if (typeof $scope.search_owner !== 'undefined' && $scope.search_owner.owner) {
         return true;
       } else if (typeof $scope.search_experiment !== 'undefined' && $scope.search_experiment.parent_experiment.title) {
         return true;
       } else if (typeof $scope.search_instrument !== 'undefined' && $scope.search_instrument.instrument.name) {
         return true;
       }
+    }
+
+    // Load more entries
+    $scope.loadMoreEntries = function(increment) {
+      if ($scope.currentFetchLimit >= $scope.totalDatasets) {
+        return;
+      }
+      if ($scope.currentFetchLimit + increment > $scope.totalDatasets) {
+        $scope.currentFetchLimit = $scope.totalDatasets;
+      } else {
+        $scope.currentFetchLimit += increment;
+      }
+      $scope.fetchFacilityData(0, $scope.currentFetchLimit);
     }
 
     // Fetch the list of facilities available to the user and facilities data
@@ -75,41 +124,53 @@
         if ($scope.facilities.length > 0) { // If the user is allowed to manage any facilities...
           $scope.selectedFacility = $scope.facilities[0].id;
           $scope.selectedFacilityName = $scope.facilities[0].name;
-          $scope.fetchFacilityData();
+          $scope.fetchFacilityData(0, $scope.defaultFetchLimit);
         }
       });
     }
 
-    // Fetch data for all facilities
-    // callback is called after data is fetched
-    $scope.fetchFacilityData = function(callback) {
-      $http.get('/facility/fetch_data/').success(function(data) {
-        $scope.datasets = data;
-        sortAndFilterData(data, $scope.selectedFacility);
+    // Fetch data for facility
+    $scope.fetchFacilityData = function(startIndex, endIndex) {
+      $scope.loading = true;
+      $http.get('/facility/fetch_data/'+$scope.selectedFacility+'/count/').success(function(data) {
+        $scope.totalDatasets = data.facility_data_count;
+        if ($scope.currentFetchLimit > $scope.totalDatasets) {
+          $scope.currentFetchLimit = $scope.totalDatasets;
+        }
       });
-    }
-
-    // Sort and filter all data for the selected facility
-    function sortAndFilterData(data, facilityId) {
-      $scope.filteredData = $filter('filter')(data, {'facility': {'id':facilityId}});
-      if ($scope.filteredData.length > 0) {
-        $scope.filteredDataByUser = groupByUser($scope.filteredData);
-        $scope.filteredDataByInstrument = groupByInstrument($scope.filteredData);
-      }
+      $http.get('/facility/fetch_data/'+$scope.selectedFacility+'/'+startIndex+'/'+endIndex+'/').success(function(data) {
+        $scope.loading = false;
+        $scope.datasets = data;
+        if ($scope.datasets.length > 0) {
+          $scope.dataByUser = groupByUser($scope.datasets);
+          $scope.dataByInstrument = groupByInstrument($scope.datasets);
+        } else {
+          $scope.dataByUser = [];
+          $scope.dataByInstrument = [];
+        }
+      });
     }
 
     // Group facilities data by user
     function groupByUser(data) {
       // Sort by user ID
-      data.sort(function(a,b) {a.owner.id - b.owner.id});
+	data.sort(function(a,b) {
+	    if (a.owner < b.owner) {
+		return -1;
+	    } else if (a.owner > b.owner) {
+		return 1;
+	    } else {
+		return 0;
+	    }
+	});
       
       var result = [];
       var tmp = {"owner":data[0].owner};
       tmp['datasets']=[];
       for (var i = 0; i < data.length; i++) {
-        if (tmp.owner.id !== data[i].owner.id) {
+        if (tmp.owner !== data[i].owner) {
           result.push(tmp);
-          tmp = data[i].owner;
+          tmp = {"owner":data[i].owner};
           tmp['datasets'] = [];
         }
         var dataset = {};
@@ -124,10 +185,12 @@
       return result;
     }
 
-    // Group facilities data by user
+    // Group facilities data by instrument
     function groupByInstrument(data) {
-      // Sort by user ID
-      data.sort(function(a,b) {a.instrument.id - b.instrument.id});
+      // Sort by instrument ID
+      data.sort(function(a,b) {
+	  return a.instrument.id - b.instrument.id;
+      });
 
       var result = [];
       var tmp = {"instrument":data[0].instrument};
@@ -135,7 +198,7 @@
       for (var i = 0; i < data.length; i++) {
         if (tmp.instrument.id !== data[i].instrument.id) {
           result.push(tmp);
-          tmp = data[i].instrument;
+          tmp = {"instrument":data[i].instrument};
           tmp['datasets'] = [];
         }
         var dataset = {};
@@ -155,7 +218,7 @@
       if ($scope.refreshCountdown > 0 && $scope.refreshInterval > 0) {
         $scope.refreshCountdown--;
       } else if ($scope.refreshInterval > 0) {
-        $scope.fetchFacilityData();
+        $scope.fetchFacilityData(0, $scope.currentFetchLimit);
         $scope.refreshCountdown = $scope.refreshInterval;
       }
     }, 1000);
@@ -183,12 +246,15 @@
       return strMins + ":" + strSecs;
     }
 
-    // Do initialisation
-    initialiseFacilitiesData();
+    // Set default settings
+    $scope.defaultFetchLimit = 50;
+    $scope.currentFetchLimit = $scope.defaultFetchLimit;
     $scope.facilities = [];
     $scope.selectedDataView = 1;
     $scope.refreshInterval = 0;
     $scope.refreshCountdown = 0;
-  });
 
-})();
+    // Do initial data fetch
+    initialiseFacilitiesData();
+
+  });

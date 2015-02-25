@@ -65,17 +65,18 @@ class DOIService(object):
         :return: DOI or None
         :rtype string
         """
-        doi_params = ExperimentParameter.objects.filter(name=self.doi_name,
-                                    parameterset__schema=self.schema,
-                                    parameterset__experiment=self.experiment)
+        doi_params = ExperimentParameter.objects.filter(
+            name=self.doi_name,
+            parameterset__schema=self.schema,
+            parameterset__experiment=self.experiment)
         if doi_params.count() == 1:
             return doi_params[0].string_value
         return None
 
     def _save_doi(self, doi):
         paramset = self._get_or_create_doi_parameterset()
-        ep = ExperimentParameter(parameterset=paramset, name=self.doi_name,\
-                                    string_value=doi)
+        ep = ExperimentParameter(parameterset=paramset, name=self.doi_name,
+                                 string_value=doi)
         ep.save()
         return doi
 
@@ -92,7 +93,8 @@ class DOIService(object):
 
         doi_response = DOIService._post(mint_url, post_data, headers)
         doi = DOIService._read_doi(doi_response)
-        if hasattr(settings, 'DOI_RELATED_INFO_ENABLE') and settings.DOI_RELATED_INFO_ENABLE:
+        if hasattr(settings, 'DOI_RELATED_INFO_ENABLE') and \
+           settings.DOI_RELATED_INFO_ENABLE:
             import tardis.apps.related_info.related_info as ri
             rih = ri.RelatedInfoHandler(self.experiment.id)
             doi_info = {
@@ -109,14 +111,14 @@ class DOIService(object):
         return self.doi_provider.datacite_xml()
 
     def _get_or_create_doi_parameterset(self):
-        eps, _ = ExperimentParameterSet.objects.\
-                    get_or_create(experiment=self.experiment,\
-                        schema=self.schema)
+        eps, _ = ExperimentParameterSet.objects.get_or_create(
+            experiment=self.experiment, schema=self.schema)
         return eps
 
     @staticmethod
     def _read_doi(doi_response):
-        matches = re.match(r'\[MT001\] DOI (.+) was successfully minted.', doi_response)
+        matches = re.match(r'\[MT001\] DOI (.+) was successfully minted.',
+                           doi_response)
         if not matches:
             raise Exception('unrecognised response: %s' + doi_response)
         return matches.group(1)
@@ -158,6 +160,6 @@ class DOIXMLProvider(object):
         c['title'] = ex.title
         c['institution_name'] = ex.institution_name
         c['publication_year'] = date.today().year
-        c['creator_names'] = [a.author for a in ex.author_experiment_set.all()]
+        c['creator_names'] = [a.author for a in ex.experimentauthor_set.all()]
         doi_xml = render_to_string(template, context_instance=c)
         return doi_xml

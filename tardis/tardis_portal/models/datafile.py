@@ -54,8 +54,14 @@ class DataFile(models.Model):
 
     @property
     def file_object(self):
-        return self.file_objects.get(
-            storage_box=self.dataset.get_default_storage_box()).file_object
+        on_disk_files = self.file_objects.filter(
+            ~Q(storage_box__attributes__value='on tape'))
+        if len(on_disk_files) > 0:
+            return on_disk_files[0].file_object
+        all_dfos = self.file_objects.all()
+        if len(all_dfos) > 0:
+            return all_dfos[0].file_object
+        return None
 
     @file_object.setter
     def file_object(self, file_object):
@@ -65,18 +71,36 @@ class DataFile(models.Model):
         oldobjs = []
         if self.file_objects.count() > 0:
             oldobjs = list(self.file_objects.all())
-        if self.dataset.storage_boxes.count() == 0:
-            self.dataset.storage_boxes.add(
-                StorageBox.get_default_storage())
-        for storage_box in self.dataset.storage_boxes.all():
+        s_boxes = [obj.storage_box for obj in oldobjs]
+        if len(s_boxes) == 0:
+            s_boxes = [self.get_default_storage_box()]
+        for box in s_boxes:
             newfile = DataFileObject(datafile=self,
-                                     storage_box=storage_box)
+                                     storage_box=box)
             newfile.save()
             newfile.file_object = file_object
             newfile.verify.delay()
         if len(oldobjs) > 0:
             for obj in oldobjs:
                 obj.delete()
+
+    def get_default_storage_box(self):
+        '''
+        try to guess appropriate box from files, dataset or experiment
+        '''
+        boxes_used = StorageBox.objects.filter(file_objects__datafile=self)
+        if len(boxes_used) > 0:
+            return boxes_used[0]
+        dataset_boxes = self.dataset.get_all_storage_boxes_used()
+        if len(dataset_boxes) > 0:
+            return dataset_boxes[0]
+        experiment_boxes = StorageBox.objects.filter(
+            file_objects__datafile__dataset__experiments__in=
+            self.dataset.experiments.all())
+        if len(experiment_boxes) > 0:
+            return experiment_boxes[0]
+        # TODO: select one accessible to the owner of the file
+        return StorageBox.get_default_storage()
 
     class Meta:
         app_label = 'tardis_portal'
@@ -153,17 +177,17 @@ class DataFile(models.Model):
         return self.file_object
 
     def get_absolute_filepath(self):
-        dfo = self.default_dfo
-        if dfo is not None:
-            return dfo.get_full_path()
+        dfos = self.file_objects.all()
+        if len(dfos) > 0:
+            return dfos[0].get_full_path()
         else:
             return None
 
     def get_file_getter(self):
-        return self.default_dfo.get_file_getter()
+        return self.file_objects.all()[0].get_file_getter()
 
     def is_local(self):
-        return self.default_dfo.is_local()
+        return self.file_objects.all()[0].is_local()
 
     def has_image(self):
         from .parameters import DatafileParameter
@@ -249,17 +273,18 @@ class DataFile(models.Model):
     def _has_delete_perm(self, user_obj):
         return self._has_any_perm(user_obj)
 
-    @property
-    def default_dfo(self):
-        s_box = self.dataset.get_default_storage_box()
-        try:
-            return self.file_objects.get(storage_box=s_box)
-        except DataFileObject.DoesNotExist:
-            return None
+    # @property
+    # def default_dfo(self):
+    #     s_box = self.get_default_storage_box()
+    #     try:
+    #         return self.file_objects.get(storage_box=s_box)
+    #     except DataFileObject.DoesNotExist:
+    #         return None
 
     @property
     def verified(self):
-        return all([obj.verified for obj in self.file_objects.all()])
+        return all([obj.verified for obj in self.file_objects.all()]) \
+            and len(self.file_objects.all()) > 0
 
     def verify(self, reverify=False):
         return all([obj.verify() for obj in self.file_objects.all()
@@ -284,9 +309,6 @@ class DataFileObject(models.Model):
         app_label = 'tardis_portal'
         unique_together = ['datafile', 'storage_box']
 
-    def _get_default_storage_class(self):
-        return self.datafile.dataset.get_fastest_storage_box()
-
     def _get_identifier(self):
         '''
         the default identifier would be directory and file name, but it may
@@ -300,7 +322,7 @@ class DataFileObject(models.Model):
                                          dfo.datafile.dataset.id)]
                 if dfo.datafile.directory is not None:
                     path_parts += [dfo.datafile.directory]
-                path_parts += [dfo.datafile.filename]
+                path_parts += [dfo.datafile.filename.strip()]
                 dfo.uri = path.join(*path_parts)
                 dfo.save()
             return dfo.uri
@@ -340,10 +362,15 @@ class DataFileObject(models.Model):
                                    .save(self._get_identifier(), file_object)
         self.save()
 
+    @property
+    def size(self):
+        return self.storage_box.get_initialised_storage_instance().size(
+                    self._get_identifier())
+
     def delete(self):
         super(DataFileObject, self).delete()
 
-    @task(name="tardis_portal.verify_dfo_method", ignore_result=True)
+    @task(name="tardis_portal.verify_dfo_method", ignore_result=True)  # noqa # too complex
     def verify(self):  # too complex # noqa
         md5, sha512, size, mimetype_buffer = generate_file_checksums(
             self.file_object)

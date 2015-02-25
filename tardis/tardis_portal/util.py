@@ -59,7 +59,7 @@ def get_free_space(fs_dir):
                            sys_type)
 
 
-def generate_file_checksums(sourceFile, tempFile=None):
+def generate_file_checksums(sourceFile, tempFile=None, leave_open=False):
     '''
     Generate checksums, etcetera for a file read from 'sourceFile'.
     If 'tempFile' is provided, the bytes are written to it as they are read.
@@ -67,21 +67,25 @@ def generate_file_checksums(sourceFile, tempFile=None):
     the file length, and chunk containing the start of the file (for doing
     mimetype guessing if necessary).
     '''
+    sourceFile.seek(0)
 
-    from contextlib import closing
-    with closing(sourceFile) as f:
-        md5 = hashlib.new('md5')
-        sha512 = hashlib.new('sha512')
-        size = 0
-        mimetype_buffer = ''
-        for chunk in iter(lambda: f.read(32 * sha512.block_size), ''):
-            size += len(chunk)
-            if len(mimetype_buffer) < 8096:  # Arbitrary memory limit
-                mimetype_buffer += chunk
-            md5.update(chunk)
-            sha512.update(chunk)
-            if tempFile is not None:
-                tempFile.write(chunk)
+    f = sourceFile
+    md5 = hashlib.new('md5')
+    sha512 = hashlib.new('sha512')
+    size = 0
+    mimetype_buffer = ''
+    for chunk in iter(lambda: f.read(32 * sha512.block_size), ''):
+        size += len(chunk)
+        if len(mimetype_buffer) < 8096:  # Arbitrary memory limit
+            mimetype_buffer += chunk
+        md5.update(chunk)
+        sha512.update(chunk)
+        if tempFile is not None:
+            tempFile.write(chunk)
+    if leave_open:
+        f.seek(0)
+    else:
+        f.close()
     return (md5.hexdigest(), sha512.hexdigest(),
             size, mimetype_buffer)
 
@@ -102,11 +106,32 @@ def render_mustache(template_name, data):
 
 
 def render_public_access_badge(experiment):
-    if experiment.public_access == experiment.PUBLIC_ACCESS_NONE:
+    if experiment.public_access == experiment.PUBLIC_ACCESS_NONE and\
+       not experiment.is_publication():
         return render_mustache('tardis_portal/badges/public_access', {
             'title': 'No public access',
             'label': 'Private',
             'private': True,
+        })
+    elif experiment.public_access == experiment.PUBLIC_ACCESS_NONE and\
+       experiment.is_publication() and not experiment.is_publication_draft():
+        return render_mustache('tardis_portal/badges/public_access', {
+            'title': 'No public access, awaiting approval',
+            'label': '[PUBLICATION] Awaiting approval',
+            'private': True,
+        })
+    elif experiment.public_access == experiment.PUBLIC_ACCESS_NONE and\
+       experiment.is_publication_draft():
+        return render_mustache('tardis_portal/badges/public_access', {
+            'title': 'No public access',
+            'label': '[PUBLICATION] Draft',
+            'private': True,
+        })
+
+    if experiment.public_access == experiment.PUBLIC_ACCESS_EMBARGO:
+        return render_mustache('tardis_portal/badges/public_access', {
+            'title': 'Under embargo and awaiting release',
+            'label': '[PUBLICATION] Awaiting release',
         })
     if experiment.public_access == experiment.PUBLIC_ACCESS_METADATA:
         return render_mustache('tardis_portal/badges/public_access', {

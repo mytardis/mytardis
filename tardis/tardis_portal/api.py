@@ -548,7 +548,7 @@ class ExperimentResource(MyTardisModelResource):
     def dehydrate(self, bundle):
         exp = bundle.obj
         authors = [{'name': a.author, 'url': a.url}
-                   for a in exp.author_experiment_set.all()]
+                   for a in exp.experimentauthor_set.all()]
         bundle.data['authors'] = authors
         lic = exp.license
         if lic is not None:
@@ -744,11 +744,10 @@ class DataFileResource(MyTardisModelResource):
         if 'attached_file' in bundle.data:
             # have POSTed file
             newfile = bundle.data['attached_file'][0]
-
             if 'md5sum' not in bundle.data and 'sha512sum' not in bundle.data:
                 from tardis.tardis_portal.util import generate_file_checksums
                 md5, sha512, size, _ = generate_file_checksums(
-                    newfile)
+                    newfile, leave_open=True)
                 bundle.data['md5sum'] = md5
 
             bundle.data['replicas'] = [{'file_object': newfile}]
@@ -858,12 +857,10 @@ class ReplicaResource(MyTardisModelResource):
                 bundle.obj.storage_box = StorageBox.objects.get(
                     name=bundle.data['location'])
             except StorageBox.DoesNotExist:
-                bundle.obj.storage_box = datafile\
-                          .dataset.get_default_storage_box()
+                bundle.obj.storage_box = datafile.get_default_storage_box()
             del(bundle.data['location'])
         else:
-            bundle.obj.storage_box = datafile\
-                      .dataset.get_default_storage_box()
+            bundle.obj.storage_box = datafile.get_default_storage_box()
 
         bundle.obj.save()
         if 'file_object' in bundle.data:

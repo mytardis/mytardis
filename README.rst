@@ -61,5 +61,21 @@ New contributors are welcome, however all developers should review the
 Code Health Status
 ------------------
 
-.. image:: https://travis-ci.org/mytardis/mytardis.png?branch=master
-   :target: https://travis-ci.org/mytardis/mytardis
+Automatic build, once a day:
+
+.. image:: https://semaphoreapp.com/api/v1/projects/5d21cc89-645b-4793-bd78-cf525a0dcce2/345561/shields_badge.svg
+   :target: https://semaphoreapp.com/mytardis/mytardis
+   :alt: Semaphore build status
+
+
+Code analysis (just testing this out at the moment):
+
+.. image:: https://www.codacy.com/project/badge/c5899f09f2c545edaaf6d474e9e5e11e
+   :target: https://www.codacy.com/public/grischa/mytardis
+   :alt: Codacy Badge
+   
+Code coverage
+   
+.. image:: https://coveralls.io/repos/mytardis/mytardis/badge.svg?branch=develop
+  :target: https://coveralls.io/r/mytardis/mytardis?branch=develop
+  :alt: Coveralls Badge

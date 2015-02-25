@@ -37,7 +37,6 @@ http://docs.djangoproject.com/en/dev/topics/testing/
 """
 from django.conf import settings
 from django.test import TestCase
-import os
 
 
 class ModelTestCase(TestCase):
@@ -81,9 +80,9 @@ class ModelTestCase(TestCase):
                                 )
         exp.save()
 
-        models.Author_Experiment(experiment=exp,
-                                 author='nigel',
-                                 order=0).save()
+        models.ExperimentAuthor(experiment=exp,
+                                author='nigel',
+                                order=0).save()
 
         exp = models.Experiment(title='test exp1',
                                 institution_name='monash',
@@ -91,22 +90,22 @@ class ModelTestCase(TestCase):
                                 )
         exp.save()
 
-        ae1 = models.Author_Experiment(experiment=exp,
-                                       author='steve',
-                                       order=100)
+        ae1 = models.ExperimentAuthor(experiment=exp,
+                                      author='steve',
+                                      order=100)
         ae1.save()
 
-        ae2 = models.Author_Experiment(experiment=exp,
-                                       author='russell',
-                                       order=1)
+        ae2 = models.ExperimentAuthor(experiment=exp,
+                                      author='russell',
+                                      order=1)
         ae2.save()
 
-        ae3 = models.Author_Experiment(experiment=exp,
-                                       author='uli',
-                                       order=50)
+        ae3 = models.ExperimentAuthor(experiment=exp,
+                                      author='uli',
+                                      order=50)
         ae3.save()
 
-        authors = exp.author_experiment_set.all()
+        authors = exp.experimentauthor_set.all()
 
         # confirm that there are 2 authors
         self.assertEqual(len(authors), 3)
@@ -124,7 +123,7 @@ class ModelTestCase(TestCase):
             datafile.save()
             dfo = DataFileObject(
                 datafile=datafile,
-                storage_box=dataset.get_default_storage_box(),
+                storage_box=datafile.get_default_storage_box(),
                 uri=url)
             dfo.save()
             return datafile
@@ -148,7 +147,7 @@ class ModelTestCase(TestCase):
             settings.REQUIRE_DATAFILE_CHECKSUMS = False
             df_file = _build(dataset, 'file.txt', 'path/file.txt', '')
             self.assertEqual(df_file.filename, 'file.txt')
-            self.assertEqual(df_file.default_dfo.uri,
+            self.assertEqual(df_file.file_objects.all()[0].uri,
                              'path/file.txt')
             self.assertEqual(df_file.dataset, dataset)
             self.assertEqual(df_file.size, '')
@@ -157,7 +156,7 @@ class ModelTestCase(TestCase):
 
             df_file = _build(dataset, 'file1.txt', 'path/file1.txt', 'vbl')
             self.assertEqual(df_file.filename, 'file1.txt')
-            self.assertEqual(df_file.default_dfo.uri,
+            self.assertEqual(df_file.file_objects.all()[0].uri,
                              'path/file1.txt')
             self.assertEqual(df_file.dataset, dataset)
             self.assertEqual(df_file.size, '')
