@@ -81,11 +81,7 @@ SITE_ID = 1
 
 USE_I18N = True
 
-SECRET_KEY = 'ij!%7-el^^rptw$b=iol%78okl10ee7zql-()z1r6e)gbxd3gl'
-'''
-Before running as production server Make this unique, and don't share it with
-anybody.
-'''
+# SECRET_KEY has been removed. Generate one by referring to build.sh
 
 ALLOWED_HOSTS = ['*']
 '''
