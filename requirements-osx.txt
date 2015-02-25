@@ -1,5 +1,6 @@
 psycopg2
 pystache
+python-dateutil
 mock
 beautifulsoup4
 flexmock

@@ -18,6 +18,7 @@ from .instrument import Instrument
 import logging
 import operator
 import pytz
+import dateutil.parser
 
 LOCAL_TZ = pytz.timezone(settings.TIME_ZONE)
 logger = logging.getLogger(__name__)
@@ -380,11 +381,16 @@ class Parameter(models.Model):
         if self.name.isNumeric():
             self.numerical_value = float(value)
         elif self.name.isDateTime():
-            if settings.USE_TZ and is_naive(value):
-                value = make_aware(value, LOCAL_TZ)
-            elif not settings.USE_TZ and is_aware(value):
-                value = make_naive(value, LOCAL_TZ)
-            self.datetime_value = value
+            # We convert the value string into datetime object.
+            # dateutil.parser detects and converts many date formats and is quite
+            # permissive in what it accepts (form validation and API input
+            # validation happens elsewhere and may be less permissive)
+            datevalue = dateutil.parser.parse(value)
+            if settings.USE_TZ and is_naive(datevalue):
+                datevalue = make_aware(value, LOCAL_TZ)
+            elif not settings.USE_TZ and is_aware(datevalue):
+                datevalue = make_naive(datevalue, LOCAL_TZ)
+            self.datetime_value = datevalue
         else:
             self.string_value = unicode(value)
 
