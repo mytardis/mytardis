@@ -50,7 +50,7 @@ from django.test import TestCase
 from django.test.client import Client
 from django.contrib.auth.models import User
 
-from tardis.tardis_portal.models import UserProfile, Experiment, ObjectACL, \
+from tardis.tardis_portal.models import Experiment, ObjectACL, \
     Schema, ParameterName, Dataset
 from tardis.tardis_portal.auth.localdb_auth import django_user
 
@@ -70,8 +70,6 @@ class SearchTestCase(TestCase):
         except User.DoesNotExist:
             user = User.objects.create_user('test', '', 'test')
             user.save()
-
-        self.userprofile = UserProfile(user=user).save()
 
         base_path = path.abspath(path.dirname(__file__))
         experiment = Experiment(title='SAXS Test',
@@ -275,7 +273,6 @@ class UserInterfaceTestCase(TestCase):
                                    first_name="Test", last_name="User")
         user.set_password(pwd)
         user.save()
-        UserProfile(user=user).save()
         experiment = Experiment.objects.create(title="Test Experiment",
                                                created_by=user,
                                                public_access=

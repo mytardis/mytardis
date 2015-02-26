@@ -35,7 +35,7 @@ from django.db.models.signals import post_save
 from django.core.exceptions import MiddlewareNotUsed
 
 from tardis.tardis_portal.filters import FilterInitMiddleware
-from tardis.tardis_portal.models import User, UserProfile, Experiment, \
+from tardis.tardis_portal.models import User, Experiment, \
     ObjectACL, Dataset, DataFile, DataFileObject, StorageBox
 
 from tardis.tardis_portal.tests.test_download import get_size_and_sha512sum
@@ -53,8 +53,6 @@ class FilterInitTestCase(TestCase):
                                      'testuser@example.test',
                                      'password')
         user = User.objects.create_user(username, email, password)
-        profile = UserProfile(user=user, isDjangoAccount=True)
-        profile.save()
 
         # Create test experiment and make user the owner of it
         experiment = Experiment(title='Text Experiment',

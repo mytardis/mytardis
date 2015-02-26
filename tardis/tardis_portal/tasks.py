@@ -1,14 +1,19 @@
 
 import os
 from os import path
+import logging
+import traceback
 
 from celery import group, chain
 from celery.task import task
 
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
 from django.db import transaction
 from django.template import Context
+from django.core.exceptions import MiddlewareNotUsed
+from django.db.models.signals import post_save
 
 from tardis.tardis_portal.models import DataFile
 from tardis.tardis_portal.models import DataFileObject
@@ -16,21 +21,35 @@ from tardis.tardis_portal.models import Dataset
 from tardis.tardis_portal.staging import get_staging_url_and_size
 from tardis.tardis_portal.email import email_user
 
-# Ensure filters are loaded
-try:
-    from tardis.tardis_portal.filters import FilterInitMiddleware
-    FilterInitMiddleware()
-except Exception:
-    pass
-
-# For ApiKey hooks:
-import tardis.tardis_portal.models.hooks
-
 try:
     from tardis.tardis_portal.logging_middleware import LoggingMiddleware
     LoggingMiddleware()
 except Exception:
     pass
+
+logger = logging.getLogger(__name__)
+
+# Ensure datafile filters are loaded
+try:
+    from tardis.tardis_portal.filters import FilterInitMiddleware
+    FilterInitMiddleware(cls=DataFile)
+except MiddlewareNotUsed:
+    pass
+except Exception:
+    logger.error(traceback.format_exc())
+
+# Ensure user filters are loaded
+try:
+    from tardis.tardis_portal.filters import FilterInitMiddleware
+    user_filters = [("tardis.tardis_portal.filters.user.UserFilter",)]
+    FilterInitMiddleware(filters=user_filters, cls=User)
+except MiddlewareNotUsed:
+    pass
+except Exception:
+    logger.error(traceback.format_exc())
+
+# For ApiKey hooks:
+import tardis.tardis_portal.models.hooks
 
 
 @task(name="tardis_portal.verify_dfos", ignore_result=True)

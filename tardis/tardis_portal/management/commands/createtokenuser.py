@@ -24,7 +24,8 @@ class Command(BaseCommand):
         password = None
 
         user = User.objects.create_user(username, email, password)
-        userProfile = UserProfile(user=user, isDjangoAccount=False)
+        userProfile = UserProfile.objects.get(user=user)
+        userProfile.isDjangoAccount = False
         userProfile.save()
 
         # We do not create a UserAuthentication intentionally.

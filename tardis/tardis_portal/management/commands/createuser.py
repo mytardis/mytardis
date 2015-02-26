@@ -143,7 +143,8 @@ class Command(BaseCommand):
 
         user = User.objects.create_user(username, email, password)
 
-        userProfile = UserProfile(user=user, isDjangoAccount=True)
+        userProfile = UserProfile.objects.get(user=user)
+        userProfile.isDjangoAccount = True
         userProfile.save()
 
         authentication = UserAuthentication(userProfile=userProfile,

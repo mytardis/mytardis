@@ -9,7 +9,7 @@ from django.test import TestCase
 from django.test.client import Client
 # from nose.plugins.skip import SkipTest
 
-from tardis.tardis_portal.models import User, UserProfile, \
+from tardis.tardis_portal.models import User, \
     Experiment, ObjectACL, Dataset, DataFile
 from tardis.tardis_portal.util import generate_file_checksums
 
@@ -26,7 +26,6 @@ http://library.stanford.edu/iiif/image-api/
 def _create_datafile():
     user = User.objects.create_user('testuser', 'user@email.test', 'pwd')
     user.save()
-    UserProfile(user=user).save()
 
     full_access = Experiment.PUBLIC_ACCESS_FULL
     experiment = Experiment.objects.create(title="IIIF Test",

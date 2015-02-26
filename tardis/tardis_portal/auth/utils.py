@@ -57,9 +57,24 @@ def create_user(auth_method, user_id, email=''):
     return user
 
 
-def configure_user(user):
+def configure_user(user, isDjangoAccount=False):
     """ Configure a user account that has just been created by adding
-    the user to the default groups and creating a UserProfile.
+    the user to the default groups and creating a UserProfile if
+    necessary.
+
+    This method can be called multiple times - each subsequent call
+    will only update isDjangoAccount and return the previously created
+    UserProfile.
+
+    Creating a User record (either from Django Admin or from within
+    MyTardis's code) will send a post_save signal defined in
+    tardis.tardis_portal.filters.FilterInitMiddleware which will call this
+    method to add the user to the default groups and to create a default
+    UserProfile with isDjangoAccount=True.
+
+    For external accounts (e.g. LDAP), this method can be called a second
+    time to set isDjangoAccount to False, and to retrieve the UserProfile
+    in order to create a UserAuthentication record.
 
     :param user: the User instance for the newly created account
     """
@@ -69,6 +84,10 @@ def configure_user(user):
             user.groups.add(group)
         except Group.DoesNotExist:
             pass
-    userProfile = UserProfile(user=user, isDjangoAccount=False)
+    try:
+        userProfile = UserProfile.objects.get(user=user)
+        userProfile.isDjangoAccount = isDjangoAccount
+    except UserProfile.DoesNotExist:
+        userProfile = UserProfile(user=user, isDjangoAccount=isDjangoAccount)
     userProfile.save()
     return userProfile

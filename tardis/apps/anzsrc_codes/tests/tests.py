@@ -8,13 +8,12 @@ from django.core.urlresolvers import reverse
 
 
 from tardis.tardis_portal.models import \
-    Experiment, ObjectACL, User, UserProfile
+    Experiment, ObjectACL, User
 
 
 def _create_user_and_login(username='testuser', password='testpass'):
     user = User.objects.create_user(username, '', password)
     user.save()
-    UserProfile(user=user).save()
 
     client = Client()
     client.login(username=username, password=password)

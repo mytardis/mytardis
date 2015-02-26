@@ -37,6 +37,7 @@ __init__.py
 """
 
 import logging
+import traceback
 
 from django.conf import settings
 from django.utils.importlib import import_module
@@ -44,19 +45,19 @@ from django.core.exceptions import ImproperlyConfigured
 from django.db.models.signals import post_save
 from django.core.exceptions import MiddlewareNotUsed
 
-from tardis.tardis_portal.models.datafile import DataFileObject
+from django.contrib.auth.models import User
+from tardis.tardis_portal.models.datafile import DataFile, DataFileObject
 
 logger = logging.getLogger(__name__)
 
 
 class FilterInitMiddleware(object):
 
-    def __init__(self, filters=None):  # noqa # TODO too complex
-        from tardis.tardis_portal.models import DataFile
+    def __init__(self, filters=None, cls=DataFile):  # noqa # TODO too complex
         if not filters:
             filters = getattr(settings, 'POST_SAVE_FILTERS', [])
         for f in filters:
-            cls = f[0]
+            filter_callable = f[0]
             args = []
             kw = {}
 
@@ -66,45 +67,80 @@ class FilterInitMiddleware(object):
             if len(f) >= 3:
                 kw = f[2]
 
-            # This hook dispatches a datafile save to a datafile filter.
-            # We only dispatch to the filter if the datafile's preferred
-            # replica is verified.
-            def make_datafile_hook(dfh):
+            try:
+                if cls == DataFile:
+                    self._connect_datafile_hooks(filter_callable, args, kw)
+                elif cls == User:
+                    self._connect_user_hooks(filter_callable, args, kw)
+            except:
+                logger.info(traceback.format_exc())
 
-                def datafile_hook(**kw):
-                    datafile = kw.get('instance')
-                    if datafile.verified:
-                        dfh(**kw)
-                return datafile_hook
-            datafile_hook = make_datafile_hook(
-                self._safe_import(cls, args, kw))
-
-            # This dispatches a replica save to a datafile filter if the
-            # replica is now in 'verified' state.
-            def make_dfo_hook(dfh):
-
-                def dfo_hook(**kw):
-                    dfo = kw.get('instance')
-                    if dfo.verified:
-                        kw['instance'] = dfo.datafile
-                        kw['dfo'] = dfo  # not actually needed it seems
-                        kw['sender'] = DataFile
-                        dfh(**kw)
-                return dfo_hook
-
-            # XXX seems to requre a strong ref else it won't fire,
-            # could be because some hooks are classes not functions.
-            # Need to use dispatch_uid to avoid expensive duplicate signals.
-            # https://docs.djangoproject.com/en/dev/topics/signals/#preventing-duplicate-signals # noqa # long url
-            post_save.connect(datafile_hook, sender=DataFile,
-                              weak=False, dispatch_uid=cls + ".datafile")
-            post_save.connect(make_dfo_hook(datafile_hook),
-                              sender=DataFileObject,
-                              weak=False, dispatch_uid=cls + ".dfo")
-            logger.debug('Initialised postsave hooks %s' % post_save.receivers)
+        if len(filters) > 0:
+            logger.info('Initialised postsave hooks for %s: %s'
+                        % (str(cls), post_save.receivers))
 
         # disable middleware
         raise MiddlewareNotUsed()
+
+    def _connect_datafile_hooks(self, filter_callable, args, kw):
+        """
+        Connects up post-save filters for datafiles.
+        """
+        # This hook dispatches a datafile save to a datafile filter.
+        # We only dispatch to the filter if the datafile's preferred
+        # replica is verified.
+        def make_datafile_hook(dfh):
+
+            def datafile_hook(**kw):
+                datafile = kw.get('instance')
+                if datafile.verified:
+                    dfh(**kw)
+            return datafile_hook
+        datafile_hook = make_datafile_hook(
+            self._safe_import(filter_callable, args, kw))
+
+        # This dispatches a replica save to a datafile filter if the
+        # replica is now in 'verified' state.
+        def make_dfo_hook(dfh):
+
+            def dfo_hook(**kw):
+                dfo = kw.get('instance')
+                if dfo.verified:
+                    kw['instance'] = dfo.datafile
+                    kw['dfo'] = dfo  # not actually needed it seems
+                    kw['sender'] = DataFile
+                    dfh(**kw)
+            return dfo_hook
+
+        # XXX seems to requre a strong ref else it won't fire,
+        # could be because some hooks are classes not functions.
+        # Need to use dispatch_uid to avoid expensive duplicate signals.
+        # https://docs.djangoproject.com/en/dev/topics/signals/#preventing-duplicate-signals # noqa # long url
+        post_save.connect(datafile_hook, sender=DataFile,
+                          weak=False,
+                          dispatch_uid=filter_callable + ".datafile")
+        post_save.connect(make_dfo_hook(datafile_hook),
+                          sender=DataFileObject,
+                          weak=False,
+                          dispatch_uid=filter_callable + ".dfo")
+
+    def _connect_user_hooks(self, filter_callable, args, kw):
+        """
+        Connects up post-save filters for users.
+        """
+        # This hook dispatches a user save to a user filter.
+        def make_user_hook(uh):
+
+            def user_hook(**kw):
+                user = kw.get('instance')
+                uh(**kw)
+            return user_hook
+        user_hook = make_user_hook(
+            self._safe_import(filter_callable, args, kw))
+
+        post_save.connect(user_hook, sender=User,
+                          weak=False,
+                          dispatch_uid=filter_callable + ".user")
 
     def _safe_import(self, path, args, kw):
         try:

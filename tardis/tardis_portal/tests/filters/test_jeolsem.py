@@ -4,7 +4,7 @@ from compare import expect
 from django.test import TestCase
 
 from tardis.tardis_portal.filters.jeolsem import JEOLSEMFilter
-from tardis.tardis_portal.models import User, UserProfile, \
+from tardis.tardis_portal.models import User, \
     ObjectACL, Experiment, Dataset, DataFile, DataFileObject, StorageBox
 from tardis.tardis_portal.ParameterSetManager import ParameterSetManager
 
@@ -19,8 +19,6 @@ class JEOLSEMFilterTestCase(TestCase):
                                      'testuser@example.test',
                                      'password')
         user = User.objects.create_user(username, email, password)
-        profile = UserProfile(user=user, isDjangoAccount=True)
-        profile.save()
 
         # Create test experiment and make user the owner of it
         experiment = Experiment(title='Text Experiment',
