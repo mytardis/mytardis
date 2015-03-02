@@ -1,0 +1,8 @@
+Hi, this message is for MyTardis Admins.
+
+An uploader registration request has just been saved:
+
+{{current_site}}/admin/tardis_portal/uploaderregistrationrequest/{{request_id}}
+
+Thanks,
+MyTardis
