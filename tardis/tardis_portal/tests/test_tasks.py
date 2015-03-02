@@ -7,7 +7,7 @@ from django.test import TestCase
 from tempfile import NamedTemporaryFile
 
 from tardis.tardis_portal.models import Experiment, Dataset, DataFile, \
-    User, UserProfile, DataFileObject, StorageBox
+    User, DataFileObject, StorageBox
 
 from tardis.tardis_portal.tasks import verify_dfos
 
@@ -21,7 +21,6 @@ class BackgroundTaskTestCase(TestCase):
     def _create_dataset(self):
         user = User.objects.create_user('testuser', 'user@email.test', 'pwd')
         user.save()
-        UserProfile(user=user).save()
         full_access = Experiment.PUBLIC_ACCESS_FULL
         experiment = Experiment.objects.create(title="Background Test",
                                                created_by=user,

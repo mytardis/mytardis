@@ -10,7 +10,7 @@ import oaipmh.interfaces
 
 import pytz
 
-from tardis.tardis_portal.models import Experiment, License, User, UserProfile
+from tardis.tardis_portal.models import Experiment, License, User
 from tardis.tardis_portal.ParameterSetManager import ParameterSetManager
 from tardis.tardis_portal.util import get_local_time
 
@@ -24,7 +24,6 @@ def _create_test_data():
                 first_name="Voltaire",
                 email='voltaire@gmail.com')
     user.save()
-    UserProfile(user=user).save()
     return (_create_experiment(user, False),
             _create_experiment(user, True), user)
 

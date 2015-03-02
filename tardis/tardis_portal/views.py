@@ -2664,7 +2664,8 @@ def create_user(request):
 
         user = User.objects.create_user(username, email, password)
 
-        userProfile = UserProfile(user=user, isDjangoAccount=True)
+        userProfile = UserProfile.objects.get(user=user)
+        userProfile.isDjangoAccount = (authMethod == localdb_auth_key)
         userProfile.save()
 
         authentication = UserAuthentication(userProfile=userProfile,

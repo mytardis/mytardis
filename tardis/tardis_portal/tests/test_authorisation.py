@@ -7,7 +7,7 @@ from django.contrib.auth.models import User, Group, Permission, AnonymousUser
 
 from tardis.tardis_portal.auth.localdb_auth import django_user
 from tardis.tardis_portal.auth.localdb_auth import auth_key as localdb_auth_key
-from tardis.tardis_portal.models import ObjectACL, Experiment, UserProfile
+from tardis.tardis_portal.models import ObjectACL, Experiment
 
 
 class ObjectACLTestCase(TestCase):
@@ -28,11 +28,6 @@ class ObjectACLTestCase(TestCase):
             user.user_permissions.add(Permission.objects.get(codename='change_group'))
             user.user_permissions.add(Permission.objects.get(codename='change_userauthentication'))
             user.user_permissions.add(Permission.objects.get(codename='change_objectacl'))
-
-        self.userProfile1 = UserProfile(user=self.user1).save()
-        self.userProfile2 = UserProfile(user=self.user2).save()
-        self.userProfile3 = UserProfile(user=self.user3).save()
-        self.userProfile4 = UserProfile(user=self.user4).save()
 
         # each user will have their own client
         self.client1 = Client()

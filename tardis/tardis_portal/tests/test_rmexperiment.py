@@ -5,7 +5,7 @@ from django.test import TestCase
 from django.core.management import call_command
 
 from tardis.tardis_portal.models import \
-    Experiment, Dataset, DataFile, ObjectACL, License, UserProfile, \
+    Experiment, Dataset, DataFile, ObjectACL, License, \
     ExperimentParameterSet, ExperimentParameter, DatasetParameterSet, \
     DatafileParameterSet
 
@@ -16,7 +16,6 @@ def _create_test_user():
                  last_name='Atkins',
                  email='tommy@atkins.net')
     user_.save()
-    UserProfile(user=user_).save()
     return user_
 
 

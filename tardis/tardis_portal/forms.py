@@ -169,8 +169,7 @@ class RegistrationForm(forms.Form):
             password=self.cleaned_data['password1'],
             email=self.cleaned_data['email'])
 
-        userProfile = UserProfile(user=user, isDjangoAccount=True)
-        userProfile.save()
+        userProfile = UserProfile.objects.get(user=user)
 
         authentication = UserAuthentication(
             userProfile=userProfile,

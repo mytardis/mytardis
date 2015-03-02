@@ -67,8 +67,6 @@ class UploadTestCase(TestCase):
         email = ''
         self.user = User.objects.create_user(user, email, pwd)
 
-        self.userProfile = UserProfile(user=self.user).save()
-
         self.test_dir = mkdtemp()
 
         self.exp = Experiment(title='test exp1',
@@ -172,9 +170,6 @@ class listTestCase(TestCase):
             user.first_name = first
             user.last_name = last
             user.save()
-            profile = UserProfile(user=user,
-                                  isDjangoAccount=True)
-            profile.save()
         self.users = User.objects.all()
 
         self.client = Client()
@@ -271,9 +266,6 @@ class TokenuserDeniedAccessTestCase(TestCase):
             user.first_name = first
             user.last_name = last
             user.save()
-            profile = UserProfile(user=user,
-                                  isDjangoAccount=True)
-            profile.save()
         self.users = User.objects.all()
 
         self.client = Client()
@@ -326,8 +318,6 @@ class RightsTestCase(TestCase):
                                      'testuser@example.test',
                                      'password')
         user = User.objects.create_user(username, email, password)
-        profile = UserProfile(user=user, isDjangoAccount=True)
-        profile.save()
 
         # Create test experiment and make user the owner of it
         experiment = Experiment(title='Text Experiment',
@@ -372,8 +362,6 @@ class ManageAccountTestCase(TestCase):
                                      'testuser@example.test',
                                      'password')
         user = User.objects.create_user(username, email, password)
-        profile = UserProfile(user=user, isDjangoAccount=True)
-        profile.save()
         expect(user.get_profile().isValidPublicContact()).to_be(False)
 
         manage_url = reverse('tardis.tardis_portal.views.manage_user_account')
@@ -415,8 +403,7 @@ class StageFilesTestCase(TestCase):
                                      'testuser@example.test',
                                      'password')
         user = User.objects.create_user(username, email, password)
-        profile = UserProfile(user=user, isDjangoAccount=True)
-        profile.save()
+        profile = UserProfile.objects.get(user=user)
         # Need UserAuthentication
         UserAuthentication(userProfile=profile,
                            username=username,
@@ -548,7 +535,6 @@ class ExperimentTestCase(TestCase):
         user.save()
         # Data used in tests
         self.user, self.username, self.password = (user, username, password)
-        self.userprofile = UserProfile(user=self.user).save()
 
     def testCreateAndEdit(self):
 
@@ -764,7 +750,6 @@ class ContextualViewTest(TestCase):
         pwd = 'secret'
         email = ''
         self.user = User.objects.create_user(user, email, pwd)
-        self.userProfile = UserProfile(user=self.user).save()
         self.exp = Experiment(title='test exp1',
                               institution_name='monash', created_by=self.user)
         self.exp.save()
@@ -834,7 +819,6 @@ class ViewTemplateContextsTest(TestCase):
         pwd = 'secret'
         email = ''
         self.user = User.objects.create_user(user, email, pwd)
-        self.userProfile = UserProfile(user=self.user).save()
         self.exp = Experiment(title='test exp1',
                               institution_name='monash', created_by=self.user)
         self.exp.save()

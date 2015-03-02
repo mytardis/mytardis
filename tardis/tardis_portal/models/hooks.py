@@ -70,7 +70,7 @@ def ensure_doi_exists(sender, **kwargs):
 if getattr(settings, 'AUTOGENERATE_API_KEY', False):
     from django.contrib.auth.models import User
     from tastypie.models import create_api_key
-    post_save.connect(create_api_key, sender=User)
+    post_save.connect(create_api_key, sender=User, weak=False)
 
 
 @receiver(post_save, sender=DataFileObject, dispatch_uid='auto_verify_dfos')
