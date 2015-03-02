@@ -860,6 +860,10 @@ def create_datafile_add_form(schema, parentObject, request=None):
                                            )
                 elif parameter_name.isLongString():
                     fields[key] = forms.CharField(widget=forms.Textarea, label=parameter_name.full_name + units, max_length=255, required=False, initial=value)
+                elif parameter_name.isDateTime():
+                    fields[key] = forms.DateTimeField(label=parameter_name.full_name + units,
+                                                      required=False,
+                                                      initial=value)
                 else:
                     fields[key] = \
                         forms.CharField(label=parameter_name.full_name + units,
