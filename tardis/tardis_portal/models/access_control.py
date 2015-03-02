@@ -7,6 +7,7 @@ from django.contrib.contenttypes import generic
 
 from django.db import models
 from django.db.models import Q
+from django.db.models.signals import post_save
 
 
 class UserProfile(models.Model):
@@ -208,3 +209,10 @@ class ObjectACL(models.Model):
             (Q(expiryDate__gte=datetime.today()) |
              Q(expiryDate__isnull=True))
         return acl_effective_query
+
+
+# ## ApiKey hooks
+if getattr(settings, 'AUTOGENERATE_API_KEY', False):
+    from django.contrib.auth.models import User
+    from tastypie.models import create_api_key
+    post_save.connect(create_api_key, sender=User, weak=False)
