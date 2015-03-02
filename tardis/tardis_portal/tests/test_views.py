@@ -616,8 +616,7 @@ class ExperimentTestCase(TestCase):
         # Create client and go to account management URL
         data = {'title': 'I Am the Very Model of a Modern Major-General',
                 'authors': 'W. S. Gilbert(http://en.wikipedia.org/wiki/'
-                'W._S._Gilbert), Arthur Sullivan (http://en.wikipedia.org/'
-                'wiki/Arthur_Sullivan)',
+                'W._S._Gilbert), Arthur Sullivan (arthur@sullivansite.net)',
                 'institution_name': 'Savoy Theatre',
                 'description':
                 "I am the very model of a modern Major-General," +
@@ -643,7 +642,10 @@ class ExperimentTestCase(TestCase):
             .to_equal(['W. S. Gilbert', 'Arthur Sullivan'])
         expect([a.url for a in experiment.experimentauthor_set.all()])\
             .to_equal(['http://en.wikipedia.org/wiki/W._S._Gilbert',
-                       'http://en.wikipedia.org/wiki/Arthur_Sullivan'])
+                       ''])
+        expect([a.email for a in experiment.experimentauthor_set.all()])\
+            .to_equal(['',
+                       'arthur@sullivansite.net'])
 
     def testDatasetJson(self):
         user = self.user

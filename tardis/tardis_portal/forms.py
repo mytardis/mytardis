@@ -430,15 +430,18 @@ class ExperimentForm(forms.ModelForm):
             widget=CommaSeparatedInput(attrs={
                 'placeholder': "eg. Howard W. Florey, Brian Schmidt " +
                 "(http://nla.gov.au/nla.party-1480342)"}),
-            help_text="Comma-separated authors and optional URLs")
+            help_text="Comma-separated authors and optional emails/URLs")
 
         for _, field in self.fields.items():
             field.widget.attrs['class'] = "span8"
 
     def _format_author(self, author):
+        if author.email:
+            return "%s (%s)" % (author.author, author.email)
         if author.url:
             return "%s (%s)" % (author.author, author.url)
         return author.author
+
 
     def _parse_authors(self, data):
         """
@@ -450,19 +453,29 @@ class ExperimentForm(forms.ModelForm):
         def build_dict(order, author_str):
             import re
             author_str = author_str.strip()
+            res = {'order': order}
+            # check for email (contains @ sign and one dot after)
+            email_match = re.match('([^\(]+)\(([^@]+@[^@]+\.[^@]+)\)', author_str)
+            if email_match:
+                try:
+                    author_str, email = email_match.group(1, 2)
+                    # Check that it really is a URL
+                    email = ExperimentAuthor().fields['email'].clean(email)
+                    res['email'] = email
+                except ValidationError:
+                    pass
+            # check for url (any non zero string)
             url_match = re.match('([^\(]+)\(([^\)]+)\)', author_str)
             if url_match:
                 try:
                     author_str, url = url_match.group(1, 2)
                     # Check that it really is a URL
                     url = ExperimentAuthor().fields['url'].clean(url)
-                    return {'order': order,
-                            'author': author_str.strip(),
-                            'url': url}
+                    res['url'] = url
                 except ValidationError:
                     pass
-            return {'order': order,
-                    'author': author_str}
+            res['author'] =  author_str.strip()
+            return res
 
         return [build_dict(i, a)
                 for i, a in enumerate(data.get('authors').split(','))]
