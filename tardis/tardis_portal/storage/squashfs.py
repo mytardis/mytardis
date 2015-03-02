@@ -142,16 +142,6 @@ class SquashFSStorage(Storage):
     def modified_time(self, name):
         return datetime.fromtimestamp(os.path.getmtime(self.path(name)))
 
-    def build_identifier(self, dfo):
-        if dfo.uri is None:
-            return None
-        sq_name = self.sq_filename.replace('.squashfs', '')
-        split_path = dfo.uri.split(os.sep)
-        if split_path[0] == sq_name:
-            return os.path.join(split_path[1:])
-        else:
-            return dfo.uri
-
     def walk(self, top='.', topdown=True, onerror=None, ignore_dotfiles=True):
         try:
             dirnames, filenames = self.listdir(top)
