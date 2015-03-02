@@ -23,20 +23,20 @@ summarised as:
 Releases
 --------
 
-The default branch on GitHub is `develop`. This is the cutting edge
+The default branch on GitHub is ``develop``. This is the cutting edge
 development version. Please DO NOT use this in production, as it may have bugs
 that eat your data.
 
-The `master` branch is the current stable release with all the latest bugfixes
+The ``master`` branch is the current stable release with all the latest bugfixes
 included. It will move to newer versions automatically. Follow this branch
 if you want to stay up to date in a production environment.
 
 Each version has its own branch named by version number. At the time of
-writing this is `3.5`. Follow this branch for your production installation and
+writing this is ``3.5``. Follow this branch for your production installation and
 perform version upgradres manually.
 
 Each bugfix or set of fixes bumps the minor version and each new release is
-tagged, eg. `3.5.2`. Use tagged releases if you are paranoid about changes to
+tagged, eg. ``3.5.2``. Use tagged releases if you are paranoid about changes to
 the code you have not tested yourself.
 
 To follow development, please see the contributing section below.
@@ -51,7 +51,7 @@ Bug reports and feature requests can be made via our `public issue tracker`_.
 Contributing
 ------------
 
-The `develop` branch is the cutting edge code base that all development is
+The ``develop`` branch is the cutting edge code base that all development is
 based upon.
 
 Send wishes, comments, etc. to tardis-devel@googlegroups.com.
