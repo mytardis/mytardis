@@ -23,6 +23,10 @@ summarised as:
 Releases
 --------
 
+The default branch on GitHub is `develop`. This is the cutting edge
+development version. Please DO NOT use this in production, as it may have bugs
+that eat your data.
+
 The `master` branch is the current stable release with all the latest bugfixes
 included. It will move to newer versions automatically. Follow this branch
 if you want to stay up to date in a production environment.
@@ -73,9 +77,9 @@ Code analysis (just testing this out at the moment):
 .. image:: https://www.codacy.com/project/badge/c5899f09f2c545edaaf6d474e9e5e11e
    :target: https://www.codacy.com/public/grischa/mytardis
    :alt: Codacy Badge
-   
+
 Code coverage
-   
+
 .. image:: https://coveralls.io/repos/mytardis/mytardis/badge.svg?branch=develop
   :target: https://coveralls.io/r/mytardis/mytardis?branch=develop
   :alt: Coveralls Badge
