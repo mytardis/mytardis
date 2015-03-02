@@ -436,12 +436,9 @@ class ExperimentForm(forms.ModelForm):
             field.widget.attrs['class'] = "span8"
 
     def _format_author(self, author):
-        if author.email:
-            return "%s (%s)" % (author.author, author.email)
-        if author.url:
-            return "%s (%s)" % (author.author, author.url)
-        return author.author
-
+        author_contacts = [author.email, author.url]
+        return "%s (%s)" % (author.author,
+                            ', '.join([c for c in author_contacts if c]))
 
     def _parse_authors(self, data):
         """
@@ -455,7 +452,8 @@ class ExperimentForm(forms.ModelForm):
             author_str = author_str.strip()
             res = {'order': order}
             # check for email (contains @ sign and one dot after)
-            email_match = re.match('([^\(]+)\(([^@]+@[^@]+\.[^@]+)\)', author_str)
+            email_match = re.match('([^\(]+)\(([^@]+@[^@]+\.[^@]+)\)',
+                                   author_str)
             if email_match:
                 try:
                     author_str, email = email_match.group(1, 2)
@@ -474,7 +472,7 @@ class ExperimentForm(forms.ModelForm):
                     res['url'] = url
                 except ValidationError:
                     pass
-            res['author'] =  author_str.strip()
+            res['author'] = author_str.strip()
             return res
 
         return [build_dict(i, a)
