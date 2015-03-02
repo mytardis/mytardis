@@ -21,21 +21,15 @@ import subprocess
 
 from celery import task
 from datetime import datetime
-from magic import Magic
 
 from django.conf import settings
 from django.core.exceptions import SuspiciousOperation
 from django.core.files import File
 from django.core.files.storage import Storage
-from django.db.models import Q
 from django.utils._os import safe_join
 from django.utils.importlib import import_module
 
-from tardis.tardis_portal.models import (
-    Dataset, DataFile, DataFileObject,
-    DatafileParameterSet
-)
-from tardis.tardis_portal.util import generate_file_checksums
+from tardis.tardis_portal.models import DataFile, DatafileParameterSet
 
 import logging
 log = logging.getLogger(__name__)

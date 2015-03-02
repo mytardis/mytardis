@@ -13,8 +13,6 @@ from tardis.tardis_portal.util import generate_file_checksums
 
 from .fields import DirectoryField
 from .dataset import Dataset
-from .parameters import DatafileParameter, DatafileParameterSet, \
-    ParameterName, Schema
 from .storage import StorageBox
 
 import logging
@@ -291,27 +289,6 @@ class DataFile(models.Model):
     def verify(self, reverify=False):
         return all([obj.verify() for obj in self.file_objects.all()
                     if reverify or not obj.verified])
-
-    def add_original_path_tag(self, path, replace=False):
-        '''
-        store information about the original filepath, independent from
-        dataset and experiment organisation
-        '''
-        schema = Schema.get_internal_schema(schema_type=Schema.DATAFILE)
-        ps, created = DatafileParameterSet.objects.get_or_create(
-            schema=schema, datafile=self)
-        pn, created = ParameterName.objects.get_or_create(
-            schema=schema,
-            name='original_path',
-            full_name='original path of file',
-            data_type=ParameterName.STRING
-        )
-        tag, created = DatafileParameter.objects.get_or_create(
-            name=pn,
-            parameterset=ps)
-        if replace or tag.string_value is None or tag.string_value == '':
-            tag.string_value = path
-            tag.save()
 
 
 class DataFileObject(models.Model):
