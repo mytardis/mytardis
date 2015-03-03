@@ -334,7 +334,7 @@ urlpatterns = patterns(
 
     # Login/out
     (r'^login/$', 'tardis.tardis_portal.views.login'),
-    (r'^logout/$', logout, {'next_page': '/'}),
+    url(r'^logout/$', logout, {'next_page': '/'}, name='logout'),
 
     # Rapid Connect
     (r'^rc/', include(rapidconnect_urls)),
