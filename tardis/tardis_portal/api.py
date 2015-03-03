@@ -468,6 +468,7 @@ class UserResource(ModelResource):
         filtering = {
             'id': ('exact', ),
             'username': ('exact', ),
+            'email': ('exact', ),
         }
 
     def dehydrate(self, bundle):
@@ -501,10 +502,14 @@ class UserResource(ModelResource):
         bundle.data['id'] = queried_user.id
 
         # allow the user to find out their username and email
-        if same_user and authenticated:
+        # allow facility managers to query other users' username and email
+        if authenticated and \
+                (same_user or len(facilities_managed_by(authuser)) > 0):
+            bundle.data['username'] = queried_user.username
             bundle.data['email'] = queried_user.email
         else:
             del(bundle.data['username'])
+            del(bundle.data['email'])
 
         # add public information
         if public_user:
