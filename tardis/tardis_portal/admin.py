@@ -78,6 +78,7 @@ class DatasetAdmin(admin.ModelAdmin):
 class StorageBoxAttributeInlineForm(forms.ModelForm):
 
     class Meta:
+        fields = '__all__'
         model = models.StorageBoxAttribute
         widgets = {
             'key': TextInput(attrs={'size': 40}),
@@ -94,6 +95,7 @@ class StorageBoxAttributeInline(admin.TabularInline):
 class StorageBoxOptionInlineForm(forms.ModelForm):
 
     class Meta:
+        fields = '__all__'
         model = models.StorageBoxOption
         widgets = {
             'key': TextInput(attrs={'size': 40}),
@@ -110,6 +112,7 @@ class StorageBoxOptionInline(admin.TabularInline):
 class StorageBoxForm(forms.ModelForm):
 
     class Meta:
+        fields = '__all__'
         model = models.StorageBox
         widgets = {
             'django_storage_class': TextInput(attrs={'size': 120}),
@@ -127,6 +130,7 @@ class StorageBoxAdmin(admin.ModelAdmin):
 class DataFileObjectInlineForm(forms.ModelForm):
 
     class Meta:
+        fields = '__all__'
         model = models.DataFileObject
         widgets = {
             'uri': TextInput(attrs={'size': 120}),
@@ -142,6 +146,7 @@ class DataFileObjectInline(admin.TabularInline):
 class DatafileAdminForm(forms.ModelForm):
 
     class Meta:
+        fields = '__all__'
         model = models.DataFile
         widgets = {
             'directory': TextInput(attrs={'size': 120}),

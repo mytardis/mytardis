@@ -187,8 +187,14 @@ class ChangeUserPermissionsForm(ModelForm):
         from django.forms.extras.widgets import SelectDateWidget
         from tardis.tardis_portal.models import ObjectACL
         model = ObjectACL
-        exclude = ('entityId', 'pluginId', 'content_object', 'content_type',
-                   'object_id', 'aclOwnershipType',)
+        fields = [
+            'canDelete,'
+            'canRead,'
+            'canWrite,'
+            'effectiveDate,'
+            'expiryDate,'
+            'isOwner,'
+        ]
         widgets = {
             'expiryDate': SelectDateWidget(),
             'effectiveDate': SelectDateWidget()}
@@ -354,14 +360,24 @@ class DatasetForm(forms.ModelForm):
 
     class Meta:
         model = models.Dataset
-        exclude = ('experiments', 'immutable')
+        fields = [
+            'description',
+            'directory',
+            'instrument',
+        ]
 
 
 class ExperimentAuthor(forms.ModelForm):
 
     class Meta:
         model = models.ExperimentAuthor
-        exclude = ('experiment', )
+        fields = [
+            'author',
+            'institution',
+            'email'
+            'order',
+            'url',
+        ]
 
 
 class ExperimentForm(forms.ModelForm):
