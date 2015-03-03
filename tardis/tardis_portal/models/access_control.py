@@ -29,7 +29,8 @@ class UserProfile(models.Model):
         null=False, blank=False, default=True)
 
     # This field is supplied by AAF's Rapid Connect service.
-    rapidConnectEduPersonTargetedID = models.CharField(max_length=400, null=True, blank=True)
+    rapidConnectEduPersonTargetedID = models.CharField(
+        max_length=400, null=True, blank=True)
 
     class Meta:
         app_label = 'tardis_portal'
