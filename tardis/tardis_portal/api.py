@@ -67,6 +67,7 @@ from tastypie.contrib.contenttypes.fields import GenericForeignKeyField
 import logging
 logger = logging.getLogger(__name__)
 
+
 class PrettyJSONSerializer(Serializer):
     json_indent = 2
 
@@ -794,7 +795,8 @@ class ExperimentResource(MyTardisModelResource):
                 if matched_instrument and matched_owner:
                     experiment_id = exp_pset.experiment.id
                     exp_list = Experiment.objects.filter(pk=experiment_id)
-                    if exp_list[0] in Experiment.safe.all(bundle.request.user).filter(title=title):
+                    if exp_list[0] in Experiment.safe.all(bundle.request.user)\
+                            .filter(title=title):
                         return exp_list
 
             return []
@@ -1282,7 +1284,7 @@ class UploaderRegistrationRequestResource(MyTardisModelResource):
     approved_staging_host = fields.ForeignKey(
         'tardis.tardis_portal.api.UploaderStagingHostResource',
         'approved_staging_host',
-        full = True, null=True, blank=True, default=None)
+        full=True, null=True, blank=True, default=None)
 
     class Meta(MyTardisModelResource.Meta):
         authentication = Authentication()
