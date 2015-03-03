@@ -1,4 +1,4 @@
-from django.conf.urls.defaults import patterns, url
+from django.conf.urls import patterns, url
 
 urlpatterns = patterns('tardis.apps.related_info.views',
     url(r'^(?P<experiment_id>\d+)/$', 'index'),
