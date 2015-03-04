@@ -44,7 +44,7 @@ def verify_dfo(dfo_id, only_local=False, reverify=False):
     allowemtpychecksums is false for auto-verify, hence the parameter
     '''
     # Use a transaction for safety
-    with transaction.commit_on_success():
+    with transaction.atomic():
         # Get dfo locked for write (to prevent concurrent actions)
         dfo = DataFileObject.objects.select_for_update().get(id=dfo_id)
         if reverify or not dfo.verified:

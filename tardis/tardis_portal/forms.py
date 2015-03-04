@@ -162,7 +162,7 @@ class RegistrationForm(forms.Form):
 
         return self.cleaned_data
 
-    @transaction.commit_on_success()
+    @transaction.atomic
     def save(self, profile_callback=None):
         user = RegistrationProfile.objects.create_inactive_user(
             username=self.cleaned_data['username'],

@@ -64,7 +64,7 @@ def get_release_date(publication):
     return release_date
 
 
-@transaction.commit_on_success
+@transaction.atomic
 def process_embargos():
     # Restricted publications are defined as those having public access
     # levels less than PUBLIC_ACCESS_PENDING_AUTH and the
@@ -116,7 +116,7 @@ def process_embargos():
             pub.save()
 
 
-@transaction.commit_on_success
+@transaction.atomic
 def populate_pdb_pub_records():
     PUB_SCHEMA = getattr(settings, 'PUBLICATION_SCHEMA_ROOT',
                          default_settings.PUBLICATION_SCHEMA_ROOT)
