@@ -1,4 +1,4 @@
-Django==1.5.5 #apt: 1.6.1
+Django==1.6.10
 SPARQLWrapper==1.6.4 #apt: 1.4.1
 South==0.8.1 #apt: 0.7.5
 Sphinx
