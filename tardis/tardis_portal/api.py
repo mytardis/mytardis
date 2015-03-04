@@ -868,11 +868,6 @@ class DatasetResource(MyTardisModelResource):
         'datasetparameterset_set',
         related_name='dataset',
         full=True, null=True)
-    storage_boxes = fields.ToManyField(
-        StorageBoxResource,
-        'storage_boxes',
-        related_name='datasets',
-        null=True)
 
     class Meta(MyTardisModelResource.Meta):
         queryset = Dataset.objects.all()
@@ -892,11 +887,6 @@ class DatasetResource(MyTardisModelResource):
                 self.wrap_view('get_datafiles'),
                 name='api_get_datafiles_for_dataset'),
         ]
-
-    def obj_create(self, bundle, **kwargs):
-        bundle = super(DatasetResource, self).obj_create(bundle, **kwargs)
-        bundle.obj.storage_boxes.add(StorageBox.get_default_storage())
-        return bundle
 
     def get_datafiles(self, request, **kwargs):
         file_path = kwargs.get('file_path', None)
