@@ -158,7 +158,7 @@ class ExperimentManager(OracleSafeManager):
 
         # the user must be authenticated
         if not user.is_authenticated():
-            return super(ExperimentManager, self).get_empty_query_set()
+            return super(ExperimentManager, self).get_queryset().none()
 
         return self.owned_by_user(user)
 

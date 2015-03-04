@@ -92,5 +92,5 @@ def dataset_size_badge(dataset=None, size=None):
         size = filesizeformat(size)
     return render_mustache('tardis_portal/badges/size', {
         'title': "Dataset size is ~%s" % size,
-        'label': str(size),
+        'label': size,
     })

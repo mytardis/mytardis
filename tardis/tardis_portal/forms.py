@@ -188,12 +188,12 @@ class ChangeUserPermissionsForm(ModelForm):
         from tardis.tardis_portal.models import ObjectACL
         model = ObjectACL
         fields = [
-            'canDelete,'
-            'canRead,'
-            'canWrite,'
-            'effectiveDate,'
-            'expiryDate,'
-            'isOwner,'
+            'canDelete',
+            'canRead',
+            'canWrite',
+            'effectiveDate',
+            'expiryDate',
+            'isOwner',
         ]
         widgets = {
             'expiryDate': SelectDateWidget(),
@@ -374,7 +374,7 @@ class ExperimentAuthor(forms.ModelForm):
         fields = [
             'author',
             'institution',
-            'email'
+            'email',
             'order',
             'url',
         ]

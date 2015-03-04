@@ -53,7 +53,7 @@ class Experiment(models.Model):
 
     url = models.URLField(max_length=255,
                           null=True, blank=True)
-    approved = models.BooleanField()
+    approved = models.BooleanField(default=False)
     title = models.CharField(max_length=400)
     institution_name = models.CharField(max_length=400,
                                         default=settings.DEFAULT_INSTITUTION)
@@ -64,7 +64,7 @@ class Experiment(models.Model):
     update_time = models.DateTimeField(auto_now=True)
     created_by = models.ForeignKey(User)
     handle = models.TextField(null=True, blank=True)
-    locked = models.BooleanField()
+    locked = models.BooleanField(default=False)
     public_access = \
         models.PositiveSmallIntegerField(choices=PUBLIC_ACCESS_CHOICES,
                                          null=False,

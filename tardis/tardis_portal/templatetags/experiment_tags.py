@@ -70,6 +70,5 @@ def experiment_size_badge(experiment):
     size = filesizeformat(experiment.get_size())
     return render_mustache('tardis_portal/badges/size', {
         'title': "Experiment size is ~%s" % size,
-        'label': str(size),
+        'label': size,
     })
-

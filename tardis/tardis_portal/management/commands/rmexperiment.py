@@ -123,29 +123,27 @@ class Command(BaseCommand):
 
         # Consider the entire experiment deletion atomic
         using = options.get('database', DEFAULT_DB_ALIAS)
-        transaction.set_autocommit(False, using=using)
 
         try:
-            acls.delete()
-            epsets.delete()
-            for dataset in datasets:
-                dataset.experiments.remove(exp.id)
-                if dataset.experiments.count() == 0:
-                    DatasetParameterSet.objects.filter(dataset=dataset).delete()
-                    for datafile in DataFile.objects.filter(dataset=dataset):
-                        DatafileParameterSet.objects.filter(datafile=datafile).delete()
-                        datafile.delete()
-                    dataset.delete()
-            authors.delete()
-            exp.delete()
-
-            transaction.commit(using=using)
+            with transaction.atomic(using=using):
+                acls.delete()
+                epsets.delete()
+                for dataset in datasets:
+                    dataset.experiments.remove(exp.id)
+                    if dataset.experiments.count() == 0:
+                        DatasetParameterSet.objects.filter(
+                            dataset=dataset).delete()
+                        for datafile in DataFile.objects.filter(
+                                dataset=dataset):
+                            DatafileParameterSet.objects.filter(
+                                datafile=datafile).delete()
+                            datafile.delete()
+                        dataset.delete()
+                authors.delete()
+                exp.delete()
         except Exception:
-            transaction.rollback(using=using)
             exc_class, exc, tb = sys.exc_info()
             new_exc = CommandError(
                 "Exception %s has occurred: rolled back transaction"
                 % (exc or exc_class))
             raise new_exc.__class__, new_exc, tb
-        finally:
-            transaction.set_autocommit(True, using=using)
