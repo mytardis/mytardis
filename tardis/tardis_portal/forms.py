@@ -37,15 +37,12 @@ forms module
 
 '''
 
-from os.path import basename
 from UserDict import UserDict
 
 from django import forms
 from django.forms import ValidationError
 from django.forms.util import ErrorList
 from django.forms.models import ModelChoiceField
-from django.forms.models import inlineformset_factory
-from django.forms.models import BaseInlineFormSet
 from django.forms.widgets import HiddenInput
 from django.forms import ModelForm
 from django.contrib.auth.forms import AuthenticationForm
@@ -61,7 +58,7 @@ from registration.models import RegistrationProfile
 
 from tardis.tardis_portal import models
 from tardis.tardis_portal.fields import MultiValueCommaSeparatedField
-from tardis.tardis_portal.widgets import CommaSeparatedInput, Span, TextInput
+from tardis.tardis_portal.widgets import CommaSeparatedInput
 from tardis.tardis_portal.models import UserProfile, UserAuthentication, \
     Experiment, License
 from tardis.tardis_portal.auth.localdb_auth \
@@ -71,6 +68,7 @@ from tardis.tardis_portal.ParameterSetManager import ParameterSetManager
 
 import logging
 logger = logging.getLogger(__name__)
+
 
 def getAuthMethodChoices():
     authMethodChoices = ()
@@ -84,10 +82,9 @@ class LoginForm(AuthenticationForm):
 
     def __init__(self, *args, **kwargs):
         super(LoginForm, self).__init__(*args, **kwargs)
-        self.fields['username'] = \
-             forms.CharField(required=True,
-                             label="Username",
-                             max_length=75)
+        self.fields['username'] = forms.CharField(required=True,
+                                                  label="Username",
+                                                  max_length=75)
 
         # authMethods = ((None, "Any"),) + getAuthMethodChoices()
         # self.fields['authMethod'] = \
@@ -119,8 +116,8 @@ class RegistrationForm(forms.Form):
         widget=forms.TextInput(attrs=attrs_dict),
         label=_("Username"),
         error_messages={'invalid':
-            _("This value must contain only letters, \
-            numbers and underscores.")})
+                        _("This value must contain only letters, \
+                        numbers and underscores.")})
     email = forms.EmailField(widget=forms.TextInput(attrs=dict(attrs_dict,
                                                                maxlength=75)),
                              label=_("Email address"))
@@ -206,26 +203,28 @@ class ChangeGroupPermissionsForm(forms.Form):
     canDelete = forms.BooleanField(label='', required=False,
                                    widget=forms.HiddenInput)
 
-    effectiveDate = forms.DateTimeField(label='Effective Date',
-            widget=SelectDateWidget(), required=False)
-    expiryDate = forms.DateTimeField(label='Expiry Date',
-            widget=SelectDateWidget(), required=False)
+    effectiveDate = forms.DateTimeField(
+        label='Effective Date', widget=SelectDateWidget(), required=False)
+    expiryDate = forms.DateTimeField(
+        label='Expiry Date', widget=SelectDateWidget(), required=False)
 
 
 class AddUserPermissionsForm(forms.Form):
 
-    entered_user = forms.CharField(label='User', required=False, max_length=100)
-    autocomp_user = forms.CharField(label='', required=False, max_length=100,
-                                   widget=forms.HiddenInput)
-    authMethod = forms.CharField(required=True,
-        widget=forms.Select(choices=getAuthMethodChoices()),
+    entered_user = forms.CharField(
+        label='User', required=False, max_length=100)
+    autocomp_user = forms.CharField(
+        label='', required=False, max_length=100, widget=forms.HiddenInput)
+    authMethod = forms.CharField(
+        required=True, widget=forms.Select(choices=getAuthMethodChoices()),
         label='Authentication Method')
-    read = forms.BooleanField(label='Read access', required=False, initial=True)
+    read = forms.BooleanField(
+        label='Read access', required=False, initial=True)
     read.widget.attrs['class'] = 'canRead'
     write = forms.BooleanField(label='Edit access', required=False)
     write.widget.attrs['class'] = 'canWrite'
     delete = forms.BooleanField(label='', required=False,
-                                   widget=forms.HiddenInput)
+                                widget=forms.HiddenInput)
     delete.widget.attrs['class'] = 'canDelete'
 
 
@@ -233,7 +232,8 @@ class AddGroupPermissionsForm(forms.Form):
 
     addgroup = forms.CharField(label='Group', required=False, max_length=100)
     addgroup.widget.attrs['class'] = 'groupsuggest'
-    authMethod = forms.CharField(required=True,
+    authMethod = forms.CharField(
+        required=True,
         widget=forms.Select(choices=getAuthMethodChoices()),
         label='Authentication Method')
 
@@ -241,7 +241,8 @@ class AddGroupPermissionsForm(forms.Form):
 class CreateGroupPermissionsForm(forms.Form):
     addgroup = forms.CharField(label='Group', required=False, max_length=100)
     addgroup.widget.attrs['class'] = 'groupsuggest'
-    authMethod = forms.CharField(required=True,
+    authMethod = forms.CharField(
+        required=True,
         widget=forms.Select(choices=getAuthMethodChoices()),
         label='Authentication Method')
     adduser = forms.CharField(label='User', required=False, max_length=100)
@@ -250,17 +251,20 @@ class CreateGroupPermissionsForm(forms.Form):
 
 class ManageGroupPermissionsForm(forms.Form):
 
-    authMethod = forms.CharField(required=True,
+    authMethod = forms.CharField(
+        required=True,
         widget=forms.Select(choices=getAuthMethodChoices()),
         label='Authentication Method')
     adduser = forms.CharField(label='User', required=False, max_length=100)
     adduser.widget.attrs['class'] = 'usersuggest'
-    admin = forms.BooleanField(label='Group Admin', required=False, initial=False)
+    admin = forms.BooleanField(
+        label='Group Admin', required=False, initial=False)
     admin.widget.attrs['class'] = 'isAdmin'
 
 
 class CreateUserPermissionsForm(RegistrationForm):
-    authMethod = forms.CharField(required=True,
+    authMethod = forms.CharField(
+        required=True,
         widget=forms.Select(choices=getAuthMethodChoices()),
         label='Authentication Method')
 
@@ -278,8 +282,8 @@ class MXDatafileSearchForm(DatafileSearchForm):
         ('Synchrotron', 'Synchrotron'),
         ('Rotating Anode', 'Rotating Anode'),
         ('Tube', 'Tube'))
-    diffractometerType = \
-        forms.CharField(widget=forms.Select(choices=__DIFFRACTOMETER_CHOICES),
+    diffractometerType = forms.CharField(
+        widget=forms.Select(choices=__DIFFRACTOMETER_CHOICES),
         label='Diffractometer Type')
     xraySource = forms.CharField(
         required=False, label='X-ray Source', max_length=20)
@@ -309,17 +313,18 @@ def createLinkedUserAuthenticationForm(authMethods):
             (authMethodKey, authMethods[authMethodKey]), )
 
     fields = {}
-    fields['authenticationMethod'] = \
-        forms.CharField(label='Authentication Method',
+    fields['authenticationMethod'] = forms.CharField(
+        label='Authentication Method',
         widget=forms.Select(choices=_authenticationMethodChoices),
         required=True)
-    fields['username'] = forms.CharField(label='Username',
-        max_length=75, required=True)
-    fields['password'] = forms.CharField(required=True,
-        widget=forms.PasswordInput(), label='Password', max_length=12)
+    fields['username'] = forms.CharField(
+        label='Username', max_length=75, required=True)
+    fields['password'] = forms.CharField(
+        required=True, widget=forms.PasswordInput(),
+        label='Password', max_length=12)
 
     return type('LinkedUserAuthenticationForm', (forms.BaseForm, ),
-                    {'base_fields': fields})
+                {'base_fields': fields})
 
 
 # infrared
@@ -344,16 +349,18 @@ class RegisterExperimentForm(forms.Form):
     originid = forms.CharField(max_length=400, required=False)
     from_url = forms.CharField(max_length=400, required=False)
 
+
 class DatasetForm(forms.ModelForm):
 
     class Meta:
         model = models.Dataset
         exclude = ('experiments', 'immutable')
 
-class Author_Experiment(forms.ModelForm):
+
+class ExperimentAuthor(forms.ModelForm):
 
     class Meta:
-        model = models.Author_Experiment
+        model = models.ExperimentAuthor
         exclude = ('experiment', )
 
 
@@ -382,13 +389,13 @@ class ExperimentForm(forms.ModelForm):
         def save_m2m(self):
             """
             {'experiment': experiment,
-            'author_experiments': author_experiments,
+            'experiment_authors': experiment_authors,
             'authors': authors,
             'datasets': datasets,
             'datafiles': datafiles}
             """
             self.data['experiment'].save()
-            for ae in self.data['author_experiments']:
+            for ae in self.data['experiment_authors']:
                 ae.experiment = self.data['experiment']
                 print ae
                 ae.save()
@@ -409,30 +416,29 @@ class ExperimentForm(forms.ModelForm):
 
         # fix up experiment form
         if instance and not data:
-                authors = instance.author_experiment_set.all()
+                authors = instance.experimentauthor_set.all()
                 self.initial['authors'] = ', '.join([self._format_author(a)
                                                      for a in authors])
 
-        self.author_experiments = []
+        self.experiment_authors = []
 
         if data:
             self._update_authors(data)
 
-        self.fields['authors'] = \
-            MultiValueCommaSeparatedField([author.fields['author'] for
-                                        author in self.author_experiments],
-                widget=CommaSeparatedInput(attrs={
-                    'placeholder': "eg. Howard W. Florey, Brian Schmidt "+
-                                   "(http://nla.gov.au/nla.party-1480342)"}),
-                help_text="Comma-separated authors and optional URLs")
+        self.fields['authors'] = MultiValueCommaSeparatedField(
+            [author.fields['author'] for author in self.experiment_authors],
+            widget=CommaSeparatedInput(attrs={
+                'placeholder': "eg. Howard W. Florey, Brian Schmidt " +
+                "(http://nla.gov.au/nla.party-1480342)"}),
+            help_text="Comma-separated authors and optional emails/URLs")
 
         for _, field in self.fields.items():
             field.widget.attrs['class'] = "span8"
 
     def _format_author(self, author):
-        if author.url:
-            return "%s (%s)" % (author.author, author.url)
-        return author.author
+        author_contacts = [author.email, author.url]
+        return "%s (%s)" % (author.author,
+                            ', '.join([c for c in author_contacts if c]))
 
     def _parse_authors(self, data):
         """
@@ -444,19 +450,30 @@ class ExperimentForm(forms.ModelForm):
         def build_dict(order, author_str):
             import re
             author_str = author_str.strip()
+            res = {'order': order}
+            # check for email (contains @ sign and one dot after)
+            email_match = re.match('([^\(]+)\(([^@]+@[^@]+\.[^@]+)\)',
+                                   author_str)
+            if email_match:
+                try:
+                    author_str, email = email_match.group(1, 2)
+                    # Check that it really is a URL
+                    email = ExperimentAuthor().fields['email'].clean(email)
+                    res['email'] = email
+                except ValidationError:
+                    pass
+            # check for url (any non zero string)
             url_match = re.match('([^\(]+)\(([^\)]+)\)', author_str)
             if url_match:
                 try:
                     author_str, url = url_match.group(1, 2)
                     # Check that it really is a URL
-                    url = Author_Experiment().fields['url'].clean(url)
-                    return {'order': order,
-                            'author': author_str.strip(),
-                            'url': url}
+                    url = ExperimentAuthor().fields['url'].clean(url)
+                    res['url'] = url
                 except ValidationError:
                     pass
-            return {'order': order,
-                    'author': author_str}
+            res['author'] = author_str.strip()
+            return res
 
         return [build_dict(i, a)
                 for i, a in enumerate(data.get('authors').split(','))]
@@ -466,16 +483,16 @@ class ExperimentForm(forms.ModelForm):
         for data in self._parse_authors(data):
             try:
                 # Get the current author for that position
-                o_ae = self.author_experiments[data['order']]
+                o_ae = self.experiment_authors[data['order']]
                 # Update the author form for that position with the new data
-                self.author_experiments[data['order']] = \
-                    Author_Experiment(data=data,
-                                      instance=o_ae.instance)
+                self.experiment_authors[data['order']] = \
+                    ExperimentAuthor(data=data,
+                                     instance=o_ae.instance)
             except IndexError:
                 # Or create an author for that position
-                o_ae = Author_Experiment(data=data,
-                                         instance=models.Author_Experiment())
-                self.author_experiments.append(o_ae)
+                o_ae = ExperimentAuthor(data=data,
+                                        instance=models.ExperimentAuthor())
+                self.experiment_authors.append(o_ae)
 
     def save(self, commit=True):
         # remove m2m field before saving
@@ -483,21 +500,21 @@ class ExperimentForm(forms.ModelForm):
 
         # fix up experiment form
         if self.instance:
-            authors = self.instance.author_experiment_set.all()
+            authors = self.instance.experimentauthor_set.all()
             for author in authors:
                 author.delete()
 
         experiment = super(ExperimentForm, self).save(commit)
 
         authors = []
-        author_experiments = []
+        experiment_authors = []
 
-        for ae in self.author_experiments:
+        for ae in self.experiment_authors:
             o_ae = ae.save(commit=commit)
-            author_experiments.append(o_ae)
+            experiment_authors.append(o_ae)
 
         return self.FullExperiment({'experiment': experiment,
-                                    'author_experiments': author_experiments,
+                                    'experiment_authors': experiment_authors,
                                     'authors': authors})
 
     def is_valid(self):
@@ -515,7 +532,7 @@ class ExperimentForm(forms.ModelForm):
             return not bool(self.errors)
 
         # TODO since this is a compound field, this should merge the errors
-        for ae in self.author_experiments:
+        for ae in self.experiment_authors:
             for name, error in ae.errors.items():
                 if isinstance(ae.fields[name], ModelChoiceField):
                     continue
@@ -648,13 +665,13 @@ def createSearchExperimentForm():
 
 
     for schema, fieldlist in schemaAndFieldLists:
-        name = schema.name if schema.name != None else 'No schema name'
+        name = schema.name if schema.name is not None else 'No schema name'
         if fieldlist:
             fieldsets.append((name, {'fields': fieldlist}))
 
     return type('SearchExperimentForm', (formutils.BetterBaseForm, forms.BaseForm, ),
-                    {'base_fields': fields, 'base_fieldsets': fieldsets,
-                     'base_row_attrs': {}})
+                {'base_fields': fields, 'base_fieldsets': fieldsets,
+                 'base_row_attrs': {}})
 
 
 def __getParameterChoices(choicesString):
@@ -715,9 +732,7 @@ class StaticField(forms.Field):
         return
 
 
-def create_parameterset_edit_form(
-    parameterset,
-    request=None):
+def create_parameterset_edit_form(parameterset, request=None):
 
     from tardis.tardis_portal.models import ParameterName
 
@@ -822,9 +837,7 @@ def save_datafile_edit_form(parameterset, request):
             psm.new_param(stripped_key, value)
 
 
-def create_datafile_add_form(
-    schema, parentObject,
-    request=None):
+def create_datafile_add_form(schema, parentObject, request=None):
 
     from tardis.tardis_portal.models import ParameterName
 
@@ -844,7 +857,7 @@ def create_datafile_add_form(
                 schema__namespace=schema,
                 name=stripped_key)
 
-            if parameter_name.immutable == False:
+            if parameter_name.immutable is False:
                 units = ""
                 if parameter_name.units:
                     units = " (" + parameter_name.units + ")"
@@ -858,6 +871,10 @@ def create_datafile_add_form(
                                            )
                 elif parameter_name.isLongString():
                     fields[key] = forms.CharField(widget=forms.Textarea, label=parameter_name.full_name + units, max_length=255, required=False, initial=value)
+                elif parameter_name.isDateTime():
+                    fields[key] = forms.DateTimeField(label=parameter_name.full_name + units,
+                                                      required=False,
+                                                      initial=value)
                 else:
                     fields[key] = \
                         forms.CharField(label=parameter_name.full_name + units,
@@ -903,13 +920,13 @@ def create_datafile_add_form(
                 max_length=255, required=False)
 
         return type('DynamicForm', (forms.BaseForm, ),
-            {'base_fields': fields})
+                    {'base_fields': fields})
 
 
 def save_datafile_add_form(schema, parentObject, request):
 
     psm = ParameterSetManager(schema=schema,
-        parentObject=parentObject)
+                              parentObject=parentObject)
 
     for key, value in sorted(request.POST.iteritems()):
         if value:
@@ -929,6 +946,7 @@ class RawSearchForm(SearchForm):
             sqs = sqs.load_all()
 
         return sqs
+
 
 class RightsForm(ModelForm):
     """
@@ -955,10 +973,11 @@ class RightsForm(ModelForm):
             suitable = license_ in License.get_suitable_licenses(public_access)
 
         if not suitable:
-            raise forms.ValidationError("Selected license it not suitable "+
+            raise forms.ValidationError("Selected license it not suitable " +
                                         "for public access level.")
 
         return cleaned_data
+
 
 class ManageAccountForm(ModelForm):
     """

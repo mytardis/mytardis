@@ -1,2 +1,0 @@
-concurrency: gunicorn=1,celerybeat=1,celeryd=1
-port: 8000

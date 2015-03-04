@@ -1,3 +1,5 @@
+from django.contrib.contenttypes import generic
+from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.urlresolvers import reverse
 from django.conf import settings
@@ -18,6 +20,7 @@ from .instrument import Instrument
 import logging
 import operator
 import pytz
+import dateutil.parser
 
 LOCAL_TZ = pytz.timezone(settings.TIME_ZONE)
 logger = logging.getLogger(__name__)
@@ -47,9 +50,18 @@ class Schema(models.Model):
         (NONE, 'None')
     )
 
+    _SCHEMA_TYPES_SHORT = (
+        (EXPERIMENT, 'experiment'),
+        (DATASET, 'dataset'),
+        (DATAFILE, 'datafile'),
+        (INSTRUMENT, 'instrument'),
+        (NONE, 'none')
+    )
+
     namespace = models.URLField(unique=True,
                                 max_length=255)
     name = models.CharField(blank=True, null=True, max_length=50)
+    # WHY 'type', a reserved word? Someone please refactor and migrate db
     type = models.IntegerField(  # @ReservedAssignment
         choices=_SCHEMA_TYPES, default=EXPERIMENT)
 
@@ -88,6 +100,29 @@ class Schema(models.Model):
         else:
             return [schema.namespace for schema in
                     Schema.objects.filter(type=type_)]
+
+    @classmethod
+    def get_schema_type_name(cls, schema_type, short=False):
+        if short:
+            type_list = cls._SCHEMA_TYPES_SHORT
+        else:
+            type_list = cls._SCHEMA_TYPES
+        return dict(type_list).get(schema_type, None)
+
+    @classmethod
+    def get_internal_schema(cls, schema_type):
+        name_prefix, ns_prefix = getattr(
+            settings, 'INTERNAL_SCHEMA_PREFIXES',
+            ('internal schema', 'http://mytardis.org/schemas/internal'))
+        type_name = cls.get_schema_type_name(schema_type)
+        name = name_prefix + ': ' + type_name
+        type_name_short = cls.get_schema_type_name(schema_type, short=True)
+        ns = '/'.join([ns_prefix, type_name_short])
+        return Schema.objects.get_or_create(
+            name=name,
+            namespace=ns,
+            type=schema_type,
+            hidden=True)[0]
 
     def __unicode__(self):
         return self._getSchemaTypeName(self.type) + (
@@ -361,6 +396,9 @@ class Parameter(models.Model):
     string_value = models.TextField(null=True, blank=True, db_index=True)
     numerical_value = models.FloatField(null=True, blank=True, db_index=True)
     datetime_value = models.DateTimeField(null=True, blank=True, db_index=True)
+    link_id = models.PositiveIntegerField(null=True, blank=True)
+    link_ct = models.ForeignKey(ContentType, null=True, blank=True)
+    link_gfk = generic.GenericForeignKey('link_ct', 'link_id')
     objects = OracleSafeManager()
     parameter_type = 'Abstract'
 
@@ -380,14 +418,27 @@ class Parameter(models.Model):
             return 'Unitialised %sParameter' % self.parameter_type
 
     def set_value(self, value):
+        """
+        Sets the parameter value, converting into the appropriate data type.
+        Deals with date/time strings that are timezone naive or aware, based
+        on the USE_TZ setting.
+
+        :param value: a string (or string-like) representing the value
+        :return:
+        """
         if self.name.isNumeric():
             self.numerical_value = float(value)
         elif self.name.isDateTime():
-            if settings.USE_TZ and is_naive(value):
-                value = make_aware(value, LOCAL_TZ)
-            elif not settings.USE_TZ and is_aware(value):
-                value = make_naive(value, LOCAL_TZ)
-            self.datetime_value = value
+            # We convert the value string into datetime object.
+            # dateutil.parser detects and converts many date formats and is quite
+            # permissive in what it accepts (form validation and API input
+            # validation happens elsewhere and may be less permissive)
+            datevalue = dateutil.parser.parse(value)
+            if settings.USE_TZ and is_naive(datevalue):
+                datevalue = make_aware(value, LOCAL_TZ)
+            elif not settings.USE_TZ and is_aware(datevalue):
+                datevalue = make_naive(datevalue, LOCAL_TZ)
+            self.datetime_value = datevalue
         else:
             self.string_value = unicode(value)
 

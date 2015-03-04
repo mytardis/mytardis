@@ -94,11 +94,10 @@ class TestStagingFiles(TestCase):
 
         # create replica
         base_url = settings.GET_FULL_STAGING_PATH_TEST
-        df.dataset.storage_boxes.add(
-            StorageBox.get_default_storage(location=base_url))
+        s_box = StorageBox.get_default_storage(location=base_url)
         dfo = DataFileObject(datafile=df,
                              uri=self.filepath,
-                             storage_box=df.dataset.storage_boxes.all()[-1])
+                             storage_box=s_box)
         dfo.save()
         self.dfo = dfo
 

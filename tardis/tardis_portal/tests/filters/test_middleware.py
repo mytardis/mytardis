@@ -78,7 +78,6 @@ class FilterInitTestCase(TestCase):
 
         base_path = path.join(path.dirname(__file__), 'fixtures')
         s_box = StorageBox.get_default_storage(location=base_path)
-        dataset.storage_boxes.add(s_box)
 
         def create_datafile(index):
             testfile = path.join(base_path, 'middleware_test%d.txt' % index)
@@ -92,7 +91,7 @@ class FilterInitTestCase(TestCase):
             datafile.save()
             dfo = DataFileObject(
                 datafile=datafile,
-                storage_box=datafile.dataset.get_default_storage_box(),
+                storage_box=s_box,
                 uri=path.basename(testfile))
             dfo.save()
 
@@ -126,7 +125,7 @@ class FilterInitTestCase(TestCase):
             t = Filter2.getTuples()
             expect(len(t)).to_equal(0)
 
-            self.datafiles[0].default_dfo.save()
+            self.datafiles[0].file_objects.all()[0].save()
             t = Filter1.getTuples()
             expect(len(t)).to_equal(2)
             expect(t[0][0]).to_equal(self.datafiles[0])
@@ -136,7 +135,7 @@ class FilterInitTestCase(TestCase):
             expect(t[0][0]).to_equal(self.datafiles[0])
             expect(t[0][1]).to_be_truthy()
 
-            self.datafiles[1].default_dfo.save()
+            self.datafiles[1].file_objects.all()[0].save()
             t = Filter1.getTuples()
             # 2 because the missing md5 sum save runs the filter as well
             expect(len(t)).to_equal(2)

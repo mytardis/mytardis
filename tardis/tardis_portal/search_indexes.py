@@ -267,7 +267,7 @@ class DatasetFileIndex(RealTimeSearchIndex):
         return self.ds_param_cache[ds]
 
     def prepare_experiment_authors(self, obj):
-        return [a.author for a in obj.dataset.experiment.author_experiment_set.all()]
+        return [a.author for a in obj.dataset.experiment.experimentauthor_set.all()]
 
     def prepare_experiment_creator(self, obj):
         exp = obj.dataset.experiment

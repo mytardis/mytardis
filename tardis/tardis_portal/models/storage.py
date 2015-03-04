@@ -70,10 +70,14 @@ class StorageBox(models.Model):
         verbose_name_plural = 'storage boxes'
 
     @classmethod
-    def get_default_storage(cls, location=None):
+    def get_default_storage(cls, location=None, user=None):
         '''
         gets first storage box or get local storage box with given base
         location or create one if it doesn't exist.
+
+        get largest free space one
+
+        test for authorisation
         '''
         if location is not None:
             try:
@@ -82,6 +86,11 @@ class StorageBox(models.Model):
             except StorageBox.DoesNotExist:
                 return StorageBox.create_local_box(location)
         try:
+            # TODO: test for authorisation,
+            # e.g. user.has_perm('storage_box.write', box)
+            # TODO: check for free space, e.g. run SQL as on stats page to
+            # get total size on box,
+            # compute max(list, key=lambda x:max_size-size)
             return StorageBox.objects.all().order_by('id')[0]
         except (DatabaseError, IndexError):
             default_location = getattr(settings, "DEFAULT_STORAGE_BASE_DIR",

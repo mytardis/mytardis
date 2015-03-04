@@ -40,7 +40,6 @@ http://docs.djangoproject.com/en/dev/topics/testing/
 from compare import expect
 from datetime import datetime
 from django.test import TestCase
-import iso8601
 import pytz
 from tardis.tardis_portal.models import Experiment, Dataset, DataFile, \
     DataFileObject, Schema, ParameterName, DatafileParameterSet, \
@@ -79,7 +78,7 @@ class ParameterSetManagerTestCase(TestCase):
 
         self.dfo = DataFileObject(
             datafile=self.datafile,
-            storage_box=self.datafile.dataset.get_default_storage_box(),
+            storage_box=self.datafile.get_default_storage_box(),
             uri="1/testfile.txt")
         self.dfo.save()
 
@@ -182,7 +181,7 @@ class ParameterSetManagerTestCase(TestCase):
         '''
         psm = ParameterSetManager(parameterset=self.datafileparameterset)
 
-        psm.new_param("parameter3", datetime(1970, 01, 01, 10, 0, 0))
+        psm.new_param("parameter3", str(datetime(1970, 01, 01, 10, 0, 0)))
 
         expect(psm.get_param("parameter3", True))\
             .to_equal(datetime(1970, 01, 01, 0, 0, 0, tzinfo=pytz.utc))
@@ -194,7 +193,7 @@ class ParameterSetManagerTestCase(TestCase):
         psm = ParameterSetManager(parameterset=self.datafileparameterset)
 
         psm.new_param("parameter3",
-                      iso8601.parse_date('1970-01-01T08:00:00+08:00'))
+                      '1970-01-01T08:00:00+08:00')
 
         expect(psm.get_param("parameter3", True))\
             .to_equal(datetime(1970, 01, 01, 0, 0, 0, tzinfo=pytz.utc))

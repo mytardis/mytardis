@@ -37,6 +37,7 @@ views.py
 
 """
 import time
+import re
 
 from tardis.tardis_portal.auth.decorators import \
     has_experiment_write, has_dataset_write
@@ -65,6 +66,7 @@ from django.core.urlresolvers import reverse
 from django.core.paginator import Paginator, InvalidPage, EmptyPage
 from django.core.exceptions import PermissionDenied
 from django.core.exceptions import ObjectDoesNotExist
+from django.core.mail import EmailMessage
 from django.forms.models import model_to_dict
 from django.views.decorators.http import require_POST
 from django.views.decorators.cache import never_cache
@@ -120,7 +122,7 @@ from django.contrib.auth import logout as django_logout
 
 from django.views.decorators.csrf import csrf_exempt
 import django.contrib.auth as djauth
-from tardis.tardis_portal.auth import jwt
+import jwt
 import pwgen
 from tardis.tardis_portal.models.jti import JTI
 
@@ -388,8 +390,9 @@ def fetch_facility_data_count(request, facility_id):
         instrument__facility__manager_group__user=request.user,
         instrument__facility__id=facility_id
     ).count()
-    return HttpResponse(json.dumps({"facility_data_count": dataset_object_count}),
-                        mimetype='application/json')
+    return HttpResponse(
+        json.dumps({'facility_data_count': dataset_object_count}),
+        mimetype='application/json')
 
 
 @never_cache
@@ -438,26 +441,21 @@ def fetch_facility_data(request, facility_id, start_index, end_index):
         for datafile in datafile_objects:
             if datafile.verified:
                 verified = "Yes"
-		verified_datafiles_count += 1
+                verified_datafiles_count += 1
                 verified_datafiles_size += int(datafile.size)
             else:
                 verified = "No"
                 try:
-                    if datafile.file_object and \
-                            datafile.file_object.size < int(datafile.size):
+                    file_object_size = \
+                        datafile.file_object.size \
+                        if datafile.file_object else 0
+                    if file_object_size < int(datafile.size):
                         verified = "No (%s of %s bytes uploaded)" \
-                            % ('{:,}'.format(datafile.file_object.size),
+                            % ('{:,}'.format(file_object_size),
                                '{:,}'.format(int(datafile.size)))
-                except ObjectDoesNotExist:
-                    # No DataFileObject exists for this datafile.
-	            verified = "No (0 of %s bytes uploaded)" \
-                        % '{:,}'.format(int(datafile.size))
                 except IOError, e:
-                    if 'No such file or directory' in str(e):
-                        verified = "No (0 of %s bytes uploaded)" \
-                            % '{:,}'.format(int(datafile.size))
-                    else:
-                        raise
+                    verified = "No (0 of %s bytes uploaded)" \
+                        % '{:,}'.format(int(datafile.size))
             datafiles.append({
                 "id": datafile.id,
                 "filename": datafile.filename,
@@ -515,7 +513,7 @@ def public_data(request):
     list of public experiments
     '''
     c = Context({
-        'public_experiments': Experiment.safe.public(),
+        'public_experiments': Experiment.safe.public().order_by('-update_time'),
     })
     return HttpResponse(render_response_index(
         request, 'tardis_portal/public_data.html', c))
@@ -599,7 +597,8 @@ def view_experiment(request, experiment_id,
         namespaces = [ps.schema.namespace
                       for ps in experiment.getParameterSets()]
         for ns, view_fn in settings.EXPERIMENT_VIEWS:
-            if ns in namespaces:
+            ns_match = next((n for n in namespaces if re.match(ns, n)), None)
+            if ns_match:
                 x = view_fn.split(".")
                 mod_name, fn_name = (".".join(x[:-1]), x[-1])
                 try:
@@ -732,7 +731,7 @@ def experiment_description(request, experiment_id):
                 {'name': experiment.title,
                  'link': experiment.get_absolute_url()}]
 
-    c['authors'] = experiment.author_experiment_set.all()
+    c['authors'] = experiment.experimentauthor_set.all()
 
     c['datafiles'] = \
         DataFile.objects.filter(dataset__experiments=experiment_id)
@@ -925,8 +924,10 @@ def dataset_json(request, experiment_id=None, dataset_id=None):
             if can_update():
                 return HttpResponseMethodNotAllowed(allow="GET PUT")
             return HttpResponseMethodNotAllowed(allow="GET")
-        # Cannot remove if this is the last experiment
-        if not can_delete() or dataset.experiments.count() < 2:
+        # Cannot remove if this is the last experiment or if it is being
+        # removed from a publication
+        if (not can_delete() or dataset.experiments.count() < 2 or
+           experiment.is_publication()):
             return HttpResponseForbidden()
         dataset.experiments.remove(experiment)
         dataset.save()
@@ -1405,7 +1406,7 @@ def search_quick(request):
                 experiments.filter(
                     institution_name__icontains=request.GET['quicksearch']) | \
                 experiments.filter(
-                    author_experiment__author__name__icontains=request.GET[
+                    experimentauthor__author__name__icontains=request.GET[
                         'quicksearch']) | \
                 experiments.filter(
                     pdbid__pdbid__icontains=request.GET['quicksearch'])
@@ -1521,7 +1522,7 @@ def __getFilteredExperiments(request, searchFilterData):
 
     if searchFilterData['creator'] != '':
         experiments = experiments.filter(
-            author_experiment__author__icontains=searchFilterData['creator'])
+            experimentauthor__author__icontains=searchFilterData['creator'])
 
     date = searchFilterData['date']
     if date is not None:
@@ -3372,8 +3373,10 @@ def rcauth(request):
 
     try:
         # Verifies signature and expiry time
-        verified_jwt = jwt.decode(request.POST['assertion'],
-                                  settings.RAPID_CONNECT_CONFIG['secret'])
+        verified_jwt = jwt.decode(
+            request.POST['assertion'],
+            settings.RAPID_CONNECT_CONFIG['secret'],
+            audience=settings.RAPID_CONNECT_CONFIG['aud'])
 
         # Check for a replay attack using the jti value.
         jti = verified_jwt['jti']
@@ -3407,6 +3410,20 @@ def rcauth(request):
                 'first_name': first_name,
                 'last_name': request.session['attributes']['surname'],
             }
+
+            # Check for an email collision.
+            edupersontargetedid = request.session['attributes'][
+                'edupersontargetedid']
+            for matching_user in UserProfile.objects.filter(
+                    user__email=user_args['email']):
+                if matching_user.rapidConnectEduPersonTargetedID != \
+                   edupersontargetedid:
+                    del request.session['attributes']
+                    del request.session['jwt']
+                    del request.session['jws']
+                    django_logout(request)
+                    raise PermissionDenied
+
             user = auth_service.get_or_create_user(user_args)
             if user is not None:
                 user.backend = 'django.contrib.auth.backends.ModelBackend'
@@ -3424,3 +3441,19 @@ def rcauth(request):
         del request.session['jws']
         django_logout(request)
         raise PermissionDenied  # Error: Security cookie has expired
+
+
+def feedback(request):
+    if request.method == 'POST':
+        feedback_data = json.loads(request.POST['data'])
+        message = feedback_data[0]['Issue']
+        img_base64 = feedback_data[1]
+        img = img_base64.replace('data:image/png;base64,', '').decode('base64')
+        admin_emails = [v for k, v in settings.ADMINS]
+        email = EmailMessage('[TARDIS] User feedback', message,
+                             'store.star.help@monash.edu', admin_emails)
+        email.attach('screenshot.png', img, 'image/png')
+        email.send()
+        return HttpResponse('OK')
+    else:
+        return redirect('/')

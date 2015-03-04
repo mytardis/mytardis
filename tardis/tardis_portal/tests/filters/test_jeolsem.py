@@ -44,7 +44,6 @@ class JEOLSEMFilterTestCase(TestCase):
 
         base_path = path.join(path.dirname(__file__), 'fixtures')
         s_box = StorageBox.get_default_storage(location=base_path)
-        dataset.storage_boxes.add(s_box)
 
         def create_datafile(index):
             testfile = path.join(base_path, 'jeol_sem_test%d.txt' % index)
@@ -57,7 +56,7 @@ class JEOLSEMFilterTestCase(TestCase):
             datafile.save()
             dfo = DataFileObject(
                 datafile=datafile,
-                storage_box=datafile.dataset.get_default_storage_box(),
+                storage_box=s_box,
                 uri=path.basename(testfile))
             dfo.save()
 
