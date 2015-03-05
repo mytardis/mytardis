@@ -46,14 +46,18 @@ class StorageBox(models.Model):
             return False
 
         def default_save_location(dfo):
-            base_location = getattr(settings, "DEFAULT_STORAGE_BASE_DIR",
-                                    '/var/lib/mytardis/store')
-            path.join(
-                base_location,
-                dfo.datafile.dataset.directory,
-                dfo.datafile.dataset.description,
-                dfo.datafile.directory,
-                dfo.datafile.filename)
+            base_location = getattr(settings, "STAGING_PATH",
+                                    '/var/lib/mytardis/staging')
+            save_location = base_location
+            if dfo.datafile.dataset.directory is not None:
+                save_location = path.join(save_location,
+                                          dfo.datafile.dataset.directory)
+            save_location = path.join(save_location, dfo.datafile.dataset.description)
+            if dfo.datafile.directory is not None:
+                save_location = path.join(save_location,
+                                          dfo.datafile.directory)
+            save_location = path.join(save_location, dfo.datafile.filename)
+            return save_location
 
         build_save_location = getattr(
             self.get_initialised_storage_instance(),
@@ -87,7 +91,7 @@ class StorageBox(models.Model):
             # TODO: check for free space, e.g. run SQL as on stats page to
             # get total size on box,
             # compute max(list, key=lambda x:max_size-size)
-            return StorageBox.objects.all()[0]
+            return StorageBox.objects.all().order_by('id')[0]
         except (DatabaseError, IndexError):
             default_location = getattr(settings, "DEFAULT_STORAGE_BASE_DIR",
                                        '/var/lib/mytardis/store')

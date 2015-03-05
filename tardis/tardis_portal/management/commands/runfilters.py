@@ -135,7 +135,8 @@ metadata to be reingested."""
         try:
             filter_class = getattr(mod, filter_classname)
         except AttributeError:
-            raise ImproperlyConfigured('Filter module "%s" does not define a "%s" class' %
+            raise ImproperlyConfigured('Filter module "%s" does not define a '
+                                       '"%s" class' %
                                        (filter_module, filter_classname))
 
         filter_instance = filter_class(*args, **kw)
@@ -145,13 +146,21 @@ metadata to be reingested."""
         using = DEFAULT_DB_ALIAS
         transaction.enter_transaction_management(using=using)
         try:
-            for datafile in DataFile.objects.all():
+            for datafile in DataFile.objects.all().order_by('-id'):
                 # Use a transaction to process each Datafile
+                if not datafile.verified:
+                    print "Not running filter for %s, because it hasn't " \
+                        "been verified yet." % datafile.filename
+                    continue
                 transaction.managed(True, using=using)
                 try:
                     for filter in filters:
-                        filter(sender=DataFile, instance=datafile,
-                               created=False, using='default')
+                        try:
+                            filter(sender=DataFile, instance=datafile,
+                                   created=False, using='default')
+                        except:
+                            print traceback.format_exc()
+                            raise
                     if dryRun:
                         transaction.rollback(using=using)
                     else:

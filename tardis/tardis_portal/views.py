@@ -65,6 +65,7 @@ from django.contrib.auth.decorators import login_required, permission_required
 from django.core.urlresolvers import reverse
 from django.core.paginator import Paginator, InvalidPage, EmptyPage
 from django.core.exceptions import PermissionDenied
+from django.core.exceptions import ObjectDoesNotExist
 from django.core.mail import EmailMessage
 from django.forms.models import model_to_dict
 from django.views.decorators.http import require_POST
@@ -420,9 +421,19 @@ def fetch_facility_data(request, facility_id, start_index, end_index):
     for dataset in dataset_objects:
         instrument = dataset.instrument
         facility = instrument.facility
-        parent_experiment = dataset.experiments.all()[:1].get()
+        try:
+            parent_experiment = dataset.experiments.all()[:1].get()
+        except ObjectDoesNotExist:
+            logger.warning("Not listing dataset id %d in Facility Overview" % dataset.id)
+            continue
         datafile_objects = DataFile.objects.filter(dataset=dataset)
         owners = parent_experiment.get_owners()
+        groups = parent_experiment.get_groups()
+        created_time = datetime_to_us(parent_experiment.created_time)
+        if len(datafile_objects) > 0:
+            created_time = \
+                datetime_to_us(dataset.datafile_set
+                               .order_by('created_time')[0].created_time)
         datafiles = []
         dataset_size = 0
         verified_datafiles_count = 0
@@ -456,6 +467,7 @@ def fetch_facility_data(request, facility_id, start_index, end_index):
             dataset_size = dataset_size + int(datafile.size)
         obj = {
             "id": dataset.id,
+            "created_time": created_time,
             "parent_experiment": {
                 "id": parent_experiment.id,
                 "title": parent_experiment.title,
@@ -468,6 +480,7 @@ def fetch_facility_data(request, facility_id, start_index, end_index):
             "verified_datafiles_count": verified_datafiles_count,
             "verified_datafiles_size": verified_datafiles_size,
             "owner": ', '.join([o.username for o in owners]),
+            "group": ', '.join([g.name for g in groups]),
             "instrument": {
                 "id": instrument.id,
                 "name": instrument.name,
@@ -1293,9 +1306,9 @@ def retrieve_datafile_list(
     # If page request (9999) is out of range, deliver last page of results.
 
     try:
-        dataset = paginator.page(page)
+        datafiles = paginator.page(page)
     except (EmptyPage, InvalidPage):
-        dataset = paginator.page(paginator.num_pages)
+        datafiles = paginator.page(paginator.num_pages)
 
     is_owner = False
     has_download_permissions = authz.has_dataset_download_access(request,
@@ -1311,7 +1324,7 @@ def retrieve_datafile_list(
     params = urlencode(params)
 
     c = Context({
-        'datafiles': dataset,
+        'datafiles': datafiles,
         'paginator': paginator,
         'immutable': immutable,
         'dataset': Dataset.objects.get(id=dataset_id),
@@ -2621,14 +2634,20 @@ def stats(request):
     cursor = connection.cursor()
     if cursor.db.vendor == 'postgresql':
         cursor.execute("SELECT SUM(size::bigint) FROM tardis_portal_datafile")
-        datafile_size = int(cursor.fetchone()[0])
+        datafiles_size = int(cursor.fetchone()[0])
     else:
-        datafile_size = DataFile.sum_sizes(DataFile.objects.all())
+        dfs = DataFile.objects.all()
+        datafiles_size = long(0)
+        for df in dfs:
+            try:
+                datafiles_size += long(df.size)
+            except:
+                pass
     c = Context({
         'experiment_count': Experiment.objects.all().count(),
         'dataset_count': Dataset.objects.all().count(),
-        'datafile_count': DataFile.objects.all().count(),
-        'datafile_size': datafile_size,
+        'datafile_count': len([df for df in DataFile.objects.all()]),
+        'datafile_size': datafiles_size,
     })
     return HttpResponse(render_response_index(request,
                         'tardis_portal/stats.html', c))

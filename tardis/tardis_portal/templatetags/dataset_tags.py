@@ -84,7 +84,7 @@ def dataset_datafiles_badge(dataset=None, count=None):
 @register.filter
 def dataset_size_badge(dataset=None, size=None):
     """
-    Displays an badge with the total size of the files in this experiment
+    Displays an badge with the total size of the files in this dataset
     """
     if size is None:
         size = filesizeformat(dataset.get_size())

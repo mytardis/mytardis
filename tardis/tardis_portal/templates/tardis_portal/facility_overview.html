@@ -102,18 +102,20 @@
             <table class="table table-striped table-bordered table-condensed">
                 <tr>
                     <th>Owner</th>
+                    <th>Group</th>
                     <th>Experiment</th>
                     <th>Dataset description</th>
                     <th>Instrument</th>
                     <th>Created</th>
                     <th></th>
                 </tr>
-                <tr ng-repeat-start="dataset in datasets | filter:search_owner:strict | filter:search_experiment:strict | filter:search_instrument:strict">
+                <tr ng-repeat-start="dataset in datasets | filter:search_owner:strict | filter:search_experiment:strict | filter:search_instrument:strict | orderBy: '-id'">
                     <td>{{dataset.owner}}</td>
+                    <td>{{dataset.group}}</td>
                     <td><a href="/experiment/view/{{dataset.parent_experiment.id}}/" target="_blank">{{dataset.parent_experiment.title}}</a></td>
                     <td>{{dataset.description}}</td>
                     <td>{{dataset.instrument.name}}</td>
-                    <td>{{dataset.parent_experiment.created_time | date:'yyyy-MM-dd h:mma'}}</td>
+                    <td>{{dataset.created_time | date:'yyyy-MM-dd h:mma'}}</td>
                     <td>
                         <a class="btn btn-small btn-info" ng-click="toggleFileList(dataset.id)">
                             <i class="icon-list-alt"></i>
@@ -159,6 +161,7 @@
             <table class="table table-striped table-bordered table-condensed">
                 <tr>
                     <th>Owner</th>
+                    <th>Group</th>
                     <th>Experiment</th>
                     <th>Dataset description</th>
                     <th>Created</th>
@@ -170,9 +173,10 @@
                 </tr>
                 <tr ng-repeat-start="dataset in datasetByInstrument.datasets | filter:search_owner:strict | filter:search_experiment:strict">
                     <td>{{dataset.owner}}</td>
+                    <td>{{dataset.group}}</td>
                     <td><a href="/experiment/view/{{dataset.parent_experiment.id}}/" target="_blank">{{dataset.parent_experiment.title}}</a></td>
                     <td>{{dataset.description}}</td>
-                    <td>{{dataset.parent_experiment.created_time | date:'yyyy-MM-dd h:mma'}}</td>
+                    <td>{{dataset.created_time | date:'yyyy-MM-dd h:mma'}}</td>
                     <td>
                         <a class="btn btn-small btn-info" ng-click="toggleFileList(dataset.id)">
                             <i class="icon-list-alt"></i>
@@ -225,13 +229,13 @@
                 </tr>
                 <tbody ng-repeat="datasetByUser in dataByUser | filter:search_owner:strict">
                 <tr>
-                    <th style="text-align:center" colspan="5">{{datasetByUser.owner}}</th>
+                    <th style="text-align:center" colspan="5">{{datasetByUser.ownerGroup}}</th>
                 </tr>
                 <tr ng-repeat-start="dataset in datasetByUser.datasets | filter:search_experiment:strict | filter:search_instrument:strict">
                     <td><a href="/experiment/view/{{dataset.parent_experiment.id}}/" target="_blank">{{dataset.parent_experiment.title}}</a></td>
                     <td>{{dataset.description}}</td>
                     <td>{{dataset.instrument.name}}</td>
-                    <td>{{dataset.parent_experiment.created_time | date:'yyyy-MM-dd h:mma'}}</td>
+                    <td>{{dataset.created_time | date:'yyyy-MM-dd h:mma'}}</td>
                     <td>
                         <a class="btn btn-small btn-info" ng-click="toggleFileList(dataset.id)">
                             <i class="icon-list-alt"></i>

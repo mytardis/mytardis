@@ -42,6 +42,7 @@ import posixpath
 
 from django.conf import settings
 
+from tardis.tardis_portal.models.storage import StorageBox
 
 logger = logging.getLogger(__name__)
 
@@ -105,21 +106,54 @@ def staging_list(pathname=settings.STAGING_PATH,
     return directory_listing
 
 
+def stage_dfo(dfo):
+    from django.core.files.uploadedfile import TemporaryUploadedFile
+    from tardis.tardis_portal.models import DataFileObject, StorageBox
+    if dfo.storage_box.attributes.filter(key="staging", value="True").count() == 0:
+        raise ValueError('Only files in staging storage boxes can be staged')
+    with TemporaryUploadedFile(dfo.datafile.filename,
+                               None, None, None) as tf:
+        if dfo.verify(tempfile=tf.file):
+            tf.file.flush()
+            dfo.storage_box = StorageBox.get_default_storage()
+            dfo.uri = None
+            dfo._cached_file_object = None
+            dfo.file_object = tf
+            dfo.save()
+            # Trigger post-save filter:
+            dfo.datafile.save()
+            return True
+        else:
+            return False
+
+
 def get_sync_location():
     from tardis.tardis_portal.models import Location
     return Location.get_location('sync')
 
 
-def get_sync_root(prefix=''):
+def get_sync_root(prefix='', sbox=None):
     from uuid import uuid4 as uuid
 
+    if sbox is not None:
+        root_path = sbox.options.get(key='location').value
+    else:
+        boxes = StorageBox.objects.filter(attributes__key="staging",
+                                          attributes__value="True")
+        if len(boxes) > 0:
+            root_path = boxes[0].options.get(key='location').value
+        else:
+            root_path = settings.STAGING_PATH
+
     def get_candidate_path():
-        return path.join(settings.SYNC_TEMP_PATH, prefix + str(uuid()))
+        return path.join(root_path, prefix + str(uuid()))
     root = (p for p in iter(get_candidate_path, '')
             if not path.exists(p)).next()
-    oldmask = os.umask(0o002)
+    oldmask = os.umask(0o007)
     makedirs(root)
     os.umask(oldmask)
+    # chmod seems safer than umask subtraction
+    os.chmod(root, 0o2770)
     return root
 
 

@@ -5,11 +5,15 @@ Implemented with Tastypie.
 .. moduleauthor:: Grischa Meyer <grischa@gmail.com>
 '''
 import json as simplejson
+from datetime import datetime
+from ipware.ip import get_ip
+import os
 
 from django.conf import settings
 from django.conf.urls.defaults import url
 from django.contrib.auth.models import AnonymousUser
 from django.contrib.auth.models import User
+from django.contrib.auth.models import Group
 from django.core.serializers import json
 from django.core.servers.basehttp import FileWrapper
 from django.http import HttpResponse
@@ -37,8 +41,16 @@ from tardis.tardis_portal.models.parameters import ExperimentParameterSet
 from tardis.tardis_portal.models.parameters import ParameterName
 from tardis.tardis_portal.models.parameters import Schema
 from tardis.tardis_portal.models.storage import StorageBox
+from tardis.tardis_portal.staging import get_sync_root
+from tardis.tardis_portal.models.uploader import Uploader
+from tardis.tardis_portal.models.uploader import UploaderStagingHost
+from tardis.tardis_portal.models.uploader import UploaderRegistrationRequest
+from tardis.tardis_portal.models.facility import Facility
+from tardis.tardis_portal.models.facility import facilities_managed_by
+from tardis.tardis_portal.models.instrument import Instrument
 
 from tastypie import fields
+from tastypie.authentication import Authentication
 from tastypie.authentication import BasicAuthentication
 from tastypie.authentication import SessionAuthentication
 from tastypie.authentication import ApiKeyAuthentication
@@ -50,6 +62,10 @@ from tastypie.http import HttpUnauthorized
 from tastypie.resources import ModelResource
 from tastypie.serializers import Serializer
 from tastypie.utils import trailing_slash
+from tastypie.contrib.contenttypes.fields import GenericForeignKeyField
+
+import logging
+logger = logging.getLogger(__name__)
 
 
 class PrettyJSONSerializer(Serializer):
@@ -132,6 +148,12 @@ class ACLAuthorization(Authorization):
         if type(bundle.obj) == Experiment:
             experiments = Experiment.safe.all(bundle.request.user)
             return [exp for exp in experiments if exp in object_list]
+        elif bundle.request.user.is_authenticated() and \
+                type(bundle.obj) == User:
+            return object_list
+        elif bundle.request.user.is_authenticated() and \
+                type(bundle.obj) == Group:
+            return object_list
         elif type(bundle.obj) == ExperimentParameterSet:
             experiments = Experiment.safe.all(bundle.request.user)
             return [eps for eps in object_list
@@ -165,6 +187,28 @@ class ACLAuthorization(Authorization):
             return object_list
         elif type(bundle.obj) == ParameterName:
             return object_list
+        elif type(bundle.obj) == ObjectACL:
+            experiments = Experiment.safe.all(bundle.request.user)
+            objacl_list = []
+            for objacl in object_list:
+                if type(objacl.content_object) == Experiment:
+                    exp = Experiment.objects.get(id=objacl.object_id)
+                    if exp in experiments:
+                        objacl_list.append(objacl)
+            return objacl_list
+        elif type(bundle.obj) == Facility:
+            facilities = facilities_managed_by(bundle.request.user)
+            return [facility for facility in object_list
+                    if facility in facilities]
+        elif type(bundle.obj) == Instrument:
+            facilities = facilities_managed_by(bundle.request.user)
+            instrument_list = []
+            for facility in facilities:
+                instruments = Instrument.objects.filter(facility=facility)
+                for instrument in instruments:
+                    instrument_list.append(instrument)
+            return [instrument for instrument in object_list
+                    if instrument in instrument_list]
         else:
             return []
 
@@ -202,12 +246,20 @@ class ACLAuthorization(Authorization):
             public_user = bundle.obj.experiment_set.filter(
                 public_access__gt=1).count() > 0
             return public_user or authenticated
+        elif type(bundle.obj) == Group:
+            return bundle.request.user.is_authenticated()
         elif type(bundle.obj) == Schema:
             return True
         elif type(bundle.obj) == ParameterName:
             return True
         elif type(bundle.obj) == StorageBox:
             return bundle.request.user.is_authenticated()
+        elif type(bundle.obj) == Facility:
+            facilities = facilities_managed_by(bundle.request.user)
+            return bundle.obj in facilities
+        elif type(bundle.obj) == Instrument:
+            facilities = facilities_managed_by(bundle.request.user)
+            return bundle.obj.facility in facilities
         raise NotImplementedError(type(bundle.obj))
 
     def create_list(self, object_list, bundle):
@@ -305,6 +357,20 @@ class ACLAuthorization(Authorization):
                 has_dataset_write(bundle.request,
                                   bundle.obj.datafile.dataset.id),
             ])
+        elif type(bundle.obj) == ObjectACL:
+            return bundle.request.user.has_perm('tardis_portal.add_objectacl')
+        elif type(bundle.obj) == Facility:
+            facilities = facilities_managed_by(bundle.request.user)
+            return all([
+                bundle.request.user.has_perm('tardis_portal.add_facility'),
+                bundle.obj in facilities
+            ])
+        elif type(bundle.obj) == Instrument:
+            facilities = facilities_managed_by(bundle.request.user)
+            return all([
+                bundle.request.user.has_perm('tardis_portal.add_instrument'),
+                bundle.obj.facility in facilities
+            ])
         raise NotImplementedError(type(bundle.obj))
 
     def update_list(self, object_list, bundle):
@@ -346,6 +412,11 @@ class ACLAuthorization(Authorization):
             return False
         elif type(bundle.obj) == Schema:
             return False
+        elif type(bundle.obj) == Facility:
+            return False
+        elif type(bundle.obj) == Instrument:
+            facilities = facilities_managed_by(bundle.request.user)
+            return bundle.obj.facility in facilities
         raise NotImplementedError(type(bundle.obj))
 
     def delete_list(self, object_list, bundle):
@@ -373,14 +444,33 @@ def lookup_by_unique_id_only(resource):
     return lookup_kwargs_with_identifiers
 
 
+class GroupResource(ModelResource):
+    class Meta:
+        queryset = Group.objects.all()
+        authentication = default_authentication
+        authorization = ACLAuthorization()
+        filtering = {
+            'id': ('exact',),
+            'name': ('exact',),
+        }
+
+
 class UserResource(ModelResource):
+    groups = fields.ManyToManyField(GroupResource, 'groups',
+                                    null=True, full=True)
+
     class Meta:
         authentication = default_authentication
         authorization = ACLAuthorization()
         queryset = User.objects.all()
         allowed_methods = ['get']
-        fields = ['username', 'first_name', 'last_name']
+        fields = ['id', 'username', 'first_name', 'last_name', 'email']
         serializer = default_serializer
+        filtering = {
+            'id': ('exact', ),
+            'username': ('exact', ),
+            'email': ('exact', ),
+        }
 
     def dehydrate(self, bundle):
         '''
@@ -413,10 +503,14 @@ class UserResource(ModelResource):
         bundle.data['id'] = queried_user.id
 
         # allow the user to find out their username and email
-        if same_user and authenticated:
+        # allow facility managers to query other users' username and email
+        if authenticated and \
+                (same_user or len(facilities_managed_by(authuser)) > 0):
+            bundle.data['username'] = queried_user.username
             bundle.data['email'] = queried_user.email
         else:
             del(bundle.data['username'])
+            del(bundle.data['email'])
 
         # add public information
         if public_user:
@@ -544,6 +638,7 @@ class ExperimentResource(MyTardisModelResource):
             'id': ('exact', ),
             'title': ('exact',),
         }
+        always_return_data = True
 
     def dehydrate(self, bundle):
         exp = bundle.obj
@@ -613,6 +708,99 @@ class ExperimentResource(MyTardisModelResource):
             if experiment[0] in Experiment.safe.all(bundle.request.user):
                 return experiment
 
+        '''
+        Responds to instrument/owner/date query for MyData.
+        The initial owner of the experiment will be the facility role account,
+        e.g. "testfacility", and then the experiment will be made accessible
+        to the real "owner", whose username will be recorded as an experiment
+        parameter.  This query can be used to retrieve an experiment using the
+        instrument, owner, and collection date.
+
+        '''
+        if hasattr(bundle.request, 'GET') and \
+                'instrument' in bundle.request.GET and \
+                'owner' in bundle.request.GET and \
+                'date' in bundle.request.GET:
+
+            instrument = bundle.request.GET['instrument']
+            owner = bundle.request.GET['owner']
+            date = bundle.request.GET['date']
+
+            exp_schema = Schema.objects.get(
+                namespace='http://tardis.edu.au'
+                '/schemas/experimentInstrument')
+
+            exp_psets = ExperimentParameterSet.objects\
+                .filter(schema=exp_schema)
+            for exp_pset in exp_psets:
+                exp_params = ExperimentParameter.objects\
+                    .filter(parameterset=exp_pset)
+                matched_instrument = False
+                matched_owner = False
+                matched_date = False
+                for exp_param in exp_params:
+                    if exp_param.name.name == "instrument" and \
+                            exp_param.string_value == instrument:
+                        matched_instrument = True
+                    if exp_param.name.name == "owner" and \
+                            exp_param.string_value == owner:
+                        matched_owner = True
+                    if exp_param.name.name == "date" and \
+                            exp_param.string_value == date:
+                        matched_date = True
+                if matched_instrument and matched_owner and matched_date:
+                    experiment_id = exp_pset.experiment.id
+                    exp_list = Experiment.objects.filter(pk=experiment_id)
+                    if exp_list[0] in Experiment.safe.all(bundle.request.user):
+                        return exp_list
+
+            return []
+
+        '''
+        Responds to instrument/owner/title query for MyData.
+        The initial owner of the experiment will be the facility role account,
+        e.g. "testfacility", and then the experiment will be made accessible
+        to the real "owner", whose username will be recorded as an experiment
+        parameter.  This query can be used to retrieve an experiment using the
+        instrument, owner, and experiment title.
+
+        '''
+        if hasattr(bundle.request, 'GET') and \
+                'instrument' in bundle.request.GET and \
+                'owner' in bundle.request.GET and \
+                'title' in bundle.request.GET:
+
+            instrument = bundle.request.GET['instrument']
+            owner = bundle.request.GET['owner']
+            title = bundle.request.GET['title']
+
+            exp_schema = Schema.objects.get(
+                namespace='http://tardis.edu.au'
+                '/schemas/experimentInstrument')
+
+            exp_psets = ExperimentParameterSet.objects\
+                .filter(schema=exp_schema)
+            for exp_pset in exp_psets:
+                exp_params = ExperimentParameter.objects\
+                    .filter(parameterset=exp_pset)
+                matched_instrument = False
+                matched_owner = False
+                for exp_param in exp_params:
+                    if exp_param.name.name == "instrument" and \
+                            exp_param.string_value == instrument:
+                        matched_instrument = True
+                    if exp_param.name.name == "owner" and \
+                            exp_param.string_value == owner:
+                        matched_owner = True
+                if matched_instrument and matched_owner:
+                    experiment_id = exp_pset.experiment.id
+                    exp_list = Experiment.objects.filter(pk=experiment_id)
+                    if exp_list[0] in Experiment.safe.all(bundle.request.user)\
+                            .filter(title=title):
+                        return exp_list
+
+            return []
+
         return super(ExperimentResource, self).obj_get_list(bundle,
                                                             **kwargs)
 
@@ -642,7 +830,37 @@ class StorageBoxResource(MyTardisModelResource):
         queryset = StorageBox.objects.all()
 
 
+class FacilityResource(MyTardisModelResource):
+    manager_group = fields.ForeignKey(GroupResource, 'manager_group',
+                                      null=True, full=True)
+
+    class Meta(MyTardisModelResource.Meta):
+        queryset = Facility.objects.all()
+        filtering = {
+            'id': ('exact', ),
+            'manager_group': ALL_WITH_RELATIONS,
+            'name': ('exact', ),
+        }
+        always_return_data = True
+
+
+class InstrumentResource(MyTardisModelResource):
+    facility = fields.ForeignKey(FacilityResource, 'facility',
+                                 null=True, full=True)
+
+    class Meta(MyTardisModelResource.Meta):
+        queryset = Instrument.objects.all()
+        filtering = {
+            'id': ('exact', ),
+            'facility': ALL_WITH_RELATIONS,
+            'name': ('exact', ),
+        }
+        always_return_data = True
+
+
 class DatasetResource(MyTardisModelResource):
+    instrument = fields.ForeignKey(InstrumentResource, 'instrument',
+                                   null=True, full=True)
     experiments = fields.ToManyField(
         ExperimentResource, 'experiments', related_name='datasets')
     parameter_sets = fields.ToManyField(
@@ -650,20 +868,17 @@ class DatasetResource(MyTardisModelResource):
         'datasetparameterset_set',
         related_name='dataset',
         full=True, null=True)
-    storage_boxes = fields.ToManyField(
-        StorageBoxResource,
-        'storage_boxes',
-        related_name='datasets',
-        null=True)
 
     class Meta(MyTardisModelResource.Meta):
         queryset = Dataset.objects.all()
         filtering = {
             'id': ('exact', ),
+            'instrument': ALL_WITH_RELATIONS,
             'experiments': ALL_WITH_RELATIONS,
             'description': ('exact', ),
             'directory': ('exact', ),
         }
+        always_return_data = True
 
     def prepend_urls(self):
         return [
@@ -703,7 +918,7 @@ class DataFileResource(MyTardisModelResource):
     replicas = fields.ToManyField(
         'tardis.tardis_portal.api.ReplicaResource',
         'file_objects',
-        related_name='datafile', full=True)
+        related_name='datafile', full=True, null=True)
     temp_url = None
 
     class Meta(MyTardisModelResource.Meta):
@@ -714,6 +929,7 @@ class DataFileResource(MyTardisModelResource):
             'filename': ('exact', ),
         }
         resource_name = 'dataset_file'
+        always_return_data = True
 
     def download_file(self, request, **kwargs):
         '''
@@ -755,21 +971,37 @@ class DataFileResource(MyTardisModelResource):
         elif 'replicas' not in bundle.data:
             # no replica specified: return upload path and create dfo for
             # new path
-            sbox = dataset.get_staging_storage_box()
+            sbox = StorageBox.objects.filter(attributes__key="staging",
+                                              attributes__value="True")[0]
             if sbox is None:
-                raise NotImplementedError
+                raise NotFound("Couldn't find a staging storage box.")
             dfo = DataFileObject(
                 datafile=bundle.obj,
                 storage_box=sbox)
-            self.temp_url = dfo.get_save_location()
+            dfo.datafile.dataset = dataset
+            stage_url = get_sync_root(prefix="%d-" %
+                                      dataset.id,
+                                      sbox=sbox)
+            uri = stage_url
+            uri = os.path.join(uri, bundle.data['filename'])
+            bundle.data['replicas'] = [{'uri': uri,
+                                        'location': sbox.options\
+                                        .get(key='location').value}]
         return bundle
 
     def post_list(self, request, **kwargs):
         response = super(DataFileResource, self).post_list(request,
                                                            **kwargs)
-        if self.temp_url is not None:
-            response.content = self.temp_url
-            self.temp_url = None
+        # The following change in response could break some
+        # MyTardis API users' code, so consultation would be
+        # needed before merging / releasing.
+
+        # Since we are now using always_return_data=True in
+        # this resource's Meta, we don't need to explicitly
+        # return just the temp_url - it will be inclded
+        # automatically in the "uri" field of the "replicas"
+        # list in the JSON output.
+
         return response
 
     def prepend_urls(self):
@@ -854,17 +1086,219 @@ class ReplicaResource(MyTardisModelResource):
         bundle.data['datafile'] = datafile
         if 'location' in bundle.data:
             try:
-                bundle.obj.storage_box = StorageBox.objects.get(
-                    name=bundle.data['location'])
+                bundle.obj.storage_box = StorageBox.objects\
+                    .get(options__key='location',
+                         options__value=bundle.data['location'])
             except StorageBox.DoesNotExist:
                 bundle.obj.storage_box = datafile.get_default_storage_box()
             del(bundle.data['location'])
         else:
             bundle.obj.storage_box = datafile.get_default_storage_box()
+        if 'uri' in bundle.data:
+            bundle.obj.uri = bundle.data['uri']
 
         bundle.obj.save()
         if 'file_object' in bundle.data:
-            bundle.obj.file_object = bundle.data['file_object']
-            bundle.data['file_object'].close()
-            del(bundle.data['file_object'])
+            if bundle.data['file_object'] is not None:
+                bundle.obj.file_object = bundle.data['file_object']
+                bundle.data['file_object'].close()
+                del(bundle.data['file_object'])
         return bundle
+
+
+class ObjectAclResource(MyTardisModelResource):
+    content_object = GenericForeignKeyField({
+        Experiment: ExperimentResource,
+        # ...
+    }, 'content_object')
+
+    class Meta:
+        authentication = default_authentication
+        authorization = ACLAuthorization()
+        queryset = ObjectACL.objects.all()
+        filtering = {
+            'object_id': ('exact', ),
+            'pluginId': ('exact', ),
+            'entityId': ('exact', ),
+        }
+
+
+# FIXME: MyData no longer needs special Auth for Uploaders,
+# i.e. MyData should already have authenticated succesfully
+# to MyTardis by the time it creates an Uploader record.
+class UploaderAuthorization(Authorization):
+    '''Authorisation class for Tastypie.
+    '''
+    def read_list(self, object_list, bundle):
+        '''
+        Uploaders should be able to read their own record, i.e.
+        any record whose MAC address matches theirs, but not anyone
+        else's record.
+        '''
+        if hasattr(bundle.request, 'GET') and \
+                'mac_address' in bundle.request.GET:
+            return object_list
+        return []
+
+    def read_detail(self, object_list, bundle):
+        '''
+        Uploaders should be able to read their own record, i.e.
+        any record whose MAC address matches theirs, but not anyone
+        else's record.  See "read_list" method.
+        '''
+        return True
+
+    def create_list(self, object_list, bundle):
+        raise NotImplementedError(type(bundle.obj))
+
+    def create_detail(self, object_list, bundle):
+        '''
+        Basically anyone can create an uploader record,
+        but if one already exists with the same MAC address,
+        it should be updated, not created.
+        '''
+        return True
+
+    def update_list(self, object_list, bundle):
+        raise NotImplementedError(type(bundle.obj))
+
+    def update_detail(self, object_list, bundle):
+        '''
+        Uploaders should only be able to update
+        the uploader record whose MAC address
+        matches theirs (if it exists).
+        '''
+        return bundle.data['mac_address'] == bundle.obj.mac_address
+
+    def delete_list(self, object_list, bundle):
+        raise Unauthorized("Sorry, no deletes.")
+
+    def delete_detail(self, object_list, bundle):
+        raise Unauthorized("Sorry, no deletes.")
+
+
+class UploaderRegistrationRequestAuthorization(Authorization):
+    '''Authorisation class for Tastypie.
+    '''
+    def read_list(self, object_list, bundle):
+        '''
+        Uploaders should be able to read their own registration
+        request, i.e. any request associated with an uploader
+        whose MAC address matches theirs, but they shouldn't
+        be able to read anyone else's upload registration request.
+        '''
+        if hasattr(bundle.request, 'GET') and \
+                'uploader__mac_address' in bundle.request.GET:
+            return object_list
+        return []
+
+    def read_detail(self, object_list, bundle):
+        return True
+
+    def create_list(self, object_list, bundle):
+        raise NotImplementedError(type(bundle.obj))
+
+    def create_detail(self, object_list, bundle):
+        return True
+
+    def update_list(self, object_list, bundle):
+        raise NotImplementedError(type(bundle.obj))
+
+    def update_detail(self, object_list, bundle):
+        '''
+        Currently there is no use case for API users
+        updating their upload registration request
+        record.  It is updated on approval, but
+        only by a Django administrator.
+
+        '''
+        return False
+
+    def delete_list(self, object_list, bundle):
+        raise Unauthorized("Sorry, no deletes.")
+
+    def delete_detail(self, object_list, bundle):
+        raise Unauthorized("Sorry, no deletes.")
+
+
+class UploaderResource(MyTardisModelResource):
+    instruments = fields.ManyToManyField(InstrumentResource, 'instruments',
+                                         null=True, full=True)
+
+    class Meta(MyTardisModelResource.Meta):
+        authentication = default_authentication
+        authorization = UploaderAuthorization()
+        queryset = Uploader.objects.all()
+        filtering = {
+            'mac_address': ('exact', ),
+            'name': ('exact', ),
+            'id': ('exact', ),
+        }
+        always_return_data = True
+
+    def obj_create(self, bundle, **kwargs):
+        bundle.data['created_time'] = datetime.now()
+        bundle.data['updated_time'] = datetime.now()
+        ip = get_ip(bundle.request)
+        if ip is not None:
+            bundle.data['wan_ip_address'] = ip
+        bundle = super(UploaderResource, self).obj_create(bundle, **kwargs)
+        return bundle
+
+    def obj_update(self, bundle, **kwargs):
+        # Workaround for
+        # https://github.com/toastdriven/django-tastypie/issues/390 :
+        if hasattr(bundle, "obj_update_done"):
+            return
+        bundle.data['updated_time'] = datetime.now()
+        ip = get_ip(bundle.request)
+        if ip is not None:
+            bundle.data['wan_ip_address'] = ip
+        bundle = super(UploaderResource, self).obj_update(bundle, **kwargs)
+        bundle.obj_update_done = True
+        return bundle
+
+
+class UploaderStagingHostResource(MyTardisModelResource):
+    class Meta(MyTardisModelResource.Meta):
+        authentication = Authentication()
+        authorization = UploaderRegistrationRequestAuthorization()
+        queryset = UploaderStagingHost.objects.all()
+
+
+class UploaderRegistrationRequestResource(MyTardisModelResource):
+    uploader = fields.ForeignKey(
+        'tardis.tardis_portal.api.UploaderResource', 'uploader')
+    approved_staging_host = fields.ForeignKey(
+        'tardis.tardis_portal.api.UploaderStagingHostResource',
+        'approved_staging_host',
+        full=True, null=True, blank=True, default=None)
+
+    class Meta(MyTardisModelResource.Meta):
+        authentication = Authentication()
+        authorization = UploaderRegistrationRequestAuthorization()
+        queryset = UploaderRegistrationRequest.objects.all()
+        filtering = {
+            'id': ('exact', ),
+            'approved': ('exact', ),
+            'requester_key_fingerprint': ('exact', ),
+            'uploader': ALL_WITH_RELATIONS,
+            'requester_key_fingerprint': ('exact', ),
+        }
+        always_return_data = True
+
+    def obj_create(self, bundle, **kwargs):
+        bundle = super(UploaderRegistrationRequestResource, self)\
+            .obj_create(bundle, **kwargs)
+        return bundle
+
+    def hydrate(self, bundle):
+        bundle = super(UploaderRegistrationRequestResource, self)\
+            .hydrate(bundle)
+        bundle.data['request_time'] = datetime.now()
+        return bundle
+
+    def save_related(self, bundle):
+        if not hasattr(bundle.obj, 'approved_staging_host'):
+            bundle.obj.approved_staging_host = None
+        super(UploaderRegistrationRequestResource, self).save_related(bundle)

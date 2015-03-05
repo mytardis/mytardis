@@ -79,28 +79,12 @@ class FilterInitMiddleware(object):
             datafile_hook = make_datafile_hook(
                 self._safe_import(cls, args, kw))
 
-            # This dispatches a replica save to a datafile filter if the
-            # replica is now in 'verified' state.
-            def make_dfo_hook(dfh):
-
-                def dfo_hook(**kw):
-                    dfo = kw.get('instance')
-                    if dfo.verified:
-                        kw['instance'] = dfo.datafile
-                        kw['dfo'] = dfo  # not actually needed it seems
-                        kw['sender'] = DataFile
-                        dfh(**kw)
-                return dfo_hook
-
             # XXX seems to requre a strong ref else it won't fire,
             # could be because some hooks are classes not functions.
             # Need to use dispatch_uid to avoid expensive duplicate signals.
             # https://docs.djangoproject.com/en/dev/topics/signals/#preventing-duplicate-signals # noqa # long url
             post_save.connect(datafile_hook, sender=DataFile,
                               weak=False, dispatch_uid=cls + ".datafile")
-            post_save.connect(make_dfo_hook(datafile_hook),
-                              sender=DataFileObject,
-                              weak=False, dispatch_uid=cls + ".dfo")
             logger.debug('Initialised postsave hooks %s' % post_save.receivers)
 
         # disable middleware

@@ -54,9 +54,16 @@ auth_display_name = u'LDAP'
 
 
 class LDAPBackend(AuthProvider, UserProvider, GroupProvider):
-    def __init__(self, name, url, base, login_attr, user_base,
-                 user_attr_map, group_id_attr, group_base,
-                 group_attr_map, admin_user='', admin_pass=''):
+    def __init__(self, name='LDAP',
+                 url=settings.LDAP_URL,
+                 base=settings.LDAP_BASE,
+                 login_attr=settings.LDAP_USER_LOGIN_ATTR,
+                 user_base=settings.LDAP_USER_BASE,
+                 user_attr_map=settings.LDAP_USER_ATTR_MAP,
+                 group_id_attr = settings.LDAP_GROUP_ID_ATTR,
+                 group_base = settings.LDAP_GROUP_BASE,
+                 group_attr_map = settings.LDAP_GROUP_ATTR_MAP,
+                 admin_user='', admin_pass=''):
         self.name = name
 
         # Basic info

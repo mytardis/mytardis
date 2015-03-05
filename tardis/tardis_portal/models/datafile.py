@@ -6,6 +6,7 @@ from django.db import models
 from django.db.models import Q
 from django.core.files import File
 from django.core.urlresolvers import reverse
+from django.core.exceptions import ObjectDoesNotExist
 
 from celery.contrib.methods import task
 
@@ -40,8 +41,8 @@ class DataFile(models.Model):
     """
 
     dataset = models.ForeignKey(Dataset)
-    filename = models.CharField(max_length=400)
-    directory = DirectoryField(blank=True, null=True)
+    filename = models.CharField(max_length=400, db_index=True)
+    directory = DirectoryField(blank=True, null=True, db_index=True)
     size = models.CharField(blank=True, max_length=400)
     created_time = models.DateTimeField(null=True, blank=True)
     modification_time = models.DateTimeField(null=True, blank=True)
@@ -61,7 +62,8 @@ class DataFile(models.Model):
         all_dfos = self.file_objects.all()
         if len(all_dfos) > 0:
             return all_dfos[0].file_object
-        return None
+        raise IOError('No DataFileObject exists for datafile '
+                      '"%s"' % str(self))
 
     @file_object.setter
     def file_object(self, file_object):
@@ -164,7 +166,7 @@ class DataFile(models.Model):
 
     def get_view_url(self):
         import re
-        viewable_mimetype_patterns = ('image/.*', 'text/.*')
+        viewable_mimetype_patterns = ('image/.*', 'text/.*', 'application/pdf')
         if not any(re.match(p, self.get_mimetype())
                    for p in viewable_mimetype_patterns):
             return None
@@ -371,38 +373,56 @@ class DataFileObject(models.Model):
         super(DataFileObject, self).delete()
 
     @task(name="tardis_portal.verify_dfo_method", ignore_result=True)  # noqa # too complex
-    def verify(self):  # too complex # noqa
+    def verify(self, tempfile=None):  # too complex # noqa
+        '''
+        If passed a file handle, it will write the file to it instead
+        of discarding data as it's read.
+        '''
+        allowEmptyChecksums = not getattr(settings,
+                                          "REQUIRE_DATAFILE_CHECKSUMS", True)
+        df = self.datafile
+        if not (allowEmptyChecksums or df.sha512sum or df.md5sum):
+            logger.error("Datafile for %s has no checksums", self.uri)
+            return False
+        try:
+            file_object = self.file_object
+        except IOError:
+            logger.error("DFO %d not found/accessible at: %s" %
+                         (self.id, self.uri))
+            return False
+
+        df_size = self.datafile.size
+        if df_size is None or df_size == '':
+            self.datafile.size = self.size
+            self.datafile.save()
+        elif int(df_size) != self.size:
+            logger.error('DataFileObject with id %d did not verify. '
+                         'File sizes did not match' % self.id)
+            return False
+
         md5, sha512, size, mimetype_buffer = generate_file_checksums(
-            self.file_object)
+            self.file_object, tempfile)
         df_md5 = self.datafile.md5sum
         df_sha512 = self.datafile.sha512sum
         if df_sha512 is None or df_sha512 == '':
             if md5 != df_md5:
                 logger.error('DataFileObject with id %d did not verify. '
-                             'MD5 sums did not match')
+                             'MD5 sums did not match' % self.id)
                 return False
             self.datafile.sha512sum = sha512
             self.datafile.save()
         elif df_md5 is None or df_md5 == '':
             if sha512 != df_sha512:
                 logger.error('DataFileObject with id %d did not verify. '
-                             'SHA512 sums did not match')
+                             'SHA512 sums did not match' % self.id)
                 return False
             self.datafile.md5sum = md5
             self.datafile.save()
         else:
             if not (md5 == df_md5 and sha512 == df_sha512):
                 logger.error('DataFileObject with id %d did not verify. '
-                             'Checksums did not match')
+                             'Checksums did not match' % self.id)
                 return False
-        df_size = self.datafile.size
-        if df_size is None or df_size == '':
-            self.datafile.size = size
-            self.datafile.save()
-        elif int(df_size) != size:
-            logger.error('DataFileObject with id %d did not verify. '
-                         'File size did not match')
-            return False
 
         self.verified = True
         self.last_verified_time = datetime.now()
