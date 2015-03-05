@@ -241,19 +241,23 @@ $('#modal-metadata .submit-button').click(function() {
     {% else %}Experiment
     {% endif %}
   </h4>
-  {% if has_write_permissions and not experiment.public %}
+  {% if not experiment.public %}
   <div class="pull-right" ng-controller="publicationFormCtrl">
+    {% if has_read_or_owner_ACL %}
     <a class="prepare_to_publish btn btn-mini btn-info"
        title="Prepare To Publish" ng-click="openPublicationForm()" ng-show="isPublicationDraft || !isPublication">
       <i class="icon-share"></i>
       <span ng-hide="isPublication">Create publication</span>
       <span ng-show="isPublicationDraft">Resume draft publication</span>
     </a>
+    {% endif %}
+    {% if has_write_permissions %}
     <a class="btn btn-mini btn-warning" title="Edit Experiment"
        href="{{ experiment.get_edit_url }}" ng-hide="isPublication">
       <i class="icon-pencil"></i>
       Edit Experiment
     </a>
+    {% endif %}
   </div>
   {% endif %}
   <h1>

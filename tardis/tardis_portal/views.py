@@ -604,6 +604,8 @@ def view_experiment(request, experiment_id,
         authz.has_experiment_download_access(request, experiment_id)
     if request.user.is_authenticated():
         c['is_owner'] = authz.has_experiment_ownership(request, experiment_id)
+        c['has_read_or_owner_ACL'] = authz.has_read_or_owner_ACL(request,
+                                                                 experiment_id)
     c['subtitle'] = experiment.title
     c['nav'] = [{'name': 'Data', 'link': '/experiment/view/'},
                 {'name': experiment.title,
