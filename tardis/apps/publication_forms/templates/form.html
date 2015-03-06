@@ -67,11 +67,15 @@
       <div class="span6">
         <label>Select experiment</label>
         <select ng-model="selectedExperiment" ng-options="e.title for e in experiments"
-                ng-change="updateDatasets()"></select>
+                ng-change="updateDatasets()"
+		id="datasetSelector"></select>
         <label>Select datasets</label>
-        <select multiple ng-dblclick="addDatasets(selectedExperiment, selectedDatasets); selectedDatasets = [];"
+        <select multiple
+		class="pub-form-ds-selection"
+		ng-dblclick="addDatasets(selectedExperiment, selectedDatasets);
+			     selectedDatasets = [];"
                 ng-model="selectedDatasets"
-                ng-options="d.description for d in selectedExperiment.datasets | removeMatchingDatasets : formData.addedDatasets"></select>
+                ng-options="(d.description + (d.directory?' - '+ d.directory:'')) for d in selectedExperiment.datasets | removeMatchingDatasets : formData.addedDatasets"></select>
         <a href="#" class="btn" ng-click="addDatasets(selectedExperiment, selectedDatasets)"><i
 												class="icon-plus"></i> Add dataset</a>
       </div>
@@ -85,7 +89,8 @@
           </thead>
           <tr ng-repeat="entry in formData.addedDatasets">
             <td>{{ entry.experiment }}</td>
-            <td>{{ entry.dataset.description }}</td>
+            <td style="display:block;">{{ entry.dataset.description }}
+	      <div ng-if="entry.dataset.directory" class="pub-form-ds-directory">{{ entry.dataset.directory }}</div></td>
             <td><a href="#"><i class="icon-minus" ng-click="removeDataset(entry)"></i></a></td>
           </tr>
         </table>
