@@ -23,7 +23,7 @@ class PubFormConfig():
         except DatabaseError as e:
             logger.error('Database error encountered while checking if '
                          'schema '+namespace+' exists')
-            raise e
+            raise
 
     def _setup_PUBLICATION_SCHEMA_ROOT(self, namespace):
         schema = Schema(namespace=namespace, name='Publication', hidden=True,

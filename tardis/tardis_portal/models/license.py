@@ -4,6 +4,7 @@ from itertools import chain
 import logging
 logger = logging.getLogger(__name__)
 
+
 class License(models.Model):
     '''
     Represents a licence for experiment content.
@@ -19,7 +20,7 @@ class License(models.Model):
         app_label = 'tardis_portal'
 
     name = models.CharField(max_length=400, unique=True, blank=False)
-    url  = models.URLField(
+    url = models.URLField(
         max_length=2000,
         blank=False,
         unique=True,
@@ -37,11 +38,11 @@ class License(models.Model):
         return self.name
 
     @classmethod
-    def get_suitable_licenses(cls, public_access_method = None):
+    def get_suitable_licenses(cls, public_access_method=None):
         def with_none(seq):
             return chain([cls.get_none_option_license()], seq)
         # If no method specify, return all
-        if public_access_method == None:
+        if public_access_method is None:
             return with_none(cls.objects.filter(is_active=True))
         # Otherwise, ask Experiment to put it in terms we understand
         from .experiment import Experiment

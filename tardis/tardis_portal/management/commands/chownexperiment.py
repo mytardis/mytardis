@@ -102,9 +102,7 @@ class Command(BaseCommand):
                     raise CommandError("Experiment id (%s) not a number" % arg)
 
         using = options.get('database', DEFAULT_DB_ALIAS)
-        transaction.commit_unless_managed(using=using)
-        transaction.enter_transaction_management(using=using)
-        transaction.managed(True, using=using)
+        transaction.set_autocommit(False, using=using)
 
         try:
             for id in ids:
@@ -115,10 +113,11 @@ class Command(BaseCommand):
                 transaction.rollback(using=using)
             else:
                 transaction.commit(using=using)
-            transaction.leave_transaction_management(using=using)
         except Exception:
             transaction.rollback(using=using)
             exc_class, exc, tb = sys.exc_info()
             new_exc = CommandError("Exception %s has occurred: rolled back "
                                    "transaction" % (exc or exc_class))
             raise new_exc.__class__, new_exc, tb
+        finally:
+            transaction.set_autocommit(True, using=using)

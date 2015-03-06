@@ -6,7 +6,7 @@ Created on 19/01/2011
 from django.test import TestCase
 from django.test.client import Client
 from django.contrib.auth.models import User, Permission
-from django.utils import simplejson
+import json as simplejson
 
 from tardis.tardis_portal.models import UserAuthentication
 

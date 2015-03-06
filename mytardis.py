@@ -3,7 +3,8 @@ from __future__ import print_function
 import os
 import sys
 
-if __name__ == "__main__":
+
+def run():
     custom_settings = 'tardis.settings'
     custom_settings_file = custom_settings.replace('.', '/') + '.py'
     demo_settings = 'tardis.settings_changeme'
@@ -18,3 +19,18 @@ if __name__ == "__main__":
     from django.core.management import execute_from_command_line
 
     execute_from_command_line(sys.argv)
+
+
+if __name__ == "__main__":
+    from django.core.exceptions import ImproperlyConfigured
+    try:
+        run()
+    except ImproperlyConfigured as e:
+        if 'SECRET_KEY' in e.message:
+            print(r'''
+# execute this wonderful command to have your settings.py created/updated
+# with a generated Django SECRET_KEY (required for MyTardis to run)
+python -c "import os; from random import choice; key_line = '%sSECRET_KEY=\"%s\"  # generated from build.sh\n' % ('from tardis.settings_changeme import * \n\n' if not os.path.isfile('tardis/settings.py') else '', ''.join([choice('abcdefghijklmnopqrstuvwxyz0123456789\\!@#$%^&*(-_=+)') for i in range(50)])); f=open('tardis/settings.py', 'a+'); f.write(key_line); f.close()"
+''')
+        else:
+            raise

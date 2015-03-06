@@ -162,7 +162,7 @@ class RegistrationForm(forms.Form):
 
         return self.cleaned_data
 
-    @transaction.commit_on_success()
+    @transaction.atomic
     def save(self, profile_callback=None):
         user = RegistrationProfile.objects.create_inactive_user(
             username=self.cleaned_data['username'],
@@ -187,8 +187,14 @@ class ChangeUserPermissionsForm(ModelForm):
         from django.forms.extras.widgets import SelectDateWidget
         from tardis.tardis_portal.models import ObjectACL
         model = ObjectACL
-        exclude = ('entityId', 'pluginId', 'content_object', 'content_type',
-                   'object_id', 'aclOwnershipType',)
+        fields = [
+            'canDelete',
+            'canRead',
+            'canWrite',
+            'effectiveDate',
+            'expiryDate',
+            'isOwner',
+        ]
         widgets = {
             'expiryDate': SelectDateWidget(),
             'effectiveDate': SelectDateWidget()}
@@ -354,14 +360,24 @@ class DatasetForm(forms.ModelForm):
 
     class Meta:
         model = models.Dataset
-        exclude = ('experiments', 'immutable')
+        fields = [
+            'description',
+            'directory',
+            'instrument',
+        ]
 
 
 class ExperimentAuthor(forms.ModelForm):
 
     class Meta:
         model = models.ExperimentAuthor
-        exclude = ('experiment', )
+        fields = [
+            'author',
+            'institution',
+            'email',
+            'order',
+            'url',
+        ]
 
 
 class ExperimentForm(forms.ModelForm):
@@ -607,7 +623,6 @@ def createSearchExperimentForm():
     from tardis.tardis_portal.models import ParameterName
 
     fields = {}
-
     fields['title'] = forms.CharField(label='Title',
             max_length=20, required=False)
     fields['description'] = forms.CharField(label='Experiment Description',
@@ -622,7 +637,6 @@ def createSearchExperimentForm():
     fieldsets = [('main fields', {'fields': ['title', 'description', 'institutionName', 'creator', 'date']})]
 
     schemaAndFieldLists = []
-
     experimentSchemata = models.Schema.objects.filter(type=models.Schema.EXPERIMENT)
     for schema in experimentSchemata:
         searchableParameterNames = \
@@ -662,7 +676,6 @@ def createSearchExperimentForm():
                         forms.CharField(label=parameterName.full_name,
                         max_length=255, required=False)
                 fieldNames.append(fieldName)
-
 
     for schema, fieldlist in schemaAndFieldLists:
         name = schema.name if schema.name is not None else 'No schema name'
@@ -744,7 +757,6 @@ def create_parameterset_edit_form(parameterset, request=None):
         for key, value in sorted(request.POST.iteritems()):
 
             x = 1
-
             stripped_key = key.replace('_s47_', '/')
             stripped_key = stripped_key.rpartition('__')[0]
 
@@ -782,7 +794,6 @@ def create_parameterset_edit_form(parameterset, request=None):
         for dfp in psm.parameters:
 
             x = 1
-
             form_id = dfp.name.name + "__" + str(x)
 
             while form_id in fields:
@@ -794,7 +805,6 @@ def create_parameterset_edit_form(parameterset, request=None):
                 units = " (" + dfp.name.units + ")"
 
             form_id = form_id.replace('/', '_s47_')
-
             if dfp.name.isNumeric():
                 fields[form_id] = \
                     forms.DecimalField(label=dfp.name.full_name + units,
@@ -826,7 +836,6 @@ def create_parameterset_edit_form(parameterset, request=None):
 def save_datafile_edit_form(parameterset, request):
 
     psm = ParameterSetManager(parameterset=parameterset)
-
     psm.delete_all_params()
 
     for key, value in sorted(request.POST.iteritems()):

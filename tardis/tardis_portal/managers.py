@@ -20,20 +20,20 @@ from tardis.tardis_portal.models import ObjectACL
 class OracleSafeManager(models.Manager):
     """
     Implements a custom manager which automatically defers the
-    retreival of any TextField fields on calls to get_query_set. This
+    retreival of any TextField fields on calls to get_queryset. This
     is to avoid the known issue that 'distinct' calls on query_sets
     containing TextFields fail when Oracle is being used as the
     backend.
     """
-    def get_query_set(self):
+    def get_queryset(self):
         from django.db import connection
         if connection.settings_dict['ENGINE'] == 'django.db.backends.oracle':
             fields = [a.attname for a in self.model._meta.fields
                       if a.db_type(connection=connection) == 'NCLOB']
             return \
-                super(OracleSafeManager, self).get_query_set().defer(*fields)
+                super(OracleSafeManager, self).get_queryset().defer(*fields)
         else:
-            return super(OracleSafeManager, self).get_query_set()
+            return super(OracleSafeManager, self).get_queryset()
 
 
 class ExperimentManager(OracleSafeManager):
@@ -62,20 +62,20 @@ class ExperimentManager(OracleSafeManager):
         query = self._query_all_public() |\
             self._query_owned_and_shared(user)
 
-        return super(ExperimentManager, self).get_query_set().filter(
+        return super(ExperimentManager, self).get_queryset().filter(
             query).distinct()
 
     def public(self):
         query = self._query_all_public()
-        return super(ExperimentManager, self).get_query_set().filter(
+        return super(ExperimentManager, self).get_queryset().filter(
             query).distinct()
 
     def owned_and_shared(self, user):
-        return super(ExperimentManager, self).get_query_set().filter(
+        return super(ExperimentManager, self).get_queryset().filter(
             self._query_owned_and_shared(user)).distinct()
 
     def shared(self, user):
-        return super(ExperimentManager, self).get_query_set().filter(
+        return super(ExperimentManager, self).get_queryset().filter(
             self._query_shared(user)).distinct()
 
     def _query_owned_and_shared(self, user):
@@ -158,7 +158,7 @@ class ExperimentManager(OracleSafeManager):
 
         # the user must be authenticated
         if not user.is_authenticated():
-            return super(ExperimentManager, self).get_empty_query_set()
+            return super(ExperimentManager, self).get_queryset().none()
 
         return self.owned_by_user(user)
 
@@ -193,14 +193,14 @@ class ExperimentManager(OracleSafeManager):
 
         """
         query = self._query_owned(user)
-        return super(ExperimentManager, self).get_query_set().filter(query)
+        return super(ExperimentManager, self).get_queryset().filter(query)
 
     def owned_by_group(self, group):
         """
         Return all experiments that are owned by a particular group
         """
         query = self._query_owned_by_group(group)
-        return super(ExperimentManager, self).get_query_set().filter(query)
+        return super(ExperimentManager, self).get_queryset().filter(query)
 
     def owned_by_user_id(self, userId):
         """
@@ -211,7 +211,7 @@ class ExperimentManager(OracleSafeManager):
 
         """
         query = self._query_owned(user=None, user_id=userId)
-        return super(ExperimentManager, self).get_query_set().filter(query)
+        return super(ExperimentManager, self).get_queryset().filter(query)
 
     def user_acls(self, experiment_id):
         """

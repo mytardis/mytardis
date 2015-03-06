@@ -68,6 +68,7 @@ def get_all_tardis_apps():
     return tuple(sorted(map(lambda name: name.replace(path.sep, '.'), names)))
 
 INSTALLED_APPS += get_all_tardis_apps() + (
+    'tardis.apps.equipment',
     'django_nose',
 )
 
@@ -136,3 +137,6 @@ AUTOGENERATE_API_KEY = True
 MIDDLEWARE_CLASSES += ('tardis.tardis_portal.filters.FilterInitMiddleware',)
 
 SECRET_KEY = 'ij!%7-el^^rptw$b=iol%78okl10ee7zql-()z1r6e)gbxd3gl'
+
+SESSION_SERIALIZER = 'django.contrib.sessions.serializers.PickleSerializer'
+USE_TZ = False  # apparently sqlist has issues with timezones?
