@@ -72,6 +72,7 @@ app.controller('publicationFormCtrl', function ($scope, $log, $http, ngDialog, $
 	delete publication_id; // Ensure this is undefined when the form loads
         ngDialog.open({
                           template: '/apps/publication-forms/form/',
+	                  closeByDocument: false,
                           preCloseCallback: function () {
                               if (typeof publication_id !== 'undefined' &&
                                   publication_id != experiment_id) {
