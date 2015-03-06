@@ -502,11 +502,12 @@ def get_git_version():
         return process.communicate()[0]
 
     try:
-        info = [run_git("log -1 --format='Commit: %H'"),
-                run_git("log -1 --format='Date: %cd' --date=rfc"),
-                "Branch: %s" % run_git("rev-parse --abbrev-ref HEAD"),
-                "Tag: %s" % run_git("describe --abbrev=0 --tags"),
-                ]
+        info = {
+            'commit_id': run_git("log -1 --format='%H'").strip(),
+            'date': run_git("log -1 --format='%cd' --date=rfc").strip(),
+            'branch': run_git("rev-parse --abbrev-ref HEAD").strip(),
+            'tag': run_git("describe --abbrev=0 --tags").strip(),
+        }
     except Exception:
         return ["unavailable"]
     return info
