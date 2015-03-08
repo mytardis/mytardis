@@ -341,8 +341,8 @@ class DataFileObject(models.Model):
             return dfo.uri
 
         build_identifier = getattr(self._storage, 'build_identifier',
-                                   default_identifier)
-        return build_identifier(self)
+                                   lambda x: None)
+        return build_identifier(self) or default_identifier(self)
 
     def get_save_location(self):
         return self.storage_box.get_save_location(self)
