@@ -20,7 +20,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.sqlite3',
         # Name of the database to use. For SQLite, it's the full path.
         'NAME': 'db.sqlite3',
-        'USER': 'postgres',
+        'USER': '',
         'PASSWORD': '',
         'HOST': '',
         'PORT': '',
@@ -111,7 +111,6 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'tardis.tardis_portal.logging_middleware.LoggingMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.transaction.TransactionMiddleware',
     'tardis.tardis_portal.auth.token_auth.TokenAuthMiddleware',
 )
 
@@ -145,11 +144,6 @@ TEMPLATE_DIRS = (
     path.join(path.dirname(__file__),
               'tardis_portal/templates/').replace('\\', '/'),
 )
-
-
-# Temporarily disable transaction management until everyone agrees that
-# we should start handling transactions
-DISABLE_TRANSACTION_MANAGEMENT = False
 
 STATIC_DOC_ROOT = path.join(path.dirname(__file__),
                             'tardis_portal/site_media').replace('\\', '/')
