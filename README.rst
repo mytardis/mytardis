@@ -1,6 +1,10 @@
 README for MyTARDIS
 ===================
 
+.. image:: https://badges.gitter.im/Join%20Chat.svg
+   :alt: Join the chat at https://gitter.im/mytardis/mytardis
+   :target: https://gitter.im/mytardis/mytardis?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
+
 MyTARDIS is a multi-institutional collaborative venture that facilitates the
 archiving and sharing of data and metadata collected at major facilities such
 as the Australian Synchrotron and ANSTO and within Institutions.
