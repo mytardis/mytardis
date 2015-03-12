@@ -43,9 +43,9 @@ from tardis.tardis_portal.models import ParameterName, DatafileParameter
 import subprocess
 import tempfile
 import base64
-from os import path
 
 logger = logging.getLogger(__name__)
+
 
 class DiffractionImageFilter(object):
     """This filter runs the CCP4 diffdump binary on a diffraction image
@@ -72,35 +72,32 @@ class DiffractionImageFilter(object):
         self.diffdump_path = diffdump_path
         self.diff2jpeg_path = diff2jpeg_path
 
-        #these values map across directly
-        self.terms = \
-        {
-            'Imagetype' : "imageType",
-            'Collectiondate' : "collectionDate",
-            'Exposuretime' : "exposureTime",
-            'DetectorS/N' : "detectorSN",
-            'Wavelength' : "wavelength",
-            'Distancetodetector' : "detectorDistance",
-            'TwoThetavalue' : "twoTheta",
-         }
+        # these values map across directly
+        self.terms = {
+            'Imagetype': "imageType",
+            'Collectiondate': "collectionDate",
+            'Exposuretime': "exposureTime",
+            'DetectorS/N': "detectorSN",
+            'Wavelength': "wavelength",
+            'Distancetodetector': "detectorDistance",
+            'TwoThetavalue': "twoTheta",
+        }
 
-        self.values = \
-        {
-            'Imagetype' : self.output_metadata,
-            'Collectiondate' : self.output_metadata,
-            'Exposuretime' : self.output_exposuretime,
-            'DetectorS/N' : self.output_metadata,
-            'Wavelength' : self.output_wavelength,
-            'Beamcenter' : self.output_beamcenter,
-            'Distancetodetector' : self.output_detectordistance,
-            'ImageSize' : self.output_imagesize,
-            'PixelSize' : self.output_pixelsize,
-            'Oscillation(phi)' : self.output_oscillation,
-            'TwoThetavalue' : self.output_twotheta,
-         }
+        self.values = {
+            'Imagetype': self.output_metadata,
+            'Collectiondate': self.output_metadata,
+            'Exposuretime': self.output_exposuretime,
+            'DetectorS/N': self.output_metadata,
+            'Wavelength': self.output_wavelength,
+            'Beamcenter': self.output_beamcenter,
+            'Distancetodetector': self.output_detectordistance,
+            'ImageSize': self.output_imagesize,
+            'PixelSize': self.output_pixelsize,
+            'Oscillation(phi)': self.output_oscillation,
+            'TwoThetavalue': self.output_twotheta,
+        }
 
     def __call__(self, sender, **kwargs):
-        from os import path
         """post save callback entry point.
 
         :param sender: The model class.
@@ -164,7 +161,7 @@ class DiffractionImageFilter(object):
         parameters = []
         for p in metadata:
 
-            if self.tagsToFind and not p in self.tagsToFind:
+            if self.tagsToFind and p not in self.tagsToFind:
                 continue
 
             if p in self.tagsToExclude:
@@ -177,7 +174,7 @@ class DiffractionImageFilter(object):
                 continue
 
             # detect type of parameter
-            datatype = ParameterName.STRING
+            # datatype = ParameterName.STRING
 
             # Int test
             try:
@@ -187,11 +184,13 @@ class DiffractionImageFilter(object):
             except TypeError:
                 pass
             else:
-                datatype = ParameterName.NUMERIC
+                pass
+                # datatype = ParameterName.NUMERIC
 
             # Fraction test
             if isinstance(metadata[p], Fraction):
-                datatype = ParameterName.NUMERIC
+                pass
+                # datatype = ParameterName.NUMERIC
 
             # Float test
             try:
@@ -201,8 +200,10 @@ class DiffractionImageFilter(object):
             except TypeError:
                 pass
             else:
-                datatype = ParameterName.NUMERIC
-
+                pass
+                # datatype = ParameterName.NUMERIC
+            # the datatype test is not actually being used, it seems.
+            # TODO revise this function for usefulness
         return parameters
 
     def getSchema(self):
@@ -268,35 +269,35 @@ class DiffractionImageFilter(object):
         values = value.split(',')
         split = []
         split.append({'key': terms[0],
-                           'value': values[0][1:].replace(strip, '')})
+                      'value': values[0][1:].replace(strip, '')})
         split.append({'key': terms[1],
-                           'value': values[1][:-1].replace(strip, '')})
+                      'value': values[1][:-1].replace(strip, '')})
         return split
 
     def split_oscillation(self, terms, value):
         values = value.split('->')
         split = []
         split.append({'key': terms[0],
-                    'value': values[0]})
+                      'value': values[0]})
         split.append({'key': terms[1],
-                    'value': values[1][:-3]})
+                      'value': values[1][:-3]})
         return split
 
     def output_beamcenter(self, term, value):
         return self.split_output(['directBeamXPos', 'directBeamYPos'],
-            value, 'mm')
+                                 value, 'mm')
 
     def output_imagesize(self, term, value):
         return self.split_output(['imageSizeX', 'imageSizeY'],
-            value, 'px')
+                                 value, 'px')
 
     def output_pixelsize(self, term, value):
         return self.split_output(['pixelSizeX', 'pixelSizeY'],
-            value, 'mm')
+                                 value, 'mm')
 
     def output_oscillation(self, term, value):
-        return self.split_oscillation(['oscillationRangeStart', 'oscillationRangeEnd'],
-            value)
+        return self.split_oscillation(
+            ['oscillationRangeStart', 'oscillationRangeEnd'], value)
 
     def parse_output(self, output):
         metadata = []
@@ -307,7 +308,7 @@ class DiffractionImageFilter(object):
             try:
                 value_outputs = self.values[term](term, value)
 
-                if type(value_outputs) is list:
+                if isinstance(value_outputs, list):
 
                     for value_output in value_outputs:
 
@@ -328,10 +329,9 @@ class DiffractionImageFilter(object):
         cmd = "cd '" + cd + "'; ./'" + diffdump_exec + "' '" + file_path + "'"
         with open("test2.txt", "a") as myfile:
             myfile.write(cmd)
-        output = subprocess.Popen(
-                            cmd,
-                            stdout=subprocess.PIPE,
-                            shell=True).stdout
+        output = subprocess.Popen(cmd,
+                                  stdout=subprocess.PIPE,
+                                  shell=True).stdout
 
         return output
 
@@ -342,12 +342,12 @@ class DiffractionImageFilter(object):
 
         tf = tempfile.NamedTemporaryFile()
 
-        cmd = "cd '" + cd + "'; ./'" + diff2jpeg_exec + "' '" + filename + "' '" + tf.name + "'"
+        cmd = "cd '" + cd + "'; ./'" + diff2jpeg_exec + "' '" + filename +\
+              "' '" + tf.name + "'"
 
-        p = subprocess.Popen(
-                            cmd,
-                            stdout=subprocess.PIPE,
-                            shell=True)
+        p = subprocess.Popen(cmd,
+                             stdout=subprocess.PIPE,
+                             shell=True)
 
         p.wait()
 
@@ -360,6 +360,7 @@ class DiffractionImageFilter(object):
 
         tf.close()
         return encoded
+
 
 def make_filter(name='', schema='', tagsToFind=[], tagsToExclude=[]):
     if not name:

@@ -39,13 +39,8 @@ http://docs.djangoproject.com/en/dev/topics/testing/
 """
 
 from compare import expect, ensure
-from os import path
 import unittest
-import datetime
-from xml.sax.handler import feature_namespaces
-from xml.sax import make_parser
 
-from django.conf import settings
 from django.test import TestCase
 from django.test.client import Client
 from django.contrib.auth.models import User
@@ -73,7 +68,7 @@ class SearchTestCase(TestCase):
 
         self.userprofile = UserProfile(user=user).save()
 
-        base_path = path.abspath(path.dirname(__file__))
+        # base_path = path.abspath(path.dirname(__file__))
         experiment = Experiment(title='SAXS Test',
                                 created_by=user)
         experiment.save()
@@ -229,8 +224,7 @@ class SearchTestCase(TestCase):
         values = response.context['experiments']
         experiment = values[0]
 
-        self.assertTrue(
-            type(experiment['sr']) is Experiment)
+        self.assertTrue(isinstance(experiment['sr'], Experiment))
 
         self.assertTrue(experiment['datafile_hit'] is False)
         self.assertTrue(experiment['dataset_hit'] is False)
@@ -276,10 +270,10 @@ class UserInterfaceTestCase(TestCase):
         user.set_password(pwd)
         user.save()
         UserProfile(user=user).save()
-        experiment = Experiment.objects.create(title="Test Experiment",
-                                               created_by=user,
-                                               public_access=
-                                               Experiment.PUBLIC_ACCESS_FULL)
+        experiment = Experiment.objects.create(
+            title="Test Experiment",
+            created_by=user,
+            public_access=Experiment.PUBLIC_ACCESS_FULL)
         experiment.save()
         acl = ObjectACL(pluginId=django_user,
                         entityId=str(user.id),

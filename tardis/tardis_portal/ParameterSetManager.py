@@ -59,19 +59,19 @@ class ParameterSetManager(object):
 
             if isinstance(self.parameterset, DatafileParameterSet):
                 self.parameters = DatafileParameter.objects.filter(
-                   parameterset=self.parameterset).order_by('name__full_name')
+                    parameterset=self.parameterset).order_by('name__full_name')
 
                 self.blank_param = DatafileParameter
 
             elif isinstance(self.parameterset, DatasetParameterSet):
                 self.parameters = DatasetParameter.objects.filter(
-                   parameterset=self.parameterset).order_by('name__full_name')
+                    parameterset=self.parameterset).order_by('name__full_name')
 
                 self.blank_param = DatasetParameter
 
             elif isinstance(self.parameterset, ExperimentParameterSet):
                 self.parameters = ExperimentParameter.objects.filter(
-                   parameterset=self.parameterset).order_by('name__full_name')
+                    parameterset=self.parameterset).order_by('name__full_name')
 
                 self.blank_param = ExperimentParameter
 
@@ -117,7 +117,8 @@ class ParameterSetManager(object):
 
             else:
                 raise TypeError("Invalid parent object." +
-                    "Must be an experiment/dataset/datafile not " + str(type(parentObject)))
+                                "Must be an experiment/dataset/datafile not "
+                                + str(type(parentObject)))
 
         else:
             raise TypeError("Missing arguments")
@@ -190,7 +191,7 @@ class ParameterSetManager(object):
 
     def set_params_from_dict(self, dict):
         for (key, value) in dict.iteritems():
-            if type(value) is list:
+            if isinstance(value, list):
                 self.set_param_list(key, value)
             else:
                 if value is not None:
@@ -210,8 +211,8 @@ class ParameterSetManager(object):
                             fullparname=None, example_value=None):
         from tardis.tardis_portal.models import ParameterName
         try:
-            paramName = ParameterName.objects.get(name=parname,
-                               schema__id=self.get_schema().id)
+            paramName = ParameterName.objects.get(
+                name=parname, schema__id=self.get_schema().id)
         except ObjectDoesNotExist:
             paramName = ParameterName()
             paramName.schema = self.get_schema()
