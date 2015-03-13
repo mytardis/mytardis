@@ -19,7 +19,7 @@ Accessible Models
 - DatasetParameterSet
 - DatasetParameter
 - -
-- Dataset_File
+- DataFile
 - DatafileParameterSet
 - DatafileParameter
 
@@ -176,7 +176,7 @@ Example JSON input:
     ]
   }
 
-Dataset_Files
+DataFiles
 -------------
 There are three ways to add a file to MyTardis via the API.
 

@@ -109,7 +109,7 @@ class Command(BaseCommand):
 
 try:
     arguments = [
-        'bin/django',
+        'python mytardis.py ',
         'graph_models',
         'tardis_portal',
         '-o', 'images/models-graphviz.png',
@@ -118,7 +118,7 @@ try:
     print 'generated model graph'
 
     arguments = [
-        'bin/django',
+        'python mytardis.py',
         'graph_models',
         '-a',
         '-o', 'images/models-graphviz-all.png',

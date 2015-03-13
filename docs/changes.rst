@@ -1,6 +1,35 @@
 Changelog
 =========
 
+3.6 - 13 March 2015
+-------------------
+
+* removed legacy operations files (foreman, apache, uwsgi, etc)
+* moved CI from Travis CI to Semaphore app
+* removed buildout build system and setup.py dependency management
+* build instructions in build.sh, using requirements.txt for dependencies now
+* gunicorn instead of uwsgi
+* updated Django to version 1.6.10
+* removed migrations app
+* renamed ``Dataset_File`` to ``DataFile``
+* renamed ``Author_Experiment`` to ``ExperimentAuthor``
+* an ``ExperimentAuthor`` can now have an email and or a URL
+* recoded ``Replica``s as ``DataFileObject``s with associated
+  ``StorageBox``es, based on the Django File API
+* API v1 got some additions, largely or fully backwards-compatible
+* a publication workflow app, guided publication of data
+* download data via SFTP using a built-in SFTP server
+* removed most traces of METS
+* AAF authentication support
+* Parameters that can store a generic foreign key (link to any database
+  object)
+* new models ``Instrument`` and ``Facility``
+
+
+* layout improvements
+* pep8 and pylint improvements
+* bug fixes
+
 3.5 - 26 August 2013
 --------------------
 

@@ -10,7 +10,7 @@ called to initialise the schema and insert the initial data fixtures.
 
 Usage
 ~~~~~
-``./bin/django syncdb --noinput``
+``python mytardis.py syncdb --noinput --all``
 
 Migrating
 ---------
@@ -29,12 +29,23 @@ In certain cases it is also necessary to update the permissions table.
 
 Usage
 ~~~~~
-``./bin/django migrate``
 
-``./bin/django update_permissions``
+Intial migration after ``syncdb --all``::
+
+  python mytardis.py migrate --fake
+
+Then::
+
+  python mytardis.py migrate
+
+If the model changes require it, run::
+
+  python mytardis.py update_permissions
+
 
 creating superuser
----------
+------------------
+
 After success of database initialization or migration, please use a
 command line utility called ``createsuperuser`` to create an
 administrator account using the admin site which is hooked to the URL
@@ -42,9 +53,10 @@ administrator account using the admin site which is hooked to the URL
 
 Usage
 ~~~~~
-``./bin/django createsuperuser``
 
-backup
+``python mytardis.py createsuperuser``
+
+Backup
 ------
 
 The backupdb command allows to backup and to restore of the MyTARDIS
@@ -57,7 +69,7 @@ loading the backup file into the database.
 
 Usage
 ~~~~~
-``./bin/django backupdb``
+``python mytardis.py backupdb``
 
 .. option:: -r FILE, --restore=FILE
 .. option:: -v VERBOSITY, --verbosity=VERBOSITY
