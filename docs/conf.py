@@ -104,7 +104,7 @@ execfile("generate-api-docs.py")
 # Model graph generation
 # ----------------------
 
-execfile('generate-model-graphs.py')
+# execfile('generate-model-graphs.py')
 
 # Options for HTML output
 # -----------------------
