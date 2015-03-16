@@ -164,8 +164,7 @@ managers and templates.
 Source Code
 -----------
 
-This section describes the top level layout of the source code in the Google
-svn repository.
+This section describes the top level layout of the source code in the `GitHub repository <https://github.com/mytardis/mytardis`_.
 
 
   * The core MyTARDIS code.
