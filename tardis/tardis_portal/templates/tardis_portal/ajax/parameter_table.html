@@ -14,9 +14,11 @@
       <td class="parameter_name">{{ parameter.name.full_name }}</td>
       <td class="parameter_value">
           {% if parameter.name.isLongString %}
-              {{ parameter.get|linebreaks }}
+            {{ parameter.get|linebreaks }}
+	  {% elif parameter.name.isLink %}
+	    <a href="{{ parameter.link_url }}">{{parameter.link_gfk}}</a>
           {% else %}
-              {{ parameter.get }}
+            {{ parameter.get }}
           {% endif %}
       </td>
   </tr>
