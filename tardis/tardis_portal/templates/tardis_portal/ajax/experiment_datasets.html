@@ -37,7 +37,7 @@
     <input type="hidden" name="expid" value="{{experiment.id}}"/>
     {{ action_bar }}
 
-    <div id="datasets">
+    <div id="datasets" style="word-break: break-all;">
     <p>Please wait... <img src="{% static 'images/ajax-loader.gif'%}" alt="loading" /></p>
     {{ experiment|dataset_tiles:has_download_permissions }}
     </div>
