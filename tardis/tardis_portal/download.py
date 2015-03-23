@@ -26,6 +26,7 @@ from itertools import chain
 from django.core.servers.basehttp import FileWrapper
 from django.http import HttpResponseRedirect, StreamingHttpResponse
 from django.conf import settings
+from django.utils.dateformat import format as dateformatter
 from django.utils.importlib import import_module
 from django.core.exceptions import ImproperlyConfigured
 from django.contrib.auth.decorators import login_required
@@ -278,6 +279,18 @@ class UncachedTarStream(TarFile):
             self._check('aw')
             tarinfo = self.tarinfo(name)
             tarinfo.size = int(df.get_size())
+            mtime = None
+            dj_mtime = df.modification_time
+            if dj_mtime is not None:
+                mtime = dateformatter(dj_mtime, 'U')
+            else:
+                try:
+                    mtime = os.fstat(fileobj.fileno()).st_mtime
+                except:
+                    pass
+            if mtime is None:
+                mtime = time.time()
+            tarinfo.mtime = mtime
             # tarinfo = copy.copy(tarinfo)
             buf = tarinfo.tobuf(self.format, self.encoding, self.errors)
             stream_buffers, remainder_buf = self.prepare_output(
