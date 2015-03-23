@@ -43,6 +43,8 @@ from tardis.tardis_portal.views import return_response_not_found, \
 
 logger = logging.getLogger(__name__)
 
+DEFAULT_ORGANIZATION = settings.DEFAULT_ARCHIVE_ORGANIZATION
+
 
 def _create_download_response(request, datafile_id, disposition='attachment'):  # too complex # noqa
     # Get datafile (and return 404 if absent)
@@ -368,7 +370,7 @@ class UncachedTarStream(TarFile):
 
 
 def _streaming_downloader(request, datafiles, rootdir, filename,
-                          comptype='tgz', organization='deep-storage'):
+                          comptype='tgz', organization=DEFAULT_ORGANIZATION):
     '''
     private function to be called by wrappers
     creates download response with given files and names
@@ -401,7 +403,7 @@ def _streaming_downloader(request, datafiles, rootdir, filename,
 
 @experiment_download_required
 def streaming_download_experiment(request, experiment_id, comptype='tgz',
-                                  organization='deep-storage'):
+                                  organization=DEFAULT_ORGANIZATION):
     experiment = Experiment.objects.get(id=experiment_id)
     rootdir = experiment.title.replace(' ', '_')
     filename = '%s-complete.tar' % rootdir
@@ -414,7 +416,7 @@ def streaming_download_experiment(request, experiment_id, comptype='tgz',
 
 @dataset_download_required
 def streaming_download_dataset(request, dataset_id, comptype='tgz',
-                               organization='deep-storage'):
+                               organization=DEFAULT_ORGANIZATION):
     dataset = Dataset.objects.get(id=dataset_id)
     rootdir = dataset.description.replace(' ', '_')
     filename = '%s-complete.tar' % rootdir
