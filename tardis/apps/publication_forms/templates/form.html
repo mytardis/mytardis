@@ -26,8 +26,7 @@
     </li>
     <li>{{ currentPageIdx + 1 }} of {{ totalPages - 1 }}</li>
     <li class="next">
-      <a href="#" ng-click="nextPage()"><span ng-hide="isLastPage()">Save and continue</span><span
-												ng-show="isLastPage()">Finish</span></a>
+      <a href="#" ng-click="nextPage()"><span ng-hide="isLastPage()">Save and continue</span><span ng-show="isLastPage()">Finish</span></a>
     </li>
   </ul>
 </div>
@@ -79,7 +78,7 @@
         <a href="#" class="btn" ng-click="addDatasets(selectedExperiment, selectedDatasets)"><i
 												class="icon-plus"></i> Add dataset</a>
       </div>
-      <div class="span6">
+      <div class="span6" style="height: 200px; overflow-y: scroll;">
         <h3>Added datasets</h3>
         <table class="table table-striped">
           <thead>
