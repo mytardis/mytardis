@@ -492,7 +492,8 @@ def get_draft_publication(user, publication_id):
 @login_required
 @never_cache
 def fetch_experiments_and_datasets(request):
-    experiments = Experiment.safe.owned_and_shared(request.user)
+    experiments = Experiment.safe.owned_and_shared(request.user)\
+                                 .order_by('title')
     json_response = []
     for experiment in experiments:
         if not experiment.is_publication():
@@ -500,7 +501,8 @@ def fetch_experiments_and_datasets(request):
                                'title': experiment.title,
                                'institution_name': experiment.institution_name,
                                'description': experiment.description}
-            datasets = Dataset.objects.filter(experiments=experiment)
+            datasets = Dataset.objects.filter(experiments=experiment)\
+                                      .order_by('description')
             dataset_json = []
             for dataset in datasets:
                 dataset_json.append({'id': dataset.id,
