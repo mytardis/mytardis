@@ -66,10 +66,9 @@
       <div class="span6">
         <label>Select experiment</label>
         <select ng-model="selectedExperiment" ng-options="e.title for e in experiments"
-                ng-change="updateDatasets()"
 		id="datasetSelector"></select>
         <label>Select datasets</label>
-        <select multiple
+        <select multiple id="datasetList"
 		class="pub-form-ds-selection"
 		ng-dblclick="addDatasets(selectedExperiment, selectedDatasets);
 			     selectedDatasets = [];"
@@ -78,21 +77,23 @@
         <a href="#" class="btn" ng-click="addDatasets(selectedExperiment, selectedDatasets)"><i
 												class="icon-plus"></i> Add dataset</a>
       </div>
-      <div class="span6" style="height: 200px; overflow-y: scroll;">
+      <div class="span6">
         <h3>Added datasets</h3>
-        <table class="table table-striped">
-          <thead>
-            <td>Experiment</td>
-            <td>Description</td>
-            <td></td>
-          </thead>
-          <tr ng-repeat="entry in formData.addedDatasets">
-            <td>{{ entry.experiment }}</td>
-            <td style="display:block;">{{ entry.dataset.description }}
-	      <div ng-if="entry.dataset.directory" class="pub-form-ds-directory">{{ entry.dataset.directory }}</div></td>
-            <td><a href="#"><i class="icon-minus" ng-click="removeDataset(entry)"></i></a></td>
-          </tr>
-        </table>
+	<div style="height: 200px; overflow-y: scroll;">
+          <table class="table table-striped">
+            <thead>
+              <td>Experiment</td>
+              <td>Description</td>
+              <td></td>
+            </thead>
+            <tr ng-repeat="entry in formData.addedDatasets">
+              <td>{{ entry.experiment }}</td>
+              <td style="display:block;">{{ entry.dataset.description }}
+		<div ng-if="entry.dataset.directory" class="pub-form-ds-directory">{{ entry.dataset.directory }}</div></td>
+              <td><a href="#"><i class="icon-minus" ng-click="removeDataset(entry)"></i></a></td>
+            </tr>
+          </table>
+	</div>
       </div>
     </div>
   </form>
