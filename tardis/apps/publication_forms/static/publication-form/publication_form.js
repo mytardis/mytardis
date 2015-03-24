@@ -393,6 +393,11 @@ app.controller('publicationFormCtrl', function ($scope, $log, $http, ngDialog, $
         $scope.formData.publicationDescription = description;
     }
 
+    // Scroll the dataset list to top
+    $scope.scrollDsSelectorToTop = function() {
+	$('#datasetList').scrollTop(0);
+    };
+
     // Add author to publication
     $scope.addAuthorEntry = function () {
 	$log.info($scope.formData)
