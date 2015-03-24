@@ -114,8 +114,8 @@ app.controller('publicationFormCtrl', function ($scope, $log, $http, ngDialog, $
             'text': 'This work is supported by the Science and Industry Endowment Fund.'
         },
         {
-            'agency': 'Multi-modal Australian ScienceS Imaging and Visulaisation Environment',
-            'text': 'This work was supported by the Multi-modal Australian ScienceS Imaging and Visulaisation Environment (MASSIVE) (www.massive.org.au).'
+            'agency': 'Multi-modal Australian ScienceS Imaging and Visualisation Environment',
+            'text': 'This work was supported by the Multi-modal Australian ScienceS Imaging and Visualisation Environment (MASSIVE) (www.massive.org.au).'
         },
         {
             'agency': 'Australian National Beamline Facility',
