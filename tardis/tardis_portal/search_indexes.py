@@ -38,7 +38,7 @@ search indexes for single search
 '''
 from haystack.indexes import *
 from haystack import site
-from models import Dataset_File, \
+from models import DataFile, \
     DatafileParameter, DatasetParameter, ExperimentParameter, \
     ParameterName, Schema
 from django.db.utils import DatabaseError
@@ -267,7 +267,7 @@ class DatasetFileIndex(RealTimeSearchIndex):
         return self.ds_param_cache[ds]
 
     def prepare_experiment_authors(self, obj):
-        return [a.author for a in obj.dataset.experiment.author_experiment_set.all()]
+        return [a.author for a in obj.dataset.experiment.experimentauthor_set.all()]
 
     def prepare_experiment_creator(self, obj):
         exp = obj.dataset.experiment
@@ -295,7 +295,7 @@ class DatasetFileIndex(RealTimeSearchIndex):
         # have an associated FreeTextSearchField
 
         params = DatafileParameter.objects.filter(
-                parameterset__dataset_file__id=obj.id,
+                parameterset__datafile__id=obj.id,
                 name__is_searchable=True,
                 name__freetextsearchfield__isnull=False)
 
@@ -311,7 +311,7 @@ class DatasetFileIndex(RealTimeSearchIndex):
 
         # add all soft parameters listed as searchable as in field search
         for par in DatafileParameter.objects.filter(
-                parameterset__dataset_file__pk=obj.pk,
+                parameterset__datafile__pk=obj.pk,
                 name__is_searchable=True):
             fn = prepareFieldName(par.name)
             self.prepared_data[fn] = _getParamValue(par)
@@ -327,4 +327,4 @@ class DatasetFileIndex(RealTimeSearchIndex):
 
         return self.prepared_data
 
-site.register(Dataset_File, DatasetFileIndex)
+site.register(DataFile, DatasetFileIndex)

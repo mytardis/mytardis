@@ -52,6 +52,15 @@ class ExperimentParameterSetAdmin(admin.ModelAdmin):
     inlines = [ExperimentParameterInline]
 
 
+class InstrumentParameterInline(admin.TabularInline):
+    model = models.InstrumentParameter
+    extra = 0
+
+
+class InstrumentParameterSetAdmin(admin.ModelAdmin):
+    inlines = [InstrumentParameterInline]
+
+
 class ObjectACLInline(generic.GenericTabularInline):
     model = models.ObjectACL
     extra = 0
@@ -66,10 +75,79 @@ class DatasetAdmin(admin.ModelAdmin):
     search_fields = ['description', 'id']
 
 
+class StorageBoxAttributeInlineForm(forms.ModelForm):
+
+    class Meta:
+        fields = '__all__'
+        model = models.StorageBoxAttribute
+        widgets = {
+            'key': TextInput(attrs={'size': 40}),
+            'value': TextInput(attrs={'size': 80})
+        }
+
+
+class StorageBoxAttributeInline(admin.TabularInline):
+    model = models.StorageBoxAttribute
+    extra = 0
+    form = StorageBoxAttributeInlineForm
+
+
+class StorageBoxOptionInlineForm(forms.ModelForm):
+
+    class Meta:
+        fields = '__all__'
+        model = models.StorageBoxOption
+        widgets = {
+            'key': TextInput(attrs={'size': 40}),
+            'value': TextInput(attrs={'size': 80})
+        }
+
+
+class StorageBoxOptionInline(admin.TabularInline):
+    model = models.StorageBoxOption
+    extra = 0
+    form = StorageBoxOptionInlineForm
+
+
+class StorageBoxForm(forms.ModelForm):
+
+    class Meta:
+        fields = '__all__'
+        model = models.StorageBox
+        widgets = {
+            'django_storage_class': TextInput(attrs={'size': 120}),
+            'name': TextInput(attrs={'size': 120}),
+            'description': TextInput(attrs={'size': 120}),
+        }
+
+
+class StorageBoxAdmin(admin.ModelAdmin):
+    inlines = [StorageBoxOptionInline,
+               StorageBoxAttributeInline]
+    form = StorageBoxForm
+
+
+class DataFileObjectInlineForm(forms.ModelForm):
+
+    class Meta:
+        fields = '__all__'
+        model = models.DataFileObject
+        widgets = {
+            'uri': TextInput(attrs={'size': 120}),
+        }
+
+
+class DataFileObjectInline(admin.TabularInline):
+    model = models.DataFileObject
+    extra = 0
+    form = DataFileObjectInlineForm
+
+
 class DatafileAdminForm(forms.ModelForm):
 
     class Meta:
-        model = models.Dataset_File
+        fields = '__all__'
+        model = models.DataFile
         widgets = {
             'directory': TextInput(attrs={'size': 120}),
         }
@@ -78,29 +156,18 @@ class DatafileAdminForm(forms.ModelForm):
 class DatafileAdmin(admin.ModelAdmin):
     search_fields = ['filename', 'id']
     form = DatafileAdminForm
+    inlines = [DataFileObjectInline, ]
 
-
-class ReplicaAdmin(admin.ModelAdmin):
-    search_fields = ['url', 'id']
-
-class ProviderParameterNameInline(admin.TabularInline):
-    model = models.ProviderParameter
-    extra = 0
-
-class LocationAdmin(admin.ModelAdmin):
-    search_fields = ['name', 'id']
-    inlines = [ProviderParameterNameInline]
-
-class ProviderParameterAdmin(admin.ModelAdmin):
-    search_fields = ['name', 'location__name', 'location__id']
 
 class ParameterNameInline(admin.TabularInline):
     model = models.ParameterName
     extra = 0
 
+
 class SchemaAdmin(admin.ModelAdmin):
     search_fields = ['name', 'namespace']
     inlines = [ParameterNameInline]
+
 
 class ParameterNameAdmin(admin.ModelAdmin):
     search_fields = ['name', 'schema__id']
@@ -117,22 +184,23 @@ class ObjectACLAdmin(admin.ModelAdmin):
 class FreeTextSearchFieldAdmin(admin.ModelAdmin):
     pass
 
+admin.site.register(models.Facility)
+admin.site.register(models.Instrument)
 admin.site.register(models.Experiment, ExperimentAdmin)
 admin.site.register(models.License)
 admin.site.register(models.Dataset, DatasetAdmin)
-admin.site.register(models.Dataset_File, DatafileAdmin)
-admin.site.register(models.Replica, ReplicaAdmin)
-admin.site.register(models.Location, LocationAdmin)
-admin.site.register(models.ProviderParameter, ProviderParameterAdmin)
+admin.site.register(models.DataFile, DatafileAdmin)
 admin.site.register(models.Schema, SchemaAdmin)
 admin.site.register(models.ParameterName, ParameterNameAdmin)
 admin.site.register(models.DatafileParameter)
 admin.site.register(models.DatasetParameter)
-admin.site.register(models.Author_Experiment)
+admin.site.register(models.InstrumentParameter)
+admin.site.register(models.ExperimentAuthor)
 admin.site.register(models.UserProfile)
 admin.site.register(models.ExperimentParameter)
 admin.site.register(models.DatafileParameterSet)
 admin.site.register(models.DatasetParameterSet)
+admin.site.register(models.InstrumentParameterSet, InstrumentParameterSetAdmin)
 admin.site.register(models.Token)
 admin.site.register(models.ExperimentParameterSet, ExperimentParameterSetAdmin)
 admin.site.register(models.GroupAdmin)
@@ -140,3 +208,7 @@ admin.site.register(models.UserAuthentication)
 admin.site.register(models.ObjectACL, ObjectACLAdmin)
 admin.site.register(models.FreeTextSearchField, FreeTextSearchFieldAdmin)
 # admin.site.register(MigrationHistory)
+admin.site.register(models.StorageBox, StorageBoxAdmin)
+admin.site.register(models.StorageBoxOption)
+admin.site.register(models.StorageBoxAttribute)
+admin.site.register(models.DataFileObject)

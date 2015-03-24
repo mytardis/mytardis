@@ -442,7 +442,7 @@ $(document).ready(function() {
       var delRow = $(this).parents('tr')
       evt.preventDefault();
       var $toggle = $($(this).attr('data-toggle_selector'));
-      $.post(this.href, {}, function()
+      $.post(this.href, {csrfmiddlewaretoken:'{{csrf_token}}'}, function()
       {
           delRow.remove();
       });
@@ -454,7 +454,7 @@ $(document).ready(function() {
      var $toggle = $(this).siblings('.access_list_token_toggle');
      var $target_token = $("#experiment_token_list");
      $target_token.html(loadingHTML + "</br>");
-     $.post(this.href, {}, function(data)
+     $.post(this.href, {csrfmiddlewaretoken:'{{csrf_token}}'}, function(data)
      {
          var href = "/experiment/control_panel/{{experiment.id}}/access_list/tokens/"
          $target_token.load(href);

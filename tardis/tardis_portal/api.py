@@ -5,10 +5,9 @@ Implemented with Tastypie.
 .. moduleauthor:: Grischa Meyer <grischa@gmail.com>
 '''
 import json as simplejson
-import os
 
 from django.conf import settings
-from django.conf.urls.defaults import url
+from django.conf.urls import url
 from django.contrib.auth.models import AnonymousUser
 from django.contrib.auth.models import User
 from django.core.serializers import json
@@ -25,10 +24,10 @@ from tardis.tardis_portal.auth.decorators import has_experiment_access
 from tardis.tardis_portal.auth.decorators import has_write_permissions
 from tardis.tardis_portal.auth.localdb_auth import django_user
 from tardis.tardis_portal.models import ObjectACL
-from tardis.tardis_portal.models.datafile import Dataset_File
+from tardis.tardis_portal.models.datafile import DataFile
+from tardis.tardis_portal.models.datafile import DataFileObject
 from tardis.tardis_portal.models.dataset import Dataset
 from tardis.tardis_portal.models.experiment import Experiment
-from tardis.tardis_portal.models.location import Location
 from tardis.tardis_portal.models.parameters import DatafileParameter
 from tardis.tardis_portal.models.parameters import DatafileParameterSet
 from tardis.tardis_portal.models.parameters import DatasetParameter
@@ -37,9 +36,7 @@ from tardis.tardis_portal.models.parameters import ExperimentParameter
 from tardis.tardis_portal.models.parameters import ExperimentParameterSet
 from tardis.tardis_portal.models.parameters import ParameterName
 from tardis.tardis_portal.models.parameters import Schema
-from tardis.tardis_portal.models.replica import Replica
-from tardis.tardis_portal.staging import get_sync_root
-from tardis.tardis_portal.staging import write_uploaded_file_to_dataset
+from tardis.tardis_portal.models.storage import StorageBox
 
 from tastypie import fields
 from tastypie.authentication import BasicAuthentication
@@ -76,7 +73,7 @@ class MyTardisAuthentication(object):
     custom tastypie authentication that works with both anonymous use and
     a number of available auth mechanisms.
     '''
-    def is_authenticated(self, request, **kwargs):
+    def is_authenticated(self, request, **kwargs):  # noqa # too complex
         '''
         handles backends explicitly so that it can return False when
         credentials are given but wrong and return Anonymous User when
@@ -128,118 +125,103 @@ default_authentication = MyTardisAuthentication()
 class ACLAuthorization(Authorization):
     '''Authorisation class for Tastypie.
     '''
-    def read_list(self, object_list, bundle):
+    def read_list(self, object_list, bundle):  # noqa # too complex
         if bundle.request.user.is_authenticated() and \
            bundle.request.user.is_superuser:
             return object_list
-        if type(bundle.obj) == Experiment:
-            return type(bundle.obj).safe.all(bundle.request.user)
-        elif type(bundle.obj) == ExperimentParameterSet:
+        if isinstance(bundle.obj, Experiment):
             experiments = Experiment.safe.all(bundle.request.user)
-            eps_list = []
-            for eps in object_list:
-                exp = eps.experiment
-                if exp in experiments:
-                    eps_list.append(eps)
-            return eps_list
-        elif type(bundle.obj) == ExperimentParameter:
+            return [exp for exp in experiments if exp in object_list]
+        elif isinstance(bundle.obj, ExperimentParameterSet):
             experiments = Experiment.safe.all(bundle.request.user)
-            ep_list = []
-            for ep in object_list:
-                exp = ep.experiment
-                if exp in experiments:
-                    ep_list.append(ep)
-            return eps_list
-        elif type(bundle.obj) == Dataset:
-            datasets = []
-            for ds in object_list:
-                if has_dataset_access(bundle.request, ds.id):
-                    datasets.append(ds)
-            return datasets
-        elif type(bundle.obj) == DatasetParameterSet:
-            dps_list = []
-            for dps in object_list:
-                if has_dataset_access(bundle.request, dps.dataset.id):
-                    dps_list.append(dps)
-            return dps_list
-        elif type(bundle.obj) == DatasetParameter:
-            dp_list = []
-            for dp in object_list:
-                if has_dataset_access(bundle.request,
-                                      dp.parameterset.dataset.id):
-                    dp_list.append(dp)
-            return dp_list
-        elif type(bundle.obj) == Dataset_File:
+            return [eps for eps in object_list
+                    if eps.experiment in experiments]
+        elif isinstance(bundle.obj, ExperimentParameter):
+            experiments = Experiment.safe.all(bundle.request.user)
+            return [ep for ep in object_list
+                    if ep.parameterset.experiment in experiments]
+        elif isinstance(bundle.obj, Dataset):
+            return [ds for ds in object_list
+                    if has_dataset_access(bundle.request, ds.id)]
+        elif isinstance(bundle.obj, DatasetParameterSet):
+            return [dps for dps in object_list
+                    if has_dataset_access(bundle.request, dps.dataset.id)]
+        elif isinstance(bundle.obj, DatasetParameter):
+            return [dp for dp in object_list
+                    if has_dataset_access(bundle.request,
+                                          dp.parameterset.dataset.id)]
+        elif isinstance(bundle.obj, DataFile):
             all_dfs = set(
                 get_accessible_datafiles_for_user(bundle.request))
             return list(all_dfs.intersection(object_list))
-        elif type(bundle.obj) == DatafileParameterSet:
+        elif isinstance(bundle.obj, DatafileParameterSet):
             datafiles = get_accessible_datafiles_for_user(bundle.request)
-            dfps_list = []
-            for dfps in object_list:
-                if dfps.dataset_file in datafiles:
-                    dfps_list.append(dfps)
-            return dfps_list
-        elif type(bundle.obj) == DatafileParameter:
+            return [dfps for dfps in object_list if dfps.datafile in datafiles]
+        elif isinstance(bundle.obj, DatafileParameter):
             datafiles = get_accessible_datafiles_for_user(bundle.request)
-            dfp_list = []
-            for dfp in object_list:
-                if dfp.parameterset.dataset_file in datafiles:
-                    dfp_list.append(dfp)
-            return dfp_list
+            return [dfp for dfp in object_list
+                    if dfp.parameterset.datafile in datafiles]
+        elif isinstance(bundle.obj, Schema):
+            return object_list
+        elif isinstance(bundle.obj, ParameterName):
+            return object_list
         else:
             return []
 
-    def read_detail(self, object_list, bundle):
+    def read_detail(self, object_list, bundle):  # noqa # too complex
         if bundle.request.user.is_authenticated() and \
            bundle.request.user.is_superuser:
             return True
-        if type(bundle.obj) == Experiment:
+        if isinstance(bundle.obj, Experiment):
             return has_experiment_access(bundle.request, bundle.obj.id)
-        elif type(bundle.obj) == ExperimentParameterSet:
+        elif isinstance(bundle.obj, ExperimentParameterSet):
             return has_experiment_access(
                 bundle.request, bundle.obj.experiment.id)
-        elif type(bundle.obj) == ExperimentParameter:
+        elif isinstance(bundle.obj, ExperimentParameter):
             return has_experiment_access(
                 bundle.request, bundle.obj.parameterset.experiment.id)
-        elif type(bundle.obj) == Dataset:
+        elif isinstance(bundle.obj, Dataset):
             return has_dataset_access(bundle.request, bundle.obj.id)
-        elif type(bundle.obj) == DatasetParameterSet:
+        elif isinstance(bundle.obj, DatasetParameterSet):
             return has_dataset_access(bundle.request, bundle.obj.dataset.id)
-        elif type(bundle.obj) == DatasetParameter:
+        elif isinstance(bundle.obj, DatasetParameter):
             return has_dataset_access(
                 bundle.request, bundle.obj.parameterset.dataset.id)
-        elif type(bundle.obj) == Dataset_File:
+        elif isinstance(bundle.obj, DataFile):
             return has_datafile_access(bundle.request, bundle.obj.id)
-        elif type(bundle.obj) == DatafileParameterSet:
+        elif isinstance(bundle.obj, DatafileParameterSet):
             return has_datafile_access(
-                bundle.request, bundle.obj.dataset_file.id)
-        elif type(bundle.obj) == DatafileParameter:
+                bundle.request, bundle.obj.datafile.id)
+        elif isinstance(bundle.obj, DatafileParameter):
             return has_datafile_access(
-                bundle.request, bundle.obj.parameterset.dataset_file.id)
-        elif type(bundle.obj) == User:
-            # allow all authenticated users to read user list
-            return bundle.request.user.is_authenticated()
-        elif type(bundle.obj) == Schema:
-            return bundle.request.user.is_authenticated()
-        elif type(bundle.obj) == ParameterName:
-            return bundle.request.user.is_authenticated()
-        elif type(bundle.obj) == Location:
+                bundle.request, bundle.obj.parameterset.datafile.id)
+        elif isinstance(bundle.obj, User):
+            # allow all authenticated users to read public user info
+            # the dehydrate function also adds/removes some information
+            authenticated = bundle.request.user.is_authenticated()
+            public_user = bundle.obj.experiment_set.filter(
+                public_access__gt=1).count() > 0
+            return public_user or authenticated
+        elif isinstance(bundle.obj, Schema):
+            return True
+        elif isinstance(bundle.obj, ParameterName):
+            return True
+        elif isinstance(bundle.obj, StorageBox):
             return bundle.request.user.is_authenticated()
         raise NotImplementedError(type(bundle.obj))
 
     def create_list(self, object_list, bundle):
         raise NotImplementedError(type(bundle.obj))
 
-    def create_detail(self, object_list, bundle):
+    def create_detail(self, object_list, bundle):  # noqa # too complex
         if not bundle.request.user.is_authenticated():
             return False
         if bundle.request.user.is_authenticated() and \
            bundle.request.user.is_superuser:
             return True
-        if type(bundle.obj) == Experiment:
+        if isinstance(bundle.obj, Experiment):
             return bundle.request.user.has_perm('tardis_portal.add_experiment')
-        elif type(bundle.obj) in (ExperimentParameterSet,):
+        elif isinstance(bundle.obj, (ExperimentParameterSet,)):
             if not bundle.request.user.has_perm(
                     'tardis_portal.change_experiment'):
                 return False
@@ -252,12 +234,12 @@ class ACLAuthorization(Authorization):
                 return has_write_permissions(bundle.request,
                                              bundle.obj.experiment.id)
             return False
-        elif type(bundle.obj) in (ExperimentParameter,):
+        elif isinstance(bundle.obj, (ExperimentParameter,)):
             return bundle.request.user.has_perm(
                 'tardis_portal.change_experiment') and \
                 has_write_permissions(bundle.request,
                                       bundle.obj.parameterset.experiment.id)
-        elif type(bundle.obj) == Dataset:
+        elif isinstance(bundle.obj, Dataset):
             if not bundle.request.user.has_perm(
                     'tardis_portal.change_dataset'):
                 return False
@@ -273,7 +255,7 @@ class ACLAuthorization(Authorization):
                 else:
                     return False
             return perm
-        elif type(bundle.obj) in (DatasetParameterSet,):
+        elif isinstance(bundle.obj, (DatasetParameterSet,)):
             if not bundle.request.user.has_perm(
                     'tardis_portal.change_dataset'):
                 return False
@@ -286,40 +268,40 @@ class ACLAuthorization(Authorization):
                 return has_dataset_write(bundle.request,
                                          bundle.obj.dataset.id)
             return False
-        elif type(bundle.obj) in (DatasetParameter,):
+        elif isinstance(bundle.obj, (DatasetParameter,)):
             return bundle.request.user.has_perm(
                 'tardis_portal.change_dataset') and \
                 has_dataset_write(bundle.request,
                                   bundle.obj.parameterset.dataset.id)
-        elif type(bundle.obj) == Dataset_File:
+        elif isinstance(bundle.obj, DataFile):
             dataset = DatasetResource.get_via_uri(DatasetResource(),
                                                   bundle.data['dataset'],
                                                   bundle.request)
             return all([
                 bundle.request.user.has_perm('tardis_portal.change_dataset'),
-                bundle.request.user.has_perm('tardis_portal.add_dataset_file'),
+                bundle.request.user.has_perm('tardis_portal.add_datafile'),
                 has_dataset_write(bundle.request, dataset.id),
             ])
-        elif type(bundle.obj) == DatafileParameterSet:
+        elif isinstance(bundle.obj, DatafileParameterSet):
             dataset = Dataset.objects.get(
-                pk=bundle.obj.dataset_file.dataset.id)
+                pk=bundle.obj.datafile.dataset.id)
             return all([
                 bundle.request.user.has_perm('tardis_portal.change_dataset'),
-                bundle.request.user.has_perm('tardis_portal.add_dataset_file'),
+                bundle.request.user.has_perm('tardis_portal.add_datafile'),
                 has_dataset_write(bundle.request, dataset.id),
             ])
-        elif type(bundle.obj) == DatafileParameter:
+        elif isinstance(bundle.obj, DatafileParameter):
             dataset = Dataset.objects.get(
-                pk=bundle.obj.parameterset.dataset_file.dataset.id)
+                pk=bundle.obj.parameterset.datafile.dataset.id)
             return all([
                 bundle.request.user.has_perm('tardis_portal.change_dataset'),
-                bundle.request.user.has_perm('tardis_portal.add_dataset_file'),
+                bundle.request.user.has_perm('tardis_portal.add_datafile'),
                 has_dataset_write(bundle.request, dataset.id),
             ])
-        elif type(bundle.obj) == Replica:
+        elif isinstance(bundle.obj, DataFileObject):
             return all([
                 bundle.request.user.has_perm('tardis_portal.change_dataset'),
-                bundle.request.user.has_perm('tardis_portal.add_dataset_file'),
+                bundle.request.user.has_perm('tardis_portal.add_datafile'),
                 has_dataset_write(bundle.request,
                                   bundle.obj.datafile.dataset.id),
             ])
@@ -336,33 +318,33 @@ class ACLAuthorization(Authorization):
 
         # return allowed
 
-    def update_detail(self, object_list, bundle):
+    def update_detail(self, object_list, bundle):  # noqa # too complex
         if not bundle.request.user.is_authenticated():
             return False
-        if type(bundle.obj) == Experiment:
+        if isinstance(bundle.obj, Experiment):
             return bundle.request.user.has_perm(
                 'tardis_portal.change_experiment') and \
                 has_write_permissions(bundle.request, bundle.obj.id)
-        elif type(bundle.obj) == ExperimentParameterSet:
+        elif isinstance(bundle.obj, ExperimentParameterSet):
             return bundle.request.user.has_perm(
                 'tardis_portal.change_experiment')  # and \
         #      has_write_permissions(bundle.request, bundle.obj.experiment.id)
-        elif type(bundle.obj) == ExperimentParameter:
+        elif isinstance(bundle.obj, ExperimentParameter):
             return bundle.request.user.has_perm(
                 'tardis_portal.change_experiment')
-        elif type(bundle.obj) == Dataset:
+        elif isinstance(bundle.obj, Dataset):
             return False
-        elif type(bundle.obj) == DatasetParameterSet:
+        elif isinstance(bundle.obj, DatasetParameterSet):
             return False
-        elif type(bundle.obj) == DatasetParameter:
+        elif isinstance(bundle.obj, DatasetParameter):
             return False
-        elif type(bundle.obj) == Dataset_File:
+        elif isinstance(bundle.obj, DataFile):
             return False
-        elif type(bundle.obj) == DatafileParameterSet:
+        elif isinstance(bundle.obj, DatafileParameterSet):
             return False
-        elif type(bundle.obj) == DatafileParameter:
+        elif isinstance(bundle.obj, DatafileParameter):
             return False
-        elif type(bundle.obj) == Schema:
+        elif isinstance(bundle.obj, Schema):
             return False
         raise NotImplementedError(type(bundle.obj))
 
@@ -370,7 +352,7 @@ class ACLAuthorization(Authorization):
         raise Unauthorized("Sorry, no deletes.")
 
     def delete_detail(self, object_list, bundle):
-        if type(bundle.obj) == Experiment:
+        if isinstance(bundle.obj, Experiment):
             return bundle.request.user.has_perm(
                 'tardis_portal.change_experiment') and \
                 has_delete_permissions(bundle.request, bundle.obj.id)
@@ -399,6 +381,48 @@ class UserResource(ModelResource):
         allowed_methods = ['get']
         fields = ['username', 'first_name', 'last_name']
         serializer = default_serializer
+
+    def dehydrate(self, bundle):
+        '''
+        use cases:
+        public user:
+          anonymous:
+            name, uri, email, id
+          authenticated:
+            other user:
+              name, uri, email, id
+            same user:
+              name, uri, email, id, username
+        private user:
+          anonymous:
+            none
+          authenticated:
+            other user:
+              name, uri, id
+            same user:
+              name, uri, email, id, username
+        '''
+        authuser = bundle.request.user
+        authenticated = authuser.is_authenticated()
+        queried_user = bundle.obj
+        public_user = queried_user.experiment_set.filter(
+            public_access__gt=1).count() > 0
+        same_user = authuser == queried_user
+
+        # add the database id for convenience
+        bundle.data['id'] = queried_user.id
+
+        # allow the user to find out their username and email
+        if same_user and authenticated:
+            bundle.data['email'] = queried_user.email
+        else:
+            del(bundle.data['username'])
+
+        # add public information
+        if public_user:
+            bundle.data['email'] = queried_user.email
+
+        return bundle
 
 
 class MyTardisModelResource(ModelResource):
@@ -517,8 +541,27 @@ class ExperimentResource(MyTardisModelResource):
     class Meta(MyTardisModelResource.Meta):
         queryset = Experiment.objects.all()
         filtering = {
+            'id': ('exact', ),
             'title': ('exact',),
         }
+
+    def dehydrate(self, bundle):
+        exp = bundle.obj
+        authors = [{'name': a.author, 'url': a.url}
+                   for a in exp.experimentauthor_set.all()]
+        bundle.data['authors'] = authors
+        lic = exp.license
+        if lic is not None:
+            bundle.data['license'] = {
+                'name': lic.name,
+                'url': lic.url,
+                'description': lic.internal_description,
+                'image_url': lic.image_url,
+                'allows_distribution': lic.allows_distribution,
+            }
+        owners = exp.get_owners()
+        bundle.data['owner_ids'] = [o.id for o in owners]
+        return bundle
 
     def hydrate_m2m(self, bundle):
         '''
@@ -560,8 +603,8 @@ class ExperimentResource(MyTardisModelResource):
         if hasattr(bundle.request, 'GET') and 'EPN' in bundle.request.GET:
             epn = bundle.request.GET['EPN']
             exp_schema = Schema.objects.get(
-                namespace=
-                'http://www.tardis.edu.au/schemas/as/experiment/2010/09/21')
+                namespace='http://www.tardis.edu.au'
+                '/schemas/as/experiment/2010/09/21')
             epn_pn = ParameterName.objects.get(schema=exp_schema, name='EPN')
             parameter = ExperimentParameter.objects.get(name=epn_pn,
                                                         string_value=epn)
@@ -594,6 +637,11 @@ class DatasetParameterResource(ParameterResource):
         queryset = DatasetParameter.objects.all()
 
 
+class StorageBoxResource(MyTardisModelResource):
+    class Meta(MyTardisModelResource.Meta):
+        queryset = StorageBox.objects.all()
+
+
 class DatasetResource(MyTardisModelResource):
     experiments = fields.ToManyField(
         ExperimentResource, 'experiments', related_name='datasets')
@@ -602,11 +650,17 @@ class DatasetResource(MyTardisModelResource):
         'datasetparameterset_set',
         related_name='dataset',
         full=True, null=True)
+    storage_boxes = fields.ToManyField(
+        StorageBoxResource,
+        'storage_boxes',
+        related_name='datasets',
+        null=True)
 
     class Meta(MyTardisModelResource.Meta):
         queryset = Dataset.objects.all()
         filtering = {
             'id': ('exact', ),
+            'experiments': ALL_WITH_RELATIONS,
             'description': ('exact', ),
             'directory': ('exact', ),
         }
@@ -623,10 +677,9 @@ class DatasetResource(MyTardisModelResource):
         file_path = kwargs.get('file_path', None)
         dataset_id = kwargs['pk']
 
-        datafiles = Dataset_File.objects.filter(dataset__id=dataset_id)
+        datafiles = DataFile.objects.filter(dataset__id=dataset_id)
         auth_bundle = self.build_bundle(request=request)
-        auth_bundle.obj = Dataset_File()
-        #import ipdb; ipdb.set_trace()
+        auth_bundle.obj = DataFile()
         self.authorized_read_list(
             datafiles, auth_bundle
             )
@@ -635,31 +688,32 @@ class DatasetResource(MyTardisModelResource):
         kwargs['dataset__id'] = dataset_id
         if file_path is not None:
             kwargs['directory__startswith'] = file_path
-        df_res = Dataset_FileResource()
+        df_res = DataFileResource()
         return df_res.dispatch('list', request, **kwargs)
 
 
-class Dataset_FileResource(MyTardisModelResource):
+class DataFileResource(MyTardisModelResource):
     dataset = fields.ForeignKey(DatasetResource, 'dataset')
     parameter_sets = fields.ToManyField(
         'tardis.tardis_portal.api.DatafileParameterSetResource',
         'datafileparameterset_set',
-        related_name='dataset_file',
+        related_name='datafile',
         full=True, null=True)
     datafile = fields.FileField()
     replicas = fields.ToManyField(
         'tardis.tardis_portal.api.ReplicaResource',
-        'replica_set',
+        'file_objects',
         related_name='datafile', full=True)
     temp_url = None
 
     class Meta(MyTardisModelResource.Meta):
-        queryset = Dataset_File.objects.all()
+        queryset = DataFile.objects.all()
         filtering = {
             'directory': ('exact', 'startswith'),
             'dataset': ALL_WITH_RELATIONS,
             'filename': ('exact', ),
         }
+        resource_name = 'dataset_file'
 
     def download_file(self, request, **kwargs):
         '''
@@ -690,33 +744,29 @@ class Dataset_FileResource(MyTardisModelResource):
         if 'attached_file' in bundle.data:
             # have POSTed file
             newfile = bundle.data['attached_file'][0]
-            file_path = write_uploaded_file_to_dataset(dataset,
-                                                       newfile)
-            location_name = 'local'
+            if 'md5sum' not in bundle.data and 'sha512sum' not in bundle.data:
+                from tardis.tardis_portal.util import generate_file_checksums
+                md5, sha512, size, _ = generate_file_checksums(
+                    newfile, leave_open=True)
+                bundle.data['md5sum'] = md5
+
+            bundle.data['replicas'] = [{'file_object': newfile}]
             del(bundle.data['attached_file'])
         elif 'replicas' not in bundle.data:
-            # no replica specified: return upload path and create replica for
+            # no replica specified: return upload path and create dfo for
             # new path
-            location_name = 'staging'
-            stage_url = get_sync_root(prefix="%d-" %
-                                      dataset.get_first_experiment().id)
-            # TODO make sure filename isn't duplicate
-            file_path = os.path.join(stage_url, bundle.data['filename'])
-            self.temp_url = file_path
-            file_path = "file://" + file_path
-        else:
-            return bundle
-        newreplica = {
-            'url': file_path,
-            'protocol': 'file',
-            'location': location_name,
-        }
-        bundle.data['replicas'] = [newreplica]
+            sbox = dataset.get_staging_storage_box()
+            if sbox is None:
+                raise NotImplementedError
+            dfo = DataFileObject(
+                datafile=bundle.obj,
+                storage_box=sbox)
+            self.temp_url = dfo.get_save_location()
         return bundle
 
     def post_list(self, request, **kwargs):
-        response = super(Dataset_FileResource, self).post_list(request,
-                                                               **kwargs)
+        response = super(DataFileResource, self).post_list(request,
+                                                           **kwargs)
         if self.temp_url is not None:
             response.content = self.temp_url
             self.temp_url = None
@@ -742,12 +792,12 @@ class Dataset_FileResource(MyTardisModelResource):
             return request.POST
         if format.startswith('multipart'):
             jsondata = request.POST['json_data']
-            data = super(Dataset_FileResource, self).deserialize(
+            data = super(DataFileResource, self).deserialize(
                 request, jsondata, format='application/json')
             data.update(request.FILES)
             return data
-        return super(Dataset_FileResource, self).deserialize(request,
-                                                             data, format)
+        return super(DataFileResource, self).deserialize(request,
+                                                         data, format)
 
     def put_detail(self, request, **kwargs):
         '''
@@ -757,12 +807,12 @@ class Dataset_FileResource(MyTardisModelResource):
                 not hasattr(request, '_body'):
             request._body = ''
 
-        return super(Dataset_FileResource, self).put_detail(request, **kwargs)
+        return super(DataFileResource, self).put_detail(request, **kwargs)
 
 
 class DatafileParameterSetResource(ParameterSetResource):
-    dataset_file = fields.ForeignKey(
-        Dataset_FileResource, 'dataset_file')
+    datafile = fields.ForeignKey(
+        DataFileResource, 'datafile')
     parameters = fields.ToManyField(
         'tardis.tardis_portal.api.DatafileParameterResource',
         'datafileparameter_set',
@@ -782,26 +832,39 @@ class DatafileParameterResource(ParameterResource):
 
 class LocationResource(MyTardisModelResource):
     class Meta(MyTardisModelResource.Meta):
-        queryset = Location.objects.all()
+        queryset = StorageBox.objects.all()
 
 
 class ReplicaResource(MyTardisModelResource):
-    datafile = fields.ForeignKey(Dataset_FileResource, 'datafile')
-    location = fields.ForeignKey(LocationResource, 'location')
+    datafile = fields.ForeignKey(DataFileResource, 'datafile')
 
     class Meta(MyTardisModelResource.Meta):
-        queryset = Replica.objects.all()
+        queryset = DataFileObject.objects.all()
+        filtering = {
+            'verified': ('exact',),
+            'url': ('exact', 'startswith'),
+        }
 
-    def hydrate_location(self, bundle):
-        try:
-            location = LocationResource.get_via_uri(LocationResource(),
-                                                    bundle.data['location'],
-                                                    bundle.request)
-        except NotFound:
+    def hydrate(self, bundle):
+        if 'url' in bundle.data:
+            bundle.data['uri'] = bundle.data['url']
+            del(bundle.data['url'])
+        datafile = bundle.related_obj
+        bundle.obj.datafile = datafile
+        bundle.data['datafile'] = datafile
+        if 'location' in bundle.data:
             try:
-                location = Location.objects.get(name=bundle.data['location'])
-            except Location.DoesNotExist:
-                raise
-        bundle.obj.location = location
-        del(bundle.data['location'])
+                bundle.obj.storage_box = StorageBox.objects.get(
+                    name=bundle.data['location'])
+            except StorageBox.DoesNotExist:
+                bundle.obj.storage_box = datafile.get_default_storage_box()
+            del(bundle.data['location'])
+        else:
+            bundle.obj.storage_box = datafile.get_default_storage_box()
+
+        bundle.obj.save()
+        if 'file_object' in bundle.data:
+            bundle.obj.file_object = bundle.data['file_object']
+            bundle.data['file_object'].close()
+            del(bundle.data['file_object'])
         return bundle

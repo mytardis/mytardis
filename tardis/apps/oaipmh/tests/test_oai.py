@@ -32,12 +32,12 @@ def _create_test_data():
     experiment.public_access = Experiment.PUBLIC_ACCESS_FULL
     experiment.license = license_
     experiment.save()
-    experiment.author_experiment_set.create(order=0,
-                                            author="John Cleese",
-                                            url="http://nla.gov.au/nla.party-1")
-    experiment.author_experiment_set.create(order=1,
-                                            author="Michael Palin",
-                                            url="http://nla.gov.au/nla.party-2")
+    experiment.experimentauthor_set.create(order=0,
+                                           author="John Cleese",
+                                           url="http://nla.gov.au/nla.party-1")
+    experiment.experimentauthor_set.create(order=1,
+                                           author="Michael Palin",
+                                           url="http://nla.gov.au/nla.party-2")
     acl = ObjectACL(content_object=experiment,
                     pluginId='django_user',
                     entityId=str(user.id),

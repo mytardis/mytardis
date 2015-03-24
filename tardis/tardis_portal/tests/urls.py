@@ -1,4 +1,4 @@
-from django.conf.urls.defaults import patterns
+from django.conf.urls import patterns
 from django.contrib.auth.urls import urlpatterns
 from django.http import HttpResponse
 from django.template import Template, RequestContext

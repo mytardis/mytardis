@@ -5,7 +5,7 @@
 
 {% else %}
 	<p><strong>Schema: </strong>{{schema.name}}</strong></p>
-	<form id="edit_metadata_form" action='/ajax/edit_{{type}}_parameters/{{parameterset_id}}/' method='post'>
+	<form id="edit_metadata_form" action='/ajax/edit_{{type}}_parameters/{{parameterset_id}}/' method='post'>{% csrf_token %}
 		{{ form.non_field_errors }}
 	    {% for field in form %}
         <div class="fieldWrapper">

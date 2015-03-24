@@ -2,11 +2,13 @@
 {% load static from staticfiles %}
 {% load experiment_tags %}
 {% load experimentstats %}
+{% load bleach_tag %}
 
 {% block script %}
 {% endblock script %}
 
 {% block content %}
+<div id="content">
   <div class="page-header">
     <h1>{{site_title|default:'MyTardis'}} Data Store</h1>
   </div>
@@ -17,9 +19,9 @@
     {% endif %}
   </p>
   <div class="row-fluid">
-    <div class="span7">
+    <div class="span6">
       {% if is_authenticated %}
-	<h3>Your most recent experiments <small><strong>(<a href="{% url 'tardis.tardis_portal.views.experiment_index' %}">view all</a>)</strong></small></h3>
+	<h3>Your most recent experiments <small><strong>(<a href="{% url 'tardis.tardis_portal.views.my_data' %}">view all</a>)</strong></small></h3>
 	<div id="experiments" class="accordion">
 	  {% for exp in private_experiments %}
 	    <div class="accordion-group">
@@ -43,9 +45,8 @@
 		      </li>
 		    </ul>
 		    <small>
-		      {% for author in exp.author_experiment_set.all %}{% if not forloop.first %}, {% else %}
-		      Authors: {% endif %}
-		      <span property="dc:author">{{ author.author }}</span>{% endfor %}
+		      {% for author in exp.experimentauthor_set.all %}{% if not forloop.first %}, {% endif %}
+		      <span property="dc:author">{{ author.author }}</span>{% empty %}&nbsp;{% endfor %}
 		    </small>
 		    <span class="pull-right">
 		      {% for dltype, dlurl in exp.get_download_urls.items %}
@@ -63,9 +64,7 @@
 	      <div id="collapse{{exp.id}}"
 		   class="accordion-body collapse{% if forloop.first %} in{% endif %}">
 		<div class="accordion-inner">
-		  <em class="pull-right"><a href="{% url 'tardis.tardis_portal.views.view_experiment' exp.id %}">View
-		  experiment</a></em>
-		  <p>{{exp.description|default:"<em>No description</em>"}}</p>
+		  <p>{{exp.description|default:"<em>No description</em>"|bleach}}</p>
 		  {% for ds in exp.datasets.all|dictsortreversed:"id"|slice:":5" %}
 		    {% if forloop.first %}
 		      <ul class="nav nav-list">
@@ -131,9 +130,9 @@
 		</li>
 	      </ul>
 	      <small>
-		{% for author in exp.author_experiment_set.all %}{% if not forloop.first %}, {% else %} Authors:
+		{% for author in exp.experimentauthor_set.all %}{% if not forloop.first %},
 	      {% endif %}
-	      <span property="dc:author">{{ author.author }}</span>{% endfor %}
+	      <span property="dc:author">{{ author.author }}</span>{% empty %}&nbsp;{% endfor %}
 	      </small>
 	      <span class="pull-right">
 		{% if exp.public_download_allowed %}
@@ -154,9 +153,7 @@
 	  <div id="collapsepub{{exp.id}}"
 	       class="accordion-body collapse{% if forloop.first and not is_authenticated %} in{% endif %}">
 	    <div class="accordion-inner">
-	      <em class="pull-right"><a href="{% url 'tardis.tardis_portal.views.view_experiment' exp.id %}">View
-	      experiment</a></em>
-	      <p>{{exp.description|default:"<em>No description</em>"}}</p>
+	      <p>{{exp.description|default:"<em>No description</em>"|bleach}}</p>
 	      {% for ds in exp.datasets.all|dictsortreversed:"id"|slice:":5" %}
 		{% if forloop.first %}
 		  <ul class="nav nav-list">
@@ -197,7 +194,8 @@
       </div>
     </div>
   </div>
-  <script type="text/javascript">
+</div>
+<script type="text/javascript">
 $(function(){
     $("#experiments .accordion-body").collapse({parent:"#experiments", toggle: false});
     $(".explink").click(function(e){

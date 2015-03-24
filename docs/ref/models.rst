@@ -5,6 +5,7 @@
 
 .. module:: tardis.tardis_portal.models
 .. moduleauthor::  Steve Androulakis <steve.androulakis@monash.edu>
+.. moduleauthor::  Grischa Meyer <grischa.meyer@monash.edu>
 
 
 :class:`UserProfile` Objects
@@ -21,9 +22,9 @@
    :undoc-members:
 
 
-:class:`ExperimentACL` Objects
+:class:`ObjectACL` Objects
 ---------------------------------
-.. autoclass:: ExperimentACL
+.. autoclass:: ObjectACL
    :members:
    :undoc-members:
 
@@ -42,9 +43,9 @@
    :undoc-members:
 
 
-:class:`Dataset_File` Objects
+:class:`DataFile` Objects
 -----------------------------
-.. autoclass:: Dataset_File
+.. autoclass:: DataFile
    :members:
    :undoc-members:
 

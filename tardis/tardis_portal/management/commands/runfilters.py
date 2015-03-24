@@ -42,7 +42,7 @@ from django.db import transaction, DEFAULT_DB_ALIAS
 from django.core.exceptions import ImproperlyConfigured
 from django.utils.importlib import import_module
 
-from tardis.tardis_portal.models import Experiment, Dataset, Dataset_File
+from tardis.tardis_portal.models import Experiment, Dataset, DataFile
 
 
 logger = logging.getLogger(__name__)
@@ -145,12 +145,12 @@ metadata to be reingested."""
         using = DEFAULT_DB_ALIAS
         transaction.enter_transaction_management(using=using)
         try:
-            for datafile in Dataset_File.objects.all():
+            for datafile in DataFile.objects.all():
                 # Use a transaction to process each Datafile
                 transaction.managed(True, using=using)
                 try:
                     for filter in filters:
-                        filter(sender=Dataset_File, instance=datafile,
+                        filter(sender=DataFile, instance=datafile,
                                created=False, using='default')
                     if dryRun:
                         transaction.rollback(using=using)

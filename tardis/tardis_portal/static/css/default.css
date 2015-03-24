@@ -1,4 +1,15 @@
+html{
+  height: 100%;
+}
+body {
+  min-height: 100%;
+}
+
 /* Inset brand in nav bar */
+.navbar .brand a {
+  color: #0097E2;
+}
+
 .brand.brand-inverse {
   color: rgba(0,0,0,0.4);
   font-weight: bold;
@@ -66,7 +77,7 @@ div.copylink {
 
 .download-selected {
     font-weight: bold;
-    margin: 3% 0 2% 0;
+    margin-bottom: 12px;
 }
 
 /*override for bootstrap nav pills*/
@@ -138,6 +149,9 @@ text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
 #experiments .accordion-toggle .badgelist {
     margin-bottom: 4px;
 }
+#experiments .accordion-body {
+    background-color: #E8F6FF;
+}
 #experiments .accordion-inner {
     -webkit-border-radius: 0px;
     -moz-border-radius: 0px;
@@ -187,3 +201,58 @@ text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
     width: 100px;
 }
 /* end dataset tiles */
+
+/* mydata page */
+.mydata .accordion-toggle .explink {
+    font-size: 1.3em;
+    max-width: 67%;
+}
+.mydata .accordion-toggle .badgelist {
+    margin-bottom: 4px;
+}
+.mydata .accordion-body {
+    background-color: #E8F6FF;
+}
+.mydata .accordion-inner {
+    -webkit-border-radius: 0px;
+    -moz-border-radius: 0px;
+    border-radius: 0px;
+    border: none;
+    padding-top:5px;
+    padding-right:10px;
+    padding-left:10px;
+    background-color: #E8F6FF;
+    margin: 0px 0px;
+}
+.mydata .accordion-inner p {
+    width: 75%;
+}
+.mydata .accordion-inner .dataset-list-header {
+    margin-left: -30px;
+}
+.mydata .accordion-inner .thumbnails li {
+    margin-bottom: 5px;
+    margin-top: 2px;
+}
+.mydata .accordion-group {
+    border: none;
+    -webkit-border-radius: 0px;
+    -moz-border-radius: 0px;
+    border-radius: 0px;
+    background-color: #F5FBFF;
+    margin-bottom: 20px;
+}
+.mydata .nav .nav-header {
+    font-size: 11px;
+    font-weight: normal;
+    color: #000000;
+    text-shadow: none;
+    font-style: italic;
+    text-transform: none;
+}
+/* end index page */
+/* autocomplete defaults */
+.ui-autocomplete {
+    z-index: 1234 !important;
+}
+/* end autocomplete defaults */

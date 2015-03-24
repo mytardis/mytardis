@@ -2,6 +2,9 @@
 User Guide
 ==========
 
+These screenshots refer to an older version. While the workflow has remained
+largely the same, the look and feel is slightly different.
+
 Browsing & Downloading Data
 ===========================
 
@@ -90,4 +93,3 @@ access.
 See also:
  * :doc:`searching`
  * :doc:`tabs`
-

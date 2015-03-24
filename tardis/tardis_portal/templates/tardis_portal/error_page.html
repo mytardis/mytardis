@@ -19,16 +19,5 @@ $(document).ready(function () {
   {% block error_message %}
   {% endblock %}</small>
 </h1>
-<script type="text/javascript">
-// Fit massive text to screen
-var resizeText = function(evt) {
-  var width = $('body').css('width');
-  var mainHeight = Math.floor(parseInt(width)/4);
-  var smallHeight = Math.floor(mainHeight/2);
-  $('h1.msg .main').css('font-size', mainHeight+'px');
-  $('h1.msg small').css('font-size', smallHeight+'px');
-};
-resizeText();
-$(window).resize(resizeText);
-</script>
+
 {% endblock %}

@@ -2,7 +2,7 @@
 {% load bootstrap %}
 
 {% block content %}
-<form action="" method="post" class="form-horizontal">
+<form action="" method="post" class="form-horizontal">{% csrf_token %}
   <input name="next_page" type="hidden" value="{{ next_page }}" />
   <fieldset>
     <legend>Please Log In</legend>
@@ -14,4 +14,14 @@
     </div>
   </fieldset>
 </form>
+
+{% if RAPID_CONNECT_ENABLED %}
+
+    <legend>Australian Access Federation login:</legend>
+
+    <p> <a href={{ RAPID_CONNECT_LOGIN_URL }} class="btn btn-large btn-info">LOGIN VIA THE AUSTRALIAN ACCESS FEDERATION</a> </p>
+
+{% endif %}
+
+
 {% endblock content %}

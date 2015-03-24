@@ -15,14 +15,14 @@
 # serve to show the default.
 
 import sys, os
-from tardis import test_settings as settings
-from django.core.management import setup_environ
-setup_environ(settings)
 
 # If your extensions (or modules documented by autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 sys.path.append(os.path.abspath('..'))
+
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "tardis.test_settings")
+
 
 # General configuration
 # ---------------------
@@ -52,8 +52,8 @@ copyright = u'2013, MyTardis Development Team'
 # built documents.
 #
 # The short X.Y version.
-import pkg_resources  # part of setuptools
-version = pkg_resources.require("MyTardis")[0].version
+import tardis
+version = tardis.__version__
 
 # The full version, including alpha/beta/rc tags.
 
@@ -104,7 +104,7 @@ execfile("generate-api-docs.py")
 # Model graph generation
 # ----------------------
 
-execfile('generate-model-graphs.py')
+# execfile('generate-model-graphs.py')
 
 # Options for HTML output
 # -----------------------

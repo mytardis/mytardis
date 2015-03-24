@@ -2,7 +2,7 @@ from django.contrib import admin
 admin.autodiscover()
 
 from django.contrib.auth.views import logout
-from django.conf.urls.defaults import patterns, include, url
+from django.conf.urls import patterns, include, url
 from django.conf import settings
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 
@@ -22,13 +22,20 @@ def getTardisApps():
 
 handler500 = 'tardis.views.error_handler'
 
+rapidconnect_urls = patterns(
+    'tardis.tardis_portal.views',
+    (r'^auth/jwt$', 'rcauth'),
+)
+
 core_urls = patterns(
     'tardis.tardis_portal.views',
     (r'^$', 'index'),
     url(r'^site-settings.xml/$', 'site_settings', name='tardis-site-settings'),
+    url(r'^mydata/$', 'my_data', name='mydata'),
+    url(r'^public_data/', 'public_data', name='public_data'),
     (r'^about/$', 'about'),
     (r'^stats/$', 'stats'),
-    (r'^import_params/$', 'import_params'),
+    (r'^help/$', 'user_guide'),
     (r'^robots\.txt$', lambda r: HttpResponse(
         "User-agent: *\nDisallow: /download/\nDisallow: /stats/",
         mimetype="text/plain"))
@@ -52,8 +59,6 @@ experiment_urls = patterns(
     (r'^list', include(experiment_lists)),
     (r'^view/$', 'experiment_index'),  # Legacy URL
     (r'^search/$', 'search_experiment'),
-    (r'^register/$', 'register_experiment_ws_xmldata'),
-    (r'^metsexport/(?P<experiment_id>\d+)/$', 'metsexport_experiment'),
     (r'^create/$', 'create_experiment'),
     (r'^control_panel/(?P<experiment_id>\d+)/access_list/add/user/'
      '(?P<username>[\w\-][\w\-\.]+(@[\w\-][\w\-\.]+[a-zA-Z]{1,4})*)/$',
@@ -117,9 +122,11 @@ dataset_urls = patterns(
 )
 iiif_urls = patterns(
     'tardis.tardis_portal.iiif',
-    url(r'^(?P<datafile_id>\d+)/(?P<region>[^\/]+)/(?P<size>[^\/]+)/(?P<rotation>[\d\.]+)/(?P<quality>\w+)$',  # noqa
+    url(r'^(?P<datafile_id>\d+)/(?P<region>[^\/]+)/(?P<size>[^\/]+)/'
+        r'(?P<rotation>[\d\.]+)/(?P<quality>\w+)$',
         'download_image'),
-    url(r'^(?P<datafile_id>\d+)/(?P<region>[^\/]+)/(?P<size>[^\/]+)/(?P<rotation>[\d\.]+)/(?P<quality>\w+).(?P<format>\w+)$',  # noqa
+    url(r'^(?P<datafile_id>\d+)/(?P<region>[^\/]+)/(?P<size>[^\/]+)/'
+        r'(?P<rotation>[\d\.]+)/(?P<quality>\w+).(?P<format>\w+)$',
         'download_image'),
     url(r'^(?P<datafile_id>\d+)/info.(?P<format>\w+)$', 'download_info'),
     )
@@ -144,8 +151,8 @@ json_urls = patterns(
 
 ajax_urls = patterns(
     'tardis.tardis_portal.views',
-    (r'^parameters/(?P<dataset_file_id>\d+)/$', 'retrieve_parameters'),
-    (r'^datafile_details/(?P<dataset_file_id>\d+)/$',
+    (r'^parameters/(?P<datafile_id>\d+)/$', 'retrieve_parameters'),
+    (r'^datafile_details/(?P<datafile_id>\d+)/$',
      'display_datafile_details'),
     (r'^dataset_metadata/(?P<dataset_id>\d+)/$', 'retrieve_dataset_metadata'),
     (r'^experiment_metadata/(?P<experiment_id>\d+)/$',
@@ -179,7 +186,8 @@ ajax_urls = patterns(
     (r'^experiment/(?P<experiment_id>\d+)/dataset-transfer$',
      'experiment_dataset_transfer'),
     (r'^license/list$', 'retrieve_licenses'),
-    (r'^json/', include(json_urls))
+    (r'^json/', include(json_urls)),
+    (r'^feedback/', 'feedback'),
 )
 
 download_urls = patterns(
@@ -194,6 +202,14 @@ download_urls = patterns(
     (r'^experiment/(?P<experiment_id>\d+)/'
      r'(?P<comptype>[a-z]{3})/(?P<organization>[^/]+)/$',
      'streaming_download_experiment'),
+    (r'^dataset/(?P<dataset_id>\d+)/$',
+     'streaming_download_dataset'),
+    (r'^dataset/(?P<dataset_id>\d+)/'
+     r'(?P<comptype>[a-z]{3})/$',  # tgz or tar
+     'streaming_download_dataset'),
+    (r'^dataset/(?P<dataset_id>\d+)/'
+     r'(?P<comptype>[a-z]{3})/(?P<organization>[^/]+)/$',
+     'streaming_download_dataset'),
     (r'^api_key/$', 'download_api_key'),
     )
 
@@ -205,6 +221,16 @@ group_urls = patterns(
      'add_user_to_group'),
     (r'^(?P<group_id>\d+)/remove/(?P<username>[\w\.]+)/$',
      'remove_user_from_group'),
+    )
+
+facility_urls = patterns(
+    'tardis.tardis_portal.views',
+    (r'^overview/$', 'facility_overview'),
+    (r'^fetch_data/(?P<facility_id>\d+)/count/', 'fetch_facility_data_count'),
+    (r'^fetch_data/(?P<facility_id>\d+)/'
+     r'(?P<start_index>\d+)/(?P<end_index>\d+)/$',
+     'fetch_facility_data'),
+    (r'^fetch_facilities_list/$', 'fetch_facilities_list'),
     )
 
 display_urls = patterns(
@@ -221,16 +247,16 @@ display_urls = patterns(
     (r'^DatasetImage/(?P<dataset_id>\d+)/(?P<parameterset_id>\d+)/'
      '(?P<parameter_name>\w+)/$',
      'display_dataset_image'),
-    (r'^DatafileImage/(?P<dataset_file_id>\d+)/'
+    (r'^DatafileImage/(?P<datafile_id>\d+)/'
      '(?P<parameterset_id>\d+)/(?P<parameter_name>\w+)/$',
      'display_datafile_image'),
 )
 
-## API SECTION
+# # API SECTION
 from tardis.tardis_portal.api import DatasetParameterSetResource
 from tardis.tardis_portal.api import DatasetParameterResource
 from tardis.tardis_portal.api import DatasetResource
-from tardis.tardis_portal.api import Dataset_FileResource
+from tardis.tardis_portal.api import DataFileResource
 from tardis.tardis_portal.api import DatafileParameterSetResource
 from tardis.tardis_portal.api import DatafileParameterResource
 from tardis.tardis_portal.api import ExperimentParameterResource
@@ -240,13 +266,14 @@ from tardis.tardis_portal.api import LocationResource
 from tardis.tardis_portal.api import ParameterNameResource
 from tardis.tardis_portal.api import ReplicaResource
 from tardis.tardis_portal.api import SchemaResource
+from tardis.tardis_portal.api import StorageBoxResource
 from tardis.tardis_portal.api import UserResource
 from tastypie.api import Api
 v1_api = Api(api_name='v1')
 v1_api.register(DatasetParameterSetResource())
 v1_api.register(DatasetParameterResource())
 v1_api.register(DatasetResource())
-v1_api.register(Dataset_FileResource())
+v1_api.register(DataFileResource())
 v1_api.register(DatafileParameterSetResource())
 v1_api.register(DatafileParameterResource())
 v1_api.register(ExperimentParameterResource())
@@ -256,12 +283,13 @@ v1_api.register(LocationResource())
 v1_api.register(ParameterNameResource())
 v1_api.register(ReplicaResource())
 v1_api.register(SchemaResource())
+v1_api.register(StorageBoxResource())
 v1_api.register(UserResource())
 api_urls = patterns(
     '',
     (r'^', include(v1_api.urls)),
 )
-## END API SECTION
+# # END API SECTION
 
 apppatterns = patterns('',)
 for app in getTardisApps():
@@ -298,12 +326,18 @@ urlpatterns = patterns(
     (r'^groups/$', 'tardis.tardis_portal.views.manage_groups'),
     (r'^group/', include(group_urls)),
 
+    # Facility views
+    (r'^facility/', include(facility_urls)),
+
     # Display Views
     (r'^display/', include(display_urls)),
 
     # Login/out
     (r'^login/$', 'tardis.tardis_portal.views.login'),
-    (r'^logout/$', logout, {'next_page': '/'}),
+    url(r'^logout/$', logout, {'next_page': '/'}, name='logout'),
+
+    # Rapid Connect
+    (r'^rc/', include(rapidconnect_urls)),
 
     # Admin
     (r'^admin/doc/', include('django.contrib.admindocs.urls')),

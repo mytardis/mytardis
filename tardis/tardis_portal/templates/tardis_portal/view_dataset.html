@@ -283,6 +283,22 @@
             });
   });
 </script>
+<style type="text/css">
+.dropzone.in {
+    background: blue;
+}
+.dropzone.hover {
+    background: lawngreen;
+}
+.dropzone.fade {
+    -webkit-transition: all 0.3s ease-out;
+    -moz-transition: all 0.3s ease-out;
+    -ms-transition: all 0.3s ease-out;
+    -o-transition: all 0.3s ease-out;
+    transition: all 0.3s ease-out;
+    opacity: 1;
+}
+</style>
 {% endblock %}
 
 {% block content %}
@@ -383,10 +399,12 @@ $('#modal-metadata .submit-button').live('click', function() {
   </h4>
   {% endif %}
 
-  <p style="text-align: right">
+    <p class="pull-right">
     {{ dataset|dataset_experiments_badge}}&nbsp;
     {{ dataset|dataset_datafiles_badge }}&nbsp;
     {{ dataset|dataset_size_badge }}
+    </p>
+    <p style="text-align:left; margin-top:10px;">
   </p>
 </div>
 
@@ -471,26 +489,88 @@ $('#modal-metadata .submit-button').live('click', function() {
     </div>
   </div>
   <hr class="visible-phone"/>
-  <div class="span4">
-      <h3 style="display: inline">
-      {{dataset.dataset_file_set.count}} File{% if dataset.dataset_file_set.count != 1 %}s{%endif%}
-      </h3>
 
-    <form id="datafile-download" method="POST" action="{% url 'tardis.tardis_portal.download.streaming_download_datafiles' %}" target="_blank">
-      <div class="row-fluid">
-        <div class="pull-left">
-          {% if has_download_permissions %}
-            <button type="submit" class="btn btn-mini download-selected">
-              <i class="icon-download-alt"></i>
-              Download Selected Files
-            </button>
-	    <input type="hidden" name="comptype" value="{{default_format}}"/>
-	    <input type="hidden" name="organization" value="{{default_organization}}"/>
-          {% endif %}
-        </div>
+  <div class="span4"> {# side bar #}
+  <div class="row-fluid">
+    <div class="span8">
+      <h3 style="display: inline">
+      {{dataset.datafile_set.count}} File{% if dataset.datafile_set.count != 1 %}s{%endif%}
+      </h3>
+    </div>
+    <div class="span4">
+{% if has_write_permissions and not experiment.public and not immutable %}
+    <span class="btn btn-success fileinput-button pull-right">
+        <i class="glyphicon glyphicon-plus"></i>
+        <span>Add files...</span>
+        <input id="fileupload" type="file" name="attached_file"
+               data-url="/api/v1/dataset_file/" multiple>
+    </span>
+{% endif %}
+  </div>
+</div>
+<div class="row-fluid">
+  <div class="span8">
+  {% block downloads %}
+  {% if has_download_permissions %}
+  <p><b>Download Dataset:</b>
+    {% if organization|length > 1 %}
+      {% for p in protocol %}
+        {% for o in organization %}
+          <a class="btn btn-primary btn-mini" href="{{p.1}}{{o}}"
+             title="Download Entire Experiment as {{p.0|upper}} with {{o}} organization">
+            <i class="icon-download-alt"></i>
+            {% if o == default_organization %}
+            {{p.0|upper}}
+            {% else %}
+            {{p.0|upper}} - {{o}}
+	    {% endif %}
+          </a>
+        {% endfor %}
+      {% endfor %}
+    {% else %}
+      {% for p in protocol %}
+        <a class="btn btn-primary btn-mini" href="{{p.1}}"
+           title="Download Entire Dataset as {{p.0|upper}}">
+          <i class="icon-download-alt"></i>
+          {{p.0|upper}}
+        </a>
+      {% endfor %}
+      {% endif %}
+  </p>
+  {% endif %}
+  {% endblock downloads %}
+  </div>
+  <div span="4">
+  {% if has_write_permissions and not experiment.public and not immutable and has_staging_access %}
+    <div class="pull-right" style="margin-top:3px;">
+      <a data-dataset_id="{{dataset.id}}" class="import_staging_files_link btn btn-mini" title="Import Staging Files">
+          <i class="icon-arrow-right"></i>
+          Import Staging Files
+      </a>
+    </div>
+    {% endif %}
+    </div>
+  </div>
+  <div class="row-fluid">
+    <div id="progress" class="progress span12" style="height:4px;min-height:4px;margin-bottom:8px;">
+        <div class="progress-bar progress-bar-success" style="background-color:blue;height:4px;width:0%;"></div>
+    </div>
+  </div>
+      <div id="datafiles-pane" class="dropzone"></div>
+      <div id="dropzone" class="dropzone" style="
+border: 6px dashed lightgrey;
+-moz-border-radius: 40px;
+border-radius: 40px;
+height: 210px;
+text-align: center;
+font-size: 40px;
+padding-top: 150px;
+font-weight: bold;
+color: lightgrey;
+display: none;
+margin-top: 20px;
+      ">Drop files here
       </div>
-      <div id="datafiles-pane"></div>
-    </form>
   </div>
 </div>
 
@@ -550,9 +630,98 @@ $(document).ready(function(){
             });
   });
 {% else %}
-  $("#upload_button_code").load('{% url upload_method dataset.id %}');
+  {% if upload_method %}
+    $("#upload_button_code").load('{% url upload_method dataset.id %}');
+  {% endif %}
 {% endif %}
 
+});
+</script>
+<!-- The Iframe Transport is required for browsers without support for XHR file uploads -->
+<script src="{% static 'js/jquery.iframe-transport.js' %}"></script>
+<!-- The basic File Upload plugin -->
+<script src="{% static 'js/jquery.fileupload.js' %}"></script>
+<!-- The File Upload processing plugin -->
+<script src="{% static 'js/jquery.fileupload-process.js' %}"></script>
+<!-- The File Upload validation plugin -->
+<script src="{% static 'js/jquery.fileupload-validate.js' %}"></script>
+<script type="text/javascript">
+$(function () {
+    $('#dropzone').hide();
+    $('#fileupload').fileupload({
+        dataType: 'json',
+	headers: {'X-CSRFToken': '{{csrf_token}}'},
+        done: function (e, data) {
+          //  $.each(data.result.files, function (index, file) {
+          //      $('<p/>').text(file.name).appendTo(document.body);
+          //  });
+            $('#datafiles-pane').trigger('reload');
+            var length = data.files.length;
+            for (var i = 0; i < length; i++) {
+                showMsg.success(data.files[i].name + " was successfully uploaded");
+                // need to change notification to show multiple, not replace existing ones
+            }
+        },
+	dropZone: $('.dropzone')
+    });
+    $('#datafiles-pane').bind('drop dragover', function (e) {
+        e.preventDefault();
+    });
+    $('#fileupload').bind('fileuploadsubmit', function (e, data) {
+        var jsondata = {
+            dataset: "/api/v1/dataset/{{dataset.id}}/",
+            filename: data.files[0].name,
+            size: data.files[0].size,
+            mimetype: data.files[0].type
+        };
+        data.formData = {json_data: JSON.stringify(jsondata)};
+    }).on('fileuploadprogressall', function (e, data) {
+        var progress = parseInt(data.loaded / data.total * 100, 10);
+        $('#progress .progress-bar').css(
+            'width',
+            progress + '%'
+        );
+    });
+});
+var showDropzone = function() {
+    $('#datafiles-pane').hide();
+    $('#dropzone').show();
+};
+var inDropzone = function() {
+
+};
+var hideDropzone = function() {
+    $('#datafiles-pane').show();
+    $('#dropzone').hide();
+};
+$(document).bind('dragover', function (e) {
+    var dropZone = $('.dropzone'),
+        timeout = window.dropZoneTimeout;
+    if (!timeout) {
+        //dropZone.addClass('in');
+        showDropzone();
+    } else {
+        clearTimeout(timeout);
+    }
+    var found = false,
+        node = e.target;
+    do {
+        if (node === dropZone[0]) {
+           found = true;
+           break;
+       }
+       node = node.parentNode;
+    } while (node != null);
+    if (found) {
+        dropZone.addClass('hover');
+    } else {
+        dropZone.removeClass('hover');
+    }
+    window.dropZoneTimeout = setTimeout(function () {
+        window.dropZoneTimeout = null;
+        //dropZone.removeClass('in hover');
+	hideDropzone();
+    }, 100);
 });
 </script>
 {% endblock finalscript %}

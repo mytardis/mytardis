@@ -12,27 +12,28 @@ from django.db.models import Q
 from django.core.exceptions import PermissionDenied
 from django.contrib.auth.models import User, Group
 
-from tardis.tardis_portal.auth.localdb_auth import django_user
+from tardis.tardis_portal.auth.localdb_auth import django_user,\
+    django_group
 from tardis.tardis_portal.models import ObjectACL
 
 
 class OracleSafeManager(models.Manager):
     """
     Implements a custom manager which automatically defers the
-    retreival of any TextField fields on calls to get_query_set. This
+    retreival of any TextField fields on calls to get_queryset. This
     is to avoid the known issue that 'distinct' calls on query_sets
     containing TextFields fail when Oracle is being used as the
     backend.
     """
-    def get_query_set(self):
+    def get_queryset(self):
         from django.db import connection
         if connection.settings_dict['ENGINE'] == 'django.db.backends.oracle':
             fields = [a.attname for a in self.model._meta.fields
                       if a.db_type(connection=connection) == 'NCLOB']
             return \
-                super(OracleSafeManager, self).get_query_set().defer(*fields)
+                super(OracleSafeManager, self).get_queryset().defer(*fields)
         else:
-            return super(OracleSafeManager, self).get_query_set()
+            return super(OracleSafeManager, self).get_queryset()
 
 
 class ExperimentManager(OracleSafeManager):
@@ -61,14 +62,29 @@ class ExperimentManager(OracleSafeManager):
         query = self._query_all_public() |\
             self._query_owned_and_shared(user)
 
-        return super(ExperimentManager, self).get_query_set().filter(
+        return super(ExperimentManager, self).get_queryset().filter(
+            query).distinct()
+
+    def public(self):
+        query = self._query_all_public()
+        return super(ExperimentManager, self).get_queryset().filter(
             query).distinct()
 
     def owned_and_shared(self, user):
-        return super(ExperimentManager, self).get_query_set().filter(
+        return super(ExperimentManager, self).get_queryset().filter(
             self._query_owned_and_shared(user)).distinct()
 
+    def shared(self, user):
+        return super(ExperimentManager, self).get_queryset().filter(
+            self._query_shared(user)).distinct()
+
     def _query_owned_and_shared(self, user):
+        return self._query_shared(user) | self._query_owned(user)
+
+    def _query_shared(self, user):
+        '''
+        get all shared experiments, not owned ones
+        '''
         # if the user is not authenticated, only tokens apply
         # this is almost duplicate code of end of has_perm in authorisation.py
         # should be refactored, but cannot think of good way atm
@@ -90,7 +106,8 @@ class ExperimentManager(OracleSafeManager):
         # based on USER permissions?
         query = Q(objectacls__pluginId=django_user,
                   objectacls__entityId=str(user.id),
-                  objectacls__canRead=True) &\
+                  objectacls__canRead=True,
+                  objectacls__isOwner=False) &\
             (Q(objectacls__effectiveDate__lte=datetime.today())
              | Q(objectacls__effectiveDate__isnull=True)) &\
             (Q(objectacls__expiryDate__gte=datetime.today())
@@ -141,9 +158,49 @@ class ExperimentManager(OracleSafeManager):
 
         # the user must be authenticated
         if not user.is_authenticated():
-            return super(ExperimentManager, self).get_empty_query_set()
+            return super(ExperimentManager, self).get_queryset().none()
 
-        return self.owned_by_user_id(user.id)
+        return self.owned_by_user(user)
+
+    def _query_owned(self, user, user_id=None):
+        # build the query to filter the ACL table
+        query = Q(objectacls__pluginId=django_user,
+                  objectacls__entityId=str(user_id or user.id),
+                  objectacls__isOwner=True) &\
+            (Q(objectacls__effectiveDate__lte=datetime.today())
+             | Q(objectacls__effectiveDate__isnull=True)) &\
+            (Q(objectacls__expiryDate__gte=datetime.today())
+             | Q(objectacls__expiryDate__isnull=True))
+        return query
+
+    def _query_owned_by_group(self, group, group_id=None):
+        # build the query to filter the ACL table
+        query = Q(objectacls__pluginId=django_group,
+                  objectacls__entityId=str(group_id or group.id),
+                  objectacls__isOwner=True) &\
+            (Q(objectacls__effectiveDate__lte=datetime.today())
+             | Q(objectacls__effectiveDate__isnull=True)) &\
+            (Q(objectacls__expiryDate__gte=datetime.today())
+             | Q(objectacls__expiryDate__isnull=True))
+        return query
+
+    def owned_by_user(self, user):
+        """
+        Return all experiments which are owned by a particular user id
+
+        :param userId: a User Object
+        :type userId: User
+
+        """
+        query = self._query_owned(user)
+        return super(ExperimentManager, self).get_queryset().filter(query)
+
+    def owned_by_group(self, group):
+        """
+        Return all experiments that are owned by a particular group
+        """
+        query = self._query_owned_by_group(group)
+        return super(ExperimentManager, self).get_queryset().filter(query)
 
     def owned_by_user_id(self, userId):
         """
@@ -153,16 +210,8 @@ class ExperimentManager(OracleSafeManager):
         :type userId: integer
 
         """
-        # build the query to filter the ACL table
-        query = Q(objectacls__pluginId=django_user,
-                  objectacls__entityId=str(userId),
-                  objectacls__isOwner=True) &\
-            (Q(objectacls__effectiveDate__lte=datetime.today())
-             | Q(objectacls__effectiveDate__isnull=True)) &\
-            (Q(objectacls__expiryDate__gte=datetime.today())
-             | Q(objectacls__expiryDate__isnull=True))
-
-        return super(ExperimentManager, self).get_query_set().filter(query)
+        query = self._query_owned(user=None, user_id=userId)
+        return super(ExperimentManager, self).get_queryset().filter(query)
 
     def user_acls(self, experiment_id):
         """

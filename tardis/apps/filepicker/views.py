@@ -9,9 +9,7 @@ from django.template import Context
 
 from tardis.tardis_portal.auth import decorators as authz
 from tardis.tardis_portal.models import Dataset
-from tardis.tardis_portal.models import Dataset_File
-from tardis.tardis_portal.models import Replica
-from tardis.tardis_portal.models import Location
+from tardis.tardis_portal.models import DataFile
 from tardis.tardis_portal.shortcuts import render_response_index
 from tardis.tardis_portal.staging import write_uploaded_file_to_dataset
 
@@ -64,18 +62,10 @@ def fpupload(request, dataset_id):
                     pass
                 else:
                     picked_file = fp.get_file()
-                    filepath = write_uploaded_file_to_dataset(dataset,
-                                                              picked_file)
-                    datafile = Dataset_File(dataset=dataset,
-                                            filename=picked_file.name,
-                                            size=picked_file.size)
-                    replica = Replica(datafile=datafile,
-                                      url=filepath,
-                                      protocol='',
-                                      location=Location.get_default_location())
-                    replica.verify(allowEmptyChecksums=True)
+                    datafile = DataFile(dataset=dataset,
+                                        filename=picked_file.name,
+                                        size=picked_file.size)
                     datafile.save()
-                    replica.datafile = datafile
-                    replica.save()
+                    datafile.file_object = picked_file
 
     return HttpResponse(json.dumps({"result": True}))

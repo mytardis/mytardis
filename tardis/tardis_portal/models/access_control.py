@@ -7,6 +7,7 @@ from django.contrib.contenttypes import generic
 
 from django.db import models
 from django.db.models import Q
+from django.db.models.signals import post_save
 
 
 class UserProfile(models.Model):
@@ -26,6 +27,10 @@ class UserProfile(models.Model):
     # False.
     isDjangoAccount = models.BooleanField(
         null=False, blank=False, default=True)
+
+    # This field is supplied by AAF's Rapid Connect service.
+    rapidConnectEduPersonTargetedID = models.CharField(
+        max_length=400, null=True, blank=True)
 
     class Meta:
         app_label = 'tardis_portal'
@@ -196,6 +201,7 @@ class ObjectACL(models.Model):
     class Meta:
         app_label = 'tardis_portal'
         ordering = ['content_type', 'object_id']
+        verbose_name = "Object ACL"
 
     @classmethod
     def get_effective_query(cls):
@@ -204,3 +210,10 @@ class ObjectACL(models.Model):
             (Q(expiryDate__gte=datetime.today()) |
              Q(expiryDate__isnull=True))
         return acl_effective_query
+
+
+# ## ApiKey hooks
+if getattr(settings, 'AUTOGENERATE_API_KEY', False):
+    from django.contrib.auth.models import User
+    from tastypie.models import create_api_key
+    post_save.connect(create_api_key, sender=User, weak=False)

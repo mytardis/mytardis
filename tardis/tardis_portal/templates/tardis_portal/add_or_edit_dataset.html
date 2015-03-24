@@ -12,7 +12,7 @@
   {% endif %}
 </div>
 
-<form class="form-horizontal" method="post">
+<form class="form-horizontal" action="" method="post">{% csrf_token %}
 {{ form|bootstrap }}
 
 <div class="form-actions">

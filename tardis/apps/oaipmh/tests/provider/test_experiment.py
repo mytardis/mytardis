@@ -25,7 +25,7 @@ def _create_test_data():
                 email='voltaire@gmail.com')
     user.save()
     UserProfile(user=user).save()
-    return (_create_experiment(user, False), 
+    return (_create_experiment(user, False),
             _create_experiment(user, True), user)
 
 def _create_experiment(user, bad):
@@ -34,12 +34,12 @@ def _create_experiment(user, bad):
                             created_by=user)
     experiment.public_access = Experiment.PUBLIC_ACCESS_METADATA
     experiment.save()
-    experiment.author_experiment_set.create(order=0,
-                                            author="John Cleese",
-                                            url="http://nla.gov.au/nla.party-1")
-    experiment.author_experiment_set.create(order=1,
-                                            author="Michael Palin",
-                                            url="http://nla.gov.au/nla.party-2")
+    experiment.experimentauthor_set.create(order=0,
+                                           author="John Cleese",
+                                           url="http://nla.gov.au/nla.party-1")
+    experiment.experimentauthor_set.create(order=1,
+                                           author="Michael Palin",
+                                           url="http://nla.gov.au/nla.party-2")
     psm = ParameterSetManager(parentObject=experiment, schema=SCHEMA_URI)
     if bad:
         params = {'type': 'website',
@@ -52,7 +52,7 @@ def _create_experiment(user, bad):
     for k, v in params.items():
         psm.set_param(k, v)
     return experiment
-    
+
 
 class AbstractExperimentProviderTC():
     __metaclass__ = ABCMeta
@@ -95,7 +95,7 @@ class AbstractExperimentProviderTC():
             if not header.identifier().startswith('experiment'):
                 continue
             e = self._experiment if header.identifier() == 'experiment/1' \
-                else self._experiment2 
+                else self._experiment2
             expect(header.identifier()).to_contain(str(e.id))
             expect(header.datestamp().replace(tzinfo=pytz.utc)) \
                 .to_equal(get_local_time(e.update_time))

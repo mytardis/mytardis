@@ -12,7 +12,7 @@
 		{% endfor %}
 		</select>
 	</p>
-	<form id="add_metadata_form" action='/ajax/add_{{type}}_parameters/{{parentObject.id}}/{{schema.id}}/' method='post' data-type="{{type}}" data-parent_object_id="{{parentObject.id}}">
+	<form id="add_metadata_form" action='/ajax/add_{{type}}_parameters/{{parentObject.id}}/{{schema.id}}/' method='post' data-type="{{type}}" data-parent_object_id="{{parentObject.id}}">{% csrf_token %}
 		{{ form.non_field_errors }}
 	    {% for field in form %}
         <div class="fieldWrapper">

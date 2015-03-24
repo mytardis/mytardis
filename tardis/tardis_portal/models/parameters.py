@@ -1,9 +1,9 @@
+from django.contrib.contenttypes import generic
+from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.urlresolvers import reverse
 from django.conf import settings
 from django.db import models
-from django.db.models.signals import pre_save
-from django.dispatch import receiver
 from django.utils.safestring import mark_safe
 from django.utils.timezone import is_aware, is_naive, make_aware, make_naive
 
@@ -13,11 +13,14 @@ from tardis.tardis_portal.managers import OracleSafeManager,\
 
 from .experiment import Experiment
 from .dataset import Dataset
-from .datafile import Dataset_File
+from .datafile import DataFile
+from .storage import StorageBox
+from .instrument import Instrument
 
 import logging
 import operator
 import pytz
+import dateutil.parser
 
 LOCAL_TZ = pytz.timezone(settings.TIME_ZONE)
 logger = logging.getLogger(__name__)
@@ -37,17 +40,29 @@ class Schema(models.Model):
     DATASET = 2
     DATAFILE = 3
     NONE = 4
+    INSTRUMENT = 5
+
     _SCHEMA_TYPES = (
         (EXPERIMENT, 'Experiment schema'),
         (DATASET, 'Dataset schema'),
         (DATAFILE, 'Datafile schema'),
+        (INSTRUMENT, 'Instrument schema'),
         (NONE, 'None')
+    )
+
+    _SCHEMA_TYPES_SHORT = (
+        (EXPERIMENT, 'experiment'),
+        (DATASET, 'dataset'),
+        (DATAFILE, 'datafile'),
+        (INSTRUMENT, 'instrument'),
+        (NONE, 'none')
     )
 
     namespace = models.URLField(unique=True,
                                 max_length=255)
     name = models.CharField(blank=True, null=True, max_length=50)
-    type = models.IntegerField( #@ReservedAssignment
+    # WHY 'type', a reserved word? Someone please refactor and migrate db
+    type = models.IntegerField(  # @ReservedAssignment
         choices=_SCHEMA_TYPES, default=EXPERIMENT)
 
     # subtype will be used for categorising the type of experiment, dataset
@@ -70,8 +85,8 @@ class Schema(models.Model):
 
     @classmethod
     def getSubTypes(cls):
-        return set([schema.subtype for schema in Schema.objects.all() \
-            if schema.subtype])
+        return set([schema.subtype for schema in Schema.objects.all()
+                    if schema.subtype])
 
     @classmethod
     def getNamespaces(cls, type_, subtype=None):
@@ -86,9 +101,33 @@ class Schema(models.Model):
             return [schema.namespace for schema in
                     Schema.objects.filter(type=type_)]
 
+    @classmethod
+    def get_schema_type_name(cls, schema_type, short=False):
+        if short:
+            type_list = cls._SCHEMA_TYPES_SHORT
+        else:
+            type_list = cls._SCHEMA_TYPES
+        return dict(type_list).get(schema_type, None)
+
+    @classmethod
+    def get_internal_schema(cls, schema_type):
+        name_prefix, ns_prefix = getattr(
+            settings, 'INTERNAL_SCHEMA_PREFIXES',
+            ('internal schema', 'http://mytardis.org/schemas/internal'))
+        type_name = cls.get_schema_type_name(schema_type)
+        name = name_prefix + ': ' + type_name
+        type_name_short = cls.get_schema_type_name(schema_type, short=True)
+        ns = '/'.join([ns_prefix, type_name_short])
+        return Schema.objects.get_or_create(
+            name=name,
+            namespace=ns,
+            type=schema_type,
+            hidden=True)[0]
+
     def __unicode__(self):
-        return self._getSchemaTypeName(self.type) + (self.subtype and ' for ' +
-            self.subtype.upper() or '') + ': ' + self.namespace
+        return self._getSchemaTypeName(self.type) + (
+            self.subtype and ' for ' + self.subtype.upper() or ''
+        ) + ': ' + self.namespace
 
     class UnsupportedType(Exception):
 
@@ -110,7 +149,7 @@ class ParameterName(models.Model):
         (EXACT_VALUE_COMPARISON, 'Exact value'),
         (CONTAINS_COMPARISON, 'Contains'),
         # TODO: enable this next time if i figure out how to support
-        #(NOT_EQUAL_COMPARISON, 'Not equal'),
+        # (NOT_EQUAL_COMPARISON, 'Not equal'),
         (RANGE_COMPARISON, 'Range'),
         (GREATER_THAN_COMPARISON, 'Greater than'),
         (GREATER_THAN_EQUAL_COMPARISON, 'Greater than or equal'),
@@ -224,7 +263,7 @@ def _getParameter(parameter):
             viewname = ''
             args = []
             if parset == 'DatafileParameterSet':
-                dfid = parameter.parameterset.dataset_file.id
+                dfid = parameter.parameterset.datafile.id
                 psid = parameter.parameterset.id
                 viewname = 'tardis.tardis_portal.views.display_datafile_image'
                 args = [dfid, psid, parameter.name]
@@ -239,6 +278,11 @@ def _getParameter(parameter):
                 viewname = 'tardis.tardis_portal.views.'
                 'display_experiment_image'
                 args = [eid, psid, parameter.name]
+            elif parset == 'InstrumentParameterSet':
+                iid = parameter.parameterset.instrument.id
+                psid = parameter.parameterset.id
+                # viewname = 'tardis.tardis_portal.views.display_instrument_image'
+                args = [iid, psid, parameter.name]
             if viewname:
                 value = "<img src='%s' />" % reverse(viewname=viewname,
                                                      args=args)
@@ -275,9 +319,9 @@ def _getParameter(parameter):
             if viewname:
                 value = "<a href='%s' target='_blank'><img style='width: 300px;' src='%s' /></a>" % \
                      (reverse(viewname=viewname,
-                     args=[parameter.id]),
-                     reverse(viewname=viewname,
-                     args=[parameter.id]))
+                              args=[parameter.id]),
+                      reverse(viewname=viewname,
+                              args=[parameter.id]))
                 return mark_safe(value)
         else:
             return parameter.string_value
@@ -292,6 +336,8 @@ def _getParameter(parameter):
 
 class ParameterSet(models.Model, ParameterSetManagerMixin):
     schema = models.ForeignKey(Schema)
+    storage_box = models.ManyToManyField(
+        StorageBox, related_name='%(class)ss')
     parameter_class = None
 
     class Meta:
@@ -347,6 +393,9 @@ class Parameter(models.Model):
     string_value = models.TextField(null=True, blank=True, db_index=True)
     numerical_value = models.FloatField(null=True, blank=True, db_index=True)
     datetime_value = models.DateTimeField(null=True, blank=True, db_index=True)
+    link_id = models.PositiveIntegerField(null=True, blank=True)
+    link_ct = models.ForeignKey(ContentType, null=True, blank=True)
+    link_gfk = generic.GenericForeignKey('link_ct', 'link_id')
     objects = OracleSafeManager()
     parameter_type = 'Abstract'
 
@@ -365,15 +414,45 @@ class Parameter(models.Model):
         except:
             return 'Unitialised %sParameter' % self.parameter_type
 
+    @property
+    def link_url(self):
+        if not self.name.isLink():
+            return None
+        if isinstance(self.link_gfk, DataFile):
+            url = reverse('tardis.tardis_portal.views.view_dataset',
+                          kwargs={'dataset_id': self.link_gfk.dataset.id})
+        elif isinstance(self.link_gfk, Dataset):
+            url = reverse('tardis.tardis_portal.views.view_dataset',
+                          kwargs={'dataset_id': self.link_id})
+        elif isinstance(self.link_gfk, Experiment):
+            url = reverse('tardis.tardis_portal.views.view_experiment',
+                          kwargs={'experiment_id': self.link_id})
+        else:
+            raise NotImplementedError
+        return url
+
     def set_value(self, value):
+        """
+        Sets the parameter value, converting into the appropriate data type.
+        Deals with date/time strings that are timezone naive or aware, based
+        on the USE_TZ setting.
+
+        :param value: a string (or string-like) representing the value
+        :return:
+        """
         if self.name.isNumeric():
             self.numerical_value = float(value)
         elif self.name.isDateTime():
-            if settings.USE_TZ and is_naive(value):
-                value = make_aware(value, LOCAL_TZ)
-            elif not settings.USE_TZ and is_aware(value):
-                value = make_naive(value, LOCAL_TZ)
-            self.datetime_value = value
+            # We convert the value string into datetime object.
+            # dateutil.parser detects and converts many date formats and is quite
+            # permissive in what it accepts (form validation and API input
+            # validation happens elsewhere and may be less permissive)
+            datevalue = dateutil.parser.parse(value)
+            if settings.USE_TZ and is_naive(datevalue):
+                datevalue = make_aware(value, LOCAL_TZ)
+            elif not settings.USE_TZ and is_aware(datevalue):
+                datevalue = make_naive(datevalue, LOCAL_TZ)
+            self.datetime_value = datevalue
         else:
             self.string_value = unicode(value)
 
@@ -415,12 +494,17 @@ class ExperimentParameter(Parameter):
             logger.exception('')
 
 
+class InstrumentParameter(Parameter):
+    parameterset = models.ForeignKey('InstrumentParameterSet')
+    parameter_type = 'Instrument'
+
+
 class DatafileParameterSet(ParameterSet):
-    dataset_file = models.ForeignKey(Dataset_File)
+    datafile = models.ForeignKey(DataFile)
     parameter_class = DatafileParameter
 
     def _get_label(self):
-        return ('dataset_file.filename', 'Datafile')
+        return ('datafile.filename', 'Datafile')
 
 
 class DatasetParameterSet(ParameterSet):
@@ -429,6 +513,14 @@ class DatasetParameterSet(ParameterSet):
 
     def _get_label(self):
         return ('dataset.description', 'Dataset')
+
+
+class InstrumentParameterSet(ParameterSet):
+    instrument = models.ForeignKey(Instrument)
+    parameter_class = InstrumentParameter
+
+    def _get_label(self):
+        return ('instrument.name', 'Instrument')
 
 
 class ExperimentParameterSet(ParameterSet):

@@ -1,6 +1,45 @@
 Changelog
 =========
 
+3.6 - 16 March 2015
+-------------------
+
+* removed legacy operations files (foreman, apache, uwsgi, etc)
+* moved CI from Travis CI to Semaphore app
+* removed buildout build system and setup.py dependency management
+* build instructions in build.sh, using requirements.txt for dependencies now
+* gunicorn instead of uwsgi
+* updated Django to version 1.6.10
+* removed migrations app
+* renamed ``Dataset_File`` to ``DataFile``
+* ``DataFile`` have a ``deleted`` and a ``version`` flag, for upcoming support
+  of these features.
+* verifying files does not have side-effects anymore
+* renamed ``Author_Experiment`` to ``ExperimentAuthor``
+* an ``ExperimentAuthor`` can now have an email and or a URL
+* recoded ``Replica`` and ``Location`` as ``DataFileObject`` with associated
+  ``StorageBox``, based on the Django File API
+* API v1 got some additions, largely or fully backwards-compatible
+* a publication workflow app, guided publication of data
+* download data via SFTP using a built-in SFTP server
+* removed most traces of METS
+* AAF authentication support
+* parameters that can store a generic foreign key (link to any database
+  object)
+* new models ``Instrument`` and ``Facility``
+* basic support for SquashFS archives as ``StorageBox``. Probably requires
+  installation-specific code such as what is used at the `Australian
+  Synchrotron <https://github.com/grischa/synch-squash-parser>`_.
+* error pages are no normal-sized
+* new view "Facility Overview", for facility administrators to have overview
+  over data.
+* "MyData" includes owned and shared data
+* safely allowing HTML in descriptions now. Achieved by "bleaching" of tags
+* stats page faster through DB-server-side aggregation
+* layout improvements
+* pep8 and pylint improvements
+* bug fixes
+
 3.5 - 26 August 2013
 --------------------
 

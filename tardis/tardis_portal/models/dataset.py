@@ -1,12 +1,15 @@
 from os import path
 
+from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.db import models
 
 from tardis.tardis_portal.managers import OracleSafeManager
 from tardis.tardis_portal.models.fields import DirectoryField
+from tardis.tardis_portal.models.storage import StorageBox
 
 from .experiment import Experiment
+from .instrument import Instrument
 
 import logging
 logger = logging.getLogger(__name__)
@@ -17,6 +20,10 @@ class Dataset(models.Model):
 
     :attribute experiment: a forign key to the
        :class:`tardis.tardis_portal.models.Experiment`
+    :attribute facility: the foreign key to the facility that generated
+        this data
+    :attribute instrument: the foreign key to the instrument that generated
+        this data
     :attribute description: description of this dataset
     """
 
@@ -24,6 +31,7 @@ class Dataset(models.Model):
     description = models.TextField(blank=True)
     directory = DirectoryField(blank=True, null=True)
     immutable = models.BooleanField(default=False)
+    instrument = models.ForeignKey(Instrument, null=True, blank=True)
     objects = OracleSafeManager()
 
     class Meta:
@@ -58,6 +66,19 @@ class Dataset(models.Model):
         return ('tardis.tardis_portal.views.view_dataset', (),
                 {'dataset_id': self.id})
 
+    def get_download_urls(self):
+        view = 'tardis.tardis_portal.download.streaming_download_' \
+               'dataset'
+        urls = {}
+        for comptype in getattr(settings,
+                                'DEFAULT_ARCHIVE_FORMATS',
+                                ['tgz', 'tar']):
+            urls[comptype] = reverse(view, kwargs={
+                'dataset_id': self.id,
+                'comptype': comptype})
+
+        return urls
+
     @models.permalink
     def get_edit_url(self):
         """Return the absolute url to the edit view of the current
@@ -67,8 +88,8 @@ class Dataset(models.Model):
 
     def get_images(self):
         from .datafile import IMAGE_FILTER
-        images = self.dataset_file_set.order_by('filename')\
-                                      .filter(IMAGE_FILTER)
+        images = self.datafile_set.order_by('filename')\
+                                  .filter(IMAGE_FILTER)
         return images
 
     def _get_image(self):
@@ -91,8 +112,8 @@ class Dataset(models.Model):
                                'format': 'jpg'})
 
     def get_size(self):
-        from .datafile import Dataset_File
-        return Dataset_File.sum_sizes(self.dataset_file_set)
+        from .datafile import DataFile
+        return DataFile.sum_sizes(self.datafile_set)
 
     def _has_any_perm(self, user_obj):
         if not hasattr(self, 'id'):
@@ -111,3 +132,8 @@ class Dataset(models.Model):
         if self.immutable:
             return False
         return self._has_any_perm(user_obj)
+
+    def get_all_storage_boxes_used(self):
+        boxes = StorageBox.objects.filter(
+            file_objects__datafile__dataset=self)
+        return boxes

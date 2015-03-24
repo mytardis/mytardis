@@ -1,2 +1,0 @@
-concurrency: uwsgi=1,web=0,celerybeat=1,celeryd=1
-port: 3031

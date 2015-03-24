@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*- # pylint: disable=C0302
 #
 # Copyright (c) 2010-2011, Monash e-Research Centre
 #   (Monash University, Australia)
@@ -36,13 +36,15 @@ views.py
 .. moduleauthor:: Ulrich Felzmaann <ulrich.felzmann@versi.edu.au>
 
 """
+import time
+import re
 
-from tardis.tardis_portal.auth.decorators import has_datafile_download_access,\
+from tardis.tardis_portal.auth.decorators import \
     has_experiment_write, has_dataset_write
 
 from base64 import b64decode
 import urllib2
-from urllib import urlencode, urlopen
+from urllib import urlencode
 from urlparse import urlparse, parse_qs
 
 from os import path
@@ -52,29 +54,32 @@ from operator import itemgetter
 
 from django.template import Context
 from django.conf import settings
+from django.db import connection
 from django.db import transaction
-from django.db.models import Q, Sum
-from django.shortcuts import render_to_response, redirect
-from django.contrib.auth.models import User, Group, AnonymousUser
-from django.http import HttpResponseRedirect, HttpResponse, HttpResponseForbidden, HttpResponseNotFound
+from django.db.models import Q
+from django.shortcuts import render_to_response, redirect, render
+from django.contrib.auth.models import User, Group
+from django.http import HttpResponseRedirect, HttpResponse,\
+    HttpResponseForbidden, HttpResponseNotFound
 from django.contrib.auth.decorators import login_required, permission_required
 from django.core.urlresolvers import reverse
 from django.core.paginator import Paginator, InvalidPage, EmptyPage
 from django.core.exceptions import PermissionDenied
+from django.core.mail import EmailMessage
 from django.forms.models import model_to_dict
 from django.views.decorators.http import require_POST
 from django.views.decorators.cache import never_cache
 from django.contrib.sites.models import Site
 from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
-from django.template.defaultfilters import pluralize, filesizeformat
+from django.template.defaultfilters import filesizeformat
 
 from tardis.urls import getTardisApps
 from tardis.tardis_portal.forms import ExperimentForm, DatasetForm, \
     createSearchDatafileForm, createSearchDatafileSelectionForm, \
-    LoginForm, RegisterExperimentForm, createSearchExperimentForm, \
+    LoginForm, createSearchExperimentForm, \
     ChangeGroupPermissionsForm, ChangeUserPermissionsForm, \
-    ImportParamsForm, create_parameterset_edit_form, \
+    create_parameterset_edit_form, \
     save_datafile_edit_form, create_datafile_add_form,\
     save_datafile_add_form, MXDatafileSearchForm, RightsForm,\
     ManageAccountForm, CreateGroupPermissionsForm,\
@@ -83,30 +88,28 @@ from tardis.tardis_portal.forms import ExperimentForm, DatasetForm, \
 from tardis.tardis_portal.errors import UnsupportedSearchQueryTypeError
 
 from tardis.tardis_portal.staging import get_full_staging_path, \
-    write_uploaded_file_to_dataset, get_staging_url_and_size, \
     staging_list
 
-from tardis.tardis_portal.tasks import create_staging_datafiles,\
-    create_staging_datafile
+from tardis.tardis_portal.tasks import create_staging_datafiles
 
 from tardis.tardis_portal.models import Experiment, ExperimentParameter, \
-    DatafileParameter, DatasetParameter, ObjectACL, Dataset_File, \
+    DatafileParameter, DatasetParameter, ObjectACL, DataFile, \
     DatafileParameterSet, ParameterName, GroupAdmin, Schema, \
-    Dataset, Location, Replica, ExperimentParameterSet, DatasetParameterSet, \
+    Dataset, ExperimentParameterSet, DatasetParameterSet, \
     License, UserProfile, UserAuthentication, Token
 
+from tardis.tardis_portal.models.facility import facilities_managed_by
+
 from tardis.tardis_portal import constants
-from tardis.tardis_portal.auth.localdb_auth import django_user, django_group
+from tardis.tardis_portal.auth.localdb_auth import django_user
 from tardis.tardis_portal.auth.localdb_auth import auth_key as localdb_auth_key
 from tardis.tardis_portal.auth import decorators as authz
 from tardis.tardis_portal.auth import auth_service
 from tardis.tardis_portal.shortcuts import render_response_index, \
     return_response_error, return_response_not_found, \
-    render_response_search, render_error_message, \
-    get_experiment_referer
-from tardis.tardis_portal.metsparser import parseMets
-from tardis.tardis_portal.creativecommonshandler import CreativeCommonsHandler
+    render_response_search, get_experiment_referer
 from tardis.tardis_portal.hacks import oracle_dbops_hack
+from tardis.tardis_portal.util import generate_file_checksums
 from tardis.tardis_portal.util import render_public_access_badge
 
 from haystack.views import SearchView
@@ -116,14 +119,21 @@ from tardis.tardis_portal.forms import RawSearchForm
 from tardis.tardis_portal.search_backend import HighlightSearchBackend
 from django.contrib.auth import logout as django_logout
 
+from django.views.decorators.csrf import csrf_exempt
+import django.contrib.auth as djauth
+import jwt
+import pwgen
+from tardis.tardis_portal.models.jti import JTI
+
 logger = logging.getLogger(__name__)
 
-def get_dataset_info(dataset, include_thumbnail=False, exclude=None):
+
+def get_dataset_info(dataset, include_thumbnail=False, exclude=None):  # too complex # noqa
     obj = model_to_dict(dataset)
     if exclude is None or 'datafiles' not in exclude or 'file_count' \
        not in exclude:
         datafiles = list(
-            dataset.dataset_file_set.values_list('id', flat=True))
+            dataset.datafile_set.values_list('id', flat=True))
         if exclude is None or 'datafiles' not in exclude:
             obj['datafiles'] = datafiles
         if exclude is None or 'file_count' not in exclude:
@@ -156,7 +166,7 @@ def get_dataset_info(dataset, include_thumbnail=False, exclude=None):
 
 
 class HttpResponseMethodNotAllowed(HttpResponse):
-    status_code=303
+    status_code = 303
 
     def __init__(self, *args, **kwargs):
         super(HttpResponseMethodNotAllowed, self).__init__(*args, **kwargs)
@@ -167,7 +177,8 @@ class HttpResponseMethodNotAllowed(HttpResponse):
 
 
 class HttpResponseSeeAlso(HttpResponseRedirect):
-    status_code=303
+    status_code = 303
+
 
 def _redirect_303(*args, **kwargs):
     response = redirect(*args, **kwargs)
@@ -183,6 +194,11 @@ def getNewSearchDatafileSelectionForm(initial=None):
 def logout(request):
     if 'datafileResults' in request.session:
         del request.session['datafileResults']
+
+    # Remove AAF attributes.
+    del request.session['attributes']
+    del request.session['jwt']
+    del request.session['jws']
 
     c = Context({})
     return HttpResponse(render_response_index(request,
@@ -219,12 +235,14 @@ def site_settings(request):
 
                     x509 = open(settings.GRID_PROXY_FILE, 'r')
 
-                    c = Context({'baseurl': request.build_absolute_uri('/'),
+                    c = Context({
+                        'baseurl': request.build_absolute_uri('/'),
                         'proxy': x509.read(), 'filestorepath':
                         settings.FILE_STORE_PATH})
-                    return HttpResponse(render_response_index(request,
-                            'tardis_portal/site_settings.xml', c),
-                            mimetype='application/xml')
+                    return HttpResponse(render_response_index(
+                        request,
+                        'tardis_portal/site_settings.xml',
+                        c), mimetype='application/xml')
 
     return return_response_error(request)
 
@@ -239,7 +257,6 @@ def load_image(request, parameter):
     return HttpResponse(wrapper, mimetype=parameter.name.units)
 
 
-
 def load_experiment_image(request, parameter_id):
     parameter = ExperimentParameter.objects.get(pk=parameter_id)
     experiment_id = parameter.parameterset.experiment.id
@@ -252,7 +269,7 @@ def load_experiment_image(request, parameter_id):
 def load_dataset_image(request, parameter_id):
     parameter = DatasetParameter.objects.get(pk=parameter_id)
     dataset = parameter.parameterset.dataset
-    if  authz.has_dataset_access(request, dataset.id):
+    if authz.has_dataset_access(request, dataset.id):
         return load_image(request, parameter)
     else:
         return return_response_error(request)
@@ -263,8 +280,8 @@ def load_datafile_image(request, parameter_id):
         parameter = DatafileParameter.objects.get(pk=parameter_id)
     except DatafileParameter.DoesNotExist:
         return HttpResponseNotFound()
-    dataset_file = parameter.parameterset.dataset_file
-    if authz.has_datafile_access(request, dataset_file.id):
+    datafile = parameter.parameterset.datafile
+    if authz.has_datafile_access(request, datafile.id):
         return load_image(request, parameter)
     else:
         return return_response_error(request)
@@ -272,7 +289,7 @@ def load_datafile_image(request, parameter_id):
 
 @authz.experiment_access_required
 def display_experiment_image(
-    request, experiment_id, parameterset_id, parameter_name):
+        request, experiment_id, parameterset_id, parameter_name):
 
     # TODO handle not exist
 
@@ -287,7 +304,7 @@ def display_experiment_image(
 
 @authz.dataset_access_required
 def display_dataset_image(
-    request, dataset_id, parameterset_id, parameter_name):
+        request, dataset_id, parameterset_id, parameter_name):
 
     # TODO handle not exist
 
@@ -302,11 +319,11 @@ def display_dataset_image(
 
 @authz.datafile_access_required
 def display_datafile_image(
-    request, dataset_file_id, parameterset_id, parameter_name):
+        request, datafile_id, parameterset_id, parameter_name):
 
     # TODO handle not exist
 
-    if not authz.has_datafile_access(request, dataset_file_id):
+    if not authz.has_datafile_access(request, datafile_id):
         return return_response_error(request)
 
     image = DatafileParameter.objects.get(name__name=parameter_name,
@@ -330,9 +347,163 @@ def about(request):
                  'about_pressed': True,
                  'nav': [{'name': 'About', 'link': '/about/'}],
                  'version': settings.MYTARDIS_VERSION,
-             })
+                 })
     return HttpResponse(render_response_index(request,
                         'tardis_portal/about.html', c))
+
+
+@login_required
+def my_data(request):
+    '''
+    show data with credential-based access
+    delegate to custom views depending on settings
+    '''
+
+    c = Context({
+        'owned_experiments': Experiment.safe.owned(request.user)
+        .order_by('-update_time'),
+        'shared_experiments': Experiment.safe.shared(request.user)
+        .order_by('-update_time'),
+    })
+    return HttpResponse(render_response_index(
+        request, 'tardis_portal/my_data.html', c))
+
+
+@login_required
+def facility_overview(request):
+    '''
+    summary of experiments in a facility
+    '''
+    return HttpResponse(render_response_index(
+        request, 'tardis_portal/facility_overview.html'))
+
+
+@never_cache
+@login_required
+def fetch_facility_data_count(request, facility_id):
+    '''
+    returns the total number of datasets for pagination in json format
+    '''
+
+    dataset_object_count = Dataset.objects.filter(
+        instrument__facility__manager_group__user=request.user,
+        instrument__facility__id=facility_id
+    ).count()
+    return HttpResponse(
+        json.dumps({'facility_data_count': dataset_object_count}),
+        mimetype='application/json')
+
+
+@never_cache
+@login_required
+def fetch_facility_data(request, facility_id, start_index, end_index):
+    '''
+    json facility datasets
+    '''
+
+    dataset_objects = Dataset.objects.filter(
+        instrument__facility__manager_group__user=request.user,
+        instrument__facility__id=facility_id
+    ).order_by('-id')[start_index:end_index]
+
+    def datetime_to_us(dt):
+        '''
+        The datetime objects are kept as None if they aren't set, otherwise
+        they're converted to milliseconds so AngularJS can format them nicely.
+        '''
+        if dt is None:
+            return None
+        return time.mktime(dt.timetuple()) * 1000 + dt.microsecond / 1000
+
+    # Select only the bits we want from the models
+    facility_data = []
+    for dataset in dataset_objects:
+        instrument = dataset.instrument
+        facility = instrument.facility
+        parent_experiment = dataset.experiments.all()[:1].get()
+        datafile_objects = DataFile.objects.filter(dataset=dataset)
+        owners = parent_experiment.get_owners()
+        datafiles = []
+        dataset_size = 0
+        verified_datafiles_count = 0
+        verified_datafiles_size = 0
+        for datafile in datafile_objects:
+            if datafile.verified:
+                verified = "Yes"
+                verified_datafiles_count += 1
+                verified_datafiles_size += int(datafile.size)
+            else:
+                verified = "No"
+                try:
+                    file_object_size = \
+                        datafile.file_object.size \
+                        if datafile.file_object else 0
+                    if file_object_size < int(datafile.size):
+                        verified = "No (%s of %s bytes uploaded)" \
+                            % ('{:,}'.format(file_object_size),
+                               '{:,}'.format(int(datafile.size)))
+                except IOError, e:
+                    verified = "No (0 of %s bytes uploaded)" \
+                        % '{:,}'.format(int(datafile.size))
+            datafiles.append({
+                "id": datafile.id,
+                "filename": datafile.filename,
+                "size": int(datafile.size),
+                "created_time": datetime_to_us(datafile.created_time),
+                "modification_time": datetime_to_us(datafile.modification_time),
+                "verified": verified,
+            })
+            dataset_size = dataset_size + int(datafile.size)
+        obj = {
+            "id": dataset.id,
+            "parent_experiment": {
+                "id": parent_experiment.id,
+                "title": parent_experiment.title,
+                "created_time": datetime_to_us(parent_experiment.created_time),
+            },
+            "description": dataset.description,
+            "institution": parent_experiment.institution_name,
+            "datafiles": datafiles,
+            "size": dataset_size,
+            "verified_datafiles_count": verified_datafiles_count,
+            "verified_datafiles_size": verified_datafiles_size,
+            "owner": ', '.join([o.username for o in owners]),
+            "instrument": {
+                "id": instrument.id,
+                "name": instrument.name,
+            },
+            "facility": {
+                "id": facility.id,
+                "name": facility.name,
+            },
+        }
+        facility_data.append(obj)
+
+    return HttpResponse(json.dumps(facility_data), mimetype='application/json')
+
+
+@never_cache
+@login_required
+def fetch_facilities_list(request):
+    '''
+    json list of facilities managed by the current user
+    '''
+    facility_data = []
+    for facility in facilities_managed_by(request.user):
+        facility_data.append({"id": facility.id, "name": facility.name})
+
+    return HttpResponse(json.dumps(facility_data), mimetype='application/json')
+
+
+def public_data(request):
+    '''
+    list of public experiments
+    '''
+    c = Context({
+        'public_experiments': Experiment.safe.public().order_by('-update_time'),
+    })
+    return HttpResponse(render_response_index(
+        request, 'tardis_portal/public_data.html', c))
 
 
 def experiment_index(request):
@@ -341,13 +512,14 @@ def experiment_index(request):
     else:
         return redirect('tardis_portal.experiment_list_public')
 
+
 @login_required
 def experiment_list_mine(request):
 
     c = Context({
         'subtitle': 'My Experiments',
         'can_see_private': True,
-        'experiments': authz.get_owned_experiments(request)\
+        'experiments': authz.get_owned_experiments(request)
                             .order_by('-update_time'),
     })
 
@@ -355,19 +527,21 @@ def experiment_list_mine(request):
     return HttpResponse(render_response_search(request,
                         'tardis_portal/experiment/list_mine.html', c))
 
+
 @login_required
 def experiment_list_shared(request):
 
     c = Context({
         'subtitle': 'Shared Experiments',
         'can_see_private': True,
-        'experiments': authz.get_shared_experiments(request) \
+        'experiments': authz.get_shared_experiments(request)
                             .order_by('-update_time'),
     })
 
     # TODO actually change loaders to load this based on stuff
     return HttpResponse(render_response_search(request,
                         'tardis_portal/experiment/list_shared.html', c))
+
 
 def experiment_list_public(request):
 
@@ -376,7 +550,7 @@ def experiment_list_public(request):
     c = Context({
         'subtitle': 'Public Experiments',
         'can_see_private': False,
-        'experiments': Experiment.objects.exclude(private_filter) \
+        'experiments': Experiment.objects.exclude(private_filter)
                                          .order_by('-update_time'),
     })
 
@@ -384,7 +558,7 @@ def experiment_list_public(request):
                         'tardis_portal/experiment/list_public.html', c))
 
 
-@authz.experiment_access_required
+@authz.experiment_access_required  # too complex # noqa
 def view_experiment(request, experiment_id,
                     template_name='tardis_portal/view_experiment.html'):
 
@@ -410,7 +584,8 @@ def view_experiment(request, experiment_id,
         namespaces = [ps.schema.namespace
                       for ps in experiment.getParameterSets()]
         for ns, view_fn in settings.EXPERIMENT_VIEWS:
-            if ns in namespaces:
+            ns_match = next((n for n in namespaces if re.match(ns, n)), None)
+            if ns_match:
                 x = view_fn.split(".")
                 mod_name, fn_name = (".".join(x[:-1]), x[-1])
                 try:
@@ -429,6 +604,8 @@ def view_experiment(request, experiment_id,
         authz.has_experiment_download_access(request, experiment_id)
     if request.user.is_authenticated():
         c['is_owner'] = authz.has_experiment_ownership(request, experiment_id)
+        c['has_read_or_owner_ACL'] = authz.has_read_or_owner_ACL(request,
+                                                                 experiment_id)
     c['subtitle'] = experiment.title
     c['nav'] = [{'name': 'Data', 'link': '/experiment/view/'},
                 {'name': experiment.title,
@@ -440,30 +617,52 @@ def view_experiment(request, experiment_id,
         c['error'] = request.POST['error']
     if 'query' in request.GET:
         c['search_query'] = SearchQueryString(request.GET['query'])
-    if  'search' in request.GET:
+    if 'search' in request.GET:
         c['search'] = request.GET['search']
-    if  'load' in request.GET:
+    if 'load' in request.GET:
         c['load'] = request.GET['load']
 
     _add_protocols_and_organizations(request, experiment, c)
 
-    import sys
+    default_apps = [
+        {'name': 'Description',
+         'viewfn': 'tardis.tardis_portal.views.experiment_description'},
+        {'name': 'Metadata',
+         'viewfn': 'tardis.tardis_portal.views.retrieve_experiment_metadata'},
+        {'name': 'Sharing', 'viewfn': 'tardis.tardis_portal.views.share'},
+        {'name': 'Transfer Datasets',
+         'viewfn': 'tardis.tardis_portal.views.experiment_dataset_transfer'},
+    ]
     appnames = []
     appurls = []
+
+    for app in getattr(settings, 'EXPERIMENT_APPS', default_apps):
+        try:
+            appnames.append(app['name'])
+            if 'viewfn' in app:
+                appurls.append(reverse(app['viewfn'], args=[experiment_id]))
+            elif 'url' in app:
+                appurls.append(app['url'])
+        except:
+            logger.debug('error when loading default exp apps')
+
+    import sys
     for app in getTardisApps():
         try:
-            appnames.append(sys.modules['%s.%s.settings'
-                                        % (settings.TARDIS_APP_ROOT, app)].NAME)
-            appurls.append('%s.%s.views.index' % (settings.TARDIS_APP_ROOT,
-                                                  app))
+            appnames.append(
+                sys.modules['%s.%s.settings'
+                            % (settings.TARDIS_APP_ROOT, app)].NAME)
+            appurls.append(
+                reverse('%s.%s.views.index' % (settings.TARDIS_APP_ROOT,
+                                               app), args=[experiment_id]))
         except:
             logger.debug("No tab for %s" % app)
 
     c['apps'] = zip(appurls, appnames)
-
     return HttpResponse(render_response_index(request, template_name, c))
 
-def _add_protocols_and_organizations(request, experiment, c):
+
+def _add_protocols_and_organizations(request, collection_object, c):
     """Add the protocol, format and organization details for
     archive requests.  Since the MacOSX archiver can't cope with
     streaming ZIP, the best way to avoid 'user disappointment'
@@ -477,9 +676,9 @@ def _add_protocols_and_organizations(request, experiment, c):
     else:
         cannot_do_zip = False
 
-    if experiment:
+    if collection_object:
         c['protocol'] = []
-        download_urls = experiment.get_download_urls()
+        download_urls = collection_object.get_download_urls()
         for key, value in download_urls.iteritems():
             if cannot_do_zip and key == 'zip':
                 continue
@@ -493,6 +692,7 @@ def _add_protocols_and_organizations(request, experiment, c):
     c['organization'] = get_download_organizations()
     c['default_organization'] = getattr(
         settings, 'DEFAULT_ARCHIVE_ORGANIZATION', 'classic')
+
 
 @authz.experiment_access_required
 def experiment_description(request, experiment_id):
@@ -520,15 +720,15 @@ def experiment_description(request, experiment_id):
                 {'name': experiment.title,
                  'link': experiment.get_absolute_url()}]
 
-    c['authors'] = experiment.author_experiment_set.all()
+    c['authors'] = experiment.experimentauthor_set.all()
 
     c['datafiles'] = \
-        Dataset_File.objects.filter(dataset__experiments=experiment_id)
+        DataFile.objects.filter(dataset__experiments=experiment_id)
 
     c['owners'] = experiment.get_owners()
 
     # calculate the sum of the datafile sizes
-    c['size'] = Dataset_File.sum_sizes(c['datafiles'])
+    c['size'] = DataFile.sum_sizes(c['datafiles'])
 
     c['has_download_permissions'] = \
         authz.has_experiment_download_access(request, experiment_id)
@@ -548,13 +748,15 @@ def experiment_description(request, experiment_id):
 
     return HttpResponse(render_response_index(request,
                         'tardis_portal/ajax/experiment_description.html', c))
-#
-# Class to manage switching between space separated search queries and
-# '+' separated search queries (for addition to urls
-#
-# TODO This would probably be better handled with filters
-#
+
+
 class SearchQueryString():
+    """
+    Class to manage switching between space separated search queries and
+    '+' separated search queries (for addition to urls
+
+    TODO This would probably be better handled with filters
+    """
 
     def __init__(self, query_string):
         import re
@@ -568,14 +770,14 @@ class SearchQueryString():
     def __unicode__(self):
         return ' '.join(self.query_terms)
 
-    def  url_safe_query(self):
+    def url_safe_query(self):
         return '+'.join(self.query_terms)
 
     def query_string(self):
         return self.__unicode__()
 
 
-@authz.dataset_access_required
+@authz.dataset_access_required  # too complex # noqa
 def view_dataset(request, dataset_id):
     """Displays a Dataset and associated information.
 
@@ -612,7 +814,7 @@ def view_dataset(request, dataset_id):
         # need to fix.
         pgresults = 100
 
-        paginator = Paginator(dataset.dataset_file_set.all(), pgresults)
+        paginator = Paginator(dataset.datafile_set.all(), pgresults)
 
         try:
             page = int(request.GET.get('page', '1'))
@@ -626,7 +828,7 @@ def view_dataset(request, dataset_id):
         except (EmptyPage, InvalidPage):
             return paginator.page(paginator.num_pages)
 
-    upload_method = getattr(settings, "UPLOAD_METHOD", "uploadify")
+    upload_method = getattr(settings, "UPLOAD_METHOD", False)
 
     c = Context({
         'dataset': dataset,
@@ -634,16 +836,16 @@ def view_dataset(request, dataset_id):
         'parametersets': dataset.getParameterSets()
                                 .exclude(schema__hidden=True),
         'has_download_permissions':
-            authz.has_dataset_download_access(request, dataset_id),
+        authz.has_dataset_download_access(request, dataset_id),
         'has_write_permissions':
-            authz.has_dataset_write(request, dataset_id),
+        authz.has_dataset_write(request, dataset_id),
         'from_experiment':
-            get_experiment_referer(request, dataset_id),
+        get_experiment_referer(request, dataset_id),
         'other_experiments':
-            authz.get_accessible_experiments_for_dataset(request, dataset_id),
+        authz.get_accessible_experiments_for_dataset(request, dataset_id),
         'upload_method': upload_method
     })
-    _add_protocols_and_organizations(request, None, c)
+    _add_protocols_and_organizations(request, dataset, c)
     return HttpResponse(render_response_index(
         request, 'tardis_portal/view_dataset.html', c))
 
@@ -651,10 +853,12 @@ def view_dataset(request, dataset_id):
 @never_cache
 @authz.experiment_access_required
 def experiment_datasets(request, experiment_id):
-    return view_experiment(request, experiment_id=experiment_id,
-                           template_name='tardis_portal/ajax/experiment_datasets.html')
+    return view_experiment(
+        request, experiment_id=experiment_id,
+        template_name='tardis_portal/ajax/experiment_datasets.html')
 
-@never_cache
+
+@never_cache  # too complex # noqa
 @authz.dataset_access_required
 def dataset_json(request, experiment_id=None, dataset_id=None):
     # Experiment ID is optional (but dataset_id is not)!
@@ -684,7 +888,7 @@ def dataset_json(request, experiment_id=None, dataset_id=None):
             if authz.has_experiment_ownership(request, experiment_id):
                 experiment = Experiment.safe.get(request.user, experiment_id)
                 logger.info("Adding dataset #%d to experiment #%d" %
-                    (dataset.id, experiment.id))
+                            (dataset.id, experiment.id))
                 dataset.experiments.add(experiment)
 
     # Update this experiment to add it to more experiments
@@ -696,20 +900,23 @@ def dataset_json(request, experiment_id=None, dataset_id=None):
         # Detect if any experiments are new, and add the dataset to them
         add_experiments(frozenset(data['experiments']))
         # Include the experiment we PUT to, as it may also be new
-        if not experiment == None:
+        if experiment is not None:
             add_experiments(frozenset((experiment.id,)))
         dataset.save()
 
     # Remove this dataset from the given experiment
     if request.method == 'DELETE':
         # First, we need an experiment
-        if experiment_id == None:
-            # As the experiment is in the URL, this method will never be allowed
+        if experiment_id is None:
+            # As the experiment is in the URL, this method will never be
+            # allowed
             if can_update():
                 return HttpResponseMethodNotAllowed(allow="GET PUT")
             return HttpResponseMethodNotAllowed(allow="GET")
-        # Cannot remove if this is the last experiment
-        if not can_delete() or dataset.experiments.count() < 2:
+        # Cannot remove if this is the last experiment or if it is being
+        # removed from a publication
+        if (not can_delete() or dataset.experiments.count() < 2 or
+           experiment.is_publication()):
             return HttpResponseForbidden()
         dataset.experiments.remove(experiment)
         dataset.save()
@@ -752,19 +959,21 @@ def experiment_dataset_transfer(request, experiment_id):
                        args=[placeholder]).replace(placeholder,
                                                    '{{experiment_id}}')
 
-    c = Context({
-                 'experiments': experiments.exclude(id=experiment_id),
+    c = Context({'experiments': experiments.exclude(id=experiment_id),
                  'url_pattern': get_json_url_pattern()
                  })
-    return HttpResponse(render_response_index(request,
-                        'tardis_portal/ajax/experiment_dataset_transfer.html',
-                        c))
+    return HttpResponse(render_response_index(
+        request,
+        'tardis_portal/ajax/experiment_dataset_transfer.html',
+        c))
+
 
 @authz.dataset_access_required
 def retrieve_dataset_metadata(request, dataset_id):
     dataset = Dataset.objects.get(pk=dataset_id)
     has_write_permissions = authz.has_dataset_write(request, dataset_id)
-    parametersets = dataset.datasetparameterset_set.exclude(schema__hidden=True)
+    parametersets = dataset.datasetparameterset_set.exclude(
+        schema__hidden=True)
 
     c = Context({'dataset': dataset,
                  'parametersets': parametersets,
@@ -787,6 +996,7 @@ def retrieve_experiment_metadata(request, experiment_id):
                  'has_write_permissions': has_write_permissions})
     return HttpResponse(render_response_index(request,
                         'tardis_portal/ajax/experiment_metadata.html', c))
+
 
 @permission_required('tardis_portal.add_experiment')
 @login_required
@@ -845,32 +1055,6 @@ def create_experiment(request,
     return HttpResponse(render_response_index(request, template_name, c))
 
 
-@never_cache
-@authz.experiment_access_required
-def metsexport_experiment(request, experiment_id):
-
-    force_http_urls = 'force_http_urls' in request.GET
-
-    from django.contrib.sites.models import Site
-    if force_http_urls:
-        protocol = ""
-        if request.is_secure():
-            protocol = "s"
-        force_http_urls = "http%s://%s" % (protocol, Site.objects.get_current().domain)
-
-    from os.path import basename
-    from django.core.servers.basehttp import FileWrapper
-    from tardis.tardis_portal.metsexporter import MetsExporter
-    exporter = MetsExporter()
-    filename = exporter.export(experiment_id,
-                               force_http_urls=force_http_urls)
-    response = HttpResponse(FileWrapper(file(filename)),
-                            mimetype='application')
-    response['Content-Disposition'] = \
-        'attachment; filename="%s"' % basename(filename)
-    return response
-
-
 @login_required
 @permission_required('tardis_portal.change_experiment')
 @authz.write_permissions_required
@@ -890,8 +1074,7 @@ def edit_experiment(request, experiment_id,
     experiment = Experiment.objects.get(id=experiment_id)
 
     c = Context({'subtitle': 'Edit Experiment',
-                 'experiment_id': experiment_id,
-              })
+                 'experiment_id': experiment_id, })
 
     if request.method == 'POST':
         form = ExperimentForm(data=request.POST, instance=experiment, extra=0)
@@ -922,7 +1105,6 @@ def login(request):
     handler for login page
     '''
     from tardis.tardis_portal.auth import auth_service
-    from django.contrib.auth import login
 
     if request.user.is_authenticated():
         # redirect the user to the home page if he is trying to go to the
@@ -941,12 +1123,13 @@ def login(request):
             next_page = request.POST.get(
                 'next_page', request.GET.get('next_page', '/'))
             user.backend = 'django.contrib.auth.backends.ModelBackend'
-            login(request, user)
+            djauth.login(request, user)
             return HttpResponseRedirect(next_page)
 
         c = Context({'status': "Sorry, username and password don't match.",
                      'error': True,
                      'loginForm': LoginForm()})
+
         return HttpResponseForbidden(
             render_response_index(request, 'tardis_portal/login.html', c))
 
@@ -958,6 +1141,10 @@ def login(request):
         next_page = '/'
     c = Context({'loginForm': LoginForm(),
                  'next_page': next_page})
+
+    c['RAPID_CONNECT_ENABLED'] = settings.RAPID_CONNECT_ENABLED
+    c['RAPID_CONNECT_LOGIN_URL'] = settings.RAPID_CONNECT_CONFIG[
+        'authnrequest_url']
 
     return HttpResponse(render_response_index(request,
                         'tardis_portal/login.html', c))
@@ -986,159 +1173,9 @@ def manage_auth_methods(request):
         return list_auth_methods(request)
 
 
-# TODO removed username from arguments
-@transaction.commit_on_success
-def _registerExperimentDocument(filename, created_by, expid=None,
-                                owners=[], username=None):
-    '''
-    Register the experiment document and return the experiment id.
-
-    :param filename: path of the document to parse (METS or notMETS)
-    :type filename: string
-    :param created_by: a User instance
-    :type created_by: :py:class:`django.contrib.auth.models.User`
-    :param expid: the experiment ID to use
-    :type expid: int
-    :param owners: a list of owners
-    :type owner: list
-    :param username: **UNUSED**
-    :rtype: int
-
-    '''
-
-
-    f = open(filename)
-    firstline = f.readline()
-    f.close()
-
-    logger.debug('processing METS')
-    eid, sync_root = parseMets(filename, created_by, expid)
-
-    auth_key = ''
-    try:
-        auth_key = settings.DEFAULT_AUTH
-    except AttributeError:
-        logger.error('no default authentication for experiment ownership set (settings.DEFAULT_AUTH)')
-
-    force_user_create = False
-    try:
-        force_user_create = settings.DEFAULT_AUTH_FORCE_USER_CREATE
-    except AttributeError:
-        pass
-
-    if auth_key:
-        for owner in owners:
-            # for each PI
-            if not owner:
-                continue
-
-            owner_username = None
-            if '@' in owner:
-                owner_username = auth_service.getUsernameByEmail(auth_key,
-                                    owner)
-            if not owner_username:
-                owner_username = owner
-
-            owner_user = auth_service.getUser(auth_key, owner_username,
-                      force_user_create=force_user_create)
-            # if exist, create ACL
-            if owner_user:
-                logger.debug('registering owner: ' + owner)
-                e = Experiment.objects.get(pk=eid)
-
-                acl = ObjectACL(content_object=e.get_ct(),
-                                object_id=e.id,
-                                pluginId=django_user,
-                                entityId=str(owner_user.id),
-                                canRead=True,
-                                canWrite=True,
-                                canDelete=True,
-                                isOwner=True,
-                                aclOwnershipType=ObjectACL.OWNER_OWNED)
-                acl.save()
-
-    return (eid, sync_root)
-
-
-# web service
-def register_experiment_ws_xmldata(request):
-
-    status = ''
-    if request.method == 'POST':  # If the form has been submitted...
-
-        # A form bound to the POST data
-        form = RegisterExperimentForm(request.POST, request.FILES)
-        if form.is_valid():  # All validation rules pass
-
-            xmldata = request.FILES['xmldata']
-            username = form.cleaned_data['username']
-            origin_id = form.cleaned_data['originid']
-            from_url = form.cleaned_data['from_url']
-
-            user = auth_service.authenticate(request=request,
-                                             authMethod=localdb_auth_key)
-            if user:
-                if not user.is_active:
-                    return return_response_error(request)
-            else:
-                return return_response_error(request)
-
-            e = Experiment(
-                title='Placeholder Title',
-                approved=True,
-                created_by=user,
-                )
-            e.save()
-            local_id = e.id
-
-            filename = path.join(e.get_or_create_directory(),
-                                 'mets_upload.xml')
-            f = open(filename, 'wb+')
-            for chunk in xmldata.chunks():
-                f.write(chunk)
-            f.close()
-
-            logger.info('=== processing experiment: START')
-            owners = request.POST.getlist('experiment_owner')
-            try:
-                _, sync_path = _registerExperimentDocument(filename=filename,
-                                                           created_by=user,
-                                                           expid=local_id,
-                                                           owners=owners,
-                                                           username=username)
-                logger.info('=== processing experiment %s: DONE' % local_id)
-            except:
-                logger.exception('=== processing experiment %s: FAILED!' % local_id)
-                return return_response_error(request)
-
-            if from_url:
-                logger.info('Sending received_remote signal')
-                from tardis.tardis_portal.signals import received_remote
-                received_remote.send(sender=Experiment,
-                        instance=e,
-                        uid=origin_id,
-                        from_url=from_url,
-                        sync_path=sync_path)
-
-            response = HttpResponse(str(sync_path), status=200)
-            response['Location'] = request.build_absolute_uri(
-                '/experiment/view/' + str(local_id))
-            return response
-    else:
-        form = RegisterExperimentForm()  # An unbound form
-
-    c = Context({
-        'form': form,
-        'status': status,
-        'subtitle': 'Register Experiment',
-        'searchDatafileSelectionForm': getNewSearchDatafileSelectionForm()})
-    return HttpResponse(render_response_index(request,
-                        'tardis_portal/register_experiment.html', c))
-
-
 @never_cache
 @authz.datafile_access_required
-def display_datafile_details(request, dataset_file_id):
+def display_datafile_details(request, datafile_id):
     """
     Displays a box, with a list of interaction options depending on
     the file type given and displays the one with the highest priority
@@ -1147,7 +1184,7 @@ def display_datafile_details(request, dataset_file_id):
     Given URLs are called with the datafile id appended.
     """
     # retrieve valid interactions for file type
-    the_file = Dataset_File.objects.get(id=dataset_file_id)
+    the_file = DataFile.objects.get(id=datafile_id)
     the_schemas = [p.schema.namespace for p in the_file.getParameterSets()]
     default_view = "Datafile Metadata"
     apps = [
@@ -1158,14 +1195,14 @@ def display_datafile_details(request, dataset_file_id):
     views = []
     for ns, url in apps:
         if ns == default_view:
-            views.append({"url": "%s/%s/" % (url, dataset_file_id),
+            views.append({"url": "%s/%s/" % (url, datafile_id),
                           "name": default_view})
         elif ns in the_schemas:
             schema = Schema.objects.get(namespace__exact=ns)
-            views.append({"url": "%s/%s/" % (url, dataset_file_id),
+            views.append({"url": "%s/%s/" % (url, datafile_id),
                           "name": schema.name})
     context = Context({
-        'datafile_id': dataset_file_id,
+        'datafile_id': datafile_id,
         'views': views,
     })
     return HttpResponse(render_response_index(
@@ -1176,13 +1213,13 @@ def display_datafile_details(request, dataset_file_id):
 
 @never_cache
 @authz.datafile_access_required
-def retrieve_parameters(request, dataset_file_id):
+def retrieve_parameters(request, datafile_id):
 
     parametersets = DatafileParameterSet.objects.all()
-    parametersets = parametersets.filter(dataset_file__pk=dataset_file_id)\
+    parametersets = parametersets.filter(datafile__pk=datafile_id)\
                                  .exclude(schema__hidden=True)
 
-    datafile = Dataset_File.objects.get(id=dataset_file_id)
+    datafile = DataFile.objects.get(id=datafile_id)
     dataset_id = datafile.dataset.id
     has_write_permissions = authz.has_dataset_write(request, dataset_id)
 
@@ -1190,15 +1227,17 @@ def retrieve_parameters(request, dataset_file_id):
                  'datafile': datafile,
                  'has_write_permissions': has_write_permissions,
                  'has_download_permissions':
-                 authz.has_dataset_download_access(request, dataset_id) })
+                 authz.has_dataset_download_access(request, dataset_id)})
 
     return HttpResponse(render_response_index(request,
                         'tardis_portal/ajax/parameters.html', c))
 
 
-@never_cache
+@never_cache  # too complex # noqa
 @authz.dataset_access_required
-def retrieve_datafile_list(request, dataset_id, template_name='tardis_portal/ajax/datafile_list.html'):
+def retrieve_datafile_list(
+        request, dataset_id,
+        template_name='tardis_portal/ajax/datafile_list.html'):
 
     params = {}
 
@@ -1208,23 +1247,27 @@ def retrieve_datafile_list(request, dataset_id, template_name='tardis_portal/aja
     if 'query' in request.GET:
         search_query = FacetFixedSearchQuery(backend=HighlightSearchBackend())
         sqs = SearchQuerySet(query=search_query)
-        query =  SearchQueryString(request.GET['query'])
-        results = sqs.raw_search(query.query_string() + ' AND dataset_id_stored:%i' % (int(dataset_id))).load_all()
-        highlighted_dsf_pks = [int(r.pk) for r in results if r.model_name == 'dataset_file' and r.dataset_id_stored == int(dataset_id)]
+        query = SearchQueryString(request.GET['query'])
+        results = sqs.raw_search(
+            query.query_string() + ' AND dataset_id_stored:%i' %
+            (int(dataset_id))).load_all()
+        highlighted_dsf_pks = [int(r.pk) for r in results
+                               if r.model_name == 'datafile' and
+                               r.dataset_id_stored == int(dataset_id)]
 
         params['query'] = query.query_string()
 
     elif 'datafileResults' in request.session and 'search' in request.GET:
-        highlighted_dsf_pks = [r.pk for r in request.session['datafileResults']]
+        highlighted_dsf_pks = [r.pk
+                               for r in request.session['datafileResults']]
 
     dataset_results = \
-        Dataset_File.objects.filter(
+        DataFile.objects.filter(
             dataset__pk=dataset_id,
         ).order_by('filename')
 
     if request.GET.get('limit', False) and len(highlighted_dsf_pks):
-        dataset_results = \
-        dataset_results.filter(pk__in=highlighted_dsf_pks)
+        dataset_results = dataset_results.filter(pk__in=highlighted_dsf_pks)
         params['limit'] = request.GET['limit']
 
     filename_search = None
@@ -1274,13 +1317,14 @@ def retrieve_datafile_list(request, dataset_id, template_name='tardis_portal/aja
         'dataset': Dataset.objects.get(id=dataset_id),
         'filename_search': filename_search,
         'is_owner': is_owner,
-        'highlighted_dataset_files': highlighted_dsf_pks,
+        'highlighted_datafiles': highlighted_dsf_pks,
         'has_download_permissions': has_download_permissions,
         'has_write_permissions': has_write_permissions,
-        'search_query' : query,
-        'params' : params
+        'search_query': query,
+        'params': params
 
         })
+    _add_protocols_and_organizations(request, None, c)
     return HttpResponse(render_response_index(request, template_name, c))
 
 
@@ -1327,7 +1371,7 @@ def search_experiment(request):
         result = {}
         result['sr'] = e
         result['dataset_hit'] = False
-        result['dataset_file_hit'] = False
+        result['datafile_hit'] = False
         result['experiment_hit'] = True
         results.append(result)
     c = Context({'header': 'Search Experiment',
@@ -1344,17 +1388,17 @@ def search_quick(request):
     if 'results' in request.GET:
         get = True
         if 'quicksearch' in request.GET \
-            and len(request.GET['quicksearch']) > 0:
+           and len(request.GET['quicksearch']) > 0:
             experiments = \
                 experiments.filter(
-                title__icontains=request.GET['quicksearch']) | \
+                    title__icontains=request.GET['quicksearch']) | \
                 experiments.filter(
-                institution_name__icontains=request.GET['quicksearch']) | \
+                    institution_name__icontains=request.GET['quicksearch']) | \
                 experiments.filter(
-                author_experiment__author__name__icontains=request.GET[
-                'quicksearch']) | \
+                    experimentauthor__author__name__icontains=request.GET[
+                        'quicksearch']) | \
                 experiments.filter(
-                pdbid__pdbid__icontains=request.GET['quicksearch'])
+                    pdbid__pdbid__icontains=request.GET['quicksearch'])
 
             experiments = experiments.distinct()
 
@@ -1383,7 +1427,7 @@ def __getFilteredDatafiles(request, searchQueryType, searchFilterData):
 
     datafile_results = authz.get_accessible_datafiles_for_user(request)
     logger.info('__getFilteredDatafiles: searchFilterData {0}'.
-        format(searchFilterData))
+                format(searchFilterData))
 
     # there's no need to do any filtering if we didn't find any
     # datafiles that the user has access to
@@ -1392,36 +1436,38 @@ def __getFilteredDatafiles(request, searchQueryType, searchFilterData):
                     access to any experiments""".format(request.user))
         return datafile_results
 
-    datafile_results = \
-        datafile_results.filter(
-datafileparameterset__datafileparameter__name__schema__namespace__in=Schema
-    .getNamespaces(
-        Schema.DATAFILE, searchQueryType)).distinct()
+    q = {
+        'datafileparameterset__datafileparameter__name__schema__namespace__in':
+        Schema.getNamespaces(Schema.DATAFILE, searchQueryType)
+    }
+    datafile_results = datafile_results.filter(**q).distinct()
 
     # if filename is searchable which i think will always be the case...
     if searchFilterData['filename'] != '':
         datafile_results = \
             datafile_results.filter(
-            filename__icontains=searchFilterData['filename'])
+                filename__icontains=searchFilterData['filename'])
     # TODO: might need to cache the result of this later on
 
     # get all the datafile parameters for the given schema
     parameters = [p for p in
-        ParameterName.objects.filter(
-        schema__namespace__in=Schema.getNamespaces(Schema.DATAFILE,
-        searchQueryType))]
+                  ParameterName.objects.filter(
+                      schema__namespace__in=Schema.getNamespaces(
+                          Schema.DATAFILE, searchQueryType))]
 
-    datafile_results = __filterParameters(parameters, datafile_results,
-            searchFilterData, 'datafileparameterset__datafileparameter')
+    datafile_results = __filterParameters(
+        parameters, datafile_results,
+        searchFilterData, 'datafileparameterset__datafileparameter')
 
     # get all the dataset parameters for given schema
     parameters = [p for p in
-        ParameterName.objects.filter(
-        schema__namespace__in=Schema.getNamespaces(Schema.DATASET,
-        searchQueryType))]
+                  ParameterName.objects.filter(
+                      schema__namespace__in=Schema.getNamespaces(
+                          Schema.DATASET, searchQueryType))]
 
-    datafile_results = __filterParameters(parameters, datafile_results,
-            searchFilterData, 'dataset__datasetparameterset__datasetparameter')
+    datafile_results = __filterParameters(
+        parameters, datafile_results,
+        searchFilterData, 'dataset__datasetparameterset__datasetparameter')
 
     # let's sort it in the end
 
@@ -1457,20 +1503,18 @@ def __getFilteredExperiments(request, searchFilterData):
     if searchFilterData['description'] != '':
         experiments = \
             experiments.filter(
-            description__icontains=searchFilterData['description'])
+                description__icontains=searchFilterData['description'])
 
     if searchFilterData['institutionName'] != '':
-        experiments = \
-            experiments.filter(
+        experiments = experiments.filter(
             institution_name__icontains=searchFilterData['institutionName'])
 
     if searchFilterData['creator'] != '':
-        experiments = \
-            experiments.filter(
-            author_experiment__author__icontains=searchFilterData['creator'])
+        experiments = experiments.filter(
+            experimentauthor__author__icontains=searchFilterData['creator'])
 
     date = searchFilterData['date']
-    if not date == None:
+    if date is not None:
         experiments = \
             experiments.filter(start_time__lt=date, end_time__gt=date)
 
@@ -1479,8 +1523,9 @@ def __getFilteredExperiments(request, searchFilterData):
     parameters = ParameterName.objects.filter(
         schema__namespace__in=exp_schema_namespaces, is_searchable=True)
 
-    experiments = __filterParameters(parameters, experiments,
-            searchFilterData, 'experimentparameterset__experimentparameter')
+    experiments = __filterParameters(
+        parameters, experiments,
+        searchFilterData, 'experimentparameterset__experimentparameter')
 
     # let's sort it in the end
     experiments = experiments.order_by('title')
@@ -1488,7 +1533,7 @@ def __getFilteredExperiments(request, searchFilterData):
     return experiments
 
 
-def __filterParameters(parameters, datafile_results,
+def __filterParameters(parameters, datafile_results,  # too complex # noqa
                        searchFilterData, paramType):
     """Go through each parameter and apply it as a filter (together with its
     specified comparator) on the provided list of datafiles.
@@ -1500,7 +1545,7 @@ def __filterParameters(parameters, datafile_results,
     :param searchFilterData: the cleaned up search form data
     :param paramType: either ``datafile`` or ``dataset``
     :type paramType: :py:class:`tardis.tardis_portal.models.Dataset` or
-       :py:class:`tardis.tardis_portal.models.Dataset_File`
+       :py:class:`tardis.tardis_portal.models.DataFile`
 
     :returns: A list of datafiles as a result of the query or None if the
       provided search request is invalid
@@ -1621,7 +1666,7 @@ def __filterParameters(parameters, datafile_results,
 
 
 def __forwardToSearchDatafileFormPage(request, searchQueryType,
-        searchForm=None):
+                                      searchForm=None):
     """Forward to the search data file form page."""
 
     # TODO: remove this later on when we have a more generic search form
@@ -1634,10 +1679,10 @@ def __forwardToSearchDatafileFormPage(request, searchQueryType,
 
     url = 'tardis_portal/search_datafile_form.html'
     if not searchForm:
-        #if searchQueryType == 'saxs':
+        # if searchQueryType == 'saxs':
         SearchDatafileForm = createSearchDatafileForm(searchQueryType)
         searchForm = SearchDatafileForm()
-        #else:
+        # else:
         #    # TODO: what do we need to do if the user didn't provide a page to
         #            display?
         #    pass
@@ -1722,15 +1767,15 @@ def __processDatafileParameters(request, searchQueryType, form):
        is the provided searchQueryType is not supported
     :returns: A list of datafiles as a result of the query or None if the
        provided search request is invalid.
-    :rtype: list of :py:class:`tardis.tardis_portal.models.Dataset_Files` or
+    :rtype: list of :py:class:`tardis.tardis_portal.models.DataFiles` or
        None
 
     """
 
     if form.is_valid():
 
-        datafile_results = __getFilteredDatafiles(request,
-            searchQueryType, form.cleaned_data)
+        datafile_results = __getFilteredDatafiles(
+            request, searchQueryType, form.cleaned_data)
 
         # let's cache the query with all the filters in the session so
         # we won't have to keep running the query all the time it is needed
@@ -1764,7 +1809,7 @@ def __processExperimentParameters(request, form):
         return None
 
 
-def search_datafile(request):
+def search_datafile(request):  # too complex # noqa
     """Either show the search datafile form or the result of the search
     datafile query.
 
@@ -1801,13 +1846,13 @@ def search_datafile(request):
                 datafile_results = request.session['datafileResults']
             else:
                 form = __getSearchDatafileForm(request, searchQueryType)
-                datafile_results = __processDatafileParameters(request,
-                    searchQueryType, form)
+                datafile_results = __processDatafileParameters(
+                    request, searchQueryType, form)
                 if datafile_results is not None:
                     bodyclass = 'list'
                 else:
-                    return __forwardToSearchDatafileFormPage(request,
-                        searchQueryType, form)
+                    return __forwardToSearchDatafileFormPage(
+                        request, searchQueryType, form)
         else:
             # display the form
             if 'datafileResults' in request.session:
@@ -1815,27 +1860,28 @@ def search_datafile(request):
             return __forwardToSearchDatafileFormPage(request, searchQueryType)
 
     # process the files to be displayed by the paginator...
-    #paginator = Paginator(datafile_results,
+    # paginator = Paginator(datafile_results,
     #                      constants.DATAFILE_RESULTS_PER_PAGE)
 
-    #try:
+    # try:
     #    page = int(request.GET.get('page', '1'))
-    #except ValueError:
+    # except ValueError:
     #    page = 1
 
     # If page request (9999) is out of :range, deliver last page of results.
-    #try:
+    # try:
     #    datafiles = paginator.page(page)
-    #except (EmptyPage, InvalidPage):
+    # except (EmptyPage, InvalidPage):
     #    datafiles = paginator.page(paginator.num_pages)
 
     import re
     cleanedUpQueryString = re.sub('&page=\d+', '',
-        request.META['QUERY_STRING'])
+                                  request.META['QUERY_STRING'])
 
     # get experiments associated with datafiles
     if datafile_results:
-        experiment_pks = list(set(datafile_results.values_list('dataset__experiments', flat=True)))
+        experiment_pks = list(set(datafile_results.values_list(
+            'dataset__experiments', flat=True)))
         experiments = Experiment.safe.in_bulk(experiment_pks)
     else:
         experiments = {}
@@ -1845,14 +1891,14 @@ def search_datafile(request):
         result = {}
         result['sr'] = e
         result['dataset_hit'] = False
-        result['dataset_file_hit'] = True
+        result['datafile_hit'] = True
         result['experiment_hit'] = False
         results.append(result)
 
     c = Context({
         'experiments': results,
         'datafiles': datafile_results,
-        #'paginator': paginator,
+        # 'paginator': paginator,
         'query_string': cleanedUpQueryString,
         'subtitle': 'Search Datafiles',
         'nav': [{'name': 'Search Datafile', 'link': '/search/datafile/'}],
@@ -1868,32 +1914,39 @@ def search_datafile(request):
 def retrieve_user_list(request):
     # TODO: Hook this up to authservice.searchUsers() to actually get
     # autocompletion data directly from auth backends.
-    # The following local DB query would be moved to auth.localdb_auth.SearchUsers.
+    # The following local DB query would be moved to
+    # auth.localdb_auth.SearchUsers.
     query = request.GET.get('q', '')
     limit = int(request.GET.get('limit', '10'))
 
     # Search all user fields and also the UserAuthentication username.
-    q = Q(username__icontains=query)   | \
+    q = Q(username__icontains=query) | \
         Q(email__icontains=query) | \
         Q(userprofile__userauthentication__username__icontains=query)
 
-    # Tokenize query string so "Bob Sm" matches (first_name~=Bob & last_name~=Smith).
+    # Tokenize query string so "Bob Sm" matches (first_name~=Bob &
+    # last_name~=Smith).
     tokens = query.split()
     if len(tokens) < 2:
         q |= Q(first_name__icontains=query.strip())
         q |= Q(last_name__icontains=query.strip())
     else:
-        q |= Q(first_name__icontains=' '.join(tokens[:-1])) & Q(last_name__icontains=tokens[-1])
+        q |= Q(first_name__icontains=' '.join(tokens[:-1])) &\
+            Q(last_name__icontains=tokens[-1])
 
     q_tokenuser = Q(username=settings.TOKEN_USERNAME)
-    users_query = User.objects.exclude(q_tokenuser).filter(q).distinct().select_related('userprofile')
+    users_query = User.objects\
+                      .exclude(q_tokenuser)\
+                      .filter(q).distinct() .select_related('userprofile')
 
-    # HACK FOR ORACLE - QUERY GENERATED DOES NOT WORK WITH LIMIT SO USING ITERATOR INSTEAD
+    # HACK FOR ORACLE - QUERY GENERATED DOES NOT WORK WITH LIMIT SO USING
+    # ITERATOR INSTEAD
     from itertools import islice
     first_n_users = list(islice(users_query, limit))
 
-    user_auths = list(UserAuthentication.objects.filter(userProfile__user__in=first_n_users))
-    auth_methods = dict( (ap[0], ap[1]) for ap in settings.AUTH_PROVIDERS)
+    user_auths = list(UserAuthentication.objects.filter(
+        userProfile__user__in=first_n_users))
+    auth_methods = dict((ap[0], ap[1]) for ap in settings.AUTH_PROVIDERS)
     """
     users = [ {
         "username": "ksr",
@@ -1908,18 +1961,19 @@ def retrieve_user_list(request):
         fields = ('first_name', 'last_name', 'username', 'email')
         # Convert attributes to dictionary keys and make sure all values
         # are strings.
-        user = dict( [ (k, str(getattr(u, k))) for k in fields ] )
+        user = dict([(k, str(getattr(u, k))) for k in fields])
         try:
-            user['auth_methods'] = [ '%s:%s:%s' % \
-                    (ua.username, ua.authenticationMethod, \
-                    auth_methods[ua.authenticationMethod]) \
-                    for ua in user_auths if ua.userProfile == u.get_profile() ]
+            user['auth_methods'] = [
+                '%s:%s:%s' %
+                (ua.username, ua.authenticationMethod,
+                 auth_methods[ua.authenticationMethod])
+                for ua in user_auths if ua.userProfile == u.get_profile()]
         except UserProfile.DoesNotExist:
             user['auth_methods'] = []
 
         if not user['auth_methods']:
-            user['auth_methods'] = [ '%s:localdb:%s' % \
-                    (u.username, auth_methods['localdb']) ]
+            user['auth_methods'] = ['%s:localdb:%s' %
+                                    (u.username, auth_methods['localdb'])]
         users.append(user)
 
     users.sort(key=itemgetter('first_name'))
@@ -1932,6 +1986,7 @@ def retrieve_group_list(request):
 
     grouplist = ' ~ '.join(map(str, Group.objects.all().order_by('name')))
     return HttpResponse(grouplist)
+
 
 def retrieve_field_list(request):
 
@@ -1949,12 +2004,14 @@ def retrieve_field_list(request):
 
     # Collect all of the indexed (searchable) fields, except
     # for the main search document ('text')
-    searchableFields = ([key + ':search_field' for key,f in allFields if f.indexed == True and key != 'text' ])
+    searchableFields = ([key + ':search_field' for key, f in allFields
+                         if f.indexed is True and key != 'text'])
 
     auto_list = usernames + searchableFields
 
     fieldList = '+'.join([str(fn) for fn in auto_list])
     return HttpResponse(fieldList)
+
 
 @never_cache
 @authz.experiment_ownership_required
@@ -1962,20 +2019,20 @@ def retrieve_access_list_user(request, experiment_id):
     from tardis.tardis_portal.forms import AddUserPermissionsForm
     user_acls = Experiment.safe.user_acls(experiment_id)
 
-    c = Context({ 'user_acls': user_acls, 'experiment_id': experiment_id,
-                 'addUserPermissionsForm': AddUserPermissionsForm() })
+    c = Context({'user_acls': user_acls, 'experiment_id': experiment_id,
+                 'addUserPermissionsForm': AddUserPermissionsForm()})
     return HttpResponse(render_response_index(request,
                         'tardis_portal/ajax/access_list_user.html', c))
 
 
 @never_cache
 def retrieve_access_list_user_readonly(request, experiment_id):
-    from tardis.tardis_portal.forms import AddUserPermissionsForm
     user_acls = Experiment.safe.user_acls(experiment_id)
 
-    c = Context({ 'user_acls': user_acls, 'experiment_id': experiment_id })
-    return HttpResponse(render_response_index(request,
-                        'tardis_portal/ajax/access_list_user_readonly.html', c))
+    c = Context({'user_acls': user_acls, 'experiment_id': experiment_id})
+    return HttpResponse(
+        render_response_index(
+            request, 'tardis_portal/ajax/access_list_user_readonly.html', c))
 
 
 @never_cache
@@ -2009,9 +2066,10 @@ def retrieve_access_list_group_readonly(request, experiment_id):
 
     c = Context({'experiment_id': experiment_id,
                  'group_acls_system_owned': group_acls_system_owned,
-                 'group_acls_user_owned': group_acls_user_owned })
-    return HttpResponse(render_response_index(request,
-                        'tardis_portal/ajax/access_list_group_readonly.html', c))
+                 'group_acls_user_owned': group_acls_user_owned})
+    return HttpResponse(render_response_index(
+        request,
+        'tardis_portal/ajax/access_list_group_readonly.html', c))
 
 
 @never_cache
@@ -2037,7 +2095,7 @@ def retrieve_access_list_tokens(request, experiment_id):
         query['token'] = token.token
         u = u._replace(query=urlencode(query, True))
         return u.geturl()
-        #return '%s?token=%s' % (request.META['HTTP_REFERER'], token.token)
+        # return '%s?token=%s' % (request.META['HTTP_REFERER'], token.token)
     tokens = [{'expiry_date': token.expiry_date,
                'user': token.user,
                'url': request.build_absolute_uri(token_url(token)),
@@ -2093,7 +2151,7 @@ def manage_groups(request):
                         'tardis_portal/manage_group_members.html', c))
 
 
-@never_cache
+@never_cache  # too complex # noqa
 @authz.group_ownership_required
 def add_user_to_group(request, group_id, username):
 
@@ -2112,7 +2170,8 @@ def add_user_to_group(request, group_id, username):
         if authMethod == localdb_auth_key:
             user = User.objects.get(username=username)
         else:
-            user = UserAuthentication.objects.get(username=username,
+            user = UserAuthentication.objects.get(
+                username=username,
                 authenticationMethod=authMethod).userProfile.user
     except User.DoesNotExist:
         return return_response_error(request)
@@ -2136,8 +2195,9 @@ def add_user_to_group(request, group_id, username):
         groupadmin.save()
 
     c = Context({'user': user, 'group_id': group_id, 'isAdmin': isAdmin})
-    return HttpResponse(render_response_index(request,
-         'tardis_portal/ajax/add_user_to_group_result.html', c))
+    return HttpResponse(render_response_index(
+        request,
+        'tardis_portal/ajax/add_user_to_group_result.html', c))
 
 
 @never_cache
@@ -2172,8 +2232,8 @@ def remove_user_from_group(request, group_id, username):
     return HttpResponse('OK')
 
 
-@never_cache
-@transaction.commit_on_success
+@never_cache  # too complex # noqa
+@transaction.atomic
 @authz.experiment_ownership_required
 def add_experiment_access_user(request, experiment_id, username):
 
@@ -2207,7 +2267,7 @@ def add_experiment_access_user(request, experiment_id, username):
         experiment = Experiment.objects.get(pk=experiment_id)
     except Experiment.DoesNotExist:
         return HttpResponse('Experiment (id=%d) does not exist.'
-            % (experiment.id))
+                            % (experiment.id))
 
     acl = ObjectACL.objects.filter(
         content_type=experiment.get_ct(),
@@ -2233,7 +2293,8 @@ def add_experiment_access_user(request, experiment_id, username):
                      'username': username,
                      'experiment_id': experiment_id})
 
-        return HttpResponse(render_response_index(request,
+        return HttpResponse(render_response_index(
+            request,
             'tardis_portal/ajax/add_user_result.html', c))
 
     return HttpResponse('User already has experiment access.')
@@ -2308,10 +2369,10 @@ def change_user_permissions(request, experiment_id, username):
         form = ChangeUserPermissionsForm(instance=acl)
         c = Context({'form': form,
                      'header':
-                         "Change User Permissions for '%s'" % user.username})
+                     "Change User Permissions for '%s'" % user.username})
 
-    return HttpResponse(render_response_index(request,
-                            'tardis_portal/form_template.html', c))
+    return HttpResponse(render_response_index(
+        request, 'tardis_portal/form_template.html', c))
 
 
 @never_cache
@@ -2361,18 +2422,20 @@ def change_group_permissions(request, experiment_id, group_id):
     c = Context({'form': form,
                  'header': "Change Group Permissions for '%s'" % group.name})
 
-    return HttpResponse(render_response_index(request,
-                            'tardis_portal/form_template.html', c))
+    return HttpResponse(render_response_index(
+        request, 'tardis_portal/form_template.html', c))
 
 
-@transaction.commit_on_success
+@transaction.atomic  # too complex # noqa
 @never_cache
 def create_group(request):
 
-    if not 'group' in request.GET:
-        c = Context({'createGroupPermissionsForm': CreateGroupPermissionsForm() })
+    if 'group' not in request.GET:
+        c = Context({'createGroupPermissionsForm':
+                     CreateGroupPermissionsForm()})
 
-        response = HttpResponse(render_response_index(request,
+        response = HttpResponse(render_response_index(
+            request,
             'tardis_portal/ajax/create_group.html', c))
         return response
 
@@ -2394,21 +2457,23 @@ def create_group(request):
         group.save()
     except:
         transaction.rollback()
-        return HttpResponse('Could not create group %s ' \
-        '(It is likely that it already exists)' % (groupname))
-
+        return HttpResponse('Could not create group %s '
+                            '(It is likely that it already exists)' %
+                            (groupname))
 
     adminuser = None
     if admin:
         if admin == settings.TOKEN_USERNAME:
             transaction.rollback()
-            return HttpResponse('User %s does not exist' % (settings.TOKEN_USERNAME))
+            return HttpResponse('User %s does not exist' %
+                                (settings.TOKEN_USERNAME))
         try:
             authMethod = request.GET['authMethod']
             if authMethod == localdb_auth_key:
                 adminuser = User.objects.get(username=admin)
             else:
-                adminuser = UserAuthentication.objects.get(username=admin,
+                adminuser = UserAuthentication.objects.get(
+                    username=admin,
                     authenticationMethod=authMethod).userProfile.user
 
         except User.DoesNotExist:
@@ -2438,51 +2503,31 @@ def create_group(request):
     c = Context({'group': group})
     transaction.commit()
 
-    response = HttpResponse(render_response_index(request,
+    response = HttpResponse(render_response_index(
+        request,
         'tardis_portal/ajax/create_group.html', c))
     return response
 
 
-@never_cache
-@transaction.commit_manually
+@never_cache  # too complex # noqa
+@transaction.atomic
 @authz.experiment_ownership_required
 def add_experiment_access_group(request, experiment_id, groupname):
 
-    create = False
-    canRead = False
-    canWrite = False
-    canDelete = False
-    isOwner = False
-    authMethod = localdb_auth_key
-    admin = None
-
-    if 'canRead' in request.GET:
-        if request.GET['canRead'] == 'true':
-            canRead = True
-
-    if 'canWrite' in request.GET:
-        if request.GET['canWrite'] == 'true':
-            canWrite = True
-
-    if 'canDelete' in request.GET:
-        if request.GET['canDelete'] == 'true':
-            canDelete = True
-
-    if 'isOwner' in request.GET:
-        if request.GET['isOwner'] == 'true':
-            isOwner = True
+    canRead = request.GET.get('canRead') == 'true'
+    canWrite = request.GET.get('canWrite') == 'true'
+    canDelete = request.GET.get('canDelete') == 'true'
+    isOwner = request.GET.get('isOwner') == 'true'
 
     try:
         experiment = Experiment.objects.get(pk=experiment_id)
     except Experiment.DoesNotExist:
-        transaction.rollback()
         return HttpResponse('Experiment (id=%d) does not exist' %
                             (experiment_id))
 
     try:
         group = Group.objects.get(name=groupname)
     except Group.DoesNotExist:
-        transaction.rollback()
         return HttpResponse('Group %s does not exist' % (groupname))
 
     acl = ObjectACL.objects.filter(
@@ -2494,9 +2539,9 @@ def add_experiment_access_group(request, experiment_id, groupname):
 
     if acl.count() > 0:
         # An ACL already exists for this experiment/group.
-        transaction.rollback()
-        return HttpResponse('Could not create group %s ' \
-            '(It is likely that it already exists)' % (groupname))
+        return HttpResponse('Could not create group %s '
+                            '(It is likely that it already exists)' %
+                            (groupname))
 
     acl = ObjectACL(content_object=experiment,
                     pluginId='django_group',
@@ -2511,10 +2556,9 @@ def add_experiment_access_group(request, experiment_id, groupname):
     c = Context({'group': group,
                 'group_acl': acl,
                  'experiment_id': experiment_id})
-    response = HttpResponse(render_response_index(request,
+    return HttpResponse(render_response_index(
+        request,
         'tardis_portal/ajax/add_group_result.html', c))
-    transaction.commit()
-    return response
 
 
 @never_cache
@@ -2550,26 +2594,35 @@ def remove_experiment_access_group(request, experiment_id, group_id):
 
     return HttpResponse('')
 
+
 def stats(request):
     # using count() is more efficient than using len() on a query set
+    cursor = connection.cursor()
+    if cursor.db.vendor == 'postgresql':
+        cursor.execute("SELECT SUM(size::bigint) FROM tardis_portal_datafile")
+        datafile_size = int(cursor.fetchone()[0])
+    else:
+        datafile_size = DataFile.sum_sizes(DataFile.objects.all())
     c = Context({
         'experiment_count': Experiment.objects.all().count(),
         'dataset_count': Dataset.objects.all().count(),
-        'datafile_count': Dataset_File.objects.all().count(),
-        'datafile_size': Dataset_File.sum_sizes(Dataset_File.objects.all()),
+        'datafile_count': DataFile.objects.all().count(),
+        'datafile_size': datafile_size,
     })
     return HttpResponse(render_response_index(request,
                         'tardis_portal/stats.html', c))
 
 
-@transaction.commit_on_success
+@transaction.atomic  # too complex # noqa
 @never_cache
 def create_user(request):
 
-    if not 'user' in request.POST:
-        c = Context({'createUserPermissionsForm': CreateUserPermissionsForm() })
+    if 'user' not in request.POST:
+        c = Context({'createUserPermissionsForm':
+                     CreateUserPermissionsForm()})
 
-        response = HttpResponse(render_response_index(request,
+        response = HttpResponse(render_response_index(
+            request,
             'tardis_portal/ajax/create_user.html', c))
         return response
 
@@ -2601,86 +2654,23 @@ def create_user(request):
         authentication.save()
 
     except ValidationError:
-        return HttpResponse('Could not create user %s ' \
-        '(Email address is invalid: %s)' % (username, email), status=403)
+        return HttpResponse('Could not create user %s '
+                            '(Email address is invalid: %s)' %
+                            (username, email), status=403)
     except:
         transaction.rollback()
-        return HttpResponse('Could not create user %s ' \
-        '(It is likely that this username already exists)' % (username), status=403)
+        return HttpResponse(
+            'Could not create user %s '
+            '(It is likely that this username already exists)' %
+            (username), status=403)
 
     c = Context({'user_created': username})
     transaction.commit()
 
-    response = HttpResponse(render_response_index(request,
+    response = HttpResponse(render_response_index(
+        request,
         'tardis_portal/ajax/create_user.html', c))
     return response
-
-
-def import_params(request):
-    if request.method == 'POST':  # If the form has been submitted...
-
-        # A form bound to the POST data
-        form = ImportParamsForm(request.POST, request.FILES)
-        if form.is_valid():  # All validation rules pass
-
-            params = request.FILES['params']
-            username = form.cleaned_data['username']
-            password = form.cleaned_data['password']
-
-            from django.contrib.auth import authenticate
-            user = authenticate(username=username, password=password)
-            if user is not None:
-                if not user.is_active or not user.is_staff:
-                    return return_response_error(request)
-            else:
-                return return_response_error(request)
-
-            i = 0
-            for line in params:
-                if i == 0:
-                    prefix = line
-                    logger.debug(prefix)
-                elif i == 1:
-                    schema = line
-                    logger.debug(schema)
-
-                    try:
-                        Schema.objects.get(namespace=schema)
-                        return HttpResponse('Schema already exists.')
-                    except Schema.DoesNotExist:
-                        schema_db = Schema(namespace=schema)
-                        # TODO: add the extra info that the Schema instance
-                        #       needs
-                        schema_db.save()
-                else:
-                    part = line.split('^')
-                    if len(part) == 4:
-
-                        is_numeric = False
-                        if part[3].strip(' \n\r') == 'True':
-                            is_numeric = True
-                        if is_numeric:
-                            pn = ParameterName(schema=schema_db,
-                                               name=part[0], full_name=part[1],
-                                               units=part[2],
-                                               data_type=ParameterName.NUMERIC)
-                        else:
-
-                            pn = ParameterName(schema=schema_db,
-                                               name=part[0], full_name=part[1],
-                                               units=part[2],
-                                               data_type=ParameterName.STRING)
-                        pn.save()
-
-                i = i + 1
-
-            return HttpResponse('OK')
-    else:
-        form = ImportParamsForm()
-
-    c = Context({'form': form, 'header': 'Import Parameters'})
-    return HttpResponse(render_response_index(request,
-                        'tardis_portal/form_template.html', c))
 
 
 def upload_complete(request,
@@ -2726,29 +2716,18 @@ def upload(request, dataset_id):
         if request.FILES:
 
             uploaded_file_post = request.FILES['Filedata']
-            filepath = write_uploaded_file_to_dataset(dataset,
-                                                      uploaded_file_post)
             logger.debug('done upload')
-            datafile = Dataset_File(dataset=dataset,
-                                    filename=uploaded_file_post.name,
-                                    size=uploaded_file_post.size)
+            md5, sha512, size, mimetype_buffer = generate_file_checksums(
+                uploaded_file_post)
+            datafile = DataFile(dataset=dataset,
+                                filename=uploaded_file_post.name,
+                                size=uploaded_file_post.size,
+                                md5sum=md5,
+                                sha512sum=sha512)
+            datafile.save(require_checksums=False)
             logger.debug('created file')
-            replica = Replica(datafile=datafile,
-                              url=filepath,
-                              protocol='',
-                              location=Location.get_default_location())
-            logger.debug('created replica')
-            try:
-                replica.verify(allowEmptyChecksums=True)
-            except Exception as e:
-                logger.error(e, exc_info=True)
-                raise e
-            logger.debug('verified')
-            datafile.save()
+            datafile.file_object = uploaded_file_post
             logger.debug('saved datafile')
-            replica.datafile = datafile
-            logger.debug('saved replica')
-            replica.save()
 
     return HttpResponse('True')
 
@@ -2767,9 +2746,11 @@ def import_staging_files(request, dataset_id):
     c = Context({
         'dataset_id': dataset_id,
         'staging_mount_prefix': settings.STAGING_MOUNT_PREFIX,
-        'staging_mount_user_suffix_enable': settings.STAGING_MOUNT_USER_SUFFIX_ENABLE
-     })
-    return render_to_response('tardis_portal/ajax/import_staging_files.html', c)
+        'staging_mount_user_suffix_enable':
+        settings.STAGING_MOUNT_USER_SUFFIX_ENABLE,
+    })
+    return HttpResponse(
+        render(request, 'tardis_portal/ajax/import_staging_files.html', c))
 
 
 def list_staging_files(request, dataset_id):
@@ -2795,8 +2776,9 @@ def list_staging_files(request, dataset_id):
     c = Context({
         'dataset_id': dataset_id,
         'directory_listing': staging_list(from_path, staging, root=root),
-     })
-    return render_to_response('tardis_portal/ajax/list_staging_files.html', c)
+    })
+    return HttpResponse(render(
+        request, 'tardis_portal/ajax/list_staging_files.html', c))
 
 
 @authz.dataset_write_permissions_required
@@ -2828,6 +2810,19 @@ def upload_files(request, dataset_id,
     return render_to_response(template_name, c)
 
 
+def remove_csrf_token(request):
+    '''
+    rather than fixing the form code that loops over all POST entries
+    indiscriminately, I am removing the csrf token with this hack.
+    This is only required in certain form code and can be removed should
+    this ever be fixed
+    '''
+    new_post_dict = request.POST.copy()
+    del(new_post_dict['csrfmiddlewaretoken'])
+    request.POST = new_post_dict
+    return request
+
+
 @login_required
 def edit_experiment_par(request, parameterset_id):
     parameterset = ExperimentParameterSet.objects.get(id=parameterset_id)
@@ -2849,7 +2844,7 @@ def edit_dataset_par(request, parameterset_id):
 @login_required
 def edit_datafile_par(request, parameterset_id):
     parameterset = DatafileParameterSet.objects.get(id=parameterset_id)
-    if authz.has_dataset_write(request, parameterset.dataset_file.dataset.id):
+    if authz.has_dataset_write(request, parameterset.datafile.dataset.id):
         return edit_parameters(request, parameterset, otype="datafile")
     else:
         return return_response_error(request)
@@ -2863,9 +2858,10 @@ def edit_parameters(request, parameterset, otype):
     valid = True
 
     if request.method == 'POST':
+        request = remove_csrf_token(request)
 
         class DynamicForm(create_parameterset_edit_form(
-            parameterset, request=request)):
+                parameterset, request=request)):
             pass
 
         form = DynamicForm(request.POST)
@@ -2880,7 +2876,7 @@ def edit_parameters(request, parameterset, otype):
     else:
 
         class DynamicForm(create_parameterset_edit_form(
-            parameterset)):
+                parameterset)):
             pass
 
         form = DynamicForm()
@@ -2901,7 +2897,7 @@ def edit_parameters(request, parameterset, otype):
 
 @login_required
 def add_datafile_par(request, datafile_id):
-    parentObject = Dataset_File.objects.get(id=datafile_id)
+    parentObject = DataFile.objects.get(id=datafile_id)
     if authz.has_dataset_write(request, parentObject.dataset.id):
         return add_par(request, parentObject,
                        otype="datafile", stype=Schema.DATAFILE)
@@ -2914,7 +2910,7 @@ def add_dataset_par(request, dataset_id):
     parentObject = Dataset.objects.get(id=dataset_id)
     if authz.has_dataset_write(request, parentObject.id):
         return add_par(request, parentObject, otype="dataset",
-                stype=Schema.DATASET)
+                       stype=Schema.DATASET)
     else:
         return return_response_error(request)
 
@@ -2924,7 +2920,7 @@ def add_experiment_par(request, experiment_id):
     parentObject = Experiment.objects.get(id=experiment_id)
     if authz.has_write_permissions(request, parentObject.id):
         return add_par(request, parentObject, otype="experiment",
-                stype=Schema.EXPERIMENT)
+                       stype=Schema.EXPERIMENT)
     else:
         return return_response_error(request)
 
@@ -2950,9 +2946,10 @@ def add_par(request, parentObject, otype, stype):
     valid = True
 
     if request.method == 'POST':
+        request = remove_csrf_token(request)
 
         class DynamicForm(create_datafile_add_form(
-            schema.namespace, parentObject, request=request)):
+                schema.namespace, parentObject, request=request)):
             pass
 
         form = DynamicForm(request.POST)
@@ -2967,7 +2964,7 @@ def add_par(request, parentObject, otype, stype):
     else:
 
         class DynamicForm(create_datafile_add_form(
-            schema.namespace, parentObject)):
+                schema.namespace, parentObject)):
             pass
 
         form = DynamicForm()
@@ -2987,40 +2984,46 @@ def add_par(request, parentObject, otype, stype):
     return HttpResponse(render_response_index(request,
                         'tardis_portal/ajax/parameteradd.html', c))
 
+
 class ExperimentSearchView(SearchView):
     def __name__(self):
         return "ExperimentSearchView"
 
     def extra_context(self):
         extra = super(ExperimentSearchView, self).extra_context()
-        # Results may contain Experiments, Datasets and Dataset_Files.
+        # Results may contain Experiments, Datasets and DataFiles.
         # Group them into experiments, noting whether or not the search
-        # hits were in the Dataset(s) or Dataset_File(s)
+        # hits were in the Dataset(s) or DataFile(s)
         results = self.results
-        facets =  results.facet_counts()
+        facets = results.facet_counts()
         if facets:
             experiment_facets = facets['fields']['experiment_id_stored']
-            experiment_ids = [ int(f[0]) for f in experiment_facets if int(f[1]) > 0 ]
+            experiment_ids = [int(f[0])
+                              for f in experiment_facets if int(f[1]) > 0]
         else:
             experiment_ids = []
-
 
         access_list = []
 
         if self.request.user.is_authenticated():
-            access_list.extend([e.pk for e in authz.get_accessible_experiments(self.request)])
+            access_list.extend(
+                [e.pk for e in
+                 authz.get_accessible_experiments(self.request)])
 
-        access_list.extend([e.pk for e in Experiment.objects.exclude(public_access=Experiment.PUBLIC_ACCESS_NONE)])
+        access_list.extend(
+            [e.pk for e in Experiment.objects.exclude(
+                public_access=Experiment.PUBLIC_ACCESS_NONE)])
 
         ids = list(set(experiment_ids) & set(access_list))
-        experiments = Experiment.objects.filter(pk__in=ids).order_by('-update_time')
+        experiments = Experiment.objects.filter(pk__in=ids)\
+                                        .order_by('-update_time')
 
         results = []
         for e in experiments:
             result = {}
             result['sr'] = e
             result['dataset_hit'] = False
-            result['dataset_file_hit'] = False
+            result['datafile_hit'] = False
             result['experiment_hit'] = False
             results.append(result)
 
@@ -3036,11 +3039,11 @@ class ExperimentSearchView(SearchView):
         # TODO this should just be done in the form clean...
         query = SearchQueryString(self.query)
         context = {
-                'search_query': query,
-                'form': self.form,
-                'page': page,
-                'paginator' : paginator,
-                }
+            'search_query': query,
+            'form': self.form,
+            'page': page,
+            'paginator': paginator,
+        }
         context.update(self.extra_context())
 
         return render_response_index(self.request, self.template, context)
@@ -3053,10 +3056,10 @@ def single_search(request):
     sqs.highlight()
 
     return ExperimentSearchView(
-            template = 'search/search.html',
-            searchqueryset=sqs,
-            form_class=RawSearchForm,
-            ).__call__(request)
+        template='search/search.html',
+        searchqueryset=sqs,
+        form_class=RawSearchForm,
+    ).__call__(request)
 
 
 def share(request, experiment_id):
@@ -3091,6 +3094,7 @@ def choose_rights(request, experiment_id):
     Choose access rights and licence.
     '''
     experiment = Experiment.objects.get(id=experiment_id)
+
     def is_valid_owner(owner):
         if not settings.REQUIRE_VALID_PUBLIC_CONTACTS:
             return True
@@ -3103,9 +3107,9 @@ def choose_rights(request, experiment_id):
     # Forbid access if no valid owner is available (and show error message)
     if not any([is_valid_owner(owner) for owner in experiment.get_owners()]):
         c = Context({'no_valid_owner': True, 'experiment': experiment})
-        return HttpResponseForbidden(\
-                    render_response_index(request, \
-                        'tardis_portal/ajax/unable_to_choose_rights.html', c))
+        return HttpResponseForbidden(render_response_index(
+            request,
+            'tardis_portal/ajax/unable_to_choose_rights.html', c))
 
     # Process form or prepopulate it
     if request.method == 'POST':
@@ -3115,8 +3119,8 @@ def choose_rights(request, experiment_id):
             experiment.license = form.cleaned_data['license']
             experiment.save()
     else:
-        form = RightsForm({ 'public_access': experiment.public_access,
-                            'license': experiment.license_id })
+        form = RightsForm({'public_access': experiment.public_access,
+                           'license': experiment.license_id})
 
     c = Context({'form': form, 'experiment': experiment})
     return HttpResponse(render_response_index(request,
@@ -3153,6 +3157,7 @@ def token_login(request, token):
     login(request, user)
     experiment = Experiment.objects.get(token__token=token)
     return HttpResponseRedirect(experiment.get_absolute_url())
+
 
 @authz.experiment_access_required
 def view_rifcs(request, experiment_id):
@@ -3230,6 +3235,7 @@ def manage_user_account(request):
     return HttpResponse(render_response_index(request,
                         'tardis_portal/manage_user_account.html', c))
 
+
 @login_required
 def add_dataset(request, experiment_id):
     if not has_experiment_write(request, experiment_id):
@@ -3254,6 +3260,7 @@ def add_dataset(request, experiment_id):
     return HttpResponse(render_response_index(request,
                         'tardis_portal/add_or_edit_dataset.html', c))
 
+
 @login_required
 def edit_dataset(request, dataset_id):
     if not has_dataset_write(request, dataset_id):
@@ -3275,12 +3282,12 @@ def edit_dataset(request, dataset_id):
     return HttpResponse(render_response_index(request,
                         'tardis_portal/add_or_edit_dataset.html', c))
 
+
 @login_required
 def stage_files_to_dataset(request, dataset_id):
     """
     Takes a JSON list of filenames to import from the staging area to this
     dataset.
-
     """
     if not has_dataset_write(request, dataset_id):
         return HttpResponseForbidden()
@@ -3307,3 +3314,108 @@ def stage_files_to_dataset(request, dataset_id):
 
     email = {'email': user.email}
     return HttpResponse(json.dumps(email), status=201)
+
+
+def user_guide(request):
+    c = Context({})
+    return HttpResponse(render_response_index(request,
+                        'tardis_portal/user_guide.html', c))
+
+
+@csrf_exempt
+def rcauth(request):
+    # Only POST is supported on this URL.
+    if request.method != 'POST':
+        raise PermissionDenied
+
+    # Rapid Connect authorization is disabled, so don't
+    # process anything.
+    if not settings.RAPID_CONNECT_ENABLED:
+        raise PermissionDenied
+
+    try:
+        # Verifies signature and expiry time
+        verified_jwt = jwt.decode(
+            request.POST['assertion'],
+            settings.RAPID_CONNECT_CONFIG['secret'],
+            audience=settings.RAPID_CONNECT_CONFIG['aud'])
+
+        # Check for a replay attack using the jti value.
+        jti = verified_jwt['jti']
+        if JTI.objects.filter(jti=jti).exists():
+            raise ValueError('Replay attack!')
+        else:
+            JTI(jti=jti).save()
+
+        if verified_jwt['aud'] == settings.RAPID_CONNECT_CONFIG['aud'] and \
+           verified_jwt['iss'] == settings.RAPID_CONNECT_CONFIG['iss']:
+            request.session['attributes'] = verified_jwt[
+                'https://aaf.edu.au/attributes']
+            request.session['jwt'] = verified_jwt
+            request.session['jws'] = request.POST['assertion']
+
+            institution_email = request.session['attributes']['mail']
+
+            logger.debug('Successfully authenticated %s via Rapid Connect.' %
+                         institution_email)
+
+            # Create a user account and profile automatically. In future,
+            # support blacklists and whitelists.
+            first_name = request.session['attributes']['givenname']
+            c_name = request.session['attributes'].get('cn', '').split(' ')
+            if not first_name and len(c_name) > 1:
+                first_name = c_name[0]
+            user_args = {
+                'id': institution_email.lower(),
+                'email': institution_email.lower(),
+                'password': pwgen.pwgen(),
+                'first_name': first_name,
+                'last_name': request.session['attributes']['surname'],
+            }
+
+            # Check for an email collision.
+            edupersontargetedid = request.session['attributes'][
+                'edupersontargetedid']
+            for matching_user in UserProfile.objects.filter(
+                    user__email=user_args['email']):
+                if matching_user.rapidConnectEduPersonTargetedID != \
+                   edupersontargetedid:
+                    del request.session['attributes']
+                    del request.session['jwt']
+                    del request.session['jws']
+                    django_logout(request)
+                    raise PermissionDenied
+
+            user = auth_service.get_or_create_user(user_args)
+            if user is not None:
+                user.backend = 'django.contrib.auth.backends.ModelBackend'
+                djauth.login(request, user)
+                return redirect('/')
+        else:
+            del request.session['attributes']
+            del request.session['jwt']
+            del request.session['jws']
+            django_logout(request)
+            raise PermissionDenied  # Error: Not for this audience
+    except jwt.ExpiredSignature:
+        del request.session['attributes']
+        del request.session['jwt']
+        del request.session['jws']
+        django_logout(request)
+        raise PermissionDenied  # Error: Security cookie has expired
+
+
+def feedback(request):
+    if request.method == 'POST':
+        feedback_data = json.loads(request.POST['data'])
+        message = feedback_data[0]['Issue']
+        img_base64 = feedback_data[1]
+        img = img_base64.replace('data:image/png;base64,', '').decode('base64')
+        admin_emails = [v for k, v in settings.ADMINS]
+        email = EmailMessage('[TARDIS] User feedback', message,
+                             'store.star.help@monash.edu', admin_emails)
+        email.attach('screenshot.png', img, 'image/png')
+        email.send()
+        return HttpResponse('OK')
+    else:
+        return redirect('/')

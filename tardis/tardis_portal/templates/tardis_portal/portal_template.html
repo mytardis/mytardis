@@ -1,10 +1,11 @@
 <!DOCTYPE html>
 {% load static from staticfiles %}
+{% load facility_tags %}
 <html lang="en"
       xmlns="http://www.w3.org/1999/xhtml"
       prefix="xsd: http://www.w3.org/2001/XMLSchema#
               dc: http://purl.org/dc/elements/1.1/"
-      class="no-js">
+      class="no-js" ng-app="MyTardis">
   <!--
     RDFa Core 1.1 uses the "prefix" element for namespace declarations.
 
@@ -29,7 +30,6 @@
 
     {% block script %}
     {% endblock script %}
-
 
     <script type="text/javascript">
     // Set active nav button
@@ -94,8 +94,14 @@
             <ul class="nav">
               <li><a href="{% url 'tardis.tardis_portal.views.index' %}">Home</a></li>
               <li><a href="{% url 'tardis.tardis_portal.views.about' %}">About</a></li>
-              <li><a href="{% url 'tardis.tardis_portal.views.experiment_index' %}">Data</a></li>
+              <li><a href="{% url 'tardis.tardis_portal.views.my_data' %}">My Data</a></li>
+              <li><a href="{% url 'tardis.tardis_portal.views.public_data' %}">Public Data</a></li>
               <li><a href="{% url 'tardis.tardis_portal.views.stats' %}">Stats</a></li>
+              {% with request|check_if_facility_manager as facility_manager %}
+              {% if facility_manager %}
+              <li><a href="{% url 'tardis.tardis_portal.views.facility_overview' %}">Facility Overview</a></li>
+              {% endif %}{% endwith %}
+              <li><a href="{% url 'tardis.tardis_portal.views.user_guide' %}"><b>Help</b></a></li>
             </ul>
             <ul class="login-nav nav pull-right">
             {% if is_authenticated %}
@@ -226,8 +232,20 @@
 	    }
 	};
       </script>
-
-      <div id="message-container" ></div>
+      
+      <div id="message-container"></div>
+      
+      {% if messages %}
+	  <div id="django-message-container" >
+        {% for message in messages %}
+        <p{% if message.tags %} class="alert alert-block alert-{{ message.tags }}"{% endif %}>
+        	<a class="close" data-dismiss="alert">&times;</a>
+        	{{ message }}
+        </p>
+        {% endfor %}
+      </div>
+      {% endif %}      
+      
       <div id="status-alert"
            class="alert alert-block {% if error %}alert-error{% endif %}"
            style="display: none">

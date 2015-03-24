@@ -1,6 +1,10 @@
 README for MyTARDIS
 ===================
 
+.. image:: https://badges.gitter.im/Join%20Chat.svg
+   :alt: Join the chat at https://gitter.im/mytardis/mytardis
+   :target: https://gitter.im/mytardis/mytardis?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
+
 MyTARDIS is a multi-institutional collaborative venture that facilitates the
 archiving and sharing of data and metadata collected at major facilities such
 as the Australian Synchrotron and ANSTO and within Institutions.
@@ -23,16 +27,20 @@ summarised as:
 Releases
 --------
 
-The `master` branch is the current stable release with all the latest bugfixes
+The default branch on GitHub is ``develop``. This is the cutting edge
+development version. Please DO NOT use this in production, as it may have bugs
+that eat your data.
+
+The ``master`` branch is the current stable release with all the latest bugfixes
 included. It will move to newer versions automatically. Follow this branch
 if you want to stay up to date in a production environment.
 
 Each version has its own branch named by version number. At the time of
-writing this is `3.5`. Follow this branch for your production installation and
+writing this is ``3.5``. Follow this branch for your production installation and
 perform version upgradres manually.
 
 Each bugfix or set of fixes bumps the minor version and each new release is
-tagged, eg. `3.5.2`. Use tagged releases if you are paranoid about changes to
+tagged, eg. ``3.5.2``. Use tagged releases if you are paranoid about changes to
 the code you have not tested yourself.
 
 To follow development, please see the contributing section below.
@@ -47,7 +55,7 @@ Bug reports and feature requests can be made via our `public issue tracker`_.
 Contributing
 ------------
 
-The `develop` branch is the cutting edge code base that all development is
+The ``develop`` branch is the cutting edge code base that all development is
 based upon.
 
 Send wishes, comments, etc. to tardis-devel@googlegroups.com.
@@ -61,5 +69,21 @@ New contributors are welcome, however all developers should review the
 Code Health Status
 ------------------
 
-.. image:: https://travis-ci.org/mytardis/mytardis.png?branch=master
-   :target: https://travis-ci.org/mytardis/mytardis
+Automatic build, once a day:
+
+.. image:: https://semaphoreapp.com/api/v1/projects/5d21cc89-645b-4793-bd78-cf525a0dcce2/345561/shields_badge.svg
+   :target: https://semaphoreapp.com/mytardis/mytardis
+   :alt: Semaphore build status
+
+
+Code analysis (just testing this out at the moment):
+
+.. image:: https://www.codacy.com/project/badge/c5899f09f2c545edaaf6d474e9e5e11e
+   :target: https://www.codacy.com/public/grischa/mytardis
+   :alt: Codacy Badge
+
+Code coverage
+
+.. image:: https://coveralls.io/repos/mytardis/mytardis/badge.svg?branch=develop
+  :target: https://coveralls.io/r/mytardis/mytardis?branch=develop
+  :alt: Coveralls Badge

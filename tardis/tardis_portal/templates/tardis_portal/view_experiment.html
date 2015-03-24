@@ -6,6 +6,7 @@
 {% load uploadify_tags %}
 {% load dynurl %}
 {% load mustachejs %}
+{% load bleach_tag %}
 
 {% block script %}
 
@@ -17,7 +18,12 @@
 {% mustachejs "tardis_portal/badges/size" %}
 
 <script type="text/javascript">
-
+var experiment_id={{ experiment.id }};
+var is_publication='{{ experiment.is_publication }}' === 'True';
+var is_publication_draft='{{ experiment.is_publication_draft }}' === 'True';
+</script>
+<script type="text/javascript" src="/static/publication-form/publication_form.js"></script>
+<script type="text/javascript">
     var toggle_files = function(loadCallback) {
         var $this = $(this);
         var $datafile_info_container = $this.parents('.dataset_datafiles').find('.datafile_list');
@@ -229,26 +235,42 @@ $('#modal-metadata .submit-button').click(function() {
 </script>
 
 <div class="page-header">
-  <h4>Experiment</h4>
-  {% if has_write_permissions and not experiment.public %}
-  <div class="pull-right">
+  <h4>
+    {% if experiment.is_publication %}
+    Publication{% if experiment.is_publication_draft %}<small style="font-style:italic;"> draft</small>{% endif %}
+    {% else %}Experiment
+    {% endif %}
+  </h4>
+  {% if not experiment.public %}
+  <div class="pull-right" ng-controller="publicationFormCtrl">
+    {% if has_read_or_owner_ACL %}
+    <a class="prepare_to_publish btn btn-mini btn-info"
+       title="Prepare To Publish" ng-click="openPublicationForm()" ng-show="isPublicationDraft || !isPublication">
+      <i class="icon-share"></i>
+      <span ng-hide="isPublication">Create publication</span>
+      <span ng-show="isPublicationDraft">Resume draft publication</span>
+    </a>
+    {% endif %}
+    {% if has_write_permissions %}
     <a class="btn btn-mini btn-warning" title="Edit Experiment"
-       href="{{ experiment.get_edit_url }}">
+       href="{{ experiment.get_edit_url }}" ng-hide="isPublication">
       <i class="icon-pencil"></i>
       Edit Experiment
     </a>
+    {% endif %}
   </div>
   {% endif %}
   <h1>
     <span property="dc:title">{{ experiment.title }}</span>
     <br/>
     <small>
-    {% for author in experiment.author_experiment_set.all %}{% capture as creator_span %}
+    {% for author in experiment.experimentauthor_set.all %}{% capture as creator_span %}
     <span property="dc:creator" style="white-space: nowrap;">
       {{ author.author }}</span>{% endcapture %}{% if not forloop.first %},
       {% endif %}
-      {% if author.url %}<a href="{{ author.url }}">{{ creator_span }}</a>{% else %}
-      {{ creator_span }}{% endif %}{% endfor %}
+      {% if author.email %}<a href="mailto:{{ author.email }}">{{ creator_span }}</a>{% endif %}
+      {% if author.url %}<a href="{{ author.url }}">{{ creator_span }}</a>{% endif %}
+      {% if not author.email and not author.url %}{{ creator_span }}{% endif %}{% endfor %}
     </small>
   </h1>
   <p style="text-align: right">
@@ -263,24 +285,21 @@ $('#modal-metadata .submit-button').click(function() {
 <div class="row-fluid" >
   <div class="span7">
   <div align="center" style="margin-bottom: -20px">
-  <div id="abstractHolder" style="display: none">{{ experiment.description|safe|linebreaksbr }}</div>
+  <div id="abstractHolder" style="display: none">{{ experiment.description|bleach|linebreaksbr }}</div>
   <a id="abstract-toggle" class="btn btn-mini" title="Show Description">
      Toggle Full Description
   </a>
   </div>
+  <div style="padding-top:10px;">
   <p class="abstract well info-box" property="dc:abstract">
       <span id="abstractText">
       </span>
   </p>
+  </div>
     <!-- Tab buttons -->
     <ul id="experiment-tabs" class="nav nav-pills">
-      <li><a data-toggle="tab" title="Description" href="{% url 'tardis.tardis_portal.views.experiment_description' experiment.id %}">Description</a></li>
-      <li><a data-toggle="tab" title="Metadata" href="{% url 'tardis.tardis_portal.views.retrieve_experiment_metadata' experiment.id %}">Metadata</a></li>
-        <li><a data-toggle="tab" title="Sharing" href="{% url 'tardis.tardis_portal.views.share' experiment.id %}">Sharing</a></li>
-        <li><a data-toggle="tab" title="Transfer Datasets" href="{% url 'tardis.tardis_portal.views.experiment_dataset_transfer' experiment.id %}">Transfer Datasets</a></li>
-      <!-- {{ apps }} -->
       {% for appurl, appname in apps %}
-        <li><a data-toggle="tab" href="{% dynurl appurl experiment.id %}">{{ appname }}</a></li>
+      <li><a data-toggle="tab" title="{{appname}}" href="{{ appurl }}">{{ appname }}</a></li>
       {% endfor %}
     </ul>
     <div class="tab-content">
@@ -389,31 +408,26 @@ $(document).ready(function() {
   // Abbreviate abstract
   var hideAbstract = false;
   var spanhtml = $('#abstractHolder').html();
-  var spantext = $('#abstractHolder').text();
 
     if(spanhtml.length > 100)
     {
 	hideAbstract = true;
-        $('#abstractText').parent().attr('style', 'padding-top: 25px;');
         $('#abstract-toggle').attr('style', 'display: inline;');
 
-        span = $('#abstractText').addClass('truncated-text');
-
-        $('#abstractText').empty().html(spantext);
+        $('#abstractText').empty().html(spanhtml);
+        $('#abstractText').parent().attr('style', 'height: 33px;');
         $('#abstractText').parent().addClass('abstract-clickable');
 
         $('#abstract-toggle').click(function(evt) {
            if(!hideAbstract)
            {
-             span.addClass('truncated-text');
-             $('#abstractText').empty().html(spantext);
+             $('#abstractText').parent().attr('style', 'height: 33px;');
              hideAbstract = true;
 	     $('#abstract-toggle').text('Show Description');
            }
            else
            {
-             span.removeClass('truncated-text');
-             $('#abstractText').empty().html(spanhtml);
+             $('#abstractText').parent().attr('style', 'padding-top:20px;');
              hideAbstract = false;
              $('#abstract-toggle').text('Hide Description');
            }
@@ -429,6 +443,15 @@ $(document).ready(function() {
 </script>
 
 <script type="text/javascript">
+$(function(){
+var oldSync = Backbone.sync;
+Backbone.sync = function(method, model, options){
+  options.beforeSend = function(xhr){
+    xhr.setRequestHeader('X-CSRFToken', '{{csrf_token}}');
+  };
+  return oldSync(method, model, options);
+};
+});
 var datasetTiles = (function() {
 
     var datasets = new MyTardis.Datasets();

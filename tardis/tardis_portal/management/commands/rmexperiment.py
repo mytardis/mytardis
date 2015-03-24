@@ -14,8 +14,8 @@ import traceback
 from optparse import make_option
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction, DEFAULT_DB_ALIAS
-from tardis.tardis_portal.models import Experiment, Dataset, Dataset_File
-from tardis.tardis_portal.models import Author_Experiment, ObjectACL
+from tardis.tardis_portal.models import Experiment, Dataset, DataFile
+from tardis.tardis_portal.models import ExperimentAuthor, ObjectACL
 from tardis.tardis_portal.models import ExperimentParameterSet, ExperimentParameter
 from tardis.tardis_portal.models import DatasetParameterSet
 from tardis.tardis_portal.models import DatafileParameterSet
@@ -52,7 +52,7 @@ class Command(BaseCommand):
 
         # Fetch Datasets and Datafiles and work out which ones would be deleted
         datasets = Dataset.objects.filter(experiments__id=exp.id)
-        datafiles = Dataset_File.objects.filter(dataset__id__in=map((lambda ds : ds.id), datasets))
+        datafiles = DataFile.objects.filter(dataset__id__in=map((lambda ds : ds.id), datasets))
         uniqueDatasets = filter((lambda ds : ds.experiments.count() == 1), datasets)
         uniqueDatasetIds = map((lambda ds : ds.id), uniqueDatasets)
         uniqueDatafiles = filter((lambda df : df.dataset.id in uniqueDatasetIds), datafiles)
@@ -60,7 +60,7 @@ class Command(BaseCommand):
         # Fetch other stuff to be printed and deleted.
         acls = ObjectACL.objects.filter(content_type=exp.get_ct(),
                                         object_id=exp.id)
-        authors = Author_Experiment.objects.filter(experiment=exp)
+        authors = ExperimentAuthor.objects.filter(experiment=exp)
         epsets = ExperimentParameterSet.objects.filter(experiment=exp)
 
         confirmed = options.get('confirmed', False)
@@ -123,29 +123,27 @@ class Command(BaseCommand):
 
         # Consider the entire experiment deletion atomic
         using = options.get('database', DEFAULT_DB_ALIAS)
-        transaction.commit_unless_managed(using=using)
-        transaction.enter_transaction_management(using=using)
-        transaction.managed(True, using=using)
 
         try:
-            acls.delete()
-            epsets.delete()
-            for dataset in datasets:
-                dataset.experiments.remove(exp.id)
-                if dataset.experiments.count() == 0:
-                    DatasetParameterSet.objects.filter(dataset=dataset).delete()
-                    for datafile in Dataset_File.objects.filter(dataset=dataset):
-                        DatafileParameterSet.objects.filter(dataset_file=datafile).delete()
-                        datafile.delete()
-                    dataset.delete()
-            authors.delete()
-            exp.delete()
-
-            transaction.commit(using=using)
-            transaction.leave_transaction_management(using=using)
+            with transaction.atomic(using=using):
+                acls.delete()
+                epsets.delete()
+                for dataset in datasets:
+                    dataset.experiments.remove(exp.id)
+                    if dataset.experiments.count() == 0:
+                        DatasetParameterSet.objects.filter(
+                            dataset=dataset).delete()
+                        for datafile in DataFile.objects.filter(
+                                dataset=dataset):
+                            DatafileParameterSet.objects.filter(
+                                datafile=datafile).delete()
+                            datafile.delete()
+                        dataset.delete()
+                authors.delete()
+                exp.delete()
         except Exception:
-            transaction.rollback(using=using)
             exc_class, exc, tb = sys.exc_info()
-            new_exc = CommandError("Exception %s has occurred: rolled back transaction"
-                                   % (exc or exc_class))
+            new_exc = CommandError(
+                "Exception %s has occurred: rolled back transaction"
+                % (exc or exc_class))
             raise new_exc.__class__, new_exc, tb

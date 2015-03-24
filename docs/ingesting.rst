@@ -19,43 +19,6 @@ There are four mechanisms for ingesting metadata and data into MyTARDIS:
    Batch ingestion is typically used by facilities automatically ingesting all
    metadata from one or more instruments into MyTARDIS.
 
-MyTARDIS supports 2 different XML schemas for importing metadata. One
-method is METS and the other is using a MyTARDIS specific XML
-format. METS is the preferred format because it is supported by
-systems other that MyTARDIS so will provide more versatility in the
-long run.
-
-
-METS
-----
-
-The Meta-data Encoding and Transmission Standard was recommended by
-Monash Librarians and ANU in 2008 as the XML description format for
-MyTARDIS datasets.
-
-For details about the METS format and how it is used by MyTARDIS, please see
-:doc:`ref/mets-format`.
-
-Ingestion Script
-----------------
-
-Metadata may be easily ingested using a simple script and POST request::
-
-   #!/bin/bash
-
-   file="$1"
-   username="localdb_admin"
-   password="secret"
-   host="http://localhost:8000"
-   owner="$username"
-
-   curl -F username=$username -F password=$password -F xmldata=@${file} -F experiment_owner=$owner "$host/experiment/register/"
-
-To use this script paste it into a new file called, e.g.
-*register.sh*, `chmod +x register.sh` then can call it using
-`./register.sh file.xml`.  There are several example XML and METS files
-within the tardis test suite.
-
 
 Post Processing
 ---------------
@@ -67,6 +30,9 @@ enabled by default operates on newly created Dataset Files.
 
 Staging Hook
 ^^^^^^^^^^^^
+
+Currently, this functionality is being rewritten and hence disabled until the
+new solution is usable.
 
 The staging hook is responsible for moving files from the staging area
 to the data store. It operates as a
@@ -87,9 +53,3 @@ EXIF Metadata extraction
 .. autoclass:: EXIFFilter
    :members:
    :undoc-members:
-
-
-.. seealso::
-
-   http://www.loc.gov/standards/mets/
-      Metadata Encoding and Tranmission Standard
