@@ -1,5 +1,7 @@
 from datetime import datetime
 
+from celery.task import task
+
 import CifFile
 
 from django.conf import settings
@@ -9,14 +11,17 @@ from django.db import transaction
 from tardis.tardis_portal.models import Schema, Experiment, \
     ExperimentParameter, ExperimentParameterSet, \
     ParameterName
-from tardis.apps.publication_forms.doi import DOI
-from utils import PDBCifHelper, send_mail_to_authors
-from email_text import email_pub_released
+from .doi import DOI
+from .utils import PDBCifHelper, send_mail_to_authors
+from .email_text import email_pub_released
 from . import default_settings
 
 LOCK_EXPIRE = 60 * 5  # Lock expires in 5 minutes
 
 
+@task(
+    name="apps.publication_forms.update_publication_records",
+    ignore_result=True)
 def update_publication_records():
 
     # Locking functions to ensure only one worker operates
@@ -195,6 +200,8 @@ def populate_pdb_pub_records():
                 pdb = PDBCifHelper(pdb_id)
 
                 # 3. insert all standard pdb parameters
+                add_if_missing(pdb_parameter_set, 'title',
+                               string_value=pdb.get_pdb_title())
                 add_if_missing(pdb_parameter_set, 'url',
                                string_value=pdb.get_pdb_url())
                 add_if_missing(pdb_parameter_set, 'resolution',

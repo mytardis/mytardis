@@ -27,6 +27,9 @@ DATABASES = {
     }
 }
 
+# Fix 'SQLite backend does not support timezone-aware datetimes
+# when USE_TZ is False.' error by setting USE_TZ to True
+
 # Celery queue
 BROKER_URL = 'django://'
 '''
@@ -416,7 +419,7 @@ CELERYBEAT_SCHEDULE = {
     },
     # enable this task for the publication workflow
     # "update-publication-records": {
-    #     "task": "tardis_portal.update_publication_records",
+    #     "task": "apps.publication_forms.update_publication_records",
     #     "schedule": timedelta(seconds=300)
     # },
 }

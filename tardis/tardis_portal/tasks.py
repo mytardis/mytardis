@@ -130,14 +130,3 @@ def create_staging_datafile(filepath, username, dataset_id):
 def email_user_task(subject, template_name, context, user):
     email_user(subject, template_name, context, user)
 
-
-# this should really be defined in the app, need to check if celery picks
-# up tasks in apps
-try:
-    from tardis.apps.publication_forms.tasks import update_publication_records
-
-    @task(name="tardis_portal.update_publication_records", ignore_result=True)
-    def update_publication_records_task():
-        update_publication_records()
-except ImportError:
-    pass

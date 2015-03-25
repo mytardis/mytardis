@@ -114,8 +114,8 @@ app.controller('publicationFormCtrl', function ($scope, $log, $http, ngDialog, $
             'text': 'This work is supported by the Science and Industry Endowment Fund.'
         },
         {
-            'agency': 'Multi-modal Australian ScienceS Imaging and Visulaisation Environment',
-            'text': 'This work was supported by the Multi-modal Australian ScienceS Imaging and Visulaisation Environment (MASSIVE) (www.massive.org.au).'
+            'agency': 'Multi-modal Australian ScienceS Imaging and Visualisation Environment',
+            'text': 'This work was supported by the Multi-modal Australian ScienceS Imaging and Visualisation Environment (MASSIVE) (www.massive.org.au).'
         },
         {
             'agency': 'Australian National Beamline Facility',
@@ -355,6 +355,7 @@ app.controller('publicationFormCtrl', function ($scope, $log, $http, ngDialog, $
 
     // Advance to the next page of the form
     $scope.nextPage = function () {
+	$('.ngdialog').scrollTop(0);
         if ($scope.currentPageIdx < $scope.form_pages.length - 1 && !$scope.loadingData) {
             $scope.errorMessages = [];
             $scope.infoMessage = "";
@@ -393,6 +394,11 @@ app.controller('publicationFormCtrl', function ($scope, $log, $http, ngDialog, $
         $scope.formData.publicationDescription = description;
     }
 
+    // Scroll the dataset list to top
+    $scope.scrollDsSelectorToTop = function() {
+	$('#datasetList').scrollTop(0);
+    };
+
     // Add author to publication
     $scope.addAuthorEntry = function () {
 	$log.info($scope.formData)
@@ -429,6 +435,7 @@ app.controller('publicationFormCtrl', function ($scope, $log, $http, ngDialog, $
     });
 
     $scope.saveAndClose = function () {
+	$('.ngdialog').scrollTop(0);
         saveFormState(function () { // On success
                           $scope.closeThisDialog();
                       }

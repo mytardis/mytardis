@@ -1,6 +1,6 @@
 from django.conf.urls import patterns
 
-from pub_form_config import PubFormConfig
+from .pub_form_config import PubFormConfig
 
 urlpatterns = patterns(
     '',
