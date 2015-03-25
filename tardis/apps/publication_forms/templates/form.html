@@ -68,12 +68,13 @@
         <select ng-model="selectedExperiment" ng-options="e.title for e in experiments"
 		id="datasetSelector" ng-change="scrollDsSelectorToTop()"></select>
         <label>Select datasets</label>
+	<input type="text" placeholder="Filter" ng-model="dsFilter" ng-change="scrollDsSelectorToTop()" style="width:100%"/>
         <select multiple id="datasetList"
 		class="pub-form-ds-selection"
 		ng-dblclick="addDatasets(selectedExperiment, selectedDatasets);
 			     selectedDatasets = [];"
                 ng-model="selectedDatasets"
-                ng-options="(d.description + (d.directory?' - '+ d.directory:'')) for d in selectedExperiment.datasets | removeMatchingDatasets : formData.addedDatasets"></select>
+                ng-options="(d.description + (d.directory?' - '+ d.directory:'')) for d in selectedExperiment.datasets | removeMatchingDatasets : formData.addedDatasets | filter: dsFilter"></select>
         <a href="#" class="btn" ng-click="addDatasets(selectedExperiment, selectedDatasets)"><i
 												class="icon-plus"></i> Add dataset</a>
       </div>
