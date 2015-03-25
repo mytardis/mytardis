@@ -28,9 +28,7 @@ DATABASES = {
 }
 
 # Fix 'SQLite backend does not support timezone-aware datetimes
-# when USE_TZ is False.' error
-if DATABASES['default']['ENGINE'] == 'django.db.backends.sqlite3':
-    USE_TZ = True
+# when USE_TZ is False.' error by setting USE_TZ to True
 
 # Celery queue
 BROKER_URL = 'django://'
