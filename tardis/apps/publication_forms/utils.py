@@ -37,6 +37,9 @@ class PDBCifHelper(CifHelper):
     def get_pdb_id(self):
         return self['_entry.id']
 
+    def get_pdb_title(self):
+        return self['_struct.title']
+
     def get_pdb_url(self):
         return 'http://www.pdb.org/pdb/search/structidSearch.do?structureId=' \
             + urllib.quote(self.get_pdb_id())
@@ -60,7 +63,7 @@ class PDBCifHelper(CifHelper):
         angle_a = self['_cell.angle_alpha']
         angle_b = self['_cell.angle_beta']
         angle_c = self['_cell.angle_gamma']
-        return '(a = %s, b = %s, c = %s),(a = %s, b = %s, c = %s)' % (
+        return '(a = %s, b = %s, c = %s),(alpha = %s, beta = %s, gamma = %s)' % (
             length_a, length_b, length_c, angle_a, angle_b, angle_c)
 
     def get_citations(self):
