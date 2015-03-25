@@ -69,7 +69,6 @@ def get_release_date(publication):
     return release_date
 
 
-@task(name="apps.publication_forms.process_embargos", ignore_result=True)
 @transaction.atomic
 def process_embargos():
     # Restricted publications are defined as those having public access
@@ -122,9 +121,6 @@ def process_embargos():
             pub.save()
 
 
-@task(
-    name="apps.publication_forms.populate_pdb_pub_records",
-    ignore_result=True)
 @transaction.atomic
 def populate_pdb_pub_records():
     PUB_SCHEMA = getattr(settings, 'PUBLICATION_SCHEMA_ROOT',
