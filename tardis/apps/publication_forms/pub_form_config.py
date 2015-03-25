@@ -71,7 +71,8 @@ class PubFormConfig():
                       immutable=True,
                       order=1).save()
         ParameterName(schema=schema,
-                      name='Title',
+                      name='title',
+                      full_name='Title',
                       data_type=ParameterName.STRING,
                       is_searchable=True,
                       immutable=True,
