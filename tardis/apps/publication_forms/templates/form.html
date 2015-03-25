@@ -17,8 +17,7 @@
   <div ng-include="current_page.url"></div>
   <div class="alert alert-info" ng-show="isLastPage()">
     <strong>Almost done,</strong> but make sure all details are correct.
-    Once submitted, you cannot make changes.<br/>
-    Not ready yet? <a href="#" ng-click="saveAndClose()">Save and finish later.</a>
+    Once submitted, you cannot make changes.
   </div>
   <ul class="pager" ng-hide="isComplete()">
     <li class="previous">
@@ -26,7 +25,10 @@
     </li>
     <li>{{ currentPageIdx + 1 }} of {{ totalPages - 1 }}</li>
     <li class="next">
-      <a href="#" ng-click="nextPage()"><span ng-hide="isLastPage()">Save and continue</span><span ng-show="isLastPage()">Finish</span></a>
+      <a href="#" ng-click="nextPage()"><span ng-hide="isLastPage()">Save and continue</span><span ng-show="isLastPage()">Submit</span></a>
+    </li>
+    <li class="next" ng-show="isLastPage()">
+      <a href="#" ng-click="saveAndClose()">Save and finish later</a>
     </li>
   </ul>
 </div>
