@@ -63,8 +63,8 @@ class PDBCifHelper(CifHelper):
         angle_a = self['_cell.angle_alpha']
         angle_b = self['_cell.angle_beta']
         angle_c = self['_cell.angle_gamma']
-        return '(a = %s, b = %s, c = %s),(alpha = %s, beta = %s, gamma = %s)' % (
-            length_a, length_b, length_c, angle_a, angle_b, angle_c)
+        return '(a = %s, b = %s, c = %s),(alpha = %s, beta = %s, gamma = %s)'\
+            % (length_a, length_b, length_c, angle_a, angle_b, angle_c)
 
     def get_citations(self):
         ids = self.as_list(self['_citation.id'])
@@ -80,9 +80,9 @@ class PDBCifHelper(CifHelper):
         author_citation_names = self.as_list(self['_citation_author.name'])
 
         citations = []
-        for pub_id, title, journal, volume, page_first, page_last, year, doi in \
-            zip(ids, titles, journals, volumes,
-                pages_first, pages_last, years, dois):
+        for pub_id, title, journal, volume, page_first, page_last, year, doi\
+            in zip(ids, titles, journals, volumes, pages_first, pages_last,
+                   years, dois):
             citation = {'_id': pub_id,
                         'title': title,
                         'journal': journal,
