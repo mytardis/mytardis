@@ -356,7 +356,6 @@ app.controller('publicationFormCtrl', function ($scope, $log, $http, ngDialog, $
     // Advance to the next page of the form
     $scope.nextPage = function () {
 	$('.ngdialog').scrollTop(0);
-	console.log('x"');
         if ($scope.currentPageIdx < $scope.form_pages.length - 1 && !$scope.loadingData) {
             $scope.errorMessages = [];
             $scope.infoMessage = "";
