@@ -11,7 +11,7 @@ from django.contrib.auth.models import User, Group
 
 from tardis.tardis_portal.models import Schema, ParameterName
 
-import default_settings
+from . import default_settings
 
 logger = logging.getLogger(__name__)
 

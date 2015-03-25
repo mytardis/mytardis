@@ -3,7 +3,6 @@ import re
 
 import dateutil.parser
 import CifFile
-import tasks
 
 from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
@@ -18,13 +17,14 @@ from tardis.tardis_portal.models import Experiment, Dataset, ObjectACL, \
     Schema, ParameterName, ExperimentParameterSet, ExperimentParameter, \
     ExperimentAuthor, License
 from tardis.tardis_portal.auth.localdb_auth import django_user, django_group
-from doi import DOI
-from utils import PDBCifHelper, check_pdb_status, get_unreleased_pdb_info, \
+from .doi import DOI
+from .utils import PDBCifHelper, check_pdb_status, get_unreleased_pdb_info, \
     send_mail_to_authors
-from email_text import email_pub_requires_authorisation, \
+from .email_text import email_pub_requires_authorisation, \
     email_pub_awaiting_approval, email_pub_approved, email_pub_rejected, \
     email_pub_reverted_to_draft
 
+from . import tasks
 from . import default_settings
 
 

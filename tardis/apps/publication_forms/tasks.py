@@ -11,9 +11,9 @@ from django.db import transaction
 from tardis.tardis_portal.models import Schema, Experiment, \
     ExperimentParameter, ExperimentParameterSet, \
     ParameterName
-from tardis.apps.publication_forms.doi import DOI
-from utils import PDBCifHelper, send_mail_to_authors
-from email_text import email_pub_released
+from .doi import DOI
+from .utils import PDBCifHelper, send_mail_to_authors
+from .email_text import email_pub_released
 from . import default_settings
 
 LOCK_EXPIRE = 60 * 5  # Lock expires in 5 minutes
