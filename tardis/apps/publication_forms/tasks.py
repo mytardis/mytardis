@@ -1,5 +1,7 @@
 from datetime import datetime
 
+from celery.task import task
+
 import CifFile
 
 from django.conf import settings
@@ -17,6 +19,9 @@ from . import default_settings
 LOCK_EXPIRE = 60 * 5  # Lock expires in 5 minutes
 
 
+@task(
+    name="apps.publication_forms.update_publication_records",
+    ignore_result=True)
 def update_publication_records():
 
     # Locking functions to ensure only one worker operates
@@ -64,6 +69,7 @@ def get_release_date(publication):
     return release_date
 
 
+@task(name="apps.publication_forms.process_embargos", ignore_result=True)
 @transaction.atomic
 def process_embargos():
     # Restricted publications are defined as those having public access
@@ -116,6 +122,9 @@ def process_embargos():
             pub.save()
 
 
+@task(
+    name="apps.publication_forms.populate_pdb_pub_records",
+    ignore_result=True)
 @transaction.atomic
 def populate_pdb_pub_records():
     PUB_SCHEMA = getattr(settings, 'PUBLICATION_SCHEMA_ROOT',
