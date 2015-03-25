@@ -71,11 +71,17 @@ class PubFormConfig():
                       immutable=True,
                       order=1).save()
         ParameterName(schema=schema,
+                      name='Title',
+                      data_type=ParameterName.STRING,
+                      is_searchable=True,
+                      immutable=True,
+                      order=2).save()
+        ParameterName(schema=schema,
                       name='url',
                       full_name='URL',
                       data_type=ParameterName.URL,
                       immutable=True,
-                      order=2).save()
+                      order=3).save()
         ParameterName(schema=schema,
                       name='resolution',
                       full_name='Resolution',
@@ -83,7 +89,7 @@ class PubFormConfig():
                       data_type=ParameterName.NUMERIC,
                       is_searchable=True,
                       immutable=True,
-                      order=3).save()
+                      order=4).save()
         ParameterName(schema=schema,
                       name='r-value',
                       full_name='R-Value',
@@ -91,27 +97,27 @@ class PubFormConfig():
                       data_type=ParameterName.NUMERIC,
                       is_searchable=True,
                       immutable=True,
-                      order=4).save()
+                      order=5).save()
         ParameterName(schema=schema,
                       name='r-free',
                       full_name='R-Free',
                       data_type=ParameterName.NUMERIC,
                       is_searchable=True,
                       immutable=True,
-                      order=5).save()
+                      order=6).save()
         ParameterName(schema=schema,
                       name='space-group',
                       full_name='Space Group',
                       data_type=ParameterName.STRING,
                       is_searchable=True,
                       immutable=True,
-                      order=6).save()
+                      order=7).save()
         ParameterName(schema=schema,
                       name='unit-cell',
                       full_name='Unit Cell (Å,°)',
                       data_type=ParameterName.STRING,
                       immutable=True,
-                      order=7).save()
+                      order=8).save()
 
     def _setup_PDB_SEQUENCE_PUBLICATION_SCHEMA(self, namespace):
         schema = Schema(namespace=namespace, name='Sequence Data',
