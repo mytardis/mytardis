@@ -195,6 +195,8 @@ def populate_pdb_pub_records():
                 pdb = PDBCifHelper(pdb_id)
 
                 # 3. insert all standard pdb parameters
+                add_if_missing(pdb_parameter_set, 'title',
+                               string_value=pdb.get_pdb_title())
                 add_if_missing(pdb_parameter_set, 'url',
                                string_value=pdb.get_pdb_url())
                 add_if_missing(pdb_parameter_set, 'resolution',
