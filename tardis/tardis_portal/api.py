@@ -82,36 +82,40 @@ class MyTardisAuthentication(object):
         auth_info = request.META.get('HTTP_AUTHORIZATION')
 
         if 'HTTP_AUTHORIZATION' not in request.META:
+            if hasattr(request.user, 'allowed_tokens'):
+                tokens = request.user.allowed_tokens
             session_auth = SessionAuthentication()
             check = session_auth.is_authenticated(request, **kwargs)
             if check:
                 if isinstance(check, HttpUnauthorized):
-                    return(False)
+                    session_auth_result = False
                 else:
                     request._authentication_backend = session_auth
-                    return(check)
+                    session_auth_result = check
             else:
                 request.user = AnonymousUser()
-                return(True)
+                session_auth_result = True
+            request.user.allowed_tokens = tokens
+            return session_auth_result
         else:
             if auth_info.startswith('Basic'):
                 basic_auth = BasicAuthentication()
                 check = basic_auth.is_authenticated(request, **kwargs)
                 if check:
                     if isinstance(check, HttpUnauthorized):
-                        return(False)
+                        return False
                     else:
                         request._authentication_backend = basic_auth
-                        return(check)
+                        return check
             if auth_info.startswith('ApiKey'):
                 apikey_auth = ApiKeyAuthentication()
                 check = apikey_auth.is_authenticated(request, **kwargs)
                 if check:
                     if isinstance(check, HttpUnauthorized):
-                        return(False)
+                        return False
                     else:
                         request._authentication_backend = apikey_auth
-                        return(check)
+                        return check
 
     def get_identifier(self, request):
         try:
