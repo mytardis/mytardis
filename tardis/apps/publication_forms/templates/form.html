@@ -67,7 +67,7 @@
     <div class="row-fluid">
       <div class="span6">
         <label>Select experiment</label>
-        <select ng-model="selectedExperiment" ng-options="e.title for e in experiments"
+        <select ng-model="selectedExperiment" ng-options="e.title for e in experiments" style="width:100%"
 		id="datasetSelector" ng-change="scrollDsSelectorToTop()"></select>
         <label>Select datasets</label>
 	<input type="text" placeholder="Filter" ng-model="dsFilter" ng-change="scrollDsSelectorToTop()" style="width:100%"/>
