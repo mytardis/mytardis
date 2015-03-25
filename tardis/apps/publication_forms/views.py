@@ -3,6 +3,7 @@ import re
 
 import dateutil.parser
 import CifFile
+import tasks
 
 from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
@@ -368,6 +369,9 @@ def process_form(request):
         send_mail_to_authors(publication,
                              '[TARDIS] Publication submitted', message_content)
 
+        # Trigger publication record update
+        tasks.update_publication_records.delay()
+
     # Clear the form action and save the state
     form_state['action'] = ''
     form_state_parameter.string_value = json.dumps(form_state)
@@ -672,6 +676,9 @@ def approve_publication(request, publication, message=None):
 
         send_mail_to_authors(publication, '[TARDIS] Publication approved',
                              email_message)
+
+        # Trigger publication update
+        tasks.update_publication_records.delay()
 
         return True
 
