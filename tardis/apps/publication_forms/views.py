@@ -260,6 +260,8 @@ def process_form(request):
         # to the browser before the publication's draft
         # status is removed.
 
+        # Clear all current authors
+        ExperimentAuthor.objects.filter(experiment=publication).delete()
         # Construct list of authors
         authorOrder = 1
         for author in form_state['authors']:
