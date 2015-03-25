@@ -17,8 +17,7 @@
   <div ng-include="current_page.url"></div>
   <div class="alert alert-info" ng-show="isLastPage()">
     <strong>Almost done,</strong> but make sure all details are correct.
-    Once submitted, you cannot make changes.<br/>
-    Not ready yet? <a href="#" ng-click="saveAndClose()">Save and finish later.</a>
+    Once submitted, you cannot make changes.
   </div>
   <ul class="pager" ng-hide="isComplete()">
     <li class="previous">
@@ -26,8 +25,10 @@
     </li>
     <li>{{ currentPageIdx + 1 }} of {{ totalPages - 1 }}</li>
     <li class="next">
-      <a href="#" ng-click="nextPage()"><span ng-hide="isLastPage()">Save and continue</span><span
-												ng-show="isLastPage()">Finish</span></a>
+      <a href="#" ng-click="nextPage()"><span ng-hide="isLastPage()">Save and continue</span><span ng-show="isLastPage()">Submit</span></a>
+    </li>
+    <li class="next" ng-show="isLastPage()">
+      <a href="#" ng-click="saveAndClose()">Save and finish later</a>
     </li>
   </ul>
 </div>
@@ -66,38 +67,39 @@
     <div class="row-fluid">
       <div class="span6">
         <label>Select experiment</label>
-        <select ng-model="selectedExperiment" ng-options="e.title for e in experiments"
-                ng-change="updateDatasets()"
-		id="datasetSelector"></select>
+        <select ng-model="selectedExperiment" ng-options="e.title for e in experiments" style="width:100%"
+		id="datasetSelector" ng-change="scrollDsSelectorToTop()"></select>
         <label>Select datasets</label>
-        <select multiple
+	<input type="text" placeholder="Filter" ng-model="dsFilter" ng-change="scrollDsSelectorToTop()" style="width:100%"/>
+        <select multiple id="datasetList"
 		class="pub-form-ds-selection"
 		ng-dblclick="addDatasets(selectedExperiment, selectedDatasets);
 			     selectedDatasets = [];"
                 ng-model="selectedDatasets"
-                ng-options="(d.description + (d.directory?' - '+ d.directory:'')) for d in selectedExperiment.datasets | removeMatchingDatasets : formData.addedDatasets"></select>
+                ng-options="(d.description + (d.directory?' - '+ d.directory:'')) for d in selectedExperiment.datasets | removeMatchingDatasets : formData.addedDatasets | filter: dsFilter"></select>
         <a href="#" class="btn" ng-click="addDatasets(selectedExperiment, selectedDatasets)"><i
 												class="icon-plus"></i> Add dataset</a>
       </div>
       <div class="span6">
         <h3>Added datasets</h3>
-        <table class="table table-striped">
-          <thead>
-            <td>Experiment</td>
-            <td>Description</td>
-            <td></td>
-          </thead>
-          <tr ng-repeat="entry in formData.addedDatasets">
-            <td>{{ entry.experiment }}</td>
-            <td style="display:block;">{{ entry.dataset.description }}
-	      <div ng-if="entry.dataset.directory" class="pub-form-ds-directory">{{ entry.dataset.directory }}</div></td>
-            <td><a href="#"><i class="icon-minus" ng-click="removeDataset(entry)"></i></a></td>
-          </tr>
-        </table>
+	<div style="height: 200px; overflow-y: scroll;">
+          <table class="table table-striped">
+            <thead>
+              <td>Experiment</td>
+              <td>Description</td>
+              <td></td>
+            </thead>
+            <tr ng-repeat="entry in formData.addedDatasets">
+              <td>{{ entry.experiment }}</td>
+              <td style="display:block;">{{ entry.dataset.description }}
+		<div ng-if="entry.dataset.directory" class="pub-form-ds-directory">{{ entry.dataset.directory }}</div></td>
+              <td><a href="#"><i class="icon-minus" ng-click="removeDataset(entry)"></i></a></td>
+            </tr>
+          </table>
+	</div>
       </div>
     </div>
   </form>
-  <div class="alert alert-info">Clicking next will save your selection so you can come back later</div>
 </script>
 <script type="text/ng-template" id="form_page3.html">
   <p>The following extra information is required based on your dataset selection:</p>

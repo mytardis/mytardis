@@ -3,6 +3,7 @@ import re
 
 import dateutil.parser
 import CifFile
+import tasks
 
 from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
@@ -260,6 +261,8 @@ def process_form(request):
         # to the browser before the publication's draft
         # status is removed.
 
+        # Clear all current authors
+        ExperimentAuthor.objects.filter(experiment=publication).delete()
         # Construct list of authors
         authorOrder = 1
         for author in form_state['authors']:
@@ -365,6 +368,9 @@ def process_form(request):
         message_content = email_pub_awaiting_approval(publication.title)
         send_mail_to_authors(publication,
                              '[TARDIS] Publication submitted', message_content)
+
+        # Trigger publication record update
+        tasks.update_publication_records.delay()
 
     # Clear the form action and save the state
     form_state['action'] = ''
@@ -492,7 +498,8 @@ def get_draft_publication(user, publication_id):
 @login_required
 @never_cache
 def fetch_experiments_and_datasets(request):
-    experiments = Experiment.safe.owned_and_shared(request.user)
+    experiments = Experiment.safe.owned_and_shared(request.user)\
+                                 .order_by('title')
     json_response = []
     for experiment in experiments:
         if not experiment.is_publication():
@@ -500,7 +507,8 @@ def fetch_experiments_and_datasets(request):
                                'title': experiment.title,
                                'institution_name': experiment.institution_name,
                                'description': experiment.description}
-            datasets = Dataset.objects.filter(experiments=experiment)
+            datasets = Dataset.objects.filter(experiments=experiment)\
+                                      .order_by('description')
             dataset_json = []
             for dataset in datasets:
                 dataset_json.append({'id': dataset.id,
@@ -668,6 +676,9 @@ def approve_publication(request, publication, message=None):
 
         send_mail_to_authors(publication, '[TARDIS] Publication approved',
                              email_message)
+
+        # Trigger publication update
+        tasks.update_publication_records.delay()
 
         return True
 
