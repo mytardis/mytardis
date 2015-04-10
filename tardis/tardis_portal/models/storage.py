@@ -27,6 +27,8 @@ class StorageBox(models.Model):
     status = models.CharField(max_length=100)
     name = models.TextField(default='default', unique=True)
     description = models.TextField(default='Default Storage')
+    master_box = models.ForeignKey('self', null=True, blank=True,
+                                   related_name='child_boxes')
 
     def __unicode__(self):
         return self.name or "anonymous Storage Box"
@@ -44,15 +46,14 @@ class StorageBox(models.Model):
         return storage_class(**self.get_options_as_dict())
 
     def get_save_location(self, dfo):
-        if self.attributes.filter(key="staging", value="True").count() == 0:
+        if self.attributes.filter(key="type", value="staging").count() == 0:
             return False
 
         def default_save_location(dfo):
-            base_location = getattr(settings, "DEFAULT_STORAGE_BASE_DIR",
-                                    '/var/lib/mytardis/store')
+            base_location = getattr(settings, "DEFAULT_STAGING_DIR",
+                                    '/var/lib/mytardis/staging')
             path.join(
                 base_location,
-                dfo.datafile.dataset.directory,
                 dfo.datafile.dataset.description,
                 dfo.datafile.directory,
                 dfo.datafile.filename)
@@ -76,6 +77,16 @@ class StorageBox(models.Model):
     def move_files(self, dest_box=None):
         for dfo in self.file_objects.all():
             dfo.move_file(dest_box)
+
+    @task(name='tardis_portal.storage_box.copy_to_master')
+    def copy_to_master(self):
+        if getattr(self, 'master_box'):
+            self.copy_files(self.master_box)
+
+    @task(name='tardis_portal.storage_box.move_to_master')
+    def move_to_master(self):
+        if getattr(self, 'master_box'):
+            self.move_files(self.master_box)
 
     @classmethod
     def get_default_storage(cls, location=None, user=None):
@@ -148,7 +159,12 @@ class StorageBoxOption(models.Model):
 class StorageBoxAttribute(models.Model):
     '''
     can hold attributes/metadata about different storage locations.
-    Definitions are in documentation or per deployment.
+
+    built-ins:
+    key   values      description
+    type  staging     holds files for ingestion only
+          permanent   permanent location (assumed by default)
+          cache       holds files for fast access
     '''
 
     storage_box = models.ForeignKey(StorageBox, related_name='attributes')

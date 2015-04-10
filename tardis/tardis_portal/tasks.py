@@ -8,11 +8,13 @@ from celery.task import task
 from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
 from django.db import transaction
+from django.db.models import Q
 from django.template import Context
 
 from tardis.tardis_portal.models import DataFile
 from tardis.tardis_portal.models import DataFileObject
 from tardis.tardis_portal.models import Dataset
+from tardis.tardis_portal.models import StorageBox
 from tardis.tardis_portal.staging import get_staging_url_and_size
 from tardis.tardis_portal.email import email_user
 
@@ -49,6 +51,19 @@ def verify_dfo(dfo_id, only_local=False, reverify=False):
         dfo = DataFileObject.objects.select_for_update().get(id=dfo_id)
         if reverify or not dfo.verified:
             dfo.verify()
+
+
+@task(name='tardis_portal.clear_temp_storage', ignore_result=True)
+def clear_temp_storage():
+    '''
+    finds all files stored in temporary storage boxes and attempts to move
+    them to their permanent home
+    '''
+    temp_boxes = StorageBox.objects.filter(Q(attributes__key='type'),
+                                           Q(attributes__value='staging'),
+                                           ~Q(master_box=None))
+    for box in temp_boxes:
+        box.move_to_master.delay()
 
 
 @task(name="tardis_portal.create_staging_datafiles", ignore_result=True)  # too complex # noqa
@@ -129,4 +144,3 @@ def create_staging_datafile(filepath, username, dataset_id):
 @task(name="tardis_portal.email_user_task", ignore_result=True)
 def email_user_task(subject, template_name, context, user):
     email_user(subject, template_name, context, user)
-

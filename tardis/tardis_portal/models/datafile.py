@@ -92,6 +92,7 @@ class DataFile(models.Model):
         try to guess appropriate box from files, dataset or experiment
         '''
         boxes_used = StorageBox.objects.filter(file_objects__datafile=self)
+        #import ipdb; ipdb.set_trace()
         if len(boxes_used) > 0:
             return boxes_used[0]
         dataset_boxes = self.dataset.get_all_storage_boxes_used()
