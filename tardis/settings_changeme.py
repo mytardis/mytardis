@@ -51,14 +51,23 @@ custom buildout.cfg:
 # 'django.middleware.cache.FetchFromCacheMiddleware'
 # to your MIDDLEWARE_CLASSES setting below
 
-# The MemcachedCache backend is required for the publication form app
-
 # CACHES = {
 #    'default': {
 #        'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
 #        'LOCATION': '127.0.0.1:11211',
 #    }
 # }
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
+        'LOCATION': '127.0.0.1:11211',
+    },
+    'celery-locks': {
+        'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
+        'LOCATION': 'celery_lock_cache',
+    }
+}
 
 # Local time zone for this installation. Choices can be found here:
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name

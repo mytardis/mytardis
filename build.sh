@@ -11,6 +11,7 @@ exit
 # sudo apt-get install python-httplib2 python-pystache python-crypto python-flexmock python-dateutil
 # sudo apt-get install memcached python-memcache
 
+
 # for OS X we need these dependencies installed via brew
 # brew install imagemagick --with-libtiff
 # brew install libmagic freetype
@@ -40,6 +41,7 @@ python mytardis.py collectstatic
 # for empty databases, sync all and fake migrate, otherwise run a real migration
 python mytardis.py syncdb --all
 python mytardis.py migrate --fake
+python mytardis.py createcachetable celery_lock_cache
 
 python mytardis.py runserver
 # os x:
