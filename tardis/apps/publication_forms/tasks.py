@@ -6,6 +6,7 @@ import CifFile
 
 from django.conf import settings
 from django.core.cache import cache
+from django.core.cache.backends.memcached import MemcachedCache
 from django.db import transaction
 
 from tardis.tardis_portal.models import Schema, Experiment, \
@@ -16,6 +17,11 @@ from .utils import PDBCifHelper, send_mail_to_authors
 from .email_text import email_pub_released
 from . import default_settings
 
+import logging
+import traceback
+
+logger = logging.getLogger(__name__)
+
 LOCK_EXPIRE = 60 * 5  # Lock expires in 5 minutes
 
 
@@ -23,6 +29,10 @@ LOCK_EXPIRE = 60 * 5  # Lock expires in 5 minutes
     name="apps.publication_forms.update_publication_records",
     ignore_result=True)
 def update_publication_records():
+    if not isinstance(cache, MemcachedCache):
+        logger.error('The publication form app celery task requires the '
+                     'django memcached backend')
+        return
 
     # Locking functions to ensure only one worker operates
     # on publication records at a time.
@@ -204,12 +214,27 @@ def populate_pdb_pub_records():
                                string_value=pdb.get_pdb_title())
                 add_if_missing(pdb_parameter_set, 'url',
                                string_value=pdb.get_pdb_url())
-                add_if_missing(pdb_parameter_set, 'resolution',
-                               numerical_value=pdb.get_resolution())
-                add_if_missing(pdb_parameter_set, 'r-value',
-                               numerical_value=pdb.get_obs_r_value())
-                add_if_missing(pdb_parameter_set, 'r-free',
-                               numerical_value=pdb.get_free_r_value())
+                try:
+                    add_if_missing(pdb_parameter_set, 'resolution',
+                                   numerical_value=pdb.get_resolution())
+                except ValueError:
+                    logger.error('PDB field "resolution" could not be set for '
+                                 'publication Id %i \n %s' % (pub.id, traceback.format_exc()))
+
+                try:
+                    add_if_missing(pdb_parameter_set, 'r-value',
+                                   numerical_value=pdb.get_obs_r_value())
+                except ValueError:
+                    logger.error('PDB field "r-value" could not be set for '
+                                 'publication Id %i \n %s' % (pub.id, traceback.format_exc()))
+
+                try:
+                    add_if_missing(pdb_parameter_set, 'r-free',
+                                   numerical_value=pdb.get_free_r_value())
+                except ValueError:
+                    logger.error('PDB field "r-free" could not be set for '
+                                 'publication Id %i \n %s' % (pub.id, traceback.format_exc()))
+
                 add_if_missing(pdb_parameter_set, 'space-group',
                                string_value=pdb.get_spacegroup())
                 add_if_missing(pdb_parameter_set, 'unit-cell',

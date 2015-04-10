@@ -51,6 +51,8 @@ custom buildout.cfg:
 # 'django.middleware.cache.FetchFromCacheMiddleware'
 # to your MIDDLEWARE_CLASSES setting below
 
+# The MemcachedCache backend is required for the publication form app
+
 # CACHES = {
 #    'default': {
 #        'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
