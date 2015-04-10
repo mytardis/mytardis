@@ -9,6 +9,7 @@ exit
 # sudo apt-get install python-virtualenv virtualenvwrapper python-psycopg2 python-yaml ipython
 # sudo apt-get install python-anyjson python-bs4 python-billiard python-feedparser python-html5lib
 # sudo apt-get install python-httplib2 python-pystache python-crypto python-flexmock python-dateutil
+# sudo apt-get install memcached python-memcache
 
 # for OS X we need these dependencies installed via brew
 # brew install imagemagick --with-libtiff
