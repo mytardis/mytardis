@@ -38,14 +38,11 @@ def update_publication_records():
     release_lock = lambda: cache.delete(lock_id)
 
     if (acquire_lock()):
-        print('has lock')
         try:
             populate_pdb_pub_records()
             process_embargos()
         finally:
             release_lock()
-    else:
-        print('no lock')
 
 
 def has_pdb_embargo(publication):
