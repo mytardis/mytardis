@@ -53,16 +53,16 @@ def verify_dfo(dfo_id, only_local=False, reverify=False):
             dfo.verify()
 
 
-@task(name='tardis_portal.clear_temp_storage', ignore_result=True)
-def clear_temp_storage():
+@task(name='tardis_portal.ingest_received_files', ignore_result=True)
+def ingest_received_files():
     '''
     finds all files stored in temporary storage boxes and attempts to move
     them to their permanent home
     '''
-    temp_boxes = StorageBox.objects.filter(Q(attributes__key='type'),
-                                           Q(attributes__value='staging'),
-                                           ~Q(master_box=None))
-    for box in temp_boxes:
+    ingest_boxes = StorageBox.objects.filter(Q(attributes__key='type'),
+                                             Q(attributes__value='receiving'),
+                                             ~Q(master_box=None))
+    for box in ingest_boxes:
         box.move_to_master.delay()
 
 
