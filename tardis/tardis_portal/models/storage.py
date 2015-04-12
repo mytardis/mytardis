@@ -46,12 +46,12 @@ class StorageBox(models.Model):
         return storage_class(**self.get_options_as_dict())
 
     def get_save_location(self, dfo):
-        if self.attributes.filter(key="type", value="staging").count() == 0:
+        if self.attributes.filter(key="type", value="receiving").count() == 0:
             return False
 
         def default_save_location(dfo):
-            base_location = getattr(settings, "DEFAULT_STAGING_DIR",
-                                    '/var/lib/mytardis/staging')
+            base_location = getattr(settings, "DEFAULT_RECEIVING_DIR",
+                                    '/var/lib/mytardis/receiving')
             path.join(
                 base_location,
                 dfo.datafile.dataset.description,
@@ -162,7 +162,7 @@ class StorageBoxAttribute(models.Model):
 
     built-ins:
     key   values      description
-    type  staging     holds files for ingestion only
+    type  receiving   holds files temporarily for ingestion only
           permanent   permanent location (assumed by default)
           cache       holds files for fast access
     '''
