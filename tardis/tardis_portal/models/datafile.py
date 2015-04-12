@@ -92,15 +92,14 @@ class DataFile(models.Model):
         try to guess appropriate box from files, dataset or experiment
         '''
         boxes_used = StorageBox.objects.filter(file_objects__datafile=self)
-        #import ipdb; ipdb.set_trace()
         if len(boxes_used) > 0:
             return boxes_used[0]
         dataset_boxes = self.dataset.get_all_storage_boxes_used()
         if len(dataset_boxes) > 0:
             return dataset_boxes[0]
         experiment_boxes = StorageBox.objects.filter(
-            file_objects__datafile__dataset__experiments__in=
-            self.dataset.experiments.all())
+            file_objects__datafile__dataset__experiments__in=self
+            .dataset.experiments.all())
         if len(experiment_boxes) > 0:
             return experiment_boxes[0]
         # TODO: select one accessible to the owner of the file
