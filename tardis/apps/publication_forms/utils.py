@@ -114,8 +114,6 @@ class PDBCifHelper(CifHelper):
         except KeyError:
             pass
 
-        print(seqs_gen)
-
         seqs_nat = []
         try:
             seqs_nat_id = self.as_list(self['_entity_src_nat.entity_id'])
@@ -124,8 +122,6 @@ class PDBCifHelper(CifHelper):
             seqs_nat = dict(zip(seqs_nat_id, seqs_nat_org))
         except KeyError:
             pass
-
-        print(seqs_nat)
 
         seqs_code = []
         try:
@@ -136,8 +132,6 @@ class PDBCifHelper(CifHelper):
         except KeyError:
             return []
 
-        print(seqs_code)
-
         seqs_name = []
         try:
             seqs_name_id = self.as_list(self['_entity_name_com.entity_id'])
@@ -145,8 +139,6 @@ class PDBCifHelper(CifHelper):
             seqs_name = dict(zip(seqs_name_id, seqs_names))
         except KeyError:
             pass
-
-        print(seqs_name)
 
         sequences = []
         # Only look at the poly entities
