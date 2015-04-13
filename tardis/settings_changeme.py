@@ -51,23 +51,25 @@ custom buildout.cfg:
 # 'django.middleware.cache.FetchFromCacheMiddleware'
 # to your MIDDLEWARE_CLASSES setting below
 
-# CACHES = {
-#    'default': {
-#        'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
-#        'LOCATION': '127.0.0.1:11211',
-#    }
-# }
-
 CACHES = {
     'default': {
-        'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
-        'LOCATION': '127.0.0.1:11211',
+        'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
+        'LOCATION': 'default_cache',
     },
+    # # or use memcached
+    # 'default': {
+    #     'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
+    #     'LOCATION': '127.0.0.1:11211',
+    # },
     'celery-locks': {
         'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
         'LOCATION': 'celery_lock_cache',
     }
 }
+'''
+change the CACHES setting to memcached if you prefer. Requires additional
+dependencies.
+'''
 
 # Local time zone for this installation. Choices can be found here:
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
@@ -113,19 +115,16 @@ SPONSORED_TEXT = None
 add text to the footer to acknowledge someone
 '''
 
-# once the cache is set up, you'll need to add
-# 'django.middleware.cache.UpdateCacheMiddleware' and
-# 'django.middleware.cache.FetchFromCacheMiddleware'
 MIDDLEWARE_CLASSES = (
     # 'django.middleware.cache.UpdateCacheMiddleware',
     'django.middleware.common.CommonMiddleware',
-    # 'django.middleware.cache.FetchFromCacheMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'tardis.tardis_portal.logging_middleware.LoggingMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'tardis.tardis_portal.auth.token_auth.TokenAuthMiddleware',
+    # 'django.middleware.cache.FetchFromCacheMiddleware',
 )
 
 ROOT_URLCONF = 'tardis.urls'
