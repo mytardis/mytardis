@@ -103,42 +103,65 @@ class PDBCifHelper(CifHelper):
         return citations
 
     def get_sequence_info(self):
+        seqs_gen = []
         try:
-            seqs_id = self.as_list(self['_entity_src_gen.entity_id'])
-            seqs_org = self.as_list(
+            seqs_gen_id = self.as_list(self['_entity_src_gen.entity_id'])
+            seqs_gen_org = self.as_list(
                 self['_entity_src_gen.pdbx_gene_src_scientific_name'])
-            seqs_exp_sys = self.as_list(
+            seqs_gen_exp_sys = self.as_list(
                 self['_entity_src_gen.pdbx_host_org_scientific_name'])
+            seqs_gen = dict(zip(seqs_gen_id, zip(seqs_gen_org, seqs_gen_exp_sys)))
+        except KeyError:
+            pass
 
+        seqs_nat = []
+        try:
+            seqs_nat_id = self.as_list(self['_entity_src_nat.entity_id'])
+            seqs_nat_org = self.as_list(
+                self['_entity_src_nat.pdbx_organism_scientific'])
+            seqs_nat = dict(zip(seqs_nat_id, seqs_nat_org))
+        except KeyError:
+            pass
+
+        seqs_code = []
+        try:
             seqs_code_id = self.as_list(self['_entity_poly.entity_id'])
             seqs_code = self.as_list(
-                self['_entity_poly.pdbx_seq_one_letter_code'])
-
-            seqs_name_id = self.as_list(self['_entity_name_com.entity_id'])
-            seqs_name = self.as_list(self['_entity_name_com.name'])
-
-            sequences = []
-            for seq_id, seq_org, seq_exp_sys in zip(
-                    seqs_id, seqs_org, seqs_exp_sys):
-                seq = {'organism': seq_org,
-                       'expression_system': seq_exp_sys}
-
-                for seq_name_id, seq_name in zip(seqs_name_id, seqs_name):
-                    if seq_name_id == seq_id:
-                        seq['name'] = seq_name
-                        break
-
-                for seq_code_id, seq_code in zip(seqs_code_id, seqs_code):
-                    if seq_code_id == seq_id:
-                        seq['sequence'] = seq_code
-                        # .replace(' ', '').replace('\n','')
-                        break
-
-                sequences.append(seq)
-
-                return sequences
+                self['_entity_poly.pdbx_seq_one_letter_code_can'])
+            seqs_code = dict(zip(seqs_code_id, seqs_code))
         except KeyError:
             return []
+
+        seqs_name = []
+        try:
+            seqs_name_id = self.as_list(self['_entity_name_com.entity_id'])
+            seqs_names = self.as_list(self['_entity_name_com.name'])
+            seqs_name = dict(zip(seqs_name_id, seqs_names))
+        except KeyError:
+            pass
+
+        sequences = []
+        # Only look at the poly entities
+        for entity_id in seqs_code.keys():
+            seq = {'sequence': seqs_code[entity_id]}
+
+            # Protein isolated directly from organism?
+            if entity_id in seqs_nat:
+                seq['organism'] = seqs_nat[entity_id]
+                seq['expression_system'] = ''
+            # Protein isolated using an expression system?
+            elif entity_id in seqs_gen:
+                seq['organism'], seq['expression_system'] = seqs_gen[entity_id]
+
+            # Has a name?
+            if entity_id in seqs_name:
+                seq['name'] = seqs_name[entity_id]
+            else:
+                seq['name'] = ''
+
+            sequences.append(seq)
+
+        return sequences
 
 
 def check_pdb_status(pdb_id):
