@@ -4,6 +4,7 @@ import logging
 from rdflib import plugin, URIRef
 from rdflib.graph import Graph
 from rdflib.parser import Parser
+from socket import error as SocketError
 
 from urllib2 import URLError
 
@@ -31,8 +32,8 @@ logger = logging.getLogger(__name__)
 for_graph = Graph()
 try:
     for_graph.parse(SCHEMA_URI)
-except URLError:
-    log.debug('no data connection to get external schema definition')
+except (URLError, SocketError):
+    logger.debug('no data connection to get external schema definition')
 
 
 def _get_schema_func(schema_uri):
