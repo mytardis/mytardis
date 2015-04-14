@@ -11,10 +11,10 @@ from django.db import transaction
 from tardis.tardis_portal.models import Schema, Experiment, \
     ExperimentParameter, ExperimentParameterSet, \
     ParameterName
-from .doi import DOI
-from .utils import PDBCifHelper, send_mail_to_authors
-from .email_text import email_pub_released
-from . import default_settings
+from tardis.apps.publication_forms.doi import DOI
+from tardis.apps.publication_forms.utils import PDBCifHelper, send_mail_to_authors
+from tardis.apps.publication_forms.email_text import email_pub_released
+from tardis.apps.publication_forms import default_settings
 
 import logging
 import traceback
