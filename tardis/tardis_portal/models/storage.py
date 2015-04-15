@@ -52,10 +52,10 @@ class StorageBox(models.Model):
         def default_save_location(dfo):
             base_location = getattr(settings, "DEFAULT_RECEIVING_DIR",
                                     '/var/lib/mytardis/receiving')
-            path.join(
+            return path.join(
                 base_location,
                 dfo.datafile.dataset.description,
-                dfo.datafile.directory,
+                dfo.datafile.directory or '',
                 dfo.datafile.filename)
 
         build_save_location = getattr(
@@ -125,7 +125,9 @@ class StorageBox(models.Model):
             raise
         disk_size = base_dir_stat.f_frsize * base_dir_stat.f_blocks
         max_size = disk_size * 0.9
-        s_box = StorageBox(max_size=max_size,
+        s_box = StorageBox(name='local box at %s' % (location or
+                           'default location'),
+                           max_size=max_size,
                            status='online')
         s_box.save()
         sbo = StorageBoxOption(
