@@ -225,7 +225,7 @@ class ACLAuthorization(Authorization):
             return True
         if isinstance(bundle.obj, Experiment):
             return bundle.request.user.has_perm('tardis_portal.add_experiment')
-        elif isinstance(bundle.obj, (ExperimentParameterSet,)):
+        elif isinstance(bundle.obj, ExperimentParameterSet):
             if not bundle.request.user.has_perm(
                     'tardis_portal.change_experiment'):
                 return False
@@ -238,7 +238,7 @@ class ACLAuthorization(Authorization):
                 return has_write_permissions(bundle.request,
                                              bundle.obj.experiment.id)
             return False
-        elif isinstance(bundle.obj, (ExperimentParameter,)):
+        elif isinstance(bundle.obj, ExperimentParameter):
             return bundle.request.user.has_perm(
                 'tardis_portal.change_experiment') and \
                 has_write_permissions(bundle.request,
@@ -259,7 +259,7 @@ class ACLAuthorization(Authorization):
                 else:
                     return False
             return perm
-        elif isinstance(bundle.obj, (DatasetParameterSet,)):
+        elif isinstance(bundle.obj, DatasetParameterSet):
             if not bundle.request.user.has_perm(
                     'tardis_portal.change_dataset'):
                 return False
@@ -272,7 +272,7 @@ class ACLAuthorization(Authorization):
                 return has_dataset_write(bundle.request,
                                          bundle.obj.dataset.id)
             return False
-        elif isinstance(bundle.obj, (DatasetParameter,)):
+        elif isinstance(bundle.obj, DatasetParameter):
             return bundle.request.user.has_perm(
                 'tardis_portal.change_dataset') and \
                 has_dataset_write(bundle.request,
