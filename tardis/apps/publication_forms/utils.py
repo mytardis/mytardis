@@ -143,7 +143,12 @@ class PDBCifHelper(CifHelper):
         sequences = []
         # Only look at the poly entities
         for entity_id in seqs_code.keys():
-            seq = {'sequence': seqs_code[entity_id]}
+            seq = {
+                'name': '',
+                'sequence': seqs_code[entity_id],
+                'organism': '',
+                'expression_system': ''
+            }
 
             # Protein isolated directly from organism?
             if entity_id in seqs_nat:
