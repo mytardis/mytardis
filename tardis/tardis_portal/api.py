@@ -900,3 +900,12 @@ class ObjectAclResource(MyTardisModelResource):
             'pluginId': ('exact', ),
             'entityId': ('exact', ),
         }
+
+    def hydrate(self, bundle):
+        # Fill in the content type.
+        if bundle.data['content_type'] == 'experiment':
+            experiment = Experiment.objects.get(pk=bundle.data['object_id'])
+            bundle.obj.content_type = experiment.get_ct()
+        else:
+            raise NotImplementedError(str(bundle.obj))
+        return bundle
