@@ -174,7 +174,7 @@ class ACLAuthorization(Authorization):
             experiments = Experiment.safe.all(bundle.request.user)
             objacl_list = []
             for objacl in object_list:
-                if type(objacl.content_object) == Experiment:
+                if isinstance(objacl.content_object, Experiment):
                     exp = Experiment.objects.get(id=objacl.object_id)
                     if exp in experiments:
                         objacl_list.append(objacl)
@@ -897,7 +897,6 @@ class ObjectAclResource(MyTardisModelResource):
         authorization = ACLAuthorization()
         queryset = ObjectACL.objects.all()
         filtering = {
-            'object_id': ('exact', ),
             'pluginId': ('exact', ),
             'entityId': ('exact', ),
         }
