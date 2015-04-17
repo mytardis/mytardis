@@ -46,7 +46,6 @@ six==1.9.0 #apt: 1.5.2
 ua-parser==0.3.3
 user-agents==0.1.1
 wsgiref==0.1.2
-pycifrw==4.1.1
 
 # apps go here
 -r tardis/apps/publication_forms/requirements.txt
