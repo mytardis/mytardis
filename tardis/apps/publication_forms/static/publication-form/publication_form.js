@@ -374,6 +374,8 @@ app.controller('publicationFormCtrl', function ($scope, $log, $http, ngDialog, $
             $scope.infoMessage = "";
             $scope.currentPageIdx--;
             $scope.current_page = $scope.form_pages[$scope.currentPageIdx];
+        } else if ($scope.currentPageIdx == 0) {
+            ngDialog.close();
         }
     }
 
