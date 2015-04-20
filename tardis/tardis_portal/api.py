@@ -888,7 +888,7 @@ class ReplicaResource(MyTardisModelResource):
         return bundle
 
 
-class ObjectAclResource(MyTardisModelResource):
+class ObjectACLResource(MyTardisModelResource):
     content_object = GenericForeignKeyField({
         Experiment: ExperimentResource,
         # ...
