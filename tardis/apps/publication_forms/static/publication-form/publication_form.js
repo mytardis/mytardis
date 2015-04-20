@@ -11,7 +11,7 @@ app.filter('removeMatchingDatasets', function () {
         for (var i = 0; i < input.length; i++) {
             var add = true;
             for (var j = 0; j < compareTo.length; j++) {
-                if (input[i].id == compareTo[j].dataset.id) {
+                if (input[i].id === compareTo[j].dataset.id) {
                     add = false;
                 }
             }
@@ -75,7 +75,7 @@ app.controller('publicationFormCtrl', function ($scope, $log, $http, ngDialog, $
 	                  closeByDocument: false,
                           preCloseCallback: function () {
                               if (typeof publication_id !== 'undefined' &&
-                                  publication_id != experiment_id) {
+                                  publication_id !== experiment_id) {
                                   var redirectTo = '/experiment/view/' + publication_id + '/';
                                   $window.location = redirectTo;
                               } else if (typeof publication_id !== 'undefined') {
@@ -175,7 +175,7 @@ app.controller('publicationFormCtrl', function ($scope, $log, $http, ngDialog, $
 
         $scope.formData.action = "update-dataset-selection";
 
-        if ($scope.formData.publicationTitle.trim().length == 0) {
+        if ($scope.formData.publicationTitle.trim().length === 0) {
             $scope.errorMessages.push("A title must be given");
         }
 
@@ -183,7 +183,7 @@ app.controller('publicationFormCtrl', function ($scope, $log, $http, ngDialog, $
             $scope.errorMessages.push("Provide a description");
         }
 
-        if ($scope.formData.addedDatasets.length == 0) {
+        if ($scope.formData.addedDatasets.length === 0) {
             $scope.errorMessages.push("At least one dataset must be selected");
         }
 
@@ -225,31 +225,33 @@ app.controller('publicationFormCtrl', function ($scope, $log, $http, ngDialog, $
         $scope.formData.action = "submit";
 
         errors = false;
-        if ($scope.formData.authors.length == 0) {
+        if ($scope.formData.authors.length === 0) {
             $scope.errorMessages.push("You must add at least one author.");
             errors = true;
         }
 
 	var tmpAuthors = [];
 	for (var a in $scope.formData.authors) {
-	    var author = $scope.formData.authors[a];
-	    var x = 0;
-	    if (typeof author.email === 'undefined' || author.email.trim().length == 0) {
-		x++;
-	    }
-	    if (typeof author.name === 'undefined' || author.name.trim().length == 0) {
-		x++;
-	    }
-	    if (typeof author.institution === 'undefined' || author.institution.trim().length == 0) {
-		x++;
-	    }
-	    if (x == 0) {
-		tmpAuthors.push(author);
-	    } else if (x < 3) {
-		errors = true;
-		$scope.errorMessages.push("Invalid author entries.");
-		break;
-	    }
+        if ($scope.formData.authors.hasOwnProperty(a)) {
+            var author = $scope.formData.authors[a];
+            var x = 0;
+            if (typeof author.email === 'undefined' || author.email.trim().length === 0) {
+                x++;
+            }
+            if (typeof author.name === 'undefined' || author.name.trim().length === 0) {
+                x++;
+            }
+            if (typeof author.institution === 'undefined' || author.institution.trim().length === 0) {
+                x++;
+            }
+            if (x === 0) {
+                tmpAuthors.push(author);
+            } else if (x < 3) {
+                errors = true;
+                $scope.errorMessages.push("Invalid author entries.");
+                break;
+            }
+        }
 	}
 	if (!errors) {
 	    $scope.formData.authors = tmpAuthors;
@@ -322,7 +324,7 @@ app.controller('publicationFormCtrl', function ($scope, $log, $http, ngDialog, $
 
         // Set default experiment
         for (var i = 0; i < $scope.experiments.length; i++) {
-            if ($scope.experiments[i].id == experiment_id) {
+            if ($scope.experiments[i].id === experiment_id) {
                 $scope.selectedExperiment = $scope.experiments[i];
                 break;
             }
@@ -374,17 +376,17 @@ app.controller('publicationFormCtrl', function ($scope, $log, $http, ngDialog, $
             $scope.infoMessage = "";
             $scope.currentPageIdx--;
             $scope.current_page = $scope.form_pages[$scope.currentPageIdx];
-        } else if ($scope.currentPageIdx == 0) {
+        } else if ($scope.currentPageIdx === 0) {
             ngDialog.close();
         }
     }
 
     $scope.isComplete = function () {
-        return $scope.currentPageIdx == ($scope.form_pages.length - 1);
+        return $scope.currentPageIdx === ($scope.form_pages.length - 1);
     }
 
     $scope.isLastPage = function () { // Actually, second last page
-        return $scope.currentPageIdx == ($scope.form_pages.length - 2);
+        return $scope.currentPageIdx === ($scope.form_pages.length - 2);
     }
 
     // Set the publication title
@@ -416,7 +418,7 @@ app.controller('publicationFormCtrl', function ($scope, $log, $http, ngDialog, $
 
     // Copy acknowledgement text to acknowledgement field
     $scope.copyAcknowledgement = function (text) {
-        if ($scope.formData.acknowledgements.indexOf(text) == -1) {
+        if ($scope.formData.acknowledgements.indexOf(text) === -1) {
             if ($scope.formData.acknowledgements.length > 0) {
                 $scope.formData.acknowledgements += " ";
             }
@@ -427,10 +429,12 @@ app.controller('publicationFormCtrl', function ($scope, $log, $http, ngDialog, $
     $scope.$watch('formData.selectedLicenseId', function (newVal, oldVal) {
         if (typeof $scope.formData.licenses !== 'undefined') {
             for (var i in $scope.formData.licenses) {
-                var license = $scope.formData.licenses[i];
-                if (license['id'] == newVal) {
-                    $scope.formData.selectedLicense = license;
-                    break;
+                if ($scope.formData.licenses.hasOwnProperty(i)) {
+                    var license = $scope.formData.licenses[i];
+                    if (license['id'] === newVal) {
+                        $scope.formData.selectedLicense = license;
+                        break;
+                    }
                 }
             }
         }
@@ -460,7 +464,7 @@ app.controller('publicationFormCtrl', function ($scope, $log, $http, ngDialog, $
     // #### PDB HELPER ####
     $scope.requirePDBHelper = function () {
         extraInfoHelpers.push(function () {
-            if (typeof $scope.pdbOK === 'undefined' || $scope.pdbOK == false) {
+            if (typeof $scope.pdbOK === 'undefined' || $scope.pdbOK === false) {
                 $scope.errorMessages.push("PDB ID invalid or not given");
                 return false;
             } else {
@@ -473,7 +477,7 @@ app.controller('publicationFormCtrl', function ($scope, $log, $http, ngDialog, $
     $scope.$watch('formData.pdbInfo', function (newVal, oldVal) {
         if (typeof newVal !== 'undefined') {
             $scope.pdbSearchComplete = Object.keys(newVal).length;
-            $scope.pdbOK = (newVal.status != 'UNKNOWN')
+            $scope.pdbOK = (newVal.status !== 'UNKNOWN')
         } else if (typeof $scope.pdbOK !== 'undefined' || $scope.hasPDB) {
             delete $scope.pdbOK // unset the variable so the form validator can continue
         }
