@@ -50,6 +50,7 @@ from tastypie.http import HttpUnauthorized
 from tastypie.resources import ModelResource
 from tastypie.serializers import Serializer
 from tastypie.utils import trailing_slash
+from tastypie.contrib.contenttypes.fields import GenericForeignKeyField
 
 
 class PrettyJSONSerializer(Serializer):
@@ -169,6 +170,15 @@ class ACLAuthorization(Authorization):
             return object_list
         elif isinstance(bundle.obj, ParameterName):
             return object_list
+        elif isinstance(bundle.obj, ObjectACL):
+            experiments = Experiment.safe.all(bundle.request.user)
+            objacl_list = []
+            for objacl in object_list:
+                if isinstance(objacl.content_object, Experiment):
+                    exp = Experiment.objects.get(id=objacl.object_id)
+                    if exp in experiments:
+                        objacl_list.append(objacl)
+            return objacl_list
         else:
             return []
 
@@ -225,7 +235,7 @@ class ACLAuthorization(Authorization):
             return True
         if isinstance(bundle.obj, Experiment):
             return bundle.request.user.has_perm('tardis_portal.add_experiment')
-        elif isinstance(bundle.obj, (ExperimentParameterSet,)):
+        elif isinstance(bundle.obj, ExperimentParameterSet):
             if not bundle.request.user.has_perm(
                     'tardis_portal.change_experiment'):
                 return False
@@ -238,7 +248,7 @@ class ACLAuthorization(Authorization):
                 return has_write_permissions(bundle.request,
                                              bundle.obj.experiment.id)
             return False
-        elif isinstance(bundle.obj, (ExperimentParameter,)):
+        elif isinstance(bundle.obj, ExperimentParameter):
             return bundle.request.user.has_perm(
                 'tardis_portal.change_experiment') and \
                 has_write_permissions(bundle.request,
@@ -259,7 +269,7 @@ class ACLAuthorization(Authorization):
                 else:
                     return False
             return perm
-        elif isinstance(bundle.obj, (DatasetParameterSet,)):
+        elif isinstance(bundle.obj, DatasetParameterSet):
             if not bundle.request.user.has_perm(
                     'tardis_portal.change_dataset'):
                 return False
@@ -272,7 +282,7 @@ class ACLAuthorization(Authorization):
                 return has_dataset_write(bundle.request,
                                          bundle.obj.dataset.id)
             return False
-        elif isinstance(bundle.obj, (DatasetParameter,)):
+        elif isinstance(bundle.obj, DatasetParameter):
             return bundle.request.user.has_perm(
                 'tardis_portal.change_dataset') and \
                 has_dataset_write(bundle.request,
@@ -309,6 +319,8 @@ class ACLAuthorization(Authorization):
                 has_dataset_write(bundle.request,
                                   bundle.obj.datafile.dataset.id),
             ])
+        elif isinstance(bundle.obj, ObjectACL):
+            return bundle.request.user.has_perm('tardis_portal.add_objectacl')
         raise NotImplementedError(type(bundle.obj))
 
     def update_list(self, object_list, bundle):
@@ -873,4 +885,29 @@ class ReplicaResource(MyTardisModelResource):
             bundle.obj.file_object = bundle.data['file_object']
             bundle.data['file_object'].close()
             del(bundle.data['file_object'])
+        return bundle
+
+
+class ObjectAclResource(MyTardisModelResource):
+    content_object = GenericForeignKeyField({
+        Experiment: ExperimentResource,
+        # ...
+    }, 'content_object')
+
+    class Meta:
+        authentication = default_authentication
+        authorization = ACLAuthorization()
+        queryset = ObjectACL.objects.all()
+        filtering = {
+            'pluginId': ('exact', ),
+            'entityId': ('exact', ),
+        }
+
+    def hydrate(self, bundle):
+        # Fill in the content type.
+        if bundle.data['content_type'] == 'experiment':
+            experiment = Experiment.objects.get(pk=bundle.data['object_id'])
+            bundle.obj.content_type = experiment.get_ct()
+        else:
+            raise NotImplementedError(str(bundle.obj))
         return bundle
