@@ -707,7 +707,7 @@ class DataFileResource(MyTardisModelResource):
     replicas = fields.ToManyField(
         'tardis.tardis_portal.api.ReplicaResource',
         'file_objects',
-        related_name='datafile', full=True)
+        related_name='datafile', full=True, null=True)
     temp_url = None
 
     class Meta(MyTardisModelResource.Meta):
@@ -742,9 +742,6 @@ class DataFileResource(MyTardisModelResource):
         return response
 
     def hydrate(self, bundle):
-        dataset = DatasetResource.get_via_uri(DatasetResource(),
-                                              bundle.data['dataset'],
-                                              bundle.request)
         if 'attached_file' in bundle.data:
             # have POSTed file
             newfile = bundle.data['attached_file'][0]
@@ -756,17 +753,22 @@ class DataFileResource(MyTardisModelResource):
 
             bundle.data['replicas'] = [{'file_object': newfile}]
             del(bundle.data['attached_file'])
-        elif 'replicas' not in bundle.data:
+        return bundle
+
+    def obj_create(self, bundle, **kwargs):
+        retval = super(DataFileResource, self).obj_create(bundle, **kwargs)
+        if 'replicas' not in bundle.data or not bundle.data['replicas']:
             # no replica specified: return upload path and create dfo for
             # new path
-            sbox = dataset.get_staging_storage_box()
+            sbox = bundle.obj.get_receiving_storage_box()
             if sbox is None:
                 raise NotImplementedError
             dfo = DataFileObject(
                 datafile=bundle.obj,
                 storage_box=sbox)
+            dfo.save()
             self.temp_url = dfo.get_save_location()
-        return bundle
+        return retval
 
     def post_list(self, request, **kwargs):
         response = super(DataFileResource, self).post_list(request,

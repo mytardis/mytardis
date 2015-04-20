@@ -16,7 +16,7 @@ from tardis.tardis_portal.util import generate_file_checksums
 
 from .fields import DirectoryField
 from .dataset import Dataset
-from .storage import StorageBox
+from .storage import StorageBox, StorageBoxOption, StorageBoxAttribute
 
 import logging
 logger = logging.getLogger(__name__)
@@ -98,12 +98,41 @@ class DataFile(models.Model):
         if len(dataset_boxes) > 0:
             return dataset_boxes[0]
         experiment_boxes = StorageBox.objects.filter(
-            file_objects__datafile__dataset__experiments__in=
-            self.dataset.experiments.all())
+            file_objects__datafile__dataset__experiments__in=self
+            .dataset.experiments.all())
         if len(experiment_boxes) > 0:
             return experiment_boxes[0]
         # TODO: select one accessible to the owner of the file
         return StorageBox.get_default_storage()
+
+    def get_receiving_storage_box(self):
+        default_box = self.get_default_storage_box()
+        child_boxes = [
+            box for box in default_box.child_boxes.all()
+            if box.attributes.filter(
+                key="type", value="receiving").count() == 1]
+        if len(child_boxes) > 0:
+            return child_boxes[0]
+
+        loc_boxes = StorageBoxOption.objects.filter(
+            key='location',
+            value=getattr(settings, 'DEFAULT_RECEIVING_DIR', '/tmp'))\
+            .values_list('storage_box', flat=True)
+        attr_boxes = StorageBoxAttribute.objects.filter(
+            key="type", value="receiving")\
+            .values_list('storage_box', flat=True)
+        existing_default = set(loc_boxes) & set(attr_boxes)
+        if len(existing_default) > 0:
+            return StorageBox.objects.get(id=existing_default.pop())
+
+        new_box = StorageBox.create_local_box(
+            location=getattr(settings, 'DEFAULT_RECEIVING_DIR', '/tmp'))
+        new_attr = StorageBoxAttribute(storage_box=new_box,
+                                       key='type', value='receiving')
+        new_box.attributes.add(new_attr)
+        new_box.master_box = default_box
+        new_box.save()
+        return new_box
 
     class Meta:
         app_label = 'tardis_portal'
