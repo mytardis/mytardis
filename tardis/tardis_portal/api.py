@@ -336,6 +336,8 @@ class ACLAuthorization(Authorization):
             ])
         elif isinstance(bundle.obj, ObjectACL):
             return bundle.request.user.has_perm('tardis_portal.add_objectacl')
+        elif isinstance(bundle.obj, Group):
+            return bundle.request.user.has_perm('tardis_portal.add_group')
         elif isinstance(bundle.obj, Facility):
             return bundle.request.user.has_perm('tardis_portal.add_facility')
         raise NotImplementedError(type(bundle.obj))
