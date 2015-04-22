@@ -311,6 +311,19 @@ class DatasetResourceTest(MyTardisResourceTestCase):
         self.assertEqual(returned_object['instrument']['id'],
                          self.testinstrument.id)
 
+    def test_post_dataset(self):
+        post_data = {
+            "description": "api test dataset",
+            "experiments": [
+                "/api/v1/experiment/1/",
+            ],
+            "immutable": False}
+        dataset_count = Dataset.objects.count()
+        self.assertHttpCreated(self.api_client.post(
+            '/api/v1/dataset/',
+            data=post_data,
+            authentication=self.get_credentials()))
+        self.assertEqual(dataset_count + 1, Dataset.objects.count())
 
 class DataFileResourceTest(MyTardisResourceTestCase):
     def setUp(self):
