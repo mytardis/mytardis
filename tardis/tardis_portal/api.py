@@ -10,6 +10,7 @@ from django.conf import settings
 from django.conf.urls import url
 from django.contrib.auth.models import AnonymousUser
 from django.contrib.auth.models import User
+from django.contrib.auth.models import Group
 from django.core.serializers import json
 from django.core.servers.basehttp import FileWrapper
 from django.http import HttpResponse
@@ -37,6 +38,8 @@ from tardis.tardis_portal.models.parameters import ExperimentParameterSet
 from tardis.tardis_portal.models.parameters import ParameterName
 from tardis.tardis_portal.models.parameters import Schema
 from tardis.tardis_portal.models.storage import StorageBox
+from tardis.tardis_portal.models.facility import Facility
+from tardis.tardis_portal.models.facility import facilities_managed_by
 
 from tastypie import fields
 from tastypie.authentication import BasicAuthentication
@@ -179,6 +182,14 @@ class ACLAuthorization(Authorization):
                     if exp in experiments:
                         objacl_list.append(objacl)
             return objacl_list
+        elif isinstance(bundle.obj, Group):
+            groups = bundle.request.user.groups.all()
+            return [grp for grp in object_list
+                    if grp in groups]
+        elif isinstance(bundle.obj, Facility):
+            facilities = facilities_managed_by(bundle.request.user)
+            return [facility for facility in object_list
+                    if facility in facilities]
         else:
             return []
 
@@ -222,6 +233,11 @@ class ACLAuthorization(Authorization):
             return True
         elif isinstance(bundle.obj, StorageBox):
             return bundle.request.user.is_authenticated()
+        elif isinstance(bundle.obj, Group):
+            return bundle.obj in bundle.request.user.groups.all()
+        elif isinstance(bundle.obj, Facility):
+            facilities = facilities_managed_by(bundle.request.user)
+            return bundle.obj in facilities
         raise NotImplementedError(type(bundle.obj))
 
     def create_list(self, object_list, bundle):
@@ -321,6 +337,8 @@ class ACLAuthorization(Authorization):
             ])
         elif isinstance(bundle.obj, ObjectACL):
             return bundle.request.user.has_perm('tardis_portal.add_objectacl')
+        elif isinstance(bundle.obj, Facility):
+            return bundle.request.user.has_perm('tardis_portal.add_facility')
         raise NotImplementedError(type(bundle.obj))
 
     def update_list(self, object_list, bundle):
@@ -361,6 +379,8 @@ class ACLAuthorization(Authorization):
         elif isinstance(bundle.obj, DatafileParameter):
             return False
         elif isinstance(bundle.obj, Schema):
+            return False
+        elif isinstance(bundle.obj, Facility):
             return False
         raise NotImplementedError(type(bundle.obj))
 
@@ -439,6 +459,17 @@ class UserResource(ModelResource):
             bundle.data['email'] = queried_user.email
 
         return bundle
+
+
+class GroupResource(ModelResource):
+    class Meta:
+        queryset = Group.objects.all()
+        authentication = default_authentication
+        authorization = ACLAuthorization()
+        filtering = {
+            'id': ('exact',),
+            'name': ('exact',),
+        }
 
 
 class MyTardisModelResource(ModelResource):
@@ -911,3 +942,17 @@ class ObjectACLResource(MyTardisModelResource):
         else:
             raise NotImplementedError(str(bundle.obj))
         return bundle
+
+
+class FacilityResource(MyTardisModelResource):
+    manager_group = fields.ForeignKey(GroupResource, 'manager_group',
+                                      null=True, full=True)
+
+    class Meta(MyTardisModelResource.Meta):
+        queryset = Facility.objects.all()
+        filtering = {
+            'id': ('exact', ),
+            'manager_group': ALL_WITH_RELATIONS,
+            'name': ('exact', ),
+        }
+        always_return_data = True
