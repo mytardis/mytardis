@@ -29,6 +29,7 @@ from tardis.tardis_portal.models.parameters import ExperimentParameterSet
 from tardis.tardis_portal.models.parameters import ParameterName
 from tardis.tardis_portal.models.parameters import Schema
 from tardis.tardis_portal.models.facility import Facility
+from tardis.tardis_portal.models.instrument import Instrument
 
 
 class SerializerTest(TestCase):
@@ -83,14 +84,20 @@ class MyTardisResourceTestCase(ResourceTestCase):
             Permission.objects.get(codename='change_dataset'))
         self.user.user_permissions.add(
             Permission.objects.get(codename='add_datafile'))
+        self.user.user_permissions.add(
+            Permission.objects.get(codename='add_instrument'))
+        self.user.user_permissions.add(
+            Permission.objects.get(codename='change_instrument'))
         self.user_profile = UserProfile(user=self.user).save()
         self.testgroup = Group(name="Test Group")
         self.testgroup.save()
         self.testgroup.user_set.add(self.user)
-        self.testgroup.save()
         self.testfacility = Facility(name="Test Facility",
                                      manager_group=self.testgroup)
         self.testfacility.save()
+        self.testinstrument = Instrument(name="Test Instrument",
+                                         facility=self.testfacility)
+        self.testinstrument.save()
         self.testexp = Experiment(title="test exp")
         self.testexp.approved = True
         self.testexp.created_by = self.user
@@ -264,6 +271,45 @@ class DatasetParameterResourceTest(MyTardisResourceTestCase):
 class DatasetResourceTest(MyTardisResourceTestCase):
     def setUp(self):
         super(DatasetResourceTest, self).setUp()
+        self.ds_no_instrument = Dataset()
+        self.ds_no_instrument.description = "Dataset no instrument"
+        self.ds_no_instrument.save()
+        self.ds_no_instrument.experiments.add(self.testexp)
+        self.ds_with_instrument = Dataset()
+        self.ds_with_instrument.description = "Dataset with instrument"
+        self.ds_with_instrument.instrument = self.testinstrument
+        self.ds_with_instrument.save()
+        self.ds_with_instrument.experiments.add(self.testexp)
+
+    def test_get_dataset_no_instrument(self):
+        uri = '/api/v1/dataset/?description=%s' \
+            % urllib.quote(self.ds_no_instrument.description)
+        output = self.api_client.get(uri,
+                                     authentication=self.get_credentials())
+        returned_data = json.loads(output.content)
+        self.assertEqual(returned_data['meta']['total_count'], 1)
+        returned_object = returned_data['objects'][0]
+        self.assertTrue('description' in returned_object)
+        self.assertEqual(returned_object['description'],
+                         self.ds_no_instrument.description)
+        self.assertTrue('instrument' in returned_object)
+        self.assertIsNone(returned_object['instrument'])
+
+    def test_get_dataset_with_instrument(self):
+        uri = '/api/v1/dataset/?description=%s' \
+            % urllib.quote(self.ds_with_instrument.description)
+        output = self.api_client.get(uri,
+                                     authentication=self.get_credentials())
+        returned_data = json.loads(output.content)
+        self.assertEqual(returned_data['meta']['total_count'], 1)
+        returned_object = returned_data['objects'][0]
+        self.assertTrue('description' in returned_object)
+        self.assertEqual(returned_object['description'],
+                         self.ds_with_instrument.description)
+        self.assertTrue('instrument' in returned_object)
+        self.assertTrue('id' in returned_object['instrument'])
+        self.assertEqual(returned_object['instrument']['id'],
+                         self.testinstrument.id)
 
 
 class DataFileResourceTest(MyTardisResourceTestCase):
@@ -517,3 +563,84 @@ class FacilityResourceTest(MyTardisResourceTestCase):
         for key, value in expected_output.iteritems():
             self.assertTrue(key in returned_object)
             self.assertEqual(returned_object[key], value)
+
+
+class InstrumentResourceTest(MyTardisResourceTestCase):
+    def setUp(self):
+        super(InstrumentResourceTest, self).setUp()
+
+    def test_get_instrument_by_id(self):
+        expected_output = {
+            "facility": {
+                "id": 1,
+                "manager_group": {
+                    "id": 1,
+                    "name": "Test Group",
+                    "resource_uri": "/api/v1/group/1/"
+                },
+                "name": "Test Facility",
+                "resource_uri": "/api/v1/facility/1/"
+            },
+            "id": 1,
+            "name": "Test Instrument",
+            "resource_uri": "/api/v1/instrument/1/"
+        }
+        output = self.api_client.get('/api/v1/instrument/1/',
+                                     authentication=self.get_credentials())
+        returned_data = json.loads(output.content)
+        for key, value in expected_output.iteritems():
+            self.assertTrue(key in returned_data)
+            self.assertEqual(returned_data[key], value)
+
+    def test_get_instrument_by_name(self):
+        expected_output = {
+            "facility": {
+                "id": 1,
+                "manager_group": {
+                    "id": 1,
+                    "name": "Test Group",
+                    "resource_uri": "/api/v1/group/1/"
+                },
+                "name": "Test Facility",
+                "resource_uri": "/api/v1/facility/1/"
+            },
+            "id": 1,
+            "name": "Test Instrument",
+            "resource_uri": "/api/v1/instrument/1/"
+        }
+        output = self.api_client.get('/api/v1/instrument/?name=%s'
+                                     % urllib.quote(self.testinstrument.name),
+                                     authentication=self.get_credentials())
+        returned_data = json.loads(output.content)
+        self.assertEqual(returned_data['meta']['total_count'], 1)
+        returned_object = returned_data['objects'][0]
+        for key, value in expected_output.iteritems():
+            self.assertTrue(key in returned_object)
+            self.assertEqual(returned_object[key], value)
+
+    def test_post_instrument(self):
+        post_data = {
+            "name": "Another Test Instrument",
+            "facility": "/api/v1/facility/1/"
+        }
+        instrument_count = Instrument.objects.count()
+        self.assertHttpCreated(self.api_client.post(
+            '/api/v1/instrument/',
+            data=post_data,
+            authentication=self.get_credentials()))
+        self.assertEqual(instrument_count + 1, Instrument.objects.count())
+
+    def test_rename_instrument(self):
+        patch_data = {
+            "name": "Renamed Test Instrument",
+        }
+        self.testinstrument.name = "Test Instrument"
+        self.testinstrument.save()
+        response = self.api_client.patch(
+            '/api/v1/instrument/%d/' % self.testinstrument.id,
+            data=patch_data,
+            authentication=self.get_credentials())
+        self.assertHttpAccepted(response)
+        self.testinstrument = Instrument.objects.get(id=self.testinstrument.id)
+        self.assertEqual(self.testinstrument.name,
+                         "Renamed Test Instrument")
