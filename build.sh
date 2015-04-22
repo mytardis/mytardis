@@ -38,12 +38,12 @@ mkdir -p var/store
 python -c "import os; from random import choice; key_line = '%sSECRET_KEY=\"%s\"  # generated from build.sh\n' % ('from tardis.settings_changeme import * \n\n' if not os.path.isfile('tardis/settings.py') else '', ''.join([choice('abcdefghijklmnopqrstuvwxyz0123456789\\!@#$%^&*(-_=+)') for i in range(50)])); f=open('tardis/settings.py', 'a+'); f.write(key_line); f.close()"
 
 python test.py
-python mytardis.py collectstatic
 # for empty databases, sync all and fake migrate, otherwise run a real migration
 python mytardis.py syncdb --all
 python mytardis.py migrate --fake
 python mytardis.py createcachetable default_cache
 python mytardis.py createcachetable celery_lock_cache
+python mytardis.py collectstatic
 
 python mytardis.py runserver
 # os x:
