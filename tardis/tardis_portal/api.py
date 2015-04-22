@@ -40,6 +40,7 @@ from tardis.tardis_portal.models.parameters import Schema
 from tardis.tardis_portal.models.storage import StorageBox
 from tardis.tardis_portal.models.facility import Facility
 from tardis.tardis_portal.models.facility import facilities_managed_by
+from tardis.tardis_portal.models.instrument import Instrument
 
 from tastypie import fields
 from tastypie.authentication import BasicAuthentication
@@ -190,6 +191,15 @@ class ACLAuthorization(Authorization):
             facilities = facilities_managed_by(bundle.request.user)
             return [facility for facility in object_list
                     if facility in facilities]
+        elif isinstance(bundle.obj, Instrument):
+            facilities = facilities_managed_by(bundle.request.user)
+            instrument_list = []
+            for facility in facilities:
+                instruments = Instrument.objects.filter(facility=facility)
+                for instrument in instruments:
+                    instrument_list.append(instrument)
+            return [instrument for instrument in object_list
+                    if instrument in instrument_list]
         else:
             return []
 
@@ -237,6 +247,9 @@ class ACLAuthorization(Authorization):
             return bundle.obj in bundle.request.user.groups.all()
         elif isinstance(bundle.obj, Facility):
             return bundle.obj in facilities_managed_by(bundle.request.user)
+        elif isinstance(bundle.obj, Instrument):
+            facilities = facilities_managed_by(bundle.request.user)
+            return bundle.obj.facility in facilities
         raise NotImplementedError(type(bundle.obj))
 
     def create_list(self, object_list, bundle):
@@ -340,6 +353,12 @@ class ACLAuthorization(Authorization):
             return bundle.request.user.has_perm('tardis_portal.add_group')
         elif isinstance(bundle.obj, Facility):
             return bundle.request.user.has_perm('tardis_portal.add_facility')
+        elif isinstance(bundle.obj, Instrument):
+            facilities = facilities_managed_by(bundle.request.user)
+            return all([
+                bundle.request.user.has_perm('tardis_portal.add_instrument'),
+                bundle.obj.facility in facilities
+            ])
         raise NotImplementedError(type(bundle.obj))
 
     def update_list(self, object_list, bundle):
@@ -385,6 +404,10 @@ class ACLAuthorization(Authorization):
             return False
         elif isinstance(bundle.obj, Facility):
             return False
+        elif isinstance(bundle.obj, Instrument):
+            facilities = facilities_managed_by(bundle.request.user)
+            return bundle.obj.facility in facilities and \
+                bundle.request.user.has_perm('tardis_portal.change_instrument')
         raise NotImplementedError(type(bundle.obj))
 
     def delete_list(self, object_list, bundle):
@@ -692,6 +715,34 @@ class StorageBoxResource(MyTardisModelResource):
         queryset = StorageBox.objects.all()
 
 
+class FacilityResource(MyTardisModelResource):
+    manager_group = fields.ForeignKey(GroupResource, 'manager_group',
+                                      null=True, full=True)
+
+    class Meta(MyTardisModelResource.Meta):
+        queryset = Facility.objects.all()
+        filtering = {
+            'id': ('exact', ),
+            'manager_group': ALL_WITH_RELATIONS,
+            'name': ('exact', ),
+        }
+        always_return_data = True
+
+
+class InstrumentResource(MyTardisModelResource):
+    facility = fields.ForeignKey(FacilityResource, 'facility',
+                                 null=True, full=True)
+
+    class Meta(MyTardisModelResource.Meta):
+        queryset = Instrument.objects.all()
+        filtering = {
+            'id': ('exact', ),
+            'facility': ALL_WITH_RELATIONS,
+            'name': ('exact', ),
+        }
+        always_return_data = True
+
+
 class DatasetResource(MyTardisModelResource):
     experiments = fields.ToManyField(
         ExperimentResource, 'experiments', related_name='datasets')
@@ -700,11 +751,11 @@ class DatasetResource(MyTardisModelResource):
         'datasetparameterset_set',
         related_name='dataset',
         full=True, null=True)
-    storage_boxes = fields.ToManyField(
-        StorageBoxResource,
-        'storage_boxes',
-        related_name='datasets',
-        null=True)
+    instrument = fields.ForeignKey(
+        InstrumentResource,
+        'instrument',
+        null=True,
+        full=True)
 
     class Meta(MyTardisModelResource.Meta):
         queryset = Dataset.objects.all()
@@ -945,17 +996,3 @@ class ObjectACLResource(MyTardisModelResource):
         else:
             raise NotImplementedError(str(bundle.obj))
         return bundle
-
-
-class FacilityResource(MyTardisModelResource):
-    manager_group = fields.ForeignKey(GroupResource, 'manager_group',
-                                      null=True, full=True)
-
-    class Meta(MyTardisModelResource.Meta):
-        queryset = Facility.objects.all()
-        filtering = {
-            'id': ('exact', ),
-            'manager_group': ALL_WITH_RELATIONS,
-            'name': ('exact', ),
-        }
-        always_return_data = True
