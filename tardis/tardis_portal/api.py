@@ -247,7 +247,7 @@ class ACLAuthorization(Authorization):
             return bundle.obj in bundle.request.user.groups.all()
         elif isinstance(bundle.obj, Facility):
             return bundle.obj in facilities_managed_by(bundle.request.user)
-        elif type(bundle.obj) == Instrument:
+        elif isinstance(bundle.obj, Instrument):
             facilities = facilities_managed_by(bundle.request.user)
             return bundle.obj.facility in facilities
         raise NotImplementedError(type(bundle.obj))
