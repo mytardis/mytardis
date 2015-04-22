@@ -236,8 +236,7 @@ class ACLAuthorization(Authorization):
         elif isinstance(bundle.obj, Group):
             return bundle.obj in bundle.request.user.groups.all()
         elif isinstance(bundle.obj, Facility):
-            facilities = facilities_managed_by(bundle.request.user)
-            return bundle.obj in facilities
+            return bundle.obj in facilities_managed_by(bundle.request.user)
         raise NotImplementedError(type(bundle.obj))
 
     def create_list(self, object_list, bundle):
@@ -379,6 +378,8 @@ class ACLAuthorization(Authorization):
         elif isinstance(bundle.obj, DatafileParameter):
             return False
         elif isinstance(bundle.obj, Schema):
+            return False
+        elif isinstance(bundle.obj, Group):
             return False
         elif isinstance(bundle.obj, Facility):
             return False
