@@ -6,9 +6,11 @@ Testing the tastypie-based mytardis api
 import json
 import os
 import tempfile
+import urllib
 
 from django.contrib.auth.models import Permission
 from django.contrib.auth.models import User
+from django.contrib.auth.models import Group
 
 from django.test.client import Client
 from django.test import TestCase
@@ -26,6 +28,7 @@ from tardis.tardis_portal.models.parameters import ExperimentParameter
 from tardis.tardis_portal.models.parameters import ExperimentParameterSet
 from tardis.tardis_portal.models.parameters import ParameterName
 from tardis.tardis_portal.models.parameters import Schema
+from tardis.tardis_portal.models.facility import Facility
 
 
 class SerializerTest(TestCase):
@@ -81,6 +84,13 @@ class MyTardisResourceTestCase(ResourceTestCase):
         self.user.user_permissions.add(
             Permission.objects.get(codename='add_datafile'))
         self.user_profile = UserProfile(user=self.user).save()
+        self.testgroup = Group(name="Test Group")
+        self.testgroup.save()
+        self.testgroup.user_set.add(self.user)
+        self.testgroup.save()
+        self.testfacility = Facility(name="Test Facility",
+                                     manager_group=self.testgroup)
+        self.testfacility.save()
         self.testexp = Experiment(title="test exp")
         self.testexp.approved = True
         self.testexp.created_by = self.user
@@ -406,3 +416,104 @@ class LocationResourceTest(MyTardisResourceTestCase):
 class ReplicaResourceTest(MyTardisResourceTestCase):
     def setUp(self):
         super(ReplicaResourceTest, self).setUp()
+
+
+class GroupResourceTest(MyTardisResourceTestCase):
+    def setUp(self):
+        super(GroupResourceTest, self).setUp()
+
+    def test_get_group_by_id(self):
+        expected_output = {
+            "id": 1,
+            "name": "Test Group",
+        }
+        output = self.api_client.get('/api/v1/group/1/',
+                                     authentication=self.get_credentials())
+        returned_data = json.loads(output.content)
+        for key, value in expected_output.iteritems():
+            self.assertTrue(key in returned_data)
+            self.assertEqual(returned_data[key], value)
+
+    def test_get_group_by_name(self):
+        expected_output = {
+            "id": 1,
+            "name": "Test Group",
+        }
+        output = self.api_client.get('/api/v1/group/1/?name=%s'
+                                     % urllib.quote(self.testgroup.name),
+                                     authentication=self.get_credentials())
+        returned_data = json.loads(output.content)
+        for key, value in expected_output.iteritems():
+            self.assertTrue(key in returned_data)
+            self.assertEqual(returned_data[key], value)
+
+
+class FacilityResourceTest(MyTardisResourceTestCase):
+    def setUp(self):
+        super(FacilityResourceTest, self).setUp()
+
+    def test_get_facility_by_id(self):
+        expected_output = {
+            "id": 1,
+            "manager_group": {
+                "id": 1,
+                "name": "Test Group",
+                "resource_uri": "/api/v1/group/1/"
+            },
+            "name": "Test Facility",
+            "resource_uri": "/api/v1/facility/1/"
+        }
+        output = self.api_client.get('/api/v1/facility/1/',
+                                     authentication=self.get_credentials())
+        returned_data = json.loads(output.content)
+        for key, value in expected_output.iteritems():
+            self.assertTrue(key in returned_data)
+            self.assertEqual(returned_data[key], value)
+
+    def test_get_facility_by_name(self):
+        expected_output = {
+            "id": 1,
+            "manager_group": {
+                "id": 1,
+                "name": "Test Group",
+                "resource_uri": "/api/v1/group/1/"
+            },
+            "name": "Test Facility",
+            "resource_uri": "/api/v1/facility/1/"
+        }
+        output = self.api_client.get('/api/v1/facility/?name=%s'
+                                     % urllib.quote(self.testfacility.name),
+                                     authentication=self.get_credentials())
+        returned_data = json.loads(output.content)
+        self.assertEqual(returned_data['meta']['total_count'],  1)
+        returned_object = returned_data['objects'][0]
+        for key, value in expected_output.iteritems():
+            self.assertTrue(key in returned_object)
+            self.assertEqual(returned_object[key], value)
+
+    def test_get_facility_by_manager_group_id(self):
+        """
+        This type of query can be used to iterate through a user's groups,
+        and use each group's id to determine which facilities a user
+        manages, i.e. a way to obtain the functionality implemented by
+          tardis.tardis_portal.models.facility.facilities_managed_by
+        via the API
+        """
+        expected_output = {
+            "id": 1,
+            "manager_group": {
+                "id": 1,
+                "name": "Test Group",
+                "resource_uri": "/api/v1/group/1/"
+            },
+            "name": "Test Facility",
+            "resource_uri": "/api/v1/facility/1/"
+        }
+        output = self.api_client.get('/api/v1/facility/?manager_group__id=1',
+                                     authentication=self.get_credentials())
+        returned_data = json.loads(output.content)
+        self.assertEqual(returned_data['meta']['total_count'],  1)
+        returned_object = returned_data['objects'][0]
+        for key, value in expected_output.iteritems():
+            self.assertTrue(key in returned_object)
+            self.assertEqual(returned_object[key], value)
