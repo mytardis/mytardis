@@ -193,13 +193,9 @@ class ACLAuthorization(Authorization):
                     if facility in facilities]
         elif isinstance(bundle.obj, Instrument):
             facilities = facilities_managed_by(bundle.request.user)
-            instrument_list = []
-            for facility in facilities:
-                instruments = Instrument.objects.filter(facility=facility)
-                for instrument in instruments:
-                    instrument_list.append(instrument)
+            instruments = Instrument.objects.filter(facility__in=facilities)
             return [instrument for instrument in object_list
-                    if instrument in instrument_list]
+                    if instrument in instruments]
         else:
             return []
 
