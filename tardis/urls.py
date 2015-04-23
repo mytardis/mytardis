@@ -253,6 +253,22 @@ display_urls = patterns(
 )
 
 # # API SECTION
+
+app_api_resources = []
+for app in getTardisApps():
+    try:
+        app = '%s.%s' % (settings.TARDIS_APP_ROOT, app)
+        app_api_string = '%s.api' % app
+        exec('import %s' % app_api_string)
+        api = eval(app_api_string)
+        resources = eval("[name for name, cls in api.__dict__.items() "
+                         "if isinstance(cls, type) and "
+                         "name.endswith('AppResource')]")
+        for resource in resources:
+            app_api_resources.append((app, resource))
+    except:
+        pass
+
 from tardis.tardis_portal.api import DatasetParameterSetResource
 from tardis.tardis_portal.api import DatasetParameterResource
 from tardis.tardis_portal.api import DatasetResource
@@ -272,6 +288,8 @@ from tardis.tardis_portal.api import GroupResource
 from tardis.tardis_portal.api import ObjectACLResource
 from tardis.tardis_portal.api import FacilityResource
 from tardis.tardis_portal.api import InstrumentResource
+for app, resource in app_api_resources:
+    exec('from %s.api import %s' % (app, resource))
 from tastypie.api import Api
 v1_api = Api(api_name='v1')
 v1_api.register(DatasetParameterSetResource())
@@ -293,6 +311,8 @@ v1_api.register(GroupResource())
 v1_api.register(ObjectACLResource())
 v1_api.register(FacilityResource())
 v1_api.register(InstrumentResource())
+for app, resource in app_api_resources:
+    exec('v1_api.register(%s())' % resource)
 api_urls = patterns(
     '',
     (r'^', include(v1_api.urls)),
