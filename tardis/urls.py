@@ -1,3 +1,5 @@
+from importlib import import_module
+
 from django.contrib import admin
 admin.autodiscover()
 
@@ -13,6 +15,9 @@ from tardis.tardis_portal.forms import RegistrationForm
 from django.http import HttpResponse
 
 import django_jasmine.urls
+
+from tastypie.api import Api
+from tastypie.resources import Resource
 
 
 def getTardisApps():
@@ -272,7 +277,6 @@ from tardis.tardis_portal.api import GroupResource
 from tardis.tardis_portal.api import ObjectACLResource
 from tardis.tardis_portal.api import FacilityResource
 from tardis.tardis_portal.api import InstrumentResource
-from tastypie.api import Api
 v1_api = Api(api_name='v1')
 v1_api.register(DatasetParameterSetResource())
 v1_api.register(DatasetParameterResource())
@@ -293,6 +297,25 @@ v1_api.register(GroupResource())
 v1_api.register(ObjectACLResource())
 v1_api.register(FacilityResource())
 v1_api.register(InstrumentResource())
+
+# App API additions
+for app in getTardisApps():
+    try:
+        app_api = import_module('tardis.apps.%s.api' % app)
+        for res_name in dir(app_api):
+            if not res_name.endswith('AppResource'):
+                continue
+            resource = getattr(app_api, res_name)
+            if not issubclass(resource, Resource):
+                continue
+            resource_name = resource._meta.resource_name
+            if not resource_name.startswith(app):
+                resource._meta.resource_name = '%s_%s' % (
+                    app, resource_name)
+            v1_api.register(resource())
+    except ImportError:
+        pass
+
 api_urls = patterns(
     '',
     (r'^', include(v1_api.urls)),
