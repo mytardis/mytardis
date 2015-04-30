@@ -1,3 +1,4 @@
+# pylint: disable=C0302
 '''
 RESTful API for MyTardis models and data.
 Implemented with Tastypie.
@@ -183,6 +184,15 @@ class ACLAuthorization(Authorization):
                     if exp in experiments:
                         objacl_list.append(objacl)
             return objacl_list
+        elif bundle.request.user.is_authenticated() and \
+                isinstance(bundle.obj, User):
+            if len(facilities_managed_by(bundle.request.user)) > 0:
+                return object_list
+            else:
+                return [user for user in object_list if
+                        (user == bundle.request.user or
+                         user.experiment_set.filter(public_access__gt=1)
+                         .count() > 0)]
         elif isinstance(bundle.obj, Group):
             groups = bundle.request.user.groups.all()
             return [grp for grp in object_list
@@ -431,7 +441,21 @@ def lookup_by_unique_id_only(resource):
     return lookup_kwargs_with_identifiers
 
 
+class GroupResource(ModelResource):
+    class Meta:
+        queryset = Group.objects.all()
+        authentication = default_authentication
+        authorization = ACLAuthorization()
+        filtering = {
+            'id': ('exact',),
+            'name': ('exact',),
+        }
+
+
 class UserResource(ModelResource):
+    groups = fields.ManyToManyField(GroupResource, 'groups',
+                                    null=True, full=True)
+
     class Meta:
         authentication = default_authentication
         authorization = ACLAuthorization()
@@ -481,17 +505,6 @@ class UserResource(ModelResource):
             bundle.data['email'] = queried_user.email
 
         return bundle
-
-
-class GroupResource(ModelResource):
-    class Meta:
-        queryset = Group.objects.all()
-        authentication = default_authentication
-        authorization = ACLAuthorization()
-        filtering = {
-            'id': ('exact',),
-            'name': ('exact',),
-        }
 
 
 class MyTardisModelResource(ModelResource):
