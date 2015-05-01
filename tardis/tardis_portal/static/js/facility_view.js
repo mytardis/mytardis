@@ -155,8 +155,8 @@
     function groupByUser(data) {
       // Sort by username, group name
 	data.sort(function(a,b) {
-            aOwnerGroup = a.owner + ', ' + a.group
-            bOwnerGroup = b.owner + ', ' + b.group
+            var aOwnerGroup = a.owner + ', ' + a.group
+            var bOwnerGroup = b.owner + ', ' + b.group
 	    if (aOwnerGroup < bOwnerGroup) {
 		return -1;
 	    } else if (aOwnerGroup > bOwnerGroup) {
