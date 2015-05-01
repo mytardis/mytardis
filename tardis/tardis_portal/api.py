@@ -774,6 +774,7 @@ class DatasetResource(MyTardisModelResource):
             'description': ('exact', ),
             'directory': ('exact', ),
         }
+        always_return_data = True
 
     def prepend_urls(self):
         return [
