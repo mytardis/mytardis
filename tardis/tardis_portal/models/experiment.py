@@ -198,6 +198,13 @@ class Experiment(models.Model):
                                         isOwner=True)
         return [acl.get_related_object() for acl in acls]
 
+    def get_groups(self):
+        acls = ObjectACL.objects.filter(pluginId='django_group',
+                                        content_type=self.get_ct(),
+                                        object_id=self.id,
+                                        canRead=True)
+        return [acl.get_related_object() for acl in acls]
+
     def _has_view_perm(self, user_obj):
         if not hasattr(self, 'id'):
             return False

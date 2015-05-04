@@ -153,11 +153,13 @@
 
     // Group facilities data by user
     function groupByUser(data) {
-      // Sort by user ID
+      // Sort by username, group name
 	data.sort(function(a,b) {
-	    if (a.owner < b.owner) {
+            var aOwnerGroup = a.owner + ', ' + a.group
+            var bOwnerGroup = b.owner + ', ' + b.group
+	    if (aOwnerGroup < bOwnerGroup) {
 		return -1;
-	    } else if (a.owner > b.owner) {
+	    } else if (aOwnerGroup > bOwnerGroup) {
 		return 1;
 	    } else {
 		return 0;
@@ -165,17 +167,30 @@
 	});
       
       var result = [];
-      var tmp = {"owner":data[0].owner};
+      if (data[0].group) {
+        data[0].ownerGroup = data[0].owner+', '+data[0].group;
+      }
+      else {
+        data[0].ownerGroup = data[0].owner
+      }
+      var tmp = {"ownerGroup":data[0].ownerGroup};
       tmp['datasets']=[];
       for (var i = 0; i < data.length; i++) {
-        if (tmp.owner !== data[i].owner) {
+        data[i].ownerGroup = data[i].owner+', '+data[i].group;
+        if (data[i].group) {
+          data[i].ownerGroup = data[i].owner+', '+data[i].group;
+        }
+        else {
+          data[i].ownerGroup = data[i].owner
+        }
+        if (tmp.ownerGroup !== data[i].ownerGroup) {
           result.push(tmp);
-          tmp = {"owner":data[i].owner};
+          tmp = {"ownerGroup":data[i].ownerGroup};
           tmp['datasets'] = [];
         }
         var dataset = {};
         for (var key in data[i]) {
-           if (key !== "owner") {
+           if (key !== "ownerGroup") {
              dataset[key] = data[i][key];
            }
         }
