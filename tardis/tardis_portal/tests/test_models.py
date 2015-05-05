@@ -116,7 +116,7 @@ class ModelTestCase(TestCase):
     def test_datafile(self):
         from tardis.tardis_portal.models import Experiment, Dataset, DataFile
 
-        def _build(dataset, filename, url, protocol):
+        def _build(dataset, filename, url):
             from tardis.tardis_portal.models import \
                 DataFileObject
             datafile = DataFile(dataset=dataset, filename=filename)
@@ -145,7 +145,7 @@ class ModelTestCase(TestCase):
         try:
             settings.REQUIRE_DATAFILE_SIZES = False
             settings.REQUIRE_DATAFILE_CHECKSUMS = False
-            df_file = _build(dataset, 'file.txt', 'path/file.txt', '')
+            df_file = _build(dataset, 'file.txt', 'path/file.txt')
             self.assertEqual(df_file.filename, 'file.txt')
             self.assertEqual(df_file.file_objects.all()[0].uri,
                              'path/file.txt')
@@ -154,7 +154,7 @@ class ModelTestCase(TestCase):
             self.assertEqual(df_file.get_download_url(),
                              '/api/v1/dataset_file/1/download')
 
-            df_file = _build(dataset, 'file1.txt', 'path/file1.txt', 'vbl')
+            df_file = _build(dataset, 'file1.txt', 'path/file1.txt')
             self.assertEqual(df_file.filename, 'file1.txt')
             self.assertEqual(df_file.file_objects.all()[0].uri,
                              'path/file1.txt')
@@ -162,7 +162,7 @@ class ModelTestCase(TestCase):
             self.assertEqual(df_file.size, '')
             self.assertEqual(df_file.get_download_url(),
                              '/api/v1/dataset_file/2/download')
-            df_file = _build(dataset, 'file1.txt', 'path/file1#txt', 'vbl')
+            df_file = _build(dataset, 'file1.txt', 'path/file1#txt')
             self.assertEqual(df_file.filename, 'file1.txt')
             self.assertEqual(df_file.dataset, dataset)
             self.assertEqual(df_file.size, '')
@@ -170,12 +170,30 @@ class ModelTestCase(TestCase):
                              '/api/v1/dataset_file/3/download')
 
             df_file = _build(dataset, 'f.txt',
-                             'http://localhost:8080/filestore/f.txt', '')
+                             'http://localhost:8080/filestore/f.txt')
             self.assertEqual(df_file.filename, 'f.txt')
             self.assertEqual(df_file.dataset, dataset)
             self.assertEqual(df_file.size, '')
             self.assertEqual(df_file.get_download_url(),
                              '/api/v1/dataset_file/4/download')
+
+            # check that we can create datafiles with byte size of zero
+            df_file = _build(dataset, 'empty.txt',
+                             'http://localhost:8080/5/empty.txt')
+            df_file.size = 0  # actually a CharField, so gets saved as a string
+            df_file.save()
+            df_pk = df_file.pk
+            saved_df = DataFile.objects.get(pk=df_pk)
+            self.assertEqual(saved_df.size, '0')
+
+
+            # check that can't save negative byte sizes
+            df_file = _build(dataset, 'lessthanempty.txt',
+                             'http://localhost:8080/6/lessthanempty.txt')
+            df_file.size = '-1'
+            with self.assertRaises(Exception):
+                df_file.save()
+
             # Now check the 'REQUIRE' config params
             with self.assertRaises(Exception):
                 settings.REQUIRE_DATAFILE_SIZES = True
