@@ -161,8 +161,12 @@ class DataFile(models.Model):
                 not self.md5sum and not self.sha512sum and require_checksums:
             raise Exception('Every Datafile requires a checksum')
         elif settings.REQUIRE_DATAFILE_SIZES and \
-                not self.size:
+             str(self.size).strip() is '':
             raise Exception('Every Datafile requires a file size')
+
+        if str(self.size).strip() is not '' and int(self.size) < 0:
+            raise Exception('Datafile size cannot be less than 0 bytes')
+
         super(DataFile, self).save(*args, **kwargs)
 
     def get_size(self):
