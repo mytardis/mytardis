@@ -49,6 +49,7 @@ class DynamicTree(object):
         self.update = self.update_nothing
         self.last_updated = None  # a time.time() number
         self.host_obj = host_obj
+        self.children = None
         self.clear_children()
 
     def update_nothing(self):
@@ -125,7 +126,20 @@ class DynamicTree(object):
             # child = self.children[file_name]
             # child.name = file_name
             # child.obj = file_obj
-            child = self.children[df_name]
+
+            def add_unique_name(children, orig_name):
+                counter = 1
+                name = orig_name
+                while name in children:
+                    counter += 1
+                    name = '%s_%i' % (orig_name, counter)
+                return name, children[name]
+
+            if df.directory:
+                path = self.add_path(df.directory)
+                df_name, child = add_unique_name(path.children, df_name)
+            else:
+                df_name, child = add_unique_name(self.children, df_name)
             child.name = df_name
             child.obj = df
 
