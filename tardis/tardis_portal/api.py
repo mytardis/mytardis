@@ -463,6 +463,10 @@ class UserResource(ModelResource):
         allowed_methods = ['get']
         fields = ['username', 'first_name', 'last_name']
         serializer = default_serializer
+        filtering = {
+            'username': ('exact', ),
+            'email': ('iexact', ),
+        }
 
     def dehydrate(self, bundle):
         '''
@@ -472,7 +476,7 @@ class UserResource(ModelResource):
             name, uri, email, id
           authenticated:
             other user:
-              name, uri, email, id
+              name, uri, email, id [, username if facility manager]
             same user:
               name, uri, email, id, username
         private user:
@@ -480,7 +484,7 @@ class UserResource(ModelResource):
             none
           authenticated:
             other user:
-              name, uri, id
+              name, uri, id [, username, email if facility manager]
             same user:
               name, uri, email, id, username
         '''
@@ -495,7 +499,9 @@ class UserResource(ModelResource):
         bundle.data['id'] = queried_user.id
 
         # allow the user to find out their username and email
-        if same_user and authenticated:
+        # allow facility managers to query other users' username and email
+        if authenticated and \
+                (same_user or len(facilities_managed_by(authuser)) > 0):
             bundle.data['email'] = queried_user.email
         else:
             del(bundle.data['username'])
