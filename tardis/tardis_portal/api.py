@@ -632,6 +632,7 @@ class ExperimentResource(MyTardisModelResource):
             'id': ('exact', ),
             'title': ('exact',),
         }
+        always_return_data = True
 
     def dehydrate(self, bundle):
         exp = bundle.obj
