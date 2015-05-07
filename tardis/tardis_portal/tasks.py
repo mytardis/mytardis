@@ -32,11 +32,11 @@ except Exception:
 
 
 @task(name="tardis_portal.verify_dfos", ignore_result=True)
-def verify_dfos(dfos=None):
+def verify_dfos(dfos=None, **kwargs):
     dfos_to_verify = dfos or DataFileObject.objects\
                                            .filter(verified=False)
     for dfo in dfos_to_verify:
-        verify_dfo.delay(dfo.id)
+        verify_dfo.apply_async(args=[dfo.id], **kwargs)
 
 
 @task(name="tardis_portal.verify_dfo", ignore_result=True)
