@@ -422,7 +422,7 @@ def fetch_facility_data(request, facility_id, start_index, end_index):
         facility = instrument.facility
         try:
             parent_experiment = dataset.experiments.all()[:1].get()
-        except ObjectDoesNotExist:
+        except Experiment.DoesNotExist:
             logger.warning("Not listing dataset id %d in Facility Overview" % dataset.id)
             continue
         datafile_objects = DataFile.objects.filter(dataset=dataset)
