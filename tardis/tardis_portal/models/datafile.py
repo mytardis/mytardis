@@ -349,7 +349,7 @@ class DataFileObject(models.Model):
         except:
             return 'undefined'
 
-    def _get_identifier(self):
+    def _build_identifier(self):
         '''
         the default identifier would be directory and file name, but it may
         not work for all backends. This function aims to abstract it.
@@ -383,7 +383,8 @@ class DataFileObject(models.Model):
         '''
         cached_file_object = getattr(self, '_cached_file_object', None)
         if cached_file_object is None or cached_file_object.closed:
-            cached_file_object = self._storage.open(self._get_identifier())
+            cached_file_object = self._storage.open(self.uri or
+                                                    self._build_identifier())
             self._cached_file_object = cached_file_object
         return self._cached_file_object
 
@@ -396,7 +397,9 @@ class DataFileObject(models.Model):
             file_object = File(file_object)
             file_object.open()
         file_object.seek(0)
-        self.uri = self._storage.save(self._get_identifier(), file_object)
+        self.uri = self._storage.save(self.uri or self._build_identifier(),
+                                      file_object)  # TODO: define behaviour
+        # when overwriting existing files
         self.save()
 
     @property
