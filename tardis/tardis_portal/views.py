@@ -2489,25 +2489,36 @@ def create_group(request):
             transaction.rollback()
             return HttpResponse('User %s does not exist' % (admin))
 
-        # create admin for this group and add it to the group
-        groupadmin = GroupAdmin(user=adminuser, group=group)
-        groupadmin.save()
+        try:
+            # create admin for this group and add it to the group
+            groupadmin = GroupAdmin(user=adminuser, group=group)
+            groupadmin.save()
 
-        adminuser.groups.add(group)
-        adminuser.save()
+            adminuser.groups.add(group)
+            adminuser.save()
+        except:
+            transaction.rollback()
+            return HttpResponse('Group not created %s '
+                    '(Group admin could not be assigned)' %
+                    (groupname))
 
     # add the current user as admin as well for newly created groups
     if not request.user == adminuser:
         user = request.user
 
-        groupadmin = GroupAdmin(user=user, group=group)
-        groupadmin.save()
+        try:
+            groupadmin = GroupAdmin(user=user, group=group)
+            groupadmin.save()
 
-        user.groups.add(group)
-        user.save()
+            user.groups.add(group)
+            user.save()
+        except:
+            transaction.rollback()
+            return HttpResponse('Group not created %s '
+                    '(Group admin could not be assigned)' %
+                    (groupname))
 
     c = Context({'group': group})
-    transaction.commit()
 
     response = HttpResponse(render_response_index(
         request,
@@ -2660,6 +2671,7 @@ def create_user(request):
         authentication.save()
 
     except ValidationError:
+        transaction.rollback()
         return HttpResponse('Could not create user %s '
                             '(Email address is invalid: %s)' %
                             (username, email), status=403)
@@ -2671,7 +2683,6 @@ def create_user(request):
             (username), status=403)
 
     c = Context({'user_created': username})
-    transaction.commit()
 
     response = HttpResponse(render_response_index(
         request,
