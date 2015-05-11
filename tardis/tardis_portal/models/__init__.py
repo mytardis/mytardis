@@ -63,3 +63,5 @@ from .parameters import DatafileParameter, DatafileParameterSet, \
                         InstrumentParameter, InstrumentParameterSet, \
                         FreeTextSearchField, ParameterName, Schema
 from .token import Token
+
+import hooks
