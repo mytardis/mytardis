@@ -1,3 +1,4 @@
+import hashlib
 from os import path
 from datetime import datetime
 
@@ -453,44 +454,80 @@ class DataFileObject(models.Model):
             self.delete()
         return copy
 
-    @task(name="tardis_portal.verify_dfo_method", ignore_result=True)  # noqa # too complex
-    def verify(self):  # too complex # noqa
-        md5, sha512, size, mimetype_buffer = generate_file_checksums(
-            self.file_object)
-        df_md5 = self.datafile.md5sum
-        df_sha512 = self.datafile.sha512sum
-        if df_sha512 is None or df_sha512 == '':
-            if md5 != df_md5:
-                logger.error('DataFileObject with id %d did not verify. '
-                             'MD5 sums did not match')
-                return False
-            self.datafile.sha512sum = sha512
-            self.datafile.save()
-        elif df_md5 is None or df_md5 == '':
-            if sha512 != df_sha512:
-                logger.error('DataFileObject with id %d did not verify. '
-                             'SHA512 sums did not match')
-                return False
-            self.datafile.md5sum = md5
-            self.datafile.save()
-        else:
-            if not (md5 == df_md5 and sha512 == df_sha512):
-                logger.error('DataFileObject with id %d did not verify. '
-                             'Checksums did not match')
-                return False
-        df_size = self.datafile.size
-        if df_size is None or df_size == '':
-            self.datafile.size = size
-            self.datafile.save()
-        elif int(df_size) != size:
-            logger.error('DataFileObject with id %d did not verify. '
-                         'File size did not match')
-            return False
+    def _compute_checksums(self,
+                           compute_md5=True,
+                           compute_sha512=True,
+                           compute_size=True):
+        blocksize = 0
+        results = {}
+        if compute_md5:
+            md5_hasher = hashlib.new('md5')
+            blocksize = max(md5_hasher.block_size, blocksize)
+            results['md5sum'] = md5_hasher
+        if compute_sha512:
+            sha512_hasher = hashlib.new('sha512')
+            blocksize = max(sha512_hasher.block_size, blocksize)
+            results['sha512sum'] = sha512_hasher
+        if compute_size:
+            results['size'] = 0
+        update_fns = {'md5sum': lambda x, y: x.update(y),
+                      'sha512sum': lambda x, y: x.update(y),
+                      'size': lambda x, y: x + len(y)}
+        fo = self.file_object
+        fo.seek(0)
+        for chunk in iter(lambda: fo.read(32 * blocksize), ''):
+            for key in results.keys():
+                update_fns[key](results[key], chunk)
+        self.file_object.close()
+        final_fns = {'md5sum': lambda x: x.hexdigest(),
+                     'sha512sum': lambda x: x.hexdigest(),
+                     'size': lambda x: x}
+        return {key: final_fns[key](val) for key, val in results.items()}
 
-        self.verified = True
+    @task(name="tardis_portal.verify_dfo_method", ignore_result=True)  # noqa # too complex
+    def verify(self, add_checksums=True):  # too complex # noqa
+        df = self.datafile
+        database = {'md5sum': df.md5sum,
+                    'sha512sum': df.sha512sum}
+        actual = {key: None for key, val in database.items()
+                  if add_checksums or val}
+        try:
+            if self.file_object.size != int(df.size):
+                the_same = False
+            else:
+                actual.update(self._compute_checksums(
+                    compute_md5='md5sum' in actual,
+                    compute_sha512='sha512sum' in actual,
+                    compute_size='size' in actual))
+                the_same = all(val == database[key]
+                               for key, val in actual.items()
+                               if (database[key] is not None and
+                                   database[key] != ''))
+        except IOError:
+            the_same = False
+
+        if the_same:
+            if add_checksums:
+                changed = False
+                for key, val in actual.items():
+                    if database[key] != val:
+                        setattr(df, key, val)
+                        changed = True
+                if changed:
+                    df.save()
+        else:
+            error_message = 'DataFileObject with id %d did not verify.' % \
+                            self.id
+            for key, val in actual.items():
+                if database[key] is not None and database[key].strip() != '' \
+                        and val != database[key]:
+                    error_message += ' %s did not match.' % key
+            logger.error(error_message)
+
+        self.verified = the_same
         self.last_verified_time = datetime.now()
         self.save(update_fields=['verified', 'last_verified_time'])
-        return True
+        return the_same
 
     def get_full_path(self):
         return self._storage.path(self.uri)
