@@ -2459,10 +2459,10 @@ def create_group(request):
         authMethod = request.GET['authMethod']
 
     try:
-        group = Group(name=groupname)
-        group.save()
+        with transaction.atomic():
+            group = Group(name=groupnme)
+            group.save()
     except:
-        transaction.rollback()
         return HttpResponse('Could not create group %s '
                             '(It is likely that it already exists)' %
                             (groupname))
@@ -2470,7 +2470,6 @@ def create_group(request):
     adminuser = None
     if admin:
         if admin == settings.TOKEN_USERNAME:
-            transaction.rollback()
             return HttpResponse('User %s does not exist' %
                                 (settings.TOKEN_USERNAME))
         try:
@@ -2483,21 +2482,19 @@ def create_group(request):
                     authenticationMethod=authMethod).userProfile.user
 
         except User.DoesNotExist:
-            transaction.rollback()
             return HttpResponse('User %s does not exist' % (admin))
         except UserAuthentication.DoesNotExist:
-            transaction.rollback()
             return HttpResponse('User %s does not exist' % (admin))
 
         try:
-            # create admin for this group and add it to the group
-            groupadmin = GroupAdmin(user=adminuser, group=group)
-            groupadmin.save()
+            with transaction.atomic():
+                # create admin for this group and add it to the group
+                groupadmin = GroupAdmin(user=adminuser, group=group)
+                groupadmin.save()
 
-            adminuser.groups.add(group)
-            adminuser.save()
+                adminuser.groups.add(group)
+                adminuser.save()
         except:
-            transaction.rollback()
             return HttpResponse('Group not created %s '
                     '(Group admin could not be assigned)' %
                     (groupname))
@@ -2507,13 +2504,13 @@ def create_group(request):
         user = request.user
 
         try:
-            groupadmin = GroupAdmin(user=user, group=group)
-            groupadmin.save()
+            with transaction.atomic():
+                groupadmin = GroupAdmin(user=user, group=group)
+                groupadmin.save()
 
-            user.groups.add(group)
-            user.save()
+                user.groups.add(group)
+                user.save()
         except:
-            transaction.rollback()
             return HttpResponse('Group not created %s '
                     '(Group admin could not be assigned)' %
                     (groupname))
@@ -2660,23 +2657,22 @@ def create_user(request):
     try:
         validate_email(email)
 
-        user = User.objects.create_user(username, email, password)
+        with transaction.atomic():
+            user = User.objects.create_user(username, email, password)
 
-        userProfile = UserProfile(user=user, isDjangoAccount=True)
-        userProfile.save()
+            userProfile = UserProfile(user=user, isDjangoAccount=True)
+            userProfile.save()
 
-        authentication = UserAuthentication(userProfile=userProfile,
-                                            username=username,
-                                            authenticationMethod=authMethod)
-        authentication.save()
+            authentication = UserAuthentication(userProfile=userProfile,
+                                                username=username,
+                                                authenticationMethod=authMethod)
+            authentication.save()
 
     except ValidationError:
-        transaction.rollback()
         return HttpResponse('Could not create user %s '
                             '(Email address is invalid: %s)' %
                             (username, email), status=403)
     except:
-        transaction.rollback()
         return HttpResponse(
             'Could not create user %s '
             '(It is likely that this username already exists)' %
