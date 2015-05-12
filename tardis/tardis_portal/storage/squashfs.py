@@ -29,7 +29,8 @@ from django.core.files.storage import Storage
 from django.utils._os import safe_join
 from django.utils.importlib import import_module
 
-from tardis.tardis_portal.models import DataFile, DatafileParameterSet
+from tardis.tardis_portal.models import DataFile, DatafileParameterSet, \
+    StorageBox
 
 import logging
 log = logging.getLogger(__name__)
@@ -55,6 +56,7 @@ class SquashFSStorage(Storage):
                               '/usr/local/bin/squashfuse')
 
     def __init__(self, sq_filename=None, sq_basepath=None, datafile_id=None):
+        self.datafile = None
         if sq_filename is not None and sq_basepath is not None:
             self.sq_filename = sq_filename
             self.location = os.path.join(self.squashmount_root,
@@ -63,6 +65,7 @@ class SquashFSStorage(Storage):
             self._mount()
         elif datafile_id is not None:
             df = DataFile.objects.get(id=datafile_id)
+            self.datafile = df
             self.location = os.path.join(self.squashmount_root, df.filename)
             self.squashfile = df.file_objects.all()[0].get_full_path()
             self._mount()
@@ -127,6 +130,17 @@ class SquashFSStorage(Storage):
     def size(self, name):
         return os.path.getsize(self.path(name))
 
+    def status(self, name):
+        """Returns the status of the squash file for any file in it
+
+        :param name:
+        :return:
+        """
+        if getattr(self, 'datafile', None) is not None:
+            return self.datafile.status
+        else:
+            return StorageBox.TYPE_UNKNOWN
+
     def accessed_time(self, name):
         return datetime.fromtimestamp(os.path.getatime(self.path(name)))
 
@@ -156,7 +170,7 @@ class SquashFSStorage(Storage):
             yield top, dirnames, filenames
 
 
-@task
+@task(name='tardis_portal.storage.squashfs.parse_new_squashfiles')
 def parse_new_squashfiles():
     '''
     settings variable SQUASH_PARSERS contains a dictionary of Datafile schemas
@@ -203,11 +217,11 @@ def get_parse_status(squash_datafile, ns):
     return status
 
 
-@task
+@task(name='tardis_portal.storage.squashfs.parse_squashfs_file')
 def parse_squashfs_file(squashfs_file_id, parse_module, ns):
     '''
     the status check doesn't provide complete protection against duplicate
-    parsing, but should be fine when the interval between runs
+    parsing, but should be fine when the interval between runs is reasonable
     '''
     squashfile = DataFile.objects.get(id=squashfs_file_id)
     status = get_parse_status(squashfile, ns)
@@ -220,8 +234,8 @@ def parse_squashfs_file(squashfs_file_id, parse_module, ns):
     try:
         parser.parse_squashfs_file(squashfile, ns)
         status.string_value = 'complete'
+        status.save()
     except:
         status.string_value = 'parse failed'
-        raise
-    finally:
         status.save()
+        raise

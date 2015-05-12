@@ -450,6 +450,15 @@ class DataFileObject(models.Model):
         self.verify.apply_async(countdown=5)
 
     @property
+    def status(self):
+        """
+        can query the status from the storage box if available, otherwise
+        guesses it from the storage box attribute
+        """
+        return getattr(self._storage, 'status',
+                       lambda x: self.storage_box.storage_type)(self.uri)
+
+    @property
     def storage_type(self):
         """
         :return: storage_box type
