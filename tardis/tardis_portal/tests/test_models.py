@@ -178,21 +178,21 @@ class ModelTestCase(TestCase):
                              '/api/v1/dataset_file/4/download')
 
             # check that we can create datafiles with byte size of zero
-            df_file = _build(dataset, 'empty.txt',
-                             'http://localhost:8080/5/empty.txt')
-            df_file.size = 0  # actually a CharField, so gets saved as a string
+            # size is actually a CharField, so gets saved as a string
+            settings.REQUIRE_DATAFILE_SIZES = True
+            df_file = DataFile(dataset=dataset,
+                               filename='empty.txt',
+                               size=0)
             df_file.save()
             df_pk = df_file.pk
             saved_df = DataFile.objects.get(pk=df_pk)
-            self.assertEqual(saved_df.size, '0')
-
+            self.assertEqual(saved_df.size, u'0')
 
             # check that can't save negative byte sizes
-            df_file = _build(dataset, 'lessthanempty.txt',
-                             'http://localhost:8080/6/lessthanempty.txt')
-            df_file.size = '-1'
             with self.assertRaises(Exception):
-                df_file.save()
+                settings.REQUIRE_DATAFILE_SIZES = True
+                DataFile(dataset=dataset, filename='lessthanempty.txt',
+                         size='-1').save()
 
             # Now check the 'REQUIRE' config params
             with self.assertRaises(Exception):
