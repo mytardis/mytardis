@@ -78,6 +78,6 @@ def auto_verify_on_save(sender, **kwargs):
     # if save is done by the verify action, only 'verified' is updated
     # needs to be called as .save(update_fields=['verified'])
     if update_fields is not None and \
-       set(['verified', 'last_verified_time']) >= set(update_fields):
+       {'verified', 'last_verified_time'} >= set(update_fields):
         return
-    dfo.verify.delay()
+    dfo.verify.apply_async(countdown=5)
