@@ -489,6 +489,8 @@ class DataFileObject(models.Model):
         df = self.datafile
         database = {'md5sum': df.md5sum,
                     'sha512sum': df.sha512sum}
+        if not settings.REQUIRE_DATAFILE_SIZES:
+            database['size'] = df.size
         actual = {key: None for key, val in database.items()
                   if add_checksums or val}
         try:
