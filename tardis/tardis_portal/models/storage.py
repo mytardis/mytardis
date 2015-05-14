@@ -54,7 +54,8 @@ class StorageBox(models.Model):
                                     '/var/lib/mytardis/receiving')
             return path.join(
                 base_location,
-                dfo.datafile.dataset.description,
+                '%s-%d' % (dfo.datafile.dataset.description,
+                           dfo.datafile.dataset.id),
                 dfo.datafile.directory or '',
                 dfo.datafile.filename)
 
