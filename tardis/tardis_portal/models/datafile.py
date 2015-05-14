@@ -350,30 +350,36 @@ class DataFileObject(models.Model):
         except:
             return 'undefined'
 
-    def _build_identifier(self):
+    def create_set_uri(self, force=False):
         '''
         the default identifier would be directory and file name, but it may
         not work for all backends. This function aims to abstract it.
         '''
 
         def default_identifier(dfo):
-            if dfo.uri is None:
-                path_parts = ["%s-%s" % (dfo.datafile.dataset.description
-                                         or 'untitled',
-                                         dfo.datafile.dataset.id)]
-                if dfo.datafile.directory is not None:
-                    path_parts += [dfo.datafile.directory]
-                path_parts += [dfo.datafile.filename.strip()]
-                dfo.uri = path.join(*path_parts)
-                dfo.save()
-            return dfo.uri
+            path_parts = ["%s-%s" % (dfo.datafile.dataset.description
+                                     or 'untitled',
+                                     dfo.datafile.dataset.id)]
+            if dfo.datafile.directory is not None:
+                path_parts += [dfo.datafile.directory]
+            path_parts += [dfo.datafile.filename.strip()]
+            uri = path.join(*path_parts)
+            return uri
 
-        build_identifier = getattr(self._storage, 'build_identifier',
-                                   lambda x: None)
-        return build_identifier(self) or default_identifier(self)
+        if not force and self.uri is not None and self.uri.strip() != '':
+            return self.uri
 
-    def get_save_location(self):
-        return self.storage_box.get_save_location(self)
+        # retained 'build_save_location' from earlier implementation
+        # but it is deprecated. TODO: remove 'build_save_location' after
+        # writing docs/changelog about its removal
+        build_identifier = getattr(
+            self._storage, 'build_identifier',
+            getattr(self._storage, 'build_save_location',
+                    lambda x: None))
+        new_uri = build_identifier(self) or default_identifier(self)
+        self.uri = new_uri
+        self.save()
+        return new_uri
 
     @property
     def file_object(self):
@@ -385,7 +391,7 @@ class DataFileObject(models.Model):
         cached_file_object = getattr(self, '_cached_file_object', None)
         if cached_file_object is None or cached_file_object.closed:
             cached_file_object = self._storage.open(self.uri or
-                                                    self._build_identifier())
+                                                    self.create_set_uri())
             self._cached_file_object = cached_file_object
         return self._cached_file_object
 
@@ -398,7 +404,7 @@ class DataFileObject(models.Model):
             file_object = File(file_object)
             file_object.open()
         file_object.seek(0)
-        self.uri = self._storage.save(self.uri or self._build_identifier(),
+        self.uri = self._storage.save(self.uri or self.create_set_uri(),
                                       file_object)  # TODO: define behaviour
         # when overwriting existing files
         self.save()

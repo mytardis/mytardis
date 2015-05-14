@@ -45,25 +45,6 @@ class StorageBox(models.Model):
             self.django_storage_class)
         return storage_class(**self.get_options_as_dict())
 
-    def get_save_location(self, dfo):
-        if self.attributes.filter(key="type", value="receiving").count() == 0:
-            return False
-
-        def default_save_location(dfo):
-            base_location = getattr(settings, "DEFAULT_RECEIVING_DIR",
-                                    '/var/lib/mytardis/receiving')
-            return path.join(
-                base_location,
-                dfo.datafile.dataset.description,
-                dfo.datafile.directory or '',
-                dfo.datafile.filename)
-
-        build_save_location = getattr(
-            self.get_initialised_storage_instance(),
-            'build_save_location',
-            default_save_location)
-        return build_save_location(dfo)
-
     class Meta:
         app_label = 'tardis_portal'
         verbose_name_plural = 'storage boxes'
