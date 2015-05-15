@@ -743,12 +743,11 @@ class DatasetParameterResource(ParameterResource):
 
 
 class StorageBoxResource(MyTardisModelResource):
-    accessible_keys = ['location']
     options = fields.ToManyField(
         'tardis.tardis_portal.api.StorageBoxOptionResource',
         attribute=lambda bundle: StorageBoxOption.objects\
             .filter(storage_box=bundle.obj,
-                    key__in=StorageBoxResource.accessible_keys),
+                    key__in=StorageBoxOptionResource.accessible_keys),
         related_name='storage_box',
         full=True, null=True)
     attributes = fields.ToManyField(
@@ -762,6 +761,7 @@ class StorageBoxResource(MyTardisModelResource):
 
 
 class StorageBoxOptionResource(MyTardisModelResource):
+    accessible_keys = ['location']
     storage_box = fields.ForeignKey(
         'tardis.tardis_portal.api.StorageBoxResource',
         'storage_box',
