@@ -262,7 +262,8 @@ class ACLAuthorization(Authorization):
         elif isinstance(bundle.obj, StorageBox):
             return bundle.request.user.is_authenticated()
         elif isinstance(bundle.obj, StorageBoxOption):
-            return bundle.obj.key in StorageBoxOptionResource.accessible_keys
+            return bundle.request.user.is_authenticated() and \
+                bundle.obj.key in StorageBoxOptionResource.accessible_keys
         elif isinstance(bundle.obj, StorageBoxAttribute):
             return bundle.request.user.is_authenticated()
         elif isinstance(bundle.obj, Group):
