@@ -39,6 +39,8 @@ from tardis.tardis_portal.models.parameters import ExperimentParameterSet
 from tardis.tardis_portal.models.parameters import ParameterName
 from tardis.tardis_portal.models.parameters import Schema
 from tardis.tardis_portal.models.storage import StorageBox
+from tardis.tardis_portal.models.storage import StorageBoxOption
+from tardis.tardis_portal.models.storage import StorageBoxAttribute
 from tardis.tardis_portal.models.facility import Facility
 from tardis.tardis_portal.models.facility import facilities_managed_by
 from tardis.tardis_portal.models.instrument import Instrument
@@ -206,6 +208,12 @@ class ACLAuthorization(Authorization):
             instruments = Instrument.objects.filter(facility__in=facilities)
             return [instrument for instrument in object_list
                     if instrument in instruments]
+        elif isinstance(bundle.obj, StorageBox):
+            return object_list
+        elif isinstance(bundle.obj, StorageBoxOption):
+            return object_list
+        elif isinstance(bundle.obj, StorageBoxAttribute):
+            return object_list
         else:
             return []
 
@@ -248,6 +256,10 @@ class ACLAuthorization(Authorization):
         elif isinstance(bundle.obj, ParameterName):
             return True
         elif isinstance(bundle.obj, StorageBox):
+            return bundle.request.user.is_authenticated()
+        elif isinstance(bundle.obj, StorageBoxOption):
+            return bundle.request.user.is_authenticated()
+        elif isinstance(bundle.obj, StorageBoxAttribute):
             return bundle.request.user.is_authenticated()
         elif isinstance(bundle.obj, Group):
             return bundle.obj in bundle.request.user.groups.all()
@@ -726,7 +738,40 @@ class DatasetParameterResource(ParameterResource):
         queryset = DatasetParameter.objects.all()
 
 
+class StorageBoxOptionResource(MyTardisModelResource):
+    storage_box = fields.ForeignKey(
+        'tardis.tardis_portal.api.StorageBoxResource',
+        'storage_box',
+        related_name='options',
+        full=False)
+
+    class Meta(MyTardisModelResource.Meta):
+        queryset = StorageBoxOption.objects.all()
+
+
+class StorageBoxAttributeResource(MyTardisModelResource):
+    storage_box = fields.ForeignKey(
+        'tardis.tardis_portal.api.StorageBoxResource',
+        'storage_box',
+        related_name='attributes',
+        full=False)
+
+    class Meta(MyTardisModelResource.Meta):
+        queryset = StorageBoxAttribute.objects.all()
+
+
 class StorageBoxResource(MyTardisModelResource):
+    options = fields.ToManyField(
+        'tardis.tardis_portal.api.StorageBoxOptionResource',
+        'options',
+        related_name='storage_box',
+        full=True, null=True)
+    attributes = fields.ToManyField(
+        'tardis.tardis_portal.api.StorageBoxAttributeResource',
+        'attributes',
+        related_name='storage_box',
+        full=True, null=True)
+
     class Meta(MyTardisModelResource.Meta):
         queryset = StorageBox.objects.all()
 
