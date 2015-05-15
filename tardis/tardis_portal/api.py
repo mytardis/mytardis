@@ -881,7 +881,7 @@ class DataFileResource(MyTardisModelResource):
                 datafile=bundle.obj,
                 storage_box=sbox)
             dfo.save()
-            self.temp_url = dfo.get_save_location()
+            self.temp_url = dfo.create_set_uri()
         return retval
 
     def post_list(self, request, **kwargs):
