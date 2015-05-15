@@ -130,17 +130,6 @@ class SquashFSStorage(Storage):
     def size(self, name):
         return os.path.getsize(self.path(name))
 
-    def status(self, name):
-        """Returns the status of the squash file for any file in it
-
-        :param name:
-        :return:
-        """
-        if getattr(self, 'datafile', None) is not None:
-            return self.datafile.status
-        else:
-            return StorageBox.TYPE_UNKNOWN
-
     def accessed_time(self, name):
         return datetime.fromtimestamp(os.path.getatime(self.path(name)))
 
