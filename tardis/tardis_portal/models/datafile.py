@@ -462,8 +462,7 @@ class DataFileObject(models.Model):
 
     def _compute_checksums(self,
                            compute_md5=True,
-                           compute_sha512=True,
-                           compute_size=True):
+                           compute_sha512=True):
         blocksize = 0
         results = {}
         if compute_md5:
@@ -474,11 +473,8 @@ class DataFileObject(models.Model):
             sha512_hasher = hashlib.new('sha512')
             blocksize = max(sha512_hasher.block_size, blocksize)
             results['sha512sum'] = sha512_hasher
-        if compute_size:
-            results['size'] = 0
         update_fns = {'md5sum': lambda x, y: x.update(y),
-                      'sha512sum': lambda x, y: x.update(y),
-                      'size': lambda x, y: x + len(y)}
+                      'sha512sum': lambda x, y: x.update(y)}
         fo = self.file_object
         fo.seek(0)
         for chunk in iter(lambda: fo.read(32 * blocksize), ''):
@@ -486,8 +482,7 @@ class DataFileObject(models.Model):
                 update_fns[key](results[key], chunk)
         self.file_object.close()
         final_fns = {'md5sum': lambda x: x.hexdigest(),
-                     'sha512sum': lambda x: x.hexdigest(),
-                     'size': lambda x: x}
+                     'sha512sum': lambda x: x.hexdigest()}
         return {key: final_fns[key](val) for key, val in results.items()}
 
     @task(name="tardis_portal.verify_dfo_method", ignore_result=True)  # noqa # too complex
@@ -495,24 +490,27 @@ class DataFileObject(models.Model):
         df = self.datafile
         database = {'md5sum': df.md5sum,
                     'sha512sum': df.sha512sum}
-        if not settings.REQUIRE_DATAFILE_SIZES:
+        if settings.REQUIRE_DATAFILE_SIZES:
             database['size'] = df.size
         actual = {key: None for key, val in database.items()
                   if add_checksums or val}
+        io_error = None
         try:
             if self.file_object.size != int(df.size):
                 the_same = False
+                actual.update({'size': str(self.file_object.size)})
             else:
                 actual.update(self._compute_checksums(
                     compute_md5='md5sum' in actual,
-                    compute_sha512='sha512sum' in actual,
-                    compute_size='size' in actual))
+                    compute_sha512='sha512sum' in actual))
+                actual.update({'size': str(self.file_object.size)})
                 the_same = all(val == database[key]
                                for key, val in actual.items()
                                if (database[key] is not None and
                                    database[key] != ''))
-        except IOError:
+        except IOError as ioe:
             the_same = False
+            io_error = str(ioe)
 
         if the_same:
             if add_checksums:
@@ -526,10 +524,14 @@ class DataFileObject(models.Model):
         else:
             error_message = 'DataFileObject with id %d did not verify.' % \
                             self.id
-            for key, val in actual.items():
-                if database[key] is not None and database[key].strip() != '' \
-                        and val != database[key]:
-                    error_message += ' %s did not match.' % key
+            if io_error:
+                error_message += ' %s' % io_error
+            else:
+                for key, val in actual.items():
+                    if database[key] is not None and \
+                            database[key].strip() != '' \
+                            and val != database[key]:
+                        error_message += ' %s did not match.' % key
             logger.error(error_message)
 
         self.verified = the_same
