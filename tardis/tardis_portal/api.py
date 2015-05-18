@@ -211,11 +211,8 @@ class ACLAuthorization(Authorization):
         elif isinstance(bundle.obj, StorageBox):
             return object_list
         elif isinstance(bundle.obj, StorageBoxOption):
-            accessible_options = []
-            for option in object_list:
-                if option.key in StorageBoxOptionResource.accessible_keys:
-                    accessible_options.append(option)
-            return accessible_options
+            return [option for option in object_list
+                    if option.key in StorageBoxOptionResource.accessible_keys]
         elif isinstance(bundle.obj, StorageBoxAttribute):
             return object_list
         else:
