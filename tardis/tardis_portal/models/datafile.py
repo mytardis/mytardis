@@ -423,10 +423,14 @@ class DataFileObject(models.Model):
     @task(name='tardis_portal.dfo.copy_file', ignore_result=True)
     def copy_file(self, dest_box=None, verify=True):
         '''
-        copies file to new storage box
+        copies verified file to new storage box
         checks for existing copy
         triggers async verification if not disabled
         '''
+        if not self.verified:
+            logger.debug('DFO (id: %d) could not be copied.'
+                         ' Source not verified' % self.id)
+            return False
         if dest_box is None:
             dest_box = StorageBox.get_default_storage()
         existing = self.datafile.file_objects.filter(storage_box=dest_box)
@@ -443,7 +447,7 @@ class DataFileObject(models.Model):
                 copy.file_object = self.file_object
         except Exception as e:
             logger.error(
-                'file move failed for dfo id: %s, with error: %s' %
+                'file copy failed for dfo id: %s, with error: %s' %
                 (self.id, str(e)))
             return False
         if verify:
