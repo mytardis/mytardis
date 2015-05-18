@@ -1,5 +1,6 @@
 import os
 from os import path
+import errno
 
 from django.conf import settings
 from django.db import models
@@ -55,9 +56,18 @@ class StorageBox(models.Model):
             dfo.copy_file(dest_box)
 
     @task(name="tardis_portal.storage_box.move_files", ignore_result=True)
-    def move_files(self, dest_box=None):
+    def move_files(self, dest_box=None, check_size=False):
         for dfo in self.file_objects.all():
-            dfo.move_file(dest_box)
+            try:
+                if not check_size or \
+                        dfo.file_object.size == int(dfo.datafile.size):
+                    dfo.move_file(dest_box)
+            except IOError as ioe:
+                if ioe.errno == errno.ENOENT:
+                    logger.warning("Can't move non-existent DFO %s"
+                                   % dfo.get_full_path())
+                else:
+                    logger.error(str(ioe))
 
     @task(name='tardis_portal.storage_box.copy_to_master')
     def copy_to_master(self):
@@ -67,7 +77,7 @@ class StorageBox(models.Model):
     @task(name='tardis_portal.storage_box.move_to_master')
     def move_to_master(self):
         if getattr(self, 'master_box'):
-            self.move_files(self.master_box)
+            self.move_files(self.master_box, check_size=True)
 
     @classmethod
     def get_default_storage(cls, location=None, user=None):
