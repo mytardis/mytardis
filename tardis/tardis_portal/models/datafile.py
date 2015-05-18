@@ -157,6 +157,8 @@ class DataFile(models.Model):
                                         .values_list('size', flat=True), 0)
 
     def save(self, *args, **kwargs):
+        if isinstance(self.size, (int, long)):
+            self.size = str(self.size)
         require_checksums = kwargs.pop('require_checksums', True)
         if settings.REQUIRE_DATAFILE_CHECKSUMS and \
                 not self.md5sum and not self.sha512sum and require_checksums:
@@ -486,58 +488,70 @@ class DataFileObject(models.Model):
         return {key: final_fns[key](val) for key, val in results.items()}
 
     @task(name="tardis_portal.verify_dfo_method", ignore_result=True)  # noqa # too complex
-    def verify(self, add_checksums=True):  # too complex # noqa
+    def verify(self, add_checksums=True, add_size=True):  # too complex # noqa
+        comparisons = ['size', 'md5sum', 'sha512sum']
+
         df = self.datafile
-        database = {'md5sum': df.md5sum,
-                    'sha512sum': df.sha512sum}
-        if settings.REQUIRE_DATAFILE_SIZES:
-            database['size'] = df.size
-        actual = {key: None for key, val in database.items()
-                  if add_checksums or val}
-        io_error = None
+        database = {comp_type: getattr(df, comp_type)
+                    for comp_type in comparisons}
+        database_update = {}
+        empty_value = {db_key: db_val is None or db_val.strip() == ''
+                       for db_key, db_val in database.items()}
+        same_values = {key: False for key, empty in empty_value.items()
+                       if not empty}
+        io_error = False
+        io_error_str = 'no error'
+        actual = {}
         try:
-            if self.file_object.size != int(df.size):
-                the_same = False
-                actual.update({'size': str(self.file_object.size)})
-            else:
+            actual['size'] = self.file_object.size
+            if not empty_value['size'] and \
+               actual['size'] == int(database['size']):
+                same_values['size'] = True
+            elif empty_value['size']:
+                # only ever empty when settings.REQ...SIZES = False
+                if add_size:
+                    database_update['size'] = str(actual['size'])
+            if same_values.get('size', True):
                 actual.update(self._compute_checksums(
-                    compute_md5='md5sum' in actual,
-                    compute_sha512='sha512sum' in actual))
-                actual.update({'size': str(self.file_object.size)})
-                the_same = all(val == database[key]
-                               for key, val in actual.items()
-                               if (database[key] is not None and
-                                   database[key] != ''))
+                    compute_md5=True,
+                    compute_sha512=True))
+                for sum_type in ['md5sum', 'sha512sum']:
+                    if empty_value[sum_type]:
+                        # all sums only ever empty when not required
+                        if add_checksums:
+                            database_update[sum_type] = actual[sum_type]
+                    if actual[sum_type] == database[sum_type]:
+                        same_values[sum_type] = True
+
         except IOError as ioe:
-            the_same = False
-            io_error = str(ioe)
+            same_values = {key: False for key in same_values.keys()}
+            io_error = True
+            io_error_str = str(ioe)
 
-        if the_same:
-            if add_checksums:
-                changed = False
-                for key, val in actual.items():
-                    if database[key] != val:
-                        setattr(df, key, val)
-                        changed = True
-                if changed:
-                    df.save()
+        result = all(same_value for same_value in same_values.values())
+        if result:
+            if len(database_update) > 0:
+                for key, val in database_update.items():
+                    setattr(df, key, val)
+                    df.save()  # triggers another file verification
         else:
-            error_message = 'DataFileObject with id %d did not verify.' % \
-                            self.id
+            reasons = []
             if io_error:
-                error_message += ' %s' % io_error
+                reasons = [io_error_str]
             else:
-                for key, val in actual.items():
-                    if database[key] is not None and \
-                            database[key].strip() != '' \
-                            and val != database[key]:
-                        error_message += ' %s did not match.' % key
-            logger.error(error_message)
+                for key, the_same in same_values.items():
+                    if not the_same:
+                        reasons.append(
+                            '%s mismatch, database: %s, disk: %s.' % (
+                                key, getattr(df, key), actual[key]))
+            logger.debug('DataFileObject with id %d did not verify. '
+                         'Reasons: %s' %
+                         (self.id, ' '.join(reasons)))
 
-        self.verified = the_same
+        self.verified = result
         self.last_verified_time = datetime.now()
         self.save(update_fields=['verified', 'last_verified_time'])
-        return the_same
+        return result
 
     def get_full_path(self):
         return self._storage.path(self.uri)
