@@ -428,7 +428,7 @@ class DataFileObject(models.Model):
         triggers async verification if not disabled
         '''
         if not self.verified:
-            logger.error('DFO (id: %d) could not be copied.'
+            logger.debug('DFO (id: %d) could not be copied.'
                          ' Source not verified' % self.id)
             return False
         if dest_box is None:
