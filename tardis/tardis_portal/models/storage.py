@@ -1,5 +1,6 @@
 import os
 from os import path
+import random
 
 from django.conf import settings
 from django.db import models
@@ -30,8 +31,31 @@ class StorageBox(models.Model):
     master_box = models.ForeignKey('self', null=True, blank=True,
                                    related_name='child_boxes')
 
+    # state values for different types of storage:
+    DISK = 1
+    TAPE = 2
+    CACHE = 3
+    TEMPORARY = 4
+    TYPE_UNKNOWN = 5
+    # end state values
+
+    # translate type attributes to constants
+    TYPES = {
+        'cache': CACHE,
+        'receiving': TEMPORARY,
+    }
+
     def __unicode__(self):
         return self.name or "anonymous Storage Box"
+
+    @property
+    def storage_type(self):
+        try:
+            storage_type = self.attributes.get(key='type').value
+            return StorageBox.TYPES.get(
+                storage_type, StorageBox.TYPE_UNKNOWN)
+        except StorageBoxAttribute.DoesNotExist:
+            return StorageBox.TYPE_UNKNOWN
 
     def get_options_as_dict(self):
         opts_dict = {}
@@ -48,6 +72,20 @@ class StorageBox(models.Model):
     class Meta:
         app_label = 'tardis_portal'
         verbose_name_plural = 'storage boxes'
+
+    @property
+    def cache_box(self):
+        """
+        Get cache box if set up
+        """
+        caches = [box for box in self.child_boxes.all()
+                  if box.storage_type == StorageBox.CACHE]
+        if len(caches) == 1:
+            return caches[0]
+        elif len(caches) > 1:
+            return caches[random.choice(range(len(caches)))]
+        else:
+            return None
 
     @task(name="tardis_portal.storage_box.copy_files", ignore_result=True)
     def copy_files(self, dest_box=None):

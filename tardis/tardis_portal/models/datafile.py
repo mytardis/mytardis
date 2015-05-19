@@ -1,6 +1,7 @@
 import hashlib
 from os import path
 from datetime import datetime
+import random
 
 from django.conf import settings
 from django.core.files import File
@@ -58,19 +59,32 @@ class DataFile(models.Model):
 
     @property
     def file_object(self):
-        on_disk_files = self.file_objects.filter(
-            ~Q(storage_box__attributes__value='on tape'))
-        if len(on_disk_files) > 0:
-            return on_disk_files[0].file_object
-        all_dfos = self.file_objects.all()
-        if len(all_dfos) > 0:
-            return all_dfos[0].file_object
-        return None
+        all_objs = {dfo.storage_type: dfo
+                    for dfo in self.file_objects.filter(verified=True)}
+        if not all_objs:
+            return None
+        type_order = [StorageBox.CACHE,
+                      StorageBox.DISK,
+                      StorageBox.TAPE,
+                      StorageBox.TEMPORARY,
+                      StorageBox.TYPE_UNKNOWN]
+        dfo = None
+        for dfo_type in type_order:
+            dfo = all_objs.get(dfo_type, None)
+            if dfo:
+                break
+        if not dfo:
+            dfo = all_objs.values()[0]
+        if dfo.storage_type in (StorageBox.TAPE, ):
+            dfo.cache_file.apply_async()
+        return dfo.file_object
 
     @file_object.setter
     def file_object(self, file_object):
         '''
         replace contents of file in all its locations
+        TODO: new content implies new size and checksums. Are we going to
+        auto-generate these or not allow this kind of assignment.
         '''
         oldobjs = []
         if self.file_objects.count() > 0:
@@ -83,10 +97,18 @@ class DataFile(models.Model):
                                      storage_box=box)
             newfile.save()
             newfile.file_object = file_object
-            newfile.verify.delay()
         if len(oldobjs) > 0:
             for obj in oldobjs:
                 obj.delete()
+
+    @property
+    def status(self):
+        """
+        returns information about the status of the file.
+        States are defined in StorageBox
+        """
+        return {dfo.storage_type for dfo in self.file_objects.all()
+                if dfo.verified}
 
     def get_default_storage_box(self):
         '''
@@ -317,9 +339,12 @@ class DataFile(models.Model):
     #         return None
 
     @property
-    def verified(self):
-        return all([obj.verified for obj in self.file_objects.all()]) \
-            and len(self.file_objects.all()) > 0
+    def verified(self, all_dfos=False):
+        dfos = [dfo.verified for dfo in self.file_objects.all()]
+        if all_dfos:
+            return all(dfos)
+        else:
+            return any(dfos)
 
     def verify(self, reverify=False):
         return all([obj.verify() for obj in self.file_objects.all()
@@ -351,6 +376,14 @@ class DataFileObject(models.Model):
             }
         except:
             return 'undefined'
+
+    @property
+    def storage_type(self):
+        """
+        :return: storage_box type
+        :rtype: StorageBox type constant
+        """
+        return self.storage_box.storage_type
 
     def create_set_uri(self, force=False):
         '''
@@ -409,6 +442,7 @@ class DataFileObject(models.Model):
         self.uri = self._storage.save(self.uri or self.create_set_uri(),
                                       file_object)  # TODO: define behaviour
         # when overwriting existing files
+        self.verified = False
         self.save()
 
     @property
@@ -419,6 +453,12 @@ class DataFileObject(models.Model):
                                  .get_initialised_storage_instance()
             self._cached_storage = cached_storage
         return self._cached_storage
+
+    @task(name='tardis_portal.dfo.cache_file', ignore_result=True)
+    def cache_file(self):
+        cache_box = self.storage_box.cache_box
+        if cache_box is not None:
+            self.copy_file(cache_box)
 
     @task(name='tardis_portal.dfo.copy_file', ignore_result=True)
     def copy_file(self, dest_box=None, verify=True):
