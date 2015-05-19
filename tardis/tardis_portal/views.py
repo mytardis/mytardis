@@ -2606,7 +2606,10 @@ def stats(request):
     cursor = connection.cursor()
     if cursor.db.vendor == 'postgresql':
         cursor.execute("SELECT SUM(size::bigint) FROM tardis_portal_datafile")
-        datafile_size = int(cursor.fetchone()[0])
+        try:
+            datafile_size = int(cursor.fetchone()[0])
+        except TypeError:
+            datafile_size = 0
     else:
         datafile_size = DataFile.sum_sizes(DataFile.objects.all())
     c = Context({
