@@ -83,6 +83,8 @@ class DataFile(models.Model):
     def file_object(self, file_object):
         '''
         replace contents of file in all its locations
+        TODO: new content implies new size and checksums. Are we going to
+        auto-generate these or not allow this kind of assignment.
         '''
         oldobjs = []
         if self.file_objects.count() > 0:
@@ -363,6 +365,7 @@ class DataFileObject(models.Model):
 
     class Meta:
         app_label = 'tardis_portal'
+        unique_together = ['datafile', 'storage_box']
 
     def __unicode__(self):
         try:
