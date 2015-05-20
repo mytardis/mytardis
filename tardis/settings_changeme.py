@@ -277,6 +277,15 @@ GROUP_PROVIDERS = (
 #   name - used as the key for the entry
 #   display name - used as the displayed value in the login form
 #   backend implementation points to the actual backend implementation
+#
+#   In most cases, the backend implementation should be a fully
+#   qualified class name string, whose class can be instantiated without
+#   any arguments.  For LDAP authentication, the
+#       'tardis.tardis_portal.auth.ldap_auth.LDAPBackend'
+#   class can't be instantiated without any arguments, so the
+#       'tardis.tardis_portal.auth.ldap_auth.ldap_auth'
+#   wrapper function should be used instead.
+#
 # We will assume that localdb will always be a default AUTH_PROVIDERS entry
 
 AUTH_PROVIDERS = (
