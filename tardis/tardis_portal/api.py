@@ -915,11 +915,12 @@ class DataFileResource(MyTardisModelResource):
                     newfile, leave_open=True)
                 bundle.data['md5sum'] = md5
 
-                if 'replicas' in bundle.data:
-                    for replica in bundle.data['replicas']:
-                        replica.update({'file_object': newfile})
-                else:
-                    bundle.data['replicas'] = [{'file_object': newfile}]
+            if 'replicas' in bundle.data:
+                for replica in bundle.data['replicas']:
+                    replica.update({'file_object': newfile})
+                print bundle.data['replicas']
+            else:
+                bundle.data['replicas'] = [{'file_object': newfile}]
                     
             del(bundle.data['attached_file'])
         return bundle
