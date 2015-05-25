@@ -223,5 +223,4 @@ def create_user_api_key(sender, **kwargs):
 
 
 if getattr(settings, 'AUTOGENERATE_API_KEY', False):
-    from tastypie.models import create_api_key
     post_save.connect(create_user_api_key, sender=User, weak=False)
