@@ -214,8 +214,14 @@ class ObjectACL(models.Model):
         return acl_effective_query
 
 
-# ## ApiKey hooks
-if getattr(settings, 'AUTOGENERATE_API_KEY', False):
-    from django.contrib.auth.models import User
+def create_user_api_key(sender, **kwargs):
+    """
+    Auto-create ApiKey objects using Tastypie's create_api_key
+    """
     from tastypie.models import create_api_key
-    post_save.connect(create_api_key, sender=User, weak=False)
+    create_api_key(User, **kwargs)
+
+
+if getattr(settings, 'AUTOGENERATE_API_KEY', False):
+    from tastypie.models import create_api_key
+    post_save.connect(create_user_api_key, sender=User, weak=False)
