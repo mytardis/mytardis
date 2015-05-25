@@ -253,7 +253,10 @@ def load_image(request, parameter):
                                        parameter.string_value))
 
     from django.core.servers.basehttp import FileWrapper
-    wrapper = FileWrapper(file(file_path))
+    try:
+        wrapper = FileWrapper(file(file_path))
+    except IOError:
+        return HttpResponseNotFound()
     return HttpResponse(wrapper, mimetype=parameter.name.units)
 
 
