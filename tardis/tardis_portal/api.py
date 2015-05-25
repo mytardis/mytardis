@@ -918,7 +918,6 @@ class DataFileResource(MyTardisModelResource):
             if 'replicas' in bundle.data:
                 for replica in bundle.data['replicas']:
                     replica.update({'file_object': newfile})
-                print bundle.data['replicas']
             else:
                 bundle.data['replicas'] = [{'file_object': newfile}]
                     
