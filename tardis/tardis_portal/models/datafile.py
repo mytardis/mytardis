@@ -2,6 +2,7 @@ import hashlib
 from os import path
 from datetime import datetime
 import random
+import mimetypes
 
 from django.conf import settings
 from django.core.files import File
@@ -13,6 +14,7 @@ from django.db.models.signals import pre_delete
 from django.dispatch import receiver
 
 from celery.contrib.methods import task
+import magic
 
 from tardis.tardis_portal.util import generate_file_checksums
 
@@ -188,6 +190,7 @@ class DataFile(models.Model):
         elif settings.REQUIRE_DATAFILE_SIZES and \
                 not self.size:
             raise Exception('Every Datafile requires a file size')
+        self.update_mimetype(save=False)
         super(DataFile, self).save(*args, **kwargs)
 
     def get_size(self):
@@ -330,13 +333,27 @@ class DataFile(models.Model):
     def _has_delete_perm(self, user_obj):
         return self._has_any_perm(user_obj)
 
-    # @property
-    # def default_dfo(self):
-    #     s_box = self.get_default_storage_box()
-    #     try:
-    #         return self.file_objects.get(storage_box=s_box)
-    #     except DataFileObject.DoesNotExist:
-    #         return None
+    def update_mimetype(self, mimetype=None, force=False, save=True):
+        if self.mimetype is not None and self.mimetype != '' and not force:
+            return self.mimetype
+        fo = self.file_object
+        if mimetype is None and fo is not None:
+            m = magic.Magic(mime_and_encoding=True)
+            mimetype = m.from_buffer(fo.read(1024))
+            fo.close()
+        if mimetype is None:
+            mimetype, encoding = mimetypes.guess_type(self.filename)
+            if mimetype is not None and encoding is not None:
+                mimetype = '%s; %s' % (mimetype, encoding)
+            mimetype = mimetype or 'application/octet-stream'
+        if ';' in mimetype:
+            mt, enc = mimetype.split(';')
+            if enc.endswith('charset=binary'):
+                mimetype = mt
+        self.mimetype = mimetype
+        if save:
+            self.save()
+        return mimetype
 
     @property
     def verified(self, all_dfos=False):
@@ -444,6 +461,7 @@ class DataFileObject(models.Model):
         # when overwriting existing files
         self.verified = False
         self.save()
+        self.datafile.update_mimetype(force=True)
 
     @property
     def _storage(self):
@@ -587,7 +605,8 @@ class DataFileObject(models.Model):
                     if not the_same:
                         reasons.append(
                             '%s mismatch, database: %s, disk: %s.' % (
-                                key, getattr(df, key), actual[key]))
+                                key, getattr(df, key),
+                                actual.get(key, 'undefined')))
             logger.debug('DataFileObject with id %d did not verify. '
                          'Reasons: %s' %
                          (self.id, ' '.join(reasons)))

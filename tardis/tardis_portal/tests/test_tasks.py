@@ -56,39 +56,17 @@ class BackgroundTaskTestCase(TestCase):
         verify_dfos()
         expect(datafile.verified).to_be(True)
 
-# disabled, because verification doesn't ingest from remote anymore
-# need to amend once staging ingestion is set up again
-    # def testRemoteFile(self):
-    #         content = urandom(1024)
-    #         with NamedTemporaryFile() as f:
-    #             # Create new Datafile
-    #             datafile = DataFile(dataset=self.dataset)
-    #             datafile.filename = 'background_task_testfile'
-    #             datafile.size = len(content)
-    #             datafile.sha512sum = hashlib.sha512(content).hexdigest()
-    #             datafile.save()
-    #             url = path.abspath(f.name)
-    #             base_url = path.dirname(path.abspath(f.name))
-    #             datafile.dataset.storage_boxes.add(
-    #                 StorageBox.get_default_storage(location=base_url))
-    #             dfo = DataFileObject(
-    #                 datafile=datafile,
-    #                 storage_box=datafile.dataset.storage_boxes.all()[-1],
-    #                 uri=url)
-    #             dfo.save()
+    def test_wrong_size_verification(self):
+        content = urandom(1024)
+        cf = ContentFile(content, 'background_task_testfile')
 
-    #             # Check that it won't verify as it stands
-    #             expect(datafile.verified).to_be(False)
-    #             verify_dfos()
-    #             expect(datafile.verified).to_be(False)
-
-    #             # Fill in the content
-    #             f.write(content)
-    #             f.flush()
-
-    #             # Check it now verifies
-    #             verify_dfos()
-    #             expect(get_replica).id).to_be(
-    #                 get_new_replica(datafile).id)
-    #             expect(get_new_replica(datafile).verified).to_be(True)
-    #             expect(get_new_replica(datafile).is_local()).to_be(True)
+        # Create new Datafile
+        datafile = DataFile(dataset=self.dataset)
+        datafile.filename = cf.name
+        datafile.size = len(content) - 1
+        datafile.sha512sum = hashlib.sha512(content).hexdigest()
+        datafile.save()
+        datafile.file_object = cf
+        # verify explicitly to catch Exceptions hidden by celery
+        datafile.verify()
+        self.assertFalse(datafile.file_objects.get().verified)

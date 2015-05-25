@@ -352,8 +352,8 @@ class DataFileResourceTest(MyTardisResourceTestCase):
         post_data = """{
     "dataset": "/api/v1/dataset/1/",
     "filename": "mytestfile.txt",
-    "md5sum": "c858d6319609d6db3c091b09783c479c",
-    "size": "12",
+    "md5sum": "930e419034038dfad994f0d2e602146c",
+    "size": "8",
     "mimetype": "text/plain",
     "parameter_sets": [{
         "schema": "http://datafileshop.com/",
@@ -380,10 +380,6 @@ class DataFileResourceTest(MyTardisResourceTestCase):
             data={"json_data": post_data, "attached_file": post_file}))
         self.assertEqual(datafile_count + 1, DataFile.objects.count())
         self.assertEqual(dfo_count + 1, DataFileObject.objects.count())
-        # fake-verify DFO, so we can access the file:
-        newdfo = DataFileObject.objects.order_by('-pk')[0]
-        newdfo.verified = True
-        newdfo.save()
         new_file = DataFile.objects.order_by('-pk')[0]
         self.assertEqual(file_content, new_file.get_file().read())
 
