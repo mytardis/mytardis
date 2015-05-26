@@ -7,7 +7,7 @@ from django.db import models
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        
+
         # Adding model 'FreeTextSearchField'
         db.create_table('tardis_portal_freetextsearchfield', (
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
@@ -17,7 +17,7 @@ class Migration(SchemaMigration):
 
 
     def backwards(self, orm):
-        
+
         # Deleting model 'FreeTextSearchField'
         db.delete_table('tardis_portal_freetextsearchfield')
 

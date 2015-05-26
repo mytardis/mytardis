@@ -7,7 +7,7 @@ from django.db import models
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        
+
         # Adding index on 'DatafileParameter', fields ['string_value']
         db.create_index('tardis_portal_datafileparameter', ['string_value'])
 
@@ -37,7 +37,7 @@ class Migration(SchemaMigration):
 
 
     def backwards(self, orm):
-        
+
         # Removing index on 'ExperimentParameter', fields ['numerical_value']
         db.delete_index('tardis_portal_experimentparameter', ['numerical_value'])
 

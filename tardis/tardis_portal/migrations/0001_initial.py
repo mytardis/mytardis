@@ -7,7 +7,7 @@ from django.db import models
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        
+
         # Adding model 'UserProfile'
         db.create_table('tardis_portal_userprofile', (
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
@@ -190,7 +190,7 @@ class Migration(SchemaMigration):
 
 
     def backwards(self, orm):
-        
+
         # Removing unique constraint on 'ParameterName', fields ['schema', 'name']
         db.delete_unique('tardis_portal_parametername', ['schema_id', 'name'])
 

@@ -7,13 +7,13 @@ from django.db import models
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        
+
         # Adding field 'Schema.immutable'
         db.add_column('tardis_portal_schema', 'immutable', self.gf('django.db.models.fields.BooleanField')(default=False), keep_default=False)
 
 
     def backwards(self, orm):
-        
+
         # Deleting field 'Schema.immutable'
         db.delete_column('tardis_portal_schema', 'immutable')
 

@@ -7,13 +7,13 @@ from django.db import models
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        
+
         # Adding field 'ParameterName.order'
         db.add_column('tardis_portal_parametername', 'order', self.gf('django.db.models.fields.PositiveIntegerField')(default=9999, null=True, blank=True), keep_default=False)
 
 
     def backwards(self, orm):
-        
+
         # Deleting field 'ParameterName.order'
         db.delete_column('tardis_portal_parametername', 'order')
 

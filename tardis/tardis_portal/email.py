@@ -7,11 +7,11 @@ from django.conf import settings
 email_template_dir = 'tardis_portal/email/'
 
 def email_user(subject, template_filename, context, user):
-    
+
     to_email = [user.email]
-    
+
     from_email = settings.EMAIL_HOST_USER
-    
+
     msg = EmailMultiAlternatives(subject, build_template_text(template_filename, context), \
         from_email, to_email)
 

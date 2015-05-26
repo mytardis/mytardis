@@ -7,9 +7,9 @@ from django.db import models
 class Migration(DataMigration):
 
     def forwards(self, orm):
-        """Migrate the Datafile urls, protocols and flags to new Replica 
+        """Migrate the Datafile urls, protocols and flags to new Replica
          objects, and populate the Locations from the INITIAL_LOCATIONS
-         setting.  
+         setting.
 
          In order for this to work properly, your must have
          defined a location (in INITIAL_LOCATIONS) to match any Datafile
@@ -17,10 +17,10 @@ class Migration(DataMigration):
          any urls that don't have a scheme.  The migration checks this
          before messing with the Datafile records.  However, it doesn't
          back out the Location (etc) records created, and if you rerun
-         the migration, it won't update the Locations it created 
+         the migration, it won't update the Locations it created
          previously."""
 
-        # Note: Remember to use orm['appname.ModelName'] rather than 
+        # Note: Remember to use orm['appname.ModelName'] rather than
         # "from appname.models..."
         from django.conf import settings
 
@@ -35,13 +35,13 @@ class Migration(DataMigration):
                 if not url.endswith('/'):
                     url = url + '/'
                 location = orm.Location(
-                    name=desc['name'], url=url, 
+                    name=desc['name'], url=url,
                     type=desc['type'],
                     priority=desc['priority'],
                     transfer_provider=desc.get('provider', 'local'))
                 location.save()
                 for (name, value) in desc.get('params', {}).items():
-                    param = orm.ProviderParameter(location=location, 
+                    param = orm.ProviderParameter(location=location,
                                                   name=name, value=value)
                     param.save()
             self.locations = self.locations + [location]
@@ -70,7 +70,7 @@ class Migration(DataMigration):
             datafile.save()
 
     # We assume that any 'url' without a scheme belongs to the
-    # default location 
+    # default location
     def mapToLocation(self, url):
         from django.conf import settings
         import urlparse

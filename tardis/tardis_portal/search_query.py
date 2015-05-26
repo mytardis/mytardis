@@ -35,7 +35,7 @@ search_backend.py
 
 """
 #
-# Note: We're pulling this straight out of the solr_backend module. 
+# Note: We're pulling this straight out of the solr_backend module.
 # ideally we should be pulling it out of the backend module,
 # but we're already cheating with the highlightSearchBackend.
 # This is a definite TODO once the search code has settled down a
@@ -46,7 +46,7 @@ from haystack.backends.solr_backend import SearchQuery
 class FacetFixedSearchQuery(SearchQuery):
 
     def get_facet_counts(self):
-    
+
         if self._facet_counts is None:
             self.get_results()
 
