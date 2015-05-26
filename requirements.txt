@@ -24,6 +24,7 @@ ecdsa==0.11 #apt: 0.10
 #elementtree
 gunicorn
 gevent
+html2text
 isodate==0.5.1 #apt: 0.4.6
 pyjwt==1.0.1
 kombu==3.0.24 #apt: 3.0.7

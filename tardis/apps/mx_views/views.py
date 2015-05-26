@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.core.paginator import Paginator, InvalidPage, EmptyPage
 from django.http import HttpResponse
 from django.template import Context

@@ -3,7 +3,7 @@ from tardis.tardis_portal.ParameterSetManager import ParameterSetManager
 from django.template import Context
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
-#from html2text import html2text
+from html2text import html2text
 
 import tardis.apps.ands_register.publishing as publishing
 from tardis.apps.ands_register.publishing import PublishHandler

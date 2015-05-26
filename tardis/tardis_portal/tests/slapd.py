@@ -2,6 +2,7 @@
 Utilities for starting up a test slapd server
 and talking to it with ldapsearch/ldapadd.
 """
+import base64
 
 import sys
 import os

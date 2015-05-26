@@ -12,6 +12,7 @@ import logging
 import urllib
 import os
 import cStringIO as StringIO
+import time
 
 try:
     import zlib  # We may need its compression method
