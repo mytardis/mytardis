@@ -245,7 +245,6 @@ INSTALLED_APPS = (
     'tardis.tardis_portal',
     'tardis.tardis_portal.templatetags',
     'registration',
-    'south',
     'django_jasmine',
     'djcelery',
     'kombu.transport.django',
