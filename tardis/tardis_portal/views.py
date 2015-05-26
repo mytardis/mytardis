@@ -444,8 +444,8 @@ def fetch_facility_data(request, facility_id, start_index, end_index):
                 verified = "No"
                 try:
                     file_object_size = \
-                        datafile.file_object.size \
-                        if datafile.file_object else 0
+                        getattr(datafile.file_objects.first().file_object,
+                                'size', 0)
                     if file_object_size < int(datafile.size):
                         verified = "No (%s of %s bytes uploaded)" \
                             % ('{:,}'.format(file_object_size),
