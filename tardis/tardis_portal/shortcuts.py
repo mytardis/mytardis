@@ -93,7 +93,7 @@ def render_to_file(template, filename, context):
 
 
 
-class RestfulExperimentParameterSet:
+class RestfulExperimentParameterSet(object):
     '''
     Helper class which enables a Backbone.sync-compatible interface to be
     created for a ExperimentParameterSet just by specifying a function which
