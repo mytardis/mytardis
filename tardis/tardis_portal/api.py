@@ -920,7 +920,7 @@ class DataFileResource(MyTardisModelResource):
                     replica.update({'file_object': newfile})
             else:
                 bundle.data['replicas'] = [{'file_object': newfile}]
-                    
+
             del(bundle.data['attached_file'])
         return bundle
 
