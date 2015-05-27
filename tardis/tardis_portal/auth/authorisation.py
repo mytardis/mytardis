@@ -98,7 +98,7 @@ class ACLAwareBackend(object):
                   entityId=str(user_obj.id))
 
         if user_obj.is_authenticated():
-            for name, group in user_obj.get_profile().ext_groups:
+            for name, group in user_obj.userprofile_set.first().ext_groups:
                 query |= Q(pluginId=name, entityId=str(group))
         else:
             # the only authorisation available for anonymous users is tokenauth

@@ -52,7 +52,6 @@ import logging
 import json
 from operator import itemgetter
 
-from django.template import Context
 from django.conf import settings
 from django.db import connection
 from django.db import transaction
@@ -200,7 +199,7 @@ def logout(request):
     del request.session['jwt']
     del request.session['jws']
 
-    c = Context({})
+    c = {}
     return HttpResponse(render_response_index(request,
                         'tardis_portal/index.html', c))
 
@@ -208,7 +207,7 @@ def logout(request):
 def index(request):
     status = ''
     limit = 8
-    c = Context({'status': status})
+    c = {'status': status}
     if request.user.is_authenticated():
         private_experiments = Experiment.safe.owned_and_shared(request.user)\
             .order_by('-update_time')[:limit]
@@ -235,14 +234,14 @@ def site_settings(request):
 
                     x509 = open(settings.GRID_PROXY_FILE, 'r')
 
-                    c = Context({
+                    c = {
                         'baseurl': request.build_absolute_uri('/'),
                         'proxy': x509.read(), 'filestorepath':
-                        settings.FILE_STORE_PATH})
+                        settings.FILE_STORE_PATH}
                     return HttpResponse(render_response_index(
                         request,
                         'tardis_portal/site_settings.xml',
-                        c), mimetype='application/xml')
+                        c), content_type='application/xml')
 
     return return_response_error(request)
 
@@ -257,7 +256,7 @@ def load_image(request, parameter):
         wrapper = FileWrapper(file(file_path))
     except IOError:
         return HttpResponseNotFound()
-    return HttpResponse(wrapper, mimetype=parameter.name.units)
+    return HttpResponse(wrapper, content_type=parameter.name.units)
 
 
 def load_experiment_image(request, parameter_id):
@@ -302,7 +301,7 @@ def display_experiment_image(
     image = ExperimentParameter.objects.get(name__name=parameter_name,
                                             parameterset=parameterset_id)
 
-    return HttpResponse(b64decode(image.string_value), mimetype='image/jpeg')
+    return HttpResponse(b64decode(image.string_value), content_type='image/jpeg')
 
 
 @authz.dataset_access_required
@@ -317,7 +316,7 @@ def display_dataset_image(
     image = DatasetParameter.objects.get(name__name=parameter_name,
                                          parameterset=parameterset_id)
 
-    return HttpResponse(b64decode(image.string_value), mimetype='image/jpeg')
+    return HttpResponse(b64decode(image.string_value), content_type='image/jpeg')
 
 
 @authz.datafile_access_required
@@ -332,7 +331,7 @@ def display_datafile_image(
     image = DatafileParameter.objects.get(name__name=parameter_name,
                                           parameterset=parameterset_id)
 
-    return HttpResponse(b64decode(image.string_value), mimetype='image/jpeg')
+    return HttpResponse(b64decode(image.string_value), content_type='image/jpeg')
 
 
 @authz.dataset_access_required
@@ -346,11 +345,11 @@ def dataset_thumbnail(request, dataset_id):
 
 def about(request):
 
-    c = Context({'subtitle': 'About',
-                 'about_pressed': True,
-                 'nav': [{'name': 'About', 'link': '/about/'}],
-                 'version': settings.MYTARDIS_VERSION,
-                 })
+    c = {'subtitle': 'About',
+         'about_pressed': True,
+         'nav': [{'name': 'About', 'link': '/about/'}],
+         'version': settings.MYTARDIS_VERSION,
+    }
     return HttpResponse(render_response_index(request,
                         'tardis_portal/about.html', c))
 
@@ -362,12 +361,12 @@ def my_data(request):
     delegate to custom views depending on settings
     '''
 
-    c = Context({
+    c = {
         'owned_experiments': Experiment.safe.owned(request.user)
         .order_by('-update_time'),
         'shared_experiments': Experiment.safe.shared(request.user)
         .order_by('-update_time'),
-    })
+    }
     return HttpResponse(render_response_index(
         request, 'tardis_portal/my_data.html', c))
 
@@ -394,7 +393,7 @@ def fetch_facility_data_count(request, facility_id):
     ).count()
     return HttpResponse(
         json.dumps({'facility_data_count': dataset_object_count}),
-        mimetype='application/json')
+        content_type='application/json')
 
 
 @never_cache
@@ -488,7 +487,7 @@ def fetch_facility_data(request, facility_id, start_index, end_index):
         }
         facility_data.append(obj)
 
-    return HttpResponse(json.dumps(facility_data), mimetype='application/json')
+    return HttpResponse(json.dumps(facility_data), content_type='application/json')
 
 
 @never_cache
@@ -501,16 +500,15 @@ def fetch_facilities_list(request):
     for facility in facilities_managed_by(request.user):
         facility_data.append({"id": facility.id, "name": facility.name})
 
-    return HttpResponse(json.dumps(facility_data), mimetype='application/json')
+    return HttpResponse(json.dumps(facility_data), content_type='application/json')
 
 
 def public_data(request):
     '''
     list of public experiments
     '''
-    c = Context({
-        'public_experiments': Experiment.safe.public().order_by('-update_time'),
-    })
+    c = {'public_experiments':
+         Experiment.safe.public().order_by('-update_time'), }
     return HttpResponse(render_response_index(
         request, 'tardis_portal/public_data.html', c))
 
@@ -525,12 +523,12 @@ def experiment_index(request):
 @login_required
 def experiment_list_mine(request):
 
-    c = Context({
+    c = {
         'subtitle': 'My Experiments',
         'can_see_private': True,
         'experiments': authz.get_owned_experiments(request)
                             .order_by('-update_time'),
-    })
+    }
 
     # TODO actually change loaders to load this based on stuff
     return HttpResponse(render_response_search(request,
@@ -540,12 +538,12 @@ def experiment_list_mine(request):
 @login_required
 def experiment_list_shared(request):
 
-    c = Context({
+    c = {
         'subtitle': 'Shared Experiments',
         'can_see_private': True,
         'experiments': authz.get_shared_experiments(request)
                             .order_by('-update_time'),
-    })
+    }
 
     # TODO actually change loaders to load this based on stuff
     return HttpResponse(render_response_search(request,
@@ -556,12 +554,12 @@ def experiment_list_public(request):
 
     private_filter = Q(public_access=Experiment.PUBLIC_ACCESS_NONE)
 
-    c = Context({
+    c = {
         'subtitle': 'Public Experiments',
         'can_see_private': False,
         'experiments': Experiment.objects.exclude(private_filter)
                                          .order_by('-update_time'),
-    })
+    }
 
     return HttpResponse(render_response_search(request,
                         'tardis_portal/experiment/list_public.html', c))
@@ -580,7 +578,7 @@ def view_experiment(request, experiment_id,
     :rtype: :class:`django.http.HttpResponse`
 
     """
-    c = Context({})
+    c = {}
 
     try:
         experiment = Experiment.safe.get(request.user, experiment_id)
@@ -714,7 +712,7 @@ def experiment_description(request, experiment_id):
     :rtype: :class:`django.http.HttpResponse`
 
     """
-    c = Context({})
+    c = {}
 
     try:
         experiment = Experiment.safe.get(request.user, experiment_id)
@@ -839,7 +837,7 @@ def view_dataset(request, dataset_id):
 
     upload_method = getattr(settings, "UPLOAD_METHOD", False)
 
-    c = Context({
+    c = {
         'dataset': dataset,
         'datafiles': get_datafiles_page(),
         'parametersets': dataset.getParameterSets()
@@ -853,7 +851,7 @@ def view_dataset(request, dataset_id):
         'other_experiments':
         authz.get_accessible_experiments_for_dataset(request, dataset_id),
         'upload_method': upload_method
-    })
+    }
     _add_protocols_and_organizations(request, dataset, c)
     return HttpResponse(render_response_index(
         request, 'tardis_portal/view_dataset.html', c))
@@ -935,7 +933,7 @@ def dataset_json(request, experiment_id=None, dataset_id=None):
 
     return HttpResponse(json.dumps(get_dataset_info(dataset,
                                                     has_download_permissions)),
-                        mimetype='application/json')
+                        content_type='application/json')
 
 
 @never_cache
@@ -954,7 +952,7 @@ def experiment_datasets_json(request, experiment_id):
                          exclude=['datafiles'])
         for ds in experiment.datasets.all()]
 
-    return HttpResponse(json.dumps(objects), mimetype='application/json')
+    return HttpResponse(json.dumps(objects), content_type='application/json')
 
 
 @never_cache
@@ -968,9 +966,9 @@ def experiment_dataset_transfer(request, experiment_id):
                        args=[placeholder]).replace(placeholder,
                                                    '{{experiment_id}}')
 
-    c = Context({'experiments': experiments.exclude(id=experiment_id),
-                 'url_pattern': get_json_url_pattern()
-                 })
+    c = {'experiments': experiments.exclude(id=experiment_id),
+         'url_pattern': get_json_url_pattern()
+    }
     return HttpResponse(render_response_index(
         request,
         'tardis_portal/ajax/experiment_dataset_transfer.html',
@@ -984,9 +982,9 @@ def retrieve_dataset_metadata(request, dataset_id):
     parametersets = dataset.datasetparameterset_set.exclude(
         schema__hidden=True)
 
-    c = Context({'dataset': dataset,
-                 'parametersets': parametersets,
-                 'has_write_permissions': has_write_permissions})
+    c = {'dataset': dataset,
+         'parametersets': parametersets,
+         'has_write_permissions': has_write_permissions}
     return HttpResponse(render_response_index(request,
                         'tardis_portal/ajax/dataset_metadata.html', c))
 
@@ -1000,9 +998,9 @@ def retrieve_experiment_metadata(request, experiment_id):
     parametersets = experiment.experimentparameterset_set\
                               .exclude(schema__hidden=True)
 
-    c = Context({'experiment': experiment,
-                 'parametersets': parametersets,
-                 'has_write_permissions': has_write_permissions})
+    c = {'experiment': experiment,
+         'parametersets': parametersets,
+         'has_write_permissions': has_write_permissions}
     return HttpResponse(render_response_index(request,
                         'tardis_portal/ajax/experiment_metadata.html', c))
 
@@ -1022,10 +1020,10 @@ def create_experiment(request,
 
     """
 
-    c = Context({
+    c = {
         'subtitle': 'Create Experiment',
         'user_id': request.user.id,
-        })
+    }
 
     if request.method == 'POST':
         form = ExperimentForm(request.POST)
@@ -1082,8 +1080,8 @@ def edit_experiment(request, experiment_id,
     """
     experiment = Experiment.objects.get(id=experiment_id)
 
-    c = Context({'subtitle': 'Edit Experiment',
-                 'experiment_id': experiment_id, })
+    c = {'subtitle': 'Edit Experiment',
+         'experiment_id': experiment_id, }
 
     if request.method == 'POST':
         form = ExperimentForm(data=request.POST, instance=experiment, extra=0)
@@ -1135,9 +1133,9 @@ def login(request):
             djauth.login(request, user)
             return HttpResponseRedirect(next_page)
 
-        c = Context({'status': "Sorry, username and password don't match.",
-                     'error': True,
-                     'loginForm': LoginForm()})
+        c = {'status': "Sorry, username and password don't match.",
+             'error': True,
+             'loginForm': LoginForm()}
 
         return HttpResponseForbidden(
             render_response_index(request, 'tardis_portal/login.html', c))
@@ -1148,8 +1146,8 @@ def login(request):
         next_page = u.path
     else:
         next_page = '/'
-    c = Context({'loginForm': LoginForm(),
-                 'next_page': next_page})
+    c = {'loginForm': LoginForm(),
+         'next_page': next_page}
 
     c['RAPID_CONNECT_ENABLED'] = settings.RAPID_CONNECT_ENABLED
     c['RAPID_CONNECT_LOGIN_URL'] = settings.RAPID_CONNECT_CONFIG[
@@ -1210,10 +1208,10 @@ def display_datafile_details(request, datafile_id):
             schema = Schema.objects.get(namespace__exact=ns)
             views.append({"url": "%s/%s/" % (url, datafile_id),
                           "name": schema.name})
-    context = Context({
+    context = {
         'datafile_id': datafile_id,
         'views': views,
-    })
+    }
     return HttpResponse(render_response_index(
         request,
         "tardis_portal/ajax/datafile_details.html",
@@ -1232,11 +1230,11 @@ def retrieve_parameters(request, datafile_id):
     dataset_id = datafile.dataset.id
     has_write_permissions = authz.has_dataset_write(request, dataset_id)
 
-    c = Context({'parametersets': parametersets,
-                 'datafile': datafile,
-                 'has_write_permissions': has_write_permissions,
-                 'has_download_permissions':
-                 authz.has_dataset_download_access(request, dataset_id)})
+    c = {'parametersets': parametersets,
+         'datafile': datafile,
+         'has_write_permissions': has_write_permissions,
+         'has_download_permissions':
+         authz.has_dataset_download_access(request, dataset_id)}
 
     return HttpResponse(render_response_index(request,
                         'tardis_portal/ajax/parameters.html', c))
@@ -1319,7 +1317,7 @@ def retrieve_datafile_list(
 
     params = urlencode(params)
 
-    c = Context({
+    c = {
         'datafiles': dataset,
         'paginator': paginator,
         'immutable': immutable,
@@ -1331,8 +1329,7 @@ def retrieve_datafile_list(
         'has_write_permissions': has_write_permissions,
         'search_query': query,
         'params': params
-
-        })
+    }
     _add_protocols_and_organizations(request, None, c)
     return HttpResponse(render_response_index(request, template_name, c))
 
@@ -1344,8 +1341,8 @@ def control_panel(request):
     if experiments:
         experiments = experiments.order_by('title')
 
-    c = Context({'experiments': experiments,
-                 'subtitle': 'Experiment Control Panel'})
+    c = {'experiments': experiments,
+         'subtitle': 'Experiment Control Panel'}
 
     return HttpResponse(render_response_index(request,
                         'tardis_portal/control_panel.html', c))
@@ -1383,9 +1380,9 @@ def search_experiment(request):
         result['datafile_hit'] = False
         result['experiment_hit'] = True
         results.append(result)
-    c = Context({'header': 'Search Experiment',
-                 'experiments': results,
-                 'bodyclass': bodyclass})
+    c = {'header': 'Search Experiment',
+         'experiments': results,
+         'bodyclass': bodyclass}
     url = 'tardis_portal/search_experiment_results.html'
     return HttpResponse(render_response_search(request, url, c))
 
@@ -1413,8 +1410,8 @@ def search_quick(request):
 
             logger.debug(experiments)
 
-    c = Context({'submitted': get, 'experiments': experiments,
-                'subtitle': 'Search Experiments'})
+    c = {'submitted': get, 'experiments': experiments,
+         'subtitle': 'Search Experiments'}
     return HttpResponse(render_response_index(request,
                         'tardis_portal/search_experiment.html', c))
 
@@ -1682,8 +1679,8 @@ def __forwardToSearchDatafileFormPage(request, searchQueryType,
     if searchQueryType == 'mx':
         url = 'tardis_portal/search_datafile_form_mx.html'
         searchForm = MXDatafileSearchForm()
-        c = Context({'header': 'Search Datafile',
-                     'searchForm': searchForm})
+        c = {'header': 'Search Datafile',
+             'searchForm': searchForm}
         return HttpResponse(render_response_search(request, url, c))
 
     url = 'tardis_portal/search_datafile_form.html'
@@ -1710,9 +1707,9 @@ def __forwardToSearchDatafileFormPage(request, searchQueryType,
     # the searchForm will be used by custom written templates whereas the
     # modifiedSearchForm will be used by the 'generic template' that the
     # dynamic search datafiles form uses.
-    c = Context({'header': 'Search Datafile',
-                 'searchForm': searchForm,
-                 'modifiedSearchForm': modifiedSearchForm})
+    c = {'header': 'Search Datafile',
+         'searchForm': searchForm,
+         'modifiedSearchForm': modifiedSearchForm}
     return HttpResponse(render_response_search(request, url, c))
 
 
@@ -1721,7 +1718,7 @@ def __forwardToSearchExperimentFormPage(request):
 
     searchForm = __getSearchExperimentForm(request)
 
-    c = Context({'searchForm': searchForm})
+    c = {'searchForm': searchForm}
     url = 'tardis_portal/search_experiment_form.html'
     return HttpResponse(render_response_search(request, url, c))
 
@@ -1904,7 +1901,7 @@ def search_datafile(request):  # too complex # noqa
         result['experiment_hit'] = False
         results.append(result)
 
-    c = Context({
+    c = {
         'experiments': results,
         'datafiles': datafile_results,
         # 'paginator': paginator,
@@ -1913,7 +1910,7 @@ def search_datafile(request):  # too complex # noqa
         'nav': [{'name': 'Search Datafile', 'link': '/search/datafile/'}],
         'bodyclass': bodyclass,
         'search_pressed': True,
-        'searchDatafileSelectionForm': getNewSearchDatafileSelectionForm()})
+        'searchDatafileSelectionForm': getNewSearchDatafileSelectionForm()}
     url = 'tardis_portal/search_experiment_results.html'
     return HttpResponse(render_response_search(request, url, c))
 
@@ -1976,7 +1973,7 @@ def retrieve_user_list(request):
                 '%s:%s:%s' %
                 (ua.username, ua.authenticationMethod,
                  auth_methods[ua.authenticationMethod])
-                for ua in user_auths if ua.userProfile == u.get_profile()]
+                for ua in user_auths if ua.userProfile == u.userprofile_set.first()]
         except UserProfile.DoesNotExist:
             user['auth_methods'] = []
 
@@ -2028,8 +2025,8 @@ def retrieve_access_list_user(request, experiment_id):
     from tardis.tardis_portal.forms import AddUserPermissionsForm
     user_acls = Experiment.safe.user_acls(experiment_id)
 
-    c = Context({'user_acls': user_acls, 'experiment_id': experiment_id,
-                 'addUserPermissionsForm': AddUserPermissionsForm()})
+    c = {'user_acls': user_acls, 'experiment_id': experiment_id,
+         'addUserPermissionsForm': AddUserPermissionsForm()}
     return HttpResponse(render_response_index(request,
                         'tardis_portal/ajax/access_list_user.html', c))
 
@@ -2038,7 +2035,7 @@ def retrieve_access_list_user(request, experiment_id):
 def retrieve_access_list_user_readonly(request, experiment_id):
     user_acls = Experiment.safe.user_acls(experiment_id)
 
-    c = Context({'user_acls': user_acls, 'experiment_id': experiment_id})
+    c = {'user_acls': user_acls, 'experiment_id': experiment_id}
     return HttpResponse(
         render_response_index(
             request, 'tardis_portal/ajax/access_list_user_readonly.html', c))
@@ -2056,10 +2053,10 @@ def retrieve_access_list_group(request, experiment_id):
     group_acls_user_owned = Experiment.safe.group_acls_user_owned(
         experiment_id)
 
-    c = Context({'group_acls_user_owned': group_acls_user_owned,
-                 'group_acls_system_owned': group_acls_system_owned,
-                 'experiment_id': experiment_id,
-                 'addGroupPermissionsForm': AddGroupPermissionsForm()})
+    c = {'group_acls_user_owned': group_acls_user_owned,
+         'group_acls_system_owned': group_acls_system_owned,
+         'experiment_id': experiment_id,
+         'addGroupPermissionsForm': AddGroupPermissionsForm()}
     return HttpResponse(render_response_index(request,
                         'tardis_portal/ajax/access_list_group.html', c))
 
@@ -2073,9 +2070,9 @@ def retrieve_access_list_group_readonly(request, experiment_id):
     group_acls_user_owned = Experiment.safe.group_acls_user_owned(
         experiment_id)
 
-    c = Context({'experiment_id': experiment_id,
-                 'group_acls_system_owned': group_acls_system_owned,
-                 'group_acls_user_owned': group_acls_user_owned})
+    c = {'experiment_id': experiment_id,
+         'group_acls_system_owned': group_acls_system_owned,
+         'group_acls_user_owned': group_acls_user_owned}
     return HttpResponse(render_response_index(
         request,
         'tardis_portal/ajax/access_list_group_readonly.html', c))
@@ -2086,7 +2083,7 @@ def retrieve_access_list_group_readonly(request, experiment_id):
 def retrieve_access_list_external(request, experiment_id):
 
     groups = Experiment.safe.external_users(experiment_id)
-    c = Context({'groups': groups, 'experiment_id': experiment_id})
+    c = {'groups': groups, 'experiment_id': experiment_id}
     return HttpResponse(render_response_index(request,
                         'tardis_portal/ajax/access_list_external.html', c))
 
@@ -2113,7 +2110,7 @@ def retrieve_access_list_tokens(request, experiment_id):
                'is_owner': request.user.has_perm('tardis_acls.owns_experiment',
                                                  token.experiment),
                } for token in tokens]
-    c = Context({'tokens': tokens})
+    c = {'tokens': tokens}
     return HttpResponse(render_response_index(
         request, 'tardis_portal/ajax/access_list_tokens.html', c))
 
@@ -2124,8 +2121,8 @@ def retrieve_group_userlist(request, group_id):
 
     from tardis.tardis_portal.forms import ManageGroupPermissionsForm
     users = User.objects.filter(groups__id=group_id)
-    c = Context({'users': users, 'group_id': group_id,
-                 'manageGroupPermissionsForm': ManageGroupPermissionsForm()})
+    c = {'users': users, 'group_id': group_id,
+         'manageGroupPermissionsForm': ManageGroupPermissionsForm()}
     return HttpResponse(render_response_index(request,
                         'tardis_portal/ajax/group_user_list.html', c))
 
@@ -2135,8 +2132,8 @@ def retrieve_group_userlist_readonly(request, group_id):
 
     from tardis.tardis_portal.forms import ManageGroupPermissionsForm
     users = User.objects.filter(groups__id=group_id)
-    c = Context({'users': users, 'group_id': group_id,
-                 'manageGroupPermissionsForm': ManageGroupPermissionsForm()})
+    c = {'users': users, 'group_id': group_id,
+         'manageGroupPermissionsForm': ManageGroupPermissionsForm()}
     return HttpResponse(render_response_index(request,
                         'tardis_portal/ajax/group_user_list_readonly.html', c))
 
@@ -2145,7 +2142,7 @@ def retrieve_group_userlist_readonly(request, group_id):
 def retrieve_group_list_by_user(request):
 
     groups = Group.objects.filter(groupadmin__user=request.user)
-    c = Context({'groups': groups})
+    c = {'groups': groups}
     return HttpResponse(render_response_index(request,
                         'tardis_portal/ajax/group_list.html', c))
 
@@ -2155,7 +2152,7 @@ def retrieve_group_list_by_user(request):
 @login_required()
 def manage_groups(request):
 
-    c = Context({})
+    c = {}
     return HttpResponse(render_response_index(request,
                         'tardis_portal/manage_group_members.html', c))
 
@@ -2203,7 +2200,7 @@ def add_user_to_group(request, group_id, username):
         groupadmin = GroupAdmin(user=user, group=group)
         groupadmin.save()
 
-    c = Context({'user': user, 'group_id': group_id, 'isAdmin': isAdmin})
+    c = {'user': user, 'group_id': group_id, 'isAdmin': isAdmin}
     return HttpResponse(render_response_index(
         request,
         'tardis_portal/ajax/add_user_to_group_result.html', c))
@@ -2296,11 +2293,11 @@ def add_experiment_access_user(request, experiment_id, username):
                         aclOwnershipType=ObjectACL.OWNER_OWNED)
 
         acl.save()
-        c = Context({'authMethod': authMethod,
-                     'user': user,
-                     'user_acl': acl,
-                     'username': username,
-                     'experiment_id': experiment_id})
+        c = {'authMethod': authMethod,
+             'user': user,
+             'user_acl': acl,
+             'username': username,
+             'experiment_id': experiment_id}
 
         return HttpResponse(render_response_index(
             request,
@@ -2376,9 +2373,9 @@ def change_user_permissions(request, experiment_id, username):
 
     else:
         form = ChangeUserPermissionsForm(instance=acl)
-        c = Context({'form': form,
-                     'header':
-                     "Change User Permissions for '%s'" % user.username})
+        c = {'form': form,
+             'header':
+             "Change User Permissions for '%s'" % user.username}
 
     return HttpResponse(render_response_index(
         request, 'tardis_portal/form_template.html', c))
@@ -2428,8 +2425,8 @@ def change_group_permissions(request, experiment_id, group_id):
                      'effectiveDate': acl.effectiveDate,
                      'expiryDate': acl.expiryDate})
 
-    c = Context({'form': form,
-                 'header': "Change Group Permissions for '%s'" % group.name})
+    c = {'form': form,
+         'header': "Change Group Permissions for '%s'" % group.name}
 
     return HttpResponse(render_response_index(
         request, 'tardis_portal/form_template.html', c))
@@ -2440,8 +2437,8 @@ def change_group_permissions(request, experiment_id, group_id):
 def create_group(request):
 
     if 'group' not in request.GET:
-        c = Context({'createGroupPermissionsForm':
-                     CreateGroupPermissionsForm()})
+        c = {'createGroupPermissionsForm':
+             CreateGroupPermissionsForm()}
 
         response = HttpResponse(render_response_index(
             request,
@@ -2509,7 +2506,7 @@ def create_group(request):
         user.groups.add(group)
         user.save()
 
-    c = Context({'group': group})
+    c = {'group': group}
     transaction.commit()
 
     response = HttpResponse(render_response_index(
@@ -2562,9 +2559,9 @@ def add_experiment_access_group(request, experiment_id, groupname):
                     aclOwnershipType=ObjectACL.OWNER_OWNED)
     acl.save()
 
-    c = Context({'group': group,
-                'group_acl': acl,
-                 'experiment_id': experiment_id})
+    c = {'group': group,
+         'group_acl': acl,
+         'experiment_id': experiment_id}
     return HttpResponse(render_response_index(
         request,
         'tardis_portal/ajax/add_group_result.html', c))
@@ -2615,12 +2612,12 @@ def stats(request):
             datafile_size = 0
     else:
         datafile_size = DataFile.sum_sizes(DataFile.objects.all())
-    c = Context({
+    c = {
         'experiment_count': Experiment.objects.all().count(),
         'dataset_count': Dataset.objects.all().count(),
         'datafile_count': DataFile.objects.all().count(),
         'datafile_size': datafile_size,
-    })
+    }
     return HttpResponse(render_response_index(request,
                         'tardis_portal/stats.html', c))
 
@@ -2630,8 +2627,8 @@ def stats(request):
 def create_user(request):
 
     if 'user' not in request.POST:
-        c = Context({'createUserPermissionsForm':
-                     CreateUserPermissionsForm()})
+        c = {'createUserPermissionsForm':
+             CreateUserPermissionsForm()}
 
         response = HttpResponse(render_response_index(
             request,
@@ -2676,7 +2673,7 @@ def create_user(request):
             '(It is likely that this username already exists)' %
             (username), status=403)
 
-    c = Context({'user_created': username})
+    c = {'user_created': username}
     transaction.commit()
 
     response = HttpResponse(render_response_index(
@@ -2697,12 +2694,12 @@ def upload_complete(request,
     :rtype: :class:`django.http.HttpResponse`
     """
 
-    c = Context({
+    c = {
         'numberOfFiles': request.POST['filesUploaded'],
         'bytes': request.POST['allBytesLoaded'],
         'speed': request.POST['speed'],
         'errorCount': request.POST['errorCount'],
-        })
+        }
     return render_to_response(template_name, c)
 
 
@@ -2729,13 +2726,9 @@ def upload(request, dataset_id):
 
             uploaded_file_post = request.FILES['Filedata']
             logger.debug('done upload')
-            md5, sha512, size, mimetype_buffer = generate_file_checksums(
-                uploaded_file_post)
             datafile = DataFile(dataset=dataset,
                                 filename=uploaded_file_post.name,
-                                size=uploaded_file_post.size,
-                                md5sum=md5,
-                                sha512sum=sha512)
+                                size=uploaded_file_post.size)
             datafile.save(require_checksums=False)
             logger.debug('created file')
             datafile.file_object = uploaded_file_post
@@ -2755,12 +2748,12 @@ def import_staging_files(request, dataset_id):
     if not staging:
         return HttpResponseNotFound()
 
-    c = Context({
+    c = {
         'dataset_id': dataset_id,
         'staging_mount_prefix': settings.STAGING_MOUNT_PREFIX,
         'staging_mount_user_suffix_enable':
         settings.STAGING_MOUNT_USER_SUFFIX_ENABLE,
-    })
+    }
     return HttpResponse(
         render(request, 'tardis_portal/ajax/import_staging_files.html', c))
 
@@ -2785,10 +2778,10 @@ def list_staging_files(request, dataset_id):
     except ValueError:
         from_path = staging
 
-    c = Context({
+    c = {
         'dataset_id': dataset_id,
         'directory_listing': staging_list(from_path, staging, root=root),
-    })
+    }
     return HttpResponse(render(
         request, 'tardis_portal/ajax/list_staging_files.html', c))
 
@@ -2814,11 +2807,11 @@ def upload_files(request, dataset_id,
     else:
         message = "Upload Files to Dataset"
     url = reverse('tardis.tardis_portal.views.upload_complete')
-    c = Context({'upload_complete_url': url,
-                 'dataset_id': dataset_id,
-                 'message': message,
-                 'session_id': request.session.session_key
-                 })
+    c = {'upload_complete_url': url,
+         'dataset_id': dataset_id,
+         'message': message,
+         'session_id': request.session.session_key
+    }
     return render_to_response(template_name, c)
 
 
@@ -2893,7 +2886,7 @@ def edit_parameters(request, parameterset, otype):
 
         form = DynamicForm()
 
-    c = Context({
+    c = {
         'schema': parameterset.schema,
         'form': form,
         'parameternames': parameternames,
@@ -2901,7 +2894,7 @@ def edit_parameters(request, parameterset, otype):
         'success': success,
         'parameterset_id': parameterset.id,
         'valid': valid,
-    })
+    }
 
     return HttpResponse(render_response_index(request,
                         'tardis_portal/ajax/parameteredit.html', c))
@@ -2981,7 +2974,7 @@ def add_par(request, parentObject, otype, stype):
 
         form = DynamicForm()
 
-    c = Context({
+    c = {
         'schema': schema,
         'form': form,
         'parameternames': parameternames,
@@ -2991,7 +2984,7 @@ def add_par(request, parentObject, otype, stype):
         'parentObject': parentObject,
         'all_schema': all_schema,
         'schema_id': schema.id,
-    })
+    }
 
     return HttpResponse(render_response_index(request,
                         'tardis_portal/ajax/parameteradd.html', c))
@@ -3080,7 +3073,7 @@ def share(request, experiment_id):
     '''
     experiment = Experiment.objects.get(id=experiment_id)
 
-    c = Context({})
+    c = {}
 
     c['has_write_permissions'] = \
         authz.has_write_permissions(request, experiment_id)
@@ -3118,7 +3111,7 @@ def choose_rights(request, experiment_id):
 
     # Forbid access if no valid owner is available (and show error message)
     if not any([is_valid_owner(owner) for owner in experiment.get_owners()]):
-        c = Context({'no_valid_owner': True, 'experiment': experiment})
+        c = {'no_valid_owner': True, 'experiment': experiment}
         return HttpResponseForbidden(render_response_index(
             request,
             'tardis_portal/ajax/unable_to_choose_rights.html', c))
@@ -3134,7 +3127,7 @@ def choose_rights(request, experiment_id):
         form = RightsForm({'public_access': experiment.public_access,
                            'license': experiment.license_id})
 
-    c = Context({'form': form, 'experiment': experiment})
+    c = {'form': form, 'experiment': experiment}
     return HttpResponse(render_response_index(request,
                         'tardis_portal/ajax/choose_rights.html', c))
 
@@ -3146,7 +3139,7 @@ def create_token(request, experiment_id):
     token = Token(experiment=experiment, user=request.user)
     token.save_with_random_token()
     logger.info('created token: %s' % token)
-    return HttpResponse('{"success": true}', mimetype='application/json')
+    return HttpResponse('{"success": true}', content_type='application/json')
 
 
 @require_POST
@@ -3154,7 +3147,7 @@ def token_delete(request, token_id):
     token = Token.objects.get(id=token_id)
     if authz.has_experiment_ownership(request, token.experiment_id):
         token.delete()
-        return HttpResponse('{"success": true}', mimetype='application/json')
+        return HttpResponse('{"success": true}', content_type='application/json')
 
 
 def token_login(request, token):
@@ -3203,7 +3196,7 @@ def view_rifcs(request, experiment_id):
 
     template = pservice.get_template()
     return HttpResponse(render_response_index(request,
-                        template, context), mimetype="text/xml")
+                        template, context), content_type="text/xml")
 
 
 def retrieve_licenses(request):
@@ -3243,7 +3236,7 @@ def manage_user_account(request):
     else:
         form = ManageAccountForm(instance=user)
 
-    c = Context({'form': form})
+    c = {'form': form}
     return HttpResponse(render_response_index(request,
                         'tardis_portal/manage_user_account.html', c))
 
@@ -3268,7 +3261,7 @@ def add_dataset(request, experiment_id):
     else:
         form = DatasetForm()
 
-    c = Context({'form': form})
+    c = {'form': form}
     return HttpResponse(render_response_index(request,
                         'tardis_portal/add_or_edit_dataset.html', c))
 
@@ -3290,7 +3283,7 @@ def edit_dataset(request, dataset_id):
     else:
         form = DatasetForm(instance=dataset)
 
-    c = Context({'form': form, 'dataset': dataset})
+    c = {'form': form, 'dataset': dataset}
     return HttpResponse(render_response_index(request,
                         'tardis_portal/add_or_edit_dataset.html', c))
 
@@ -3329,7 +3322,7 @@ def stage_files_to_dataset(request, dataset_id):
 
 
 def user_guide(request):
-    c = Context({})
+    c = {}
     return HttpResponse(render_response_index(request,
                         'tardis_portal/user_guide.html', c))
 

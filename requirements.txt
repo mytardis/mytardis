@@ -1,4 +1,4 @@
-Django==1.6.10
+Django>=1.7,<1.8
 SPARQLWrapper==1.6.4 #apt: 1.4.1
 South==1.0.2 #apt: 0.7.5
 Sphinx
@@ -14,11 +14,12 @@ django-celery==3.1.16 #apt: 2.5.5
 django-extensions==1.1.1 #apt: 1.2.5
 django-form-utils==0.2.0
 django-haystack==1.2.7
-django-jasmine==0.4.1
+#django-jasmine==0.4.1
+-e git+https://github.com/Aquasys/django-jasmine.git#egg=django-jasmine
 django-mustachejs==0.6.0
 django-nose
-django-registration==1.0 #apt: 1.0
--e git+https://github.com/grischa/django-tastypie.git@testing-mytardis-deployment#egg=django-tastypie
+django-registration-redux
+-e git+https://github.com/grischa/django-tastypie.git@mytardis-dj1.7#egg=django-tastypie
 django-user-agents==0.2.2
 ecdsa==0.11 #apt: 0.10
 #elementtree

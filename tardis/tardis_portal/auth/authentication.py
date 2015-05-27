@@ -79,10 +79,10 @@ def list_auth_methods(request):
     except UserProfile.DoesNotExist:
         isDjangoAccount = True
 
-    c = Context({'userAuthMethodList': userAuthMethodList,
-        'authForm': authForm, 'supportedAuthMethods': supportedAuthMethods,
-        'allAuthMethods': _getSupportedAuthMethods(),
-        'isDjangoAccount': isDjangoAccount})
+    c = {'userAuthMethodList': userAuthMethodList,
+         'authForm': authForm, 'supportedAuthMethods': supportedAuthMethods,
+         'allAuthMethods': _getSupportedAuthMethods(),
+         'isDjangoAccount': isDjangoAccount}
 
     return HttpResponse(render_response_index(request,
                         'tardis_portal/auth_methods.html', c))
@@ -326,23 +326,23 @@ def _getSupportedAuthMethods():
 
 def _getJsonFailedResponse(errorMessage):
     '''Return a failed JSON HttpResponse.'''
-    from django.utils import simplejson
+    import json
     response = {"status": "fail", "errorMessage": errorMessage}
-    return HttpResponse(simplejson.dumps(response),
-        mimetype="application/json")
+    return HttpResponse(json.dumps(response),
+        content_type="application/json")
 
 
 def _getJsonSuccessResponse(data={}):
     '''Return a successful JSON HttpResponse.'''
-    from django.utils import simplejson
+    import json
     response = {"status": "success", "data": data}
-    return HttpResponse(simplejson.dumps(response),
-        mimetype="application/json")
+    return HttpResponse(json.dumps(response),
+        content_type="application/json")
 
 
 def _getJsonConfirmResponse(data={}):
     '''Return a JSON HttpResponse asking the user for confirmation'''
-    from django.utils import simplejson
+    import json
     response = {"status": "confirm", "data": data}
-    return HttpResponse(simplejson.dumps(response),
-        mimetype="application/json")
+    return HttpResponse(json.dumps(response),
+        content_type="application/json")
