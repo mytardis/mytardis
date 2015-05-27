@@ -133,7 +133,7 @@ class AbstractExperimentProvider(BaseProvider):
             until = get_local_time(until.replace(tzinfo=pytz.utc)) # UTC->local
             experiments = experiments.filter(update_time__lte=until)
         def get_users_from_experiment(experiment):
-            return filter(lambda u: u.get_profile().isValidPublicContact(),
+            return filter(lambda u: u.userprofile_set.first().isValidPublicContact(),
                           experiment.get_owners())
         users = chain(map(get_users_from_experiment, experiments))
         return frozenset(chain(experiments, *users))
@@ -419,7 +419,7 @@ class RifCsExperimentProvider(AbstractExperimentProvider):
                                            'RIFCS_KEY',
                                            site.domain),
                                            identifier)
-            if not obj.get_profile().isValidPublicContact():
+            if not obj.userprofile_set.first().isValidPublicContact():
                 return
             relatedObject = SubElement(element, self._nsrif('relatedObject') )
             SubElement(relatedObject, self._nsrif('key')).text = \

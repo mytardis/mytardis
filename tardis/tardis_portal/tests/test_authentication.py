@@ -6,7 +6,7 @@ Created on 19/01/2011
 from django.test import TestCase
 from django.test.client import Client
 from django.contrib.auth.models import User, Permission
-import json as simplejson
+import json
 
 from tardis.tardis_portal.models import UserAuthentication
 
@@ -105,7 +105,7 @@ class AuthenticationTestCase(TestCase):
             'username': 'test@test.com', 'password': 'testpass',
             'authenticationMethod': 'vbl'})
 
-        self.assertTrue(simplejson.loads(response.content)['status'])
+        self.assertTrue(json.loads(response.content)['status'])
         self.client.logout()
 
     def test_djangoauth(self):

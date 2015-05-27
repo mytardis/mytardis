@@ -46,7 +46,7 @@ core_urls = patterns(
     (r'^help/$', 'user_guide'),
     (r'^robots\.txt$', lambda r: HttpResponse(
         "User-agent: *\nDisallow: /download/\nDisallow: /stats/",
-        mimetype="text/plain"))
+        content_type="text/plain"))
 )
 
 experiment_lists = patterns(

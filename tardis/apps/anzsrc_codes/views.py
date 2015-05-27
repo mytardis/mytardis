@@ -83,9 +83,9 @@ def index(request, experiment_id):
     except Experiment.DoesNotExist:
         return return_response_not_found(request)
 
-    c = Context({'experiment': experiment,
-                 'for_code_json': json.dumps(_get_for_codes(),
-                                             sort_keys=True)})
+    c = {'experiment': experiment,
+         'for_code_json': json.dumps(_get_for_codes(),
+                                     sort_keys=True)}
 
     if authz.has_write_permissions(request, experiment_id):
         template = 'anzsrc_codes/index.html'

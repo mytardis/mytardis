@@ -5,14 +5,13 @@ Implemented with Tastypie.
 
 .. moduleauthor:: Grischa Meyer <grischa@gmail.com>
 '''
-import json as simplejson
+import json
 
 from django.conf import settings
 from django.conf.urls import url
 from django.contrib.auth.models import AnonymousUser
 from django.contrib.auth.models import User
 from django.contrib.auth.models import Group
-from django.core.serializers import json
 from django.core.servers.basehttp import FileWrapper
 from django.http import HttpResponse, HttpResponseForbidden
 
@@ -67,9 +66,9 @@ class PrettyJSONSerializer(Serializer):
     def to_json(self, data, options=None):
         options = options or {}
         data = self.to_simple(data, options)
-        return simplejson.dumps(data, cls=json.DjangoJSONEncoder,
-                                sort_keys=True, ensure_ascii=False,
-                                indent=self.json_indent) + "\n"
+        return json.dumps(data, cls=json.JSONEncoder,
+                          sort_keys=True, ensure_ascii=False,
+                          indent=self.json_indent) + "\n"
 
 if settings.DEBUG:
     default_serializer = PrettyJSONSerializer()
@@ -1051,7 +1050,8 @@ class ReplicaResource(MyTardisModelResource):
 
     def hydrate(self, bundle):
         if 'url' in bundle.data:
-            bundle.data['uri'] = bundle.data['url']
+            if 'file_object' not in bundle.data:
+                bundle.data['uri'] = bundle.data['url']
             del(bundle.data['url'])
         datafile = bundle.related_obj
         bundle.obj.datafile = datafile
