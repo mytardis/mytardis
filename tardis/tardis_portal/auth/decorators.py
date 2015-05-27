@@ -194,7 +194,7 @@ def has_read_or_owner_ACL(request, experiment_id):
                   | Q(expiryDate__isnull=True))
 
     # and finally check all the group based authorisation roles
-    for name, group in request.user.get_profile().ext_groups:
+    for name, group in request.user.userprofile_set.first().ext_groups:
         query |= Q(pluginId=name,
                    entityId=str(group),
                    content_type=experiment.get_ct(),

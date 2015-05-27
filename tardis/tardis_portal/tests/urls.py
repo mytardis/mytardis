@@ -9,7 +9,7 @@ def groups_view(request):
     t = Template(
         "Groups are {% for p, g in groups %}({{ p }},{{ g }}) {% endfor %}.")
     c = RequestContext(request,
-                       {'groups': request.user.get_profile().ext_groups})
+                       {'groups': request.user.userprofile_set.first().ext_groups})
     return HttpResponse(t.render(c))
 
 # special urls for auth test cases

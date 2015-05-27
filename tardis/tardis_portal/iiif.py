@@ -43,12 +43,12 @@ def _get_iiif_error(parameter, text):
 
 def _bad_request(parameter, text):
     return HttpResponse(_get_iiif_error(parameter, text),
-                        status=400, mimetype='application/xml')
+                        status=400, content_type='application/xml')
 
 def _invalid_media_response():
     xml = _get_iiif_error('format',
                           'Image cannot be converted to this format')
-    return HttpResponse(xml, status=415, mimetype='application/xml')
+    return HttpResponse(xml, status=415, content_type='application/xml')
 
 
 def _do_resize(img, size):
@@ -162,7 +162,7 @@ def download_image(request, datafile_id, region, size, rotation,
                     if not mimetype in ALLOWED_MIMETYPES:
                         return HttpResponseNotFound()
                 img.save(file=buf)
-                response = HttpResponse(buf.getvalue(), mimetype=mimetype)
+                response = HttpResponse(buf.getvalue(), content_type=mimetype)
                 response['Content-Disposition'] = \
                     'inline; filename="%s.%s"' % (datafile.filename, format)
                 # Set Cache
@@ -213,7 +213,7 @@ def download_info(request, datafile_id, format): #@ReservedAssignment
         width = SubElement(info, 'width')
         width.text = str(data['width'])
         return HttpResponse(etree.tostring(info, method='xml'),
-                            mimetype="application/xml")
+                            content_type="application/xml")
     if format == 'json':
-        return HttpResponse(json.dumps(data), mimetype="application/json")
+        return HttpResponse(json.dumps(data), content_type="application/json")
     return HttpResponseNotFound()

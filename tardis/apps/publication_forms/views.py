@@ -47,7 +47,7 @@ def process_form(request):
             json.dumps({
                 'error': 'Invalid form data was submitted '
                 '(server-side validation failed)'}),
-            mimetype="application/json")
+            content_type="application/json")
 
     # Check if the form data contains a publication ID
     # If it does, then this publication needs to be updated
@@ -81,7 +81,7 @@ def process_form(request):
     if form_state['action'] == 'resume':
         form_state = json.loads(form_state_parameter.string_value)
         return HttpResponse(json.dumps(form_state),
-                            mimetype="application/json")
+                            content_type="application/json")
 
     if form_state['action'] == 'update-dataset-selection':
         # Update the publication title/description if changed.
@@ -377,7 +377,7 @@ def process_form(request):
     form_state_parameter.string_value = json.dumps(form_state)
     form_state_parameter.save()
 
-    return HttpResponse(json.dumps(form_state), mimetype="appication/json")
+    return HttpResponse(json.dumps(form_state), content_type="appication/json")
 
 
 def select_forms(datasets):
@@ -516,7 +516,7 @@ def fetch_experiments_and_datasets(request):
                                      'directory': dataset.directory})
             experiment_json['datasets'] = dataset_json
             json_response.append(experiment_json)
-    return HttpResponse(json.dumps(json_response), mimetype="appication/json")
+    return HttpResponse(json.dumps(json_response), content_type="appication/json")
 
 
 def pdb_helper(request, pdb_id):
@@ -542,7 +542,7 @@ def pdb_helper(request, pdb_id):
                       'authors': '',
                       'status': 'UNKNOWN'}
 
-    return HttpResponse(json.dumps(result), mimetype="application/json")
+    return HttpResponse(json.dumps(result), content_type="application/json")
 
 
 def require_publication_admin(f):
@@ -576,7 +576,7 @@ def approval_ajax(request):
 
     # wrapper to return json
     def response(obj):
-        return HttpResponse(json.dumps(obj), mimetype="application/json")
+        return HttpResponse(json.dumps(obj), content_type="application/json")
 
     def json_get_publications_awaiting_approval():
         pubs = []

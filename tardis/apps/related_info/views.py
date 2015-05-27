@@ -33,7 +33,7 @@ def index(request, experiment_id):
     except Experiment.DoesNotExist:
         return return_response_not_found(request)
 
-    c = Context({'experiment': experiment})
+    c = {'experiment': experiment}
 
     if authz.has_write_permissions(request, experiment_id):
         template = 'related_info/index.html'

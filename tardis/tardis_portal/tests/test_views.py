@@ -374,7 +374,7 @@ class ManageAccountTestCase(TestCase):
         user = User.objects.create_user(username, email, password)
         profile = UserProfile(user=user, isDjangoAccount=True)
         profile.save()
-        expect(user.get_profile().isValidPublicContact()).to_be(False)
+        expect(user.userprofile_set.first().isValidPublicContact()).to_be(False)
 
         manage_url = reverse('tardis.tardis_portal.views.manage_user_account')
 
@@ -404,7 +404,7 @@ class ManageAccountTestCase(TestCase):
         expect(response.status_code).to_equal(303)
 
         user = User.objects.get(id=user.id)
-        expect(user.get_profile().isValidPublicContact()).to_be(True)
+        expect(user.userprofile_set.first().isValidPublicContact()).to_be(True)
 
 
 class StageFilesTestCase(TestCase):
