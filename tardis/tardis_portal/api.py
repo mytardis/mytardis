@@ -475,7 +475,7 @@ class UserResource(ModelResource):
         authorization = ACLAuthorization()
         queryset = User.objects.all()
         allowed_methods = ['get']
-        fields = ['username', 'first_name', 'last_name']
+        fields = ['username', 'first_name', 'last_name', 'email']
         serializer = default_serializer
         filtering = {
             'username': ('exact', ),
@@ -519,6 +519,7 @@ class UserResource(ModelResource):
             bundle.data['email'] = queried_user.email
         else:
             del(bundle.data['username'])
+            del(bundle.data['email'])
 
         # add public information
         if public_user:
