@@ -40,6 +40,7 @@ forms module
 from UserDict import UserDict
 
 from django import forms
+from django.contrib.sites.shortcuts import get_current_site
 from django.forms import ValidationError
 from django.forms.util import ErrorList
 from django.forms.models import ModelChoiceField
@@ -165,6 +166,7 @@ class RegistrationForm(forms.Form):
     @transaction.atomic
     def save(self, profile_callback=None):
         user = RegistrationProfile.objects.create_inactive_user(
+            site=get_current_site(None),
             username=self.cleaned_data['username'],
             password=self.cleaned_data['password1'],
             email=self.cleaned_data['email'])
