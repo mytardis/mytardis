@@ -11,9 +11,9 @@ import tardis.tardis_portal.models.token
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('auth', '0001_initial'),
+        ('contenttypes', '0002_remove_content_type_name'),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('contenttypes', '0001_initial'),
+        ('auth', '0006_require_contenttypes_0002'),
     ]
 
     operations = [
@@ -36,7 +36,6 @@ class Migration(migrations.Migration):
             options={
                 'ordering': ['filename'],
             },
-            bases=(models.Model,),
         ),
         migrations.CreateModel(
             name='DataFileObject',
@@ -48,9 +47,6 @@ class Migration(migrations.Migration):
                 ('last_verified_time', models.DateTimeField(null=True, blank=True)),
                 ('datafile', models.ForeignKey(related_name='file_objects', to='tardis_portal.DataFile')),
             ],
-            options={
-            },
-            bases=(models.Model,),
         ),
         migrations.CreateModel(
             name='DatafileParameter',
@@ -66,7 +62,6 @@ class Migration(migrations.Migration):
                 'ordering': ['name'],
                 'abstract': False,
             },
-            bases=(models.Model,),
         ),
         migrations.CreateModel(
             name='DatafileParameterSet',
@@ -91,7 +86,6 @@ class Migration(migrations.Migration):
             options={
                 'ordering': ['-id'],
             },
-            bases=(models.Model,),
         ),
         migrations.CreateModel(
             name='DatasetParameter',
@@ -107,7 +101,6 @@ class Migration(migrations.Migration):
                 'ordering': ['name'],
                 'abstract': False,
             },
-            bases=(models.Model,),
         ),
         migrations.CreateModel(
             name='DatasetParameterSet',
@@ -139,9 +132,6 @@ class Migration(migrations.Migration):
                 ('public_access', models.PositiveSmallIntegerField(default=1, choices=[(1, b'No public access (hidden)'), (25, b'Ready to be released pending embargo expiry'), (50, b'Public Metadata only (no data file access)'), (100, b'Public')])),
                 ('created_by', models.ForeignKey(to=settings.AUTH_USER_MODEL)),
             ],
-            options={
-            },
-            bases=(models.Model,),
         ),
         migrations.CreateModel(
             name='ExperimentAuthor',
@@ -157,7 +147,6 @@ class Migration(migrations.Migration):
             options={
                 'ordering': ['order'],
             },
-            bases=(models.Model,),
         ),
         migrations.CreateModel(
             name='ExperimentParameter',
@@ -173,7 +162,6 @@ class Migration(migrations.Migration):
                 'ordering': ['name'],
                 'abstract': False,
             },
-            bases=(models.Model,),
         ),
         migrations.CreateModel(
             name='ExperimentParameterSet',
@@ -197,16 +185,12 @@ class Migration(migrations.Migration):
             options={
                 'verbose_name_plural': 'Facilities',
             },
-            bases=(models.Model,),
         ),
         migrations.CreateModel(
             name='FreeTextSearchField',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
             ],
-            options={
-            },
-            bases=(models.Model,),
         ),
         migrations.CreateModel(
             name='GroupAdmin',
@@ -215,9 +199,6 @@ class Migration(migrations.Migration):
                 ('group', models.ForeignKey(to='auth.Group')),
                 ('user', models.ForeignKey(to=settings.AUTH_USER_MODEL)),
             ],
-            options={
-            },
-            bases=(models.Model,),
         ),
         migrations.CreateModel(
             name='Instrument',
@@ -229,7 +210,6 @@ class Migration(migrations.Migration):
             options={
                 'verbose_name_plural': 'Instruments',
             },
-            bases=(models.Model,),
         ),
         migrations.CreateModel(
             name='InstrumentParameter',
@@ -245,7 +225,6 @@ class Migration(migrations.Migration):
                 'ordering': ['name'],
                 'abstract': False,
             },
-            bases=(models.Model,),
         ),
         migrations.CreateModel(
             name='InstrumentParameterSet',
@@ -266,9 +245,6 @@ class Migration(migrations.Migration):
                 ('jti', models.CharField(max_length=255)),
                 ('created_time', models.DateTimeField(auto_now_add=True)),
             ],
-            options={
-            },
-            bases=(models.Model,),
         ),
         migrations.CreateModel(
             name='License',
@@ -281,9 +257,6 @@ class Migration(migrations.Migration):
                 ('allows_distribution', models.BooleanField(default=False, help_text=b'Does this license provide distribution rights?')),
                 ('is_active', models.BooleanField(default=True, help_text=b'Can experiments continue to select this license?')),
             ],
-            options={
-            },
-            bases=(models.Model,),
         ),
         migrations.CreateModel(
             name='ObjectACL',
@@ -305,7 +278,6 @@ class Migration(migrations.Migration):
                 'ordering': ['content_type', 'object_id'],
                 'verbose_name': 'Object ACL',
             },
-            bases=(models.Model,),
         ),
         migrations.CreateModel(
             name='ParameterName',
@@ -324,7 +296,6 @@ class Migration(migrations.Migration):
             options={
                 'ordering': ('order', 'name'),
             },
-            bases=(models.Model,),
         ),
         migrations.CreateModel(
             name='Schema',
@@ -337,9 +308,6 @@ class Migration(migrations.Migration):
                 ('immutable', models.BooleanField(default=False)),
                 ('hidden', models.BooleanField(default=False)),
             ],
-            options={
-            },
-            bases=(models.Model,),
         ),
         migrations.CreateModel(
             name='StorageBox',
@@ -355,7 +323,6 @@ class Migration(migrations.Migration):
             options={
                 'verbose_name_plural': 'storage boxes',
             },
-            bases=(models.Model,),
         ),
         migrations.CreateModel(
             name='StorageBoxAttribute',
@@ -365,9 +332,6 @@ class Migration(migrations.Migration):
                 ('value', models.TextField()),
                 ('storage_box', models.ForeignKey(related_name='attributes', to='tardis_portal.StorageBox')),
             ],
-            options={
-            },
-            bases=(models.Model,),
         ),
         migrations.CreateModel(
             name='StorageBoxOption',
@@ -377,9 +341,6 @@ class Migration(migrations.Migration):
                 ('value', models.TextField()),
                 ('storage_box', models.ForeignKey(related_name='options', to='tardis_portal.StorageBox')),
             ],
-            options={
-            },
-            bases=(models.Model,),
         ),
         migrations.CreateModel(
             name='Token',
@@ -390,9 +351,6 @@ class Migration(migrations.Migration):
                 ('experiment', models.ForeignKey(to='tardis_portal.Experiment')),
                 ('user', models.ForeignKey(to=settings.AUTH_USER_MODEL)),
             ],
-            options={
-            },
-            bases=(models.Model,),
         ),
         migrations.CreateModel(
             name='UserAuthentication',
@@ -401,9 +359,6 @@ class Migration(migrations.Migration):
                 ('username', models.CharField(max_length=50)),
                 ('authenticationMethod', models.CharField(max_length=30)),
             ],
-            options={
-            },
-            bases=(models.Model,),
         ),
         migrations.CreateModel(
             name='UserProfile',
@@ -413,165 +368,138 @@ class Migration(migrations.Migration):
                 ('rapidConnectEduPersonTargetedID', models.CharField(max_length=400, null=True, blank=True)),
                 ('user', models.ForeignKey(to=settings.AUTH_USER_MODEL, unique=True)),
             ],
-            options={
-            },
-            bases=(models.Model,),
         ),
         migrations.AddField(
             model_name='userauthentication',
             name='userProfile',
             field=models.ForeignKey(to='tardis_portal.UserProfile'),
-            preserve_default=True,
         ),
         migrations.AddField(
             model_name='parametername',
             name='schema',
             field=models.ForeignKey(to='tardis_portal.Schema'),
-            preserve_default=True,
-        ),
-        migrations.AlterUniqueTogether(
-            name='parametername',
-            unique_together=set([('schema', 'name')]),
         ),
         migrations.AddField(
             model_name='instrumentparameterset',
             name='schema',
             field=models.ForeignKey(to='tardis_portal.Schema'),
-            preserve_default=True,
         ),
         migrations.AddField(
             model_name='instrumentparameterset',
             name='storage_box',
             field=models.ManyToManyField(related_name='instrumentparametersets', to='tardis_portal.StorageBox'),
-            preserve_default=True,
         ),
         migrations.AddField(
             model_name='instrumentparameter',
             name='name',
             field=models.ForeignKey(to='tardis_portal.ParameterName'),
-            preserve_default=True,
         ),
         migrations.AddField(
             model_name='instrumentparameter',
             name='parameterset',
             field=models.ForeignKey(to='tardis_portal.InstrumentParameterSet'),
-            preserve_default=True,
         ),
         migrations.AddField(
             model_name='freetextsearchfield',
             name='parameter_name',
             field=models.ForeignKey(to='tardis_portal.ParameterName'),
-            preserve_default=True,
         ),
         migrations.AddField(
             model_name='experimentparameterset',
             name='schema',
             field=models.ForeignKey(to='tardis_portal.Schema'),
-            preserve_default=True,
         ),
         migrations.AddField(
             model_name='experimentparameterset',
             name='storage_box',
             field=models.ManyToManyField(related_name='experimentparametersets', to='tardis_portal.StorageBox'),
-            preserve_default=True,
         ),
         migrations.AddField(
             model_name='experimentparameter',
             name='name',
             field=models.ForeignKey(to='tardis_portal.ParameterName'),
-            preserve_default=True,
         ),
         migrations.AddField(
             model_name='experimentparameter',
             name='parameterset',
             field=models.ForeignKey(to='tardis_portal.ExperimentParameterSet'),
-            preserve_default=True,
-        ),
-        migrations.AlterUniqueTogether(
-            name='experimentauthor',
-            unique_together=set([('experiment', 'author')]),
         ),
         migrations.AddField(
             model_name='experiment',
             name='license',
             field=models.ForeignKey(blank=True, to='tardis_portal.License', null=True),
-            preserve_default=True,
         ),
         migrations.AddField(
             model_name='datasetparameterset',
             name='schema',
             field=models.ForeignKey(to='tardis_portal.Schema'),
-            preserve_default=True,
         ),
         migrations.AddField(
             model_name='datasetparameterset',
             name='storage_box',
             field=models.ManyToManyField(related_name='datasetparametersets', to='tardis_portal.StorageBox'),
-            preserve_default=True,
         ),
         migrations.AddField(
             model_name='datasetparameter',
             name='name',
             field=models.ForeignKey(to='tardis_portal.ParameterName'),
-            preserve_default=True,
         ),
         migrations.AddField(
             model_name='datasetparameter',
             name='parameterset',
             field=models.ForeignKey(to='tardis_portal.DatasetParameterSet'),
-            preserve_default=True,
         ),
         migrations.AddField(
             model_name='dataset',
             name='experiments',
             field=models.ManyToManyField(related_name='datasets', to='tardis_portal.Experiment'),
-            preserve_default=True,
         ),
         migrations.AddField(
             model_name='dataset',
             name='instrument',
             field=models.ForeignKey(blank=True, to='tardis_portal.Instrument', null=True),
-            preserve_default=True,
         ),
         migrations.AddField(
             model_name='datafileparameterset',
             name='schema',
             field=models.ForeignKey(to='tardis_portal.Schema'),
-            preserve_default=True,
         ),
         migrations.AddField(
             model_name='datafileparameterset',
             name='storage_box',
             field=models.ManyToManyField(related_name='datafileparametersets', to='tardis_portal.StorageBox'),
-            preserve_default=True,
         ),
         migrations.AddField(
             model_name='datafileparameter',
             name='name',
             field=models.ForeignKey(to='tardis_portal.ParameterName'),
-            preserve_default=True,
         ),
         migrations.AddField(
             model_name='datafileparameter',
             name='parameterset',
             field=models.ForeignKey(to='tardis_portal.DatafileParameterSet'),
-            preserve_default=True,
         ),
         migrations.AddField(
             model_name='datafileobject',
             name='storage_box',
             field=models.ForeignKey(related_name='file_objects', to='tardis_portal.StorageBox'),
-            preserve_default=True,
-        ),
-        migrations.AlterUniqueTogether(
-            name='datafileobject',
-            unique_together=set([('datafile', 'storage_box')]),
         ),
         migrations.AddField(
             model_name='datafile',
             name='dataset',
             field=models.ForeignKey(to='tardis_portal.Dataset'),
-            preserve_default=True,
+        ),
+        migrations.AlterUniqueTogether(
+            name='parametername',
+            unique_together=set([('schema', 'name')]),
+        ),
+        migrations.AlterUniqueTogether(
+            name='experimentauthor',
+            unique_together=set([('experiment', 'author')]),
+        ),
+        migrations.AlterUniqueTogether(
+            name='datafileobject',
+            unique_together=set([('datafile', 'storage_box')]),
         ),
         migrations.AlterUniqueTogether(
             name='datafile',
