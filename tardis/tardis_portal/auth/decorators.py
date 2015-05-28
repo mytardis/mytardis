@@ -194,7 +194,7 @@ def has_read_or_owner_ACL(request, experiment_id):
                   | Q(expiryDate__isnull=True))
 
     # and finally check all the group based authorisation roles
-    for name, group in request.user.userprofile_set.first().ext_groups:
+    for name, group in request.user.userprofile.ext_groups:
         query |= Q(pluginId=name,
                    entityId=str(group),
                    content_type=experiment.get_ct(),
@@ -362,13 +362,13 @@ def delete_permissions_required(f):
 
 def upload_auth(f):
     def wrap(request, *args, **kwargs):
-        from datetime import datetime
+        from django.utils import timezone
         session_id = request.POST.get('session_id',
                                       request.COOKIES.get(
                                           settings.SESSION_COOKIE_NAME,
                                           None))
         sessions = Session.objects.filter(pk=session_id)
-        if len(sessions) != 0 and sessions[0].expire_date > datetime.now():
+        if len(sessions) != 0 and sessions[0].expire_date > timezone.now():
             try:
                 request.user = User.objects.get(
                     pk=sessions[0].get_decoded()['_auth_user_id'])

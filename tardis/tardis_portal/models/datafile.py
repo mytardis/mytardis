@@ -465,6 +465,7 @@ class DataFileObject(models.Model):
         self.uri = self._storage.save(self.uri or self.create_set_uri(),
                                       file_object)  # TODO: define behaviour
         # when overwriting existing files
+        file_object.close()
         self.verified = False
         self.save()
         self.datafile.update_mimetype(force=True)

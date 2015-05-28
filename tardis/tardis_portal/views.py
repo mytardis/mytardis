@@ -1977,7 +1977,7 @@ def retrieve_user_list(request):
                 '%s:%s:%s' %
                 (ua.username, ua.authenticationMethod,
                  auth_methods[ua.authenticationMethod])
-                for ua in user_auths if ua.userProfile == u.userprofile_set.first()]
+                for ua in user_auths if ua.userProfile == u.userprofile]
         except UserProfile.DoesNotExist:
             user['auth_methods'] = []
 
@@ -2511,7 +2511,6 @@ def create_group(request):
         user.save()
 
     c = {'group': group}
-    transaction.commit()
 
     response = HttpResponse(render_response_index(
         request,
