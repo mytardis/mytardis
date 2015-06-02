@@ -202,12 +202,15 @@ class RifCsExperimentProvider(AbstractExperimentProvider):
     def _get_experiment_metadata(self, experiment, metadataPrefix):
         license_ = experiment.license or License.get_none_option_license()
         # Access Rights statement
+        access_type = None
         if experiment.public_access == Experiment.PUBLIC_ACCESS_METADATA:
             access = "Only metadata is publicly available online."+\
                     " Requests for further access should be directed to a"+\
                     " listed data manager."
+            access_type = "restricted"
         else:
             access = "All data is publicly available online."
+            access_type = "open"
 
         def get_related_info(ps):
             psm = ParameterSetManager(ps)
@@ -245,6 +248,7 @@ class RifCsExperimentProvider(AbstractExperimentProvider):
             'licence_name': license_.name,
             'licence_uri': license_.url,
             'access': access,
+            'access_type': access_type,
             'collectors': collectors,
             'managers': experiment.get_owners(),
             'related_info': related_info,
@@ -353,6 +357,7 @@ class RifCsExperimentProvider(AbstractExperimentProvider):
             # rights
             rights = SubElement(collection, _nsrif('rights') )
             access = SubElement(rights, _nsrif('accessRights') )
+            access.set('type', metadata.getMap().get('access_type', 'restricted'))
             access.text = metadata.getMap().get('access')
             licence_ = SubElement(rights, _nsrif('licence') )
             licence_.set('rightsUri', metadata.getMap().get('licence_uri'))
