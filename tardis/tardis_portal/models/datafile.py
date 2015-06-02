@@ -402,7 +402,7 @@ class DataFileObject(models.Model):
         """
         return self.storage_box.storage_type
 
-    def create_set_uri(self, force=False):
+    def _create_uri(self):
         '''
         the default identifier would be directory and file name, but it may
         not work for all backends. This function aims to abstract it.
@@ -418,9 +418,6 @@ class DataFileObject(models.Model):
             uri = path.join(*path_parts)
             return uri
 
-        if not force and self.uri is not None and self.uri.strip() != '':
-            return self.uri
-
         # retained 'build_save_location' from earlier implementation
         # but it is deprecated. TODO: remove 'build_save_location' after
         # writing docs/changelog about its removal
@@ -429,9 +426,18 @@ class DataFileObject(models.Model):
             getattr(self._storage, 'build_save_location',
                     lambda x: None))
         new_uri = build_identifier(self) or default_identifier(self)
-        self.uri = new_uri
-        self.save()
         return new_uri
+
+    def create_set_uri(self, force=False):
+        """
+        sets the uri as well as building it
+        :param force:
+        :return:
+        """
+        if force or self.uri is None or self.uri.strip() != '':
+            self.uri = self._create_uri()
+            self.save()
+        return self.uri
 
     @property
     def file_object(self):
@@ -443,7 +449,7 @@ class DataFileObject(models.Model):
         cached_file_object = getattr(self, '_cached_file_object', None)
         if cached_file_object is None or cached_file_object.closed:
             cached_file_object = self._storage.open(self.uri or
-                                                    self.create_set_uri())
+                                                    self._create_uri())
             self._cached_file_object = cached_file_object
         return self._cached_file_object
 
