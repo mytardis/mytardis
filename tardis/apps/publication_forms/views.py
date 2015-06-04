@@ -140,10 +140,8 @@ def process_form(request):
         schema_draft = getattr(settings, 'PUBLICATION_DRAFT_SCHEMA',
                                default_settings.PUBLICATION_DRAFT_SCHEMA)
         for parameter_set in publication.getParameterSets():
-            if parameter_set.schema.namespace != \
-                    schema_draft and \
-                            parameter_set.schema.namespace != \
-                            schema_root:
+            if parameter_set.schema.namespace != schema_draft and \
+                    parameter_set.schema.namespace != schema_root:
                 parameter_set.delete()
             elif parameter_set.schema.namespace == schema_root:
                 try:
@@ -256,8 +254,8 @@ def process_form(request):
         if len(form_state['authors']) == 1 and \
                 not form_state['authors'][0]['name']:
             form_state['authors'] = [
-                {'name': request.user.first_name + " " +
-                         request.user.last_name,
+                {'name': ' '.join([request.user.first_name,
+                                   request.user.last_name]),
                  'institution': '',
                  'email': request.user.email}]
 
@@ -453,8 +451,7 @@ def create_draft_publication(user, publication_title, publication_description):
                   Group.objects.get_or_create(
                       name=getattr(
                           settings, 'PUBLICATION_OWNER_GROUP',
-                          default_settings.PUBLICATION_OWNER_GROUP))[0]
-                      .id),
+                          default_settings.PUBLICATION_OWNER_GROUP))[0].id),
               canRead=True,
               canWrite=True,
               canDelete=True,
@@ -653,34 +650,40 @@ def approve_publication(request, publication, message=None):
             pass
         publication.save()
 
-        # Set the publication owner appropriately (sets the managedBy relatedObject in rif-cs)
-        pub_data_admin_username = getattr(settings, 'PUBLICATION_DATA_ADMIN',
-                                          default_settings.PUBLICATION_DATA_ADMIN)
+        # Set the publication owner appropriately
+        # (sets the managedBy relatedObject in rif-cs)
+        pub_data_admin_username = getattr(
+            settings, 'PUBLICATION_DATA_ADMIN',
+            default_settings.PUBLICATION_DATA_ADMIN)
         if pub_data_admin_username is not None:
             try:
-                pub_data_admin = User.objects.get(username=pub_data_admin_username)
+                pub_data_admin = User.objects.get(
+                    username=pub_data_admin_username)
                 # Remove ownership status for all current owners
-                current_owners = ObjectACL.objects.filter(pluginId='django_user',
-                                                          content_type=publication.get_ct(),
-                                                          object_id=publication.id,
-                                                          isOwner=True)
+                current_owners = ObjectACL.objects.filter(
+                    pluginId='django_user',
+                    content_type=publication.get_ct(),
+                    object_id=publication.id,
+                    isOwner=True)
                 for owner in current_owners:
                     owner.isOwner = False
                     owner.save()
 
                 # Add the data administrator as an owner
-                data_admin_acl, _ = ObjectACL.objects.get_or_create(content_type=publication.get_ct(),
-                                                                    object_id=publication.id,
-                                                                    pluginId=django_user,
-                                                                    entityId=str(pub_data_admin.id),
-                                                                    aclOwnershipType=ObjectACL.OWNER_OWNED)
+                data_admin_acl, _ = ObjectACL.objects.get_or_create(
+                    content_type=publication.get_ct(),
+                    object_id=publication.id,
+                    pluginId=django_user,
+                    entityId=str(pub_data_admin.id),
+                    aclOwnershipType=ObjectACL.OWNER_OWNED)
                 data_admin_acl.canRead = True
                 data_admin_acl.canWrite = True
                 data_admin_acl.canDelete = True
                 data_admin_acl.isOwner = True
                 data_admin_acl.save()
             except User.DoesNotExist:
-                logger.error("Could not change publication owner to PUBLICATION_DATA_ADMIN; no such user.")
+                logger.error("Could not change publication owner to "
+                             "PUBLICATION_DATA_ADMIN; no such user.")
 
         doi = None
         url = request.build_absolute_uri(
@@ -742,11 +745,11 @@ def revert_publication_to_draft(publication, message=None):
             return False
 
         # Check that form_state exists (raises an exception if not)
+        schema_ns_root = getattr(settings, 'PUBLICATION_SCHEMA_ROOT',
+                                 default_settings.PUBLICATION_SCHEMA_ROOT)
         ExperimentParameter.objects.get(
             name__name='form_state',
-            name__schema__namespace=getattr(
-                settings, 'PUBLICATION_SCHEMA_ROOT',
-                default_settings.PUBLICATION_SCHEMA_ROOT),
+            name__schema__namespace=schema_ns_root,
             parameterset__experiment=publication)
 
         # Reduce access level to none
@@ -754,9 +757,10 @@ def revert_publication_to_draft(publication, message=None):
         publication.save()
 
         # Add the draft schema
+        draft_schema_ns = getattr(settings, 'PUBLICATION_DRAFT_SCHEMA',
+                                  default_settings.PUBLICATION_DRAFT_SCHEMA)
         draft_publication_schema = Schema.objects.get(
-            namespace=getattr(settings, 'PUBLICATION_DRAFT_SCHEMA',
-                              default_settings.PUBLICATION_DRAFT_SCHEMA))
+            namespace=draft_schema_ns)
         ExperimentParameterSet(schema=draft_publication_schema,
                                experiment=publication).save()
 
@@ -765,22 +769,14 @@ def revert_publication_to_draft(publication, message=None):
         # to the publication draft schema or containing the form_state
         # parameter
         for parameter_set in publication.getParameterSets():
-            if parameter_set.schema.namespace != \
-                    getattr(settings, 'PUBLICATION_DRAFT_SCHEMA',
-                            default_settings.PUBLICATION_DRAFT_SCHEMA) and \
-                            parameter_set.schema.namespace != getattr(
-                        settings, 'PUBLICATION_SCHEMA_ROOT',
-                        default_settings.PUBLICATION_SCHEMA_ROOT):
+            if parameter_set.schema.namespace != draft_schema_ns and \
+               parameter_set.schema.namespace != schema_ns_root:
                 parameter_set.delete()
-            elif parameter_set.schema.namespace == getattr(
-                    settings, 'PUBLICATION_SCHEMA_ROOT',
-                    default_settings.PUBLICATION_SCHEMA_ROOT):
+            elif parameter_set.schema.namespace == schema_ns_root:
                 try:
                     ExperimentParameter.objects.get(
                         name__name='form_state',
-                        name__schema__namespace=getattr(
-                            settings, 'PUBLICATION_SCHEMA_ROOT',
-                            default_settings.PUBLICATION_SCHEMA_ROOT),
+                        name__schema__namespace=schema_ns_root,
                         parameterset=parameter_set)
                 except ExperimentParameter.DoesNotExist:
                     parameter_set.delete()
