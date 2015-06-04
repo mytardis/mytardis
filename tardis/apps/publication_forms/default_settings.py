@@ -66,4 +66,4 @@ MODC_DOI_MINT_URL_ROOT = 'http://mytardisserver/'
 
 # Change this to the user name of the data administrator if it should be someone other than the
 # publication creator
-PUBLICATION_DATA_ADMIN = 'jrigby'
+PUBLICATION_DATA_ADMIN = None
