@@ -1,16 +1,21 @@
 import json
+import logging
 import re
 
 import dateutil.parser
 import CifFile
-
 from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
 from django.views.decorators.cache import never_cache
+
 from django.http import HttpResponse, HttpResponseForbidden
+
 from django.conf import settings
-from django.contrib.auth.models import Group
+
+from django.contrib.auth.models import User, Group
+
 from django.core.mail import send_mail
+
 from tardis.tardis_portal.shortcuts import return_response_error
 from tardis.tardis_portal.shortcuts import render_response_index
 from tardis.tardis_portal.models import Experiment, Dataset, ObjectACL, \
@@ -23,9 +28,10 @@ from .utils import PDBCifHelper, check_pdb_status, get_unreleased_pdb_info, \
 from .email_text import email_pub_requires_authorisation, \
     email_pub_awaiting_approval, email_pub_approved, email_pub_rejected, \
     email_pub_reverted_to_draft
-
 from . import tasks
 from . import default_settings
+
+logger = logging.getLogger(__name__)
 
 
 @login_required
@@ -46,7 +52,7 @@ def process_form(request):
         return HttpResponse(
             json.dumps({
                 'error': 'Invalid form data was submitted '
-                '(server-side validation failed)'}),
+                         '(server-side validation failed)'}),
             mimetype="application/json")
 
     # Check if the form data contains a publication ID
@@ -87,7 +93,7 @@ def process_form(request):
         # Update the publication title/description if changed.
         # Must not be blank.
         if not form_state['publicationTitle'].strip() or \
-           not form_state['publicationDescription'].strip():
+                not form_state['publicationDescription'].strip():
             return validation_error()
 
         if publication.title != form_state['publicationTitle']:
@@ -135,9 +141,9 @@ def process_form(request):
                                default_settings.PUBLICATION_DRAFT_SCHEMA)
         for parameter_set in publication.getParameterSets():
             if parameter_set.schema.namespace != \
-               schema_draft and \
-               parameter_set.schema.namespace != \
-               schema_root:
+                    schema_draft and \
+                            parameter_set.schema.namespace != \
+                            schema_root:
                 parameter_set.delete()
             elif parameter_set.schema.namespace == schema_root:
                 try:
@@ -187,12 +193,12 @@ def process_form(request):
         try:
             synch_epn_schema = Schema.objects.get(
                 namespace='http://www.tardis.edu.au/schemas/as/'
-                'experiment/2010/09/21')
+                          'experiment/2010/09/21')
             datasets = Dataset.objects.filter(experiments=publication)
             synch_experiments = Experiment.objects.filter(
                 datasets__in=datasets,
                 experimentparameterset__schema=synch_epn_schema).exclude(
-                    pk=publication.pk).distinct()
+                pk=publication.pk).distinct()
             for exp in [s for s in
                         synch_experiments if not s.is_publication()]:
                 epn = ExperimentParameter.objects.get(
@@ -248,10 +254,10 @@ def process_form(request):
         # By default, the form sends a list of authors of one element
         # with blank fields
         if len(form_state['authors']) == 1 and \
-           not form_state['authors'][0]['name']:
+                not form_state['authors'][0]['name']:
             form_state['authors'] = [
                 {'name': request.user.first_name + " " +
-                 request.user.last_name,
+                         request.user.last_name,
                  'institution': '',
                  'email': request.user.email}]
 
@@ -347,13 +353,13 @@ def process_form(request):
             for user in Group.objects.get(
                 name=getattr(settings, 'PUBLICATION_OWNER_GROUP',
                              default_settings.PUBLICATION_OWNER_GROUP))
-            .user_set.all()
+                .user_set.all()
             if user.email]
         message_content = email_pub_requires_authorisation(
             request.user.username,
             request.build_absolute_uri(
                 reverse('tardis.tardis_portal.views.view_experiment',
-                        args=(publication.id, ))),
+                        args=(publication.id,))),
             request.build_absolute_uri(
                 '/apps/publication-forms/approvals/'))
 
@@ -384,8 +390,8 @@ def select_forms(datasets):
     default_form = [{'name': 'default',
                      'template': '/static/publication-form/default-form.html'}]
 
-    if not hasattr(settings, 'PUBLICATION_FORM_MAPPINGS')\
-       and not hasattr(default_settings, 'PUBLICATION_FORM_MAPPINGS'):
+    if not hasattr(settings, 'PUBLICATION_FORM_MAPPINGS') \
+            and not hasattr(default_settings, 'PUBLICATION_FORM_MAPPINGS'):
         return default_form
 
     FORM_MAPPINGS = getattr(settings, 'PUBLICATION_FORM_MAPPINGS',
@@ -448,7 +454,7 @@ def create_draft_publication(user, publication_title, publication_description):
                       name=getattr(
                           settings, 'PUBLICATION_OWNER_GROUP',
                           default_settings.PUBLICATION_OWNER_GROUP))[0]
-                  .id),
+                      .id),
               canRead=True,
               canWrite=True,
               canDelete=True,
@@ -498,8 +504,8 @@ def get_draft_publication(user, publication_id):
 @login_required
 @never_cache
 def fetch_experiments_and_datasets(request):
-    experiments = Experiment.safe.owned_and_shared(request.user)\
-                                 .order_by('title')
+    experiments = Experiment.safe.owned_and_shared(request.user) \
+        .order_by('title')
     json_response = []
     for experiment in experiments:
         if not experiment.is_publication():
@@ -507,8 +513,8 @@ def fetch_experiments_and_datasets(request):
                                'title': experiment.title,
                                'institution_name': experiment.institution_name,
                                'description': experiment.description}
-            datasets = Dataset.objects.filter(experiments=experiment)\
-                                      .order_by('description')
+            datasets = Dataset.objects.filter(experiments=experiment) \
+                .order_by('description')
             dataset_json = []
             for dataset in datasets:
                 dataset_json.append({'id': dataset.id,
@@ -627,13 +633,13 @@ def get_publications_awaiting_approval():
     pubs = Experiment.objects.filter(
         public_access=Experiment.PUBLIC_ACCESS_NONE,
         experimentparameterset__schema__namespace=pub_schema).exclude(
-            experimentparameterset__schema__namespace=pub_schema_draft
-        ).distinct()
+        experimentparameterset__schema__namespace=pub_schema_draft
+    ).distinct()
     return pubs
 
 
 def approve_publication(request, publication, message=None):
-    if publication.is_publication() and not publication.is_publication_draft()\
+    if publication.is_publication() and not publication.is_publication_draft() \
             and publication.public_access == Experiment.PUBLIC_ACCESS_NONE:
         # Change the access level
         publication.public_access = Experiment.PUBLIC_ACCESS_EMBARGO
@@ -645,13 +651,41 @@ def approve_publication(request, publication, message=None):
                 experiment=publication).delete()
         except ExperimentParameterSet.DoesNotExist:
             pass
-
         publication.save()
+
+        # Set the publication owner appropriately (sets the managedBy relatedObject in rif-cs)
+        pub_data_admin_username = getattr(settings, 'PUBLICATION_DATA_ADMIN',
+                                          default_settings.PUBLICATION_DATA_ADMIN)
+        if pub_data_admin_username is not None:
+            try:
+                pub_data_admin = User.objects.get(username=pub_data_admin_username)
+                # Remove ownership status for all current owners
+                current_owners = ObjectACL.objects.filter(pluginId='django_user',
+                                                          content_type=publication.get_ct(),
+                                                          object_id=publication.id,
+                                                          isOwner=True)
+                for owner in current_owners:
+                    owner.isOwner = False
+                    owner.save()
+
+                # Add the data administrator as an owner
+                data_admin_acl, _ = ObjectACL.objects.get_or_create(content_type=publication.get_ct(),
+                                                                    object_id=publication.id,
+                                                                    pluginId=django_user,
+                                                                    entityId=str(pub_data_admin.id),
+                                                                    aclOwnershipType=ObjectACL.OWNER_OWNED)
+                data_admin_acl.canRead = True
+                data_admin_acl.canWrite = True
+                data_admin_acl.canDelete = True
+                data_admin_acl.isOwner = True
+                data_admin_acl.save()
+            except User.DoesNotExist:
+                logger.error("Could not change publication owner to PUBLICATION_DATA_ADMIN; no such user.")
 
         doi = None
         url = request.build_absolute_uri(
             reverse('tardis.tardis_portal.views.view_experiment',
-                    args=(publication.id, )))
+                    args=(publication.id,)))
         if getattr(settings, 'MODC_DOI_ENABLED',
                    default_settings.MODC_DOI_ENABLED):
             try:
@@ -665,7 +699,7 @@ def approve_publication(request, publication, message=None):
                 doi_param.string_value = doi.mint(
                     publication.id,
                     reverse('tardis.tardis_portal.views.view_experiment',
-                            args=(publication.id, )))
+                            args=(publication.id,)))
                 doi.deactivate()
                 doi_param.save()
             except ExperimentParameter.DoesNotExist:
@@ -686,9 +720,8 @@ def approve_publication(request, publication, message=None):
 
 
 def reject_publication(publication, message=None):
-    if publication.is_publication() and not publication.is_publication_draft()\
+    if publication.is_publication() and not publication.is_publication_draft() \
             and publication.public_access == Experiment.PUBLIC_ACCESS_NONE:
-
         email_message = email_pub_rejected(publication.title, message)
 
         send_mail_to_authors(publication, '[TARDIS] Publication rejected',
@@ -704,7 +737,7 @@ def revert_publication_to_draft(publication, message=None):
     # Anything with the form_state parameter can be reverted to draft
     try:
         # Check that the publication is currently finalised but not released
-        if publication.is_publication_draft() and publication.is_publication()\
+        if publication.is_publication_draft() and publication.is_publication() \
                 and publication.public_access == Experiment.PUBLIC_ACCESS_NONE:
             return False
 
@@ -733,11 +766,11 @@ def revert_publication_to_draft(publication, message=None):
         # parameter
         for parameter_set in publication.getParameterSets():
             if parameter_set.schema.namespace != \
-               getattr(settings, 'PUBLICATION_DRAFT_SCHEMA',
-                       default_settings.PUBLICATION_DRAFT_SCHEMA) and \
-               parameter_set.schema.namespace != getattr(
-                   settings, 'PUBLICATION_SCHEMA_ROOT',
-                   default_settings.PUBLICATION_SCHEMA_ROOT):
+                    getattr(settings, 'PUBLICATION_DRAFT_SCHEMA',
+                            default_settings.PUBLICATION_DRAFT_SCHEMA) and \
+                            parameter_set.schema.namespace != getattr(
+                        settings, 'PUBLICATION_SCHEMA_ROOT',
+                        default_settings.PUBLICATION_SCHEMA_ROOT):
                 parameter_set.delete()
             elif parameter_set.schema.namespace == getattr(
                     settings, 'PUBLICATION_SCHEMA_ROOT',
