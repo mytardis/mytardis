@@ -450,6 +450,9 @@ def fetch_facility_data(request, facility_id, start_index, end_index):
                         verified = "No (%s of %s bytes uploaded)" \
                             % ('{:,}'.format(file_object_size),
                                '{:,}'.format(int(datafile.size)))
+                except AttributeError:
+                    verified = "No (0 of %s bytes uploaded)" \
+                        % '{:,}'.format(int(datafile.size))
                 except IOError, e:
                     verified = "No (0 of %s bytes uploaded)" \
                         % '{:,}'.format(int(datafile.size))
