@@ -14,11 +14,12 @@ from django.contrib.auth.models import User
 from django.contrib.auth.models import Group
 from django.core.serializers import json
 from django.core.servers.basehttp import FileWrapper
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseForbidden
 
 from tardis.tardis_portal.auth.decorators import \
     get_accessible_datafiles_for_user
 from tardis.tardis_portal.auth.decorators import has_datafile_access
+from tardis.tardis_portal.auth.decorators import has_datafile_download_access
 from tardis.tardis_portal.auth.decorators import has_dataset_access
 from tardis.tardis_portal.auth.decorators import has_dataset_write
 from tardis.tardis_portal.auth.decorators import has_delete_permissions
@@ -892,6 +893,10 @@ class DataFileResource(MyTardisModelResource):
         self.method_check(request, allowed=['get'])
         self.is_authenticated(request)
         self.throttle_check(request)
+
+        if not has_datafile_download_access(
+                request=request, datafile_id=kwargs['pk']):
+            return HttpResponseForbidden()
 
         file_record = self._meta.queryset.get(pk=kwargs['pk'])
         self.authorized_read_detail(
