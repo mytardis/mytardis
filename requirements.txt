@@ -32,7 +32,8 @@ lxml==3.2.1 #apt: 3.3.3
 mimeparse==0.1.3 #apt: 0.1.4
 nose
 nosexcover
-paramiko==1.15.2 #apt: 1.10.1
+# paramiko==1.15.2 #apt: 1.10.1
+-e git+https://github.com/jasonrig/paramiko.git@rsacert#egg=paramiko
 pwgen==0.4
 pylint
 pyoai==2.4.4
