@@ -1,0 +1,2 @@
+class NoSuitableCredential(Exception):
+    pass

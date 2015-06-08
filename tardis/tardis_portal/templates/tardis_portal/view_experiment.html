@@ -251,6 +251,14 @@ $('#modal-metadata .submit-button').click(function() {
       <span ng-show="isPublicationDraft">Resume draft publication</span>
     </a>
     {% endif %}
+    {% if push_to_enabled and is_authenticated %}
+    <a class="btn btn-mini btn-danger" title="Push to..."
+       onclick="window.open('{{ push_to_url }}', 'push-to', 'width=600, height=250'); return false;"
+       href="{{ push_to_url }}" target="_blank">
+      <i class="icon-upload"></i>
+      Push to...
+    </a>
+    {% endif %}
     {% if has_write_permissions %}
     <a class="btn btn-mini btn-warning" title="Edit Experiment"
        href="{{ experiment.get_edit_url }}" ng-hide="isPublication">

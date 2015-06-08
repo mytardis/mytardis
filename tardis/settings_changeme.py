@@ -257,6 +257,7 @@ INSTALLED_APPS = (
     # these optional apps, may require extra settings
     'tardis.apps.publication_forms',
     'tardis.apps.oaipmh',
+    'tardis.apps.push_to',
 )
 
 JASMINE_TEST_DIRECTORY = path.abspath(path.join(path.dirname(__file__),

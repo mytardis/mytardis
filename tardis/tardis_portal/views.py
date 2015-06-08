@@ -38,6 +38,8 @@ views.py
 """
 import time
 import re
+from tardis.apps.push_to.apps import PushToConfig
+from tardis.apps.push_to.views import initiate_push_experiment, initiate_push_dataset
 
 from tardis.tardis_portal.auth.decorators import \
     has_experiment_write, has_dataset_write
@@ -623,6 +625,15 @@ def view_experiment(request, experiment_id,
         c['is_owner'] = authz.has_experiment_ownership(request, experiment_id)
         c['has_read_or_owner_ACL'] = authz.has_read_or_owner_ACL(request,
                                                                  experiment_id)
+
+    # Enables UI elements for the push_to app
+    c['push_to_enabled'] = PushToConfig.name in settings.INSTALLED_APPS
+    if c['push_to_enabled']:
+        push_to_args = {
+            'experiment_id': experiment.pk
+        }
+        c['push_to_url'] = reverse(initiate_push_experiment, kwargs=push_to_args)
+
     c['subtitle'] = experiment.title
     c['nav'] = [{'name': 'Data', 'link': '/experiment/view/'},
                 {'name': experiment.title,
@@ -863,6 +874,15 @@ def view_dataset(request, dataset_id):
         authz.get_accessible_experiments_for_dataset(request, dataset_id),
         'upload_method': upload_method
     }
+
+    # Enables UI elements for the push_to app
+    c['push_to_enabled'] = PushToConfig.name in settings.INSTALLED_APPS
+    if c['push_to_enabled']:
+        push_to_args = {
+            'dataset_id': dataset.pk
+        }
+        c['push_to_url'] = reverse(initiate_push_dataset, kwargs=push_to_args)
+
     _add_protocols_and_organizations(request, dataset, c)
     return HttpResponse(render_response_index(
         request, 'tardis_portal/view_dataset.html', c))
