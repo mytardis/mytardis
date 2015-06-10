@@ -322,7 +322,6 @@ for app in getTardisApps():
             v1_api.register(resource())
     except ImportError as e:
         logger.debug('App API URLs import error: %s' % str(e))
-        pass
 
 api_urls = patterns(
     '',
