@@ -1,4 +1,5 @@
 from importlib import import_module
+import logging
 
 from django.contrib import admin
 admin.autodiscover()
@@ -18,6 +19,8 @@ import django_jasmine.urls
 
 from tastypie.api import Api
 from tastypie.resources import Resource
+
+logger = logging.getLogger(__name__)
 
 
 def getTardisApps():
@@ -317,7 +320,8 @@ for app in getTardisApps():
                 resource._meta.resource_name = '%s_%s' % (
                     app, resource_name)
             v1_api.register(resource())
-    except ImportError:
+    except ImportError as e:
+        logger.debug('App API URLs import error: %s' % str(e))
         pass
 
 api_urls = patterns(
