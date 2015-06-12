@@ -911,6 +911,25 @@ class DataFileResource(MyTardisModelResource):
         self.log_throttled_access(request)
         return response
 
+    def verify_file(self, request, **kwargs):
+        '''triggers verification of file, e.g. after non-POST upload complete
+        '''
+        self.method_check(request, allowed=['get'])
+        self.is_authenticated(request)
+        self.throttle_check(request)
+
+        if not has_datafile_download_access(
+                request=request, datafile_id=kwargs['pk']):
+            return HttpResponseForbidden()
+
+        file_record = self._meta.queryset.get(pk=kwargs['pk'])
+        self.authorized_read_detail(
+            [file_record],
+            self.build_bundle(obj=file_record, request=request))
+        for dfo in file_record.file_objects.all():
+            dfo.verify.apply_async()
+        return HttpResponse()
+
     def hydrate(self, bundle):
         if 'attached_file' in bundle.data:
             # have POSTed file
@@ -959,6 +978,9 @@ class DataFileResource(MyTardisModelResource):
             url(r"^(?P<resource_name>%s)/(?P<pk>\w[\w/-]*)/download%s$" %
                 (self._meta.resource_name, trailing_slash()),
                 self.wrap_view('download_file'), name="api_download_file"),
+            url(r"^(?P<resource_name>%s)/(?P<pk>\w[\w/-]*)/verify%s$" %
+                (self._meta.resource_name, trailing_slash()),
+                self.wrap_view('verify_file'), name="api_verify_file"),
         ]
 
     def deserialize(self, request, data, format=None):
