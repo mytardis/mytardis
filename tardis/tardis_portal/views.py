@@ -68,7 +68,7 @@ from django.core.exceptions import PermissionDenied
 from django.core.mail import EmailMessage
 from django.forms.models import model_to_dict
 from django.views.decorators.http import require_POST
-from django.views.decorators.cache import never_cache
+from django.views.decorators.cache import never_cache, cache_page
 from django.contrib.sites.models import Site
 from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
@@ -2608,6 +2608,7 @@ def remove_experiment_access_group(request, experiment_id, group_id):
     return HttpResponse('')
 
 
+@cache_page(60 * 30)
 def stats(request):
     # using count() is more efficient than using len() on a query set
     cursor = connection.cursor()
