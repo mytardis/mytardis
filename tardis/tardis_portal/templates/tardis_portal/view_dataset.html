@@ -574,7 +574,7 @@ $('#modal-metadata .submit-button').live('click', function() {
   </p>
       <p>This dataset is {% if dataset.is_online %}online{% else %}
       not available for quick download, the greyed out files in particular.
-      <a href="{% url "cache-dataset" dataset.id %}" id="request-fast-access"
+      <a href="{% url "cache_dataset" dataset.id %}" id="request-fast-access"
          class="btn btn-warning btn-mini" style="float:right">Request
           Fast Access</a>{% endif %}
       </p>

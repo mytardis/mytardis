@@ -100,6 +100,7 @@ class DataFile(models.Model):
         return any(dfo.storage_type in StorageBox.online_types
                    for dfo in self.file_objects.filter(verified=True))
 
+    @task(name="tardis_portal.cache_datafile")
     def cache_file(self):
         if self.is_online:
             return True
