@@ -79,10 +79,11 @@ Select: <a class="dataset_selector_all btn btn-mini">All</a> / <a class="dataset
       <a  class="filelink datafile_name"
           href="{{ datafile.get_view_url }}"
           title="View"
+          {% if not datafile.is_online %}style="color:darkgray"{% endif %}
           target="_blank">{{ datafile.filename }}</a>
     {% else %}
       {% if datafile.verified %}
-        <span class="datafile_name">{{ datafile.filename }}</span>
+          <span class="datafile_name" {% if not datafile.is_online %}style="color:darkgray"{% endif %}>{{ datafile.filename }}</span>
       {% else %}
         <span class="datafile_name" style="color:red;">{{ datafile.filename }}</span>
       {% endif %}

@@ -38,6 +38,10 @@ class Dataset(models.Model):
         app_label = 'tardis_portal'
         ordering = ['-id']
 
+    @property
+    def is_online(self):
+        return all(df.is_online for df in self.datafile_set.all())
+
     def getParameterSets(self, schemaType=None):
         """Return the dataset parametersets associated with this
         experiment.

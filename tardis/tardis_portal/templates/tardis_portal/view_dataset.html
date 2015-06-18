@@ -185,6 +185,12 @@
         loadModalRemoteBody(this, '#modal-metadata');
     });
 
+    $('#request-fast-access').live('click', function(evt){
+        evt.preventDefault();
+        $('#modal-request-access .modal-header .title').text("Request sent");
+        loadModalRemoteBody(this, '#modal-request-access');
+    });
+
     $('.pagelink').live('click', function( event ){
         var href = $(this).attr("href");
         var html = $(this).html();
@@ -330,6 +336,27 @@ $('#modal-metadata .submit-button').live('click', function() {
     </button>
   </div>
 </div>
+
+<div class="modal hide fade" id="modal-request-access">
+  <div class="modal-header">
+    <a class="close" data-dismiss="modal">&times;</a>
+    <h1 class="title"></h1>
+  </div>
+
+  <div class="loading-placeholder" style="display: none">
+    <p>Please wait... <img src="{% static 'images/ajax-loader.gif'%}" alt="loading" /></p>
+  </div>
+
+  <div class="modal-body"></div>
+
+  <div class="modal-footer">
+    <button class="submit-button btn btn-success">
+      <i class="icon-ok"></i>
+      Save
+    </button>
+  </div>
+</div>
+
 
 <div class="modal hide fade" id="modal-upload-files">
   <div class="modal-header">
@@ -545,6 +572,12 @@ $('#modal-metadata .submit-button').live('click', function() {
       {% endfor %}
       {% endif %}
   </p>
+      <p>This dataset is {% if dataset.is_online %}online{% else %}
+      not available for quick download, the greyed out files in particular.
+      <a href="{% url "cache-dataset" dataset.id %}" id="request-fast-access"
+         class="btn btn-warning btn-mini" style="float:right">Request
+          Fast Access</a>{% endif %}
+      </p>
   {% endif %}
   {% endblock downloads %}
   </div>
