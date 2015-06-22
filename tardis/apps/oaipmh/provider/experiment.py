@@ -317,9 +317,9 @@ class RifCsExperimentProvider(AbstractExperimentProvider):
                 return getattr(settings, 'RIFCS_GROUP', '')
             def _get_originating_source(metadata):
                 # TODO: Handle repository data from federated MyTardis instances
-                return "http://%s/" % site.domain
+                return "https://%s/" % site.domain
             def _get_location(metadata):
-                return "http://%s%s" % \
+                return "https://%s%s" % \
                     ( site.domain,
                       reverse('tardis.tardis_portal.views.view_experiment',
                               args=[metadata.getMap().get('id')]) )
@@ -457,7 +457,7 @@ class RifCsExperimentProvider(AbstractExperimentProvider):
                                                           'RIFCS_GROUP', ''))
         def _get_originating_source(metadata):
             # TODO: Handle repository data from federated MyTardis instances
-            return "http://%s/" % site.domain
+            return "https://%s/" % site.domain
         # registryObjects
         wrapper = SubElement(element, _nsrif('registryObjects'), \
                        nsmap={None: RIFCS_NS, 'xsi': NS_XSI} )
