@@ -299,34 +299,43 @@ class RifCsExperimentProvider(AbstractExperimentProvider):
             self.root = root
             self.metadata = metadata
             self.site = site
+            if getattr(settings, 'CSRF_COOKIE_SECURE', False):
+                self.protocol = 'https'
+            else:
+                self.protocol = 'http'
 
         @staticmethod
         def _nsrif(name):
             from . import RIFCS_NS
             return '{%s}%s' % (RIFCS_NS, name)
 
-
-
         def write(self):
             # Get our data
             metadata, site = (self.metadata, self.site)
             _nsrif = self._nsrif
+
             def _get_id(metadata):
-                return RifCsExperimentProvider.get_rifcs_id(metadata.getMap().get('id'), site)
+                return RifCsExperimentProvider.get_rifcs_id(
+                    metadata.getMap().get('id'), site)
+
             def _get_group(metadata):
                 return getattr(settings, 'RIFCS_GROUP', '')
+
             def _get_originating_source(metadata):
                 # TODO: Handle repository data from federated MyTardis instances
-                return "http://%s/" % site.domain
+                return "%s://%s/" % (self.protocol, site.domain)
+
             def _get_location(metadata):
-                return "http://%s%s" % \
-                    ( site.domain,
-                      reverse('tardis.tardis_portal.views.view_experiment',
-                              args=[metadata.getMap().get('id')]) )
+                return "%s://%s%s" % (
+                    self.protocol,
+                    site.domain,
+                    reverse('tardis.tardis_portal.views.view_experiment',
+                            args=[metadata.getMap().get('id')]))
+
             # registryObjects
             wrapper = self.writeRegistryObjectsWrapper()
             # registryObject
-            obj = SubElement(wrapper, _nsrif('registryObject') )
+            obj = SubElement(wrapper, _nsrif('registryObject'))
             obj.set('group', _get_group(metadata))
             # key
             SubElement(obj, _nsrif('key')).text = _get_id(metadata)
@@ -457,10 +466,14 @@ class RifCsExperimentProvider(AbstractExperimentProvider):
                                                           'RIFCS_GROUP', ''))
         def _get_originating_source(metadata):
             # TODO: Handle repository data from federated MyTardis instances
-            return "http://%s/" % site.domain
+            if getattr(settings, 'CSRF_COOKIE_SECURE', False):
+                protocol = 'https'
+            else:
+                protocol = 'http'
+            return "%s://%s/" % (protocol, site.domain)
         # registryObjects
-        wrapper = SubElement(element, _nsrif('registryObjects'), \
-                       nsmap={None: RIFCS_NS, 'xsi': NS_XSI} )
+        wrapper = SubElement(element, _nsrif('registryObjects'),
+                             nsmap={None: RIFCS_NS, 'xsi': NS_XSI})
         wrapper.set('{%s}schemaLocation' % NS_XSI,
                     '%s %s' % (RIFCS_NS, RIFCS_SCHEMA))
         # registryObject
