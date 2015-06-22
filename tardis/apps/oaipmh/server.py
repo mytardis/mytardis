@@ -112,7 +112,7 @@ class ProxyingServer(IOAI):
         current_site = Site.objects.get_current().domain
         return Identify(
             "%s (MyTardis)" % (settings.DEFAULT_INSTITUTION,),
-            'http://%s%s' % (current_site, reverse('oaipmh-endpoint')),
+            'https://%s%s' % (current_site, reverse('oaipmh-endpoint')),
             '2.0',
             self._get_admin_emails(current_site),
             datetime.fromtimestamp(0),

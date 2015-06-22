@@ -104,7 +104,7 @@ class EndpointTestCase(TestCase):
         # <originatingSource>http://keydomain.test.example/</originatingSource>
         expect(registryObject.xpath('r:originatingSource/text()',
                                     namespaces=ns)[0]) \
-                                    .to_equal('http://example.com/')
+                                    .to_equal('https://example.com/')
         # <collection type="dataset">
         expect(registryObject.xpath('r:collection/@type',
                                     namespaces=ns)[0]).to_equal('dataset')
@@ -128,7 +128,7 @@ class EndpointTestCase(TestCase):
         loc_xpath = 'r:location/r:address/r:electronic[@type="url"]'\
                     +'/r:value/text()'
         expect(collection.xpath(loc_xpath, namespaces=ns)[0]) \
-                .to_equal('http://example.com/experiment/view/%d/' %
+                .to_equal('https://example.com/experiment/view/%d/' %
                           experiment.id)
         # <rights>
         #     <accessRights>
@@ -168,7 +168,7 @@ class EndpointTestCase(TestCase):
         # <originatingSource>http://keydomain.test.example/</originatingSource>
         expect(registryObject.xpath('r:originatingSource/text()',
                                     namespaces=ns)[0]) \
-                                    .to_equal('http://example.com/')
+                                    .to_equal('https://example.com/')
         # <collection type="dataset">
         expect(registryObject.xpath('r:party/@type',
                                     namespaces=ns)[0]).to_equal('person')
