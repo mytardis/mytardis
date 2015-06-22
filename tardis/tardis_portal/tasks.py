@@ -151,7 +151,7 @@ def email_user_task(subject, template_name, context, user):
 def cache_done_notify(results, user_id, site_id, ct_id, obj_ids):
     user = User.objects.get(id=user_id)
     site = Site.objects.get(id=site_id)
-    subject = '[{site}] Cache recall done'.format({'site': site.name})
+    subject = '[{site}] Cache recall done'.format(site=site.name)
     ct = ContentType.objects.get(id=ct_id)
     objects = [ct.get_object_for_this_type(id=obj_id) for obj_id in obj_ids]
     context = {
@@ -159,3 +159,4 @@ def cache_done_notify(results, user_id, site_id, ct_id, obj_ids):
         'username': user.username,
     }
     email_user(subject, 'cache_done_email', context, user)
+    return "all done"

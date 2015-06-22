@@ -1022,7 +1022,7 @@ def cache_dataset(request, dataset_id=None, notify=False):
         run_this = chord(run_this)(
             cache_done_notify.subtask(kwargs={
                 'user_id': request.user.id,
-                'site_id': Site.objects.get_current(request),
+                'site_id': Site.objects.get_current(request).id,
                 'ct_id': ContentType.objects.get_for_model(Dataset).id,
                 'obj_ids': [dataset_id], }))
     result = run_this.apply_async()

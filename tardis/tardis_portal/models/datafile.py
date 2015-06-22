@@ -608,8 +608,9 @@ class DataFileObject(models.Model):
         database = {comp_type: getattr(df, comp_type)
                     for comp_type in comparisons}
         database_update = {}
-        empty_value = {db_key: db_val is None or db_val.strip() == ''
-                       for db_key, db_val in database.items()}
+        empty_value = {db_key: db_val is None or (
+            isinstance(db_val, basestring) and db_val.strip() == '')
+            for db_key, db_val in database.items()}
         same_values = {key: False for key, empty in empty_value.items()
                        if not empty}
         io_error = False
