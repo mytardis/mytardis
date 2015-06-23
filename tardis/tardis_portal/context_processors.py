@@ -31,6 +31,15 @@ def registration_processor(request):
         return False
     return {'registration_enabled': is_registration_enabled()}
 
+def manage_account_processor(request):
+    def manage_account_enabled():
+        try:
+            return getattr(settings, 'MANAGE_ACCOUNT_ENABLED', True)
+        except AttributeError:
+            pass
+        return False
+    return {'manage_account_enabled': manage_account_enabled()}
+
 def user_details_processor(request):
     is_authenticated = request.user.is_authenticated()
     if is_authenticated:

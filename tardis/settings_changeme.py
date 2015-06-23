@@ -140,6 +140,7 @@ TEMPLATE_CONTEXT_PROCESSORS = [
     'tardis.tardis_portal.context_processors.single_search_processor',
     'tardis.tardis_portal.context_processors.tokenuser_processor',
     'tardis.tardis_portal.context_processors.registration_processor',
+    'tardis.tardis_portal.context_processors.is_registration_enabled',
     'tardis.tardis_portal.context_processors.user_details_processor',
 ]
 
@@ -617,6 +618,7 @@ RAPID_CONNECT_CONFIG['aud'] = 'https://example.com/rc/'
 Rapid Connect.
 '''
 
+MANAGE_ACCOUNT_ENABLED = True
 
 # Example settings for the publication form workflow. Also requires the
 # corresponding app in 'INSTALLED_APPS' and the corresponding task to be
