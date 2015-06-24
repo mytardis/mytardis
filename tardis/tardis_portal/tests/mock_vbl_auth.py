@@ -3,8 +3,11 @@ Created on 24/01/2011
 
 @author: gerson
 '''
-from tardis.tardis_portal.models import *
-from django.contrib.auth.models import User, AnonymousUser
+from tardis.tardis_portal.models import (
+    UserAuthentication,
+    UserProfile,
+)
+from django.contrib.auth.models import User
 
 
 auth_key = 'vbl'
@@ -38,7 +41,8 @@ class MockBackend():
         try:
             # check if the given username in combination with the VBL
             # auth method is already in the UserAuthentication table
-            user = UserAuthentication.objects.get(username=username,
+            user = UserAuthentication.objects.get(
+                username=username,
                 authenticationMethod=auth_key).userProfile.user
 
         except UserAuthentication.DoesNotExist:
@@ -64,7 +68,8 @@ class MockBackend():
                 userProfile = UserProfile(user=user, isDjangoAccount=True)
                 userProfile.save()
 
-            userAuth = UserAuthentication(userProfile=userProfile,
+            userAuth = UserAuthentication(
+                userProfile=userProfile,
                 username=username, authenticationMethod=auth_key)
             userAuth.save()
 

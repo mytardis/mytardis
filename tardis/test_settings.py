@@ -1,3 +1,4 @@
+# pylint: disable=W0401,W0614
 from tardis.settings_changeme import *  # noqa
 from os import listdir
 import logging

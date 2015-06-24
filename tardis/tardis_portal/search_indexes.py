@@ -36,7 +36,15 @@ search indexes for single search
 .. moduleauthor:: Shaun O'Keefe  <shaun.okeefe@versi.edu.au>
 
 '''
-from haystack.indexes import *
+from haystack.indexes import (
+    CharField,
+    DateTimeField,
+    FloatField,
+    IntegerField,
+    MultiValueField,
+    RealTimeSearchIndex,
+    SearchIndex,
+)
 from haystack import site
 from models import DataFile, \
     DatafileParameter, DatasetParameter, ExperimentParameter, \
@@ -69,6 +77,7 @@ def cleanText(text):
 
     return clean_text
 
+
 def _underscoreSlug(text):
     return slugify(text).replace('-', '_')
 
@@ -76,6 +85,7 @@ def _underscoreSlug(text):
 # into a suitable search field name
 # based on the paramtername schema type
 # and the paramtername full name
+
 
 def prepareFieldName(parameter_name):
 
@@ -93,6 +103,7 @@ def prepareFieldName(parameter_name):
 
     return '_'.join([prefix, schema_name, slug])
 
+
 # This is a text index so any numeric fields
 # will default to being rounded to ints
 # as there's no real intuitive way to do
@@ -102,13 +113,14 @@ def prepareFieldName(parameter_name):
 # so this function tries to do the most intelligent possible thing for each
 # situation.
 #
-# For non NUMERIC types, check if string can be converted to a float. If so, then it's a string representation
-# if a number and should be converted to a number. If that fails, it's probably a string and
-# can go in as is. If converted to a float, see the steps below for numeric types.
+# For non NUMERIC types, check if string can be converted to a float. If so,
+# then it's a string representation if a number and should be converted to a
+# number. If that fails, it's probably a string and can go in as is. If
+# converted to a float, see the steps below for numeric types.
 #
-# For NUMERIC types, convert to an int to remove decimal points. Text search for
-# the number '3.12159' probably isn't very handy so assume that if someone has specified
-# this field as text searchable, then it's actually in int.
+# For NUMERIC types, convert to an int to remove decimal points. Text search
+# for the number '3.12159' probably isn't very handy so assume that if someone
+# has specified this field as text searchable, then it's actually in int.
 #
 def toIntIfNumeric(param):
     val = ''
@@ -122,7 +134,8 @@ def toIntIfNumeric(param):
     else:
         val = _getParamValue(param)
 
-    return  int(val)
+    return int(val)
+
 
 def _getDataType(param_name):
     if param_name.isNumeric():
@@ -132,6 +145,7 @@ def _getDataType(param_name):
     else:
         return CharField()
 
+
 def _getParamValue(param):
     if param.name.isNumeric():
         return param.numerical_value
@@ -140,7 +154,7 @@ def _getParamValue(param):
     else:
         return param.string_value
 
-#
+
 # Overrides the index_queryset function of the basic
 # SearchIndex. index_queryset fetches a QuerySet for
 # haystack to index. If we're uinsg the OracleSafeManager
@@ -166,6 +180,7 @@ class OracleSafeIndex(RealTimeSearchIndex):
     def index_queryset(self):
         return self.model._default_manager.all().defer(None)
 
+
 class GetDatasetFileParameters(SearchIndex.__metaclass__):
     def __new__(mcs, name, bases, attrs):
 
@@ -178,28 +193,41 @@ class GetDatasetFileParameters(SearchIndex.__metaclass__):
         except DatabaseError:
             pass
 
-        return super(GetDatasetFileParameters, mcs).__new__(mcs, name, bases, attrs)
+        return super(GetDatasetFileParameters, mcs).__new__(
+            mcs, name, bases, attrs)
+
 
 class DatasetFileIndex(RealTimeSearchIndex):
 
     __metaclass__ = GetDatasetFileParameters
 
-    text=CharField(document=True)
-    datafile_filename  = CharField(model_attr='filename')
+    text = CharField(document=True)
+    datafile_filename = CharField(model_attr='filename')
 
-    dataset_id_stored = IntegerField(model_attr='dataset__pk', indexed=True) #changed
+    dataset_id_stored = IntegerField(
+        model_attr='dataset__pk', indexed=True)  # changed
     dataset_description = CharField(model_attr='dataset__description')
 
-    experiment_id_stored = IntegerField(model_attr='dataset__experiment__pk', indexed=True) # changed
-    experiment_description = CharField(model_attr='dataset__experiment__description')
-    experiment_title = CharField(model_attr='dataset__experiment__title')
-    experiment_created_time = DateTimeField(model_attr='dataset__experiment__created_time')
-    experiment_start_time = DateTimeField(model_attr='dataset__experiment__start_time', default=None)
-    experiment_end_time = DateTimeField(model_attr='dataset__experiment__end_time', default=None)
-    experiment_update_time = DateTimeField(model_attr='dataset__experiment__update_time', default=None)
-    experiment_institution_name = CharField(model_attr='dataset__experiment__institution_name', default=None)
-    experiment_creator=CharField(model_attr='dataset__experiment__created_by__username')
-    experiment_institution_name=CharField(model_attr='dataset__experiment__institution_name')
+    experiment_id_stored = IntegerField(
+        model_attr='dataset__experiment__pk', indexed=True)  # changed
+    experiment_description = CharField(
+        model_attr='dataset__experiment__description')
+    experiment_title = CharField(
+        model_attr='dataset__experiment__title')
+    experiment_created_time = DateTimeField(
+        model_attr='dataset__experiment__created_time')
+    experiment_start_time = DateTimeField(
+        model_attr='dataset__experiment__start_time', default=None)
+    experiment_end_time = DateTimeField(
+        model_attr='dataset__experiment__end_time', default=None)
+    experiment_update_time = DateTimeField(
+        model_attr='dataset__experiment__update_time', default=None)
+    experiment_institution_name = CharField(
+        model_attr='dataset__experiment__institution_name', default=None)
+    experiment_creator = CharField(
+        model_attr='dataset__experiment__created_by__username')
+    experiment_institution_name = CharField(
+        model_attr='dataset__experiment__institution_name')
     experiment_authors = MultiValueField()
 
     exp_cache = {}
@@ -209,36 +237,36 @@ class DatasetFileIndex(RealTimeSearchIndex):
 
     def get_experiment_text(self, obj, exp):
 
-        if not exp in self.exp_cache:
+        if exp not in self.exp_cache:
             text_list = [exp.title, exp.description, exp.institution_name]
             params = ExperimentParameter.objects.filter(
-                    parameterset__experiment__id=exp.id,
-                    name__is_searchable=True,
-                    name__freetextsearchfield__isnull=False)
+                parameterset__experiment__id=exp.id,
+                name__is_searchable=True,
+                name__freetextsearchfield__isnull=False)
 
             text_list.extend(map(toIntIfNumeric, params))
 
             # add all authors to the free text search
             text_list.extend(self.prepare_experiment_authors(obj))
             text_list.extend(self.prepare_experiment_creator(obj))
-            self.exp_cache[exp] = ' '.join(map(cleanText,text_list))
+            self.exp_cache[exp] = ' '.join(map(cleanText, text_list))
 
         return self.exp_cache[exp]
 
     def get_dataset_text(self, obj, ds):
         ds = obj.dataset
 
-        if not ds in self.ds_cache:
+        if ds not in self.ds_cache:
             text_list = [ds.description]
             params = DatasetParameter.objects.filter(
-                    parameterset__dataset__id=ds.id,
-                    name__is_searchable=True,
-                    name__freetextsearchfield__isnull=False)
+                parameterset__dataset__id=ds.id,
+                name__is_searchable=True,
+                name__freetextsearchfield__isnull=False)
 
             text_list.extend(map(toIntIfNumeric, params))
 
             # Always convert to strings as this is a text index
-            self.ds_cache[ds] = ' '.join(map(cleanText,text_list))
+            self.ds_cache[ds] = ' '.join(map(cleanText, text_list))
         return self.ds_cache[ds]
 
     def get_experiment_params(self, exp):
@@ -267,12 +295,13 @@ class DatasetFileIndex(RealTimeSearchIndex):
         return self.ds_param_cache[ds]
 
     def prepare_experiment_authors(self, obj):
-        return [a.author for a in obj.dataset.experiment.experimentauthor_set.all()]
+        return [a.author
+                for a in obj.dataset.experiment.experimentauthor_set.all()]
 
     def prepare_experiment_creator(self, obj):
         exp = obj.dataset.experiment
-        return ' '.join([exp.created_by.first_name, exp.created_by.last_name,\
-                exp.created_by.username, exp.created_by.email])
+        return ' '.join([exp.created_by.first_name, exp.created_by.last_name,
+                         exp.created_by.username, exp.created_by.email])
 
     def prepare(self, obj):
         self.prepared_data = super(DatasetFileIndex, self).prepare(obj)
@@ -285,7 +314,6 @@ class DatasetFileIndex(RealTimeSearchIndex):
         ds = obj.dataset
         text_list = [obj.filename]
 
-
         # Get all searchable soft params for this experiment that
         # appear in the list of soft params to be indexed for
         # full text search
@@ -295,9 +323,9 @@ class DatasetFileIndex(RealTimeSearchIndex):
         # have an associated FreeTextSearchField
 
         params = DatafileParameter.objects.filter(
-                parameterset__datafile__id=obj.id,
-                name__is_searchable=True,
-                name__freetextsearchfield__isnull=False)
+            parameterset__datafile__id=obj.id,
+            name__is_searchable=True,
+            name__freetextsearchfield__isnull=False)
 
         text_list.extend(map(toIntIfNumeric, params))
 
@@ -305,7 +333,7 @@ class DatasetFileIndex(RealTimeSearchIndex):
         ds_text = self.get_dataset_text(obj, ds)
 
         # Always convert to strings as this is a text index
-        df_text  = ' '.join(map(cleanText, text_list))
+        df_text = ' '.join(map(cleanText, text_list))
 
         self.prepared_data['text'] = ' '.join([exp_text, ds_text, df_text])
 
