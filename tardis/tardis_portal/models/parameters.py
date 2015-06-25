@@ -338,8 +338,8 @@ def _getParameter(parameter):
         return value
 
     elif parameter.name.isTable():
-        tabledict = json.loads(parameter.string_value)
         try:
+            tabledict = json.loads(parameter.string_value)
             thead = tabledict['thead']
             tbody = tabledict['tbody']
             value = "<table>\n"
