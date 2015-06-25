@@ -163,8 +163,8 @@ class ParameterName(models.Model):
     LINK = 4
     FILENAME = 5
     DATETIME = 6
-
     LONGSTRING = 7
+    TABLE = 8
 
     __TYPE_CHOICES = (
         (NUMERIC, 'NUMERIC'),
@@ -173,7 +173,8 @@ class ParameterName(models.Model):
         (LINK, 'LINK'),
         (FILENAME, 'FILENAME'),
         (DATETIME, 'DATETIME'),
-        (LONGSTRING, 'LONGSTRING')
+        (LONGSTRING, 'LONGSTRING'),
+        (TABLE, 'TABLE')
         )
 
     schema = models.ForeignKey(Schema)
@@ -243,6 +244,9 @@ class ParameterName(models.Model):
 
     def getUniqueShortName(self):
         return self.name + '_' + str(self.id)
+
+    def isTable(self):
+        return self.data_type == self.TABLE
 
 
 def _getParameter(parameter):
