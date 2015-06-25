@@ -343,12 +343,15 @@ def _getParameter(parameter):
             thead = tabledict['thead']
             tbody = tabledict['tbody']
             value = "<table>\n"
+            value += "<thead>\n"
             value += "<tr>"
             for col in thead:
                 colkey = col.keys()[0]
                 colname = col.values()[0]
                 value += "<th>%s</th>" % escape(colname)
             value += "</tr>\n"
+            value += "</thead>\n"
+            value += "<tbody>\n"
             for row in tbody:
                 value += "<tr>"
                 for col in thead:
@@ -358,6 +361,7 @@ def _getParameter(parameter):
                     else:
                         value += "<td>&nbsp;</td>"
                 value += "</tr>\n"
+            value += "</tbody>\n"
             value += "</table>\n"
             return mark_safe(value)
         except:
