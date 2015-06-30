@@ -6,6 +6,7 @@ Implemented with Tastypie.
 .. moduleauthor:: Grischa Meyer <grischa@gmail.com>
 '''
 import json as simplejson
+import pwgen
 
 from django.conf import settings
 from django.conf.urls import url
@@ -27,6 +28,7 @@ from tardis.tardis_portal.auth.decorators import has_experiment_access
 from tardis.tardis_portal.auth.decorators import has_write_permissions
 from tardis.tardis_portal.auth.localdb_auth import django_user
 from tardis.tardis_portal.models import ObjectACL
+from tardis.tardis_portal.models import UserProfile
 from tardis.tardis_portal.models.datafile import DataFile
 from tardis.tardis_portal.models.datafile import DataFileObject
 from tardis.tardis_portal.models.dataset import Dataset
@@ -1097,3 +1099,135 @@ class ObjectACLResource(MyTardisModelResource):
         else:
             raise NotImplementedError(str(bundle.obj))
         return bundle
+
+class UserProjectACLResource(MyTardisModelResource):
+    class Meta:
+        authentication = default_authentication
+        authorization = ACLAuthorization()
+
+    def obj_get_list(self, bundle, **kwargs):
+        return []
+
+    def obj_create(self, bundle, **kwargs):
+
+        # Find the first matching value in an experiment parameterset.
+        def _get_value(eps, name):
+            for p in eps.parameters:
+                str(p) # force calculation of _name_cache
+                if p._name_cache.name == name:
+                    return p.string_value
+
+            return None
+
+        # Get or create a group:
+        def _get_group(name):
+            if Group.objects.filter(name=name).count() == 0:
+                g = Group(name=name)
+                g.save()
+            else:
+                g = Group.objects.get(name=name)
+
+            return g
+
+        # Get or create a user:
+        def _get_user(email):
+            if User.objects.filter(username__iexact=email).count() > 0:
+                u = User.objects.get(username__iexact=email)
+            else:
+                u = User.objects.create_user(
+                                    email,
+                                    email,
+                                    pwgen.pwgen(25),
+                                    first_name='',
+                                    last_name='',
+                                    )
+                UserProfile(user=u).save()
+
+            return u
+
+        # Data in POST:
+        acl_pairs = simplejson.loads(bundle.data['json_data'])['acl_pairs']
+        acl_pairs = [(u.lower(), p) for (u, p) in acl_pairs]
+
+        for (email, project_id) in acl_pairs:
+            project_name = 'Project ' + project_id
+
+            # Create this group (for the project):
+            g = _get_group(project_name)
+
+            # Create this user:
+            u = _get_user(email)
+
+            # Add this user to the group:
+            u.groups.add(g)
+            u.save()
+
+        # Apply ACLs for experiments.
+        for eps in ExperimentParameterSet.objects.all():
+            for p in eps.parameters:
+                str(p) # force calculation of _name_cache
+                if p._name_cache.name != 'Project': continue
+
+                project_name = p.string_value
+
+                g = _get_group(project_name)
+
+                if ObjectACL.objects.filter(aclOwnershipType=1,
+                                            canRead=True,
+                                            entityId=str(g.id),
+                                            object_id=eps.experiment.id).count() == 0:
+                    oacl = ObjectACL(content_type=eps.experiment.get_ct(),
+                                     aclOwnershipType=1,
+                                     canRead=True,
+                                     canWrite=False,
+                                     canDelete=False,
+                                     entityId=str(g.id),
+                                     object_id=eps.experiment.id,
+                                     isOwner=False,
+                                     pluginId="django_group")
+                    oacl.save()
+
+
+        # Apply access for operators.
+        for eps in ExperimentParameterSet.objects.all():
+            operator_emails  = _get_value(eps, 'Operator')
+            instrument       = _get_value(eps, 'Instrument')
+
+            if instrument is not None:
+                operator_group_name = 'OPERATOR :: ' + instrument
+                operator_group = _get_group(operator_group_name)
+            else:
+                # FIXME log warning somewhere
+                continue
+
+            if operator_emails is not None:
+                operator_emails = operator_emails.split() # multiple email addresses
+            else:
+                # FIXME log warning somewhere
+                continue
+
+            # For each operator, create/add them as a user, add them to the group,
+            # and add the ObjectACL for this experiment.
+            for operator_email in operator_emails:
+                operator = _get_user(operator_email)
+                operator.groups.add(operator_group)
+                operator.save()
+
+                if ObjectACL.objects.filter(aclOwnershipType=1,
+                                            canRead=True,
+                                            entityId=str(operator_group.id),
+                                            object_id=eps.experiment.id).count() == 0:
+                    oacl = ObjectACL(content_type=eps.experiment.get_ct(),
+                                     aclOwnershipType=1,
+                                     canRead=True,
+                                     canWrite=False,
+                                     canDelete=False,
+                                     entityId=str(operator_group.id),
+                                     object_id=eps.experiment.id,
+                                     isOwner=False,
+                                     pluginId="django_group")
+                    oacl.save()
+
+    def deserialize(self, request, data, format=None):
+        if format == 'application/x-www-form-urlencoded':
+            return request.POST
