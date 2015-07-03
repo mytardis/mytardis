@@ -1026,7 +1026,7 @@ def cache_dataset(request, dataset_id=None, notify=False):
                 'ct_id': ContentType.objects.get_for_model(Dataset).id,
                 'obj_ids': [dataset_id], }))
     result = run_this.apply_async()
-    return HttpResponse(json.dumps({"result": str(result)}),
+    return HttpResponse(json.dumps({"result": str(result.id)}),
                         content_type='application/json')
 
 

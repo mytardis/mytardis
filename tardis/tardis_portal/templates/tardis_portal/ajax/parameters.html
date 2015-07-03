@@ -1,7 +1,7 @@
 {% load capture %}
 <div class="datafile_parameters">
     <strong><h3 style="display: inline;"><small>For the file:</small></h3>
-        {% if has_download_permissions and datafile.get_view_url %}
+        {% if has_download_permissions and datafile.is_online and datafile.get_view_url %}
           <a  class="filelink datafile_name"
               href="{{ datafile.get_view_url }}"
               title="View"
@@ -13,7 +13,7 @@
     </strong>
 
     <div class="btn-group pull-right">
-      {% if has_download_permissions %}
+      {% if has_download_permissions and datafile.is_online %}
       <a  class="btn"
           href="{{ datafile.get_download_url }}"
           title="Download">
