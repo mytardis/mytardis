@@ -6,10 +6,6 @@ from django.test.client import Client
 
 from lxml import etree
 
-import oaipmh.error
-import pytz
-
-from tardis.tardis_portal.creativecommonshandler import CreativeCommonsHandler
 from tardis.tardis_portal.models import \
     Experiment, License, ObjectACL, UserProfile
 
@@ -47,7 +43,7 @@ def _create_test_data():
                     canDelete=True,
                     aclOwnershipType=ObjectACL.OWNER_OWNED)
     acl.save()
-    return (user, experiment)
+    return user, experiment
 
 
 class EndpointTestCase(TestCase):

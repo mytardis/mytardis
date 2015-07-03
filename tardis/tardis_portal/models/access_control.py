@@ -18,7 +18,7 @@ class UserProfile(models.Model):
     :attribute user: a foreign key to the
        :class:`django.contrib.auth.models.User`
     """
-    user = models.ForeignKey(User, unique=True)
+    user = models.OneToOneField(User)
 
     # This flag will tell us if the main User account was created using any
     # non localdb auth methods. For example, if a first time user authenticates

@@ -75,7 +75,7 @@ def _create_download_response(request, datafile_id, disposition='attachment'):  
             return return_response_not_found(request)
         wrapper = FileWrapper(file_obj, blksize=65535)
         response = StreamingHttpResponse(wrapper,
-                                         mimetype=datafile.get_mimetype())
+                                         content_type=datafile.get_mimetype())
         response['Content-Disposition'] = \
             '%s; filename="%s"' % (disposition, datafile.filename)
         return response

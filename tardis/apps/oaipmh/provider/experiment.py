@@ -1,4 +1,5 @@
 from abc import abstractmethod
+import datetime
 
 from django.conf import settings
 from django.core.urlresolvers import reverse
@@ -97,12 +98,16 @@ class AbstractExperimentProvider(BaseProvider):
             raise oaipmh.error.IdDoesNotExistError
 
     def _get_header(self, obj):
-        if (isinstance(obj, User)):
-            timeFunc = lambda u: u.last_login
+        if isinstance(obj, User):
+            time_func = lambda u: u.last_login
         else:
-            timeFunc = lambda e: e.update_time
+            time_func = lambda e: e.update_time
         # Get UTC timestamp
-        timestamp = get_utc_time(timeFunc(obj)).replace(tzinfo=None)
+        timestamp = time_func(obj)
+        if timestamp is None:
+            timestamp = datetime.datetime.now()
+        else:
+            timestamp = get_utc_time(timestamp).replace(tzinfo=None)
         return Header(self.get_id(obj), timestamp, [], None)
 
     def _get_metadata(self, obj, metadataPrefix):
@@ -133,7 +138,7 @@ class AbstractExperimentProvider(BaseProvider):
             until = get_local_time(until.replace(tzinfo=pytz.utc)) # UTC->local
             experiments = experiments.filter(update_time__lte=until)
         def get_users_from_experiment(experiment):
-            return filter(lambda u: u.get_profile().isValidPublicContact(),
+            return filter(lambda u: u.userprofile.isValidPublicContact(),
                           experiment.get_owners())
         users = chain(map(get_users_from_experiment, experiments))
         return frozenset(chain(experiments, *users))
@@ -419,7 +424,7 @@ class RifCsExperimentProvider(AbstractExperimentProvider):
                                            'RIFCS_KEY',
                                            site.domain),
                                            identifier)
-            if not obj.get_profile().isValidPublicContact():
+            if not obj.userprofile.isValidPublicContact():
                 return
             relatedObject = SubElement(element, self._nsrif('relatedObject') )
             SubElement(relatedObject, self._nsrif('key')).text = \

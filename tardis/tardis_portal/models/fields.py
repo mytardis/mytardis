@@ -5,11 +5,11 @@ custom model fields
 from django.db import models
 from django import forms
 
-from south.modelsinspector import add_introspection_rules
-add_introspection_rules(
-    [], ["^tardis\.tardis_portal\.models\.fields\.DirectoryField"])
-add_introspection_rules(
-    [], ["^tardis\.tardis_portal\.models\.fields\.FileObjectField"])
+# from south.modelsinspector import add_introspection_rules
+# add_introspection_rules(
+#     [], ["^tardis\.tardis_portal\.models\.fields\.DirectoryField"])
+# add_introspection_rules(
+#     [], ["^tardis\.tardis_portal\.models\.fields\.FileObjectField"])
 
 
 class DirectoryField(models.TextField):

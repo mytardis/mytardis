@@ -5,8 +5,6 @@ from os import path
 # MUST change this to False for any serious use.
 DEBUG = True
 
-TEMPLATE_DEBUG = DEBUG
-
 ADMINS = (('bob', 'bob@bobmail.com'), )
 
 MANAGERS = ADMINS
@@ -29,6 +27,7 @@ DATABASES = {
 
 # Fix 'SQLite backend does not support timezone-aware datetimes
 # when USE_TZ is False.' error by setting USE_TZ to True
+USE_TZ = True
 
 # Celery queue
 BROKER_URL = 'django://'
@@ -129,34 +128,39 @@ MIDDLEWARE_CLASSES = (
 
 ROOT_URLCONF = 'tardis.urls'
 
-TEMPLATE_CONTEXT_PROCESSORS = [
-    'django.core.context_processors.request',
-    'django.core.context_processors.static',
-    'django.contrib.auth.context_processors.auth',
-    'django.contrib.messages.context_processors.messages',
-    'django.core.context_processors.debug',
-    'django.core.context_processors.i18n',
-    'tardis.tardis_portal.context_processors.global_contexts',
-    'tardis.tardis_portal.context_processors.single_search_processor',
-    'tardis.tardis_portal.context_processors.tokenuser_processor',
-    'tardis.tardis_portal.context_processors.registration_processor',
-    'tardis.tardis_portal.context_processors.user_details_processor',
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [
+            path.join(path.dirname(__file__),
+                      'tardis_portal/templates/').replace('\\', '/'),
+        ],
+        'OPTIONS': {
+            'context_processors': [
+                'django.template.context_processors.request',
+                'django.template.context_processors.static',
+                'django.contrib.auth.context_processors.auth',
+                'django.contrib.messages.context_processors.messages',
+                'django.template.context_processors.debug',
+                'django.template.context_processors.i18n',
+                'tardis.tardis_portal.context_processors'
+                '.global_contexts',
+                'tardis.tardis_portal.context_processors'
+                '.single_search_processor',
+                'tardis.tardis_portal.context_processors'
+                '.tokenuser_processor',
+                'tardis.tardis_portal.context_processors'
+                '.registration_processor',
+                'tardis.tardis_portal.context_processors'
+                '.user_details_processor',
+            ],
+            'loaders': [
+                'django.template.loaders.app_directories.Loader',
+                'django.template.loaders.filesystem.Loader',
+            ],
+        },
+    }
 ]
-
-TEMPLATE_LOADERS = (
-    'tardis.template.loaders.app_specific.Loader',
-    'django.template.loaders.app_directories.Loader',
-    'django.template.loaders.filesystem.Loader',
-)
-
-
-# Put strings here, like "/home/html/django_templates" or
-# "C:/www/django/templates". Always use forward slashes, even on Windows.
-# Don't forget to use absolute paths, not relative paths.
-TEMPLATE_DIRS = (
-    path.join(path.dirname(__file__),
-              'tardis_portal/templates/').replace('\\', '/'),
-)
 
 STATIC_DOC_ROOT = path.join(path.dirname(__file__),
                             'tardis_portal/site_media').replace('\\', '/')
@@ -241,11 +245,9 @@ INSTALLED_APPS = (
     'django.contrib.admin',
     'django.contrib.admindocs',
     'django.contrib.humanize',
-    'tardis.template.loaders',
     'tardis.tardis_portal',
     'tardis.tardis_portal.templatetags',
     'registration',
-    'south',
     'django_jasmine',
     'djcelery',
     'kombu.transport.django',

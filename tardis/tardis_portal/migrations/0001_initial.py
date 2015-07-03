@@ -1,430 +1,508 @@
-# encoding: utf-8
-import datetime
-from south.db import db
-from south.v2 import SchemaMigration
-from django.db import models
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals
 
-class Migration(SchemaMigration):
-
-    def forwards(self, orm):
-
-        # Adding model 'UserProfile'
-        db.create_table('tardis_portal_userprofile', (
-            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('user', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['auth.User'], unique=True)),
-            ('isDjangoAccount', self.gf('django.db.models.fields.BooleanField')(default=True)),
-        ))
-        db.send_create_signal('tardis_portal', ['UserProfile'])
-
-        # Adding model 'GroupAdmin'
-        db.create_table('tardis_portal_groupadmin', (
-            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('user', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['auth.User'])),
-            ('group', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['auth.Group'])),
-        ))
-        db.send_create_signal('tardis_portal', ['GroupAdmin'])
-
-        # Adding model 'UserAuthentication'
-        db.create_table('tardis_portal_userauthentication', (
-            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('userProfile', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['tardis_portal.UserProfile'])),
-            ('username', self.gf('django.db.models.fields.CharField')(max_length=50)),
-            ('authenticationMethod', self.gf('django.db.models.fields.CharField')(max_length=30)),
-        ))
-        db.send_create_signal('tardis_portal', ['UserAuthentication'])
-
-        # Adding model 'Experiment'
-        db.create_table('tardis_portal_experiment', (
-            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('url', self.gf('django.db.models.fields.URLField')(max_length=255, null=True, blank=True)),
-            ('approved', self.gf('django.db.models.fields.BooleanField')(default=False)),
-            ('title', self.gf('django.db.models.fields.CharField')(max_length=400)),
-            ('institution_name', self.gf('django.db.models.fields.CharField')(default='Monash University', max_length=400)),
-            ('description', self.gf('django.db.models.fields.TextField')(blank=True)),
-            ('start_time', self.gf('django.db.models.fields.DateTimeField')(null=True, blank=True)),
-            ('end_time', self.gf('django.db.models.fields.DateTimeField')(null=True, blank=True)),
-            ('created_time', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
-            ('update_time', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
-            ('created_by', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['auth.User'])),
-            ('handle', self.gf('django.db.models.fields.TextField')(null=True, blank=True)),
-            ('public', self.gf('django.db.models.fields.BooleanField')(default=False)),
-        ))
-        db.send_create_signal('tardis_portal', ['Experiment'])
-
-        # Adding model 'ExperimentACL'
-        db.create_table('tardis_portal_experimentacl', (
-            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('pluginId', self.gf('django.db.models.fields.CharField')(max_length=30)),
-            ('entityId', self.gf('django.db.models.fields.CharField')(max_length=320)),
-            ('experiment', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['tardis_portal.Experiment'])),
-            ('canRead', self.gf('django.db.models.fields.BooleanField')(default=False)),
-            ('canWrite', self.gf('django.db.models.fields.BooleanField')(default=False)),
-            ('canDelete', self.gf('django.db.models.fields.BooleanField')(default=False)),
-            ('isOwner', self.gf('django.db.models.fields.BooleanField')(default=False)),
-            ('effectiveDate', self.gf('django.db.models.fields.DateField')(null=True, blank=True)),
-            ('expiryDate', self.gf('django.db.models.fields.DateField')(null=True, blank=True)),
-            ('aclOwnershipType', self.gf('django.db.models.fields.IntegerField')(default=1)),
-        ))
-        db.send_create_signal('tardis_portal', ['ExperimentACL'])
-
-        # Adding model 'Author_Experiment'
-        db.create_table('tardis_portal_author_experiment', (
-            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('experiment', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['tardis_portal.Experiment'])),
-            ('author', self.gf('django.db.models.fields.CharField')(max_length=255)),
-            ('order', self.gf('django.db.models.fields.PositiveIntegerField')()),
-        ))
-        db.send_create_signal('tardis_portal', ['Author_Experiment'])
-
-        # Adding unique constraint on 'Author_Experiment', fields ['experiment', 'author']
-        db.create_unique('tardis_portal_author_experiment', ['experiment_id', 'author'])
-
-        # Adding model 'Dataset'
-        db.create_table('tardis_portal_dataset', (
-            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('experiment', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['tardis_portal.Experiment'])),
-            ('description', self.gf('django.db.models.fields.TextField')(blank=True)),
-            ('immutable', self.gf('django.db.models.fields.BooleanField')(default=False)),
-        ))
-        db.send_create_signal('tardis_portal', ['Dataset'])
-
-        # Adding model 'Dataset_File'
-        db.create_table('tardis_portal_dataset_file', (
-            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('dataset', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['tardis_portal.Dataset'])),
-            ('filename', self.gf('django.db.models.fields.CharField')(max_length=400)),
-            ('url', self.gf('django.db.models.fields.CharField')(max_length=400)),
-            ('size', self.gf('django.db.models.fields.CharField')(max_length=400, blank=True)),
-            ('protocol', self.gf('django.db.models.fields.CharField')(max_length=10, blank=True)),
-            ('created_time', self.gf('django.db.models.fields.DateTimeField')(null=True, blank=True)),
-            ('modification_time', self.gf('django.db.models.fields.DateTimeField')(null=True, blank=True)),
-            ('mimetype', self.gf('django.db.models.fields.CharField')(max_length=80, blank=True)),
-            ('md5sum', self.gf('django.db.models.fields.CharField')(max_length=32, blank=True)),
-        ))
-        db.send_create_signal('tardis_portal', ['Dataset_File'])
-
-        # Adding model 'Schema'
-        db.create_table('tardis_portal_schema', (
-            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('namespace', self.gf('django.db.models.fields.URLField')(unique=True, max_length=255)),
-            ('name', self.gf('django.db.models.fields.CharField')(max_length=50, null=True, blank=True)),
-            ('type', self.gf('django.db.models.fields.IntegerField')(default=1)),
-            ('subtype', self.gf('django.db.models.fields.CharField')(max_length=30, null=True, blank=True)),
-        ))
-        db.send_create_signal('tardis_portal', ['Schema'])
-
-        # Adding model 'DatafileParameterSet'
-        db.create_table('tardis_portal_datafileparameterset', (
-            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('schema', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['tardis_portal.Schema'])),
-            ('dataset_file', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['tardis_portal.Dataset_File'])),
-        ))
-        db.send_create_signal('tardis_portal', ['DatafileParameterSet'])
-
-        # Adding model 'DatasetParameterSet'
-        db.create_table('tardis_portal_datasetparameterset', (
-            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('schema', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['tardis_portal.Schema'])),
-            ('dataset', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['tardis_portal.Dataset'])),
-        ))
-        db.send_create_signal('tardis_portal', ['DatasetParameterSet'])
-
-        # Adding model 'ExperimentParameterSet'
-        db.create_table('tardis_portal_experimentparameterset', (
-            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('schema', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['tardis_portal.Schema'])),
-            ('experiment', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['tardis_portal.Experiment'])),
-        ))
-        db.send_create_signal('tardis_portal', ['ExperimentParameterSet'])
-
-        # Adding model 'ParameterName'
-        db.create_table('tardis_portal_parametername', (
-            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('schema', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['tardis_portal.Schema'])),
-            ('name', self.gf('django.db.models.fields.CharField')(max_length=60)),
-            ('full_name', self.gf('django.db.models.fields.CharField')(max_length=60)),
-            ('units', self.gf('django.db.models.fields.CharField')(max_length=60, blank=True)),
-            ('data_type', self.gf('django.db.models.fields.IntegerField')(default=2)),
-            ('immutable', self.gf('django.db.models.fields.BooleanField')(default=False)),
-            ('comparison_type', self.gf('django.db.models.fields.IntegerField')(default=1)),
-            ('is_searchable', self.gf('django.db.models.fields.BooleanField')(default=False)),
-            ('choices', self.gf('django.db.models.fields.CharField')(max_length=500, blank=True)),
-        ))
-        db.send_create_signal('tardis_portal', ['ParameterName'])
-
-        # Adding unique constraint on 'ParameterName', fields ['schema', 'name']
-        db.create_unique('tardis_portal_parametername', ['schema_id', 'name'])
-
-        # Adding model 'DatafileParameter'
-        db.create_table('tardis_portal_datafileparameter', (
-            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('parameterset', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['tardis_portal.DatafileParameterSet'])),
-            ('name', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['tardis_portal.ParameterName'])),
-            ('string_value', self.gf('django.db.models.fields.TextField')(null=True, blank=True)),
-            ('numerical_value', self.gf('django.db.models.fields.FloatField')(null=True, blank=True)),
-            ('datetime_value', self.gf('django.db.models.fields.DateTimeField')(null=True, blank=True)),
-        ))
-        db.send_create_signal('tardis_portal', ['DatafileParameter'])
-
-        # Adding model 'DatasetParameter'
-        db.create_table('tardis_portal_datasetparameter', (
-            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('parameterset', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['tardis_portal.DatasetParameterSet'])),
-            ('name', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['tardis_portal.ParameterName'])),
-            ('string_value', self.gf('django.db.models.fields.TextField')(null=True, blank=True)),
-            ('numerical_value', self.gf('django.db.models.fields.FloatField')(null=True, blank=True)),
-            ('datetime_value', self.gf('django.db.models.fields.DateTimeField')(null=True, blank=True)),
-        ))
-        db.send_create_signal('tardis_portal', ['DatasetParameter'])
-
-        # Adding model 'ExperimentParameter'
-        db.create_table('tardis_portal_experimentparameter', (
-            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('parameterset', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['tardis_portal.ExperimentParameterSet'])),
-            ('name', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['tardis_portal.ParameterName'])),
-            ('string_value', self.gf('django.db.models.fields.TextField')(null=True, blank=True)),
-            ('numerical_value', self.gf('django.db.models.fields.FloatField')(null=True, blank=True)),
-            ('datetime_value', self.gf('django.db.models.fields.DateTimeField')(null=True, blank=True)),
-        ))
-        db.send_create_signal('tardis_portal', ['ExperimentParameter'])
+from django.db import models, migrations
+import tardis.tardis_portal.models.parameters
+import tardis.tardis_portal.models.fields
+from django.conf import settings
+import tardis.tardis_portal.models.token
 
 
-    def backwards(self, orm):
+class Migration(migrations.Migration):
 
-        # Removing unique constraint on 'ParameterName', fields ['schema', 'name']
-        db.delete_unique('tardis_portal_parametername', ['schema_id', 'name'])
+    dependencies = [
+        ('contenttypes', '0002_remove_content_type_name'),
+        migrations.swappable_dependency(settings.AUTH_USER_MODEL),
+        ('auth', '0006_require_contenttypes_0002'),
+    ]
 
-        # Removing unique constraint on 'Author_Experiment', fields ['experiment', 'author']
-        db.delete_unique('tardis_portal_author_experiment', ['experiment_id', 'author'])
-
-        # Deleting model 'UserProfile'
-        db.delete_table('tardis_portal_userprofile')
-
-        # Deleting model 'GroupAdmin'
-        db.delete_table('tardis_portal_groupadmin')
-
-        # Deleting model 'UserAuthentication'
-        db.delete_table('tardis_portal_userauthentication')
-
-        # Deleting model 'Experiment'
-        db.delete_table('tardis_portal_experiment')
-
-        # Deleting model 'ExperimentACL'
-        db.delete_table('tardis_portal_experimentacl')
-
-        # Deleting model 'Author_Experiment'
-        db.delete_table('tardis_portal_author_experiment')
-
-        # Deleting model 'Dataset'
-        db.delete_table('tardis_portal_dataset')
-
-        # Deleting model 'Dataset_File'
-        db.delete_table('tardis_portal_dataset_file')
-
-        # Deleting model 'Schema'
-        db.delete_table('tardis_portal_schema')
-
-        # Deleting model 'DatafileParameterSet'
-        db.delete_table('tardis_portal_datafileparameterset')
-
-        # Deleting model 'DatasetParameterSet'
-        db.delete_table('tardis_portal_datasetparameterset')
-
-        # Deleting model 'ExperimentParameterSet'
-        db.delete_table('tardis_portal_experimentparameterset')
-
-        # Deleting model 'ParameterName'
-        db.delete_table('tardis_portal_parametername')
-
-        # Deleting model 'DatafileParameter'
-        db.delete_table('tardis_portal_datafileparameter')
-
-        # Deleting model 'DatasetParameter'
-        db.delete_table('tardis_portal_datasetparameter')
-
-        # Deleting model 'ExperimentParameter'
-        db.delete_table('tardis_portal_experimentparameter')
-
-
-    models = {
-        'auth.group': {
-            'Meta': {'object_name': 'Group'},
-            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '80'}),
-            'permissions': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['auth.Permission']", 'symmetrical': 'False', 'blank': 'True'})
-        },
-        'auth.permission': {
-            'Meta': {'ordering': "('content_type__app_label', 'content_type__model', 'codename')", 'unique_together': "(('content_type', 'codename'),)", 'object_name': 'Permission'},
-            'codename': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
-            'content_type': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['contenttypes.ContentType']"}),
-            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'name': ('django.db.models.fields.CharField', [], {'max_length': '50'})
-        },
-        'auth.user': {
-            'Meta': {'object_name': 'User'},
-            'date_joined': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
-            'email': ('django.db.models.fields.EmailField', [], {'max_length': '75', 'blank': 'True'}),
-            'first_name': ('django.db.models.fields.CharField', [], {'max_length': '30', 'blank': 'True'}),
-            'groups': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['auth.Group']", 'symmetrical': 'False', 'blank': 'True'}),
-            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'is_active': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
-            'is_staff': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            'is_superuser': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            'last_login': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
-            'last_name': ('django.db.models.fields.CharField', [], {'max_length': '30', 'blank': 'True'}),
-            'password': ('django.db.models.fields.CharField', [], {'max_length': '128'}),
-            'user_permissions': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['auth.Permission']", 'symmetrical': 'False', 'blank': 'True'}),
-            'username': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '30'})
-        },
-        'contenttypes.contenttype': {
-            'Meta': {'ordering': "('name',)", 'unique_together': "(('app_label', 'model'),)", 'object_name': 'ContentType', 'db_table': "'django_content_type'"},
-            'app_label': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
-            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'model': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
-            'name': ('django.db.models.fields.CharField', [], {'max_length': '100'})
-        },
-        'tardis_portal.author_experiment': {
-            'Meta': {'ordering': "['order']", 'unique_together': "(('experiment', 'author'),)", 'object_name': 'Author_Experiment'},
-            'author': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
-            'experiment': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['tardis_portal.Experiment']"}),
-            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'order': ('django.db.models.fields.PositiveIntegerField', [], {})
-        },
-        'tardis_portal.datafileparameter': {
-            'Meta': {'ordering': "['id']", 'object_name': 'DatafileParameter'},
-            'datetime_value': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
-            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'name': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['tardis_portal.ParameterName']"}),
-            'numerical_value': ('django.db.models.fields.FloatField', [], {'null': 'True', 'blank': 'True'}),
-            'parameterset': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['tardis_portal.DatafileParameterSet']"}),
-            'string_value': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'})
-        },
-        'tardis_portal.datafileparameterset': {
-            'Meta': {'ordering': "['id']", 'object_name': 'DatafileParameterSet'},
-            'dataset_file': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['tardis_portal.Dataset_File']"}),
-            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'schema': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['tardis_portal.Schema']"})
-        },
-        'tardis_portal.dataset': {
-            'Meta': {'object_name': 'Dataset'},
-            'description': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
-            'experiment': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['tardis_portal.Experiment']"}),
-            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'immutable': ('django.db.models.fields.BooleanField', [], {'default': 'False'})
-        },
-        'tardis_portal.dataset_file': {
-            'Meta': {'object_name': 'Dataset_File'},
-            'created_time': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
-            'dataset': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['tardis_portal.Dataset']"}),
-            'filename': ('django.db.models.fields.CharField', [], {'max_length': '400'}),
-            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'md5sum': ('django.db.models.fields.CharField', [], {'max_length': '32', 'blank': 'True'}),
-            'mimetype': ('django.db.models.fields.CharField', [], {'max_length': '80', 'blank': 'True'}),
-            'modification_time': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
-            'protocol': ('django.db.models.fields.CharField', [], {'max_length': '10', 'blank': 'True'}),
-            'size': ('django.db.models.fields.CharField', [], {'max_length': '400', 'blank': 'True'}),
-            'url': ('django.db.models.fields.CharField', [], {'max_length': '400'})
-        },
-        'tardis_portal.datasetparameter': {
-            'Meta': {'ordering': "['id']", 'object_name': 'DatasetParameter'},
-            'datetime_value': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
-            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'name': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['tardis_portal.ParameterName']"}),
-            'numerical_value': ('django.db.models.fields.FloatField', [], {'null': 'True', 'blank': 'True'}),
-            'parameterset': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['tardis_portal.DatasetParameterSet']"}),
-            'string_value': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'})
-        },
-        'tardis_portal.datasetparameterset': {
-            'Meta': {'ordering': "['id']", 'object_name': 'DatasetParameterSet'},
-            'dataset': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['tardis_portal.Dataset']"}),
-            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'schema': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['tardis_portal.Schema']"})
-        },
-        'tardis_portal.experiment': {
-            'Meta': {'object_name': 'Experiment'},
-            'approved': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            'created_by': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['auth.User']"}),
-            'created_time': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
-            'description': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
-            'end_time': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
-            'handle': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
-            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'institution_name': ('django.db.models.fields.CharField', [], {'default': "'Monash University'", 'max_length': '400'}),
-            'public': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            'start_time': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
-            'title': ('django.db.models.fields.CharField', [], {'max_length': '400'}),
-            'update_time': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'blank': 'True'}),
-            'url': ('django.db.models.fields.URLField', [], {'max_length': '255', 'null': 'True', 'blank': 'True'})
-        },
-        'tardis_portal.experimentacl': {
-            'Meta': {'ordering': "['experiment__id']", 'object_name': 'ExperimentACL'},
-            'aclOwnershipType': ('django.db.models.fields.IntegerField', [], {'default': '1'}),
-            'canDelete': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            'canRead': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            'canWrite': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            'effectiveDate': ('django.db.models.fields.DateField', [], {'null': 'True', 'blank': 'True'}),
-            'entityId': ('django.db.models.fields.CharField', [], {'max_length': '320'}),
-            'experiment': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['tardis_portal.Experiment']"}),
-            'expiryDate': ('django.db.models.fields.DateField', [], {'null': 'True', 'blank': 'True'}),
-            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'isOwner': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            'pluginId': ('django.db.models.fields.CharField', [], {'max_length': '30'})
-        },
-        'tardis_portal.experimentparameter': {
-            'Meta': {'ordering': "['id']", 'object_name': 'ExperimentParameter'},
-            'datetime_value': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
-            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'name': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['tardis_portal.ParameterName']"}),
-            'numerical_value': ('django.db.models.fields.FloatField', [], {'null': 'True', 'blank': 'True'}),
-            'parameterset': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['tardis_portal.ExperimentParameterSet']"}),
-            'string_value': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'})
-        },
-        'tardis_portal.experimentparameterset': {
-            'Meta': {'ordering': "['id']", 'object_name': 'ExperimentParameterSet'},
-            'experiment': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['tardis_portal.Experiment']"}),
-            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'schema': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['tardis_portal.Schema']"})
-        },
-        'tardis_portal.groupadmin': {
-            'Meta': {'object_name': 'GroupAdmin'},
-            'group': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['auth.Group']"}),
-            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'user': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['auth.User']"})
-        },
-        'tardis_portal.parametername': {
-            'Meta': {'unique_together': "(('schema', 'name'),)", 'object_name': 'ParameterName'},
-            'choices': ('django.db.models.fields.CharField', [], {'max_length': '500', 'blank': 'True'}),
-            'comparison_type': ('django.db.models.fields.IntegerField', [], {'default': '1'}),
-            'data_type': ('django.db.models.fields.IntegerField', [], {'default': '2'}),
-            'full_name': ('django.db.models.fields.CharField', [], {'max_length': '60'}),
-            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'immutable': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            'is_searchable': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            'name': ('django.db.models.fields.CharField', [], {'max_length': '60'}),
-            'schema': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['tardis_portal.Schema']"}),
-            'units': ('django.db.models.fields.CharField', [], {'max_length': '60', 'blank': 'True'})
-        },
-        'tardis_portal.schema': {
-            'Meta': {'object_name': 'Schema'},
-            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'name': ('django.db.models.fields.CharField', [], {'max_length': '50', 'null': 'True', 'blank': 'True'}),
-            'namespace': ('django.db.models.fields.URLField', [], {'unique': 'True', 'max_length': '255'}),
-            'subtype': ('django.db.models.fields.CharField', [], {'max_length': '30', 'null': 'True', 'blank': 'True'}),
-            'type': ('django.db.models.fields.IntegerField', [], {'default': '1'})
-        },
-        'tardis_portal.userauthentication': {
-            'Meta': {'object_name': 'UserAuthentication'},
-            'authenticationMethod': ('django.db.models.fields.CharField', [], {'max_length': '30'}),
-            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'userProfile': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['tardis_portal.UserProfile']"}),
-            'username': ('django.db.models.fields.CharField', [], {'max_length': '50'})
-        },
-        'tardis_portal.userprofile': {
-            'Meta': {'object_name': 'UserProfile'},
-            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'isDjangoAccount': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
-            'user': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['auth.User']", 'unique': 'True'})
-        }
-    }
-
-    complete_apps = ['tardis_portal']
+    operations = [
+        migrations.CreateModel(
+            name='DataFile',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('filename', models.CharField(max_length=400)),
+                ('directory', tardis.tardis_portal.models.fields.DirectoryField(null=True, blank=True)),
+                ('size', models.CharField(max_length=400, blank=True)),
+                ('created_time', models.DateTimeField(null=True, blank=True)),
+                ('modification_time', models.DateTimeField(null=True, blank=True)),
+                ('mimetype', models.CharField(max_length=80, blank=True)),
+                ('md5sum', models.CharField(max_length=32, blank=True)),
+                ('sha512sum', models.CharField(max_length=128, blank=True)),
+                ('deleted', models.BooleanField(default=False)),
+                ('deleted_time', models.DateTimeField(null=True, blank=True)),
+                ('version', models.IntegerField(default=1)),
+            ],
+            options={
+                'ordering': ['filename'],
+            },
+        ),
+        migrations.CreateModel(
+            name='DataFileObject',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('uri', models.TextField(null=True, blank=True)),
+                ('created_time', models.DateTimeField(auto_now_add=True)),
+                ('verified', models.BooleanField(default=False)),
+                ('last_verified_time', models.DateTimeField(null=True, blank=True)),
+                ('datafile', models.ForeignKey(related_name='file_objects', to='tardis_portal.DataFile')),
+            ],
+        ),
+        migrations.CreateModel(
+            name='DatafileParameter',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('string_value', models.TextField(db_index=True, null=True, blank=True)),
+                ('numerical_value', models.FloatField(db_index=True, null=True, blank=True)),
+                ('datetime_value', models.DateTimeField(db_index=True, null=True, blank=True)),
+                ('link_id', models.PositiveIntegerField(null=True, blank=True)),
+                ('link_ct', models.ForeignKey(blank=True, to='contenttypes.ContentType', null=True)),
+            ],
+            options={
+                'ordering': ['name'],
+                'abstract': False,
+            },
+        ),
+        migrations.CreateModel(
+            name='DatafileParameterSet',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('datafile', models.ForeignKey(to='tardis_portal.DataFile')),
+            ],
+            options={
+                'ordering': ['id'],
+                'abstract': False,
+            },
+            bases=(models.Model, tardis.tardis_portal.models.parameters.ParameterSetManagerMixin),
+        ),
+        migrations.CreateModel(
+            name='Dataset',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('description', models.TextField(blank=True)),
+                ('directory', tardis.tardis_portal.models.fields.DirectoryField(null=True, blank=True)),
+                ('immutable', models.BooleanField(default=False)),
+            ],
+            options={
+                'ordering': ['-id'],
+            },
+        ),
+        migrations.CreateModel(
+            name='DatasetParameter',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('string_value', models.TextField(db_index=True, null=True, blank=True)),
+                ('numerical_value', models.FloatField(db_index=True, null=True, blank=True)),
+                ('datetime_value', models.DateTimeField(db_index=True, null=True, blank=True)),
+                ('link_id', models.PositiveIntegerField(null=True, blank=True)),
+                ('link_ct', models.ForeignKey(blank=True, to='contenttypes.ContentType', null=True)),
+            ],
+            options={
+                'ordering': ['name'],
+                'abstract': False,
+            },
+        ),
+        migrations.CreateModel(
+            name='DatasetParameterSet',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('dataset', models.ForeignKey(to='tardis_portal.Dataset')),
+            ],
+            options={
+                'ordering': ['id'],
+                'abstract': False,
+            },
+            bases=(models.Model, tardis.tardis_portal.models.parameters.ParameterSetManagerMixin),
+        ),
+        migrations.CreateModel(
+            name='Experiment',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('url', models.URLField(max_length=255, null=True, blank=True)),
+                ('approved', models.BooleanField(default=False)),
+                ('title', models.CharField(max_length=400)),
+                ('institution_name', models.CharField(default=b'Monash University', max_length=400)),
+                ('description', models.TextField(blank=True)),
+                ('start_time', models.DateTimeField(null=True, blank=True)),
+                ('end_time', models.DateTimeField(null=True, blank=True)),
+                ('created_time', models.DateTimeField(auto_now_add=True)),
+                ('update_time', models.DateTimeField(auto_now=True)),
+                ('handle', models.TextField(null=True, blank=True)),
+                ('locked', models.BooleanField(default=False)),
+                ('public_access', models.PositiveSmallIntegerField(default=1, choices=[(1, b'No public access (hidden)'), (25, b'Ready to be released pending embargo expiry'), (50, b'Public Metadata only (no data file access)'), (100, b'Public')])),
+                ('created_by', models.ForeignKey(to=settings.AUTH_USER_MODEL)),
+            ],
+        ),
+        migrations.CreateModel(
+            name='ExperimentAuthor',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('author', models.CharField(max_length=255)),
+                ('institution', models.CharField(max_length=255, null=True, blank=True)),
+                ('email', models.CharField(max_length=255, null=True, blank=True)),
+                ('order', models.PositiveIntegerField()),
+                ('url', models.URLField(help_text=b'URL identifier for the author', max_length=2000, null=True, blank=True)),
+                ('experiment', models.ForeignKey(to='tardis_portal.Experiment')),
+            ],
+            options={
+                'ordering': ['order'],
+            },
+        ),
+        migrations.CreateModel(
+            name='ExperimentParameter',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('string_value', models.TextField(db_index=True, null=True, blank=True)),
+                ('numerical_value', models.FloatField(db_index=True, null=True, blank=True)),
+                ('datetime_value', models.DateTimeField(db_index=True, null=True, blank=True)),
+                ('link_id', models.PositiveIntegerField(null=True, blank=True)),
+                ('link_ct', models.ForeignKey(blank=True, to='contenttypes.ContentType', null=True)),
+            ],
+            options={
+                'ordering': ['name'],
+                'abstract': False,
+            },
+        ),
+        migrations.CreateModel(
+            name='ExperimentParameterSet',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('experiment', models.ForeignKey(to='tardis_portal.Experiment')),
+            ],
+            options={
+                'ordering': ['id'],
+                'abstract': False,
+            },
+            bases=(models.Model, tardis.tardis_portal.models.parameters.ParameterSetManagerMixin),
+        ),
+        migrations.CreateModel(
+            name='Facility',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('name', models.CharField(max_length=100)),
+                ('manager_group', models.ForeignKey(to='auth.Group')),
+            ],
+            options={
+                'verbose_name_plural': 'Facilities',
+            },
+        ),
+        migrations.CreateModel(
+            name='FreeTextSearchField',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+            ],
+        ),
+        migrations.CreateModel(
+            name='GroupAdmin',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('group', models.ForeignKey(to='auth.Group')),
+                ('user', models.ForeignKey(to=settings.AUTH_USER_MODEL)),
+            ],
+        ),
+        migrations.CreateModel(
+            name='Instrument',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('name', models.CharField(max_length=100)),
+                ('facility', models.ForeignKey(to='tardis_portal.Facility')),
+            ],
+            options={
+                'verbose_name_plural': 'Instruments',
+            },
+        ),
+        migrations.CreateModel(
+            name='InstrumentParameter',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('string_value', models.TextField(db_index=True, null=True, blank=True)),
+                ('numerical_value', models.FloatField(db_index=True, null=True, blank=True)),
+                ('datetime_value', models.DateTimeField(db_index=True, null=True, blank=True)),
+                ('link_id', models.PositiveIntegerField(null=True, blank=True)),
+                ('link_ct', models.ForeignKey(blank=True, to='contenttypes.ContentType', null=True)),
+            ],
+            options={
+                'ordering': ['name'],
+                'abstract': False,
+            },
+        ),
+        migrations.CreateModel(
+            name='InstrumentParameterSet',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('instrument', models.ForeignKey(to='tardis_portal.Instrument')),
+            ],
+            options={
+                'ordering': ['id'],
+                'abstract': False,
+            },
+            bases=(models.Model, tardis.tardis_portal.models.parameters.ParameterSetManagerMixin),
+        ),
+        migrations.CreateModel(
+            name='JTI',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('jti', models.CharField(max_length=255)),
+                ('created_time', models.DateTimeField(auto_now_add=True)),
+            ],
+        ),
+        migrations.CreateModel(
+            name='License',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('name', models.CharField(unique=True, max_length=400)),
+                ('url', models.URLField(help_text=b'Link to document outlining licensing details.', unique=True, max_length=2000)),
+                ('internal_description', models.TextField()),
+                ('image_url', models.URLField(max_length=2000, blank=True)),
+                ('allows_distribution', models.BooleanField(default=False, help_text=b'Does this license provide distribution rights?')),
+                ('is_active', models.BooleanField(default=True, help_text=b'Can experiments continue to select this license?')),
+            ],
+        ),
+        migrations.CreateModel(
+            name='ObjectACL',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('pluginId', models.CharField(max_length=30)),
+                ('entityId', models.CharField(max_length=320)),
+                ('object_id', models.PositiveIntegerField()),
+                ('canRead', models.BooleanField(default=False)),
+                ('canWrite', models.BooleanField(default=False)),
+                ('canDelete', models.BooleanField(default=False)),
+                ('isOwner', models.BooleanField(default=False)),
+                ('effectiveDate', models.DateField(null=True, blank=True)),
+                ('expiryDate', models.DateField(null=True, blank=True)),
+                ('aclOwnershipType', models.IntegerField(default=1, choices=[(1, b'Owner-owned'), (2, b'System-owned')])),
+                ('content_type', models.ForeignKey(to='contenttypes.ContentType')),
+            ],
+            options={
+                'ordering': ['content_type', 'object_id'],
+                'verbose_name': 'Object ACL',
+            },
+        ),
+        migrations.CreateModel(
+            name='ParameterName',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('name', models.CharField(max_length=60)),
+                ('full_name', models.CharField(max_length=60)),
+                ('units', models.CharField(max_length=60, blank=True)),
+                ('data_type', models.IntegerField(default=2, choices=[(1, b'NUMERIC'), (2, b'STRING'), (3, b'URL'), (4, b'LINK'), (5, b'FILENAME'), (6, b'DATETIME'), (7, b'LONGSTRING')])),
+                ('immutable', models.BooleanField(default=False)),
+                ('comparison_type', models.IntegerField(default=1, choices=[(1, b'Exact value'), (8, b'Contains'), (3, b'Range'), (4, b'Greater than'), (5, b'Greater than or equal'), (6, b'Less than'), (7, b'Less than or equal')])),
+                ('is_searchable', models.BooleanField(default=False)),
+                ('choices', models.CharField(max_length=500, blank=True)),
+                ('order', models.PositiveIntegerField(default=9999, null=True, blank=True)),
+            ],
+            options={
+                'ordering': ('order', 'name'),
+            },
+        ),
+        migrations.CreateModel(
+            name='Schema',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('namespace', models.URLField(unique=True, max_length=255)),
+                ('name', models.CharField(max_length=50, null=True, blank=True)),
+                ('type', models.IntegerField(default=1, choices=[(1, b'Experiment schema'), (2, b'Dataset schema'), (3, b'Datafile schema'), (5, b'Instrument schema'), (4, b'None')])),
+                ('subtype', models.CharField(max_length=30, null=True, blank=True)),
+                ('immutable', models.BooleanField(default=False)),
+                ('hidden', models.BooleanField(default=False)),
+            ],
+        ),
+        migrations.CreateModel(
+            name='StorageBox',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('django_storage_class', models.TextField(default=b'tardis.tardis_portal.storage.MyTardisLocalFileSystemStorage')),
+                ('max_size', models.BigIntegerField()),
+                ('status', models.CharField(max_length=100)),
+                ('name', models.TextField(default=b'default', unique=True)),
+                ('description', models.TextField(default=b'Default Storage')),
+                ('master_box', models.ForeignKey(related_name='child_boxes', blank=True, to='tardis_portal.StorageBox', null=True)),
+            ],
+            options={
+                'verbose_name_plural': 'storage boxes',
+            },
+        ),
+        migrations.CreateModel(
+            name='StorageBoxAttribute',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('key', models.TextField()),
+                ('value', models.TextField()),
+                ('storage_box', models.ForeignKey(related_name='attributes', to='tardis_portal.StorageBox')),
+            ],
+        ),
+        migrations.CreateModel(
+            name='StorageBoxOption',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('key', models.TextField()),
+                ('value', models.TextField()),
+                ('storage_box', models.ForeignKey(related_name='options', to='tardis_portal.StorageBox')),
+            ],
+        ),
+        migrations.CreateModel(
+            name='Token',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('token', models.CharField(unique=True, max_length=30)),
+                ('expiry_date', models.DateField(default=tardis.tardis_portal.models.token._token_expiry)),
+                ('experiment', models.ForeignKey(to='tardis_portal.Experiment')),
+                ('user', models.ForeignKey(to=settings.AUTH_USER_MODEL)),
+            ],
+        ),
+        migrations.CreateModel(
+            name='UserAuthentication',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('username', models.CharField(max_length=50)),
+                ('authenticationMethod', models.CharField(max_length=30)),
+            ],
+        ),
+        migrations.CreateModel(
+            name='UserProfile',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('isDjangoAccount', models.BooleanField(default=True)),
+                ('rapidConnectEduPersonTargetedID', models.CharField(max_length=400, null=True, blank=True)),
+                ('user', models.ForeignKey(to=settings.AUTH_USER_MODEL, unique=True)),
+            ],
+        ),
+        migrations.AddField(
+            model_name='userauthentication',
+            name='userProfile',
+            field=models.ForeignKey(to='tardis_portal.UserProfile'),
+        ),
+        migrations.AddField(
+            model_name='parametername',
+            name='schema',
+            field=models.ForeignKey(to='tardis_portal.Schema'),
+        ),
+        migrations.AddField(
+            model_name='instrumentparameterset',
+            name='schema',
+            field=models.ForeignKey(to='tardis_portal.Schema'),
+        ),
+        migrations.AddField(
+            model_name='instrumentparameterset',
+            name='storage_box',
+            field=models.ManyToManyField(related_name='instrumentparametersets', to='tardis_portal.StorageBox'),
+        ),
+        migrations.AddField(
+            model_name='instrumentparameter',
+            name='name',
+            field=models.ForeignKey(to='tardis_portal.ParameterName'),
+        ),
+        migrations.AddField(
+            model_name='instrumentparameter',
+            name='parameterset',
+            field=models.ForeignKey(to='tardis_portal.InstrumentParameterSet'),
+        ),
+        migrations.AddField(
+            model_name='freetextsearchfield',
+            name='parameter_name',
+            field=models.ForeignKey(to='tardis_portal.ParameterName'),
+        ),
+        migrations.AddField(
+            model_name='experimentparameterset',
+            name='schema',
+            field=models.ForeignKey(to='tardis_portal.Schema'),
+        ),
+        migrations.AddField(
+            model_name='experimentparameterset',
+            name='storage_box',
+            field=models.ManyToManyField(related_name='experimentparametersets', to='tardis_portal.StorageBox'),
+        ),
+        migrations.AddField(
+            model_name='experimentparameter',
+            name='name',
+            field=models.ForeignKey(to='tardis_portal.ParameterName'),
+        ),
+        migrations.AddField(
+            model_name='experimentparameter',
+            name='parameterset',
+            field=models.ForeignKey(to='tardis_portal.ExperimentParameterSet'),
+        ),
+        migrations.AddField(
+            model_name='experiment',
+            name='license',
+            field=models.ForeignKey(blank=True, to='tardis_portal.License', null=True),
+        ),
+        migrations.AddField(
+            model_name='datasetparameterset',
+            name='schema',
+            field=models.ForeignKey(to='tardis_portal.Schema'),
+        ),
+        migrations.AddField(
+            model_name='datasetparameterset',
+            name='storage_box',
+            field=models.ManyToManyField(related_name='datasetparametersets', to='tardis_portal.StorageBox'),
+        ),
+        migrations.AddField(
+            model_name='datasetparameter',
+            name='name',
+            field=models.ForeignKey(to='tardis_portal.ParameterName'),
+        ),
+        migrations.AddField(
+            model_name='datasetparameter',
+            name='parameterset',
+            field=models.ForeignKey(to='tardis_portal.DatasetParameterSet'),
+        ),
+        migrations.AddField(
+            model_name='dataset',
+            name='experiments',
+            field=models.ManyToManyField(related_name='datasets', to='tardis_portal.Experiment'),
+        ),
+        migrations.AddField(
+            model_name='dataset',
+            name='instrument',
+            field=models.ForeignKey(blank=True, to='tardis_portal.Instrument', null=True),
+        ),
+        migrations.AddField(
+            model_name='datafileparameterset',
+            name='schema',
+            field=models.ForeignKey(to='tardis_portal.Schema'),
+        ),
+        migrations.AddField(
+            model_name='datafileparameterset',
+            name='storage_box',
+            field=models.ManyToManyField(related_name='datafileparametersets', to='tardis_portal.StorageBox'),
+        ),
+        migrations.AddField(
+            model_name='datafileparameter',
+            name='name',
+            field=models.ForeignKey(to='tardis_portal.ParameterName'),
+        ),
+        migrations.AddField(
+            model_name='datafileparameter',
+            name='parameterset',
+            field=models.ForeignKey(to='tardis_portal.DatafileParameterSet'),
+        ),
+        migrations.AddField(
+            model_name='datafileobject',
+            name='storage_box',
+            field=models.ForeignKey(related_name='file_objects', to='tardis_portal.StorageBox'),
+        ),
+        migrations.AddField(
+            model_name='datafile',
+            name='dataset',
+            field=models.ForeignKey(to='tardis_portal.Dataset'),
+        ),
+        migrations.AlterUniqueTogether(
+            name='parametername',
+            unique_together=set([('schema', 'name')]),
+        ),
+        migrations.AlterUniqueTogether(
+            name='experimentauthor',
+            unique_together=set([('experiment', 'author')]),
+        ),
+        migrations.AlterUniqueTogether(
+            name='datafileobject',
+            unique_together=set([('datafile', 'storage_box')]),
+        ),
+        migrations.AlterUniqueTogether(
+            name='datafile',
+            unique_together=set([('dataset', 'directory', 'filename', 'version')]),
+        ),
+    ]
