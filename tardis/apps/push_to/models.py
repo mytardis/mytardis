@@ -28,8 +28,6 @@ class KeyField(models.TextField):
         return KeyField._to_pkey(value)
 
     def get_prep_value(self, value):
-        if value is None:
-            return value
         if isinstance(value, PKey):
             return KeyField._from_pkey(value)
         return None
