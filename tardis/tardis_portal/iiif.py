@@ -130,6 +130,8 @@ def download_image(request, datafile_id, region, size, rotation,
         from contextlib import closing
         with closing(file_obj) as f:
             with Image(file=f) as img:
+                if len(img.sequence) > 1:
+                    img = Image(img.sequence[0])
                 # Handle region
                 if region != 'full':
                     x, y, w, h = map(lambda x: int(x), region.split(','))
