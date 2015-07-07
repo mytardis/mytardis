@@ -22,9 +22,9 @@ def push_experiment_to_host(
                 files_to_copy.append((path, df))
 
         do_file_copy(credential_id, remote_host_id, files_to_copy)
-        notify_user(user_id, success=True)
+        notify_user(user_id, remote_host_id, success=True)
     except:
-        notify_user(user_id, success=False)
+        notify_user(user_id, remote_host_id, success=False)
         raise
 
 
@@ -40,9 +40,9 @@ def push_dataset_to_host(user_id, credential_id, remote_host_id, dataset_id):
                 files_to_copy.append((path, df))
 
         do_file_copy(credential_id, remote_host_id, files_to_copy)
-        notify_user(user_id, success=True)
+        notify_user(user_id, remote_host_id, success=True)
     except:
-        notify_user(user_id, success=False)
+        notify_user(user_id, remote_host_id, success=False)
         raise
 
 
@@ -51,20 +51,25 @@ def push_datafile_to_host(user_id, credential_id, remote_host_id, datafile_id):
     try:
         file_to_copy = [([], DataFile.objects.get(pk=datafile_id))]
         do_file_copy(credential_id, remote_host_id, file_to_copy)
-        notify_user(user_id, success=True)
+        notify_user(user_id, remote_host_id, success=True)
     except:
-        notify_user(user_id, success=False)
+        notify_user(user_id, remote_host_id, success=False)
         raise
 
 
-def notify_user(user_id, success=True):
+def notify_user(user_id, remote_host_id, success=True):
+    remote_host = RemoteHost.objects.get(pk=remote_host_id);
     user = User.objects.get(pk=user_id)
     if success:
-        # Tell the user everything went okay
-        pass
+        subject = '[MyTardis] Data pushed successfully'
+        message = 'Your recent push-to request was completed successfully!\n' \
+                  'Log in to %s to access the requested data.' % remote_host.nickname
     else:
-        # Tell the user things went badly
+        subject = '[MyTardis] Data push failed'
+        message = 'Your recent push-to request to %s encountered an error and could not be completed.\n' \
+                  'Contact your system administrator for more information.' % remote_host.nickname
         pass
+    user.email_user(subject, message)
 
 
 def do_file_copy(credential_id, remote_host_id, datafile_map):
