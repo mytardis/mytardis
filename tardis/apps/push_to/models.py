@@ -120,7 +120,7 @@ class OAuthSSHCertSigningService(models.Model):
     allowed_remote_hosts = models.ManyToManyField(RemoteHost)
     allowed_groups = models.ManyToManyField(Group, blank=True)
     allowed_users = models.ManyToManyField(User, blank=True)
-    allow_for_all = models.BooleanField('Allow for all')
+    allow_for_all = models.BooleanField('Allow for all', default=False)
 
     class Meta:
         verbose_name = 'OAuth2 SSH cert signing service'
