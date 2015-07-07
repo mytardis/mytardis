@@ -32,6 +32,13 @@ def render_success_message(request, message, status=200):
 
 
 def get_push_url_for_host(remote_host, obj_type, push_obj_id):
+    """
+    Constructs a push-to URL to trigger data transfer
+    :param remote_host: the RemoteHost to which data should be copied
+    :param obj_type: the type of data to be copied (experiment, dataset or datafile)
+    :param push_obj_id: the database object id
+    :return: a push-to URL
+    """
     push_view = None
     if obj_type == 'experiment':
         push_view = initiate_push_experiment
@@ -51,6 +58,14 @@ def get_push_url_for_host(remote_host, obj_type, push_obj_id):
 
 @login_required
 def get_accessible_hosts(request, obj_type=None, push_obj_id=None):
+    """
+    Retrieves all accessible hosts (i.e. hosts for which the user already has credentials for) including
+    push-to trigger URLs if the object type and id are supplied
+    :param request: request object
+    :param obj_type: the type of data to be copied (experiment, dataset or datafile)
+    :param push_obj_id: the database object id
+    :return: json object with accessible hosts
+    """
     hosts = RemoteHost.objects.filter(credential__user=request.user).distinct()
     response = []
     for h in hosts:
@@ -75,6 +90,14 @@ def get_accessible_hosts(request, obj_type=None, push_obj_id=None):
 
 @login_required
 def get_signing_services(request, obj_type=None, push_obj_id=None):
+    """
+    Retrieves all certificate signing services and associated hosts including
+    push-to trigger URLs if the object type and id are supplied
+    :param request: request object
+    :param obj_type: the type of data to be copied (experiment, dataset or datafile)
+    :param push_obj_id: the database object id
+    :return: json object with signing services and hosts
+    """
     services = OAuthSSHCertSigningService.get_available_signing_services(
         request.user)
     response = []
@@ -109,6 +132,13 @@ def get_signing_services(request, obj_type=None, push_obj_id=None):
 @login_required
 @authz.experiment_download_required
 def initiate_push_experiment(request, experiment_id, remote_host_id=None):
+    """
+    Kicks off push for experiment data
+    :param request: request object
+    :param experiment_id: experiment database id
+    :param remote_host_id: remote host database id
+    :return: redirect or status message
+    """
     return _initiate_push(
         request,
         initiate_push_experiment,
@@ -120,6 +150,13 @@ def initiate_push_experiment(request, experiment_id, remote_host_id=None):
 @login_required
 @authz.dataset_download_required
 def initiate_push_dataset(request, dataset_id, remote_host_id=None):
+    """
+    Kicks off push for dataset data
+    :param request: request object
+    :param dataset_id: dataset database id
+    :param remote_host_id: remote host database id
+    :return: redirect or status message
+    """
     return _initiate_push(
         request,
         initiate_push_dataset,
@@ -131,6 +168,13 @@ def initiate_push_dataset(request, dataset_id, remote_host_id=None):
 @login_required
 @authz.datafile_access_required
 def initiate_push_datafile(request, datafile_id, remote_host_id=None):
+    """
+    Kicks off push for datafile data
+    :param request: request object
+    :param datafile_id: datafile database id
+    :param remote_host_id: remote host database id
+    :return: redirect or status message
+    """
     return _initiate_push(
         request,
         initiate_push_datafile,
@@ -145,6 +189,15 @@ def _initiate_push(
         remote_host_id,
         obj_type,
         push_obj_id):
+    """
+    Kicks off data push
+    :param request: request object
+    :param callback_view: view that initiates the appropriate type of data transfer (e.g. experiment, dataset, datafile)
+    :param remote_host_id: database id of remote host to which data should be transferred
+    :param obj_type: the type of data
+    :param push_obj_id: the data object id
+    :return: status message, host list or OAuth2 redirects
+    """
     # If the remote_host_id is not given, render a view to show a list of
     # acceptable hosts
     if remote_host_id is None:
@@ -200,6 +253,13 @@ def _initiate_push(
 
 
 def get_credential(request, remote_host):
+    """
+    Fetches a suitable credential for the remote host, or raises an exception if none found
+    :param request: request object
+    :param remote_host: the RemoteHost for which a credential should be found
+    :return: the credential
+    :raises NoSuitableCredential: raised when no credential is found
+    """
     credential_id = request.GET.get('credential_id', None)
 
     # See if there are any suitable credentials, should none be supplied
@@ -226,12 +286,23 @@ def get_credential(request, remote_host):
 
 
 def oauth_callback_url(request):
+    """
+    Builds the oauth callback URL
+    :param request: request object
+    :return: callback URL
+    """
     return request.build_absolute_uri(reverse(oauth_callback))
 
 
 @login_required
 def authorize_remote_access(request, remote_host_id, service_id=None):
-
+    """
+    Generates an SSH certificate using an OAuth2 SSH signing service
+    :param request: request object
+    :param remote_host_id: remote host id
+    :param service_id: OAuth2 SSH certificate signing service id
+    :return: an error message or OAuth2 redirects
+    """
     next = request.GET.get('next', '/')
 
     # Identify a suitable SSH cert signing service for the requested host
@@ -299,7 +370,11 @@ def authorize_remote_access(request, remote_host_id, service_id=None):
 
 @login_required
 def oauth_callback(request):
-
+    """
+    OAuth2 callback endpoint to continue the SSH certificate signing process
+    :param request: request object
+    :return: error message or redirect back to the signing service with the access token
+    """
     # Check for OAuth error message
     error = request.GET.get('error', None)
     if error is not None:

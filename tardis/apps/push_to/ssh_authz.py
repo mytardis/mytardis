@@ -1,13 +1,13 @@
 import base64
 import json
 from StringIO import StringIO
-from pprint import pprint
 from paramiko import RSACert
 import requests
 
 
 def sign_certificate(credential, token, url):
     """
+    An interface to the OAuth2 SSH certificate signing service
     @type credential: models.Credential
     """
     key_type = credential.key.get_name()

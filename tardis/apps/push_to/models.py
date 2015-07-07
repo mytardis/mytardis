@@ -110,6 +110,10 @@ class RemoteHost(models.Model):
 
 
 class OAuthSSHCertSigningService(models.Model):
+    """
+    Connection parameters for an OAuth2 SSH certificate signing service. Supports
+    certificate signing server available here: https://github.com/monash-merc/ssh-authz
+    """
     nickname = models.CharField('Nickname', max_length=50)
     oauth_authorize_url = models.CharField('Authorize url', max_length=255)
     oauth_token_url = models.CharField('Token url', max_length=255)
