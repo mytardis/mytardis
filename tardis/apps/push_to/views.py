@@ -248,7 +248,7 @@ def _initiate_push(
 
     return render_success_message(
         request,
-        'The requested item will be pushed to ' +
+        'The requested item will be pushed to %s. You will be notified by email once this has been completed.' %
         remote_host.nickname)
 
 
