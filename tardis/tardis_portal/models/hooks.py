@@ -65,19 +65,3 @@ def ensure_doi_exists(sender, **kwargs):
         from tardis.tardis_portal.ands_doi import DOIService
         doi_service = DOIService(experiment)
         doi_service.get_or_mint_doi(doi_url)
-
-
-@receiver(post_save, sender=DataFileObject, dispatch_uid='auto_verify_dfos')
-def auto_verify_on_save(sender, **kwargs):
-    '''
-    auto verify local files
-    reverify on every save
-    '''
-    dfo = kwargs['instance']
-    update_fields = kwargs['update_fields']
-    # if save is done by the verify action, only 'verified' is updated
-    # needs to be called as .save(update_fields=['verified'])
-    if update_fields is not None and \
-       {'verified', 'last_verified_time'} >= set(update_fields):
-        return
-    dfo.verify.apply_async(countdown=5)

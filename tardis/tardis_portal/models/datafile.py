@@ -12,6 +12,7 @@ from django.db import transaction
 from django.db.models import Q
 from django.db.models.signals import pre_delete
 from django.dispatch import receiver
+from django.forms.models import model_to_dict
 
 from celery.contrib.methods import task
 import magic
@@ -380,6 +381,8 @@ class DataFileObject(models.Model):
     verified = models.BooleanField(default=False)
     last_verified_time = models.DateTimeField(blank=True, null=True)
 
+    _initial_values = None
+
     class Meta:
         app_label = 'tardis_portal'
         unique_together = ['datafile', 'storage_box']
@@ -393,6 +396,36 @@ class DataFileObject(models.Model):
             }
         except:
             return 'undefined'
+
+    def __init__(self, *args, **kwargs):
+        """Stores values prior to changes for change detection in
+        self._initial_values
+        """
+        super(DataFileObject, self).__init__(*args, **kwargs)
+        self._initial_values = self._current_values
+
+    @property
+    def _current_values(self):
+        return model_to_dict(self, fields=[
+            field.name for field in self._meta.fields
+            if field.name not in ['verified', 'last_verified_time']])
+
+    @property
+    def _changed(self):
+        """return True if anything has changed since last save"""
+        new_values = self._current_values
+        for k, v in new_values.iteritems():
+            if k not in self._initial_values:
+                return True
+            if self._initial_values[k] != v:
+                return True
+        return False
+
+    def save(self, *args, **kwargs):
+        super(DataFileObject, self).save(*args, **kwargs)
+        if self._changed:
+            self._initial_values = self._current_values
+            self.verify.apply_async(countdown=5)
 
     @property
     def storage_type(self):
