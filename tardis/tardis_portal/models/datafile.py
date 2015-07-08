@@ -639,7 +639,7 @@ class DataFileObject(models.Model):
             if len(database_update) > 0:
                 for key, val in database_update.items():
                     setattr(df, key, val)
-                    df.save()  # triggers another file verification
+                    df.save()
         else:
             reasons = []
             if io_error:
