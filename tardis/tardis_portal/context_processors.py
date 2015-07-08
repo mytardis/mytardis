@@ -1,6 +1,7 @@
 from django.conf import settings
 from tardis.tardis_portal.staging import get_full_staging_path
 
+
 def single_search_processor(request):
 
     context = {}
@@ -11,15 +12,17 @@ def single_search_processor(request):
     except AttributeError:
         pass
 
-    context =  {
-	    'search_form': single_search_on,
+    context = {
+        'search_form': single_search_on,
     }
 
     return context
 
+
 def tokenuser_processor(request):
     is_token_user = request.user.username == settings.TOKEN_USERNAME
     return {'is_token_user': is_token_user}
+
 
 def registration_processor(request):
     def is_registration_enabled():
@@ -30,6 +33,12 @@ def registration_processor(request):
             pass
         return False
     return {'registration_enabled': is_registration_enabled()}
+
+
+def manage_account_processor(request):
+    return {'manage_account_enabled': getattr(
+        settings, 'MANAGE_ACCOUNT_ENABLED', True)}
+
 
 def user_details_processor(request):
     is_authenticated = request.user.is_authenticated()
@@ -44,6 +53,7 @@ def user_details_processor(request):
             'is_authenticated': is_authenticated,
             'is_superuser': is_superuser,
             'has_staging_access': staging}
+
 
 def global_contexts(request):
     site_title = getattr(settings, 'SITE_TITLE', None)

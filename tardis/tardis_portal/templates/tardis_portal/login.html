@@ -2,26 +2,32 @@
 {% load bootstrap %}
 
 {% block content %}
-<form action="" method="post" class="form-horizontal">{% csrf_token %}
-  <input name="next_page" type="hidden" value="{{ next_page }}" />
-  <fieldset>
-    <legend>Please Log In</legend>
-    {{ loginForm|bootstrap }}
-    <div class="form-actions">
-      <button type="submit" class="btn btn-info btn-large">
-        <i class="icon-signin"></i> Login
-      </button>
-    </div>
-  </fieldset>
-</form>
 
 {% if RAPID_CONNECT_ENABLED %}
 
-    <legend>Australian Access Federation login:</legend>
+    <legend>Please Log In</legend>
 
+    <p> User authentication on this system is managed by the Australian Access Federation. Click the blue button below to log in. </p>
+    <br><br>
+    <p><img src="https://rapid.aaf.edu.au/aaf_service_223x54.png"> </p>
+    <br><br>
     <p> <a href={{ RAPID_CONNECT_LOGIN_URL }} class="btn btn-large btn-info">LOGIN VIA THE AUSTRALIAN ACCESS FEDERATION</a> </p>
 
-{% endif %}
+{% else %}
 
+    <form action="" method="post" class="form-horizontal">{% csrf_token %}
+      <input name="next_page" type="hidden" value="{{ next_page }}" />
+      <fieldset>
+        <legend>Please Log In</legend>
+        {{ loginForm|bootstrap }}
+        <div class="form-actions">
+          <button type="submit" class="btn btn-info btn-large">
+            <i class="icon-signin"></i> Login
+          </button>
+        </div>
+      </fieldset>
+    </form>
+
+{% endif %}
 
 {% endblock content %}

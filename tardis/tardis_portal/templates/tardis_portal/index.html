@@ -13,9 +13,12 @@
     <h1>{{site_title|default:'MyTardis'}} Data Store</h1>
   </div>
   <p>
-    {% if not is_authenticated %}
-      Please <a href="{% url 'tardis.tardis_portal.views.login' %}">login</a>
-      to see your experiment data.
+    {% if RAPID_CONNECT_ENABLED %}
+        Please <a href={{ RAPID_CONNECT_LOGIN_URL }}>login</a>
+        to see your experiment data.
+    {% else %}
+        Please <a href="{% url 'tardis.tardis_portal.views.login' %}">login</a>
+        to see your experiment data.
     {% endif %}
   </p>
   <div class="row-fluid">

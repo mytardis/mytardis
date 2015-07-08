@@ -218,6 +218,9 @@ def index(request):
         .exclude(public_access=Experiment.PUBLIC_ACCESS_NONE)\
         .order_by('-update_time')[:limit]
     c['public_experiments'] = public_experiments
+    c['RAPID_CONNECT_ENABLED'] = settings.RAPID_CONNECT_ENABLED
+    c['RAPID_CONNECT_LOGIN_URL'] = settings.RAPID_CONNECT_CONFIG[
+        'authnrequest_url']
     return HttpResponse(render_response_index(request,
                         'tardis_portal/index.html', c))
 
@@ -3352,7 +3355,12 @@ def rcauth(request):
         # Check for a replay attack using the jti value.
         jti = verified_jwt['jti']
         if JTI.objects.filter(jti=jti).exists():
-            raise ValueError('Replay attack!')
+            logger.debug('Replay attack? ' + str(jti))
+            request.session.pop('attributes', None)
+            request.session.pop('jwt', None)
+            request.session.pop('jws', None)
+            django_logout(request)
+            return redirect('/')
         else:
             JTI(jti=jti).save()
 
@@ -3386,9 +3394,10 @@ def rcauth(request):
             edupersontargetedid = request.session['attributes'][
                 'edupersontargetedid']
             for matching_user in UserProfile.objects.filter(
-                    user__email=user_args['email']):
-                if matching_user.rapidConnectEduPersonTargetedID != \
-                   edupersontargetedid:
+                    user__email__iexact=user_args['email']):
+                if (matching_user.rapidConnectEduPersonTargetedID is not None
+                    and matching_user.rapidConnectEduPersonTargetedID !=
+                        edupersontargetedid):
                     del request.session['attributes']
                     del request.session['jwt']
                     del request.session['jws']

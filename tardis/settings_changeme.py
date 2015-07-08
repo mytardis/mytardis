@@ -619,6 +619,7 @@ RAPID_CONNECT_CONFIG['aud'] = 'https://example.com/rc/'
 Rapid Connect.
 '''
 
+MANAGE_ACCOUNT_ENABLED = True
 
 # Example settings for the publication form workflow. Also requires the
 # corresponding app in 'INSTALLED_APPS' and the corresponding task to be
