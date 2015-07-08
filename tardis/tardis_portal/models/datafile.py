@@ -15,6 +15,7 @@ from django.dispatch import receiver
 from django.forms.models import model_to_dict
 
 from celery.contrib.methods import task
+from django.utils import timezone
 import magic
 
 from tardis.tardis_portal.util import generate_file_checksums
@@ -422,10 +423,13 @@ class DataFileObject(models.Model):
         return False
 
     def save(self, *args, **kwargs):
+        reverify = kwargs.pop('reverify', False)
         super(DataFileObject, self).save(*args, **kwargs)
         if self._changed:
             self._initial_values = self._current_values
-            self.verify.apply_async(countdown=5)
+        elif not reverify:
+            return
+        self.verify.apply_async(countdown=5)
 
     @property
     def storage_type(self):
@@ -461,7 +465,7 @@ class DataFileObject(models.Model):
         new_uri = build_identifier(self) or default_identifier(self)
         return new_uri
 
-    def create_set_uri(self, force=False):
+    def create_set_uri(self, force=False, save=False):
         """
         sets the uri as well as building it
         :param force:
@@ -469,7 +473,8 @@ class DataFileObject(models.Model):
         """
         if force or self.uri is None or self.uri.strip() != '':
             self.uri = self._create_uri()
-            self.save()
+            if save:
+                self.save()
         return self.uri
 
     @property
@@ -501,7 +506,6 @@ class DataFileObject(models.Model):
         file_object.close()
         self.verified = False
         self.save()
-        self.datafile.update_mimetype(force=True)
 
     @property
     def _storage(self):
@@ -652,8 +656,9 @@ class DataFileObject(models.Model):
                          (self.id, ' '.join(reasons)))
 
         self.verified = result
-        self.last_verified_time = datetime.now()
+        self.last_verified_time = timezone.now()
         self.save(update_fields=['verified', 'last_verified_time'])
+        df.update_mimetype(force=True)
         return result
 
     def get_full_path(self):
