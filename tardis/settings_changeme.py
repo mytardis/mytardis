@@ -683,3 +683,6 @@ MANAGE_ACCOUNT_ENABLED = True
 #     'DeactivateDoiService.wsdl'
 # MODC_DOI_ENDPOINT = 'https://doiserver/modc/ws/'
 # MODC_DOI_MINT_URL_ROOT = 'http://mytardisserver/'
+
+# Push-to app settings
+#PUSH_TO_FROM_EMAIL = 'noreply@example.com'

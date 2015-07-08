@@ -1,6 +1,7 @@
 from celery.task import task
 from datetime import datetime
 from django.contrib.auth.models import User
+from tardis import settings
 from tardis.apps.push_to.models import Credential, RemoteHost
 from tardis.tardis_portal.models import Experiment, Dataset, DataFile
 
@@ -69,7 +70,7 @@ def notify_user(user_id, remote_host_id, success=True):
         message = 'Your recent push-to request to %s encountered an error and could not be completed.\n' \
                   'Contact your system administrator for more information.' % remote_host.nickname
         pass
-    user.email_user(subject, message)
+    user.email_user(subject, message, from_email=getattr(settings, 'PUSH_TO_FROM_EMAIL', None))
 
 
 def do_file_copy(credential_id, remote_host_id, datafile_map):
