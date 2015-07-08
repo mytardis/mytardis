@@ -111,13 +111,15 @@
                   <b class="caret"></b>
                 </a>
                 <ul class="dropdown-menu">
-                  <li>
-                    <a href="{% url 'tardis.tardis_portal.views.manage_user_account' %}">
-                      <!-- Font Awesome needs a "link" icon! -->
-                      <i class="icon-user"></i>
-                      Manage Account
-                    </a>
-                  </li>
+                  {% if manage_account_enabled %}
+                      <li>
+                        <a href="{% url 'tardis.tardis_portal.views.manage_user_account' %}">
+                          <!-- Font Awesome needs a "link" icon! -->
+                          <i class="icon-user"></i>
+                          Manage Account
+                        </a>
+                      </li>
+                  {% endif %}
 		  {% if request.user.api_key.key %}
                   <li>
                     <a href="{% url 'tardis.tardis_portal.download.download_api_key' %}">
@@ -181,10 +183,17 @@
               </li>
               {% endif %}
               <li>
+              {% if RAPID_CONNECT_ENABLED %}
+                  <a id="login-button" class="btn btn-info" href={{ RAPID_CONNECT_LOGIN_URL }}>
+                    <i class="icon-signin"></i>
+                    Log In
+                  </a>
+              {% else %}
                 <a id="login-button" class="btn btn-info" href="{% url 'tardis.tardis_portal.views.login' %}">
                   <i class="icon-signin"></i>
                   Log In
                 </a>
+              {% endif %}
               </li>
             {% endif %}
             </ul>
