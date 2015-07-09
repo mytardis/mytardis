@@ -185,11 +185,18 @@ class DataFile(models.Model):
             self.size = str(self.size)
         require_checksums = kwargs.pop('require_checksums', True)
         if settings.REQUIRE_DATAFILE_CHECKSUMS and \
-                not self.md5sum and not self.sha512sum and require_checksums:
+                not self.md5sum and \
+                not self.sha512sum and \
+                require_checksums:
             raise Exception('Every Datafile requires a checksum')
-        elif settings.REQUIRE_DATAFILE_SIZES and \
-                not self.size:
-            raise Exception('Every Datafile requires a file size')
+        elif settings.REQUIRE_DATAFILE_SIZES:
+            if ((isinstance(self.size, basestring) and
+                 (self.size.strip() is '' or
+                  long(self.size.strip()) < 0)) or
+                (isinstance(self.size, (int, long)) and
+                 self.size < 0) or str(self.size).strip() is ''):
+                raise Exception('Invalid Datafile size (must be >= 0): %s' %
+                                repr(self.size))
         self.update_mimetype(save=False)
         super(DataFile, self).save(*args, **kwargs)
 
