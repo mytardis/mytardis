@@ -6,6 +6,7 @@ from django.conf import settings
 from django.db import models
 from django.utils.safestring import mark_safe
 from django.utils.timezone import is_aware, is_naive, make_aware, make_naive
+from django.utils.html import escape
 
 from tardis.tardis_portal.ParameterSetManager import ParameterSetManager
 from tardis.tardis_portal.managers import OracleSafeManager,\
@@ -21,6 +22,8 @@ import logging
 import operator
 import pytz
 import dateutil.parser
+import json
+import traceback
 
 LOCAL_TZ = pytz.timezone(settings.TIME_ZONE)
 logger = logging.getLogger(__name__)
@@ -163,8 +166,8 @@ class ParameterName(models.Model):
     LINK = 4
     FILENAME = 5
     DATETIME = 6
-
     LONGSTRING = 7
+    TABLE = 8
 
     __TYPE_CHOICES = (
         (NUMERIC, 'NUMERIC'),
@@ -173,7 +176,8 @@ class ParameterName(models.Model):
         (LINK, 'LINK'),
         (FILENAME, 'FILENAME'),
         (DATETIME, 'DATETIME'),
-        (LONGSTRING, 'LONGSTRING')
+        (LONGSTRING, 'LONGSTRING'),
+        (TABLE, 'TABLE')
         )
 
     schema = models.ForeignKey(Schema)
@@ -243,6 +247,9 @@ class ParameterName(models.Model):
 
     def getUniqueShortName(self):
         return self.name + '_' + str(self.id)
+
+    def isTable(self):
+        return self.data_type == self.TABLE
 
 
 def _getParameter(parameter):
@@ -329,6 +336,37 @@ def _getParameter(parameter):
     elif parameter.name.isDateTime():
         value = str(parameter.datetime_value)
         return value
+
+    elif parameter.name.isTable():
+        try:
+            tabledict = json.loads(parameter.string_value)
+            thead = tabledict['thead']
+            tbody = tabledict['tbody']
+            value = "<table>\n"
+            value += "<thead>\n"
+            value += "<tr>"
+            for col in thead:
+                colkey = col.keys()[0]
+                colname = col.values()[0]
+                value += "<th>%s</th>" % escape(colname)
+            value += "</tr>\n"
+            value += "</thead>\n"
+            value += "<tbody>\n"
+            for row in tbody:
+                value += "<tr>"
+                for col in thead:
+                    colkey = col.keys()[0]
+                    if colkey in row:
+                        value += "<td>%s</td>" % escape(row[colkey])
+                    else:
+                        value += "<td>&nbsp;</td>"
+                value += "</tr>\n"
+            value += "</tbody>\n"
+            value += "</table>\n"
+            return mark_safe(value)
+        except:
+            logger.error(traceback.format_exc())
+            return None
 
     else:
         return None
