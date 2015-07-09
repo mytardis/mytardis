@@ -12,15 +12,18 @@
   <div class="page-header">
     <h1>{{site_title|default:'MyTardis'}} Data Store</h1>
   </div>
-  <p>
-    {% if RAPID_CONNECT_ENABLED %}
-        Please <a href={{ RAPID_CONNECT_LOGIN_URL }}>login</a>
-        to see your experiment data.
-    {% else %}
-        Please <a href="{% url 'tardis.tardis_portal.views.login' %}">login</a>
-        to see your experiment data.
+    {% if not is_authenticated %}
+    <p>
+        {% if RAPID_CONNECT_ENABLED %}
+            Please <a href={{ RAPID_CONNECT_LOGIN_URL }}>login</a>
+            to see your experiment data.
+        {% else %}
+            Please
+            <a href="{% url 'tardis.tardis_portal.views.login' %}">login</a>
+            to see your experiment data.
+        {% endif %}
+    </p>
     {% endif %}
-  </p>
   <div class="row-fluid">
     <div class="span6">
       {% if is_authenticated %}
