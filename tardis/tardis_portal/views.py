@@ -609,7 +609,10 @@ def view_experiment(request, experiment_id,
                 except (ImportError, AttributeError) as e:
                     logger.error('custom view import failed. view name: %s, '
                                  'error-msg: %s' % (repr(view_fn), e))
-                    continue
+                    if getattr(settings, 'DEBUG', True):
+                        raise e
+                    else:
+                        continue
 
     c['experiment'] = experiment
     c['has_write_permissions'] = \
@@ -821,7 +824,10 @@ def view_dataset(request, dataset_id):
                 except (ImportError, AttributeError) as e:
                     logger.error('custom view import failed. view name: %s, '
                                  'error-msg: %s' % (repr(view_fn), e))
-                    continue
+                    if getattr(settings, 'DEBUG', True):
+                        raise e
+                    else:
+                        continue
 
     def get_datafiles_page():
         # pagination was removed by someone in the interface but not here.
