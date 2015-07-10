@@ -13,7 +13,7 @@ from tardis.tardis_portal.models import User, UserProfile, \
     Experiment, ObjectACL, Dataset, DataFile
 
 from wand.image import Image
-from tardis_portal.models.datafile import compute_checksums
+from tardis.tardis_portal.models.datafile import compute_checksums
 
 """
 Tests for IIIF API.
