@@ -685,4 +685,4 @@ MANAGE_ACCOUNT_ENABLED = True
 # MODC_DOI_MINT_URL_ROOT = 'http://mytardisserver/'
 
 # Push-to app settings
-#PUSH_TO_FROM_EMAIL = 'noreply@example.com'
+# PUSH_TO_FROM_EMAIL = 'noreply@example.com'
