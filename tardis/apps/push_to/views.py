@@ -49,7 +49,7 @@ def get_push_url_for_host(remote_host, obj_type, push_obj_id):
     elif obj_type == 'dataset':
         push_view = initiate_push_dataset
     elif obj_type == 'datafile':
-        push_view == initiate_push_datafile
+        push_view = initiate_push_datafile
 
     if push_view is not None and push_obj_id is not None:
         return reverse(push_view,
