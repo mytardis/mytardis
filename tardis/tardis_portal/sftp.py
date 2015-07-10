@@ -344,6 +344,11 @@ class MyTSFTPHandle(SFTPHandle):
 
 class MyTServerInterface(ServerInterface):
 
+    def __init__(self):
+        super(MyTServerInterface, self).__init__()
+        self.username = None
+        self.user = None
+
     def get_allowed_auths(self, username):
         auth_methods = ['password', 'keyboard-interactive']
         # if user_has_key_set_up:
@@ -365,6 +370,9 @@ class MyTServerInterface(ServerInterface):
             request=fake_request,
             authMethod=None)  # checks all available methods
         if user and user.is_authenticated():
+            # the following line is Australian Synchrotron specific and will
+            # disappear when we start using their newer auth system
+            user.epn_list = fake_request.session.get('_epn_list', [])
             self.username = username
             self.user = user
             return AUTH_SUCCESSFUL

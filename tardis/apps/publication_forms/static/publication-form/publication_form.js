@@ -271,7 +271,7 @@ app.controller('publicationFormCtrl', function ($scope, $log, $http, ngDialog, $
 
     // A list of available pages of the form, along with a function used to validate the form content
     $scope.form_pages = [{
-        title: 'Ready to publish?',
+        title: '',
         url: 'form_page1.html',
         validationFunction: noValidation
     },

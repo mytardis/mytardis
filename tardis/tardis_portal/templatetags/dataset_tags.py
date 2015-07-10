@@ -15,7 +15,7 @@ register = template.Library()
 @register.filter
 def dataset_tiles(experiment, include_thumbnails):
     # only show 8 datasets for initial load
-    datasets = experiment.datasets.all()[:8]
+    datasets = experiment.datasets.all().order_by('description')[:8]
 
     # Get data to template (used by JSON service too)
     # ?? doesn't seem to be used by JSON service at all

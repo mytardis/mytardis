@@ -612,9 +612,6 @@ class ExperimentParameterSetResource(ParameterSetResource):
         'experimentparameter_set',
         related_name='parameterset', full=True, null=True)
 
-    def save_m2m(self, bundle):
-        super(ExperimentParameterSetResource, self).save_m2m(bundle)
-
     class Meta(ParameterSetResource.Meta):
         queryset = ExperimentParameterSet.objects.all()
 

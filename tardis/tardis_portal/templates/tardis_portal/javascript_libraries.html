@@ -68,4 +68,7 @@ The Font Awesome webfont, CSS, and LESS files are licensed under CC BY 3.0.
 
 {% block site_css %}
 <link type="text/css" href="{% static 'css/default.css' %}" rel="stylesheet" />
+    <style type="text/css">
+        {{ site_styles|safe }}
+    </style>
 {% endblock %}

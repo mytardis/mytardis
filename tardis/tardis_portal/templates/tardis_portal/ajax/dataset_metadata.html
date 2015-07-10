@@ -24,39 +24,12 @@
    </div>
    {% endif %}
   {% endcapture %}
-  <div style="margin-top: 10px">
-    {% with parameters=parameterset.datasetparameter_set.all %}
-    <table class="parameter_table table table-bordered {{ parameterset.schema.name|slugify }}">
-      <tr>
-        <th class="schema_name" title="{{ parameterset.schema.namespace }} {{ parameterset.schema.immutable|yesno:'(immutable),' }}" colspan="2">
-        {% if parameterset.schema.name %}
-          {{ parameterset.schema.name }}
-        {% endif %}
-        {% if edit_control %}
-            {{ edit_control }}
-        {% endif %}
-        </th>
-      </tr>
-      {% for parameter in parameters %}
-      <tr>
-          <td class="parameter_name">{{ parameter.name.full_name }}</td>
-          <td class="parameter_value">
-          {% if parameter.name.isLongString %}
-            {{ parameter.get|linebreaks }}
-	  {% elif parameter.name.isLink %}
-	    <a href="{{ parameter.link_url }}">{{parameter.link_gfk}}</a>
-          {% else %}
-            {{ parameter.get }}
-          {% endif %}
-          </td>
-      </tr>
-      {% endfor %}
-    </table>
-    {% endwith %}
-  </div>
+    <div style="margin-top: 10px">
+        {% include "tardis_portal/ajax/parameter_table.html" with parameters=parameterset.datasetparameter_set.all %}
+    </div>
 {% empty %}
-  <div>
-    There is no metadata for this dataset.
-  </div>
+    <div>
+        There is no metadata for this dataset.
+    </div>
 {% endfor %}
 </div>

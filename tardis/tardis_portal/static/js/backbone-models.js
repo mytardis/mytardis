@@ -182,8 +182,7 @@ var MyTardis = (function(){
             }
             this.visibleTiles = _.chain(this.collection.filter(filterFunc))
                 .pluck('id')         // Get IDs
-                .sortBy(_.identity)  // Sort by ID (chronological)
-                .reverse().value();  // Get reversed order
+		.value();
             this.render();
             return this;
 	},

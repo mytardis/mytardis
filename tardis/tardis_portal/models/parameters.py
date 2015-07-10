@@ -21,6 +21,7 @@ import logging
 import operator
 import pytz
 import dateutil.parser
+import json
 
 LOCAL_TZ = pytz.timezone(settings.TIME_ZONE)
 logger = logging.getLogger(__name__)
@@ -47,7 +48,7 @@ class Schema(models.Model):
         (DATASET, 'Dataset schema'),
         (DATAFILE, 'Datafile schema'),
         (INSTRUMENT, 'Instrument schema'),
-        (NONE, 'None')
+        (NONE, 'None'),
     )
 
     _SCHEMA_TYPES_SHORT = (
@@ -55,7 +56,7 @@ class Schema(models.Model):
         (DATASET, 'dataset'),
         (DATAFILE, 'datafile'),
         (INSTRUMENT, 'instrument'),
-        (NONE, 'none')
+        (NONE, 'none'),
     )
 
     namespace = models.URLField(unique=True,
@@ -163,8 +164,8 @@ class ParameterName(models.Model):
     LINK = 4
     FILENAME = 5
     DATETIME = 6
-
     LONGSTRING = 7
+    JSON = 8
 
     __TYPE_CHOICES = (
         (NUMERIC, 'NUMERIC'),
@@ -173,7 +174,8 @@ class ParameterName(models.Model):
         (LINK, 'LINK'),
         (FILENAME, 'FILENAME'),
         (DATETIME, 'DATETIME'),
-        (LONGSTRING, 'LONGSTRING')
+        (LONGSTRING, 'LONGSTRING'),
+        (JSON, 'JSON'),
         )
 
     schema = models.ForeignKey(Schema)
@@ -243,6 +245,9 @@ class ParameterName(models.Model):
 
     def getUniqueShortName(self):
         return self.name + '_' + str(self.id)
+
+    def is_json(self):
+        return self.data_type == self.JSON
 
 
 def _getParameter(parameter):
@@ -329,6 +334,9 @@ def _getParameter(parameter):
     elif parameter.name.isDateTime():
         value = str(parameter.datetime_value)
         return value
+
+    elif parameter.name.is_json():
+        return json.loads(parameter.string_value)
 
     else:
         return None
