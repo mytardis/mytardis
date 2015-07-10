@@ -39,7 +39,7 @@ models.py
 import logging
 
 from django.conf import settings
-from django.utils.importlib import import_module
+from importlib import import_module
 from django.core.exceptions import ImproperlyConfigured
 from django.contrib.auth.models import User
 from django.contrib.auth.models import Permission

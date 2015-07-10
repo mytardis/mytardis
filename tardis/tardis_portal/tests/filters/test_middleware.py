@@ -124,18 +124,17 @@ class FilterInitTestCase(TestCase):
             expect(len(t)).to_equal(0)
             t = Filter2.getTuples()
             expect(len(t)).to_equal(0)
-
             self.datafiles[0].file_objects.all()[0].save()
             t = Filter1.getTuples()
-            expect(len(t)).to_equal(2)
+            expect(len(t)).to_equal(1)
             expect(t[0][0]).to_equal(self.datafiles[0])
             expect(t[0][1]).to_be_truthy()
             t = Filter2.getTuples()
-            expect(len(t)).to_equal(2)
+            expect(len(t)).to_equal(1)
             expect(t[0][0]).to_equal(self.datafiles[0])
             expect(t[0][1]).to_be_truthy()
 
-            self.datafiles[1].file_objects.all()[0].save()
+            self.datafiles[1].file_objects.all()[0].save(reverify=True)
             t = Filter1.getTuples()
             # 2 because the missing md5 sum save runs the filter as well
             expect(len(t)).to_equal(2)

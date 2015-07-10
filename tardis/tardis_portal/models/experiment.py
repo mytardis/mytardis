@@ -2,7 +2,7 @@ from os import path
 
 from django.conf import settings
 from django.contrib.auth.models import User
-from django.contrib.contenttypes import generic
+from django.contrib.contenttypes.fields import GenericRelation
 from django.contrib.contenttypes.models import ContentType
 from django.core.urlresolvers import reverse
 from django.db import models
@@ -71,7 +71,7 @@ class Experiment(models.Model):
                                          default=PUBLIC_ACCESS_NONE)
     license = models.ForeignKey(License,  # @ReservedAssignment
                                 blank=True, null=True)
-    objectacls = generic.GenericRelation(ObjectACL)
+    objectacls = GenericRelation(ObjectACL)
     objects = OracleSafeManager()
     safe = ExperimentManager()  # The acl-aware specific manager.
 

@@ -9,7 +9,7 @@ class PublishService():
     def _get_provider(self):
         from tardis.tardis_portal.publish.provider.rifcsprovider import RifCsProvider
         if self.rc_providers:
-            from django.utils.importlib import import_module
+            from importlib import import_module
             for pmodule in self.rc_providers:
                 # Import the module
                 try:

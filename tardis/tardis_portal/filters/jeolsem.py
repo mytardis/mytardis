@@ -80,9 +80,8 @@ class JEOLSEMFilter(object):
 
         return datafile.filename in processed_files(datafile.dataset)
 
-
     def is_text_file(self, datafile):
-        return datafile.get_mimetype() == 'text/plain'
+        return datafile.get_mimetype().startswith('text/plain')
 
     def get_file_contents(self, datafile):
         from contextlib import closing

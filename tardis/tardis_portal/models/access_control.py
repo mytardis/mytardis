@@ -3,7 +3,7 @@ from datetime import datetime
 from django.conf import settings
 from django.contrib.auth.models import User, Group
 from django.contrib.contenttypes.models import ContentType
-from django.contrib.contenttypes import generic
+from django.contrib.contenttypes.fields import GenericForeignKey
 
 from django.db import models
 from django.db.models import Q
@@ -117,7 +117,7 @@ class UserAuthentication(models.Model):
 #     '''
 #     entity_type = models.ForeignKey(ContentType)
 #     entity_id = models.PositiveIntegerField()
-#     entity_object = generic.GenericForeignKey('entity_type', 'entity_id')
+#     entity_object = GenericForeignKey('entity_type', 'entity_id')
 #
 #     can_read = models.BooleanField()
 #     can_download = models.BooleanField()
@@ -128,7 +128,7 @@ class UserAuthentication(models.Model):
 #
 #     content_type = models.ForeignKey(ContentType)
 #     object_id = models.PositiveIntegerField()
-#     content_object = generic.GenericForeignKey('content_type', 'object_id')
+#     content_object = GenericForeignKey('content_type', 'object_id')
 
 
 class ObjectACL(models.Model):
@@ -167,7 +167,7 @@ class ObjectACL(models.Model):
 #    experiment = models.ForeignKey('Experiment')
     content_type = models.ForeignKey(ContentType)
     object_id = models.PositiveIntegerField()
-    content_object = generic.GenericForeignKey('content_type', 'object_id')
+    content_object = GenericForeignKey('content_type', 'object_id')
     canRead = models.BooleanField(default=False)
     canWrite = models.BooleanField(default=False)
     canDelete = models.BooleanField(default=False)

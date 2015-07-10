@@ -1,7 +1,6 @@
 import hashlib
 from os import path
-from datetime import datetime
-import random
+import magic
 import mimetypes
 
 from django.conf import settings
@@ -12,11 +11,10 @@ from django.db import transaction
 from django.db.models import Q
 from django.db.models.signals import pre_delete
 from django.dispatch import receiver
+from django.forms.models import model_to_dict
 
 from celery.contrib.methods import task
-import magic
-
-from tardis.tardis_portal.util import generate_file_checksums
+from django.utils import timezone
 
 from .fields import DirectoryField
 from .dataset import Dataset
@@ -387,6 +385,8 @@ class DataFileObject(models.Model):
     verified = models.BooleanField(default=False)
     last_verified_time = models.DateTimeField(blank=True, null=True)
 
+    _initial_values = None
+
     class Meta:
         app_label = 'tardis_portal'
         unique_together = ['datafile', 'storage_box']
@@ -400,6 +400,39 @@ class DataFileObject(models.Model):
             }
         except:
             return 'undefined'
+
+    def __init__(self, *args, **kwargs):
+        """Stores values prior to changes for change detection in
+        self._initial_values
+        """
+        super(DataFileObject, self).__init__(*args, **kwargs)
+        self._initial_values = self._current_values
+
+    @property
+    def _current_values(self):
+        return model_to_dict(self, fields=[
+            field.name for field in self._meta.fields
+            if field.name not in ['verified', 'last_verified_time']])
+
+    @property
+    def _changed(self):
+        """return True if anything has changed since last save"""
+        new_values = self._current_values
+        for k, v in new_values.iteritems():
+            if k not in self._initial_values:
+                return True
+            if self._initial_values[k] != v:
+                return True
+        return False
+
+    def save(self, *args, **kwargs):
+        reverify = kwargs.pop('reverify', False)
+        super(DataFileObject, self).save(*args, **kwargs)
+        if self._changed:
+            self._initial_values = self._current_values
+        elif not reverify:
+            return
+        self.verify.apply_async(countdown=5)
 
     @property
     def storage_type(self):
@@ -435,7 +468,7 @@ class DataFileObject(models.Model):
         new_uri = build_identifier(self) or default_identifier(self)
         return new_uri
 
-    def create_set_uri(self, force=False):
+    def create_set_uri(self, force=False, save=False):
         """
         sets the uri as well as building it
         :param force:
@@ -443,7 +476,8 @@ class DataFileObject(models.Model):
         """
         if force or self.uri is None or self.uri.strip() != '':
             self.uri = self._create_uri()
-            self.save()
+            if save:
+                self.save()
         return self.uri
 
     @property
@@ -475,7 +509,6 @@ class DataFileObject(models.Model):
         file_object.close()
         self.verified = False
         self.save()
-        self.datafile.update_mimetype(force=True)
 
     @property
     def _storage(self):
@@ -538,31 +571,6 @@ class DataFileObject(models.Model):
             self.delete()
         return copy
 
-    def _compute_checksums(self,
-                           compute_md5=True,
-                           compute_sha512=True):
-        blocksize = 0
-        results = {}
-        if compute_md5:
-            md5_hasher = hashlib.new('md5')
-            blocksize = max(md5_hasher.block_size, blocksize)
-            results['md5sum'] = md5_hasher
-        if compute_sha512:
-            sha512_hasher = hashlib.new('sha512')
-            blocksize = max(sha512_hasher.block_size, blocksize)
-            results['sha512sum'] = sha512_hasher
-        update_fns = {'md5sum': lambda x, y: x.update(y),
-                      'sha512sum': lambda x, y: x.update(y)}
-        fo = self.file_object
-        fo.seek(0)
-        for chunk in iter(lambda: fo.read(32 * blocksize), ''):
-            for key in results.keys():
-                update_fns[key](results[key], chunk)
-        self.file_object.close()
-        final_fns = {'md5sum': lambda x: x.hexdigest(),
-                     'sha512sum': lambda x: x.hexdigest()}
-        return {key: final_fns[key](val) for key, val in results.items()}
-
     @task(name="tardis_portal.verify_dfo_method", ignore_result=True)  # noqa # too complex
     def verify(self, add_checksums=True, add_size=True):  # too complex # noqa
         comparisons = ['size', 'md5sum', 'sha512sum']
@@ -588,7 +596,8 @@ class DataFileObject(models.Model):
                 if add_size:
                     database_update['size'] = str(actual['size'])
             if same_values.get('size', True):
-                actual.update(self._compute_checksums(
+                actual.update(compute_checksums(
+                    self.file_object,
                     compute_md5=True,
                     compute_sha512=True))
                 for sum_type in ['md5sum', 'sha512sum']:
@@ -609,7 +618,7 @@ class DataFileObject(models.Model):
             if len(database_update) > 0:
                 for key, val in database_update.items():
                     setattr(df, key, val)
-                    df.save()  # triggers another file verification
+                    df.save()
         else:
             reasons = []
             if io_error:
@@ -626,8 +635,9 @@ class DataFileObject(models.Model):
                          (self.id, ' '.join(reasons)))
 
         self.verified = result
-        self.last_verified_time = datetime.now()
+        self.last_verified_time = timezone.now()
         self.save(update_fields=['verified', 'last_verified_time'])
+        df.update_mimetype(force=True)
         return result
 
     def get_full_path(self):
@@ -646,3 +656,46 @@ def delete_dfo(sender, instance, **kwargs):
     else:
         logger.debug('Did not delete file dfo.id '
                      '%s, because it was the last copy' % instance.id)
+
+
+
+def compute_checksums(file_object,
+                      compute_md5=True,
+                      compute_sha512=True,
+                      close_file=True):
+    """Computes checksums for a python file object
+
+    :param file_object: Python File object
+    :param compute_md5: whether to compute md5 default=True
+    :type compute_md5: bool
+    :param compute_sha512: whether to compute sha512, default=True
+    :type compute_sha512: bool
+    :param close_file: whether to close the file_object, default=True
+    :type leave_open: bool
+
+    :return: the checksums as {'md5sum': result, 'sha512sum': result}
+    :rtype : dict
+    """
+    blocksize = 0
+    results = {}
+    if compute_md5:
+        md5_hasher = hashlib.new('md5')
+        blocksize = max(md5_hasher.block_size, blocksize)
+        results['md5sum'] = md5_hasher
+    if compute_sha512:
+        sha512_hasher = hashlib.new('sha512')
+        blocksize = max(sha512_hasher.block_size, blocksize)
+        results['sha512sum'] = sha512_hasher
+    update_fns = {'md5sum': lambda x, y: x.update(y),
+                  'sha512sum': lambda x, y: x.update(y)}
+    file_object.seek(0)
+    for chunk in iter(lambda: file_object.read(32 * blocksize), ''):
+        for key in results.keys():
+            update_fns[key](results[key], chunk)
+    if close_file:
+        file_object.close()
+    else:
+        file_object.seek(0)
+    final_fns = {'md5sum': lambda x: x.hexdigest(),
+                 'sha512sum': lambda x: x.hexdigest()}
+    return {key: final_fns[key](val) for key, val in results.items()}

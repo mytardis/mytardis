@@ -1,3 +1,4 @@
+import warnings
 from django.conf import settings
 
 import ctypes
@@ -60,13 +61,15 @@ def get_free_space(fs_dir):
 
 
 def generate_file_checksums(sourceFile, tempFile=None, leave_open=False):
-    '''
+    '''DEPRECATED
     Generate checksums, etcetera for a file read from 'sourceFile'.
     If 'tempFile' is provided, the bytes are written to it as they are read.
     The result is a tuple comprising the MD5 checksum, the SHA512 checksum,
     the file length, and chunk containing the start of the file (for doing
     mimetype guessing if necessary).
     '''
+    warnings.warn("please replace usages with models/datafile.py:"
+                  "compute_checksums", DeprecationWarning)
     sourceFile.seek(0)
 
     f = sourceFile

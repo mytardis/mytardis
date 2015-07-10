@@ -108,7 +108,6 @@ from tardis.tardis_portal.shortcuts import render_response_index, \
     return_response_error, return_response_not_found, \
     render_response_search, get_experiment_referer
 from tardis.tardis_portal.hacks import oracle_dbops_hack
-from tardis.tardis_portal.util import generate_file_checksums
 from tardis.tardis_portal.util import render_public_access_badge
 
 from haystack.views import SearchView
