@@ -16,7 +16,7 @@ pushToApp.controller('HostSelectCtrl', function($scope, $resource) {
             // Filter hosts allowed by SSH certificate signing, excluding hosts
             // that the user already has access to.
             for (var svcIdx = 0; svcIdx < certServices.length; svcIdx++) {
-                var svc = certServices[svcIdx]
+                var svc = certServices[svcIdx];
                 for (var hostIdx = 0; hostIdx < svc.remote_hosts.length; hostIdx++) {
                     var h = svc.remote_hosts[hostIdx];
                     var found = false;
