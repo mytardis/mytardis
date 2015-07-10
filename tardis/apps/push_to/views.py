@@ -287,7 +287,7 @@ def authorize_remote_access(request, remote_host_id, service_id=None):
     :param service_id: OAuth2 SSH certificate signing service id
     :return: an error message or OAuth2 redirects
     """
-    next = request.GET.get('next', '/')
+    next_redirect = request.GET.get('next', '/')
 
     # Identify a suitable SSH cert signing service for the requested host
     try:
@@ -328,7 +328,7 @@ def authorize_remote_access(request, remote_host_id, service_id=None):
             oauth_service.oauth_authorize_url +
             '?response_type=code&client_id=%s&redirect_uri=%s&state=%s' %
             (oauth_service.oauth_client_id, oauth_callback_url(request),
-             (str(service_id) + ',' + next)))
+             (str(service_id) + ',' + next_redirect)))
     else:
         # We have a token, so try to create a credential and sign it
         # remote_user is overwritten once the cert is signed
@@ -340,7 +340,7 @@ def authorize_remote_access(request, remote_host_id, service_id=None):
             oauth_service.cert_signing_url) and \
                 credential.verify_remote_access(
         ):
-            return redirect(next + '?credential_id=%i' % credential.pk)
+            return redirect(next_redirect + '?credential_id=%i' % credential.pk)
         else:
             # If key signing failed, delete the credential
             credential.delete()
@@ -366,7 +366,7 @@ def oauth_callback(request):
             error_message)
 
     try:
-        service_id, next = request.GET.get('state', '/').split(',')
+        service_id, next_redirect = request.GET.get('state', '/').split(',')
     except ValueError:
         return render_error_message(request, 'Invalid state', status=400)
 
@@ -394,4 +394,4 @@ def oauth_callback(request):
     token = json.loads(r.text)
     set_token(request, oauth_service, token)
 
-    return redirect(next)
+    return redirect(next_redirect)

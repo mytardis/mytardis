@@ -87,11 +87,11 @@ def do_file_copy(credential_id, remote_host_id, datafile_map):
 
     def make_dirs(dir_list):
         full_path = ''
-        for dir in dir_list:
+        for directory in dir_list:
             if full_path:
-                full_path += '/' + dir
+                full_path += '/' + directory
             else:
-                full_path = dir
+                full_path = directory
             try:
                 sftp_client.stat(full_path)
             except IOError:  # Raised when the directory doesn't exist
