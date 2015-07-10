@@ -371,6 +371,26 @@ function listed in the ``*_VIEWS`` configuration item and added to the
 
 Refer to the :doc:`views documentation<contextual_views>` for further information.
 
+Site Customisations
+~~~~~~~~~~~~~~~~~~~
+
+Some settings that allow customised messages and styles.
+
+.. code-block:: python
+
+    PUBLICATION_INTRODUCTION = """
+    <p><strong>... introduction and publication agreement ...</strong></p>
+    """
+    SITE_STYLES = ''  # should be CSS
+
+    # if either GA setting is empty, GA is disabled
+    GOOGLE_ANALYTICS_ID = ''  # whatever Google provides
+    GOOGLE_ANALYTICS_HOST = ''  # the host registered with Google
+
+    # these refer to any template finder findable location, e.g. APPDIR/templates/...
+    CUSTOM_ABOUT_SECTION_TEMPLATE = 'tardis_portal/about_include.html'
+    CUSTOM_USER_GUIDE = 'user_guide/index.html'
+
 
 Deployment
 ----------

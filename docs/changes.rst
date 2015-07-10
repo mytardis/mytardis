@@ -1,6 +1,12 @@
 Changelog
 =========
 
+in development
+--------------
+
+* new settings for customisations
+
+
 3.6 - 16 March 2015
 -------------------
 
