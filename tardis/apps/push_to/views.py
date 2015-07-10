@@ -223,8 +223,13 @@ def _initiate_push(
         tasks.push_datafile_to_host.delay(
             request.user.pk, credential.pk, remote_host_id, push_obj_id)
 
-    success_message = ('The requested item will be pushed to %s. You will be'
-                       ' notified by email once this has been completed.')
+    success_message = ('The requested item will be pushed to %s. <strong>You '
+                       'will be notified by email once this has been '
+                       'completed.</strong>'
+                       '<br/>'
+                       'In most cases, your data will be pushed to your home '
+                       'directory.'
+                       '<pre>~/mytardis-data/&lt;timestamp&gt;/...</pre>')
     success_message %= remote_host.nickname
     return render_success_message(
         request,
