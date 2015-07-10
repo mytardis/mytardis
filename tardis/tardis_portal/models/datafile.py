@@ -1,7 +1,6 @@
 import hashlib
 from os import path
-from datetime import datetime
-import random
+import magic
 import mimetypes
 
 from django.conf import settings
@@ -16,9 +15,6 @@ from django.forms.models import model_to_dict
 
 from celery.contrib.methods import task
 from django.utils import timezone
-import magic
-
-from tardis.tardis_portal.util import generate_file_checksums
 
 from .fields import DirectoryField
 from .dataset import Dataset
@@ -568,31 +564,6 @@ class DataFileObject(models.Model):
             self.delete()
         return copy
 
-    def _compute_checksums(self,
-                           compute_md5=True,
-                           compute_sha512=True):
-        blocksize = 0
-        results = {}
-        if compute_md5:
-            md5_hasher = hashlib.new('md5')
-            blocksize = max(md5_hasher.block_size, blocksize)
-            results['md5sum'] = md5_hasher
-        if compute_sha512:
-            sha512_hasher = hashlib.new('sha512')
-            blocksize = max(sha512_hasher.block_size, blocksize)
-            results['sha512sum'] = sha512_hasher
-        update_fns = {'md5sum': lambda x, y: x.update(y),
-                      'sha512sum': lambda x, y: x.update(y)}
-        fo = self.file_object
-        fo.seek(0)
-        for chunk in iter(lambda: fo.read(32 * blocksize), ''):
-            for key in results.keys():
-                update_fns[key](results[key], chunk)
-        self.file_object.close()
-        final_fns = {'md5sum': lambda x: x.hexdigest(),
-                     'sha512sum': lambda x: x.hexdigest()}
-        return {key: final_fns[key](val) for key, val in results.items()}
-
     @task(name="tardis_portal.verify_dfo_method", ignore_result=True)  # noqa # too complex
     def verify(self, add_checksums=True, add_size=True):  # too complex # noqa
         comparisons = ['size', 'md5sum', 'sha512sum']
@@ -618,7 +589,8 @@ class DataFileObject(models.Model):
                 if add_size:
                     database_update['size'] = str(actual['size'])
             if same_values.get('size', True):
-                actual.update(self._compute_checksums(
+                actual.update(compute_checksums(
+                    self.file_object,
                     compute_md5=True,
                     compute_sha512=True))
                 for sum_type in ['md5sum', 'sha512sum']:
@@ -677,3 +649,46 @@ def delete_dfo(sender, instance, **kwargs):
     else:
         logger.debug('Did not delete file dfo.id '
                      '%s, because it was the last copy' % instance.id)
+
+
+
+def compute_checksums(file_object,
+                      compute_md5=True,
+                      compute_sha512=True,
+                      close_file=True):
+    """Computes checksums for a python file object
+
+    :param file_object: Python File object
+    :param compute_md5: whether to compute md5 default=True
+    :type compute_md5: bool
+    :param compute_sha512: whether to compute sha512, default=True
+    :type compute_sha512: bool
+    :param close_file: whether to close the file_object, default=True
+    :type leave_open: bool
+
+    :return: the checksums as {'md5sum': result, 'sha512sum': result}
+    :rtype : dict
+    """
+    blocksize = 0
+    results = {}
+    if compute_md5:
+        md5_hasher = hashlib.new('md5')
+        blocksize = max(md5_hasher.block_size, blocksize)
+        results['md5sum'] = md5_hasher
+    if compute_sha512:
+        sha512_hasher = hashlib.new('sha512')
+        blocksize = max(sha512_hasher.block_size, blocksize)
+        results['sha512sum'] = sha512_hasher
+    update_fns = {'md5sum': lambda x, y: x.update(y),
+                  'sha512sum': lambda x, y: x.update(y)}
+    file_object.seek(0)
+    for chunk in iter(lambda: file_object.read(32 * blocksize), ''):
+        for key in results.keys():
+            update_fns[key](results[key], chunk)
+    if close_file:
+        file_object.close()
+    else:
+        file_object.seek(0)
+    final_fns = {'md5sum': lambda x: x.hexdigest(),
+                 'sha512sum': lambda x: x.hexdigest()}
+    return {key: final_fns[key](val) for key, val in results.items()}

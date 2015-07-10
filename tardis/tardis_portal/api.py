@@ -26,7 +26,7 @@ from tardis.tardis_portal.auth.decorators import has_experiment_access
 from tardis.tardis_portal.auth.decorators import has_write_permissions
 from tardis.tardis_portal.auth.localdb_auth import django_user
 from tardis.tardis_portal.models import ObjectACL
-from tardis.tardis_portal.models.datafile import DataFile
+from tardis.tardis_portal.models.datafile import DataFile, compute_checksums
 from tardis.tardis_portal.models.datafile import DataFileObject
 from tardis.tardis_portal.models.dataset import Dataset
 from tardis.tardis_portal.models.experiment import Experiment
@@ -934,10 +934,9 @@ class DataFileResource(MyTardisModelResource):
             # have POSTed file
             newfile = bundle.data['attached_file'][0]
             if 'md5sum' not in bundle.data and 'sha512sum' not in bundle.data:
-                from tardis.tardis_portal.util import generate_file_checksums
-                md5, sha512, size, _ = generate_file_checksums(
-                    newfile, leave_open=True)
-                bundle.data['md5sum'] = md5
+                checksums = compute_checksums(newfile, close_file=False)
+                bundle.data['md5sum'] = checksums['md5sum']
+                bundle.data['sha512sum'] = checksums['sha512sum']
 
             if 'replicas' in bundle.data:
                 for replica in bundle.data['replicas']:

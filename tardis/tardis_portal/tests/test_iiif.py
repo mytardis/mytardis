@@ -11,9 +11,9 @@ from django.test.client import Client
 
 from tardis.tardis_portal.models import User, UserProfile, \
     Experiment, ObjectACL, Dataset, DataFile
-from tardis.tardis_portal.util import generate_file_checksums
 
 from wand.image import Image
+from tardis_portal.models.datafile import compute_checksums
 
 """
 Tests for IIIF API.
@@ -56,8 +56,9 @@ def _create_datafile():
                         size=os.path.getsize(tempfile.file.name),
                         filename='iiif_named_file',
                         mimetype='image/tiff')
-    datafile.md5sum, datafile.sha512sum, _, _ = \
-        generate_file_checksums(open(tempfile.file.name, 'r'))
+    checksums = compute_checksums(open(tempfile.file.name, 'r'))
+    datafile.md5sum = checksums['md5sum']
+    datafile.sha512sum = checksums['sha512sum']
     datafile.save()
     datafile.file_object = tempfile
     return datafile

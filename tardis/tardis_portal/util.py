@@ -1,3 +1,4 @@
+import warnings
 from django.conf import settings
 
 import ctypes
@@ -67,6 +68,8 @@ def generate_file_checksums(sourceFile, tempFile=None, leave_open=False):
     the file length, and chunk containing the start of the file (for doing
     mimetype guessing if necessary).
     '''
+    warnings.warn("please replace usages with models/datafile.py:"
+                  "compute_checksums", DeprecationWarning)
     sourceFile.seek(0)
 
     f = sourceFile
