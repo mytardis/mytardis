@@ -26,6 +26,7 @@ def sign_certificate(credential, token, url):
         return False
 
     # Ignore the certificate comment field
+    remote_user_name = cert_response['user']
     cert_type, cert_data = cert_response['certificate'].split()[0:2]
     if cert_type != 'ssh-rsa-cert-v01@openssh.com':
         return False  # We only support this certificate type at the moment
@@ -38,5 +39,6 @@ def sign_certificate(credential, token, url):
         data=base64.b64decode(cert_data),
         privkey_file_obj=private_key)
     credential.key = cert
+    credential.remote_user = remote_user_name
     credential.save()
     return True

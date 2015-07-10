@@ -326,7 +326,8 @@ def authorize_remote_access(request, remote_host_id, service_id=None):
              (str(service_id) + ',' + next)))
     else:
         # We have a token, so try to create a credential and sign it
-        remote_user = auth_token_data['user_name']
+        # remote_user is overwritten once the cert is signed
+        remote_user = 'unknown'
         credential = Credential.generate_keypair_credential(
             request.user, remote_user, [remote_host])
         if sign_certificate(
