@@ -2,16 +2,14 @@ from celery.task import task
 from datetime import datetime
 from django.contrib.auth.models import User
 from tardis import settings
-from tardis.apps.push_to.models import Credential, RemoteHost
+from .models import Credential, RemoteHost
 from tardis.tardis_portal.models import Experiment, Dataset, DataFile
 
 
 @task
 def push_experiment_to_host(
-        user_id,
-        credential_id,
-        remote_host_id,
-        experiment_id):
+    user_id, credential_id, remote_host_id, experiment_id
+):
     try:
         files_to_copy = []
         experiment = Experiment.objects.get(pk=experiment_id)
@@ -59,25 +57,27 @@ def push_datafile_to_host(user_id, credential_id, remote_host_id, datafile_id):
 
 
 def notify_user(user_id, remote_host_id, success=True):
-    remote_host = RemoteHost.objects.get(pk=remote_host_id);
+    remote_host = RemoteHost.objects.get(pk=remote_host_id)
     user = User.objects.get(pk=user_id)
     if success:
-        subject = '[MyTardis] Data pushed successfully'
-        message = 'Your recent push-to request was completed successfully!\n' \
-                  'Log in to %s to access the requested data.' % remote_host.nickname
+        subject = '[TARDIS] Data pushed successfully'
+        message = ('Your recent push-to request was completed successfully!\n'
+                   'Log in to %s to access the requested data.')
     else:
-        subject = '[MyTardis] Data push failed'
-        message = 'Your recent push-to request to %s encountered an error and could not be completed.\n' \
-                  'Contact your system administrator for more information.' % remote_host.nickname
-        pass
-    user.email_user(subject, message, from_email=getattr(settings, 'PUSH_TO_FROM_EMAIL', None))
+        subject = '[TARDIS] Data push failed'
+        message = ('Your recent push-to request to %s encountered an error and'
+                   ' could not be completed.\n'
+                   'Contact your system administrator for more information.')
+    message %= remote_host.nickname
+    user.email_user(subject, message,
+                    from_email=getattr(settings, 'PUSH_TO_FROM_EMAIL', None))
 
 
 def do_file_copy(credential_id, remote_host_id, datafile_map):
 
     base_dir = [
-        'mytardis-data',
-        datetime.now().strftime("%Y-%m-%d_%H:%M:%S.%f")]
+        'mytardis-data', datetime.now().strftime("%Y-%m-%d_%H:%M:%S.%f")
+    ]
 
     credential = Credential.objects.get(pk=credential_id)
     ssh = credential.get_client_for_host(

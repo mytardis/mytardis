@@ -3,11 +3,12 @@ import base64
 
 from django.contrib import admin
 from django.core.exceptions import ValidationError
-from paramiko import RSAKey, RSACert, SSHClient, MissingHostKeyPolicy, AutoAddPolicy, PKey, DSSKey, ECDSAKey
+from paramiko import RSAKey, RSACert, SSHClient, MissingHostKeyPolicy,\
+    AutoAddPolicy, PKey, DSSKey, ECDSAKey
 from django.db import models, transaction
 from django.contrib.auth.models import User, Group
 from paramiko.config import SSH_PORT
-from tardis.apps.push_to.exceptions import NoSuitableCredential
+from .exceptions import NoSuitableCredential
 
 
 class KeyField(models.TextField):
@@ -110,9 +111,11 @@ class RemoteHost(models.Model):
 
 
 class OAuthSSHCertSigningService(models.Model):
+
     """
-    Connection parameters for an OAuth2 SSH certificate signing service. Supports
-    certificate signing server available here: https://github.com/monash-merc/ssh-authz
+    Connection parameters for an OAuth2 SSH certificate signing service.
+    Supports certificate signing server available here:
+    https://github.com/monash-merc/ssh-authz
     """
     nickname = models.CharField('Nickname', max_length=50)
     oauth_authorize_url = models.CharField('Authorize url', max_length=255)
@@ -142,8 +145,10 @@ class OAuthSSHCertSigningService(models.Model):
         """
         return (
             OAuthSSHCertSigningService.objects.filter(
-                allowed_users=user) | OAuthSSHCertSigningService.objects.filter(
-                allowed_groups__user=user) | OAuthSSHCertSigningService.objects.filter(
+                allowed_users=user) |
+            OAuthSSHCertSigningService.objects.filter(
+                allowed_groups__user=user) |
+            OAuthSSHCertSigningService.objects.filter(
                 allow_for_all=True)).distinct()
 
     @staticmethod
@@ -179,8 +184,9 @@ class DBHostKeyPolicy(MissingHostKeyPolicy):
 class Credential(models.Model):
 
     """
-    A credential that may contain a password and/or key. The auth method chosen depends on the credentials available,
-    allowed auth methods, and priorities defined by the SSH client.
+    A credential that may contain a password and/or key. The auth method chosen
+    depends on the credentials available, allowed auth methods, and priorities
+    defined by the SSH client.
     """
     user = models.ForeignKey(User)
     remote_hosts = models.ManyToManyField(RemoteHost)
@@ -217,13 +223,12 @@ class Credential(models.Model):
 
     @staticmethod
     def generate_keypair_credential(
-            tardis_user,
-            remote_user,
-            remote_hosts,
+            tardis_user, remote_user, remote_hosts,
             bit_length=2048):
         """
-        Generates and saves an RSA key pair credential. Credentials returned by this method are intended to be
-        registered on remote systems before being used.
+        Generates and saves an RSA key pair credential. Credentials returned
+        by this method are intended to be registered on remote systems before
+        being used.
         @type tardis_user: User
         @type remote_user: str
         @type bit_length: int
@@ -247,8 +252,9 @@ class Credential(models.Model):
 
     def get_client_for_host(self, remote_host):
         """
-        Attempts to establish a connection with the remote_host using this credential object.
-        The remote_host may be any host, but only those in the remote_hosts field are expected to work.
+        Attempts to establish a connection with the remote_host using this
+        credential object. The remote_host may be any host, but only those in
+        the remote_hosts field are expected to work.
         @type remote_host: .RemoteHost
         :return: a connected SSH client
         """

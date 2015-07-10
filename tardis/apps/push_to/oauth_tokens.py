@@ -35,7 +35,9 @@ def get_token_data(oauth_service, token):
     # Verify=False is a bad thing, but I need it for now
     r = requests.get(
         oauth_service.oauth_check_token_url, {
-            'token': token}, verify=False)
+            'token': token
+        },
+        verify=False)
     decoded_token = json.loads(r.text)
     if 'error' in decoded_token:
         return

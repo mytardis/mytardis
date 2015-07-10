@@ -21,21 +21,25 @@ def render_error_message(request, message, status=500):
     return HttpResponse(
         render(
             request, 'error.html', {
-                'message': message}, status=status))
+                'message': message
+            },
+            status=status))
 
 
 def render_success_message(request, message, status=200):
     return HttpResponse(
         render(
             request, 'success.html', {
-                'message': message}, status=status))
+                'message': message
+            },
+            status=status))
 
 
 def get_push_url_for_host(remote_host, obj_type, push_obj_id):
     """
     Constructs a push-to URL to trigger data transfer
     :param remote_host: the RemoteHost to which data should be copied
-    :param obj_type: the type of data to be copied (experiment, dataset or datafile)
+    :param obj_type: data type to be copied (experiment, dataset or datafile)
     :param push_obj_id: the database object id
     :return: a push-to URL
     """
@@ -48,10 +52,11 @@ def get_push_url_for_host(remote_host, obj_type, push_obj_id):
         push_view == initiate_push_datafile
 
     if push_view is not None and push_obj_id is not None:
-        return reverse(push_view, kwargs={
-            obj_type + '_id': push_obj_id,
-            'remote_host_id': remote_host.pk
-        })
+        return reverse(push_view,
+                       kwargs={
+                           obj_type + '_id': push_obj_id,
+                           'remote_host_id': remote_host.pk
+                       })
     else:
         return None
 
@@ -59,10 +64,11 @@ def get_push_url_for_host(remote_host, obj_type, push_obj_id):
 @login_required
 def get_accessible_hosts(request, obj_type=None, push_obj_id=None):
     """
-    Retrieves all accessible hosts (i.e. hosts for which the user already has credentials for) including
-    push-to trigger URLs if the object type and id are supplied
+    Retrieves all accessible hosts (i.e. hosts for which the user already has
+    credentials for) including push-to trigger URLs if the object type and id
+    are supplied
     :param request: request object
-    :param obj_type: the type of data to be copied (experiment, dataset or datafile)
+    :param obj_type: data type to be copied (experiment, dataset or datafile)
     :param push_obj_id: the database object id
     :return: json object with accessible hosts
     """
@@ -71,11 +77,7 @@ def get_accessible_hosts(request, obj_type=None, push_obj_id=None):
     for h in hosts:
         try:
             Credential.get_suitable_credential(request.user, h)
-            host = {
-                'id': h.pk,
-                'name': h.nickname,
-                'hostname': h.host_name
-            }
+            host = {'id': h.pk, 'name': h.nickname, 'hostname': h.host_name}
             if h.logo_img is not None:
                 host['logo_img'] = h.logo_img
             push_url = get_push_url_for_host(h, obj_type, push_obj_id)
@@ -94,7 +96,7 @@ def get_signing_services(request, obj_type=None, push_obj_id=None):
     Retrieves all certificate signing services and associated hosts including
     push-to trigger URLs if the object type and id are supplied
     :param request: request object
-    :param obj_type: the type of data to be copied (experiment, dataset or datafile)
+    :param obj_type: data type to be copied (experiment, dataset or datafile)
     :param push_obj_id: the database object id
     :return: json object with signing services and hosts
     """
@@ -104,19 +106,16 @@ def get_signing_services(request, obj_type=None, push_obj_id=None):
     for svc in services:
         remote_hosts = []
         for h in svc.allowed_remote_hosts.all():
-            host = {
-                'id': h.pk,
-                'name': h.nickname,
-                'hostname': h.host_name
-            }
+            host = {'id': h.pk, 'name': h.nickname, 'hostname': h.host_name}
             if h.logo_img is not None:
                 host['logo_img'] = h.logo_img
             push_url = get_push_url_for_host(h, obj_type, push_obj_id)
             if push_url is not None:
-                push_url = reverse(authorize_remote_access, kwargs={
-                    'remote_host_id': h.pk,
-                    'service_id': svc.pk
-                }) + '?next=%s' % push_url
+                push_url = reverse(authorize_remote_access,
+                                   kwargs={
+                                       'remote_host_id': h.pk,
+                                       'service_id': svc.pk
+                                   }) + '?next=%s' % push_url
                 host['push_url'] = push_url
             remote_hosts.append(host)
         service = {
@@ -140,10 +139,7 @@ def initiate_push_experiment(request, experiment_id, remote_host_id=None):
     :return: redirect or status message
     """
     return _initiate_push(
-        request,
-        initiate_push_experiment,
-        remote_host_id,
-        'experiment',
+        request, initiate_push_experiment, remote_host_id, 'experiment',
         experiment_id)
 
 
@@ -158,11 +154,7 @@ def initiate_push_dataset(request, dataset_id, remote_host_id=None):
     :return: redirect or status message
     """
     return _initiate_push(
-        request,
-        initiate_push_dataset,
-        remote_host_id,
-        'dataset',
-        dataset_id)
+        request, initiate_push_dataset, remote_host_id, 'dataset', dataset_id)
 
 
 @login_required
@@ -176,24 +168,18 @@ def initiate_push_datafile(request, datafile_id, remote_host_id=None):
     :return: redirect or status message
     """
     return _initiate_push(
-        request,
-        initiate_push_datafile,
-        remote_host_id,
-        'datafile',
+        request, initiate_push_datafile, remote_host_id, 'datafile',
         datafile_id)
 
 
 def _initiate_push(
-        request,
-        callback_view,
-        remote_host_id,
-        obj_type,
-        push_obj_id):
+    request, callback_view, remote_host_id, obj_type, push_obj_id
+):
     """
     Kicks off data push
     :param request: request object
-    :param callback_view: view that initiates the appropriate type of data transfer (e.g. experiment, dataset, datafile)
-    :param remote_host_id: database id of remote host to which data should be transferred
+    :param callback_view: initiating view (e.g. initiate_push_datafile)
+    :param remote_host_id: database id of remote host
     :param obj_type: the type of data
     :param push_obj_id: the data object id
     :return: status message, host list or OAuth2 redirects
@@ -201,25 +187,25 @@ def _initiate_push(
     # If the remote_host_id is not given, render a view to show a list of
     # acceptable hosts
     if remote_host_id is None:
-        args = {
-            'obj_type': obj_type,
-            'push_obj_id': push_obj_id
-        }
+        args = {'obj_type': obj_type, 'push_obj_id': push_obj_id}
         c = {
             'cert_signing_services_url': reverse(
                 get_signing_services,
                 kwargs=args),
             'accessible_hosts_url': reverse(
                 get_accessible_hosts,
-                kwargs=args)}
+                kwargs=args)
+        }
         return HttpResponse(render(request, 'host_list.html', c))
 
     try:
         remote_host = RemoteHost.objects.get(pk=remote_host_id)
         credential = get_credential(request, remote_host)
     except NoSuitableCredential:
-        callback_args = {'remote_host_id': remote_host_id,
-                         obj_type + '_id': push_obj_id}
+        callback_args = {
+            'remote_host_id': remote_host_id,
+            obj_type + '_id': push_obj_id
+        }
         callback_url = reverse(callback_view, kwargs=callback_args)
         redirect_args = {'remote_host_id': remote_host_id}
         redirect_url = reverse(
@@ -229,32 +215,26 @@ def _initiate_push(
 
     if obj_type == 'experiment':
         tasks.push_experiment_to_host.delay(
-            request.user.pk,
-            credential.pk,
-            remote_host_id,
-            push_obj_id)
+            request.user.pk, credential.pk, remote_host_id, push_obj_id)
     elif obj_type == 'dataset':
         tasks.push_dataset_to_host.delay(
-            request.user.pk,
-            credential.pk,
-            remote_host_id,
-            push_obj_id)
+            request.user.pk, credential.pk, remote_host_id, push_obj_id)
     elif obj_type == 'datafile':
         tasks.push_datafile_to_host.delay(
-            request.user.pk,
-            credential.pk,
-            remote_host_id,
-            push_obj_id)
+            request.user.pk, credential.pk, remote_host_id, push_obj_id)
 
+    success_message = ('The requested item will be pushed to %s. You will be'
+                       ' notified by email once this has been completed.')
+    success_message %= remote_host.nickname
     return render_success_message(
         request,
-        'The requested item will be pushed to %s. You will be notified by email once this has been completed.' %
-        remote_host.nickname)
+        success_message)
 
 
 def get_credential(request, remote_host):
     """
-    Fetches a suitable credential for the remote host, or raises an exception if none found
+    Fetches a suitable credential for the remote host, or raises an exception
+    if none found
     :param request: request object
     :param remote_host: the RemoteHost for which a credential should be found
     :return: the credential
@@ -265,8 +245,7 @@ def get_credential(request, remote_host):
     # See if there are any suitable credentials, should none be supplied
     if credential_id is None:
         credential = Credential.get_suitable_credential(
-            request.user,
-            remote_host)
+            request.user, remote_host)
     else:
         try:
             credential = Credential.objects.get(
@@ -308,28 +287,29 @@ def authorize_remote_access(request, remote_host_id, service_id=None):
     # Identify a suitable SSH cert signing service for the requested host
     try:
         if service_id is None:
-            allowed_services = OAuthSSHCertSigningService.get_available_signing_services(
-                request.user).filter(
-                allowed_remote_hosts__pk=remote_host_id)
+            allowed_services = OAuthSSHCertSigningService\
+                .get_available_signing_services(
+                    request.user).filter(
+                        allowed_remote_hosts__pk=remote_host_id)
             try:
                 oauth_service = allowed_services[0]
                 service_id = oauth_service.pk
             except IndexError:
+                error_message = ('Could not find suitable cert signing service'
+                                 ' for remote host')
                 return render_error_message(
                     request,
-                    'Could not find suitable cert signing service for remote host',
+                    error_message,
                     status=400)
         else:
             oauth_service = OAuthSSHCertSigningService.get_oauth_service(
-                request.user,
-                service_id)
+                request.user, service_id)
 
         remote_host = oauth_service.allowed_remote_hosts.get(pk=remote_host_id)
 
     except OAuthSSHCertSigningService.DoesNotExist:
         return render_error_message(
-            request,
-            'Invalid OAuth service',
+            request, 'Invalid OAuth service',
             status=400)
 
     # Check whether we have a token already
@@ -342,29 +322,24 @@ def authorize_remote_access(request, remote_host_id, service_id=None):
         return redirect(
             oauth_service.oauth_authorize_url +
             '?response_type=code&client_id=%s&redirect_uri=%s&state=%s' %
-            (oauth_service.oauth_client_id,
-             oauth_callback_url(request),
-             (str(service_id) +
-              ',' +
-              next)))
+            (oauth_service.oauth_client_id, oauth_callback_url(request),
+             (str(service_id) + ',' + next)))
     else:
         # We have a token, so try to create a credential and sign it
         remote_user = auth_token_data['user_name']
         credential = Credential.generate_keypair_credential(
-            request.user,
-            remote_user,
-            [remote_host])
+            request.user, remote_user, [remote_host])
         if sign_certificate(
-                credential,
-                auth_token,
-                oauth_service.cert_signing_url) and credential.verify_remote_access():
+            credential, auth_token,
+            oauth_service.cert_signing_url) and \
+                credential.verify_remote_access(
+        ):
             return redirect(next + '?credential_id=%i' % credential.pk)
         else:
             # If key signing failed, delete the credential
             credential.delete()
             return render_error_message(
-                request,
-                'Could not sign SSH certificate',
+                request, 'Could not sign SSH certificate',
                 status=500)
 
 
@@ -373,45 +348,42 @@ def oauth_callback(request):
     """
     OAuth2 callback endpoint to continue the SSH certificate signing process
     :param request: request object
-    :return: error message or redirect back to the signing service with the access token
+    :return: error message or redirect to the signing service with access token
     """
     # Check for OAuth error message
     error = request.GET.get('error', None)
     if error is not None:
+        error_message = ('Push failed! MyTardis was not authorized to access '
+                         'the remote system.')
         return render_error_message(
             request,
-            'Push failed! MyTardis was not authorized to access the remote system.')
+            error_message)
 
     try:
         service_id, next = request.GET.get('state', '/').split(',')
     except ValueError:
-        return render_error_message(
-            request,
-            'Invalid state',
-            status=400)
+        return render_error_message(request, 'Invalid state', status=400)
 
     try:
         oauth_service = OAuthSSHCertSigningService.get_oauth_service(
-            request.user,
-            service_id)
+            request.user, service_id)
     except OAuthSSHCertSigningService.DoesNotExist:
         return render_error_message(
-            request,
-            'Invalid OAuth service',
+            request, 'Invalid OAuth service',
             status=404)
     auth_code = request.GET.get('code')
-    data = {'grant_type': 'authorization_code',
-            'code': auth_code,
-            'client_id': oauth_service.oauth_client_id,
-            'redirect_uri': oauth_callback_url(request)}
+    data = {
+        'grant_type': 'authorization_code',
+        'code': auth_code,
+        'client_id': oauth_service.oauth_client_id,
+        'redirect_uri': oauth_callback_url(request)
+    }
 
     # Verify=False is a bad thing, but I need it for now
     r = requests.post(
-        oauth_service.oauth_token_url,
-        data,
+        oauth_service.oauth_token_url, data,
         auth=(
-            oauth_service.oauth_client_id,
-            oauth_service.oauth_client_secret),
+            oauth_service.oauth_client_id, oauth_service.oauth_client_secret),
         verify=False)
     token = json.loads(r.text)
     set_token(request, oauth_service, token)
