@@ -5,89 +5,103 @@ from django.contrib import admin
 from django.core.exceptions import ValidationError
 from paramiko import RSAKey, RSACert, SSHClient, MissingHostKeyPolicy,\
     AutoAddPolicy, PKey, DSSKey, ECDSAKey
-from django.db import models, transaction
+from django.db import models
 from django.contrib.auth.models import User, Group
 from paramiko.config import SSH_PORT
 from .exceptions import NoSuitableCredential
 
 
-class KeyField(models.TextField):
-
+class KeyPair(models.Model):
     """
     A key pair
     """
 
-    def from_db_value(self, value, expression, connection, context):
-        if value is None:
-            return value
-        return KeyField._to_pkey(value)
+    key_type = models.CharField('Key type',
+                                max_length=25,
+                                blank=True,
+                                null=True)
+    _public_key = models.TextField('Public key',
+                                   blank=True,
+                                   null=True,
+                                   db_column='public_key')
+    private_key = models.TextField('Private key', blank=True, null=True)
 
-    def to_python(self, value):
-        if isinstance(value, PKey):
-            return value
-
-        return KeyField._to_pkey(value)
-
-    def get_prep_value(self, value):
-        if isinstance(value, PKey):
-            return KeyField._from_pkey(value)
-        return None
-
-    def value_from_object(self, obj):
-        value = super(KeyField, self).value_from_object(obj)
-        return self.get_prep_value(value)
-
-    def clean(self, value, model_instance):
-        value = self.to_python(value)
-        return value
+    class Meta:
+        abstract = True
 
     @staticmethod
-    def _to_pkey(value):
+    def _get_key_type_from_public_key(public_key):
+        public_key = StringIO(base64.b64decode(public_key))
+        length = int(public_key.read(4).encode('hex'), 16)
+        return public_key.read(length)
+
+    @property
+    def public_key(self):
+        return self._public_key
+
+    @public_key.setter
+    def public_key(self, value):
+        if value:
+            # Check if the public key is in the id_rsa.pub format
+            pub_key_fields = value.split()
+            if len(pub_key_fields) >= 2:
+                self._public_key = pub_key_fields[1]
+            else:
+                self._public_key = value
+            # Extract the key type
+            self.key_type = KeyPair._get_key_type_from_public_key(
+                self._public_key)
+
+    @property
+    def key(self):
         """
         :return: a subclass of PKey of the appropriate key type
         """
-        try:
-            key_type, public_key, private_key = value.split('.')
-        except ValueError:
-            raise ValidationError('Malformed key data')
-        key_type = base64.b64decode(key_type)
-        public_key = base64.b64decode(public_key)
-        private_key = StringIO(private_key)
-        if key_type == 'ssh-dss':
+
+        # Check if the key pair exists: at least a public or private part of
+        # the key is required.
+        if self.public_key is None and self.private_key is None:
+            return None
+
+        public_key = None
+        private_key = None
+        if self.public_key:
+            public_key = base64.b64decode(self.public_key)
+        if self.private_key:
+            private_key = StringIO(self.private_key)
+
+        if self.key_type == 'ssh-dss':
             pkey = DSSKey(data=public_key, file_obj=private_key)
-        elif key_type == 'ssh-rsa':
+        elif self.key_type == 'ssh-rsa':
             pkey = RSAKey(data=public_key, file_obj=private_key)
-        elif key_type == 'ecdsa-sha2-nistp256':
+        elif self.key_type.startswith('ecdsa-'):
             pkey = ECDSAKey(data=public_key, file_obj=private_key)
-        elif key_type == 'ssh-rsa-cert-v01@openssh.com':
+        elif self.key_type == 'ssh-rsa-cert-v01@openssh.com':
             pkey = RSACert(data=public_key, privkey_file_obj=private_key)
         else:
-            raise ValidationError('Unsupported key type')
+            raise ValidationError('Unsupported key type: ' + self.key_type)
 
         return pkey
 
-    @staticmethod
-    def _from_pkey(pkey):
+    @key.setter
+    def key(self, pkey):
         """
         Creates a new Key object created from a paramiko pkey object
         @type pkey: PKey
         :return: the Key object that has been saved
         """
-        key_type = base64.b64encode(pkey.get_name())
-        public_key = pkey.get_base64()
-        private_key = ''
+        if not isinstance(pkey, PKey):
+            raise ValueError('invalid PKey object supplied')
+        self.key_type = pkey.get_name()
+        self.public_key = pkey.get_base64()
+        self.private_key = None
         if pkey.can_sign():
             key_data = StringIO()
             pkey.write_private_key(key_data)
-            private_key = key_data.getvalue()
-
-        key = key_type + '.' + public_key + '.' + private_key
-
-        return key
+            self.private_key = key_data.getvalue()
 
 
-class RemoteHost(models.Model):
-
+class RemoteHost(KeyPair):
     """
     A remote host that may be connected to via SSH
     """
@@ -104,14 +118,12 @@ class RemoteHost(models.Model):
         null=True)
     host_name = models.CharField('Host name', max_length=50)
     port = models.IntegerField('Port', default=SSH_PORT)
-    host_key = KeyField(blank=True, null=True)
 
     def __unicode__(self):
         return self.nickname + ' | ' + self.host_name + ':' + str(self.port)
 
 
 class OAuthSSHCertSigningService(models.Model):
-
     """
     Connection parameters for an OAuth2 SSH certificate signing service.
     Supports certificate signing server available here:
@@ -163,7 +175,6 @@ class OAuthSSHCertSigningService(models.Model):
 
 
 class DBHostKeyPolicy(MissingHostKeyPolicy):
-
     """
     Host key verification policy based on the host key stored in the database.
     """
@@ -173,7 +184,7 @@ class DBHostKeyPolicy(MissingHostKeyPolicy):
         @type key: PKey
         """
         acceptable_key_fingerprint = RemoteHost.objects.get(
-            host_name=hostname).host_key.get_fingerprint()
+            host_name=hostname).key.get_fingerprint()
         host_key_fingerprint = key.get_fingerprint()
         if acceptable_key_fingerprint != host_key_fingerprint:
             raise Exception(
@@ -181,8 +192,7 @@ class DBHostKeyPolicy(MissingHostKeyPolicy):
                 (hostname, acceptable_key_fingerprint, host_key_fingerprint))
 
 
-class Credential(models.Model):
-
+class Credential(KeyPair):
     """
     A credential that may contain a password and/or key. The auth method chosen
     depends on the credentials available, allowed auth methods, and priorities
@@ -196,7 +206,6 @@ class Credential(models.Model):
         max_length=255,
         blank=True,
         null=True)
-    key = KeyField(blank=True, null=True)
 
     def _hostname_list(self):
         return [h.host_name for h in self.remote_hosts.all()]
@@ -223,7 +232,7 @@ class Credential(models.Model):
 
     @staticmethod
     def generate_keypair_credential(
-            tardis_user, remote_user, remote_hosts,
+        tardis_user, remote_user, remote_hosts,
             bit_length=2048):
         """
         Generates and saves an RSA key pair credential. Credentials returned
@@ -235,20 +244,16 @@ class Credential(models.Model):
         @type remote_hosts: list[RemoteHost]
         :return: the generated credential
         """
+        key = RSAKey.generate(bits=bit_length)
+        credential = Credential(user=tardis_user, remote_user=remote_user)
+        credential.key = key
+        credential.save()
 
-        with transaction.atomic():
-            key = RSAKey.generate(bits=bit_length)
-            credential = Credential(
-                user=tardis_user,
-                remote_user=remote_user,
-                key=key)
+        if remote_hosts is not None:
+            credential.remote_hosts.add(*remote_hosts)
             credential.save()
 
-            if remote_hosts is not None:
-                credential.remote_hosts.add(*remote_hosts)
-                credential.save()
-
-            return credential
+        return credential
 
     def get_client_for_host(self, remote_host):
         """
@@ -290,7 +295,28 @@ class Credential(models.Model):
                 return False
         return True
 
+
+class KeyPairModelAdmin(admin.ModelAdmin):
+    """
+    A base ModelAdmin class for models extending KeyPair
+    """
+
+    def save_model(self, request, obj, form, change):
+        """
+        Ensures the public key is validated on form save in the django admin
+        """
+        obj.public_key = obj._public_key
+        obj.save()
+
+
+class RemoteHostAdmin(KeyPairModelAdmin):
+    """
+    Hides the private key field, which is not necessary for host keys
+    """
+    fields = ['nickname', 'administrator', 'host_name', 'port', 'key_type',
+              '_public_key', 'logo_img']
+
 # Register the models with the admin
-admin.site.register(RemoteHost)
-admin.site.register(Credential)
+admin.site.register(RemoteHost, RemoteHostAdmin)
+admin.site.register(Credential, KeyPairModelAdmin)
 admin.site.register(OAuthSSHCertSigningService)

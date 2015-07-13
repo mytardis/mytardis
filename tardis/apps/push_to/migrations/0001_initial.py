@@ -3,7 +3,6 @@ from __future__ import unicode_literals
 
 from django.db import models, migrations
 from django.conf import settings
-import tardis.apps.push_to.models
 
 
 class Migration(migrations.Migration):
@@ -18,10 +17,15 @@ class Migration(migrations.Migration):
             name='Credential',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('key_type', models.CharField(max_length=25, null=True, verbose_name=b'Key type', blank=True)),
+                ('public_key', models.TextField(null=True, verbose_name=b'Public key', blank=True)),
+                ('private_key', models.TextField(null=True, verbose_name=b'Private key', blank=True)),
                 ('remote_user', models.CharField(max_length=50, verbose_name=b'User name')),
                 ('password', models.CharField(max_length=255, null=True, verbose_name=b'Password', blank=True)),
-                ('key', tardis.apps.push_to.models.KeyField(null=True, blank=True)),
             ],
+            options={
+                'abstract': False,
+            },
         ),
         migrations.CreateModel(
             name='OAuthSSHCertSigningService',
@@ -34,7 +38,7 @@ class Migration(migrations.Migration):
                 ('oauth_client_id', models.CharField(max_length=255, verbose_name=b'Client id')),
                 ('oauth_client_secret', models.CharField(max_length=255, verbose_name=b'Client secret')),
                 ('cert_signing_url', models.CharField(max_length=255, verbose_name=b'Cert signing url')),
-                ('allow_for_all', models.BooleanField(verbose_name=b'Allow for all')),
+                ('allow_for_all', models.BooleanField(default=False, verbose_name=b'Allow for all')),
                 ('allowed_groups', models.ManyToManyField(to='auth.Group', blank=True)),
             ],
             options={
@@ -46,13 +50,18 @@ class Migration(migrations.Migration):
             name='RemoteHost',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('key_type', models.CharField(max_length=25, null=True, verbose_name=b'Key type', blank=True)),
+                ('public_key', models.TextField(null=True, verbose_name=b'Public key', blank=True)),
+                ('private_key', models.TextField(null=True, verbose_name=b'Private key', blank=True)),
                 ('nickname', models.CharField(max_length=50, verbose_name=b'Nickname')),
                 ('logo_img', models.CharField(max_length=255, null=True, verbose_name=b'Image url', blank=True)),
                 ('host_name', models.CharField(max_length=50, verbose_name=b'Host name')),
                 ('port', models.IntegerField(default=22, verbose_name=b'Port')),
-                ('host_key', tardis.apps.push_to.models.KeyField(null=True, blank=True)),
                 ('administrator', models.ForeignKey(to=settings.AUTH_USER_MODEL)),
             ],
+            options={
+                'abstract': False,
+            },
         ),
         migrations.AddField(
             model_name='oauthsshcertsigningservice',

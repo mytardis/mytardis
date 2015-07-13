@@ -6,7 +6,6 @@ from ..models import Credential, RemoteHost, OAuthSSHCertSigningService
 
 
 class ModelsTestCase(TestCase):
-
     def setUp(self):
         self.user1 = User.objects.create_user('aperson',
                                               email='abc@example.com',
@@ -45,6 +44,43 @@ class ModelsTestCase(TestCase):
         credential_copy = Credential.objects.get(pk=credential.pk)
         self.assertEqual(key.get_fingerprint(),
                          credential_copy.key.get_fingerprint())
+
+    def test_key_type_detection(self):
+        rsa_key_string = (
+            'AAAAB3NzaC1yc2EAAAADAQABAAABAQC55qMy9V9u+kXvyQfeztFjzf0Mz7ieRit1'
+            'lEaQLV9zn5AGGzametc8JGWIwWju3iBW0WIndkZltNmk3pdbAxl9S4gP3B9ga+5w'
+            'J1fADaYOl8OmKOu/ovg1Jtll3wRhkI4L3cHAuoPjwOc1Erbj1VTnyZi0FrmsNBUJ'
+            'yQdrf0Qge+lBXHUbccerObYX1JX+nAGlJkYMBKPJWfjdnj4ff5nNr0ZxutiB7FyG'
+            'v+VRrGndbBRTCq19WF+NaHOSoNgwKnQYjAmDYXZ2O2q036y9tFYJ6BUma4qVV1hf'
+            'gPcMFU9vZA/cXDE8WJxxZAzscztoGl97QQGKFnu7e7odat+/czRl')
+        dsa_key_string = (
+            'AAAAB3NzaC1kc3MAAACBANpiUkTHu88d1ldKC1p6NkWqMMLZ3y2Gk/jnwPEQVylw'
+            'NmZoqpBU86TyPm5kNiuAEF9Jn3K2B8HfemaeSO6ZFsyIgEWyvs6nnVGccWhrVbc+'
+            '74z8vayj7MjhisqA7xBFASGWjHoAumZXwicr9XIpTC6LYL01VU7dfMP49w4SByXZ'
+            'AAAAFQDhxd00faq4j7wUP6tDFCQt/jWLNQAAAIEAm5ZhxzjP0nYRU8HqcqZP8TKd'
+            'TWj+A6cInuL0eB1u4jIUeDFFGGz3H/bHaP86OkMVsXsHTwnAlBeAvfAaE5pux58k'
+            'tgAdmaFdosn0RSlycAFTs3z2zeSBa9xC+8xs/RMIZu66Km+ut5OGgX5gu+z033BY'
+            'OPuj08t0s4EIZmakFEAAAACAQi2LborZAIaWXX5SesRwYH8yNlB5wT4VNNt4Xmt0'
+            'jC/KkM2Xb/WCesu+n+NxFFQfAnEYScZtFj7iIjX5LbqV+gyJi/+cU6IofMoBO7vS'
+            'taP78YcfLGgYOGA3M7rofeBpj9eGlr6uKqqL3h+e3gxAtzjA6pRlmnUKRafUEEuD'
+            'EsI=')
+
+        credential = Credential.objects.create(user=self.user1,
+                                               remote_user='remote_user')
+        credential.public_key = rsa_key_string
+        self.assertEqual(credential.key.get_name(), 'ssh-rsa')
+
+        credential.key_type = None
+        credential.public_key = 'ssh-rsa ' + rsa_key_string
+        self.assertEqual(credential.key.get_name(), 'ssh-rsa')
+
+        credential.key_type = None
+        credential.public_key = dsa_key_string
+        self.assertEqual(credential.key.get_name(), 'ssh-dss')
+
+        credential.key_type = None
+        credential.public_key = 'ssh-dss ' + dsa_key_string
+        self.assertEqual(credential.key.get_name(), 'ssh-dss')
 
     def test_get_allowed_signing_services(self):
         svc_for_all = OAuthSSHCertSigningService.objects.create(
