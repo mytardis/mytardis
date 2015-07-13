@@ -30,6 +30,22 @@ class KeyPair(models.Model):
     class Meta:
         abstract = True
 
+    def save(self, *args, **kwargs):
+
+        # Attempt to auto-complete the public key & key type if missing
+        if not self.key_type and not self.public_key and self.private_key:
+            # Attempt to guess the key type from private key:
+            if self.private_key.startswith('-----BEGIN RSA PRIVATE KEY-----'):
+                self.key_type = 'ssh-rsa'
+            elif self.private_key.startswith(
+                    '-----BEGIN DSS PRIVATE KEY-----'):
+                self.key_type = 'ssh-dss'
+            # TODO: work out what to do with EC keys
+        if self.key_type and self.private_key and not self.public_key:
+            self.public_key = self.key.get_base64()
+
+        super(KeyPair, self).save(*args, **kwargs)
+
     @staticmethod
     def _get_key_type_from_public_key(public_key):
         public_key = StringIO(base64.b64decode(public_key))
@@ -75,7 +91,7 @@ class KeyPair(models.Model):
             pkey = DSSKey(data=public_key, file_obj=private_key)
         elif self.key_type == 'ssh-rsa':
             pkey = RSAKey(data=public_key, file_obj=private_key)
-        elif self.key_type.startswith('ecdsa-'):
+        elif self.key_type.startswith('ecdsa'):
             pkey = ECDSAKey(data=public_key, file_obj=private_key)
         elif self.key_type == 'ssh-rsa-cert-v01@openssh.com':
             pkey = RSACert(data=public_key, privkey_file_obj=private_key)
@@ -189,8 +205,7 @@ class DBHostKeyPolicy(MissingHostKeyPolicy):
         host_key_fingerprint = key.get_fingerprint()
         if acceptable_key_fingerprint != host_key_fingerprint:
             raise Exception(
-                'Host key for host %s not accepted: expected %s, got %s' %
-                (hostname, acceptable_key_fingerprint, host_key_fingerprint))
+                'Host key for host %s not accepted' % hostname)
 
 
 class Credential(KeyPair):
@@ -267,7 +282,7 @@ class Credential(KeyPair):
         ssh = SSHClient()
 
         # Decide whether to verify the host key
-        if remote_host.host_key is not None:
+        if remote_host.key is not None:
             ssh.set_missing_host_key_policy(DBHostKeyPolicy())
         else:
             ssh.set_missing_host_key_policy(AutoAddPolicy())
