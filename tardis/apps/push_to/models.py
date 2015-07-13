@@ -38,7 +38,7 @@ class KeyPair(models.Model):
             if self.private_key.startswith('-----BEGIN RSA PRIVATE KEY-----'):
                 self.key_type = 'ssh-rsa'
             elif self.private_key.startswith(
-                    '-----BEGIN DSS PRIVATE KEY-----'):
+                    '-----BEGIN DSA PRIVATE KEY-----'):
                 self.key_type = 'ssh-dss'
             # TODO: work out what to do with EC keys
         if self.key_type and self.private_key and not self.public_key:
