@@ -1,5 +1,6 @@
 from StringIO import StringIO
 import base64
+from django import forms
 
 from django.contrib import admin
 from django.core.exceptions import ValidationError
@@ -316,7 +317,18 @@ class RemoteHostAdmin(KeyPairModelAdmin):
     fields = ['nickname', 'administrator', 'host_name', 'port', 'key_type',
               '_public_key', 'logo_img']
 
+
+class CredentialForm(forms.ModelForm):
+    class Meta:
+        fields = '__all__'
+        model = Credential
+        widgets = {'password': forms.PasswordInput(), }
+
+
+class CredentialAdmin(KeyPairModelAdmin):
+    form = CredentialForm
+
 # Register the models with the admin
 admin.site.register(RemoteHost, RemoteHostAdmin)
-admin.site.register(Credential, KeyPairModelAdmin)
+admin.site.register(Credential, CredentialAdmin)
 admin.site.register(OAuthSSHCertSigningService)
