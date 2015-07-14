@@ -1,7 +1,7 @@
 from celery.task import task
 from datetime import datetime
 from django.contrib.auth.models import User
-from tardis import settings
+from django.conf import settings
 from .models import Credential, RemoteHost
 from tardis.tardis_portal.models import Experiment, Dataset, DataFile
 
