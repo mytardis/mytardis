@@ -254,7 +254,7 @@ class ExperimentManager(OracleSafeManager):
 
         acl = ObjectACL.objects.filter(
             pluginId='django_group',
-            content_type__name='experiment',
+            content_type__model='experiment',
             object_id=experiment_id,
             aclOwnershipType=ObjectACL.OWNER_OWNED)
 
@@ -270,7 +270,7 @@ class ExperimentManager(OracleSafeManager):
         """
         return ObjectACL.objects.filter(
             pluginId='django_group',
-            content_type__name='experiment',
+            content_type__model='experiment',
             object_id=experiment_id,
             aclOwnershipType=ObjectACL.OWNER_OWNED)
 
@@ -284,7 +284,7 @@ class ExperimentManager(OracleSafeManager):
         """
         return ObjectACL.objects.filter(
             pluginId='django_group',
-            content_type__name='experiment',
+            content_type__model='experiment',
             object_id=experiment_id,
             aclOwnershipType=ObjectACL.SYSTEM_OWNED)
 
@@ -300,7 +300,7 @@ class ExperimentManager(OracleSafeManager):
         from tardis.tardis_portal.models import ObjectACL
         acl = ObjectACL.objects.filter(
             pluginId='django_group',
-            content_type__name='experiment',
+            content_type__model='experiment',
             object_id=experiment_id,
             aclOwnershipType=ObjectACL.SYSTEM_OWNED)
 
@@ -318,7 +318,7 @@ class ExperimentManager(OracleSafeManager):
         from tardis.tardis_portal.models import ObjectACL
         acl = ObjectACL.objects.exclude(pluginId=django_user)
         acl = acl.exclude(pluginId='django_group')
-        acl = acl.filter(content_type__name='experiment',
+        acl = acl.filter(content_type__model='experiment',
                          object_id=experiment_id)
 
         if not acl:
