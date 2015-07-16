@@ -4,7 +4,7 @@
     "model": "tardis_portal.license",
     "fields": {
       "name": "Creative Commons Attribution 3.0 Australia (CC BY 3.0)",
-      "url": "http://creativecommons.org/licenses/by/3.0/au/",
+      "url": "https://creativecommons.org/licenses/by/3.0/au/",
       "is_active": true,
       "allows_distribution": true,
       "internal_description": "This licence lets others distribute, remix, tweak, and build upon your work, even commercially, as long as they credit you for the original creation. This is the most accommodating of licences offered under Creative Commons.",
@@ -16,7 +16,7 @@
     "model": "tardis_portal.license",
     "fields": {
       "name": "Creative Commons Attribution-ShareAlike 3.0 Australia (CC BY-SA 3.0)",
-      "url": "http://creativecommons.org/licenses/by-sa/3.0/au/",
+      "url": "https://creativecommons.org/licenses/by-sa/3.0/au/",
       "is_active": true,
       "allows_distribution": true,
       "internal_description": "This licence lets others remix, tweak, and build upon your work even for commercial purposes, as long as they credit you and licence their new creations under the identical terms.",
@@ -28,7 +28,7 @@
     "model": "tardis_portal.license",
     "fields": {
       "name": "Creative Commons Attribution-NonCommercial 3.0 Australia (CC BY-NC 3.0)",
-      "url": "http://creativecommons.org/licenses/by-nc/3.0/au/",
+      "url": "https://creativecommons.org/licenses/by-nc/3.0/au/",
       "is_active": true,
       "allows_distribution": true,
       "internal_description": "This licence lets others remix, tweak, and build upon your work non-commercially, and although their new works must also acknowledge you and be non-commercial, they don\u2019t have to licence their derivative works on the same terms.",
@@ -40,7 +40,7 @@
     "model": "tardis_portal.license",
     "fields": {
       "name": "Creative Commons Attribution-NoDerivs 3.0 Australia (CC BY-ND 3.0)",
-      "url": "http://creativecommons.org/licenses/by-nd/3.0/au/",
+      "url": "https://creativecommons.org/licenses/by-nd/3.0/au/",
       "is_active": true,
       "allows_distribution": true,
       "internal_description": "This licence allows for redistribution, commercial and non-commercial, as long as it is passed along unchanged and in whole, with credit to you.",
@@ -52,7 +52,7 @@
     "model": "tardis_portal.license",
     "fields": {
       "name": "Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Australia (CC BY-NC-SA 3.0)",
-      "url": "http://creativecommons.org/licenses/by-nc-sa/3.0/au/",
+      "url": "https://creativecommons.org/licenses/by-nc-sa/3.0/au/",
       "is_active": true,
       "allows_distribution": true,
       "internal_description": "This licence lets others remix, tweak, and build upon your work non-commercially, as long as they credit you and licence their new creations under the identical terms.",
@@ -64,7 +64,7 @@
     "model": "tardis_portal.license",
     "fields": {
       "name": "Creative Commons Attribution-NonCommercial-NoDerivs 3.0 Australia (CC BY-NC-ND 3.0)",
-      "url": "http://creativecommons.org/licenses/by-nc-nd/3.0/au/",
+      "url": "https://creativecommons.org/licenses/by-nc-nd/3.0/au/",
       "is_active": true,
       "allows_distribution": true,
       "internal_description": "This licence is the most restrictive Creative Commons licence, only allowing others to download your works and share them with others as long as they credit you, but they can\u2019t change them in any way or use them commercially.",
