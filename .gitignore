@@ -37,6 +37,7 @@ tardis/apps/*
 !tardis/apps/mx_views
 !tardis/apps/oaipmh
 !tardis/apps/publication_forms
+!tardis/apps/push_to
 !tardis/apps/related_info
 !tardis/apps/slideshow_view
 !tardis/apps/synch_linking
