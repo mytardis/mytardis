@@ -89,8 +89,12 @@ class DynamicTree(object):
                 leaf.update()
         return leaf
 
+    @staticmethod
+    def _sanitise_name(name):
+        return name.replace(' ', '_').replace('/', '&#47;')
+
     def update_experiments(self):
-        exps = [("%s_%d" % (exp.title.replace(' ', '_'), exp.id), exp)
+        exps = [("%s_%d" % (self._sanitise_name(exp.title), exp.id), exp)
                 for exp in self.host_obj.experiments]
         self.clear_children()
         for exp_name, exp in exps:
@@ -100,7 +104,7 @@ class DynamicTree(object):
             child.update = child.update_datasets
 
     def update_datasets(self):
-        datasets = [("%s_%d" % (ds.description.replace(' ', '_'), ds.id), ds)
+        datasets = [("%s_%d" % (self._sanitise_name(ds.description), ds.id), ds)
                     for ds in self.obj.datasets.all()]
         self.clear_children()
         for ds_name, ds in datasets:
@@ -112,7 +116,7 @@ class DynamicTree(object):
     def update_datafiles(self):
         self.clear_children()
         for df in self.obj.datafile_set.all().iterator():
-            df_name = df.filename.replace(' ', '_')
+            df_name = self._sanitise_name(df.filename)
             # try:
             #     file_obj = df.file_object
             #     file_name = df_name
