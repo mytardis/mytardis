@@ -1014,7 +1014,7 @@ def experiment_dataset_transfer(request, experiment_id):
 
 @never_cache
 @authz.dataset_download_required
-def cache_dataset(request, dataset_id=None, notify=False):
+def cache_dataset(request, dataset_id=None, notify=True):
     dataset = Dataset.objects.get(id=dataset_id)
     run_this = group(df.cache_file.s()
                      for df in dataset.datafile_set.all())

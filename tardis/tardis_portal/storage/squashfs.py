@@ -29,8 +29,7 @@ from django.core.files.storage import Storage
 from django.utils._os import safe_join
 from django.utils.importlib import import_module
 
-from tardis.tardis_portal.models import DataFile, DatafileParameterSet, \
-    StorageBox
+from tardis.tardis_portal.models import DataFile, DatafileParameterSet
 
 import logging
 log = logging.getLogger(__name__)
