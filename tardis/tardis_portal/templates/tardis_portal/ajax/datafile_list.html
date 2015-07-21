@@ -82,7 +82,7 @@
                            target="_blank">{{ datafile.filename }}</a>
                     {% else %}
                         {% if datafile.verified %}
-                            <span class="datafile_name">{{ datafile.filename }}</span>
+                            <span class="datafile_name archived-file">{{ datafile.filename }}</span>
                         {% else %}
                             <span class="datafile_name" style="color:red;">{{ datafile.filename }}</span>
                         {% endif %}
@@ -124,10 +124,10 @@
                 </td>
                 <td style="width: 110px">
                     <div class="btn-group pull-right">
-                        {% if has_download_permissions and datafile.is_online %}
-                            <a class="btn"
-                               href="{{ datafile.get_download_url }}"
-                               title="Download">
+                        {% if has_download_permissions and datafile.verified %}
+                            <a class="btn{% if datafile.is_online %}" title="Download"
+                               {% else %} archived-file disabled"{% endif %}
+                               href="{{ datafile.get_download_url }}">
                                 <i class="icon-download-alt icon-large"></i>
                             </a>
                         {% endif %}
@@ -152,6 +152,14 @@
 </table>
 </form>
 
+<script type="text/javascript">
+    $(function () {
+        $('.archived-file').tooltip({'title': "This file is archived.<br/>Press <b>Retrieve</b> button above file list"});
+        $('a.archived-file').click(function(e) {
+            e.preventDefault();
+        });
+    });
+</script>
 {# this appears to break things? Why is it here? -steve #}
 {# <script type="text/javascript"> #}
 {# (function() { #}
