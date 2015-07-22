@@ -91,7 +91,7 @@ class DynamicTree(object):
 
     @staticmethod
     def _sanitise_name(name):
-        return name.replace(' ', '_').replace('/', '&#47;')
+        return name.replace(' ', '_').replace('/', ':')
 
     def update_experiments(self):
         exps = [("%s_%d" % (self._sanitise_name(exp.title), exp.id), exp)
