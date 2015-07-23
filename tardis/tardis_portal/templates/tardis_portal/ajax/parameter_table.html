@@ -43,8 +43,16 @@
                 <td class="parameter_value">
                     {% if parameter.name.isLongString %}
                         {{ parameter.get|linebreaks }}
+                    {% elif parameter.name.isNumeric %}
+                        {{ parameter.get|floatformat:"-3" }}
                     {% elif parameter.name.isLink %}
-                        <a href="{{ parameter.link_url }}">{{ parameter.link_gfk }}</a>
+                        <a href="{{ parameter.link_url }}">
+                            {% if parameter.link_gfk %}
+                                {{ parameter.link_gfk }}
+                            {% else %}
+                                {{ parameter.link_url }}
+                            {% endif %}
+                        </a>
                     {% else %}
                         {{ parameter.get }}
                     {% endif %}
