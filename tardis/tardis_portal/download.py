@@ -68,8 +68,10 @@ def _create_download_response(request, datafile_id, disposition='attachment'):  
         return download_image(*args, format='png')
     # Send local file
     try:
+        # Query parameter to allow download of unverified files
+        verified_only = not request.GET.get('ignore_verification_status', False)
         # Get file object for datafile
-        file_obj = datafile.get_file()
+        file_obj = datafile.get_file(verified_only=verified_only)
         if not file_obj:
             # If file path doesn't resolve, return not found
             return return_response_not_found(request)

@@ -59,33 +59,17 @@ class DataFile(models.Model):
 
     @property
     def file_object(self):
-        all_objs = {dfo.storage_type: dfo
-                    for dfo in self.file_objects.filter(verified=True)}
-        if not all_objs:
-            return None
-        type_order = [StorageBox.CACHE,
-                      StorageBox.DISK,
-                      StorageBox.TAPE,
-                      StorageBox.TEMPORARY,
-                      StorageBox.TYPE_UNKNOWN]
-        dfo = None
-        for dfo_type in type_order:
-            dfo = all_objs.get(dfo_type, None)
-            if dfo:
-                break
-        if not dfo:
-            dfo = all_objs.values()[0]
-        if dfo.storage_type in (StorageBox.TAPE, ):
-            dfo.cache_file.apply_async()
-        return dfo.file_object
+        return self.get_file()
 
     @file_object.setter
     def file_object(self, file_object):
-        '''
-        replace contents of file in all its locations
+        """
+        Replace contents of file in all its locations
         TODO: new content implies new size and checksums. Are we going to
-        auto-generate these or not allow this kind of assignment.
-        '''
+        auto-generate these or not allow this kind of assignment ?
+
+        :type file_object: Python File object
+        """
         oldobjs = []
         if self.file_objects.count() > 0:
             oldobjs = list(self.file_objects.all())
@@ -238,8 +222,42 @@ class DataFile(models.Model):
     def get_download_url(self):
         return '/api/v1/dataset_file/%d/download' % self.id
 
-    def get_file(self):
-        return self.file_object
+    def get_file(self, verified_only=True):
+        """
+        Returns the file as a readable file-like object from the best avaiable
+        storage box.
+
+        If verified_only=False, the return of files without a verified checksum
+        is allowed, otherwise None is returned for unverified files.
+
+        :type verified_only: bool
+        :rtype: Python File object
+        """
+
+        if verified_only:
+            obj_query = self.file_objects.filter(verified=True)
+        else:
+            obj_query = self.file_objects.all()
+        all_objs = {dfo.storage_type: dfo for dfo in obj_query}
+
+        if not all_objs:
+            return None
+
+        type_order = [StorageBox.CACHE,
+                      StorageBox.DISK,
+                      StorageBox.TAPE,
+                      StorageBox.TEMPORARY,
+                      StorageBox.TYPE_UNKNOWN]
+        dfo = None
+        for dfo_type in type_order:
+            dfo = all_objs.get(dfo_type, None)
+            if dfo:
+                break
+        if not dfo:
+            dfo = all_objs.values()[0]
+        if dfo.storage_type in (StorageBox.TAPE,):
+            dfo.cache_file.apply_async()
+        return dfo.file_object
 
     def get_absolute_filepath(self):
         dfos = self.file_objects.all()
@@ -247,9 +265,6 @@ class DataFile(models.Model):
             return dfos[0].get_full_path()
         else:
             return None
-
-    def get_file_getter(self):
-        return self.file_objects.all()[0].get_file_getter()
 
     def is_local(self):
         return self.file_objects.all()[0].is_local()
@@ -482,11 +497,13 @@ class DataFileObject(models.Model):
 
     @property
     def file_object(self):
-        '''
-        a set of accessor functions that convert the file information to a
-        standard python file object for reading and copy the contents of an
+        """
+        A set of accessor functions that convert the file information to a
+        standard Python file object for reading and copy the contents of an
         existing file_object into the storage backend.
-        '''
+
+        :rtype: Python File object
+        """
         cached_file_object = getattr(self, '_cached_file_object', None)
         if cached_file_object is None or cached_file_object.closed:
             cached_file_object = self._storage.open(self.uri or
@@ -496,9 +513,11 @@ class DataFileObject(models.Model):
 
     @file_object.setter
     def file_object(self, file_object):
-        '''
-        write contents of file object to storage_box
-        '''
+        """
+        Write contents of file object to storage_box
+
+        :type file_object: Python File object
+        """
         if file_object.closed:
             file_object = File(file_object)
             file_object.open()
