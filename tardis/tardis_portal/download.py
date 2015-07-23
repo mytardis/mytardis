@@ -68,8 +68,14 @@ def _create_download_response(request, datafile_id, disposition='attachment'):  
         return download_image(*args, format='png')
     # Send local file
     try:
+        verified_only = True
         # Query parameter to allow download of unverified files
-        verified_only = not request.GET.get('ignore_verification_status', False)
+        ignore_verif = request.GET.get('ignore_verification_status', '0')
+        # Ensure ignore_verification_status=0 etc works as expected
+        # a bare ?ignore_verification_status is True
+        if ignore_verif.lower() in [u'', u'1', u'true']:
+            verified_only = False
+
         # Get file object for datafile
         file_obj = datafile.get_file(verified_only=verified_only)
         if not file_obj:
