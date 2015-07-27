@@ -80,7 +80,13 @@ def _create_download_response(request, datafile_id, disposition='attachment'):  
         file_obj = datafile.get_file(verified_only=verified_only)
         if not file_obj:
             # If file path doesn't resolve, return not found
-            return return_response_not_found(request)
+            if verified_only:
+                return render_error_message(request,
+                                            "File is unverified, "
+                                            "please try again later.",
+                                            status=503)
+            else:
+                return return_response_not_found(request)
         wrapper = FileWrapper(file_obj, blksize=65535)
         response = StreamingHttpResponse(wrapper,
                                          content_type=datafile.get_mimetype())
