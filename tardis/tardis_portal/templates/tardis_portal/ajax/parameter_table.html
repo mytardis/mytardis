@@ -49,7 +49,7 @@
                         <a href="{{ parameter.link_url }}">
                             {% if parameter.link_gfk %}
                                 {{ parameter.link_gfk }}
-                            {% else %}
+                            {% elif parameter.link_url %}
                                 {{ parameter.link_url }}
                             {% endif %}
                         </a>
