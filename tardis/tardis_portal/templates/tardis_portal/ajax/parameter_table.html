@@ -45,11 +45,11 @@
                         {{ parameter.get|linebreaks }}
                     {% elif parameter.name.isNumeric %}
                         {{ parameter.get|floatformat:"-3" }}
-                    {% elif parameter.name.isLink %}
+                    {% elif parameter.name.isLink and parameter.link_url %}
                         <a href="{{ parameter.link_url }}">
                             {% if parameter.link_gfk %}
                                 {{ parameter.link_gfk }}
-                            {% elif parameter.link_url %}
+                            {% else parameter.link_url %}
                                 {{ parameter.link_url }}
                             {% endif %}
                         </a>
