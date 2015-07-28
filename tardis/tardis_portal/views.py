@@ -72,6 +72,7 @@ from django.contrib.sites.models import Site
 from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
 from django.template.defaultfilters import filesizeformat
+from django.utils import timezone
 
 from tardis.urls import getTardisApps
 from tardis.tardis_portal.forms import ExperimentForm, DatasetForm, \
@@ -420,6 +421,7 @@ def fetch_facility_data(request, facility_id, start_index, end_index):
         '''
         if dt is None:
             return None
+        dt = timezone.localtime(dt)
         return time.mktime(dt.timetuple()) * 1000 + dt.microsecond / 1000
 
     # Select only the bits we want from the models
