@@ -358,6 +358,9 @@ UPLOADIFY_UPLOAD_PATH = '%s/%s' % (MEDIA_URL, 'uploads')
 # Download size limit: zero means no limit
 DOWNLOAD_ARCHIVE_SIZE_LIMIT = 0
 
+# Render image file size limit: zero means no limit
+RENDER_IMAGE_SIZE_LIMIT = 0
+
 # temporary download file location
 from tempfile import gettempdir
 DOWNLOAD_TEMP_DIR = gettempdir()

@@ -228,6 +228,15 @@ class DataFile(models.Model):
                 return 'application/octet-stream'
 
     def get_view_url(self):
+        render_image_size_limit = getattr(settings, 'RENDER_IMAGE_SIZE_LIMIT',
+                                          0)
+        if render_image_size_limit:
+            try:
+                if long(self.size) > render_image_size_limit:
+                    return None
+            except ValueError:
+                return None
+
         import re
         viewable_mimetype_patterns = ('image/.*', 'text/.*')
         if not any(re.match(p, self.get_mimetype())
