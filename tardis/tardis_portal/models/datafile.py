@@ -544,7 +544,7 @@ class DataFileObject(models.Model):
                 existing[0].verify.delay()
             return existing[0]
         try:
-            with transaction.commit_on_success():
+            with transaction.atomic():
                 copy = DataFileObject(
                     datafile=self.datafile,
                     storage_box=dest_box)
