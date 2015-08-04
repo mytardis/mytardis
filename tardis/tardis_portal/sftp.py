@@ -89,8 +89,12 @@ class DynamicTree(object):
                 leaf.update()
         return leaf
 
+    @staticmethod
+    def _sanitise_name(name):
+        return name.replace(' ', '_').replace('/', ':')
+
     def update_experiments(self):
-        exps = [("%s_%d" % (exp.title.replace(' ', '_'), exp.id), exp)
+        exps = [("%s_%d" % (self._sanitise_name(exp.title), exp.id), exp)
                 for exp in self.host_obj.experiments]
         self.clear_children()
         for exp_name, exp in exps:
@@ -100,48 +104,64 @@ class DynamicTree(object):
             child.update = child.update_datasets
 
     def update_datasets(self):
-        datasets = [("%s_%d" % (ds.description.replace(' ', '_'), ds.id), ds)
+        all_files_name = '00_all_files'
+        datasets = [("%s_%d" % (self._sanitise_name(ds.description), ds.id), ds)
                     for ds in self.obj.datasets.all()]
         self.clear_children()
         for ds_name, ds in datasets:
+            if ds_name == all_files_name:
+                ds_name = '%s_dataset' % all_files_name
             child = self.children[ds_name]
             child.name = ds_name
             child.obj = ds
-            child.update = child.update_datafiles
+            child.update = child.update_dataset_files
+        child = self.children[all_files_name]
+        child.name = all_files_name
+        child.obj = self.obj
+        child.update = child.update_all_files
 
-    def update_datafiles(self):
+    def update_all_files(self):
+        self.clear_children()
+        for df in DataFile.objects.filter(
+                dataset__experiments=self.obj).iterator():
+            self._add_file_entry(df)
+
+    def update_dataset_files(self):
         self.clear_children()
         for df in self.obj.datafile_set.all().iterator():
-            df_name = df.filename.replace(' ', '_')
-            # try:
-            #     file_obj = df.file_object
-            #     file_name = df_name
-            # except IOError:
-            #     file_name = df_name + "_offline"
-            #     if getattr(settings, 'DEBUG', False):
-            #         placeholder = df.file_objects.all()[0].uri
-            #     else:
-            #         placeholder = 'offline file, contact administrator'
-            #     file_obj = StringIO(placeholder)
-            # child = self.children[file_name]
-            # child.name = file_name
-            # child.obj = file_obj
+            self._add_file_entry(df)
 
-            def add_unique_name(children, orig_name):
-                counter = 1
-                name = orig_name
-                while name in children:
-                    counter += 1
-                    name = '%s_%i' % (orig_name, counter)
-                return name, children[name]
+    def _add_file_entry(self, datafile):
+        df_name = self._sanitise_name(datafile.filename)
+        # try:
+        #     file_obj = df.file_object
+        #     file_name = df_name
+        # except IOError:
+        #     file_name = df_name + "_offline"
+        #     if getattr(settings, 'DEBUG', False):
+        #         placeholder = df.file_objects.all()[0].uri
+        #     else:
+        #         placeholder = 'offline file, contact administrator'
+        #     file_obj = StringIO(placeholder)
+        # child = self.children[file_name]
+        # child.name = file_name
+        # child.obj = file_obj
 
-            if df.directory:
-                path = self.add_path(df.directory)
-                df_name, child = add_unique_name(path.children, df_name)
-            else:
-                df_name, child = add_unique_name(self.children, df_name)
-            child.name = df_name
-            child.obj = df
+        def add_unique_name(children, orig_name):
+            counter = 1
+            name = orig_name
+            while name in children:
+                counter += 1
+                name = '%s_%i' % (orig_name, counter)
+            return name, children[name]
+
+        if datafile.directory:
+            path = self.add_path(datafile.directory)
+            df_name, child = add_unique_name(path.children, df_name)
+        else:
+            df_name, child = add_unique_name(self.children, df_name)
+        child.name = df_name
+        child.obj = datafile
 
 
 class MyTSFTPServerInterface(SFTPServerInterface):
