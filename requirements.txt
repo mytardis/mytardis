@@ -26,13 +26,14 @@ gunicorn
 gevent
 html2text
 isodate==0.5.1 #apt: 0.4.6
-pyjwt==1.0.1
+pyjwt==1.3.0
 kombu==3.0.24 #apt: 3.0.7
 lxml==3.2.1 #apt: 3.3.3
 mimeparse==0.1.3 #apt: 0.1.4
 nose
 nosexcover
-paramiko==1.15.2 #apt: 1.10.1
+# paramiko==1.15.2 #apt: 1.10.1
+-e git+https://github.com/jasonrig/paramiko.git@rsacert#egg=paramiko
 pwgen==0.4
 pylint
 pyoai==2.4.4
@@ -51,6 +52,7 @@ wsgiref==0.1.2
 
 # apps go here
 -r tardis/apps/publication_forms/requirements.txt
+-r tardis/apps/push_to/requirements.txt
 
 # OS specific packages go here (as build.sh only defines ubuntu packages)
 # -r requirements-centos.txt

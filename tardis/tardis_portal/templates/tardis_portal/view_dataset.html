@@ -347,15 +347,23 @@ $('#modal-metadata .submit-button').live('click', function() {
 
 <div class="page-header">
   <h4>Dataset</h4>
-  {% if has_write_permissions %}
-  <div class="pull-right">
+    <div class="pull-right">
+  {% if push_to_enabled %}
+    <a class="btn btn-mini btn-danger" title="Push to..."
+       onclick="window.open('{{ push_to_url }}', 'push-to', 'width=800, height=600'); return false;"
+       href="{{ push_to_url }}" target="_blank">
+      <i class="icon-upload"></i>
+      Push to...
+    </a>
+  {% endif %}
+  {% if has_write_permissions and is_authenticated %}
     <a class="btn btn-warning btn-mini" title="Edit Dataset"
        href="{{ dataset.get_edit_url }}">
       <i class="icon-pencil"></i>
       Edit Dataset Description
     </a>
-  </div>
   {% endif %}
+    </div>
   <h1>
     {% if dataset.description %}
       <span property="dc:title">{{ dataset.description }}</span>

@@ -257,6 +257,7 @@ INSTALLED_APPS = (
     # these optional apps, may require extra settings
     'tardis.apps.publication_forms',
     'tardis.apps.oaipmh',
+    'tardis.apps.push_to',
 )
 
 JASMINE_TEST_DIRECTORY = path.abspath(path.join(path.dirname(__file__),
@@ -682,3 +683,6 @@ MANAGE_ACCOUNT_ENABLED = True
 #     'DeactivateDoiService.wsdl'
 # MODC_DOI_ENDPOINT = 'https://doiserver/modc/ws/'
 # MODC_DOI_MINT_URL_ROOT = 'http://mytardisserver/'
+
+# Push-to app settings
+# PUSH_TO_FROM_EMAIL = 'noreply@example.com'

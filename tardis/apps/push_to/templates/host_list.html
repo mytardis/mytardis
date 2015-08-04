@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html ng-app="push-to">
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>Push to</title>
+    <script type="text/javascript" src="/static/angular/angular.min.js"></script>
+    <link href="/static/push-to/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <script type="text/javascript">
+        var accessible_hosts_url = '{{ accessible_hosts_url }}';
+        var cert_signing_services_url = '{{ cert_signing_services_url }}';
+    </script>
+</head>
+{% verbatim %}
+    <body ng-controller="HostSelectCtrl" style="margin: 5px 5px 5px 5px">
+    <div ng-if="loading" class="alert alert-info" role="alert">
+        <span><img src="/static/push-to/ajax-loader.gif"> Just checking available push locations...</span>
+    </div>
+    <div ng-if="!loading">
+        <div class="panel panel-success">
+            <div class="panel-heading"><strong>Push data to:</strong></div>
+            <div class="panel-body">
+                <ul style="list-style-type: none">
+                    <li ng-repeat="host in accessibleHosts"><a href="{{ host.push_url }}"><img ng-if="host.logo_img" ng-src="{{ host.logo_img }}"><br/>{{ host.name }}</a></li>
+                </ul>
+                <ul style="list-style-type: none">
+                    <li ng-repeat="host in certHosts"><a href="{{ host.push_url }}"><img ng-if="host.logo_img" ng-src="{{ host.logo_img }}"><br/>{{ host.name }}</a></li>
+                </ul>
+                <span ng-if="accessibleHosts.length + certHosts.length == 0">No locations found</span>
+            </div>
+        </div>
+    </div>
+    </body>
+{% endverbatim %}
+<script type="application/javascript" src="/static/push-to/angular-resource.min.js"></script>
+<script type="application/javascript" src="/static/push-to/push-to.js"></script>
+</html>
