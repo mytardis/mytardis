@@ -81,7 +81,6 @@ class DataFile(models.Model):
                                      storage_box=box)
             newfile.save()
             newfile.file_object = file_object
-            newfile.verify.delay()
         if len(oldobjs) > 0:
             for obj in oldobjs:
                 obj.delete()
