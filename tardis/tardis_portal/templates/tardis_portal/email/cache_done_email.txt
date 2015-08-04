@@ -1,0 +1,8 @@
+Hello {{ username }},
+
+Your files were recalled from the archive successfully.
+Click here to view your data:
+{{ current_site }}
+
+Regards,
+MyTardis Admin

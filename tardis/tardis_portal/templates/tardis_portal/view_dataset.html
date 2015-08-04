@@ -185,6 +185,23 @@
         loadModalRemoteBody(this, '#modal-metadata');
     });
 
+    $('#request-fast-access').live('click', function(evt){
+        evt.preventDefault();
+        var modal = '#modal-retrieve-files';
+        $(modal).find('.modal-footer').hide();
+        // Fill with "loading" placeholder content
+        $(modal).find('.modal-jobid').html(
+                $(modal).find('.loading-placeholder').html()
+        );
+        $(modal).modal('show');
+        $.ajax({
+            url: $(this).attr('href'),
+            success: function (data, textStatus, jqXHR) {
+                $(modal).find('.modal-jobid').html(data["result"]);
+            }
+        });
+    });
+
     $('.pagelink').live('click', function( event ){
         var href = $(this).attr("href");
         var html = $(this).html();
@@ -330,6 +347,28 @@ $('#modal-metadata .submit-button').live('click', function() {
     </button>
   </div>
 </div>
+
+<div class="modal hide fade" id="modal-retrieve-files">
+  <div class="modal-header">
+    <a class="close" data-dismiss="modal">&times;</a>
+    <h1 class="title">Request sent</h1>
+  </div>
+
+  <div class="loading-placeholder" style="display: none">
+    <p>Please wait... <img src="{% static 'images/ajax-loader.gif'%}" alt="loading" /></p>
+  </div>
+
+  <div class="modal-body">
+      <p>You will receive an email when all
+      files are available
+      </p>
+    <div>Job ID
+        <span class="modal-jobid"></span>
+    </div>
+  </div>
+
+</div>
+
 
 <div class="modal hide fade" id="modal-upload-files">
   <div class="modal-header">
@@ -517,53 +556,60 @@ $('#modal-metadata .submit-button').live('click', function() {
   </div>
 </div>
 <div class="row-fluid">
-  <div class="span8">
-  {% block downloads %}
-  {% if has_download_permissions %}
-  <p><b>Download Dataset:</b>
-    {% if organization|length > 1 %}
-      {% for p in protocol %}
-        {% for o in organization %}
-          <a class="btn btn-primary btn-mini" href="{{p.1}}{{o}}"
-             title="Download Entire Experiment as {{p.0|upper}} with {{o}} organization">
-            <i class="icon-download-alt"></i>
-            {% if o == default_organization %}
-            {{p.0|upper}}
-            {% else %}
-            {{p.0|upper}} - {{o}}
-	    {% endif %}
-          </a>
-        {% endfor %}
-      {% endfor %}
-    {% else %}
-      {% for p in protocol %}
-        <a class="btn btn-primary btn-mini" href="{{p.1}}"
-           title="Download Entire Dataset as {{p.0|upper}}">
-          <i class="icon-download-alt"></i>
-          {{p.0|upper}}
-        </a>
-      {% endfor %}
-      {% endif %}
-  </p>
-  {% endif %}
-  {% endblock downloads %}
-  </div>
-  <div span="4">
-  {% if has_write_permissions and not experiment.public and not immutable and has_staging_access %}
-    <div class="pull-right" style="margin-top:3px;">
-      <a data-dataset_id="{{dataset.id}}" class="import_staging_files_link btn btn-mini" title="Import Staging Files">
-          <i class="icon-arrow-right"></i>
-          Import Staging Files
-      </a>
+    <div class="span8">
+        {% block downloads %}
+            {% if has_download_permissions and dataset.is_online %}
+                <p><b>Download Dataset:</b>
+                    {% if organization|length > 1 %}
+                        {% for p in protocol %}
+                            {% for o in organization %}
+                                <a class="btn btn-primary btn-mini" href="{{p.1}}{{o}}"
+                                   title="Download Entire Experiment as {{p.0|upper}} with {{o}} organization">
+                                    <i class="icon-download-alt"></i>
+                                    {% if o == default_organization %}
+                                        {{p.0|upper}}
+                                    {% else %}
+                                        {{p.0|upper}} - {{o}}
+                                    {% endif %}
+                                </a>
+                            {% endfor %}
+                        {% endfor %}
+                    {% else %}
+                        {% for p in protocol %}
+                            <a class="btn btn-primary btn-mini" href="{{p.1}}"
+                               title="Download Entire Dataset as {{p.0|upper}}">
+                                <i class="icon-download-alt"></i>
+                                {{p.0|upper}}
+                            </a>
+                        {% endfor %}
+                    {% endif %}
+                </p>
+            {%  elif has_download_permissions and not dataset.is_online %}
+                <p>Some or all files in this dataset are archived.
+                <a href="{% url "cache_dataset" dataset.id %}"
+                   id="request-fast-access"
+                   class="btn btn-success btn-mini">Retrieve All
+                    Files</a>
+                </p>
+            {% endif %}
+        {% endblock downloads %}
     </div>
-    {% endif %}
+    <div span="4">
+        {% if has_write_permissions and not experiment.public and not immutable and has_staging_access %}
+            <div class="pull-right" style="margin-top:3px;">
+                <a data-dataset_id="{{dataset.id}}" class="import_staging_files_link btn btn-mini" title="Import Staging Files">
+                    <i class="icon-arrow-right"></i>
+                    Import Staging Files
+                </a>
+            </div>
+        {% endif %}
     </div>
-  </div>
-  <div class="row-fluid">
-    <div id="progress" class="progress span12" style="height:4px;min-height:4px;margin-bottom:8px;">
-        <div class="progress-bar progress-bar-success" style="background-color:blue;height:4px;width:0%;"></div>
-    </div>
-  </div>
+</div>
+      <div class="row-fluid">
+          <div id="progress" class="progress span12" style="height:4px;min-height:4px;margin-bottom:8px;">
+              <div class="progress-bar progress-bar-success" style="background-color:blue;height:4px;width:0%;"></div>
+          </div>
+      </div>
       <div id="datafiles-pane" class="dropzone"></div>
       <div id="dropzone" class="dropzone" style="
 border: 6px dashed lightgrey;

@@ -38,6 +38,9 @@ views.py
 """
 import time
 import re
+from celery import chord, group
+from django.contrib.contenttypes.models import ContentType
+
 from tardis.apps.push_to.apps import PushToConfig
 from tardis.apps.push_to.views import initiate_push_experiment, initiate_push_dataset
 
@@ -92,7 +95,8 @@ from tardis.tardis_portal.errors import UnsupportedSearchQueryTypeError
 from tardis.tardis_portal.staging import get_full_staging_path, \
     staging_list
 
-from tardis.tardis_portal.tasks import create_staging_datafiles
+from tardis.tardis_portal.tasks import create_staging_datafiles, \
+    cache_done_notify
 
 from tardis.tardis_portal.models import Experiment, ExperimentParameter, \
     DatafileParameter, DatasetParameter, ObjectACL, DataFile, \
@@ -1006,6 +1010,24 @@ def experiment_dataset_transfer(request, experiment_id):
         request,
         'tardis_portal/ajax/experiment_dataset_transfer.html',
         c))
+
+
+@never_cache
+@authz.dataset_download_required
+def cache_dataset(request, dataset_id=None, notify=True):
+    dataset = Dataset.objects.get(id=dataset_id)
+    run_this = group(df.cache_file.s()
+                     for df in dataset.datafile_set.all())
+    if notify:
+        run_this = chord(run_this)(
+            cache_done_notify.subtask(kwargs={
+                'user_id': request.user.id,
+                'site_id': Site.objects.get_current(request).id,
+                'ct_id': ContentType.objects.get_for_model(Dataset).id,
+                'obj_ids': [dataset_id], }))
+    result = run_this.apply_async()
+    return HttpResponse(json.dumps({"result": str(result.id)}),
+                        content_type='application/json')
 
 
 @authz.dataset_access_required

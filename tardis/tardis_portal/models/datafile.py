@@ -91,8 +91,21 @@ class DataFile(models.Model):
         returns information about the status of the file.
         States are defined in StorageBox
         """
-        return {dfo.storage_type for dfo in self.file_objects.all()
-                if dfo.verified}
+        return {dfo.storage_type
+                for dfo in self.file_objects.filter(verified=True)}
+
+    @property
+    def is_online(self):
+        return any(dfo.storage_type in StorageBox.online_types
+                   for dfo in self.file_objects.filter(verified=True))
+
+    @task(name="tardis_portal.cache_datafile")
+    def cache_file(self):
+        if self.is_online:
+            return True
+        for dfo in self.file_objects.filter(verified=True):
+            if dfo.cache_file():
+                return True
 
     def get_default_storage_box(self):
         '''
@@ -243,13 +256,8 @@ class DataFile(models.Model):
         if not all_objs:
             return None
 
-        type_order = [StorageBox.CACHE,
-                      StorageBox.DISK,
-                      StorageBox.TAPE,
-                      StorageBox.TEMPORARY,
-                      StorageBox.TYPE_UNKNOWN]
         dfo = None
-        for dfo_type in type_order:
+        for dfo_type in StorageBox.type_order:
             dfo = all_objs.get(dfo_type, None)
             if dfo:
                 break
@@ -542,7 +550,8 @@ class DataFileObject(models.Model):
     def cache_file(self):
         cache_box = self.storage_box.cache_box
         if cache_box is not None:
-            self.copy_file(cache_box)
+            return self.copy_file(cache_box)
+        return None
 
     @task(name='tardis_portal.dfo.copy_file', ignore_result=True)
     def copy_file(self, dest_box=None, verify=True):
@@ -598,8 +607,9 @@ class DataFileObject(models.Model):
         database = {comp_type: getattr(df, comp_type)
                     for comp_type in comparisons}
         database_update = {}
-        empty_value = {db_key: db_val is None or db_val.strip() == ''
-                       for db_key, db_val in database.items()}
+        empty_value = {db_key: db_val is None or (
+            isinstance(db_val, basestring) and db_val.strip() == '')
+            for db_key, db_val in database.items()}
         same_values = {key: False for key, empty in empty_value.items()
                        if not empty}
         io_error = False

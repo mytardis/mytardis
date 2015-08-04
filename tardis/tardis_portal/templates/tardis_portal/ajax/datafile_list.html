@@ -48,111 +48,118 @@
 
 <form id="datafile-download" method="POST" action="{% url 'tardis.tardis_portal.download.streaming_download_datafiles' %}" target="_blank">{% csrf_token %}
 
-<div class="clearfix"></div>
-<table class="datafiles table table-condensed">
-{% if has_download_permissions %}
-<thead>
-<tr id="datafile-selectors" class="js-required">
-<td colspan="3">
-Select: <a class="dataset_selector_all btn btn-mini">All</a> / <a class="dataset_selector_none btn btn-mini">None</a>
-<div class="pull-right">
-  <button type="submit" class="btn btn-mini download-selected">
-      <i class="icon-download-alt"></i>
-      Download Selected Files
-    </button>
-    <input type="hidden" name="comptype" value="{{default_format}}"/>
-    <input type="hidden" name="organization" value="{{default_organization}}"/>
-</div></td>
-  </tr>
-</thead>
-{% endif %}
-<tbody>
-{% for datafile in datafiles.object_list %}
-<tr class="datafile search_match_file">
-  <td>
-    {% if has_download_permissions and datafile.verified %}
-    <input type="checkbox" style="" class="datafile_checkbox" name="datafile" value="{{datafile.id}}" />
-    {% endif %}
-  </td>
-  <td>
-    {% if has_download_permissions and datafile.get_view_url and datafile.verified %}
-      <a  class="filelink datafile_name"
-          href="{{ datafile.get_view_url }}"
-          title="View"
-          target="_blank">{{ datafile.filename }}</a>
-    {% else %}
-      {% if datafile.verified %}
-        <span class="datafile_name">{{ datafile.filename }}</span>
-      {% else %}
-        <span class="datafile_name" style="color:red;">{{ datafile.filename }}</span>
-      {% endif %}
-    {% endif %}
-    {% if datafile.verified %}
-      {% if datafile.size %}<span style="margin-right: 5px">({{ datafile.size|filesizeformat }})</span>{% endif %}
-    {% else %}
-      <span style="margin-right: 5px; color:red;">(unverified)</span>
-    {% endif %}
-    {% if has_download_permissions and datafile.get_view_url %}
-      {% url 'tardis.tardis_portal.iiif.download_image' datafile_id=datafile.id region='full' size=',28' rotation=0 quality='native' format='jpg' as thumbnail %}
-      {% url 'tardis.tardis_portal.iiif.download_image' datafile_id=datafile.id region='full' size='full' rotation=0 quality='native' format='png' as image %}
-      {% if thumbnail and datafile.has_image %}
+    <div class="clearfix"></div>
+    <table class="datafiles table table-condensed">
+        {% if has_download_permissions %}
+            <thead>
+            <tr id="datafile-selectors" class="js-required">
+                <td colspan="3">
+                    Select: <a class="dataset_selector_all btn btn-mini">All</a> / <a class="dataset_selector_none btn btn-mini">None</a>
+                    <div class="pull-right">
+                        <button type="submit" class="btn btn-mini download-selected">
+                            <i class="icon-download-alt"></i>
+                            Download Selected Files
+                        </button>
+                        <input type="hidden" name="comptype" value="{{default_format}}"/>
+                        <input type="hidden" name="organization" value="{{default_organization}}"/>
+                    </div></td>
+            </tr>
+            </thead>
+        {% endif %}
+        <tbody>
+        {% for datafile in datafiles.object_list %}
+            <tr class="datafile search_match_file">
+                <td>
+                    {% if has_download_permissions and datafile.verified %}
+                        <input type="checkbox" style="" class="datafile_checkbox" name="datafile" value="{{datafile.id}}" />
+                    {% endif %}
+                </td>
+                <td>
+                    {% if has_download_permissions and datafile.get_view_url and datafile.verified and datafile.is_online %}
+                        <a class="filelink datafile_name"
+                           href="{{ datafile.get_view_url }}"
+                           title="View"
+                           target="_blank">{{ datafile.filename }}</a>
+                    {% else %}
+                        {% if datafile.verified %}
+                            <span class="datafile_name archived-file">{{ datafile.filename }}</span>
+                        {% else %}
+                            <span class="datafile_name" style="color:red;">{{ datafile.filename }}</span>
+                        {% endif %}
+                    {% endif %}
+                    {% if datafile.verified %}
+                        {% if datafile.size %}<span style="margin-right: 5px">({{ datafile.size|filesizeformat }})</span>{% endif %}
+                    {% else %}
+                        <span style="margin-right: 5px; color:red;">(unverified)</span>
+                    {% endif %}
+                    {% if has_download_permissions and datafile.get_view_url %}
+                        {% url 'tardis.tardis_portal.iiif.download_image' datafile_id=datafile.id region='full' size=',28' rotation=0 quality='native' format='jpg' as thumbnail %}
+                        {% url 'tardis.tardis_portal.iiif.download_image' datafile_id=datafile.id region='full' size='full' rotation=0 quality='native' format='png' as image %}
+                        {% if thumbnail and datafile.has_image %}
 
-	{# TODO: Should include a function call to 'encodeLiveAction('imgIcon');' as images need to be bound for functionality. #}
-	{# Calling in this file does not work with code in 'view_full_dataset.html'. Stopped working when code in file #}
-	{# was placed in Django Inheritance blocks ("finalscript"); worked fine when defined out of that block. #}
-	<a href="#">
-	    <img class="imgIcon"
-            alt="Preview image for Datafile #{{ datafile.id }}"
-	    src="{{ thumbnail }}"
-	    title = "view"
-	    target = "_blank"
-            data-fileSize = "{{datafile.size|filesizeformat}}"
-            data-fullRes = "{{ image }}"
-            data-createdTime = '{{ datafile.created_time|time:"H:i" }}'
-            data-createdDate = '{{ datafile.created_time|date:"d-m-Y" }}'
-            data-imgId = "{{ datafile.id }}"
-            data-fileName = "{{ datafile.filename }}"
-            data-imgAmount = "{{ datafiles.object_list|length }}"
-		    style="display: block; margin-left: 0; margin-right: 0;"
-		    onerror="$(this).hide()"
-            id= "imgIcon-{{ forloop.counter }}"
-           />
-        </a>
+                            {# TODO: Should include a function call to 'encodeLiveAction('imgIcon');' as images need to be bound for functionality. #}
+                            {# Calling in this file does not work with code in 'view_full_dataset.html'. Stopped working when code in file #}
+                            {# was placed in Django Inheritance blocks ("finalscript"); worked fine when defined out of that block. #}
+                            <a href="#">
+                                <img class="imgIcon"
+                                     alt="Preview image for Datafile #{{ datafile.id }}"
+                                     src="{{ thumbnail }}"
+                                     title = "view"
+                                     target = "_blank"
+                                     data-fileSize = "{{datafile.size|filesizeformat}}"
+                                     data-fullRes = "{{ image }}"
+                                     data-createdTime = '{{ datafile.created_time|time:"H:i" }}'
+                                     data-createdDate = '{{ datafile.created_time|date:"d-m-Y" }}'
+                                     data-imgId = "{{ datafile.id }}"
+                                     data-fileName = "{{ datafile.filename }}"
+                                     data-imgAmount = "{{ datafiles.object_list|length }}"
+                                     style="display: block; margin-left: 0; margin-right: 0;"
+                                     onerror="$(this).hide()"
+                                     id= "imgIcon-{{ forloop.counter }}"
+                                        />
+                            </a>
+                        {% endif %}
+                    {% endif %}
 
-      {% endif %}
-    {% endif %}
+                </td>
+                <td style="width: 110px">
+                    <div class="btn-group pull-right">
+                        {% if has_download_permissions and datafile.verified %}
+                            <a class="btn{% if datafile.is_online %}" title="Download"
+                               {% else %} archived-file disabled"{% endif %}
+                               href="{{ datafile.get_download_url }}">
+                                <i class="icon-download-alt icon-large"></i>
+                            </a>
+                        {% endif %}
+                        {% if has_write_permissions and not immutable %}
+                            <a title="Add Metadata" href="{% url 'tardis.tardis_portal.views.add_datafile_par' datafile.id %}"
+                               data-toggle_selector="#datafile_metadata_toggle_{{datafile.id}}"
+                               class="btn add-metadata">
+                                <i class="icon-plus"></i>
+                            </a>
+                        {% endif %}
 
-  </td>
-  <td style="width: 110px">
-    <div class="btn-group pull-right">
-      {% if has_download_permissions and datafile.verified %}
-      <a  class="btn"
-          href="{{ datafile.get_download_url }}"
-          title="Download">
-          <i class="icon-download-alt icon-large"></i>
-      </a>
-      {% endif %}
-      {% if has_write_permissions and not immutable %}
-      <a title="Add Metadata" href="{% url 'tardis.tardis_portal.views.add_datafile_par' datafile.id %}"
-       data-toggle_selector="#datafile_metadata_toggle_{{datafile.id}}"
-       class="btn add-metadata">
-          <i class="icon-plus"></i>
-       </a>
-       {% endif %}
-
-      <a id="datafile_metadata_toggle_{{datafile.id}}" title="Show/Hide Metadata"
-         class="datafile-info-toggle metadata_hidden btn" href="/ajax/datafile_details/{{datafile.id}}/">
-          <i class="icon-list"></i>
-      </a>
-    </div>
-  </td>
-</tr>
-{% endfor %}
+                        <a id="datafile_metadata_toggle_{{datafile.id}}" title="Show/Hide Metadata"
+                           class="datafile-info-toggle metadata_hidden btn" href="/ajax/datafile_details/{{datafile.id}}/">
+                            <i class="icon-list"></i>
+                        </a>
+                    </div>
+                </td>
+            </tr>
+        {% endfor %}
 
 </tbody>
 </table>
 </form>
 
+<script type="text/javascript">
+    $(function () {
+        $('.archived-file').tooltip({'title': "This file is archived.<br/>Press <b>Retrieve</b> button above file list"});
+        $('a.archived-file').click(function(e) {
+            e.preventDefault();
+        });
+    });
+</script>
 {# this appears to break things? Why is it here? -steve #}
 {# <script type="text/javascript"> #}
 {# (function() { #}

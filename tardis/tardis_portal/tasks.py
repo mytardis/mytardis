@@ -6,6 +6,7 @@ from celery import group, chain
 from celery.task import task
 
 from django.contrib.auth.models import User
+from django.contrib.contenttypes.models import ContentType
 from django.contrib.sites.models import Site
 from django.db import transaction
 from django.db.models import Q
@@ -144,3 +145,18 @@ def create_staging_datafile(filepath, username, dataset_id):
 @task(name="tardis_portal.email_user_task", ignore_result=True)
 def email_user_task(subject, template_name, context, user):
     email_user(subject, template_name, context, user)
+
+
+@task(name='tardis_portal.cache_notify')
+def cache_done_notify(results, user_id, site_id, ct_id, obj_ids):
+    user = User.objects.get(id=user_id)
+    site = Site.objects.get(id=site_id)
+    subject = '[{site}] Cache recall done'.format(site=site.name)
+    ct = ContentType.objects.get(id=ct_id)
+    objects = [ct.get_object_for_this_type(id=obj_id) for obj_id in obj_ids]
+    context = {
+        'objects': objects,
+        'username': user.username,
+    }
+    email_user(subject, 'cache_done_email', context, user)
+    return "all done"

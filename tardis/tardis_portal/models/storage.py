@@ -43,7 +43,20 @@ class StorageBox(models.Model):
     TYPES = {
         'cache': CACHE,
         'receiving': TEMPORARY,
+        'tape': TAPE,
     }
+
+    # storage types that provide instantaneous access
+    online_types = [CACHE,
+                    DISK,
+                    TEMPORARY]
+
+    # when file access is requested, try in this order
+    type_order = [CACHE,
+                  DISK,
+                  TAPE,
+                  TEMPORARY,
+                  TYPE_UNKNOWN]
 
     def __unicode__(self):
         return self.name or "anonymous Storage Box"
