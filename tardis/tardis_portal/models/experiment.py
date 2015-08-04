@@ -164,9 +164,15 @@ class Experiment(models.Model):
 
     def get_images(self):
         from .datafile import IMAGE_FILTER
-        return self.get_datafiles().order_by('-modification_time',
-                                             '-created_time') \
-                                   .filter(IMAGE_FILTER)
+        images = self.get_datafiles().order_by('-modification_time',
+                                               '-created_time') \
+            .filter(IMAGE_FILTER)
+        render_image_size_limit = getattr(settings, 'RENDER_IMAGE_SIZE_LIMIT',
+                                          0)
+        if render_image_size_limit:
+            images = images.extra(where=['CAST(size AS BIGINT) <= %d'
+                                         % render_image_size_limit])
+        return images
 
     def get_size(self):
         from .datafile import DataFile
