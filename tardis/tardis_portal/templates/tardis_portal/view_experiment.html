@@ -291,7 +291,7 @@ $('#modal-metadata .submit-button').click(function() {
 </div>
 
 <div class="row-fluid" >
-  <div class="span7">
+  <div class="span5">
   <div align="center" style="margin-bottom: -20px">
   <div id="abstractHolder" style="display: none">{{ experiment.description|bleach|linebreaksbr }}</div>
   <a id="abstract-toggle" class="btn btn-mini" title="Show Description">
@@ -317,7 +317,7 @@ $('#modal-metadata .submit-button').click(function() {
     </div>
   </div>
   <hr class="visible-phone"/>
-  <div id="datasets-pane" class="span5">
+  <div id="datasets-pane" class="span7">
     {% include "tardis_portal/ajax/experiment_datasets.html" %}
   </div>
 </div>

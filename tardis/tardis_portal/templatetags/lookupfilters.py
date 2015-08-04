@@ -1,4 +1,3 @@
-from django.template import Library
 from django import template
 
 
