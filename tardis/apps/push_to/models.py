@@ -1,7 +1,7 @@
 from StringIO import StringIO
 import base64
 from django import forms
-
+from django.apps import apps
 from django.contrib import admin
 from django.core.exceptions import ValidationError
 from paramiko import RSAKey, RSACert, SSHClient, MissingHostKeyPolicy,\
@@ -9,6 +9,7 @@ from paramiko import RSAKey, RSACert, SSHClient, MissingHostKeyPolicy,\
 from django.db import models
 from django.contrib.auth.models import User, Group
 from paramiko.config import SSH_PORT
+from .apps import PushToConfig
 from .exceptions import NoSuitableCredential
 
 
@@ -344,6 +345,7 @@ class CredentialAdmin(KeyPairModelAdmin):
     form = CredentialForm
 
 # Register the models with the admin
-admin.site.register(RemoteHost, RemoteHostAdmin)
-admin.site.register(Credential, CredentialAdmin)
-admin.site.register(OAuthSSHCertSigningService)
+if apps.is_installed(PushToConfig.name):
+    admin.site.register(RemoteHost, RemoteHostAdmin)
+    admin.site.register(Credential, CredentialAdmin)
+    admin.site.register(OAuthSSHCertSigningService)
