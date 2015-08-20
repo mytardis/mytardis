@@ -38,11 +38,11 @@ from optparse import make_option
 
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
-from django.db import transaction, DEFAULT_DB_ALIAS
 from django.core.exceptions import ImproperlyConfigured
 from django.utils.importlib import import_module
 
 from tardis.tardis_portal.models import Experiment, Dataset, DataFile
+from tardis.tardis_portal.models import DataFileObject
 
 
 logger = logging.getLogger(__name__)
@@ -142,29 +142,25 @@ metadata to be reingested."""
         return filter_instance
 
     def runFilters(self, filters, dryRun=False):
-        using = DEFAULT_DB_ALIAS
-        transaction.enter_transaction_management(using=using)
+        if dryRun:
+            raise Exception("dryRun not supported.")
         try:
             for datafile in DataFile.objects.all():
-                # Use a transaction to process each Datafile
-                transaction.managed(True, using=using)
+                dfo = DataFileObject.objects.filter(datafile=datafile,
+                                                    verified=True).first()
+                if not dfo:
+                    continue 
                 try:
                     for filter in filters:
                         filter(sender=DataFile, instance=datafile,
                                created=False, using='default')
-                    if dryRun:
-                        transaction.rollback(using=using)
-                    else:
-                        transaction.commit(using=using)
                 except Exception:
-                    transaction.rollback(using=using)
                     exc_class, exc, tb = sys.exc_info()
-                    new_exc = CommandError("Exception %s has occurred: "
-                                           "rolled back transaction" % \
+                    new_exc = CommandError("Exception %s has occurred: " % \
                                                (exc or exc_class))
                     raise new_exc.__class__, new_exc, tb
         finally:
-            transaction.leave_transaction_management(using=using)
+            pass
 
     def listFilters(self):
         if len(self.availableFilters):
