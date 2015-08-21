@@ -18,12 +18,22 @@ from paramiko import OPEN_SUCCEEDED, OPEN_FAILED_ADMINISTRATIVELY_PROHIBITED,\
 from paramiko.common import AUTH_FAILED, AUTH_SUCCESSFUL
 
 logger = logging.getLogger(__name__)
+file_handler = logging.FileHandler('sftpd.log')
+formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
+file_handler.setFormatter(formatter)
+logger.addHandler(file_handler)
 
 paramiko_log = logging.getLogger('paramiko.transport')
 if not paramiko_log.handlers:
-    paramiko_log.addHandler(logging.FileHandler('sftpd.log'))
+    paramiko_log.addHandler(file_handler)
 
 from django.conf import settings
+
+logging_levels = {'DEBUG': logging.DEBUG, 'INFO': logging.INFO,
+                  'WARN': logging.WARN, 'ERROR': logging.ERROR,
+                  'CRITICAL': logging.CRITICAL}
+logger.setLevel(logging_levels[settings.MODULE_LOG_LEVEL])
+paramiko_log.setLevel(logging_levels[settings.MODULE_LOG_LEVEL])
 
 if getattr(settings, 'SFTP_GEVENT', False):
     from gevent import monkey
@@ -364,10 +374,11 @@ class MyTSFTPHandle(SFTPHandle):
 
 class MyTServerInterface(ServerInterface):
 
-    def __init__(self):
+    def __init__(self, client_address):
         super(MyTServerInterface, self).__init__()
         self.username = None
         self.user = None
+        self.client_address = client_address
 
     def get_allowed_auths(self, username):
         auth_methods = ['password', 'keyboard-interactive']
@@ -395,7 +406,11 @@ class MyTServerInterface(ServerInterface):
             user.epn_list = fake_request.session.get('_epn_list', [])
             self.username = username
             self.user = user
+            logger.info('Successful authentication for %s from %s' %
+                        (username, self.client_address[0]))
             return AUTH_SUCCESSFUL
+        logger.warning('Failed authentication for %s from %s' %
+                       (username, self.client_address[0]))
         return AUTH_FAILED
 
     def check_auth_password(self, username, password):
@@ -429,6 +444,12 @@ class MyTSFTPRequestHandler(SocketServer.BaseRequestHandler):
     def setup(self):
         #import ipdb; ipdb.set_trace()
 
+        # We receive the client address before beginning an active session.
+        # We may never begin a session if the client rejects the server's
+        # RSA host key, or if the client is only attempting to monitor
+        # whether the server is actively listening on the appropriate port.
+        logger.info(self.client_address[0])
+
         self.transport = Transport(self.request)
         self.transport.load_server_moduli()
         so = self.transport.get_security_options()
@@ -439,7 +460,8 @@ class MyTSFTPRequestHandler(SocketServer.BaseRequestHandler):
             'sftp', SFTPServer, MyTSFTPServerInterface)
 
     def handle(self):
-        self.transport.start_server(server=MyTServerInterface())
+        self.transport.start_server(
+            server=MyTServerInterface(self.client_address))
 
     def handle_timeout(self):
         try:
