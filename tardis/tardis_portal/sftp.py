@@ -448,7 +448,7 @@ class MyTSFTPRequestHandler(SocketServer.BaseRequestHandler):
         # We may never begin a session if the client rejects the server's
         # RSA host key, or if the client is only attempting to monitor
         # whether the server is actively listening on the appropriate port.
-        logger.info(self.client_address[0])
+        logger.info('Connection requested from %s' % self.client_address[0])
 
         self.transport = Transport(self.request)
         self.transport.load_server_moduli()
