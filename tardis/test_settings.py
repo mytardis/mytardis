@@ -147,3 +147,7 @@ SECRET_KEY = 'ij!%7-el^^rptw$b=iol%78okl10ee7zql-()z1r6e)gbxd3gl'
 
 SESSION_SERIALIZER = 'django.contrib.sessions.serializers.PickleSerializer'
 USE_TZ = True  # apparently sqlite has issues with timezones?
+
+STATICFILES_STORAGE = \
+    'django.contrib.staticfiles.storage.CachedStaticFilesStorage'
+STATIC_ROOT = path.abspath(path.join(path.dirname(__file__), '..', 'static_test'))
