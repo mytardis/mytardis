@@ -1,5 +1,6 @@
 import shutil
-from os import makedirs, path
+from os import path
+from tempfile import mkdtemp
 from django.test import TestCase
 from django.conf import settings
 from django.contrib.staticfiles.management.commands import collectstatic
@@ -8,9 +9,7 @@ from django.contrib.staticfiles.management.commands import collectstatic
 class CollectstaticTest(TestCase):
 
     def setUp(self):
-        self.STATIC_ROOT = path.abspath(path.join(path.dirname(__file__), '..', 'static_test'))
-        if not path.exists(self.STATIC_ROOT):
-            makedirs(self.STATIC_ROOT)
+        self.STATIC_ROOT = mkdtemp()
         self.cmd = collectstatic.Command()
 
     def tearDown(self):
