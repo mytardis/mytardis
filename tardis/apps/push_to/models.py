@@ -22,10 +22,9 @@ class KeyPair(models.Model):
                                 max_length=25,
                                 blank=True,
                                 null=True)
-    _public_key = models.TextField('Public key',
+    public_key = models.TextField('Public key',
                                    blank=True,
-                                   null=True,
-                                   db_column='public_key')
+                                   null=True)
     private_key = models.TextField('Private key', blank=True, null=True)
 
     class Meta:
@@ -53,22 +52,23 @@ class KeyPair(models.Model):
         length = int(public_key.read(4).encode('hex'), 16)
         return public_key.read(length)
 
-    @property
-    def public_key(self):
-        return self._public_key
+    def __setattr__(self, attrname, val):
+        if attrname == 'public_key':
+            super(KeyPair, self).__setattr__(attrname, self._validate_public_key(val))
+        else:
+            super(KeyPair, self).__setattr__(attrname, val)
 
-    @public_key.setter
-    def public_key(self, value):
+    def _validate_public_key(self, value):
         if value:
             # Check if the public key is in the id_rsa.pub format
             pub_key_fields = value.split()
             if len(pub_key_fields) >= 2:
-                self._public_key = pub_key_fields[1]
+                public_key = pub_key_fields[1]
             else:
-                self._public_key = value
-            # Extract the key type
-            self.key_type = KeyPair._get_key_type_from_public_key(
-                self._public_key)
+                public_key = value
+                # Extract the key type
+            self.key_type = KeyPair._get_key_type_from_public_key(public_key)
+            return public_key
 
     @property
     def key(self):
