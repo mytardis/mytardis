@@ -235,7 +235,7 @@ class DataFile(models.Model):
                 return None
 
         import re
-        viewable_mimetype_patterns = ('image/.*', 'text/.*')
+        viewable_mimetype_patterns = ('image/.*', 'text/.*', 'application/pdf')
         if not any(re.match(p, self.get_mimetype())
                    for p in viewable_mimetype_patterns):
             return None
