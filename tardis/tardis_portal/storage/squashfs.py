@@ -37,12 +37,15 @@ log = logging.getLogger(__name__)
 
 class SquashFSStorage(Storage):
     """
-    The default mounter is squashfuse, which can be found here:
-    https://github.com/vasi/squashfuse
+    Fuse mounting is not reliable. To use this requires bash scripts, examples
+    attached at the end of the file. These scripts need to be allowed for sudo
+    execution by the Gunicorn user.
+    The paths can be set in settings. They default to /usr/local/bin/...
 
     settings:
     SQUASHFS_MOUNT_ROOT = '/mnt/squashfs'
-    SQUASHFS_MOUNT_CMD = "/usr/local/bin/squashfuse"
+    SQUASHFS_MOUNT_CMD = "/usr/local/bin/squashfsmount"
+    SQUASHFS_UMOUNT_CMD = "/usr/local/bin/squashfsumount"
 
     datafile_id only works for block storage
     """
@@ -52,7 +55,10 @@ class SquashFSStorage(Storage):
                                '/mnt/squashfs')
     squashmount_cmd = getattr(settings,
                               'SQUASHFSMOUNT_CMD',
-                              '/usr/local/bin/squashfuse')
+                              '/usr/local/bin/squashfsmount')
+    squashumount_cmd = getattr(settings,
+                               'SQUASHFSUMOUNT_CMD',
+                               '/usr/local/bin/squashfsumount')
 
     def __init__(self, sq_filename=None, sq_basepath=None, datafile_id=None):
         self.datafile = None
@@ -67,6 +73,7 @@ class SquashFSStorage(Storage):
             self.datafile = df
             self.location = os.path.join(self.squashmount_root, df.filename)
             self.squashfile = df.file_objects.all()[0].get_full_path()
+            self.sq_filename = os.path.basename(self.squashfile)
             self._mount()
         else:
             raise Exception('provide squash file name and path or datafile id')
@@ -80,21 +87,13 @@ class SquashFSStorage(Storage):
         return mount_list.find(self.location) > -1
 
     def _mount(self):
-        if self._mounted:
-            return
-        try:
-            os.makedirs(self.location)
-        except OSError as exc:
-            if not (exc.errno == errno.EEXIST and
-                    os.path.isdir(self.location)):
-                raise
-        subprocess.call([self.squashmount_cmd,
-                         self.squashfile, self.location])
+        if not self._mounted:
+            subprocess.call(['sudo', self.squashmount_cmd, self.squashfile])
         return self._mounted
 
     def _umount(self):
         if self._mounted:
-            subprocess.call(['fusermount', '-u', self.location])
+            subprocess.call(['sudo', self.squashumount_cmd, self.sq_filename])
         return self._mounted
 
     def _open(self, name, mode='rb'):
@@ -220,10 +219,54 @@ def parse_squashfs_file(squashfs_file_id, parse_module, ns):
     parser = import_module(parse_module)
 
     try:
-        parser.parse_squashfs_file(squashfile, ns)
-        status.string_value = 'complete'
-        status.save()
-    except:
-        status.string_value = 'parse failed'
-        status.save()
+        if parser.parse_squashfs_file(squashfile, ns):
+            status.string_value = 'complete'
+        else:
+            status.string_value = 'incomplete'
+    except Exception as e:
+        log.exception('squash file parse error. id: %s' % squashfs_file_id)
+        status.string_value = 'error'
         raise
+    finally:
+        status.save()
+
+# example scripts
+# /usr/local/bin/squashfsmount
+"""
+#!/usr/bin/python
+
+import os
+import shlex
+import subprocess
+import sys
+
+USERNAME = 'mytardis'
+SQUASHPATH = sys.argv[1]
+FILENAME = os.path.basename(SQUASHPATH)
+MOUNTDIR = os.path.join('/srv/squashfsmounts', FILENAME)
+if MOUNTDIR in subprocess.check_output('mount'):
+    quit()
+subprocess.call(shlex.split('mkdir -p {}'.format(MOUNTDIR)))
+subprocess.call(shlex.split(
+    'mount -t squashfs -o ro {squashpath} {mountdir}'.format(
+        squashpath=SQUASHPATH, mountdir=MOUNTDIR
+)))
+"""
+
+# /usr/local/bin/squashfsumount
+"""
+#!/usr/bin/python
+
+import os
+import shlex
+import subprocess
+import sys
+
+FILENAME = sys.argv[1]
+MOUNTDIR = os.path.join('/srv/squashfsmounts', FILENAME)
+if MOUNTDIR not in subprocess.check_output('mount'):
+    quit()
+subprocess.call(shlex.split(
+    'umount {mountdir}'.format(mountdir=MOUNTDIR
+)))
+"""
