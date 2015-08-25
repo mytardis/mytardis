@@ -5,13 +5,11 @@ import json
 import logging
 
 from django.http import HttpResponse
-from django.template import Context
 
 from tardis.tardis_portal.auth import decorators as authz
 from tardis.tardis_portal.models import Dataset
 from tardis.tardis_portal.models import DataFile
 from tardis.tardis_portal.shortcuts import render_response_index
-from tardis.tardis_portal.staging import write_uploaded_file_to_dataset
 
 import tardis.apps.filepicker.filepicker_settings as filepicker_settings
 from tardis.apps.filepicker.utils import FilepickerFile
@@ -27,8 +25,8 @@ def upload_button(request, dataset_id):
     '''
     filepicker_api_key = filepicker_settings.filepicker_api_key
 
-    c = Context({'filepicker_api_key': filepicker_api_key,
-                 'dataset_id': dataset_id, })
+    c = {'filepicker_api_key': filepicker_api_key,
+         'dataset_id': dataset_id, }
 
     return HttpResponse(render_response_index(
         request, 'filepicker/filepicker.html', c))

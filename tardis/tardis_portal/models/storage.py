@@ -44,12 +44,16 @@ class StorageBox(models.Model):
         'cache': CACHE,
         'receiving': TEMPORARY,
         'tape': TAPE,
+        'disk': DISK,
     }
 
     # storage types that provide instantaneous access
     online_types = [CACHE,
                     DISK,
                     TEMPORARY]
+
+    # storage types that do not provide instantaneous access
+    offline_types = [TAPE, ]
 
     # when file access is requested, try in this order
     type_order = [CACHE,

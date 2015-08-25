@@ -96,7 +96,7 @@ class DataFile(models.Model):
 
     @property
     def is_online(self):
-        return any(dfo.storage_type in StorageBox.online_types
+        return any(dfo.storage_type not in StorageBox.offline_types
                    for dfo in self.file_objects.filter(verified=True))
 
     @task(name="tardis_portal.cache_datafile")
@@ -242,7 +242,10 @@ class DataFile(models.Model):
         return reverse('view_datafile', kwargs={'datafile_id': self.id})
 
     def get_download_url(self):
-        return '/api/v1/dataset_file/%d/download' % self.id
+        return reverse('api_download_file',
+                       kwargs={'pk': self.id,
+                               'api_name': 'v1',
+                               'resource_name': 'dataset_file'})
 
     def get_file(self, verified_only=True):
         """
@@ -675,7 +678,7 @@ class DataFileObject(models.Model):
         self.verified = result
         self.last_verified_time = timezone.now()
         self.save(update_fields=['verified', 'last_verified_time'])
-        df.update_mimetype(force=True)
+        df.update_mimetype()
         return result
 
     def get_full_path(self):

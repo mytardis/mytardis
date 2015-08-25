@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 from django.http import HttpResponse
-from django.template import Context
 
 from tardis.tardis_portal.shortcuts import render_response_index, \
     render_response_search
