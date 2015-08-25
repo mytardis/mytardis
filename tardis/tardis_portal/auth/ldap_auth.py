@@ -136,12 +136,12 @@ class LDAPBackend(AuthProvider, UserProvider, GroupProvider):
             l.protocol_version = ldap.VERSION3
             l.simple_bind(userRDN + ',' + self._base, password)
             ldap_result = l.search_s(self._user_base, ldap.SCOPE_SUBTREE,
-                                      userRDN, retrieveAttributes)
+                                     userRDN, retrieveAttributes)
 
             bind_dn = ldap_result[0][0]
             l.simple_bind_s(bind_dn, password)
             ldap_result = l.search_s(self._user_base, ldap.SCOPE_SUBTREE,
-                                      userRDN, retrieveAttributes)
+                                     userRDN, retrieveAttributes)
 
             if ldap_result[0][1]['uid'][0] == username:
                 # check if the given username in combination with the LDAP
