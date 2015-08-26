@@ -10,7 +10,6 @@ from urllib2 import URLError
 
 from django.core.exceptions import PermissionDenied
 from django.http import HttpResponse
-from django.template import Context
 
 from tardis.tardis_portal.auth import decorators as authz
 from tardis.tardis_portal.models import \

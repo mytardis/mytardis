@@ -1,10 +1,9 @@
 from django.core.exceptions import PermissionDenied
 from django.http import HttpResponse
-from django.template import Context
 
 from tardis.tardis_portal.auth import decorators as authz
 from tardis.tardis_portal.models import \
-    Experiment, ExperimentParameterSet, Schema
+    Experiment, Schema
 from tardis.tardis_portal.shortcuts import render_response_index, \
     return_response_error, return_response_not_found, \
     RestfulExperimentParameterSet

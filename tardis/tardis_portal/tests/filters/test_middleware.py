@@ -136,10 +136,9 @@ class FilterInitTestCase(TestCase):
 
             self.datafiles[1].file_objects.all()[0].save(reverify=True)
             t = Filter1.getTuples()
-            # 2 because the missing md5 sum save runs the filter as well
-            expect(len(t)).to_equal(2)
+            expect(len(t)).to_equal(1)
             t = Filter2.getTuples()
-            expect(len(t)).to_equal(2)
+            expect(len(t)).to_equal(1)
 
         finally:
             # Remove our hooks!

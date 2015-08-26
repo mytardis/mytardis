@@ -1,6 +1,5 @@
 from django.core.paginator import Paginator, InvalidPage, EmptyPage
 from django.http import HttpResponse
-from django.template import Context
 from django.conf import settings
 
 from tardis.tardis_portal.auth import decorators as authz
@@ -54,7 +53,7 @@ def view_full_dataset(request, dataset_id):
         # take 4 evenly spaced images from the set
         display_images = display_images[0::image_count / 3][:3]
 
-    c = Context({
+    c = {
         'dataset': dataset,
         'datafiles': get_datafiles_page(),
         'parametersets': dataset.getParameterSets()
@@ -74,7 +73,7 @@ def view_full_dataset(request, dataset_id):
             getattr(settings, 'DEFAULT_ARCHIVE_ORGANIZATION', 'classic'),
         'default_format':
             getattr(settings, 'DEFAULT_ARCHIVE_FORMATS', ['tgz', 'tar'])[0]
-    })
+    }
     _add_protocols_and_organizations(request, dataset, c)
     return HttpResponse(render_response_index(
         request, 'slideshow_view/view_full_dataset.html', c))

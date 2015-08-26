@@ -37,11 +37,10 @@ http://docs.djangoproject.com/en/dev/topics/testing/
 """
 from django.conf import settings
 from django.test import TestCase
+from tastypie.utils import trailing_slash
 
 
 class ModelTestCase(TestCase):
-
-    urls = 'tardis.tardis_portal.tests.urls'
 
     def setUp(self):
         from django.contrib.auth.models import User
@@ -67,8 +66,8 @@ class ModelTestCase(TestCase):
         self.assertEqual(exp.public_access,
                          models.Experiment.PUBLIC_ACCESS_NONE)
         self.assertEqual(
-            exp.get_absolute_url(), '/test/experiment/view/1/',
-            exp.get_absolute_url() + ' != /test/experiment/view/1/')
+            exp.get_absolute_url(), '/experiment/view/1/',
+            exp.get_absolute_url() + ' != /experiment/view/1/')
         self.assertEqual(exp.get_or_create_directory(),
                          path.join(settings.FILE_STORE_PATH, str(exp.id)))
 
@@ -152,7 +151,8 @@ class ModelTestCase(TestCase):
             self.assertEqual(df_file.dataset, dataset)
             self.assertEqual(df_file.size, '')
             self.assertEqual(df_file.get_download_url(),
-                             '/api/v1/dataset_file/1/download')
+                             '/api/v1/dataset_file/1/download%s' %
+                             trailing_slash())
 
             df_file = _build(dataset, 'file1.txt', 'path/file1.txt')
             self.assertEqual(df_file.filename, 'file1.txt')
@@ -161,13 +161,15 @@ class ModelTestCase(TestCase):
             self.assertEqual(df_file.dataset, dataset)
             self.assertEqual(df_file.size, '')
             self.assertEqual(df_file.get_download_url(),
-                             '/api/v1/dataset_file/2/download')
+                             '/api/v1/dataset_file/2/download%s' %
+                             trailing_slash())
             df_file = _build(dataset, 'file1.txt', 'path/file1#txt')
             self.assertEqual(df_file.filename, 'file1.txt')
             self.assertEqual(df_file.dataset, dataset)
             self.assertEqual(df_file.size, '')
             self.assertEqual(df_file.get_download_url(),
-                             '/api/v1/dataset_file/3/download')
+                             '/api/v1/dataset_file/3/download%s' %
+                             trailing_slash())
 
             df_file = _build(dataset, 'f.txt',
                              'http://localhost:8080/filestore/f.txt')
@@ -175,7 +177,8 @@ class ModelTestCase(TestCase):
             self.assertEqual(df_file.dataset, dataset)
             self.assertEqual(df_file.size, '')
             self.assertEqual(df_file.get_download_url(),
-                             '/api/v1/dataset_file/4/download')
+                             '/api/v1/dataset_file/4/download%s' %
+                             trailing_slash())
 
             # check that we can create datafiles with byte size of zero
             # size is actually a CharField, so gets saved as a string
@@ -303,15 +306,15 @@ class ModelTestCase(TestCase):
             exp_parameter.save()
 
             self.assertEqual(
-                "<a href='/test/DatafileImage/load/%i/' target='_blank'><img style='width: 300px;' src='/test/DatafileImage/load/%i/' /></a>" %  # noqa
+                "<a href='/display/DatafileImage/load/%i/' target='_blank'><img style='width: 300px;' src='/display/DatafileImage/load/%i/' /></a>" %  # noqa
                 (df_parameter.id, df_parameter.id), df_parameter.get())
 
             self.assertEqual(
-                "<a href='/test/DatasetImage/load/%i/' target='_blank'><img style='width: 300px;' src='/test/DatasetImage/load/%i/' /></a>" %  # noqa
+                "<a href='/display/DatasetImage/load/%i/' target='_blank'><img style='width: 300px;' src='/display/DatasetImage/load/%i/' /></a>" %  # noqa
                 (ds_parameter.id, ds_parameter.id), ds_parameter.get())
 
             self.assertEqual(
-                "<a href='/test/ExperimentImage/load/%i/' target='_blank'><img style='width: 300px;' src='/test/ExperimentImage/load/%i/' /></a>" %   # noqa
+                "<a href='/display/ExperimentImage/load/%i/' target='_blank'><img style='width: 300px;' src='/display/ExperimentImage/load/%i/' /></a>" %   # noqa
                 (exp_parameter.id, exp_parameter.id), exp_parameter.get())
 
     # Verify that create a new user will generate an api_key automtically
