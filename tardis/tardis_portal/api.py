@@ -13,7 +13,8 @@ from django.contrib.auth.models import AnonymousUser
 from django.contrib.auth.models import User
 from django.contrib.auth.models import Group
 from django.core.servers.basehttp import FileWrapper
-from django.http import HttpResponse, HttpResponseForbidden
+from django.http import HttpResponse, HttpResponseForbidden, \
+    StreamingHttpResponse
 
 from tardis.tardis_portal.auth.decorators import \
     get_accessible_datafiles_for_user
@@ -900,7 +901,8 @@ class DataFileResource(MyTardisModelResource):
             self.build_bundle(obj=file_record, request=request))
         file_object = file_record.get_file()
         wrapper = FileWrapper(file_object)
-        response = HttpResponse(wrapper, content_type=file_record.mimetype)
+        response = StreamingHttpResponse(
+            wrapper, content_type=file_record.mimetype)
         response['Content-Length'] = file_record.size
         response['Content-Disposition'] = 'attachment; filename="%s"' % \
                                           file_record.filename
