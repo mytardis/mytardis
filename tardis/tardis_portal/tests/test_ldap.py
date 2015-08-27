@@ -34,7 +34,8 @@ class LDAPTest(TestCase):
         import tardis.tardis_portal.tests.slapd as slapd
         global server
         if not slapd.Slapd.check_paths():
-            raise SkipTest()
+            raise SkipTest('slapd.Slapd.check_paths() failed, '
+                           'so skipping LDAPTest')
 
         server = slapd.Slapd()
         server.set_port(38911)
@@ -54,14 +55,14 @@ class LDAPTest(TestCase):
         from tardis.tardis_portal.auth.ldap_auth import ldap_auth
 
         l = ldap_auth()
-        res = l._query(settings.LDAP_USER_BASE, '(objectClass=*)', ['cn'])
+        res = l._query(settings.LDAP_USER_BASE, '(objectClass=*)', ['givenName', 'sn'])
         res1 = [('ou=People,dc=example,dc=com', {}),
                 ('uid=testuser1,ou=People,dc=example,dc=com',
-                 {'cn': ['Test User']}),
+                 {'givenName': 'Test', 'sn': 'User'}),
                 ('uid=testuser2,ou=People,dc=example,dc=com',
-                 {'cn': ['Test User2']}),
+                 {'givenName': 'Test', 'sn': 'User2'}),
                 ('uid=testuser3,ou=People,dc=example,dc=com',
-                 {'cn': ['Test User3']})]
+                 {'givenName': 'Test', 'sn': 'User3'})]
         self.assertEqual(res, res1)
 
         res = l._query(settings.LDAP_GROUP_BASE, '(objectClass=*)', ['cn'])
@@ -80,7 +81,8 @@ class LDAPTest(TestCase):
         user = l.getUserById('testuser1')
         user1 = {'id': 'testuser1',
                  'email': 't.user@example.com',
-                 'display': 'Test'}
+                 'first_name': 'Test',
+                 'last_name': 'User'}
         self.assertEqual(user, user1)
 
         user = l.getUserById('nulluser')
@@ -99,7 +101,9 @@ class LDAPTest(TestCase):
                      'authMethod': 'ldap'}
         u = l.authenticate(req)
         u1 = {'email': 't.user@example.com',
-              'display': 'Test', 'id': 'testuser1'}
+              'first_name': 'Test',
+              'last_name': 'User',
+              'id': 'testuser1'}
         self.failUnlessEqual(u, u1)
 
         # Test authservice API

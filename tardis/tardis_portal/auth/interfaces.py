@@ -63,7 +63,8 @@ class UserProvider:
         return the user dictionary in the format of::
 
             {"id": 123,
-            "display": "John Smith",
+            "first_name": "John",
+            "last_name": "Smith",
             "email": "john@example.com"}
 
         """
@@ -76,7 +77,8 @@ class UserProvider:
         each user is in the format of::
 
             {"id": 123,
-            "display": "John Smith",
+            "first_name": "John",
+            "last_name": "Smith",
             "email": "john@example.com"}
 
         """

@@ -41,8 +41,9 @@ initialising the LDAP backend.
 .. attribute:: tardis.settings_changeme.LDAP_USER_ATTR_MAP
 
     The LDAP user attribute map is used to map internal identifiers
-    like *display* and *email* to their LDAP equivalents e.g.
-    *{"givenName": "display", "mail": "email"}*
+    like *first_name*, *last_name* and *email* to their LDAP equivalents e.g.
+    *{"givenName": "first_name", "sn": "last_name", "mail": "email"}*
+
 
 .. attribute:: tardis.settings_changeme.LDAP_GROUP_ID_ATTR
 
