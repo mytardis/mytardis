@@ -60,9 +60,9 @@ metadata to be reingested."""
                     action='store_true',
                     dest='dryRun',
                     default=False,
-                    help="Don't commit the results of running the " \
-                        "filters to the database.  Warning: does not " \
-                        "handle non-database changes made by a filter!"),
+                    help="Don't commit the results of running the "
+                         "filters to the database.  Warning: does not "
+                         "handle non-database changes made by a filter!"),
         ) + (
         make_option('--list', '-l',
                     action='store_true',
@@ -135,7 +135,8 @@ metadata to be reingested."""
         try:
             filter_class = getattr(mod, filter_classname)
         except AttributeError:
-            raise ImproperlyConfigured('Filter module "%s" does not define a "%s" class' %
+            raise ImproperlyConfigured('Filter module "%s" does not define a '
+                                       '"%s" class' %
                                        (filter_module, filter_classname))
 
         filter_instance = filter_class(*args, **kw)
@@ -149,15 +150,15 @@ metadata to be reingested."""
                 dfo = DataFileObject.objects.filter(datafile=datafile,
                                                     verified=True).first()
                 if not dfo:
-                    continue 
+                    continue
                 try:
                     for filter in filters:
                         filter(sender=DataFile, instance=datafile,
                                created=False, using='default')
                 except Exception:
                     exc_class, exc, tb = sys.exc_info()
-                    new_exc = CommandError("Exception %s has occurred: " % \
-                                               (exc or exc_class))
+                    new_exc = CommandError("Exception %s has occurred: " %
+                                           (exc or exc_class))
                     raise new_exc.__class__, new_exc, tb
         finally:
             pass
