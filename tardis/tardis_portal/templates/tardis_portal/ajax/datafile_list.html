@@ -82,7 +82,7 @@
                            target="_blank">{{ datafile.filename }}</a>
                     {% else %}
                         {% if datafile.verified %}
-                            <span class="datafile_name{% if not datafile.is_online %} archived-file{% endif %}">{{ datafile.fi
+                            <span class="datafile_name{% if not datafile.is_online %} archived-file{% endif %}">{{ datafile.filename }}</span>
                         {% else %}
                             <span class="datafile_name" style="color:red;">{{ datafile.filename }}</span>
                         {% endif %}
