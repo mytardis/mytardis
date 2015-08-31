@@ -2,8 +2,9 @@
 
 .. moduleauthor:: Ruseell Sim <russell.sim@monash.edu>
 """
-from django.test import TestCase
+from django.test import TestCase, RequestFactory
 from nose.plugins.skip import SkipTest
+
 server = None
 
 from django.utils.unittest import skipIf
@@ -30,7 +31,7 @@ class LDAPErrorTest(TestCase):
 class LDAPTest(TestCase):
     def setUp(self):
         from tardis.tardis_portal.tests.ldap_ldif import test_ldif
-        import slapd
+        import tardis.tardis_portal.tests.slapd as slapd
         global server
         if not slapd.Slapd.check_paths():
             raise SkipTest()
@@ -87,12 +88,12 @@ class LDAPTest(TestCase):
 
     def test_authenticate(self):
         from tardis.tardis_portal.auth.ldap_auth import ldap_auth
-        from django.core.handlers.wsgi import WSGIRequest
         from django.contrib.auth.models import User
 
         # Tests Authenticate API
         l = ldap_auth()
-        req = WSGIRequest({"REQUEST_METHOD": "POST"})
+        rf = RequestFactory()
+        req = rf.post('')
         req._post = {'username': 'testuser1',
                      'password': 'kklk',
                      'authMethod': 'ldap'}
@@ -103,7 +104,7 @@ class LDAPTest(TestCase):
 
         # Test authservice API
         from tardis.tardis_portal.auth import auth_service
-        req = WSGIRequest({"REQUEST_METHOD": "POST"})
+        req = rf.post('')
         req._post = {'username': 'testuser1',
                      'password': 'kklk',
                      'authMethod': 'ldap'}
@@ -116,15 +117,16 @@ class LDAPTest(TestCase):
             userProfile__user=user,
             authenticationMethod=l.name)
 
-        user1 = UserAuthentication.objects.get(username=user.username,
-                        authenticationMethod='ldap').userProfile.user
+        user1 = UserAuthentication.objects.get(
+            username=user.username,
+            authenticationMethod='ldap').userProfile.user
         self.assertEqual(user, user1)
 
     def test_getgroups(self):
         from django.contrib.auth.models import User
-        from django.core.handlers.wsgi import WSGIRequest
         from tardis.tardis_portal.auth import auth_service
-        req = WSGIRequest({"REQUEST_METHOD": "POST"})
+        rf = RequestFactory()
+        req = rf.post('')
         req._post = {'username': 'testuser1',
                      'password': 'kklk',
                      'authMethod': 'ldap'}
@@ -135,10 +137,12 @@ class LDAPTest(TestCase):
         from tardis.tardis_portal.auth.ldap_auth import ldap_auth
         # Tests getGroups
         l = ldap_auth()
-        self.assertEqual([g for g in l.getGroups(req)], ['full', 'systems'])
+        self.assertEqual([g for g in l.getGroups(req.user)],
+                         ['full', 'systems'])
 
     def test_getgroupbyid(self):
         from tardis.tardis_portal.auth.ldap_auth import ldap_auth
+
         l = ldap_auth()
         self.assertEqual(l.getGroupById('full'),
                          {'id': 'full', 'display': 'Full Group'})

@@ -29,6 +29,11 @@ def mkdirs(path):
     return path
 
 
+def which(executable):
+    return subprocess.check_output(
+        ['which', executable]).strip().replace('//', '/')
+
+
 def delete_directory_content(path):
     for dirpath, dirnames, filenames in os.walk(path, topdown=False):
         for n in filenames:
@@ -68,13 +73,11 @@ class Slapd:
     TEST_UTILS_DIR = os_path.abspath(os_path.split(__file__)[0])
     PATH_TMPDIR = "/var/tmp/python-ldap-test"
     PATH_TMPDIR = tempfile.mkdtemp()
-    PATH_SBINDIR = "/usr/sbin"
-    PATH_BINDIR = "/usr/bin"
     PATH_SCHEMA_DIR = TEST_UTILS_DIR + "/ldap_schemas/"
-    PATH_LDAPADD = os.path.join(PATH_BINDIR, "ldapadd")
-    PATH_LDAPSEARCH = os.path.join(PATH_BINDIR, "ldapsearch")
-    PATH_SLAPD = os.path.join(PATH_SBINDIR, "slapd")
-    PATH_SLAPTEST = os.path.join(PATH_SBINDIR, "slaptest")
+    PATH_LDAPADD = which("ldapadd")
+    PATH_LDAPSEARCH = which("ldapsearch")
+    PATH_SLAPD = which("slapd")
+    PATH_SLAPTEST = which("slaptest")
 
     # TODO add paths for other OSs
 
@@ -83,16 +86,9 @@ class Slapd:
         Checks that the configured executable paths look valid.
         If they don't, then logs warning messages (not errors).
         """
-        for name, path in (
-                ("slapd", cls.PATH_SLAPD),
-                ("ldapadd", cls.PATH_LDAPADD),
-                ("ldapsearch", cls.PATH_LDAPSEARCH),
-             ):
-            cls._log.debug("checking %s executable at %s", name, path)
-            if not os.access(path, os.X_OK):
-                cls._log.warn("cannot find %s executable at %s", name, path)
-                return False
-        return True
+        return all(name in which(name)
+                   for name in ('slapd', 'ldapadd', 'ldapsearch'))
+
     check_paths = classmethod(check_paths)
 
     def __init__(self):
@@ -218,21 +214,23 @@ class Slapd:
         config_path = self._write_config()
         self._log.info("starting slapd")
         self._proc = subprocess.Popen([self.PATH_SLAPD,
-                "-f", config_path,
-                "-h", self.get_url(),
-                "-d", str(self._slapd_debug_level),
-                ])
+                                       "-f", config_path,
+                                       "-h", self.get_url(),
+                                       "-d", str(self._slapd_debug_level),
+                                   ])
         self._proc_config = config_path
 
     def _wait_for_slapd(self):
         # Waits until the LDAP server socket is open, or slapd crashed
         s = socket.socket()
         while 1:
+
             if self._proc.poll() is not None:
                 self._stopped()
                 raise RuntimeError("slapd exited before opening port")
             try:
                 self._log.debug("Connecting to %s", repr(self.get_address()))
+                time.sleep(0.3)
                 s.connect(self.get_address())
                 s.close()
                 return
@@ -300,30 +298,30 @@ class Slapd:
         """Runs ldapadd on this slapd instance, passing it the ldif content"""
         self._log.debug("adding %s", repr(ldif))
         p = subprocess.Popen([self.PATH_LDAPADD,
-                "-x",
-                "-D", self.get_root_dn(),
-                "-w", self.get_root_password(),
-                "-H", self.get_url()] + extra_args,
-                stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+                              "-x",
+                              "-D", self.get_root_dn(),
+                              "-w", self.get_root_password(),
+                              "-H", self.get_url()] + extra_args,
+                             stdin=subprocess.PIPE, stdout=subprocess.PIPE)
         p.communicate(ldif)
         if p.wait() != 0:
             raise RuntimeError("ldapadd process failed")
 
     def ldapsearch(self, base=None, filter='(objectClass=*)', attrs=[],
-        scope='sub', extra_args=[]):
+                   scope='sub', extra_args=[]):
         if base is None:
             base = self.get_dn_suffix()
         self._log.debug("ldapsearch filter=%s", repr(filter))
         p = subprocess.Popen([self.PATH_LDAPSEARCH,
-                "-x",
-                "-D", self.get_root_dn(),
-                "-w", self.get_root_password(),
-                "-H", self.get_url(),
-                "-b", base,
-                "-s", scope,
-                "-LL",
-                ] + extra_args + [filter] + attrs,
-                stdout=subprocess.PIPE)
+                              "-x",
+                              "-D", self.get_root_dn(),
+                              "-w", self.get_root_password(),
+                              "-H", self.get_url(),
+                              "-b", base,
+                              "-s", scope,
+                              "-LL",
+                              ] + extra_args + [filter] + attrs,
+                             stdout=subprocess.PIPE)
         output = p.communicate()[0]
         if p.wait() != 0:
             raise RuntimeError("ldapadd process failed")
@@ -387,8 +385,8 @@ class Slapd:
         root_cn = self.get_root_dn().split(',')[0][3:]
 
         self._log.debug("adding %s and %s",
-                self.get_dn_suffix(),
-                self.get_root_dn())
+                        self.get_dn_suffix(),
+                        self.get_root_dn())
 
         self.ldapadd("\n".join([
             'dn: ' + self.get_dn_suffix(),
