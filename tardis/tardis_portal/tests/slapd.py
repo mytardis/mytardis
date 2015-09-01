@@ -30,8 +30,11 @@ def mkdirs(path):
 
 
 def which(executable):
-    return subprocess.check_output(
-        ['which', executable]).strip().replace('//', '/')
+    try:
+        return subprocess.check_output(
+            ['which', executable]).strip().replace('//', '/')
+    except subprocess.CalledProcessError:
+        return None
 
 
 def delete_directory_content(path):
@@ -86,8 +89,8 @@ class Slapd:
         Checks that the configured executable paths look valid.
         If they don't, then logs warning messages (not errors).
         """
-        return all(name in which(name)
-                   for name in ('slapd', 'ldapadd', 'ldapsearch'))
+        return all(which(cmd_name) is not None
+                   for cmd_name in ('slapd', 'ldapadd', 'ldapsearch'))
 
     check_paths = classmethod(check_paths)
 

@@ -7,7 +7,7 @@ from nose.plugins.skip import SkipTest
 
 server = None
 
-from django.utils.unittest import skipIf
+from unittest import skipIf
 from django.conf import settings
 
 ldap_auth_provider = ('ldap', 'LDAP',
