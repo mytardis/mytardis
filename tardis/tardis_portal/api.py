@@ -164,9 +164,8 @@ class ACLAuthorization(Authorization):
                     if has_dataset_access(bundle.request,
                                           dp.parameterset.dataset.id)]
         elif isinstance(bundle.obj, DataFile):
-            all_dfs = set(
-                get_accessible_datafiles_for_user(bundle.request))
-            return list(all_dfs.intersection(object_list))
+            all_files = get_accessible_datafiles_for_user(bundle.request)
+            return all_files.filter(id__in=[obj.id for obj in object_list])
         elif isinstance(bundle.obj, DatafileParameterSet):
             datafiles = get_accessible_datafiles_for_user(bundle.request)
             return [dfps for dfps in object_list if dfps.datafile in datafiles]
