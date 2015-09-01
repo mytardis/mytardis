@@ -139,20 +139,23 @@ class ACLAuthorization(Authorization):
     '''Authorisation class for Tastypie.
     '''
     def read_list(self, object_list, bundle):  # noqa # too complex
+        obj_ids = [obj.id for obj in object_list]
         if bundle.request.user.is_authenticated() and \
            bundle.request.user.is_superuser:
             return object_list
         if isinstance(bundle.obj, Experiment):
             experiments = Experiment.safe.all(bundle.request.user)
-            return [exp for exp in experiments if exp in object_list]
+            return experiments.filter(id__in=obj_ids)
         elif isinstance(bundle.obj, ExperimentParameterSet):
             experiments = Experiment.safe.all(bundle.request.user)
-            return [eps for eps in object_list
-                    if eps.experiment in experiments]
+            return ExperimentParameterSet.objects.filter(
+                experiment__in=experiments, id__in=obj_ids)
         elif isinstance(bundle.obj, ExperimentParameter):
             experiments = Experiment.safe.all(bundle.request.user)
-            return [ep for ep in object_list
-                    if ep.parameterset.experiment in experiments]
+            return ExperimentParameter.objects.filter(
+                parameterset__experiment__in=experiments,
+                id__in=obj_ids
+            )
         elif isinstance(bundle.obj, Dataset):
             return [ds for ds in object_list
                     if has_dataset_access(bundle.request, ds.id)]
@@ -165,27 +168,28 @@ class ACLAuthorization(Authorization):
                                           dp.parameterset.dataset.id)]
         elif isinstance(bundle.obj, DataFile):
             all_files = get_accessible_datafiles_for_user(bundle.request)
-            return all_files.filter(id__in=[obj.id for obj in object_list])
+            return all_files.filter(id__in=obj_ids)
         elif isinstance(bundle.obj, DatafileParameterSet):
             datafiles = get_accessible_datafiles_for_user(bundle.request)
-            return [dfps for dfps in object_list if dfps.datafile in datafiles]
+            return DatafileParameterSet.objects.filter(
+                datafile__in=datafiles, id__in=obj_ids
+            )
         elif isinstance(bundle.obj, DatafileParameter):
             datafiles = get_accessible_datafiles_for_user(bundle.request)
-            return [dfp for dfp in object_list
-                    if dfp.parameterset.datafile in datafiles]
+            return DatafileParameter.objects.filter(
+                parameterset__datafile__in=datafiles, id__in=obj_ids)
         elif isinstance(bundle.obj, Schema):
             return object_list
         elif isinstance(bundle.obj, ParameterName):
             return object_list
         elif isinstance(bundle.obj, ObjectACL):
-            experiments = Experiment.safe.all(bundle.request.user)
-            objacl_list = []
-            for objacl in object_list:
-                if isinstance(objacl.content_object, Experiment):
-                    exp = Experiment.objects.get(id=objacl.object_id)
-                    if exp in experiments:
-                        objacl_list.append(objacl)
-            return objacl_list
+            experiment_ids = Experiment.safe.all(
+                bundle.request.user).values_list('id', flat=True)
+            return ObjectACL.objects.filter(
+                content_type__name='experiment',
+                content_id__in=experiment_ids,
+                id__in=obj_ids
+            )
         elif bundle.request.user.is_authenticated() and \
                 isinstance(bundle.obj, User):
             if len(facilities_managed_by(bundle.request.user)) > 0:
@@ -196,9 +200,7 @@ class ACLAuthorization(Authorization):
                          user.experiment_set.filter(public_access__gt=1)
                          .count() > 0)]
         elif isinstance(bundle.obj, Group):
-            groups = bundle.request.user.groups.all()
-            return [grp for grp in object_list
-                    if grp in groups]
+            return bundle.request.user.groups.filter(id__in=obj_ids)
         elif isinstance(bundle.obj, Facility):
             facilities = facilities_managed_by(bundle.request.user)
             return [facility for facility in object_list
