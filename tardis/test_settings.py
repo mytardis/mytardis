@@ -42,7 +42,9 @@ GET_FULL_STAGING_PATH_TEST = path.join(STAGING_PATH, "test_user")
 AUTH_PROVIDERS = (('localdb', 'Local DB',
                   'tardis.tardis_portal.auth.localdb_auth.DjangoAuthBackend'),
                   ('vbl', 'VBL',
-                   'tardis.tardis_portal.tests.mock_vbl_auth.MockBackend'))
+                   'tardis.tardis_portal.tests.mock_vbl_auth.MockBackend'),
+                  ('ldap', 'LDAP',
+                   'tardis.tardis_portal.auth.ldap_auth.ldap_auth'))
 
 #if (optional) ldap doesn't exist then don't enable ldap auth
 try:
