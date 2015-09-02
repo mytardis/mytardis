@@ -15,6 +15,7 @@ from django.contrib.auth.models import Group
 from django.core.servers.basehttp import FileWrapper
 from django.http import HttpResponse, HttpResponseForbidden, \
     StreamingHttpResponse
+from werkzeug.http import parse_range_header
 
 from tardis.tardis_portal.auth.decorators import \
     get_accessible_datafiles_for_user
@@ -900,12 +901,28 @@ class DataFileResource(MyTardisModelResource):
             [file_record],
             self.build_bundle(obj=file_record, request=request))
         file_object = file_record.get_file()
-        wrapper = FileWrapper(file_object)
+        file_size = int(file_record.size)
+        content_size = file_size
+        # http://werkzeug.pocoo.org/docs/0.10/http/
+        range_request = parse_range_header(request.META.get("HTTP_RANGE"))
         response = StreamingHttpResponse(
-            wrapper, content_type=file_record.mimetype)
-        response['Content-Length'] = file_record.size
-        response['Content-Disposition'] = 'attachment; filename="%s"' % \
-                                          file_record.filename
+            content_type=file_record.mimetype)
+        response['Accept-Ranges'] = 'bytes'
+        if range_request is not None:
+            if len(range_request.ranges) > 1:
+                return HttpResponse("Only single ranges are supported",
+                                    status=416)
+            content_range = range_request.make_content_range(file_size)
+            file_object.seek(content_range.start)
+            response["Content-Range"] = content_range.to_header()
+            response["Content-Length"] = (content_range.stop -
+                                          content_range.start)
+            response.status_code = 206
+        else:
+            response['Content-Length'] = content_size
+        response['Content-Disposition'] = ('attachment; filename="%s"' %
+                                           file_record.filename)
+        response.streaming_content = FileWrapper(file_object)
         self.log_throttled_access(request)
         return response
 
