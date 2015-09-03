@@ -58,11 +58,11 @@ class LDAPTest(TestCase):
         res = l._query(settings.LDAP_USER_BASE, '(objectClass=*)', ['givenName', 'sn'])
         res1 = [('ou=People,dc=example,dc=com', {}),
                 ('uid=testuser1,ou=People,dc=example,dc=com',
-                 {'givenName': 'Test', 'sn': 'User'}),
+                 {'givenName': ['Test'], 'sn': ['User']}),
                 ('uid=testuser2,ou=People,dc=example,dc=com',
-                 {'givenName': 'Test', 'sn': 'User2'}),
+                 {'givenName': ['Test'], 'sn': ['User2']}),
                 ('uid=testuser3,ou=People,dc=example,dc=com',
-                 {'givenName': 'Test', 'sn': 'User3'})]
+                 {'givenName': ['Test'], 'sn': ['User3']})]
         self.assertEqual(res, res1)
 
         res = l._query(settings.LDAP_GROUP_BASE, '(objectClass=*)', ['cn'])
