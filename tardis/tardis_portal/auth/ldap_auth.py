@@ -147,7 +147,8 @@ class LDAPBackend(AuthProvider, UserProvider, GroupProvider):
                 # check if the given username in combination with the LDAP
                 # auth method is already in the UserAuthentication table
                 user = ldap_result[0][1]
-                return {'display': user['givenName'][0],
+                return {'first_name': user['givenName'][0],
+                        'last_name': user['sn'][0],
                         "id": user['uid'][0],
                         "email": user['mail'][0]}
             return None
@@ -173,7 +174,8 @@ class LDAPBackend(AuthProvider, UserProvider, GroupProvider):
         return the user dictionary in the format of::
 
             {"id": 123,
-            "display": "John Smith",
+            "first_name": "John",
+            "last_name": "Smith",
             "email": "john@example.com"}
 
         """

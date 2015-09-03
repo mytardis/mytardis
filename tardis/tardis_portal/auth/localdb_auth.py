@@ -90,15 +90,17 @@ class DjangoUserProvider(UserProvider):
         return the user dictionary in the format of::
 
             {"id": 123,
-            "display": "John Smith",
+            "first_name": "John",
+            "last_name": "Smith",
             "email": "john@example.com"}
 
         """
         try:
             userObj = User.objects.get(username=id)
-            return {'id': id, 'display': userObj.first_name + ' ' +
-                    userObj.last_name, 'first_name': userObj.first_name,
-                    'last_name': userObj.last_name, 'email': userObj.email}
+            return {'id': id,
+                    'first_name': userObj.first_name,
+                    'last_name': userObj.last_name,
+                    'email': userObj.email}
         except User.DoesNotExist:
             return None
 

@@ -165,7 +165,7 @@ class AuthService():
             authMethods = [authMethod]
         for authMethod in authMethods:
             # authenticate() returns either a User or a dictionary describing a
-            # user (id, display, email, first_name, last_name).
+            # user (id, email, first_name, last_name).
             authenticate_retval = self._authentication_backends[
                 authMethod].authenticate(**credentials)
             user = self.get_or_create_user(authenticate_retval,
@@ -189,7 +189,7 @@ class AuthService():
         if authMethod in self._authentication_backends:
             try:
                 # get_user returns either a User or a dictionary describing a
-                # user (id, display, email, first_name, last_name).
+                # user (id, email, first_name, last_name).
                 user = self._authentication_backends[authMethod].get_user(user_id)
             except (NotImplementedError, AttributeError):
                 # For backwards compatibility
