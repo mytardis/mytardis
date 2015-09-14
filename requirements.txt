@@ -40,6 +40,7 @@ pyoai==2.4.4
 pyparsing==1.5.7 #apt: 2.0.1
 pysolr>=2.1.0,<3 #apt: 2.0.15
 python-dateutil==2.4.0 #apt: 1.5
+python-ldap
 # python-magic==0.4.6 #apt: 1:5.14
 -e git+https://github.com/grischa/python-magic.git#egg=python-magic
 pytz  #apt: 2012c
@@ -49,7 +50,6 @@ six==1.9.0 #apt: 1.5.2
 ua-parser==0.3.3
 user-agents==0.1.1
 wsgiref==0.1.2
-python-ldap
 
 # apps go here
 -r tardis/apps/publication_forms/requirements.txt
