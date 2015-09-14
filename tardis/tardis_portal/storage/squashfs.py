@@ -18,6 +18,7 @@ sudo make install
 import errno
 import os
 import subprocess
+import tempfile
 
 from celery import task
 from datetime import datetime
@@ -61,17 +62,22 @@ class SquashFSStorage(Storage):
                                '/usr/local/bin/squashfsumount')
 
     def __init__(self, sq_filename=None, sq_basepath=None, datafile_id=None):
+        # create unique temporary mount point
+        tempfile.tempdir = self.squashmount_root
+        self.mount_dir = tempfile.mkdtemp()
+        self.mount_dir_name = os.path.basename(self.mount_dir)
+        tempfile.tempdir = None
+
         self.datafile = None
         if sq_filename is not None and sq_basepath is not None:
             self.sq_filename = sq_filename
-            self.location = os.path.join(self.squashmount_root,
-                                         sq_filename)
+            self.location = os.path.join(self.mount_dir, sq_filename)
             self.squashfile = os.path.join(sq_basepath, sq_filename)
             self._mount()
         elif datafile_id is not None:
             df = DataFile.objects.get(id=datafile_id)
             self.datafile = df
-            self.location = os.path.join(self.squashmount_root, df.filename)
+            self.location = os.path.join(self.mount_dir, df.filename)
             self.squashfile = df.file_objects.all()[0].get_full_path()
             self.sq_filename = os.path.basename(self.squashfile)
             self._mount()
@@ -80,6 +86,7 @@ class SquashFSStorage(Storage):
 
     def __del__(self):
         self._umount()
+        os.rmdir(self.mount_dir)
 
     @property
     def _mounted(self):
@@ -87,13 +94,56 @@ class SquashFSStorage(Storage):
         return mount_list.find(self.location) > -1
 
     def _mount(self):
+        # example scripts
+        # /usr/local/bin/squashfsmount self.squashfile self.mount_dir_name
+        """
+        #!/usr/bin/python
+
+        import os
+        import shlex
+        import subprocess
+        import sys
+
+        USERNAME = 'mytardis'
+        SQUASHPATH = sys.argv[1]
+        MOUNT_ID = os.path.basename(sys.argv[2])  # basename for security reasons
+        FILENAME = os.path.basename(SQUASHPATH)
+        MOUNTDIR = os.path.join('/srv/squashfsmounts', MOUNT_ID, FILENAME)
+        if MOUNTDIR in subprocess.check_output('mount'):
+            quit()
+        subprocess.call(shlex.split('mkdir -p {}'.format(MOUNTDIR)))
+        subprocess.call(shlex.split(
+            'mount -t squashfs -o ro {squashpath} {mountdir}'.format(
+                squashpath=SQUASHPATH, mountdir=MOUNTDIR
+        )))
+        """
         if not self._mounted:
-            subprocess.call(['sudo', self.squashmount_cmd, self.squashfile])
+            subprocess.call(['sudo', self.squashmount_cmd, self.squashfile,
+                             self.mount_dir_name])
         return self._mounted
 
     def _umount(self):
+        # /usr/local/bin/squashfsumount self.sq_filename self.mount_dir_name
+        """
+        #!/usr/bin/python
+
+        import os
+        import shlex
+        import subprocess
+        import sys
+
+        FILENAME = sys.argv[1]
+        MOUNT_ID = os.path.basename(sys.argv[2])  # for security reasons
+        MOUNTDIR = os.path.join('/srv/squashfsmounts', MOUNT_ID, FILENAME)
+        if MOUNTDIR not in subprocess.check_output('mount'):
+            quit()
+        subprocess.call(shlex.split(
+            'umount {mountdir}'.format(mountdir=MOUNTDIR
+        )))
+        """
         if self._mounted:
-            subprocess.call(['sudo', self.squashumount_cmd, self.sq_filename])
+            subprocess.call(['sudo', self.squashumount_cmd, self.sq_filename,
+                             self.mount_dir_name])
         return self._mounted
 
     def _open(self, name, mode='rb'):
@@ -230,43 +280,3 @@ def parse_squashfs_file(squashfs_file_id, parse_module, ns):
     finally:
         status.save()
 
-# example scripts
-# /usr/local/bin/squashfsmount
-"""
-#!/usr/bin/python
-
-import os
-import shlex
-import subprocess
-import sys
-
-USERNAME = 'mytardis'
-SQUASHPATH = sys.argv[1]
-FILENAME = os.path.basename(SQUASHPATH)
-MOUNTDIR = os.path.join('/srv/squashfsmounts', FILENAME)
-if MOUNTDIR in subprocess.check_output('mount'):
-    quit()
-subprocess.call(shlex.split('mkdir -p {}'.format(MOUNTDIR)))
-subprocess.call(shlex.split(
-    'mount -t squashfs -o ro {squashpath} {mountdir}'.format(
-        squashpath=SQUASHPATH, mountdir=MOUNTDIR
-)))
-"""
-
-# /usr/local/bin/squashfsumount
-"""
-#!/usr/bin/python
-
-import os
-import shlex
-import subprocess
-import sys
-
-FILENAME = sys.argv[1]
-MOUNTDIR = os.path.join('/srv/squashfsmounts', FILENAME)
-if MOUNTDIR not in subprocess.check_output('mount'):
-    quit()
-subprocess.call(shlex.split(
-    'umount {mountdir}'.format(mountdir=MOUNTDIR
-)))
-"""
