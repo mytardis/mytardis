@@ -424,17 +424,29 @@ class Parameter(models.Model):
 
     @property
     def link_url(self):
+        def get_view_method(view_override_setting, default):
+            for view_override in settings.get(view_override_setting, []):
+                if view_override[0] == self.name.schema.namespace:
+                    return view_override[1]
+            return default
+
         if not self.name.isLink():
             return None
         if isinstance(self.link_gfk, DataFile):
-            url = reverse('tardis.tardis_portal.views.view_dataset',
-                          kwargs={'dataset_id': self.link_gfk.dataset.id})
+            view = get_view_method('DATAFILE_VIEWS',
+                                   'tardis.tardis_portal.views.view_dataset')
+            url = reverse(view, kwargs={'dataset_id': self.link_gfk.dataset.id})
         elif isinstance(self.link_gfk, Dataset):
-            url = reverse('tardis.tardis_portal.views.view_dataset',
-                          kwargs={'dataset_id': self.link_id})
+            view = get_view_method('DATASET_VIEWS',
+                                   'tardis.tardis_portal.views.view_dataset')
+            url = reverse(view, kwargs={'dataset_id': self.link_id})
         elif isinstance(self.link_gfk, Experiment):
-            url = reverse('tardis.tardis_portal.views.view_experiment',
+            view = get_view_method('EXPERIMENT_VIEWS',
+                                   'tardis.tardis_portal.views.view_experiment')
+            url = reverse(view,
                           kwargs={'experiment_id': self.link_id})
+        elif self.link_gfk is None and self.string_value:
+            url = self.string_value
         else:
             raise NotImplementedError
         return url
@@ -452,15 +464,57 @@ class Parameter(models.Model):
             self.numerical_value = float(value)
         elif self.name.isDateTime():
             # We convert the value string into datetime object.
-            # dateutil.parser detects and converts many date formats and is quite
-            # permissive in what it accepts (form validation and API input
-            # validation happens elsewhere and may be less permissive)
+            # dateutil.parser detects and converts many date formats and is
+            # quite permissive in what it accepts (form validation and API
+            # input validation happens elsewhere and may be less permissive)
             datevalue = dateutil.parser.parse(value)
             if settings.USE_TZ and is_naive(datevalue):
                 datevalue = make_aware(datevalue, LOCAL_TZ)
             elif not settings.USE_TZ and is_aware(datevalue):
                 datevalue = make_naive(datevalue, LOCAL_TZ)
             self.datetime_value = datevalue
+        elif self.name.isLink():
+            # Always store the raw value as a string, even if setting
+            # the GenericForeignKey via link_id/link_ct
+            self.string_value = unicode(value)
+
+            try:
+                # We detect experiment or dataset view URLs
+                # (eg, /experiment/view/12345 or /dataset/123)
+                # and extract values to populate link_ct and link_id. This
+                # covers two common cases, allowing LINK Parameters to be
+                # properly created via the API.
+                # Ideally we should be able to take the a URL in the form
+                # returned by Model.get_absolute_url() and map it back to a
+                # model instance, however there doesn't appear to be any simple
+                # way to do this cleanly.
+                # (Something like django.core.urlresolvers.resolve will return
+                # the matching view associated with a URL, but not the model)
+                v = value.lstrip('/')  # no leading slash
+                from tardis.urls import experiment_view_url, dataset_view_url
+                match = None
+                for url in [experiment_view_url, dataset_view_url]:
+                    match = url.regex.match(v)
+                    if match:
+                        break
+
+                # Split URLs paths in the form <model_name>/../<pk_id>
+                if match:
+                    from urlparse import urlparse
+                    path = urlparse(value).path
+                    path_bits = path.strip('/').split('/')
+                    model_name = path_bits[0]
+                    pk = int(path_bits[-1])
+
+                    self.link_id = pk
+                    self.link_ct = ContentType.objects.get(
+                        app_label='tardis_portal',
+                        model=model_name)
+            except (ValueError, IndexError), e:
+                # we were unable to successfully match the url to model
+                # instance - users of the model instance will need to
+                # fall back to using self.string_value instead of self.link_gfk
+                pass
         else:
             self.string_value = unicode(value)
 
