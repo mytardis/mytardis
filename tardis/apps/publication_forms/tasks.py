@@ -1,5 +1,3 @@
-from datetime import datetime
-
 from celery.task import task
 
 import CifFile
@@ -7,6 +5,7 @@ import CifFile
 from django.conf import settings
 from django.core.cache import get_cache
 from django.db import transaction
+from django.utils import timezone
 
 from tardis.tardis_portal.models import Schema, Experiment, \
     ExperimentParameter, ExperimentParameterSet, \
@@ -71,7 +70,7 @@ def get_release_date(publication):
                 default_settings.PUBLICATION_SCHEMA_ROOT),
             parameterset__experiment=publication).datetime_value
     except ExperimentParameter.DoesNotExist:
-        release_date = datetime.now()
+        release_date = timezone.now()
 
     return release_date
 
@@ -100,7 +99,7 @@ def process_embargos():
 
         # Check the embargo date
         release_date = get_release_date(pub)
-        embargo_expired = datetime.now() >= release_date
+        embargo_expired = timezone.now() >= release_date
 
         if embargo_expired and pdb_pass:
             pub.public_access = Experiment.PUBLIC_ACCESS_FULL
@@ -175,7 +174,7 @@ def populate_pdb_pub_records():
                 getattr(settings,
                         'PDB_REFRESH_INTERVAL',
                         default_settings.PDB_REFRESH_INTERVAL) \
-                < datetime.now()
+                < timezone.now()
 
         except ExperimentParameter.DoesNotExist:
             # if the PDB last update time parameter doesn't exist,
@@ -322,9 +321,9 @@ def populate_pdb_pub_records():
                     pdb_last_update_parameter = ExperimentParameter(
                         name=last_update_parameter_name,
                         parameterset=pub_parameter_set,
-                        datetime_value=datetime.now())
+                        datetime_value=timezone.now())
                 else:
-                    pdb_last_update_parameter.datetime_value = datetime.now()
+                    pdb_last_update_parameter.datetime_value = timezone.now()
                 pdb_last_update_parameter.save()
 
             except CifFile.StarError:
