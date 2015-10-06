@@ -236,6 +236,7 @@ STATICFILES_STORAGE = \
 # this Django installation.
 TARDIS_APP_ROOT = 'tardis.apps'
 INSTALLED_APPS = (
+    'tardis.tardis_portal',
     'django_extensions',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -245,7 +246,6 @@ INSTALLED_APPS = (
     'django.contrib.admin',
     'django.contrib.admindocs',
     'django.contrib.humanize',
-    'tardis.tardis_portal',
     'tardis.tardis_portal.templatetags',
     'registration',
     'django_jasmine',
