@@ -157,7 +157,7 @@ class DataFile(models.Model):
     class Meta:
         app_label = 'tardis_portal'
         ordering = ['filename']
-        unique_together = ['dataset', 'directory', 'filename', 'version']
+        unique_together = ['dataset', 'filename', 'version']
 
     @classmethod
     def sum_sizes(cls, datafiles):
