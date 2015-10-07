@@ -26,7 +26,7 @@ class StorageBox(models.Model):
                         'django.core.files.storage.FileSystemStorage'))
     max_size = models.BigIntegerField()  # Bytes
     status = models.CharField(max_length=100)
-    name = models.TextField(default='default', unique=True)
+    name = models.TextField(max_length=255,default='default', unique=True)
     description = models.TextField(default='Default Storage')
     master_box = models.ForeignKey('self', null=True, blank=True,
                                    related_name='child_boxes')
