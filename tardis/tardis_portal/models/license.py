@@ -19,14 +19,14 @@ class License(models.Model):
     class Meta:
         app_label = 'tardis_portal'
 
-    name = models.CharField(max_length=400, unique=True, blank=False)
+    name = models.CharField(max_length=255, unique=True, blank=False)
     url = models.URLField(
-        max_length=2000,
+        max_length=255,
         blank=False,
         unique=True,
         help_text="Link to document outlining licensing details.")
     internal_description = models.TextField(blank=False)
-    image_url = models.URLField(max_length=2000, blank=True)
+    image_url = models.URLField(max_length=255, blank=True)
     allows_distribution = models.BooleanField(
         default=False,
         help_text="Does this license provide distribution rights?")

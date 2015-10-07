@@ -398,7 +398,7 @@ class ParameterSet(models.Model, ParameterSetManagerMixin):
 
 class Parameter(models.Model):
     name = models.ForeignKey(ParameterName)
-    string_value = models.TextField(null=True, blank=True, db_index=True)
+    string_value = models.TextField(null=True, blank=True, db_index=False)
     numerical_value = models.FloatField(null=True, blank=True, db_index=True)
     datetime_value = models.DateTimeField(null=True, blank=True, db_index=True)
     link_id = models.PositiveIntegerField(null=True, blank=True)
