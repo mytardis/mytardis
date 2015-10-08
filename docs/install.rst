@@ -20,23 +20,18 @@ Ubuntu 14.04::
   python-feedparser python-html5lib python-httplib2 python-pystache \
   python-crypto python-flexmock python-dateutil
 
-Redhat/CentOS::
+Redhat/CentOS 7::
 
-  sudo yum install cyrus-sasl-ldap cyrus-sasl-devel openldap-devel libxslt \
-  libxslt-devel libxslt-python git graphviz-devel
+  sudo yum install epel-release
+  sudo yum install cyrus-sasl-ldap cyrus-sasl-devel openldap-devel \
+  libxslt libxslt-devel libxslt-python git gcc graphviz-devel \ 
+  python-virtualenv python-virtualenvwrapper python-pip php-devel php-pear \ 
+  ImageMagick ImageMagick-devel libevent-devel compat-libevent14-devel
 
 
-We do not actively develop or deploy on RedHat or CentOS, so the list of
-required packages might be incomplete.
-
-Depending on which flavour of RHEL or CentOS and which db try one of::
-
-  sudo yum install libevent-devel
-
-or::
-
-  sudo yum install compat-libevent14-devel
-
+Note that at least one of ``libevent-devel`` and ``compat-libevent14-devel`` 
+needs to be successfully installed as they are alternatives of the same package 
+for different distributions.
 
 Download
 --------
@@ -61,18 +56,29 @@ It is recommended that you use a virtualenv. The list of packages above
 includes the ``virtualenvwrapper`` toolkit. Set up your environment with these
 commands::
 
+Ubuntu 14.04::
+
   source /usr/share/virtualenvwrapper/virtualenvwrapper.sh
+  
+Redhat/CentOS 7:: 
+
+  source /usr/bin/virtualenvwrapper.sh
+  
+Then create the ``mytardis`` virtual environment ::
+
   mkvirtualenv --system-site-packages mytardis
   pip install -U pip
 
-Next time you want to work with this virtualenv, run::
-
-  source /usr/share/virtualenvwrapper/virtualenvwrapper.sh  # or add this to .bash_profile
-  workon mytardis
+Note: the next time you want to work with this virtualenv, run the appropriate 
+``source`` command and then use the command: ``workon mytardis``
 
 MyTARDIS dependencies are then installed with pip::
 
   pip install -r requirements.txt
+  
+For Redhat/CentOS 7, also run::
+
+  pip install -r requirements-centos.txt
 
 Configuring MyTARDIS is done through a standard Django *settings.py*
 file. MyTARDIS comes with a sample configuration file at
@@ -113,11 +119,10 @@ Initialisation
 
 Create and configure the database::
 
-  python mytardis.py syncdb --all --noinput
-  python mytardis.py migrate --fake
+  python mytardis.py migrate
 
 This avoids creating a superuser before the MyTardis specific ``UserProfile``
-table has been created. More information about the ``syncdb`` and ``migrate``
+table has been created. More information about the ``migrate``
 commands can be found at :doc:`admin`.
 
 Next, create a superuser::
