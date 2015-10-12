@@ -200,6 +200,43 @@ Database
    default port for the database engine will be used. If you are using
    SQLite then this field is ignored.
 
+MySQL - additional settings
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Additional settings are required to successfully deploy MyTardis on a 
+MySQL server, including: ``STORAGE_ENGINE`` and ``OPTIONS``. 
+An example settings configuration for a MySQL database is as follows:
+
+	DATABASES = {
+    	'default': {
+        	'ENGINE':   'django.db.backends.mysql',
+        	'NAME':     '<<mysql database name>>',
+        	'USER':     '<<mysql user>>',  # user must have all privileges to db
+        	'PASSWORD': '<<mysql password>>',
+        	'HOST':     '<<mysql host>>',  
+        	'PORT':     '3306',            # change if not using default port
+        	'STORAGE_ENGINE': 'InnoDB',
+        	'OPTIONS': {
+            	'init_command': 'SET storage_engine=InnoDB',
+            	'charset':      'utf8',
+            	'use_unicode':  True,
+        	},
+    	}
+	}
+
+Also, install the appropriate packages:
+	
+Ubuntu 14.04::
+
+  apt-get install libmysqlclient-dev
+
+RHEL/CentOS 7::
+
+  yum install mysql mysql-devel
+  
+MySQL python client::
+ 
+  pip install MySQL-python
 
 LDAP
 ~~~~
