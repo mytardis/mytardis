@@ -113,12 +113,20 @@ token_urls = patterns(
 accounts_urls = patterns(
     'tardis.tardis_portal.views',
     (r'^login/$', 'login'),
+    (r'^logout/$', 'logout'),
     (r'^manage$', 'manage_user_account'),
     (r'^manage_auth_methods/$', 'manage_auth_methods'),
     url(r'^register/$', RegistrationView.as_view(  # pylint: disable=E1120
         form_class=RegistrationForm),
         name='register'),
     (r'', include('registration.backends.default.urls')),
+    )
+
+cas_urls = patterns(
+    'tardis.tardis_portal.auth.cas.views',
+    url(r'^login/proxyCallback', 'proxy_callback', name='proxyCallback'),
+    url(r'^login/$', 'login', name='login'),
+    url(r'^logout/$', 'logout', {'next_page': '/'}, name='logout'),
     )
 
 dataset_urls = patterns(
@@ -361,6 +369,9 @@ urlpatterns = patterns(
 
     # Account Views
     (r'^accounts/', include(accounts_urls)),
+
+    # CAS Views
+    (r'^cas/', include(cas_urls)),
 
     # Group Views
     (r'^groups/$', 'tardis.tardis_portal.views.manage_groups'),

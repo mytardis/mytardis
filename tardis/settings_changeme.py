@@ -123,6 +123,7 @@ MIDDLEWARE_CLASSES = (
     'tardis.tardis_portal.logging_middleware.LoggingMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'tardis.tardis_portal.auth.token_auth.TokenAuthMiddleware',
+    'tardis.tardis_portal.auth.cas.middleware.CASMiddleware',
     # 'django.middleware.cache.FetchFromCacheMiddleware',
 )
 
@@ -294,6 +295,8 @@ GROUP_PROVIDERS = (
 AUTH_PROVIDERS = (
     ('localdb', 'Local DB',
      'tardis.tardis_portal.auth.localdb_auth.DjangoAuthBackend'),
+    ('cas', 'CAS Server', 
+     'tardis.tardis_portal.auth.cas.backends.CASBackend'),
 )
 
 # default authentication module for experiment ownership user during
@@ -309,6 +312,7 @@ ACCOUNT_ACTIVATION_DAYS = 3
 
 AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
+    'tardis.tardis_portal.auth.cas.backends.CASBackend',
     'tardis.tardis_portal.auth.authorisation.ACLAwareBackend',
 )
 
