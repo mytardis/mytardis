@@ -14,12 +14,12 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='datafileparameter',
             name='string_value',
-            field=models.CharField(max_length=255, null=True, blank=True),
+            field=models.CharField(max_length=255, null=True, blank=True, db_index=True),
         ),
         migrations.AlterField(
             model_name='datasetparameter',
             name='string_value',
-            field=models.CharField(max_length=255, null=True, blank=True),
+            field=models.CharField(max_length=255, null=True, blank=True, db_index=True),
         ),
         migrations.AlterField(
             model_name='experimentauthor',
@@ -29,12 +29,12 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='experimentparameter',
             name='string_value',
-            field=models.CharField(max_length=255, null=True, blank=True),
+            field=models.CharField(max_length=255, null=True, blank=True, db_index=True),
         ),
         migrations.AlterField(
             model_name='instrumentparameter',
             name='string_value',
-            field=models.CharField(max_length=255, null=True, blank=True),
+            field=models.CharField(max_length=255, null=True, blank=True, db_index=True),
         ),
         migrations.AlterField(
             model_name='license',
