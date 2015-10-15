@@ -316,6 +316,14 @@ AUTHENTICATION_BACKENDS = (
     'tardis.tardis_portal.auth.authorisation.ACLAwareBackend',
 )
 
+# CAS Server default settings
+CAS_ENABLED = False
+CAS_SERVER_URL = 'https//<url of the CAS Service>/'
+CAS_SERVICE_URL = 'http://<url of the tardis instance>/'
+CAS_IGNORE_REDIRECT = True
+CAS_LOGOUT_COMPLETELY = True
+CAS_LOGIN_URL = '/cas/login/'
+
 # Email Configuration
 
 EMAIL_PORT = 587

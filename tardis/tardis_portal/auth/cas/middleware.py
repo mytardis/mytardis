@@ -19,8 +19,8 @@ class CASMiddleware(object):
     def process_request(self, request):
         """Logs in the user if a ticket is append as parameter"""
 
-        if settings.USE_CAS:
-            request.session['use_cas'] = settings.USE_CAS
+        if settings.CAS_ENABLED:
+            request.session['use_cas'] = settings.CAS_ENABLED
         else:
             request.session['use_cas'] = False
             
