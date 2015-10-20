@@ -231,13 +231,14 @@ def parse_new_squashfiles():
     parsers = getattr(settings, 'SQUASHFS_PARSERS', {})
     for ns, parse_module in parsers.iteritems():
         unparsed_files = DatafileParameterSet.objects.filter(
-            schema__namespace=ns,
-            datafileparameter__name__name='parse_status'
+            schema__namespace=ns
         ).exclude(
+            datafileparameter__name__name='parse_status',
             datafileparameter__string_value='complete'
         ).exclude(
+            datafileparameter__name__name='parse_status',
             datafileparameter__string_value='running'
-        ).values_list('datafile_id', flat=True)
+        ).order_by('-id').values_list('datafile_id', flat=True)
 
         for sq_file_id in unparsed_files:
             parse_squashfs_file.delay(sq_file_id, parse_module, ns)
@@ -291,4 +292,3 @@ def parse_squashfs_file(squashfs_file_id, parse_module, ns):
         raise
     finally:
         status.save()
-
