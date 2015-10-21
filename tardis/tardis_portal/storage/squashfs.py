@@ -219,7 +219,8 @@ class SquashFSStorage(Storage):
             yield top, dirnames, filenames
 
 
-@task(name='tardis_portal.storage.squashfs.parse_new_squashfiles')
+@task(name='tardis_portal.storage.squashfs.parse_new_squashfiles',
+      ignore_result=True)
 def parse_new_squashfiles():
     '''
     settings variable SQUASH_PARSERS contains a dictionary of Datafile schemas
@@ -241,7 +242,9 @@ def parse_new_squashfiles():
         ).order_by('-id').values_list('datafile_id', flat=True)
 
         for sq_file_id in unparsed_files:
-            parse_squashfs_file.delay(sq_file_id, parse_module, ns)
+            parse_squashfs_file.apply_async(
+                args=(sq_file_id, parse_module, ns),
+                queue='low_priority_queue')
 
 
 def get_parse_status(squash_datafile, ns):
@@ -267,7 +270,8 @@ def get_parse_status(squash_datafile, ns):
     return status
 
 
-@task(name='tardis_portal.storage.squashfs.parse_squashfs_file')
+@task(name='tardis_portal.storage.squashfs.parse_squashfs_file',
+      ignore_result=True)
 def parse_squashfs_file(squashfs_file_id, parse_module, ns):
     '''
     the status check doesn't provide complete protection against duplicate
