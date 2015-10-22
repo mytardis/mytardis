@@ -281,6 +281,10 @@ def parse_squashfs_file(squashfs_file_id, parse_module, ns):
     status = get_parse_status(squashfile, ns)
     if status.string_value in ['complete', 'running']:
         return
+    elif not squashfile.verified:
+        status.string_value = 'unverified squashfs file'
+        status.save()
+        return
     status.string_value = 'running'
     status.save()
     parser = import_module(parse_module)
