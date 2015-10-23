@@ -18,7 +18,7 @@ Ubuntu 14.04::
   zlib1g-dev python-wand python-virtualenv virtualenvwrapper python-psycopg2 \
   python-yaml ipython python-anyjson python-bs4 python-billiard \
   python-feedparser python-html5lib python-httplib2 python-pystache \
-  python-crypto python-flexmock python-dateutil
+  python-crypto python-flexmock python-dateutil libldap2-dev libsasl2-dev
 
 Redhat/CentOS 7::
 
