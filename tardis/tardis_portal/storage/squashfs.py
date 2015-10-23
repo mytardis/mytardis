@@ -36,6 +36,16 @@ import logging
 log = logging.getLogger(__name__)
 
 
+class SquashFSFile(File):
+
+    def __init__(self, *args, **kwargs):
+        self.storage_box_instance = kwargs.pop('storage_box_instance')
+        super(SquashFSFile, self).__init__(*args, **kwargs)
+
+    def __del__(self, *args, **kwargs):
+        self.close()
+
+
 class SquashFSStorage(Storage):
     """
     Fuse mounting is not reliable. To use this requires bash scripts, examples
@@ -86,6 +96,7 @@ class SquashFSStorage(Storage):
 
     def __del__(self):
         self._umount()
+        os.rmdir(self.location)
         os.rmdir(self.mount_dir)
 
     @property
@@ -152,7 +163,8 @@ class SquashFSStorage(Storage):
         then raises whichever error is raised by open(filename)
         '''
         self._mount()
-        return File(open(self.path(name), mode))
+        return SquashFSFile(
+            open(self.path(name), mode), storage_box_instance=self)
 
     def exists(self, name):
         return os.path.exists(self.path(name))

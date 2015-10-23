@@ -22,8 +22,14 @@ unique to the file and storagebox.
 
 They point to a class that implements the Django storage API.
 
-Optional access parameters for each StorageBox can be stored in
-StorageBoxOptions.
+Optional instatiation parameters for each ``StorageBox`` can be stored in
+StorageBoxOptions. These are used as parameters to the storage class set in
+the ``django_storage_class`` attribute of a ``StorageBox``
+
+These parameters are string types by default. However, by
+setting the optional parameter ``value_type`` to ``'pickle'``, any picklable
+object can be stored here and hence used for instantiation of the storage
+class.
 
 Optional classification and other metadata can be stored in
 StorageBoxAttributes.
