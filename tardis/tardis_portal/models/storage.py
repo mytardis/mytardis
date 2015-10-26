@@ -10,6 +10,8 @@ import django.core.files.storage as django_storage
 from celery.contrib.methods import task
 
 import logging
+import pickle
+
 logger = logging.getLogger(__name__)
 
 
@@ -78,7 +80,7 @@ class StorageBox(models.Model):
         opts_dict = {}
         # using ugly for loop for python 2.6 compatibility
         for o in self.options.all():
-            opts_dict[o.key] = o.value
+            opts_dict[o.key] = o.unpickled_value
         return opts_dict
 
     def get_initialised_storage_instance(self):
@@ -177,21 +179,45 @@ class StorageBox(models.Model):
 class StorageBoxOption(models.Model):
     '''
     holds the options passed to the storage class defined in StorageBox.
-    simple key: value store
+    key->value store with support for typed values through pickling when
+    value_type is set to 'pickle'
     '''
+    STRING = 'string'
+    PICKLE = 'pickle'
+    TYPE_CHOICES = ((STRING, 'String value'),
+                    (PICKLE, 'Pickled value'))
 
     storage_box = models.ForeignKey(StorageBox, related_name='options')
     key = models.TextField()
     value = models.TextField()
+    value_type = models.CharField(max_length=6,
+                                  choices=TYPE_CHOICES,
+                                  default=STRING)
 
     def __unicode__(self):
         return '-> '.join([
             self.storage_box.__unicode__(),
-            ': '.join([self.key or 'no key', self.value or 'no value'])
+            ': '.join([self.key or 'no key',
+                       self.unpickled_value or 'no value'])
         ])
 
     class Meta:
         app_label = 'tardis_portal'
+
+    @property
+    def unpickled_value(self):
+        if not self.value or self.value == '':
+            return None
+        if self.value_type == StorageBoxOption.STRING:
+            return self.value
+        return pickle.loads(self.value)
+
+    @unpickled_value.setter
+    def unpickled_value(self, input_value):
+        if self.value_type == StorageBoxOption.STRING:
+            self.value = input_value
+        else:
+            self.value = pickle.dumps(input_value)
 
 
 class StorageBoxAttribute(models.Model):
