@@ -147,7 +147,7 @@ def email_user_task(subject, template_name, context, user):
     email_user(subject, template_name, context, user)
 
 
-@task(name='tardis_portal.cache_notify')
+@task(name='tardis_portal.cache_notify', ignore_result=True)
 def cache_done_notify(results, user_id, site_id, ct_id, obj_ids):
     user = User.objects.get(id=user_id)
     site = Site.objects.get(id=site_id)
@@ -160,3 +160,7 @@ def cache_done_notify(results, user_id, site_id, ct_id, obj_ids):
     }
     email_user(subject, 'cache_done_email', context, user)
     return "all done"
+
+
+# import tasks from elsewhere here so they are registered
+import tardis.tardis_portal.storage.squashfs
