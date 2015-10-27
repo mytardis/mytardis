@@ -411,6 +411,19 @@ def fetch_facility_data_count(request, facility_id):
 
 @never_cache
 @login_required
+def fetch_facilities_list(request):
+    '''
+    json list of facilities managed by the current user
+    '''
+    facility_data = []
+    for facility in facilities_managed_by(request.user):
+        facility_data.append({"id": facility.id, "name": facility.name})
+
+    return HttpResponse(json.dumps(facility_data), content_type='application/json')
+
+
+@never_cache
+@login_required
 def fetch_facility_data(request, facility_id, start_index, end_index):
     '''
     json facility datasets
@@ -504,19 +517,6 @@ def fetch_facility_data(request, facility_id, start_index, end_index):
             },
         }
         facility_data.append(obj)
-
-    return HttpResponse(json.dumps(facility_data), content_type='application/json')
-
-
-@never_cache
-@login_required
-def fetch_facilities_list(request):
-    '''
-    json list of facilities managed by the current user
-    '''
-    facility_data = []
-    for facility in facilities_managed_by(request.user):
-        facility_data.append({"id": facility.id, "name": facility.name})
 
     return HttpResponse(json.dumps(facility_data), content_type='application/json')
 
