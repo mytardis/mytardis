@@ -393,9 +393,20 @@ def facility_overview(request):
         request, 'tardis_portal/facility_overview.html'))
 
 
+def datetime_to_us(dt):
+    '''
+    The datetime objects are kept as None if they aren't set, otherwise
+    they're converted to milliseconds so AngularJS can format them nicely.
+    '''
+    if dt is None:
+        return None
+    dt = timezone.localtime(dt)
+    return time.mktime(dt.timetuple()) * 1000 + dt.microsecond / 1000
+
+
 @never_cache
 @login_required
-def fetch_facility_data_count(request, facility_id):
+def facility_overview_data_count(request, facility_id):
     '''
     returns the total number of datasets for pagination in json format
     '''
@@ -411,7 +422,7 @@ def fetch_facility_data_count(request, facility_id):
 
 @never_cache
 @login_required
-def fetch_facilities_list(request):
+def facility_overview_facilities_list(request):
     '''
     json list of facilities managed by the current user
     '''
@@ -422,9 +433,68 @@ def fetch_facilities_list(request):
     return HttpResponse(json.dumps(facility_data), content_type='application/json')
 
 
+def facility_overview_datafile_list(dataset):
+    datafile_objects = DataFile.objects.filter(dataset=dataset)
+    datafiles = []
+    dataset_size = 0
+    verified_datafiles_count = 0
+    verified_datafiles_size = 0
+    for datafile in datafile_objects:
+        if datafile.verified:
+            verified = "Yes"
+            verified_datafiles_count += 1
+            verified_datafiles_size += int(datafile.size)
+        else:
+            verified = "No"
+            try:
+                file_object_size = getattr(
+                    getattr(datafile.file_objects.first(),
+                            'file_object', None),
+                    'size', 0)
+                if file_object_size < int(datafile.size):
+                    verified = "No (%s of %s bytes uploaded)" \
+                        % ('{:,}'.format(file_object_size),
+                           '{:,}'.format(int(datafile.size)))
+            except AttributeError:
+                verified = "No (0 of %s bytes uploaded)" \
+                    % '{:,}'.format(int(datafile.size))
+            except IOError, e:
+                verified = "No (0 of %s bytes uploaded)" \
+                    % '{:,}'.format(int(datafile.size))
+        datafiles.append({
+            "id": datafile.id,
+            "filename": datafile.filename,
+            "size": int(datafile.size),
+            "created_time": datetime_to_us(datafile.created_time),
+            "modification_time": datetime_to_us(datafile.modification_time),
+            "verified": verified,
+        })
+        dataset_size = dataset_size + int(datafile.size)
+    return {
+        "dataset_size": dataset_size,
+        "verified_datafiles_count": verified_datafiles_count,
+        "verified_datafiles_size": verified_datafiles_size,
+        "datafiles": datafiles,
+        "datafile_count": len(datafiles)
+    }
+
+
 @never_cache
 @login_required
-def fetch_facility_data(request, facility_id, start_index, end_index):
+def facility_overview_dataset_detail(request, dataset_id):
+    return HttpResponse(
+        json.dumps(
+            facility_overview_datafile_list(
+                Dataset.objects.get(
+                    instrument__facility__manager_group__user=request.user, pk=dataset_id
+                )
+            )['datafiles']
+        ), content_type='application/json')
+
+
+@never_cache
+@login_required
+def facility_overview_experiments(request, facility_id, start_index, end_index):
     '''
     json facility datasets
     '''
@@ -433,16 +503,6 @@ def fetch_facility_data(request, facility_id, start_index, end_index):
         instrument__facility__manager_group__user=request.user,
         instrument__facility__id=facility_id
     ).order_by('-id')[start_index:end_index]
-
-    def datetime_to_us(dt):
-        '''
-        The datetime objects are kept as None if they aren't set, otherwise
-        they're converted to milliseconds so AngularJS can format them nicely.
-        '''
-        if dt is None:
-            return None
-        dt = timezone.localtime(dt)
-        return time.mktime(dt.timetuple()) * 1000 + dt.microsecond / 1000
 
     # Select only the bits we want from the models
     facility_data = []
@@ -454,44 +514,12 @@ def fetch_facility_data(request, facility_id, start_index, end_index):
         except Experiment.DoesNotExist:
             logger.warning("Not listing dataset id %d in Facility Overview" % dataset.id)
             continue
-        datafile_objects = DataFile.objects.filter(dataset=dataset)
+
         owners = parent_experiment.get_owners()
         groups = parent_experiment.get_groups()
-        datafiles = []
-        dataset_size = 0
-        verified_datafiles_count = 0
-        verified_datafiles_size = 0
-        for datafile in datafile_objects:
-            if datafile.verified:
-                verified = "Yes"
-                verified_datafiles_count += 1
-                verified_datafiles_size += int(datafile.size)
-            else:
-                verified = "No"
-                try:
-                    file_object_size = getattr(
-                        getattr(datafile.file_objects.first(),
-                                'file_object', None),
-                        'size', 0)
-                    if file_object_size < int(datafile.size):
-                        verified = "No (%s of %s bytes uploaded)" \
-                            % ('{:,}'.format(file_object_size),
-                               '{:,}'.format(int(datafile.size)))
-                except AttributeError:
-                    verified = "No (0 of %s bytes uploaded)" \
-                        % '{:,}'.format(int(datafile.size))
-                except IOError, e:
-                    verified = "No (0 of %s bytes uploaded)" \
-                        % '{:,}'.format(int(datafile.size))
-            datafiles.append({
-                "id": datafile.id,
-                "filename": datafile.filename,
-                "size": int(datafile.size),
-                "created_time": datetime_to_us(datafile.created_time),
-                "modification_time": datetime_to_us(datafile.modification_time),
-                "verified": verified,
-            })
-            dataset_size = dataset_size + int(datafile.size)
+
+        datafile_list = facility_overview_datafile_list(dataset)
+
         obj = {
             "id": dataset.id,
             "parent_experiment": {
@@ -501,10 +529,10 @@ def fetch_facility_data(request, facility_id, start_index, end_index):
             },
             "description": dataset.description,
             "institution": parent_experiment.institution_name,
-            "datafiles": datafiles,
-            "size": dataset_size,
-            "verified_datafiles_count": verified_datafiles_count,
-            "verified_datafiles_size": verified_datafiles_size,
+            "datafile_count": datafile_list['datafile_count'],
+            "size": datafile_list['dataset_size'],
+            "verified_datafiles_count": datafile_list['verified_datafiles_count'],
+            "verified_datafiles_size": datafile_list['verified_datafiles_size'],
             "owner": ', '.join([o.username for o in owners]),
             "group": ', '.join([g.name for g in groups]),
             "instrument": {

@@ -38,12 +38,16 @@ app.filter('filesize', function () {
 app.controller('FacilityCtrl', function ($scope, $resource, $interval, $log) {
 
     var countRes = $resource('/facility/fetch_data/:facility_id/count/');
+    var datasetDetailRes = $resource('/facility/fetch_datafiles/:dataset_id/',
+        {}, {
+            'get': {method: 'GET', isArray: true}
+        });
     var facilityListRes = $resource('/facility/fetch_facilities_list/', {}, {
         'get': {method: 'GET', isArray: true}
     });
     var facilityDataRes = $resource('/facility/fetch_data/:facility_id/:start_index/:end_index/', {
-        startIndex: 0,
-        endIndex: 50
+        start_index: 0,
+        end_index: 50
     }, {
         'get': {method: 'GET', isArray: true}
     });
@@ -85,11 +89,14 @@ app.controller('FacilityCtrl', function ($scope, $resource, $interval, $log) {
     };
 
     // Toggle file list visibility
-    $scope.toggleFileList = function (id) {
-        if ($scope.visibleFileList === id) {
+    $scope.toggleFileList = function (dataset) {
+        if ($scope.visibleFileList === dataset.id) {
             delete $scope.visibleFileList;
         } else {
-            $scope.visibleFileList = id;
+            $scope.visibleFileList = dataset.id;
+            datasetDetailRes.get({'dataset_id': dataset.id}).$promise.then(function (data) {
+                dataset.datafiles = data;
+            });
         }
     };
     // Check if file list is visible
@@ -127,7 +134,7 @@ app.controller('FacilityCtrl', function ($scope, $resource, $interval, $log) {
         } else {
             $scope.currentFetchLimit += increment;
         }
-        $scope.fetchFacilityData(0, $scope.currentFetchLimit);
+        $scope.fetchFacilityData($scope.datasets.length, $scope.currentFetchLimit, true);
     };
 
     // Fetch the list of facilities available to the user and facilities data
@@ -147,8 +154,9 @@ app.controller('FacilityCtrl', function ($scope, $resource, $interval, $log) {
     }
 
     // Fetch data for facility
-    $scope.fetchFacilityData = function (startIndex, endIndex) {
+    $scope.fetchFacilityData = function (startIndex, endIndex, append) {
 
+        delete $scope.visibleFileList;
         $scope.loading = true;
 
         countRes.get({'facility_id': $scope.selectedFacility}).$promise.then(function (data) {
@@ -167,22 +175,27 @@ app.controller('FacilityCtrl', function ($scope, $resource, $interval, $log) {
             'start_index': startIndex,
             'end_index': endIndex
         }).$promise.then(function (data) {
-                $log.debug("Fetched datasets between indices " + startIndex + " and " + endIndex);
-                $scope.datasets = data;
-                if ($scope.datasets.length > 0) {
-                    $scope.dataByUser = groupByUser($scope.datasets);
-                    $scope.dataByInstrument = groupByInstrument($scope.datasets);
-                } else {
-                    $scope.dataByUser = [];
-                    $scope.dataByInstrument = [];
-                }
-            },
-            function () {
-                $log.error("Could not fetch datasets");
-            })
-            .finally(function () {
-                $scope.loading = false;
-            });
+            $log.debug("Fetched datasets between indices " + startIndex + " and " + endIndex);
+            if (append && $scope.datasets) {
+                $scope.datasets = $scope.datasets.concat(data.slice(0, data.length));
+            } else {
+                $scope.datasets = data.slice(0, data.length);
+            }
+            console.log($scope.datasets);
+            if ($scope.datasets.length > 0) {
+                $scope.dataByUser = groupByUser($scope.datasets);
+                $scope.dataByInstrument = groupByInstrument($scope.datasets);
+            } else {
+                $scope.dataByUser = [];
+                $scope.dataByInstrument = [];
+            }
+        },
+        function () {
+            $log.error("Could not fetch datasets");
+        })
+        .finally(function () {
+            $scope.loading = false;
+        });
     };
 
     // Group facilities data by user
@@ -267,6 +280,7 @@ app.controller('FacilityCtrl', function ($scope, $resource, $interval, $log) {
         if ($scope.refreshCountdown > 0 && $scope.refreshInterval > 0) {
             $scope.refreshCountdown--;
         } else if ($scope.refreshInterval > 0) {
+            delete $scope.visibleFileList;
             $scope.fetchFacilityData(0, $scope.currentFetchLimit);
             $scope.refreshCountdown = $scope.refreshInterval;
         }
