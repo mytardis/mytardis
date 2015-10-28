@@ -57,20 +57,16 @@ def _verify_cas2(ticket, service):
 
     url = (urljoin(settings.CAS_SERVER_URL, 'proxyValidate') + '?' +
            urllib.urlencode(params))
-    
+
     logger.debug("url = " + url)
-    
     page = urllib.urlopen(url)
-    
     response = page.read()
-    
     tree = ElementTree.fromstring(response)
-    
     page.close()
 
     if tree.find(CAS + 'authenticationSuccess') is not None:
         username = tree.find(CAS + 'authenticationSuccess/' + CAS + 'user').text
-        pgtIouIdElement = tree.find(CAS + 'authenticationSuccess/' + CAS + 'proxyGrantingTicket');
+        pgtIouIdElement = tree.find(CAS + 'authenticationSuccess/' + CAS + 'proxyGrantingTicket')
         pgtIouId = pgtIouIdElement.text if pgtIouIdElement is not None else None
 
         if pgtIouId:
@@ -120,7 +116,6 @@ def verify_proxy_ticket(ticket, service):
             return None
     finally:
         page.close()
-    
 
 _PROTOCOLS = {'1': _verify_cas1, '2': _verify_cas2}
 
@@ -155,7 +150,7 @@ class CASBackend(object):
             #user.user_permissions.add(Permission.objects.get(codename='change_dataset'))
             #user.user_permissions.add(Permission.objects.get(codename='add_dataset_file'))
             configure_user(user)
-            
+
         if authentication_response and _CAS_USER_DETAILS_RESOLVER:
             _CAS_USER_DETAILS_RESOLVER(user, authentication_response)
 

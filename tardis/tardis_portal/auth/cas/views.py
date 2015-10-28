@@ -18,9 +18,9 @@ __all__ = ['login', 'logout']
 
 def _service_url(request, redirect_to=None):
     """Generates application service URL for CAS"""
-    
+
     logger.debug("request[%s] redirect_to[%s]" % (request, redirect_to))
-    
+
     try:
         service = settings.CAS_SERVICE_URL
     except:
@@ -28,9 +28,9 @@ def _service_url(request, redirect_to=None):
         protocol = ('http://', 'https://')[request.is_secure()]
         host = request.get_host()
         service = protocol + host + request.path
-    
+
     logger.debug("service = %s" % (service))
-        
+
     if redirect_to:
         if '?' in service:
             service += '&'
@@ -45,13 +45,13 @@ def _redirect_url(request):
     set.
     """
     logger.debug("_redirect_url: request[%s]" % (request))
-    
+
     if settings.CAS_IGNORE_REDIRECT:
         logger.debug("ignore redirect!")
         return None
 
     next = request.GET.get(REDIRECT_FIELD_NAME)
-    
+
     if not next:
         if settings.CAS_IGNORE_REFERER:
             next = settings.CAS_REDIRECT_URL
@@ -62,15 +62,15 @@ def _redirect_url(request):
                   request.get_host())
         if next.startswith(prefix):
             next = next[len(prefix):]
-        
+
     return next
 
 
 def _login_url(service, ticket='ST'):
     """Generates CAS login URL"""
-    
+
     logger.debug("service[%s] ticket[%s]" % (service, ticket))
-    
+
     LOGINS = {'ST':'login',
               'PT':'proxyValidate'}
     params = {'service': service}
@@ -84,11 +84,11 @@ def _login_url(service, ticket='ST'):
 
 def _logout_url(request, next_page=None):
     """Generates CAS logout URL"""
-    
+
     logger.debug("request[%s] next_page[%s]" % (request, next_page))
 
     url = urljoin(settings.CAS_SERVER_URL, 'logout')
-    
+
     if next_page:
         protocol = ('http://', 'https://')[request.is_secure()]
         host = request.get_host()
@@ -133,7 +133,7 @@ def login(request, next_page=None, required=False):
 
 def logout(request, next_page=None):
     """Redirects to CAS logout page"""
-    
+
     logger.debug("request[%s] next_page[%s]" % (request, next_page))
 
     from django.contrib.auth import logout
@@ -150,13 +150,13 @@ def proxy_callback(request):
     """Handles CAS 2.0+ XML-based proxy callback call.
     Stores the proxy granting ticket in the database for 
     future use.
-    
+
     NB: Use created and set it in python in case database
     has issues with setting up the default timestamp value
     """
-    
+
     logger.debug("request[%s]" % (request))
-    
+
     pgtIou = request.GET.get('pgtIou')
     tgt = request.GET.get('pgtId')
 

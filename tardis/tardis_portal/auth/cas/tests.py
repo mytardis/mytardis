@@ -28,7 +28,7 @@ class backendTest(TestCase):
     def test_verify_cas2_with_pgt(self):
         urllib.urlopen = dummyUrlOpenWithProxyGrantingTikcet
         #st = ServiceTicket.objects.create();
-        tgt = Tgt.objects.create(username='sannies');
+        tgt = Tgt.objects.create(username='sannies')
         PgtIOU.objects.create(tgt=tgt, pgtIou='PGTIOU-NUYny6RiAfHBsuWq270m3l1kgPTjEOCexpowQV9ZJDrh8cGKzb')
 
         settings.CAS_PROXY_CALLBACK = "http://dummy2"

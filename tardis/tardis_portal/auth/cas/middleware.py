@@ -23,11 +23,11 @@ class CASMiddleware(object):
             request.session['use_cas'] = settings.CAS_ENABLED
         else:
             request.session['use_cas'] = False
-            
+
         ticket = request.GET.get('ticket')
         # fix for tastypie
         request._read_started = False
-        
+
         if ticket:
             from django.contrib import auth
             user = auth.authenticate(ticket=ticket, service=_service_url(request))
