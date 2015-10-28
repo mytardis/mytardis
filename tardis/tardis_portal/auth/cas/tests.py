@@ -1,7 +1,7 @@
 from StringIO import StringIO
 import urllib
 from django.conf import settings
-from django.utils.unittest.case import TestCase
+from django.test import TestCase
 
 from tardis.tardis_portal.auth.cas.backends import _verify_cas2
 from tardis.tardis_portal.auth.cas.models import PgtIOU, Tgt
