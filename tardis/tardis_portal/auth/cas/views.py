@@ -57,7 +57,7 @@ def _redirect_url(request):
             next = settings.CAS_REDIRECT_URL
         else:
             next = request.META.get('HTTP_REFERER', settings.CAS_REDIRECT_URL)
-            
+
         prefix = (('http://', 'https://')[request.is_secure()] +
                   request.get_host())
         if next.startswith(prefix):
@@ -148,7 +148,7 @@ def logout(request, next_page=None):
 
 def proxy_callback(request):
     """Handles CAS 2.0+ XML-based proxy callback call.
-    Stores the proxy granting ticket in the database for 
+    Stores the proxy granting ticket in the database for
     future use.
 
     NB: Use created and set it in python in case database
