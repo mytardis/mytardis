@@ -17,8 +17,40 @@ the custom object level permission framework described below.
 
     AUTHENTICATION_BACKENDS = (
         'django.contrib.auth.backends.ModelBackend',
-        'tardis.tardis_portal.auth.authorisation.ACLAwareBackend',
+        'tardis.tardis_portal.auth.cas.backends.CASBackend',
+    	'tardis.tardis_portal.auth.authorisation.ACLAwareBackend',
     )
+
+# Using the Central Authentication Service (CAS) Backend
+
+To use a CAS Server for authentication the following settings must be overridden:
+```python
+CAS_ENABLED = True
+CAS_SERVER_URL = 'https//<url of the CAS Service>/'
+CAS_SERVICE_URL = 'http://<url of the tardis instance>/'
+```
+* `CAS_ENABLED` must be set to `True` to turn on the CAS backend. This will also
+enable the login button to redirect to the CAS server. 
+* `CAS_SERVER_URL` must be set to the base URL of the CAS service. This can be 
+checked by using a browser to go to the login page via the URL: 
+`https//<url of the CAS Service>/login`
+* `CAS_SERVICE_URL` must be set to the URL of the MyTardis instance. This will
+be passed to the CAS service so that it can redirect back to MyTardis after 
+authentication.
+
+The following settings may also be overridden as required:
+```python
+CAS_LOGOUT_COMPLETELY = True
+CAS_LOGIN_URL = '/cas/login/'
+```
+* `CAS_LOGOUT_COMPLETELY` may be set to `False` if your enterprise has a single 
+sign-in policy. If so, the user will remain logged in via CAS even if they log 
+out of MyTardis.
+* `CAS_LOGIN_URL` may be overridden if an alternate login view has been developed.
+
+For more information on CAS see: http://jasid.github.io/cas    
+
+# Permissions
 
 The Django default permissions are automatically available for each Model.
 The verbs are ``add``, ``change``, ``delete``, and they can be queried on the
