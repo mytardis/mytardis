@@ -43,7 +43,7 @@ To use a CAS Server for authentication the following settings must be overridden
   be passed to the CAS service so that it can redirect back to MyTardis after 
   authentication.
 
-The following settings may also be overridden as required:
+The following settings may be overridden as required:
 
 .. code-block:: python
 	CAS_LOGOUT_COMPLETELY = True
