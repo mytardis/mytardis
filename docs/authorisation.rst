@@ -32,8 +32,8 @@ To use a CAS Server for authentication the following settings must be overridden
 	CAS_SERVICE_URL = 'http://<url of the tardis instance>/'
 
 
-* ``CAS_ENABLED`` must be set to `True` to turn on the CAS backend. This will also
-  enable the login button to redirect to the CAS server. 
+* ``CAS_ENABLED`` must be set to ``True`` to turn on the CAS backend. This will 
+  also enable the login button to redirect to the CAS server. 
 
 * ``CAS_SERVER_URL`` must be set to the base URL of the CAS service. This can be 
   checked by using a browser to go to the login page via the URL: 
@@ -49,11 +49,12 @@ The following settings may also be overridden as required:
 	CAS_LOGOUT_COMPLETELY = True
 	CAS_LOGIN_URL = '/cas/login/'
 
-* ``CAS_LOGOUT_COMPLETELY`` may be set to `False` if your enterprise has a single 
-  sign-in policy, then the user will remain logged in via CAS even if they log 
-  out of MyTardis.
+* ``CAS_LOGOUT_COMPLETELY`` may be set to ``False`` if your enterprise has a 
+  single sign-in policy. The user will remain logged in via CAS even if they 
+  have logged out of MyTardis.
 
-* ``CAS_LOGIN_URL`` may be overridden if an alternate login view has been developed.
+* ``CAS_LOGIN_URL`` may be overridden if an alternate login view has been 
+  developed.
 
 For more information on CAS see: http://jasig.github.io/cas    
 
