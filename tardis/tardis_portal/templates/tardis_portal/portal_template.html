@@ -183,17 +183,18 @@
               </li>
               {% endif %}
               <li>
+                  <a id="login-button" class="btn btn-info" 
               {% if RAPID_CONNECT_ENABLED %}
-                  <a id="login-button" class="btn btn-info" href={{ RAPID_CONNECT_LOGIN_URL }}>
-                    <i class="icon-signin"></i>
-                    Log In
-                  </a>
+                  href={{ RAPID_CONNECT_LOGIN_URL }}
+              {% elif CAS_ENABLED %}
+                  href={{ CAS_LOGIN_URL }}
               {% else %}
-                <a id="login-button" class="btn btn-info" href="{% url 'tardis.tardis_portal.views.login' %}">
+                  href="{% url 'tardis.tardis_portal.views.login' %}"
+              {% endif %}
+		  >
                   <i class="icon-signin"></i>
                   Log In
                 </a>
-              {% endif %}
               </li>
             {% endif %}
             </ul>
