@@ -219,7 +219,8 @@ class SquashFSStorage(Storage):
             yield top, dirnames, filenames
 
 
-@task(name='tardis_portal.storage.squashfs.parse_new_squashfiles')
+@task(name='tardis_portal.storage.squashfs.parse_new_squashfiles',
+      ignore_result=True)
 def parse_new_squashfiles():
     '''
     settings variable SQUASH_PARSERS contains a dictionary of Datafile schemas
@@ -231,16 +232,19 @@ def parse_new_squashfiles():
     parsers = getattr(settings, 'SQUASHFS_PARSERS', {})
     for ns, parse_module in parsers.iteritems():
         unparsed_files = DatafileParameterSet.objects.filter(
-            schema__namespace=ns,
-            datafileparameter__name__name='parse_status'
+            schema__namespace=ns
         ).exclude(
+            datafileparameter__name__name='parse_status',
             datafileparameter__string_value='complete'
         ).exclude(
+            datafileparameter__name__name='parse_status',
             datafileparameter__string_value='running'
-        ).values_list('datafile_id', flat=True)
+        ).order_by('-id').values_list('datafile_id', flat=True)
 
         for sq_file_id in unparsed_files:
-            parse_squashfs_file.delay(sq_file_id, parse_module, ns)
+            parse_squashfs_file.apply_async(
+                args=(sq_file_id, parse_module, ns),
+                queue='low_priority_queue')
 
 
 def get_parse_status(squash_datafile, ns):
@@ -266,7 +270,8 @@ def get_parse_status(squash_datafile, ns):
     return status
 
 
-@task(name='tardis_portal.storage.squashfs.parse_squashfs_file')
+@task(name='tardis_portal.storage.squashfs.parse_squashfs_file',
+      ignore_result=True)
 def parse_squashfs_file(squashfs_file_id, parse_module, ns):
     '''
     the status check doesn't provide complete protection against duplicate
@@ -275,6 +280,10 @@ def parse_squashfs_file(squashfs_file_id, parse_module, ns):
     squashfile = DataFile.objects.get(id=squashfs_file_id)
     status = get_parse_status(squashfile, ns)
     if status.string_value in ['complete', 'running']:
+        return
+    elif not squashfile.verified:
+        status.string_value = 'unverified squashfs file'
+        status.save()
         return
     status.string_value = 'running'
     status.save()
@@ -291,4 +300,3 @@ def parse_squashfs_file(squashfs_file_id, parse_module, ns):
         raise
     finally:
         status.save()
-

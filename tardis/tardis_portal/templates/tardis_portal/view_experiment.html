@@ -243,7 +243,7 @@ $('#modal-metadata .submit-button').click(function() {
   </h4>
   {% if not experiment.public %}
   <div class="pull-right" ng-controller="publicationFormCtrl">
-    {% if has_read_or_owner_ACL %}
+    {% if has_read_or_owner_ACL and pub_form_enabled %}
     <a class="prepare_to_publish btn btn-mini btn-info"
        title="Prepare To Publish" ng-click="openPublicationForm()" ng-show="isPublicationDraft || !isPublication">
       <i class="icon-share"></i>
