@@ -12,9 +12,9 @@ from datetime import datetime, timedelta
 from tardis.tardis_portal.auth.cas import CAS
 
 class Tgt(models.Model):
-    username = models.CharField(max_length = 255, unique = True)
-    tgt = models.CharField(max_length = 255)
-    created = models.DateTimeField(auto_now = True)
+    username = models.CharField(max_length=255, unique=True)
+    tgt = models.CharField(max_length=255)
+    created = models.DateTimeField(auto_now=True)
 
     def get_proxy_ticket_for(self, service):
         """Verifies CAS 2.0+ XML-based authentication ticket.
@@ -48,16 +48,16 @@ class Tgt(models.Model):
 
 class PgtIOU(models.Model):
     """ Proxy granting ticket and IOU """
-    pgtIou = models.CharField(max_length = 255, unique = True)
-    tgt = models.CharField(max_length = 255)
-    created = models.DateTimeField(auto_now = True)
+    pgtIou = models.CharField(max_length=255, unique=True)
+    tgt = models.CharField(max_length=255)
+    created = models.DateTimeField(auto_now=True)
 
 def get_tgt_for(user):
     if not settings.CAS_PROXY_CALLBACK:
         raise CasConfigException("No proxy callback set in settings")
 
     try:
-        return Tgt.objects.get(username = user.username)
+        return Tgt.objects.get(username=user.username)
     except ObjectDoesNotExist:
         raise CasTicketException("no ticket found for user " + user.username)
 

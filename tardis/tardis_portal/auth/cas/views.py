@@ -78,7 +78,7 @@ def _login_url(service, ticket='ST'):
         params.update(settings.CAS_EXTRA_LOGIN_PARAMS)
     if not ticket:
         ticket = 'ST'
-    login = LOGINS.get(ticket[:2],'login')
+    login = LOGINS.get(ticket[:2], 'login')
     return urljoin(settings.CAS_SERVER_URL, login) + '?' + urlencode(params)
 
 
@@ -111,7 +111,7 @@ def login(request, next_page=None, required=False):
     ticket = request.GET.get('ticket')
     service = _service_url(request, next_page)
     if ticket:
-        logger.debug("auth.authenticate(ticket[%s], service[%s])" % (ticket,service))
+        logger.debug("auth.authenticate(ticket[%s], service[%s])" % (ticket, service))
         user = auth.authenticate(ticket=ticket, service=service)
 
         if user is not None:
@@ -164,7 +164,7 @@ def proxy_callback(request):
         return HttpResponse()
 
     try:
-        PgtIOU.objects.create(tgt = tgt, pgtIou = pgtIou, created = datetime.now())
+        PgtIOU.objects.create(tgt=tgt, pgtIou=pgtIou, created=datetime.now())
     except:
         return HttpResponse('PGT storage failed for %s' % str(request.GET), mimetype="text/plain")
 

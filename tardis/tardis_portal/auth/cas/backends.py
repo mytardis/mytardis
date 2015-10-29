@@ -70,13 +70,13 @@ def _verify_cas2(ticket, service):
         pgtIouId = pgtIouIdElement.text if pgtIouIdElement is not None else None
 
         if pgtIouId:
-            pgtIou = PgtIOU.objects.get(pgtIou = pgtIouId)
+            pgtIou = PgtIOU.objects.get(pgtIou=pgtIouId)
             try:
-                tgt = Tgt.objects.get(username = username)
+                tgt = Tgt.objects.get(username=username)
                 tgt.tgt = pgtIou.tgt
                 tgt.save()
             except ObjectDoesNotExist:
-                Tgt.objects.create(username = username, tgt = pgtIou.tgt)
+                Tgt.objects.create(username=username, tgt=pgtIou.tgt)
 
             pgtIou.delete()
         return username, tree
