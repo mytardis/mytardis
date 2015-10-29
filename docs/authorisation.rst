@@ -56,7 +56,7 @@ The following settings may be overridden as required:
 * ``CAS_LOGIN_URL`` may be overridden if an alternate login view has been 
   developed.
 
-For more information on CAS see: http://jasig.github.io/cas    
+For more information on CAS project see: http://jasig.github.io/cas    
 
 Permissions
 ^^^^^^^^^^^
