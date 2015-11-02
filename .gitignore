@@ -40,7 +40,6 @@ tardis/apps/*
 !tardis/apps/push_to
 !tardis/apps/related_info
 !tardis/apps/slideshow_view
-!tardis/apps/synch_linking
 tardis/tardis_portal/filters/*
 !tardis/tardis_portal/filters/__init__.py
 !tardis/tardis_portal/filters/diffractionimage.py
