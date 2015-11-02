@@ -1,16 +1,16 @@
 import urllib
+
 import CifFile
-import default_settings
-
-from django.core.mail import send_mail
+from . import default_settings
+from django.core.mail import EmailMultiAlternatives
 from django.conf import settings
-
+from django.contrib.auth.models import Group
 from tardis.tardis_portal.models import ExperimentAuthor
-
 from bs4 import BeautifulSoup
 
 
 class CifHelper(object):
+
     def __init__(self, cif_url):
         self.cf = CifFile.ReadCif(cif_url)
 
@@ -25,6 +25,7 @@ class CifHelper(object):
 
 
 class PDBCifHelper(CifHelper):
+
     def __init__(self, pdb_id):
         super(PDBCifHelper, self).__init__(
             'http://www.pdb.org/pdb/files/' + urllib.quote(pdb_id) + '.cif')
@@ -42,7 +43,7 @@ class PDBCifHelper(CifHelper):
 
     def get_pdb_url(self):
         return 'http://www.pdb.org/pdb/search/structidSearch.do?structureId=' \
-            + urllib.quote(self.get_pdb_id())
+               + urllib.quote(self.get_pdb_id())
 
     def get_obs_r_value(self):
         return float(self['_refine.ls_R_factor_obs'])
@@ -63,8 +64,8 @@ class PDBCifHelper(CifHelper):
         angle_a = self['_cell.angle_alpha']
         angle_b = self['_cell.angle_beta']
         angle_c = self['_cell.angle_gamma']
-        return '(a = %s, b = %s, c = %s),(alpha = %s, beta = %s, gamma = %s)'\
-            % (length_a, length_b, length_c, angle_a, angle_b, angle_c)
+        return '(a = %s, b = %s, c = %s),(alpha = %s, beta = %s, gamma = %s)' \
+               % (length_a, length_b, length_c, angle_a, angle_b, angle_c)
 
     def get_citations(self):
         ids = self.as_list(self['_citation.id'])
@@ -80,9 +81,9 @@ class PDBCifHelper(CifHelper):
         author_citation_names = self.as_list(self['_citation_author.name'])
 
         citations = []
-        for pub_id, title, journal, volume, page_first, page_last, year, doi\
-            in zip(ids, titles, journals, volumes, pages_first, pages_last,
-                   years, dois):
+        for pub_id, title, journal, volume, page_first, page_last, year, doi \
+                in zip(ids, titles, journals, volumes, pages_first, pages_last,
+                       years, dois):
             citation = {'_id': pub_id,
                         'title': title,
                         'journal': journal,
@@ -110,7 +111,8 @@ class PDBCifHelper(CifHelper):
                 self['_entity_src_gen.pdbx_gene_src_scientific_name'])
             seqs_gen_exp_sys = self.as_list(
                 self['_entity_src_gen.pdbx_host_org_scientific_name'])
-            seqs_gen = dict(zip(seqs_gen_id, zip(seqs_gen_org, seqs_gen_exp_sys)))
+            seqs_gen = dict(
+                zip(seqs_gen_id, zip(seqs_gen_org, seqs_gen_exp_sys)))
         except KeyError:
             pass
 
@@ -193,10 +195,25 @@ def get_unreleased_pdb_info(pdb_id):
     return info
 
 
+def get_pub_admin_email_addresses():
+    return [
+        user.email
+        for user in Group.objects.get(
+            name=getattr(settings, 'PUBLICATION_OWNER_GROUP',
+                         default_settings.PUBLICATION_OWNER_GROUP))
+            .user_set.all()
+        if user.email]
+
+
 def send_mail_to_authors(publication, subject, message):
-    email_addresses = [author.email for author in
-                       ExperimentAuthor.objects.filter(experiment=publication)]
-    send_mail(subject, message,
-              getattr(settings, 'PUBLICATION_NOTIFICATION_SENDER_EMAIL',
-                      default_settings.PUBLICATION_NOTIFICATION_SENDER_EMAIL),
-              email_addresses, fail_silently=True)
+    recipients = [author.email for author in
+                  ExperimentAuthor.objects.filter(experiment=publication)]
+    from_email = getattr(settings, 'PUBLICATION_NOTIFICATION_SENDER_EMAIL',
+                         default_settings.PUBLICATION_NOTIFICATION_SENDER_EMAIL)
+    msg = EmailMultiAlternatives(
+        subject,
+        message,
+     from_email,
+     recipients,
+     cc=get_pub_admin_email_addresses())
+    msg.send()
