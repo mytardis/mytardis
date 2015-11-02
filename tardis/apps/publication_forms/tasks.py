@@ -1,12 +1,12 @@
+import logging
+import traceback
+
 from celery.task import task
-
 import CifFile
-
 from django.conf import settings
 from django.core.cache import get_cache
 from django.db import transaction
 from django.utils import timezone
-
 from tardis.tardis_portal.models import Schema, Experiment, \
     ExperimentParameter, ExperimentParameterSet, \
     ParameterName
@@ -14,9 +14,6 @@ from tardis.apps.publication_forms.doi import DOI
 from tardis.apps.publication_forms.utils import PDBCifHelper, send_mail_to_authors
 from tardis.apps.publication_forms.email_text import email_pub_released
 from tardis.apps.publication_forms import default_settings
-
-import logging
-import traceback
 
 logger = logging.getLogger(__name__)
 
@@ -27,7 +24,6 @@ LOCK_EXPIRE = 60 * 5  # Lock expires in 5 minutes
     name="apps.publication_forms.update_publication_records",
     ignore_result=True)
 def update_publication_records():
-
     cache = get_cache('celery-locks')
 
     # Locking functions to ensure only one worker operates
@@ -103,7 +99,6 @@ def process_embargos():
 
         if embargo_expired and pdb_pass:
             pub.public_access = Experiment.PUBLIC_ACCESS_FULL
-            doi = None
             doi_value = None
             if getattr(settings, 'MODC_DOI_ENABLED',
                        default_settings.MODC_DOI_ENABLED):
@@ -117,6 +112,9 @@ def process_embargos():
                         parameterset__experiment=pub).string_value
                     doi = DOI(doi_value)
                     doi.activate()
+                    logger.info(
+                        "DOI %s for publication id %i is now active." %
+                        (doi.doi, pub.id))
                 except ExperimentParameter.DoesNotExist:
                     pass
 
@@ -138,7 +136,7 @@ def populate_pdb_pub_records():
     publications = Experiment.objects \
         .filter(experimentparameterset__schema__namespace=PDB_SCHEMA) \
         .filter(experimentparameterset__schema__namespace=PUB_SCHEMA) \
-        .exclude(experimentparameterset__schema__namespace=PUB_SCHEMA_DRAFT)\
+        .exclude(experimentparameterset__schema__namespace=PUB_SCHEMA_DRAFT) \
         .distinct()
 
     last_update_parameter_name = ParameterName.objects.get(
@@ -148,7 +146,7 @@ def populate_pdb_pub_records():
     def add_if_missing(parameterset, name, string_value=None,
                        numerical_value=None, datetime_value=None):
         try:
-            param = ExperimentParameter.objects.get(
+            ExperimentParameter.objects.get(
                 name__name=name, parameterset=parameterset)
         except ExperimentParameter.DoesNotExist:
             param_name = ParameterName.objects.get(
@@ -161,7 +159,6 @@ def populate_pdb_pub_records():
             param.save()
 
     for pub in publications:
-        needs_update = False
         try:
             # try to get the last update time for the PDB data
             pdb_last_update_parameter = ExperimentParameter.objects.get(
@@ -298,7 +295,7 @@ def populate_pdb_pub_records():
                                         citation['page_last']]))
                     add_if_missing(cit_parameter_set, 'doi',
                                    string_value='http://dx.doi.org/' +
-                                   citation['doi'])
+                                                citation['doi'])
 
                 # 6. Remove the PDB embargo if set, since the update has
                 # occurred and therefore the PDB must have been relased.

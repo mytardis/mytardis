@@ -6,11 +6,8 @@ Set up publication form schemas
 import logging
 
 from django.conf import settings
-from django.db import DatabaseError
 from django.contrib.auth.models import User, Group
-
 from tardis.tardis_portal.models import Schema, ParameterName
-
 from . import default_settings
 
 logger = logging.getLogger(__name__)
@@ -238,8 +235,8 @@ class PubFormConfig():
                                      recommended_settings):
             if not hasattr(settings, setting):
                 logger.info(setting + ' setting not found. Using defaults'
-                            ' for now, but you might encounter problems'
-                            ' later! (%s)' % description)
+                                      ' for now, but you might encounter problems'
+                                      ' later! (%s)' % description)
 
         for schema, description in required_schemas:
             logger.info('Setting up schema: ' + schema)

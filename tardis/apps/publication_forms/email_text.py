@@ -73,6 +73,6 @@ def email_pub_released(pub_title, doi=None):
 Your publication, %s, is now public!
 ''' % pub_title
     if doi:
-        email_message += 'You may view your publication here: '\
+        email_message += 'You may view your publication here: ' \
                          'http://dx.doi.org/%s' % doi
     return email_message
