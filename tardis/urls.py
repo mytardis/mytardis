@@ -63,7 +63,7 @@ experiment_lists = patterns(
         name="tardis_portal.experiment_list_shared"),
     )
 
-experiment_view_url = url(r'^experiment/view/(?P<experiment_id>\d+)/?$',
+experiment_view_url = url(r'^experiment/view/(?P<experiment_id>\d+)/$',
                           'tardis.tardis_portal.views.view_experiment')
 
 experiment_urls = patterns(
@@ -127,7 +127,7 @@ accounts_urls = patterns(
     (r'', include('registration.backends.default.urls')),
     )
 
-dataset_view_url = url(r'^dataset/(?P<dataset_id>\d+)/?$',
+dataset_view_url = url(r'^dataset/(?P<dataset_id>\d+)/$',
                        'tardis.tardis_portal.views.view_dataset')
 
 dataset_urls = patterns(
@@ -370,12 +370,12 @@ urlpatterns = patterns(
     (r'^api/', include(tastypie_swagger_urls)),
 
     # Experiment Views
-    (r'^experiment/', include(experiment_urls)),
     experiment_view_url,
+    (r'^experiment/', include(experiment_urls)),
 
     # Dataset Views
-    (r'^dataset/', include(dataset_urls)),
     dataset_view_url,
+    (r'^dataset/', include(dataset_urls)),
 
     # Datafile Views
     (r'^datafile/', include(datafile_urls)),
