@@ -71,6 +71,49 @@ class ModelTestCase(TestCase):
         self.assertEqual(exp.get_or_create_directory(),
                          path.join(settings.FILE_STORE_PATH, str(exp.id)))
 
+    def test_dataset(self):
+        from tardis.tardis_portal import models
+        exp = models.Experiment(title='test exp1',
+                                institution_name='monash',
+                                created_by=self.user,
+                                )
+
+        exp.save()
+        exp2 = models.Experiment(title='test exp2',
+                                 institution_name='monash',
+                                 created_by=self.user,
+                                 )
+        exp2.save()
+
+        group = models.Group(name="Test Manager Group")
+        group.save()
+        group.user_set.add(self.user)
+        facility = models.Facility(name="Test Facility",
+                                   manager_group=group)
+        facility.save()
+        instrument = models.Instrument(name="Test Instrument",
+                                       facility=facility)
+        instrument.save()
+
+        dataset = models.Dataset(description='test dataset1')
+        dataset.instrument = instrument
+        dataset.save()
+        dataset.experiments = [exp, exp2]
+        dataset.save()
+        dataset_id = dataset.id
+
+        del dataset
+        dataset = models.Dataset.objects.get(pk=dataset_id)
+
+        self.assertEqual(dataset.description, 'test dataset1')
+        self.assertEqual(dataset.experiments.count(), 2)
+        self.assertIn(exp, list(dataset.experiments.iterator()))
+        self.assertIn(exp2, list(dataset.experiments.iterator()))
+        self.assertEqual(instrument, dataset.instrument)
+        self.assertEqual(
+            dataset.get_absolute_url(), '/dataset/1/',
+            dataset.get_absolute_url() + ' != /dataset/1/')
+
     def test_authors(self):
         from tardis.tardis_portal import models
         exp = models.Experiment(title='test exp2',
