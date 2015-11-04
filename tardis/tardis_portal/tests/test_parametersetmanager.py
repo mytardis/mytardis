@@ -173,16 +173,16 @@ class ParameterSetManagerTestCase(TestCase):
         psm = ParameterSetManager(parentObject=self.datafile,
                                   schema="http://localhost/psmtest/df2/")
 
-        self.assertTrue(psm.get_schema().namespace
-                        == "http://localhost/psmtest/df2/")
+        self.assertTrue(psm.get_schema().namespace ==
+                        "http://localhost/psmtest/df2/")
 
         psm.set_param("newparam1", "test3", "New Parameter 1")
 
-        self.assertTrue(psm.get_param("newparam1").string_value
-                        == "test3")
+        self.assertTrue(psm.get_param("newparam1").string_value ==
+                        "test3")
 
-        self.assertTrue(psm.get_param("newparam1").name.full_name
-                        == "New Parameter 1")
+        self.assertTrue(psm.get_param("newparam1").name.full_name ==
+                        "New Parameter 1")
 
         psm.new_param("newparam1", "test4")
 
@@ -240,9 +240,9 @@ class ParameterSetManagerTestCase(TestCase):
         self.assertTrue(psm.get_param("dataset_link").link_gfk == self.dataset)
 
     def test_tz_naive_date_handling(self):
-        '''
+        """
         Ensure that dates are handling in a timezone-aware way.
-        '''
+        """
         psm = ParameterSetManager(parameterset=self.datafileparameterset)
 
         psm.new_param("parameter3", str(datetime(1970, 01, 01, 10, 0, 0)))
@@ -251,9 +251,9 @@ class ParameterSetManagerTestCase(TestCase):
             .to_equal(datetime(1970, 01, 01, 0, 0, 0, tzinfo=pytz.utc))
 
     def test_tz_aware_date_handling(self):
-        '''
+        """
         Ensure that dates are handling in a timezone-aware way.
-        '''
+        """
         psm = ParameterSetManager(parameterset=self.datafileparameterset)
 
         psm.new_param("parameter3",
