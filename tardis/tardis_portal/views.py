@@ -3495,3 +3495,35 @@ def feedback(request):
         return HttpResponse('OK')
     else:
         return redirect('/')
+
+
+@login_required
+def sftp_access(request):
+    """
+    Show dynamically generated instructions on how to connect to SFTP
+    :param request: HttpRequest
+    :return: HttpResponse
+    """
+    def build_sftp_location(object_type, object_id):
+        if not (object_type and object_id):
+            return ''
+
+    sftp_start_dir = build_sftp_location(
+        request.GET.get('object_type'), request.GET.get('object_id'))
+    if request.user.userprofile.isDjangoAccount:
+        sftp_username = request.user.username
+    else:
+        sftp_username = request.user.email
+    c = {
+        'sftp_host': request.get_host().split(':')[0],
+        'sftp_port': getattr(settings, 'SFTP_PORT', 2200),
+        'sftp_username': sftp_username,
+        'sftp_start_dir': sftp_start_dir,
+        'site_name': getattr(settings, 'SITE_TITLE', 'MyTardis'),
+    }
+    c['sftp_url'] = 'sftp://{}@{}:{}/{}'.format(
+        c['sftp_username'],
+        c['sftp_host'],
+        c['sftp_port'],
+        c['sftp_start_dir'])
+    return render(request, template_name='tardis_portal/sftp.html', context=c)
