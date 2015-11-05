@@ -118,10 +118,9 @@ def process_embargos():
                 except ExperimentParameter.DoesNotExist:
                     pass
 
-            email_message = email_pub_released(pub.title, doi_value)
+            subject, email_message = email_pub_released(pub.title, doi_value)
 
-            send_mail_to_authors(pub, '[TARDIS] Publication released',
-                                 email_message)
+            send_mail_to_authors(pub, subject, email_message)
             pub.save()
 
 

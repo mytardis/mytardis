@@ -222,6 +222,7 @@ def index(request):
             limit = 4
     public_experiments = Experiment.objects\
         .exclude(public_access=Experiment.PUBLIC_ACCESS_NONE)\
+        .exclude(public_access=Experiment.PUBLIC_ACCESS_EMBARGO)\
         .order_by('-update_time')[:limit]
     c['public_experiments'] = public_experiments
     c['RAPID_CONNECT_ENABLED'] = settings.RAPID_CONNECT_ENABLED
@@ -3078,8 +3079,9 @@ class ExperimentSearchView(SearchView):
                  authz.get_accessible_experiments(self.request)])
 
         access_list.extend(
-            [e.pk for e in Experiment.objects.exclude(
-                public_access=Experiment.PUBLIC_ACCESS_NONE)])
+            [e.pk for e in Experiment.objects
+                .exclude(public_access=Experiment.PUBLIC_ACCESS_NONE)
+                .exclude(public_access=Experiment.PUBLIC_ACCESS_EMBARGO)])
 
         ids = list(set(experiment_ids) & set(access_list))
         experiments = Experiment.objects.filter(pk__in=ids)\
