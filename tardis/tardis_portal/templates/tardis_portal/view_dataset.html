@@ -583,6 +583,8 @@ $('#modal-metadata .submit-button').live('click', function() {
                             </a>
                         {% endfor %}
                     {% endif %}
+                    <a href="{% url "sftp_access" %}?object_id={{ dataset.id }}&object_type=dataset"
+                       class="btn btn-primary btn-mini" title="Download with SFTP">SFTP</a>
                 </p>
             {%  elif has_download_permissions and not dataset.is_online %}
                 <p>Some or all files in this dataset are archived.

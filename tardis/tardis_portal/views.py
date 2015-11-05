@@ -38,6 +38,10 @@ views.py
 """
 import time
 import re
+
+from PIL import Image
+from PIL import ImageDraw
+from PIL import ImageFont
 from celery import chord, group
 from django.contrib.contenttypes.models import ContentType
 
@@ -129,6 +133,7 @@ import django.contrib.auth as djauth
 import jwt
 import pwgen
 from tardis.tardis_portal.models.jti import JTI
+from tardis.tardis_portal.util import dirname_with_id
 
 logger = logging.getLogger(__name__)
 
@@ -3504,12 +3509,35 @@ def sftp_access(request):
     :param request: HttpRequest
     :return: HttpResponse
     """
-    def build_sftp_location(object_type, object_id):
+    def build_sftp_location(username, object_type, object_id):
         if not (object_type and object_id):
             return ''
+        ct = ContentType.objects.get_by_natural_key(
+            'tardis_portal', object_type)
+        item = ct.model_class().objects.get(id=object_id)
+        if object_type == 'experiment':
+            exp = item
+            dataset = None
+            datafile = None
+        else:
+            if object_type == 'dataset':
+                dataset = item
+                datafile = None
+            elif object_type == 'datafile':
+                datafile = item
+                dataset = datafile.dataset
+            exp = dataset.experiments.first()
+        path_parts = ['/home', username, 'experiments',
+                      dirname_with_id(exp.title, exp.id)]
+        if dataset is not None:
+            path_parts.append(dirname_with_id(dataset.description, dataset.id))
+        if datafile is not None:
+            path_parts.append(datafile.directory)
+        return path.join(*path_parts)
 
-    sftp_start_dir = build_sftp_location(
-        request.GET.get('object_type'), request.GET.get('object_id'))
+    sftp_start_dir = build_sftp_location(request.user.username,
+                                         request.GET.get('object_type'),
+                                         request.GET.get('object_id'))
     if request.user.userprofile.isDjangoAccount:
         sftp_username = request.user.username
     else:
@@ -3521,9 +3549,55 @@ def sftp_access(request):
         'sftp_start_dir': sftp_start_dir,
         'site_name': getattr(settings, 'SITE_TITLE', 'MyTardis'),
     }
-    c['sftp_url'] = 'sftp://{}@{}:{}/{}'.format(
+    c['sftp_url'] = 'sftp://{}@{}:{}{}'.format(
         c['sftp_username'],
         c['sftp_host'],
         c['sftp_port'],
         c['sftp_start_dir'])
     return render(request, template_name='tardis_portal/sftp.html', context=c)
+
+
+@login_required
+def cybderduck_connection_window(request):
+    base_image = ("tardis/tardis_portal/templates/images/"
+                  "cyberduck_connection_blank.png")
+    font_file = "tardis/tardis_portal/templates/fonts/roboto.ttf"
+    base = Image.open(base_image)
+    font = ImageFont.truetype(font_file, 13)
+    draw = ImageDraw.Draw(base)
+    if request.user.userprofile.isDjangoAccount:
+        sftp_username = request.user.username
+    else:
+        sftp_username = request.user.email
+    sftp_host = request.get_host().split(':')[0]
+    sftp_port = str(getattr(settings, 'SFTP_PORT', 2200))
+    info = [
+        {'location': (247, 171),
+         'text': sftp_host},
+        {'location': (530, 170),
+         'text': sftp_port},
+        {'location': (247, 218),
+         'text': sftp_username},
+    ]
+    url = {'location': (241, 195),
+           'text': 'sftp://{}@{}:{}/'.format(
+               sftp_username,
+               sftp_host,
+               sftp_port)}
+    for text in info:
+        draw.text(text['location'], text['text'], font=font,
+                  fill=(0, 0, 0))
+    def draw_underlined_text(draw, pos, text, font, **options):
+        twidth, theight = draw.textsize(text, font=font)
+        lx, ly = pos[0], pos[1] + theight - 2
+        draw.text(pos, text, font=font, **options)
+        draw.line((lx, ly, lx + twidth - 2, ly), **options)
+
+    url_font = ImageFont.truetype(font_file, 11)
+    url_colour = (0, 49, 249)
+    draw_underlined_text(draw, url['location'],
+                         url['text'], url_font, fill=url_colour)
+    response = HttpResponse(content_type='image/png')
+    base.save(response, "PNG")
+    base.save("foo.png")
+    return response

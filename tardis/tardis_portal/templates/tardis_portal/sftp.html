@@ -1,26 +1,22 @@
 {% extends "tardis_portal/portal_template.html" %}
 {% block content %}
     <h1>Instructions for file access via SFTP and SSHFS</h1>
+    <div class="row-fluid">
+    <div class="span8">
     <p>You can access all the files you have access to on the web via the
         SFTP protocol.</p>
-    <p>This allows you to use Desktop programs like Filezilla or Cyberduck to
+    <p>This allows you to use Desktop programs like Filezilla or <a
+            href="https://cyberduck.io">Cyberduck</a> to
         browse and download your files.</p>
     <p>On some systems you can also mount MyTardis as a drive using
         SSHFS.</p>
-    <p>Instructions for each appear below</p>
-    <ul>
-        <li>Magic URL</li>
-        <li>SFTP access parameters</li>
-        <li>FileZilla example</li>
-        <li>SSHFS on Linux</li>
-    </ul>
-
+    <p>Instructions for different ways to connect appear below</p>
     <h2>Magic URL</h2>
     <p>Some system are configured in a way that this link will connect you
-        automatically: <a href="{{ sftp_url }}">{{ sftp_url }}</a></p>
+        automatically:<br/><a href="{{ sftp_url }}">{{ sftp_url }}</a></p>
 
     <h2>SFTP access parameters</h2>
-    <table>
+    <table class="table table-striped table-bordered">
     <thead>
     <th>Parameter</th>
     <th>Value</th>
@@ -41,12 +37,21 @@
         <td>Password</td>
         <td><i>Your {{ site_name }} password</i></td>
     </tr>
+    <tr>
+        <td>Start folder</td>
+        <td>{{ sftp_start_dir }}</td>
+    </tr>
     </table>
 
-    <h2>FileZilla example</h2>
-    <p>Get FileZilla here: </p>
-    <p>...</p>
+        <h2>Cyberduck example</h2>
+        <p>Get Cyberduck here: <a
+            href="https://cyberduck.io">https://cyberduck.io</a> </p>
+        <p>Hit "Open Connection" and enter your details<br/>
+            <img width="713" height="641"
+                 src="{% url "cyberduck_connection_window" %}" />
+        </p>
+{#        <h2>SSHFS on Linux</h2>#}
 
-    <h2>SSHFS on Linux</h2>
-
+    </div>
+</div>
 {% endblock content %}
