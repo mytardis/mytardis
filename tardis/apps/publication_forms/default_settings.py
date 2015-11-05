@@ -33,13 +33,14 @@ PUBLICATION_FORM_MAPPINGS = [
 # It is defined here as a setting because it is used both for the publication
 # form and for fetching data from PDB.org and must always match.
 PDB_PUBLICATION_SCHEMA_ROOT = 'http://synchrotron.org.au/pub/mx/pdb/'
-PDB_SEQUENCE_PUBLICATION_SCHEMA = PDB_PUBLICATION_SCHEMA_ROOT+'sequence/'
-PDB_CITATION_PUBLICATION_SCHEMA = PDB_PUBLICATION_SCHEMA_ROOT+'citation/'
+PDB_SEQUENCE_PUBLICATION_SCHEMA = PDB_PUBLICATION_SCHEMA_ROOT + 'sequence/'
+PDB_CITATION_PUBLICATION_SCHEMA = PDB_PUBLICATION_SCHEMA_ROOT + 'citation/'
 
 # Used by the Australian Synchrotron for MX datasets
 MX_PUBLICATION_DATASET_SCHEMA = 'http://synchrotron.org.au/pub/mx/dataset/'
 
 from datetime import timedelta
+
 PDB_REFRESH_INTERVAL = timedelta(days=7)
 
 PUBLICATION_FORM_MAPPINGS = [
@@ -49,7 +50,7 @@ PUBLICATION_FORM_MAPPINGS = [
     {'dataset_schema': r'^http://synchrotron.org.au/mx/',
      'publication_schema': MX_PUBLICATION_DATASET_SCHEMA,
      'form_template':
-     '/static/publication-form/mx-dataset-description-template.html'}]
+         '/static/publication-form/mx-dataset-description-template.html'}]
 
 # Put your API_ID for the Monash DOI minting service here. For other DOI
 # minting, please contact the developers
@@ -58,9 +59,9 @@ MODC_DOI_API_ID = ''
 MODC_DOI_API_PASSWORD = ''
 MODC_DOI_MINT_DEFINITION = 'https://doiserver/modc/ws/MintDoiService.wsdl'
 MODC_DOI_ACTIVATE_DEFINITION = 'https://doiserver/modc/ws/' \
-    'ActivateDoiService.wsdl'
+                               'ActivateDoiService.wsdl'
 MODC_DOI_DEACTIVATE_DEFINITION = 'https://doiserver/modc/ws/' \
-    'DeactivateDoiService.wsdl'
+                                 'DeactivateDoiService.wsdl'
 MODC_DOI_ENDPOINT = 'https://doiserver/modc/ws/'
 MODC_DOI_MINT_URL_ROOT = 'http://mytardisserver/'
 
