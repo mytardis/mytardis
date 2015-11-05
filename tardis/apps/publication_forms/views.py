@@ -221,7 +221,7 @@ def process_form(request):
         remove_draft_status(publication)
 
         # Send emails about publication in draft
-        message_content = email_pub_requires_authorisation(
+        subject, message_content = email_pub_requires_authorisation(
             request.user.username,
             request.build_absolute_uri(
                 reverse('tardis.tardis_portal.views.view_experiment',
@@ -229,7 +229,7 @@ def process_form(request):
             request.build_absolute_uri(
                 '/apps/publication-forms/approvals/'))
 
-        send_mail('[TARDIS] Publication requires authorisation',
+        send_mail(subject,
                   message_content,
                   getattr(
                       settings, 'PUBLICATION_NOTIFICATION_SENDER_EMAIL',
@@ -237,9 +237,9 @@ def process_form(request):
                   get_pub_admin_email_addresses(),
                   fail_silently=True)
 
-        message_content = email_pub_awaiting_approval(publication.title)
-        send_mail_to_authors(publication,
-                             '[TARDIS] Publication submitted', message_content)
+        subject, message_content = email_pub_awaiting_approval(
+            publication.title)
+        send_mail_to_authors(publication, subject, message_content)
 
         # Trigger publication record update
         tasks.update_publication_records.delay()
@@ -749,11 +749,10 @@ def approve_publication(request, publication, message=None):
                 logger.error(
                     "Could not find the publication details parameter set")
 
-        email_message = email_pub_approved(publication.title, message, doi,
-                                           url)
+        subject, email_message = email_pub_approved(
+            publication.title, url, doi, message)
 
-        send_mail_to_authors(publication, '[TARDIS] Publication approved',
-                             email_message)
+        send_mail_to_authors(publication, subject, email_message)
 
         # Trigger publication update
         tasks.update_publication_records.delay()
@@ -766,10 +765,9 @@ def approve_publication(request, publication, message=None):
 def reject_publication(publication, message=None):
     if publication.is_publication() and not publication.is_publication_draft() \
             and publication.public_access == Experiment.PUBLIC_ACCESS_NONE:
-        email_message = email_pub_rejected(publication.title, message)
+        subject, email_message = email_pub_rejected(publication.title, message)
 
-        send_mail_to_authors(publication, '[TARDIS] Publication rejected',
-                             email_message)
+        send_mail_to_authors(publication, subject, email_message)
 
         publication.delete()
 
@@ -823,11 +821,10 @@ def revert_publication_to_draft(publication, message=None):
                     parameter_set.delete()
 
         # Send notification emails -- must be done before authors are deleted
-        email_message = email_pub_reverted_to_draft(publication.title, message)
+        subject, email_message = email_pub_reverted_to_draft(
+            publication.title, message)
 
-        send_mail_to_authors(publication,
-                             '[TARDIS] Publication reverted to draft',
-                             email_message)
+        send_mail_to_authors(publication, subject, email_message)
 
         # Delete all author records
         ExperimentAuthor.objects.filter(experiment=publication).delete()
