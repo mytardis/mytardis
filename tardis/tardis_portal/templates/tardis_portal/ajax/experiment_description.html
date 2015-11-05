@@ -127,7 +127,7 @@
       {% endfor %}
     {% endif %}
     <a href="{% url "sftp_access" %}?object_id={{ experiment.id }}&object_type=experiment"
-       class="btn btn-primary btn-mini" title="Download with SFTP">SFTP</a>
+       target="_blank" class="btn btn-primary btn-mini" title="Download with SFTP">SFTP</a>
     </dd>
   </dl>
   {% endif %}
