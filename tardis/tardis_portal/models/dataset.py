@@ -29,7 +29,7 @@ class Dataset(models.Model):
 
     experiments = models.ManyToManyField(Experiment, related_name='datasets')
     description = models.TextField(blank=True)
-    directory = DirectoryField(blank=True, null=True)
+    directory = DirectoryField(blank=True, null=True, max_length=255)
     immutable = models.BooleanField(default=False)
     instrument = models.ForeignKey(Instrument, null=True, blank=True)
     objects = OracleSafeManager()

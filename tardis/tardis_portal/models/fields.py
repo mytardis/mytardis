@@ -22,6 +22,6 @@ class DirectoryField(models.CharField):
     '''
 
     def formfield(self, **kwargs):
-        defaults = {'widget': forms.CharField(max_length=255)}
+        defaults = {'widget': forms.TextInput(attrs={'maxlength':'255'})}
         defaults.update(kwargs)
         return super(DirectoryField, self).formfield(**defaults)
