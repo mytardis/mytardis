@@ -3572,11 +3572,11 @@ def cybderduck_connection_window(request):
     sftp_host = request.get_host().split(':')[0]
     sftp_port = str(getattr(settings, 'SFTP_PORT', 2200))
     info = [
-        {'location': (247, 171),
+        {'location': (247, 170),
          'text': sftp_host},
-        {'location': (530, 170),
+        {'location': (530, 169),
          'text': sftp_port},
-        {'location': (247, 218),
+        {'location': (247, 217),
          'text': sftp_username},
     ]
     url = {'location': (241, 195),
