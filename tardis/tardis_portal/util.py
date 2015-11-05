@@ -147,3 +147,11 @@ def render_public_access_badge(experiment):
             'label': 'Public',
             'public': True,
         })
+
+
+def sanitise_name(name):
+    return name.replace(' ', '_').replace('/', ':')
+
+
+def dirname_with_id(obj_name, obj_id):
+    return "%s_%d" % (sanitise_name(obj_name), obj_id)
