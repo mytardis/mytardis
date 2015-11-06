@@ -1,78 +1,70 @@
-def email_pub_requires_authorisation(user_name, pub_url, approvals_url):
-    return '''\
-Hello!
-A publication has been submitted by %s and requires approval by a publication \
-administrator.
-You may view the publication here: %s
+from django.conf import settings
 
-This publication will not be publicly accessible until all embargo conditions \
-are met following approval.
-To approve this publication, please access the publication approvals \
-interface here: %s
-''' % (user_name,
-       pub_url,
-       approvals_url)
+from . import default_settings
+
+
+def interpolate_template(template_name, **kwargs):
+    publication_email_messages = getattr(
+        settings, 'PUBLICATION_EMAIL_MESSAGES',
+        default_settings.PUBLICATION_EMAIL_MESSAGES)
+    subject, template = publication_email_messages[template_name]
+    return subject, template.format(**kwargs)
+
+
+def email_pub_requires_authorisation(user_name, pub_url, approvals_url):
+    return interpolate_template('requires_authorisation', user_name=user_name,
+                                pub_url=pub_url, approvals_url=approvals_url)
 
 
 def email_pub_awaiting_approval(pub_title):
-    return '''\
-Hello!
-Your publication, %s, has been submitted and is awaiting approval by an \
-administrator.
-You will receive a notification once his has occurred.''' % pub_title
+    return interpolate_template('awaiting_approval', pub_title=pub_title)
 
 
-def email_pub_approved(pub_title, message=None, doi=None, url=None):
-    email_message = '''\
-Hello!
-Your publication, %s, has been approved for release and will appear online \
-following any embargo conditions. You may view your publication here: %s
-''' % (pub_title, url)
-
-    if doi is not None:
-        email_message += '''A DOI has been assigned to this publication (%s) \
-and will become active once your publication is released.
-You may use cite using this DOI immediately.''' % doi
+def email_pub_approved(pub_title, pub_url, doi=None, message=None):
+    if doi:
+        subject, email_message = interpolate_template(
+            'approved_with_doi', pub_title=pub_title, pub_url=pub_url,
+            doi=doi)
+    else:
+        subject, email_message = interpolate_template(
+            'approved', pub_title=pub_title, pub_url=pub_url)
 
     if message:
-        email_message += ''' ---
+        email_message += '''
+---
 %s''' % message
 
-    return email_message
+    return subject, email_message
 
 
 def email_pub_rejected(pub_title, message=None):
-    email_message = '''\
-Hello!
-Your publication, %s, is unable to be released. Please contact your system \
-administrator for further information.
-''' % pub_title
+    subject, email_message = interpolate_template(
+        'rejected', pub_title=pub_title)
 
     if message:
         email_message += ''' ---
 %s''' % message
 
-    return email_message
+    return subject, email_message
 
 
 def email_pub_reverted_to_draft(pub_title, message=None):
-    email_message = '''\
-Hello!
-Your publication, %s, has been reverted to draft and may now be amended.
-''' % pub_title
+    subject, email_message = interpolate_template(
+        'reverted_to_draft', pub_title=pub_title)
 
     if message:
         email_message += ''' ---
 %s''' % message
 
-    return email_message
+    return subject, email_message
 
 
 def email_pub_released(pub_title, doi=None):
-    email_message = '''Hello,
-Your publication, %s, is now public!
-''' % pub_title
     if doi:
-        email_message += 'You may view your publication here: ' \
-                         'http://dx.doi.org/%s' % doi
-    return email_message
+        subject, message = interpolate_template(
+            'released_with_doi', pub_title=pub_title, doi=doi)
+    else:
+        subject, message = interpolate_template(
+            'released', pub_title=pub_title)
+
+    return subject, message
