@@ -1,5 +1,3 @@
-import string
-
 from django.conf import settings
 
 from . import default_settings
@@ -10,7 +8,7 @@ def interpolate_template(template_name, **kwargs):
         settings, 'PUBLICATION_EMAIL_MESSAGES',
                                          default_settings.PUBLICATION_EMAIL_MESSAGES)
     subject, template = publication_email_messages[template_name]
-    return subject, string.Template(template).substitute(**kwargs)
+    return subject, template.format(**kwargs)
 
 
 def email_pub_requires_authorisation(user_name, pub_url, approvals_url):
