@@ -49,7 +49,7 @@ from tardis.apps.push_to.apps import PushToConfig
 from tardis.apps.push_to.views import initiate_push_experiment, initiate_push_dataset
 
 from tardis.tardis_portal.auth.decorators import \
-    has_experiment_write, has_dataset_write
+    has_experiment_write, has_dataset_write, has_experiment_download_access
 
 from base64 import b64decode
 import urllib2
@@ -3509,14 +3509,15 @@ def sftp_access(request):
     :param request: HttpRequest
     :return: HttpResponse
     """
-    def build_sftp_location(username, object_type, object_id):
-        if not (object_type and object_id):
-            return ''
+    object_type = request.GET.get('object_type')
+    object_id = request.GET.get('object_id')
+    sftp_start_dir = ''
+    if object_type and object_id:
         ct = ContentType.objects.get_by_natural_key(
             'tardis_portal', object_type)
         item = ct.model_class().objects.get(id=object_id)
         if object_type == 'experiment':
-            exp = item
+            exps = [item]
             dataset = None
             datafile = None
         else:
@@ -3526,22 +3527,27 @@ def sftp_access(request):
             elif object_type == 'datafile':
                 datafile = item
                 dataset = datafile.dataset
-            exp = dataset.experiments.first()
-        path_parts = ['/home', username, 'experiments',
-                      dirname_with_id(exp.title, exp.id)]
-        if dataset is not None:
-            path_parts.append(dirname_with_id(dataset.description, dataset.id))
-        if datafile is not None:
-            path_parts.append(datafile.directory)
-        return path.join(*path_parts)
+            exps = dataset.experiments.all()
+        allowed_exps = []
+        for exp in exps:
+            if has_experiment_download_access(request, exp.id):
+                allowed_exps.append(exp)
+        if len(allowed_exps) > 0:
+            exp = allowed_exps[0]
+            path_parts = ['/home', request.user.username, 'experiments',
+                          dirname_with_id(exp.title, exp.id)]
+            if dataset is not None:
+                path_parts.append(
+                    dirname_with_id(dataset.description, dataset.id))
+            if datafile is not None:
+                path_parts.append(datafile.directory)
+            sftp_start_dir = path.join(*path_parts)
 
-    sftp_start_dir = build_sftp_location(request.user.username,
-                                         request.GET.get('object_type'),
-                                         request.GET.get('object_id'))
     if request.user.userprofile.isDjangoAccount:
         sftp_username = request.user.username
     else:
-        sftp_username = request.user.email
+        login_attr = getattr(settings, 'SFTP_USERNAME_ATTRIBUTE', 'email')
+        sftp_username = getattr(request.user, login_attr)
     c = {
         'sftp_host': request.get_host().split(':')[0],
         'sftp_port': getattr(settings, 'SFTP_PORT', 2200),

@@ -12,7 +12,7 @@
         SSHFS.</p>
     <p>Instructions for different ways to connect appear below</p>
     <h2>Magic URL</h2>
-    <p>Some system are configured in a way that this link will connect you
+    <p>Some systems are configured in a way that this link will connect you
         automatically:<br/><a href="{{ sftp_url }}">{{ sftp_url }}</a></p>
 
     <h2>SFTP access parameters</h2>
@@ -47,7 +47,9 @@
         <p>Get Cyberduck here: <a
             href="https://cyberduck.io"
             target="_blank">https://cyberduck.io</a> </p>
-        <p>Hit "Open Connection" and enter your details<br/>
+        <p>Hit "Open Connection" and enter your details (Start folder is under
+            'More Options')<br/>
+            Make sure the top dropdown menu reads SFTP<br/>
             <img width="713" height="641"
                  src="{% url "cyberduck_connection_window" %}" />
         </p>
