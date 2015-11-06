@@ -3,19 +3,16 @@ import logging
 import re
 
 import dateutil.parser
+
 import CifFile
 from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
+from django.db import transaction
 from django.views.decorators.cache import never_cache
-
 from django.http import HttpResponse, HttpResponseForbidden
-
 from django.conf import settings
-
 from django.contrib.auth.models import User, Group
-
 from django.core.mail import send_mail
-
 from tardis.tardis_portal.shortcuts import return_response_error
 from tardis.tardis_portal.shortcuts import render_response_index
 from tardis.tardis_portal.models import Experiment, Dataset, ObjectACL, \
@@ -24,7 +21,7 @@ from tardis.tardis_portal.models import Experiment, Dataset, ObjectACL, \
 from tardis.tardis_portal.auth.localdb_auth import django_user, django_group
 from .doi import DOI
 from .utils import PDBCifHelper, check_pdb_status, get_unreleased_pdb_info, \
-    send_mail_to_authors
+    send_mail_to_authors, get_pub_admin_email_addresses
 from .email_text import email_pub_requires_authorisation, \
     email_pub_awaiting_approval, email_pub_approved, email_pub_rejected, \
     email_pub_reverted_to_draft
@@ -57,7 +54,7 @@ def process_form(request):
         return HttpResponse(
             json.dumps({
                 'error': 'Invalid form data was submitted '
-                '(server-side validation failed)'}),
+                         '(server-side validation failed)'}),
             content_type="application/json")
 
     # Check if the form data contains a publication ID
@@ -124,7 +121,7 @@ def process_form(request):
         for dataset in datasets:
             dataset.experiments.add(publication)
 
-        # ## Get data for the next page ## #
+        # --- Get data for the next page --- #
         # Construct the disclipline-specific form based on the
         # selected datasets
         selected_forms = select_forms(datasets)
@@ -140,110 +137,19 @@ def process_form(request):
         # Clear any current parameter sets except for those belonging
         # to the publication draft schema or containing the form_state
         # parameter
-        schema_root = getattr(settings, 'PUBLICATION_SCHEMA_ROOT',
-                              default_settings.PUBLICATION_SCHEMA_ROOT)
-        schema_draft = getattr(settings, 'PUBLICATION_DRAFT_SCHEMA',
-                               default_settings.PUBLICATION_DRAFT_SCHEMA)
-        for parameter_set in publication.getParameterSets():
-            if parameter_set.schema.namespace != schema_draft and \
-                    parameter_set.schema.namespace != schema_root:
-                parameter_set.delete()
-            elif parameter_set.schema.namespace == schema_root:
-                try:
-                    ExperimentParameter.objects.get(
-                        name__name='form_state',
-                        name__schema__namespace=schema_root,
-                        parameterset=parameter_set)
-                except ExperimentParameter.DoesNotExist:
-                    parameter_set.delete()
+        clear_publication_metadata(publication)
 
         # Loop through form data and create associates parameter sets
         # Any unrecognised fields or schemas are ignored!
-        for form_id, form in form_state['extraInfo'].iteritems():
-            try:  # Ignore form if no schema exists with this name
-                schema = Schema.objects.get(namespace=form['schema'])
-            except Schema.DoesNotExist:
-                continue
-            parameter_set = ExperimentParameterSet(
-                schema=schema, experiment=publication)
-            parameter_set.save()
-            for key, value in form.iteritems():
-                if key != 'schema':
-                    try:  # Ignore field if parameter name (key) doesn't match
-                        parameter_name = ParameterName.objects.get(
-                            schema=schema, name=key)
-                        if parameter_name.isNumeric():
-                            parameter = ExperimentParameter(
-                                name=parameter_name,
-                                parameterset=parameter_set,
-                                numerical_value=float(value))
-                        elif parameter_name.isLongString() or \
-                                parameter_name.isString() or \
-                                parameter_name.isURL() or \
-                                parameter_name.isLink() or \
-                                parameter_name.isFilename():
-                            parameter = ExperimentParameter(
-                                name=parameter_name,
-                                parameterset=parameter_set,
-                                string_value=str(value))
-                        parameter.save()
-                    except ParameterName.DoesNotExist:
-                        pass
+        map_form_to_schemas(form_state['extraInfo'], publication)
 
         # *** Synchrotron specific ***
         # Search for beamline/EPN information associated with each dataset
         # and add to the publication.
-        try:
-            synch_epn_schema = Schema.objects.get(
-                namespace='http://www.tardis.edu.au/schemas/as/'
-                          'experiment/2010/09/21')
-            datasets = Dataset.objects.filter(experiments=publication)
-            synch_experiments = Experiment.objects.filter(
-                datasets__in=datasets,
-                experimentparameterset__schema=synch_epn_schema).exclude(
-                pk=publication.pk).distinct()
-            for exp in [s for s in
-                        synch_experiments if not s.is_publication()]:
-                epn = ExperimentParameter.objects.get(
-                    name__name='EPN',
-                    name__schema=synch_epn_schema,
-                    parameterset__experiment=exp).string_value
-                beamline = ExperimentParameter.objects.get(
-                    name__name='beamline',
-                    name__schema=synch_epn_schema,
-                    parameterset__experiment=exp).string_value
-
-                epn_parameter_set = ExperimentParameterSet(
-                    schema=synch_epn_schema,
-                    experiment=publication)
-                epn_parameter_set.save()
-                epn_copy = ExperimentParameter(
-                    name=ParameterName.objects.get(
-                        name='EPN', schema=synch_epn_schema),
-                    parameterset=epn_parameter_set)
-                epn_copy.string_value = epn
-                epn_copy.save()
-                beamline_copy = ExperimentParameter(
-                    name=ParameterName.objects.get(
-                        name='beamline', schema=synch_epn_schema),
-                    parameterset=epn_parameter_set)
-                beamline_copy.string_value = beamline
-                beamline_copy.save()
-        except Schema.DoesNotExist:
-            pass
+        synchrotron_search_epn(publication)
 
         # --- Get data for the next page --- #
-        licenses = License.objects.filter(
-            is_active=True, allows_distribution=True)
-        licenses_json = []
-        for license in licenses:
-            l = {}
-            l['id'] = license.id
-            l['name'] = license.name
-            l['url'] = license.url
-            l['description'] = license.internal_description
-            l['image'] = license.image_url
-            licenses_json.append(l)
+        licenses_json = get_licenses()
         form_state['licenses'] = licenses_json
 
         # Select the first license as default
@@ -270,18 +176,7 @@ def process_form(request):
         # to the browser before the publication's draft
         # status is removed.
 
-        # Clear all current authors
-        ExperimentAuthor.objects.filter(experiment=publication).delete()
-        # Construct list of authors
-        authorOrder = 1
-        for author in form_state['authors']:
-            ExperimentAuthor(experiment=publication,
-                             author=author['name'],
-                             institution=author['institution'],
-                             email=author['email'],
-                             url='',
-                             order=authorOrder).save()
-            authorOrder += 1
+        set_publication_authors(form_state['authors'], publication)
 
         institutions = '; '.join(
             set([author['institution'] for author in form_state['authors']]))
@@ -304,32 +199,12 @@ def process_form(request):
                             parameterset=pub_details_parameter_set,
                             string_value=form_state['acknowledgements']).save()
 
-        # DOIs are generated during approval, so this is just a placeholder.
-        if getattr(settings, 'MODC_DOI_ENABLED',
-                   default_settings.MODC_DOI_ENABLED):
-            doi = '---'
-            doi_parameter_name = ParameterName.objects.get(
-                schema=pub_details_schema,
-                name='doi')
-            ExperimentParameter(name=doi_parameter_name,
-                                parameterset=pub_details_parameter_set,
-                                string_value=doi).save()
-
         # Set the release date
-        release_date = dateutil.parser.parse(form_state['embargo'])
-        pub_schema_root = Schema.objects.get(
-            namespace=getattr(settings, 'PUBLICATION_SCHEMA_ROOT',
-                              default_settings.PUBLICATION_SCHEMA_ROOT))
-        pub_schema_root_parameter_set = ExperimentParameterSet(
-            schema=pub_schema_root,
-            experiment=publication)
-        pub_schema_root_parameter_set.save()
-        embargo_parameter_name = ParameterName.objects.get(
-            schema=pub_schema_root,
-            name='embargo')
-        ExperimentParameter(name=embargo_parameter_name,
-                            parameterset=pub_schema_root_parameter_set,
-                            datetime_value=release_date).save()
+        set_embargo_release_date(
+            publication,
+            dateutil.parser.parse(
+                form_state[
+                    'embargo']))
 
         # Set the license
         try:
@@ -343,21 +218,9 @@ def process_form(request):
         publication.save()
 
         # Remove the draft status
-        ExperimentParameterSet.objects.get(
-            schema__namespace=getattr(
-                settings, 'PUBLICATION_DRAFT_SCHEMA',
-                default_settings.PUBLICATION_DRAFT_SCHEMA),
-            experiment=publication).delete()
+        remove_draft_status(publication)
 
         # Send emails about publication in draft
-        # -- Get list of emails for all publication administrators
-        pub_admin_email_addresses = [
-            user.email
-            for user in Group.objects.get(
-                name=getattr(settings, 'PUBLICATION_OWNER_GROUP',
-                             default_settings.PUBLICATION_OWNER_GROUP))
-                .user_set.all()
-            if user.email]
         message_content = email_pub_requires_authorisation(
             request.user.username,
             request.build_absolute_uri(
@@ -371,7 +234,7 @@ def process_form(request):
                   getattr(
                       settings, 'PUBLICATION_NOTIFICATION_SENDER_EMAIL',
                       default_settings.PUBLICATION_NOTIFICATION_SENDER_EMAIL),
-                  pub_admin_email_addresses,
+                  get_pub_admin_email_addresses(),
                   fail_silently=True)
 
         message_content = email_pub_awaiting_approval(publication.title)
@@ -387,6 +250,160 @@ def process_form(request):
     form_state_parameter.save()
 
     return HttpResponse(json.dumps(form_state), content_type="appication/json")
+
+
+def clear_publication_metadata(publication):
+    schema_root = getattr(settings, 'PUBLICATION_SCHEMA_ROOT',
+                          default_settings.PUBLICATION_SCHEMA_ROOT)
+    schema_draft = getattr(settings, 'PUBLICATION_DRAFT_SCHEMA',
+                           default_settings.PUBLICATION_DRAFT_SCHEMA)
+    for parameter_set in publication.getParameterSets():
+        if parameter_set.schema.namespace != schema_draft and \
+                parameter_set.schema.namespace != schema_root:
+            parameter_set.delete()
+        elif parameter_set.schema.namespace == schema_root:
+            try:
+                ExperimentParameter.objects.get(
+                    name__name='form_state',
+                    name__schema__namespace=schema_root,
+                    parameterset=parameter_set)
+            except ExperimentParameter.DoesNotExist:
+                parameter_set.delete()
+
+
+def map_form_to_schemas(extraInfo, publication):
+    for form_id, form in extraInfo.iteritems():
+        try:  # Ignore form if no schema exists with this name
+            schema = Schema.objects.get(namespace=form['schema'])
+        except Schema.DoesNotExist:
+            continue
+        parameter_set = ExperimentParameterSet(
+            schema=schema, experiment=publication)
+        parameter_set.save()
+        for key, value in form.iteritems():
+            if key != 'schema':
+                try:  # Ignore field if parameter name (key) doesn't match
+                    parameter_name = ParameterName.objects.get(
+                        schema=schema, name=key)
+                    if parameter_name.isNumeric():
+                        parameter = ExperimentParameter(
+                            name=parameter_name,
+                            parameterset=parameter_set,
+                            numerical_value=float(value))
+                    elif parameter_name.isLongString() or \
+                            parameter_name.isString() or \
+                            parameter_name.isURL() or \
+                            parameter_name.isLink() or \
+                            parameter_name.isFilename():
+                        parameter = ExperimentParameter(
+                            name=parameter_name,
+                            parameterset=parameter_set,
+                            string_value=str(value))
+                    else:
+                        # Shouldn't happen, but here in case the parameter type
+                        # is non-standard
+                        continue
+                    parameter.save()
+                except ParameterName.DoesNotExist:
+                    pass
+
+
+def get_licenses():
+    licenses = License.objects.filter(
+        is_active=True, allows_distribution=True)
+    licenses_json = []
+    for license in licenses:
+        l = {}
+        l['id'] = license.id
+        l['name'] = license.name
+        l['url'] = license.url
+        l['description'] = license.internal_description
+        l['image'] = license.image_url
+        licenses_json.append(l)
+    return licenses_json
+
+
+def remove_draft_status(publication):
+    ExperimentParameterSet.objects.get(
+        schema__namespace=getattr(
+            settings, 'PUBLICATION_DRAFT_SCHEMA',
+            default_settings.PUBLICATION_DRAFT_SCHEMA),
+        experiment=publication).delete()
+
+
+def set_publication_authors(author_list, publication):
+    # Clear all current authors
+    ExperimentAuthor.objects.filter(experiment=publication).delete()
+    # Construct list of authors
+    authorOrder = 1
+    for author in author_list:
+        ExperimentAuthor(experiment=publication,
+                         author=author['name'],
+                         institution=author['institution'],
+                         email=author['email'],
+                         url='',
+                         order=authorOrder).save()
+        authorOrder += 1
+
+
+def set_embargo_release_date(publication, release_date):
+    pub_schema_root = Schema.objects.get(
+        namespace=getattr(settings, 'PUBLICATION_SCHEMA_ROOT',
+                          default_settings.PUBLICATION_SCHEMA_ROOT))
+    pub_schema_root_parameter_set = ExperimentParameterSet(
+        schema=pub_schema_root,
+        experiment=publication)
+    pub_schema_root_parameter_set.save()
+    embargo_parameter_name = ParameterName.objects.get(
+        schema=pub_schema_root,
+        name='embargo')
+    ExperimentParameter(name=embargo_parameter_name,
+                        parameterset=pub_schema_root_parameter_set,
+                        datetime_value=release_date).save()
+
+
+def synchrotron_search_epn(publication):
+    # *** Synchrotron specific ***
+    # Search for beamline/EPN information associated with each dataset
+    # and add to the publication.
+    try:
+        synch_epn_schema = Schema.objects.get(
+            namespace='http://www.tardis.edu.au/schemas/as/'
+                      'experiment/2010/09/21')
+        datasets = Dataset.objects.filter(experiments=publication)
+        synch_experiments = Experiment.objects.filter(
+            datasets__in=datasets,
+            experimentparameterset__schema=synch_epn_schema).exclude(
+            pk=publication.pk).distinct()
+        for exp in [s for s in
+                    synch_experiments if not s.is_publication()]:
+            epn = ExperimentParameter.objects.get(
+                name__name='EPN',
+                name__schema=synch_epn_schema,
+                parameterset__experiment=exp).string_value
+            beamline = ExperimentParameter.objects.get(
+                name__name='beamline',
+                name__schema=synch_epn_schema,
+                parameterset__experiment=exp).string_value
+
+            epn_parameter_set = ExperimentParameterSet(
+                schema=synch_epn_schema,
+                experiment=publication)
+            epn_parameter_set.save()
+            epn_copy = ExperimentParameter(
+                name=ParameterName.objects.get(
+                    name='EPN', schema=synch_epn_schema),
+                parameterset=epn_parameter_set)
+            epn_copy.string_value = epn
+            epn_copy.save()
+            beamline_copy = ExperimentParameter(
+                name=ParameterName.objects.get(
+                    name='beamline', schema=synch_epn_schema),
+                parameterset=epn_parameter_set)
+            beamline_copy.string_value = beamline
+            beamline_copy.save()
+    except Schema.DoesNotExist:
+        pass
 
 
 def select_forms(datasets):
@@ -640,6 +657,7 @@ def get_publications_awaiting_approval():
     return pubs
 
 
+@transaction.atomic
 def approve_publication(request, publication, message=None):
     if publication.is_publication() and not publication.is_publication_draft() \
             and publication.public_access == Experiment.PUBLIC_ACCESS_NONE:
@@ -697,21 +715,39 @@ def approve_publication(request, publication, message=None):
         if getattr(settings, 'MODC_DOI_ENABLED',
                    default_settings.MODC_DOI_ENABLED):
             try:
-                doi_param = ExperimentParameter.objects.get(
-                    name__name='doi',
-                    name__schema__namespace=getattr(
-                        settings, 'PUBLICATION_DETAILS_SCHEMA',
-                        default_settings.PUBLICATION_DETAILS_SCHEMA),
-                    parameterset__experiment=publication)
+                pub_details_schema = getattr(
+                    settings, 'PUBLICATION_DETAILS_SCHEMA',
+                    default_settings.PUBLICATION_DETAILS_SCHEMA)
+
+                doi_parameter_name = ParameterName.objects.get(
+                    schema__namespace=pub_details_schema,
+                    name='doi')
+                pub_details_parameter_set = ExperimentParameterSet.objects.get(
+                    schema__namespace=pub_details_schema,
+                    experiment=publication)
+
                 doi = DOI()
-                doi_param.string_value = doi.mint(
-                    publication.id,
-                    reverse('tardis.tardis_portal.views.view_experiment',
-                            args=(publication.id,)))
+                ExperimentParameter(name=doi_parameter_name,
+                                    parameterset=pub_details_parameter_set,
+                                    string_value=doi.mint(
+                                        publication.id,
+                                        reverse(
+                                            'tardis.tardis_portal.views.view_experiment',
+                                                args=(publication.id,)))
+                                    ).save()
+                logger.info(
+                    "DOI %s minted for publication ID %i" %
+                    (doi.doi, publication.id))
                 doi.deactivate()
-                doi_param.save()
-            except ExperimentParameter.DoesNotExist:
-                pass
+                logger.info(
+                    "DOI %s deactivated, pending publication release criteria" %
+                    doi.doi)
+            except ParameterName.DoesNotExist:
+                logger.error(
+                    "Could not find the DOI parameter name (check schema definitions)")
+            except ExperimentParameterSet.DoesNotExist:
+                logger.error(
+                    "Could not find the publication details parameter set")
 
         email_message = email_pub_approved(publication.title, message, doi,
                                            url)
@@ -775,7 +811,7 @@ def revert_publication_to_draft(publication, message=None):
         # parameter
         for parameter_set in publication.getParameterSets():
             if parameter_set.schema.namespace != draft_schema_ns and \
-               parameter_set.schema.namespace != schema_ns_root:
+                    parameter_set.schema.namespace != schema_ns_root:
                 parameter_set.delete()
             elif parameter_set.schema.namespace == schema_ns_root:
                 try:

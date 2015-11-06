@@ -1,14 +1,14 @@
+import logging
 from datetime import date
 
 from django.conf import settings
 from suds.client import Client
 from suds.wsse import Security
-
 from suds_passworddigest.token import UsernameDigestToken
-
 from tardis.tardis_portal.models import Experiment, ExperimentAuthor
-
 from . import default_settings
+
+logger = logging.getLogger(__name__)
 
 
 class DOI():
@@ -18,7 +18,7 @@ class DOI():
         self.api_id = getattr(settings, 'MODC_DOI_API_ID',
                               default_settings.MODC_DOI_API_ID)
         self.url_root = getattr(settings, 'MODC_DOI_MINT_URL_ROOT',
-                                default_settings.MODC_DOI_MINT_URL_ROOT)
+                                default_settings.MODC_DOI_MINT_URL_ROOT).strip("/")
 
     def _init_client(self, wsdl_definition, endpoint):
         client = Client(wsdl_definition, location=endpoint)
@@ -50,8 +50,16 @@ class DOI():
         resource['publicationYear'] = date.today().year + 1
         resource['publisher'] = publisher
 
-        response = client.service.MintDoi(
-            self.api_id, resource, self.url_root+uri)
+        url = self.url_root + uri
+
+        logger.info("Minting DOI for URL: %s" % url)
+        try:
+            response = client.service.MintDoi(
+                self.api_id, resource, url)
+        except:
+            logger.error(
+                "DOI minting could not be completed. See traceback in web response.")
+            raise
 
         self.doi = response.doi
 

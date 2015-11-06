@@ -46,7 +46,7 @@ class DataFile(models.Model):
 
     dataset = models.ForeignKey(Dataset)
     filename = models.CharField(max_length=400)
-    directory = DirectoryField(blank=True, null=True)
+    directory = DirectoryField(blank=True, null=True, max_length=255)
     size = models.CharField(blank=True, max_length=400)
     created_time = models.DateTimeField(null=True, blank=True)
     modification_time = models.DateTimeField(null=True, blank=True)
@@ -157,7 +157,7 @@ class DataFile(models.Model):
     class Meta:
         app_label = 'tardis_portal'
         ordering = ['filename']
-        unique_together = ['dataset', 'filename', 'version']
+        unique_together = ['dataset', 'directory', 'filename', 'version']
 
     @classmethod
     def sum_sizes(cls, datafiles):

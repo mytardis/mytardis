@@ -10,7 +10,7 @@ import tardis.tardis_portal.models.token
 
 class Migration(migrations.Migration):
 
-    replaces = [(b'tardis_portal', '0001_initial'), (b'tardis_portal', '0002_auto_20150528_1128'), (b'tardis_portal', '0003_auto_20151007_1826')]
+    replaces = [(b'tardis_portal', '0001_initial'), (b'tardis_portal', '0002_auto_20150528_1128'), (b'tardis_portal', '0003_auto_20150907_1315'), (b'tardis_portal', '0004_storageboxoption_value_type'), (b'tardis_portal', '0005_auto_20151105_1547')]
 
     dependencies = [
         ('contenttypes', '0002_remove_content_type_name'),
@@ -24,7 +24,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('filename', models.CharField(max_length=400)),
-                ('directory', tardis.tardis_portal.models.fields.DirectoryField(null=True, blank=True)),
+                ('directory', tardis.tardis_portal.models.fields.DirectoryField(null=True, blank=True, max_length=255)),
                 ('size', models.CharField(max_length=400, blank=True)),
                 ('created_time', models.DateTimeField(null=True, blank=True)),
                 ('modification_time', models.DateTimeField(null=True, blank=True)),
@@ -54,7 +54,7 @@ class Migration(migrations.Migration):
             name='DatafileParameter',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('string_value', models.TextField(db_index=True, null=True, blank=True)),
+                ('string_value', models.CharField(db_index=True, null=True, blank=True, max_length=255)),
                 ('numerical_value', models.FloatField(db_index=True, null=True, blank=True)),
                 ('datetime_value', models.DateTimeField(db_index=True, null=True, blank=True)),
                 ('link_id', models.PositiveIntegerField(null=True, blank=True)),
@@ -82,7 +82,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('description', models.TextField(blank=True)),
-                ('directory', tardis.tardis_portal.models.fields.DirectoryField(null=True, blank=True)),
+                ('directory', tardis.tardis_portal.models.fields.DirectoryField(null=True, blank=True, max_length=255)),
                 ('immutable', models.BooleanField(default=False)),
             ],
             options={
@@ -93,7 +93,7 @@ class Migration(migrations.Migration):
             name='DatasetParameter',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('string_value', models.TextField(db_index=True, null=True, blank=True)),
+                ('string_value', models.CharField(db_index=True, null=True, blank=True, max_length=255)),
                 ('numerical_value', models.FloatField(db_index=True, null=True, blank=True)),
                 ('datetime_value', models.DateTimeField(db_index=True, null=True, blank=True)),
                 ('link_id', models.PositiveIntegerField(null=True, blank=True)),
@@ -143,7 +143,7 @@ class Migration(migrations.Migration):
                 ('institution', models.CharField(max_length=255, null=True, blank=True)),
                 ('email', models.CharField(max_length=255, null=True, blank=True)),
                 ('order', models.PositiveIntegerField()),
-                ('url', models.URLField(help_text=b'URL identifier for the author', max_length=2000, null=True, blank=True)),
+                ('url', models.URLField(help_text=b'URL identifier for the author', max_length=255, null=True, blank=True)),
                 ('experiment', models.ForeignKey(to='tardis_portal.Experiment')),
             ],
             options={
@@ -154,7 +154,7 @@ class Migration(migrations.Migration):
             name='ExperimentParameter',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('string_value', models.TextField(db_index=True, null=True, blank=True)),
+                ('string_value', models.CharField(db_index=True, null=True, blank=True, max_length=255)),
                 ('numerical_value', models.FloatField(db_index=True, null=True, blank=True)),
                 ('datetime_value', models.DateTimeField(db_index=True, null=True, blank=True)),
                 ('link_id', models.PositiveIntegerField(null=True, blank=True)),
@@ -217,7 +217,7 @@ class Migration(migrations.Migration):
             name='InstrumentParameter',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('string_value', models.TextField(db_index=True, null=True, blank=True)),
+                ('string_value', models.CharField(db_index=True, null=True, blank=True, max_length=255)),
                 ('numerical_value', models.FloatField(db_index=True, null=True, blank=True)),
                 ('datetime_value', models.DateTimeField(db_index=True, null=True, blank=True)),
                 ('link_id', models.PositiveIntegerField(null=True, blank=True)),
@@ -318,7 +318,7 @@ class Migration(migrations.Migration):
                 ('django_storage_class', models.TextField(default=b'tardis.tardis_portal.storage.MyTardisLocalFileSystemStorage')),
                 ('max_size', models.BigIntegerField()),
                 ('status', models.CharField(max_length=100)),
-                ('name', models.CharField(max_length=255, default=b'default', unique=True)),
+                ('name', models.CharField(default=b'default', unique=True, max_length=255)),
                 ('description', models.TextField(default=b'Default Storage')),
                 ('master_box', models.ForeignKey(related_name='child_boxes', blank=True, to='tardis_portal.StorageBox', null=True)),
             ],
@@ -342,6 +342,7 @@ class Migration(migrations.Migration):
                 ('key', models.TextField()),
                 ('value', models.TextField()),
                 ('storage_box', models.ForeignKey(related_name='options', to='tardis_portal.StorageBox')),
+                ('value_type', models.CharField(default=b'string', max_length=6, choices=[(b'string', b'String value'), (b'pickle', b'Pickled value')])),
             ],
         ),
         migrations.CreateModel(
@@ -505,17 +506,32 @@ class Migration(migrations.Migration):
         ),
         migrations.AlterUniqueTogether(
             name='datafile',
-            unique_together=set([('dataset', 'filename', 'version')]),
+            unique_together=set([('dataset', 'directory', 'filename', 'version')]),
+        ),
+        migrations.AlterField(
+            model_name='parametername',
+            name='data_type',
+            field=models.IntegerField(default=2, choices=[(1, b'NUMERIC'), (2, b'STRING'), (3, b'URL'), (4, b'LINK'), (5, b'FILENAME'), (6, b'DATETIME'), (7, b'LONGSTRING'), (8, b'JSON')]),
+        ),
+        migrations.AlterField(
+            model_name='datafile',
+            name='directory',
+            field=tardis.tardis_portal.models.fields.DirectoryField(max_length=255, null=True, blank=True),
         ),
         migrations.AlterField(
             model_name='datafileparameter',
             name='string_value',
-            field=models.CharField(max_length=255, null=True, blank=True, db_index=True),
+            field=models.CharField(db_index=True, max_length=255, null=True, blank=True),
+        ),
+        migrations.AlterField(
+            model_name='dataset',
+            name='directory',
+            field=tardis.tardis_portal.models.fields.DirectoryField(max_length=255, null=True, blank=True),
         ),
         migrations.AlterField(
             model_name='datasetparameter',
             name='string_value',
-            field=models.CharField(max_length=255, null=True, blank=True, db_index=True),
+            field=models.CharField(db_index=True, max_length=255, null=True, blank=True),
         ),
         migrations.AlterField(
             model_name='experimentauthor',
@@ -525,16 +541,16 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='experimentparameter',
             name='string_value',
-            field=models.CharField(max_length=255, null=True, blank=True, db_index=True),
+            field=models.CharField(db_index=True, max_length=255, null=True, blank=True),
         ),
         migrations.AlterField(
             model_name='instrumentparameter',
             name='string_value',
-            field=models.CharField(max_length=255, null=True, blank=True, db_index=True),
+            field=models.CharField(db_index=True, max_length=255, null=True, blank=True),
         ),
         migrations.AlterField(
-            model_name='parametername',
-            name='data_type',
-            field=models.IntegerField(default=2, choices=[(1, b'NUMERIC'), (2, b'STRING'), (3, b'URL'), (4, b'LINK'), (5, b'FILENAME'), (6, b'DATETIME'), (7, b'LONGSTRING'), (8, b'JSON')]),
+            model_name='storagebox',
+            name='name',
+            field=models.CharField(default=b'default', unique=True, max_length=255),
         ),
     ]
