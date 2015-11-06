@@ -75,57 +75,57 @@ PUBLICATION_EMAIL_MESSAGES = {
     'requires_authorisation': ('[TARDIS] Publication requires authorisation',
                                '''\
 Hello!
-A publication has been submitted by ${user_name} and requires approval by a publication \
+A publication has been submitted by {user_name} and requires approval by a publication \
 administrator.
-You may view the publication here: ${pub_url}
+You may view the publication here: {pub_url}
 
 This publication will not be publicly accessible until all embargo conditions \
 are met following approval.
 To approve this publication, please access the publication approvals \
-interface here: ${approvals_url}
+interface here: {approvals_url}
 '''),
     'awaiting_approval': ('[TARDIS] Publication submitted',
                           '''\
 Hello!
-Your publication, ${pub_title}, has been submitted and is awaiting approval by an \
+Your publication, {pub_title}, has been submitted and is awaiting approval by an \
 administrator.
 You will receive a notification once his has occurred.
 '''),
     'approved': ('[TARDIS] Publication approved',
                  '''\
 Hello!
-Your publication, ${pub_title}, has been approved for release and will appear online \
-following any embargo conditions. You may view your publication here: ${pub_url}
+Your publication, {pub_title}, has been approved for release and will appear online \
+following any embargo conditions. You may view your publication here: {pub_url}
 '''),
     'approved_with_doi': ('[TARDIS] Publication approved',
                           '''\
 Hello!
-Your publication, ${pub_title}, has been approved for release and will appear online \
-following any embargo conditions. You may view your publication here: ${pub_url}
-A DOI has been assigned to this publication (${doi}) \
+Your publication, {pub_title}, has been approved for release and will appear online \
+following any embargo conditions. You may view your publication here: {pub_url}
+A DOI has been assigned to this publication ({doi}) \
 and will become active once your publication is released.
 You may use cite using this DOI immediately.
 '''),
     'rejected': ('[TARDIS] Publication rejected',
                  '''\
 Hello!
-Your publication, ${pub_title}, is unable to be released. Please contact your system \
+Your publication, {pub_title}, is unable to be released. Please contact your system \
 administrator for further information.
 '''),
     'reverted_to_draft': ('[TARDIS] Publication reverted to draft',
                           '''\
 Hello!
-Your publication, ${pub_title}, has been reverted to draft and may now be amended.
+Your publication, {pub_title}, has been reverted to draft and may now be amended.
 '''),
     'released': ('[TARDIS] Publication released',
                  '''\
 Hello,
-Your publication, ${pub_title}, is now public!
+Your publication, {pub_title}, is now public!
 '''),
     'released_with_doi': ('[TARDIS] Publication released',
                           '''\
 Hello,
-Your publication, ${pub_title}, is now public!
-You may view your publication here: http://dx.doi.org/${doi}
+Your publication, {pub_title}, is now public!
+You may view your publication here: http://dx.doi.org/{doi}
 ''')
 }
