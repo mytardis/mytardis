@@ -6,15 +6,14 @@ from . import default_settings
 def interpolate_template(template_name, **kwargs):
     publication_email_messages = getattr(
         settings, 'PUBLICATION_EMAIL_MESSAGES',
-                                         default_settings.PUBLICATION_EMAIL_MESSAGES)
+        default_settings.PUBLICATION_EMAIL_MESSAGES)
     subject, template = publication_email_messages[template_name]
     return subject, template.format(**kwargs)
 
 
 def email_pub_requires_authorisation(user_name, pub_url, approvals_url):
-    return interpolate_template(
-        'requires_authorisation', user_name=user_name, pub_url=pub_url,
-                                approvals_url=approvals_url)
+    return interpolate_template('requires_authorisation', user_name=user_name,
+                                pub_url=pub_url, approvals_url=approvals_url)
 
 
 def email_pub_awaiting_approval(pub_title):
@@ -25,7 +24,7 @@ def email_pub_approved(pub_title, pub_url, doi=None, message=None):
     if doi:
         subject, email_message = interpolate_template(
             'approved_with_doi', pub_title=pub_title, pub_url=pub_url,
-                                                      doi=doi)
+            doi=doi)
     else:
         subject, email_message = interpolate_template(
             'approved', pub_title=pub_title, pub_url=pub_url)
