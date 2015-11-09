@@ -181,7 +181,6 @@ app.controller('FacilityCtrl', function ($scope, $resource, $interval, $log) {
             } else {
                 $scope.datasets = data.slice(0, data.length);
             }
-            console.log($scope.datasets);
             if ($scope.datasets.length > 0) {
                 $scope.dataByUser = groupByUser($scope.datasets);
                 $scope.dataByInstrument = groupByInstrument($scope.datasets);
