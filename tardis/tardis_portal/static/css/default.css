@@ -98,10 +98,6 @@ div.copylink {
     word-break: break-all;
 }
 
-.datafiles.table {
-    width: auto !important;
-}
-
 .info-box {
     border: 1px solid #DDDDDD;
     padding: 5px 10px 5px 10px;
