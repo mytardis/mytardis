@@ -433,17 +433,24 @@ def facility_overview_facilities_list(request):
     return HttpResponse(json.dumps(facility_data), content_type='application/json')
 
 
+def dataset_aggregate_info(dataset):
+    datafiles_all = DataFile.objects.filter(dataset=dataset)
+    datafiles_verified = DataFile.objects.filter(dataset=dataset,
+                                                        verified=True)
+    return {
+        "dataset_size": DataFile.sum_sizes(datafiles_all),
+        "verified_datafiles_count": datafiles_verified.count(),
+        "verified_datafiles_size": DataFile.sum_sizes(datafiles_verified),
+        "datafile_count": datafiles_all.count()
+    }
+
+
 def facility_overview_datafile_list(dataset):
     datafile_objects = DataFile.objects.filter(dataset=dataset)
     datafiles = []
-    dataset_size = 0
-    verified_datafiles_count = 0
-    verified_datafiles_size = 0
     for datafile in datafile_objects:
         if datafile.verified:
             verified = "Yes"
-            verified_datafiles_count += 1
-            verified_datafiles_size += int(datafile.size)
         else:
             verified = "No"
             try:
@@ -469,14 +476,7 @@ def facility_overview_datafile_list(dataset):
             "modification_time": datetime_to_us(datafile.modification_time),
             "verified": verified,
         })
-        dataset_size = dataset_size + int(datafile.size)
-    return {
-        "dataset_size": dataset_size,
-        "verified_datafiles_count": verified_datafiles_count,
-        "verified_datafiles_size": verified_datafiles_size,
-        "datafiles": datafiles,
-        "datafile_count": len(datafiles)
-    }
+    return datafiles
 
 
 @never_cache
@@ -488,7 +488,7 @@ def facility_overview_dataset_detail(request, dataset_id):
                 Dataset.objects.get(
                     instrument__facility__manager_group__user=request.user, pk=dataset_id
                 )
-            )['datafiles']
+            )
         ), content_type='application/json')
 
 
@@ -518,7 +518,7 @@ def facility_overview_experiments(request, facility_id, start_index, end_index):
         owners = parent_experiment.get_owners()
         groups = parent_experiment.get_groups()
 
-        datafile_list = facility_overview_datafile_list(dataset)
+        dataset_info = dataset_aggregate_info(dataset)
 
         obj = {
             "id": dataset.id,
@@ -529,10 +529,10 @@ def facility_overview_experiments(request, facility_id, start_index, end_index):
             },
             "description": dataset.description,
             "institution": parent_experiment.institution_name,
-            "datafile_count": datafile_list['datafile_count'],
-            "size": datafile_list['dataset_size'],
-            "verified_datafiles_count": datafile_list['verified_datafiles_count'],
-            "verified_datafiles_size": datafile_list['verified_datafiles_size'],
+            "datafile_count": dataset_info['datafile_count'],
+            "size": dataset_info['dataset_size'],
+            "verified_datafiles_count": dataset_info['verified_datafiles_count'],
+            "verified_datafiles_size": dataset_info['verified_datafiles_size'],
             "owner": ', '.join([o.username for o in owners]),
             "group": ', '.join([g.name for g in groups]),
             "instrument": {
