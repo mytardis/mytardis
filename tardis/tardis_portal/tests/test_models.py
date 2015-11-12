@@ -149,7 +149,7 @@ class ModelTestCase(TestCase):
             self.assertEqual(df_file.file_objects.all()[0].uri,
                              'path/file.txt')
             self.assertEqual(df_file.dataset, dataset)
-            self.assertEqual(df_file.size, '')
+            self.assertEqual(df_file.size, 0)
             self.assertEqual(df_file.get_download_url(),
                              '/api/v1/dataset_file/1/download%s' %
                              trailing_slash())
@@ -159,14 +159,14 @@ class ModelTestCase(TestCase):
             self.assertEqual(df_file.file_objects.all()[0].uri,
                              'path/file1.txt')
             self.assertEqual(df_file.dataset, dataset)
-            self.assertEqual(df_file.size, '')
+            self.assertEqual(df_file.size, 0)
             self.assertEqual(df_file.get_download_url(),
                              '/api/v1/dataset_file/2/download%s' %
                              trailing_slash())
             df_file = _build(dataset, 'file1.txt', 'path/file1#txt')
             self.assertEqual(df_file.filename, 'file1.txt')
             self.assertEqual(df_file.dataset, dataset)
-            self.assertEqual(df_file.size, '')
+            self.assertEqual(df_file.size, 0)
             self.assertEqual(df_file.get_download_url(),
                              '/api/v1/dataset_file/3/download%s' %
                              trailing_slash())
@@ -175,27 +175,16 @@ class ModelTestCase(TestCase):
                              'http://localhost:8080/filestore/f.txt')
             self.assertEqual(df_file.filename, 'f.txt')
             self.assertEqual(df_file.dataset, dataset)
-            self.assertEqual(df_file.size, '')
+            self.assertEqual(df_file.size, 0)
             self.assertEqual(df_file.get_download_url(),
                              '/api/v1/dataset_file/4/download%s' %
                              trailing_slash())
-
-            # check that we can create datafiles with byte size of zero
-            # size is actually a CharField, so gets saved as a string
-            settings.REQUIRE_DATAFILE_SIZES = True
-            df_file = DataFile(dataset=dataset,
-                               filename='empty.txt',
-                               size=0)
-            df_file.save()
-            df_pk = df_file.pk
-            saved_df = DataFile.objects.get(pk=df_pk)
-            self.assertEqual(saved_df.size, u'0')
 
             # check that can't save negative byte sizes
             with self.assertRaises(Exception):
                 settings.REQUIRE_DATAFILE_SIZES = True
                 DataFile(dataset=dataset, filename='lessthanempty.txt',
-                         size='-1').save()
+                         size=-1).save()
 
             # Now check the 'REQUIRE' config params
             with self.assertRaises(Exception):
@@ -207,7 +196,7 @@ class ModelTestCase(TestCase):
                 settings.REQUIRE_DATAFILE_SIZES = False
                 settings.REQUIRE_DATAFILE_CHECKSUMS = True
                 DataFile(dataset=dataset, filename='foo.txt',
-                         size='1').save()
+                         size=1).save()
 
         finally:
             settings.REQUIRE_DATAFILE_SIZES = save1
@@ -232,7 +221,7 @@ class ModelTestCase(TestCase):
 
         df_file = models.DataFile(dataset=dataset,
                                   filename='file.txt',
-                                  size='42',
+                                  size=42,
                                   md5sum='bogus')
         df_file.save()
 
