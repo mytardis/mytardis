@@ -1,3 +1,0 @@
-django-nose
-django-jasmine
--r ../requirements.txt
