@@ -7,7 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('tardis_portal', '0005_datafile__size'),
+        ('tardis_portal', '0005_datafile_add_size_int_column'),
     ]
 
     operations = [
