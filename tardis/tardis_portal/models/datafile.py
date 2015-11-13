@@ -182,10 +182,6 @@ class DataFile(models.Model):
                                 self.size)
         self.update_mimetype(save=False)
 
-        # Needed because null=True seems to only work for string-based fields
-        if self.size is None:
-            self.size = 0
-
         super(DataFile, self).save(*args, **kwargs)
 
     def get_size(self):

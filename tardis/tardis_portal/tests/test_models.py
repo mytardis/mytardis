@@ -149,7 +149,7 @@ class ModelTestCase(TestCase):
             self.assertEqual(df_file.file_objects.all()[0].uri,
                              'path/file.txt')
             self.assertEqual(df_file.dataset, dataset)
-            self.assertEqual(df_file.size, 0)
+            self.assertEqual(df_file.size, None)
             self.assertEqual(df_file.get_download_url(),
                              '/api/v1/dataset_file/1/download%s' %
                              trailing_slash())
@@ -159,14 +159,14 @@ class ModelTestCase(TestCase):
             self.assertEqual(df_file.file_objects.all()[0].uri,
                              'path/file1.txt')
             self.assertEqual(df_file.dataset, dataset)
-            self.assertEqual(df_file.size, 0)
+            self.assertEqual(df_file.size, None)
             self.assertEqual(df_file.get_download_url(),
                              '/api/v1/dataset_file/2/download%s' %
                              trailing_slash())
             df_file = _build(dataset, 'file1.txt', 'path/file1#txt')
             self.assertEqual(df_file.filename, 'file1.txt')
             self.assertEqual(df_file.dataset, dataset)
-            self.assertEqual(df_file.size, 0)
+            self.assertEqual(df_file.size, None)
             self.assertEqual(df_file.get_download_url(),
                              '/api/v1/dataset_file/3/download%s' %
                              trailing_slash())
@@ -175,7 +175,7 @@ class ModelTestCase(TestCase):
                              'http://localhost:8080/filestore/f.txt')
             self.assertEqual(df_file.filename, 'f.txt')
             self.assertEqual(df_file.dataset, dataset)
-            self.assertEqual(df_file.size, 0)
+            self.assertEqual(df_file.size, None)
             self.assertEqual(df_file.get_download_url(),
                              '/api/v1/dataset_file/4/download%s' %
                              trailing_slash())
