@@ -123,6 +123,7 @@ MIDDLEWARE_CLASSES = (
     'tardis.tardis_portal.logging_middleware.LoggingMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'tardis.tardis_portal.auth.token_auth.TokenAuthMiddleware',
+    'tardis.tardis_portal.auth.cas.middleware.CASMiddleware',
     # 'django.middleware.cache.FetchFromCacheMiddleware',
 )
 
@@ -236,6 +237,7 @@ STATICFILES_STORAGE = \
 # this Django installation.
 TARDIS_APP_ROOT = 'tardis.apps'
 INSTALLED_APPS = (
+    'tardis.tardis_portal',
     'django_extensions',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -245,7 +247,6 @@ INSTALLED_APPS = (
     'django.contrib.admin',
     'django.contrib.admindocs',
     'django.contrib.humanize',
-    'tardis.tardis_portal',
     'tardis.tardis_portal.templatetags',
     'registration',
     'django_jasmine',
@@ -294,6 +295,8 @@ GROUP_PROVIDERS = (
 AUTH_PROVIDERS = (
     ('localdb', 'Local DB',
      'tardis.tardis_portal.auth.localdb_auth.DjangoAuthBackend'),
+    ('cas', 'CAS Server',
+     'tardis.tardis_portal.auth.cas.backends.CASBackend'),
 )
 
 # default authentication module for experiment ownership user during
@@ -309,8 +312,17 @@ ACCOUNT_ACTIVATION_DAYS = 3
 
 AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
+    'tardis.tardis_portal.auth.cas.backends.CASBackend',
     'tardis.tardis_portal.auth.authorisation.ACLAwareBackend',
 )
+
+# CAS Server default settings
+CAS_ENABLED = False
+CAS_SERVER_URL = 'https//<url of the CAS Service>/'
+CAS_SERVICE_URL = 'http://<url of the tardis instance>/'
+CAS_IGNORE_REDIRECT = True
+CAS_LOGOUT_COMPLETELY = True
+CAS_LOGIN_URL = '/cas/login/'
 
 # Email Configuration
 

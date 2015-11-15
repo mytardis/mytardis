@@ -63,5 +63,6 @@ from .parameters import DatafileParameter, DatafileParameterSet, \
                         InstrumentParameter, InstrumentParameterSet, \
                         FreeTextSearchField, ParameterName, Schema
 from .token import Token
+from tardis.tardis_portal.auth.cas.models import Tgt, PgtIOU
 
 import hooks
