@@ -424,27 +424,17 @@ class Parameter(models.Model):
 
     @property
     def link_url(self):
-        def get_view_method(view_override_setting, default):
-            for view_override in settings.get(view_override_setting, []):
-                if view_override[0] == self.name.schema.namespace:
-                    return view_override[1]
-            return default
-
         if not self.name.isLink():
             return None
         if isinstance(self.link_gfk, DataFile):
-            view = get_view_method('DATAFILE_VIEWS',
-                                   'tardis.tardis_portal.views.view_dataset')
+            view = 'tardis.tardis_portal.views.view_dataset'
             url = reverse(view, kwargs={'dataset_id': self.link_gfk.dataset.id})
         elif isinstance(self.link_gfk, Dataset):
-            view = get_view_method('DATASET_VIEWS',
-                                   'tardis.tardis_portal.views.view_dataset')
+            view = 'tardis.tardis_portal.views.view_dataset'
             url = reverse(view, kwargs={'dataset_id': self.link_id})
         elif isinstance(self.link_gfk, Experiment):
-            view = get_view_method('EXPERIMENT_VIEWS',
-                                   'tardis.tardis_portal.views.view_experiment')
-            url = reverse(view,
-                          kwargs={'experiment_id': self.link_id})
+            view = 'tardis.tardis_portal.views.view_experiment'
+            url = reverse(view, kwargs={'experiment_id': self.link_id})
         elif self.link_gfk is None and self.string_value:
             url = self.string_value
         else:
@@ -483,35 +473,33 @@ class Parameter(models.Model):
                 # (eg, /experiment/view/12345 or /dataset/123)
                 # and extract values to populate link_ct and link_id. This
                 # covers two common cases, allowing LINK Parameters to be
-                # properly created via the API.
-                # Ideally we should be able to take the a URL in the form
-                # returned by Model.get_absolute_url() and map it back to a
-                # model instance, however there doesn't appear to be any simple
-                # way to do this cleanly.
-                # (Something like django.core.urlresolvers.resolve will return
-                # the matching view associated with a URL, but not the model)
+                # properly created via the REST API.
                 v = value.lstrip('/')  # no leading slash
+
+                # Additional view url routes and their associated models
+                # can be added here as tuples:
+                # (route_url, regex_group_name, model_name)
                 from tardis.urls import experiment_view_url, dataset_view_url
-                match = None
-                for url in [experiment_view_url, dataset_view_url]:
-                    match = url.regex.match(v)
+                url_model_mapping = [
+                    (experiment_view_url, 'experiment_id', 'Experiment'),
+                    (dataset_view_url, 'dataset_id', 'Dataset'),
+                ]
+
+                match, model_name, pk = None, None, None
+                for u in url_model_mapping:
+                    match = u[0].regex.match(v)
                     if match:
+                        pk = int(match.group(u[1]))
+                        model_name = u[2]
                         break
 
-                # Split URLs paths in the form <model_name>/../<pk_id>
-                if match:
-                    from urlparse import urlparse
-                    path = urlparse(value).path
-                    path_bits = path.strip('/').split('/')
-                    model_name = path_bits[0]
-                    pk = int(path_bits[-1])
-
+                if pk is not None and model_name is not None:
                     self.link_id = pk
                     self.link_ct = ContentType.objects.get(
                         app_label='tardis_portal',
-                        model=model_name)
-            except (ValueError, IndexError), e:
-                # we were unable to successfully match the url to model
+                        model=model_name.lower())
+            except (ValueError, IndexError):
+                # If we were unable to successfully match the url to model
                 # instance - users of the model instance will need to
                 # fall back to using self.string_value instead of self.link_gfk
                 pass
