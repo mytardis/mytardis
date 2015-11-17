@@ -428,14 +428,14 @@ class Parameter(models.Model):
         if not self.name.isLink():
             return None
         if isinstance(self.link_gfk, DataFile):
-            view = 'tardis.tardis_portal.views.view_dataset'
-            url = reverse(view, kwargs={'dataset_id': self.link_gfk.dataset.id})
+            url = reverse('tardis.tardis_portal.views.view_dataset',
+                          kwargs={'dataset_id': self.link_gfk.dataset.id})
         elif isinstance(self.link_gfk, Dataset):
-            view = 'tardis.tardis_portal.views.view_dataset'
-            url = reverse(view, kwargs={'dataset_id': self.link_id})
+            url = reverse('tardis.tardis_portal.views.view_dataset',
+                          kwargs={'dataset_id': self.link_id})
         elif isinstance(self.link_gfk, Experiment):
-            view = 'tardis.tardis_portal.views.view_experiment'
-            url = reverse(view, kwargs={'experiment_id': self.link_id})
+            url = reverse('tardis.tardis_portal.views.view_experiment',
+                          kwargs={'experiment_id': self.link_id})
         elif self.link_gfk is None and self.string_value:
             url = self.string_value
         else:
