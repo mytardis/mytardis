@@ -227,7 +227,7 @@ class ParameterSetManagerTestCase(TestCase):
         self.assertTrue(psm.get_param("exp_link").link_gfk == self.exp)
 
         # Check link to dataset
-        dataset_url = self.dataset.get_absolute_url()  # /dataset/1
+        dataset_url = self.dataset.get_absolute_url()  # /dataset/1/
         self.assertTrue(psm.get_param("dataset_link").string_value ==
                         dataset_url)
 
@@ -238,6 +238,49 @@ class ParameterSetManagerTestCase(TestCase):
         self.assertTrue(psm.get_param("dataset_link").link_ct == dataset_ct)
 
         self.assertTrue(psm.get_param("dataset_link").link_gfk == self.dataset)
+
+    def test_link_parameter_type_extra(self):
+        # make a second ParameterSet for testing some variations
+        # in URL values
+        self.datafileparameterset2 = DatafileParameterSet(
+            schema=self.schema, datafile=self.datafile)
+        self.datafileparameterset2.save()
+
+        psm = ParameterSetManager(parameterset=self.datafileparameterset2)
+
+        self.dataset_link_param2 = DatafileParameter(
+            parameterset=self.datafileparameterset2,
+            name=self.parametername_dataset_link)
+        # /dataset/1 - no trailing slash
+        dataset_url = self.dataset.get_absolute_url().rstrip('/')
+        self.dataset_link_param2.set_value(dataset_url)
+        self.dataset_link_param2.save()
+
+        # Check link_id/link_ct/link_gfk to dataset
+        self.assertTrue(psm.get_param("dataset_link").link_id ==
+                        self.dataset.id)
+
+        dataset_ct = ContentType.objects.get(model__iexact="dataset")
+        self.assertTrue(psm.get_param("dataset_link").link_ct == dataset_ct)
+
+        self.assertTrue(psm.get_param("dataset_link").link_gfk == self.dataset)
+
+        # Test links of the form /v1/api/experiment/<experiment_id>
+        self.exp_link_param2 = DatafileParameter(
+            parameterset=self.datafileparameterset2,
+            name=self.parametername_exp_link)
+        exp_url = 'v1/api/experiment/%s' % self.exp.id
+        self.exp_link_param2.set_value(exp_url)
+        self.exp_link_param2.save()
+
+        # Check link_id/link_ct/link_gfk to experiment
+        self.assertTrue(psm.get_param("exp_link").link_id ==
+                        self.exp.id)
+
+        exp_ct = ContentType.objects.get(model__iexact="experiment")
+        self.assertTrue(psm.get_param("exp_link").link_ct == exp_ct)
+
+        self.assertTrue(psm.get_param("exp_link").link_gfk == self.exp)
 
     def test_tz_naive_date_handling(self):
         """
