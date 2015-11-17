@@ -22,6 +22,7 @@ import operator
 import pytz
 import dateutil.parser
 import json
+import re
 
 LOCAL_TZ = pytz.timezone(settings.TIME_ZONE)
 logger = logging.getLogger(__name__)
@@ -474,20 +475,30 @@ class Parameter(models.Model):
                 # and extract values to populate link_ct and link_id. This
                 # covers two common cases, allowing LINK Parameters to be
                 # properly created via the REST API.
-                v = value.lstrip('/')  # no leading slash
+
+                # trailing slash, no leading slash
+                v = '%s/' % value.strip('/')
+
+                from tardis.urls import experiment_view_url, dataset_view_url
+
+                expt_api_regex = \
+                    re.compile(r'^v1/api/experiment/(?P<experiment_id>\d+)/$')
+                dataset_api_regex = \
+                    re.compile(r'^v1/api/dataset/(?P<dataset_id>\d+)/$')
 
                 # Additional view url routes and their associated models
                 # can be added here as tuples:
-                # (route_url, regex_group_name, model_name)
-                from tardis.urls import experiment_view_url, dataset_view_url
+                # (url_regex, regex_group_name, model_name)
                 url_model_mapping = [
-                    (experiment_view_url, 'experiment_id', 'Experiment'),
-                    (dataset_view_url, 'dataset_id', 'Dataset'),
+                    (experiment_view_url.regex, 'experiment_id', 'Experiment'),
+                    (dataset_view_url.regex, 'dataset_id', 'Dataset'),
+                    (expt_api_regex, 'experiment_id', 'Experiment'),
+                    (dataset_api_regex, 'dataset_id', 'Dataset'),
                 ]
 
                 match, model_name, pk = None, None, None
                 for u in url_model_mapping:
-                    match = u[0].regex.match(v)
+                    match = u[0].match(v)
                     if match:
                         pk = int(match.group(u[1]))
                         model_name = u[2]
