@@ -2,6 +2,7 @@
 importing all views files here, so that any old code will work as expected,
 when importing from tardis.tardis_portal.views
 """
+# pylint: disable=W0401,W0614
 
 from tardis.tardis_portal.views.ajax_actions import *
 from tardis.tardis_portal.views.ajax_json import *
