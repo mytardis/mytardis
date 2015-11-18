@@ -4,6 +4,7 @@ views that render full pages
 
 import logging
 import re
+import sys
 from os import path
 
 from django.conf import settings
@@ -34,7 +35,6 @@ from tardis.tardis_portal.util import dirname_with_id
 from tardis.tardis_portal.views.search import SearchQueryString
 from tardis.tardis_portal.views.utils import (
     _redirect_303, _add_protocols_and_organizations, HttpResponseSeeAlso)
-from tardis.urls import getTardisApps
 
 logger = logging.getLogger(__name__)
 
@@ -194,7 +194,8 @@ def view_experiment(request, experiment_id,
         except:
             logger.debug('error when loading default exp apps')
 
-    import sys
+    from tardis.urls import getTardisApps
+
     for app in getTardisApps():
         try:
             appnames.append(
