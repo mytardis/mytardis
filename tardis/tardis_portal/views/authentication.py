@@ -1,0 +1,292 @@
+"""
+views that have to do with authentication
+"""
+
+from urlparse import urlparse
+
+import jwt
+import logging
+import pwgen
+
+from django.conf import settings
+from django.contrib import auth as djauth
+from django.contrib.auth import logout as django_logout
+from django.contrib.auth.decorators import login_required, permission_required
+from django.contrib.auth.models import User
+from django.core.exceptions import PermissionDenied, ValidationError
+from django.core.validators import validate_email
+from django.db import transaction
+from django.http import HttpResponse, HttpResponseRedirect, \
+    HttpResponseForbidden
+from django.shortcuts import redirect
+from django.views.decorators.cache import never_cache
+from django.views.decorators.csrf import csrf_exempt
+
+from tardis.tardis_portal.auth import auth_service
+from tardis.tardis_portal.auth.localdb_auth import auth_key as localdb_auth_key
+from tardis.tardis_portal.forms import ManageAccountForm, CreateUserPermissionsForm, \
+    LoginForm
+from tardis.tardis_portal.models import JTI, UserProfile, UserAuthentication
+from tardis.tardis_portal.shortcuts import render_response_index
+from tardis.tardis_portal.views.utils import _redirect_303
+
+logger = logging.getLogger(__name__)
+
+
+@csrf_exempt
+def rcauth(request):
+    # Only POST is supported on this URL.
+    if request.method != 'POST':
+        raise PermissionDenied
+
+    # Rapid Connect authorization is disabled, so don't
+    # process anything.
+    if not settings.RAPID_CONNECT_ENABLED:
+        raise PermissionDenied
+
+    try:
+        # Verifies signature and expiry time
+        verified_jwt = jwt.decode(
+            request.POST['assertion'],
+            settings.RAPID_CONNECT_CONFIG['secret'],
+            audience=settings.RAPID_CONNECT_CONFIG['aud'])
+
+        # Check for a replay attack using the jti value.
+        jti = verified_jwt['jti']
+        if JTI.objects.filter(jti=jti).exists():
+            logger.debug('Replay attack? ' + str(jti))
+            request.session.pop('attributes', None)
+            request.session.pop('jwt', None)
+            request.session.pop('jws', None)
+            django_logout(request)
+            return redirect('/')
+        else:
+            JTI(jti=jti).save()
+
+        if verified_jwt['aud'] == settings.RAPID_CONNECT_CONFIG['aud'] and \
+           verified_jwt['iss'] == settings.RAPID_CONNECT_CONFIG['iss']:
+            request.session['attributes'] = verified_jwt[
+                'https://aaf.edu.au/attributes']
+            request.session['jwt'] = verified_jwt
+            request.session['jws'] = request.POST['assertion']
+
+            institution_email = request.session['attributes']['mail']
+
+            logger.debug('Successfully authenticated %s via Rapid Connect.' %
+                         institution_email)
+
+            # Create a user account and profile automatically. In future,
+            # support blacklists and whitelists.
+            first_name = request.session['attributes']['givenname']
+            c_name = request.session['attributes'].get('cn', '').split(' ')
+            if not first_name and len(c_name) > 1:
+                first_name = c_name[0]
+            user_args = {
+                'id': institution_email.lower(),
+                'email': institution_email.lower(),
+                'password': pwgen.pwgen(),
+                'first_name': first_name,
+                'last_name': request.session['attributes']['surname'],
+            }
+
+            # Check for an email collision.
+            edupersontargetedid = request.session['attributes'][
+                'edupersontargetedid']
+            for matching_user in UserProfile.objects.filter(
+                    user__email__iexact=user_args['email']):
+                if (matching_user.rapidConnectEduPersonTargetedID is not None
+                    and matching_user.rapidConnectEduPersonTargetedID !=
+                        edupersontargetedid):
+                    del request.session['attributes']
+                    del request.session['jwt']
+                    del request.session['jws']
+                    django_logout(request)
+                    raise PermissionDenied
+
+            user = auth_service.get_or_create_user(user_args)
+            if user is not None:
+                user.backend = 'django.contrib.auth.backends.ModelBackend'
+                djauth.login(request, user)
+                return redirect('/')
+        else:
+            del request.session['attributes']
+            del request.session['jwt']
+            del request.session['jws']
+            django_logout(request)
+            raise PermissionDenied  # Error: Not for this audience
+    except jwt.ExpiredSignature:
+        del request.session['attributes']
+        del request.session['jwt']
+        del request.session['jws']
+        django_logout(request)
+        raise PermissionDenied  # Error: Security cookie has expired
+
+
+@login_required
+def manage_user_account(request):
+    user = request.user
+
+    # Process form or prepopulate it
+    if request.method == 'POST':
+        form = ManageAccountForm(request.POST)
+        if form.is_valid():
+            user.first_name = form.cleaned_data['first_name']
+            user.last_name = form.cleaned_data['last_name']
+            user.email = form.cleaned_data['email']
+            user.save()
+            return _redirect_303('tardis.tardis_portal.views.index')
+    else:
+        form = ManageAccountForm(instance=user)
+
+    c = {'form': form}
+    return HttpResponse(render_response_index(request,
+                        'tardis_portal/manage_user_account.html', c))
+
+
+def logout(request):
+    if 'datafileResults' in request.session:
+        del request.session['datafileResults']
+
+    # Remove AAF attributes.
+    del request.session['attributes']
+    del request.session['jwt']
+    del request.session['jws']
+
+    c = {}
+    return HttpResponse(render_response_index(request,
+                        'tardis_portal/index.html', c))
+
+
+@transaction.atomic  # too complex # noqa
+@never_cache
+def create_user(request):
+
+    if 'user' not in request.POST:
+        c = {'createUserPermissionsForm':
+             CreateUserPermissionsForm()}
+
+        response = HttpResponse(render_response_index(
+            request,
+            'tardis_portal/ajax/create_user.html', c))
+        return response
+
+    authMethod = localdb_auth_key
+
+    if 'user' in request.POST:
+        username = request.POST['user']
+
+    if 'authMethod' in request.POST:
+        authMethod = request.POST['authMethod']
+
+    if 'email' in request.POST:
+        email = request.POST['email']
+
+    if 'password' in request.POST:
+        password = request.POST['password']
+
+    try:
+        validate_email(email)
+
+        user = User.objects.create_user(username, email, password)
+
+        userProfile = UserProfile(user=user, isDjangoAccount=True)
+        userProfile.save()
+
+        authentication = UserAuthentication(userProfile=userProfile,
+                                            username=username,
+                                            authenticationMethod=authMethod)
+        authentication.save()
+
+    except ValidationError:
+        return HttpResponse('Could not create user %s '
+                            '(Email address is invalid: %s)' %
+                            (username, email), status=403)
+    except:
+        transaction.rollback()
+        return HttpResponse(
+            'Could not create user %s '
+            '(It is likely that this username already exists)' %
+            (username), status=403)
+
+    c = {'user_created': username}
+    transaction.commit()
+
+    response = HttpResponse(render_response_index(
+        request,
+        'tardis_portal/ajax/create_user.html', c))
+    return response
+
+
+def login(request):
+    '''
+    handler for login page
+    '''
+    from tardis.tardis_portal.auth import auth_service
+
+    if request.user.is_authenticated():
+        # redirect the user to the home page if he is trying to go to the
+        # login page
+        return HttpResponseRedirect(request.POST.get('next_page', '/'))
+
+    # TODO: put me in SETTINGS
+    if 'username' in request.POST and \
+            'password' in request.POST:
+        authMethod = request.POST.get('authMethod', None)
+
+        user = auth_service.authenticate(
+            authMethod=authMethod, request=request)
+
+        if user:
+            next_page = request.POST.get(
+                'next_page', request.GET.get('next_page', '/'))
+            user.backend = 'django.contrib.auth.backends.ModelBackend'
+            djauth.login(request, user)
+            return HttpResponseRedirect(next_page)
+
+        c = {'status': "Sorry, username and password don't match.",
+             'error': True,
+             'loginForm': LoginForm()}
+
+        return HttpResponseForbidden(
+            render_response_index(request, 'tardis_portal/login.html', c))
+
+    url = request.META.get('HTTP_REFERER', '/')
+    u = urlparse(url)
+    if u.netloc == request.META.get('HTTP_HOST', ""):
+        next_page = u.path
+    else:
+        next_page = '/'
+    c = {'loginForm': LoginForm(),
+         'next_page': next_page}
+
+    c['RAPID_CONNECT_ENABLED'] = settings.RAPID_CONNECT_ENABLED
+    c['RAPID_CONNECT_LOGIN_URL'] = settings.RAPID_CONNECT_CONFIG[
+        'authnrequest_url']
+
+    return HttpResponse(render_response_index(request,
+                        'tardis_portal/login.html', c))
+
+
+@permission_required('tardis_portal.change_userauthentication')
+@login_required()
+def manage_auth_methods(request):
+    '''Manage the user's authentication methods using AJAX.'''
+    from tardis.tardis_portal.auth.authentication import add_auth_method, \
+        merge_auth_method, remove_auth_method, edit_auth_method, \
+        list_auth_methods
+
+    if request.method == 'POST':
+        operation = request.POST['operation']
+        if operation == 'addAuth':
+            return add_auth_method(request)
+        elif operation == 'mergeAuth':
+            return merge_auth_method(request)
+        elif operation == 'removeAuth':
+            return remove_auth_method(request)
+        else:
+            return edit_auth_method(request)
+    else:
+        # if GET, we'll just give the initial list of auth methods for the user
+        return list_auth_methods(request)
+
+
