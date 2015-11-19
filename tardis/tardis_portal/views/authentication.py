@@ -157,7 +157,6 @@ def logout(request):
                         'tardis_portal/index.html', c))
 
 
-@transaction.atomic  # too complex # noqa
 @never_cache
 def create_user(request):
 
@@ -185,24 +184,23 @@ def create_user(request):
         password = request.POST['password']
 
     try:
-        validate_email(email)
+        with transaction.atomic():
+            validate_email(email)
+            user = User.objects.create_user(username, email, password)
 
-        user = User.objects.create_user(username, email, password)
+            userProfile = UserProfile(user=user, isDjangoAccount=True)
+            userProfile.save()
 
-        userProfile = UserProfile(user=user, isDjangoAccount=True)
-        userProfile.save()
-
-        authentication = UserAuthentication(userProfile=userProfile,
-                                            username=username,
-                                            authenticationMethod=authMethod)
-        authentication.save()
+            authentication = UserAuthentication(userProfile=userProfile,
+                                                username=username,
+                                                authenticationMethod=authMethod)
+            authentication.save()
 
     except ValidationError:
         return HttpResponse('Could not create user %s '
                             '(Email address is invalid: %s)' %
                             (username, email), status=403)
-    except:
-        transaction.rollback()
+    except:  # FIXME
         return HttpResponse(
             'Could not create user %s '
             '(It is likely that this username already exists)' %
