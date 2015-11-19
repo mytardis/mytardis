@@ -41,7 +41,8 @@ class DOIService(object):
 
             self.doi_provider = constructor(experiment)
             self.schema = Schema.objects.get(namespace=settings.DOI_NAMESPACE)
-            self.doi_name = ParameterName.objects.get(name=DOI_NAME)
+            self.doi_name = ParameterName.objects.get(
+                schema=self.schema, name=DOI_NAME)
 
         else:
             raise Exception('DOI is not enabled')
