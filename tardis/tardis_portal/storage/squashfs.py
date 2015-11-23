@@ -36,7 +36,7 @@ class SquashFSStorage(FileSystemStorage):
                      'volume': {'source': '/my/volume/storage',
                                 'autofs': '/volumed-squashfiles'}}
     """
-    squashfs_dirs = getattr(settings, 'SQUASHFS_DIRS')
+    squashfs_dirs = getattr(settings, 'SQUASHFS_DIRS', None)
 
     def __init__(self, sq_filename=None, datafile_id=None, sq_dir=None):
         if SquashFSStorage.squashfs_dirs is None:
