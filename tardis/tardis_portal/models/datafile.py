@@ -259,15 +259,21 @@ class DataFile(models.Model):
         :rtype: Python File object
         """
 
+        dfo = self.get_preferred_dfo(verified_only)
+        if dfo is None:
+            return None
+        if dfo.storage_type in (StorageBox.TAPE,):
+            dfo.cache_file.apply_async()
+        return dfo.file_object
+
+    def get_preferred_dfo(self, verified_only):
         if verified_only:
             obj_query = self.file_objects.filter(verified=True)
         else:
             obj_query = self.file_objects.all()
         all_objs = {dfo.storage_type: dfo for dfo in obj_query}
-
         if not all_objs:
             return None
-
         dfo = None
         for dfo_type in StorageBox.type_order:
             dfo = all_objs.get(dfo_type, None)
@@ -275,9 +281,7 @@ class DataFile(models.Model):
                 break
         if not dfo:
             dfo = all_objs.values()[0]
-        if dfo.storage_type in (StorageBox.TAPE,):
-            dfo.cache_file.apply_async()
-        return dfo.file_object
+        return dfo
 
     def get_absolute_filepath(self):
         dfos = self.file_objects.all()
