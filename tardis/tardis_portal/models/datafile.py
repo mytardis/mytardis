@@ -266,7 +266,7 @@ class DataFile(models.Model):
             dfo.cache_file.apply_async()
         return dfo.file_object
 
-    def get_preferred_dfo(self, verified_only):
+    def get_preferred_dfo(self, verified_only=True):
         if verified_only:
             obj_query = self.file_objects.filter(verified=True)
         else:
