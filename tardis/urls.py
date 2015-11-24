@@ -332,6 +332,19 @@ api_urls = patterns(
     '',
     (r'^', include(v1_api.urls)),
 )
+
+tastypie_swagger_urls = patterns(
+    '',
+    url(r'v1/swagger/',
+        include('tastypie_swagger.urls',
+                namespace='api_v1_tastypie_swagger'),
+        kwargs={
+          "tastypie_api_module": v1_api,
+          "namespace": "api_v1_tastypie_swagger",
+          "version": "1"}
+        ),
+)
+
 # # END API SECTION
 
 apppatterns = patterns('',)
@@ -346,6 +359,9 @@ urlpatterns = patterns(
     (r'', include(core_urls)),
     # API views
     (r'^api/', include(api_urls)),
+
+    # tastypie_swagger endpoints for API auto-documentation
+    (r'^api/', include(tastypie_swagger_urls)),
 
     # Experiment Views
     (r'^experiment/', include(experiment_urls)),

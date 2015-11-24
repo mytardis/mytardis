@@ -254,6 +254,7 @@ INSTALLED_APPS = (
     'bootstrapform',
     'mustachejs',
     'tastypie',
+    'tastypie_swagger',
     # these optional apps, may require extra settings
     'tardis.apps.publication_forms',
     'tardis.apps.oaipmh',
