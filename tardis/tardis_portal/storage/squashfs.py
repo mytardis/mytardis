@@ -52,7 +52,7 @@ class SquashFSStorage(FileSystemStorage):
                 # guess location
                 dfo = df.get_preferred_dfo()
                 try:
-                    base_dir = dfo.storage_box.options.get(key='location')
+                    base_dir = dfo.storage_box.options.get(key='location').value
                 except StorageBoxOption.DoesNotExist:
                     raise ImproperlyConfigured('SquashFS files have '
                                                'misconfigured locations')
