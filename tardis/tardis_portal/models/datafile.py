@@ -164,7 +164,7 @@ class DataFile(models.Model):
         """
         Takes a query set of datafiles and returns their total size.
         """
-        return datafiles.aggregate(size=Sum('size'))['size']
+        return datafiles.aggregate(size=Sum('size'))['size'] or 0
 
     def save(self, *args, **kwargs):
         if self.size is not None and not isinstance(self.size, (int, long)):
