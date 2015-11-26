@@ -10,8 +10,11 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 from django.utils import timezone
 from django.views.decorators.cache import never_cache
-from django.db.models import Count
 from django.db.models import Sum
+from django.db.models import Min
+from django.db.models import Case
+from django.db.models import When
+from django.db.models import IntegerField
 
 from tardis.tardis_portal.models import Dataset, Experiment, DataFile
 from tardis.tardis_portal.models.facility import facilities_managed_by
@@ -62,25 +65,25 @@ def facility_overview_facilities_list(request):
 
 def dataset_aggregate_info(dataset):
     datafiles_all = DataFile.objects.filter(dataset=dataset)
-    # Classify datafiles into verified == True, verified == False, and
-    # verified == None, where verified == None means that the datafile
-    # doesn't have any DFOs.  Then extract the total number of
-    # datafiles with verified == True.
-    datafiles_verified_classes = \
+    verified_datafiles_count = \
         DataFile.objects.filter(dataset=dataset) \
-        .values('file_objects__verified') \
-        .annotate(total=Count('file_objects__verified'),
-                  size=Sum('size')) \
-        .order_by('total')
-    verified_datafiles_count = 0
-    verified_datafiles_size = 0
-    for datafiles_verified_class in datafiles_verified_classes:
-        if datafiles_verified_class['file_objects__verified']:
-            verified_datafiles_count = \
-                datafiles_verified_class['total']
-            verified_datafiles_size = \
-                datafiles_verified_class['size']
-
+        .values('id') \
+        .annotate(min_verified=Min(Case(When(file_objects__verified=True,
+                                             then=1),
+                                        default=0,
+                                        output_field=IntegerField()))) \
+        .filter(min_verified=1) \
+        .order_by('id').count()
+    verified_datafiles_size = \
+        DataFile.objects.filter(dataset=dataset) \
+            .values('id') \
+            .annotate(min_verified=Min(Case(When(file_objects__verified=True,
+                                                 then=1),
+                                            default=0,
+                                            output_field=IntegerField()))) \
+            .filter(min_verified=1) \
+            .order_by('id') \
+            .aggregate(Sum('size'))['size__sum'] or 0
     return {
         "dataset_size": DataFile.sum_sizes(datafiles_all),
         "verified_datafiles_count": verified_datafiles_count,
