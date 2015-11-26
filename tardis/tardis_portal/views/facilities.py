@@ -76,7 +76,7 @@ def fetch_facility_data(request, facility_id, start_index, end_index):
             if datafile.verified:
                 verified = "Yes"
                 verified_datafiles_count += 1
-                verified_datafiles_size += int(datafile.size)
+                verified_datafiles_size += datafile.size
             else:
                 verified = "No"
                 try:
@@ -84,25 +84,25 @@ def fetch_facility_data(request, facility_id, start_index, end_index):
                         getattr(datafile.file_objects.first(),
                                 'file_object', None),
                         'size', 0)
-                    if file_object_size < int(datafile.size):
+                    if file_object_size < datafile.size:
                         verified = "No (%s of %s bytes uploaded)" \
                             % ('{:,}'.format(file_object_size),
-                               '{:,}'.format(int(datafile.size)))
+                               '{:,}'.format(datafile.size))
                 except AttributeError:
                     verified = "No (0 of %s bytes uploaded)" \
-                        % '{:,}'.format(int(datafile.size))
+                        % '{:,}'.format(datafile.size)
                 except IOError, e:
                     verified = "No (0 of %s bytes uploaded)" \
-                        % '{:,}'.format(int(datafile.size))
+                        % '{:,}'.format(datafile.size)
             datafiles.append({
                 "id": datafile.id,
                 "filename": datafile.filename,
-                "size": int(datafile.size),
+                "size": datafile.size,
                 "created_time": datetime_to_us(datafile.created_time),
                 "modification_time": datetime_to_us(datafile.modification_time),
                 "verified": verified,
             })
-            dataset_size = dataset_size + int(datafile.size)
+            dataset_size = dataset_size + datafile.size
         obj = {
             "id": dataset.id,
             "parent_experiment": {
