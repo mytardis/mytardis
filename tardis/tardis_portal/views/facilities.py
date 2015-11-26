@@ -10,6 +10,8 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 from django.utils import timezone
 from django.views.decorators.cache import never_cache
+from django.db.models import Count
+from django.db.models import Sum
 
 from tardis.tardis_portal.models import Dataset, Experiment, DataFile
 from tardis.tardis_portal.models.facility import facilities_managed_by
@@ -43,6 +45,7 @@ def facility_overview_data_count(request, facility_id):
         json.dumps({'facility_data_count': dataset_object_count}),
         content_type='application/json')
 
+
 @never_cache
 @login_required
 def facility_overview_facilities_list(request):
@@ -53,17 +56,35 @@ def facility_overview_facilities_list(request):
     for facility in facilities_managed_by(request.user):
         facility_data.append({"id": facility.id, "name": facility.name})
 
-    return HttpResponse(json.dumps(facility_data), content_type='application/json')
+    return HttpResponse(json.dumps(facility_data),
+                        content_type='application/json')
 
 
 def dataset_aggregate_info(dataset):
     datafiles_all = DataFile.objects.filter(dataset=dataset)
-    datafiles_verified = DataFile.objects.filter(dataset=dataset,
-                                                 verified=True)
+    # Classify datafiles into verified == True, verified == False, and
+    # verified == None, where verified == None means that the datafile
+    # doesn't have any DFOs.  Then extract the total number of
+    # datafiles with verified == True.
+    datafiles_verified_classes = \
+        DataFile.objects.filter(dataset=dataset) \
+        .values('file_objects__verified') \
+        .annotate(total=Count('file_objects__verified'),
+                  size=Sum('size')) \
+        .order_by('total')
+    verified_datafiles_count = 0
+    verified_datafiles_size = 0
+    for datafiles_verified_class in datafiles_verified_classes:
+        if datafiles_verified_class['file_objects__verified']:
+            verified_datafiles_count = \
+                datafiles_verified_class['total']
+            verified_datafiles_size = \
+                datafiles_verified_class['size']
+
     return {
         "dataset_size": DataFile.sum_sizes(datafiles_all),
-        "verified_datafiles_count": datafiles_verified.count(),
-        "verified_datafiles_size": DataFile.sum_sizes(datafiles_verified),
+        "verified_datafiles_count": verified_datafiles_count,
+        "verified_datafiles_size": verified_datafiles_size,
         "datafile_count": datafiles_all.count()
     }
 
@@ -109,7 +130,8 @@ def facility_overview_dataset_detail(request, dataset_id):
         json.dumps(
             facility_overview_datafile_list(
                 Dataset.objects.get(
-                    instrument__facility__manager_group__user=request.user, pk=dataset_id
+                    instrument__facility__manager_group__user=request.user,
+                    pk=dataset_id
                 )
             )
         ), content_type='application/json')
@@ -117,7 +139,8 @@ def facility_overview_dataset_detail(request, dataset_id):
 
 @never_cache
 @login_required
-def facility_overview_experiments(request, facility_id, start_index, end_index):
+def facility_overview_experiments(request, facility_id, start_index,
+                                  end_index):
     '''
     json facility datasets
     '''
@@ -135,7 +158,8 @@ def facility_overview_experiments(request, facility_id, start_index, end_index):
         try:
             parent_experiment = dataset.experiments.all()[:1].get()
         except Experiment.DoesNotExist:
-            logger.warning("Not listing dataset id %d in Facility Overview" % dataset.id)
+            logger.warning("Not listing dataset id %s in Facility Overview",
+                           dataset.id)
             continue
 
         owners = parent_experiment.get_owners()
