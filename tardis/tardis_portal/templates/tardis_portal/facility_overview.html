@@ -173,7 +173,7 @@
                                          when="{'0': 'no verified files', 'one': '1 verified file', 'other': '{} verified files'}"></ng-pluralize>
                                  ({{dataset.verified_datafiles_size | filesize}})
                                      / 
-                                 <ng-pluralize count="dataset.datafiles.length"
+                                 <ng-pluralize count="dataset.datafile_count"
                                                when="{'0': 'no files', 'one': '1 file', 'other': '{} files'}"></ng-pluralize>
                                  ({{dataset.size | filesize}})
                              </span>
@@ -233,7 +233,7 @@
                                          when="{'0': 'no verified files', 'one': '1 verified file', 'other': '{} verified files'}"></ng-pluralize>
                                  ({{dataset.verified_datafiles_size | filesize}})
                                      / 
-                                 <ng-pluralize count="dataset.datafiles.length"
+                                 <ng-pluralize count="dataset.datafile_count"
                                                when="{'0': 'no files', 'one': '1 file', 'other': '{} files'}"></ng-pluralize>
                                  ({{dataset.size | filesize}})
                              </span>
@@ -291,7 +291,7 @@
                                          when="{'0': 'no verified files', 'one': '1 verified file', 'other': '{} verified files'}"></ng-pluralize>
                                  ({{dataset.verified_datafiles_size | filesize}})
                                      / 
-                                 <ng-pluralize count="dataset.datafiles.length"
+                                 <ng-pluralize count="dataset.datafile_count"
                                                when="{'0': 'no files', 'one': '1 file', 'other': '{} files'}"></ng-pluralize>
                                  ({{dataset.size | filesize}})
                              </span>
