@@ -691,6 +691,11 @@ class DataFileObject(models.Model):
 
 @receiver(pre_delete, sender=DataFileObject, dispatch_uid='dfo_delete')
 def delete_dfo(sender, instance, **kwargs):
+    read_only = instance.storage_box.attributes.filter(key='read_only').first()
+    if read_only and read_only.value:
+        logger.debug('Did not delete file dfo.id %s, '
+                     'because its storage box is read only.' % instance.id)
+        return
     if instance.datafile.file_objects.count() > 1:
         try:
             instance._storage.delete(instance.uri)
