@@ -1072,6 +1072,11 @@ class ReplicaResource(MyTardisModelResource):
             del(bundle.data['file_object'])
         return bundle
 
+    def dehydrate(self, bundle):
+        dfo = bundle.obj
+        bundle.data['location'] = dfo.storage_box.name
+        return bundle
+
 
 class ObjectACLResource(MyTardisModelResource):
     content_object = GenericForeignKeyField({
