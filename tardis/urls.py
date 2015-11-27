@@ -63,9 +63,12 @@ experiment_lists = patterns(
         name="tardis_portal.experiment_list_shared"),
     )
 
+experiment_view_url = url(r'^experiment/view/(?P<experiment_id>\d+)/$',
+                          'tardis.tardis_portal.views.view_experiment')
+
 experiment_urls = patterns(
     'tardis.tardis_portal.views',
-    (r'^view/(?P<experiment_id>\d+)/$', 'view_experiment'),
+    # (r'^view/(?P<experiment_id>\d+)/$', 'view_experiment'),
     (r'^edit/(?P<experiment_id>\d+)/$', 'edit_experiment'),
     (r'^list', include(experiment_lists)),
     (r'^view/$', 'experiment_index'),  # Legacy URL
@@ -124,10 +127,13 @@ accounts_urls = patterns(
     (r'', include('registration.backends.default.urls')),
     )
 
+dataset_view_url = url(r'^dataset/(?P<dataset_id>\d+)/$',
+                       'tardis.tardis_portal.views.view_dataset')
+
 dataset_urls = patterns(
     'tardis.tardis_portal.views',
     (r'^(?P<dataset_id>\d+)/stage-files$', 'stage_files_to_dataset'),
-    (r'^(?P<dataset_id>\d+)$', 'view_dataset'),
+    # (r'^(?P<dataset_id>\d+)$', 'view_dataset'),
     (r'^(?P<dataset_id>\d+)/edit$', 'edit_dataset'),
     (r'^(?P<dataset_id>\d+)/thumbnail$', 'dataset_thumbnail'),
 )
@@ -364,9 +370,11 @@ urlpatterns = patterns(
     (r'^api/', include(tastypie_swagger_urls)),
 
     # Experiment Views
+    experiment_view_url,
     (r'^experiment/', include(experiment_urls)),
 
     # Dataset Views
+    dataset_view_url,
     (r'^dataset/', include(dataset_urls)),
 
     # Datafile Views

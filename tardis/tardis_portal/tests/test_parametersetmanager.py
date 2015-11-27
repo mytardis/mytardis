@@ -40,6 +40,7 @@ http://docs.djangoproject.com/en/dev/topics/testing/
 from compare import expect
 from datetime import datetime
 from django.test import TestCase
+from django.contrib.contenttypes.models import ContentType
 import pytz
 from tardis.tardis_portal.models import Experiment, Dataset, DataFile, \
     DataFileObject, Schema, ParameterName, DatafileParameterSet, \
@@ -118,20 +119,50 @@ class ParameterSetManagerTestCase(TestCase):
             name=self.parametername2, numerical_value=2)
         self.datafileparameter2.save()
 
+        # Create a ParameterName and Parameter of type LINK to an experiment
+        self.parametername_exp_link = ParameterName(
+            schema=self.schema, name="exp_link",
+            full_name="This parameter is a experiment LINK",
+            data_type=ParameterName.LINK)
+        self.parametername_exp_link.save()
+
+        self.exp_link_param = DatafileParameter(
+            parameterset=self.datafileparameterset,
+            name=self.parametername_exp_link)
+        exp_url = self.exp.get_absolute_url()  # /experiment/view/1/
+        self.exp_link_param.set_value(exp_url)
+        self.exp_link_param.save()
+
+        # Create a ParameterName and Parameter of type LINK to a dataset
+        self.parametername_dataset_link = ParameterName(
+            schema=self.schema, name="dataset_link",
+            full_name="This parameter is a dataset LINK",
+            data_type=ParameterName.LINK)
+        self.parametername_dataset_link.save()
+
+        self.dataset_link_param = DatafileParameter(
+            parameterset=self.datafileparameterset,
+            name=self.parametername_dataset_link)
+        dataset_url = self.dataset.get_absolute_url()  # /dataset/1/
+        self.dataset_link_param.set_value(dataset_url)
+        self.dataset_link_param.save()
+
     def tearDown(self):
         self.exp.delete()
         self.user.delete()
         self.parametername1.delete()
         self.parametername2.delete()
         self.parametername3.delete()
+        self.parametername_exp_link.delete()
+        self.parametername_dataset_link.delete()
         self.schema.delete()
 
     def test_existing_parameterset(self):
 
         psm = ParameterSetManager(parameterset=self.datafileparameterset)
 
-        self.assertTrue(psm.get_schema().namespace
-                        == "http://localhost/psmtest/df/")
+        self.assertTrue(psm.get_schema().namespace ==
+                        "http://localhost/psmtest/df/")
 
         self.assertTrue(psm.get_param("parameter1").string_value == "test1")
 
@@ -142,16 +173,16 @@ class ParameterSetManagerTestCase(TestCase):
         psm = ParameterSetManager(parentObject=self.datafile,
                                   schema="http://localhost/psmtest/df2/")
 
-        self.assertTrue(psm.get_schema().namespace
-                        == "http://localhost/psmtest/df2/")
+        self.assertTrue(psm.get_schema().namespace ==
+                        "http://localhost/psmtest/df2/")
 
         psm.set_param("newparam1", "test3", "New Parameter 1")
 
-        self.assertTrue(psm.get_param("newparam1").string_value
-                        == "test3")
+        self.assertTrue(psm.get_param("newparam1").string_value ==
+                        "test3")
 
-        self.assertTrue(psm.get_param("newparam1").name.full_name
-                        == "New Parameter 1")
+        self.assertTrue(psm.get_param("newparam1").name.full_name ==
+                        "New Parameter 1")
 
         psm.new_param("newparam1", "test4")
 
@@ -175,10 +206,86 @@ class ParameterSetManagerTestCase(TestCase):
 
         self.assertTrue(len(psm.get_params("newparam1", True)) == 0)
 
+    def test_link_parameter_type(self):
+        """
+        Test that Parameter.link_gfk (GenericForeignKey) is correctly
+        assigned after using Parameter.set_value(some_url) for a LINK Parameter.
+        """
+        psm = ParameterSetManager(parameterset=self.datafileparameterset)
+
+        # Check link to experiment
+        exp_url = self.exp.get_absolute_url()  # /experiment/view/1/
+        self.assertTrue(psm.get_param("exp_link").string_value ==
+                        exp_url)
+
+        self.assertTrue(psm.get_param("exp_link").link_id ==
+                        self.exp.id)
+
+        exp_ct = ContentType.objects.get(model__iexact="experiment")
+        self.assertTrue(psm.get_param("exp_link").link_ct == exp_ct)
+
+        self.assertTrue(psm.get_param("exp_link").link_gfk == self.exp)
+
+        # Check link to dataset
+        dataset_url = self.dataset.get_absolute_url()  # /dataset/1/
+        self.assertTrue(psm.get_param("dataset_link").string_value ==
+                        dataset_url)
+
+        self.assertTrue(psm.get_param("dataset_link").link_id ==
+                        self.dataset.id)
+
+        dataset_ct = ContentType.objects.get(model__iexact="dataset")
+        self.assertTrue(psm.get_param("dataset_link").link_ct == dataset_ct)
+
+        self.assertTrue(psm.get_param("dataset_link").link_gfk == self.dataset)
+
+    def test_link_parameter_type_extra(self):
+        # make a second ParameterSet for testing some variations
+        # in URL values
+        self.datafileparameterset2 = DatafileParameterSet(
+            schema=self.schema, datafile=self.datafile)
+        self.datafileparameterset2.save()
+
+        psm = ParameterSetManager(parameterset=self.datafileparameterset2)
+
+        self.dataset_link_param2 = DatafileParameter(
+            parameterset=self.datafileparameterset2,
+            name=self.parametername_dataset_link)
+        # /dataset/1 - no trailing slash
+        dataset_url = self.dataset.get_absolute_url().rstrip('/')
+        self.dataset_link_param2.set_value(dataset_url)
+        self.dataset_link_param2.save()
+
+        # Check link_id/link_ct/link_gfk to dataset
+        self.assertTrue(psm.get_param("dataset_link").link_id ==
+                        self.dataset.id)
+
+        dataset_ct = ContentType.objects.get(model__iexact="dataset")
+        self.assertTrue(psm.get_param("dataset_link").link_ct == dataset_ct)
+
+        self.assertTrue(psm.get_param("dataset_link").link_gfk == self.dataset)
+
+        # Test links of the form /v1/api/experiment/<experiment_id>
+        self.exp_link_param2 = DatafileParameter(
+            parameterset=self.datafileparameterset2,
+            name=self.parametername_exp_link)
+        exp_url = 'v1/api/experiment/%s' % self.exp.id
+        self.exp_link_param2.set_value(exp_url)
+        self.exp_link_param2.save()
+
+        # Check link_id/link_ct/link_gfk to experiment
+        self.assertTrue(psm.get_param("exp_link").link_id ==
+                        self.exp.id)
+
+        exp_ct = ContentType.objects.get(model__iexact="experiment")
+        self.assertTrue(psm.get_param("exp_link").link_ct == exp_ct)
+
+        self.assertTrue(psm.get_param("exp_link").link_gfk == self.exp)
+
     def test_tz_naive_date_handling(self):
-        '''
+        """
         Ensure that dates are handling in a timezone-aware way.
-        '''
+        """
         psm = ParameterSetManager(parameterset=self.datafileparameterset)
 
         psm.new_param("parameter3", str(datetime(1970, 01, 01, 10, 0, 0)))
@@ -187,9 +294,9 @@ class ParameterSetManagerTestCase(TestCase):
             .to_equal(datetime(1970, 01, 01, 0, 0, 0, tzinfo=pytz.utc))
 
     def test_tz_aware_date_handling(self):
-        '''
+        """
         Ensure that dates are handling in a timezone-aware way.
-        '''
+        """
         psm = ParameterSetManager(parameterset=self.datafileparameterset)
 
         psm.new_param("parameter3",
