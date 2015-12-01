@@ -691,6 +691,16 @@ class DataFileObject(models.Model):
 
 @receiver(pre_delete, sender=DataFileObject, dispatch_uid='dfo_delete')
 def delete_dfo(sender, instance, **kwargs):
+    can_delete_attr = \
+        instance.storage_box.attributes.filter(key='can_delete').first()
+    if can_delete_attr:
+        can_delete = (can_delete_attr.value.lower() == 'true')
+    else:
+        can_delete = True
+    if not can_delete:
+        logger.debug('Did not delete file dfo.id %s, because its storage box '
+                     'has can_delete == False.' % instance.id)
+        return
     if instance.datafile.file_objects.count() > 1:
         try:
             instance._storage.delete(instance.uri)
