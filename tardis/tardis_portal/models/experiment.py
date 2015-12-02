@@ -244,7 +244,7 @@ class ExperimentAuthor(models.Model):
                              blank=True, null=True)
     order = models.PositiveIntegerField()
     url = models.URLField(
-        max_length=2000,
+        max_length=255,
         blank=True, null=True,
         help_text="URL identifier for the author")
 
