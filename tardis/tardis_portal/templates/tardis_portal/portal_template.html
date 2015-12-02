@@ -206,32 +206,43 @@
               <!-- Optional Logins -->
               <!-- -------------------- -->
               {% if RAPID_CONNECT_ENABLED or CAS_ENABLED %}
-              <li>
-               <ul class="dropdown-menu">
-                  {% if RAPID_CONNECT_ENABLED %}
-                  <li>
-              		<a id="login-button" class="btn btn-info" 
+              <li id="login-menu" class="dropdown">
+                <a class="dropdown-toggle" data-toggle="dropdown" 
+					href="#login-menu">
+                  Alternate Logins 
+                  <b class="caret"></b>
+                </a>
+				<ul class="dropdown-menu"  >
+                  {% if RAPID_CONNECT_ENABLED and DEFAULT_LOGIN|lower != 'aaf' %}
+        	  	<li>      
+					<a id="login-button" 
+						class="btn btn-info btn-block"
+						style="width: 80%;" 
                   		href={{ RAPID_CONNECT_LOGIN_URL }} >
                   		<i class="icon-signin"></i>
-                  		Login using AAF
+                  		AAF
                 	</a>
                   </li>
                   {% endif %}
-              	  {% if CAS_ENABLED %}
-              	  <li>
-              	  	<a id="login-button" class="btn btn-info" 
+              	  {% if CAS_ENABLED and DEFAULT_LOGIN|lower != 'cas' %}
+        	  	<li>      
+              	  	<a id="login-button"   
+				class="btn btn-info btn-block"
+				style="width: 80%;" 
                   		href={{ CAS_LOGIN_URL }} >
                   		<i class="icon-signin"></i>
-                  		Login using CAS
+                  		CAS
                 	</a>
                   </li>
                   {% endif %}
               	  {% if DEFAULT_LOGIN|lower == 'aaf' or DEFAULT_LOGIN|lower == 'cas' %}
-              	  <li>
-              	  	<a id="login-button" class="btn btn-info" 
+        	  <li>      
+              	  	<a id="login-button"  
+				class="btn btn-info btn-block"
+				style="width: 80%;" 
                   		href="{% url 'tardis.tardis_portal.views.login' %}" >
                   		<i class="icon-signin"></i>
-                  		Login using Local DB
+                  		Local DB
                 	</a>
                   </li>
                   {% endif %}	

@@ -3,33 +3,48 @@
 
 {% block content %}
 
+<div class="page-header">
+  <h1>Login</h1>
+</div>
+
+<div class="page-content">
+
 {% if RAPID_CONNECT_ENABLED %}
-	<legend>Australia Access Federation</legend>
-    <p>
-    <img src="https://rapid.aaf.edu.au/aaf_service_223x54.png"> 
+<div class="row-fluid">
+  <div class="span2 text-center">
+    <img src="https://rapid.aaf.edu.au/aaf_service_223x54.png"
+	style="height: 54px;" > 
+  </div> 
+  <div class="span4">
     <a href={{ RAPID_CONNECT_LOGIN_URL }} class="btn btn-large btn-info">
-    	<i class="icon-signin"></i>
-    	Login via the Australian Access Federation
-    </a> 
-    </p>
+      <i class="icon-signin"></i>
+      Login via the Australian Access Federation
+    </a>
+  </div> 
+</div>
 {% endif %}
 
 {% if CAS_ENABLED %}
-	<legend>Central Authentication Service</legend>
-    <p>
-    <img src="https://www.apereo.org/sites/default/files/styles/project_logo/public/projects/logos/cas_max_logo_0.png"> </p>
+<div class="row-fluid">
+  <div class="span2 text-center">
+    <img src="https://www.apereo.org/sites/default/files/styles/project_logo/public/projects/logos/cas_max_logo_0.png"
+    class="center-block"
+    style="height: 54px;" >
+  </div>
+  <div class="span4">
     <a href={{ CAS_LOGIN_URL }} class="btn btn-large btn-info">
-    	<i class="icon-signin"></i>
-    	Login via the Central Authentication Service
+      <i class="icon-signin"></i>
+      Login via the Central Authentication Service
     </a>
-    </p>
+  </div> 
+</div>
 {% endif %}
 
-	<legend>Local Database</legend>
-	<form action="" method="post" class="form-horizontal">{% csrf_token %}
+<div class="row-fluid">
+    <legend>Local Database</legend>
+    <form action="" method="post" class="form-horizontal">{% csrf_token %}
       <input name="next_page" type="hidden" value="{{ next_page }}" />
       <fieldset>
-        <legend>Please Log In</legend>
         {{ loginForm|bootstrap }}
         <div class="form-actions">
           <button type="submit" class="btn btn-info btn-large">
@@ -39,5 +54,7 @@
         </div>
       </fieldset>
     </form>
+</div>
 
+</div>
 {% endblock content %}
