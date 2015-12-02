@@ -41,9 +41,11 @@ search_backend.py
 # This is a definite TODO once the search code has settled down a
 # bit
 #
-from haystack.backends.solr_backend import SearchQuery
 
-class FacetFixedSearchQuery(SearchQuery):
+from haystack.backends.elasticsearch_backend import ElasticsearchSearchQuery
+
+
+class FacetFixedSearchQuery(ElasticsearchSearchQuery):
 
     def get_facet_counts(self):
 

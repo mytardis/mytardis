@@ -409,7 +409,8 @@ urlpatterns = patterns(
     (r'^upload/(?P<dataset_id>\d+)/$', 'tardis.tardis_portal.views.upload'),
 
     # Search
-    (r'^search/$', 'tardis.tardis_portal.views.single_search'),
+    #url(r'^search/$', SingleSearchView.as_view(), name='menu_search'),
+    url(r'^search/', include('haystack.urls')),
 
     # Apps
     (r'^apps/', include(apppatterns)),
