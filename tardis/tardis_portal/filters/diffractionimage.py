@@ -35,14 +35,14 @@ diffractionimage.py
 .. moduleauthor:: Steve Androulakis <steve.androulakis@gmail.com>
 
 """
+import base64
 from fractions import Fraction
 import logging
+import subprocess
+import tempfile
 
 from tardis.tardis_portal.models import Schema, DatafileParameterSet
 from tardis.tardis_portal.models import ParameterName, DatafileParameter
-import subprocess
-import tempfile
-import base64
 
 logger = logging.getLogger(__name__)
 

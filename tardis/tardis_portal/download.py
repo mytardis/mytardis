@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 """
 download.py
 
@@ -23,6 +22,10 @@ except ImportError:
     crc32 = binascii.crc32
 
 from itertools import chain
+import tarfile
+from tarfile import TarFile
+import gzip
+import io
 
 from django.core.servers.basehttp import FileWrapper
 from django.http import HttpResponseRedirect, StreamingHttpResponse
@@ -202,12 +205,6 @@ def _get_datafile_details_for_archive(mapper, datafiles):
 
 
 ########### NEW DOWNLOAD ##############
-import tarfile
-from tarfile import TarFile
-import gzip
-import io
-
-
 class UncachedTarStream(TarFile):
     '''
     Stream files into a compressed tar stream on the fly
@@ -494,7 +491,7 @@ def streaming_download_datafiles(request):  # too complex # noqa
                 status=404)
 
     elif 'url' in request.POST:
-        if not len(request.POST.getlist('url')) == 0:
+        if len(request.POST.getlist('url')) != 0:
             return render_error_message(
                 request,
                 'No Datasets or Datafiles were selected for downloaded',

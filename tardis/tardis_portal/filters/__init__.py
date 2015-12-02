@@ -36,10 +36,10 @@ __init__.py
 
 """
 
+from importlib import import_module
 import logging
 
 from django.conf import settings
-from importlib import import_module
 from django.core.exceptions import ImproperlyConfigured
 from django.db.models.signals import post_save
 from django.core.exceptions import MiddlewareNotUsed

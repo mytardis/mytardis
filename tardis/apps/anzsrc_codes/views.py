@@ -1,12 +1,12 @@
 import json
 import logging
 
+from socket import error as SocketError
+from urllib2 import URLError
+
 from rdflib import plugin, URIRef
 from rdflib.graph import Graph
 from rdflib.parser import Parser
-from socket import error as SocketError
-
-from urllib2 import URLError
 
 from django.core.exceptions import PermissionDenied
 from django.http import HttpResponse

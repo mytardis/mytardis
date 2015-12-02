@@ -37,12 +37,13 @@ models.py
 
 """
 import logging
+from importlib import import_module
 
 from django.conf import settings
-from importlib import import_module
 from django.core.exceptions import ImproperlyConfigured
 from django.contrib.auth.models import User
 from django.contrib.auth.models import Permission
+
 from tardis.tardis_portal.auth.localdb_auth import auth_key as localdb_auth_key
 from tardis.tardis_portal.auth.utils import get_or_create_user
 
@@ -63,7 +64,7 @@ class AuthService():
     def __init__(self, settings=settings):
         self._group_providers = []
         self._user_providers = []
-        self._authentication_backends = {}
+        self._authentication_backends = []
         self._initialised = False
         self.settings = settings
 
@@ -313,7 +314,7 @@ class AuthService():
 
         for gp in self._group_providers:
             if plugin:
-                if not gp.name == plugin:
+                if gp.name != plugin:
                     continue
             for group in gp.searchGroups(**kw):
                 group["pluginname"] = gp.name

@@ -1,12 +1,14 @@
 import urllib
 
 import CifFile
-from . import default_settings
 from django.core.mail import EmailMultiAlternatives
 from django.conf import settings
 from django.contrib.auth.models import Group
-from tardis.tardis_portal.models import ExperimentAuthor
+
 from bs4 import BeautifulSoup
+from tardis.tardis_portal.models import ExperimentAuthor
+
+from . import default_settings
 
 
 class CifHelper(object):
@@ -104,43 +106,39 @@ class PDBCifHelper(CifHelper):
         return citations
 
     def get_sequence_info(self):
-        seqs_gen = []
         try:
             seqs_gen_id = self.as_list(self['_entity_src_gen.entity_id'])
             seqs_gen_org = self.as_list(
                 self['_entity_src_gen.pdbx_gene_src_scientific_name'])
             seqs_gen_exp_sys = self.as_list(
                 self['_entity_src_gen.pdbx_host_org_scientific_name'])
-            seqs_gen = dict(
+            seqs_gen = dict(  # R0204:116,12:PDBCifHelper.get_sequence_info: Redefinition of seqs_gen type from list to dict
                 zip(seqs_gen_id, zip(seqs_gen_org, seqs_gen_exp_sys)))
         except KeyError:
-            pass
+            seqs_gen = dict()
 
-        seqs_nat = []
         try:
             seqs_nat_id = self.as_list(self['_entity_src_nat.entity_id'])
             seqs_nat_org = self.as_list(
                 self['_entity_src_nat.pdbx_organism_scientific'])
             seqs_nat = dict(zip(seqs_nat_id, seqs_nat_org))
         except KeyError:
-            pass
+            seqs_nat = dict()
 
-        seqs_code = []
         try:
             seqs_code_id = self.as_list(self['_entity_poly.entity_id'])
             seqs_code = self.as_list(
                 self['_entity_poly.pdbx_seq_one_letter_code_can'])
             seqs_code = dict(zip(seqs_code_id, seqs_code))
         except KeyError:
-            return []
+            seqs_code = dict()
 
-        seqs_name = []
         try:
             seqs_name_id = self.as_list(self['_entity_name_com.entity_id'])
             seqs_names = self.as_list(self['_entity_name_com.name'])
             seqs_name = dict(zip(seqs_name_id, seqs_names))
         except KeyError:
-            pass
+            seqs_name = dict()
 
         sequences = []
         # Only look at the poly entities

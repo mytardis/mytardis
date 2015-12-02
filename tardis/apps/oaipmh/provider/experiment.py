@@ -182,7 +182,7 @@ class DcExperimentProvider(AbstractExperimentProvider):
         })
 
     def _get_user_metadata(self):
-        raise
+        raise NotImplementedError
 
     def _handles_metadata_prefix(self, metadataPrefix):
         return metadataPrefix == 'oai_dc'

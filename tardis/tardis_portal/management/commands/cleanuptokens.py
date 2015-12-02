@@ -2,15 +2,13 @@
 Management utility to clean up tokens
 """
 
-import sys
+from datetime import datetime as dt
 
 from optparse import make_option
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management.base import BaseCommand
 from django.db.models import Count
 from tardis.tardis_portal.models import Token, ObjectACL
 from tardis.tardis_portal.auth.token_auth import TokenGroupProvider
-
-from datetime import datetime as dt
 
 
 class Command(BaseCommand):

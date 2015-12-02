@@ -1,7 +1,9 @@
 '''
 SFTP Server
 '''
-# pylint: disable=R0923
+# pylint: disable=C0411,C0412,C0413
+# disabling import order check for monkey patching
+
 import SocketServer
 import collections
 import logging
@@ -16,6 +18,7 @@ from paramiko import InteractiveQuery,  RSAKey, ServerInterface,\
 from paramiko import OPEN_SUCCEEDED, OPEN_FAILED_ADMINISTRATIVELY_PROHIBITED,\
     SFTP_OP_UNSUPPORTED, SFTP_NO_SUCH_FILE
 from paramiko.common import AUTH_FAILED, AUTH_SUCCESSFUL
+from django.conf import settings
 
 from tardis.tardis_portal.util import sanitise_name, dirname_with_id
 
@@ -25,7 +28,6 @@ paramiko_log = logging.getLogger('paramiko.transport')
 if not paramiko_log.handlers:
     paramiko_log.addHandler(logging.FileHandler('sftpd.log'))
 
-from django.conf import settings
 
 if getattr(settings, 'SFTP_GEVENT', False):
     from gevent import monkey

@@ -36,8 +36,8 @@ LDAP Authentication module.
 '''
 
 
-import ldap
 import logging
+import ldap
 
 from django.conf import settings
 
@@ -194,7 +194,7 @@ class LDAPBackend(AuthProvider, UserProvider, GroupProvider):
 
 
     def getUsernameByEmail(self, email):
-        if not "@" in email:
+        if "@" not in email:
             #input is username not email so return username
             return email
 

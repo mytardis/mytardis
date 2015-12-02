@@ -1,18 +1,19 @@
-import json, cgi, re
+import cgi
+import json
+import re
 
 from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.shortcuts import render
-from django.template import RequestContext, Context
 from django.http import HttpResponse, \
     HttpResponseForbidden, HttpResponseNotFound, HttpResponseServerError
-
-from tardis.tardis_portal.models import \
-    ExperimentParameterSet, Schema
-from tardis.tardis_portal.ParameterSetManager import ParameterSetManager
-
 from django.template.loader import render_to_string
 from django.contrib.sites.models import Site
+
+from tardis.tardis_portal.models import \
+    ExperimentParameterSet
+from tardis.tardis_portal.ParameterSetManager import ParameterSetManager
+
 
 def render_response_index(request, *args, **kwargs):
     return render(request, *args, **kwargs)
@@ -71,7 +72,7 @@ def get_experiment_referer(request, dataset_id):
         domain_url_split = Site.objects.get_current().domain.split('//')
 
         referer = 0
-        if not from_url_split[0] == domain_url_split[1]:
+        if from_url_split[0] != domain_url_split[1]:
             return None
 
         if from_url_split[1] == 'experiment' and from_url_split[2] == 'view':

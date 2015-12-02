@@ -1,12 +1,13 @@
-import warnings
-from django.conf import settings
-
 import ctypes
 import hashlib
 import os
 import platform
-import pystache
 import pytz
+import warnings
+
+import pystache
+
+from django.conf import settings
 
 LOCAL_TZ = pytz.timezone(settings.TIME_ZONE)
 

@@ -1,4 +1,6 @@
+# pylint: disable=R0916  # remove when file sizes are integers
 import hashlib
+import logging
 from os import path
 import magic
 import mimetypes
@@ -12,15 +14,14 @@ from django.db.models import Q
 from django.db.models.signals import pre_delete
 from django.dispatch import receiver
 from django.forms.models import model_to_dict
+from django.utils import timezone
 
 from celery.contrib.methods import task
-from django.utils import timezone
 
 from .fields import DirectoryField
 from .dataset import Dataset
 from .storage import StorageBox, StorageBoxOption, StorageBoxAttribute
 
-import logging
 logger = logging.getLogger(__name__)
 
 IMAGE_FILTER = (Q(mimetype__startswith='image/') &
@@ -701,7 +702,6 @@ def delete_dfo(sender, instance, **kwargs):
     else:
         logger.debug('Did not delete file dfo.id '
                      '%s, because it was the last copy' % instance.id)
-
 
 
 def compute_checksums(file_object,

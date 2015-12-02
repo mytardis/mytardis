@@ -5,13 +5,12 @@
 The function `rfc3339` formats dates according to the :RFC:`3339`. `rfc3339`
 tries to have as much as possible sensible defaults.
 '''
+import datetime
+import time
 
 __author__ = 'Henry Precheur <henry@precheur.org>'
 __license__ = 'Public Domain'
 __all__ = ('rfc3339', )
-
-import datetime
-import time
 
 
 def _timezone(utcoffset):
@@ -124,5 +123,5 @@ def rfc3339(date, utc=False, use_system_timezone=True):
 
 
 if __name__ == '__main__':
-    import doctest
+    import doctest  # pylint: disable=C0413
     doctest.testmod()

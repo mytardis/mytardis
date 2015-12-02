@@ -1,9 +1,12 @@
-from celery.task import task
 from datetime import datetime
+
+from celery.task import task
 from django.contrib.auth.models import User
 from django.conf import settings
-from .models import Credential, RemoteHost
+
 from tardis.tardis_portal.models import Experiment, Dataset, DataFile
+
+from .models import Credential, RemoteHost
 
 
 @task
