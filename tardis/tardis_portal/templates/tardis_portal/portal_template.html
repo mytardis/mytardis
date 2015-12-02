@@ -190,9 +190,9 @@
               <!-- -------------------- -->
               <li>
                   <a id="login-button" class="btn btn-info" 
-              {% if DEFAULT_LOGIN = 'aaf' %}
+              {% if DEFAULT_LOGIN|lower = 'aaf' %}
                   href={{ RAPID_CONNECT_LOGIN_URL }}
-              {% elif DEFAULT_LOGIN = 'cas' %}
+              {% elif DEFAULT_LOGIN|lower = 'cas' %}
                   href={{ CAS_LOGIN_URL }}
               {% else %}
                   href="{% url 'tardis.tardis_portal.views.login' %}"
@@ -205,7 +205,7 @@
               <!-- -------------------- -->
               <!-- Optional Logins -->
               <!-- -------------------- -->
-              {% if RAPID_CONNECT_ENABLED || CAS_ENABLED %}
+              {% if RAPID_CONNECT_ENABLED or CAS_ENABLED %}
               <li>
                <ul class="dropdown-menu">
                   {% if RAPID_CONNECT_ENABLED %}
@@ -226,7 +226,7 @@
                 	</a>
                   </li>
                   {% endif %}
-              	  {% if DEFAULT_LOGIN = 'aaf' || DEFAULT_LOGIN = 'cas' %}
+              	  {% if DEFAULT_LOGIN|lower == 'aaf' or DEFAULT_LOGIN|lower == 'cas' %}
               	  <li>
               	  	<a id="login-button" class="btn btn-info" 
                   		href="{% url 'tardis.tardis_portal.views.login' %}" >

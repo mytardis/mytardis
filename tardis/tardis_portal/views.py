@@ -1213,7 +1213,7 @@ def login(request):
         next_page = '/'
     c = {'loginForm': LoginForm(),
          'next_page': next_page}
-
+    c['DEFAULT_LOGIN'] = settings.DEFAULT_LOGIN
     c['RAPID_CONNECT_ENABLED'] = settings.RAPID_CONNECT_ENABLED
     c['RAPID_CONNECT_LOGIN_URL'] = settings.RAPID_CONNECT_CONFIG[
         'authnrequest_url']

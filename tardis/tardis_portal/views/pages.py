@@ -54,9 +54,12 @@ def index(request):
         .exclude(public_access=Experiment.PUBLIC_ACCESS_EMBARGO)\
         .order_by('-update_time')[:limit]
     c['public_experiments'] = public_experiments
+    c['DEFAULT_LOGIN'] = settings.DEFAULT_LOGIN
     c['RAPID_CONNECT_ENABLED'] = settings.RAPID_CONNECT_ENABLED
     c['RAPID_CONNECT_LOGIN_URL'] = settings.RAPID_CONNECT_CONFIG[
         'authnrequest_url']
+    c['CAS_ENABLED'] = settings.CAS_ENABLED
+    c['CAS_LOGIN_URL'] = settings.CAS_LOGIN_URL
     return HttpResponse(render_response_index(request,
                         'tardis_portal/index.html', c))
 

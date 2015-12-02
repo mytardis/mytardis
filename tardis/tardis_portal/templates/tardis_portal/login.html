@@ -3,35 +3,30 @@
 
 {% block content %}
 
-<legend>Please Log In</legend>
-
 {% if RAPID_CONNECT_ENABLED %}
-    <p> Click the blue button below to login via the Australian Access 
-    Federation. </p>
-    <p><img src="https://rapid.aaf.edu.au/aaf_service_223x54.png"> </p>
-    <br>    
-    <p> 
-    	<a href={{ RAPID_CONNECT_LOGIN_URL }} class="btn btn-large btn-info">
-    		<i class="icon-signin"></i>
-    		Login via the Australian Access Federation
-    	</a> 
+	<legend>Australia Access Federation</legend>
+    <p>
+    <img src="https://rapid.aaf.edu.au/aaf_service_223x54.png"> 
+    <a href={{ RAPID_CONNECT_LOGIN_URL }} class="btn btn-large btn-info">
+    	<i class="icon-signin"></i>
+    	Login via the Australian Access Federation
+    </a> 
     </p>
 {% endif %}
 
 {% if CAS_ENABLED %}
-    <p> Click the blue button below to login via the Central Authenication 
-    Service. </p>
-    <p><img src="https://www.apereo.org/sites/default/files/styles/project_logo/public/projects/logos/cas_max_logo_0.png"> </p>
-    <br>
-    <p> 
-    	<a href={{ CAS_LOGIN_URL }} class="btn btn-large btn-info">
-    		<i class="icon-signin"></i>
-    		Login via the Central Authentication Service</a>
+	<legend>Central Authentication Service</legend>
+    <p>
+    <img src="https://www.apereo.org/sites/default/files/styles/project_logo/public/projects/logos/cas_max_logo_0.png"> </p>
+    <a href={{ CAS_LOGIN_URL }} class="btn btn-large btn-info">
+    	<i class="icon-signin"></i>
+    	Login via the Central Authentication Service
+    </a>
     </p>
 {% endif %}
 
-	<p> Use the form below to login via the Local Database.</p>
-    <form action="" method="post" class="form-horizontal">{% csrf_token %}
+	<legend>Local Database</legend>
+	<form action="" method="post" class="form-horizontal">{% csrf_token %}
       <input name="next_page" type="hidden" value="{{ next_page }}" />
       <fieldset>
         <legend>Please Log In</legend>

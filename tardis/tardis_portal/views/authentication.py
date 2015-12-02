@@ -257,9 +257,12 @@ def login(request):
     c = {'loginForm': LoginForm(),
          'next_page': next_page}
 
+    c['DEFAULT_LOGIN'] = settings.DEFAULT_LOGIN
     c['RAPID_CONNECT_ENABLED'] = settings.RAPID_CONNECT_ENABLED
     c['RAPID_CONNECT_LOGIN_URL'] = settings.RAPID_CONNECT_CONFIG[
         'authnrequest_url']
+    c['CAS_ENABLED'] = settings.CAS_ENABLED
+    c['CAS_LOGIN_URL'] = settings.CAS_LOGIN_URL
 
     return HttpResponse(render_response_index(request,
                         'tardis_portal/login.html', c))
