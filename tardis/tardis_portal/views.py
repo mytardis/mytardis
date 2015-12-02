@@ -224,6 +224,7 @@ def index(request):
         .exclude(public_access=Experiment.PUBLIC_ACCESS_NONE)\
         .order_by('-update_time')[:limit]
     c['public_experiments'] = public_experiments
+    c['DEFAULT_LOGIN'] = settings.DEFAULT_LOGIN
     c['RAPID_CONNECT_ENABLED'] = settings.RAPID_CONNECT_ENABLED
     c['RAPID_CONNECT_LOGIN_URL'] = settings.RAPID_CONNECT_CONFIG[
         'authnrequest_url']

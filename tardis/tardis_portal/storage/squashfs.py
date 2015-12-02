@@ -4,200 +4,69 @@ SquashFS Storage Box
 
 setup requirements:
 user-owned mount root dir
-user added to fuse group
+mytardis user must have access to files in squashfs file based on immutable
+permissions set in squashfile. In easy cases, one group owns everything and the
+mytardis user can be added to that group.
 
-building squashfuse:
-apt-get install autoconf libfuse-dev liblzma-dev liblzo2-dev liblz4-dev
-git clone https://github.com/vasi/squashfuse.git
-cd squashfuse
-./autogen.sh
-./configure
-make
-sudo make install
+set up autofs to auto-mount squashfiles
 '''
-import errno
-import os
-import subprocess
-import tempfile
-
-from celery import task
-from datetime import datetime
-
-from django.conf import settings
-from django.core.exceptions import SuspiciousOperation
-from django.core.files import File
-from django.core.files.storage import Storage
-from django.utils._os import safe_join
-from django.utils.importlib import import_module
-
-from tardis.tardis_portal.models import DataFile, DatafileParameterSet
 
 import logging
+import os
+
+from celery.task import task
+
+from django.conf import settings
+from django.core.exceptions import ImproperlyConfigured
+from django.core.files.storage import FileSystemStorage
+from django.utils.importlib import import_module
+
+from tardis.tardis_portal.models import DataFile, DatafileParameterSet, \
+    StorageBoxOption
+
 log = logging.getLogger(__name__)
 
 
-class SquashFSFile(File):
-
-    def __init__(self, *args, **kwargs):
-        self.storage_box_instance = kwargs.pop('storage_box_instance')
-        super(SquashFSFile, self).__init__(*args, **kwargs)
-
-    def __del__(self, *args, **kwargs):
-        self.close()
-
-
-class SquashFSStorage(Storage):
+class SquashFSStorage(FileSystemStorage):
     """
-    Fuse mounting is not reliable. To use this requires bash scripts, examples
-    attached at the end of the file. These scripts need to be allowed for sudo
-    execution by the Gunicorn user.
-    The paths can be set in settings. They default to /usr/local/bin/...
-
-    settings:
-    SQUASHFS_MOUNT_ROOT = '/mnt/squashfs'
-    SQUASHFS_MOUNT_CMD = "/usr/local/bin/squashfsmount"
-    SQUASHFS_UMOUNT_CMD = "/usr/local/bin/squashfsumount"
-
-    datafile_id only works for block storage
+    Only works for autofs mounted squashfs files
+    Please provide a setting that maps source dir and mount dir, e.g.:
+    SQUASHFS_DIRS = {'tape': {'source': '/my/tape/mount',
+                              'autofs': '/taped-squashfiles'},
+                     'volume': {'source': '/my/volume/storage',
+                                'autofs': '/volumed-squashfiles'}}
     """
+    squashfs_dirs = getattr(settings, 'SQUASHFS_DIRS', None)
 
-    squashmount_root = getattr(settings,
-                               'SQUASHFS_MOUNT_ROOT',
-                               '/mnt/squashfs')
-    squashmount_cmd = getattr(settings,
-                              'SQUASHFSMOUNT_CMD',
-                              '/usr/local/bin/squashfsmount')
-    squashumount_cmd = getattr(settings,
-                               'SQUASHFSUMOUNT_CMD',
-                               '/usr/local/bin/squashfsumount')
-
-    def __init__(self, sq_filename=None, sq_basepath=None, datafile_id=None):
-        # create unique temporary mount point
-        tempfile.tempdir = self.squashmount_root
-        self.mount_dir = tempfile.mkdtemp()
-        self.mount_dir_name = os.path.basename(self.mount_dir)
-        tempfile.tempdir = None
-
-        self.datafile = None
-        if sq_filename is not None and sq_basepath is not None:
-            self.sq_filename = sq_filename
-            self.location = os.path.join(self.mount_dir, sq_filename)
-            self.squashfile = os.path.join(sq_basepath, sq_filename)
-            self._mount()
+    def __init__(self, sq_filename=None, datafile_id=None, sq_dir=None):
+        if SquashFSStorage.squashfs_dirs is None:
+            raise ImproperlyConfigured('Please configure SQUASHFS_DIRS')
+        autofs_dir, name = None, None
+        if sq_filename is not None and sq_dir is not None:
+            name, ext = os.path.splitext(sq_filename)
+            autofs_dir = SquashFSStorage.squashfs_dirs[sq_dir]['autofs']
         elif datafile_id is not None:
             df = DataFile.objects.get(id=datafile_id)
-            self.datafile = df
-            self.location = os.path.join(self.mount_dir, df.filename)
-            self.squashfile = df.file_objects.all()[0].get_full_path()
-            self.sq_filename = os.path.basename(self.squashfile)
-            self._mount()
-        else:
-            raise Exception('provide squash file name and path or datafile id')
-
-    def __del__(self):
-        self._umount()
-        os.rmdir(self.location)
-        os.rmdir(self.mount_dir)
-
-    @property
-    def _mounted(self):
-        mount_list = subprocess.check_output(['mount'], shell=False)
-        return mount_list.find(self.location) > -1
-
-    def _mount(self):
-        # example scripts
-        # /usr/local/bin/squashfsmount self.squashfile self.mount_dir_name
-        """
-        #!/usr/bin/python
-
-        import os
-        import shlex
-        import subprocess
-        import sys
-
-        USERNAME = 'mytardis'
-        SQUASHPATH = sys.argv[1]
-        MOUNT_ID = os.path.basename(sys.argv[2])  # basename for security reasons
-        FILENAME = os.path.basename(SQUASHPATH)
-        MOUNTDIR = os.path.join('/srv/squashfsmounts', MOUNT_ID, FILENAME)
-        if MOUNTDIR in subprocess.check_output('mount'):
-            quit()
-        subprocess.call(shlex.split('mkdir -p {}'.format(MOUNTDIR)))
-        subprocess.call(shlex.split(
-            'mount -t squashfs -o ro {squashpath} {mountdir}'.format(
-                squashpath=SQUASHPATH, mountdir=MOUNTDIR
-        )))
-        """
-        if not self._mounted:
-            subprocess.call(['sudo', self.squashmount_cmd, self.squashfile,
-                             self.mount_dir_name])
-        return self._mounted
-
-    def _umount(self):
-        # /usr/local/bin/squashfsumount self.sq_filename self.mount_dir_name
-        """
-        #!/usr/bin/python
-
-        import os
-        import shlex
-        import subprocess
-        import sys
-
-        FILENAME = sys.argv[1]
-        MOUNT_ID = os.path.basename(sys.argv[2])  # for security reasons
-        MOUNTDIR = os.path.join('/srv/squashfsmounts', MOUNT_ID, FILENAME)
-        if MOUNTDIR not in subprocess.check_output('mount'):
-            quit()
-        subprocess.call(shlex.split(
-            'umount {mountdir}'.format(mountdir=MOUNTDIR
-        )))
-        """
-        if self._mounted:
-            subprocess.call(['sudo', self.squashumount_cmd, self.sq_filename,
-                             self.mount_dir_name])
-        return self._mounted
-
-    def _open(self, name, mode='rb'):
-        '''
-        tries mounting squashfs file once,
-        then raises whichever error is raised by open(filename)
-        '''
-        self._mount()
-        return SquashFSFile(
-            open(self.path(name), mode), storage_box_instance=self)
-
-    def exists(self, name):
-        return os.path.exists(self.path(name))
-
-    def listdir(self, path):
-        path = self.path(path)
-        directories, files = [], []
-        for entry in os.listdir(path):
-            if os.path.isdir(os.path.join(path, entry)):
-                directories.append(entry)
+            name, ext = os.path.splitext(df.filename)
+            if sq_dir is None:
+                # guess location
+                dfo = df.get_preferred_dfo()
+                try:
+                    base_dir = dfo.storage_box.options.get(key='location').value
+                except StorageBoxOption.DoesNotExist:
+                    raise ImproperlyConfigured('SquashFS files have '
+                                               'misconfigured locations')
+                for key, val in SquashFSStorage.squashfs_dirs.iteritems():
+                    if base_dir == val['source']:
+                        autofs_dir = val['autofs']
+                        break
             else:
-                files.append(entry)
-        return directories, files
-
-    def path(self, name):
-        try:
-            path = safe_join(self.location, name)
-        except ValueError:
-            raise SuspiciousOperation("Attempted access to '%s' denied." %
-                                      name)
-        return os.path.normpath(path)
-
-    def size(self, name):
-        return os.path.getsize(self.path(name))
-
-    def accessed_time(self, name):
-        return datetime.fromtimestamp(os.path.getatime(self.path(name)))
-
-    def created_time(self, name):
-        return datetime.fromtimestamp(os.path.getctime(self.path(name)))
-
-    def modified_time(self, name):
-        return datetime.fromtimestamp(os.path.getmtime(self.path(name)))
+                autofs_dir = SquashFSStorage.squashfs_dirs[sq_dir]['autofs']
+        if autofs_dir is None or name is None:
+            raise Exception('provide squash file name or datafile id '
+                            'and location')
+        location = os.path.join(autofs_dir, name)
+        super(SquashFSStorage, self).__init__(location=location)
 
     def walk(self, top='.', topdown=True, onerror=None, ignore_dotfiles=True):
         try:

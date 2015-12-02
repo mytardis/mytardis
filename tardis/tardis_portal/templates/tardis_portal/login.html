@@ -3,18 +3,34 @@
 
 {% block content %}
 
+<legend>Please Log In</legend>
+
 {% if RAPID_CONNECT_ENABLED %}
-
-    <legend>Please Log In</legend>
-
-    <p> User authentication on this system is managed by the Australian Access Federation. Click the blue button below to log in. </p>
-    <br><br>
+    <p> Click the blue button below to login via the Australian Access 
+    Federation. </p>
     <p><img src="https://rapid.aaf.edu.au/aaf_service_223x54.png"> </p>
-    <br><br>
-    <p> <a href={{ RAPID_CONNECT_LOGIN_URL }} class="btn btn-large btn-info">LOGIN VIA THE AUSTRALIAN ACCESS FEDERATION</a> </p>
+    <br>    
+    <p> 
+    	<a href={{ RAPID_CONNECT_LOGIN_URL }} class="btn btn-large btn-info">
+    		<i class="icon-signin"></i>
+    		Login via the Australian Access Federation
+    	</a> 
+    </p>
+{% endif %}
 
-{% else %}
+{% if CAS_ENABLED %}
+    <p> Click the blue button below to login via the Central Authenication 
+    Service. </p>
+    <p><img src="https://www.apereo.org/sites/default/files/styles/project_logo/public/projects/logos/cas_max_logo_0.png"> </p>
+    <br>
+    <p> 
+    	<a href={{ CAS_LOGIN_URL }} class="btn btn-large btn-info">
+    		<i class="icon-signin"></i>
+    		Login via the Central Authentication Service</a>
+    </p>
+{% endif %}
 
+	<p> Use the form below to login via the Local Database.</p>
     <form action="" method="post" class="form-horizontal">{% csrf_token %}
       <input name="next_page" type="hidden" value="{{ next_page }}" />
       <fieldset>
@@ -22,12 +38,11 @@
         {{ loginForm|bootstrap }}
         <div class="form-actions">
           <button type="submit" class="btn btn-info btn-large">
-            <i class="icon-signin"></i> Login
+            <i class="icon-signin"></i> 
+            Login via Local DB
           </button>
         </div>
       </fieldset>
     </form>
-
-{% endif %}
 
 {% endblock content %}

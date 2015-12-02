@@ -1,6 +1,10 @@
 README for MyTARDIS
 ===================
 
+.. image:: https://readthedocs.org/projects/mytardis/badge/?version=develop
+   :target: http://mytardis.readthedocs.org/en/develop/?badge=develop
+   :alt: Documentation Status
+
 .. image:: https://badges.gitter.im/Join%20Chat.svg
    :alt: Join the chat at https://gitter.im/mytardis/mytardis
    :target: https://gitter.im/mytardis/mytardis?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge

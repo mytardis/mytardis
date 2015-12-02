@@ -8,6 +8,9 @@ a RESTful API.
 Not all functionality is being implement at the same time. This documentation
 reflects what is available and tested.
 
+The RESTful API can be explored via the automatically generated Swagger
+documentation at: http://localhost:8000/api/v1/swagger/
+
 Accessible Models
 =================
 

@@ -44,6 +44,9 @@ core_urls = patterns(
     (r'^about/$', 'about'),
     (r'^stats/$', 'stats'),
     (r'^help/$', 'user_guide'),
+    url(r'^sftp_access/cyberduck/connection.png$',
+        'cybderduck_connection_window', name='cyberduck_connection_window'),
+    url(r'^sftp_access/$', 'sftp_access', name='sftp_access'),
     (r'^robots\.txt$', lambda r: HttpResponse(
         "User-agent: *\nDisallow: /download/\nDisallow: /stats/",
         content_type="text/plain"))
@@ -337,6 +340,19 @@ api_urls = patterns(
     '',
     (r'^', include(v1_api.urls)),
 )
+
+tastypie_swagger_urls = patterns(
+    '',
+    url(r'v1/swagger/',
+        include('tastypie_swagger.urls',
+                namespace='api_v1_tastypie_swagger'),
+        kwargs={
+          "tastypie_api_module": v1_api,
+          "namespace": "api_v1_tastypie_swagger",
+          "version": "1"}
+        ),
+)
+
 # # END API SECTION
 
 apppatterns = patterns('',)
@@ -351,6 +367,9 @@ urlpatterns = patterns(
     (r'', include(core_urls)),
     # API views
     (r'^api/', include(api_urls)),
+
+    # tastypie_swagger endpoints for API auto-documentation
+    (r'^api/', include(tastypie_swagger_urls)),
 
     # Experiment Views
     (r'^experiment/', include(experiment_urls)),

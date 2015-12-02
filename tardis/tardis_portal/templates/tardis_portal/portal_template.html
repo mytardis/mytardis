@@ -175,6 +175,9 @@
                 </ul>
               </li>
             {% else %}
+              <!-- -------------------- -->
+              <!-- Registration Button  -->
+              <!-- -------------------- -->
               {% if registration_enabled %}
               <li>
                 <a href="{% url 'register' %}">
@@ -182,20 +185,60 @@
                 </a>
               </li>
               {% endif %}
+              <!-- -------------------- -->
+              <!-- Default Login Button -->
+              <!-- -------------------- -->
               <li>
                   <a id="login-button" class="btn btn-info" 
-              {% if RAPID_CONNECT_ENABLED %}
+              {% if DEFAULT_LOGIN = 'aaf' %}
                   href={{ RAPID_CONNECT_LOGIN_URL }}
-              {% elif CAS_ENABLED %}
+              {% elif DEFAULT_LOGIN = 'cas' %}
                   href={{ CAS_LOGIN_URL }}
               {% else %}
                   href="{% url 'tardis.tardis_portal.views.login' %}"
               {% endif %}
-		  >
+		  			>
                   <i class="icon-signin"></i>
                   Log In
                 </a>
               </li>
+              <!-- -------------------- -->
+              <!-- Optional Logins -->
+              <!-- -------------------- -->
+              {% if RAPID_CONNECT_ENABLED || CAS_ENABLED %}
+              <li>
+               <ul class="dropdown-menu">
+                  {% if RAPID_CONNECT_ENABLED %}
+                  <li>
+              		<a id="login-button" class="btn btn-info" 
+                  		href={{ RAPID_CONNECT_LOGIN_URL }} >
+                  		<i class="icon-signin"></i>
+                  		Login using AAF
+                	</a>
+                  </li>
+                  {% endif %}
+              	  {% if CAS_ENABLED %}
+              	  <li>
+              	  	<a id="login-button" class="btn btn-info" 
+                  		href={{ CAS_LOGIN_URL }} >
+                  		<i class="icon-signin"></i>
+                  		Login using CAS
+                	</a>
+                  </li>
+                  {% endif %}
+              	  {% if DEFAULT_LOGIN = 'aaf' || DEFAULT_LOGIN = 'cas' %}
+              	  <li>
+              	  	<a id="login-button" class="btn btn-info" 
+                  		href="{% url 'tardis.tardis_portal.views.login' %}" >
+                  		<i class="icon-signin"></i>
+                  		Login using Local DB
+                	</a>
+                  </li>
+                  {% endif %}	
+                </ul>
+              </li>
+              <!-- -------------------- -->
+              {% endif %}
             {% endif %}
             </ul>
             {% if search_form %}
