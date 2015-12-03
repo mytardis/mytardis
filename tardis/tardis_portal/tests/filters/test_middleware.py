@@ -53,8 +53,6 @@ class FilterInitTestCase(TestCase):
                                      'testuser@example.test',
                                      'password')
         user = User.objects.create_user(username, email, password)
-        profile = UserProfile(user=user, isDjangoAccount=True)
-        profile.save()
 
         # Create test experiment and make user the owner of it
         experiment = Experiment(title='Text Experiment',

@@ -143,10 +143,7 @@ class Command(BaseCommand):
 
         user = User.objects.create_superuser(username, email, password)
 
-        userProfile = UserProfile(user=user, isDjangoAccount=True)
-        userProfile.save()
-
-        authentication = UserAuthentication(userProfile=userProfile,
+        authentication = UserAuthentication(userProfile=user.userprofile,
                                             username=username,
                                             authenticationMethod=locabdb_auth_key)
         authentication.save()

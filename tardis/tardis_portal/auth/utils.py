@@ -69,6 +69,6 @@ def configure_user(user):
             user.groups.add(group)
         except Group.DoesNotExist:
             pass
-    userProfile = UserProfile(user=user, isDjangoAccount=False)
-    userProfile.save()
-    return userProfile
+    user.userprofile.isDjangoAccount = False
+    user.userprofile.save()
+    return user.userprofile

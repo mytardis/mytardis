@@ -24,7 +24,6 @@ def _create_test_data():
                 first_name="Voltaire",
                 email='voltaire@gmail.com')
     user.save()
-    UserProfile(user=user).save()
     return (_create_experiment(user, False),
             _create_experiment(user, True), user)
 

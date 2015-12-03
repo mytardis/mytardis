@@ -83,9 +83,9 @@ class AuthServiceTestCase(TestCase):
         self.user2 = User.objects.create_user('mockdb_user2', '', 'secret')
         self.user3 = User.objects.create_user('mockdb_user3', '', 'secret')
 
-        self.userProfile1 = UserProfile(user=self.user1).save()
-        self.userProfile2 = UserProfile(user=self.user2).save()
-        self.userProfile3 = UserProfile(user=self.user3).save()
+        self.userProfile1 = self.user1.userprofile
+        self.userProfile2 = self.user2.userprofile
+        self.userProfile3 = self.user3.userprofile
 
         from tardis.tardis_portal.auth import AuthService, auth_service
         s = MockSettings()
