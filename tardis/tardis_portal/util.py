@@ -4,8 +4,8 @@ import os
 import platform
 import warnings
 
-import pytz
 import pystache
+import pytz
 
 from django.conf import settings
 

@@ -40,8 +40,8 @@ http://docs.djangoproject.com/en/dev/topics/testing/
 import json
 from urlparse import urlparse
 
-from compare import expect, ensure
 from flexmock import flexmock
+from compare import expect, ensure
 
 from django.conf import settings
 from django.core.urlresolvers import resolve, reverse

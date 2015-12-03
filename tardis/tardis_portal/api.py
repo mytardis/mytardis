@@ -16,6 +16,20 @@ from django.core.servers.basehttp import FileWrapper
 from django.http import HttpResponse, HttpResponseForbidden, \
     StreamingHttpResponse
 
+from tastypie import fields
+from tastypie.authentication import BasicAuthentication
+from tastypie.authentication import SessionAuthentication
+from tastypie.authentication import ApiKeyAuthentication
+from tastypie.authorization import Authorization
+from tastypie.constants import ALL_WITH_RELATIONS
+from tastypie.exceptions import NotFound
+from tastypie.exceptions import Unauthorized
+from tastypie.http import HttpUnauthorized
+from tastypie.resources import ModelResource
+from tastypie.serializers import Serializer
+from tastypie.utils import trailing_slash
+from tastypie.contrib.contenttypes.fields import GenericForeignKeyField
+
 from tardis.tardis_portal.auth.decorators import \
     get_accessible_datafiles_for_user
 from tardis.tardis_portal.auth.decorators import has_datafile_access
@@ -45,20 +59,6 @@ from tardis.tardis_portal.models.storage import StorageBoxAttribute
 from tardis.tardis_portal.models.facility import Facility
 from tardis.tardis_portal.models.facility import facilities_managed_by
 from tardis.tardis_portal.models.instrument import Instrument
-
-from tastypie import fields
-from tastypie.authentication import BasicAuthentication
-from tastypie.authentication import SessionAuthentication
-from tastypie.authentication import ApiKeyAuthentication
-from tastypie.authorization import Authorization
-from tastypie.constants import ALL_WITH_RELATIONS
-from tastypie.exceptions import NotFound
-from tastypie.exceptions import Unauthorized
-from tastypie.http import HttpUnauthorized
-from tastypie.resources import ModelResource
-from tastypie.serializers import Serializer
-from tastypie.utils import trailing_slash
-from tastypie.contrib.contenttypes.fields import GenericForeignKeyField
 
 
 class PrettyJSONSerializer(Serializer):

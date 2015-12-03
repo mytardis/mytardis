@@ -1,6 +1,8 @@
 import json
 import os
 
+from wand.image import Image
+
 from lxml import etree
 from compare import ensure, expect
 from django.core.urlresolvers import reverse
@@ -8,7 +10,6 @@ from django.core.files.uploadedfile import TemporaryUploadedFile
 from django.test import TestCase
 from django.test.client import Client
 # from nose.plugins.skip import SkipTest
-from wand.image import Image
 
 from tardis.tardis_portal.models import User, UserProfile, \
     Experiment, ObjectACL, Dataset, DataFile

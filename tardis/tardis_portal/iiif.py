@@ -2,6 +2,9 @@ import json
 import mimetypes
 from StringIO import StringIO
 
+from wand.exceptions import MissingDelegateError
+from wand.image import Image
+
 from lxml import etree
 from lxml.etree import Element, SubElement
 
@@ -9,9 +12,6 @@ from django.conf import settings
 from django.http import HttpResponse, HttpResponseNotFound
 from django.views.decorators.http import etag
 from django.utils.cache import patch_cache_control
-
-from wand.exceptions import MissingDelegateError
-from wand.image import Image
 
 from tardis.tardis_portal.models import Experiment, DataFile
 from tardis.tardis_portal.auth.decorators import has_datafile_download_access
