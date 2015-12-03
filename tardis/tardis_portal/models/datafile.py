@@ -695,10 +695,16 @@ class DataFileObject(models.Model):
     def get_full_path(self):
         return self._storage.path(self.uri)
 
+    def delete_data(self):
+        self._storage.delete(self.uri)
+
 
 @receiver(pre_delete, sender=DataFileObject, dispatch_uid='dfo_delete')
 def delete_dfo(sender, instance, **kwargs):
-    if instance.datafile.file_objects.count() > 1:
+    can_delete = getattr(
+        instance.storage_box.attributes.filter(key='can_delete'),
+        'value', 'True')
+    if can_delete.lower() == 'true':
         try:
             instance._storage.delete(instance.uri)
         except NotImplementedError:
@@ -707,7 +713,7 @@ def delete_dfo(sender, instance, **kwargs):
                                            str(instance.id)))
     else:
         logger.debug('Did not delete file dfo.id '
-                     '%s, because it was the last copy' % instance.id)
+                     '%s, because deletes are disabled' % instance.id)
 
 
 def compute_checksums(file_object,
