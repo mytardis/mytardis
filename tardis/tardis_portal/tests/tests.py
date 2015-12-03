@@ -38,8 +38,8 @@ http://docs.djangoproject.com/en/dev/topics/testing/
 
 """
 
-from compare import expect, ensure
 import unittest
+from compare import expect, ensure
 
 from django.test import TestCase
 from django.test.client import Client

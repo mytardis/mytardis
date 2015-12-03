@@ -2,9 +2,9 @@ import ctypes
 import hashlib
 import os
 import platform
-import pytz
 import warnings
 
+import pytz
 import pystache
 
 from django.conf import settings

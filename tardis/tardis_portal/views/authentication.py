@@ -4,8 +4,8 @@ views that have to do with authentication
 
 from urlparse import urlparse
 
-import jwt
 import logging
+import jwt
 import pwgen
 
 from django.conf import settings

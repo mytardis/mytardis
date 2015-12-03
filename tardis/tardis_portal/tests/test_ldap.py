@@ -2,13 +2,12 @@
 
 .. moduleauthor:: Ruseell Sim <russell.sim@monash.edu>
 """
+from unittest import skipIf
+from django.conf import settings
 from django.test import TestCase, RequestFactory
 from nose.plugins.skip import SkipTest
 
 server = None
-
-from unittest import skipIf
-from django.conf import settings
 
 ldap_auth_provider = ('ldap', 'LDAP',
                       'tardis.tardis_portal.auth.ldap_auth.ldap_auth')

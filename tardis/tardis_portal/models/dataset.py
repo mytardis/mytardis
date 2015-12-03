@@ -1,3 +1,4 @@
+import logging
 from os import path
 
 from django.conf import settings
@@ -11,7 +12,6 @@ from tardis.tardis_portal.models.storage import StorageBox
 from .experiment import Experiment
 from .instrument import Instrument
 
-import logging
 logger = logging.getLogger(__name__)
 
 

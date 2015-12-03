@@ -64,7 +64,7 @@ class AuthService():
     def __init__(self, settings=settings):
         self._group_providers = []
         self._user_providers = []
-        self._authentication_backends = []
+        self._authentication_backends = {}
         self._initialised = False
         self.settings = settings
 
@@ -161,7 +161,7 @@ class AuthService():
             self._manual_init()
 
         if authMethod is None or authMethod == "None":
-            authMethods = self._authentication_backends
+            authMethods = self._authentication_backends.keys()
         else:
             authMethods = [authMethod]
         for authMethod in authMethods:

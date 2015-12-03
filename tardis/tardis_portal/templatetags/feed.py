@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from django import template
 from datetime import datetime
 import time
+from django import template
 
 register = template.Library()
 

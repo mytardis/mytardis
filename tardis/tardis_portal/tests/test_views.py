@@ -28,7 +28,6 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-from tardis.tardis_portal.staging import get_full_staging_path
 
 """
 test_views.py
@@ -50,6 +49,7 @@ from django.test import TestCase
 from django.test.client import Client
 from django.contrib.auth.models import User, Group, Permission
 
+from tardis.tardis_portal.staging import get_full_staging_path
 from tardis.tardis_portal.auth.localdb_auth import django_user
 from tardis.tardis_portal.models import UserProfile, UserAuthentication, \
     ObjectACL, Experiment, Dataset, DataFile, Schema, \
@@ -961,7 +961,7 @@ class _ContextMatcher(object):
 
     def __eq__(self, other):
         for (key, value) in self.template.items():
-            if not key in other or other[key] != value:
+            if key not in other or other[key] != value:
                 return False
         return True
 

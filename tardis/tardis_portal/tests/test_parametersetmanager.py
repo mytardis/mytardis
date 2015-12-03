@@ -37,8 +37,8 @@ http://docs.djangoproject.com/en/dev/topics/testing/
 
 """
 
-from compare import expect
 from datetime import datetime
+from compare import expect
 from django.test import TestCase
 import pytz
 from tardis.tardis_portal.models import Experiment, Dataset, DataFile, \

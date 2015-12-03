@@ -283,8 +283,6 @@ def retrieve_datafile_list(
 
     immutable = Dataset.objects.get(id=dataset_id).immutable
 
-    params = urlencode(params)
-
     c = {
         'datafiles': dataset,
         'paginator': paginator,
@@ -296,7 +294,7 @@ def retrieve_datafile_list(
         'has_download_permissions': has_download_permissions,
         'has_write_permissions': has_write_permissions,
         'search_query': query,
-        'params': params
+        'params': urlencode(params),
     }
     _add_protocols_and_organizations(request, None, c)
     return HttpResponse(render_response_index(request, template_name, c))

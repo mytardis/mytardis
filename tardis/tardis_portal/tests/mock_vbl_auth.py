@@ -3,11 +3,11 @@ Created on 24/01/2011
 
 @author: gerson
 '''
+from django.contrib.auth.models import User
 from tardis.tardis_portal.models import (
     UserAuthentication,
     UserProfile,
 )
-from django.contrib.auth.models import User
 
 
 auth_key = 'vbl'

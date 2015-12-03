@@ -614,7 +614,7 @@ def create_group(request):
         adminuser.save()
 
     # add the current user as admin as well for newly created groups
-    if not request.user == adminuser:
+    if request.user != adminuser:
         user = request.user
 
         groupadmin = GroupAdmin(user=user, group=group)
