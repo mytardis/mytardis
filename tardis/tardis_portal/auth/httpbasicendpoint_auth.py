@@ -52,7 +52,7 @@ class HttpBasicEndpointAuth(AuthProvider):
         """
         username = request.POST['username']
         password = request.POST['password']
-        if self._openEndpointWithCredentials(username, password) == None:
+        if self._openEndpointWithCredentials(username, password) is None:
             return None
         try:
             user = User.objects.get(username=username)

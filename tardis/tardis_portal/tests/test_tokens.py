@@ -31,15 +31,15 @@
 """
 test_tokens.py
 """
-from django.test import TestCase
-from django.conf import settings
-
-from tardis.tardis_portal.models import Token
+import sys
 
 import datetime
 from datetime import datetime as old_datetime
 
-import sys
+from django.test import TestCase
+from django.conf import settings
+
+from tardis.tardis_portal.models import Token
 
 
 class FrozenTime:

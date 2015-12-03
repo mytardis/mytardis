@@ -1,7 +1,7 @@
+import logging
 from django.db import models
 from django.utils.safestring import SafeUnicode
 
-import logging
 logger = logging.getLogger(__name__)
 
 

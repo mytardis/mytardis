@@ -205,13 +205,13 @@ def __filterParameters(parameters, datafile_results,  # too complex # noqa
 
     """
 
-    for parameter in parameters:
+    for parameter in parameters:  # pylint: disable=R0101
         fieldName = parameter.getUniqueShortName()
         kwargs = {paramType + '__name__id': parameter.id}
         try:
 
             # if parameter is a string...
-            if not parameter.data_type == ParameterName.NUMERIC:
+            if parameter.data_type != ParameterName.NUMERIC:
                 if searchFilterData[fieldName] != '':
                     # let's check if this is a field that's specified to be
                     # displayed as a dropdown menu in the form
@@ -334,7 +334,7 @@ def __forwardToSearchDatafileFormPage(request, searchQueryType,
     if not searchForm:
         # if searchQueryType == 'saxs':
         SearchDatafileForm = createSearchDatafileForm(searchQueryType)
-        searchForm = SearchDatafileForm()
+        searchForm = SearchDatafileForm()  # pylint: disable=R0204
         # else:
         #    # TODO: what do we need to do if the user didn't provide a page to
         #            display?

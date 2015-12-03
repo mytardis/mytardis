@@ -40,7 +40,7 @@ class MockGroupProvider(GroupProvider):
     def searchGroups(self, **filter):
         for g in self.groups:
             for s, t in filter.items():
-                if not s in g:
+                if s not in g:
                     continue
                 if t in g[s]:
                     group = g.copy()
@@ -49,7 +49,7 @@ class MockGroupProvider(GroupProvider):
 
     def getGroupsForEntity(self, id):
         for g in self.groups:
-            if not id in g['members']:
+            if id not in g['members']:
                 continue
             group = g.copy()
             del group['members']

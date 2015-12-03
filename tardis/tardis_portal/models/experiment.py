@@ -1,3 +1,4 @@
+import logging
 from os import path
 
 from django.conf import settings
@@ -13,7 +14,6 @@ from tardis.tardis_portal.models import ObjectACL
 
 from .license import License
 
-import logging
 logger = logging.getLogger(__name__)
 
 

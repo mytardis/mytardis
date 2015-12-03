@@ -1,6 +1,8 @@
+# pylint: disable=R0916
+# remove when file sizes are integers
 import hashlib
+import logging
 from os import path
-import magic
 import mimetypes
 
 from django.conf import settings
@@ -12,15 +14,16 @@ from django.db.models import Q
 from django.db.models.signals import pre_delete
 from django.dispatch import receiver
 from django.forms.models import model_to_dict
+from django.utils import timezone
 
 from celery.contrib.methods import task
-from django.utils import timezone
+
+import magic
 
 from .fields import DirectoryField
 from .dataset import Dataset
 from .storage import StorageBox, StorageBoxOption, StorageBoxAttribute
 
-import logging
 logger = logging.getLogger(__name__)
 
 IMAGE_FILTER = (Q(mimetype__startswith='image/') &
@@ -210,7 +213,11 @@ class DataFile(models.Model):
             raise Schema.UnsupportedType
 
     def __unicode__(self):
-        return "%s %s # %s" % (self.sha512sum[:32] or self.md5sum,
+        if self.sha512sum is not None and len(self.sha512sum) > 31:
+            checksum = str(self.sha512sum)[:32]
+        else:
+            checksum = self.md5sum or 'no checksum'
+        return "%s %s # %s" % (checksum,
                                self.filename, self.mimetype)
 
     def get_mimetype(self):
@@ -701,7 +708,6 @@ def delete_dfo(sender, instance, **kwargs):
     else:
         logger.debug('Did not delete file dfo.id '
                      '%s, because it was the last copy' % instance.id)
-
 
 
 def compute_checksums(file_object,

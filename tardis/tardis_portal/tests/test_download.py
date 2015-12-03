@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
 
-from compare import expect
 from os import makedirs
 from os.path import abspath, basename, dirname, join, exists, getsize
 from shutil import rmtree
 from zipfile import is_zipfile, ZipFile
 from tarfile import is_tarfile, TarFile
+from tempfile import NamedTemporaryFile
+
+from compare import expect
 
 from django.test import TestCase
 from django.test.client import Client
@@ -16,10 +18,9 @@ from django.contrib.auth.models import User
 from tardis.tardis_portal.models import \
     Experiment, Dataset, DataFile, DataFileObject
 
-from tempfile import NamedTemporaryFile
 
 try:
-    from wand.image import Image
+    from wand.image import Image  # pylint: disable=C0411
     IMAGEMAGICK_AVAILABLE = True
 except (AttributeError, ImportError):
     IMAGEMAGICK_AVAILABLE = False

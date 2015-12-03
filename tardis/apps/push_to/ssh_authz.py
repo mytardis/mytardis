@@ -1,8 +1,9 @@
 import base64
 import json
 from StringIO import StringIO
-from paramiko import RSACert
+
 import requests
+from paramiko import RSACert
 
 
 def sign_certificate(credential, token, url):

@@ -1,5 +1,6 @@
 import os
-from os import path
+import logging
+import pickle
 import random
 
 from django.conf import settings
@@ -9,8 +10,6 @@ import django.core.files.storage as django_storage
 
 from celery.contrib.methods import task
 
-import logging
-import pickle
 
 logger = logging.getLogger(__name__)
 

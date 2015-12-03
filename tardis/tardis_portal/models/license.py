@@ -1,7 +1,7 @@
-from django.db import models
-
 from itertools import chain
 import logging
+from django.db import models
+
 logger = logging.getLogger(__name__)
 
 

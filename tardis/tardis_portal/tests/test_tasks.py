@@ -4,7 +4,6 @@ from os import path, urandom
 from compare import expect
 from django.core.files.base import ContentFile
 from django.test import TestCase
-from tempfile import NamedTemporaryFile
 
 from tardis.tardis_portal.models import Experiment, Dataset, DataFile, \
     User, UserProfile, DataFileObject, StorageBox

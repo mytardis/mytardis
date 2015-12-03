@@ -1,3 +1,6 @@
+# pylint: disable=R0204
+import pytz
+
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils.timezone import is_aware, make_aware
@@ -5,8 +8,6 @@ from django.utils.timezone import is_aware, make_aware
 from tardis.tardis_portal.models import Experiment
 from tardis.tardis_portal.models import Dataset
 from tardis.tardis_portal.models import DataFile
-
-import pytz
 
 LOCAL_TZ = pytz.timezone(settings.TIME_ZONE)
 

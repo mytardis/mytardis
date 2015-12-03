@@ -1,6 +1,8 @@
-import djcelery
 from datetime import timedelta
 from os import path
+from tempfile import gettempdir
+
+import djcelery
 
 # MUST change this to False for any serious use.
 DEBUG = True
@@ -364,7 +366,6 @@ DOWNLOAD_ARCHIVE_SIZE_LIMIT = 0
 RENDER_IMAGE_SIZE_LIMIT = 0
 
 # temporary download file location
-from tempfile import gettempdir
 DOWNLOAD_TEMP_DIR = gettempdir()
 
 # Safety margin for temporary space when downloading.  (Estimated archive

@@ -73,11 +73,11 @@ class TokenAuthMiddleware(object):
     '''
 
     def process_request(self, request):
-        all_tokens = set()
-        all_tokens.add(request.GET.get('token', None))
-        all_tokens.update(getattr(request.user, 'allowed_tokens', []))
-        all_tokens.update(request.session.get('allowed_tokens', []))
-        all_tokens = list(all_tokens)
-        request.user.allowed_tokens = all_tokens
-        request.session['allowed_tokens'] = all_tokens
+        all_tokens_set = set()
+        all_tokens_set.add(request.GET.get('token', None))
+        all_tokens_set.update(getattr(request.user, 'allowed_tokens', []))
+        all_tokens_set.update(request.session.get('allowed_tokens', []))
+        all_tokens_list = list(all_tokens_set)
+        request.user.allowed_tokens = all_tokens_list
+        request.session['allowed_tokens'] = all_tokens_list
         return None

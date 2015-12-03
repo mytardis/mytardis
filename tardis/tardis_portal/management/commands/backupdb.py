@@ -6,8 +6,8 @@ from os.path import exists, join
 import subprocess
 import time
 
-from django.core.management.base import BaseCommand
 from optparse import make_option
+from django.core.management.base import BaseCommand
 
 
 class Command(BaseCommand):

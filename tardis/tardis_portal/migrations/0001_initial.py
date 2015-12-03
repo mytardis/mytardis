@@ -2,9 +2,9 @@
 from __future__ import unicode_literals
 
 from django.db import models, migrations
+from django.conf import settings
 import tardis.tardis_portal.models.parameters
 import tardis.tardis_portal.models.fields
-from django.conf import settings
 import tardis.tardis_portal.models.token
 
 

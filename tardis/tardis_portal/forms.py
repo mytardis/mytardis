@@ -36,6 +36,7 @@ forms module
 .. moduleauthor::  Gerson Galang <gerson.galang@versi.edu.au>
 
 '''
+import logging
 
 from UserDict import UserDict
 
@@ -67,7 +68,6 @@ from tardis.tardis_portal.auth.localdb_auth \
 
 from tardis.tardis_portal.ParameterSetManager import ParameterSetManager
 
-import logging
 logger = logging.getLogger(__name__)
 
 

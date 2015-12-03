@@ -1,7 +1,8 @@
 # pylint: disable=W0401,W0614
-from tardis.settings_changeme import *  # noqa
 from os import listdir
 import logging
+
+from tardis.settings_changeme import *  # noqa
 
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 
@@ -48,7 +49,7 @@ AUTH_PROVIDERS = (('localdb', 'Local DB',
 
 #if (optional) ldap doesn't exist then don't enable ldap auth
 try:
-    import ldap  # noqa
+    import ldap  # noqa # pylint: disable=C0411,C0413
     AUTH_PROVIDERS += (('ldap', 'LDAP',
                         'tardis.tardis_portal.auth.ldap_auth.ldap_auth'),)
 except ImportError:

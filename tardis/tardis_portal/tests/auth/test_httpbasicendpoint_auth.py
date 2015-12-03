@@ -3,9 +3,6 @@ Created on Dec 15, 2011
 
 @author: Tim Dettrick <t.dettrick@uq.edu.au>
 '''
-from django.test import TestCase
-from django.test.client import RequestFactory
-from django.contrib.auth.models import User, Group
 import base64
 import urllib2
 import tempfile
@@ -14,6 +11,9 @@ import SocketServer
 import threading
 from flexmock import flexmock, flexmock_teardown
 from nose.tools import ok_, eq_
+from django.test import TestCase
+from django.test.client import RequestFactory
+from django.contrib.auth.models import User, Group
 
 from tardis.tardis_portal.auth.httpbasicendpoint_auth import HttpBasicEndpointAuth
 
@@ -53,7 +53,7 @@ class HttpBasicEndpointAuthTestCase(TestCase):
             print msg % args
 
         def _isAuthorized(self):
-            if self.headers.getheader('Authorization') == None:
+            if self.headers.getheader('Authorization') is None:
                 return False
             t, creds = self.headers.getheader('Authorization').split(" ")
             if t != "Basic":
@@ -174,7 +174,7 @@ class HttpBasicEndpointAuthTestCase(TestCase):
         auth = HttpBasicEndpointAuth(endpoint=server.getUrl())
         result = auth.authenticate(request)
         server.stop()
-        assert result == None
+        assert result is None
 
     def testCanHandlePreviousUser(self):
         username = 'testuser'

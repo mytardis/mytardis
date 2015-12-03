@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 from django import template
 from tardis.tardis_portal.models import DataFile
-from django.db.models import Sum
 
 register = template.Library()
 
