@@ -111,31 +111,6 @@ def retrieve_group_list(request):
     return HttpResponse(grouplist)
 
 
-def retrieve_field_list(request):
-
-    from tardis.tardis_portal.search_indexes import DatasetFileIndex
-
-    # Get all of the fields in the indexes
-    #
-    # TODO: these should be onl read from registered indexes
-    #
-    allFields = DatasetFileIndex.fields.items()
-
-    users = User.objects.all()
-
-    usernames = [u.first_name + ' ' + u.last_name + ':username' for u in users]
-
-    # Collect all of the indexed (searchable) fields, except
-    # for the main search document ('text')
-    searchableFields = ([key + ':search_field' for key, f in allFields
-                         if f.indexed is True and key != 'text'])
-
-    auto_list = usernames + searchableFields
-
-    fieldList = '+'.join([str(fn) for fn in auto_list])
-    return HttpResponse(fieldList)
-
-
 @never_cache
 @authz.experiment_ownership_required
 def retrieve_access_list_user(request, experiment_id):

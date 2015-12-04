@@ -7,7 +7,7 @@ import logging
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 from haystack.query import SearchQuerySet
-from haystack.views import SearchView
+from haystack.generic_views import SearchView
 
 from tardis.tardis_portal.auth import decorators as authz
 from tardis.tardis_portal.forms import createSearchDatafileSelectionForm, RawSearchForm
@@ -290,14 +290,46 @@ class ExperimentSearchView(SearchView):
         return render_response_index(self.request, self.template, context)
 
 
-@login_required
-def single_search(request):
-    search_query = FacetFixedSearchQuery(backend=HighlightSearchBackend())
-    sqs = SearchQuerySet(query=search_query)
-    sqs.highlight()
+# @login_required
+# def single_search(request):
+#     search_query = FacetFixedSearchQuery(backend=HighlightSearchBackend())
+#     sqs = SearchQuerySet(query=search_query)
+#     sqs.highlight()
+#
+#     return ExperimentSearchView(
+#         template='search/search.html',
+#         searchqueryset=sqs,
+#         form_class=RawSearchForm,
+#     ).__call__(request)
 
-    return ExperimentSearchView(
-        template='search/search.html',
-        searchqueryset=sqs,
-        form_class=RawSearchForm,
-    ).__call__(request)
+
+class SingleSearchView(ExperimentSearchView):
+    template_name = 'search/search.html'
+    queryset = SearchQuerySet()
+    form_class = RawSearchForm
+
+
+def retrieve_field_list(request):
+
+    from tardis.tardis_portal.search_indexes import DataFileIndex
+
+    # Get all of the fields in the indexes
+    #
+    # TODO: these should be onl read from registered indexes
+    #
+    allFields = DataFileIndex.fields.items()
+
+    users = User.objects.all()
+
+    usernames = [u.first_name + ' ' + u.last_name + ':username' for u in users]
+
+    # Collect all of the indexed (searchable) fields, except
+    # for the main search document ('text')
+    searchableFields = ([key + ':search_field' for key, f in allFields
+                         if f.indexed is True and key != 'text'])
+
+    auto_list = usernames + searchableFields
+
+    fieldList = '+'.join([str(fn) for fn in auto_list])
+    return HttpResponse(fieldList)
+
