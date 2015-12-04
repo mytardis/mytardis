@@ -41,7 +41,7 @@ from tardis.tardis_portal.api import (
     UserResource,
 )
 from tardis.tardis_portal.forms import RegistrationForm
-
+from tardis.tardis_portal.views import SingleSearchView
 
 admin.autodiscover()
 
@@ -94,7 +94,7 @@ experiment_urls = patterns(
     (r'^edit/(?P<experiment_id>\d+)/$', 'edit_experiment'),
     (r'^list', include(experiment_lists)),
     (r'^view/$', 'experiment_index'),  # Legacy URL
-    (r'^search/$', 'search_experiment'),
+    #(r'^search/$', 'search_experiment'),  # disabled while updating search
     (r'^create/$', 'create_experiment'),
     (r'^control_panel/(?P<experiment_id>\d+)/access_list/add/user/'
      '(?P<username>[\w\-][\w\-\.]+(@[\w\-][\w\-\.]+[a-zA-Z]{1,4})*)/$',
@@ -410,7 +410,8 @@ urlpatterns = patterns(
 
     # Search
     #url(r'^search/$', SingleSearchView.as_view(), name='menu_search'),
-    url(r'^search/', include('haystack.urls')),
+    #url(r'^search/', include('haystack.urls')),
+    url(r'^search/?$', SingleSearchView.as_view(), name='haystack_search'),
 
     # Apps
     (r'^apps/', include(apppatterns)),

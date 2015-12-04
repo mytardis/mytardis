@@ -38,16 +38,11 @@ search indexes for single search
 
 '''
 import logging
-import re
+import os
 import datetime
 from haystack import indexes
 
-from django.db.utils import DatabaseError
-from django.template.defaultfilters import slugify
-
-from .models import DataFile, \
-    DatafileParameter, DatasetParameter, ExperimentParameter, \
-    ParameterName, Schema
+from tardis.tardis_portal.models import DataFile, Dataset, Experiment
 
 logger = logging.getLogger(__name__)
 
@@ -78,6 +73,7 @@ class ExperimentIndex(indexes.SearchIndex, indexes.Indexable):
         """Used when the entire index for model is updated."""
         return self.get_model().objects.filter(created_time__lte=datetime.datetime.now())
 
+
 class DatasetIndex(indexes.SearchIndex, indexes.Indexable):
     text = indexes.CharField(document=True)
     experiment_id_stored = indexes.MultiValueField(indexed=True, stored=True) #indexes.IntegerField(model_attr='experiments', indexed=True)
@@ -92,6 +88,7 @@ class DatasetIndex(indexes.SearchIndex, indexes.Indexable):
 
     def get_model(self):
         return Dataset
+
 
 class DataFileIndex(indexes.SearchIndex, indexes.Indexable):
     text = indexes.CharField(document=True)

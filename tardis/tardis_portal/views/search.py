@@ -6,6 +6,7 @@ import logging
 
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
+from haystack.forms import SearchForm
 from haystack.query import SearchQuerySet
 from haystack.generic_views import SearchView
 
@@ -261,11 +262,8 @@ class ExperimentSearchView(SearchView):
 
         results = []
         for e in experiments:
-            result = {}
-            result['sr'] = e
-            result['dataset_hit'] = False
-            result['datafile_hit'] = False
-            result['experiment_hit'] = False
+            result = {'sr': e, 'dataset_hit': False, 'datafile_hit': False,
+                      'experiment_hit': False}
             results.append(result)
 
         extra['experiments'] = results
@@ -303,10 +301,15 @@ class ExperimentSearchView(SearchView):
 #     ).__call__(request)
 
 
-class SingleSearchView(ExperimentSearchView):
+class SingleSearchView(SearchView):
+    form_class = SearchForm
     template_name = 'search/search.html'
-    queryset = SearchQuerySet()
-    form_class = RawSearchForm
+
+    def get_queryset(self):
+        import ipdb; ipdb.set_trace()
+        queryset = super(SingleSearchView, self).get_queryset()
+        # further filter queryset based on some set of criteria
+        return queryset
 
 
 def retrieve_field_list(request):
