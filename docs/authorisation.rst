@@ -10,7 +10,7 @@ Django Authorisation
 ====================
 
 Django provides an authorisation/permission mechanism that is in use by
-default.  It is enabled in MyTardis in ``settings_changeme.py`` together with
+default.  It is enabled in MyTardis in ``default_settings.py`` together with
 the custom object level permission framework described below.
 
 .. code-block:: python
