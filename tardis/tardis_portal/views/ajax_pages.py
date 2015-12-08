@@ -16,7 +16,7 @@ from django.http import HttpResponse, HttpResponseNotFound, \
 from django.shortcuts import render
 from django.views.decorators.cache import never_cache
 from haystack.query import SearchQuerySet
-
+from tardis.search.utils import SearchQueryString
 from tardis.tardis_portal.auth import decorators as authz
 from tardis.tardis_portal.forms import RightsForm
 from tardis.tardis_portal.models import Experiment, DataFile, Dataset, Schema, \
@@ -28,7 +28,6 @@ from tardis.tardis_portal.shortcuts import return_response_error, \
 from tardis.tardis_portal.staging import get_full_staging_path, staging_list
 from tardis.tardis_portal.util import render_public_access_badge
 from tardis.tardis_portal.views.pages import view_experiment
-from tardis.tardis_portal.views.search import SearchQueryString
 from tardis.tardis_portal.views.utils import _add_protocols_and_organizations
 
 logger = logging.getLogger(__name__)

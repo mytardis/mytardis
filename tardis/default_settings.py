@@ -247,8 +247,6 @@ INSTALLED_APPS = (
     'django.contrib.admin',
     'django.contrib.admindocs',
     'django.contrib.humanize',
-    'tardis.tardis_portal',
-    'tardis.tardis_portal.templatetags',
     'registration',
     'django_jasmine',
     'djcelery',
@@ -257,6 +255,9 @@ INSTALLED_APPS = (
     'mustachejs',
     'tastypie',
     'tastypie_swagger',
+    'tardis.tardis_portal',
+    'tardis.tardis_portal.templatetags',
+    'tardis.search',
     # these optional apps, may require extra settings
     'tardis.apps.publication_forms',
     'tardis.apps.oaipmh',
@@ -377,14 +378,26 @@ DOWNLOAD_SPACE_SAFETY_MARGIN = 8388608
 
 # Settings for the single search box
 # Set HAYSTACK_SOLR_URL to the location of the SOLR server instance
-SINGLE_SEARCH_ENABLED = False
-HAYSTACK_SITECONF = 'tardis.search_sites'
-HAYSTACK_SEARCH_ENGINE = 'solr'
-HAYSTACK_SOLR_URL = 'http://127.0.0.1:8080/solr'
+SINGLE_SEARCH_ENABLED = True
+# flip this to turn on search:
+if True:
+    HAYSTACK_CONNECTIONS = {
+        'default': {
+            'ENGINE': 'haystack.backends.elasticsearch_backend.'
+                      'ElasticsearchSearchEngine',
+            'URL': 'http://127.0.0.1:9200/',
+            'INDEX_NAME': 'haystack',
+        },
+    }
+else:
+    HAYSTACK_CONNECTIONS = {
+        'default': {
+            'ENGINE': 'haystack.backends.simple_backend.SimpleEngine',
+        },
+    }
 if SINGLE_SEARCH_ENABLED:
     INSTALLED_APPS = INSTALLED_APPS + ('haystack',)
-else:
-    HAYSTACK_ENABLE_REGISTRATIONS = False
+HAYSTACK_SIGNAL_PROCESSOR = 'haystack.signals.RealtimeSignalProcessor'
 
 DEFAULT_INSTITUTION = "Monash University"
 
