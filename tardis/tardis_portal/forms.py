@@ -171,11 +171,8 @@ class RegistrationForm(forms.Form):
             password=self.cleaned_data['password1'],
             email=self.cleaned_data['email'])
 
-        userProfile = UserProfile(user=user, isDjangoAccount=True)
-        userProfile.save()
-
         authentication = UserAuthentication(
-            userProfile=userProfile,
+            userProfile=user.userprofile,
             username=self.cleaned_data['username'],
             authenticationMethod=locabdb_auth_key)
         authentication.save()

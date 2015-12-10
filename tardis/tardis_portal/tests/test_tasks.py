@@ -20,7 +20,6 @@ class BackgroundTaskTestCase(TestCase):
     def _create_dataset(self):
         user = User.objects.create_user('testuser', 'user@email.test', 'pwd')
         user.save()
-        UserProfile(user=user).save()
         full_access = Experiment.PUBLIC_ACCESS_FULL
         experiment = Experiment.objects.create(title="Background Test",
                                                created_by=user,

@@ -24,8 +24,8 @@ class Command(BaseCommand):
         password = None
 
         user = User.objects.create_user(username, email, password)
-        userProfile = UserProfile(user=user, isDjangoAccount=False)
-        userProfile.save()
+        user.userprofile.isDjangoAccount = False
+        user.userprofile.save()
 
         # We do not create a UserAuthentication intentionally.
         # If we did, lookups to find the "TokenAuth" would fail

@@ -188,10 +188,7 @@ def create_user(request):
             validate_email(email)
             user = User.objects.create_user(username, email, password)
 
-            userProfile = UserProfile(user=user, isDjangoAccount=True)
-            userProfile.save()
-
-            authentication = UserAuthentication(userProfile=userProfile,
+            authentication = UserAuthentication(userProfile=user.userprofile,
                                                 username=username,
                                                 authenticationMethod=authMethod)
             authentication.save()

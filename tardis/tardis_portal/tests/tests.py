@@ -66,7 +66,7 @@ class SearchTestCase(TestCase):
             user = User.objects.create_user('test', '', 'test')
             user.save()
 
-        self.userprofile = UserProfile(user=user).save()
+        self.userprofile = user.userprofile
 
         # base_path = path.abspath(path.dirname(__file__))
         experiment = Experiment(title='SAXS Test',
@@ -269,7 +269,6 @@ class UserInterfaceTestCase(TestCase):
                                    first_name="Test", last_name="User")
         user.set_password(pwd)
         user.save()
-        UserProfile(user=user).save()
         experiment = Experiment.objects.create(
             title="Test Experiment",
             created_by=user,

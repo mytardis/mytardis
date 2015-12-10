@@ -16,7 +16,6 @@ def _create_test_user():
                  last_name='Atkins',
                  email='tommy@atkins.net')
     user_.save()
-    UserProfile(user=user_).save()
     return user_
 
 
