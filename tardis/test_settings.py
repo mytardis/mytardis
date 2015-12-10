@@ -2,7 +2,7 @@
 from os import listdir
 import logging
 
-from tardis.settings_changeme import *  # noqa
+from tardis.default_settings import *  # noqa
 
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 
