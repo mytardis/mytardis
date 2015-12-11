@@ -1,6 +1,8 @@
-import djcelery
 from datetime import timedelta
 from os import path
+from tempfile import gettempdir
+
+import djcelery
 
 # MUST change this to False for any serious use.
 DEBUG = True
@@ -236,7 +238,6 @@ STATICFILES_STORAGE = \
 # this Django installation.
 TARDIS_APP_ROOT = 'tardis.apps'
 INSTALLED_APPS = (
-    'tardis.tardis_portal',
     'django_extensions',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -246,6 +247,7 @@ INSTALLED_APPS = (
     'django.contrib.admin',
     'django.contrib.admindocs',
     'django.contrib.humanize',
+    'tardis.tardis_portal',
     'tardis.tardis_portal.templatetags',
     'registration',
     'django_jasmine',
@@ -306,15 +308,20 @@ DEFAULT_AUTH = 'localdb'
 
 AUTH_PROFILE_MODULE = 'tardis_portal.UserProfile'
 
-# ---------------------------------
-# Authentication Backend settings
-# ---------------------------------
+# New users are added to these groups by default.
+NEW_USER_INITIAL_GROUPS = []
+
+ACCOUNT_ACTIVATION_DAYS = 3
+
 AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
     'tardis.tardis_portal.auth.authorisation.ACLAwareBackend',
     'django_cas_ng.backends.CASBackend',
 )
 
+# ---------------------------------
+# Log In Method settings
+# ---------------------------------
 ''' Sets the method used by the default login button on the portal_template.
 Options include: 'aaf', 'cas', and 'localdb'
 '''
@@ -322,13 +329,19 @@ Options include: 'aaf', 'cas', and 'localdb'
 DEFAULT_LOGIN = "localdb"
 
 # CAS Server default settings
+''' CAS SERVER configuration parameters...
+server_url: the base url of the CAS Service.
+service_url: the base url of the mytardis instance.
+login_url: links the portal_template to the CAS backend.
+logout_completely: set to false to enable single sign-on (sso) sessions.
+'''
 CAS_ENABLED = False
 CAS_SERVER_URL = 'https//<url of the CAS Service>/'
 CAS_SERVICE_URL = 'http://<url of the tardis instance>/'
-CAS_IGNORE_REDIRECT = True
-CAS_LOGOUT_COMPLETELY = True
-CAS_IGNORE_REFERRER = True
 CAS_LOGIN_URL = '/cas/login/'
+CAS_LOGOUT_COMPLETELY = True
+CAS_IGNORE_REDIRECT = True
+CAS_IGNORE_REFERRER = True
 
 # Show the Rapid Connect login button.
 ''' AAF RAPID CONNECT configuration parameters...
@@ -353,12 +366,6 @@ RAPID_CONNECT_CONFIG['secret'] = 'CHANGE_ME'
 RAPID_CONNECT_CONFIG['authnrequest_url'] = 'CHANGE_ME'
 
 # ---------------------------------
-
-# New users are added to these groups by default.
-NEW_USER_INITIAL_GROUPS = []
-
-ACCOUNT_ACTIVATION_DAYS = 3
-
 # Email Configuration
 
 EMAIL_PORT = 587
@@ -410,7 +417,6 @@ DOWNLOAD_ARCHIVE_SIZE_LIMIT = 0
 RENDER_IMAGE_SIZE_LIMIT = 0
 
 # temporary download file location
-from tempfile import gettempdir
 DOWNLOAD_TEMP_DIR = gettempdir()
 
 # Safety margin for temporary space when downloading.  (Estimated archive

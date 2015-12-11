@@ -28,7 +28,6 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-from tardis.tardis_portal.staging import get_full_staging_path
 
 """
 test_views.py
@@ -41,8 +40,8 @@ http://docs.djangoproject.com/en/dev/topics/testing/
 import json
 from urlparse import urlparse
 
-from compare import expect, ensure
 from flexmock import flexmock
+from compare import expect, ensure
 
 from django.conf import settings
 from django.core.urlresolvers import resolve, reverse
@@ -50,6 +49,7 @@ from django.test import TestCase
 from django.test.client import Client
 from django.contrib.auth.models import User, Group, Permission
 
+from tardis.tardis_portal.staging import get_full_staging_path
 from tardis.tardis_portal.auth.localdb_auth import django_user
 from tardis.tardis_portal.models import UserProfile, UserAuthentication, \
     ObjectACL, Experiment, Dataset, DataFile, Schema, \
@@ -67,7 +67,7 @@ class UploadTestCase(TestCase):
         email = ''
         self.user = User.objects.create_user(user, email, pwd)
 
-        self.userProfile = UserProfile(user=self.user).save()
+        self.userProfile = self.user.userprofile
 
         self.test_dir = mkdtemp()
 
@@ -172,9 +172,6 @@ class listTestCase(TestCase):
             user.first_name = first
             user.last_name = last
             user.save()
-            profile = UserProfile(user=user,
-                                  isDjangoAccount=True)
-            profile.save()
         self.users = User.objects.all()
 
         self.client = Client()
@@ -271,9 +268,6 @@ class TokenuserDeniedAccessTestCase(TestCase):
             user.first_name = first
             user.last_name = last
             user.save()
-            profile = UserProfile(user=user,
-                                  isDjangoAccount=True)
-            profile.save()
         self.users = User.objects.all()
 
         self.client = Client()
@@ -326,8 +320,6 @@ class RightsTestCase(TestCase):
                                      'testuser@example.test',
                                      'password')
         user = User.objects.create_user(username, email, password)
-        profile = UserProfile(user=user, isDjangoAccount=True)
-        profile.save()
 
         # Create test experiment and make user the owner of it
         experiment = Experiment(title='Text Experiment',
@@ -372,8 +364,6 @@ class ManageAccountTestCase(TestCase):
                                      'testuser@example.test',
                                      'password')
         user = User.objects.create_user(username, email, password)
-        profile = UserProfile(user=user, isDjangoAccount=True)
-        profile.save()
         expect(user.userprofile.isValidPublicContact()).to_be(False)
 
         manage_url = reverse('tardis.tardis_portal.views.manage_user_account')
@@ -415,10 +405,8 @@ class StageFilesTestCase(TestCase):
                                      'testuser@example.test',
                                      'password')
         user = User.objects.create_user(username, email, password)
-        profile = UserProfile(user=user, isDjangoAccount=True)
-        profile.save()
         # Need UserAuthentication
-        UserAuthentication(userProfile=profile,
+        UserAuthentication(userProfile=user.userprofile,
                            username=username,
                            authenticationMethod='localdb').save()
         # Create staging dir
@@ -548,7 +536,7 @@ class ExperimentTestCase(TestCase):
         user.save()
         # Data used in tests
         self.user, self.username, self.password = (user, username, password)
-        self.userprofile = UserProfile(user=self.user).save()
+        self.userprofile = self.user.userprofile
 
     def testCreateAndEdit(self):
 
@@ -764,7 +752,7 @@ class ContextualViewTest(TestCase):
         pwd = 'secret'
         email = ''
         self.user = User.objects.create_user(user, email, pwd)
-        self.userProfile = UserProfile(user=self.user).save()
+        self.userProfile = self.user.userprofile
         self.exp = Experiment(title='test exp1',
                               institution_name='monash', created_by=self.user)
         self.exp.save()
@@ -834,7 +822,7 @@ class ViewTemplateContextsTest(TestCase):
         pwd = 'secret'
         email = ''
         self.user = User.objects.create_user(user, email, pwd)
-        self.userProfile = UserProfile(user=self.user).save()
+        self.userProfile = self.user.userprofile
         self.exp = Experiment(title='test exp1',
                               institution_name='monash', created_by=self.user)
         self.exp.save()
@@ -961,7 +949,7 @@ class _ContextMatcher(object):
 
     def __eq__(self, other):
         for (key, value) in self.template.items():
-            if not key in other or other[key] != value:
+            if key not in other or other[key] != value:
                 return False
         return True
 

@@ -3,10 +3,10 @@ Created on 19/01/2011
 
 .. moduleauthor:: Gerson Galang <gerson.galang@versi.edu.au>
 '''
+import json
 from django.test import TestCase
 from django.test.client import Client
 from django.contrib.auth.models import User, Permission
-import json
 
 from tardis.tardis_portal.models import UserAuthentication
 
@@ -95,7 +95,7 @@ class AuthenticationTestCase(TestCase):
 
         response = self.client.get(self.manageAuthMethodsUrl)
         self.assertEqual(len(response.context['userAuthMethodList']), 1, response)
-        self.assertTrue(response.context['isDjangoAccount'] == True)
+        self.assertTrue(response.context['isDjangoAccount'] is True)
         self.assertTrue(len(response.context['supportedAuthMethods']), 1)
         self.assertTrue(len(response.context['allAuthMethods']), 1)
 

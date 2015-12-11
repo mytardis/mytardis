@@ -1,7 +1,9 @@
-from lxml import etree
 import json
 import os
 
+from wand.image import Image
+
+from lxml import etree
 from compare import ensure, expect
 from django.core.urlresolvers import reverse
 from django.core.files.uploadedfile import TemporaryUploadedFile
@@ -11,8 +13,6 @@ from django.test.client import Client
 
 from tardis.tardis_portal.models import User, UserProfile, \
     Experiment, ObjectACL, Dataset, DataFile
-
-from wand.image import Image
 from tardis.tardis_portal.models.datafile import compute_checksums
 
 """
@@ -26,7 +26,6 @@ http://library.stanford.edu/iiif/image-api/
 def _create_datafile():
     user = User.objects.create_user('testuser', 'user@email.test', 'pwd')
     user.save()
-    UserProfile(user=user).save()
 
     full_access = Experiment.PUBLIC_ACCESS_FULL
     experiment = Experiment.objects.create(title="IIIF Test",

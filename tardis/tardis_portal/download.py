@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 """
 download.py
 
@@ -23,6 +22,10 @@ except ImportError:
     crc32 = binascii.crc32
 
 from itertools import chain
+import tarfile
+from tarfile import TarFile
+import gzip
+import io
 
 from django.core.servers.basehttp import FileWrapper
 from django.http import HttpResponseRedirect, StreamingHttpResponse
@@ -202,12 +205,6 @@ def _get_datafile_details_for_archive(mapper, datafiles):
 
 
 ########### NEW DOWNLOAD ##############
-import tarfile
-from tarfile import TarFile
-import gzip
-import io
-
-
 class UncachedTarStream(TarFile):
     '''
     Stream files into a compressed tar stream on the fly
@@ -225,6 +222,9 @@ class UncachedTarStream(TarFile):
         self.inodes = {}
         self._loaded = True
         self.mapped_file_objs = mapped_file_objs
+        filenum = len(mapped_file_objs)
+        self.tarinfos = [None] * filenum
+        self.tarinfo_bufs = [None] * filenum
         self.filename = filename
         self.buffersize = buffersize
         self.http_buffersize = http_buffersize
@@ -237,22 +237,42 @@ class UncachedTarStream(TarFile):
             self.tar_size = self.compute_size()
 
     def compute_size(self):
-        tarinfo_size = 512
         total_size = 0
-        for df, name in self.mapped_file_objs:
-            the_file = df.file_object
-            total_size += tarinfo_size
-            size = int(df.get_size())
+        for num, fobj in enumerate(self.mapped_file_objs):
+            df, name = fobj
+            tarinfo = self.tarinfo_for_df(df, name)
+            self.tarinfos[num] = tarinfo
+            tarinfo_buf = tarinfo.tobuf(self.format, self.encoding, self.errors)
+            self.tarinfo_bufs[num] = tarinfo_buf
+            total_size += len(tarinfo_buf)
+            size = int(tarinfo.size)
             blocks, remainder = divmod(size, tarfile.BLOCKSIZE)
-            total_size += blocks * tarfile.BLOCKSIZE
             if remainder > 0:
-                total_size += tarfile.BLOCKSIZE
-        total_size += tarfile.BLOCKSIZE * 2
+                blocks += 1
+            total_size += blocks * tarfile.BLOCKSIZE
         blocks, remainder = divmod(total_size, tarfile.RECORDSIZE)
-        total_size = blocks * tarfile.RECORDSIZE
         if remainder > 0:
-            total_size += tarfile.RECORDSIZE
+            blocks += 1
+        total_size = blocks * tarfile.RECORDSIZE
         return total_size
+
+    def tarinfo_for_df(self, df, name):
+        tarinfo = self.tarinfo(name)
+        tarinfo.size = int(df.get_size())
+        mtime = None
+        dj_mtime = df.modification_time
+        if dj_mtime is not None:
+            mtime = dateformatter(dj_mtime, 'U')
+        else:
+            try:
+                fileobj = df.file_object
+                mtime = os.fstat(fileobj.fileno()).st_mtime
+            except:
+                raise Exception('cannot read size for downloads')
+        if mtime is None:
+            mtime = time.time()
+        tarinfo.mtime = mtime
+        return tarinfo
 
     def compress(self, buf):
         self.gzipfile.write(buf)
@@ -291,46 +311,38 @@ class UncachedTarStream(TarFile):
         because 'yield's don't bubble up.
         '''
         remainder_buf = None
-        for df, name in self.mapped_file_objs:
+        for num, fobj in enumerate(self.mapped_file_objs):
+            df, name = fobj
             fileobj = df.file_object
             self._check('aw')
-            tarinfo = self.tarinfo(name)
-            tarinfo.size = int(df.get_size())
-            mtime = None
-            dj_mtime = df.modification_time
-            if dj_mtime is not None:
-                mtime = dateformatter(dj_mtime, 'U')
-            else:
-                try:
-                    mtime = os.fstat(fileobj.fileno()).st_mtime
-                except:
-                    pass
-            if mtime is None:
-                mtime = time.time()
-            tarinfo.mtime = mtime
-            # tarinfo = copy.copy(tarinfo)
-            buf = tarinfo.tobuf(self.format, self.encoding, self.errors)
+            tarinfo = self.tarinfos[num]
+            buf = self.tarinfo_bufs[num]
             stream_buffers, remainder_buf = self.prepare_output(
-                buf, remainder_buf)
+                buf,
+                remainder_buf)
             for stream_buf in stream_buffers:
                 yield stream_buf
-            self.offset += len(buf)
+            self.offset += len(buf or '')
             if tarinfo.isreg():
                 if tarinfo.size == 0:
                     continue
+                # split into file read buffer sized chunks
                 blocks, remainder = divmod(tarinfo.size, self.buffersize)
                 for b in xrange(blocks):
                     buf = fileobj.read(self.buffersize)
                     if len(buf) < self.buffersize:
                         raise IOError("end of file reached")
+                    # send in http_buffersize sized chunks
                     stream_buffers, remainder_buf = self.prepare_output(
                         buf, remainder_buf)
                     for stream_buf in stream_buffers:
                         yield stream_buf
+                # in case the file has remaining read bytes
                 if remainder != 0:
                     buf = fileobj.read(remainder)
                     if len(buf) < remainder:
                         raise IOError("end of file reached")
+                    # send remaining file data
                     stream_buffers, remainder_buf = self.prepare_output(
                         buf, remainder_buf)
                     for stream_buf in stream_buffers:
@@ -345,13 +357,6 @@ class UncachedTarStream(TarFile):
                     blocks += 1
                 self.offset += blocks * tarfile.BLOCKSIZE
             fileobj.close()
-
-        buf = (tarfile.NUL * (tarfile.BLOCKSIZE * 2))
-        stream_buffers, remainder_buf = self.prepare_output(
-            buf, remainder_buf)
-        for stream_buf in stream_buffers:
-            yield stream_buf
-        self.offset += (tarfile.BLOCKSIZE * 2)
         # fill up the end with zero-blocks
         # (like option -b20 for tar does)
         blocks, remainder = divmod(self.offset, tarfile.RECORDSIZE)
@@ -361,7 +366,7 @@ class UncachedTarStream(TarFile):
                 buf, remainder_buf)
             for stream_buf in stream_buffers:
                 yield stream_buf
-        if len(remainder_buf) > 0:
+        if remainder_buf and len(remainder_buf) > 0:
             yield remainder_buf
         if self.do_gzip:
             yield self.close_gzip()
@@ -370,7 +375,7 @@ class UncachedTarStream(TarFile):
         if self.do_gzip:
             content_type = 'application/x-gzip'
             content_length = None
-            self.filename = self.filename + '.gz'
+            self.filename += '.gz'
         else:
             content_type = 'application/x-tar'
             content_length = self.tar_size
@@ -494,7 +499,7 @@ def streaming_download_datafiles(request):  # too complex # noqa
                 status=404)
 
     elif 'url' in request.POST:
-        if not len(request.POST.getlist('url')) == 0:
+        if len(request.POST.getlist('url')) != 0:
             return render_error_message(
                 request,
                 'No Datasets or Datafiles were selected for downloaded',

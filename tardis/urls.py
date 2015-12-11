@@ -1,24 +1,49 @@
 from importlib import import_module
 import logging
+from os import path
 
 from django.contrib import admin
-admin.autodiscover()
 
 from django.contrib.auth.views import logout
 from django.conf.urls import patterns, include, url
 from django.conf import settings
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
+from django.http import HttpResponse
 
 from registration.backends.default.views import RegistrationView
-
-from tardis.tardis_portal.forms import RegistrationForm
-
-from django.http import HttpResponse
 
 import django_jasmine.urls
 
 from tastypie.api import Api
 from tastypie.resources import Resource
+
+from tardis.tardis_portal.api import (
+    DatafileParameterResource,
+    DatafileParameterSetResource,
+    DataFileResource,
+    DatasetParameterResource,
+    DatasetParameterSetResource,
+    DatasetResource,
+    ExperimentParameterResource,
+    ExperimentParameterSetResource,
+    ExperimentResource,
+    FacilityResource,
+    GroupResource,
+    InstrumentResource,
+    LocationResource,
+    ObjectACLResource,
+    ParameterNameResource,
+    ReplicaResource,
+    SchemaResource,
+    StorageBoxAttributeResource,
+    StorageBoxOptionResource,
+    StorageBoxResource,
+    UserResource,
+)
+from tardis.tardis_portal.forms import RegistrationForm
+
+
+admin.autodiscover()
 
 logger = logging.getLogger(__name__)
 
@@ -116,20 +141,12 @@ token_urls = patterns(
 accounts_urls = patterns(
     'tardis.tardis_portal.views',
     (r'^login/$', 'login'),
-    (r'^logout/$', 'logout'),
     (r'^manage$', 'manage_user_account'),
     (r'^manage_auth_methods/$', 'manage_auth_methods'),
     url(r'^register/$', RegistrationView.as_view(  # pylint: disable=E1120
         form_class=RegistrationForm),
         name='register'),
     (r'', include('registration.backends.default.urls')),
-    )
-
-cas_urls = patterns(
-    'tardis.tardis_portal.auth.cas.views',
-    url(r'^login/proxyCallback', 'proxy_callback', name='proxyCallback'),
-    url(r'^login/$', 'login', name='login'),
-    url(r'^logout/$', 'logout', {'next_page': '/'}, name='logout'),
     )
 
 dataset_urls = patterns(
@@ -274,27 +291,6 @@ display_urls = patterns(
 )
 
 # # API SECTION
-from tardis.tardis_portal.api import DatasetParameterSetResource
-from tardis.tardis_portal.api import DatasetParameterResource
-from tardis.tardis_portal.api import DatasetResource
-from tardis.tardis_portal.api import DataFileResource
-from tardis.tardis_portal.api import DatafileParameterSetResource
-from tardis.tardis_portal.api import DatafileParameterResource
-from tardis.tardis_portal.api import ExperimentParameterResource
-from tardis.tardis_portal.api import ExperimentParameterSetResource
-from tardis.tardis_portal.api import ExperimentResource
-from tardis.tardis_portal.api import LocationResource
-from tardis.tardis_portal.api import ParameterNameResource
-from tardis.tardis_portal.api import ReplicaResource
-from tardis.tardis_portal.api import SchemaResource
-from tardis.tardis_portal.api import StorageBoxResource
-from tardis.tardis_portal.api import StorageBoxOptionResource
-from tardis.tardis_portal.api import StorageBoxAttributeResource
-from tardis.tardis_portal.api import UserResource
-from tardis.tardis_portal.api import GroupResource
-from tardis.tardis_portal.api import ObjectACLResource
-from tardis.tardis_portal.api import FacilityResource
-from tardis.tardis_portal.api import InstrumentResource
 v1_api = Api(api_name='v1')
 v1_api.register(DatasetParameterSetResource())
 v1_api.register(DatasetParameterResource())
@@ -389,9 +385,6 @@ urlpatterns = patterns(
     # Account Views
     (r'^accounts/', include(accounts_urls)),
 
-    # CAS Views
-    (r'^cas/', include(cas_urls)),
-
     # Group Views
     (r'^groups/$', 'tardis.tardis_portal.views.manage_groups'),
     (r'^group/', include(group_urls)),
@@ -435,7 +428,6 @@ urlpatterns += staticfiles_urlpatterns()
 # Show compiled documentation to developers. Production instances can be
 # enabled to show on readthedocs.org
 if settings.DEBUG:
-    from os import path
     urlpatterns += patterns(
         '',
         url(r'^docs/(?P<path>.*)$', 'django.views.static.serve', {

@@ -1,3 +1,6 @@
+from datetime import datetime
+import itertools
+
 from django.conf import settings
 from django.utils.importlib import import_module
 from django.core.exceptions import ImproperlyConfigured
@@ -5,17 +8,12 @@ from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
 from django.core.urlresolvers import reverse
 
-from datetime import datetime
-
 from oaipmh.common import Identify, Header, Metadata
 import oaipmh.error
 from oaipmh.interfaces import IOAI
 from oaipmh.metadata import MetadataRegistry
 from oaipmh.server import Server, oai_dc_writer
 
-import itertools
-
-import pytz
 
 def _safe_import_class(path):
     try:

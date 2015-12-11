@@ -1,4 +1,4 @@
-
+# pylint: disable=R0204
 import os
 from os import path
 
@@ -18,6 +18,9 @@ from tardis.tardis_portal.models import Dataset
 from tardis.tardis_portal.models import StorageBox
 from tardis.tardis_portal.staging import get_staging_url_and_size
 from tardis.tardis_portal.email import email_user
+
+# import tasks from elsewhere here so they are registered
+import tardis.tardis_portal.storage.squashfs
 
 # Ensure filters are loaded
 try:
@@ -160,7 +163,3 @@ def cache_done_notify(results, user_id, site_id, ct_id, obj_ids):
     }
     email_user(subject, 'cache_done_email', context, user)
     return "all done"
-
-
-# import tasks from elsewhere here so they are registered
-import tardis.tardis_portal.storage.squashfs

@@ -1,3 +1,4 @@
+import logging
 from django.conf import settings
 from django.db import models
 from django.contrib.auth.models import User
@@ -6,7 +7,6 @@ from tardis.tardis_portal.managers import OracleSafeManager
 
 from .experiment import Experiment
 
-import logging
 logger = logging.getLogger(__name__)
 
 def _token_expiry():

@@ -8,6 +8,7 @@ from django.contrib.contenttypes.fields import GenericForeignKey
 from django.db import models
 from django.db.models import Q
 from django.db.models.signals import post_save
+from django.dispatch import receiver
 
 
 class UserProfile(models.Model):
@@ -60,6 +61,12 @@ class UserProfile(models.Model):
         if not hasattr(self, '_cached_groups'):
             self._cached_groups = fix_circular.getGroups(self.user)
         return self._cached_groups
+
+
+@receiver(post_save, sender=User, dispatch_uid="create_user_profile")
+def create_user_profile(sender, instance, created, **kwargs):
+    if created:
+        UserProfile(user=instance).save()
 
 
 class GroupAdmin(models.Model):

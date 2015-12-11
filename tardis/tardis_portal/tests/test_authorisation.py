@@ -29,10 +29,10 @@ class ObjectACLTestCase(TestCase):
             user.user_permissions.add(Permission.objects.get(codename='change_userauthentication'))
             user.user_permissions.add(Permission.objects.get(codename='change_objectacl'))
 
-        self.userProfile1 = UserProfile(user=self.user1).save()
-        self.userProfile2 = UserProfile(user=self.user2).save()
-        self.userProfile3 = UserProfile(user=self.user3).save()
-        self.userProfile4 = UserProfile(user=self.user4).save()
+        self.userProfile1 = self.user1.userprofile
+        self.userProfile2 = self.user2.userprofile
+        self.userProfile3 = self.user3.userprofile
+        self.userProfile4 = self.user4.userprofile
 
         # each user will have their own client
         self.client1 = Client()

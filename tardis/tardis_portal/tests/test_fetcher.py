@@ -1,11 +1,16 @@
-from django.test import TestCase
-from compare import expect
-from nose.tools import ok_, eq_
-
 from SimpleHTTPServer import SimpleHTTPRequestHandler
-import BaseHTTPServer, base64, os, SocketServer, threading, urllib2
+import BaseHTTPServer
+import base64
+import os
+import SocketServer
+import threading
+import urllib2
+
+from nose.tools import ok_, eq_
+from django.test import TestCase
 
 from tardis.tardis_portal.fetcher import get_privileged_opener
+
 
 class TestWebServer:
     '''
@@ -20,7 +25,7 @@ class TestWebServer:
             print msg % args
 
         def _isAuthorized(self):
-            if self.headers.getheader('Authorization') == None:
+            if self.headers.getheader('Authorization') is None:
                 return False
             t, creds = self.headers.getheader('Authorization').split(" ")
             if t != "Basic":

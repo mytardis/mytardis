@@ -52,7 +52,7 @@ def list_auth_methods(request):
         # ... and append it to our list
         for userAuth in userAuths:
             # localdb is already represented above
-            if not userAuth.authenticationMethod == "localdb":
+            if userAuth.authenticationMethod != "localdb":
                 userAuthMethodList.append((userAuth.username,
                     userAuth.getAuthMethodDescription(),
                     userAuth.authenticationMethod))

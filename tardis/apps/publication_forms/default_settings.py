@@ -3,6 +3,8 @@ default settings for publication app
 override in main settings
 '''
 
+from datetime import timedelta
+
 PUBLICATION_NOTIFICATION_SENDER_EMAIL = 'emailsender@mytardisserver'
 PUBLICATION_OWNER_GROUP = 'publication-admin'
 PUBLICATION_SCHEMA_ROOT = 'http://www.tardis.edu.au/schemas/publication/'
@@ -38,8 +40,6 @@ PDB_CITATION_PUBLICATION_SCHEMA = PDB_PUBLICATION_SCHEMA_ROOT + 'citation/'
 
 # Used by the Australian Synchrotron for MX datasets
 MX_PUBLICATION_DATASET_SCHEMA = 'http://synchrotron.org.au/pub/mx/dataset/'
-
-from datetime import timedelta
 
 PDB_REFRESH_INTERVAL = timedelta(days=7)
 

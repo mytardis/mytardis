@@ -108,7 +108,7 @@ class JEOLSEMFilter(object):
                 return None
             try:
                 key, value = line[len(prefix):].strip().split(' ')
-                if not key.lower() in known_attributes:
+                if key.lower() not in known_attributes:
                     return None
             except ValueError:
                 # Not a key value pair

@@ -1,11 +1,14 @@
-from lxml import etree
-from lxml.etree import Element, SubElement
 import json
 import mimetypes
 from StringIO import StringIO
-from urllib2 import urlopen
+
+from wand.exceptions import MissingDelegateError
+from wand.image import Image
+
+from lxml import etree
+from lxml.etree import Element, SubElement
+
 from django.conf import settings
-from django.core.servers.basehttp import FileWrapper
 from django.http import HttpResponse, HttpResponseNotFound
 from django.views.decorators.http import etag
 from django.utils.cache import patch_cache_control
@@ -13,8 +16,6 @@ from django.utils.cache import patch_cache_control
 from tardis.tardis_portal.models import Experiment, DataFile
 from tardis.tardis_portal.auth.decorators import has_datafile_download_access
 
-from wand.exceptions import MissingDelegateError
-from wand.image import Image
 
 MAX_AGE = getattr(settings, 'DATAFILE_CACHE_MAX_AGE', 60*60*24*7)
 
@@ -149,19 +150,19 @@ def download_image(request, datafile_id, region, size, rotation,
                 if rotation:
                     img.rotate(float(rotation))
                 # Handle quality (mostly by rejecting it)
-                if not quality in ['native', 'color']:
+                if quality not in ['native', 'color']:
                     return _get_iiif_error('quality',
                     'This server does not support greyscale or bitonal quality.')
                 # Handle format
                 if format:
                     mimetype = mimetypes.types_map['.%s' % format.lower()]
                     img.format = format
-                    if not mimetype in ALLOWED_MIMETYPES:
+                    if mimetype not in ALLOWED_MIMETYPES:
                         return _invalid_media_response()
                 else:
                     mimetype = datafile.get_mimetype()
                     # If the native format is not allowed, pretend it doesn't exist.
-                    if not mimetype in ALLOWED_MIMETYPES:
+                    if mimetype not in ALLOWED_MIMETYPES:
                         return HttpResponseNotFound()
                 img.save(file=buf)
                 response = HttpResponse(buf.getvalue(), content_type=mimetype)
@@ -197,7 +198,7 @@ def download_info(request, datafile_id, format): #@ReservedAssignment
         return HttpResponseNotFound()
 
     file_obj = datafile.get_file()
-    if file_obj == None:
+    if file_obj is None:
         return HttpResponseNotFound()
     from contextlib import closing
     with closing(file_obj) as f:

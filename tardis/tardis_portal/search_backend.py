@@ -1,3 +1,4 @@
+# pylint: disable=R0204
 from django.conf import settings
 from haystack.backends.solr_backend import SearchBackend
 from haystack.backends import EmptyResults

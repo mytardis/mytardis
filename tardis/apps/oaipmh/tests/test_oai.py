@@ -16,7 +16,6 @@ def _create_test_data():
                 last_name='Atkins',
                 email='tommy@atkins.net')
     user.save()
-    UserProfile(user=user).save()
     license_ = License(name='Creative Commons Attribution-NoDerivs 2.5 Australia',
                        url='http://creativecommons.org/licenses/by-nd/2.5/au/',
                        internal_description='CC BY 2.5 AU',

@@ -1,3 +1,5 @@
+import logging
+
 from django.conf import settings
 from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
@@ -6,7 +8,6 @@ from .datafile import DataFileObject
 from .experiment import Experiment, ExperimentAuthor
 from .parameters import ExperimentParameter, ExperimentParameterSet
 
-import logging
 logger = logging.getLogger(__name__)
 
 

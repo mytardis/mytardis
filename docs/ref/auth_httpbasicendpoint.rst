@@ -26,7 +26,7 @@ name. eg.
 On each request, MyTardis will attempt to use basic authentication with the
 provided credentials to access the HTTP resource. If it fails, access is denied.
 
-.. attribute:: tardis.settings_changeme.LDAP_TLS
+.. attribute:: tardis.default_settings.LDAP_TLS
 
     Endpoint to use in HTTP Basic Endpoint Auth. eg.
 

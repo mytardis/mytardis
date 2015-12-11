@@ -1,17 +1,17 @@
 """ ands_doi.py """
 
+import re
+import urllib2
+from urllib2 import HTTPError
+import logging
+
 from django.conf import settings
 from django.template.loader import render_to_string
 from django.utils.importlib import import_module
-from urllib2 import HTTPError
 
 from tardis.tardis_portal.models import ExperimentParameter, \
     ExperimentParameterSet, ParameterName, Schema
 
-import re
-import urllib2
-
-import logging
 logger = logging.getLogger(__name__)
 
 DOI_NAME = 'doi'  # the ParameterName.name for the DOI

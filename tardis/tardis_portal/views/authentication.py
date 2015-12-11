@@ -4,9 +4,8 @@ views that have to do with authentication
 
 from urlparse import urlparse
 
-import sys
-import jwt
 import logging
+import jwt
 import pwgen
 
 from django.conf import settings
@@ -30,7 +29,6 @@ from tardis.tardis_portal.forms import ManageAccountForm, CreateUserPermissionsF
 from tardis.tardis_portal.models import JTI, UserProfile, UserAuthentication
 from tardis.tardis_portal.shortcuts import render_response_index
 from tardis.tardis_portal.views.utils import _redirect_303
-from salt.modules.test import kwarg
 
 logger = logging.getLogger(__name__)
 
@@ -73,10 +71,6 @@ def rcauth(request):
             request.session['jws'] = request.POST['assertion']
 
             institution_email = request.session['attributes']['mail']
-            principalname = request.session['attributes'][
-                                                    'edupersonprincipalname']
-            edupersontargetedid = request.session['attributes'][
-                                                    'edupersontargetedid']
 
             logger.debug('Successfully authenticated %s via Rapid Connect.' %
                          institution_email)
@@ -86,8 +80,7 @@ def rcauth(request):
             first_name = request.session['attributes']['givenname']
             c_name = request.session['attributes'].get('cn', '').split(' ')
             if not first_name and len(c_name) > 1:
-                first_name = c_name[0]              
-                
+                first_name = c_name[0]
             user_args = {
                 'id': institution_email.lower(),
                 'email': institution_email.lower(),
@@ -96,21 +89,9 @@ def rcauth(request):
                 'last_name': request.session['attributes']['surname'],
             }
 
-            # if a principal domain is set 
-            # strip domain from edupersonprincipalname
-            # and use remainder as user id    
-            try:
-                if settings.RAPID_CONNECT_PRINCIPAL_DOMAIN:
-                    domain = "@" + settings.RAPID_CONNECT_PRINCIPAL_DOMAIN
-                    if ';' not in principalname and \
-                        principalname.endswith(domain):
-                        user_id = principalname.replace(domain,'').lower()
-                        user_args['id'] = user_id
-            except:
-                logger.debug('check principal domain failed with: %s' %
-                             sys.exc_info()[0])
-                
             # Check for an email collision.
+            edupersontargetedid = request.session['attributes'][
+                'edupersontargetedid']
             for matching_user in UserProfile.objects.filter(
                     user__email__iexact=user_args['email']):
                 if (matching_user.rapidConnectEduPersonTargetedID is not None
@@ -207,10 +188,7 @@ def create_user(request):
             validate_email(email)
             user = User.objects.create_user(username, email, password)
 
-            userProfile = UserProfile(user=user, isDjangoAccount=True)
-            userProfile.save()
-
-            authentication = UserAuthentication(userProfile=userProfile,
+            authentication = UserAuthentication(userProfile=user.userprofile,
                                                 username=username,
                                                 authenticationMethod=authMethod)
             authentication.save()
@@ -276,12 +254,9 @@ def login(request):
     c = {'loginForm': LoginForm(),
          'next_page': next_page}
 
-    c['DEFAULT_LOGIN'] = settings.DEFAULT_LOGIN
     c['RAPID_CONNECT_ENABLED'] = settings.RAPID_CONNECT_ENABLED
     c['RAPID_CONNECT_LOGIN_URL'] = settings.RAPID_CONNECT_CONFIG[
         'authnrequest_url']
-    c['CAS_ENABLED'] = settings.CAS_ENABLED
-    c['CAS_LOGIN_URL'] = settings.CAS_LOGIN_URL
 
     return HttpResponse(render_response_index(request,
                         'tardis_portal/login.html', c))

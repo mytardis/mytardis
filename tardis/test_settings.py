@@ -1,7 +1,8 @@
 # pylint: disable=W0401,W0614
-from tardis.settings_changeme import *  # noqa
 from os import listdir
 import logging
+
+from tardis.default_settings import *  # noqa
 
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 
@@ -48,7 +49,7 @@ AUTH_PROVIDERS = (('localdb', 'Local DB',
 
 #if (optional) ldap doesn't exist then don't enable ldap auth
 try:
-    import ldap  # noqa
+    import ldap  # noqa # pylint: disable=C0411,C0413
     AUTH_PROVIDERS += (('ldap', 'LDAP',
                         'tardis.tardis_portal.auth.ldap_auth.ldap_auth'),)
 except ImportError:
@@ -133,13 +134,15 @@ REQUIRE_DATAFILE_SIZES = True
 REQUIRE_VALIDATION_ON_INGESTION = True
 
 ARCHIVE_FILE_MAPPERS = {
-    'test': ('tardis.tardis_portal.tests.test_download.MyMapper',),
-    'test2': ('tardis.tardis_portal.tests.test_download.MyMapper',
-              {'exclude': '.txt'})
+    'deep-storage': (
+        'tardis.apps.deep_storage_download_mapper.mapper.deep_storage_mapper',
+    ),
 }
 
-DEFAULT_ARCHIVE_ORGANIZATION = 'test'
-DEFAULT_ARCHIVE_FORMATS = ['tar', 'tgz']
+# Site's default archive organization (i.e. path structure)
+DEFAULT_ARCHIVE_ORGANIZATION = 'deep-storage'
+
+DEFAULT_ARCHIVE_FORMATS = ['tar']
 
 AUTOGENERATE_API_KEY = True
 

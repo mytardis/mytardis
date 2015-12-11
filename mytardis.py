@@ -12,7 +12,7 @@ def run():
         os.environ.setdefault("DJANGO_SETTINGS_MODULE", custom_settings)
     else:
         os.environ.setdefault("DJANGO_SETTINGS_MODULE", demo_settings)
-        print('Using demo settings in "tardis/settings_changeme.py",'
+        print('Using demo settings in "tardis/default_settings.py",'
               ' please add your own settings file, '
               '"tardis/settings.py".')
 
