@@ -380,7 +380,7 @@ DOWNLOAD_SPACE_SAFETY_MARGIN = 8388608
 # Set HAYSTACK_SOLR_URL to the location of the SOLR server instance
 SINGLE_SEARCH_ENABLED = True
 # flip this to turn on search:
-if True:
+if SINGLE_SEARCH_ENABLED:
     HAYSTACK_CONNECTIONS = {
         'default': {
             'ENGINE': 'haystack.backends.elasticsearch_backend.'

@@ -219,7 +219,7 @@ def retrieve_datafile_list(
     highlighted_dsf_pks = []
 
     if 'query' in request.GET:
-        search_query = FacetFixedSearchQuery(backend=HighlightSearchBackend())
+        search_query = FacetFixedSearchQuery()
         sqs = SearchQuerySet(query=search_query)
         query = SearchQueryString(request.GET['query'])
         results = sqs.raw_search(
