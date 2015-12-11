@@ -10,26 +10,37 @@
     </form>
     </div>
     {% if query %}
-        <h3>Search Results</h3>
+        <h3>Found {{ object_list|length }} Matches</h3>
         {% for result in object_list %}
             {% if result.content_type == 'tardis_portal.experiment' %}
                 <div class="search_result">
-                    <div>Experiment <a href="{{ result.object.get_absolute_url }}">{{ result.highlighted.0|bleach }}</a>
+                    <div>Experiment <a href="{{ result.object.get_absolute_url }}">{{ result.highlighted.0|bleach|default:result.experiment_title }}</a>
                     </div>
                 </div>
             {% elif result.content_type == 'tardis_portal.dataset' %}
-                <div class="seach_result">
-                    <div>Experiments with matching datasets:<br/>
+                <div class="search_result">
+                    <div>Experiments with matching dataset:<br/>
                         {% for experiment in result.experiments %}
-                        <a href="{{ experiment.get_absolute_url }}">{{ experiment }}</a><br/>
+                            <a href="{{ experiment.get_absolute_url }}">{{ experiment }}</a><br/>
                         {% endfor %}
-                    <div>Dataset <a href="{{ result.object.get_absolute_url }}">{{ result.highlighted.0|bleach }}</a></div>
+                        <div>Dataset <a href="{{ result.object.get_absolute_url }}">{{ result.highlighted.0|bleach|default:result.dataset_description }}</a></div>
                     </div>
                 </div>
-                {% endif %}
-            {% empty %}
-                <p>No results found.</p>
-            {% endfor %}
+            {% elif result.content_type == 'tardis_portal.datafile' %}
+                <div class="search_result">
+                    <div>Experiments/Datasets with matching file:<br/>
+                        {% for experiment in result.experiments %}
+                            <a href="{{ experiment.get_absolute_url }}">{{ experiment }}</a><br/>
+                        {% endfor %}
+                        <div>Dataset <a href="{{ result.object.dataset.get_absolute_url }}">{{ result.object.dataset.description }}</a>
+                        <div>File <a href="{{ result.object.get_absolute_url }}">{{ result.highlighted.0|bleach|default:result.text }}</a></div></div>
+                    </div>
+                </div>
+            {% endif %}
+            <hr/>
+        {% empty %}
+            <p>No results found.</p>
+        {% endfor %}
 
         {% if page.has_previous or page.has_next %}
             <div>
