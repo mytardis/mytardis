@@ -1,12 +1,13 @@
-import warnings
-from django.conf import settings
-
 import ctypes
 import hashlib
 import os
 import platform
+import warnings
+
 import pystache
 import pytz
+
+from django.conf import settings
 
 LOCAL_TZ = pytz.timezone(settings.TIME_ZONE)
 
@@ -147,3 +148,11 @@ def render_public_access_badge(experiment):
             'label': 'Public',
             'public': True,
         })
+
+
+def sanitise_name(name):
+    return name.replace(' ', '_').replace('/', ':')
+
+
+def dirname_with_id(obj_name, obj_id):
+    return "%s_%d" % (sanitise_name(obj_name), obj_id)

@@ -1,6 +1,8 @@
+# pylint: disable=R0916
+# remove when file sizes are integers
 import hashlib
+import logging
 from os import path
-import magic
 import mimetypes
 
 from django.conf import settings
@@ -12,15 +14,16 @@ from django.db.models import Q
 from django.db.models.signals import pre_delete
 from django.dispatch import receiver
 from django.forms.models import model_to_dict
+from django.utils import timezone
 
 from celery.contrib.methods import task
-from django.utils import timezone
+
+import magic
 
 from .fields import DirectoryField
 from .dataset import Dataset
 from .storage import StorageBox, StorageBoxOption, StorageBoxAttribute
 
-import logging
 logger = logging.getLogger(__name__)
 
 IMAGE_FILTER = (Q(mimetype__startswith='image/') &
@@ -210,7 +213,11 @@ class DataFile(models.Model):
             raise Schema.UnsupportedType
 
     def __unicode__(self):
-        return "%s %s # %s" % (self.sha512sum[:32] or self.md5sum,
+        if self.sha512sum is not None and len(self.sha512sum) > 31:
+            checksum = str(self.sha512sum)[:32]
+        else:
+            checksum = self.md5sum or 'no checksum'
+        return "%s %s # %s" % (checksum,
                                self.filename, self.mimetype)
 
     def get_mimetype(self):
@@ -259,15 +266,21 @@ class DataFile(models.Model):
         :rtype: Python File object
         """
 
+        dfo = self.get_preferred_dfo(verified_only)
+        if dfo is None:
+            return None
+        if dfo.storage_type in (StorageBox.TAPE,):
+            dfo.cache_file.apply_async()
+        return dfo.file_object
+
+    def get_preferred_dfo(self, verified_only=True):
         if verified_only:
             obj_query = self.file_objects.filter(verified=True)
         else:
             obj_query = self.file_objects.all()
         all_objs = {dfo.storage_type: dfo for dfo in obj_query}
-
         if not all_objs:
             return None
-
         dfo = None
         for dfo_type in StorageBox.type_order:
             dfo = all_objs.get(dfo_type, None)
@@ -275,9 +288,7 @@ class DataFile(models.Model):
                 break
         if not dfo:
             dfo = all_objs.values()[0]
-        if dfo.storage_type in (StorageBox.TAPE,):
-            dfo.cache_file.apply_async()
-        return dfo.file_object
+        return dfo
 
     def get_absolute_filepath(self):
         dfos = self.file_objects.all()
@@ -684,20 +695,25 @@ class DataFileObject(models.Model):
     def get_full_path(self):
         return self._storage.path(self.uri)
 
+    def delete_data(self):
+        self._storage.delete(self.uri)
+
 
 @receiver(pre_delete, sender=DataFileObject, dispatch_uid='dfo_delete')
 def delete_dfo(sender, instance, **kwargs):
-    if instance.datafile.file_objects.count() > 1:
+    can_delete = getattr(
+        instance.storage_box.attributes.filter(key='can_delete').first(),
+        'value', 'True')
+    if can_delete.lower() == 'true':
         try:
-            instance._storage.delete(instance.uri)
+            instance.delete_data()
         except NotImplementedError:
             logger.info('deletion not supported on storage box %s, '
                         'for dfo id %s' % (str(instance.storage_box),
                                            str(instance.id)))
     else:
         logger.debug('Did not delete file dfo.id '
-                     '%s, because it was the last copy' % instance.id)
-
+                     '%s, because deletes are disabled' % instance.id)
 
 
 def compute_checksums(file_object,

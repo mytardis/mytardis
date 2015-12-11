@@ -30,12 +30,13 @@
 #
 
 
-from django.contrib import admin
-from django.contrib.contenttypes.admin import GenericTabularInline
-from tardis.tardis_portal import models
 from django import forms
 from django.forms import TextInput
 import django.db
+from django.contrib import admin
+from django.contrib.contenttypes.admin import GenericTabularInline
+
+from tardis.tardis_portal import models
 
 # from south.models import MigrationHistory
 

@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# pylint: disable=R0204
 
 #
 # Copyright (c) 2010-2011, Monash e-Research Centre
@@ -36,6 +37,9 @@ search indexes for single search
 .. moduleauthor:: Shaun O'Keefe  <shaun.okeefe@versi.edu.au>
 
 '''
+import logging
+import re
+
 from haystack.indexes import (
     CharField,
     DateTimeField,
@@ -46,13 +50,12 @@ from haystack.indexes import (
     SearchIndex,
 )
 from haystack import site
-from models import DataFile, \
+from django.db.utils import DatabaseError
+from django.template.defaultfilters import slugify
+
+from .models import DataFile, \
     DatafileParameter, DatasetParameter, ExperimentParameter, \
     ParameterName, Schema
-from django.db.utils import DatabaseError
-import logging
-from django.template.defaultfilters import slugify
-import re
 
 logger = logging.getLogger(__name__)
 

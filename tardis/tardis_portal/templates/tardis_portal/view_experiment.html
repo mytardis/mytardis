@@ -243,7 +243,7 @@ $('#modal-metadata .submit-button').click(function() {
   </h4>
   {% if not experiment.public %}
   <div class="pull-right" ng-controller="publicationFormCtrl">
-    {% if has_read_or_owner_ACL %}
+    {% if has_read_or_owner_ACL and pub_form_enabled %}
     <a class="prepare_to_publish btn btn-mini btn-info"
        title="Prepare To Publish" ng-click="openPublicationForm()" ng-show="isPublicationDraft || !isPublication">
       <i class="icon-share"></i>
@@ -272,13 +272,11 @@ $('#modal-metadata .submit-button').click(function() {
     <span property="dc:title">{{ experiment.title }}</span>
     <br/>
     <small>
-    {% for author in experiment.experimentauthor_set.all %}{% capture as creator_span %}
-    <span property="dc:creator" style="white-space: nowrap;">
-      {{ author.author }}</span>{% endcapture %}{% if not forloop.first %},
-      {% endif %}
-      {% if author.email %}<a href="mailto:{{ author.email }}">{{ creator_span }}</a>{% endif %}
-      {% if author.url %}<a href="{{ author.url }}">{{ creator_span }}</a>{% endif %}
-      {% if not author.email and not author.url %}{{ creator_span }}{% endif %}{% endfor %}
+        {% for author in experiment.experimentauthor_set.all %}{% capture as creator_span %}<span
+                property="dc:creator"
+                style="white-space: nowrap;">{{ author.author }}</span>{% endcapture %}{% if not forloop.first %}, {% endif %}{% if author.email %}<a
+                href="mailto:{{ author.email }}">{{ creator_span }}</a>{% endif %}{% if author.url %}<a
+                href="{{ author.url }}">{{ creator_span }}</a>{% endif %}{% if not author.email and not author.url %}{{ creator_span }}{% endif %}{% endfor %}
     </small>
   </h1>
   <p style="text-align: right">

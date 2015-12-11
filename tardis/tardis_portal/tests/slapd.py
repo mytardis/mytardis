@@ -6,12 +6,12 @@ import base64
 
 import sys
 import os
+from os import path as os_path
 import socket
 import time
 import subprocess
 import logging
 import tempfile
-from os import path as os_path
 _log = logging.getLogger("slapd")
 
 
@@ -84,6 +84,7 @@ class Slapd:
 
     # TODO add paths for other OSs
 
+    @classmethod
     def check_paths(cls):
         """
         Checks that the configured executable paths look valid.
@@ -91,8 +92,6 @@ class Slapd:
         """
         return all(which(cmd_name) is not None
                    for cmd_name in ('slapd', 'ldapadd', 'ldapsearch'))
-
-    check_paths = classmethod(check_paths)
 
     def __init__(self):
         self._config = []

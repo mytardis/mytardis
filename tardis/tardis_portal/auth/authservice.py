@@ -37,12 +37,13 @@ models.py
 
 """
 import logging
+from importlib import import_module
 
 from django.conf import settings
-from importlib import import_module
 from django.core.exceptions import ImproperlyConfigured
 from django.contrib.auth.models import User
 from django.contrib.auth.models import Permission
+
 from tardis.tardis_portal.auth.localdb_auth import auth_key as localdb_auth_key
 from tardis.tardis_portal.auth.utils import get_or_create_user
 
@@ -160,7 +161,7 @@ class AuthService():
             self._manual_init()
 
         if authMethod is None or authMethod == "None":
-            authMethods = self._authentication_backends
+            authMethods = self._authentication_backends.keys()
         else:
             authMethods = [authMethod]
         for authMethod in authMethods:
@@ -313,7 +314,7 @@ class AuthService():
 
         for gp in self._group_providers:
             if plugin:
-                if not gp.name == plugin:
+                if gp.name != plugin:
                     continue
             for group in gp.searchGroups(**kw):
                 group["pluginname"] = gp.name

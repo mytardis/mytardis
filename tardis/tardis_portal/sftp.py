@@ -1,14 +1,16 @@
 '''
 SFTP Server
 '''
-# pylint: disable=R0923
+# pylint: disable=C0411,C0412,C0413
+# disabling import order check for monkey patching
+
+import SocketServer
 import collections
 import logging
 import os
-import SocketServer
 import stat
-from cStringIO import StringIO
 import time
+from cStringIO import StringIO
 
 from paramiko import InteractiveQuery,  RSAKey, ServerInterface,\
     SFTPAttributes, SFTPHandle,\
@@ -16,6 +18,9 @@ from paramiko import InteractiveQuery,  RSAKey, ServerInterface,\
 from paramiko import OPEN_SUCCEEDED, OPEN_FAILED_ADMINISTRATIVELY_PROHIBITED,\
     SFTP_OP_UNSUPPORTED, SFTP_NO_SUCH_FILE
 from paramiko.common import AUTH_FAILED, AUTH_SUCCESSFUL
+from django.conf import settings
+
+from tardis.tardis_portal.util import sanitise_name, dirname_with_id
 
 logger = logging.getLogger(__name__)
 
@@ -23,7 +28,6 @@ paramiko_log = logging.getLogger('paramiko.transport')
 if not paramiko_log.handlers:
     paramiko_log.addHandler(logging.FileHandler('sftpd.log'))
 
-from django.conf import settings
 
 if getattr(settings, 'SFTP_GEVENT', False):
     from gevent import monkey
@@ -89,12 +93,8 @@ class DynamicTree(object):
                 leaf.update()
         return leaf
 
-    @staticmethod
-    def _sanitise_name(name):
-        return name.replace(' ', '_').replace('/', ':')
-
     def update_experiments(self):
-        exps = [("%s_%d" % (self._sanitise_name(exp.title), exp.id), exp)
+        exps = [(dirname_with_id(exp.title, exp.id), exp)
                 for exp in self.host_obj.experiments]
         self.clear_children()
         for exp_name, exp in exps:
@@ -105,7 +105,7 @@ class DynamicTree(object):
 
     def update_datasets(self):
         all_files_name = '00_all_files'
-        datasets = [("%s_%d" % (self._sanitise_name(ds.description), ds.id), ds)
+        datasets = [(dirname_with_id(ds.description, ds.id), ds)
                     for ds in self.obj.datasets.all()]
         self.clear_children()
         for ds_name, ds in datasets:
@@ -132,7 +132,7 @@ class DynamicTree(object):
             self._add_file_entry(df)
 
     def _add_file_entry(self, datafile):
-        df_name = self._sanitise_name(datafile.filename)
+        df_name = sanitise_name(datafile.filename)
         # try:
         #     file_obj = df.file_object
         #     file_name = df_name

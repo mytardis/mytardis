@@ -36,6 +36,7 @@ forms module
 .. moduleauthor::  Gerson Galang <gerson.galang@versi.edu.au>
 
 '''
+import logging
 
 from UserDict import UserDict
 
@@ -67,7 +68,6 @@ from tardis.tardis_portal.auth.localdb_auth \
 
 from tardis.tardis_portal.ParameterSetManager import ParameterSetManager
 
-import logging
 logger = logging.getLogger(__name__)
 
 
@@ -171,11 +171,8 @@ class RegistrationForm(forms.Form):
             password=self.cleaned_data['password1'],
             email=self.cleaned_data['email'])
 
-        userProfile = UserProfile(user=user, isDjangoAccount=True)
-        userProfile.save()
-
         authentication = UserAuthentication(
-            userProfile=userProfile,
+            userProfile=user.userprofile,
             username=self.cleaned_data['username'],
             authenticationMethod=locabdb_auth_key)
         authentication.save()

@@ -1,17 +1,17 @@
 """ ands_doi.py """
 
+import re
+import urllib2
+from urllib2 import HTTPError
+import logging
+
 from django.conf import settings
 from django.template.loader import render_to_string
 from django.utils.importlib import import_module
-from urllib2 import HTTPError
 
 from tardis.tardis_portal.models import ExperimentParameter, \
     ExperimentParameterSet, ParameterName, Schema
 
-import re
-import urllib2
-
-import logging
 logger = logging.getLogger(__name__)
 
 DOI_NAME = 'doi'  # the ParameterName.name for the DOI
@@ -41,7 +41,8 @@ class DOIService(object):
 
             self.doi_provider = constructor(experiment)
             self.schema = Schema.objects.get(namespace=settings.DOI_NAMESPACE)
-            self.doi_name = ParameterName.objects.get(name=DOI_NAME)
+            self.doi_name = ParameterName.objects.get(
+                schema=self.schema, name=DOI_NAME)
 
         else:
             raise Exception('DOI is not enabled')

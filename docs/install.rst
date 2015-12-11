@@ -18,19 +18,19 @@ Ubuntu 14.04::
   zlib1g-dev python-wand python-virtualenv virtualenvwrapper python-psycopg2 \
   python-yaml ipython python-anyjson python-bs4 python-billiard \
   python-feedparser python-html5lib python-httplib2 python-pystache \
-  python-crypto python-flexmock python-dateutil
+  python-crypto python-flexmock python-dateutil libldap2-dev libsasl2-dev
 
 Redhat/CentOS 7::
 
   sudo yum install epel-release
   sudo yum install cyrus-sasl-ldap cyrus-sasl-devel openldap-devel \
-  libxslt libxslt-devel libxslt-python git gcc graphviz-devel \ 
-  python-virtualenv python-virtualenvwrapper python-pip php-devel php-pear \ 
+  libxslt libxslt-devel libxslt-python git gcc graphviz-devel \
+  python-virtualenv python-virtualenvwrapper python-pip php-devel php-pear \
   ImageMagick ImageMagick-devel libevent-devel compat-libevent14-devel
 
 
-Note that at least one of ``libevent-devel`` and ``compat-libevent14-devel`` 
-needs to be successfully installed as they are alternatives of the same package 
+Note that at least one of ``libevent-devel`` and ``compat-libevent14-devel``
+needs to be successfully installed as they are alternatives of the same package
 for different distributions.
 
 Download
@@ -59,36 +59,36 @@ commands::
 Ubuntu 14.04::
 
   source /usr/share/virtualenvwrapper/virtualenvwrapper.sh
-  
-Redhat/CentOS 7:: 
+
+Redhat/CentOS 7::
 
   source /usr/bin/virtualenvwrapper.sh
-  
+
 Then create the ``mytardis`` virtual environment ::
 
   mkvirtualenv --system-site-packages mytardis
   pip install -U pip
 
-Note: the next time you want to work with this virtualenv, run the appropriate 
+Note: the next time you want to work with this virtualenv, run the appropriate
 ``source`` command and then use the command: ``workon mytardis``
 
 MyTARDIS dependencies are then installed with pip::
 
   pip install -r requirements.txt
-  
+
 For Redhat/CentOS 7, also run::
 
   pip install -r requirements-centos.txt
 
 Configuring MyTARDIS is done through a standard Django *settings.py*
 file. MyTARDIS comes with a sample configuration file at
-``tardis/settings_changeme.py``. You can import this as the basis of your own
+``tardis/default_settings.py``. You can import this as the basis of your own
 config file - options defined here will override the relevant options in
-``settings_changeme.py``.
+``default_settings.py``.
 
 Create a new file ``tardis/settings.py`` containing the following::
 
-  from settings_changeme import *
+  from default_settings import *
 
   # Add site specific changes here.
 
@@ -107,7 +107,7 @@ This is important for security reasons.
 A convenient method is to run the following command in your mytardis
 installation location::
 
-  python -c "import os; from random import choice; key_line = '%sSECRET_KEY=\"%s\"  # generated from build.sh\n' % ('from tardis.settings_changeme import * \n\n' if not os.path.isfile('tardis/settings.py') else '', ''.join([choice('abcdefghijklmnopqrstuvwxyz0123456789\\!@#$%^&*(-_=+)') for i in range(50)])); f=open('tardis/settings.py', 'a+'); f.write(key_line); f.close()"
+  python -c "import os; from random import choice; key_line = '%sSECRET_KEY=\"%s\"  # generated from build.sh\n' % ('from tardis.default_settings import * \n\n' if not os.path.isfile('tardis/settings.py') else '', ''.join([choice('abcdefghijklmnopqrstuvwxyz0123456789\\!@#$%^&*(-_=+)') for i in range(50)])); f=open('tardis/settings.py', 'a+'); f.write(key_line); f.close()"
 
 
 This is the minimum set of changes required to successfully run the
@@ -172,34 +172,34 @@ time.
 Database
 ~~~~~~~~
 
-.. attribute:: tardis.settings_changeme.DATABASE_ENGINE
+.. attribute:: tardis.default_settings.DATABASE_ENGINE
 
    The database server engine that will be used to store the MyTARDIS
    metadata, possible values are *postgresql_psycopg2*, *postgresql*,
    *mysql*, *sqlite3* or *oracle*.
 
-.. attribute:: tardis.settings_changeme.DATABASE_NAME
+.. attribute:: tardis.default_settings.DATABASE_NAME
 
    The name of the database to used to store the data, this is the
    path to the database if you are using the SQLite storage engine.
 
-.. attribute:: tardis.settings_changeme.DATABASE_USER
+.. attribute:: tardis.default_settings.DATABASE_USER
 
    The user name used to authenticate to the database. If you are
    using SQLite this field is not used.
 
-.. attribute:: tardis.settings_changeme.DATABASE_PASSWORD
+.. attribute:: tardis.default_settings.DATABASE_PASSWORD
 
    The password used to authenticate to the database. If you are using
    SQLite this field is not used.
 
-.. attribute:: tardis.settings_changeme.DATABASE_HOST
+.. attribute:: tardis.default_settings.DATABASE_HOST
 
    The host name of the machine hosting the database service. If this
    is empty then localhost will be used. If you are using SQLite then
    this field is ignored.
 
-.. attribute:: tardis.settings_changeme.DATABASE_PORT
+.. attribute:: tardis.default_settings.DATABASE_PORT
 
    The port the database is running on. If this is empty then the
    default port for the database engine will be used. If you are using
@@ -215,32 +215,32 @@ For further information see :ref:`LDAP authentication<ref-ldap_auth>`
 Repository
 ~~~~~~~~~~
 
-.. attribute:: tardis.settings_changeme.DEFAULT_STORAGE_BASE_DIR
+.. attribute:: tardis.default_settings.DEFAULT_STORAGE_BASE_DIR
 
    The path to the default MyTARDIS storage location. This is where files will
    be stored to if you do not provide any other location explicitly through
    ``StorageBox``es.
 
-.. attribute:: tardis.settings_changeme.STAGING_PATH
+.. attribute:: tardis.default_settings.STAGING_PATH
 
    The path to the staging path. This is where new files to be
    included in datasets will be sourced. This functionality, however, is
    not available in current MyTardis versions.
 
-.. attribute:: tardis.settings_changeme.REQUIRE_DATAFILE_CHECKSUMS
+.. attribute:: tardis.default_settings.REQUIRE_DATAFILE_CHECKSUMS
 
    If True, a Datafile requires an MD5 or SHA-512 checksum from the time
    it is first recorded in the MyTardis database.  This enables a model-level
    constraint check each time a Datafile record is saved.  Defaults to True.
    Datafile record is saved.
 
-.. attribute:: tardis.settings_changeme.REQUIRE_DATAFILE_SIZES
+.. attribute:: tardis.default_settings.REQUIRE_DATAFILE_SIZES
 
    If True, a Datafile require a size from the time it is first recorded in
    the MyTardis database.  This enables a model-level
    constraint check each time a Datafile record is saved.  Defaults to True.
 
-.. attribute:: tardis.settings_changeme.REQUIRE_VALIDATION_ON_INGESTION
+.. attribute:: tardis.default_settings.REQUIRE_VALIDATION_ON_INGESTION
 
    If True, ingestion of a Datafile is only permitted if the Datafile
    matches its supplied size and/or checksums.  Defaults to True.
@@ -279,7 +279,7 @@ legal notice is displayed. You can override it by either:
 Filters
 ~~~~~~~
 
-.. attribute:: tardis.settings_changeme.POST_SAVE_FILTERS
+.. attribute:: tardis.default_settings.POST_SAVE_FILTERS
 
    This contains a list of post save filters that are execute when a
    new data file is created.
@@ -296,19 +296,19 @@ Filters
 Archive Organizations
 ~~~~~~~~~~~~~~~~~~~~~
 
-.. attribute:: tardis.settings_changeme.DEFAULT_ARCHIVE_FORMATS.
+.. attribute:: tardis.default_settings.DEFAULT_ARCHIVE_FORMATS.
 
    This is a prioritized list of download archive formats to be used
    in contexts where only one choice is offered to the user; e.g. the
    "download selected" buttons.  (The list allows for using different
    archive formats depending on the user's platform.)
 
-.. attribute:: tardis.settings_changeme.DEFAULT_ARCHIVE_ORGANIZATION.
+.. attribute:: tardis.default_settings.DEFAULT_ARCHIVE_ORGANIZATION.
 
    This gives the default archive "organization" to be used.
    Organizations are defined via the next attribute.
 
-.. attribute:: tardis.settings_changeme.ARCHIVE_FILE_MAPPERS.
+.. attribute:: tardis.default_settings.ARCHIVE_FILE_MAPPERS.
 
    This is a hash that maps archive organization names to Datafile filename
    mapper functions.  These functions are reponsible for generating the
@@ -411,12 +411,12 @@ To collect all the static files to a single directory::
   python mytardis.py collectstatic
 
 
-.. attribute:: tardis.settings_changeme.STATIC_ROOT
+.. attribute:: tardis.default_settings.STATIC_ROOT
 
    This contains the location to deposit static content for serving.
 
 
-.. attribute:: tardis.settings_changeme.STATIC_URL
+.. attribute:: tardis.default_settings.STATIC_URL
 
    The path static content will be served from. (eg. ``/static`` or
    ``http://mytardis-resources.example.com/``)

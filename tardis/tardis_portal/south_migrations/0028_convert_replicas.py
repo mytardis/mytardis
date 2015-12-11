@@ -65,11 +65,11 @@ class Migration(DataMigration):
                 print '{0} % done '.format(percent),
                 print 'memory used: %d' % resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
 
-        if False:
+        if 0 == 1:
             files_failed_verification = []
             # verify all files
             for dfo in orm.DataFileObject.objects.all():
-                if not dfo.storage_box.django_storage_class == \
+                if dfo.storage_box.django_storage_class != \
                    'tardis.tardis_portal.storage.DummyStorage':
                     if not dfo.verify():
                         files_failed_verification.append(dfo)

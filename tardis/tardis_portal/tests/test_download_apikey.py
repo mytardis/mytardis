@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 
 from django.core.urlresolvers import reverse
-from tastypie.test import ResourceTestCase
 from django.test.client import Client
-
 from django.contrib.auth.models import User
+
+from tastypie.test import ResourceTestCase
 
 
 class ApiKeyDownloadTestCase(ResourceTestCase):

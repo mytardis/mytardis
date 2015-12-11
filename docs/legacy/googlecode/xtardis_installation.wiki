@@ -58,13 +58,13 @@ sudo -u postgres createdb xtardisdb
 ====Step 4.2====
 *NOTE* advice on allowing remote access to a Postgres database can be found [http://www.cyberciti.biz/tips/postgres-allow-remote-access-tcp-connection.html here].
 
-Install pgAdmin III on a desktop computer. The click the 'plug' icon in the top right hand corner to create a connection to the newly installed database server. 
+Install pgAdmin III on a desktop computer. The click the 'plug' icon in the top right hand corner to create a connection to the newly installed database server.
 
  * Enter any name you wish in the 'Name' section.
  * Enter the ip address in the 'Host' section.
  * Enter the port (default 5432) in the 'Port' section.
  * Enter the password you chose in step 3 into the 'Password' section.
- * Leave the rest as default and click OK. 
+ * Leave the rest as default and click OK.
 
 By expanding the tree on the left hand side of the pgAdmin window you should see the name of your database. If there is a red *x* on the icon, right click it and select 'connect'.
 Clicking the *+* next to your database name should show another list containing 'Login Roles'. Right click this item and select 'Create New Login Role...'.
@@ -85,7 +85,7 @@ The database should now be created and ready.
 Create a copy of the template settings and modify to your settings.
 {{{
 cd tardis
-cp settings_changeme.py settings.py
+cp default_settings.py settings.py
 }}}
 
 *NOTE* vim is used here as an example, but any other text editor is fine.
@@ -166,12 +166,12 @@ An example block looks like this:
 {{{
 {
     "fields": {
-        "name": null, 
+        "name": null,
         "namespace": "http://www.url.com/name",
-        "subtype": null, 
+        "subtype": null,
         "type": 1
-    }, 
-    "model": "tardis_portal.schema", 
+    },
+    "model": "tardis_portal.schema",
     "pk": 1
 }
 }}}
@@ -273,7 +273,7 @@ The elements of interest are:
 
 Instructions on running the server through Apache rather than the python webserver can be found here:
 
-https://docs.djangoproject.com/en/1.3/howto/deployment/modwsgi/ 
+https://docs.djangoproject.com/en/1.3/howto/deployment/modwsgi/
 
 with more detailed instructions here:
 

@@ -88,7 +88,7 @@ class MyTardisResourceTestCase(ResourceTestCase):
             Permission.objects.get(codename='add_instrument'))
         self.user.user_permissions.add(
             Permission.objects.get(codename='change_instrument'))
-        self.user_profile = UserProfile(user=self.user).save()
+        self.user_profile = self.user.userprofile
         self.testgroup = Group(name="Test Group")
         self.testgroup.save()
         self.testgroup.user_set.add(self.user)

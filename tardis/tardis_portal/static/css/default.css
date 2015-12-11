@@ -95,6 +95,7 @@ div.copylink {
 .datafile_name {
     font-size: 110%;
     font-weight: bold;
+    word-break: break-all;
 }
 
 .info-box {

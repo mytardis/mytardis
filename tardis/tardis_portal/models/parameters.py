@@ -1,3 +1,9 @@
+import logging
+import operator
+import json
+import pytz
+import dateutil.parser
+
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ObjectDoesNotExist
@@ -17,11 +23,6 @@ from .datafile import DataFile
 from .storage import StorageBox
 from .instrument import Instrument
 
-import logging
-import operator
-import pytz
-import dateutil.parser
-import json
 
 LOCAL_TZ = pytz.timezone(settings.TIME_ZONE)
 logger = logging.getLogger(__name__)
@@ -205,43 +206,25 @@ class ParameterName(models.Model):
         return (self.schema.namespace, self.name)
 
     def isNumeric(self):
-        if self.data_type == self.NUMERIC:
-            return True
-        else:
-            return False
+        return self.data_type == self.NUMERIC
 
     def isLongString(self):
         return self.data_type == self.LONGSTRING
 
     def isString(self):
-        if self.data_type == self.STRING:
-            return True
-        else:
-            return False
+        return self.data_type == self.STRING
 
     def isURL(self):
-        if self.data_type == self.URL:
-            return True
-        else:
-            return False
+        return self.data_type == self.URL
 
     def isLink(self):
-        if self.data_type == self.LINK:
-            return True
-        else:
-            return False
+        return self.data_type == self.LINK
 
     def isFilename(self):
-        if self.data_type == self.FILENAME:
-            return True
-        else:
-            return False
+        return self.data_type == self.FILENAME
 
     def isDateTime(self):
-        if self.data_type == self.DATETIME:
-            return True
-        else:
-            return False
+        return self.data_type == self.DATETIME
 
     def getUniqueShortName(self):
         return self.name + '_' + str(self.id)
@@ -253,7 +236,7 @@ class ParameterName(models.Model):
 def _getParameter(parameter):
 
     if parameter.name.isNumeric():
-        value = str(parameter.numerical_value)
+        value = unicode(parameter.numerical_value)
         units = parameter.name.units
         if units:
             value += ' %s' % units
@@ -332,7 +315,7 @@ def _getParameter(parameter):
             return parameter.string_value
 
     elif parameter.name.isDateTime():
-        value = str(parameter.datetime_value)
+        value = unicode(parameter.datetime_value)
         return value
 
     elif parameter.name.is_json():

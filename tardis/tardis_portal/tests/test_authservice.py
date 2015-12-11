@@ -40,7 +40,7 @@ class MockGroupProvider(GroupProvider):
     def searchGroups(self, **filter):
         for g in self.groups:
             for s, t in filter.items():
-                if not s in g:
+                if s not in g:
                     continue
                 if t in g[s]:
                     group = g.copy()
@@ -49,7 +49,7 @@ class MockGroupProvider(GroupProvider):
 
     def getGroupsForEntity(self, id):
         for g in self.groups:
-            if not id in g['members']:
+            if id not in g['members']:
                 continue
             group = g.copy()
             del group['members']
@@ -83,9 +83,9 @@ class AuthServiceTestCase(TestCase):
         self.user2 = User.objects.create_user('mockdb_user2', '', 'secret')
         self.user3 = User.objects.create_user('mockdb_user3', '', 'secret')
 
-        self.userProfile1 = UserProfile(user=self.user1).save()
-        self.userProfile2 = UserProfile(user=self.user2).save()
-        self.userProfile3 = UserProfile(user=self.user3).save()
+        self.userProfile1 = self.user1.userprofile
+        self.userProfile2 = self.user2.userprofile
+        self.userProfile3 = self.user3.userprofile
 
         from tardis.tardis_portal.auth import AuthService, auth_service
         s = MockSettings()

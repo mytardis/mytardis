@@ -1,24 +1,49 @@
 from importlib import import_module
 import logging
+from os import path
 
 from django.contrib import admin
-admin.autodiscover()
 
 from django.contrib.auth.views import logout
 from django.conf.urls import patterns, include, url
 from django.conf import settings
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
+from django.http import HttpResponse
 
 from registration.backends.default.views import RegistrationView
-
-from tardis.tardis_portal.forms import RegistrationForm
-
-from django.http import HttpResponse
 
 import django_jasmine.urls
 
 from tastypie.api import Api
 from tastypie.resources import Resource
+
+from tardis.tardis_portal.api import (
+    DatafileParameterResource,
+    DatafileParameterSetResource,
+    DataFileResource,
+    DatasetParameterResource,
+    DatasetParameterSetResource,
+    DatasetResource,
+    ExperimentParameterResource,
+    ExperimentParameterSetResource,
+    ExperimentResource,
+    FacilityResource,
+    GroupResource,
+    InstrumentResource,
+    LocationResource,
+    ObjectACLResource,
+    ParameterNameResource,
+    ReplicaResource,
+    SchemaResource,
+    StorageBoxAttributeResource,
+    StorageBoxOptionResource,
+    StorageBoxResource,
+    UserResource,
+)
+from tardis.tardis_portal.forms import RegistrationForm
+
+
+admin.autodiscover()
 
 logger = logging.getLogger(__name__)
 
@@ -44,6 +69,9 @@ core_urls = patterns(
     (r'^about/$', 'about'),
     (r'^stats/$', 'stats'),
     (r'^help/$', 'user_guide'),
+    url(r'^sftp_access/cyberduck/connection.png$',
+        'cybderduck_connection_window', name='cyberduck_connection_window'),
+    url(r'^sftp_access/$', 'sftp_access', name='sftp_access'),
     (r'^robots\.txt$', lambda r: HttpResponse(
         "User-agent: *\nDisallow: /download/\nDisallow: /stats/",
         content_type="text/plain"))
@@ -263,27 +291,6 @@ display_urls = patterns(
 )
 
 # # API SECTION
-from tardis.tardis_portal.api import DatasetParameterSetResource
-from tardis.tardis_portal.api import DatasetParameterResource
-from tardis.tardis_portal.api import DatasetResource
-from tardis.tardis_portal.api import DataFileResource
-from tardis.tardis_portal.api import DatafileParameterSetResource
-from tardis.tardis_portal.api import DatafileParameterResource
-from tardis.tardis_portal.api import ExperimentParameterResource
-from tardis.tardis_portal.api import ExperimentParameterSetResource
-from tardis.tardis_portal.api import ExperimentResource
-from tardis.tardis_portal.api import LocationResource
-from tardis.tardis_portal.api import ParameterNameResource
-from tardis.tardis_portal.api import ReplicaResource
-from tardis.tardis_portal.api import SchemaResource
-from tardis.tardis_portal.api import StorageBoxResource
-from tardis.tardis_portal.api import StorageBoxOptionResource
-from tardis.tardis_portal.api import StorageBoxAttributeResource
-from tardis.tardis_portal.api import UserResource
-from tardis.tardis_portal.api import GroupResource
-from tardis.tardis_portal.api import ObjectACLResource
-from tardis.tardis_portal.api import FacilityResource
-from tardis.tardis_portal.api import InstrumentResource
 v1_api = Api(api_name='v1')
 v1_api.register(DatasetParameterSetResource())
 v1_api.register(DatasetParameterResource())
@@ -329,6 +336,19 @@ api_urls = patterns(
     '',
     (r'^', include(v1_api.urls)),
 )
+
+tastypie_swagger_urls = patterns(
+    '',
+    url(r'v1/swagger/',
+        include('tastypie_swagger.urls',
+                namespace='api_v1_tastypie_swagger'),
+        kwargs={
+          "tastypie_api_module": v1_api,
+          "namespace": "api_v1_tastypie_swagger",
+          "version": "1"}
+        ),
+)
+
 # # END API SECTION
 
 apppatterns = patterns('',)
@@ -343,6 +363,9 @@ urlpatterns = patterns(
     (r'', include(core_urls)),
     # API views
     (r'^api/', include(api_urls)),
+
+    # tastypie_swagger endpoints for API auto-documentation
+    (r'^api/', include(tastypie_swagger_urls)),
 
     # Experiment Views
     (r'^experiment/', include(experiment_urls)),
@@ -405,7 +428,6 @@ urlpatterns += staticfiles_urlpatterns()
 # Show compiled documentation to developers. Production instances can be
 # enabled to show on readthedocs.org
 if settings.DEBUG:
-    from os import path
     urlpatterns += patterns(
         '',
         url(r'^docs/(?P<path>.*)$', 'django.views.static.serve', {

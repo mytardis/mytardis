@@ -3,11 +3,11 @@
 """
 import sys
 
+from optparse import make_option
+
 from django.core.management.base import BaseCommand
 from django.db import connections, transaction, DEFAULT_DB_ALIAS
 from django.core import serializers
-
-from optparse import make_option
 
 from tardis.tardis_portal import models
 

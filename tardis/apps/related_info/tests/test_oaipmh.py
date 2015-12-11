@@ -18,7 +18,6 @@ from tardis.tardis_portal.ParameterSetManager import ParameterSetManager
 def _create_user_and_login(username='testuser', password='testpass'):
     user = User.objects.create_user(username, '', password)
     user.save()
-    UserProfile(user=user).save()
 
     client = Client()
     client.login(username=username, password=password)
