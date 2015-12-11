@@ -189,17 +189,19 @@
               <!-- Default Login Button -->
               <!-- -------------------- -->
               <li>
-                  <a id="login-button" class="btn btn-info" 
-              {% if DEFAULT_LOGIN|lower = 'aaf' %}
-                  href={{ RAPID_CONNECT_LOGIN_URL }}
-              {% elif DEFAULT_LOGIN|lower = 'cas' %}
-                  href={{ CAS_LOGIN_URL }}
-              {% else %}
-                  href="{% url 'tardis.tardis_portal.views.login' %}"
-              {% endif %}
+                  <a id="login-button" 
+                  		class="btn btn-info"
+                  		style="width: 80px; text-align: center;" 
+              	{% if DEFAULT_LOGIN|lower = 'aaf' %}
+                  		href={{ RAPID_CONNECT_LOGIN_URL }}
+              	{% elif DEFAULT_LOGIN|lower = 'cas' %}
+                  		href={{ CAS_LOGIN_URL }}
+              	{% else %}
+                  		href="{% url 'tardis.tardis_portal.views.login' %}"
+              	{% endif %}
 		  			>
-                  <i class="icon-signin"></i>
-                  Log In
+                  	<i class="icon-signin"></i>
+                  	Log In
                 </a>
               </li>
               <!-- -------------------- -->
@@ -209,15 +211,15 @@
               <li id="login-menu" class="dropdown">
                 <a class="dropdown-toggle" data-toggle="dropdown" 
 					href="#login-menu">
-                  Alternate Logins 
+                  	Other Log Ins 
                   <b class="caret"></b>
                 </a>
 				<ul class="dropdown-menu"  >
-                  {% if RAPID_CONNECT_ENABLED and DEFAULT_LOGIN|lower != 'aaf' %}
+                {% if RAPID_CONNECT_ENABLED and DEFAULT_LOGIN|lower != 'aaf' %}
         	  	<li>      
 					<a id="login-button" 
 						class="btn btn-info btn-block"
-						style="width: 80%;" 
+                  		style="width: 80px; text-align: center;"
                   		href={{ RAPID_CONNECT_LOGIN_URL }} >
                   		<i class="icon-signin"></i>
                   		AAF
@@ -227,9 +229,9 @@
               	  {% if CAS_ENABLED and DEFAULT_LOGIN|lower != 'cas' %}
         	  	<li>      
               	  	<a id="login-button"   
-				class="btn btn-info btn-block"
-				style="width: 80%;" 
-                  		href={{ CAS_LOGIN_URL }} >
+						class="btn btn-info btn-block"
+				   		style="width: 80px; text-align: center;"
+				   		href={{ CAS_LOGIN_URL }} >
                   		<i class="icon-signin"></i>
                   		CAS
                 	</a>
@@ -238,8 +240,8 @@
               	  {% if DEFAULT_LOGIN|lower == 'aaf' or DEFAULT_LOGIN|lower == 'cas' %}
         	  <li>      
               	  	<a id="login-button"  
-				class="btn btn-info btn-block"
-				style="width: 80%;" 
+						class="btn btn-info btn-block"
+                  		style="width: 80px; text-align: center;"
                   		href="{% url 'tardis.tardis_portal.views.login' %}" >
                   		<i class="icon-signin"></i>
                   		Local DB

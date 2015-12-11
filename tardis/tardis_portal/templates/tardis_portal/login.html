@@ -3,18 +3,24 @@
 
 {% block content %}
 
-   <legend>Please Log In</legend>
-    <form action="" method="post" class="form-horizontal">{% csrf_token %}
-      <input name="next_page" type="hidden" value="{{ next_page }}" />
-      <fieldset>
-        <legend>Please Log In</legend>
-        {{ loginForm|bootstrap }}
-        <div class="form-actions">
-          <button type="submit" class="btn btn-info btn-large">
-            <i class="icon-signin"></i> Login
-          </button>
-        </div>
-      </fieldset>
-    </form>
+<div class="page-content">
+
+  <legend>Log In via Local DB</legend>
+
+  <form action="" method="post" class="form-horizontal">{% csrf_token %}
+    <input name="next_page" type="hidden" value="{{ next_page }}" />
+    <fieldset>
+      {{ loginForm|bootstrap }}
+      <div class="form-actions">
+        <button type="submit" 
+          		class="btn btn-info btn-block">
+          		<i class="icon-signin"></i>
+          		Log In
+        </button>
+      </div>
+    </fieldset>
+  </form>
+
+</div>
 
 {% endblock content %}

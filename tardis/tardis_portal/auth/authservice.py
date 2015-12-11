@@ -37,6 +37,7 @@ models.py
 
 """
 import logging
+import sys
 
 from django.conf import settings
 from importlib import import_module
@@ -163,15 +164,20 @@ class AuthService():
             authMethods = self._authentication_backends
         else:
             authMethods = [authMethod]
+            
         for authMethod in authMethods:
             # authenticate() returns either a User or a dictionary describing a
             # user (id, email, first_name, last_name).
-            authenticate_retval = self._authentication_backends[
-                authMethod].authenticate(**credentials)
-            user = self.get_or_create_user(authenticate_retval,
-                                           authMethod)
-            if user is not None:
-                return user
+            try:
+                authenticate_retval = self._authentication_backends[
+                            authMethod].authenticate(**credentials)
+                user = self.get_or_create_user(authenticate_retval,
+                            authMethod)
+                if user is not None:
+                    return user
+            except:
+                logger.debug('unexpected error: %s' % sys.exc_info()[0])
+                
         return None
 
     def getUser(self, authMethod, user_id, force_user_create=False):

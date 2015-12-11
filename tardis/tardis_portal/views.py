@@ -1213,12 +1213,7 @@ def login(request):
         next_page = '/'
     c = {'loginForm': LoginForm(),
          'next_page': next_page}
-    c['DEFAULT_LOGIN'] = settings.DEFAULT_LOGIN
-    c['RAPID_CONNECT_ENABLED'] = settings.RAPID_CONNECT_ENABLED
-    c['RAPID_CONNECT_LOGIN_URL'] = settings.RAPID_CONNECT_CONFIG[
-        'authnrequest_url']
-    c['CAS_ENABLED'] = settings.CAS_ENABLED
-    c['CAS_LOGIN_URL'] = settings.CAS_LOGIN_URL
+    
     return HttpResponse(render_response_index(request,
                         'tardis_portal/login.html', c))
 
@@ -3396,93 +3391,6 @@ def user_guide(request):
                         'tardis_portal/user_guide.html', c))
 
 
-@csrf_exempt
-def rcauth(request):
-    # Only POST is supported on this URL.
-    if request.method != 'POST':
-        raise PermissionDenied
-
-    # Rapid Connect authorization is disabled, so don't
-    # process anything.
-    if not settings.RAPID_CONNECT_ENABLED:
-        raise PermissionDenied
-
-    try:
-        # Verifies signature and expiry time
-        verified_jwt = jwt.decode(
-            request.POST['assertion'],
-            settings.RAPID_CONNECT_CONFIG['secret'],
-            audience=settings.RAPID_CONNECT_CONFIG['aud'])
-
-        # Check for a replay attack using the jti value.
-        jti = verified_jwt['jti']
-        if JTI.objects.filter(jti=jti).exists():
-            logger.debug('Replay attack? ' + str(jti))
-            request.session.pop('attributes', None)
-            request.session.pop('jwt', None)
-            request.session.pop('jws', None)
-            django_logout(request)
-            return redirect('/')
-        else:
-            JTI(jti=jti).save()
-
-        if verified_jwt['aud'] == settings.RAPID_CONNECT_CONFIG['aud'] and \
-           verified_jwt['iss'] == settings.RAPID_CONNECT_CONFIG['iss']:
-            request.session['attributes'] = verified_jwt[
-                'https://aaf.edu.au/attributes']
-            request.session['jwt'] = verified_jwt
-            request.session['jws'] = request.POST['assertion']
-
-            institution_email = request.session['attributes']['mail']
-
-            logger.debug('Successfully authenticated %s via Rapid Connect.' %
-                         institution_email)
-
-            # Create a user account and profile automatically. In future,
-            # support blacklists and whitelists.
-            first_name = request.session['attributes']['givenname']
-            c_name = request.session['attributes'].get('cn', '').split(' ')
-            if not first_name and len(c_name) > 1:
-                first_name = c_name[0]
-            user_args = {
-                'id': institution_email.lower(),
-                'email': institution_email.lower(),
-                'password': pwgen.pwgen(),
-                'first_name': first_name,
-                'last_name': request.session['attributes']['surname'],
-            }
-
-            # Check for an email collision.
-            edupersontargetedid = request.session['attributes'][
-                'edupersontargetedid']
-            for matching_user in UserProfile.objects.filter(
-                    user__email__iexact=user_args['email']):
-                if (matching_user.rapidConnectEduPersonTargetedID is not None
-                    and matching_user.rapidConnectEduPersonTargetedID !=
-                        edupersontargetedid):
-                    del request.session['attributes']
-                    del request.session['jwt']
-                    del request.session['jws']
-                    django_logout(request)
-                    raise PermissionDenied
-
-            user = auth_service.get_or_create_user(user_args)
-            if user is not None:
-                user.backend = 'django.contrib.auth.backends.ModelBackend'
-                djauth.login(request, user)
-                return redirect('/')
-        else:
-            del request.session['attributes']
-            del request.session['jwt']
-            del request.session['jws']
-            django_logout(request)
-            raise PermissionDenied  # Error: Not for this audience
-    except jwt.ExpiredSignature:
-        del request.session['attributes']
-        del request.session['jwt']
-        del request.session['jws']
-        django_logout(request)
-        raise PermissionDenied  # Error: Security cookie has expired
 
 
 def feedback(request):
