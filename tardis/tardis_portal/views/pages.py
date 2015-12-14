@@ -10,6 +10,7 @@ from os import path
 from django.conf import settings
 from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.contenttypes.models import ContentType
+from django.contrib.sites.shortcuts import get_current_site
 from django.core.exceptions import PermissionDenied
 from django.core.paginator import Paginator, EmptyPage, InvalidPage
 from django.core.urlresolvers import reverse
@@ -39,7 +40,16 @@ from tardis.tardis_portal.views.utils import (
 logger = logging.getLogger(__name__)
 
 
-def index(request):
+def index_context(request):
+    """
+    Prepares the values to be passed to the default index view - a list of
+    experiments, respecting authorization rules.
+
+    :param request: The Django request object
+    :type request: django.http.HttpRequest
+    :return: A dictionary of values for the view/template.
+    :rtype: dict
+    """
     status = ''
     limit = 8
     c = {'status': status}
@@ -57,6 +67,43 @@ def index(request):
     c['RAPID_CONNECT_ENABLED'] = settings.RAPID_CONNECT_ENABLED
     c['RAPID_CONNECT_LOGIN_URL'] = settings.RAPID_CONNECT_CONFIG[
         'authnrequest_url']
+
+    return c
+
+
+def index(request):
+    """
+    The index view, intended to render the front page of the MyTardis site
+    listing recent experiments.
+
+    This default view can be overriden by defining a dictionary INDEX_VIEWS in
+    settings which maps SITE_ID's or domain names to an alternative view
+    function (similar to the DATASET_VIEWS or EXPERIMENT_VIEWS overrides).
+
+    :param request: The Django request object
+    :type request: django.http.HttpRequest
+    :return: The Django response object
+    :rtype: django.http.HttpResponse
+    """
+    index_view_overrides = getattr(settings, 'INDEX_VIEWS', {})
+    if index_view_overrides:
+        site = get_current_site(request)
+        # try to find an overriding view based on domain name or SITE_ID (int)
+        view = index_view_overrides.get(site.domain, None)
+        if not view:
+            view = index_view_overrides.get(site.id, None)
+        if view:
+            try:
+                view_fn = _resolve_view_method(view)
+                return view_fn(request)
+            except (ImportError or AttributeError) as e:
+                logger.error('custom view import failed. using default index'
+                             'view as fallback. view name: %s, error-msg: %s'
+                             % (repr(view_fn), e))
+                if settings.DEBUG:
+                    raise e
+
+    c = index_context(request)
     return HttpResponse(render_response_index(request,
                         'tardis_portal/index.html', c))
 
@@ -92,6 +139,29 @@ def my_data(request):
         request, 'tardis_portal/my_data.html', c))
 
 
+def _resolve_view_method(view_function):
+    """
+    Takes a string representing a 'module.app.view' function,
+    imports the module and returns the view function, eg
+    'tardis.apps.my_custom_app.views.my_special_view' will
+    return the my_special_view function defined in views.py in
+    that app.
+
+    Will raise ImportError or AttributeError if the module or
+    view function don't exist, respectively.
+
+    :param view_function: A string representing the view.
+    :type view_function: str
+    :return: The view function
+    :rtype: types.FunctionType
+    """
+    x = view_function.split(".")
+    mod_name, fn_name = (".".join(x[:-1]), x[-1])
+    module = __import__(mod_name, fromlist=[fn_name])
+    fn = getattr(module, fn_name)
+    return fn
+
+
 @authz.experiment_access_required  # too complex # noqa
 def view_experiment(request, experiment_id,
                     template_name='tardis_portal/view_experiment.html'):
@@ -120,11 +190,8 @@ def view_experiment(request, experiment_id,
         for ns, view_fn in settings.EXPERIMENT_VIEWS:
             ns_match = next((n for n in namespaces if re.match(ns, n)), None)
             if ns_match:
-                x = view_fn.split(".")
-                mod_name, fn_name = (".".join(x[:-1]), x[-1])
                 try:
-                    module = __import__(mod_name, fromlist=[fn_name])
-                    fn = getattr(module, fn_name)
+                    fn = _resolve_view_method(view_fn)
                     return fn(request, experiment_id=experiment_id)
                 except (ImportError, AttributeError) as e:
                     logger.error('custom view import failed. view name: %s, '
@@ -232,11 +299,8 @@ def view_dataset(request, dataset_id):
                       for ps in dataset.getParameterSets()]
         for ns, view_fn in settings.DATASET_VIEWS:
             if ns in namespaces:
-                x = view_fn.split(".")
-                mod_name, fn_name = (".".join(x[:-1]), x[-1])
                 try:
-                    module = __import__(mod_name, fromlist=[fn_name])
-                    fn = getattr(module, fn_name)
+                    fn = _resolve_view_method(view_fn)
                     return fn(request, dataset_id=dataset_id)
                 except (ImportError, AttributeError) as e:
                     logger.error('custom view import failed. view name: %s, '
