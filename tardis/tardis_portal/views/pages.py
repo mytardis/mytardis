@@ -46,7 +46,7 @@ def index_context(request):
     experiments, respecting authorization rules.
 
     :param request: The Django request object
-    :type request: django.http.HttpRequest
+    :type request: :class:`django.http.HttpRequest`
     :return: A dictionary of values for the view/template.
     :rtype: dict
     """
@@ -80,10 +80,10 @@ def index(request):
     settings which maps SITE_ID's or domain names to an alternative view
     function (similar to the DATASET_VIEWS or EXPERIMENT_VIEWS overrides).
 
-    :param request: The Django request object
-    :type request: django.http.HttpRequest
+    :param request: a HTTP request object
+    :type request: :class:`django.http.HttpRequest`
     :return: The Django response object
-    :rtype: django.http.HttpResponse
+    :rtype: :class:`django.http.HttpResponse`
     """
     index_view_overrides = getattr(settings, 'INDEX_VIEWS', {})
     if index_view_overrides:
@@ -162,43 +162,10 @@ def _resolve_view_method(view_function):
     return fn
 
 
-@authz.experiment_access_required  # too complex # noqa
-def view_experiment(request, experiment_id,
-                    template_name='tardis_portal/view_experiment.html'):
+def view_experiment_context(request, experiment):
+    experiment_id = experiment.id
 
-    """View an existing experiment.
-
-    :param request: a HTTP Request instance
-    :type request: :class:`django.http.HttpRequest`
-    :param experiment_id: the ID of the experiment to be edited
-    :type experiment_id: string
-    :rtype: :class:`django.http.HttpResponse`
-
-    """
     c = {}
-
-    try:
-        experiment = Experiment.safe.get(request.user, experiment_id)
-    except PermissionDenied:
-        return return_response_error(request)
-    except Experiment.DoesNotExist:
-        return return_response_not_found(request)
-
-    if hasattr(settings, "EXPERIMENT_VIEWS"):
-        namespaces = [ps.schema.namespace
-                      for ps in experiment.getParameterSets()]
-        for ns, view_fn in settings.EXPERIMENT_VIEWS:
-            ns_match = next((n for n in namespaces if re.match(ns, n)), None)
-            if ns_match:
-                try:
-                    fn = _resolve_view_method(view_fn)
-                    return fn(request, experiment_id=experiment_id)
-                except (ImportError, AttributeError) as e:
-                    logger.error('custom view import failed. view name: %s, '
-                                 'error-msg: %s' % (repr(view_fn), e))
-                    if settings.DEBUG:
-                        raise e
-
     c['experiment'] = experiment
     c['has_write_permissions'] = \
         authz.has_write_permissions(request, experiment_id)
@@ -219,7 +186,8 @@ def view_experiment(request, experiment_id,
         push_to_args = {
             'experiment_id': experiment.pk
         }
-        c['push_to_url'] = reverse(initiate_push_experiment, kwargs=push_to_args)
+        c['push_to_url'] = reverse(initiate_push_experiment,
+                                   kwargs=push_to_args)
 
     c['subtitle'] = experiment.title
     c['nav'] = [{'name': 'Data', 'link': '/experiment/view/'},
@@ -275,39 +243,64 @@ def view_experiment(request, experiment_id,
             logger.debug("No tab for %s" % app)
 
     c['apps'] = zip(appurls, appnames)
-    return HttpResponse(render_response_index(request, template_name, c))
+
+    return c
 
 
-@authz.dataset_access_required  # too complex # noqa
-def view_dataset(request, dataset_id):
-    """Displays a Dataset and associated information.
+@authz.experiment_access_required  # too complex # noqa
+def view_experiment(request, experiment_id,
+                    template_name='tardis_portal/view_experiment.html'):
 
-    Shows a dataset its metadata and a list of associated files with
-    the option to show metadata of each file and ways to download those files.
-    With write permission this page also allows uploading and metadata
-    editing.
-    Optionally, if set up in settings.py, datasets of a certain type can
-    override the default view.
-    Settings example:
-    DATASET_VIEWS = [("http://dataset.example/schema",
-                      "tardis.apps.custom_views_app.views.my_view_dataset"),]
     """
-    dataset = Dataset.objects.get(id=dataset_id)
+    View an existing experiment.
 
-    if hasattr(settings, "DATASET_VIEWS"):
+    :param request: a HTTP Request instance
+    :type request: :class:`django.http.HttpRequest`
+    :param experiment_id: the ID of the experiment
+    :type experiment_id: str | int
+    :param template_name: Path to the template to render
+    :type template_name: str
+    :rtype: :class:`django.http.HttpResponse`
+    """
+
+    try:
+        experiment = Experiment.safe.get(request.user, experiment_id)
+    except PermissionDenied:
+        return return_response_error(request)
+    except Experiment.DoesNotExist:
+        return return_response_not_found(request)
+
+    if hasattr(settings, "EXPERIMENT_VIEWS"):
         namespaces = [ps.schema.namespace
-                      for ps in dataset.getParameterSets()]
-        for ns, view_fn in settings.DATASET_VIEWS:
-            if ns in namespaces:
+                      for ps in experiment.getParameterSets()]
+        for ns, view_fn in settings.EXPERIMENT_VIEWS:
+            ns_match = next((n for n in namespaces if re.match(ns, n)), None)
+            if ns_match:
                 try:
                     fn = _resolve_view_method(view_fn)
-                    return fn(request, dataset_id=dataset_id)
+                    return fn(request, experiment_id=experiment_id)
                 except (ImportError, AttributeError) as e:
                     logger.error('custom view import failed. view name: %s, '
                                  'error-msg: %s' % (repr(view_fn), e))
                     if settings.DEBUG:
                         raise e
 
+    c = view_experiment_context(request, experiment)
+
+    return HttpResponse(render_response_index(request, template_name, c))
+
+
+def view_dataset_context(request, dataset):
+    """
+    Prepares a dictionary (the 'context') of values for the dataset view.
+
+    :param request: a HTTP request object
+    :type request: :class:`django.http.HttpRequest`
+    :param dataset: The Dataset model instance
+    :type dataset: tardis.tardis_portal.models.dataset.Dataset
+    :return: A dictionary of values to be passed to the template
+    :rtype: dict
+    """
     def get_datafiles_page():
         # pagination was removed by someone in the interface but not here.
         # need to fix.
@@ -327,21 +320,22 @@ def view_dataset(request, dataset_id):
         except (EmptyPage, InvalidPage):
             return paginator.page(paginator.num_pages)
 
+    dataset_id = dataset.id
     upload_method = getattr(settings, "UPLOAD_METHOD", False)
 
     c = {
         'dataset': dataset,
         'datafiles': get_datafiles_page(),
         'parametersets': dataset.getParameterSets()
-                                .exclude(schema__hidden=True),
+            .exclude(schema__hidden=True),
         'has_download_permissions':
-        authz.has_dataset_download_access(request, dataset_id),
+            authz.has_dataset_download_access(request, dataset_id),
         'has_write_permissions':
-        authz.has_dataset_write(request, dataset_id),
+            authz.has_dataset_write(request, dataset_id),
         'from_experiment':
-        get_experiment_referer(request, dataset_id),
+            get_experiment_referer(request, dataset_id),
         'other_experiments':
-        authz.get_accessible_experiments_for_dataset(request, dataset_id),
+            authz.get_accessible_experiments_for_dataset(request, dataset_id),
         'upload_method': upload_method
     }
 
@@ -354,6 +348,50 @@ def view_dataset(request, dataset_id):
         c['push_to_url'] = reverse(initiate_push_dataset, kwargs=push_to_args)
 
     _add_protocols_and_organizations(request, dataset, c)
+
+    return c
+
+
+@authz.dataset_access_required  # too complex # noqa
+def view_dataset(request, dataset_id):
+    """
+    Displays a Dataset and associated information.
+
+    Shows a dataset its metadata and a list of associated files with
+    the option to show metadata of each file and ways to download those files.
+    With write permission this page also allows uploading and metadata
+    editing.
+    Optionally, if set up in settings.py, datasets of a certain type can
+    override the default view.
+    Settings example:
+    DATASET_VIEWS = [("http://dataset.example/schema",
+                      "tardis.apps.custom_views_app.views.my_view_dataset"),]
+
+    :param request: a HTTP Request instance
+    :type request: :class:`django.http.HttpRequest`
+    :param dataset_id: the ID of the dataset
+    :type dataset_id: str | int
+    :rtype: :class:`django.http.HttpResponse`
+    """
+
+    dataset = Dataset.objects.get(id=dataset_id)
+
+    if hasattr(settings, "DATASET_VIEWS"):
+        namespaces = [ps.schema.namespace
+                      for ps in dataset.getParameterSets()]
+        for ns, view_fn in settings.DATASET_VIEWS:
+            if ns in namespaces:
+                try:
+                    fn = _resolve_view_method(view_fn)
+                    return fn(request, dataset_id=dataset_id)
+                except (ImportError, AttributeError) as e:
+                    logger.error('custom view import failed. view name: %s, '
+                                 'error-msg: %s' % (repr(view_fn), e))
+                    if settings.DEBUG:
+                        raise e
+
+    c = view_dataset_context(request, dataset)
+
     return HttpResponse(render_response_index(
         request, 'tardis_portal/view_dataset.html', c))
 
@@ -588,9 +626,9 @@ def edit_experiment(request, experiment_id,
     :param request: a HTTP Request instance
     :type request: :class:`django.http.HttpRequest`
     :param experiment_id: the ID of the experiment to be edited
-    :type experiment_id: string
-    :param template_name: the path of the template to render
-    :type template_name: string
+    :type experiment_id: str | int
+    :param template: the path of the template to render
+    :type template: str | int
     :rtype: :class:`django.http.HttpResponse`
 
     """
