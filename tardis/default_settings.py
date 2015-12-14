@@ -263,6 +263,32 @@ INSTALLED_APPS = (
     # 'tardis.apps.push_to',
 )
 
+# Here you can define any custom view overrides provided by apps.
+# Index page overrides are associated with a Django 'Site', specified
+# by SITE_ID (an integer) or the domain name of the incoming request.
+# Overriding index views are encouraged to use the method
+# tardis.tardis_portal.views.pages.index_context as the basis
+# for the context dictionary in their response to ensure public/private
+# authorization is respected.
+#
+# Dataset and Experiment view overrides are mapped via a Schema
+# namespace.
+#
+# INDEX_VIEWS = {
+#     1: 'tardis.apps.my_custom_app.views.index',
+#     'store.example.com': 'tardis.apps.another_custom_app.views.index'
+# }
+#
+# DATASET_VIEWS = [
+#     ('http://www.tardis.edu.au/schemas/dataset/my_example_schema',
+#      'tardis.apps.my_custom_app.views.custom_dataset_view'),
+# ]
+#
+# EXPERIMENT_VIEWS = [
+#     ('http://www.tardis.edu.au/schemas/expt/my_example_schema',
+#      'tardis.apps.my_custom_app.views.custom_expt_view'),
+# ]
+
 JASMINE_TEST_DIRECTORY = path.abspath(path.join(path.dirname(__file__),
                                                 'tardis_portal',
                                                 'tests',
