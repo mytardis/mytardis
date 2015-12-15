@@ -45,7 +45,7 @@ def index_context(request):
     Prepares the values to be passed to the default index view - a list of
     experiments, respecting authorization rules.
 
-    :param request: The Django request object
+    :param request: a HTTP request object
     :type request: :class:`django.http.HttpRequest`
     :return: A dictionary of values for the view/template.
     :rtype: dict
