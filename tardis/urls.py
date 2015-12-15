@@ -60,6 +60,13 @@ rapidconnect_urls = patterns(
     (r'^auth/jwt$', 'rcauth'),
 )
 
+cas_urls = patterns(
+    'django_cas_ng.views',
+    (r'^login/$','login'),
+    (r'^logout/$','logout'),
+    (r'^callback/$','callback'),
+)
+
 core_urls = patterns(
     'tardis.tardis_portal.views',
     (r'^$', 'index'),
@@ -401,6 +408,9 @@ urlpatterns = patterns(
 
     # Rapid Connect
     (r'^rc/', include(rapidconnect_urls)),
+
+    # CAS
+    (r'^cas/', include(cas_urls)),
 
     # Admin
     (r'^admin/doc/', include('django.contrib.admindocs.urls')),

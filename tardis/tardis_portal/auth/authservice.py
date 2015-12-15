@@ -167,12 +167,15 @@ class AuthService():
         for authMethod in authMethods:
             # authenticate() returns either a User or a dictionary describing a
             # user (id, email, first_name, last_name).
-            authenticate_retval = self._authentication_backends[
-                authMethod].authenticate(**credentials)
-            user = self.get_or_create_user(authenticate_retval,
-                                           authMethod)
-            if user is not None:
-                return user
+            try:
+                authenticate_retval = self._authentication_backends[
+                                    authMethod].authenticate(**credentials)
+                user = self.get_or_create_user(authenticate_retval,
+                                    authMethod)
+                if user is not None:
+                    return user
+            except:
+                logger.debug('authenticate with backend failed!')
         return None
 
     def getUser(self, authMethod, user_id, force_user_create=False):
