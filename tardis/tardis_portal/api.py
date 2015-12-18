@@ -552,6 +552,10 @@ class SchemaResource(MyTardisModelResource):
 
     class Meta(MyTardisModelResource.Meta):
         queryset = Schema.objects.all()
+        filtering = {
+            'id': ('exact', ),
+            'namespace': ('exact', ),
+        }
 
 
 class ParameterNameResource(MyTardisModelResource):
@@ -559,6 +563,9 @@ class ParameterNameResource(MyTardisModelResource):
 
     class Meta(MyTardisModelResource.Meta):
         queryset = ParameterName.objects.all()
+        filtering = {
+            'schema': ALL_WITH_RELATIONS,
+        }
 
 
 class ParameterResource(MyTardisModelResource):
