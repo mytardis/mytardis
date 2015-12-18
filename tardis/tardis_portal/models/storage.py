@@ -151,7 +151,11 @@ class StorageBox(models.Model):
             # TODO: check for free space, e.g. run SQL as on stats page to
             # get total size on box,
             # compute max(list, key=lambda x:max_size-size)
-            return StorageBox.objects.all()[0]
+            try:
+                return StorageBox.objects.get(attributes__key='default',
+                                              attributes__value='True')
+            except StorageBox.DoesNotExist:
+                return StorageBox.objects.all().order_by('id')[0]
         except (DatabaseError, IndexError):
             default_location = getattr(settings, "DEFAULT_STORAGE_BASE_DIR",
                                        '/var/lib/mytardis/store')
