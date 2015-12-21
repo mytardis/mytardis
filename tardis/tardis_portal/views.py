@@ -225,11 +225,11 @@ def index(request):
         .order_by('-update_time')[:limit]
     c['public_experiments'] = public_experiments
     c['DEFAULT_LOGIN'] = settings.DEFAULT_LOGIN
+    c['CAS_ENABLED'] = settings.CAS_ENABLED
     c['RAPID_CONNECT_ENABLED'] = settings.RAPID_CONNECT_ENABLED
     c['RAPID_CONNECT_LOGIN_URL'] = settings.RAPID_CONNECT_CONFIG[
-        'authnrequest_url']
-    c['CAS_ENABLED'] = settings.CAS_ENABLED
-    c['CAS_LOGIN_URL'] = settings.CAS_LOGIN_URL
+                                        'authnrequest_url']
+    
     return HttpResponse(render_response_index(request,
                         'tardis_portal/index.html', c))
 
@@ -1201,6 +1201,11 @@ def login(request):
         c = {'status': "Sorry, username and password don't match.",
              'error': True,
              'loginForm': LoginForm()}
+        c['DEFAULT_LOGIN'] = settings.DEFAULT_LOGIN
+        c['CAS_ENABLED'] = settings.CAS_ENABLED
+        c['RAPID_CONNECT_ENABLED'] = settings.RAPID_CONNECT_ENABLED
+        c['RAPID_CONNECT_LOGIN_URL'] = settings.RAPID_CONNECT_CONFIG[
+                                        'authnrequest_url']
 
         return HttpResponseForbidden(
             render_response_index(request, 'tardis_portal/login.html', c))
@@ -1213,6 +1218,11 @@ def login(request):
         next_page = '/'
     c = {'loginForm': LoginForm(),
          'next_page': next_page}
+    c['DEFAULT_LOGIN'] = settings.DEFAULT_LOGIN
+    c['CAS_ENABLED'] = settings.CAS_ENABLED
+    c['RAPID_CONNECT_ENABLED'] = settings.RAPID_CONNECT_ENABLED
+    c['RAPID_CONNECT_LOGIN_URL'] = settings.RAPID_CONNECT_CONFIG[
+                                        'authnrequest_url']
     
     return HttpResponse(render_response_index(request,
                         'tardis_portal/login.html', c))

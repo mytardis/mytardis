@@ -14,14 +14,16 @@
   </div>
     {% if not is_authenticated %}
     <p>
-        {% if RAPID_CONNECT_ENABLED %}
-            Please <a href={{ RAPID_CONNECT_LOGIN_URL }}>login</a>
-            to see your experiment data.
+    	Please 
+        {% if RAPID_CONNECT_ENABLED and DEFAULT_LOGIN|lower == 'aaf' %}
+            <a href={{ RAPID_CONNECT_LOGIN_URL }}>
+        {% elif CAS_ENABLED and DEFAULT_LOGIN|lower == 'cas' %}
+            <a href="{% url 'django_cas_ng.views.login' %}">
         {% else %}
-            Please
-            <a href="{% url 'tardis.tardis_portal.views.login' %}">login</a>
-            to see your experiment data.
+            <a href="{% url 'tardis.tardis_portal.views.login' %}">
         {% endif %}
+        Log In</a>
+        to see your experiment data.
     </p>
     {% endif %}
   <div class="row-fluid">

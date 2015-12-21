@@ -7,6 +7,7 @@ from urlparse import urlparse
 import logging
 import jwt
 import pwgen
+import sys
 
 from django.conf import settings
 from django.contrib import auth as djauth
@@ -21,6 +22,8 @@ from django.http import HttpResponse, HttpResponseRedirect, \
 from django.shortcuts import redirect
 from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import csrf_exempt
+from django.dispatch import receiver
+from django_cas_ng.signals import cas_user_authenticated
 
 from tardis.tardis_portal.auth import auth_service
 from tardis.tardis_portal.auth.localdb_auth import auth_key as localdb_auth_key
@@ -29,12 +32,19 @@ from tardis.tardis_portal.forms import ManageAccountForm, CreateUserPermissionsF
 from tardis.tardis_portal.models import JTI, UserProfile, UserAuthentication
 from tardis.tardis_portal.shortcuts import render_response_index
 from tardis.tardis_portal.views.utils import _redirect_303
+from tardis.default_settings import CAS_ENABLED
 
 logger = logging.getLogger(__name__)
 
 
+@receiver(cas_user_authenticated)
+def cas_callback(sender, **kwargs):
+    logger.debug('_cas_callback() start!')
+    return 
+
 @csrf_exempt
 def rcauth(request):
+    logger.debug('rcauth() start!')
     # Only POST is supported on this URL.
     if request.method != 'POST':
         raise PermissionDenied
@@ -71,6 +81,10 @@ def rcauth(request):
             request.session['jws'] = request.POST['assertion']
 
             institution_email = request.session['attributes']['mail']
+            edupersontargetedid = request.session['attributes'][
+                                                'edupersontargetedid']
+            principalname = request.session['attributes'][
+                                                'edupersonprincipalname']
 
             logger.debug('Successfully authenticated %s via Rapid Connect.' %
                          institution_email)
@@ -88,10 +102,22 @@ def rcauth(request):
                 'first_name': first_name,
                 'last_name': request.session['attributes']['surname'],
             }
-
+            
+            # if a principal domain is set 
+            # strip domain from edupersonprincipalname
+            # and use remainder as user id    
+            try:
+                if settings.RAPID_CONNECT_PRINCIPAL_DOMAIN:
+                    domain = "@" + settings.RAPID_CONNECT_PRINCIPAL_DOMAIN
+                    if ';' not in principalname and \
+                        principalname.endswith(domain):
+                        user_id = principalname.replace(domain,'').lower()
+                        user_args['id'] = user_id
+            except:
+                logger.debug('check principal domain failed with: %s' %
+                             sys.exc_info()[0])
+                
             # Check for an email collision.
-            edupersontargetedid = request.session['attributes'][
-                'edupersontargetedid']
             for matching_user in UserProfile.objects.filter(
                     user__email__iexact=user_args['email']):
                 if (matching_user.rapidConnectEduPersonTargetedID is not None
@@ -120,6 +146,9 @@ def rcauth(request):
         del request.session['jws']
         django_logout(request)
         raise PermissionDenied  # Error: Security cookie has expired
+    except:
+        logger.debug('rcauth() failed with: %s' % sys.exc_info()[0])
+        raise PermissionDenied
 
 
 @login_required
@@ -241,6 +270,11 @@ def login(request):
         c = {'status': "Sorry, username and password don't match.",
              'error': True,
              'loginForm': LoginForm()}
+        c['DEFAULT_LOGIN'] = settings.DEFAULT_LOGIN
+        c['CAS_ENABLED'] = settings.CAS_ENABLED
+        c['RAPID_CONNECT_ENABLED'] = settings.RAPID_CONNECT_ENABLED
+        c['RAPID_CONNECT_LOGIN_URL'] = settings.RAPID_CONNECT_CONFIG[
+                                        'authnrequest_url']
 
         return HttpResponseForbidden(
             render_response_index(request, 'tardis_portal/login.html', c))
@@ -253,7 +287,8 @@ def login(request):
         next_page = '/'
     c = {'loginForm': LoginForm(),
          'next_page': next_page}
-
+    c['DEFAULT_LOGIN'] = settings.DEFAULT_LOGIN
+    c['CAS_ENABLED'] = settings.CAS_ENABLED
     c['RAPID_CONNECT_ENABLED'] = settings.RAPID_CONNECT_ENABLED
     c['RAPID_CONNECT_LOGIN_URL'] = settings.RAPID_CONNECT_CONFIG[
         'authnrequest_url']

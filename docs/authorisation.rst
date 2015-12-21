@@ -47,14 +47,10 @@ The following settings may be overridden as required:
 
 .. code-block:: python
 	CAS_LOGOUT_COMPLETELY = True
-	CAS_LOGIN_URL = '/cas/login/'
 
 * ``CAS_LOGOUT_COMPLETELY`` may be set to ``False`` if your enterprise has a 
   single sign-in policy. The user will remain logged in via CAS even if they 
   have logged out of MyTardis.
-
-* ``CAS_LOGIN_URL`` may be overridden if an alternate login view has been 
-  developed.
 
 For more information on CAS project see: http://jasig.github.io/cas    
 

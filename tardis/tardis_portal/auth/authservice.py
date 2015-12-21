@@ -82,7 +82,7 @@ class AuthService():
             self._user_providers.append(self._safe_import(up))
         for authenticationBackend in self.settings.AUTH_PROVIDERS:
             self._authentication_backends[authenticationBackend[0]] = \
-                self._safe_import(authenticationBackend[2])
+                self._safe_import(authenticationBackend[2])   
         self._initialised = True
 
     def _safe_import(self, path):
@@ -104,7 +104,7 @@ class AuthService():
                 (auth_module, auth_classname))
 
         auth_instance = auth_class()
-        return auth_instance
+        return auth_instance  
 
     def _get_or_create_user_from_dict(self, user_dict, auth_method):
         (user, created) = get_or_create_user(auth_method, user_dict['id'])

@@ -332,13 +332,11 @@ DEFAULT_LOGIN = "localdb"
 ''' CAS SERVER configuration parameters...
 server_url: the base url of the CAS Service.
 service_url: the base url of the mytardis instance.
-login_url: links the portal_template to the CAS backend.
 logout_completely: set to false to enable single sign-on (sso) sessions.
 '''
 CAS_ENABLED = False
 CAS_SERVER_URL = 'https//<url of the CAS Service>/'
 CAS_SERVICE_URL = 'http://<url of the tardis instance>/'
-CAS_LOGIN_URL = '/cas/login/'
 CAS_LOGOUT_COMPLETELY = True
 CAS_IGNORE_REDIRECT = True
 CAS_IGNORE_REFERRER = True
@@ -353,7 +351,7 @@ service registration,
 e.g. 'https://rapid.test.aaf.edu.au/jwt/authnrequest/research/XXXXXXXXXXXXXXXX'
 
 NOTE: when registering the service use the following callback url:
-     'https://<url of the mytardis instance>/auth/jwt/'
+     'https://<url of the mytardis instance>/rc/auth/jwt/'
 
 NOTE: if set the RAPID_CONNECT_PRINCIPAL_DOMAIN will be strip from the 
       edupersonprincipalname to extract the user id within the domain. 
