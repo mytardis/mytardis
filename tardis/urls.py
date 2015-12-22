@@ -41,7 +41,7 @@ from tardis.tardis_portal.api import (
     UserResource,
 )
 from tardis.tardis_portal.forms import RegistrationForm
-
+from tardis.tardis_portal.views import IndexView
 
 admin.autodiscover()
 
@@ -60,9 +60,13 @@ rapidconnect_urls = patterns(
     (r'^auth/jwt$', 'rcauth'),
 )
 
+overridable_urls = patterns(
+        '',
+        url(r'^$', IndexView.as_view(), name='index')
+)
+
 core_urls = patterns(
     'tardis.tardis_portal.views',
-    (r'^$', 'index'),
     url(r'^site-settings.xml/$', 'site_settings', name='tardis-site-settings'),
     url(r'^mydata/$', 'my_data', name='mydata'),
     url(r'^public_data/', 'public_data', name='public_data'),
@@ -420,6 +424,8 @@ urlpatterns = patterns(
     # Jasmine JavaScript Tests
     (r'^jasmine/', include(django_jasmine.urls)),
 
+    # Class-based views that may be overriden by apps
+    (r'', include(overridable_urls)),
 )
 
 # Handle static files from /static
