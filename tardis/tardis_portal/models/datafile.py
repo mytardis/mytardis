@@ -306,8 +306,8 @@ class DataFile(models.Model):
         Returns a traditional file-system-based file object
         that is a copy of the original data. The file is deleted
         when the context is destroyed.
-        :param directory:
-        :return:
+        :param directory: the directory in which to create the temp file
+        :return: the temporary file object
         """
         temp_file = NamedTemporaryFile(delete=True, dir=directory)
         try:
