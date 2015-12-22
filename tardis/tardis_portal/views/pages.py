@@ -19,6 +19,7 @@ from django.db.models import Q
 from django.http import HttpResponse, HttpResponseForbidden
 from django.shortcuts import render, redirect
 from django.views.decorators.cache import cache_page
+from django.views.generic.base import TemplateView
 
 from tardis.apps.push_to.apps import PushToConfig
 from tardis.apps.push_to.views import (
@@ -40,72 +41,81 @@ from tardis.tardis_portal.views.utils import (
 logger = logging.getLogger(__name__)
 
 
-def index_context(request):
-    """
-    Prepares the values to be passed to the default index view - a list of
-    experiments, respecting authorization rules.
+class IndexView(TemplateView):
+    template_name = 'tardis_portal/index.html'
 
-    :param request: a HTTP request object
-    :type request: :class:`django.http.HttpRequest`
-    :return: A dictionary of values for the view/template.
-    :rtype: dict
-    """
-    status = ''
-    limit = 8
-    c = {'status': status}
-    if request.user.is_authenticated():
-        private_experiments = Experiment.safe.owned_and_shared(request.user)\
-            .order_by('-update_time')[:limit]
-        c['private_experiments'] = private_experiments
-        if len(private_experiments) > 4:
-            limit = 4
-    public_experiments = Experiment.objects\
-        .exclude(public_access=Experiment.PUBLIC_ACCESS_NONE)\
-        .exclude(public_access=Experiment.PUBLIC_ACCESS_EMBARGO)\
-        .order_by('-update_time')[:limit]
-    c['public_experiments'] = public_experiments
-    c['RAPID_CONNECT_ENABLED'] = settings.RAPID_CONNECT_ENABLED
-    c['RAPID_CONNECT_LOGIN_URL'] = settings.RAPID_CONNECT_CONFIG[
-        'authnrequest_url']
+    def get_context_data(self, request, **kwargs):
+        """
+        Prepares the values to be passed to the default index view - a list of
+        experiments, respecting authorization rules.
 
-    return c
+        :param request: a HTTP request object
+        :type request: :class:`django.http.HttpRequest`
+        :return: A dictionary of values for the view/template.
+        :rtype: dict
+        """
+        c = super(IndexView, self).get_context_data(**kwargs)
+        status = ''
+        limit = 8
+        c['status'] = status
+        if request.user.is_authenticated():
+            private_experiments = Experiment.safe.owned_and_shared(
+                    request.user).order_by('-update_time')[:limit]
+            c['private_experiments'] = private_experiments
+            if len(private_experiments) > 4:
+                limit = 4
+        public_experiments = Experiment.objects.exclude(
+                public_access=Experiment.PUBLIC_ACCESS_NONE).exclude(
+                public_access=Experiment.PUBLIC_ACCESS_EMBARGO).order_by(
+                '-update_time')[:limit]
+        c['public_experiments'] = public_experiments
+        c['RAPID_CONNECT_ENABLED'] = settings.RAPID_CONNECT_ENABLED
+        c['RAPID_CONNECT_LOGIN_URL'] = settings.RAPID_CONNECT_CONFIG[
+            'authnrequest_url']
 
+        return c
 
-def index(request):
-    """
-    The index view, intended to render the front page of the MyTardis site
-    listing recent experiments.
+    def get(self, request, *args, **kwargs):
+        """
+        The index view, intended to render the front page of the MyTardis site
+        listing recent experiments.
 
-    This default view can be overriden by defining a dictionary INDEX_VIEWS in
-    settings which maps SITE_ID's or domain names to an alternative view
-    function (similar to the DATASET_VIEWS or EXPERIMENT_VIEWS overrides).
+        This default view can be overriden by defining a dictionary INDEX_VIEWS in
+        settings which maps SITE_ID's or domain names to an alternative view
+        class (similar to the DATASET_VIEWS or EXPERIMENT_VIEWS overrides).
 
-    :param request: a HTTP request object
-    :type request: :class:`django.http.HttpRequest`
-    :return: The Django response object
-    :rtype: :class:`django.http.HttpResponse`
-    """
-    index_view_overrides = getattr(settings, 'INDEX_VIEWS', {})
-    if index_view_overrides:
-        site = get_current_site(request)
-        # try to find an overriding view based on domain name or SITE_ID (int)
-        view = index_view_overrides.get(site.domain, None)
-        if not view:
-            view = index_view_overrides.get(site.id, None)
-        if view:
-            try:
-                view_fn = _resolve_view_method(view)
-                return view_fn(request)
-            except (ImportError or AttributeError) as e:
-                logger.error('custom view import failed. using default index'
-                             'view as fallback. view name: %s, error-msg: %s'
-                             % (repr(view_fn), e))
-                if settings.DEBUG:
-                    raise e
+        :param request: a HTTP request object
+        :type request: :class:`django.http.HttpRequest`
+        :return: The Django response object
+        :rtype: :class:`django.http.HttpResponse`
+        """
 
-    c = index_context(request)
-    return HttpResponse(render_response_index(request,
-                        'tardis_portal/index.html', c))
+        # TODO: Shift this behaviour into urls.py, where if
+        #       INDEX_VIEWS is defined for a site the class definition
+        #       provided by INDEX_VIEWS is used instead of this one
+
+        # index_view_overrides = getattr(settings, 'INDEX_VIEWS', {})
+        # if index_view_overrides:
+        #     site = get_current_site(request)
+        #     # try to find an overriding view based on domain name or SITE_ID (int)
+        #     view = index_view_overrides.get(site.domain, None)
+        #     if not view:
+        #         view = index_view_overrides.get(site.id, None)
+        #     if view:
+        #         try:
+        #             view_fn = _resolve_view_method(view)
+        #             return view_fn(request)
+        #         except (ImportError or AttributeError) as e:
+        #             logger.error('custom view import failed. using default index'
+        #                          'view as fallback. view name: %s, error-msg: %s'
+        #                          % (repr(view_fn), e))
+        #             if settings.DEBUG:
+        #                 raise e
+
+        c = self.get_context_data(request, **kwargs)
+
+        return HttpResponse(render_response_index(request,
+                            self.template_name, c))
 
 
 def about(request):
