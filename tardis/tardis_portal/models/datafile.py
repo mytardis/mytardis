@@ -313,6 +313,7 @@ class DataFile(models.Model):
         try:
             temp_file.write(self.file_object.read())
             temp_file.flush()
+            temp_file.seek(0, 0)
             yield temp_file
         finally:
             temp_file.close()
