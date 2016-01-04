@@ -42,6 +42,7 @@ from tardis.tardis_portal.api import (
 )
 from tardis.tardis_portal.forms import RegistrationForm
 from tardis.tardis_portal.views import IndexView
+from tardis.tardis_portal.views.pages import site_routed_view
 
 admin.autodiscover()
 
@@ -60,9 +61,17 @@ rapidconnect_urls = patterns(
     (r'^auth/jwt$', 'rcauth'),
 )
 
+index_site_mappings = getattr(settings, 'INDEX_VIEWS', {})
 overridable_urls = patterns(
         '',
-        url(r'^$', IndexView.as_view(), name='index')
+
+        # without site-based routing
+        # url(r'^$', IndexView.as_view(), name='index'),
+
+        # with site-based routing to alternative views defined in settings
+        url(r'^$', site_routed_view, {'_default_view': IndexView.as_view(),
+                                      '_site_mappings': index_site_mappings},
+            name='index'),
 )
 
 core_urls = patterns(

@@ -41,9 +41,110 @@ from tardis.tardis_portal.views.utils import (
 logger = logging.getLogger(__name__)
 
 
+def site_routed_view(request, _default_view, _site_mappings, *args, **kwargs):
+    """
+    Allows a view to be overriden based on the Site (eg domain) for the current
+    request. Takes a default fallback view (_default_view) and a dictionary
+    mapping Django Sites (domain name or int SITE_ID) to views. If the current
+    request matches a Site in the dictionary, that view is used instead of the
+    default.
+
+    The intention is to define {site: view} mappings in settings.py, and use
+    this wrapper view in urls.py to allow a single URL to be routed to different
+    views depending on the Site in the request.
+
+    :param request: a HTTP request object
+    :type request: :class:`django.http.HttpRequest`
+    :param _default_view: The default view if no Site in _site_mappings matches
+                          the current Site.
+    :type _default_view: types.FunctionType | str
+    :param _site_mappings: A dictionary mapping Django sites to views
+                          (sites are specified as either a domain name str or
+                           int SITE_ID).
+    :type _site_mappings: dict
+    :param args:
+    :type args:
+    :param kwargs:
+    :type kwargs:
+    :return: A view function
+    :rtype: types.FunctionType
+    """
+    view = None
+    if _site_mappings:
+        site = get_current_site(request)
+        # try to find an overriding view based on domain name or SITE_ID
+        # (int)
+        view = _site_mappings.get(site.domain, None)
+        if not view:
+            view = _site_mappings.get(site.id, None)
+    if view:
+        try:
+            view_fn = _resolve_view_method(view)
+            return view_fn(request, *args, **kwargs)
+        except (ImportError or AttributeError) as e:
+            logger.error('custom view import failed. using default index'
+                         'view as fallback. view name: %s, error-msg: %s'
+                         % (repr(view_fn), e))
+            if settings.DEBUG:
+                raise e
+    else:
+        view_fn = _resolve_view_method(_default_view)
+        return view_fn(request, *args, **kwargs)
+
+
+def class_to_view(class_based_view, request, *args, **kwargs):
+    """
+    A wrapper that returns the view function for a class-based view,
+    so that we can refer to it as a string in settings.py (or urls.py) rather
+    than importing the class directly (like MyViewClass.as_view()).
+    This is unfortunate, but apparently necessary since views can't be
+    reified until settings has been imported.
+
+    :param class_based_view: A Django class-based view
+    :type class_based_view: django.views.generic.base.View
+    :param request: a HTTP request object
+    :type request: :class:`django.http.HttpRequest`
+    :param args: Standard *args list idiom
+    :type args:
+    :param kwargs: Standard **kwargs dict idiom
+    :type kwargs:
+    :return: A view function
+    :rtype: types.FunctionType
+    """
+    return class_based_view.as_view()(request, *args, **kwargs)
+
+
+def use_rapid_connect(fn):
+    """
+    A decorator that adds AAF Rapid Connect settings to a get_context_data
+    method.
+
+    :param fn: A get_context_data function/method.
+    :type fn: types.FunctionType
+    :return: A get_context_data function that adds RAPID_CONNECT_* keys to its
+             output context.
+    :rtype: types.FunctionType
+    """
+
+    def add_rapid_connect_settings(cxt, *args, **kwargs):
+        c = fn(cxt, *args, **kwargs)
+
+        c['RAPID_CONNECT_ENABLED'] = getattr(settings,
+                                             'RAPID_CONNECT_ENABLED', False)
+
+        if c['RAPID_CONNECT_ENABLED']:
+            c['RAPID_CONNECT_LOGIN_URL'] = settings.getattr(
+                    settings.RAPID_CONNECT_CONFIG,
+                    'authnrequest_url')
+        return c
+
+    return add_rapid_connect_settings
+
+
 class IndexView(TemplateView):
     template_name = 'tardis_portal/index.html'
 
+    @use_rapid_connect
     def get_context_data(self, request, **kwargs):
         """
         Prepares the values to be passed to the default index view - a list of
@@ -69,9 +170,6 @@ class IndexView(TemplateView):
                 public_access=Experiment.PUBLIC_ACCESS_EMBARGO).order_by(
                 '-update_time')[:limit]
         c['public_experiments'] = public_experiments
-        c['RAPID_CONNECT_ENABLED'] = settings.RAPID_CONNECT_ENABLED
-        c['RAPID_CONNECT_LOGIN_URL'] = settings.RAPID_CONNECT_CONFIG[
-            'authnrequest_url']
 
         return c
 
@@ -82,35 +180,13 @@ class IndexView(TemplateView):
 
         This default view can be overriden by defining a dictionary INDEX_VIEWS in
         settings which maps SITE_ID's or domain names to an alternative view
-        class (similar to the DATASET_VIEWS or EXPERIMENT_VIEWS overrides).
+        function (similar to the DATASET_VIEWS or EXPERIMENT_VIEWS overrides).
 
         :param request: a HTTP request object
         :type request: :class:`django.http.HttpRequest`
         :return: The Django response object
         :rtype: :class:`django.http.HttpResponse`
         """
-
-        # TODO: Shift this behaviour into urls.py, where if
-        #       INDEX_VIEWS is defined for a site the class definition
-        #       provided by INDEX_VIEWS is used instead of this one
-
-        # index_view_overrides = getattr(settings, 'INDEX_VIEWS', {})
-        # if index_view_overrides:
-        #     site = get_current_site(request)
-        #     # try to find an overriding view based on domain name or SITE_ID (int)
-        #     view = index_view_overrides.get(site.domain, None)
-        #     if not view:
-        #         view = index_view_overrides.get(site.id, None)
-        #     if view:
-        #         try:
-        #             view_fn = _resolve_view_method(view)
-        #             return view_fn(request)
-        #         except (ImportError or AttributeError) as e:
-        #             logger.error('custom view import failed. using default index'
-        #                          'view as fallback. view name: %s, error-msg: %s'
-        #                          % (repr(view_fn), e))
-        #             if settings.DEBUG:
-        #                 raise e
 
         c = self.get_context_data(request, **kwargs)
 
@@ -160,15 +236,18 @@ def _resolve_view_method(view_function):
     Will raise ImportError or AttributeError if the module or
     view function don't exist, respectively.
 
-    :param view_function: A string representing the view.
-    :type view_function: str
+    :param view_function: A string representing the view, or a function itself
+    :type view_function: str | types.FunctionType
     :return: The view function
     :rtype: types.FunctionType
     """
-    x = view_function.split(".")
-    mod_name, fn_name = (".".join(x[:-1]), x[-1])
-    module = __import__(mod_name, fromlist=[fn_name])
-    fn = getattr(module, fn_name)
+    if isinstance(view_function, str):
+        x = view_function.split(".")
+        mod_name, fn_name = (".".join(x[:-1]), x[-1])
+        module = __import__(mod_name, fromlist=[fn_name])
+        fn = getattr(module, fn_name)
+    else:
+        fn = view_function
     return fn
 
 
