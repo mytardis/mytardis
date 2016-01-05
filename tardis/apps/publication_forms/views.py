@@ -224,7 +224,7 @@ def process_form(request):
         subject, message_content = email_pub_requires_authorisation(
             request.user.username,
             request.build_absolute_uri(
-                reverse('tardis.tardis_portal.views.view_experiment',
+                reverse('tardis_portal.view_experiment',
                         args=(publication.id,))),
             request.build_absolute_uri(
                 '/apps/publication-forms/approvals/'))
@@ -710,7 +710,7 @@ def approve_publication(request, publication, message=None):
 
         doi = None
         url = request.build_absolute_uri(
-            reverse('tardis.tardis_portal.views.view_experiment',
+            reverse('tardis_portal.view_experiment',
                     args=(publication.id,)))
         if getattr(settings, 'MODC_DOI_ENABLED',
                    default_settings.MODC_DOI_ENABLED):
@@ -732,7 +732,7 @@ def approve_publication(request, publication, message=None):
                                     string_value=doi.mint(
                                         publication.id,
                                         reverse(
-                                            'tardis.tardis_portal.views.view_experiment',
+                                            'tardis_portal.view_experiment',
                                                 args=(publication.id,)))
                                     ).save()
                 logger.info(

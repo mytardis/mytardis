@@ -25,7 +25,7 @@
 	    {% endif %}
 	  </th>
 	  <td> {{datafile.dataset.description}} </td>
-	  <td> <a href="{% url 'tardis.tardis_portal.views.view_experiment' datafile.dataset.experiment.id %}">{{datafile.dataset.experiment.title}}</a> </td>
+	  <td> <a href="{% url 'tardis_portal.view_experiment' datafile.dataset.experiment.id %}">{{datafile.dataset.experiment.title}}</a> </td>
 	</tr>
 	{% endfor %}
     </table>

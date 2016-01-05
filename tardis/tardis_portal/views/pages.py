@@ -251,132 +251,168 @@ def _resolve_view_method(view_function):
     return fn
 
 
-def view_experiment_context(request, experiment):
-    experiment_id = experiment.id
+class ExperimentView(TemplateView):
+    template_name = 'tardis_portal/view_experiment.html'
 
-    c = {}
-    c['experiment'] = experiment
-    c['has_write_permissions'] = \
-        authz.has_write_permissions(request, experiment_id)
-    c['has_download_permissions'] = \
-        authz.has_experiment_download_access(request, experiment_id)
-    if request.user.is_authenticated():
-        c['is_owner'] = authz.has_experiment_ownership(request, experiment_id)
-        c['has_read_or_owner_ACL'] = authz.has_read_or_owner_ACL(request,
-                                                                 experiment_id)
+    # TODO: Can me make this a generic function like site_routed_view
+    #       that will take an Experiment, Dataset or DataFile and
+    #       the associated routing list from settings ?
+    # eg
+    # schema_routed_view(request, model_instance,
+    #                    view_override_tuples, **kwargs)
+    def find_custom_view_override(self, request, experiment):
+        if hasattr(settings, "EXPERIMENT_VIEWS"):
+            namespaces = [ps.schema.namespace
+                          for ps in experiment.getParameterSets()]
+            for ns, view_fn in settings.EXPERIMENT_VIEWS:
+                ns_match = next((n for n in namespaces if re.match(ns, n)),
+                                None)
+                if ns_match:
+                    try:
+                        fn = _resolve_view_method(view_fn)
+                        return fn(request, experiment_id=experiment.id)
+                    except (ImportError, AttributeError) as e:
+                        logger.error(
+                            'custom view import failed. view name: %s, '
+                            'error-msg: %s' % (repr(view_fn), e))
+                        if settings.DEBUG:
+                            raise e
+        return None
 
-    # Enables UI elements for the publication form
-    c['pub_form_enabled'] = 'tardis.apps.publication_forms' in \
-                            settings.INSTALLED_APPS
+    def get_context_data(self, request, experiment, **kwargs):
+        """
+        Prepares the values to be passed to the default experiment view,
+        respecting authorization rules. My return a dict of values (the context)
+        or an HTTP response object for an error condition (eg Unauthorized)
 
-    # Enables UI elements for the push_to app
-    c['push_to_enabled'] = PushToConfig.name in settings.INSTALLED_APPS
-    if c['push_to_enabled']:
-        push_to_args = {
-            'experiment_id': experiment.pk
-        }
-        c['push_to_url'] = reverse(initiate_push_experiment,
-                                   kwargs=push_to_args)
+        :param request: a HTTP request object
+        :type request: :class:`django.http.HttpRequest`
+        :param experiment: the experiment model instance
+        :type experiment: tardis.tardis_portal.models.experiment.Experiment
+        :return: A dictionary of values for the view/template, or an
+                 HTTP response.
+        :rtype: dict | :class:`django.http.HttpResponse`
+        """
 
-    c['subtitle'] = experiment.title
-    c['nav'] = [{'name': 'Data', 'link': '/experiment/view/'},
-                {'name': experiment.title,
-                 'link': experiment.get_absolute_url()}]
+        c = super(ExperimentView, self).get_context_data(**kwargs)
 
-    if 'status' in request.POST:
-        c['status'] = request.POST['status']
-    if 'error' in request.POST:
-        c['error'] = request.POST['error']
-    if 'query' in request.GET:
-        c['search_query'] = SearchQueryString(request.GET['query'])
-    if 'search' in request.GET:
-        c['search'] = request.GET['search']
-    if 'load' in request.GET:
-        c['load'] = request.GET['load']
+        c['experiment'] = experiment
+        c['has_write_permissions'] = \
+            authz.has_write_permissions(request, experiment.id)
+        c['has_download_permissions'] = \
+            authz.has_experiment_download_access(request, experiment.id)
+        if request.user.is_authenticated():
+            c['is_owner'] = authz.has_experiment_ownership(request, experiment.id)
+            c['has_read_or_owner_ACL'] = authz.has_read_or_owner_ACL(request,
+                                                                     experiment.id)
 
-    _add_protocols_and_organizations(request, experiment, c)
+        # Enables UI elements for the publication form
+        c['pub_form_enabled'] = 'tardis.apps.publication_forms' in \
+                                settings.INSTALLED_APPS
 
-    default_apps = [
-        {'name': 'Description',
-         'viewfn': 'tardis.tardis_portal.views.experiment_description'},
-        {'name': 'Metadata',
-         'viewfn': 'tardis.tardis_portal.views.retrieve_experiment_metadata'},
-        {'name': 'Sharing', 'viewfn': 'tardis.tardis_portal.views.share'},
-        {'name': 'Transfer Datasets',
-         'viewfn': 'tardis.tardis_portal.views.experiment_dataset_transfer'},
-    ]
-    appnames = []
-    appurls = []
+        # Enables UI elements for the push_to app
+        c['push_to_enabled'] = PushToConfig.name in settings.INSTALLED_APPS
+        if c['push_to_enabled']:
+            push_to_args = {
+                'experiment_id': experiment.pk
+            }
+            c['push_to_url'] = reverse(initiate_push_experiment,
+                                       kwargs=push_to_args)
 
-    for app in getattr(settings, 'EXPERIMENT_APPS', default_apps):
+        c['subtitle'] = experiment.title
+        c['nav'] = [{'name': 'Data', 'link': '/experiment/view/'},
+                    {'name': experiment.title,
+                     'link': experiment.get_absolute_url()}]
+
+        if 'status' in request.POST:
+            c['status'] = request.POST['status']
+        if 'error' in request.POST:
+            c['error'] = request.POST['error']
+        if 'query' in request.GET:
+            c['search_query'] = SearchQueryString(request.GET['query'])
+        if 'search' in request.GET:
+            c['search'] = request.GET['search']
+        if 'load' in request.GET:
+            c['load'] = request.GET['load']
+
+        _add_protocols_and_organizations(request, experiment, c)
+
+        default_apps = [
+            {'name': 'Description',
+             'viewfn': 'tardis.tardis_portal.views.experiment_description'},
+            {'name': 'Metadata',
+             'viewfn': 'tardis.tardis_portal.views.retrieve_experiment_metadata'},
+            {'name': 'Sharing', 'viewfn': 'tardis.tardis_portal.views.share'},
+            {'name': 'Transfer Datasets',
+             'viewfn': 'tardis.tardis_portal.views.experiment_dataset_transfer'},
+        ]
+        appnames = []
+        appurls = []
+
+        for app in getattr(settings, 'EXPERIMENT_APPS', default_apps):
+            try:
+                appnames.append(app['name'])
+                if 'viewfn' in app:
+                    appurls.append(reverse(app['viewfn'], args=[experiment.id]))
+                elif 'url' in app:
+                    appurls.append(app['url'])
+            except:
+                logger.debug('error when loading default exp apps')
+
+        from tardis.urls import getTardisApps
+
+        for app in getTardisApps():
+            try:
+                appnames.append(
+                    sys.modules['%s.%s.settings'
+                                % (settings.TARDIS_APP_ROOT, app)].NAME)
+                appurls.append(
+                    reverse('%s.%s.views.index' % (settings.TARDIS_APP_ROOT,
+                                                   app), args=[experiment.id]))
+            except:
+                logger.debug("No tab for %s" % app)
+
+        c['apps'] = zip(appurls, appnames)
+
+        return c
+
+    @authz.experiment_access_required  # too complex # noqa
+    def get(self, request, *args, **kwargs):
+        """
+        View an existing experiment.
+
+        :param request: a HTTP Request instance
+        :type request: :class:`django.http.HttpRequest`
+        :param experiment_id: the ID of the experiment
+        :rtype: :class:`django.http.HttpResponse`
+        """
+
+        experiment_id = kwargs.get('experiment_id', None)
+        if experiment_id is None:
+            return return_response_error(request)
+
         try:
-            appnames.append(app['name'])
-            if 'viewfn' in app:
-                appurls.append(reverse(app['viewfn'], args=[experiment_id]))
-            elif 'url' in app:
-                appurls.append(app['url'])
-        except:
-            logger.debug('error when loading default exp apps')
+            experiment = Experiment.safe.get(request.user, experiment_id)
+        except PermissionDenied:
+            return return_response_error(request)
+        except Experiment.DoesNotExist:
+            return return_response_not_found(request)
 
-    from tardis.urls import getTardisApps
+        if not experiment:
+            return return_response_not_found(request)
 
-    for app in getTardisApps():
-        try:
-            appnames.append(
-                sys.modules['%s.%s.settings'
-                            % (settings.TARDIS_APP_ROOT, app)].NAME)
-            appurls.append(
-                reverse('%s.%s.views.index' % (settings.TARDIS_APP_ROOT,
-                                               app), args=[experiment_id]))
-        except:
-            logger.debug("No tab for %s" % app)
+        view_override = self.find_custom_view_override(request, experiment)
+        if view_override is not None:
+            return view_override
 
-    c['apps'] = zip(appurls, appnames)
+        c = self.get_context_data(request, experiment)
 
-    return c
+        template_name = kwargs.get('template_name', None)
+        if template_name is None:
+            template_name = self.template_name
 
-
-@authz.experiment_access_required  # too complex # noqa
-def view_experiment(request, experiment_id,
-                    template_name='tardis_portal/view_experiment.html'):
-
-    """
-    View an existing experiment.
-
-    :param request: a HTTP Request instance
-    :type request: :class:`django.http.HttpRequest`
-    :param experiment_id: the ID of the experiment
-    :type experiment_id: str | int
-    :param template_name: Path to the template to render
-    :type template_name: str
-    :rtype: :class:`django.http.HttpResponse`
-    """
-
-    try:
-        experiment = Experiment.safe.get(request.user, experiment_id)
-    except PermissionDenied:
-        return return_response_error(request)
-    except Experiment.DoesNotExist:
-        return return_response_not_found(request)
-
-    if hasattr(settings, "EXPERIMENT_VIEWS"):
-        namespaces = [ps.schema.namespace
-                      for ps in experiment.getParameterSets()]
-        for ns, view_fn in settings.EXPERIMENT_VIEWS:
-            ns_match = next((n for n in namespaces if re.match(ns, n)), None)
-            if ns_match:
-                try:
-                    fn = _resolve_view_method(view_fn)
-                    return fn(request, experiment_id=experiment_id)
-                except (ImportError, AttributeError) as e:
-                    logger.error('custom view import failed. view name: %s, '
-                                 'error-msg: %s' % (repr(view_fn), e))
-                    if settings.DEBUG:
-                        raise e
-
-    c = view_experiment_context(request, experiment)
-
-    return HttpResponse(render_response_index(request, template_name, c))
+        return HttpResponse(render_response_index(request,
+                                                  template_name, c))
 
 
 def view_dataset_context(request, dataset):
@@ -691,9 +727,8 @@ def create_experiment(request,
             acl.save()
 
             request.POST = {'status': "Experiment Created."}
-            return HttpResponseSeeAlso(reverse(
-                'tardis.tardis_portal.views.view_experiment',
-                args=[str(experiment.id)]) + "#created")
+            return HttpResponseSeeAlso(reverse('tardis_portal.view_experiment',
+                                       args=[str(experiment.id)]) + "#created")
 
         c['status'] = "Errors exist in form."
         c["error"] = 'true'
@@ -735,9 +770,9 @@ def edit_experiment(request, experiment_id,
             full_experiment.save_m2m()
 
             request.POST = {'status': "Experiment Saved."}
-            return HttpResponseSeeAlso(reverse(
-                'tardis.tardis_portal.views.view_experiment',
-                args=[str(experiment.id)]) + "#saved")
+            return HttpResponseSeeAlso(reverse('tardis_portal.view_experiment',
+                                               args=[str(experiment.id)]) +
+                                       "#saved")
 
         c['status'] = "Errors exist in form."
         c["error"] = 'true'

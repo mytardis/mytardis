@@ -59,7 +59,7 @@
 	      <div class="accordion-toggle" data-toggle="collapse"
 		   onclick="$('#collapse{{exp.id}}').collapse('toggle');" >
 		<strong><a class="pull-left explink"
-			   href="{% url 'tardis.tardis_portal.views.view_experiment' exp.id %}">{{ exp.title }}</a></strong>
+			   href="{% url 'tardis_portal.view_experiment' exp.id %}">{{ exp.title }}</a></strong>
 		<ul class="nav nav-pills badgelist">
 		  <li class="pull-right">
 		    {{ exp|experiment_public_access_badge }}
@@ -157,7 +157,7 @@
 	    <div class="accordion-toggle" data-toggle="collapse"
 		 onclick="$('#collapsepub{{exp.id}}').collapse('toggle');" >
 	      <strong><a class="pull-left explink"
-			 href="{% url 'tardis.tardis_portal.views.view_experiment' exp.id %}">{{ exp.title }}</a></strong>
+			 href="{% url 'tardis_portal.view_experiment' exp.id %}">{{ exp.title }}</a></strong>
 	      <ul class="nav nav-pills badgelist">
 		<li class="pull-right">
 		  {{ exp|experiment_datafiles_badge }}
