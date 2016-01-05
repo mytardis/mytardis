@@ -30,7 +30,7 @@
 #
 from django.contrib.auth.decorators import login_required
 from django.contrib.sessions.models import Session
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpRequest
 from django.http import HttpResponseRedirect
 from django.db.models import Q
 from django.conf import settings
@@ -260,10 +260,20 @@ def experiment_ownership_required(f):
 
 def experiment_access_required(f):
 
-    def wrap(request, *args, **kwargs):
+    def wrap(*args, **kwargs):
+        # We find the request as either the first or second argument.
+        # This is so it can be used for the 'get' method on class-based
+        # views (where the first argument is 'self') and also with traditional
+        # view functions (where the first argument is the request).
+        # TODO: An alternative would be to create a mixin for the ExperimentView
+        #       and similar classes, like AccessRequiredMixin
+        request = args[0]
+        if not isinstance(request, HttpRequest):
+            request = args[1]
+
         if not has_experiment_access(request, kwargs['experiment_id']):
             return return_response_error(request)
-        return f(request, *args, **kwargs)
+        return f(*args, **kwargs)
 
     wrap.__doc__ = f.__doc__
     wrap.__name__ = f.__name__

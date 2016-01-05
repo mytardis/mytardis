@@ -856,13 +856,14 @@ class ViewTemplateContextsTest(TestCase):
         """
         test some template context parameters for an experiment view
         """
-        from tardis.tardis_portal.views import view_experiment
+        from tardis.tardis_portal.views import ExperimentView
         from django.http import HttpRequest
         import sys
 
         # Default behavior
         views_module = flexmock(sys.modules['tardis.tardis_portal.views'])
         request = HttpRequest()
+        request.method = 'GET'
         request.user = self.user
         request.groups = []
         context = {'organization': ['test', 'test2'],
@@ -873,7 +874,8 @@ class ViewTemplateContextsTest(TestCase):
         views_module.should_call('render_response_index'). \
             with_args(_AnyMatcher(), "tardis_portal/view_experiment.html",
                       _ContextMatcher(context))
-        response = view_experiment(request, experiment_id=self.exp.id)
+        view_fn = ExperimentView.as_view()
+        response = view_fn(request, experiment_id=self.exp.id)
         self.assertEqual(response.status_code, 200)
 
         # Behavior with USER_AGENT_SENSING enabled and a request.user_agent
@@ -881,6 +883,7 @@ class ViewTemplateContextsTest(TestCase):
         try:
             setattr(settings, "USER_AGENT_SENSING", True)
             request = HttpRequest()
+            request.method = 'GET'
             request.user = self.user
             request.groups = []
             mock_agent = _MiniMock(os=_MiniMock(family="Macintosh"))
@@ -892,7 +895,8 @@ class ViewTemplateContextsTest(TestCase):
             views_module.should_call('render_response_index'). \
                 with_args(_AnyMatcher(), "tardis_portal/view_experiment.html",
                           _ContextMatcher(context))
-            response = view_experiment(request, experiment_id=self.exp.id)
+            view_fn = ExperimentView.as_view()
+            response = view_fn(request, experiment_id=self.exp.id)
             self.assertEqual(response.status_code, 200)
         finally:
             if saved_setting is not None:

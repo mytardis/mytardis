@@ -41,7 +41,7 @@ from tardis.tardis_portal.api import (
     UserResource,
 )
 from tardis.tardis_portal.forms import RegistrationForm
-from tardis.tardis_portal.views import IndexView
+from tardis.tardis_portal.views import IndexView, ExperimentView
 from tardis.tardis_portal.views.pages import site_routed_view
 
 admin.autodiscover()
@@ -103,7 +103,8 @@ experiment_lists = patterns(
 
 experiment_urls = patterns(
     'tardis.tardis_portal.views',
-    (r'^view/(?P<experiment_id>\d+)/$', 'view_experiment'),
+    url(r'^view/(?P<experiment_id>\d+)/$', ExperimentView.as_view(),
+        name='tardis_portal.view_experiment'),
     (r'^edit/(?P<experiment_id>\d+)/$', 'edit_experiment'),
     (r'^list', include(experiment_lists)),
     (r'^view/$', 'experiment_index'),  # Legacy URL

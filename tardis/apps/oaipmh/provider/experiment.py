@@ -334,7 +334,7 @@ class RifCsExperimentProvider(AbstractExperimentProvider):
                 return "%s://%s%s" % (
                     self.protocol,
                     site.domain,
-                    reverse('tardis.tardis_portal.views.view_experiment',
+                    reverse('tardis_portal.view_experiment',
                             args=[metadata.getMap().get('id')]))
 
             # registryObjects
