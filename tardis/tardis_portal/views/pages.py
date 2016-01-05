@@ -81,7 +81,7 @@ def site_routed_view(request, _default_view, _site_mappings, *args, **kwargs):
         try:
             view_fn = _resolve_view_method(view)
             return view_fn(request, *args, **kwargs)
-        except (ImportError or AttributeError) as e:
+        except (ImportError, AttributeError) as e:
             logger.error('custom view import failed. using default index'
                          'view as fallback. view name: %s, error-msg: %s'
                          % (repr(view_fn), e))
