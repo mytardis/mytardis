@@ -147,6 +147,14 @@ class ParameterSetManagerTestCase(TestCase):
         self.dataset_link_param.set_value(dataset_url)
         self.dataset_link_param.save()
 
+        # Create a ParameterName type LINK to an unresolvable (non-URL)
+        # free-text value
+        self.parametername_unresolvable_link = ParameterName(
+                schema=self.schema, name="freetext_link",
+                full_name="This parameter is a non-URL LINK",
+                data_type=ParameterName.LINK)
+        self.parametername_unresolvable_link.save()
+
     def tearDown(self):
         self.exp.delete()
         self.user.delete()
@@ -155,6 +163,7 @@ class ParameterSetManagerTestCase(TestCase):
         self.parametername3.delete()
         self.parametername_exp_link.delete()
         self.parametername_dataset_link.delete()
+        self.parametername_unresolvable_link.delete()
         self.schema.delete()
 
     def test_existing_parameterset(self):
@@ -252,7 +261,7 @@ class ParameterSetManagerTestCase(TestCase):
             parameterset=self.datafileparameterset2,
             name=self.parametername_dataset_link)
         # /dataset/1 - no trailing slash
-        dataset_url = self.dataset.get_absolute_url().rstrip('/')
+        dataset_url = self.dataset.get_absolute_url()
         self.dataset_link_param2.set_value(dataset_url)
         self.dataset_link_param2.save()
 
@@ -281,6 +290,33 @@ class ParameterSetManagerTestCase(TestCase):
         self.assertTrue(psm.get_param("exp_link").link_ct == exp_ct)
 
         self.assertTrue(psm.get_param("exp_link").link_gfk == self.exp)
+
+    def test_unresolvable_link_parameter(self):
+        """
+        Test that LINK Parameters that can't be resolved to a model (including
+        non-URL values) still work.
+        """
+        self.datafileparameterset3 = DatafileParameterSet(
+                schema=self.schema, datafile=self.datafile)
+        self.datafileparameterset3.save()
+
+        psm = ParameterSetManager(parameterset=self.datafileparameterset3)
+
+        # Create a Parameter of type LINK to an unresolvable (non-URL)
+        # free-text value
+        self.freetext_link_param = DatafileParameter(
+                parameterset=self.datafileparameterset3,
+                name=self.parametername_unresolvable_link)
+        self.freetext_link_param.set_value("FREETEXT_ID_123")
+        self.freetext_link_param.save()
+
+        # Check the free-text unresolvable (non-URL) link
+        self.assertTrue(psm.get_param("freetext_link").string_value ==
+                        "FREETEXT_ID_123")
+
+        self.assertTrue(psm.get_param("freetext_link").link_id is None)
+        self.assertTrue(psm.get_param("freetext_link").link_ct is None)
+        self.assertTrue(psm.get_param("freetext_link").link_gfk is None)
 
     def test_tz_naive_date_handling(self):
         """
