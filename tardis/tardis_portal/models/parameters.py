@@ -8,7 +8,7 @@ import dateutil.parser
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ObjectDoesNotExist
-from django.core.urlresolvers import reverse, resolve
+from django.core.urlresolvers import reverse, resolve, Resolver404
 from django.conf import settings
 from django.db import models
 from django.utils.safestring import mark_safe
@@ -454,7 +454,7 @@ class Parameter(models.Model):
 
             try:
                 # We detect experiment or dataset view URLs
-                # (eg, /experiment/view/12345 or /dataset/123)
+                # (eg, /experiment/view/12345/ or /api/v1/dataset/456)
                 # and extract values to populate link_ct and link_id. This
                 # covers two common cases, allowing LINK Parameters to be
                 # properly created via the REST API.
@@ -480,7 +480,7 @@ class Parameter(models.Model):
                     self.link_ct = ContentType.objects.get(
                         app_label='tardis_portal',
                         model=model_name.lower())
-            except (ValueError, IndexError):
+            except (ValueError, IndexError, Resolver404):
                 # If we were unable to successfully match the url to model
                 # instance - users of the model instance will need to
                 # fall back to using self.string_value instead of self.link_gfk
