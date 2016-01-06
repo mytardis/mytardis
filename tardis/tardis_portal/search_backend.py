@@ -105,7 +105,7 @@ class HighlightSearchBackend(ElasticsearchSearchBackend):
             if not self.silently_fail:
                 raise
 
-            self.log.error("Failed to query Solr using '%s': %s", query_string, e)
+            self.log.error("Failed to query ElasticSearch using '%s': %s", query_string, e)
             raw_results = EmptyResults()
 
         return self._process_results(raw_results, highlight=highlight, result_class=result_class)

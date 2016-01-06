@@ -34,13 +34,6 @@ search_backend.py
 .. moduleauthor::  Shaun O'Keefe  <shaun.okeefe@versi.edu.au>
 
 """
-#
-# Note: We're pulling this straight out of the solr_backend module.
-# ideally we should be pulling it out of the backend module,
-# but we're already cheating with the highlightSearchBackend.
-# This is a definite TODO once the search code has settled down a
-# bit
-#
 
 from haystack.backends.elasticsearch_backend import ElasticsearchSearchQuery
 
