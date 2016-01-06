@@ -377,8 +377,7 @@ DOWNLOAD_SPACE_SAFETY_MARGIN = 8388608
 # INSTALLED_APPS = filter(lambda x: x != 'registration', INSTALLED_APPS)
 
 # Settings for the single search box
-# Set HAYSTACK_SOLR_URL to the location of the SOLR server instance
-SINGLE_SEARCH_ENABLED = True
+SINGLE_SEARCH_ENABLED = False
 # flip this to turn on search:
 if SINGLE_SEARCH_ENABLED:
     HAYSTACK_CONNECTIONS = {

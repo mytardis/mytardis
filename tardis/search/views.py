@@ -259,19 +259,6 @@ class ExperimentSearchView(SearchView):
         return render_response_index(self.request, self.template, context)
 
 
-# @login_required
-# def single_search(request):
-#     search_query = FacetFixedSearchQuery(backend=HighlightSearchBackend())
-#     sqs = SearchQuerySet(query=search_query)
-#     sqs.highlight()
-#
-#     return ExperimentSearchView(
-#         template='search/search.html',
-#         searchqueryset=sqs,
-#         form_class=RawSearchForm,
-#     ).__call__(request)
-
-
 def retrieve_field_list(request):
 
     from tardis.search.search_indexes import DataFileIndex
@@ -297,7 +284,6 @@ def retrieve_field_list(request):
     return HttpResponse(fieldList)
 
 
-### begin new style search ###
 class SingleSearchView(SearchView):
     form_class = GroupedSearchForm
     template_name = 'search/search.html'
