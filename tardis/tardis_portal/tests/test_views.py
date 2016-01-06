@@ -908,12 +908,13 @@ class ViewTemplateContextsTest(TestCase):
         """
         test some context parameters for a dataset view
         """
-        from tardis.tardis_portal.views import view_dataset
+        from tardis.tardis_portal.views import DatasetView
         from django.http import HttpRequest
         import sys
 
         views_module = flexmock(sys.modules['tardis.tardis_portal.views'])
         request = HttpRequest()
+        request.method = 'GET'
         request.user = self.user
         request.groups = []
         context = {'default_organization': 'test',
@@ -921,7 +922,8 @@ class ViewTemplateContextsTest(TestCase):
         views_module.should_call('render_response_index'). \
             with_args(_AnyMatcher(), "tardis_portal/view_dataset.html",
                       _ContextMatcher(context))
-        response = view_dataset(request, dataset_id=self.dataset.id)
+        view_fn = DatasetView.as_view()
+        response = view_fn(request, dataset_id=self.dataset.id)
         self.assertEqual(response.status_code, 200)
 
         # Behavior with USER_AGENT_SENSING enabled and a request.user_agent
@@ -929,6 +931,7 @@ class ViewTemplateContextsTest(TestCase):
         try:
             setattr(settings, "USER_AGENT_SENSING", True)
             request = HttpRequest()
+            request.method = 'GET'
             request.user = self.user
             request.groups = []
             mock_agent = _MiniMock(os=_MiniMock(family="Macintosh"))
@@ -938,7 +941,8 @@ class ViewTemplateContextsTest(TestCase):
             views_module.should_call('render_response_index'). \
                 with_args(_AnyMatcher(), "tardis_portal/view_dataset.html",
                           _ContextMatcher(context))
-            response = view_dataset(request, dataset_id=self.dataset.id)
+            view_fn = DatasetView.as_view()
+            response = view_fn(request, dataset_id=self.dataset.id)
             self.assertEqual(response.status_code, 200)
         finally:
             if saved_setting is not None:

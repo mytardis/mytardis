@@ -307,10 +307,20 @@ def dataset_download_required(f):
 
 def dataset_access_required(f):
 
-    def wrap(request, *args, **kwargs):
+    def wrap(*args, **kwargs):
+        # We find the request as either the first or second argument.
+        # This is so it can be used for the 'get' method on class-based
+        # views (where the first argument is 'self') and also with traditional
+        # view functions (where the first argument is the request).
+        # TODO: An alternative would be to create a mixin for the DatasetView
+        #       and similar classes, like AccessRequiredMixin
+        request = args[0]
+        if not isinstance(request, HttpRequest):
+            request = args[1]
+
         if not has_dataset_access(request, kwargs['dataset_id']):
             return return_response_error(request)
-        return f(request, *args, **kwargs)
+        return f(*args, **kwargs)
 
     wrap.__doc__ = f.__doc__
     wrap.__name__ = f.__name__

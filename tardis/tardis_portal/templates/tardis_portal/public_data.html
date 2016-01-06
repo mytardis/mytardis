@@ -95,7 +95,7 @@
 		      <li class="nav-header dataset-list-header">Latest dataset in this experiment</li>
 		  {% endif %}
 		  <li>
-		      <a href="{% url 'tardis.tardis_portal.views.view_dataset' ds.id %}"><strong>{{ ds.description }}</strong></a>
+		      <a href="{% url 'tardis_portal.view_dataset' ds.id %}"><strong>{{ ds.description }}</strong></a>
 		  {% if exp.public_download_allowed %}
 		    {% for datafile in ds.get_images|slice:":5" %}
 		      {% if forloop.first %}

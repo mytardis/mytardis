@@ -79,7 +79,7 @@
 			{% endwith %}
 		      {% endif %}
 		      <li>
-			<a href="{% url 'tardis.tardis_portal.views.view_dataset' ds.id %}"><strong>{{ ds.description }}</strong></a>
+			<a href="{% url 'tardis_portal.view_dataset' ds.id %}"><strong>{{ ds.description }}</strong></a>
 			{% for datafile in ds.get_images|slice:":5" %}
 			  {% if forloop.first %}
 			    <ul class="thumbnails">
@@ -168,7 +168,7 @@
 		    {% endwith %}
 		  {% endif %}
 		  <li>
-		    <a href="{% url 'tardis.tardis_portal.views.view_dataset' ds.id %}"><strong>{{ ds.description }}</strong></a>
+		    <a href="{% url 'tardis_portal.view_dataset' ds.id %}"><strong>{{ ds.description }}</strong></a>
 		    {% if exp.public_download_allowed %}
 
 		    {% for datafile in ds.get_images|slice:":5" %}

@@ -92,6 +92,10 @@ def site_routed_view(request, _default_view, _site_mappings, *args, **kwargs):
         return view_fn(request, *args, **kwargs)
 
 
+# TODO: Could we instead add a @property to class-based
+#       views, view_function, which returned the result of .as_view(),
+#       allowing us to reference class-based views via a string in
+#       settings without requiring the use of this wrapper function ?
 def class_to_view(class_based_view, request, *args, **kwargs):
     """
     A wrapper that returns the view function for a class-based view,
@@ -194,6 +198,151 @@ class IndexView(TemplateView):
                             self.template_name, c))
 
 
+class DatasetView(TemplateView):
+    template_name = 'tardis_portal/view_dataset.html'
+
+    # TODO: Can me make this a generic function like site_routed_view
+    #       that will take an Experiment, Dataset or DataFile and
+    #       the associated routing list from settings ?
+    # eg
+    # schema_routed_view(request, model_instance,
+    #                    view_override_tuples, **kwargs)
+    def find_custom_view_override(self, request, dataset):
+        """
+        Determines if any custom view overrides have been defined in
+        settings.DATASET_VIEWS and returns the view function if a match
+        to one the schemas for the dataset is found.
+        (DATASET_VIEWS is a list of (schema_namespace, view_function) tuples).
+
+        :param request:
+        :type request:
+        :param dataset:
+        :type dataset:
+        :return:
+        :rtype:
+        """
+        if hasattr(settings, "DATASET_VIEWS"):
+            namespaces = [ps.schema.namespace
+                          for ps in dataset.getParameterSets()]
+            for ns, view_fn in settings.DATASET_VIEWS:
+                ns_match = next((n for n in namespaces if re.match(ns, n)),
+                                None)
+                if ns_match:
+                    try:
+                        fn = _resolve_view_method(view_fn)
+                        return fn(request, dataset_id=dataset.id)
+                    except (ImportError, AttributeError) as e:
+                        logger.error(
+                            'custom view import failed. view name: %s, '
+                            'error-msg: %s' % (repr(view_fn), e))
+                        if settings.DEBUG:
+                            raise e
+        return None
+
+    def get_context_data(self, request, dataset, **kwargs):
+        """
+        Prepares the values to be passed to the default dataset view,
+        respecting authorization rules. Returns a dict of values (the context).
+
+        :param request: a HTTP request object
+        :type request: :class:`django.http.HttpRequest`
+        :param dataset: the Dataset model instance
+        :type dataset: tardis.tardis_portal.models.dataset.Dataset
+        :return: A dictionary of values for the view/template.
+        :rtype: dict
+        """
+
+        def get_datafiles_page():
+            # pagination was removed by someone in the interface but not here.
+            # need to fix.
+            pgresults = 100
+
+            paginator = Paginator(dataset.datafile_set.all(), pgresults)
+
+            try:
+                page = int(request.GET.get('page', '1'))
+            except ValueError:
+                page = 1
+
+            # If page request is out of range (eg 9999), deliver last page of
+            # results.
+            try:
+                return paginator.page(page)
+            except (EmptyPage, InvalidPage):
+                return paginator.page(paginator.num_pages)
+
+        c = super(DatasetView, self).get_context_data(**kwargs)
+
+        dataset_id = dataset.id
+        upload_method = getattr(settings, "UPLOAD_METHOD", False)
+
+        c.update(
+            {'dataset': dataset,
+             'datafiles': get_datafiles_page(),
+             'parametersets': dataset.getParameterSets().exclude(
+                     schema__hidden=True),
+             'has_download_permissions': authz.has_dataset_download_access(
+                 request, dataset_id),
+             'has_write_permissions': authz.has_dataset_write(request,
+                                                              dataset_id),
+             'from_experiment': get_experiment_referer(request, dataset_id),
+             'other_experiments': authz.get_accessible_experiments_for_dataset(
+                 request,
+                 dataset_id),
+             'upload_method': upload_method,
+             'push_to_enabled': PushToConfig.name in settings.INSTALLED_APPS,
+             }
+        )
+
+        # Enables UI elements for the push_to app
+        if c['push_to_enabled']:
+            push_to_args = {
+                'dataset_id': dataset.pk
+            }
+            c['push_to_url'] = reverse(initiate_push_dataset,
+                                       kwargs=push_to_args)
+
+        _add_protocols_and_organizations(request, dataset, c)
+
+        return c
+
+    @authz.dataset_access_required  # too complex # noqa
+    def get(self, request, *args, **kwargs):
+        """
+        The index view, intended to render the front page of the MyTardis site
+        listing recent experiments.
+
+        This default view can be overriden by defining a dictionary INDEX_VIEWS in
+        settings which maps SITE_ID's or domain names to an alternative view
+        function (similar to the DATASET_VIEWS or EXPERIMENT_VIEWS overrides).
+
+        :param request: a HTTP request object
+        :type request: :class:`django.http.HttpRequest`
+        :return: The Django response object
+        :rtype: :class:`django.http.HttpResponse`
+        """
+
+        dataset_id = kwargs.get('dataset_id', None)
+        if dataset_id is None:
+            return return_response_error(request)
+
+        dataset = Dataset.objects.get(id=dataset_id)
+        if not dataset:
+            return return_response_not_found(request)
+
+        view_override = self.find_custom_view_override(request, dataset)
+        if view_override is not None:
+            return view_override
+
+        c = self.get_context_data(request, dataset, **kwargs)
+
+        template_name = kwargs.get('template_name', None)
+        if template_name is None:
+            template_name = self.template_name
+
+        return HttpResponse(render_response_index(request, template_name, c))
+
+
 def about(request):
 
     c = {'subtitle': 'About',
@@ -282,16 +431,14 @@ class ExperimentView(TemplateView):
     def get_context_data(self, request, experiment, **kwargs):
         """
         Prepares the values to be passed to the default experiment view,
-        respecting authorization rules. My return a dict of values (the context)
-        or an HTTP response object for an error condition (eg Unauthorized)
+        respecting authorization rules. Returns a dict of values (the context).
 
         :param request: a HTTP request object
         :type request: :class:`django.http.HttpRequest`
         :param experiment: the experiment model instance
         :type experiment: tardis.tardis_portal.models.experiment.Experiment
-        :return: A dictionary of values for the view/template, or an
-                 HTTP response.
-        :rtype: dict | :class:`django.http.HttpResponse`
+        :return: A dictionary of values for the view/template.
+        :rtype: dict
         """
 
         c = super(ExperimentView, self).get_context_data(**kwargs)
@@ -413,112 +560,6 @@ class ExperimentView(TemplateView):
 
         return HttpResponse(render_response_index(request,
                                                   template_name, c))
-
-
-def view_dataset_context(request, dataset):
-    """
-    Prepares a dictionary (the 'context') of values for the dataset view.
-
-    :param request: a HTTP request object
-    :type request: :class:`django.http.HttpRequest`
-    :param dataset: The Dataset model instance
-    :type dataset: tardis.tardis_portal.models.dataset.Dataset
-    :return: A dictionary of values to be passed to the template
-    :rtype: dict
-    """
-    def get_datafiles_page():
-        # pagination was removed by someone in the interface but not here.
-        # need to fix.
-        pgresults = 100
-
-        paginator = Paginator(dataset.datafile_set.all(), pgresults)
-
-        try:
-            page = int(request.GET.get('page', '1'))
-        except ValueError:
-            page = 1
-
-        # If page request (9999) is out of range, deliver last page of results.
-
-        try:
-            return paginator.page(page)
-        except (EmptyPage, InvalidPage):
-            return paginator.page(paginator.num_pages)
-
-    dataset_id = dataset.id
-    upload_method = getattr(settings, "UPLOAD_METHOD", False)
-
-    c = {
-        'dataset': dataset,
-        'datafiles': get_datafiles_page(),
-        'parametersets': dataset.getParameterSets()
-            .exclude(schema__hidden=True),
-        'has_download_permissions':
-            authz.has_dataset_download_access(request, dataset_id),
-        'has_write_permissions':
-            authz.has_dataset_write(request, dataset_id),
-        'from_experiment':
-            get_experiment_referer(request, dataset_id),
-        'other_experiments':
-            authz.get_accessible_experiments_for_dataset(request, dataset_id),
-        'upload_method': upload_method
-    }
-
-    # Enables UI elements for the push_to app
-    c['push_to_enabled'] = PushToConfig.name in settings.INSTALLED_APPS
-    if c['push_to_enabled']:
-        push_to_args = {
-            'dataset_id': dataset.pk
-        }
-        c['push_to_url'] = reverse(initiate_push_dataset, kwargs=push_to_args)
-
-    _add_protocols_and_organizations(request, dataset, c)
-
-    return c
-
-
-@authz.dataset_access_required  # too complex # noqa
-def view_dataset(request, dataset_id):
-    """
-    Displays a Dataset and associated information.
-
-    Shows a dataset its metadata and a list of associated files with
-    the option to show metadata of each file and ways to download those files.
-    With write permission this page also allows uploading and metadata
-    editing.
-    Optionally, if set up in settings.py, datasets of a certain type can
-    override the default view.
-    Settings example:
-    DATASET_VIEWS = [("http://dataset.example/schema",
-                      "tardis.apps.custom_views_app.views.my_view_dataset"),]
-
-    :param request: a HTTP Request instance
-    :type request: :class:`django.http.HttpRequest`
-    :param dataset_id: the ID of the dataset
-    :type dataset_id: str | int
-    :rtype: :class:`django.http.HttpResponse`
-    """
-
-    dataset = Dataset.objects.get(id=dataset_id)
-
-    if hasattr(settings, "DATASET_VIEWS"):
-        namespaces = [ps.schema.namespace
-                      for ps in dataset.getParameterSets()]
-        for ns, view_fn in settings.DATASET_VIEWS:
-            if ns in namespaces:
-                try:
-                    fn = _resolve_view_method(view_fn)
-                    return fn(request, dataset_id=dataset_id)
-                except (ImportError, AttributeError) as e:
-                    logger.error('custom view import failed. view name: %s, '
-                                 'error-msg: %s' % (repr(view_fn), e))
-                    if settings.DEBUG:
-                        raise e
-
-    c = view_dataset_context(request, dataset)
-
-    return HttpResponse(render_response_index(
-        request, 'tardis_portal/view_dataset.html', c))
 
 
 @cache_page(60 * 30)
@@ -799,7 +840,7 @@ def add_dataset(request, experiment_id):
             experiment = Experiment.objects.get(id=experiment_id)
             dataset.experiments.add(experiment)
             dataset.save()
-            return _redirect_303('tardis.tardis_portal.views.view_dataset',
+            return _redirect_303('tardis_portal.view_dataset',
                                  dataset.id)
     else:
         form = DatasetForm()
@@ -821,7 +862,7 @@ def edit_dataset(request, dataset_id):
         if form.is_valid():
             dataset.description = form.cleaned_data['description']
             dataset.save()
-            return _redirect_303('tardis.tardis_portal.views.view_dataset',
+            return _redirect_303('tardis_portal.view_dataset',
                                  dataset.id)
     else:
         form = DatasetForm(instance=dataset)

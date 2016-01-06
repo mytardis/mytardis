@@ -266,27 +266,32 @@ INSTALLED_APPS = (
 # Here you can define any custom view overrides provided by apps.
 # Index page overrides are associated with a Django 'Site', specified
 # by SITE_ID (an integer) or the domain name of the incoming request.
-# Overriding index views are encouraged to use the method
-# tardis.tardis_portal.views.pages.index_context as the basis
-# for the context dictionary in their response to ensure public/private
-# authorization is respected.
+# Overriding index views are encouraged to subclass
+# tardis.tardis_portal.views.pages.IndexView. However, in order to reference
+# this class-based view from settings you need to create a wrapper function
+# which returns MySubclassedView.as_view() (since class-based views cannot
+# be referenced by module path strings like traditional view functions).
+# eg
+# def my_custom_index_wrapper(request, *args, **kwargs):
+#     from tardis.tardis_portal.views.pages import class_to_view
+#     return class_to_view(MySubclassedView, request, *args, **kwargs):
 #
 # Dataset and Experiment view overrides are mapped via a Schema
 # namespace.
 #
 # INDEX_VIEWS = {
-#     1: 'tardis.apps.my_custom_app.views.index',
-#     'store.example.com': 'tardis.apps.another_custom_app.views.index'
+#     1: 'tardis.apps.my_custom_app.views.my_custom_index_wrapper',
+#     'store.example.com': 'tardis.apps.myapp.my_custom_index_wrapper'
 # }
 #
 # DATASET_VIEWS = [
 #     ('http://www.tardis.edu.au/schemas/dataset/my_example_schema',
-#      'tardis.apps.my_custom_app.views.custom_dataset_view'),
+#      'tardis.apps.my_custom_app.views.dataset_view_wrapper_fn'),
 # ]
 #
 # EXPERIMENT_VIEWS = [
 #     ('http://www.tardis.edu.au/schemas/expt/my_example_schema',
-#      'tardis.apps.my_custom_app.views.custom_expt_view'),
+#      'tardis.apps.my_custom_app.views.expt_view_wrapper_fn'),
 # ]
 
 JASMINE_TEST_DIRECTORY = path.abspath(path.join(path.dirname(__file__),

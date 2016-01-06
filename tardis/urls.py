@@ -41,7 +41,7 @@ from tardis.tardis_portal.api import (
     UserResource,
 )
 from tardis.tardis_portal.forms import RegistrationForm
-from tardis.tardis_portal.views import IndexView, ExperimentView
+from tardis.tardis_portal.views import IndexView, ExperimentView, DatasetView
 from tardis.tardis_portal.views.pages import site_routed_view
 
 admin.autodiscover()
@@ -166,7 +166,8 @@ accounts_urls = patterns(
 dataset_urls = patterns(
     'tardis.tardis_portal.views',
     (r'^(?P<dataset_id>\d+)/stage-files$', 'stage_files_to_dataset'),
-    (r'^(?P<dataset_id>\d+)$', 'view_dataset'),
+    url(r'^(?P<dataset_id>\d+)$', DatasetView.as_view(),
+        name='tardis_portal.view_dataset'),
     (r'^(?P<dataset_id>\d+)/edit$', 'edit_dataset'),
     (r'^(?P<dataset_id>\d+)/thumbnail$', 'dataset_thumbnail'),
 )
