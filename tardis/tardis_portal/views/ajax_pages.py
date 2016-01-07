@@ -27,7 +27,7 @@ from tardis.tardis_portal.shortcuts import return_response_error, \
     return_response_not_found, render_response_index
 from tardis.tardis_portal.staging import get_full_staging_path, staging_list
 from tardis.tardis_portal.util import render_public_access_badge
-from tardis.tardis_portal.views.pages import view_experiment
+from tardis.tardis_portal.views.pages import ExperimentView
 from tardis.tardis_portal.views.utils import _add_protocols_and_organizations
 
 logger = logging.getLogger(__name__)
@@ -92,7 +92,7 @@ def experiment_description(request, experiment_id):
 @never_cache
 @authz.experiment_access_required
 def experiment_datasets(request, experiment_id):
-    return view_experiment(
+    return ExperimentView.as_view()(
         request, experiment_id=experiment_id,
         template_name='tardis_portal/ajax/experiment_datasets.html')
 

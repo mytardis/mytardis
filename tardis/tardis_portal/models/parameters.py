@@ -410,13 +410,13 @@ class Parameter(models.Model):
         if not self.name.isLink():
             return None
         if isinstance(self.link_gfk, DataFile):
-            url = reverse('tardis.tardis_portal.views.view_dataset',
+            url = reverse('tardis_portal.view_dataset',
                           kwargs={'dataset_id': self.link_gfk.dataset.id})
         elif isinstance(self.link_gfk, Dataset):
-            url = reverse('tardis.tardis_portal.views.view_dataset',
+            url = reverse('tardis_portal.view_dataset',
                           kwargs={'dataset_id': self.link_id})
         elif isinstance(self.link_gfk, Experiment):
-            url = reverse('tardis.tardis_portal.views.view_experiment',
+            url = reverse('tardis_portal.view_experiment',
                           kwargs={'experiment_id': self.link_id})
         else:
             raise NotImplementedError

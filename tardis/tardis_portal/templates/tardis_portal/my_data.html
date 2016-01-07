@@ -59,7 +59,7 @@
 	      <div class="accordion-toggle" data-toggle="collapse"
 		   onclick="$('#collapse{{exp.id}}').collapse('toggle');" >
 		<strong><a class="pull-left explink"
-			   href="{% url 'tardis.tardis_portal.views.view_experiment' exp.id %}">{{ exp.title }}</a></strong>
+			   href="{% url 'tardis_portal.view_experiment' exp.id %}">{{ exp.title }}</a></strong>
 		<ul class="nav nav-pills badgelist">
 		  <li class="pull-right">
 		    {{ exp|experiment_public_access_badge }}
@@ -102,7 +102,7 @@
 		      <li class="nav-header dataset-list-header">Latest dataset in this experiment</li>
 		  {% endif %}
 		  <li>
-		    <a href="{% url 'tardis.tardis_portal.views.view_dataset' ds.id %}"><strong>{{ ds.description }}</strong></a>
+		    <a href="{% url 'tardis_portal.view_dataset' ds.id %}"><strong>{{ ds.description }}</strong></a>
 		    {% for datafile in ds.get_images|slice:":5" %}
 		      {% if forloop.first %}
 			<ul class="thumbnails">
@@ -157,7 +157,7 @@
 	    <div class="accordion-toggle" data-toggle="collapse"
 		 onclick="$('#collapsepub{{exp.id}}').collapse('toggle');" >
 	      <strong><a class="pull-left explink"
-			 href="{% url 'tardis.tardis_portal.views.view_experiment' exp.id %}">{{ exp.title }}</a></strong>
+			 href="{% url 'tardis_portal.view_experiment' exp.id %}">{{ exp.title }}</a></strong>
 	      <ul class="nav nav-pills badgelist">
 		<li class="pull-right">
 		  {{ exp|experiment_datafiles_badge }}
@@ -198,7 +198,7 @@
 		<li>
 		    <span class="pull-left" >
 		      Latest dataset in this experiment<br/>
-		      <a href="{% url 'tardis.tardis_portal.views.view_dataset' ds.id %}"><strong>{{ ds.description }}</strong></a>
+		      <a href="{% url 'tardis_portal.view_dataset' ds.id %}"><strong>{{ ds.description }}</strong></a>
 		    </span>
 		    {% for datafile in ds.get_images|slice:":5" %}
 		      {% if forloop.first %}

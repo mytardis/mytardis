@@ -126,7 +126,7 @@ class Experiment(models.Model):
     @models.permalink
     def get_absolute_url(self):
         """Return the absolute url to the current ``Experiment``"""
-        return ('tardis.tardis_portal.views.view_experiment', (),
+        return ('tardis_portal.view_experiment', (),
                 {'experiment_id': self.id})
 
     @models.permalink

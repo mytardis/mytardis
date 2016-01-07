@@ -3,7 +3,7 @@
 <tr>
   <th>
     <span{% if result.experiment_hit %} style="background-color: #FFFF00"{% endif %}>
-      <a href="{% url 'tardis.tardis_portal.views.view_experiment' key %}?search=true&query={{ search_query.url_safe_query }}">{{result.sr.experiment_title_stored}}</a>
+      <a href="{% url 'tardis_portal.view_experiment' key %}?search=true&query={{ search_query.url_safe_query }}">{{result.sr.experiment_title_stored}}</a>
     </span>
   </th>
 </tr>
@@ -25,14 +25,14 @@
 <tr>
   <td class="experiment-table_stats">
     <span{% if result.dataset_hit %} style="background-color: #FFFF00"{% endif %}>
-    <a href="{% url 'tardis.tardis_portal.views.view_experiment' key %}?search=true&query={{ search_query.url_safe_query }}#ui-tabs-2">
+    <a href="{% url 'tardis_portal.view_experiment' key %}?search=true&query={{ search_query.url_safe_query }}#ui-tabs-2">
 <strong> {{result.sr.object.experiment.datasets.all.count}} </strong>
 dataset{{result.sr.object.experiment.datasets.all.count|pluralize }}</strong>
 </a>
     </span>
     containing
     <span{% if result.datafile_hit %} style="background-color: #FFFF00"{% endif %}>
-    <a href="{% url 'tardis.tardis_portal.views.view_experiment' key %}?search=true&query={{ search_query.url_safe_query }}#ui-tabs-2">
+    <a href="{% url 'tardis_portal.view_experiment' key %}?search=true&query={{ search_query.url_safe_query }}#ui-tabs-2">
 <strong>{{ result.sr.experiment_id_stored|experiment_file_count }}</strong>
 file{{ result.sr.experiment_id_stored|experiment_file_count|pluralize }}
 </a>

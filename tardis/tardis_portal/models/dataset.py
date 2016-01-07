@@ -67,7 +67,7 @@ class Dataset(models.Model):
     @models.permalink
     def get_absolute_url(self):
         """Return the absolute url to the current ``Dataset``"""
-        return ('tardis.tardis_portal.views.view_dataset', (),
+        return ('tardis_portal.view_dataset', (),
                 {'dataset_id': self.id})
 
     def get_download_urls(self):

@@ -41,6 +41,8 @@ from tardis.tardis_portal.api import (
     UserResource,
 )
 from tardis.tardis_portal.forms import RegistrationForm
+from tardis.tardis_portal.views import IndexView, ExperimentView, DatasetView
+from tardis.tardis_portal.views.pages import site_routed_view
 
 admin.autodiscover()
 
@@ -59,9 +61,21 @@ rapidconnect_urls = patterns(
     (r'^auth/jwt$', 'rcauth'),
 )
 
+index_site_mappings = getattr(settings, 'INDEX_VIEWS', {})
+overridable_urls = patterns(
+        '',
+
+        # without site-based routing
+        # url(r'^$', IndexView.as_view(), name='index'),
+
+        # with site-based routing to alternative views defined in settings
+        url(r'^$', site_routed_view, {'_default_view': IndexView.as_view(),
+                                      '_site_mappings': index_site_mappings},
+            name='index'),
+)
+
 core_urls = patterns(
     'tardis.tardis_portal.views',
-    (r'^$', 'index'),
     url(r'^site-settings.xml/$', 'site_settings', name='tardis-site-settings'),
     url(r'^mydata/$', 'my_data', name='mydata'),
     url(r'^public_data/', 'public_data', name='public_data'),
@@ -89,7 +103,8 @@ experiment_lists = patterns(
 
 experiment_urls = patterns(
     'tardis.tardis_portal.views',
-    (r'^view/(?P<experiment_id>\d+)/$', 'view_experiment'),
+    url(r'^view/(?P<experiment_id>\d+)/$', ExperimentView.as_view(),
+        name='tardis_portal.view_experiment'),
     (r'^edit/(?P<experiment_id>\d+)/$', 'edit_experiment'),
     (r'^list', include(experiment_lists)),
     (r'^view/$', 'experiment_index'),  # Legacy URL
@@ -150,7 +165,8 @@ accounts_urls = patterns(
 dataset_urls = patterns(
     'tardis.tardis_portal.views',
     (r'^(?P<dataset_id>\d+)/stage-files$', 'stage_files_to_dataset'),
-    (r'^(?P<dataset_id>\d+)$', 'view_dataset'),
+    url(r'^(?P<dataset_id>\d+)$', DatasetView.as_view(),
+        name='tardis_portal.view_dataset'),
     (r'^(?P<dataset_id>\d+)/edit$', 'edit_dataset'),
     (r'^(?P<dataset_id>\d+)/thumbnail$', 'dataset_thumbnail'),
 )
@@ -415,6 +431,8 @@ urlpatterns = patterns(
     # Jasmine JavaScript Tests
     (r'^jasmine/', include(django_jasmine.urls)),
 
+    # Class-based views that may be overriden by apps
+    (r'', include(overridable_urls)),
 )
 
 # Handle static files from /static

@@ -35,7 +35,7 @@
 		  <div class="accordion-toggle" data-toggle="collapse"  data-parent="#experiments"
 		       onclick="$('#collapse{{exp.id}}').collapse('toggle');" >
 		    <strong><a class="pull-left explink"
-			       href="{% url 'tardis.tardis_portal.views.view_experiment' exp.id %}">{{ exp.title }}</a></strong>
+			       href="{% url 'tardis_portal.view_experiment' exp.id %}">{{ exp.title }}</a></strong>
 		    <ul class="nav nav-pills badgelist">
 		      <li class="pull-right">
 			{{ exp|experiment_public_access_badge }}
@@ -79,7 +79,7 @@
 			{% endwith %}
 		      {% endif %}
 		      <li>
-			<a href="{% url 'tardis.tardis_portal.views.view_dataset' ds.id %}"><strong>{{ ds.description }}</strong></a>
+			<a href="{% url 'tardis_portal.view_dataset' ds.id %}"><strong>{{ ds.description }}</strong></a>
 			{% for datafile in ds.get_images|slice:":5" %}
 			  {% if forloop.first %}
 			    <ul class="thumbnails">
@@ -123,7 +123,7 @@
 		 data-toggle="collapse"  data-parent="#experiments"
 		 onclick="$('#collapsepub{{exp.id}}').collapse('toggle');" >
 	      <strong><a class="pull-left explink"
-			 href="{% url 'tardis.tardis_portal.views.view_experiment' exp.id %}">{{ exp.title }}</a></strong>
+			 href="{% url 'tardis_portal.view_experiment' exp.id %}">{{ exp.title }}</a></strong>
 	      <ul class="nav nav-pills badgelist">
 		<li class="pull-right">
 		  {{ exp|experiment_datafiles_badge }}
@@ -168,7 +168,7 @@
 		    {% endwith %}
 		  {% endif %}
 		  <li>
-		    <a href="{% url 'tardis.tardis_portal.views.view_dataset' ds.id %}"><strong>{{ ds.description }}</strong></a>
+		    <a href="{% url 'tardis_portal.view_dataset' ds.id %}"><strong>{{ ds.description }}</strong></a>
 		    {% if exp.public_download_allowed %}
 
 		    {% for datafile in ds.get_images|slice:":5" %}

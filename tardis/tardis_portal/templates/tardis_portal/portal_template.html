@@ -88,11 +88,11 @@
             <span class="icon-bar"></span>
           </a>
           {% block site_brand %}
-          <span class="brand"><a href="{% url 'tardis.tardis_portal.views.index' %}">{{ site_title|default:'MyTardis' }}</a></span>
+          <span class="brand"><a href="{% url 'index' %}">{{ site_title|default:'MyTardis' }}</a></span>
           {% endblock %}
           <div class="nav-collapse">
             <ul class="nav">
-              <li><a href="{% url 'tardis.tardis_portal.views.index' %}">Home</a></li>
+              <li><a href="{% url 'index' %}">Home</a></li>
               <li><a href="{% url 'tardis.tardis_portal.views.about' %}">About</a></li>
               <li><a href="{% url 'tardis.tardis_portal.views.my_data' %}">My Data</a></li>
               <li><a href="{% url 'tardis.tardis_portal.views.public_data' %}">Public Data</a></li>

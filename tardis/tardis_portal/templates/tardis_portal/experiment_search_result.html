@@ -3,7 +3,7 @@
   <td>
     <h4>
       <a class="experiment-link"
-         href="{% url 'tardis.tardis_portal.views.view_experiment' result.sr.pk %}#description">
+         href="{% url 'tardis_portal.view_experiment' result.sr.pk %}#description">
          {{result.sr.title}}
       </a>
       {% if result.experiment_hit %}
@@ -23,7 +23,7 @@
 {% endif%}
     <p class="experiment-table_stats">
       <span>
-        <a href="{% url 'tardis.tardis_portal.views.view_experiment' result.sr.pk %}">
+        <a href="{% url 'tardis_portal.view_experiment' result.sr.pk %}">
         <strong> {{result.sr.datasets.all.count}} </strong>
         dataset{{result.sr.datasets.all.count|pluralize }}
         </a>
