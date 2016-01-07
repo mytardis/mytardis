@@ -19,7 +19,7 @@ from django.db.models import Q
 from django.http import HttpResponse, HttpResponseForbidden
 from django.shortcuts import render, redirect
 from django.views.decorators.cache import cache_page
-from django.views.generic.base import TemplateView
+from django.views.generic.base import TemplateView, View
 
 from tardis.apps.push_to.apps import PushToConfig
 from tardis.apps.push_to.views import (
@@ -74,12 +74,11 @@ def site_routed_view(request, _default_view, _site_mappings, *args, **kwargs):
         site = get_current_site(request)
         # try to find an overriding view based on domain name or SITE_ID
         # (int)
-        view = _site_mappings.get(site.domain, None)
-        if not view:
-            view = _site_mappings.get(site.id, None)
+        view = _site_mappings.get(site.domain, None) or \
+            _site_mappings.get(site.id, None)
     if view:
         try:
-            view_fn = _resolve_view_method(view)
+            view_fn = _resolve_view(view)
             return view_fn(request, *args, **kwargs)
         except (ImportError, AttributeError) as e:
             logger.error('custom view import failed. using default index'
@@ -87,35 +86,8 @@ def site_routed_view(request, _default_view, _site_mappings, *args, **kwargs):
                          % (repr(view_fn), e))
             if settings.DEBUG:
                 raise e
-    else:
-        view_fn = _resolve_view_method(_default_view)
-        return view_fn(request, *args, **kwargs)
-
-
-# TODO: Could we instead add a @property to class-based
-#       views, view_function, which returned the result of .as_view(),
-#       allowing us to reference class-based views via a string in
-#       settings without requiring the use of this wrapper function ?
-def class_to_view(class_based_view, request, *args, **kwargs):
-    """
-    A wrapper that returns the view function for a class-based view,
-    so that we can refer to it as a string in settings.py (or urls.py) rather
-    than importing the class directly (like MyViewClass.as_view()).
-    This is unfortunate, but apparently necessary since views can't be
-    reified until settings has been imported.
-
-    :param class_based_view: A Django class-based view
-    :type class_based_view: django.views.generic.base.View
-    :param request: a HTTP request object
-    :type request: :class:`django.http.HttpRequest`
-    :param args: Standard *args list idiom
-    :type args:
-    :param kwargs: Standard **kwargs dict idiom
-    :type kwargs:
-    :return: A view function
-    :rtype: types.FunctionType
-    """
-    return class_based_view.as_view()(request, *args, **kwargs)
+    view_fn = _resolve_view(_default_view)
+    return view_fn(request, *args, **kwargs)
 
 
 def use_rapid_connect(fn):
@@ -229,7 +201,7 @@ class DatasetView(TemplateView):
                                 None)
                 if ns_match:
                     try:
-                        fn = _resolve_view_method(view_fn)
+                        fn = _resolve_view(view_fn)
                         return fn(request, dataset_id=dataset.id)
                     except (ImportError, AttributeError) as e:
                         logger.error(
@@ -374,13 +346,14 @@ def my_data(request):
         request, 'tardis_portal/my_data.html', c))
 
 
-def _resolve_view_method(view_function):
+def _resolve_view(view_object_or_string):
     """
-    Takes a string representing a 'module.app.view' function,
+    Takes a string representing a 'module.app.view' function or View class,
     imports the module and returns the view function, eg
     'tardis.apps.my_custom_app.views.my_special_view' will
     return the my_special_view function defined in views.py in
     that app.
+    Auto detects class-based views.
 
     Will raise ImportError or AttributeError if the module or
     view function don't exist, respectively.
@@ -390,14 +363,16 @@ def _resolve_view_method(view_function):
     :return: The view function
     :rtype: types.FunctionType
     """
-    if isinstance(view_function, str):
-        x = view_function.split(".")
-        mod_name, fn_name = (".".join(x[:-1]), x[-1])
-        module = __import__(mod_name, fromlist=[fn_name])
-        fn = getattr(module, fn_name)
+    if isinstance(view_object_or_string, basestring):
+        x = view_object_or_string.split('.')
+        obj_path, obj_name = ('.'.join(x[:-1]), x[-1])
+        module = __import__(obj_path, fromlist=[obj_name])
+        obj = getattr(module, obj_name)
     else:
-        fn = view_function
-    return fn
+        obj = view_object_or_string
+    if isinstance(obj, View):
+        return obj.as_view()
+    return obj
 
 
 class ExperimentView(TemplateView):
@@ -418,7 +393,7 @@ class ExperimentView(TemplateView):
                                 None)
                 if ns_match:
                     try:
-                        fn = _resolve_view_method(view_fn)
+                        fn = _resolve_view(view_fn)
                         return fn(request, experiment_id=experiment.id)
                     except (ImportError, AttributeError) as e:
                         logger.error(

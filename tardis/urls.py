@@ -61,17 +61,12 @@ rapidconnect_urls = patterns(
     (r'^auth/jwt$', 'rcauth'),
 )
 
-index_site_mappings = getattr(settings, 'INDEX_VIEWS', {})
 overridable_urls = patterns(
-        '',
-
-        # without site-based routing
-        # url(r'^$', IndexView.as_view(), name='index'),
-
-        # with site-based routing to alternative views defined in settings
-        url(r'^$', site_routed_view, {'_default_view': IndexView.as_view(),
-                                      '_site_mappings': index_site_mappings},
-            name='index'),
+    '',
+    url(r'^$', site_routed_view, {'_default_view': IndexView.as_view(),
+                                  '_site_mappings':
+                                      getattr(settings, 'INDEX_VIEWS', {})},
+        name='index'),
 )
 
 core_urls = patterns(
