@@ -1,16 +1,19 @@
 # pylint: disable=R0204
 from django.conf import settings
-from haystack.backends.solr_backend import SearchBackend
+from haystack.backends.elasticsearch_backend import ElasticsearchSearchBackend
 from haystack.backends import EmptyResults
 from haystack.constants import DJANGO_CT
 from haystack.exceptions import MissingDependency
 
 try:
-    from pysolr import SolrError
+    from elasticsearch.exceptions import ElasticsearchException
 except ImportError:
-    raise MissingDependency("The 'solr' backend requires the installation of 'pysolr'. Please refer to the documentation.")
+    raise MissingDependency(
+        "The 'elasticsearch' backend requires the installation of "
+        "'elasticsearch'. Please refer to the documentation.")
 
-class HighlightSearchBackend(SearchBackend):
+
+class HighlightSearchBackend(ElasticsearchSearchBackend):
 
     def search(self, query_string, sort_by=None, start_offset=0, end_offset=None,
                fields='', highlight=False, facets=None, date_facets=None, query_facets=None,
@@ -98,11 +101,11 @@ class HighlightSearchBackend(SearchBackend):
 
         try:
             raw_results = self.conn.search(query_string, **kwargs)
-        except (IOError, SolrError), e:
+        except (IOError, ElasticsearchException), e:
             if not self.silently_fail:
                 raise
 
-            self.log.error("Failed to query Solr using '%s': %s", query_string, e)
+            self.log.error("Failed to query ElasticSearch using '%s': %s", query_string, e)
             raw_results = EmptyResults()
 
         return self._process_results(raw_results, highlight=highlight, result_class=result_class)

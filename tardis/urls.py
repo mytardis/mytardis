@@ -42,7 +42,6 @@ from tardis.tardis_portal.api import (
 )
 from tardis.tardis_portal.forms import RegistrationForm
 
-
 admin.autodiscover()
 
 logger = logging.getLogger(__name__)
@@ -94,7 +93,6 @@ experiment_urls = patterns(
     (r'^edit/(?P<experiment_id>\d+)/$', 'edit_experiment'),
     (r'^list', include(experiment_lists)),
     (r'^view/$', 'experiment_index'),  # Legacy URL
-    (r'^search/$', 'search_experiment'),
     (r'^create/$', 'create_experiment'),
     (r'^control_panel/(?P<experiment_id>\d+)/access_list/add/user/'
      '(?P<username>[\w\-][\w\-\.]+(@[\w\-][\w\-\.]+[a-zA-Z]{1,4})*)/$',
@@ -169,7 +167,6 @@ iiif_urls = patterns(
 
 datafile_urls = patterns(
     '',
-    (r'^search/$', 'tardis.tardis_portal.views.search_datafile'),
     url(r'^view/(?P<datafile_id>\d+)/$',
         'tardis.tardis_portal.download.view_datafile',
         name="view_datafile"),
@@ -218,7 +215,6 @@ ajax_urls = patterns(
         'add_dataset_par'),
     (r'^add_experiment_parameters/(?P<experiment_id>\d+)/$',
         'add_experiment_par'),
-    (r'^parameter_field_list/$', 'retrieve_field_list'),
     (r'^experiment/(?P<experiment_id>\d+)/rights$', 'choose_rights'),
     (r'^experiment/(?P<experiment_id>\d+)/share$', 'share'),
     (r'^experiment/(?P<experiment_id>\d+)/dataset-transfer$',
@@ -358,7 +354,6 @@ for app in getTardisApps():
                              include('%s.%s.urls' %
                                      (settings.TARDIS_APP_ROOT, app))))
 urlpatterns = patterns(
-    # (r'^search/quick/$', 'tardis.tardis_portal.views.search_quick'),
     '',
     (r'', include(core_urls)),
     # API views
@@ -409,7 +404,7 @@ urlpatterns = patterns(
     (r'^upload/(?P<dataset_id>\d+)/$', 'tardis.tardis_portal.views.upload'),
 
     # Search
-    (r'^search/$', 'tardis.tardis_portal.views.single_search'),
+    url(r'^search/', include('tardis.search.urls')),
 
     # Apps
     (r'^apps/', include(apppatterns)),

@@ -132,29 +132,41 @@ class StorageBox(models.Model):
     @classmethod
     def get_default_storage(cls, location=None, user=None):
         '''
-        gets first storage box or get local storage box with given base
+        gets default storage box or get local storage box with given base
         location or create one if it doesn't exist.
 
-        get largest free space one
+        policies:
+        Have a StorageBoxAttribute: key='default', value=True
+        find a storage box where location is DEFAULT_STORAGE_BASE_DIR
+        create a default storage box at DEFAULT_STORAGE_BASE_DIR
+        lowest id storage box is default
+        no storage box defined, use hard coded default for now  TODO: consider removing this
 
-        test for authorisation
+        Would be nice: get largest free space one, test for authorisation
         '''
-        if location is not None:
+        if location is None:
+            try:
+                # TODO: test for authorisation,
+                # e.g. user.has_perm('storage_box.write', box)
+                # TODO: check for free space, e.g. run SQL as on stats page to
+                # get total size on box,
+                # compute max(list, key=lambda x:max_size-size)
+                return StorageBox.objects.get(attributes__key='default',
+                                              attributes__value='True')
+            except StorageBox.DoesNotExist:
+                pass  # continue with other options
+        default_location = getattr(settings, "DEFAULT_STORAGE_BASE_DIR", None)
+        if location is not None or default_location is not None:
+            box_location = location or default_location
             try:
                 return StorageBox.objects.get(options__key='location',
-                                              options__value=location)
+                                              options__value=box_location)
             except StorageBox.DoesNotExist:
-                return StorageBox.create_local_box(location)
+                return StorageBox.create_local_box(box_location)
         try:
-            # TODO: test for authorisation,
-            # e.g. user.has_perm('storage_box.write', box)
-            # TODO: check for free space, e.g. run SQL as on stats page to
-            # get total size on box,
-            # compute max(list, key=lambda x:max_size-size)
-            return StorageBox.objects.all()[0]
+            return StorageBox.objects.all().order_by('id')[0]
         except (DatabaseError, IndexError):
-            default_location = getattr(settings, "DEFAULT_STORAGE_BASE_DIR",
-                                       '/var/lib/mytardis/store')
+            default_location = '/var/lib/mytardis/store'
             return StorageBox.create_local_box(default_location)
 
     @classmethod
