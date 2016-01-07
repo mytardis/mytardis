@@ -415,14 +415,7 @@ class ACLAuthorization(Authorization):
         elif isinstance(bundle.obj, DatasetParameter):
             return False
         elif isinstance(bundle.obj, DataFile):
-            dataset = DatasetResource.get_via_uri(DatasetResource(),
-                                                  bundle.data['dataset'],
-                                                  bundle.request)
-            return all([
-                bundle.request.user.has_perm('tardis_portal.change_dataset'),
-                bundle.request.user.has_perm('tardis_portal.change_datafile'),
-                has_dataset_write(bundle.request, dataset.id),
-            ])
+            return bundle.request.user.has_perm('tardis_portal.change_datafile')
         elif isinstance(bundle.obj, DatafileParameterSet):
             return False
         elif isinstance(bundle.obj, DatafileParameter):
