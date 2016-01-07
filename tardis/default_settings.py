@@ -106,7 +106,7 @@ For security reasons this needs to be set to your hostname and/or IP
 address in production.
 '''
 
-SITE_TITLE = None
+SITE_TITLE = 'MyTardis'
 '''
 customise the title of your site
 '''
