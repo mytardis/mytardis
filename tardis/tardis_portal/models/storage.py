@@ -213,7 +213,7 @@ class StorageBoxOption(models.Model):
         return '-> '.join([
             self.storage_box.__unicode__(),
             ': '.join([self.key or 'no key',
-                       self.unpickled_value or 'no value'])
+                       str(self.unpickled_value) or 'no value'])
         ])
 
     class Meta:
