@@ -7,7 +7,7 @@ import dateutil.parser
 
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
-from django.core.exceptions import ObjectDoesNotExist
+from django.core.exceptions import ObjectDoesNotExist, SuspiciousOperation
 from django.core.urlresolvers import reverse, resolve, Resolver404
 from django.conf import settings
 from django.db import models
@@ -450,6 +450,8 @@ class Parameter(models.Model):
         elif self.name.isLink():
             # Always store the raw value as a string, even if setting
             # the GenericForeignKey via link_id/link_ct
+            if str(value) == '' or value is None:
+                return
             self.string_value = unicode(value)
 
             try:
@@ -482,9 +484,10 @@ class Parameter(models.Model):
                         model=model_name.lower())
             except (ValueError, IndexError, Resolver404):
                 # If we were unable to successfully match the url to model
-                # instance - users of the model instance will need to
-                # fall back to using self.string_value instead of self.link_gfk
-                pass
+                # instance, return an error. For any URL the URL Parameter
+                # type should be used.
+                raise SuspiciousOperation('Link parameter could not be set '
+                                          'from string: %s' % str(value))
         else:
             self.string_value = unicode(value)
 
