@@ -83,7 +83,7 @@ def site_routed_view(request, _default_view, _site_mappings, *args, **kwargs):
         except (ImportError, AttributeError) as e:
             logger.error('custom view import failed. using default index'
                          'view as fallback. view name: %s, error-msg: %s'
-                         % (repr(view_fn), e))
+                         % (repr(view), e))
             if settings.DEBUG:
                 raise e
     view_fn = _resolve_view(_default_view)
@@ -358,8 +358,9 @@ def _resolve_view(view_object_or_string):
     Will raise ImportError or AttributeError if the module or
     view function don't exist, respectively.
 
-    :param view_function: A string representing the view, or a function itself
-    :type view_function: str | types.FunctionType
+    :param view_object_or_string: A string representing the view, or a function
+                                  itself
+    :type view_object_or_string: basestring | types.FunctionType
     :return: The view function
     :rtype: types.FunctionType
     """
@@ -370,7 +371,7 @@ def _resolve_view(view_object_or_string):
         obj = getattr(module, obj_name)
     else:
         obj = view_object_or_string
-    if isinstance(obj, View):
+    if issubclass(obj, View):
         return obj.as_view()
     return obj
 
