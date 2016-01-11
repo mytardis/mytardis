@@ -2,6 +2,9 @@
 # remove when file sizes are integers
 import hashlib
 import logging
+from contextlib import contextmanager
+from tempfile import NamedTemporaryFile
+
 from os import path
 import mimetypes
 
@@ -296,6 +299,24 @@ class DataFile(models.Model):
             return dfos[0].get_full_path()
         else:
             return None
+
+    @contextmanager
+    def get_as_temporary_file(self, directory=None):
+        """
+        Returns a traditional file-system-based file object
+        that is a copy of the original data. The file is deleted
+        when the context is destroyed.
+        :param directory: the directory in which to create the temp file
+        :return: the temporary file object
+        """
+        temp_file = NamedTemporaryFile(delete=True, dir=directory)
+        try:
+            temp_file.write(self.file_object.read())
+            temp_file.flush()
+            temp_file.seek(0, 0)
+            yield temp_file
+        finally:
+            temp_file.close()
 
     def is_local(self):
         return self.file_objects.all()[0].is_local()
