@@ -39,6 +39,7 @@ http://docs.djangoproject.com/en/dev/topics/testing/
 
 from datetime import datetime
 from compare import expect
+from django.core.exceptions import SuspiciousOperation
 from django.test import TestCase
 from django.contrib.contenttypes.models import ContentType
 import pytz
@@ -307,16 +308,9 @@ class ParameterSetManagerTestCase(TestCase):
         self.freetext_link_param = DatafileParameter(
                 parameterset=self.datafileparameterset3,
                 name=self.parametername_unresolvable_link)
-        self.freetext_link_param.set_value("FREETEXT_ID_123")
-        self.freetext_link_param.save()
-
-        # Check the free-text unresolvable (non-URL) link
-        self.assertTrue(psm.get_param("freetext_link").string_value ==
-                        "FREETEXT_ID_123")
-
-        self.assertTrue(psm.get_param("freetext_link").link_id is None)
-        self.assertTrue(psm.get_param("freetext_link").link_ct is None)
-        self.assertTrue(psm.get_param("freetext_link").link_gfk is None)
+        self.assertRaises(SuspiciousOperation,
+                          lambda: self.freetext_link_param.set_value(
+                              "FREETEXT_ID_123"))
 
     def test_tz_naive_date_handling(self):
         """
