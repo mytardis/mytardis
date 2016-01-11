@@ -6,6 +6,8 @@ import logging
 import re
 import sys
 from os import path
+import inspect
+import types
 
 from django.conf import settings
 from django.contrib.auth.decorators import login_required, permission_required
@@ -346,10 +348,10 @@ def my_data(request):
         request, 'tardis_portal/my_data.html', c))
 
 
-def _resolve_view(view_object_or_string):
+def _resolve_view(view_function_or_string):
     """
-    Takes a string representing a 'module.app.view' function or View class,
-    imports the module and returns the view function, eg
+    Takes a string representing a 'module.app.view' function, a view function
+    itself, or View class. Imports the module and returns the view function, eg
     'tardis.apps.my_custom_app.views.my_special_view' will
     return the my_special_view function defined in views.py in
     that app.
@@ -358,21 +360,25 @@ def _resolve_view(view_object_or_string):
     Will raise ImportError or AttributeError if the module or
     view function don't exist, respectively.
 
-    :param view_object_or_string: A string representing the view, or a function
-                                  itself
-    :type view_object_or_string: basestring | types.FunctionType
+    :param view_function_or_string: A string representing the view,
+                                    or a function itself
+    :type view_function_or_string: basestring | types.FunctionType
     :return: The view function
     :rtype: types.FunctionType
     """
-    if isinstance(view_object_or_string, basestring):
-        x = view_object_or_string.split('.')
+    if isinstance(view_function_or_string, basestring):
+        x = view_function_or_string.split('.')
         obj_path, obj_name = ('.'.join(x[:-1]), x[-1])
         module = __import__(obj_path, fromlist=[obj_name])
         obj = getattr(module, obj_name)
+    elif isinstance(view_function_or_string, types.FunctionType):
+        obj = view_function_or_string
     else:
-        obj = view_object_or_string
-    if issubclass(obj, View):
-        return obj.as_view()
+        raise TypeError("Must provide a string or a view function")
+
+    if inspect.isclass(obj) and issubclass(obj, View):
+        obj = obj.as_view()
+
     return obj
 
 
