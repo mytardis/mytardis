@@ -111,7 +111,7 @@ def use_rapid_connect(fn):
                                              'RAPID_CONNECT_ENABLED', False)
 
         if c['RAPID_CONNECT_ENABLED']:
-            c['RAPID_CONNECT_LOGIN_URL'] = settings.getattr(
+            c['RAPID_CONNECT_LOGIN_URL'] = getattr(
                     settings.RAPID_CONNECT_CONFIG,
                     'authnrequest_url')
         return c
