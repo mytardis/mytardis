@@ -2,12 +2,13 @@ import logging
 import operator
 import json
 import pytz
+
 import dateutil.parser
 
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
-from django.core.exceptions import ObjectDoesNotExist
-from django.core.urlresolvers import reverse
+from django.core.exceptions import ObjectDoesNotExist, SuspiciousOperation
+from django.core.urlresolvers import reverse, resolve, Resolver404
 from django.conf import settings
 from django.db import models
 from django.utils.safestring import mark_safe
@@ -418,6 +419,8 @@ class Parameter(models.Model):
         elif isinstance(self.link_gfk, Experiment):
             url = reverse('tardis_portal.view_experiment',
                           kwargs={'experiment_id': self.link_id})
+        elif self.link_gfk is None and self.string_value:
+            url = self.string_value
         else:
             raise NotImplementedError
         return url
@@ -435,15 +438,56 @@ class Parameter(models.Model):
             self.numerical_value = float(value)
         elif self.name.isDateTime():
             # We convert the value string into datetime object.
-            # dateutil.parser detects and converts many date formats and is quite
-            # permissive in what it accepts (form validation and API input
-            # validation happens elsewhere and may be less permissive)
+            # dateutil.parser detects and converts many date formats and is
+            # quite permissive in what it accepts (form validation and API
+            # input validation happens elsewhere and may be less permissive)
             datevalue = dateutil.parser.parse(value)
             if settings.USE_TZ and is_naive(datevalue):
                 datevalue = make_aware(datevalue, LOCAL_TZ)
             elif not settings.USE_TZ and is_aware(datevalue):
                 datevalue = make_naive(datevalue, LOCAL_TZ)
             self.datetime_value = datevalue
+        elif self.name.isLink():
+            # Always store the raw value as a string, even if setting
+            # the GenericForeignKey via link_id/link_ct
+            if str(value) == '' or value is None:
+                return
+            self.string_value = unicode(value)
+
+            try:
+                # We detect experiment or dataset view URLs
+                # (eg, /experiment/view/12345/ or /api/v1/dataset/456)
+                # and extract values to populate link_ct and link_id. This
+                # covers two common cases, allowing LINK Parameters to be
+                # properly created via the REST API.
+
+                match = resolve(value)
+                if match.view_name == u'api_dispatch_detail':
+                    model_name = match.kwargs.get(u'resource_name', None)
+                    if model_name not in ('experiment', 'dataset'):
+                        model_name, pk = None, None
+                    else:
+                        pk = match.kwargs.get('pk', None)
+                elif match.view_name.endswith('view_experiment'):
+                    model_name = 'experiment'
+                    pk = match.kwargs.get('experiment_id')
+                elif match.view_name.endswith('view_dataset'):
+                    model_name = 'dataset'
+                    pk = match.kwargs.get('dataset_id')
+                else:
+                    model_name, pk = None, None
+
+                if pk is not None and model_name is not None:
+                    self.link_id = pk
+                    self.link_ct = ContentType.objects.get(
+                        app_label='tardis_portal',
+                        model=model_name.lower())
+            except (ValueError, IndexError, Resolver404):
+                # If we were unable to successfully match the url to model
+                # instance, return an error. For any URL the URL Parameter
+                # type should be used.
+                raise SuspiciousOperation('Link parameter could not be set '
+                                          'from string: %s' % str(value))
         else:
             self.string_value = unicode(value)
 
