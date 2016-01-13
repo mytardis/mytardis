@@ -13,7 +13,7 @@ from django.core.files import File
 from django.core.urlresolvers import reverse
 from django.db import models
 from django.db import transaction
-from django.db.models import Q
+from django.db.models import Q, Sum
 from django.db.models.signals import pre_delete
 from django.dispatch import receiver
 from django.forms.models import model_to_dict
@@ -53,7 +53,7 @@ class DataFile(models.Model):
     dataset = models.ForeignKey(Dataset)
     filename = models.CharField(max_length=400)
     directory = DirectoryField(blank=True, null=True)
-    size = models.CharField(blank=True, max_length=400)
+    size = models.BigIntegerField(blank=True, null=True)
     created_time = models.DateTimeField(null=True, blank=True)
     modification_time = models.DateTimeField(null=True, blank=True)
     mimetype = models.CharField(blank=True, max_length=80)
@@ -170,20 +170,12 @@ class DataFile(models.Model):
         """
         Takes a query set of datafiles and returns their total size.
         """
-        def sum_str(*args):
-            def coerce_to_long(x):
-                try:
-                    return long(x)
-                except ValueError:
-                    return 0
-            return sum(map(coerce_to_long, args))
-        # Filter empty sizes, get array of sizes, then reduce
-        return reduce(sum_str, datafiles.exclude(size='')
-                                        .values_list('size', flat=True), 0)
+        return datafiles.aggregate(size=Sum('size'))['size'] or 0
 
     def save(self, *args, **kwargs):
-        if isinstance(self.size, (int, long)):
-            self.size = str(self.size)
+        if self.size is not None and not isinstance(self.size, (int, long)):
+            self.size = long(self.size)
+
         require_checksums = kwargs.pop('require_checksums', True)
         if settings.REQUIRE_DATAFILE_CHECKSUMS and \
                 not self.md5sum and \
@@ -191,14 +183,11 @@ class DataFile(models.Model):
                 require_checksums:
             raise Exception('Every Datafile requires a checksum')
         elif settings.REQUIRE_DATAFILE_SIZES:
-            if ((isinstance(self.size, basestring) and
-                 (self.size.strip() is '' or
-                  long(self.size.strip()) < 0)) or
-                (isinstance(self.size, (int, long)) and
-                 self.size < 0) or str(self.size).strip() is ''):
-                raise Exception('Invalid Datafile size (must be >= 0): %s' %
-                                repr(self.size))
+            if self.size < 0:
+                raise Exception('Invalid Datafile size (must be >= 0): %d' %
+                                self.size)
         self.update_mimetype(save=False)
+
         super(DataFile, self).save(*args, **kwargs)
 
     def get_size(self):
@@ -239,7 +228,7 @@ class DataFile(models.Model):
                                           0)
         if render_image_size_limit:
             try:
-                if long(self.size) > render_image_size_limit:
+                if self.size > render_image_size_limit:
                     return None
             except ValueError:
                 return None

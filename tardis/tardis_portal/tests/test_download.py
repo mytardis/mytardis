@@ -346,7 +346,7 @@ class DownloadTestCase(TestCase):
         except:
             # XXX Test disabled because lib magic can't be loaded
             pass
-        self.assertEqual(df.size, str(13))
+        self.assertEqual(df.size, 13)
         self.assertEqual(df.md5sum, '8ddd8be4b179a529afa5f2ffae4b9858')
 
         # Now check we can calculate checksums and infer the mime type
@@ -365,7 +365,7 @@ class DownloadTestCase(TestCase):
         except:
             # XXX Test disabled because lib magic can't be loaded
             pass
-        self.assertEqual(pdf1.size, str(14232))
+        self.assertEqual(pdf1.size, 14232)
         self.assertEqual(pdf1.md5sum, 'c450d5126ffe3d14643815204daf1bfb')
 
         # Now check that we can override the physical file meta information
@@ -375,7 +375,7 @@ class DownloadTestCase(TestCase):
                                     checksum='cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e',
                                     size=0,
                                     mimetype='application/vnd.openxmlformats-officedocument.presentationml.presentation')  # noqa
-        self.assertEqual(pdf2.size, str(0))
+        self.assertEqual(pdf2.size, 0)
         self.assertEqual(pdf2.md5sum, '')
         self.assertEqual(pdf2.file_objects.get().verified, False)
         pdf2 = DataFile.objects.get(pk=pdf2.pk)
@@ -385,7 +385,7 @@ class DownloadTestCase(TestCase):
         except:
             # XXX Test disabled because lib magic can't be loaded
             pass
-        self.assertEqual(pdf2.size, str(0))
+        self.assertEqual(pdf2.size, 0)
         self.assertEqual(pdf2.md5sum, '')
 
         pdf2.mimetype = ''
