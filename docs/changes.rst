@@ -4,6 +4,7 @@ Changelog
 in development
 --------------
 
+* DataFile size is now a BigInteger field
 * new settings for customisations
 
 

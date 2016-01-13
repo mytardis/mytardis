@@ -27,6 +27,7 @@ tardis/settings.py
 tardis/tardis_portal/tests/rifcs/MyTARDIS-1.xml
 var/
 versions.cfg
+tardis_db
 tardis/apps/*
 !tardis/apps/__init__.py
 !tardis/apps/anzsrc_codes
