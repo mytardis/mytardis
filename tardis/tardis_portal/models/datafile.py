@@ -173,7 +173,7 @@ class DataFile(models.Model):
         return datafiles.aggregate(size=Sum('size'))['size'] or 0
 
     def save(self, *args, **kwargs):
-        if self.size is not None and not isinstance(self.size, (int, long)):
+        if self.size is not None:
             self.size = long(self.size)
 
         require_checksums = kwargs.pop('require_checksums', True)
@@ -651,12 +651,12 @@ class DataFileObject(models.Model):
         try:
             actual['size'] = self.file_object.size
             if not empty_value['size'] and \
-               actual['size'] == int(database['size']):
+               actual['size'] == database['size']:
                 same_values['size'] = True
             elif empty_value['size']:
                 # only ever empty when settings.REQ...SIZES = False
                 if add_size:
-                    database_update['size'] = str(actual['size'])
+                    database_update['size'] = actual['size']
             if same_values.get('size', True):
                 actual.update(compute_checksums(
                     self.file_object,

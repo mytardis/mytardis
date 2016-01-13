@@ -114,7 +114,7 @@ class DownloadTestCase(TestCase):
         filesize, sha512sum = get_size_and_sha512sum(testfile)
         datafile = DataFile(dataset=dataset, filename=filename,
                             mimetype=mimetype,
-                            size=str(size if size is not None else filesize),
+                            size=size if size is not None else filesize,
                             sha512sum=(checksum if checksum else sha512sum))
         datafile.save()
         dfo = DataFileObject(
