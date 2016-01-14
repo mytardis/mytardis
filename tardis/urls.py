@@ -1,7 +1,5 @@
 from importlib import import_module
 import logging
-
-import re
 from os import path
 
 from django.contrib import admin
@@ -19,7 +17,7 @@ import django_jasmine.urls
 from tastypie.api import Api
 from tastypie.resources import Resource
 
-from tardis.app_config import AbstractTardisAppConfig
+from tardis.app_config import get_tardis_apps
 from tardis.tardis_portal.api import (
     DatafileParameterResource,
     DatafileParameterSetResource,
@@ -50,60 +48,6 @@ from tardis.tardis_portal.views.pages import site_routed_view
 admin.autodiscover()
 
 logger = logging.getLogger(__name__)
-
-
-def get_tardis_apps():
-    default_app_config = 'default_app_config'
-
-    def get_app_and_config_class(app):
-        """
-        Gets the app module and configuration class if available
-        :param app: a string reference to the app module
-        :return: a tuple containing the app module and configuration class,
-        respectively.
-        """
-        app_module = import_module(app)
-        config_class = None
-        if hasattr(app_module, default_app_config):
-            module_name, class_name = getattr(app_module,
-                                              default_app_config).rsplit('.',
-                                                                         1)
-            config_class = getattr(import_module(module_name), class_name)
-        return app_module, config_class
-
-    def get_app_name(app):
-        """
-        Gets the app's name
-        :param app: a string reference to the app module
-        :return: the app's name
-        """
-        app_module, config_class = get_app_and_config_class(app)
-
-        if config_class is not None:
-            name = config_class.verbose_name
-        elif app.startswith(settings.TARDIS_APP_ROOT):
-            name = app.split('.').pop()
-        else:
-            name = app
-
-        # Replaces any non A-Z characters with a dash (-)
-        return re.sub(r'[^a-z]+', '-', name.lower())
-
-    def is_tardis_app(app):
-        """
-        Determines whether the installed app is a MyTardis app
-        :param app: a string reference to the app module
-        :return: True if the app is a MyTardis app, False otherwise
-        """
-        if app.startswith(settings.TARDIS_APP_ROOT):
-            return True
-        app_module, config_class = get_app_and_config_class(app)
-        if config_class is not None:
-            return issubclass(config_class, AbstractTardisAppConfig)
-        return False
-
-    return [(get_app_name(app), app) for app in settings.INSTALLED_APPS if
-            is_tardis_app(app)]
 
 handler500 = 'tardis.views.error_handler'
 

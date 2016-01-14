@@ -488,7 +488,7 @@ class ExperimentView(TemplateView):
             except:
                 logger.debug('error when loading default exp apps')
 
-        from tardis.urls import get_tardis_apps
+        from tardis.app_config import get_tardis_apps
 
         for app_name, app in get_tardis_apps():
             try:
