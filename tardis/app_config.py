@@ -25,17 +25,18 @@ def is_tardis_app(app_config):
     return isinstance(app_config, AbstractTardisAppConfig)
 
 
+def format_app_name_for_url(name):
+    return re.sub(r'[^a-z]+', '-', name.lower())
+
+
 def get_tardis_apps():
     """
     Gets a list of tuples where the first element is the app name, and the
     second is the module path
     :return:
     """
-    def format_app_name(name):
-        return re.sub(r'[^a-z]+', '-', name.lower())
-
     tardis_apps = []
     for app_name, app_config in apps.app_configs.items():
         if is_tardis_app(app_config):
-            tardis_apps.append((format_app_name(app_name), app_config.name))
+            tardis_apps.append((app_name, app_config.name))
     return tardis_apps

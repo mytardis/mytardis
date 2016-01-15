@@ -17,7 +17,7 @@ import django_jasmine.urls
 from tastypie.api import Api
 from tastypie.resources import Resource
 
-from tardis.app_config import get_tardis_apps
+from tardis.app_config import get_tardis_apps, format_app_name_for_url
 from tardis.tardis_portal.api import (
     DatafileParameterResource,
     DatafileParameterSetResource,
@@ -331,7 +331,7 @@ for app_name, app in get_tardis_apps():
             resource_name = resource._meta.resource_name
             if not resource_name.startswith(app_name):
                 resource._meta.resource_name = '%s_%s' % (
-                    app_name, resource_name)
+                    format_app_name_for_url(app_name), resource_name)
             v1_api.register(resource())
     except ImportError as e:
         logger.debug('App API URLs import error: %s' % str(e))
@@ -358,7 +358,7 @@ tastypie_swagger_urls = patterns(
 apppatterns = patterns('', )
 for app_name, app in get_tardis_apps():
     apppatterns += patterns('tardis.apps',
-                            (r'^%s/' % app_name,
+                            (r'^%s/' % format_app_name_for_url(app_name),
                              include('%s.urls' % app)))
 urlpatterns = patterns(
     '',
