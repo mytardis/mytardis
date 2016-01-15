@@ -357,7 +357,7 @@ tastypie_swagger_urls = patterns(
 
 apppatterns = patterns('', )
 for app_name, app in get_tardis_apps():
-    apppatterns += patterns('tardis.apps',
+    apppatterns += patterns('',
                             (r'^%s/' % format_app_name_for_url(app_name),
                              include('%s.urls' % app)))
 urlpatterns = patterns(
