@@ -26,7 +26,7 @@ def is_tardis_app(app_config):
 
 
 def format_app_name_for_url(name):
-    return re.sub(r'[^a-z]+', '-', name.lower())
+    return re.sub(r'[^a-z0-9]+', '-', name.lower())
 
 
 def get_tardis_apps():
