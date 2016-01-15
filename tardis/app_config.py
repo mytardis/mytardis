@@ -3,8 +3,7 @@ from importlib import import_module
 import re
 from django.apps import AppConfig
 from django.conf import settings
-
-DEFAULT_APP_CONFIG = 'default_app_config'
+from django.apps import apps
 
 
 class AbstractTardisAppConfig(AppConfig):
@@ -15,56 +14,28 @@ class AbstractTardisAppConfig(AppConfig):
     pass
 
 
-def get_app_and_config_class(app):
-    """
-    Gets the app module and configuration class if available
-    :param app: a string reference to the app module
-    :return: a tuple containing the app module and configuration class,
-    respectively.
-    """
-    app_module = import_module(app)
-    config_class = None
-    if hasattr(app_module, DEFAULT_APP_CONFIG):
-        module_name, class_name = getattr(app_module,
-                                          DEFAULT_APP_CONFIG).rsplit('.',
-                                                                     1)
-        config_class = getattr(import_module(module_name), class_name)
-    return app_module, config_class
-
-
-def get_app_name(app):
-    """
-    Gets the app's name
-    :param app: a string reference to the app module
-    :return: the app's name
-    """
-    app_module, config_class = get_app_and_config_class(app)
-
-    if config_class is not None:
-        name = config_class.verbose_name
-    elif app.startswith(settings.TARDIS_APP_ROOT):
-        name = app.split('.').pop()
-    else:
-        name = app
-
-    # Replaces any non A-Z characters with a dash (-)
-    return re.sub(r'[^a-z]+', '-', name.lower())
-
-
-def is_tardis_app(app):
+def is_tardis_app(app_config):
     """
     Determines whether the installed app is a MyTardis app
-    :param app: a string reference to the app module
+    :param app_config: the AppConfig object of an installed app
     :return: True if the app is a MyTardis app, False otherwise
     """
-    if app.startswith(settings.TARDIS_APP_ROOT):
+    if app_config.name.startswith(settings.TARDIS_APP_ROOT):
         return True
-    app_module, config_class = get_app_and_config_class(app)
-    if config_class is not None:
-        return issubclass(config_class, AbstractTardisAppConfig)
-    return False
+    return isinstance(app_config, AbstractTardisAppConfig)
 
 
 def get_tardis_apps():
-    return [(get_app_name(app), app) for app in settings.INSTALLED_APPS if
-            is_tardis_app(app)]
+    """
+    Gets a list of tuples where the first element is the app name, and the
+    second is the module path
+    :return:
+    """
+    def format_app_name(name):
+        return re.sub(r'[^a-z]+', '-', name.lower())
+
+    tardis_apps = []
+    for app_name, app_config in apps.app_configs.items():
+        if is_tardis_app(app_config):
+            tardis_apps.append((format_app_name(app_name), app_config.name))
+    return tardis_apps
