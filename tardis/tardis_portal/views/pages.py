@@ -488,19 +488,6 @@ class ExperimentView(TemplateView):
             except:
                 logger.debug('error when loading default exp apps')
 
-        from tardis.urls import getTardisApps
-
-        for app in getTardisApps():
-            try:
-                appnames.append(
-                    sys.modules['%s.%s.settings'
-                                % (settings.TARDIS_APP_ROOT, app)].NAME)
-                appurls.append(
-                    reverse('%s.%s.views.index' % (settings.TARDIS_APP_ROOT,
-                                                   app), args=[experiment.id]))
-            except:
-                logger.debug("No tab for %s" % app)
-
         c['apps'] = zip(appurls, appnames)
 
         return c
