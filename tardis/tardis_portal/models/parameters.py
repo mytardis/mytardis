@@ -248,10 +248,10 @@ def _getParameterAsImageElement(parameter):
     :return: An HTML formated img element, or None
     :rtype: basestring | types.NoneType
     """
-    assert parameter.name.isString(), \
-        "'Image' parameters are expected to be of type STRING"
+    assert (parameter.name.isString() or parameter.name.isFilename()), \
+        "'Image' parameters are expected to be of type STRING or FILENAME"
 
-    if parameter.name.name.endswith('Image'):
+    if parameter.name.isString() and parameter.name.name.endswith('Image'):
         parset = type(parameter.parameterset).__name__
         viewname = None
         args = []
@@ -280,6 +280,26 @@ def _getParameterAsImageElement(parameter):
                                                  args=args)
             return mark_safe(value)
 
+    elif parameter.name.isFilename() and \
+            parameter.name.units.startswith('image') and \
+            parameter.string_value:
+        parset = type(parameter.parameterset).__name__
+        viewname = None
+        if parset == 'DatafileParameterSet':
+            viewname = 'tardis.tardis_portal.views.load_datafile_image'
+        elif parset == 'DatasetParameterSet':
+            viewname = 'tardis.tardis_portal.views.load_dataset_image'
+        elif parset == 'ExperimentParameterSet':
+            viewname = 'tardis.tardis_portal.views.load_experiment_image'
+        if viewname is not None:
+            value = "<a href='%s' target='_blank'>" \
+                    "<img style='width: 300px;' src='%s' /></a>" % \
+                 (reverse(viewname=viewname,
+                          args=[parameter.id]),
+                  reverse(viewname=viewname,
+                          args=[parameter.id]))
+            return mark_safe(value)
+
     return None
 
 
@@ -301,6 +321,12 @@ def _getParameter(parameter):
         return as_img_element if as_img_element is not None else \
             parameter.string_value
 
+    elif parameter.name.isFilename():
+        as_img_element = _getParameterAsImageElement(parameter)
+
+        return as_img_element if as_img_element is not None else \
+            parameter.string_value
+
     elif parameter.name.isURL():
         url = parameter.string_value
         value = "<a href='%s'>%s</a>" % (url, url)
@@ -316,27 +342,6 @@ def _getParameter(parameter):
             url = parameter.string_value
         value = "<a href='%s'>%s</a>" % (url, parameter.string_value)
         return mark_safe(value)
-
-    elif parameter.name.isFilename():
-        if parameter.name.units.startswith('image') and parameter.string_value:
-            parset = type(parameter.parameterset).__name__
-            viewname = ''
-            if parset == 'DatafileParameterSet':
-                viewname = 'tardis.tardis_portal.views.load_datafile_image'
-            elif parset == 'DatasetParameterSet':
-                viewname = 'tardis.tardis_portal.views.load_dataset_image'
-            elif parset == 'ExperimentParameterSet':
-                viewname = 'tardis.tardis_portal.views.load_experiment_image'
-            if viewname:
-                value = "<a href='%s' target='_blank'>" \
-                        "<img style='width: 300px;' src='%s' /></a>" % \
-                     (reverse(viewname=viewname,
-                              args=[parameter.id]),
-                      reverse(viewname=viewname,
-                              args=[parameter.id]))
-                return mark_safe(value)
-        else:
-            return parameter.string_value
 
     elif parameter.name.isDateTime():
         value = unicode(parameter.datetime_value)
