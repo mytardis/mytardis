@@ -248,8 +248,8 @@ def _getParameterAsImageElement(parameter):
     :return: An HTML formated img element, or None
     :rtype: basestring | types.NoneType
     """
-    assert (parameter.name.isString(), "'Image' parameters are expect to be of"
-                                       "type STRING")
+    assert parameter.name.isString(), \
+        "'Image' parameters are expected to be of type STRING"
 
     if parameter.name.name.endswith('Image'):
         parset = type(parameter.parameterset).__name__
