@@ -54,22 +54,19 @@ def check_app_dependencies(app_configs, **kwargs):
     :return: a list of unsatisfied dependencies
     """
 
-    def app_configs_to_dict(configs):
-        return dict([(app_config[1].name, app_config[1]) for app_config in
-                     configs.iteritems()])
-
-    installed_apps = app_configs_to_dict(apps.app_configs)
+    installed_apps = dict([(app_config.name, app_config) for app_config in
+                     apps.app_configs.itervalues()])
 
     # According to https://docs.djangoproject.com/en/1.8/topics/checks/#writing-your-own-checks
     # app_configs may contain a list of apps to check, but if it's None, all
     # apps should be inspected.
     if app_configs:
-        apps_to_check = app_configs_to_dict(app_configs)
+        apps_to_check = app_configs.itervalues()
     else:
-        apps_to_check = installed_apps
+        apps_to_check = installed_apps.itervalues()
 
     errors = []
-    for app in apps_to_check.itervalues():
+    for app in apps_to_check:
         deps = getattr(app, 'app_dependencies', [])
         for dependency in deps:
             if not installed_apps.has_key(dependency):
