@@ -1,9 +1,8 @@
-from importlib import import_module
-
 import re
 from django.apps import AppConfig
-from django.conf import settings
 from django.apps import apps
+from django.conf import settings
+from django.core.checks import Error, register
 
 
 class AbstractTardisAppConfig(AppConfig):
@@ -33,10 +32,40 @@ def get_tardis_apps():
     """
     Gets a list of tuples where the first element is the app name, and the
     second is the module path
-    :return:
+    :return: a list of tardis apps
     """
     tardis_apps = []
     for app_name, app_config in apps.app_configs.items():
         if is_tardis_app(app_config):
             tardis_apps.append((app_name, app_config.name))
     return tardis_apps
+
+
+@register()
+def check_app_dependencies(app_configs, **kwargs):
+    """
+    Checks currently installed apps for dependencies required by installed apps
+    as defined by the app_dependencies attribute of the AppConfig object.
+    :param app_configs: a list of app_configs to check, or None for all apps to
+     be checked
+    :return: a list of unsatisfied dependencies
+    """
+
+    def app_configs_to_dict(configs):
+        return dict([(app_config[1].name, app_config[1]) for app_config in
+                     configs.iteritems()])
+
+    installed_apps = app_configs_to_dict(apps.app_configs)
+    apps_to_check = installed_apps or app_configs_to_dict(app_configs)
+
+    errors = []
+    for app in apps_to_check.itervalues():
+        deps = getattr(app, 'app_dependencies', [])
+        for dependency in deps:
+            if not installed_apps.has_key(dependency):
+                errors.append(Error(
+                        'Could not find dependent app: %s' % dependency,
+                        hint='Add "%s" to INSTALLED_APPS' % dependency,
+                        obj=app
+                ))
+    return errors
