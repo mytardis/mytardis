@@ -10,7 +10,9 @@ class AbstractTardisAppConfig(AppConfig):
     All MyTardis app configuration classes should extend this abstract class
     to have their APIs and URLs automatically added to URL routing.
     """
-    pass
+
+    # Override this in subclasses to define any apps that this app depends on
+    app_dependencies = []
 
 
 def is_tardis_app(app_config):
@@ -45,7 +47,8 @@ def get_tardis_apps():
 def check_app_dependencies(app_configs, **kwargs):
     """
     Checks currently installed apps for dependencies required by installed apps
-    as defined by the app_dependencies attribute of the AppConfig object.
+    as defined by the app_dependencies attribute of the AppConfig object, if
+    present.
     :param app_configs: a list of app_configs to check, or None for all apps to
      be checked
     :return: a list of unsatisfied dependencies
@@ -56,7 +59,14 @@ def check_app_dependencies(app_configs, **kwargs):
                      configs.iteritems()])
 
     installed_apps = app_configs_to_dict(apps.app_configs)
-    apps_to_check = installed_apps or app_configs_to_dict(app_configs)
+
+    # According to https://docs.djangoproject.com/en/1.8/topics/checks/#writing-your-own-checks
+    # app_configs may contain a list of apps to check, but if it's None, all
+    # apps should be inspected.
+    if app_configs:
+        apps_to_check = app_configs_to_dict(app_configs)
+    else:
+        apps_to_check = installed_apps
 
     errors = []
     for app in apps_to_check.itervalues():
