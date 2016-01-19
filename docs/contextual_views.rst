@@ -20,7 +20,11 @@ User Guide
 A default installation has no contextual views. To enable them a few
 steps are needed:
 
-* an app needs to be installed in ``tardis/apps/``
+* an app needs to be installed either in ``tardis/apps/``, or the app's
+  configuration must subclass ``AbstractTardisAppConfig`` thereby enabling
+  autodetection. ``AbstractTardisAppConfig`` replaces ``AppConfig`` as
+  described in these
+  `django docs <https://docs.djangoproject.com/en/1.8/ref/applications/>`_.
 
 * ``DataFile`` s need to be manually or automatically tagged with a
   schema that identifies them as viewable with a particular
