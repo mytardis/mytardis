@@ -234,7 +234,96 @@ class ParameterName(models.Model):
         return self.data_type == self.JSON
 
 
-def _getParameter(parameter):
+def _get_string_parameter_as_image_element(parameter):
+    """
+    Detect if a parameter name contains the suffix 'Image' in a parameter set
+    associated with an Experiment, Dataset or DataFile.
+    If so, return an associated HTML <img> element.
+
+    Associated ParameterName must be of type STRING, however the
+    string_value is not used.
+
+    :param parameter: The Parameter instance
+    :type parameter: tardis.tardis_portal.models.parameters.Parameter
+    :return: An HTML formated img element, or None
+    :rtype: basestring | types.NoneType
+    """
+    assert parameter.name.isString(), \
+        "'*Image' parameters are expected to be of type STRING"
+
+    if parameter.name.isString() and parameter.name.name.endswith('Image'):
+        parset = type(parameter.parameterset).__name__
+        viewname = None
+        args = []
+        if parset == 'DatafileParameterSet':
+            dfid = parameter.parameterset.datafile.id
+            psid = parameter.parameterset.id
+            viewname = 'tardis.tardis_portal.views.display_datafile_image'
+            args = [dfid, psid, parameter.name]
+        elif parset == 'DatasetParameterSet':
+            dsid = parameter.parameterset.dataset.id
+            psid = parameter.parameterset.id
+            viewname = 'tardis.tardis_portal.views.display_dataset_image'
+            args = [dsid, psid, parameter.name]
+        elif parset == 'ExperimentParameterSet':
+            eid = parameter.parameterset.dataset.id
+            psid = parameter.parameterset.id
+            viewname = 'tardis.tardis_portal.views.display_experiment_image'
+            args = [eid, psid, parameter.name]
+        # elif parset == 'InstrumentParameterSet':
+        #     iid = parameter.parameterset.instrument.id
+        #     psid = parameter.parameterset.id
+        #     viewname = 'tardis.tardis_portal.views.display_instrument_image'
+        #     args = [iid, psid, parameter.name]
+        if viewname is not None:
+            value = "<img src='%s' />" % reverse(viewname=viewname,
+                                                 args=args)
+            return mark_safe(value)
+
+    return None
+
+
+def _get_filename_parameter_as_image_element(parameter):
+    """
+    Detect if a parameter name contains the prefix 'image' in a parameter set
+    associated with an Experiment, Dataset or DataFile.
+    If so, return an associated HTML <img> element.
+
+    Associated ParameterName must be of type FILENAME, however the
+    string_value is not used.
+
+    :param parameter: The Parameter instance
+    :type parameter: tardis.tardis_portal.models.parameters.Parameter
+    :return: An HTML formated img element, or None
+    :rtype: basestring | types.NoneType
+    """
+    assert parameter.name.isFilename(), \
+        "'image*' parameters are expected to be of type FILENAME"
+
+    if parameter.name.isFilename() and \
+            parameter.name.units.startswith('image') and \
+            parameter.string_value:
+        parset = type(parameter.parameterset).__name__
+        viewname = None
+        if parset == 'DatafileParameterSet':
+            viewname = 'tardis.tardis_portal.views.load_datafile_image'
+        elif parset == 'DatasetParameterSet':
+            viewname = 'tardis.tardis_portal.views.load_dataset_image'
+        elif parset == 'ExperimentParameterSet':
+            viewname = 'tardis.tardis_portal.views.load_experiment_image'
+        if viewname is not None:
+            value = "<a href='%s' target='_blank'>" \
+                    "<img style='width: 300px;' src='%s' /></a>" % \
+                 (reverse(viewname=viewname,
+                          args=[parameter.id]),
+                  reverse(viewname=viewname,
+                          args=[parameter.id]))
+            return mark_safe(value)
+
+    return None
+
+
+def _get_parameter(parameter):
 
     if parameter.name.isNumeric():
         value = unicode(parameter.numerical_value)
@@ -247,37 +336,16 @@ def _getParameter(parameter):
         return parameter.string_value
 
     elif parameter.name.isString():
-        if parameter.name.name.endswith('Image'):
-            parset = type(parameter.parameterset).__name__
-            viewname = ''
-            args = []
-            if parset == 'DatafileParameterSet':
-                dfid = parameter.parameterset.datafile.id
-                psid = parameter.parameterset.id
-                viewname = 'tardis.tardis_portal.views.display_datafile_image'
-                args = [dfid, psid, parameter.name]
-            elif parset == 'DatasetParameterSet':
-                dsid = parameter.parameterset.dataset.id
-                psid = parameter.parameterset.id
-                viewname = 'tardis.tardis_portal.views.display_dataset_image'
-                args = [dsid, psid, parameter.name]
-            elif parset == 'ExperimentParameterSet':
-                eid = parameter.parameterset.dataset.id
-                psid = parameter.parameterset.id
-                viewname = 'tardis.tardis_portal.views.'
-                'display_experiment_image'
-                args = [eid, psid, parameter.name]
-            elif parset == 'InstrumentParameterSet':
-                iid = parameter.parameterset.instrument.id
-                psid = parameter.parameterset.id
-                # viewname = 'tardis.tardis_portal.views.display_instrument_image'
-                args = [iid, psid, parameter.name]
-            if viewname:
-                value = "<img src='%s' />" % reverse(viewname=viewname,
-                                                     args=args)
-                return mark_safe(value)
+        as_img_element = _get_string_parameter_as_image_element(parameter)
 
-        return parameter.string_value
+        return as_img_element if as_img_element is not None else \
+            parameter.string_value
+
+    elif parameter.name.isFilename():
+        as_img_element = _get_filename_parameter_as_image_element(parameter)
+
+        return as_img_element if as_img_element is not None else \
+            parameter.string_value
 
     elif parameter.name.isURL():
         url = parameter.string_value
@@ -294,26 +362,6 @@ def _getParameter(parameter):
             url = parameter.string_value
         value = "<a href='%s'>%s</a>" % (url, parameter.string_value)
         return mark_safe(value)
-
-    elif parameter.name.isFilename():
-        if parameter.name.units.startswith('image') and parameter.string_value:
-            parset = type(parameter.parameterset).__name__
-            viewname = ''
-            if parset == 'DatafileParameterSet':
-                viewname = 'tardis.tardis_portal.views.load_datafile_image'
-            elif parset == 'DatasetParameterSet':
-                viewname = 'tardis.tardis_portal.views.load_dataset_image'
-            elif parset == 'ExperimentParameterSet':
-                viewname = 'tardis.tardis_portal.views.load_experiment_image'
-            if viewname:
-                value = "<a href='%s' target='_blank'><img style='width: 300px;' src='%s' /></a>" % \
-                     (reverse(viewname=viewname,
-                              args=[parameter.id]),
-                      reverse(viewname=viewname,
-                              args=[parameter.id]))
-                return mark_safe(value)
-        else:
-            return parameter.string_value
 
     elif parameter.name.isDateTime():
         value = unicode(parameter.datetime_value)
@@ -397,7 +445,7 @@ class Parameter(models.Model):
         ordering = ['name']
 
     def get(self):
-        return _getParameter(self)
+        return _get_parameter(self)
 
     def __unicode__(self):
         try:
