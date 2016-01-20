@@ -6,6 +6,8 @@ in development
 
 * DataFile size is now a BigInteger field
 * new settings for customisations
+* A new AbstractTardisAppConfig class that all new tardis apps should subclass
+* Third-party tardis app dependency checking
 
 
 3.6 - 16 March 2015

@@ -17,6 +17,7 @@ import django_jasmine.urls
 from tastypie.api import Api
 from tastypie.resources import Resource
 
+from tardis.app_config import get_tardis_apps, format_app_name_for_url
 from tardis.tardis_portal.api import (
     DatafileParameterResource,
     DatafileParameterSetResource,
@@ -47,12 +48,6 @@ from tardis.tardis_portal.views.pages import site_routed_view
 admin.autodiscover()
 
 logger = logging.getLogger(__name__)
-
-
-def getTardisApps():
-    return map(lambda app: app.split('.').pop(),
-               filter(lambda app: app.startswith(settings.TARDIS_APP_ROOT),
-                      settings.INSTALLED_APPS))
 
 handler500 = 'tardis.views.error_handler'
 
@@ -324,9 +319,9 @@ v1_api.register(FacilityResource())
 v1_api.register(InstrumentResource())
 
 # App API additions
-for app in getTardisApps():
+for app_name, app in get_tardis_apps():
     try:
-        app_api = import_module('tardis.apps.%s.api' % app)
+        app_api = import_module('%s.api' % app)
         for res_name in dir(app_api):
             if not res_name.endswith('AppResource'):
                 continue
@@ -334,9 +329,9 @@ for app in getTardisApps():
             if not issubclass(resource, Resource):
                 continue
             resource_name = resource._meta.resource_name
-            if not resource_name.startswith(app):
+            if not resource_name.startswith(app_name):
                 resource._meta.resource_name = '%s_%s' % (
-                    app, resource_name)
+                    format_app_name_for_url(app_name), resource_name)
             v1_api.register(resource())
     except ImportError as e:
         logger.debug('App API URLs import error: %s' % str(e))
@@ -360,12 +355,11 @@ tastypie_swagger_urls = patterns(
 
 # # END API SECTION
 
-apppatterns = patterns('',)
-for app in getTardisApps():
-    apppatterns += patterns('tardis.apps',
-                            (r'^%s/' % app.replace('_', '-'),
-                             include('%s.%s.urls' %
-                                     (settings.TARDIS_APP_ROOT, app))))
+apppatterns = patterns('', )
+for app_name, app in get_tardis_apps():
+    apppatterns += patterns('',
+                            (r'^%s/' % format_app_name_for_url(app_name),
+                             include('%s.urls' % app)))
 urlpatterns = patterns(
     '',
     (r'', include(core_urls)),
