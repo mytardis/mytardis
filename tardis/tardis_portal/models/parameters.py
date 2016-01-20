@@ -234,7 +234,7 @@ class ParameterName(models.Model):
         return self.data_type == self.JSON
 
 
-def _getParameterAsImageElement(parameter):
+def _get_string_parameter_as_image_element(parameter):
     """
     Detect if a parameter name contains the suffix 'Image' in a parameter set
     associated with an Experiment, Dataset or DataFile.
@@ -248,8 +248,8 @@ def _getParameterAsImageElement(parameter):
     :return: An HTML formated img element, or None
     :rtype: basestring | types.NoneType
     """
-    assert (parameter.name.isString() or parameter.name.isFilename()), \
-        "'Image' parameters are expected to be of type STRING or FILENAME"
+    assert parameter.name.isString(), \
+        "'*Image' parameters are expected to be of type STRING"
 
     if parameter.name.isString() and parameter.name.name.endswith('Image'):
         parset = type(parameter.parameterset).__name__
@@ -280,7 +280,27 @@ def _getParameterAsImageElement(parameter):
                                                  args=args)
             return mark_safe(value)
 
-    elif parameter.name.isFilename() and \
+    return None
+
+
+def _get_filename_parameter_as_image_element(parameter):
+    """
+    Detect if a parameter name contains the prefix 'image' in a parameter set
+    associated with an Experiment, Dataset or DataFile.
+    If so, return an associated HTML <img> element.
+
+    Associated ParameterName must be of type FILENAME, however the
+    string_value is not used.
+
+    :param parameter: The Parameter instance
+    :type parameter: tardis.tardis_portal.models.parameters.Parameter
+    :return: An HTML formated img element, or None
+    :rtype: basestring | types.NoneType
+    """
+    assert parameter.name.isFilename(), \
+        "'image*' parameters are expected to be of type FILENAME"
+
+    if parameter.name.isFilename() and \
             parameter.name.units.startswith('image') and \
             parameter.string_value:
         parset = type(parameter.parameterset).__name__
@@ -303,7 +323,7 @@ def _getParameterAsImageElement(parameter):
     return None
 
 
-def _getParameter(parameter):
+def _get_parameter(parameter):
 
     if parameter.name.isNumeric():
         value = unicode(parameter.numerical_value)
@@ -316,13 +336,13 @@ def _getParameter(parameter):
         return parameter.string_value
 
     elif parameter.name.isString():
-        as_img_element = _getParameterAsImageElement(parameter)
+        as_img_element = _get_string_parameter_as_image_element(parameter)
 
         return as_img_element if as_img_element is not None else \
             parameter.string_value
 
     elif parameter.name.isFilename():
-        as_img_element = _getParameterAsImageElement(parameter)
+        as_img_element = _get_filename_parameter_as_image_element(parameter)
 
         return as_img_element if as_img_element is not None else \
             parameter.string_value
@@ -425,7 +445,7 @@ class Parameter(models.Model):
         ordering = ['name']
 
     def get(self):
-        return _getParameter(self)
+        return _get_parameter(self)
 
     def __unicode__(self):
         try:
