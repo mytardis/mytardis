@@ -88,11 +88,11 @@
             <span class="icon-bar"></span>
           </a>
           {% block site_brand %}
-          <span class="brand"><a href="{% url 'tardis.tardis_portal.views.index' %}">{{ site_title|default:'MyTardis' }}</a></span>
+          <span class="brand"><a href="{% url 'index' %}">{{ site_title|default:'MyTardis' }}</a></span>
           {% endblock %}
           <div class="nav-collapse">
             <ul class="nav">
-              <li><a href="{% url 'tardis.tardis_portal.views.index' %}">Home</a></li>
+              <li><a href="{% url 'index' %}">Home</a></li>
               <li><a href="{% url 'tardis.tardis_portal.views.about' %}">About</a></li>
               <li><a href="{% url 'tardis.tardis_portal.views.my_data' %}">My Data</a></li>
               <li><a href="{% url 'tardis.tardis_portal.views.public_data' %}">Public Data</a></li>
@@ -196,6 +196,8 @@
                   		href={{ RAPID_CONNECT_LOGIN_URL }}
               	{% elif DEFAULT_LOGIN|lower = 'cas' %}
                   		href={% url 'django_cas_ng.views.login' %}
+              	{% elif DEFAULT_LOGIN|lower = 'saml2' %}
+                  		href='/saml2/login/'
               	{% else %}
                   		href="{% url 'tardis.tardis_portal.views.login' %}"
               	{% endif %}
@@ -237,7 +239,20 @@
                 	</a>
                   </li>
                   {% endif %}
-              	  {% if DEFAULT_LOGIN|lower == 'aaf' or DEFAULT_LOGIN|lower == 'cas' %}
+              	  {% if SAML2_ENABLED and DEFAULT_LOGIN|lower != 'saml2' %}
+        	  	<li>      
+              	  	<a id="login-button"   
+						class="btn btn-info btn-block"
+				   		style="width: 80px; text-align: center;"
+				   		href='/saml2/login/' >
+                  		<i class="icon-signin"></i>
+                  		SAML2
+                	</a>
+                  </li>
+                  {% endif %}
+              	  {% if DEFAULT_LOGIN|lower == 'aaf' 
+              	  	 or DEFAULT_LOGIN|lower == 'cas' 
+              	  	 or DEFAULT_LOGIN|lower == 'saml2' %}
         	  <li>      
               	  	<a id="login-button"  
 						class="btn btn-info btn-block"
@@ -257,8 +272,8 @@
             {% if search_form %}
             <form id="searchbox" method="get"
                 class="navbar-search pull-right"
-                action="{% url 'tardis.tardis_portal.views.single_search' %}">
-              <input id="id_q" autocomplete="off"
+                action="{% url 'haystack_search' %}">
+              <input id="id_q" autocomplete="off" name="q"
                    type="text" class="search-query" placeholder="Search"
                    {% if query %} value="{{ query }}" {% endif %}/>
             </form>

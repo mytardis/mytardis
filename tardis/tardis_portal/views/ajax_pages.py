@@ -16,7 +16,7 @@ from django.http import HttpResponse, HttpResponseNotFound, \
 from django.shortcuts import render
 from django.views.decorators.cache import never_cache
 from haystack.query import SearchQuerySet
-
+from tardis.search.utils import SearchQueryString
 from tardis.tardis_portal.auth import decorators as authz
 from tardis.tardis_portal.forms import RightsForm
 from tardis.tardis_portal.models import Experiment, DataFile, Dataset, Schema, \
@@ -27,8 +27,7 @@ from tardis.tardis_portal.shortcuts import return_response_error, \
     return_response_not_found, render_response_index
 from tardis.tardis_portal.staging import get_full_staging_path, staging_list
 from tardis.tardis_portal.util import render_public_access_badge
-from tardis.tardis_portal.views.pages import view_experiment
-from tardis.tardis_portal.views.search import SearchQueryString
+from tardis.tardis_portal.views.pages import ExperimentView
 from tardis.tardis_portal.views.utils import _add_protocols_and_organizations
 
 logger = logging.getLogger(__name__)
@@ -93,7 +92,7 @@ def experiment_description(request, experiment_id):
 @never_cache
 @authz.experiment_access_required
 def experiment_datasets(request, experiment_id):
-    return view_experiment(
+    return ExperimentView.as_view()(
         request, experiment_id=experiment_id,
         template_name='tardis_portal/ajax/experiment_datasets.html')
 
@@ -220,7 +219,7 @@ def retrieve_datafile_list(
     highlighted_dsf_pks = []
 
     if 'query' in request.GET:
-        search_query = FacetFixedSearchQuery(backend=HighlightSearchBackend())
+        search_query = FacetFixedSearchQuery()
         sqs = SearchQuerySet(query=search_query)
         query = SearchQueryString(request.GET['query'])
         results = sqs.raw_search(

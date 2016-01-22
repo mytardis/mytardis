@@ -4,17 +4,16 @@ views relevant to search
 
 import logging
 
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
 from django.http import HttpResponse
-from haystack.query import SearchQuerySet
-from haystack.views import SearchView
+from haystack.generic_views import SearchView
 
+from tardis.search.forms import GroupedSearchForm
+from tardis.search.utils import SearchQueryString
 from tardis.tardis_portal.auth import decorators as authz
-from tardis.tardis_portal.forms import createSearchDatafileSelectionForm, RawSearchForm
+from tardis.tardis_portal.forms import createSearchDatafileSelectionForm
 from tardis.tardis_portal.hacks import oracle_dbops_hack
 from tardis.tardis_portal.models import Experiment
-from tardis.tardis_portal.search_backend import HighlightSearchBackend
-from tardis.tardis_portal.search_query import FacetFixedSearchQuery
 from tardis.tardis_portal.shortcuts import render_response_search, \
     render_response_index
 from tardis.tardis_portal.views.utils import __forwardToSearchExperimentFormPage, \
@@ -28,33 +27,6 @@ logger = logging.getLogger(__name__)
 def getNewSearchDatafileSelectionForm(initial=None):
     DatafileSelectionForm = createSearchDatafileSelectionForm(initial)
     return DatafileSelectionForm()
-
-
-class SearchQueryString():
-    """
-    Class to manage switching between space separated search queries and
-    '+' separated search queries (for addition to urls
-
-    TODO This would probably be better handled with filters
-    """
-
-    def __init__(self, query_string):
-        import re
-        # remove extra spaces around colons
-        stripped_query = re.sub('\s*?:\s*', ':', query_string)
-
-        # create a list of terms which can be easily joined by
-        # spaces or pluses
-        self.query_terms = stripped_query.split()
-
-    def __unicode__(self):
-        return ' '.join(self.query_terms)
-
-    def url_safe_query(self):
-        return '+'.join(self.query_terms)
-
-    def query_string(self):
-        return self.__unicode__()
 
 
 @oracle_dbops_hack
@@ -261,11 +233,8 @@ class ExperimentSearchView(SearchView):
 
         results = []
         for e in experiments:
-            result = {}
-            result['sr'] = e
-            result['dataset_hit'] = False
-            result['datafile_hit'] = False
-            result['experiment_hit'] = False
+            result = {'sr': e, 'dataset_hit': False, 'datafile_hit': False,
+                      'experiment_hit': False}
             results.append(result)
 
         extra['experiments'] = results
@@ -290,14 +259,41 @@ class ExperimentSearchView(SearchView):
         return render_response_index(self.request, self.template, context)
 
 
-@login_required
-def single_search(request):
-    search_query = FacetFixedSearchQuery(backend=HighlightSearchBackend())
-    sqs = SearchQuerySet(query=search_query)
-    sqs.highlight()
+def retrieve_field_list(request):
 
-    return ExperimentSearchView(
-        template='search/search.html',
-        searchqueryset=sqs,
-        form_class=RawSearchForm,
-    ).__call__(request)
+    from tardis.search.search_indexes import DataFileIndex
+
+    # Get all of the fields in the indexes
+    #
+    # TODO: these should be onl read from registered indexes
+    #
+    allFields = DataFileIndex.fields.items()
+
+    users = User.objects.all()
+
+    usernames = [u.first_name + ' ' + u.last_name + ':username' for u in users]
+
+    # Collect all of the indexed (searchable) fields, except
+    # for the main search document ('text')
+    searchableFields = ([key + ':search_field' for key, f in allFields
+                         if f.indexed is True and key != 'text'])
+
+    auto_list = usernames + searchableFields
+
+    fieldList = '+'.join([str(fn) for fn in auto_list])
+    return HttpResponse(fieldList)
+
+
+class SingleSearchView(SearchView):
+    form_class = GroupedSearchForm
+    template_name = 'search/search.html'
+
+    def form_valid(self, form):
+        sqs = form.search(user=self.request.user)
+        context = self.get_context_data(**{
+            self.form_name: form,
+            'query': form.cleaned_data.get(self.search_field),
+            'object_list': sqs,
+        })
+        return self.render_to_response(context)
+

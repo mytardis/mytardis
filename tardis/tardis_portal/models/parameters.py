@@ -2,12 +2,13 @@ import logging
 import operator
 import json
 import pytz
+
 import dateutil.parser
 
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
-from django.core.exceptions import ObjectDoesNotExist
-from django.core.urlresolvers import reverse
+from django.core.exceptions import ObjectDoesNotExist, SuspiciousOperation
+from django.core.urlresolvers import reverse, resolve, Resolver404
 from django.conf import settings
 from django.db import models
 from django.utils.safestring import mark_safe
@@ -233,7 +234,96 @@ class ParameterName(models.Model):
         return self.data_type == self.JSON
 
 
-def _getParameter(parameter):
+def _get_string_parameter_as_image_element(parameter):
+    """
+    Detect if a parameter name contains the suffix 'Image' in a parameter set
+    associated with an Experiment, Dataset or DataFile.
+    If so, return an associated HTML <img> element.
+
+    Associated ParameterName must be of type STRING, however the
+    string_value is not used.
+
+    :param parameter: The Parameter instance
+    :type parameter: tardis.tardis_portal.models.parameters.Parameter
+    :return: An HTML formated img element, or None
+    :rtype: basestring | types.NoneType
+    """
+    assert parameter.name.isString(), \
+        "'*Image' parameters are expected to be of type STRING"
+
+    if parameter.name.isString() and parameter.name.name.endswith('Image'):
+        parset = type(parameter.parameterset).__name__
+        viewname = None
+        args = []
+        if parset == 'DatafileParameterSet':
+            dfid = parameter.parameterset.datafile.id
+            psid = parameter.parameterset.id
+            viewname = 'tardis.tardis_portal.views.display_datafile_image'
+            args = [dfid, psid, parameter.name]
+        elif parset == 'DatasetParameterSet':
+            dsid = parameter.parameterset.dataset.id
+            psid = parameter.parameterset.id
+            viewname = 'tardis.tardis_portal.views.display_dataset_image'
+            args = [dsid, psid, parameter.name]
+        elif parset == 'ExperimentParameterSet':
+            eid = parameter.parameterset.dataset.id
+            psid = parameter.parameterset.id
+            viewname = 'tardis.tardis_portal.views.display_experiment_image'
+            args = [eid, psid, parameter.name]
+        # elif parset == 'InstrumentParameterSet':
+        #     iid = parameter.parameterset.instrument.id
+        #     psid = parameter.parameterset.id
+        #     viewname = 'tardis.tardis_portal.views.display_instrument_image'
+        #     args = [iid, psid, parameter.name]
+        if viewname is not None:
+            value = "<img src='%s' />" % reverse(viewname=viewname,
+                                                 args=args)
+            return mark_safe(value)
+
+    return None
+
+
+def _get_filename_parameter_as_image_element(parameter):
+    """
+    Detect if a parameter name contains the prefix 'image' in a parameter set
+    associated with an Experiment, Dataset or DataFile.
+    If so, return an associated HTML <img> element.
+
+    Associated ParameterName must be of type FILENAME, however the
+    string_value is not used.
+
+    :param parameter: The Parameter instance
+    :type parameter: tardis.tardis_portal.models.parameters.Parameter
+    :return: An HTML formated img element, or None
+    :rtype: basestring | types.NoneType
+    """
+    assert parameter.name.isFilename(), \
+        "'image*' parameters are expected to be of type FILENAME"
+
+    if parameter.name.isFilename() and \
+            parameter.name.units.startswith('image') and \
+            parameter.string_value:
+        parset = type(parameter.parameterset).__name__
+        viewname = None
+        if parset == 'DatafileParameterSet':
+            viewname = 'tardis.tardis_portal.views.load_datafile_image'
+        elif parset == 'DatasetParameterSet':
+            viewname = 'tardis.tardis_portal.views.load_dataset_image'
+        elif parset == 'ExperimentParameterSet':
+            viewname = 'tardis.tardis_portal.views.load_experiment_image'
+        if viewname is not None:
+            value = "<a href='%s' target='_blank'>" \
+                    "<img style='width: 300px;' src='%s' /></a>" % \
+                 (reverse(viewname=viewname,
+                          args=[parameter.id]),
+                  reverse(viewname=viewname,
+                          args=[parameter.id]))
+            return mark_safe(value)
+
+    return None
+
+
+def _get_parameter(parameter):
 
     if parameter.name.isNumeric():
         value = unicode(parameter.numerical_value)
@@ -246,37 +336,16 @@ def _getParameter(parameter):
         return parameter.string_value
 
     elif parameter.name.isString():
-        if parameter.name.name.endswith('Image'):
-            parset = type(parameter.parameterset).__name__
-            viewname = ''
-            args = []
-            if parset == 'DatafileParameterSet':
-                dfid = parameter.parameterset.datafile.id
-                psid = parameter.parameterset.id
-                viewname = 'tardis.tardis_portal.views.display_datafile_image'
-                args = [dfid, psid, parameter.name]
-            elif parset == 'DatasetParameterSet':
-                dsid = parameter.parameterset.dataset.id
-                psid = parameter.parameterset.id
-                viewname = 'tardis.tardis_portal.views.display_dataset_image'
-                args = [dsid, psid, parameter.name]
-            elif parset == 'ExperimentParameterSet':
-                eid = parameter.parameterset.dataset.id
-                psid = parameter.parameterset.id
-                viewname = 'tardis.tardis_portal.views.'
-                'display_experiment_image'
-                args = [eid, psid, parameter.name]
-            elif parset == 'InstrumentParameterSet':
-                iid = parameter.parameterset.instrument.id
-                psid = parameter.parameterset.id
-                # viewname = 'tardis.tardis_portal.views.display_instrument_image'
-                args = [iid, psid, parameter.name]
-            if viewname:
-                value = "<img src='%s' />" % reverse(viewname=viewname,
-                                                     args=args)
-                return mark_safe(value)
+        as_img_element = _get_string_parameter_as_image_element(parameter)
 
-        return parameter.string_value
+        return as_img_element if as_img_element is not None else \
+            parameter.string_value
+
+    elif parameter.name.isFilename():
+        as_img_element = _get_filename_parameter_as_image_element(parameter)
+
+        return as_img_element if as_img_element is not None else \
+            parameter.string_value
 
     elif parameter.name.isURL():
         url = parameter.string_value
@@ -293,26 +362,6 @@ def _getParameter(parameter):
             url = parameter.string_value
         value = "<a href='%s'>%s</a>" % (url, parameter.string_value)
         return mark_safe(value)
-
-    elif parameter.name.isFilename():
-        if parameter.name.units.startswith('image') and parameter.string_value:
-            parset = type(parameter.parameterset).__name__
-            viewname = ''
-            if parset == 'DatafileParameterSet':
-                viewname = 'tardis.tardis_portal.views.load_datafile_image'
-            elif parset == 'DatasetParameterSet':
-                viewname = 'tardis.tardis_portal.views.load_dataset_image'
-            elif parset == 'ExperimentParameterSet':
-                viewname = 'tardis.tardis_portal.views.load_experiment_image'
-            if viewname:
-                value = "<a href='%s' target='_blank'><img style='width: 300px;' src='%s' /></a>" % \
-                     (reverse(viewname=viewname,
-                              args=[parameter.id]),
-                      reverse(viewname=viewname,
-                              args=[parameter.id]))
-                return mark_safe(value)
-        else:
-            return parameter.string_value
 
     elif parameter.name.isDateTime():
         value = unicode(parameter.datetime_value)
@@ -396,7 +445,7 @@ class Parameter(models.Model):
         ordering = ['name']
 
     def get(self):
-        return _getParameter(self)
+        return _get_parameter(self)
 
     def __unicode__(self):
         try:
@@ -410,14 +459,16 @@ class Parameter(models.Model):
         if not self.name.isLink():
             return None
         if isinstance(self.link_gfk, DataFile):
-            url = reverse('tardis.tardis_portal.views.view_dataset',
+            url = reverse('tardis_portal.view_dataset',
                           kwargs={'dataset_id': self.link_gfk.dataset.id})
         elif isinstance(self.link_gfk, Dataset):
-            url = reverse('tardis.tardis_portal.views.view_dataset',
+            url = reverse('tardis_portal.view_dataset',
                           kwargs={'dataset_id': self.link_id})
         elif isinstance(self.link_gfk, Experiment):
-            url = reverse('tardis.tardis_portal.views.view_experiment',
+            url = reverse('tardis_portal.view_experiment',
                           kwargs={'experiment_id': self.link_id})
+        elif self.link_gfk is None and self.string_value:
+            url = self.string_value
         else:
             raise NotImplementedError
         return url
@@ -435,15 +486,56 @@ class Parameter(models.Model):
             self.numerical_value = float(value)
         elif self.name.isDateTime():
             # We convert the value string into datetime object.
-            # dateutil.parser detects and converts many date formats and is quite
-            # permissive in what it accepts (form validation and API input
-            # validation happens elsewhere and may be less permissive)
+            # dateutil.parser detects and converts many date formats and is
+            # quite permissive in what it accepts (form validation and API
+            # input validation happens elsewhere and may be less permissive)
             datevalue = dateutil.parser.parse(value)
             if settings.USE_TZ and is_naive(datevalue):
                 datevalue = make_aware(datevalue, LOCAL_TZ)
             elif not settings.USE_TZ and is_aware(datevalue):
                 datevalue = make_naive(datevalue, LOCAL_TZ)
             self.datetime_value = datevalue
+        elif self.name.isLink():
+            # Always store the raw value as a string, even if setting
+            # the GenericForeignKey via link_id/link_ct
+            if str(value) == '' or value is None:
+                return
+            self.string_value = unicode(value)
+
+            try:
+                # We detect experiment or dataset view URLs
+                # (eg, /experiment/view/12345/ or /api/v1/dataset/456)
+                # and extract values to populate link_ct and link_id. This
+                # covers two common cases, allowing LINK Parameters to be
+                # properly created via the REST API.
+
+                match = resolve(value)
+                if match.view_name == u'api_dispatch_detail':
+                    model_name = match.kwargs.get(u'resource_name', None)
+                    if model_name not in ('experiment', 'dataset'):
+                        model_name, pk = None, None
+                    else:
+                        pk = match.kwargs.get('pk', None)
+                elif match.view_name.endswith('view_experiment'):
+                    model_name = 'experiment'
+                    pk = match.kwargs.get('experiment_id')
+                elif match.view_name.endswith('view_dataset'):
+                    model_name = 'dataset'
+                    pk = match.kwargs.get('dataset_id')
+                else:
+                    model_name, pk = None, None
+
+                if pk is not None and model_name is not None:
+                    self.link_id = pk
+                    self.link_ct = ContentType.objects.get(
+                        app_label='tardis_portal',
+                        model=model_name.lower())
+            except (ValueError, IndexError, Resolver404):
+                # If we were unable to successfully match the url to model
+                # instance, return an error. For any URL the URL Parameter
+                # type should be used.
+                raise SuspiciousOperation('Link parameter could not be set '
+                                          'from string: %s' % str(value))
         else:
             self.string_value = unicode(value)
 

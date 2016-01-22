@@ -17,6 +17,7 @@ import django_jasmine.urls
 from tastypie.api import Api
 from tastypie.resources import Resource
 
+from tardis.app_config import get_tardis_apps, format_app_name_for_url
 from tardis.tardis_portal.api import (
     DatafileParameterResource,
     DatafileParameterSetResource,
@@ -41,17 +42,12 @@ from tardis.tardis_portal.api import (
     UserResource,
 )
 from tardis.tardis_portal.forms import RegistrationForm
-
+from tardis.tardis_portal.views import IndexView, ExperimentView, DatasetView
+from tardis.tardis_portal.views.pages import site_routed_view
 
 admin.autodiscover()
 
 logger = logging.getLogger(__name__)
-
-
-def getTardisApps():
-    return map(lambda app: app.split('.').pop(),
-               filter(lambda app: app.startswith(settings.TARDIS_APP_ROOT),
-                      settings.INSTALLED_APPS))
 
 handler500 = 'tardis.views.error_handler'
 
@@ -67,9 +63,16 @@ cas_urls = patterns(
     (r'^callback/$','callback'),
 )
 
+overridable_urls = patterns(
+    '',
+    url(r'^$', site_routed_view, {'_default_view': IndexView.as_view(),
+                                  '_site_mappings':
+                                      getattr(settings, 'INDEX_VIEWS', {})},
+        name='index'),
+)
+
 core_urls = patterns(
     'tardis.tardis_portal.views',
-    (r'^$', 'index'),
     url(r'^site-settings.xml/$', 'site_settings', name='tardis-site-settings'),
     url(r'^mydata/$', 'my_data', name='mydata'),
     url(r'^public_data/', 'public_data', name='public_data'),
@@ -97,11 +100,11 @@ experiment_lists = patterns(
 
 experiment_urls = patterns(
     'tardis.tardis_portal.views',
-    (r'^view/(?P<experiment_id>\d+)/$', 'view_experiment'),
+    url(r'^view/(?P<experiment_id>\d+)/$', ExperimentView.as_view(),
+        name='tardis_portal.view_experiment'),
     (r'^edit/(?P<experiment_id>\d+)/$', 'edit_experiment'),
     (r'^list', include(experiment_lists)),
     (r'^view/$', 'experiment_index'),  # Legacy URL
-    (r'^search/$', 'search_experiment'),
     (r'^create/$', 'create_experiment'),
     (r'^control_panel/(?P<experiment_id>\d+)/access_list/add/user/'
      '(?P<username>[\w\-][\w\-\.]+(@[\w\-][\w\-\.]+[a-zA-Z]{1,4})*)/$',
@@ -159,7 +162,8 @@ accounts_urls = patterns(
 dataset_urls = patterns(
     'tardis.tardis_portal.views',
     (r'^(?P<dataset_id>\d+)/stage-files$', 'stage_files_to_dataset'),
-    (r'^(?P<dataset_id>\d+)$', 'view_dataset'),
+    url(r'^(?P<dataset_id>\d+)$', DatasetView.as_view(),
+        name='tardis_portal.view_dataset'),
     (r'^(?P<dataset_id>\d+)/edit$', 'edit_dataset'),
     (r'^(?P<dataset_id>\d+)/thumbnail$', 'dataset_thumbnail'),
 )
@@ -176,7 +180,6 @@ iiif_urls = patterns(
 
 datafile_urls = patterns(
     '',
-    (r'^search/$', 'tardis.tardis_portal.views.search_datafile'),
     url(r'^view/(?P<datafile_id>\d+)/$',
         'tardis.tardis_portal.download.view_datafile',
         name="view_datafile"),
@@ -225,7 +228,6 @@ ajax_urls = patterns(
         'add_dataset_par'),
     (r'^add_experiment_parameters/(?P<experiment_id>\d+)/$',
         'add_experiment_par'),
-    (r'^parameter_field_list/$', 'retrieve_field_list'),
     (r'^experiment/(?P<experiment_id>\d+)/rights$', 'choose_rights'),
     (r'^experiment/(?P<experiment_id>\d+)/share$', 'share'),
     (r'^experiment/(?P<experiment_id>\d+)/dataset-transfer$',
@@ -271,11 +273,13 @@ group_urls = patterns(
 facility_urls = patterns(
     'tardis.tardis_portal.views',
     (r'^overview/$', 'facility_overview'),
-    (r'^fetch_data/(?P<facility_id>\d+)/count/', 'fetch_facility_data_count'),
+    (r'^fetch_data/(?P<facility_id>\d+)/count/', 'facility_overview_data_count'),
     (r'^fetch_data/(?P<facility_id>\d+)/'
      r'(?P<start_index>\d+)/(?P<end_index>\d+)/$',
-     'fetch_facility_data'),
-    (r'^fetch_facilities_list/$', 'fetch_facilities_list'),
+     'facility_overview_experiments'),
+    (r'^fetch_datafiles/(?P<dataset_id>\d+)/$',
+     'facility_overview_dataset_detail'),
+    (r'^fetch_facilities_list/$', 'facility_overview_facilities_list'),
     )
 
 display_urls = patterns(
@@ -322,9 +326,9 @@ v1_api.register(FacilityResource())
 v1_api.register(InstrumentResource())
 
 # App API additions
-for app in getTardisApps():
+for app_name, app in get_tardis_apps():
     try:
-        app_api = import_module('tardis.apps.%s.api' % app)
+        app_api = import_module('%s.api' % app)
         for res_name in dir(app_api):
             if not res_name.endswith('AppResource'):
                 continue
@@ -332,9 +336,9 @@ for app in getTardisApps():
             if not issubclass(resource, Resource):
                 continue
             resource_name = resource._meta.resource_name
-            if not resource_name.startswith(app):
+            if not resource_name.startswith(app_name):
                 resource._meta.resource_name = '%s_%s' % (
-                    app, resource_name)
+                    format_app_name_for_url(app_name), resource_name)
             v1_api.register(resource())
     except ImportError as e:
         logger.debug('App API URLs import error: %s' % str(e))
@@ -358,14 +362,12 @@ tastypie_swagger_urls = patterns(
 
 # # END API SECTION
 
-apppatterns = patterns('',)
-for app in getTardisApps():
-    apppatterns += patterns('tardis.apps',
-                            (r'^%s/' % app.replace('_', '-'),
-                             include('%s.%s.urls' %
-                                     (settings.TARDIS_APP_ROOT, app))))
+apppatterns = patterns('', )
+for app_name, app in get_tardis_apps():
+    apppatterns += patterns('',
+                            (r'^%s/' % format_app_name_for_url(app_name),
+                             include('%s.urls' % app)))
 urlpatterns = patterns(
-    # (r'^search/quick/$', 'tardis.tardis_portal.views.search_quick'),
     '',
     (r'', include(core_urls)),
     # API views
@@ -412,6 +414,9 @@ urlpatterns = patterns(
     # CAS
     (r'^cas/', include(cas_urls)),
 
+    # SAML2 
+    (r'^saml2/', include('djangosaml2.urls')),
+
     # Admin
     (r'^admin/doc/', include('django.contrib.admindocs.urls')),
     (r'^admin/', include(admin.site.urls)),
@@ -419,7 +424,7 @@ urlpatterns = patterns(
     (r'^upload/(?P<dataset_id>\d+)/$', 'tardis.tardis_portal.views.upload'),
 
     # Search
-    (r'^search/$', 'tardis.tardis_portal.views.single_search'),
+    url(r'^search/', include('tardis.search.urls')),
 
     # Apps
     (r'^apps/', include(apppatterns)),
@@ -430,6 +435,8 @@ urlpatterns = patterns(
     # Jasmine JavaScript Tests
     (r'^jasmine/', include(django_jasmine.urls)),
 
+    # Class-based views that may be overriden by apps
+    (r'', include(overridable_urls)),
 )
 
 # Handle static files from /static

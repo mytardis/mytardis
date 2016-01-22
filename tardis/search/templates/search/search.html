@@ -1,0 +1,56 @@
+{% extends "tardis_portal/portal_template.html" %}
+{% load bleach_tag %}
+
+{% block content %}
+    <h2>Search {{ site_title }}</h2>
+    <div>
+    <form method="GET" action="{% url "haystack_search" %}">
+    {{ form }}
+        <input class="btn btn-success" type="submit" value="Search">
+    </form>
+    </div>
+    {% if query %}
+        <h3>Found {{ object_list|length }} Matches</h3>
+        {% for result in object_list %}
+            {% if result.content_type == 'tardis_portal.experiment' %}
+                <div class="search_result">
+                    <div>Experiment <a href="{{ result.object.get_absolute_url }}">{{ result.highlighted.0|bleach|default:result.experiment_title }}</a>
+                    </div>
+                </div>
+            {% elif result.content_type == 'tardis_portal.dataset' %}
+                <div class="search_result">
+                    <div>Experiments with matching dataset:<br/>
+                        {% for experiment in result.experiments %}
+                            <a href="{{ experiment.get_absolute_url }}">{{ experiment }}</a><br/>
+                        {% endfor %}
+                        <div>Dataset <a href="{{ result.object.get_absolute_url }}">{{ result.highlighted.0|bleach|default:result.dataset_description }}</a></div>
+                    </div>
+                </div>
+            {% elif result.content_type == 'tardis_portal.datafile' %}
+                <div class="search_result">
+                    <div>Experiments/Datasets with matching file:<br/>
+                        {% for experiment in result.experiments %}
+                            <a href="{{ experiment.get_absolute_url }}">{{ experiment }}</a><br/>
+                        {% endfor %}
+                        <div>Dataset <a href="{{ result.object.dataset.get_absolute_url }}">{{ result.object.dataset.description }}</a>
+                        <div>File <a href="{{ result.object.get_absolute_url }}">{{ result.highlighted.0|bleach|default:result.text }}</a></div></div>
+                    </div>
+                </div>
+            {% endif %}
+            <hr/>
+        {% empty %}
+            <p>No results found.</p>
+        {% endfor %}
+
+        {% if page.has_previous or page.has_next %}
+            <div>
+                {% if page.has_previous %}<a href="?q={{ query }}&amp;page={{ page.previous_page_number }}">{% endif %}&laquo; Previous{% if page.has_previous %}</a>{% endif %}
+                |
+                    {% if page.has_next %}<a href="?q={{ query }}&amp;page={{ page.next_page_number }}">{% endif %}Next &raquo;{% if page.has_next %}</a>{% endif %}
+            </div>
+        {% endif %}
+    {% else %}
+        Enter your search term to search Experiment, Dataset and Datafile names
+        {# Show some example queries to run, maybe query syntax, something else? #}
+    {% endif %}
+{% endblock content%}

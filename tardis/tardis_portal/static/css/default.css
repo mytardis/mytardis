@@ -257,3 +257,14 @@ text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
     z-index: 1234 !important;
 }
 /* end autocomplete defaults */
+/* begin search */
+.search_result {
+    margin-top: 0.3em;
+}
+.search_result div {
+    margin-left: 1em;
+}
+.search_result div div {
+    margin-left: 1em;
+}
+/* end search */

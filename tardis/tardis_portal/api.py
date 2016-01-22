@@ -415,7 +415,7 @@ class ACLAuthorization(Authorization):
         elif isinstance(bundle.obj, DatasetParameter):
             return False
         elif isinstance(bundle.obj, DataFile):
-            return False
+            return bundle.request.user.has_perm('tardis_portal.change_datafile')
         elif isinstance(bundle.obj, DatafileParameterSet):
             return False
         elif isinstance(bundle.obj, DatafileParameter):

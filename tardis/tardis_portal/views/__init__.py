@@ -14,6 +14,5 @@ from tardis.tardis_portal.views.images import *
 from tardis.tardis_portal.views.machine import *
 from tardis.tardis_portal.views.pages import *
 from tardis.tardis_portal.views.parameters import *
-from tardis.tardis_portal.views.search import *
 from tardis.tardis_portal.views.upload import *
 from tardis.tardis_portal.views.utils import *
