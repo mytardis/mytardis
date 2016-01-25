@@ -6,7 +6,7 @@ class Instrument(models.Model):
     '''
     Represents an instrument belonging to a facility that produces data
     '''
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=100, unique=True)
     facility = models.ForeignKey(Facility)
 
     class Meta:
@@ -27,3 +27,10 @@ class Instrument(models.Model):
                 schema__type=Schema.INSTRUMENT)
         else:
             raise Schema.UnsupportedType
+
+    def _has_change_perm(self, user_obj):
+        """
+        Instrument objects should only be modified by members of the facility
+        managers group.
+        """
+        return self.facility.manager_group in user_obj.groups.all()
