@@ -200,7 +200,10 @@ class ACLAuthorization(Authorization):
                          user.experiment_set.filter(public_access__gt=1)
                          .count() > 0)]
         elif isinstance(bundle.obj, Group):
-            return bundle.request.user.groups.filter(id__in=obj_ids)
+            if facilities_managed_by(bundle.request.user).count() > 0:
+                return object_list
+            else:
+                return bundle.request.user.groups.filter(id__in=obj_ids)
         elif isinstance(bundle.obj, Facility):
             facilities = facilities_managed_by(bundle.request.user)
             return [facility for facility in object_list
@@ -517,7 +520,8 @@ class UserResource(ModelResource):
         # allow the user to find out their username and email
         # allow facility managers to query other users' username and email
         if authenticated and \
-                (same_user or len(facilities_managed_by(authuser)) > 0):
+                (same_user or facilities_managed_by(authuser).count() > 0):
+            bundle.data['username'] = queried_user.username
             bundle.data['email'] = queried_user.email
         else:
             del(bundle.data['username'])
