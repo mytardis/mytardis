@@ -4,13 +4,10 @@ from __future__ import unicode_literals
 from django.db import models, migrations, connection
 from tardis.tardis_portal.models import ExperimentParameter, DatasetParameter, \
     DatafileParameter, InstrumentParameter
-from tardis import settings
 
 def _generate_index_migrations():
     max_length = 256
 
-    # if 'postgres' not in settings.DATABASES['default']['ENGINE'].lower():
-    #     return []
     if hasattr(connection, 'vendor') and 'postgresql' not in connection.vendor:
         return []
 
