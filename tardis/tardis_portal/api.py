@@ -186,8 +186,8 @@ class ACLAuthorization(Authorization):
             experiment_ids = Experiment.safe.all(
                 bundle.request.user).values_list('id', flat=True)
             return ObjectACL.objects.filter(
-                content_type__name='experiment',
-                content_id__in=experiment_ids,
+                content_type__model='experiment',
+                object_id__in=experiment_ids,
                 id__in=obj_ids
             )
         elif bundle.request.user.is_authenticated() and \
