@@ -264,36 +264,48 @@ INSTALLED_APPS = (
     # 'tardis.apps.push_to',
 )
 
-# Here you can define any custom view overrides provided by apps.
-# Index page overrides are associated with a Django 'Site', specified
-# by SITE_ID (an integer) or the domain name of the incoming request.
-# Overriding index views are encouraged to subclass
-# tardis.tardis_portal.views.pages.IndexView. However, in order to reference
-# this class-based view from settings you need to create a wrapper function
-# which returns MySubclassedView.as_view() (since class-based views cannot
-# be referenced by module path strings like traditional view functions).
-# eg
-# def my_custom_index_wrapper(request, *args, **kwargs):
-#     from tardis.tardis_portal.views.pages import class_to_view
-#     return class_to_view(MySubclassedView, request, *args, **kwargs):
-#
-# Dataset and Experiment view overrides are mapped via a Schema
-# namespace.
-#
-# INDEX_VIEWS = {
-#     1: 'tardis.apps.my_custom_app.views.my_custom_index_wrapper',
-#     'store.example.com': 'tardis.apps.myapp.my_custom_index_wrapper'
-# }
-#
-# DATASET_VIEWS = [
-#     ('http://www.tardis.edu.au/schemas/dataset/my_example_schema',
-#      'tardis.apps.my_custom_app.views.dataset_view_wrapper_fn'),
-# ]
-#
-# EXPERIMENT_VIEWS = [
-#     ('http://www.tardis.edu.au/schemas/expt/my_example_schema',
-#      'tardis.apps.my_custom_app.views.expt_view_wrapper_fn'),
-# ]
+INDEX_VIEWS = {}
+'''
+A custom index page override is defined in as dictionary mapping a class-based
+view (or view function) to a Django ``Site``, specified by SITE_ID (an integer)
+or the domain name of the incoming request.
+See: https://mytardis.readthedocs.org/en/develop/contextual_views.html#custom-index-view
+
+eg:
+::
+        INDEX_VIEWS = {
+            1: 'tardis.apps.my_custom_app.views.MyCustomIndexSubclass',
+            'store.example.com': 'tardis.apps.myapp.AnotherCustomIndexSubclass'
+        }
+'''
+
+DATASET_VIEWS = []
+'''
+Dataset view overrides ('contextual views') are specified as tuples mapping
+a Schema namespace to a class-based view (or view function).
+See: https://mytardis.readthedocs.org/en/develop/contextual_views.html#dataset-and-experiment-views
+
+eg:
+::
+        DATASET_VIEWS = [
+            ('http://example.org/schemas/dataset/my_awesome_schema',
+             'tardis.apps.my_awesome_app.views.CustomDatasetViewSubclass'),
+        ]
+'''
+
+EXPERIMENT_VIEWS = []
+'''
+Experiment view overrides ('contextual views') are specified as tuples mapping
+a Schema namespace to a class-based view (or view function).
+See: https://mytardis.readthedocs.org/en/develop/contextual_views.html#dataset-and-experiment-views
+
+eg:
+::
+        EXPERIMENT_VIEWS = [
+            ('http://example.org/schemas/expt/my_awesome_schema',
+             'tardis.apps.my_awesome_app.views.CustomExptViewSubclass'),
+        ]
+'''
 
 JASMINE_TEST_DIRECTORY = path.abspath(path.join(path.dirname(__file__),
                                                 'tardis_portal',
