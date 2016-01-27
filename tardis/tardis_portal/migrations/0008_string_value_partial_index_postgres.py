@@ -6,7 +6,7 @@ from tardis.tardis_portal.models import ExperimentParameter, DatasetParameter, \
     DatafileParameter, InstrumentParameter
 
 def _generate_index_migrations():
-    max_length = 256
+    max_length = 255
 
     if hasattr(connection, 'vendor') and 'postgresql' not in connection.vendor:
         return []
