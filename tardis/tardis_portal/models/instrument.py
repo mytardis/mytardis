@@ -6,12 +6,13 @@ class Instrument(models.Model):
     '''
     Represents an instrument belonging to a facility that produces data
     '''
-    name = models.CharField(max_length=100, unique=True)
+    name = models.CharField(max_length=100)
     facility = models.ForeignKey(Facility)
 
     class Meta:
         app_label = 'tardis_portal'
         verbose_name_plural = 'Instruments'
+        unique_together = ['name', 'facility']
 
     def __unicode__(self):
         return self.name

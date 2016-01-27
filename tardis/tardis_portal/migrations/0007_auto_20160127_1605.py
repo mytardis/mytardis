@@ -11,9 +11,8 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.AlterField(
-            model_name='instrument',
-            name='name',
-            field=models.CharField(unique=True, max_length=100),
+        migrations.AlterUniqueTogether(
+            name='instrument',
+            unique_together=set([('name', 'facility')]),
         ),
     ]
