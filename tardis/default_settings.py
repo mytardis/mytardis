@@ -264,6 +264,7 @@ INSTALLED_APPS = (
     # 'tardis.apps.push_to',
 )
 
+INDEX_VIEWS = {}
 '''
 A custom index page override is defined in as dictionary mapping a class-based
 view (or view function) to a Django ``Site``, specified by SITE_ID (an integer)
@@ -277,8 +278,8 @@ eg:
             'store.example.com': 'tardis.apps.myapp.AnotherCustomIndexSubclass'
         }
 '''
-INDEX_VIEWS = {}
 
+DATASET_VIEWS = []
 '''
 Dataset view overrides ('contextual views') are specified as tuples mapping
 a Schema namespace to a class-based view (or view function).
@@ -291,8 +292,8 @@ eg:
              'tardis.apps.my_awesome_app.views.CustomDatasetViewSubclass'),
         ]
 '''
-DATASET_VIEWS = []
 
+EXPERIMENT_VIEWS = []
 '''
 Experiment view overrides ('contextual views') are specified as tuples mapping
 a Schema namespace to a class-based view (or view function).
@@ -305,7 +306,6 @@ eg:
              'tardis.apps.my_awesome_app.views.CustomExptViewSubclass'),
         ]
 '''
-EXPERIMENT_VIEWS = []
 
 JASMINE_TEST_DIRECTORY = path.abspath(path.join(path.dirname(__file__),
                                                 'tardis_portal',
