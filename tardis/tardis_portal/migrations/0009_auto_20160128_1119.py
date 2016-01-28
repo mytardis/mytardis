@@ -7,7 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('tardis_portal', '0006_datafile_remove_size_string_column'),
+        ('tardis_portal', '0008_string_value_partial_index_postgres'),
     ]
 
     operations = [
