@@ -5,9 +5,12 @@ in development
 --------------
 
 * DataFile size is now a BigInteger field
-* new settings for customisations
+* New settings for customisations, contextual view overrides (eg INDEX_VIEWS).
 * A new AbstractTardisAppConfig class that all new tardis apps should subclass
 * Third-party tardis app dependency checking
+* Removed database index from Parameter.string_value to allow longer strings in
+  Postgres. Migrations add a Postgres partial index for string_values shorter
+  than 256 characters.
 
 
 3.6 - 16 March 2015
