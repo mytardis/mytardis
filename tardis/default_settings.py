@@ -106,7 +106,7 @@ For security reasons this needs to be set to your hostname and/or IP
 address in production.
 '''
 
-SITE_TITLE = None
+SITE_TITLE = 'MyTardis'
 '''
 customise the title of your site
 '''
@@ -247,8 +247,6 @@ INSTALLED_APPS = (
     'django.contrib.admin',
     'django.contrib.admindocs',
     'django.contrib.humanize',
-    'tardis.tardis_portal',
-    'tardis.tardis_portal.templatetags',
     'registration',
     'django_jasmine',
     'djcelery',
@@ -257,11 +255,57 @@ INSTALLED_APPS = (
     'mustachejs',
     'tastypie',
     'tastypie_swagger',
+    'tardis.tardis_portal',
+    'tardis.tardis_portal.templatetags',
+    'tardis.search',
     # these optional apps, may require extra settings
     'tardis.apps.publication_forms',
     'tardis.apps.oaipmh',
     # 'tardis.apps.push_to',
 )
+
+INDEX_VIEWS = {}
+'''
+A custom index page override is defined in as dictionary mapping a class-based
+view (or view function) to a Django ``Site``, specified by SITE_ID (an integer)
+or the domain name of the incoming request.
+See: https://mytardis.readthedocs.org/en/develop/contextual_views.html#custom-index-view
+
+eg:
+::
+        INDEX_VIEWS = {
+            1: 'tardis.apps.my_custom_app.views.MyCustomIndexSubclass',
+            'store.example.com': 'tardis.apps.myapp.AnotherCustomIndexSubclass'
+        }
+'''
+
+DATASET_VIEWS = []
+'''
+Dataset view overrides ('contextual views') are specified as tuples mapping
+a Schema namespace to a class-based view (or view function).
+See: https://mytardis.readthedocs.org/en/develop/contextual_views.html#dataset-and-experiment-views
+
+eg:
+::
+        DATASET_VIEWS = [
+            ('http://example.org/schemas/dataset/my_awesome_schema',
+             'tardis.apps.my_awesome_app.views.CustomDatasetViewSubclass'),
+        ]
+'''
+
+EXPERIMENT_VIEWS = []
+'''
+Experiment view overrides ('contextual views') are specified as tuples mapping
+a Schema namespace to a class-based view (or view function).
+See: https://mytardis.readthedocs.org/en/develop/contextual_views.html#dataset-and-experiment-views
+
+eg:
+::
+        EXPERIMENT_VIEWS = [
+            ('http://example.org/schemas/expt/my_awesome_schema',
+             'tardis.apps.my_awesome_app.views.CustomExptViewSubclass'),
+        ]
+'''
 
 JASMINE_TEST_DIRECTORY = path.abspath(path.join(path.dirname(__file__),
                                                 'tardis_portal',
@@ -376,15 +420,26 @@ DOWNLOAD_SPACE_SAFETY_MARGIN = 8388608
 # INSTALLED_APPS = filter(lambda x: x != 'registration', INSTALLED_APPS)
 
 # Settings for the single search box
-# Set HAYSTACK_SOLR_URL to the location of the SOLR server instance
 SINGLE_SEARCH_ENABLED = False
-HAYSTACK_SITECONF = 'tardis.search_sites'
-HAYSTACK_SEARCH_ENGINE = 'solr'
-HAYSTACK_SOLR_URL = 'http://127.0.0.1:8080/solr'
+# flip this to turn on search:
+if SINGLE_SEARCH_ENABLED:
+    HAYSTACK_CONNECTIONS = {
+        'default': {
+            'ENGINE': 'haystack.backends.elasticsearch_backend.'
+                      'ElasticsearchSearchEngine',
+            'URL': 'http://127.0.0.1:9200/',
+            'INDEX_NAME': 'haystack',
+        },
+    }
+else:
+    HAYSTACK_CONNECTIONS = {
+        'default': {
+            'ENGINE': 'haystack.backends.simple_backend.SimpleEngine',
+        },
+    }
 if SINGLE_SEARCH_ENABLED:
     INSTALLED_APPS = INSTALLED_APPS + ('haystack',)
-else:
-    HAYSTACK_ENABLE_REGISTRATIONS = False
+HAYSTACK_SIGNAL_PROCESSOR = 'haystack.signals.RealtimeSignalProcessor'
 
 DEFAULT_INSTITUTION = "Monash University"
 

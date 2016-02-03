@@ -352,8 +352,8 @@ storage backends such as cloud storage or SFTP servers.  Please refer to the
 Single Search
 ~~~~~~~~~~~~~
 
-Instructions on installing and configuring Solr for advanced search are
-available from :doc:`searchsetup`.
+Instructions on installing and configuring Elasticsearch for advanced search
+are available from :doc:`searchsetup`.
 
 
 Additional Tabs

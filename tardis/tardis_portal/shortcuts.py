@@ -21,7 +21,7 @@ def render_response_index(request, *args, **kwargs):
 
 def render_response_search(request, url, c):
 
-    from tardis.tardis_portal.views import getNewSearchDatafileSelectionForm
+    from tardis.search.views import getNewSearchDatafileSelectionForm
 
     links = {}
     for app in settings.INSTALLED_APPS:

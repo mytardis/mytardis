@@ -186,8 +186,8 @@ class ACLAuthorization(Authorization):
             experiment_ids = Experiment.safe.all(
                 bundle.request.user).values_list('id', flat=True)
             return ObjectACL.objects.filter(
-                content_type__name='experiment',
-                content_id__in=experiment_ids,
+                content_type__model='experiment',
+                object_id__in=experiment_ids,
                 id__in=obj_ids
             )
         elif bundle.request.user.is_authenticated() and \
@@ -200,7 +200,10 @@ class ACLAuthorization(Authorization):
                          user.experiment_set.filter(public_access__gt=1)
                          .count() > 0)]
         elif isinstance(bundle.obj, Group):
-            return bundle.request.user.groups.filter(id__in=obj_ids)
+            if facilities_managed_by(bundle.request.user).count() > 0:
+                return object_list
+            else:
+                return bundle.request.user.groups.filter(id__in=obj_ids)
         elif isinstance(bundle.obj, Facility):
             facilities = facilities_managed_by(bundle.request.user)
             return [facility for facility in object_list
@@ -415,7 +418,7 @@ class ACLAuthorization(Authorization):
         elif isinstance(bundle.obj, DatasetParameter):
             return False
         elif isinstance(bundle.obj, DataFile):
-            return False
+            return bundle.request.user.has_perm('tardis_portal.change_datafile')
         elif isinstance(bundle.obj, DatafileParameterSet):
             return False
         elif isinstance(bundle.obj, DatafileParameter):
@@ -517,7 +520,8 @@ class UserResource(ModelResource):
         # allow the user to find out their username and email
         # allow facility managers to query other users' username and email
         if authenticated and \
-                (same_user or len(facilities_managed_by(authuser)) > 0):
+                (same_user or facilities_managed_by(authuser).count() > 0):
+            bundle.data['username'] = queried_user.username
             bundle.data['email'] = queried_user.email
         else:
             del(bundle.data['username'])
@@ -552,6 +556,10 @@ class SchemaResource(MyTardisModelResource):
 
     class Meta(MyTardisModelResource.Meta):
         queryset = Schema.objects.all()
+        filtering = {
+            'id': ('exact', ),
+            'namespace': ('exact', ),
+        }
 
 
 class ParameterNameResource(MyTardisModelResource):
@@ -559,6 +567,9 @@ class ParameterNameResource(MyTardisModelResource):
 
     class Meta(MyTardisModelResource.Meta):
         queryset = ParameterName.objects.all()
+        filtering = {
+            'schema': ALL_WITH_RELATIONS,
+        }
 
 
 class ParameterResource(MyTardisModelResource):

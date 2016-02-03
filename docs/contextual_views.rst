@@ -2,6 +2,13 @@
 Contextual Views
 ================
 
+Introduction
+============
+In order to better represent specific data types and facilities, MyTardis
+allows apps to override the default views for Experiments, Datasets,
+DataFile metadata, and the main index page. The following sections detail
+settings and requirements of apps to make this happen.
+
 Datafile Views
 ==============
 
@@ -20,7 +27,11 @@ User Guide
 A default installation has no contextual views. To enable them a few
 steps are needed:
 
-* an app needs to be installed in ``tardis/apps/``
+* an app needs to be installed either in ``tardis/apps/``, or the app's
+  configuration must subclass ``AbstractTardisAppConfig`` thereby enabling
+  autodetection. ``AbstractTardisAppConfig`` replaces ``AppConfig`` as
+  described in these
+  `django docs <https://docs.djangoproject.com/en/1.8/ref/applications/>`_.
 
 * ``DataFile`` s need to be manually or automatically tagged with a
   schema that identifies them as viewable with a particular
@@ -37,12 +48,12 @@ steps are needed:
 
 ::
 
-    DATAFILE_VIEWS = [("http://example.org/views/awesome_view",
-                       "/apps/awesome-view/view"),]
+    DATAFILE_VIEWS = [("http://example.org/schemas/datafile/my_awesome_schema",
+                       "/apps/my-awesome-app/view"),]
 
 Currently, the default view is always ``DataFile`` metadata. This
 can be changed, for example, by developing a custom ``Dataset`` view,
-which is explained in the following chapter.
+which is explained in the following section.
 
 Dataset and Experiment Views
 ============================
@@ -51,52 +62,86 @@ Rationale
 ---------
 
 For some specific uses the data available can be presented and/or
-processed in useful ways. The example that this feature was built for
-are single-image and many-image datasets from the Australian
-Synchrotron. Single images can be displayed large and for a many-image
-dataset it is more useful to show a couple of example images taken at
-regular intervals not from the beginning of the set of files.  These
-different datasets can be tagged differently and subsequently
-displayed differently.
+processed in useful ways. MyTardis allows views for Experiments and Datasets to
+be overriden by apps on a per-schema basis, allowing custom views for specifc
+data types. The example that this feature was built for are single-image and
+many-image datasets from the Australian Synchrotron. Single images can be
+displayed large and for a many-image dataset it is more useful to show a couple
+of example images taken at regular intervals not from the beginning of the set
+of files. These different datasets can be detected via their schema namespace
+and displayed differently.
 
 User Guide
 ----------
 
-Similarly to contextual ``DataFile`` views, ``Dataset`` and ``Experiment``
-views rely on specific schemas attached to them.
+Akin to ``DataFile`` contextual views, ``Dataset`` and ``Experiment``
+contextual views rely on matching a specific schema namespace in an attached
+ParameterSet.
 
-The schema for each view either needs to be created and attached to a
-Dataset, or the view can be set up for Dataset schemas that are
-already in use.
+Existing schemas can be used, or a special schema intended only for tagging an
+Experiment or Dataset for contextual view override can be attached (via an
+otherwise empty ParameterSet).
 
-There are two main differences:
-
-* instead of an AJAX-loaded URL the settings associate a view function
-  with a schema.
+``Dataset`` and ``Experiment`` contextual views are configured in settings by
+ associating a schema namespace with a class-based view (or view function).
+Unlike ``DataFile`` contextual views which inject content into the DOM via an
+AJAX call, these contextual views override the entire page.
 
   Example:
 
 ::
 
     DATASET_VIEWS = [
-        ("http://example.org/awesome_data/1",
-         "tardis.apps.mx_views.views.view_full_dataset"),
+        ('http://example.org/schemas/dataset/my_awesome_schema',
+         'tardis.apps.my_awesome_app.views.CustomDatasetViewSubclass'),
     ]
+
     EXPERIMENT_VIEWS = [
-        ("http://example.org/awesome_experiments/1",
-         "tardis.apps.mx_views.views.view_fancy_experiment"),
+        ('http://example.org/schemas/expt/my_awesome_schema',
+         'tardis.apps.my_awesome_app.views.CustomExptViewSubclass'),
     ]
 
+Custom Index View
+=================
 
-* there is currently no UI choice of the ``Dataset`` and ``Experiment`` views.
+Rationale
+---------
+Specific sites or facilities often want to display a custom index page that
+presents recently ingested experiments in a way which is more meaningful for
+their particular domain or application. MyTardis support overriding the
+index page (/) on a per-domain or per-``Site`` basis.
 
-Good practice
--------------
+User Guide
+----------
 
-The default and well-tested ``Dataset`` and ``Experiment`` views can be
-changed minimally for specific purposes by extending the default template
-and overriding a template block.
+Example:
+::
 
-New versions may change the default view functions. If you copy and paste them
-for your application, please check with each upgrade that you are still using
-up to date code.
+    INDEX_VIEWS = {
+        1: 'tardis.apps.my_custom_app.views.MyCustomIndexSubclass',
+        'facility.example.org': 'tardis.apps.myapp.AnotherCustomIndexSubclass'
+    }
+
+A custom view override is defined in settings as dictionary mapping a
+class-based view (or view function) to a Django
+`Site <https://docs.djangoproject.com/en/1.8/ref/contrib/sites/>`_. A ``Site`` is
+specified by SITE_ID (an integer) or the domain name of the incoming request.
+
+Developers creating custom contextual index views are encouraged to subclass
+``tardis.tardis_portal.views.pages.IndexView``.
+
+Good practice for app developers
+================================
+
+In order to benefit from future bug and security fixes in core MyTardis, app
+developers are strongly encouraged to override ``IndexView``, ``DatasetView``
+and ``ExperimentView`` (from ``tardis.tardis_portal.pages``) when creating
+custom contextual views.
+
+The default and well-tested ``index.html``, ``view_dataset.html`` and
+``view_experiment.html`` templates can used as a basis for these custom
+contextual views.
+
+New versions may change the default templates and view functions. If you copy
+and paste parts for your application, please check with each upgrade that you
+are still using up to date code.

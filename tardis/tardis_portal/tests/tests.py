@@ -39,6 +39,7 @@ http://docs.djangoproject.com/en/dev/topics/testing/
 """
 
 import unittest
+from unittest import skip
 from compare import expect, ensure
 
 from django.test import TestCase
@@ -109,6 +110,7 @@ class SearchTestCase(TestCase):
         for experiment in self.experiments:
             experiment.delete()
 
+    @skip('search is undergoing some changes, skip in the meantime')
     def testSearchDatafileForm(self):
         self.client.login(username='test', password='test')
         response = self.client.get('/datafile/search/', {'type': 'saxs', })
@@ -122,6 +124,7 @@ class SearchTestCase(TestCase):
 
         self.client.logout()
 
+    @skip('search is undergoing some changes, skip in the meantime')
     def testSearchDatafileAuthentication(self):
         response = self.client.get('/datafile/search/',
                                    {'type': 'saxs', 'filename': '', })
@@ -185,6 +188,7 @@ class SearchTestCase(TestCase):
     #     self.assertEqual(len(response.context['datafiles']), 5)
     #     self.client.logout()
 
+    @skip('search is undergoing some changes, skip in the meantime')
     def testSearchExperimentForm(self):
         login = self.client.login(username='test', password='test')
         self.assertEqual(login, True)
@@ -196,6 +200,7 @@ class SearchTestCase(TestCase):
                                 'tardis_portal/search_experiment_form.html')
         self.client.logout()
 
+    @skip('search is undergoing some changes, skip in the meantime')
     def testSearchExperimentAuthentication(self):
         self.client.login(username='test', password='test')
         response = self.client.get('/experiment/search/',
@@ -203,6 +208,7 @@ class SearchTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         self.client.logout()
 
+    @skip('search is undergoing some changes, skip in the meantime')
     def testSearchExperimentResults(self):
         self.client.login(username='test', password='test')
         response = self.client.get('/experiment/search/',
@@ -246,9 +252,12 @@ class UserInterfaceTestCase(TestCase):
 
     def test_urls(self):
         c = Client()
-        urls = ['/login/', '/about/', '/stats/',
+        urls = ['/login/',
+                '/about/',
+                '/stats/',
                 '/experiment/list/public',
-                '/experiment/search/']
+                # '/experiment/search/',
+        ]
 
         for u in urls:
             response = c.get(u)
@@ -293,8 +302,8 @@ class UserInterfaceTestCase(TestCase):
         urls = ['/about/', '/stats/']
         urls += ['/experiment/list/%s' % part
                  for part in ('mine', 'shared', 'public')]
-        urls += ['/experiment/%s/' % part
-                 for part in ('search',)]
+        # urls += ['/experiment/%s/' % part
+        #          for part in ('search',)]
         urls += ['/experiment/view/%d/' % experiment.id]
         urls += ['/ajax/experiment/%d/%s' % (experiment.id, tabpane)
                  for tabpane in ('description', 'datasets', 'rights')]
@@ -313,6 +322,7 @@ class UserInterfaceTestCase(TestCase):
             response = c.get(u)
             expect(response.status_code).to_equal(302)
 
+    @skip('search is undergoing some changes, skip in the meantime')
     def test_search_urls(self):
         # Load schemas for test
         from django.core.management import call_command

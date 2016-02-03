@@ -71,6 +71,49 @@ class ModelTestCase(TestCase):
         self.assertEqual(exp.get_or_create_directory(),
                          path.join(settings.FILE_STORE_PATH, str(exp.id)))
 
+    def test_dataset(self):
+        from tardis.tardis_portal import models
+        exp = models.Experiment(title='test exp1',
+                                institution_name='monash',
+                                created_by=self.user,
+                                )
+
+        exp.save()
+        exp2 = models.Experiment(title='test exp2',
+                                 institution_name='monash',
+                                 created_by=self.user,
+                                 )
+        exp2.save()
+
+        group = models.Group(name="Test Manager Group")
+        group.save()
+        group.user_set.add(self.user)
+        facility = models.Facility(name="Test Facility",
+                                   manager_group=group)
+        facility.save()
+        instrument = models.Instrument(name="Test Instrument",
+                                       facility=facility)
+        instrument.save()
+
+        dataset = models.Dataset(description='test dataset1')
+        dataset.instrument = instrument
+        dataset.save()
+        dataset.experiments = [exp, exp2]
+        dataset.save()
+        dataset_id = dataset.id
+
+        del dataset
+        dataset = models.Dataset.objects.get(pk=dataset_id)
+
+        self.assertEqual(dataset.description, 'test dataset1')
+        self.assertEqual(dataset.experiments.count(), 2)
+        self.assertIn(exp, list(dataset.experiments.iterator()))
+        self.assertIn(exp2, list(dataset.experiments.iterator()))
+        self.assertEqual(instrument, dataset.instrument)
+        self.assertEqual(
+            dataset.get_absolute_url(), '/dataset/1',
+            dataset.get_absolute_url() + ' != /dataset/1')
+
     def test_authors(self):
         from tardis.tardis_portal import models
         exp = models.Experiment(title='test exp2',
@@ -149,7 +192,7 @@ class ModelTestCase(TestCase):
             self.assertEqual(df_file.file_objects.all()[0].uri,
                              'path/file.txt')
             self.assertEqual(df_file.dataset, dataset)
-            self.assertEqual(df_file.size, '')
+            self.assertEqual(df_file.size, None)
             self.assertEqual(df_file.get_download_url(),
                              '/api/v1/dataset_file/1/download%s' %
                              trailing_slash())
@@ -159,14 +202,14 @@ class ModelTestCase(TestCase):
             self.assertEqual(df_file.file_objects.all()[0].uri,
                              'path/file1.txt')
             self.assertEqual(df_file.dataset, dataset)
-            self.assertEqual(df_file.size, '')
+            self.assertEqual(df_file.size, None)
             self.assertEqual(df_file.get_download_url(),
                              '/api/v1/dataset_file/2/download%s' %
                              trailing_slash())
             df_file = _build(dataset, 'file1.txt', 'path/file1#txt')
             self.assertEqual(df_file.filename, 'file1.txt')
             self.assertEqual(df_file.dataset, dataset)
-            self.assertEqual(df_file.size, '')
+            self.assertEqual(df_file.size, None)
             self.assertEqual(df_file.get_download_url(),
                              '/api/v1/dataset_file/3/download%s' %
                              trailing_slash())
@@ -175,27 +218,16 @@ class ModelTestCase(TestCase):
                              'http://localhost:8080/filestore/f.txt')
             self.assertEqual(df_file.filename, 'f.txt')
             self.assertEqual(df_file.dataset, dataset)
-            self.assertEqual(df_file.size, '')
+            self.assertEqual(df_file.size, None)
             self.assertEqual(df_file.get_download_url(),
                              '/api/v1/dataset_file/4/download%s' %
                              trailing_slash())
-
-            # check that we can create datafiles with byte size of zero
-            # size is actually a CharField, so gets saved as a string
-            settings.REQUIRE_DATAFILE_SIZES = True
-            df_file = DataFile(dataset=dataset,
-                               filename='empty.txt',
-                               size=0)
-            df_file.save()
-            df_pk = df_file.pk
-            saved_df = DataFile.objects.get(pk=df_pk)
-            self.assertEqual(saved_df.size, u'0')
 
             # check that can't save negative byte sizes
             with self.assertRaises(Exception):
                 settings.REQUIRE_DATAFILE_SIZES = True
                 DataFile(dataset=dataset, filename='lessthanempty.txt',
-                         size='-1').save()
+                         size=-1).save()
 
             # Now check the 'REQUIRE' config params
             with self.assertRaises(Exception):
@@ -207,7 +239,7 @@ class ModelTestCase(TestCase):
                 settings.REQUIRE_DATAFILE_SIZES = False
                 settings.REQUIRE_DATAFILE_CHECKSUMS = True
                 DataFile(dataset=dataset, filename='foo.txt',
-                         size='1').save()
+                         size=1).save()
 
         finally:
             settings.REQUIRE_DATAFILE_SIZES = save1
@@ -232,7 +264,7 @@ class ModelTestCase(TestCase):
 
         df_file = models.DataFile(dataset=dataset,
                                   filename='file.txt',
-                                  size='42',
+                                  size=42,
                                   md5sum='bogus')
         df_file.save()
 
