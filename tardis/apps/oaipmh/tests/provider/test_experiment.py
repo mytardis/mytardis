@@ -125,6 +125,11 @@ class AbstractExperimentProviderTC():
             pass
 
     def tearDown(self):
+        Experiment.objects.all().delete()
+        License.objects.all().delete()
+        User.objects.all().delete()
+        UserProfile.objects.all().delete()
+        
         pass
 
 
