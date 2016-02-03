@@ -30,6 +30,7 @@ from tastypie.serializers import Serializer
 from tastypie.utils import trailing_slash
 from tastypie.contrib.contenttypes.fields import GenericForeignKeyField
 
+from tardis.tardis_portal import tasks
 from tardis.tardis_portal.auth.decorators import \
     get_accessible_datafiles_for_user
 from tardis.tardis_portal.auth.decorators import has_datafile_access
@@ -937,7 +938,7 @@ class DataFileResource(MyTardisModelResource):
             [file_record],
             self.build_bundle(obj=file_record, request=request))
         for dfo in file_record.file_objects.all():
-            dfo.verify.apply_async()
+            tasks.dfo_verify.delay(dfo.id)
         return HttpResponse()
 
     def hydrate(self, bundle):
