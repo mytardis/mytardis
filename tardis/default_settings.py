@@ -358,14 +358,23 @@ AUTHENTICATION_BACKENDS = (
 # Log In Method settings
 # ---------------------------------
 ''' Sets the method used by the default login button on the portal_template.
-Options include: 'aaf', 'cas', and 'localdb'
+Options include: 'aaf', 'cas', 'localdb', and 'saml2'.
 '''
 
 DEFAULT_LOGIN = "localdb"
 
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False
+
+# local db login settings
+LOCALDB_ENABLED = True
+LOCALDB_DISPLAY = "Local"
+
 # SAML2 settings
+SAML2_ENABLED = False
+SAML2_DISPLAY = "SAML2"
 SAML2_LOGIN_URL = '/saml2/login/'
-SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+SAML2_CONFIG = {}
+SAML2_CONFIG[''] = ''
 
 # CAS Server default settings
 ''' CAS SERVER configuration parameters...
@@ -374,6 +383,7 @@ service_url: the base url of the mytardis instance.
 logout_completely: set to false to enable single sign-on (sso) sessions.
 '''
 CAS_ENABLED = False
+CAS_DISPLAY = "CAS"
 CAS_SERVER_URL = 'https//<url of the CAS Service>/'
 CAS_SERVICE_URL = 'http://<url of the tardis instance>/'
 CAS_LOGOUT_COMPLETELY = True
@@ -398,6 +408,7 @@ NOTE: if set the RAPID_CONNECT_PRINCIPAL_DOMAIN will be strip from the
       into a user id of 'u99999'. 
 '''
 RAPID_CONNECT_ENABLED = False
+RAPID_CONNECT_DISPLAY = "AAF"
 RAPID_CONNECT_PRINCIPAL_DOMAIN = ''
 RAPID_CONNECT_CONFIG = {}
 RAPID_CONNECT_CONFIG['iss'] = 'https://rapid.test.aaf.edu.au'

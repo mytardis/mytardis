@@ -224,7 +224,7 @@
                   		style="width: 80px; text-align: center;"
                   		href={{ RAPID_CONNECT_LOGIN_URL }} >
                   		<i class="icon-signin"></i>
-                  		AAF
+                  		{{ RAPID_CONNECT_DISPLAY }}
                 	</a>
                   </li>
                   {% endif %}
@@ -235,7 +235,7 @@
 				   		style="width: 80px; text-align: center;"
 				   		href={% url 'django_cas_ng.views.login' %} >
                   		<i class="icon-signin"></i>
-                  		CAS
+                  		{{ CAS_DISPLAY }}
                 	</a>
                   </li>
                   {% endif %}
@@ -246,20 +246,18 @@
 				   		style="width: 80px; text-align: center;"
 				   		href='/saml2/login/' >
                   		<i class="icon-signin"></i>
-                  		SAML2
+                  		{{ SAML2_DISPLAY }}
                 	</a>
                   </li>
                   {% endif %}
-              	  {% if DEFAULT_LOGIN|lower == 'aaf' 
-              	  	 or DEFAULT_LOGIN|lower == 'cas' 
-              	  	 or DEFAULT_LOGIN|lower == 'saml2' %}
+              	  {% if LOCALDB_ENABLED and DEFAULT_LOGIN|lower != 'localdb' %}
         	  <li>      
               	  	<a id="login-button"  
 						class="btn btn-info btn-block"
                   		style="width: 80px; text-align: center;"
                   		href="{% url 'tardis.tardis_portal.views.login' %}" >
                   		<i class="icon-signin"></i>
-                  		Local DB
+                  		{{ LOCAL_LOGIN_DISPLAY }}
                 	</a>
                   </li>
                   {% endif %}	

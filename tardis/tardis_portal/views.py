@@ -1172,6 +1172,8 @@ def edit_experiment(request, experiment_id,
 
 
 # todo complete....
+from tardis.tardis_portal.views.pages import use_multimodal_login
+@use_multimodal_login
 def login(request):
     '''
     handler for login page
