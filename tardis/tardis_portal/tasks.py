@@ -225,13 +225,13 @@ def dfo_cache_file(dfo_id):
     return dfo.cache_file()
 
 
-@task(name="tardis_portal.verify_dfo_method", ignore_result=True)
+@task(name="tardis_portal.dfo.verify", ignore_result=True)
 def dfo_verify(dfo_id, *args, **kwargs):
     from tardis.tardis_portal.models import DataFileObject
     # Get dfo locked for write (to prevent concurrent actions)
     if kwargs.pop('transaction_lock', False):
         with transaction.atomic():
             dfo = DataFileObject.objects.select_for_update().get(id=dfo_id)
-    else:
-        dfo = DataFileObject.objects.get(id=dfo_id)
-    return dfo.verify(*args, **kwargs)
+            return dfo.verify(*args, **kwargs)
+    dfo = DataFileObject.objects.get(id=dfo_id)
+    dfo.verify(*args, **kwargs)

@@ -260,7 +260,7 @@ class DataFile(models.Model):
         if dfo is None:
             return None
         if dfo.storage_type in (StorageBox.TAPE,):
-            tasks.dfo_cache_file.apply_async(dfo.id)
+            tasks.dfo_cache_file.apply_async(args=[dfo.id])
         return dfo.file_object
 
     def get_preferred_dfo(self, verified_only=True):
@@ -678,7 +678,7 @@ class DataFileObject(models.Model):
             if len(database_update) > 0:
                 for key, val in database_update.items():
                     setattr(df, key, val)
-                    df.save()
+                df.save()
         else:
             reasons = []
             if io_error:

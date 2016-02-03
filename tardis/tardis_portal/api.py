@@ -1082,6 +1082,7 @@ class ReplicaResource(MyTardisModelResource):
             bundle.obj.file_object = bundle.data['file_object']
             bundle.data['file_object'].close()
             del(bundle.data['file_object'])
+            bundle.obj = DataFileObject.objects.get(id=bundle.obj.id)
         return bundle
 
     def dehydrate(self, bundle):
