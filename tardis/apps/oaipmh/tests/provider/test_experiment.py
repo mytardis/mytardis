@@ -52,6 +52,10 @@ def _create_experiment(user, bad):
         psm.set_param(k, v)
     return experiment
 
+def _get_first_exp_id():
+    exp_ids = [exp.id for exp in Experiment.objects]
+    return 'experiment/%d' % min(exp_ids)
+    
 
 class AbstractExperimentProviderTC():
     __metaclass__ = ABCMeta
@@ -93,7 +97,7 @@ class AbstractExperimentProviderTC():
         for header in headers:
             if not header.identifier().startswith('experiment'):
                 continue
-            e = self._experiment if header.identifier() == 'experiment/1' \
+            e = self._experiment if header.identifier() == _get_first_exp_id() \
                 else self._experiment2
             expect(header.identifier()).to_contain(str(e.id))
             expect(header.datestamp().replace(tzinfo=pytz.utc)) \
@@ -125,11 +129,6 @@ class AbstractExperimentProviderTC():
             pass
 
     def tearDown(self):
-        Experiment.objects.all().delete()
-        License.objects.all().delete()
-        User.objects.all().delete()
-        UserProfile.objects.all().delete()
-        
         pass
 
 
@@ -146,7 +145,7 @@ class DcExperimentProviderTestCase(AbstractExperimentProviderTC, TestCase):
 
     def testGetRecord(self):
         header, metadata, about = self._getProvider().getRecord('oai_dc', \
-                                                                'experiment/1')
+                                                    _get_first_exp_id())
         expect(header.identifier()).to_contain(str(self._experiment.id))
         expect(header.datestamp().replace(tzinfo=pytz.utc))\
             .to_equal(get_local_time(self._experiment.update_time))
@@ -160,7 +159,7 @@ class DcExperimentProviderTestCase(AbstractExperimentProviderTC, TestCase):
         results = self._getProvider().listRecords('oai_dc')
         # Iterate through headers
         for header, metadata, _ in results:
-            e = self._experiment if header.identifier() == 'experiment/1' \
+            e = self._experiment if header.identifier() == _get_first_exp_id() \
                 else self._experiment2
             expect(header.identifier()).to_contain(str(e.id))
             expect(header.datestamp().replace(tzinfo=pytz.utc))\
@@ -192,7 +191,7 @@ class RifCsExperimentProviderTestCase(AbstractExperimentProviderTC, TestCase):
 
     def testGetRecord(self):
         header, metadata, about = self._getProvider().getRecord('rif',
-                                                                'experiment/1')
+                                                     _get_first_exp_id())
         expect(header.identifier()).to_contain(str(self._experiment.id))
         expect(header.datestamp().replace(tzinfo=pytz.utc))\
             .to_equal(get_local_time(self._experiment.update_time))
@@ -220,7 +219,7 @@ class RifCsExperimentProviderTestCase(AbstractExperimentProviderTC, TestCase):
         # Iterate through headers
         for header, metadata, _ in results:
             if header.identifier().startswith('experiment'):
-                e = self._experiment if header.identifier() == 'experiment/1' \
+                e = self._experiment if header.identifier() == _get_first_exp_id() \
                     else self._experiment2
                 expect(header.identifier()).to_contain(str(e.id))
                 expect(header.datestamp().replace(tzinfo=pytz.utc))\
