@@ -19,10 +19,9 @@ from django.dispatch import receiver
 from django.forms.models import model_to_dict
 from django.utils import timezone
 
-from celery.contrib.methods import task
-
 import magic
 
+from tardis.tardis_portal import tasks
 from .fields import DirectoryField
 from .dataset import Dataset
 from .storage import StorageBox, StorageBoxOption, StorageBoxAttribute
@@ -105,7 +104,6 @@ class DataFile(models.Model):
         return any(dfo.storage_type not in StorageBox.offline_types
                    for dfo in self.file_objects.filter(verified=True))
 
-    @task(name="tardis_portal.cache_datafile")
     def cache_file(self):
         if self.is_online:
             return True
@@ -262,7 +260,7 @@ class DataFile(models.Model):
         if dfo is None:
             return None
         if dfo.storage_type in (StorageBox.TAPE,):
-            dfo.cache_file.apply_async()
+            tasks.dfo_cache_file.apply_async(args=[dfo.id])
         return dfo.file_object
 
     def get_preferred_dfo(self, verified_only=True):
@@ -488,7 +486,7 @@ class DataFileObject(models.Model):
             self._initial_values = self._current_values
         elif not reverify:
             return
-        self.verify.apply_async(countdown=5)
+        tasks.dfo_verify.apply_async(countdown=5, args=[self.id])
 
     @property
     def storage_type(self):
@@ -579,19 +577,19 @@ class DataFileObject(models.Model):
             self._cached_storage = cached_storage
         return self._cached_storage
 
-    @task(name='tardis_portal.dfo.cache_file', ignore_result=True)
     def cache_file(self):
         cache_box = self.storage_box.cache_box
         if cache_box is not None:
             return self.copy_file(cache_box)
         return None
 
-    @task(name='tardis_portal.dfo.copy_file', ignore_result=True)
     def copy_file(self, dest_box=None, verify=True):
         '''
         copies verified file to new storage box
         checks for existing copy
         triggers async verification if not disabled
+        :param dest_box: StorageBox instance
+        :param verify: bool
         '''
         if not self.verified:
             logger.debug('DFO (id: %d) could not be copied.'
@@ -602,7 +600,7 @@ class DataFileObject(models.Model):
         existing = self.datafile.file_objects.filter(storage_box=dest_box)
         if existing.count() > 0:
             if not existing[0].verified and verify:
-                existing[0].verify.delay()
+                tasks.dfo_verify.delay(existing[0].id)
             return existing[0]
         try:
             with transaction.atomic():
@@ -617,22 +615,22 @@ class DataFileObject(models.Model):
                 (self.id, str(e)))
             return False
         if verify:
-            copy.verify.delay()
+            tasks.dfo_verify.delay(copy.id)
         return copy
 
-    @task(name='tardis_portal.dfo.move_file', ignore_result=True)
     def move_file(self, dest_box=None):
         '''
         moves a file
         copies first, then synchronously verifies
         deletes file if copy is true copy and has been verified
+
+        :param dest_box: StorageBox instance
         '''
         copy = self.copy_file(dest_box=dest_box, verify=False)
         if copy and copy.id != self.id and (copy.verified or copy.verify()):
             self.delete()
         return copy
 
-    @task(name="tardis_portal.verify_dfo_method", ignore_result=True)  # noqa # too complex
     def verify(self, add_checksums=True, add_size=True):  # too complex # noqa
         comparisons = ['size', 'md5sum', 'sha512sum']
 
@@ -680,7 +678,7 @@ class DataFileObject(models.Model):
             if len(database_update) > 0:
                 for key, val in database_update.items():
                     setattr(df, key, val)
-                    df.save()
+                df.save()
         else:
             reasons = []
             if io_error:
