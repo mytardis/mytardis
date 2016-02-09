@@ -158,8 +158,9 @@ class ACLAuthorization(Authorization):
                 id__in=obj_ids
             )
         elif isinstance(bundle.obj, Dataset):
-            return [ds for ds in object_list
-                    if has_dataset_access(bundle.request, ds.id)]
+            dataset_ids = [ds.id for ds in object_list
+                           if has_dataset_access(bundle.request, ds.id)]
+            return Dataset.objects.filter(id__in=dataset_ids)
         elif isinstance(bundle.obj, DatasetParameterSet):
             return [dps for dps in object_list
                     if has_dataset_access(bundle.request, dps.dataset.id)]
@@ -658,6 +659,11 @@ class ExperimentResource(MyTardisModelResource):
             'id': ('exact', ),
             'title': ('exact',),
         }
+        ordering = [
+            'title',
+            'created_time',
+            'update_time'
+        ]
         always_return_data = True
 
     def dehydrate(self, bundle):
@@ -843,6 +849,9 @@ class DatasetResource(MyTardisModelResource):
             'description': ('exact', ),
             'directory': ('exact', ),
         }
+        ordering = [
+            'description'
+        ]
         always_return_data = True
 
     def prepend_urls(self):
@@ -893,6 +902,10 @@ class DataFileResource(MyTardisModelResource):
             'dataset': ALL_WITH_RELATIONS,
             'filename': ('exact', ),
         }
+        ordering = [
+            'filename',
+            'modification_time'
+        ]
         resource_name = 'dataset_file'
 
     def download_file(self, request, **kwargs):
