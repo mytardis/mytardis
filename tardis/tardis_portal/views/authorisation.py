@@ -27,7 +27,8 @@ from tardis.tardis_portal.forms import ChangeUserPermissionsForm, \
     ChangeGroupPermissionsForm, CreateGroupPermissionsForm
 from tardis.tardis_portal.models import UserAuthentication, UserProfile, Experiment, \
     Token, GroupAdmin, ObjectACL
-from tardis.tardis_portal.shortcuts import render_response_index, return_response_error
+from tardis.tardis_portal.shortcuts import render_response_index, \
+    return_response_error, render_error_message
 
 logger = logging.getLogger(__name__)
 
@@ -397,7 +398,6 @@ def add_experiment_access_user(request, experiment_id, username):
 
     return HttpResponse('User already has experiment access.')
 
-
 @never_cache
 @authz.experiment_ownership_required
 def remove_experiment_access_user(request, experiment_id, username):
@@ -411,11 +411,7 @@ def remove_experiment_access_user(request, experiment_id, username):
     except Experiment.DoesNotExist:
         return HttpResponse('Experiment does not exist')
 
-    expt_acls = ObjectACL.objects.filter(
-        content_type=experiment.get_ct(),
-        object_id=experiment.id,
-        pluginId=django_user,
-        aclOwnershipType=ObjectACL.OWNER_OWNED)
+    expt_acls = Experiment.safe.user_acls(experiment_id)
 
     target_acl = expt_acls.filter(entityId=str(user.id))
     owner_acls = [acl for acl in expt_acls if acl.isOwner]
@@ -456,12 +452,10 @@ def change_user_permissions(request, experiment_id, username):
         return return_response_error(request)
 
     try:
-        acl = ObjectACL.objects.get(
-            content_type=experiment.get_ct(),
-            object_id=experiment.id,
-            pluginId=django_user,
-            entityId=str(user.id),
-            aclOwnershipType=ObjectACL.OWNER_OWNED)
+        expt_acls = Experiment.safe.user_acls(experiment_id)
+
+        acl = expt_acls.filter(entityId=str(user.id))
+        owner_acls = [acl for acl in expt_acls if acl.isOwner]
     except ObjectACL.DoesNotExist:
         return return_response_error(request)
 
@@ -469,6 +463,13 @@ def change_user_permissions(request, experiment_id, username):
         form = ChangeUserPermissionsForm(request.POST, instance=acl)
 
         if form.is_valid:
+            if 'isOwner' in form.changed_data and \
+                            form.cleaned_data['isOwner'] == False and \
+                            len(owner_acls) == 1:
+                return render_error_message(
+                    request,
+                    'Cannot remove ownership, every experiment must have at '
+                    'least one user owner.', status=409)
             form.save()
             url = reverse('tardis.tardis_portal.views.control_panel')
             return HttpResponseRedirect(url)
