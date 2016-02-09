@@ -411,24 +411,34 @@ def remove_experiment_access_user(request, experiment_id, username):
     except Experiment.DoesNotExist:
         return HttpResponse('Experiment does not exist')
 
-    acl = ObjectACL.objects.filter(
+    expt_acls = ObjectACL.objects.filter(
         content_type=experiment.get_ct(),
         object_id=experiment.id,
         pluginId=django_user,
-        entityId=str(user.id),
         aclOwnershipType=ObjectACL.OWNER_OWNED)
 
-    if acl.count() == 1:
-        if int(acl[0].entityId) == request.user.id:
-            return HttpResponse('Cannot remove your own user access.')
+    target_acl = expt_acls.filter(entityId=str(user.id))
+    owner_acls = [acl for acl in expt_acls if acl.isOwner]
 
-        acl[0].delete()
-        return HttpResponse('OK')
-    elif acl.count() == 0:
+    if target_acl.count() == 0:
+        return HttpResponse('The user %s does not have access to this '
+                            'experiment.'
+                            % username)
+
+    if expt_acls.count() >= 1:
+        if len(owner_acls) > 1 or \
+                (len(owner_acls) == 1 and not target_acl[0].isOwner):
+            target_acl[0].delete()
+            return HttpResponse('OK')
+        else:
+            return HttpResponse(
+                'All experiments must have at least one user as '
+                'owner. Add an additional owner first before '
+                'removing this one.')
+    elif expt_acls.count() == 0:
+        # the user shouldn't really ever see this in normal operation
         return HttpResponse(
-            'The user %s does not have access to this experiment.' % username)
-    else:
-        return HttpResponse('Multiple ACLs found')
+            'Experiment has no permissions (of type OWNER_OWNED) !')
 
 
 @never_cache
@@ -729,6 +739,7 @@ def share(request, experiment_id):
     Choose access rights and licence.
     '''
     experiment = Experiment.objects.get(id=experiment_id)
+    user = request.user
 
     c = {}
 
@@ -736,8 +747,10 @@ def share(request, experiment_id):
         authz.has_write_permissions(request, experiment_id)
     c['has_download_permissions'] = \
         authz.has_experiment_download_access(request, experiment_id)
-    if request.user.is_authenticated():
+    if user.is_authenticated():
         c['is_owner'] = authz.has_experiment_ownership(request, experiment_id)
+        c['is_superuser'] = user.is_superuser
+        c['is_staff'] = user.is_staff
 
     domain = Site.objects.get_current().domain
     public_link = experiment.public_access >= Experiment.PUBLIC_ACCESS_METADATA
