@@ -464,7 +464,7 @@ def change_user_permissions(request, experiment_id, username):
 
         if form.is_valid:
             if 'isOwner' in form.changed_data and \
-                            form.cleaned_data['isOwner'] == False and \
+                            form.cleaned_data['isOwner'] is False and \
                             len(owner_acls) == 1:
                 return render_error_message(
                     request,
