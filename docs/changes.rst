@@ -15,6 +15,8 @@ in development
   now unique together
 * Changed method tasks to task functions, pre-empting the removal of method
   tasks in new celery versions
+* RESTful API now supports ordering, e.g. &order_by=-title, for Experiments,
+  Datasets and DataFiles.
 * Allowed groups to be 'owners' of an Experiment. Enforce rule in views
   for web UI requiring every Experiment to have at least one user owner.
 
