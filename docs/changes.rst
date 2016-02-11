@@ -15,6 +15,8 @@ in development
   now unique together
 * changed method tasks to task functions, pre-empting the removal of methods
   tasks in new celery versions
+* RESTful API now supports ordering, e.g. &order_by=-title, for Experiments,
+  Datasets and DataFiles.
 
 
 3.6 - 16 March 2015
