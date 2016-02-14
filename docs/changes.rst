@@ -13,8 +13,10 @@ in development
   than 256 characters.
 * Changed constraints on the instrument model; facility and instrument name are
   now unique together
-* changed method tasks to task functions, pre-empting the removal of methods
+* Changed method tasks to task functions, pre-empting the removal of method
   tasks in new celery versions
+* Allowed groups to be 'owners' of an Experiment. Enforce rule in views
+  for web UI requiring every Experiment to have at least one user owner.
 
 
 3.6 - 16 March 2015
