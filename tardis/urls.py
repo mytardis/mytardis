@@ -41,7 +41,6 @@ from tardis.tardis_portal.api import (
     StorageBoxResource,
     UserResource,
 )
-from tardis.tardis_portal.forms import RegistrationForm
 from tardis.tardis_portal.views import IndexView, ExperimentView, DatasetView
 from tardis.tardis_portal.views.pages import site_routed_view
 
@@ -146,8 +145,7 @@ accounts_urls = patterns(
     (r'^login/$', 'login'),
     (r'^manage$', 'manage_user_account'),
     (r'^manage_auth_methods/$', 'manage_auth_methods'),
-    url(r'^register/$', RegistrationView.as_view(  # pylint: disable=E1120
-        ),
+    url(r'^register/$', RegistrationView.as_view(),  # pylint: disable=E1120
         name='register'),
     (r'', include('registration.backends.default.urls')),
     )
