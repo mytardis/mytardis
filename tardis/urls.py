@@ -147,7 +147,7 @@ accounts_urls = patterns(
     (r'^manage$', 'manage_user_account'),
     (r'^manage_auth_methods/$', 'manage_auth_methods'),
     url(r'^register/$', RegistrationView.as_view(  # pylint: disable=E1120
-        form_class=RegistrationForm),
+        ),
         name='register'),
     (r'', include('registration.backends.default.urls')),
     )
