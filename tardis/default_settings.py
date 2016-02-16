@@ -352,9 +352,6 @@ AUTH_PROFILE_MODULE = 'tardis_portal.UserProfile'
 # New users are added to these groups by default.
 NEW_USER_INITIAL_GROUPS = []
 
-# Turn on/off the self-registration link and form
-REGISTRATION_OPEN = True
-
 ACCOUNT_ACTIVATION_DAYS = 3
 
 AUTHENTICATION_BACKENDS = (
@@ -419,7 +416,9 @@ DOWNLOAD_TEMP_DIR = gettempdir()
 # file size + safety_margin must be less that available disk space ...)
 DOWNLOAD_SPACE_SAFETY_MARGIN = 8388608
 
-# Disable registration (copy to your settings.py first!)
+# Turn on/off the self-registration link and form
+REGISTRATION_OPEN = True
+# or disable registration app (copy to your settings.py first!)
 # INSTALLED_APPS = filter(lambda x: x != 'registration', INSTALLED_APPS)
 
 # Settings for the single search box
