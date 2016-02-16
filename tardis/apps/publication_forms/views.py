@@ -239,7 +239,11 @@ def process_form(request):
                 publication.title)
             send_mail_to_authors(publication, subject, message_content,
                                  fail_silently=False)
-        except:
+        except Exception as e:
+            logger.error(
+                "failed to send publication notification email(s): %s" %
+                repr(e)
+            )
             return HttpResponse(
                 json.dumps({
                     'error': 'Failed to send notification email - please '
