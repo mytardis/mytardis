@@ -21,7 +21,7 @@ from tardis.tardis_portal.models import Experiment, Dataset, ObjectACL, \
 from tardis.tardis_portal.auth.localdb_auth import django_user, django_group
 from .doi import DOI
 from .utils import PDBCifHelper, check_pdb_status, get_unreleased_pdb_info, \
-    send_mail_to_authors, get_pub_admin_email_addresses
+    send_mail_to_authors, get_pub_admin_email_addresses, get_site_admin_email
 from .email_text import email_pub_requires_authorisation, \
     email_pub_awaiting_approval, email_pub_approved, email_pub_rejected, \
     email_pub_reverted_to_draft
@@ -72,7 +72,7 @@ def process_form(request):
             request.user, form_state['publication_id'])
         # Check if the publication is finalised (i.e. not in draft)
         # if it is, then refuse to process the form.
-        if not publication.is_publication_draft():
+        if publication is None or not publication.is_publication_draft():
             return HttpResponseForbidden()
 
     # Get the form state database object
@@ -217,9 +217,6 @@ def process_form(request):
 
         publication.save()
 
-        # Remove the draft status
-        remove_draft_status(publication)
-
         # Send emails about publication in draft
         subject, message_content = email_pub_requires_authorisation(
             request.user.username,
@@ -229,17 +226,32 @@ def process_form(request):
             request.build_absolute_uri(
                 '/apps/publication-forms/approvals/'))
 
-        send_mail(subject,
-                  message_content,
-                  getattr(
-                      settings, 'PUBLICATION_NOTIFICATION_SENDER_EMAIL',
-                      default_settings.PUBLICATION_NOTIFICATION_SENDER_EMAIL),
-                  get_pub_admin_email_addresses(),
-                  fail_silently=True)
+        try:
+            send_mail(subject,
+                      message_content,
+                      getattr(
+                          settings, 'PUBLICATION_NOTIFICATION_SENDER_EMAIL',
+                          default_settings.PUBLICATION_NOTIFICATION_SENDER_EMAIL),
+                      get_pub_admin_email_addresses(),
+                      fail_silently=False)
 
-        subject, message_content = email_pub_awaiting_approval(
-            publication.title)
-        send_mail_to_authors(publication, subject, message_content)
+            subject, message_content = email_pub_awaiting_approval(
+                publication.title)
+            send_mail_to_authors(publication, subject, message_content,
+                                 fail_silently=False)
+        except:
+            return HttpResponse(
+                json.dumps({
+                    'error': 'Failed to send notification email - please '
+                             'contact the %s administrator (%s), '
+                             'or try again later. Your draft is saved.'
+                             % (get_site_admin_email(),
+                                getattr(settings, 'SITE_TITLE', 'MyTardis'))
+                }),
+                content_type="application/json")
+
+        # Remove the draft status
+        remove_draft_status(publication)
 
         # Trigger publication record update
         tasks.update_publication_records.delay()
