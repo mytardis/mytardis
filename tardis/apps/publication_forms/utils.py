@@ -203,7 +203,11 @@ def get_pub_admin_email_addresses():
         if user.email]
 
 
-def send_mail_to_authors(publication, subject, message):
+def get_site_admin_email():
+    return getattr(settings, 'ADMINS', [('', '')])[0][1]
+
+
+def send_mail_to_authors(publication, subject, message, fail_silently=False):
     recipients = [author.email for author in
                   ExperimentAuthor.objects.filter(experiment=publication)]
     from_email = getattr(settings, 'PUBLICATION_NOTIFICATION_SENDER_EMAIL',
@@ -211,7 +215,7 @@ def send_mail_to_authors(publication, subject, message):
     msg = EmailMultiAlternatives(
         subject,
         message,
-     from_email,
-     recipients,
-     cc=get_pub_admin_email_addresses())
-    msg.send()
+        from_email,
+        recipients,
+        cc=get_pub_admin_email_addresses())
+    msg.send(fail_silently=fail_silently)
