@@ -185,12 +185,11 @@ class MyTSFTPServerInterface(SFTPServerInterface):
         u = self.user.username
         if u not in self._exps_cache:
             self._exps_cache[u] = {'all': None, 'last_update': None}
-        if self._exps_cache[u]['all'] is None:
+        if self._exps_cache[u]['all'] is None or (
+                        self._exps_cache[u]['last_update'] - time.time() >
+                        self._cache_time):
             self._exps_cache[u]['all'] = Experiment.safe.all(self.user)
             self._exps_cache[u]['last_update'] = time.time()
-        elif self._exps_cache[u]['last_update'] - time.time() > \
-             self._cache_time:
-            self._exps_cache[u]['all']._result_cache = None
         return self._exps_cache[u]['all']
 
     def session_started(self):
