@@ -410,7 +410,7 @@ DOWNLOAD_ARCHIVE_SIZE_LIMIT = 0
 RENDER_IMAGE_SIZE_LIMIT = 0
 
 # Max number of images in dataset view's carousel: zero means no limit
-MAX_IMAGES_IN_CAROUSEL = 0
+MAX_IMAGES_IN_CAROUSEL = 100
 
 # temporary download file location
 DOWNLOAD_TEMP_DIR = gettempdir()
