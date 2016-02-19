@@ -249,6 +249,11 @@ class DatasetView(TemplateView):
 
         dataset_id = dataset.id
         upload_method = getattr(settings, "UPLOAD_METHOD", False)
+        max_images_in_carousel = getattr(settings, "MAX_IMAGES_IN_CAROUSEL", 0)
+        if max_images_in_carousel:
+            carousel_slice = ":%s" % max_images_in_carousel
+        else:
+            carousel_slice = ":"
 
         c.update(
             {'dataset': dataset,
@@ -265,6 +270,7 @@ class DatasetView(TemplateView):
                  dataset_id),
              'upload_method': upload_method,
              'push_to_enabled': PushToConfig.name in settings.INSTALLED_APPS,
+             'carousel_slice': carousel_slice,
              }
         )
 

@@ -461,11 +461,11 @@ $('#modal-metadata .submit-button').live('click', function() {
     <div class="row-fluid" style="margin-bottom: 20px">
     <h3>Preview Images</h3>
     <div class="info-box">
-    {% if dataset.get_images.count > 0 %}
+    {% if dataset.get_images.exists %}
       <div id="preview" class="carousel" style="margin: 20px auto 20px auto">
         <!-- Carousel items -->
         <div class="carousel-inner" style="background-color: white;">
-          {% for datafile in dataset.get_images %}
+          {% for datafile in dataset.get_images|slice:carousel_slice %}
             <div class="{{ forloop.first|yesno:'active ,' }}item" style="height: 100%">
               {% url 'tardis.tardis_portal.iiif.download_image' datafile_id=datafile.id region='full' size='!320,240' rotation=0 quality='native' format='jpg' as thumbnail %}
               {% url 'tardis.tardis_portal.iiif.download_image' datafile_id=datafile.id region='full' size='full' rotation=0 quality='native' format='png' as image %}
@@ -481,7 +481,7 @@ $('#modal-metadata .submit-button').live('click', function() {
             </div>
           {% endfor %}
         </div>
-        {% if dataset.get_images.count > 1 %}
+        {% if dataset.get_images|slice:":2"|length > 1 %}
             <!-- Carousel nav -->
             <a class="carousel-control left" href="#preview" data-slide="prev">&lsaquo;</a>
             <a class="carousel-control right" href="#preview" data-slide="next">&rsaquo;</a>
