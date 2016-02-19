@@ -18,7 +18,7 @@
       <span property="dc:author">{{ author.author }}</span>{% endfor %}
     </small>
   </h4>
-  {% if show_images and experiment.get_images.count > 0 %}
+  {% if show_images and experiment.get_images.exists %}
     <div class="image-preview">
       <span style="height: 28px"></span>
     {% for datafile in experiment.get_images|slice:":10" %}
