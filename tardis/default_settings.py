@@ -672,7 +672,7 @@ RAPID_CONNECT_ENABLED = False
 RAPID_CONNECT_CONFIG = {}
 
 RAPID_CONNECT_CONFIG['secret'] = 'CHANGE_ME'
-RAPID_CONNECT_CONFIG['authnrequest_url'] = 'CHANGE_ME'
+RAPID_CONNECT_CONFIG['authnrequest_url'] = ''
 '''something like
 'https://rapid.test.aaf.edu.au/jwt/authnrequest/research/XXXXXXXXXXXXXXXX'
 '''
