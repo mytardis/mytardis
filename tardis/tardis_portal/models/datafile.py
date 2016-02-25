@@ -344,10 +344,14 @@ class DataFile(models.Model):
     def get_image_data(self):
         from .parameters import DatafileParameter
 
-        if self.is_image():
+        render_image_size_limit = getattr(settings, 'RENDER_IMAGE_SIZE_LIMIT',
+                                          0)
+        if self.is_image() and (self.size <= render_image_size_limit or
+                                render_image_size_limit == 0):
             return self.get_file()
 
         # look for image data in parameters
+        preview_image_par = None
         pss = self.getParameterSets()
 
         if not pss:
