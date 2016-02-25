@@ -351,6 +351,7 @@ class DataFile(models.Model):
             return self.get_file()
 
         # look for image data in parameters
+        preview_image_par = None
         pss = self.getParameterSets()
 
         if not pss:
