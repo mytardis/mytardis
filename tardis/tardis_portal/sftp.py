@@ -181,7 +181,7 @@ class MyTSFTPServerInterface(SFTPServerInterface):
         self.server = server
 
         # clear old caches
-        for entry in MyTSFTPServerInterface._exps_cache:
+        for key, entry in MyTSFTPServerInterface._exps_cache.iteritems():
             if (time.time() - entry['last_update'] >
                MyTSFTPServerInterface._cache_time):
                 del entry
