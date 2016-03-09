@@ -48,7 +48,7 @@ def get_accessible_experiments_for_dataset(request, dataset_id):
     experiments = Experiment.safe.all(request.user)
 
     # probably a much cleverer way of writing this with safe
-    experiment_dataset_access = []
+    experiment_dataset_access = Experiment.objects.none()
     for experiment in experiments:
         experiment_dataset = Experiment.objects.filter(
             id=experiment.id,
@@ -76,7 +76,7 @@ def get_accessible_datafiles_for_user(request):
 
     experiments = get_accessible_experiments(request)
     if experiments.count() == 0:
-        return []
+        return DataFile.objects.none()
 
     queries = [Q(dataset__experiments__id=e.id) for e in experiments]
 
