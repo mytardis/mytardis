@@ -169,7 +169,7 @@ class MyTSFTPServerInterface(SFTPServerInterface):
     MyTardis data via SFTP
     '''
 
-    _cache_time = 60  # in seconds
+    _cache_time = 20  # in seconds
     _exps_cache = {}
 
     def __init__(self, server, *args, **kwargs):
@@ -180,18 +180,25 @@ class MyTSFTPServerInterface(SFTPServerInterface):
         """
         self.server = server
 
+        # clear old caches
+        for key, entry in MyTSFTPServerInterface._exps_cache.iteritems():
+            if (time.time() - entry['last_update'] >
+               MyTSFTPServerInterface._cache_time):
+                del entry
+
     @property
     def experiments(self):
-        u = self.user.username
-        if u not in self._exps_cache:
-            self._exps_cache[u] = {'all': None, 'last_update': None}
-        if self._exps_cache[u]['all'] is None:
-            self._exps_cache[u]['all'] = Experiment.safe.all(self.user)
-            self._exps_cache[u]['last_update'] = time.time()
-        elif self._exps_cache[u]['last_update'] - time.time() > \
-             self._cache_time:
-            self._exps_cache[u]['all']._result_cache = None
-        return self._exps_cache[u]['all']
+        username = self.user.username
+        cache = MyTSFTPServerInterface._exps_cache.get(
+            username,
+            {'all': None, 'last_update': None})
+        if cache['all'] is None or (
+                time.time() - cache['last_update'] >
+                MyTSFTPServerInterface._cache_time):
+            cache['all'] = Experiment.safe.all(self.user)
+            cache['last_update'] = time.time()
+            MyTSFTPServerInterface._exps_cache[username] = cache
+        return cache['all']
 
     def session_started(self):
         """

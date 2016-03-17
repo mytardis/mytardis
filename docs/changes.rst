@@ -22,6 +22,7 @@ in development
 * Registration support updated for latest django-registration-redux package
 * Speed-ups for dataset view page loading for datasets with large numbers of
   images.  The carousel is now limited to a maximum of 100 preview images.
+* Fix for SFTP caching bug
 
 
 3.6 - 16 March 2015
