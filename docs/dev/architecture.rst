@@ -168,7 +168,9 @@ Source Code
 -----------
 
 This section describes the top level layout of the source code in
-the `GitHub repository <https://github.com/mytardis/mytardis`_.
+the `GitHub repository`_.
+
+.. _`GitHub repository`: https://github.com/mytardis/mytardis
 
 
   * ``docs``
