@@ -1,8 +1,8 @@
 Releases
 ========
 
-in development
---------------
+3.7 - 17 March 2016
+-------------------
 
 * DataFile size is now a BigInteger field
 * New settings for customisations, contextual view overrides (eg INDEX_VIEWS).
