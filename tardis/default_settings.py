@@ -343,6 +343,12 @@ AUTH_PROVIDERS = (
      'tardis.tardis_portal.auth.localdb_auth.DjangoAuthBackend'),
 )
 
+SFTP_USERNAME_ATTRIBUTE = 'email'
+'''
+The attribute from the User model ('email' or 'username') used to generate
+the SFTP login example on the sftp_access help page.
+'''
+
 # default authentication module for experiment ownership user during
 # ingestion? Must be one of the above authentication provider names
 DEFAULT_AUTH = 'localdb'
