@@ -28,10 +28,13 @@ def cybderduck_connection_window(request):
     base = Image.open(base_image)
     font = ImageFont.truetype(font_file, 13)
     draw = ImageDraw.Draw(base)
+
     if request.user.userprofile.isDjangoAccount:
         sftp_username = request.user.username
     else:
-        sftp_username = request.user.email
+        login_attr = getattr(settings, 'SFTP_USERNAME_ATTRIBUTE', 'email')
+        sftp_username = getattr(request.user, login_attr)
+
     sftp_host = request.get_host().split(':')[0]
     sftp_port = str(getattr(settings, 'SFTP_PORT', 2200))
     info = [
