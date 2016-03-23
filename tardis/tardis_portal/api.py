@@ -30,6 +30,7 @@ from tastypie.serializers import Serializer
 from tastypie.utils import trailing_slash
 from tastypie.contrib.contenttypes.fields import GenericForeignKeyField
 
+from tardis.tardis_portal import tasks
 from tardis.tardis_portal.auth.decorators import \
     get_accessible_datafiles_for_user
 from tardis.tardis_portal.auth.decorators import has_datafile_access
@@ -157,8 +158,9 @@ class ACLAuthorization(Authorization):
                 id__in=obj_ids
             )
         elif isinstance(bundle.obj, Dataset):
-            return [ds for ds in object_list
-                    if has_dataset_access(bundle.request, ds.id)]
+            dataset_ids = [ds.id for ds in object_list
+                           if has_dataset_access(bundle.request, ds.id)]
+            return Dataset.objects.filter(id__in=dataset_ids)
         elif isinstance(bundle.obj, DatasetParameterSet):
             return [dps for dps in object_list
                     if has_dataset_access(bundle.request, dps.dataset.id)]
@@ -657,6 +659,11 @@ class ExperimentResource(MyTardisModelResource):
             'id': ('exact', ),
             'title': ('exact',),
         }
+        ordering = [
+            'title',
+            'created_time',
+            'update_time'
+        ]
         always_return_data = True
 
     def dehydrate(self, bundle):
@@ -842,6 +849,9 @@ class DatasetResource(MyTardisModelResource):
             'description': ('exact', ),
             'directory': ('exact', ),
         }
+        ordering = [
+            'description'
+        ]
         always_return_data = True
 
     def prepend_urls(self):
@@ -892,6 +902,10 @@ class DataFileResource(MyTardisModelResource):
             'dataset': ALL_WITH_RELATIONS,
             'filename': ('exact', ),
         }
+        ordering = [
+            'filename',
+            'modification_time'
+        ]
         resource_name = 'dataset_file'
 
     def download_file(self, request, **kwargs):
@@ -937,7 +951,7 @@ class DataFileResource(MyTardisModelResource):
             [file_record],
             self.build_bundle(obj=file_record, request=request))
         for dfo in file_record.file_objects.all():
-            dfo.verify.apply_async()
+            tasks.dfo_verify.delay(dfo.id)
         return HttpResponse()
 
     def hydrate(self, bundle):
@@ -1081,6 +1095,7 @@ class ReplicaResource(MyTardisModelResource):
             bundle.obj.file_object = bundle.data['file_object']
             bundle.data['file_object'].close()
             del(bundle.data['file_object'])
+            bundle.obj = DataFileObject.objects.get(id=bundle.obj.id)
         return bundle
 
     def dehydrate(self, bundle):

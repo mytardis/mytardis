@@ -6,9 +6,17 @@ from django.db import migrations, models
 
 def cast_string_to_integer(apps, schema_editor):
     DataFile = apps.get_model("tardis_portal", "DataFile")
-    for df in DataFile.objects.all():
+    total_objects = DataFile.objects.all().count()
+
+    print
+    current_object = 0
+    for df in DataFile.objects.all().iterator():
         df._size = long(df.size)
         df.save()
+        current_object += 1
+        if current_object % 10000 == 0:
+            print "{0} of {1} datafile objects converted".format(
+                    current_object, total_objects)
 
 
 class Migration(migrations.Migration):

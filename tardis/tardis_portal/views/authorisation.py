@@ -27,7 +27,8 @@ from tardis.tardis_portal.forms import ChangeUserPermissionsForm, \
     ChangeGroupPermissionsForm, CreateGroupPermissionsForm
 from tardis.tardis_portal.models import UserAuthentication, UserProfile, Experiment, \
     Token, GroupAdmin, ObjectACL
-from tardis.tardis_portal.shortcuts import render_response_index, return_response_error
+from tardis.tardis_portal.shortcuts import render_response_index, \
+    return_response_error, render_error_message
 
 logger = logging.getLogger(__name__)
 
@@ -397,7 +398,6 @@ def add_experiment_access_user(request, experiment_id, username):
 
     return HttpResponse('User already has experiment access.')
 
-
 @never_cache
 @authz.experiment_ownership_required
 def remove_experiment_access_user(request, experiment_id, username):
@@ -411,24 +411,30 @@ def remove_experiment_access_user(request, experiment_id, username):
     except Experiment.DoesNotExist:
         return HttpResponse('Experiment does not exist')
 
-    acl = ObjectACL.objects.filter(
-        content_type=experiment.get_ct(),
-        object_id=experiment.id,
-        pluginId=django_user,
-        entityId=str(user.id),
-        aclOwnershipType=ObjectACL.OWNER_OWNED)
+    expt_acls = Experiment.safe.user_acls(experiment_id)
 
-    if acl.count() == 1:
-        if int(acl[0].entityId) == request.user.id:
-            return HttpResponse('Cannot remove your own user access.')
+    target_acl = expt_acls.filter(entityId=str(user.id))
+    owner_acls = [acl for acl in expt_acls if acl.isOwner]
 
-        acl[0].delete()
-        return HttpResponse('OK')
-    elif acl.count() == 0:
+    if target_acl.count() == 0:
+        return HttpResponse('The user %s does not have access to this '
+                            'experiment.'
+                            % username)
+
+    if expt_acls.count() >= 1:
+        if len(owner_acls) > 1 or \
+                (len(owner_acls) == 1 and not target_acl[0].isOwner):
+            target_acl[0].delete()
+            return HttpResponse('OK')
+        else:
+            return HttpResponse(
+                'All experiments must have at least one user as '
+                'owner. Add an additional owner first before '
+                'removing this one.')
+    elif expt_acls.count() == 0:
+        # the user shouldn't really ever see this in normal operation
         return HttpResponse(
-            'The user %s does not have access to this experiment.' % username)
-    else:
-        return HttpResponse('Multiple ACLs found')
+            'Experiment has no permissions (of type OWNER_OWNED) !')
 
 
 @never_cache
@@ -446,12 +452,10 @@ def change_user_permissions(request, experiment_id, username):
         return return_response_error(request)
 
     try:
-        acl = ObjectACL.objects.get(
-            content_type=experiment.get_ct(),
-            object_id=experiment.id,
-            pluginId=django_user,
-            entityId=str(user.id),
-            aclOwnershipType=ObjectACL.OWNER_OWNED)
+        expt_acls = Experiment.safe.user_acls(experiment_id)
+
+        acl = expt_acls.filter(entityId=str(user.id))
+        owner_acls = [acl for acl in expt_acls if acl.isOwner]
     except ObjectACL.DoesNotExist:
         return return_response_error(request)
 
@@ -459,6 +463,13 @@ def change_user_permissions(request, experiment_id, username):
         form = ChangeUserPermissionsForm(request.POST, instance=acl)
 
         if form.is_valid:
+            if 'isOwner' in form.changed_data and \
+                            form.cleaned_data['isOwner'] is False and \
+                            len(owner_acls) == 1:
+                return render_error_message(
+                    request,
+                    'Cannot remove ownership, every experiment must have at '
+                    'least one user owner.', status=409)
             form.save()
             url = reverse('tardis.tardis_portal.views.control_panel')
             return HttpResponseRedirect(url)
@@ -729,6 +740,7 @@ def share(request, experiment_id):
     Choose access rights and licence.
     '''
     experiment = Experiment.objects.get(id=experiment_id)
+    user = request.user
 
     c = {}
 
@@ -736,8 +748,10 @@ def share(request, experiment_id):
         authz.has_write_permissions(request, experiment_id)
     c['has_download_permissions'] = \
         authz.has_experiment_download_access(request, experiment_id)
-    if request.user.is_authenticated():
+    if user.is_authenticated():
         c['is_owner'] = authz.has_experiment_ownership(request, experiment_id)
+        c['is_superuser'] = user.is_superuser
+        c['is_staff'] = user.is_staff
 
     domain = Site.objects.get_current().domain
     public_link = experiment.public_access >= Experiment.PUBLIC_ACCESS_METADATA

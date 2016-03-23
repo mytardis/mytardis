@@ -13,7 +13,7 @@ from django.conf import settings
 from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.sites.shortcuts import get_current_site
-from django.core.exceptions import PermissionDenied
+from django.core.exceptions import PermissionDenied, ImproperlyConfigured
 from django.core.paginator import Paginator, EmptyPage, InvalidPage
 from django.core.urlresolvers import reverse
 from django.db import connection
@@ -111,9 +111,15 @@ def use_rapid_connect(fn):
                                              'RAPID_CONNECT_ENABLED', False)
 
         if c['RAPID_CONNECT_ENABLED']:
-            c['RAPID_CONNECT_LOGIN_URL'] = getattr(
-                    settings.RAPID_CONNECT_CONFIG,
-                    'authnrequest_url')
+            c['RAPID_CONNECT_LOGIN_URL'] = \
+                getattr(settings, 'RAPID_CONNECT_CONFIG', {}).get(
+                    'authnrequest_url',
+                    None)
+
+            if not c['RAPID_CONNECT_LOGIN_URL']:
+                raise ImproperlyConfigured(
+                    "RAPID_CONNECT_CONFIG['authnrequest_url'] must be "
+                    "configured in settings if RAPID_CONNECT_ENABLED is True.")
         return c
 
     return add_rapid_connect_settings
@@ -249,6 +255,11 @@ class DatasetView(TemplateView):
 
         dataset_id = dataset.id
         upload_method = getattr(settings, "UPLOAD_METHOD", False)
+        max_images_in_carousel = getattr(settings, "MAX_IMAGES_IN_CAROUSEL", 0)
+        if max_images_in_carousel:
+            carousel_slice = ":%s" % max_images_in_carousel
+        else:
+            carousel_slice = ":"
 
         c.update(
             {'dataset': dataset,
@@ -265,6 +276,7 @@ class DatasetView(TemplateView):
                  dataset_id),
              'upload_method': upload_method,
              'push_to_enabled': PushToConfig.name in settings.INSTALLED_APPS,
+             'carousel_slice': carousel_slice,
              }
         )
 

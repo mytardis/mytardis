@@ -343,6 +343,12 @@ AUTH_PROVIDERS = (
      'tardis.tardis_portal.auth.localdb_auth.DjangoAuthBackend'),
 )
 
+SFTP_USERNAME_ATTRIBUTE = 'email'
+'''
+The attribute from the User model ('email' or 'username') used to generate
+the SFTP login example on the sftp_access help page.
+'''
+
 # default authentication module for experiment ownership user during
 # ingestion? Must be one of the above authentication provider names
 DEFAULT_AUTH = 'localdb'
@@ -409,6 +415,9 @@ DOWNLOAD_ARCHIVE_SIZE_LIMIT = 0
 # Render image file size limit: zero means no limit
 RENDER_IMAGE_SIZE_LIMIT = 0
 
+# Max number of images in dataset view's carousel: zero means no limit
+MAX_IMAGES_IN_CAROUSEL = 100
+
 # temporary download file location
 DOWNLOAD_TEMP_DIR = gettempdir()
 
@@ -416,7 +425,9 @@ DOWNLOAD_TEMP_DIR = gettempdir()
 # file size + safety_margin must be less that available disk space ...)
 DOWNLOAD_SPACE_SAFETY_MARGIN = 8388608
 
-# Disable registration (copy to your settings.py first!)
+# Turn on/off the self-registration link and form
+REGISTRATION_OPEN = True
+# or disable registration app (copy to your settings.py first!)
 # INSTALLED_APPS = filter(lambda x: x != 'registration', INSTALLED_APPS)
 
 # Settings for the single search box
@@ -667,7 +678,7 @@ RAPID_CONNECT_ENABLED = False
 RAPID_CONNECT_CONFIG = {}
 
 RAPID_CONNECT_CONFIG['secret'] = 'CHANGE_ME'
-RAPID_CONNECT_CONFIG['authnrequest_url'] = 'CHANGE_ME'
+RAPID_CONNECT_CONFIG['authnrequest_url'] = ''
 '''something like
 'https://rapid.test.aaf.edu.au/jwt/authnrequest/research/XXXXXXXXXXXXXXXX'
 '''
