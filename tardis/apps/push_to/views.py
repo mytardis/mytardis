@@ -3,12 +3,16 @@ import json
 import requests
 from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseForbidden, \
+    HttpResponseNotFound
 from django.shortcuts import redirect, render
 from paramiko import RSACert
 
 from ssh_authz import sign_certificate
+from tardis.apps.push_to.utils import bytes_available, is_directory, \
+    list_subdirectories
 from tardis.tardis_portal.auth import decorators as authz
+from tardis.tardis_portal.models import Experiment, Dataset, DataFile
 from . import tasks
 from .exceptions import NoSuitableCredential
 from .models import OAuthSSHCertSigningService, Credential, RemoteHost
@@ -125,6 +129,66 @@ def get_signing_services(request, obj_type=None, push_obj_id=None):
             'remote_hosts': remote_hosts
         }
         response.append(service)
+
+    return HttpResponse(json.dumps(response), content_type='application/json')
+
+
+@login_required
+def validate_remote_path(request, remote_host_id):
+    path = request.GET.get('path', None)
+
+    # Check if experiment will be pushed
+    tardis_object = None
+    for obj_type in [Experiment, Dataset, DataFile]:
+        Experiment.
+    if tardis_object:
+        object_size = tardis_object.get_size()
+
+    response = {}
+    try:
+        credential = Credential.get_suitable_credential(request.user,
+                                                        RemoteHost.objects.get(
+                                                            pk=remote_host_id))
+        ssh = credential.get_client_for_host(
+            RemoteHost.objects.get(pk=remote_host_id))
+        sftp_client = ssh.open_sftp()
+        sftp_client.chdir('.')
+
+        response['default'] = {}
+        response['default']['path'] = sftp_client.getcwd()
+        response['default']['free_space'] = bytes_available(ssh, response['default']['path'])
+        response['default']['valid_children'] = list_subdirectories(sftp_client, response['default']['path'])
+
+        if path is not None:
+            path_parts = path.split('/')
+            valid_parts = []
+            invalid_parts = []
+
+            for part in path_parts:
+                if not invalid_parts:
+                    test_path = '/'.join(valid_parts + [part])
+                    try:
+                        sftp_client.chdir(test_path)
+                        valid_parts.append(part)
+                    except IOError:
+                        invalid_parts.append(part)
+                else:
+                    invalid_parts.append(part)
+            response[path] = {}
+            response[path]['valid_parts'] = '/'.join(valid_parts)
+            response[path]['invalid_parts'] = '/'.join(invalid_parts)
+            response[path]['valid_children'] = list_subdirectories(sftp_client, response[path]['valid_parts'])
+            response[path]['free_space'] = bytes_available(ssh, response[path]['valid_parts'])
+
+
+    except Credential.DoesNotExist:
+        response['message'] = "You don't have access to this host."
+        return HttpResponseForbidden(json.dumps(response),
+                                     content_type='application/json')
+    except RemoteHost.DoesNotExist:
+        response['message'] = "Remote host does not exist."
+        return HttpResponseNotFound(json.dumps(response),
+                                    content_type='application/json')
 
     return HttpResponse(json.dumps(response), content_type='application/json')
 
@@ -343,10 +407,10 @@ def authorize_remote_access(request, remote_host_id, service_id=None):
         credential = Credential.generate_keypair_credential(
             request.user, remote_user, [remote_host])
         signing_result = sign_certificate(
-                credential, auth_token,
-                oauth_service.cert_signing_url) and \
-                credential.verify_remote_access(
-                )
+            credential, auth_token,
+            oauth_service.cert_signing_url) and \
+                         credential.verify_remote_access(
+                         )
         print signing_result
         if signing_result:
             return redirect(
