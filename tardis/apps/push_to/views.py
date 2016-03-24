@@ -9,10 +9,10 @@ from django.shortcuts import redirect, render
 from paramiko import RSACert
 
 from ssh_authz import sign_certificate
-from tardis.apps.push_to.utils import bytes_available, is_directory, \
-    list_subdirectories
+from tardis.apps.push_to.utils import bytes_available, list_subdirectories, \
+    get_object_size, can_copy, get_default_push_location
 from tardis.tardis_portal.auth import decorators as authz
-from tardis.tardis_portal.models import Experiment, Dataset, DataFile
+from tardis.tardis_portal.models import Experiment, Dataset
 from . import tasks
 from .exceptions import NoSuitableCredential
 from .models import OAuthSSHCertSigningService, Credential, RemoteHost
@@ -135,16 +135,20 @@ def get_signing_services(request, obj_type=None, push_obj_id=None):
 
 @login_required
 def validate_remote_path(request, remote_host_id):
+    response = {}
     path = request.GET.get('path', None)
 
-    # Check if experiment will be pushed
-    tardis_object = None
-    for obj_type in [Experiment, Dataset, DataFile]:
-        Experiment.
-    if tardis_object:
-        object_size = tardis_object.get_size()
+    tardis_object_type = request.GET.get('object_type', None)
+    tardis_object_id = request.GET.get('object_id', None)
+    if tardis_object_type and tardis_object_id:
+        try:
+            response['object_size'] = get_object_size(tardis_object_type,
+                                                      tardis_object_id)
+        except (Experiment.DoesNotExist, Dataset.DoesNotExist, TypeError):
+            response['message'] = "Experiment/dataset/datafile does not exist."
+            return HttpResponseNotFound(json.dumps(response),
+                                        content_type='application/json')
 
-    response = {}
     try:
         credential = Credential.get_suitable_credential(request.user,
                                                         RemoteHost.objects.get(
@@ -152,12 +156,17 @@ def validate_remote_path(request, remote_host_id):
         ssh = credential.get_client_for_host(
             RemoteHost.objects.get(pk=remote_host_id))
         sftp_client = ssh.open_sftp()
-        sftp_client.chdir('.')
 
         response['default'] = {}
-        response['default']['path'] = sftp_client.getcwd()
-        response['default']['free_space'] = bytes_available(ssh, response['default']['path'])
-        response['default']['valid_children'] = list_subdirectories(sftp_client, response['default']['path'])
+        response['default']['path'] = get_default_push_location(sftp_client)
+        response['default']['free_space'] = bytes_available(ssh, response[
+            'default']['path'])
+        response['default']['valid_children'] = list_subdirectories(
+            sftp_client, response['default']['path'])
+        if 'object_size' in response:
+            response['default']['sufficient_space'] = response['default'][
+                                                          'free_space'] > \
+                                                      response['object_size']
 
         if path is not None:
             path_parts = path.split('/')
@@ -177,9 +186,16 @@ def validate_remote_path(request, remote_host_id):
             response[path] = {}
             response[path]['valid_parts'] = '/'.join(valid_parts)
             response[path]['invalid_parts'] = '/'.join(invalid_parts)
-            response[path]['valid_children'] = list_subdirectories(sftp_client, response[path]['valid_parts'])
-            response[path]['free_space'] = bytes_available(ssh, response[path]['valid_parts'])
-
+            response[path]['valid_children'] = list_subdirectories(sftp_client,
+                                                                   response[
+                                                                       path][
+                                                                       'valid_parts'])
+            response[path]['free_space'] = bytes_available(ssh, response[path][
+                'valid_parts'])
+            if 'object_size' in response:
+                response[path]['sufficient_space'] = response[path][
+                                                         'free_space'] > \
+                                                     response['object_size']
 
     except Credential.DoesNotExist:
         response['message'] = "You don't have access to this host."
@@ -269,6 +285,18 @@ def _initiate_push(
     try:
         remote_host = RemoteHost.objects.get(pk=remote_host_id)
         credential = get_credential(request, remote_host)
+
+        ssh_client = credential.get_client_for_host(remote_host)
+        if destination is None:
+            destination = get_default_push_location(ssh_client.open_sftp())
+
+        if not can_copy(ssh_client, obj_type, push_obj_id, destination):
+            return render_error_message(request,
+                                        'Invalid destination provided;'
+                                        'data cannot be pushed.')
+        else:
+            destination += "/mytardis-data"
+
     except NoSuitableCredential:
         callback_args = {
             'remote_host_id': remote_host_id,
@@ -298,10 +326,9 @@ def _initiate_push(
                        'will be notified by email once this has been '
                        'completed.</strong>'
                        '<br/>'
-                       'In most cases, your data will be pushed to your home '
-                       'directory.'
-                       '<pre>~/mytardis-data/&lt;timestamp&gt;/...</pre>')
-    success_message %= remote_host.nickname
+                       'Data will be pushed to '
+                       '<pre>%s</pre>')
+    success_message %= (remote_host.nickname, destination)
     return render_success_message(
         request,
         success_message)

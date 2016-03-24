@@ -1,5 +1,7 @@
 from paramiko import SFTPError
 
+from tardis.tardis_portal.models import Experiment, Dataset, DataFile
+
 
 def shell_escape(s):
     return "'" + s.replace("'", "'\\''") + "'"
@@ -35,8 +37,31 @@ def is_directory(sftp_client, path):
 
 
 def list_subdirectories(sftp_client, path, show_hidden=False):
-    dir_list = [dir for dir in sftp_client.listdir(path) if is_directory(sftp_client, dir)]
+    dir_list = [dir for dir in sftp_client.listdir(path) if
+                is_directory(sftp_client, dir)]
     if not show_hidden:
         return [dir for dir in dir_list if not dir.startswith('.')]
     else:
         return dir_list
+
+
+def get_default_push_location(sftp_client):
+    sftp_client.chdir('.')
+    return sftp_client.getcwd()
+
+
+def get_object_size(type, id):
+    for obj_type in [Experiment, Dataset, DataFile]:
+        if obj_type.__name__.lower() == type.lower():
+            return obj_type.objects.get(pk=id).get_size()
+    raise TypeError("Object of type %s does not exist" % type)
+
+
+def can_copy(ssh_client, object_type, object_id, path):
+    if not is_directory(ssh_client.open_sftp(), path):
+        return False
+    try:
+        return bytes_available(ssh_client, path) > get_object_size(object_type,
+                                                                   object_id)
+    except (Experiment.DoesNotExist, Dataset.DoesNotExist, TypeError):
+        return False
