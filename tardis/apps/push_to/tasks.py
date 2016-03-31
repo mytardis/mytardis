@@ -3,6 +3,7 @@ from django.conf import settings
 from django.contrib.auth.models import User
 
 from tardis.tardis_portal.models import Experiment, Dataset, DataFile
+from tardis.tardis_portal.util import split_path
 from .models import Credential, RemoteHost
 
 
@@ -95,7 +96,7 @@ def do_file_copy(credential_id, remote_host_id, datafile_map, base_dir=None):
     if base_dir is None:
         base_dir = ['mytardis-data']
     elif isinstance(base_dir, basestring):
-        base_dir = base_dir.split('/')
+        base_dir = split_path(base_dir)
 
     credential = Credential.objects.get(pk=credential_id)
     ssh = credential.get_client_for_host(

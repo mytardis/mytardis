@@ -30,7 +30,7 @@ def is_directory(sftp_client, path):
     try:
         sftp_client.chdir(path)
         return True
-    except SFTPError:
+    except (SFTPError, IOError):
         return False
     finally:
         sftp_client.chdir(cwd)
@@ -59,9 +59,12 @@ def get_object_size(type, id):
 
 def can_copy(ssh_client, object_type, object_id, path):
     if not is_directory(ssh_client.open_sftp(), path):
-        return False
+        return False, "Directory does not exist."
     try:
-        return bytes_available(ssh_client, path) > get_object_size(object_type,
-                                                                   object_id)
+        if bytes_available(ssh_client, path) > get_object_size(object_type,
+                                                                   object_id):
+            return True, ''
+        else:
+            return False, 'Insufficient disk space'
     except (Experiment.DoesNotExist, Dataset.DoesNotExist, TypeError):
-        return False
+        return False, ''

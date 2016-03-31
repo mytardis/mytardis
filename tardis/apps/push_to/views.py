@@ -150,11 +150,10 @@ def validate_remote_path(request, remote_host_id):
                                         content_type='application/json')
 
     try:
-        credential = Credential.get_suitable_credential(request.user,
-                                                        RemoteHost.objects.get(
-                                                            pk=remote_host_id))
-        ssh = credential.get_client_for_host(
-            RemoteHost.objects.get(pk=remote_host_id))
+        remote_host = RemoteHost.objects.get(pk=remote_host_id)
+        credential = get_credential(request, remote_host)
+
+        ssh = credential.get_client_for_host(remote_host)
         sftp_client = ssh.open_sftp()
 
         response['default'] = {}
@@ -186,18 +185,16 @@ def validate_remote_path(request, remote_host_id):
             response[path] = {}
             response[path]['valid_parts'] = '/'.join(valid_parts)
             response[path]['invalid_parts'] = '/'.join(invalid_parts)
-            response[path]['valid_children'] = list_subdirectories(sftp_client,
-                                                                   response[
-                                                                       path][
-                                                                       'valid_parts'])
-            response[path]['free_space'] = bytes_available(ssh, response[path][
-                'valid_parts'])
+            response[path]['valid_children'] = list_subdirectories(
+                sftp_client,
+                response[path]['valid_parts'])
+            response[path]['free_space'] = bytes_available(
+                ssh, response[path]['valid_parts'])
             if 'object_size' in response:
-                response[path]['sufficient_space'] = response[path][
-                                                         'free_space'] > \
-                                                     response['object_size']
+                response[path]['sufficient_space'] = \
+                    response[path]['free_space'] > response['object_size']
 
-    except Credential.DoesNotExist:
+    except NoSuitableCredential:
         response['message'] = "You don't have access to this host."
         return HttpResponseForbidden(json.dumps(response),
                                      content_type='application/json')
@@ -254,8 +251,7 @@ def initiate_push_datafile(request, datafile_id, remote_host_id=None):
 
 
 def _initiate_push(
-        request, callback_view, remote_host_id, obj_type, push_obj_id,
-        destination=None
+        request, callback_view, remote_host_id, obj_type, push_obj_id
 ):
     """
     Kicks off data push
@@ -264,7 +260,7 @@ def _initiate_push(
     :param remote_host_id: database id of remote host
     :param obj_type: the type of data
     :param push_obj_id: the data object id
-    :param destination: a list of directories
+    :param destination: a path
     :return: status message, host list or OAuth2 redirects
     """
 
@@ -287,15 +283,25 @@ def _initiate_push(
         credential = get_credential(request, remote_host)
 
         ssh_client = credential.get_client_for_host(remote_host)
-        if destination is None:
-            destination = get_default_push_location(ssh_client.open_sftp())
-
-        if not can_copy(ssh_client, obj_type, push_obj_id, destination):
-            return render_error_message(request,
-                                        'Invalid destination provided;'
-                                        'data cannot be pushed.')
+        if request.GET.get('path', None) is not None:
+            destination = request.GET.get('path')
         else:
-            destination += "/mytardis-data"
+            args = {
+                'remote_host_id': remote_host_id
+            }
+            c = {
+                'remote_path_verify_url': reverse(validate_remote_path,
+                                                  kwargs=args),
+                'remote_destination_name': remote_host.nickname
+            }
+            return HttpResponse(
+                render(request, 'destination_selector.html', c))
+
+        destination_ok, message = can_copy(ssh_client, obj_type, push_obj_id,
+                                           destination)
+        if not destination_ok:
+            return render_error_message(request,
+                                        'Invalid destination: %s' % message)
 
     except NoSuitableCredential:
         callback_args = {
