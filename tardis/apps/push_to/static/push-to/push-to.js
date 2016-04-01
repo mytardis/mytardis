@@ -89,6 +89,7 @@ pushToApp.controller('DestinationSelectorCtrl', function ($scope, $resource) {
     validPaths.initialize().then(function () {
         return PathValidationService.get({}).$promise.then(function (info) {
             $scope.destinationPath = info['default']['path'];
+            $scope.defaultPath = $scope.destinationPath;
             $scope.loading = false;
         });
     });
@@ -96,4 +97,11 @@ pushToApp.controller('DestinationSelectorCtrl', function ($scope, $resource) {
     $scope.validPaths = {
         source: validPaths.ttAdapter()
     };
+    
+    $(document).ajaxStart(function() {
+        $scope.ajaxRunning = true;
+    })
+    $(document).ajaxStop(function() {
+        $scope.ajaxRunning = false;
+    })
 });

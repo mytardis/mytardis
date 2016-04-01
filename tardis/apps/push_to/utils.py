@@ -1,3 +1,5 @@
+import random
+
 from paramiko import SFTPError
 
 from tardis.tardis_portal.models import Experiment, Dataset, DataFile
@@ -60,9 +62,20 @@ def get_object_size(type, id):
 def can_copy(ssh_client, object_type, object_id, path):
     if not is_directory(ssh_client.open_sftp(), path):
         return False, "Directory does not exist."
+
+    # check if destination is writable by touching a file and deleting it
+    chan = ssh_client.get_transport().open_session()
+    test_file_name = "%032x" % random.getrandbits(128)
+    chan.exec_command(
+        "touch {destination}/{test_file_name} && "
+        "rm {destination}/{test_file_name}".format(
+            destination=path, test_file_name=test_file_name))
+    if chan.recv_exit_status() != 0:
+        return False, "Destination is not writable"
+
     try:
         if bytes_available(ssh_client, path) > get_object_size(object_type,
-                                                                   object_id):
+                                                               object_id):
             return True, ''
         else:
             return False, 'Insufficient disk space'
