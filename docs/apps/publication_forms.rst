@@ -45,6 +45,9 @@ defined:
  * :py:const:`PUBLICATION_INTRODUCTION` set to an HTML formatted
    introductory text that is displayed to the user before begins the
    publication process
+ * the :py:mod:`apps.publication_forms.update_publication_records` task
+   should be added to :py:const:`CELERYBEAT_SCHEDULE` and set to a
+   reasonable interval for embargo processing
 
 DOI support
 -----------
@@ -75,34 +78,34 @@ app to see defaults. The following keys in the dictionary must be defined if
 
  * :py:const:`PUBLICATION_DATA_ADMIN['requires_authorisation']`
     * Sent to publication admins to authorise/approve a publication for release
-    * {user_name}: the submitting user's user name
-    * {pub_url}: the direct link to the publication for review
-    * {approvals_url}: the link to the admin approvals page
+    * `{user_name}`: the submitting user's user name
+    * `{pub_url}`: the direct link to the publication for review
+    * `{approvals_url}`: the link to the admin approvals page
  * :py:const:`PUBLICATION_DATA_ADMIN['awaiting_approval']`
     * Sent to all authors immediately after submission
-    * {pub_title}: the title of the publication
+    * `{pub_title}`: the title of the publication
  * :py:const:`PUBLICATION_DATA_ADMIN['approved']`
     * Sent to all authors after the publication has been approved but before
       being released (e.g. by embargo expiry)
-    * {pub_title): the title of the publication
-    * {pub_url}: the direct link to the publication
+    * `{pub_title}`: the title of the publication
+    * `{pub_url}`: the direct link to the publication
  * :py:const:`PUBLICATION_DATA_ADMIN['approved_with_doi']`
     * As above, but contains a DOI
-    * {doi}: the publication's DOI
+    * `{doi}`: the publication's DOI
  * :py:const:`PUBLICATION_DATA_ADMIN['rejected']`
     * Sent to all authors if the publication is rejected
-    * {pub_title}: the title of the publication
+    * `{pub_title}`: the title of the publication
  * :py:const:`PUBLICATION_DATA_ADMIN['reverted_to_draft']`
     * Sent to all authors when the publication requires amendments by the
       submitting user
-    * {pub_title}: the title of the publication
+    * `{pub_title}`: the title of the publication
  * :py:const:`PUBLICATION_DATA_ADMIN['released']`
     * Sent to all authors when the publication has been released following
       approval
-    * {pub_title}: the title of the publication
+    * `{pub_title}`: the title of the publication
  * :py:const:`PUBLICATION_DATA_ADMIN['released_with_doi']`
     * As above, but contains a DOI
-    * {doi}: the publication's DOI
+    * `{doi}`: the publication's DOI
 
 Domain-specific metadata
 ========================
@@ -123,34 +126,35 @@ below:
      'form_template':
          '/static/publication-form/mx-dataset-description-template.html'}]
 
-*dataset_schema* is a regular expression applied to each schema attached to
-each data set, and if matched, the corresponding *publication_schema* is added
- to the resulting publication, and its parameters are provided by the
- *form_template*.
+`dataset_schema` is a regular expression applied to each schema attached to
+each data set, and if matched, the corresponding `publication_schema` is added
+to the resulting publication, and its parameters are provided by the form
+template. Care could be taken in constructing the `dataset_schema` regex
+keeping in mind that the expression could match one or more data sets.
 
-Constructing the *form_template* HTML files are somewhat challenging;
-examples are provided in the *static/publication-form* directory. These
+Constructing the form template HTML files are somewhat challenging;
+examples are provided in the `static/publication-form` directory. These
 forms require special syntax that is defined using *AngularJs*. All forms
-have access to a *formTemplate* variable, which includes the publication
-schema name (*formTemplate.name*) a list of affected data sets
-(*formTemplate.datasets*). Each form will populate *formData.extraInfo[x]*
-with the user supplied data, where *x* is a unique key.
+have access to a `formTemplate` variable, which includes the publication
+schema name (`formTemplate.name`) a list of affected data sets
+(*formTemplate.datasets*). Each form will populate `formData.extraInfo[x]`
+with the user supplied data, where `x` is a unique key.
 
-The forms themselves must be enclosed in a <tardis-form> tag, which requires
- a *my-model* attribute (set to *formData.extraInfo[x]*, and a *schema* (set
-to *formTemplate.name*). Any form field tags must also include the
-*tardis-form-field* attribute, in addition to *parameter-name*, which is set
- to the publication schema's parameter to populate. The value given to *x* as
-the *formData.extraInfo[x]* key must be unique over all included forms so
-that form data can be reloaded from draft. In our example below, the form and
-data set indices are concatenated to form this unique key. Each entry in
-*formData.extraInfo* is given its own parameter set in the final
-publication metadata.
+The forms themselves must be enclosed in a `<tardis-form>` tag, which requires
+a `my-model` attribute (set to `formData.extraInfo[x]`, and a *schema* (set
+to `formTemplate.name`). Any form field tags must also include the
+*tardis-form-field* attribute, in addition to `parameter-name`, which is set
+to the publication schema's parameter to populate. The value given to `x` as
+the `formData.extraInfo[x]` key must be unique over all included forms. In
+our example below, the form and data set indices are concatenated to form
+this unique key. Each entry in `formData.extraInfo` is given its own
+parameter set in the final publication metadata.
 
 Here is an example that collects some information for each dataset that
-matches the *dataset_schema* regex:
+matches the `dataset_schema` regex:
 
 .. code-block:: html
+
    <div ng-repeat="ds in formTemplate.datasets"
         ng-init="f = $parent.$index; formData.extraInfo[f+'.'+$index]['dataset'] = ds.description;">
         <h4>{{ ds.description }}</h4>
@@ -165,22 +169,22 @@ matches the *dataset_schema* regex:
 
 The above form works as follows:
 
- 1. The code inside the outer <div> tag is repeated for each data set, which
-    is provided by *formTemplate.datasets*. The outer <div> tag also
-    initialises a form index, *f*, obtained from the parent scope's *$index*
-    variable, which is used in conjunction with the inner scope's *$index*
-    variable to form the unique key for *formData.extraInfo*; namely,
-    *formData.extraInfo[f+'.'+$index]*.
- 2. *ng-init* in the outer <div> tag also saves a 'dataset' field, which is
-    included in *formData.extraInfo*. This functions exactly as a hidden
+ 1. The code inside the outer `<div>` tag is repeated for each data set, which
+    is provided by `formTemplate.datasets`. The outer `<div>` tag also
+    initialises a form index, `f`, obtained from the parent scope's `$index`
+    variable, which is used in conjunction with the inner scope's `$index`
+    variable to form the unique key for `formData.extraInfo`; namely,
+    `formData.extraInfo[f+'.'+$index]`.
+ 2. `ng-init` in the outer `<div>` tag also saves a 'dataset' field, which is
+    included in `formData.extraInfo`. This functions exactly as a hidden
     HTML input field would.
  3. The corresponding dataset name is displayed to the user in the <h4> tag
- 4. A <tardis-form> is started, using *formData.extraInfo[f+'.'+$index]* as
-    its model, linking it to the schema provided by *formTemplate.name*.
- 5. A <textarea> collects a data set description that will be added to the
+ 4. A `<tardis-form>` is started, using `formData.extraInfo[f+'.'+$index]` as
+    its model, linking it to the schema provided by `formTemplate.name`.
+ 5. A `<textarea>` collects a data set description that will be added to the
     parameter named 'additional-information', as defined in the
     corresponding schema
 
 Please note that it is extremely important to ensure that the
-*parameter-name* attribute for each form field matches exactly the schema
+`parameter-name` attribute for each form field matches exactly the schema
 parameter. Any fields that do not match are silently ignored!
