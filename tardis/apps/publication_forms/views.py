@@ -443,7 +443,7 @@ def select_forms(datasets):
                     # of datasets that satisfy the criteria for selecting this
                     # form.
                     # This allows the frontend to request dataset-specific
-                    # information as well as generall information.
+                    # information as well as general information.
                     if not any(f['name'] == mapping['publication_schema']
                                for f in forms):
                         forms.append({'name': mapping['publication_schema'],
