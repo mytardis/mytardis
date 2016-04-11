@@ -134,7 +134,7 @@ class UploadTestCase(TestCase):
             DataFile.objects.filter(dataset__id=self.dataset.id)
         self.assertTrue(path.exists(path.join(self.dataset_path,
                         self.filename)))
-        target_id = DataFile.objects.first().id()
+        target_id = Dataset.objects.first().id
         self.assertTrue(self.dataset.id == target_id)
         url = test_files_db[0].file_objects.all()[0].uri
         self.assertTrue(url ==
@@ -664,7 +664,7 @@ class ExperimentTestCase(TestCase):
             ds = Dataset.objects.create(description="Dataset #%d" % i)
             ds.experiments.add(experiment)
             ds.save()
-            return (i, ds)
+            return (ds.id, ds)
         datasets = dict(map(create_dataset, range(1, 11)))
 
         # Login as user

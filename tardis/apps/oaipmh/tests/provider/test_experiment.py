@@ -53,9 +53,9 @@ def _create_experiment(user, bad):
     return experiment
 
 def _get_first_exp_id():
-    exp_ids = [exp.id for exp in Experiment.objects]
-    return 'experiment/%d' % min(exp_ids)
-    
+    #exp_ids = [exp.id for exp in Experiment.objects]
+    #return 'experiment/%d' % min(exp_ids)
+    return 'experiment/%d' % Experiment.objects.first().id
 
 class AbstractExperimentProviderTC():
     __metaclass__ = ABCMeta
@@ -244,7 +244,7 @@ class RifCsExperimentProviderTestCase(AbstractExperimentProviderTC, TestCase):
             else:
                 expect(header.identifier()).to_contain(str(self._user.id))
                 expect(header.datestamp().replace(tzinfo=pytz.utc))\
-                    .to_equal(get_local_time(self._user.last_login))
+                    .to_estRecordsqual(get_local_time(self._user.last_login))
                 expect(metadata.getField('id')).to_equal(self._user.id)
                 expect(metadata.getField('email'))\
                     .to_equal(str(self._user.email))
