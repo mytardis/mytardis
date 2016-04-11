@@ -134,7 +134,8 @@ class UploadTestCase(TestCase):
             DataFile.objects.filter(dataset__id=self.dataset.id)
         self.assertTrue(path.exists(path.join(self.dataset_path,
                         self.filename)))
-        self.assertTrue(self.dataset.id == 1)
+        target_id = DataFile.objects.first().id()
+        self.assertTrue(self.dataset.id == target_id)
         url = test_files_db[0].file_objects.all()[0].uri
         self.assertTrue(url ==
                         path.relpath('%s/testfile.txt' % self.dataset_path,
