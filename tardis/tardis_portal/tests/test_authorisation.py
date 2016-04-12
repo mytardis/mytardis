@@ -82,7 +82,7 @@ class ObjectACLTestCase(TestCase):
         self.experiment4.save()
 
         # user1 owns experiment1
-        acl = ObjectACL(
+        self.acl1 = ObjectACL(
             pluginId=django_user,
             entityId=str(self.user1.id),
             content_object=self.experiment1,
@@ -90,10 +90,10 @@ class ObjectACLTestCase(TestCase):
             isOwner=True,
             aclOwnershipType=ObjectACL.OWNER_OWNED,
             )
-        acl.save()
+        self.acl1.save()
 
         # user2 owns experiment2
-        acl = ObjectACL(
+        self.acl2 = ObjectACL(
             pluginId=django_user,
             entityId=str(self.user2.id),
             content_object=self.experiment2,
@@ -101,19 +101,24 @@ class ObjectACLTestCase(TestCase):
             isOwner=True,
             aclOwnershipType=ObjectACL.OWNER_OWNED,
             )
-        acl.save()
+        self.acl2.save()
 
         # experiment4 is accessible via location
-        acl = ObjectACL(
+        self.acl3 = ObjectACL(
             pluginId='ip_address',
             entityId='127.0.0.1',
             content_object=self.experiment4,
             canRead=True,
             aclOwnershipType=ObjectACL.SYSTEM_OWNED,
         )
-        acl.save()
+        self.acl3.save()
 
     def tearDown(self):
+        
+        self.acl1.delete()
+        self.acl2.delete()
+        self.acl3.delete()
+
         self.client1.logout()
         self.client2.logout()
         self.client3.logout()
@@ -128,6 +133,12 @@ class ObjectACLTestCase(TestCase):
         self.user2.delete()
         self.user3.delete()
         self.user4.delete()
+
+        try:
+            self.group1.delete()
+            self.group2.delete()
+        except: 
+            pass
 
     def testReadAccess(self):
         login = self.client1.login(username=self.user1.username,
@@ -168,16 +179,16 @@ class ObjectACLTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
 
         # add user2 as admin to the newly created group1
-        group = Group.objects.get(name='group1')
+        self.group1 = Group.objects.get(name='group1')
         response = self.client1.get('/group/%i/add/%s/?isAdmin=true&authMethod=%s'
-                                    % (group.id,
+                                    % (self.group1.id,
                                        self.user2.username,
                                        localdb_auth_key))
         self.assertEqual(response.status_code, 200)
 
         # try it again
         response = self.client1.get('/group/%i/add/%s/?isAdmin=true&authMethod=%s'
-                                    % (group.id,
+                                    % (self.group1.id,
                                        self.user2.username,
                                        localdb_auth_key))
         self.assertEqual(response.content, 'User %s is already member of that'
@@ -258,7 +269,7 @@ class ObjectACLTestCase(TestCase):
         # user2 should be able to add user3 to group1 (experiment1)
         response = self.client2.get(
             '/group/%i/add/%s/?isAdmin=false&authMethod=%s'
-            % (group.id, self.user3.username, localdb_auth_key))
+            % (self.group1.id, self.user3.username, localdb_auth_key))
         self.assertEqual(response.status_code, 200)
 
         self.client2.logout()
@@ -286,7 +297,7 @@ class ObjectACLTestCase(TestCase):
         # user3 should not be able to add another user4 to group1
         response = self.client3.get(
             '/group/%i/add/%s/?isAdmin=false&authMethod=%s'
-            % (group.id, 'testuser4', localdb_auth_key))
+            % (self.group1.id, 'testuser4', localdb_auth_key))
         self.assertEqual(response.status_code, 403)
 
         self.client3.logout()
@@ -303,7 +314,7 @@ class ObjectACLTestCase(TestCase):
 
         # remove user3 from group1
         response = self.client1.get('/group/%i/remove/%s/'
-                                   % (group.id, self.user3.username))
+                                   % (self.group1.id, self.user3.username))
         self.assertEqual(response.status_code, 200)
 
         # add user3 to experiment1
@@ -315,7 +326,7 @@ class ObjectACLTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, '<div class="access_list_user')
 
-        # give user3 read permissions for experiment1 effictive TOMORROW
+        # give user3 read permissions for experiment1 effective TOMORROW
         response = self.client1.post(url % (self.experiment1.id,
                                             self.user3.username),
                           {'canRead': True,
@@ -440,10 +451,10 @@ class ObjectACLTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
 
         # add user3 as admin to group2
-        group = Group.objects.get(name='group2')
+        self.group2 = Group.objects.get(name='group2')
         response = self.client1.get(
             '/group/%i/add/%s/?isAdmin=true&authMethod=%s'
-            % (group.id,
+            % (self.group2.id,
                self.user3.username,
                localdb_auth_key))
         self.assertEqual(response.status_code, 200)

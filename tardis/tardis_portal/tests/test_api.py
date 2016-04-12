@@ -316,10 +316,11 @@ class DatasetResourceTest(MyTardisResourceTestCase):
                          self.testinstrument.id)
 
     def test_post_dataset(self):
+        exp_id = Experiment.objects.first().id
         post_data = {
             "description": "api test dataset",
             "experiments": [
-                "/api/v1/experiment/1/",
+                "/api/v1/experiment/%d/" % exp_id,
             ],
             "immutable": False}
         dataset_count = Dataset.objects.count()
@@ -353,8 +354,9 @@ class DataFileResourceTest(MyTardisResourceTestCase):
         self.test_parname2.save()
 
     def test_post_single_file(self):
+        ds_id = Dataset.objects.first().id
         post_data = """{
-    "dataset": "/api/v1/dataset/1/",
+    "dataset": "/api/v1/dataset/%d/",
     "filename": "mytestfile.txt",
     "md5sum": "930e419034038dfad994f0d2e602146c",
     "size": "8",
@@ -370,7 +372,7 @@ class DataFileResourceTest(MyTardisResourceTestCase):
             "value": "123"
         }]
     }]
-}"""
+}""" % ds_id
 
         post_file = tempfile.NamedTemporaryFile()
         file_content = "123test\n"
