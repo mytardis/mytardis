@@ -502,7 +502,7 @@ class GroupResourceTest(MyTardisResourceTestCase):
             "id": group_id,
             "name": "Test Group",
         }
-        output = self.api_client.get('/api/v1/group/%d/?name=%s' % 
+        output = self.api_client.get('/api/v1/group/%d/?name=%s' %
                           (group_id, urllib.quote(self.testgroup.name)),
                                      authentication=self.get_credentials())
         returned_data = json.loads(output.content)
@@ -578,7 +578,7 @@ class FacilityResourceTest(MyTardisResourceTestCase):
             "name": "Test Facility",
             "resource_uri": "/api/v1/facility/%d/" % facility_id
         }
-        output = self.api_client.get('/api/v1/facility/?manager_group__id=%d' % 
+        output = self.api_client.get('/api/v1/facility/?manager_group__id=%d' %
                                      group_id,
                                      authentication=self.get_credentials())
         returned_data = json.loads(output.content)

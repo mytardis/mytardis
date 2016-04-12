@@ -1,4 +1,5 @@
 import datetime
+import logging
 
 from django.test import TestCase
 from django.test.client import Client
@@ -9,6 +10,7 @@ from tardis.tardis_portal.auth.localdb_auth import django_user
 from tardis.tardis_portal.auth.localdb_auth import auth_key as localdb_auth_key
 from tardis.tardis_portal.models import ObjectACL, Experiment, UserProfile
 
+logger = logging.getLogger(__name__)
 
 class ObjectACLTestCase(TestCase):
     urls = 'tardis.urls'
@@ -82,7 +84,7 @@ class ObjectACLTestCase(TestCase):
         self.experiment4.save()
 
         # user1 owns experiment1
-        self.acl1 = ObjectACL(
+        acl = ObjectACL(
             pluginId=django_user,
             entityId=str(self.user1.id),
             content_object=self.experiment1,
@@ -90,10 +92,10 @@ class ObjectACLTestCase(TestCase):
             isOwner=True,
             aclOwnershipType=ObjectACL.OWNER_OWNED,
             )
-        self.acl1.save()
+        acl.save()
 
         # user2 owns experiment2
-        self.acl2 = ObjectACL(
+        acl = ObjectACL(
             pluginId=django_user,
             entityId=str(self.user2.id),
             content_object=self.experiment2,
@@ -101,24 +103,19 @@ class ObjectACLTestCase(TestCase):
             isOwner=True,
             aclOwnershipType=ObjectACL.OWNER_OWNED,
             )
-        self.acl2.save()
+        acl.save()
 
         # experiment4 is accessible via location
-        self.acl3 = ObjectACL(
+        acl = ObjectACL(
             pluginId='ip_address',
             entityId='127.0.0.1',
             content_object=self.experiment4,
             canRead=True,
             aclOwnershipType=ObjectACL.SYSTEM_OWNED,
         )
-        self.acl3.save()
+        acl.save()
 
     def tearDown(self):
-        
-        self.acl1.delete()
-        self.acl2.delete()
-        self.acl3.delete()
-
         self.client1.logout()
         self.client2.logout()
         self.client3.logout()
@@ -133,12 +130,6 @@ class ObjectACLTestCase(TestCase):
         self.user2.delete()
         self.user3.delete()
         self.user4.delete()
-
-        try:
-            self.group1.delete()
-            self.group2.delete()
-        except: 
-            pass
 
     def testReadAccess(self):
         login = self.client1.login(username=self.user1.username,
@@ -179,16 +170,16 @@ class ObjectACLTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
 
         # add user2 as admin to the newly created group1
-        self.group1 = Group.objects.get(name='group1')
+        group = Group.objects.get(name='group1')
         response = self.client1.get('/group/%i/add/%s/?isAdmin=true&authMethod=%s'
-                                    % (self.group1.id,
+                                    % (group.id,
                                        self.user2.username,
                                        localdb_auth_key))
         self.assertEqual(response.status_code, 200)
 
         # try it again
         response = self.client1.get('/group/%i/add/%s/?isAdmin=true&authMethod=%s'
-                                    % (self.group1.id,
+                                    % (group.id,
                                        self.user2.username,
                                        localdb_auth_key))
         self.assertEqual(response.content, 'User %s is already member of that'
@@ -269,7 +260,7 @@ class ObjectACLTestCase(TestCase):
         # user2 should be able to add user3 to group1 (experiment1)
         response = self.client2.get(
             '/group/%i/add/%s/?isAdmin=false&authMethod=%s'
-            % (self.group1.id, self.user3.username, localdb_auth_key))
+            % (group.id, self.user3.username, localdb_auth_key))
         self.assertEqual(response.status_code, 200)
 
         self.client2.logout()
@@ -297,7 +288,7 @@ class ObjectACLTestCase(TestCase):
         # user3 should not be able to add another user4 to group1
         response = self.client3.get(
             '/group/%i/add/%s/?isAdmin=false&authMethod=%s'
-            % (self.group1.id, 'testuser4', localdb_auth_key))
+            % (group.id, 'testuser4', localdb_auth_key))
         self.assertEqual(response.status_code, 403)
 
         self.client3.logout()
@@ -307,14 +298,16 @@ class ObjectACLTestCase(TestCase):
         yesterday = today - datetime.timedelta(days=1)
         tomorrow = today + datetime.timedelta(days=1)
 
-        url = '/experiment/control_panel/%i/access_list/change/user/%s/'
+        url = ("/experiment/control_panel/%i/access_list"
+               "/change/user/%s/?authMethod=%s")
+
         login = self.client1.login(username=self.user1.username,
                                    password='secret')
         self.assertTrue(login)
 
         # remove user3 from group1
         response = self.client1.get('/group/%i/remove/%s/'
-                                   % (self.group1.id, self.user3.username))
+                                   % (group.id, self.user3.username))
         self.assertEqual(response.status_code, 200)
 
         # add user3 to experiment1
@@ -328,12 +321,14 @@ class ObjectACLTestCase(TestCase):
 
         # give user3 read permissions for experiment1 effective TOMORROW
         response = self.client1.post(url % (self.experiment1.id,
-                                            self.user3.username),
+                                            self.user3.username,
+                                            localdb_auth_key),
                           {'canRead': True,
                            'effectiveDate_year': tomorrow.year,
                            'effectiveDate_month': tomorrow.month,
                            'effectiveDate_day': tomorrow.day,
                            })
+        # logger.debug('[1] response =' + str(response))
         self.assertEqual(response.status_code, 302)
 
         # check permissions for user3
@@ -347,7 +342,8 @@ class ObjectACLTestCase(TestCase):
 
         # change effective date to TODAY
         response = self.client1.post(url % (self.experiment1.id,
-                                            self.user3.username),
+                                            self.user3.username,
+                                            localdb_auth_key),
                           {'canRead': True,
                            'effectiveDate_year': today.year,
                            'effectiveDate_month': today.month,
@@ -360,7 +356,9 @@ class ObjectACLTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
 
         # change effictive date to YESTERDAY
-        self.client1.post(url % (self.experiment1.id, self.user3.username),
+        self.client1.post(url % (self.experiment1.id,
+                                 self.user3.username,
+                                 localdb_auth_key),
                           {'canRead': True,
                            'effectiveDate_year': yesterday.year,
                            'effectiveDate_month': yesterday.month,
@@ -372,7 +370,9 @@ class ObjectACLTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
 
         # set expiry date to TOMORROW
-        self.client1.post(url % (self.experiment1.id, self.user3.username),
+        self.client1.post(url % (self.experiment1.id,
+                                 self.user3.username,
+                                 localdb_auth_key),
                           {'canRead': True,
                            'expiryDate_year': tomorrow.year,
                            'expiryDate_month': tomorrow.month,
@@ -384,7 +384,9 @@ class ObjectACLTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
 
         # set expiry date to TODAY
-        self.client1.post(url % (self.experiment1.id, self.user3.username),
+        self.client1.post(url % (self.experiment1.id,
+                                 self.user3.username,
+                                 localdb_auth_key),
                           {'canRead': True,
                            'expiryDate_year': today.year,
                            'expiryDate_month': today.month,
@@ -396,7 +398,9 @@ class ObjectACLTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
 
         # set expiry date to YESTERDAY
-        self.client1.post(url % (self.experiment1.id, self.user3.username),
+        self.client1.post(url % (self.experiment1.id,
+                                 self.user3.username,
+                                 localdb_auth_key),
                           {'canRead': True,
                            'expiryDate_year': yesterday.year,
                            'expiryDate_month': yesterday.month,

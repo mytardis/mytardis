@@ -1,10 +1,10 @@
 import json
+import requests
 
 from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
-import requests
 
 from paramiko import RSACert
 
