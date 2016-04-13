@@ -4,9 +4,9 @@ DATABASES = {
     'default': {
         'ENGINE':   "django.db.backends.postgresql_psycopg2",
         'NAME':     "tardis",
-        'USER':     "runner",
-        'PASSWORD': "semaphoredb",
+        'USER':     "mytardis",
+        'PASSWORD': "password",
         'HOST':     "localhost",
-        'PORT':     "",
+        'PORT':     "5432",
     }
 }
