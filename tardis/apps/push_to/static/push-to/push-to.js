@@ -58,7 +58,7 @@ pushToApp.controller('DestinationSelectorCtrl', function ($scope, $resource) {
                 currentQuery = query;
                 if (!query.endsWith("/")) {
                     var n = query.lastIndexOf('/');
-                    query = query.substring(0, n != -1 ? n : query.length) + "/";
+                    query = query.substring(0, n !== -1 ? n : query.length) + "/";
                 }
                 currentQueryBase = query;
                 settings.url = settings.url.replace("%QUERY", encodeURIComponent(query));
