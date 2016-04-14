@@ -64,6 +64,14 @@ We have tested the following backends with MyTardis:
 - SFTP
 - SWIFT Object Storage
 
+Documented backends
+-------------------
+
+.. toctree::
+   :maxdepth: 1
+
+   s3_storage
+
 
 Appendix: Conversion of 'Replicas'
 ==================================
