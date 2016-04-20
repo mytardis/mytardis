@@ -12,3 +12,4 @@ Configuration and Administration
   admin/metadata
   admin/searchsetup
   admin/storage
+  admin/facility_overview
