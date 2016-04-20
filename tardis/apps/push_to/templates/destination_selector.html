@@ -1,0 +1,32 @@
+{% load static from staticfiles %}
+<!DOCTYPE html>
+<html ng-app="push-to">
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>Push to</title>
+    <script type="application/javascript" src="{% static 'js/lib/jquery-1.10.2.min.js' %}"></script>
+    <script type="application/javascript" src="{% static 'angular/angular.min.js' %}"></script>
+    <script type="application/javascript" src="{% static 'push-to/typeahead.bundle.js' %}"></script>
+    <link href="{% static 'push-to/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
+    <script type="application/javascript">
+        var remote_destination_name = '{{ remote_destination_name }}';
+        var remote_path_verify_url = '{{ remote_path_verify_url }}';
+    </script>
+</head>
+{% verbatim %}
+    <body ng-controller="DestinationSelectorCtrl" style="margin: 5px 5px 5px 5px">
+    <h1>{{ remote_destination_name }}</h1>
+    <div ng-if="!loading">
+        <p>Enter a destination for your files:</p>
+        <button type="button" class="btn btn-default" ng-click="destinationPath = defaultPath"><span class="glyphicon glyphicon-home" aria-hidden="true"></span></button>
+        <input type="text" class="typeahead" sf-typeahead datasets="validPaths" options="pathOptions" ng-model="destinationPath" />
+        <a ng-href="?path={{ destinationPath }}" role="button" class="btn btn-primary">Push</a>
+        <img src="/static/push-to/ajax-loader.gif" ng-if="ajaxRunning" />
+    </div>
+    <div ng-if="loading">Checking remote host...</div>
+    </body>
+{% endverbatim %}
+<script type="application/javascript" src="{% static 'push-to/angular-typeahead.js' %}"></script>
+<script type="application/javascript" src="{% static 'push-to/angular-resource.min.js' %}"></script>
+<script type="application/javascript" src="{% static 'push-to/push-to.js' %}"></script>
+</html>
