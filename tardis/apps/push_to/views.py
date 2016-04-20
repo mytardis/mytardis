@@ -7,10 +7,6 @@ from django.core.urlresolvers import reverse
 from django.http import HttpResponse, HttpResponseForbidden, \
     HttpResponseNotFound
 from django.shortcuts import redirect, render
-<<<<<<< HEAD
-
-=======
->>>>>>> b9677093aef23c667674940b148bbb62b6a485ea
 from paramiko import RSACert
 
 from ssh_authz import sign_certificate
