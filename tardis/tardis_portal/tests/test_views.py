@@ -727,7 +727,8 @@ class ExperimentTestCase(TestCase):
             expect(response.status_code).to_equal(200)
             item = json.loads(response.content)
             check_item(item)
-            expect(item['experiments']).to_equal([e.id for e in experiments])
+            expect(sorted(item['experiments'])).to_equal(
+                   sorted([e.id for e in experiments]))
             # Remove the dataset from the original experiment
             # Should succeed because there are now many more experiments
             response = client.delete(json_url+str(item['id']),
