@@ -234,8 +234,7 @@ class UncachedTarStream(TarFile):
             self.binary_buffer = io.BytesIO()
             self.gzipfile = gzip.GzipFile(bytes(filename), 'w',
                                           comp_level, self.binary_buffer)
-        else:
-            self.tar_size = self.compute_size()
+        self.tar_size = self.compute_size()
 
     def compute_size(self):
         total_size = 0
