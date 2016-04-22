@@ -18,6 +18,7 @@ from django.db.models.signals import pre_delete
 from django.dispatch import receiver
 from django.forms.models import model_to_dict
 from django.utils import timezone
+from django.db import DatabaseError
 
 import magic
 
@@ -700,7 +701,14 @@ class DataFileObject(models.Model):
 
         self.verified = result
         self.last_verified_time = timezone.now()
-        self.save(update_fields=['verified', 'last_verified_time'])
+        try:
+            self.save(update_fields=['verified', 'last_verified_time'])
+        except DatabaseError as err:
+            logger.error(err)
+            logger.error("DataFile: %s, ID: %s", df.filename, df.id)
+            logger.error("DFO storage_box: %s, URI: %s, ID: %s",
+                         self.storage_box, self.uri, self.id)
+            logger.error("actual['size'] = %s", actual['size'])
         df.update_mimetype()
         return result
 
@@ -708,7 +716,10 @@ class DataFileObject(models.Model):
         return self._storage.path(self.uri)
 
     def delete_data(self):
-        self._storage.delete(self.uri)
+        try:
+            self._storage.delete(self.uri)
+        except IOError as ioe:
+            logger.error(ioe)
 
 
 @receiver(pre_delete, sender=DataFileObject, dispatch_uid='dfo_delete')
