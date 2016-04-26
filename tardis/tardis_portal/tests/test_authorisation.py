@@ -116,10 +116,6 @@ class ObjectACLTestCase(TestCase):
         acl.save()
 
     def tearDown(self):
-        self.client1.logout()
-        self.client2.logout()
-        self.client3.logout()
-        self.client4.logout()
 
         self.experiment1.delete()
         self.experiment2.delete()
@@ -130,6 +126,98 @@ class ObjectACLTestCase(TestCase):
         self.user2.delete()
         self.user3.delete()
         self.user4.delete()
+        
+        self.client1.logout()
+        self.client2.logout()
+        self.client3.logout()
+        self.client4.logout()
+        
+    def testChangeUserAccess(self):
+        login1 = self.client1.login(username=self.user1.username,
+                                   password='secret')
+        self.assertTrue(login1)
+
+        login3 = self.client3.login(username=self.user3.username,
+                                   password='secret')
+        self.assertTrue(login3)
+
+        # user1 should be see experiment1
+        response = self.client1.get('/experiment/view/%i/'
+                                   % (self.experiment1.id))
+        self.assertEqual(response.status_code, 200)
+
+        # user3 should not be able to see experiment1
+        response = self.client3.get('/experiment/view/%i/'
+                                   % (self.experiment1.id))
+        self.assertEqual(response.status_code, 403)
+        
+        # make the group1 a full read/write/owner of the experiment1
+        response = self.client1.get('/experiment/control_panel/%i'
+                                    '/access_list/add/group/%s/?canRead=true'
+                                    '&canWrite=true&canDelete=false&isOwner=true'
+                                    % (self.experiment1.id, 'group1'))
+        self.assertEqual(response.status_code, 200)
+
+        # ok, now do some tricky stuff
+        today = datetime.datetime.today()
+        yesterday = today - datetime.timedelta(days=1)
+        tomorrow = today + datetime.timedelta(days=1)
+
+        # add user3 to experiment1
+        response = self.client1.get('/experiment/control_panel/%i/access_list'
+                                    '/add/user/%s/?authMethod=%s'
+                                    % (self.experiment1.id,
+                                       self.user3.username,
+                                       localdb_auth_key))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, '<div class="access_list_user')
+        
+        # check permissions for user3 - fail as canRead not set to True
+        response = self.client3.get('/experiment/view/%i/'
+                                   % (self.experiment1.id))
+        self.assertEqual(response.status_code, 403)
+
+
+        # give user3 read permissions for experiment1 effective TOMORROW
+        url = ("/experiment/control_panel/%i/access_list"
+               "/change/user/%s/?authMethod=%s")
+
+        response = self.client1.post(url % (self.experiment1.id,
+                                            self.user3.username,
+                                            localdb_auth_key),
+                          {'canRead': True,
+                           'effectiveDate_year':  tomorrow.year,
+                           'effectiveDate_month': tomorrow.month,
+                           'effectiveDate_day':   tomorrow.day,
+                           })
+        self.assertEqual(response.status_code, 302)
+
+        # check permissions for user3
+        response = self.client3.get('/experiment/view/%i/'
+                                   % (self.experiment1.id))
+        self.assertEqual(response.status_code, 403)
+
+
+        # give user3 read permissions for experiment1 effective YESTERDAY
+        url = ("/experiment/control_panel/%i/access_list"
+               "/change/user/%s/?authMethod=%s")
+
+        response = self.client1.post(url % (self.experiment1.id,
+                                            self.user3.username,
+                                            localdb_auth_key),
+                          {'canRead': True,
+                           'effectiveDate_year':  yesterday.year,
+                           'effectiveDate_month': yesterday.month,
+                           'effectiveDate_day':   yesterday.day,
+                           })
+        # logger.debug('[1] response =' + str(response))
+        self.assertEqual(response.status_code, 302)
+
+        # check permissions for user3
+        response = self.client3.get('/experiment/view/%i/'
+                                   % (self.experiment1.id))
+        self.assertEqual(response.status_code, 200)
+
 
     def testReadAccess(self):
         login = self.client1.login(username=self.user1.username,
