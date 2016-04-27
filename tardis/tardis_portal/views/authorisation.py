@@ -29,7 +29,6 @@ from tardis.tardis_portal.models import UserAuthentication, UserProfile, Experim
     Token, GroupAdmin, ObjectACL
 from tardis.tardis_portal.shortcuts import render_response_index, \
     return_response_error, render_error_message
-from numpy.f2py.auxfuncs import throw_error
 
 logger = logging.getLogger(__name__)
 
