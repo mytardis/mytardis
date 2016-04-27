@@ -126,12 +126,12 @@ class ObjectACLTestCase(TestCase):
         self.user2.delete()
         self.user3.delete()
         self.user4.delete()
-        
+
         self.client1.logout()
         self.client2.logout()
         self.client3.logout()
         self.client4.logout()
-        
+
     def testChangeUserPermissions(self):
         login1 = self.client1.login(username=self.user1.username,
                                    password='secret')
@@ -150,7 +150,7 @@ class ObjectACLTestCase(TestCase):
         response = self.client3.get('/experiment/view/%i/'
                                    % (self.experiment1.id))
         self.assertEqual(response.status_code, 403)
-        
+
         # make the group1 a full read/write/owner of the experiment1
         response = self.client1.get('/experiment/control_panel/%i'
                                     '/access_list/add/group/%s/?canRead=true'
@@ -171,7 +171,7 @@ class ObjectACLTestCase(TestCase):
                                        localdb_auth_key))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, '<div class="access_list_user')
-        
+
         # check permissions for user3 - fail as canRead not set to True
         response = self.client3.get('/experiment/view/%i/'
                                    % (self.experiment1.id))

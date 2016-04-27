@@ -459,7 +459,7 @@ def change_user_permissions(request, experiment_id, username):
                eacl.get_related_object().id == user.id:
                 acl = eacl
         #acl = expt_acls.filter(entityId=str(user.id))
-        if acl == None:
+        if acl is None:
             raise ObjectACL.DoesNotExist
         owner_acls = [oacl for oacl in expt_acls if oacl.isOwner]
     except ObjectACL.DoesNotExist:
