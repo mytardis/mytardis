@@ -8,7 +8,7 @@ from django.contrib.auth.models import User, Group, Permission, AnonymousUser
 
 from tardis.tardis_portal.auth.localdb_auth import django_user
 from tardis.tardis_portal.auth.localdb_auth import auth_key as localdb_auth_key
-from tardis.tardis_portal.models import ObjectACL, Experiment, UserProfile
+from tardis.tardis_portal.models import ObjectACL, Experiment
 
 logger = logging.getLogger(__name__)
 
@@ -132,7 +132,7 @@ class ObjectACLTestCase(TestCase):
         self.client3.logout()
         self.client4.logout()
         
-    def testChangeUserAccess(self):
+    def testChangeUserPermissions(self):
         login1 = self.client1.login(username=self.user1.username,
                                    password='secret')
         self.assertTrue(login1)
@@ -197,6 +197,10 @@ class ObjectACLTestCase(TestCase):
                                    % (self.experiment1.id))
         self.assertEqual(response.status_code, 403)
 
+        # user1 should be see experiment1
+        response = self.client1.get('/experiment/view/%i/'
+                                   % (self.experiment1.id))
+        self.assertEqual(response.status_code, 200)
 
         # give user3 read permissions for experiment1 effective YESTERDAY
         url = ("/experiment/control_panel/%i/access_list"
@@ -210,7 +214,6 @@ class ObjectACLTestCase(TestCase):
                            'effectiveDate_month': yesterday.month,
                            'effectiveDate_day':   yesterday.day,
                            })
-        # logger.debug('[1] response =' + str(response))
         self.assertEqual(response.status_code, 302)
 
         # check permissions for user3

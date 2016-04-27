@@ -29,6 +29,7 @@ from tardis.tardis_portal.models import UserAuthentication, UserProfile, Experim
     Token, GroupAdmin, ObjectACL
 from tardis.tardis_portal.shortcuts import render_response_index, \
     return_response_error, render_error_message
+from numpy.f2py.auxfuncs import throw_error
 
 logger = logging.getLogger(__name__)
 
@@ -453,9 +454,15 @@ def change_user_permissions(request, experiment_id, username):
 
     try:
         expt_acls = Experiment.safe.user_acls(experiment_id)
-
-        acl = expt_acls.filter(entityId=str(user.id))
-        owner_acls = [acl for acl in expt_acls if acl.isOwner]
+        acl = None
+        for eacl in expt_acls:
+            if eacl.pluginId == 'django_user' and \
+               eacl.get_related_object().id == user.id:
+                acl = eacl
+        #acl = expt_acls.filter(entityId=str(user.id))
+        if acl == None:
+            raise ObjectACL.DoesNotExist
+        owner_acls = [oacl for oacl in expt_acls if oacl.isOwner]
     except ObjectACL.DoesNotExist:
         return return_response_error(request)
 
@@ -466,10 +473,13 @@ def change_user_permissions(request, experiment_id, username):
             if 'isOwner' in form.changed_data and \
                             form.cleaned_data['isOwner'] is False and \
                             len(owner_acls) == 1:
-                return render_error_message(
-                    request,
-                    'Cannot remove ownership, every experiment must have at '
-                    'least one user owner.', status=409)
+                owner = owner_acls[0].get_related_object()
+                plugin = owner_acls[0].pluginId
+                if plugin == 'django_user' and owner.id == user.id:
+                    return render_error_message(
+                        request,
+                        'Cannot remove ownership, every experiment must have at '
+                        'least one user owner.', status=409)
             form.save()
             url = reverse('tardis.tardis_portal.views.control_panel')
             return HttpResponseRedirect(url)
