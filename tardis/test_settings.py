@@ -1,4 +1,4 @@
-# pylint: disable=W0401,W0614
+# pylint: disable=wildcard-import,unused-wildcard-import
 import logging
 from os import listdir
 from tardis.default_settings import *  # noqa # pylint: disable=W0401,W0614
