@@ -1,4 +1,5 @@
-from tardis.test_settings import *
+# pylint: disable=wildcard-import
+from tardis.test_settings import *  # noqa # pylint: disable=W0614
 
 DATABASES = {
     'default': {
