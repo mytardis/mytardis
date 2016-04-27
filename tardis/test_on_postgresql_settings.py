@@ -1,5 +1,5 @@
 # pylint: disable=W0401,W0614
-from tardis.test_settings import *  # noqa # pylint: disable=W0614
+from tardis.test_settings import *  # noqa # pylint: disable=W0401,W0614
 
 DATABASES = {
     'default': {

@@ -1,7 +1,7 @@
 # pylint: disable=W0401,W0614
 import logging
 from os import listdir
-from tardis.default_settings import *  # noqa # pylint: disable=W0614
+from tardis.default_settings import *  # noqa # pylint: disable=W0401,W0614
 
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 
