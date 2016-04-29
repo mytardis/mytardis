@@ -1,8 +1,7 @@
-# pylint: disable=W0401,W0614
-from os import listdir
+# pylint: disable=wildcard-import,unused-wildcard-import
 import logging
-
-from tardis.default_settings import *  # noqa
+from os import listdir
+from tardis.default_settings import *  # noqa # pylint: disable=W0401,W0614
 
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 

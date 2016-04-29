@@ -65,9 +65,10 @@ class ModelTestCase(TestCase):
         self.assertEqual(exp.created_by, self.user)
         self.assertEqual(exp.public_access,
                          models.Experiment.PUBLIC_ACCESS_NONE)
+        target_id = models.Experiment.objects.first().id
         self.assertEqual(
-            exp.get_absolute_url(), '/experiment/view/1/',
-            exp.get_absolute_url() + ' != /experiment/view/1/')
+            exp.get_absolute_url(), '/experiment/view/%d/' % target_id,
+            exp.get_absolute_url() + ' != /experiment/view/%d/' % target_id)
         self.assertEqual(exp.get_or_create_directory(),
                          path.join(settings.FILE_STORE_PATH, str(exp.id)))
 
@@ -110,9 +111,10 @@ class ModelTestCase(TestCase):
         self.assertIn(exp, list(dataset.experiments.iterator()))
         self.assertIn(exp2, list(dataset.experiments.iterator()))
         self.assertEqual(instrument, dataset.instrument)
+        target_id = models.Dataset.objects.first().id
         self.assertEqual(
-            dataset.get_absolute_url(), '/dataset/1',
-            dataset.get_absolute_url() + ' != /dataset/1')
+            dataset.get_absolute_url(), '/dataset/%d' % target_id,
+            dataset.get_absolute_url() + ' != /dataset/%d' % target_id)
 
     def test_authors(self):
         from tardis.tardis_portal import models
@@ -188,14 +190,15 @@ class ModelTestCase(TestCase):
             settings.REQUIRE_DATAFILE_SIZES = False
             settings.REQUIRE_DATAFILE_CHECKSUMS = False
             df_file = _build(dataset, 'file.txt', 'path/file.txt')
+            first_id = df_file.id
             self.assertEqual(df_file.filename, 'file.txt')
             self.assertEqual(df_file.file_objects.all()[0].uri,
                              'path/file.txt')
             self.assertEqual(df_file.dataset, dataset)
             self.assertEqual(df_file.size, None)
             self.assertEqual(df_file.get_download_url(),
-                             '/api/v1/dataset_file/1/download%s' %
-                             trailing_slash())
+                             '/api/v1/dataset_file/%d/download%s' %
+                             (first_id, trailing_slash()))
 
             df_file = _build(dataset, 'file1.txt', 'path/file1.txt')
             self.assertEqual(df_file.filename, 'file1.txt')
@@ -204,15 +207,16 @@ class ModelTestCase(TestCase):
             self.assertEqual(df_file.dataset, dataset)
             self.assertEqual(df_file.size, None)
             self.assertEqual(df_file.get_download_url(),
-                             '/api/v1/dataset_file/2/download%s' %
-                             trailing_slash())
-            df_file = _build(dataset, 'file1.txt', 'path/file1#txt')
-            self.assertEqual(df_file.filename, 'file1.txt')
+                             '/api/v1/dataset_file/%d/download%s' %
+                             (first_id + 1, trailing_slash()))
+
+            df_file = _build(dataset, 'file2.txt', 'path/file2#txt')
+            self.assertEqual(df_file.filename, 'file2.txt')
             self.assertEqual(df_file.dataset, dataset)
             self.assertEqual(df_file.size, None)
             self.assertEqual(df_file.get_download_url(),
-                             '/api/v1/dataset_file/3/download%s' %
-                             trailing_slash())
+                             '/api/v1/dataset_file/%d/download%s' %
+                             (first_id + 2, trailing_slash()))
 
             df_file = _build(dataset, 'f.txt',
                              'http://localhost:8080/filestore/f.txt')
@@ -220,8 +224,8 @@ class ModelTestCase(TestCase):
             self.assertEqual(df_file.dataset, dataset)
             self.assertEqual(df_file.size, None)
             self.assertEqual(df_file.get_download_url(),
-                             '/api/v1/dataset_file/4/download%s' %
-                             trailing_slash())
+                             '/api/v1/dataset_file/%d/download%s' %
+                             (first_id + 3, trailing_slash()))
 
             # check that can't save negative byte sizes
             with self.assertRaises(Exception):

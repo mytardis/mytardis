@@ -134,7 +134,8 @@ class UploadTestCase(TestCase):
             DataFile.objects.filter(dataset__id=self.dataset.id)
         self.assertTrue(path.exists(path.join(self.dataset_path,
                         self.filename)))
-        self.assertTrue(self.dataset.id == 1)
+        target_id = Dataset.objects.first().id
+        self.assertTrue(self.dataset.id == target_id)
         url = test_files_db[0].file_objects.all()[0].uri
         self.assertTrue(url ==
                         path.relpath('%s/testfile.txt' % self.dataset_path,
@@ -663,7 +664,7 @@ class ExperimentTestCase(TestCase):
             ds = Dataset.objects.create(description="Dataset #%d" % i)
             ds.experiments.add(experiment)
             ds.save()
-            return (i, ds)
+            return (ds.id, ds)
         datasets = dict(map(create_dataset, range(1, 11)))
 
         # Login as user
@@ -715,8 +716,8 @@ class ExperimentTestCase(TestCase):
             item = json.loads(response.content)
             check_item(item)
             # This dataset should now have two experiments
-            expect(item['experiments'])\
-                .to_equal([e.id for e in experiments[:2]])
+            expect(sorted(item['experiments'])).to_equal(
+                   sorted([e.id for e in experiments[:2]]))
             # Add the rest of the experiments to the dataset
             item['experiments'] = [e.id for e in experiments]
             # Send the revised dataset back to be altered with PUT
@@ -726,7 +727,8 @@ class ExperimentTestCase(TestCase):
             expect(response.status_code).to_equal(200)
             item = json.loads(response.content)
             check_item(item)
-            expect(item['experiments']).to_equal([e.id for e in experiments])
+            expect(sorted(item['experiments'])).to_equal(
+                   sorted([e.id for e in experiments]))
             # Remove the dataset from the original experiment
             # Should succeed because there are now many more experiments
             response = client.delete(json_url+str(item['id']),
@@ -735,8 +737,8 @@ class ExperimentTestCase(TestCase):
             item = json.loads(response.content)
             check_item(item)
             # Expect the item is now in all but the first experiment
-            expect(item['experiments'])\
-                .to_equal([e.id for e in experiments][1:])
+            expect(sorted(item['experiments'])).to_equal(
+                   sorted([e.id for e in experiments][1:]))
             # Check it no longer exists
             response = client.get(json_url+str(item['id']))
             expect(response.status_code).to_equal(404)

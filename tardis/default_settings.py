@@ -1,4 +1,5 @@
-from datetime import timedelta
+# pylint: disable=wildcard-import
+from datetime import timedelta  # noqa # pylint: disable=W0614
 from os import path
 from tempfile import gettempdir
 
