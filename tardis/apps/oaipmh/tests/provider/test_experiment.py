@@ -251,7 +251,7 @@ class RifCsExperimentProviderTestCase(AbstractExperimentProviderTC, TestCase):
             else:
                 expect(header.identifier()).to_contain(str(self._user.id))
                 expect(header.datestamp().replace(tzinfo=pytz.utc))\
-                    .to_estRecordsqual(get_local_time(self._user.last_login))
+                    .to_equal(get_local_time(self._user.last_login))
                 expect(metadata.getField('id')).to_equal(self._user.id)
                 expect(metadata.getField('email'))\
                     .to_equal(str(self._user.email))
