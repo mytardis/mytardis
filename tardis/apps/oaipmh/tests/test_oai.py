@@ -194,7 +194,7 @@ class EndpointTestCase(TestCase):
         expect(collection.xpath(
             'r:relatedObject[r:relation/@type="isManagerOf"]/r:key/text()',
             namespaces=ns)) \
-            .to_equal(['keydomain.test.example/experiment/%d' % 
+            .to_equal(['keydomain.test.example/experiment/%d' %
                          Experiment.objects.first().id])
 
     def testListIdentifiers(self):

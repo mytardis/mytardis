@@ -716,8 +716,8 @@ class ExperimentTestCase(TestCase):
             item = json.loads(response.content)
             check_item(item)
             # This dataset should now have two experiments
-            expect(item['experiments'])\
-                .to_equal([e.id for e in experiments[:2]])
+            expect(sorted(item['experiments'])).to_equal(
+                   sorted([e.id for e in experiments[:2]]))
             # Add the rest of the experiments to the dataset
             item['experiments'] = [e.id for e in experiments]
             # Send the revised dataset back to be altered with PUT
@@ -727,7 +727,8 @@ class ExperimentTestCase(TestCase):
             expect(response.status_code).to_equal(200)
             item = json.loads(response.content)
             check_item(item)
-            expect(item['experiments']).to_equal([e.id for e in experiments])
+            expect(sorted(item['experiments'])).to_equal(
+                   sorted([e.id for e in experiments]))
             # Remove the dataset from the original experiment
             # Should succeed because there are now many more experiments
             response = client.delete(json_url+str(item['id']),
@@ -736,8 +737,8 @@ class ExperimentTestCase(TestCase):
             item = json.loads(response.content)
             check_item(item)
             # Expect the item is now in all but the first experiment
-            expect(item['experiments'])\
-                .to_equal([e.id for e in experiments][1:])
+            expect(sorted(item['experiments'])).to_equal(
+                   sorted([e.id for e in experiments][1:]))
             # Check it no longer exists
             response = client.get(json_url+str(item['id']))
             expect(response.status_code).to_equal(404)

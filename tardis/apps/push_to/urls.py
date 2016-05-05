@@ -26,4 +26,5 @@ urlpatterns = [
     url(r'^ssh-authz/sign/(?P<service_id>\d+)/host/(?P<remote_host_id>\d+)/$',
         views.authorize_remote_access),
     url(r'^ssh-authz/oauth/callback/$', views.oauth_callback),
+    url(r'^ajax/validate-path/(?P<remote_host_id>\d+)/', views.validate_remote_path)
 ]
