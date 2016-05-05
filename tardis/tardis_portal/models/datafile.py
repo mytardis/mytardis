@@ -51,7 +51,7 @@ class DataFile(models.Model):
 
     dataset = models.ForeignKey(Dataset)
     filename = models.CharField(max_length=400)
-    directory = DirectoryField(blank=True, null=True)
+    directory = DirectoryField(blank=True, null=True, max_length=255)
     size = models.BigIntegerField(blank=True, null=True)
     created_time = models.DateTimeField(null=True, blank=True)
     modification_time = models.DateTimeField(null=True, blank=True)
