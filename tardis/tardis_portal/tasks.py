@@ -50,7 +50,7 @@ def ingest_received_files():
                                              Q(attributes__value='receiving'),
                                              ~Q(master_box=None))
     for box in ingest_boxes:
-        box.move_to_master.delay()
+        sbox_move_to_master.delay(box.id)
 
 
 @task(name="tardis_portal.create_staging_datafiles", ignore_result=True)  # too complex # noqa
@@ -173,14 +173,14 @@ def sbox_move_files(sbox_id, dest_box_id=None, *args, **kwargs):
     return sbox.move_files(dest_box=dest_box, *args, **kwargs)
 
 
-@task(name='tardis_portal.storage_box.copy_to_master')
+@task(name='tardis_portal.storage_box.copy_to_master', ignore_result=True)
 def sbox_copy_to_master(sbox_id, *args, **kwargs):
     from tardis.tardis_portal.models import StorageBox
     sbox = StorageBox.objects.get(id=sbox_id)
     return sbox.copy_to_master(*args, **kwargs)
 
 
-@task(name='tardis_portal.storage_box.move_to_master')
+@task(name='tardis_portal.storage_box.move_to_master', ignore_result=True)
 def sbox_move_to_master(sbox_id, *args, **kwargs):
     from tardis.tardis_portal.models import StorageBox
     sbox = StorageBox.objects.get(id=sbox_id)
