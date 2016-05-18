@@ -96,7 +96,7 @@ def do_file_copy(credential_id, remote_host_id, datafile_map, base_dir=None):
     if base_dir is None:
         base_dir = ['mytardis-data']
     elif isinstance(base_dir, basestring):
-        base_dir = split_path(base_dir)
+        base_dir = split_path(base_dir) + ['mytardis-data']
 
     credential = Credential.objects.get(pk=credential_id)
     ssh = credential.get_client_for_host(
