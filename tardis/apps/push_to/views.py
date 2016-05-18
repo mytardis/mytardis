@@ -1,5 +1,6 @@
 import json
 import requests
+import os
 
 from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
@@ -302,6 +303,8 @@ def _initiate_push(
         if not destination_ok:
             return render_error_message(request,
                                         'Invalid destination: %s' % message)
+        else:
+            destination = os.path.join(destination, 'mytardis-data')
 
     except NoSuitableCredential:
         callback_args = {
@@ -444,7 +447,6 @@ def authorize_remote_access(request, remote_host_id, service_id=None):
             oauth_service.cert_signing_url) and \
                          credential.verify_remote_access(
                          )
-        print signing_result
         if signing_result:
             return redirect(
                 next_redirect + '?credential_id=%i' % credential.pk)

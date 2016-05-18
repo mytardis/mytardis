@@ -121,7 +121,8 @@ def do_file_copy(credential_id, remote_host_id, datafile_map, base_dir=None):
 
     make_dirs(sftp_client, base_dir)
 
-    for (path, datafile) in datafile_map:
+    for (_path, datafile) in datafile_map:
+        path = list(_path)
         if datafile.directory is not None:
             path += datafile.directory.split('/')
         path = base_dir + path
