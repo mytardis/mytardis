@@ -2,31 +2,31 @@ import json
 import logging
 import re
 
-import CifFile
 import dateutil.parser
-from django.conf import settings
+
+import CifFile
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.models import User, Group
-from django.core.mail import send_mail
 from django.core.urlresolvers import reverse
 from django.db import transaction
-from django.http import HttpResponse, HttpResponseForbidden
 from django.views.decorators.cache import never_cache
-
-from tardis.tardis_portal.auth.localdb_auth import django_user, django_group
+from django.http import HttpResponse, HttpResponseForbidden
+from django.conf import settings
+from django.contrib.auth.models import User, Group
+from django.core.mail import send_mail
+from tardis.tardis_portal.shortcuts import return_response_error
+from tardis.tardis_portal.shortcuts import render_response_index
 from tardis.tardis_portal.models import Experiment, Dataset, ObjectACL, \
     Schema, ParameterName, ExperimentParameterSet, ExperimentParameter, \
     ExperimentAuthor, License
-from tardis.tardis_portal.shortcuts import render_response_index
-from tardis.tardis_portal.shortcuts import return_response_error
-from . import default_settings
-from . import tasks
+from tardis.tardis_portal.auth.localdb_auth import django_user, django_group
 from .doi import DOI
+from .utils import PDBCifHelper, check_pdb_status, get_unreleased_pdb_info, \
+    send_mail_to_authors, get_pub_admin_email_addresses, get_site_admin_email
 from .email_text import email_pub_requires_authorisation, \
     email_pub_awaiting_approval, email_pub_approved, email_pub_rejected, \
     email_pub_reverted_to_draft
-from .utils import PDBCifHelper, check_pdb_status, get_unreleased_pdb_info, \
-    send_mail_to_authors, get_pub_admin_email_addresses, get_site_admin_email
+from . import tasks
+from . import default_settings
 
 logger = logging.getLogger(__name__)
 
