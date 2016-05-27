@@ -19,12 +19,18 @@ def get_local_time(dt):
     If the USE_TZ setting in the current dev version of Django comes in,
     this *should* keep providing correct behaviour.
     '''
+    
+    # truncate microseconds
+    result = dt.replace(microsecond=0)
+    
     # If datetime is already naive, simply set TZ
     if dt.tzinfo is None:
-        return dt.replace(tzinfo=LOCAL_TZ)
-    # Otherwise convert
-    return dt.astimezone(LOCAL_TZ)
+        result = result.replace(tzinfo=LOCAL_TZ)
+    else: 
+        # Otherwise convert
+        result = result.astimezone(LOCAL_TZ)
 
+    return result
 
 def get_utc_time(dt):
     '''
@@ -33,10 +39,16 @@ def get_utc_time(dt):
     If the USE_TZ setting in the current dev version of Django comes in,
     this *should* keep providing correct behaviour.
     '''
+
+    # truncate microseconds
+    result = dt.replace(microsecond=0)
+    
     # If datetime is already naive, set TZ
     if dt.tzinfo is None:
-        dt = dt.replace(tzinfo=LOCAL_TZ)
-    return dt.astimezone(pytz.utc)
+        result = result.replace(tzinfo=LOCAL_TZ)
+        
+    result = result.astimezone(pytz.utc)
+    return result
 
 
 def get_free_space(fs_dir):
