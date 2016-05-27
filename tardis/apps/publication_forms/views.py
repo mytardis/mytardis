@@ -275,7 +275,7 @@ def clear_publication_metadata(publication):
                            default_settings.PUBLICATION_DRAFT_SCHEMA)
     for parameter_set in publication.getParameterSets():
         if parameter_set.schema.namespace != schema_draft and \
-                parameter_set.schema.namespace != schema_root:
+                        parameter_set.schema.namespace != schema_root:
             parameter_set.delete()
         elif parameter_set.schema.namespace == schema_root:
             try:
@@ -423,22 +423,24 @@ def synchrotron_search_epn(publication):
 
 
 def select_forms(datasets):
-    default_form = [{'name': 'default',
-                     'template': '/static/publication-form/default-form.html'}]
-
-    if not hasattr(settings, 'PUBLICATION_FORM_MAPPINGS') \
-            and not hasattr(default_settings, 'PUBLICATION_FORM_MAPPINGS'):
-        return default_form
+    default_form_schema = getattr(
+        settings, 'GENERIC_PUBLICATION_DATASET_SCHEMA',
+        default_settings.GENERIC_PUBLICATION_DATASET_SCHEMA)
+    default_form = {'name': default_form_schema,
+                    'template': '/static/publication-form/default-form.html',
+                    'datasets': []}
 
     FORM_MAPPINGS = getattr(settings, 'PUBLICATION_FORM_MAPPINGS',
                             default_settings.PUBLICATION_FORM_MAPPINGS)
     forms = []
     for dataset in datasets:
         parametersets = dataset.getParameterSets()
+        form_count = 0
         for parameterset in parametersets:
             schema_namespace = parameterset.schema.namespace
             for mapping in FORM_MAPPINGS:
                 if re.match(mapping['dataset_schema'], schema_namespace):
+                    form_count += 1
                     # The data returned from selected_forms() includes a list
                     # of datasets that satisfy the criteria for selecting this
                     # form.
@@ -459,11 +461,16 @@ def select_forms(datasets):
                         forms[idx]['datasets'].append({
                             'id': dataset.id,
                             'description': dataset.description})
+        if not form_count:
+            default_form['datasets'].append({
+                'id': dataset.id,
+                'description': dataset.description
+            })
 
-    if not forms:
-        return default_form
-    else:
-        return forms
+    if len(default_form['datasets']):
+        forms.append(default_form)
+
+    return forms
 
 
 def create_draft_publication(user, publication_title, publication_description):
@@ -557,7 +564,8 @@ def fetch_experiments_and_datasets(request):
                                      'directory': dataset.directory})
             experiment_json['datasets'] = dataset_json
             json_response.append(experiment_json)
-    return HttpResponse(json.dumps(json_response), content_type="appication/json")
+    return HttpResponse(json.dumps(json_response),
+                        content_type="appication/json")
 
 
 def pdb_helper(request, pdb_id):
@@ -749,7 +757,7 @@ def approve_publication(request, publication, message=None):
                                         publication.id,
                                         reverse(
                                             'tardis_portal.view_experiment',
-                                                args=(publication.id,)))
+                                            args=(publication.id,)))
                                     ).save()
                 logger.info(
                     "DOI %s minted for publication ID %i" %
@@ -825,7 +833,7 @@ def revert_publication_to_draft(publication, message=None):
         # parameter
         for parameter_set in publication.getParameterSets():
             if parameter_set.schema.namespace != draft_schema_ns and \
-                    parameter_set.schema.namespace != schema_ns_root:
+                            parameter_set.schema.namespace != schema_ns_root:
                 parameter_set.delete()
             elif parameter_set.schema.namespace == schema_ns_root:
                 try:
