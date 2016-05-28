@@ -1,4 +1,5 @@
 # pylint: disable=R0204
+import logging
 import os
 from os import path
 
@@ -16,17 +17,25 @@ from tardis.tardis_portal.staging import get_staging_url_and_size
 from tardis.tardis_portal.email import email_user
 
 
-# Ensure filters are loaded
-try:
-    from tardis.tardis_portal.filters import FilterInitMiddleware
-    FilterInitMiddleware()
-except Exception:
-    pass
 try:
     from tardis.tardis_portal.logging_middleware import LoggingMiddleware
     LoggingMiddleware()
 except Exception:
     pass
+
+logger = logging.getLogger(__name__)
+
+
+def init_filters():
+    """
+    load filters and avoid circular import
+    :return:
+    """
+    try:
+        from tardis.tardis_portal.filters import FilterInitMiddleware
+        FilterInitMiddleware()
+    except Exception as e:
+        logger.info('filters not loaded for tasks because: %s' % e)
 
 
 @task(name="tardis_portal.verify_dfos", ignore_result=True)
@@ -50,12 +59,12 @@ def ingest_received_files():
                                              Q(attributes__value='receiving'),
                                              ~Q(master_box=None))
     for box in ingest_boxes:
-        box.move_to_master.delay()
+        sbox_move_to_master.delay(box.id)
 
 
 @task(name="tardis_portal.create_staging_datafiles", ignore_result=True)  # too complex # noqa
 def create_staging_datafiles(files, user_id, dataset_id, is_secure):
-
+    init_filters()
     from tardis.tardis_portal.staging import get_full_staging_path
 
     def f7(seq):
@@ -118,6 +127,7 @@ def create_staging_datafiles(files, user_id, dataset_id, is_secure):
 
 @task(name="tardis_portal.create_staging_datafile", ignore_result=True)
 def create_staging_datafile(filepath, username, dataset_id):
+    init_filters()
     from tardis.tardis_portal.models import DataFile, Dataset
     dataset = Dataset.objects.get(id=dataset_id)
 
@@ -153,6 +163,7 @@ def cache_done_notify(results, user_id, site_id, ct_id, obj_ids):
 # StorageBox
 @task(name="tardis_portal.storage_box.copy_files", ignore_result=True)
 def sbox_copy_files(sbox_id, dest_box_id=None, *args, **kwargs):
+    init_filters()
     from tardis.tardis_portal.models import StorageBox
     sbox = StorageBox.objects.get(id=sbox_id)
     if dest_box_id is not None:
@@ -164,6 +175,7 @@ def sbox_copy_files(sbox_id, dest_box_id=None, *args, **kwargs):
 
 @task(name="tardis_portal.storage_box.move_files", ignore_result=True)
 def sbox_move_files(sbox_id, dest_box_id=None, *args, **kwargs):
+    init_filters()
     from tardis.tardis_portal.models import StorageBox
     sbox = StorageBox.objects.get(id=sbox_id)
     if dest_box_id is not None:
@@ -173,15 +185,17 @@ def sbox_move_files(sbox_id, dest_box_id=None, *args, **kwargs):
     return sbox.move_files(dest_box=dest_box, *args, **kwargs)
 
 
-@task(name='tardis_portal.storage_box.copy_to_master')
+@task(name='tardis_portal.storage_box.copy_to_master', ignore_result=True)
 def sbox_copy_to_master(sbox_id, *args, **kwargs):
+    init_filters()
     from tardis.tardis_portal.models import StorageBox
     sbox = StorageBox.objects.get(id=sbox_id)
     return sbox.copy_to_master(*args, **kwargs)
 
 
-@task(name='tardis_portal.storage_box.move_to_master')
+@task(name='tardis_portal.storage_box.move_to_master', ignore_result=True)
 def sbox_move_to_master(sbox_id, *args, **kwargs):
+    init_filters()
     from tardis.tardis_portal.models import StorageBox
     sbox = StorageBox.objects.get(id=sbox_id)
     return sbox.move_to_master(*args, **kwargs)
@@ -190,6 +204,7 @@ def sbox_move_to_master(sbox_id, *args, **kwargs):
 # DataFile
 @task(name="tardis_portal.cache_datafile", ignore_result=True)
 def df_cache_file(df_id):
+    init_filters()
     from tardis.tardis_portal.models import DataFile
     df = DataFile.objects.get(id=df_id)
     return df.cache_file()
@@ -198,6 +213,7 @@ def df_cache_file(df_id):
 # DataFileObject
 @task(name='tardis_portal.dfo.move_file', ignore_result=True)
 def dfo_move_file(dfo_id, dest_box_id=None):
+    init_filters()
     from tardis.tardis_portal.models import DataFileObject, StorageBox
     dfo = DataFileObject.objects.get(id=dfo_id)
     if dest_box_id is not None:
@@ -209,6 +225,7 @@ def dfo_move_file(dfo_id, dest_box_id=None):
 
 @task(name='tardis_portal.dfo.copy_file', ignore_result=True)
 def dfo_copy_file(dfo_id, dest_box_id=None, *args, **kwargs):
+    init_filters()
     from tardis.tardis_portal.models import DataFileObject, StorageBox
     dfo = DataFileObject.objects.get(id=dfo_id)
     if dest_box_id is not None:
@@ -220,6 +237,7 @@ def dfo_copy_file(dfo_id, dest_box_id=None, *args, **kwargs):
 
 @task(name='tardis_portal.dfo.cache_file', ignore_result=True)
 def dfo_cache_file(dfo_id):
+    init_filters()
     from tardis.tardis_portal.models import DataFileObject
     dfo = DataFileObject.objects.get(id=dfo_id)
     return dfo.cache_file()
@@ -227,6 +245,7 @@ def dfo_cache_file(dfo_id):
 
 @task(name="tardis_portal.dfo.verify", ignore_result=True)
 def dfo_verify(dfo_id, *args, **kwargs):
+    init_filters()
     from tardis.tardis_portal.models import DataFileObject
     # Get dfo locked for write (to prevent concurrent actions)
     if kwargs.pop('transaction_lock', False):

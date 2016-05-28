@@ -12,7 +12,7 @@ from django import forms
 #     [], ["^tardis\.tardis_portal\.models\.fields\.FileObjectField"])
 
 
-class DirectoryField(models.TextField):
+class DirectoryField(models.CharField):
     '''
     Directories should never be presented in a text area
     This class also allows for future customisations
@@ -22,6 +22,6 @@ class DirectoryField(models.TextField):
     '''
 
     def formfield(self, **kwargs):
-        defaults = {'widget': forms.TextInput}
+        defaults = {'widget': forms.TextInput(attrs={'maxlength':'255'})}
         defaults.update(kwargs)
         return super(DirectoryField, self).formfield(**defaults)

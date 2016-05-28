@@ -444,7 +444,6 @@ def authorize_remote_access(request, remote_host_id, service_id=None):
             oauth_service.cert_signing_url) and \
                          credential.verify_remote_access(
                          )
-        print signing_result
         if signing_result:
             return redirect(
                 next_redirect + '?credential_id=%i' % credential.pk)
