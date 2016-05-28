@@ -2,7 +2,7 @@ Django>=1.8,<1.9
 SPARQLWrapper==1.6.4 #apt: 1.4.1
 Sphinx
 Wand
-amqp
+amqp==2.0.0
 argparse==1.2.1 #apt: libpython2.7-stdlib
 billiard
 bleach==1.4.1 #apt: 1.2.2
