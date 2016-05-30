@@ -257,6 +257,12 @@ def process_form(request):
         # Remove the draft status
         remove_draft_status(publication)
 
+        # Automatically approve publications if approval is not required
+        if not getattr(settings, 'PUBLICATIONS_REQUIRE_APPROVAL',
+                       default_settings.PUBLICATIONS_REQUIRE_APPROVAL):
+            approve_publication(request, publication, message=None,
+                                send_email=False)
+
         # Trigger publication record update
         tasks.update_publication_records.delay()
 
@@ -682,7 +688,7 @@ def get_publications_awaiting_approval():
 
 
 @transaction.atomic
-def approve_publication(request, publication, message=None):
+def approve_publication(request, publication, message=None, send_email=True):
     if publication.is_publication() and not publication.is_publication_draft() \
             and publication.public_access == Experiment.PUBLIC_ACCESS_NONE:
         # Change the access level
@@ -773,10 +779,10 @@ def approve_publication(request, publication, message=None):
                 logger.error(
                     "Could not find the publication details parameter set")
 
-        subject, email_message = email_pub_approved(
-            publication.title, url, doi, message)
-
-        send_mail_to_authors(publication, subject, email_message)
+        if send_email:
+            subject, email_message = email_pub_approved(
+                publication.title, url, doi, message)
+            send_mail_to_authors(publication, subject, email_message)
 
         # Trigger publication update
         tasks.update_publication_records.delay()
