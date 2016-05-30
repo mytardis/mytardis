@@ -49,6 +49,10 @@ defined:
    should be added to :py:const:`CELERYBEAT_SCHEDULE` and set to a
    reasonable interval for embargo processing
 
+To disable the approval workflow and have publications automatically
+released, :py:const:`PUBLICATIONS_REQUIRE_APPROVAL` can be set to False
+(defaults to True).
+
 DOI support
 -----------
 These additional settings are required for DOI minting support:
