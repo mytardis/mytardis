@@ -50,11 +50,13 @@ def process_form(request):
     # Decode the form data
     form_state = json.loads(request.body)
 
-    def validation_error():
+    def validation_error(error=None):
+        if error is None:
+            error = 'Invalid form data was submitted ' \
+                    '(server-side validation failed)'
         return HttpResponse(
             json.dumps({
-                'error': 'Invalid form data was submitted '
-                         '(server-side validation failed)'}),
+                'error': error}),
             content_type="application/json")
 
     # Check if the form data contains a publication ID
@@ -175,6 +177,10 @@ def process_form(request):
         # and specific error messages can be returned
         # to the browser before the publication's draft
         # status is removed.
+
+        if 'acknowledge' not in form_state or not form_state['acknowledge']:
+            return validation_error('You must confirm that you are '
+                                    'authorised to submit this publication')
 
         set_publication_authors(form_state['authors'], publication)
 
