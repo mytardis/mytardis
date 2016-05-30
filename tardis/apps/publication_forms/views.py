@@ -262,6 +262,11 @@ def process_form(request):
                        default_settings.PUBLICATIONS_REQUIRE_APPROVAL):
             approve_publication(request, publication, message=None,
                                 send_email=False)
+            # approve_publication will delete the form state, so don't
+            # bother saving is and return.
+            form_state['action'] = ''
+            return HttpResponse(json.dumps(form_state),
+                                content_type="appication/json")
 
         # Trigger publication record update
         tasks.update_publication_records.delay()
