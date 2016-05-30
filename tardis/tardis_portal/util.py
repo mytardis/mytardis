@@ -19,14 +19,14 @@ def get_local_time(dt):
     If the USE_TZ setting in the current dev version of Django comes in,
     this *should* keep providing correct behaviour.
     '''
-    
+
     # truncate microseconds
     result = dt.replace(microsecond=0)
-    
+
     # If datetime is already naive, simply set TZ
     if dt.tzinfo is None:
         result = result.replace(tzinfo=LOCAL_TZ)
-    else: 
+    else:
         # Otherwise convert
         result = result.astimezone(LOCAL_TZ)
 
@@ -42,11 +42,11 @@ def get_utc_time(dt):
 
     # truncate microseconds
     result = dt.replace(microsecond=0)
-    
+
     # If datetime is already naive, set TZ
     if dt.tzinfo is None:
         result = result.replace(tzinfo=LOCAL_TZ)
-        
+
     result = result.astimezone(pytz.utc)
     return result
 
