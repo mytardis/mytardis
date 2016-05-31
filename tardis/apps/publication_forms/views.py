@@ -50,11 +50,13 @@ def process_form(request):
     # Decode the form data
     form_state = json.loads(request.body)
 
-    def validation_error():
+    def validation_error(error=None):
+        if error is None:
+            error = 'Invalid form data was submitted ' \
+                    '(server-side validation failed)'
         return HttpResponse(
             json.dumps({
-                'error': 'Invalid form data was submitted '
-                         '(server-side validation failed)'}),
+                'error': error}),
             content_type="application/json")
 
     # Check if the form data contains a publication ID
@@ -176,6 +178,10 @@ def process_form(request):
         # to the browser before the publication's draft
         # status is removed.
 
+        if 'acknowledge' not in form_state or not form_state['acknowledge']:
+            return validation_error('You must confirm that you are '
+                                    'authorised to submit this publication')
+
         set_publication_authors(form_state['authors'], publication)
 
         institutions = '; '.join(
@@ -256,6 +262,17 @@ def process_form(request):
 
         # Remove the draft status
         remove_draft_status(publication)
+
+        # Automatically approve publications if approval is not required
+        if not getattr(settings, 'PUBLICATIONS_REQUIRE_APPROVAL',
+                       default_settings.PUBLICATIONS_REQUIRE_APPROVAL):
+            approve_publication(request, publication, message=None,
+                                send_email=False)
+            # approve_publication will delete the form state, so don't
+            # bother saving is and return.
+            form_state['action'] = ''
+            return HttpResponse(json.dumps(form_state),
+                                content_type="appication/json")
 
         # Trigger publication record update
         tasks.update_publication_records.delay()
@@ -682,7 +699,7 @@ def get_publications_awaiting_approval():
 
 
 @transaction.atomic
-def approve_publication(request, publication, message=None):
+def approve_publication(request, publication, message=None, send_email=True):
     if publication.is_publication() and not publication.is_publication_draft() \
             and publication.public_access == Experiment.PUBLIC_ACCESS_NONE:
         # Change the access level
@@ -773,10 +790,10 @@ def approve_publication(request, publication, message=None):
                 logger.error(
                     "Could not find the publication details parameter set")
 
-        subject, email_message = email_pub_approved(
-            publication.title, url, doi, message)
-
-        send_mail_to_authors(publication, subject, email_message)
+        if send_email:
+            subject, email_message = email_pub_approved(
+                publication.title, url, doi, message)
+            send_mail_to_authors(publication, subject, email_message)
 
         # Trigger publication update
         tasks.update_publication_records.delay()
