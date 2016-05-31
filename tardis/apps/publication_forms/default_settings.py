@@ -46,6 +46,8 @@ GENERIC_PUBLICATION_DATASET_SCHEMA = PUBLICATION_SCHEMA_ROOT + 'generic/'
 
 PDB_REFRESH_INTERVAL = timedelta(days=7)
 
+PUBLICATIONS_REQUIRE_APPROVAL = True
+
 PUBLICATION_FORM_MAPPINGS = [
     {'dataset_schema': r'^http://synchrotron.org.au/mx/',
      'publication_schema': PDB_PUBLICATION_SCHEMA_ROOT,
