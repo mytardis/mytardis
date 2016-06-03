@@ -83,7 +83,7 @@ class EndpointTestCase(TestCase):
         header, metadata = xml.xpath('/o:OAI-PMH/o:GetRecord/o:record/o:*',
                                      namespaces=ns)[0:2]
         expect(header.xpath('o:identifier/text()',namespaces=ns)[0]) \
-            .to_equal('experiment/1')
+            .to_equal('experiment/%d' % Experiment.objects.first().id)
         # <registryObject group="MyTARDIS Default Group">
         expect(metadata.xpath('r:registryObjects/r:registryObject/@group',
                               namespaces=ns)[0]).to_equal('MyTardis Test Group')
@@ -149,7 +149,7 @@ class EndpointTestCase(TestCase):
         expect(collection.xpath(
             'r:relatedObject[r:relation/@type="isManagedBy"]/r:key/text()',
             namespaces=ns)) \
-            .to_equal(['keydomain.test.example/user/1'])
+            .to_equal(['keydomain.test.example/user/%d' % User.objects.first().id])
         expect(collection.xpath(
             'r:relatedObject[r:relation/@type="hasCollector"]/r:key/text()',
             namespaces=ns)) \
@@ -194,7 +194,8 @@ class EndpointTestCase(TestCase):
         expect(collection.xpath(
             'r:relatedObject[r:relation/@type="isManagerOf"]/r:key/text()',
             namespaces=ns)) \
-            .to_equal(['keydomain.test.example/experiment/1'])
+            .to_equal(['keydomain.test.example/experiment/%d' %
+                         Experiment.objects.first().id])
 
     def testListIdentifiers(self):
         user, experiment = _create_test_data()

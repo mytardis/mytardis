@@ -156,3 +156,8 @@ def sanitise_name(name):
 
 def dirname_with_id(obj_name, obj_id):
     return "%s_%d" % (sanitise_name(obj_name), obj_id)
+
+
+def split_path(p):
+    base, top = os.path.split(os.path.normpath(p))
+    return (split_path(base) if len(base) and len(top) else []) + [top]

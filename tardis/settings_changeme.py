@@ -1,2 +1,2 @@
-# pylint: disable=W0401,W0614
-from default_settings import *
+# pylint: disable=wildcard-import
+from default_settings import *  # noqa # pylint: disable=W0614

@@ -55,7 +55,7 @@ class DataFile(models.Model):
     size = models.BigIntegerField(blank=True, null=True)
     created_time = models.DateTimeField(null=True, blank=True)
     modification_time = models.DateTimeField(null=True, blank=True)
-    mimetype = models.CharField(blank=True, max_length=80)
+    mimetype = models.CharField(db_index=True, blank=True, max_length=80)
     md5sum = models.CharField(blank=True, max_length=32)
     sha512sum = models.CharField(blank=True, max_length=128)
     deleted = models.BooleanField(default=False)
@@ -101,8 +101,16 @@ class DataFile(models.Model):
 
     @property
     def is_online(self):
+        """
+        return False if a file is on tape.
+        At this stage it checks it returns true for no file objects, because
+        those files are offline through other checks
+        """
+        dfos = self.file_objects.filter(verified=True)
+        if dfos.count() == 0:
+            return True
         return any(dfo.storage_type not in StorageBox.offline_types
-                   for dfo in self.file_objects.filter(verified=True))
+                   for dfo in dfos)
 
     def cache_file(self):
         if self.is_online:

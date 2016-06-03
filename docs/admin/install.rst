@@ -320,7 +320,7 @@ Archive Organizations
 
    This is a hash that maps archive organization names to Datafile filename
    mapper functions.  These functions are reponsible for generating the
-   archive pathnames used for files written to "tar" amd "zip" archives
+   archive pathnames used for files written to "tar" and "zip" archives
    by the downloads module.
 
    The **ARCHIVE_FILE_MAPPERS** variable is specified like::
@@ -351,8 +351,7 @@ A MyTardis instance can be configured to support multiple locations
 ( ``DataFileObject`` s) of ``DataFile`` s that are recorded in the MyTardis
 database.
 
-The ``StorageBox`` architecture is compatible with the Django File Storage API
-(TODO link). This makes it relatively easy to support a number of different
+The ``StorageBox`` architecture is compatible with the `Django File Storage API`_. This makes it relatively easy to support a number of different
 storage backends such as cloud storage or SFTP servers.  Please refer to the
 :doc:`StorageBox documentation<storage>` for more detailed information.
 
@@ -540,6 +539,7 @@ permissions. The location is set in the ``settings.py`` file.
 
 .. _`Django with Gunicorn`: https://docs.djangoproject.com/en/dev/howto/deployment/wsgi/gunicorn/
 
+.. _`Django File Storage API`: https://docs.djangoproject.com/en/dev/ref/files/storage/
 
 Serving with Apache HTTPD + mod_wsgi
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

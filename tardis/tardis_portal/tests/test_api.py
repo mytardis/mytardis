@@ -184,6 +184,8 @@ class ExperimentResourceTest(MyTardisResourceTestCase):
         self.test_parname2.save()
 
     def test_post_experiment(self):
+        schema_id = Schema.objects.first().id
+        parm_id = ParameterName.objects.first().id
         post_data = {
             "description": "test description",
             "institution_name": "Monash University",
@@ -192,17 +194,17 @@ class ExperimentResourceTest(MyTardisResourceTestCase):
                     "schema": "http://experi-mental.com/",
                     "parameters": [
                         {
-                            "name": "/api/v1/parametername/1/",
+                            "name": "/api/v1/parametername/%d/" % parm_id,
                             "string_value": "Test16"
                         },
                         {
-                            "name": "/api/v1/parametername/2/",
+                            "name": "/api/v1/parametername/%d/" % (parm_id + 1),
                             "numerical_value": "244"
                         }
                     ]
                 },
                 {
-                    "schema": "/api/v1/schema/1/",
+                    "schema": "/api/v1/schema/%d/" % schema_id,
                     "parameters": [
                         {
                             "name": "expparameter1",
@@ -231,25 +233,27 @@ class ExperimentResourceTest(MyTardisResourceTestCase):
                          ExperimentParameter.objects.count())
 
     def test_get_experiment(self):
+        exp_id = Experiment.objects.first().id
+        user_id = User.objects.first().id
         expected_output = {
             "approved": True,
-            "created_by": "/api/v1/user/1/",
+            "created_by": "/api/v1/user/%d/" % user_id,
             "created_time": "2013-05-29T13:00:26.626580",
             "description": "",
             "end_time": None,
             "handle": "",
-            "id": 1,
+            "id": exp_id,
             "institution_name": "Monash University",
             "locked": False,
             "parameter_sets": [],
             "public_access": 1,
-            "resource_uri": "/api/v1/experiment/1/",
+            "resource_uri": "/api/v1/experiment/%d/" % exp_id,
             "start_time": None,
             "title": "test exp",
             "update_time": "2013-05-29T13:00:26.626609",
             "url": None
         }
-        output = self.api_client.get('/api/v1/experiment/1/',
+        output = self.api_client.get('/api/v1/experiment/%d/' % exp_id,
                                      authentication=self.get_credentials())
         returned_data = json.loads(output.content)
         for key, value in expected_output.iteritems():
@@ -312,10 +316,11 @@ class DatasetResourceTest(MyTardisResourceTestCase):
                          self.testinstrument.id)
 
     def test_post_dataset(self):
+        exp_id = Experiment.objects.first().id
         post_data = {
             "description": "api test dataset",
             "experiments": [
-                "/api/v1/experiment/1/",
+                "/api/v1/experiment/%d/" % exp_id,
             ],
             "immutable": False}
         dataset_count = Dataset.objects.count()
@@ -349,8 +354,9 @@ class DataFileResourceTest(MyTardisResourceTestCase):
         self.test_parname2.save()
 
     def test_post_single_file(self):
+        ds_id = Dataset.objects.first().id
         post_data = """{
-    "dataset": "/api/v1/dataset/1/",
+    "dataset": "/api/v1/dataset/%d/",
     "filename": "mytestfile.txt",
     "md5sum": "930e419034038dfad994f0d2e602146c",
     "size": "8",
@@ -366,7 +372,7 @@ class DataFileResourceTest(MyTardisResourceTestCase):
             "value": "123"
         }]
     }]
-}"""
+}""" % ds_id
 
         post_file = tempfile.NamedTemporaryFile()
         file_content = "123test\n"
@@ -478,11 +484,12 @@ class GroupResourceTest(MyTardisResourceTestCase):
         super(GroupResourceTest, self).setUp()
 
     def test_get_group_by_id(self):
+        group_id = Group.objects.first().id
         expected_output = {
-            "id": 1,
+            "id": group_id,
             "name": "Test Group",
         }
-        output = self.api_client.get('/api/v1/group/1/',
+        output = self.api_client.get('/api/v1/group/%d/' % group_id,
                                      authentication=self.get_credentials())
         returned_data = json.loads(output.content)
         for key, value in expected_output.iteritems():
@@ -490,12 +497,13 @@ class GroupResourceTest(MyTardisResourceTestCase):
             self.assertEqual(returned_data[key], value)
 
     def test_get_group_by_name(self):
+        group_id = Group.objects.first().id
         expected_output = {
-            "id": 1,
+            "id": group_id,
             "name": "Test Group",
         }
-        output = self.api_client.get('/api/v1/group/1/?name=%s'
-                                     % urllib.quote(self.testgroup.name),
+        output = self.api_client.get('/api/v1/group/%d/?name=%s' %
+                          (group_id, urllib.quote(self.testgroup.name)),
                                      authentication=self.get_credentials())
         returned_data = json.loads(output.content)
         for key, value in expected_output.iteritems():
@@ -508,17 +516,19 @@ class FacilityResourceTest(MyTardisResourceTestCase):
         super(FacilityResourceTest, self).setUp()
 
     def test_get_facility_by_id(self):
+        first_facility = Facility.objects.first().id
+        first_group = Group.objects.first().id
         expected_output = {
-            "id": 1,
+            "id": first_facility,
             "manager_group": {
-                "id": 1,
+                "id": first_group,
                 "name": "Test Group",
-                "resource_uri": "/api/v1/group/1/"
+                "resource_uri": "/api/v1/group/%d/" % first_group
             },
             "name": "Test Facility",
-            "resource_uri": "/api/v1/facility/1/"
+            "resource_uri": "/api/v1/facility/%d/" % first_facility
         }
-        output = self.api_client.get('/api/v1/facility/1/',
+        output = self.api_client.get('/api/v1/facility/%d/' % first_facility,
                                      authentication=self.get_credentials())
         returned_data = json.loads(output.content)
         for key, value in expected_output.iteritems():
@@ -526,15 +536,17 @@ class FacilityResourceTest(MyTardisResourceTestCase):
             self.assertEqual(returned_data[key], value)
 
     def test_get_facility_by_name(self):
+        first_facility = Facility.objects.first().id
+        first_group = Group.objects.first().id
         expected_output = {
-            "id": 1,
+            "id": first_facility,
             "manager_group": {
-                "id": 1,
+                "id": first_group,
                 "name": "Test Group",
-                "resource_uri": "/api/v1/group/1/"
+                "resource_uri": "/api/v1/group/%d/" % first_group
             },
             "name": "Test Facility",
-            "resource_uri": "/api/v1/facility/1/"
+            "resource_uri": "/api/v1/facility/%d/" % first_facility
         }
         output = self.api_client.get('/api/v1/facility/?name=%s'
                                      % urllib.quote(self.testfacility.name),
@@ -554,17 +566,20 @@ class FacilityResourceTest(MyTardisResourceTestCase):
           tardis.tardis_portal.models.facility.facilities_managed_by
         via the API
         """
+        facility_id = Facility.objects.first().id
+        group_id = Group.objects.first().id
         expected_output = {
-            "id": 1,
             "manager_group": {
-                "id": 1,
+                "id": group_id,
                 "name": "Test Group",
-                "resource_uri": "/api/v1/group/1/"
+                "resource_uri": "/api/v1/group/%d/" % group_id
             },
+            "id": facility_id,
             "name": "Test Facility",
-            "resource_uri": "/api/v1/facility/1/"
+            "resource_uri": "/api/v1/facility/%d/" % facility_id
         }
-        output = self.api_client.get('/api/v1/facility/?manager_group__id=1',
+        output = self.api_client.get('/api/v1/facility/?manager_group__id=%d' %
+                                     group_id,
                                      authentication=self.get_credentials())
         returned_data = json.loads(output.content)
         self.assertEqual(returned_data['meta']['total_count'], 1)
@@ -579,22 +594,26 @@ class InstrumentResourceTest(MyTardisResourceTestCase):
         super(InstrumentResourceTest, self).setUp()
 
     def test_get_instrument_by_id(self):
+        facility_id = Facility.objects.first().id
+        group_id = Group.objects.first().id
+        instrument_id = Instrument.objects.first().id
         expected_output = {
             "facility": {
-                "id": 1,
                 "manager_group": {
-                    "id": 1,
+                    "id": group_id,
                     "name": "Test Group",
-                    "resource_uri": "/api/v1/group/1/"
+                    "resource_uri": "/api/v1/group/%d/" % group_id
                 },
+                "id": facility_id,
                 "name": "Test Facility",
-                "resource_uri": "/api/v1/facility/1/"
+                "resource_uri": "/api/v1/facility/%d/" % facility_id
             },
-            "id": 1,
+            "id": instrument_id,
             "name": "Test Instrument",
-            "resource_uri": "/api/v1/instrument/1/"
+            "resource_uri": "/api/v1/instrument/%d/" % instrument_id
         }
-        output = self.api_client.get('/api/v1/instrument/1/',
+        output = self.api_client.get('/api/v1/instrument/%d/' %
+                                     instrument_id,
                                      authentication=self.get_credentials())
         returned_data = json.loads(output.content)
         for key, value in expected_output.iteritems():
@@ -602,20 +621,23 @@ class InstrumentResourceTest(MyTardisResourceTestCase):
             self.assertEqual(returned_data[key], value)
 
     def test_get_instrument_by_name(self):
+        facility_id = Facility.objects.first().id
+        group_id = Group.objects.first().id
+        instrument_id = Instrument.objects.first().id
         expected_output = {
             "facility": {
-                "id": 1,
                 "manager_group": {
-                    "id": 1,
+                    "id": group_id,
                     "name": "Test Group",
-                    "resource_uri": "/api/v1/group/1/"
+                    "resource_uri": "/api/v1/group/%d/" % group_id
                 },
+                "id": facility_id,
                 "name": "Test Facility",
-                "resource_uri": "/api/v1/facility/1/"
+                "resource_uri": "/api/v1/facility/%d/" % facility_id
             },
-            "id": 1,
+            "id": instrument_id,
             "name": "Test Instrument",
-            "resource_uri": "/api/v1/instrument/1/"
+            "resource_uri": "/api/v1/instrument/%d/" % instrument_id
         }
         output = self.api_client.get('/api/v1/instrument/?name=%s'
                                      % urllib.quote(self.testinstrument.name),
@@ -628,9 +650,10 @@ class InstrumentResourceTest(MyTardisResourceTestCase):
             self.assertEqual(returned_object[key], value)
 
     def test_post_instrument(self):
+        facility_id = Facility.objects.first().id
         post_data = {
             "name": "Another Test Instrument",
-            "facility": "/api/v1/facility/1/"
+            "facility": "/api/v1/facility/%d/" % facility_id
         }
         instrument_count = Instrument.objects.count()
         self.assertHttpCreated(self.api_client.post(
