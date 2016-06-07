@@ -118,7 +118,6 @@ def use_multimodal_login(fn):
             c['LOCALDB_DISPLAY'] = getattr(settings,'LOCALDB_DISPLAY','Local')
         
         if c['RAPID_CONNECT_ENABLED']:
-<<<<<<< HEAD
             c['RAPID_CONNECT_LOGIN_URL'] = getattr(
                     settings.RAPID_CONNECT_CONFIG,
                     'authnrequest_url')
@@ -133,18 +132,6 @@ def use_multimodal_login(fn):
         if c['SAML2_ENABLED']:
             c['SAML2_DISPLAY'] = getattr(settings.SAML2_DISPLAY, 'SAML2')
             
-            
-=======
-            c['RAPID_CONNECT_LOGIN_URL'] = \
-                getattr(settings, 'RAPID_CONNECT_CONFIG', {}).get(
-                    'authnrequest_url',
-                    None)
-
-            if not c['RAPID_CONNECT_LOGIN_URL']:
-                raise ImproperlyConfigured(
-                    "RAPID_CONNECT_CONFIG['authnrequest_url'] must be "
-                    "configured in settings if RAPID_CONNECT_ENABLED is True.")
->>>>>>> 7191d921ad9a3abf348b893da826dc226585a75c
         return c
 
     return add_multimodal_login_settings

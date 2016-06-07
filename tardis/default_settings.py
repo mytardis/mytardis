@@ -743,28 +743,6 @@ SFTP_HOST_KEY = (
 public, useless key, debugging use only
 '''
 
-<<<<<<< HEAD
-=======
-# Show the Rapid Connect login button.
-RAPID_CONNECT_ENABLED = False
-
-RAPID_CONNECT_CONFIG = {}
-
-RAPID_CONNECT_CONFIG['secret'] = 'CHANGE_ME'
-RAPID_CONNECT_CONFIG['authnrequest_url'] = ''
-'''something like
-'https://rapid.test.aaf.edu.au/jwt/authnrequest/research/XXXXXXXXXXXXXXXX'
-'''
-
-RAPID_CONNECT_CONFIG['iss'] = 'https://rapid.test.aaf.edu.au'
-''' 'https://rapid.test.aaf.edu.au' or 'https://rapid.aaf.edu.au'
-'''
-RAPID_CONNECT_CONFIG['aud'] = 'https://example.com/rc/'
-'''Public facing URL that accepts the HTTP/HTTPS POST request from
-Rapid Connect.
-'''
-
->>>>>>> 7191d921ad9a3abf348b893da826dc226585a75c
 MANAGE_ACCOUNT_ENABLED = True
 
 # Example settings for the publication form workflow. Also requires the
