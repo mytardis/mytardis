@@ -30,6 +30,7 @@ from tastypie.serializers import Serializer
 from tastypie.utils import trailing_slash
 from tastypie.contrib.contenttypes.fields import GenericForeignKeyField
 
+from tardis.tardis_portal import tasks
 from tardis.tardis_portal.auth.decorators import \
     get_accessible_datafiles_for_user
 from tardis.tardis_portal.auth.decorators import has_datafile_access
@@ -157,8 +158,9 @@ class ACLAuthorization(Authorization):
                 id__in=obj_ids
             )
         elif isinstance(bundle.obj, Dataset):
-            return [ds for ds in object_list
-                    if has_dataset_access(bundle.request, ds.id)]
+            dataset_ids = [ds.id for ds in object_list
+                           if has_dataset_access(bundle.request, ds.id)]
+            return Dataset.objects.filter(id__in=dataset_ids)
         elif isinstance(bundle.obj, DatasetParameterSet):
             return [dps for dps in object_list
                     if has_dataset_access(bundle.request, dps.dataset.id)]
@@ -186,8 +188,8 @@ class ACLAuthorization(Authorization):
             experiment_ids = Experiment.safe.all(
                 bundle.request.user).values_list('id', flat=True)
             return ObjectACL.objects.filter(
-                content_type__name='experiment',
-                content_id__in=experiment_ids,
+                content_type__model='experiment',
+                object_id__in=experiment_ids,
                 id__in=obj_ids
             )
         elif bundle.request.user.is_authenticated() and \
@@ -200,7 +202,10 @@ class ACLAuthorization(Authorization):
                          user.experiment_set.filter(public_access__gt=1)
                          .count() > 0)]
         elif isinstance(bundle.obj, Group):
-            return bundle.request.user.groups.filter(id__in=obj_ids)
+            if facilities_managed_by(bundle.request.user).count() > 0:
+                return object_list
+            else:
+                return bundle.request.user.groups.filter(id__in=obj_ids)
         elif isinstance(bundle.obj, Facility):
             facilities = facilities_managed_by(bundle.request.user)
             return [facility for facility in object_list
@@ -517,7 +522,8 @@ class UserResource(ModelResource):
         # allow the user to find out their username and email
         # allow facility managers to query other users' username and email
         if authenticated and \
-                (same_user or len(facilities_managed_by(authuser)) > 0):
+                (same_user or facilities_managed_by(authuser).count() > 0):
+            bundle.data['username'] = queried_user.username
             bundle.data['email'] = queried_user.email
         else:
             del(bundle.data['username'])
@@ -653,6 +659,11 @@ class ExperimentResource(MyTardisModelResource):
             'id': ('exact', ),
             'title': ('exact',),
         }
+        ordering = [
+            'title',
+            'created_time',
+            'update_time'
+        ]
         always_return_data = True
 
     def dehydrate(self, bundle):
@@ -838,6 +849,9 @@ class DatasetResource(MyTardisModelResource):
             'description': ('exact', ),
             'directory': ('exact', ),
         }
+        ordering = [
+            'description'
+        ]
         always_return_data = True
 
     def prepend_urls(self):
@@ -888,6 +902,10 @@ class DataFileResource(MyTardisModelResource):
             'dataset': ALL_WITH_RELATIONS,
             'filename': ('exact', ),
         }
+        ordering = [
+            'filename',
+            'modification_time'
+        ]
         resource_name = 'dataset_file'
 
     def download_file(self, request, **kwargs):
@@ -933,7 +951,7 @@ class DataFileResource(MyTardisModelResource):
             [file_record],
             self.build_bundle(obj=file_record, request=request))
         for dfo in file_record.file_objects.all():
-            dfo.verify.apply_async()
+            tasks.dfo_verify.delay(dfo.id)
         return HttpResponse()
 
     def hydrate(self, bundle):
@@ -1077,6 +1095,7 @@ class ReplicaResource(MyTardisModelResource):
             bundle.obj.file_object = bundle.data['file_object']
             bundle.data['file_object'].close()
             del(bundle.data['file_object'])
+            bundle.obj = DataFileObject.objects.get(id=bundle.obj.id)
         return bundle
 
     def dehydrate(self, bundle):

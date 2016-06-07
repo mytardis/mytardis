@@ -10,7 +10,8 @@ import oaipmh.interfaces
 
 import pytz
 
-from tardis.tardis_portal.models import Experiment, License, User, UserProfile
+from tardis.tardis_portal.models import Experiment, License, User, \
+     UserProfile, ExperimentParameterSet
 from tardis.tardis_portal.ParameterSetManager import ParameterSetManager
 from tardis.tardis_portal.util import get_local_time
 
@@ -52,6 +53,10 @@ def _create_experiment(user, bad):
         psm.set_param(k, v)
     return experiment
 
+def _get_first_exp_id():
+    #exp_ids = [exp.id for exp in Experiment.objects]
+    #return 'experiment/%d' % min(exp_ids)
+    return 'experiment/%d' % Experiment.objects.first().id
 
 class AbstractExperimentProviderTC():
     __metaclass__ = ABCMeta
@@ -93,7 +98,7 @@ class AbstractExperimentProviderTC():
         for header in headers:
             if not header.identifier().startswith('experiment'):
                 continue
-            e = self._experiment if header.identifier() == 'experiment/1' \
+            e = self._experiment if header.identifier() == _get_first_exp_id() \
                 else self._experiment2
             expect(header.identifier()).to_contain(str(e.id))
             expect(header.datestamp().replace(tzinfo=pytz.utc)) \
@@ -141,7 +146,7 @@ class DcExperimentProviderTestCase(AbstractExperimentProviderTC, TestCase):
 
     def testGetRecord(self):
         header, metadata, about = self._getProvider().getRecord('oai_dc', \
-                                                                'experiment/1')
+                                                    _get_first_exp_id())
         expect(header.identifier()).to_contain(str(self._experiment.id))
         expect(header.datestamp().replace(tzinfo=pytz.utc))\
             .to_equal(get_local_time(self._experiment.update_time))
@@ -155,7 +160,7 @@ class DcExperimentProviderTestCase(AbstractExperimentProviderTC, TestCase):
         results = self._getProvider().listRecords('oai_dc')
         # Iterate through headers
         for header, metadata, _ in results:
-            e = self._experiment if header.identifier() == 'experiment/1' \
+            e = self._experiment if header.identifier() == _get_first_exp_id() \
                 else self._experiment2
             expect(header.identifier()).to_contain(str(e.id))
             expect(header.datestamp().replace(tzinfo=pytz.utc))\
@@ -187,10 +192,13 @@ class RifCsExperimentProviderTestCase(AbstractExperimentProviderTC, TestCase):
 
     def testGetRecord(self):
         header, metadata, about = self._getProvider().getRecord('rif',
-                                                                'experiment/1')
+                                                     _get_first_exp_id())
         expect(header.identifier()).to_contain(str(self._experiment.id))
         expect(header.datestamp().replace(tzinfo=pytz.utc))\
             .to_equal(get_local_time(self._experiment.update_time))
+        ns = 'http://ands.org.au/standards/rif-cs/registryObjects#relatedInfo'
+        ps_id = ExperimentParameterSet.objects\
+                .filter(experiment=self._experiment,schema__namespace=ns).first().id
         expect(metadata.getField('id')).to_equal(self._experiment.id)
         expect(metadata.getField('title'))\
             .to_equal(str(self._experiment.title))
@@ -204,7 +212,7 @@ class RifCsExperimentProviderTestCase(AbstractExperimentProviderTC, TestCase):
             .to_equal([{'notes': 'This is a note.', \
                         'identifier': 'https://www.example.com/', \
                         'type': 'website', \
-                        'id': 1, \
+                        'id': ps_id, \
                         'title': 'Google'}])
         expect(len(metadata.getField('collectors')))\
             .to_equal(2)
@@ -215,7 +223,7 @@ class RifCsExperimentProviderTestCase(AbstractExperimentProviderTC, TestCase):
         # Iterate through headers
         for header, metadata, _ in results:
             if header.identifier().startswith('experiment'):
-                e = self._experiment if header.identifier() == 'experiment/1' \
+                e = self._experiment if header.identifier() == _get_first_exp_id() \
                     else self._experiment2
                 expect(header.identifier()).to_contain(str(e.id))
                 expect(header.datestamp().replace(tzinfo=pytz.utc))\
@@ -229,11 +237,14 @@ class RifCsExperimentProviderTestCase(AbstractExperimentProviderTC, TestCase):
                 expect(metadata.getField('licence_name'))\
                     .to_equal(License.get_none_option_license().name)
                 if e == self._experiment:
+                    ns = 'http://ands.org.au/standards/rif-cs/registryObjects#relatedInfo'
+                    ps_id = ExperimentParameterSet.objects\
+                      .filter(experiment=self._experiment,schema__namespace=ns).first().id
                     expect(metadata.getField('related_info'))\
                         .to_equal([{'notes': 'This is a note.', \
                                         'identifier': 'https://www.example.com/', \
                                         'type': 'website', \
-                                        'id': 1, \
+                                        'id': ps_id, \
                                         'title': 'Google'}])
                 else:
                     expect(metadata.getField('related_info')).to_equal([{}])

@@ -4,7 +4,7 @@ import re
 from bs4 import BeautifulSoup
 from compare import expect, ensure, matcher
 
-from django.test import TestCase
+from django.test import TestCase, TransactionTestCase
 from django.test.client import Client
 from django.core.urlresolvers import reverse
 
@@ -23,7 +23,7 @@ def _create_user_and_login(username='testuser', password='testpass'):
     client.login(username=username, password=password)
     return (user, client)
 
-class RifCSTestCase(TestCase):
+class RifCSTestCase(TransactionTestCase):
 
     def setUp(self):
         self.ns = {'r': 'http://ands.org.au/standards/rif-cs/registryObjects',
@@ -88,8 +88,9 @@ class RifCSTestCase(TestCase):
         assert xml.xpath('/o:OAI-PMH/o:GetRecord/o:record', namespaces=ns)
         header, metadata = xml.xpath('/o:OAI-PMH/o:GetRecord/o:record/o:*',
                                      namespaces=ns)[0:2]
+        exp_id = Experiment.objects.first().id
         expect(header.xpath('o:identifier/text()',namespaces=ns)[0]) \
-            .to_equal('experiment/1')
+            .to_equal('experiment/%d' % exp_id)
         # <registryObject group="MyTARDIS Default Group">
         registryObject = metadata.xpath('r:registryObjects/r:registryObject',
                                            namespaces=ns)[0]

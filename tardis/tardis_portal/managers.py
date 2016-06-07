@@ -149,7 +149,8 @@ class ExperimentManager(OracleSafeManager):
 
     def owned(self, user):
         """
-        Return all experiments which are owned by a particular user
+        Return all experiments which are owned by a particular user, including
+        those shared with a group of which the user is a member.
 
         :param request: a HTTP Request instance
         :type request: :py:class:`django.http.HttpRequest`
@@ -160,14 +161,19 @@ class ExperimentManager(OracleSafeManager):
         if not user.is_authenticated():
             return super(ExperimentManager, self).get_queryset().none()
 
-        return self.owned_by_user(user)
+        query = self._query_owned(user)
+        for group in user.groups.all():
+            query |= self._query_owned_by_group(group)
+        return super(ExperimentManager, self).get_queryset().filter(query)
+
+        # return self.owned_by_user(user)
 
     def _query_owned(self, user, user_id=None):
         # build the query to filter the ACL table
         query = Q(objectacls__pluginId=django_user,
                   objectacls__entityId=str(user_id or user.id),
                   objectacls__isOwner=True) &\
-            (Q(objectacls__effectiveDate__lte=datetime.today())
+                (Q(objectacls__effectiveDate__lte=datetime.today())
              | Q(objectacls__effectiveDate__isnull=True)) &\
             (Q(objectacls__expiryDate__gte=datetime.today())
              | Q(objectacls__expiryDate__isnull=True))

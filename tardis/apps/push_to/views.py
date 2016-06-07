@@ -1,19 +1,23 @@
 import json
+import requests
 
 from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseForbidden, \
+    HttpResponseNotFound
 from django.shortcuts import redirect, render
-import requests
-
 from paramiko import RSACert
 
+from ssh_authz import sign_certificate
+from tardis.apps.push_to.utils import bytes_available, list_subdirectories, \
+    get_object_size, can_copy, get_default_push_location
+from tardis.tardis_portal.auth import decorators as authz
+from tardis.tardis_portal.models import Experiment, Dataset
+from . import tasks
 from .exceptions import NoSuitableCredential
 from .models import OAuthSSHCertSigningService, Credential, RemoteHost
 from .oauth_tokens import get_token, get_token_data, set_token
-from . import tasks
-from tardis.tardis_portal.auth import decorators as authz
-from ssh_authz import sign_certificate
+
 
 # TODO: Remove 'verify=False' for requests
 
@@ -130,6 +134,79 @@ def get_signing_services(request, obj_type=None, push_obj_id=None):
 
 
 @login_required
+def validate_remote_path(request, remote_host_id):
+    response = {}
+    path = request.GET.get('path', None)
+
+    tardis_object_type = request.GET.get('object_type', None)
+    tardis_object_id = request.GET.get('object_id', None)
+    if tardis_object_type and tardis_object_id:
+        try:
+            response['object_size'] = get_object_size(tardis_object_type,
+                                                      tardis_object_id)
+        except (Experiment.DoesNotExist, Dataset.DoesNotExist, TypeError):
+            response['message'] = "Experiment/dataset/datafile does not exist."
+            return HttpResponseNotFound(json.dumps(response),
+                                        content_type='application/json')
+
+    try:
+        remote_host = RemoteHost.objects.get(pk=remote_host_id)
+        credential = get_credential(request, remote_host)
+
+        ssh = credential.get_client_for_host(remote_host)
+        sftp_client = ssh.open_sftp()
+
+        response['default'] = {}
+        response['default']['path'] = get_default_push_location(sftp_client)
+        response['default']['free_space'] = bytes_available(ssh, response[
+            'default']['path'])
+        response['default']['valid_children'] = list_subdirectories(
+            sftp_client, response['default']['path'])
+        if 'object_size' in response:
+            response['default']['sufficient_space'] = response['default'][
+                                                          'free_space'] > \
+                                                      response['object_size']
+
+        if path is not None:
+            path_parts = path.split('/')
+            valid_parts = []
+            invalid_parts = []
+
+            for part in path_parts:
+                if not invalid_parts:
+                    test_path = '/'.join(valid_parts + [part])
+                    try:
+                        sftp_client.chdir(test_path)
+                        valid_parts.append(part)
+                    except IOError:
+                        invalid_parts.append(part)
+                else:
+                    invalid_parts.append(part)
+            response[path] = {}
+            response[path]['valid_parts'] = '/'.join(valid_parts)
+            response[path]['invalid_parts'] = '/'.join(invalid_parts)
+            response[path]['valid_children'] = list_subdirectories(
+                sftp_client,
+                response[path]['valid_parts'])
+            response[path]['free_space'] = bytes_available(
+                ssh, response[path]['valid_parts'])
+            if 'object_size' in response:
+                response[path]['sufficient_space'] = \
+                    response[path]['free_space'] > response['object_size']
+
+    except NoSuitableCredential:
+        response['message'] = "You don't have access to this host."
+        return HttpResponseForbidden(json.dumps(response),
+                                     content_type='application/json')
+    except RemoteHost.DoesNotExist:
+        response['message'] = "Remote host does not exist."
+        return HttpResponseNotFound(json.dumps(response),
+                                    content_type='application/json')
+
+    return HttpResponse(json.dumps(response), content_type='application/json')
+
+
+@login_required
 @authz.experiment_download_required
 def initiate_push_experiment(request, experiment_id, remote_host_id=None):
     """
@@ -174,7 +251,7 @@ def initiate_push_datafile(request, datafile_id, remote_host_id=None):
 
 
 def _initiate_push(
-    request, callback_view, remote_host_id, obj_type, push_obj_id
+        request, callback_view, remote_host_id, obj_type, push_obj_id
 ):
     """
     Kicks off data push
@@ -183,8 +260,10 @@ def _initiate_push(
     :param remote_host_id: database id of remote host
     :param obj_type: the type of data
     :param push_obj_id: the data object id
+    :param destination: a path
     :return: status message, host list or OAuth2 redirects
     """
+
     # If the remote_host_id is not given, render a view to show a list of
     # acceptable hosts
     if remote_host_id is None:
@@ -202,6 +281,28 @@ def _initiate_push(
     try:
         remote_host = RemoteHost.objects.get(pk=remote_host_id)
         credential = get_credential(request, remote_host)
+
+        ssh_client = credential.get_client_for_host(remote_host)
+        if request.GET.get('path', None) is not None:
+            destination = request.GET.get('path')
+        else:
+            args = {
+                'remote_host_id': remote_host_id
+            }
+            c = {
+                'remote_path_verify_url': reverse(validate_remote_path,
+                                                  kwargs=args),
+                'remote_destination_name': remote_host.nickname
+            }
+            return HttpResponse(
+                render(request, 'destination_selector.html', c))
+
+        destination_ok, message = can_copy(ssh_client, obj_type, push_obj_id,
+                                           destination)
+        if not destination_ok:
+            return render_error_message(request,
+                                        'Invalid destination: %s' % message)
+
     except NoSuitableCredential:
         callback_args = {
             'remote_host_id': remote_host_id,
@@ -216,22 +317,24 @@ def _initiate_push(
 
     if obj_type == 'experiment':
         tasks.push_experiment_to_host.delay(
-            request.user.pk, credential.pk, remote_host_id, push_obj_id)
+            request.user.pk, credential.pk, remote_host_id, push_obj_id,
+            destination)
     elif obj_type == 'dataset':
         tasks.push_dataset_to_host.delay(
-            request.user.pk, credential.pk, remote_host_id, push_obj_id)
+            request.user.pk, credential.pk, remote_host_id, push_obj_id,
+            destination)
     elif obj_type == 'datafile':
         tasks.push_datafile_to_host.delay(
-            request.user.pk, credential.pk, remote_host_id, push_obj_id)
+            request.user.pk, credential.pk, remote_host_id, push_obj_id,
+            destination)
 
     success_message = ('The requested item will be pushed to %s. <strong>You '
                        'will be notified by email once this has been '
                        'completed.</strong>'
                        '<br/>'
-                       'In most cases, your data will be pushed to your home '
-                       'directory.'
-                       '<pre>~/mytardis-data/&lt;timestamp&gt;/...</pre>')
-    success_message %= remote_host.nickname
+                       'Data will be pushed to '
+                       '<pre>%s</pre>')
+    success_message %= (remote_host.nickname, destination)
     return render_success_message(
         request,
         success_message)
@@ -293,10 +396,10 @@ def authorize_remote_access(request, remote_host_id, service_id=None):
     # Identify a suitable SSH cert signing service for the requested host
     try:
         if service_id is None:
-            allowed_services = OAuthSSHCertSigningService\
+            allowed_services = OAuthSSHCertSigningService \
                 .get_available_signing_services(
-                    request.user).filter(
-                        allowed_remote_hosts__pk=remote_host_id)
+                request.user).filter(
+                allowed_remote_hosts__pk=remote_host_id)
             try:
                 oauth_service = allowed_services[0]
                 service_id = oauth_service.pk
@@ -336,12 +439,14 @@ def authorize_remote_access(request, remote_host_id, service_id=None):
         remote_user = 'unknown'
         credential = Credential.generate_keypair_credential(
             request.user, remote_user, [remote_host])
-        if sign_certificate(
+        signing_result = sign_certificate(
             credential, auth_token,
             oauth_service.cert_signing_url) and \
-                credential.verify_remote_access(
-        ):
-            return redirect(next_redirect + '?credential_id=%i' % credential.pk)
+                         credential.verify_remote_access(
+                         )
+        if signing_result:
+            return redirect(
+                next_redirect + '?credential_id=%i' % credential.pk)
         else:
             # If key signing failed, delete the credential
             credential.delete()

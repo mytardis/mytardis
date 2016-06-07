@@ -231,11 +231,25 @@ def is_group_admin(request, group_id):
 
 
 def group_ownership_required(f):
+    """
+    A decorator for Django views that validates if a user is a group admin,
+    'staff' or 'superuser' prior to further processing the request.
+    Unauthenticated requests are redirected to the login page. If the
+    user making the request satisfies none of these criteria, an error response
+    is returned.
 
+    :param f: A Django view function
+    :type f: types.FunctionType
+    :return: A Django view function
+    :rtype: types.FunctionType
+    """
     def wrap(request, *args, **kwargs):
+        user = request.user
         if not request.user.is_authenticated():
             return HttpResponseRedirect('/login?next=%s' % request.path)
-        if not is_group_admin(request, kwargs['group_id']):
+        if not (is_group_admin(request, kwargs['group_id']) or
+                user.is_staff or
+                user.is_superuser):
             return return_response_error(request)
         return f(request, *args, **kwargs)
 
@@ -245,11 +259,25 @@ def group_ownership_required(f):
 
 
 def experiment_ownership_required(f):
+    """
+    A decorator for Django views that validates if a user is an owner of an
+    experiment, 'staff' or 'superuser' prior to further processing the request.
+    Unauthenticated requests are redirected to the login page. If the
+    user making the request satisfies none of these criteria, an error response
+    is returned.
 
+    :param f: A Django view function
+    :type f: types.FunctionType
+    :return: A Django view function
+    :rtype: types.FunctionType
+    """
     def wrap(request, *args, **kwargs):
-        if not request.user.is_authenticated():
+        user = request.user
+        if not user.is_authenticated():
             return HttpResponseRedirect('/login?next=%s' % request.path)
-        if not has_experiment_ownership(request, kwargs['experiment_id']):
+        if not (has_experiment_ownership(request, kwargs['experiment_id']) or
+                user.is_staff or
+                user.is_superuser):
             return return_response_error(request)
         return f(request, *args, **kwargs)
 

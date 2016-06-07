@@ -1,4 +1,5 @@
 import datetime
+import logging
 
 from django.test import TestCase
 from django.test.client import Client
@@ -7,8 +8,9 @@ from django.contrib.auth.models import User, Group, Permission, AnonymousUser
 
 from tardis.tardis_portal.auth.localdb_auth import django_user
 from tardis.tardis_portal.auth.localdb_auth import auth_key as localdb_auth_key
-from tardis.tardis_portal.models import ObjectACL, Experiment, UserProfile
+from tardis.tardis_portal.models import ObjectACL, Experiment
 
+logger = logging.getLogger(__name__)
 
 class ObjectACLTestCase(TestCase):
     urls = 'tardis.urls'
@@ -114,10 +116,6 @@ class ObjectACLTestCase(TestCase):
         acl.save()
 
     def tearDown(self):
-        self.client1.logout()
-        self.client2.logout()
-        self.client3.logout()
-        self.client4.logout()
 
         self.experiment1.delete()
         self.experiment2.delete()
@@ -128,6 +126,101 @@ class ObjectACLTestCase(TestCase):
         self.user2.delete()
         self.user3.delete()
         self.user4.delete()
+
+        self.client1.logout()
+        self.client2.logout()
+        self.client3.logout()
+        self.client4.logout()
+
+    def testChangeUserPermissions(self):
+        login1 = self.client1.login(username=self.user1.username,
+                                   password='secret')
+        self.assertTrue(login1)
+
+        login3 = self.client3.login(username=self.user3.username,
+                                   password='secret')
+        self.assertTrue(login3)
+
+        # user1 should be see experiment1
+        response = self.client1.get('/experiment/view/%i/'
+                                   % (self.experiment1.id))
+        self.assertEqual(response.status_code, 200)
+
+        # user3 should not be able to see experiment1
+        response = self.client3.get('/experiment/view/%i/'
+                                   % (self.experiment1.id))
+        self.assertEqual(response.status_code, 403)
+
+        # make the group1 a full read/write/owner of the experiment1
+        response = self.client1.get('/experiment/control_panel/%i'
+                                    '/access_list/add/group/%s/?canRead=true'
+                                    '&canWrite=true&canDelete=false&isOwner=true'
+                                    % (self.experiment1.id, 'group1'))
+        self.assertEqual(response.status_code, 200)
+
+        # ok, now do some tricky stuff
+        today = datetime.datetime.today()
+        yesterday = today - datetime.timedelta(days=1)
+        tomorrow = today + datetime.timedelta(days=1)
+
+        # add user3 to experiment1
+        response = self.client1.get('/experiment/control_panel/%i/access_list'
+                                    '/add/user/%s/?authMethod=%s'
+                                    % (self.experiment1.id,
+                                       self.user3.username,
+                                       localdb_auth_key))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, '<div class="access_list_user')
+
+        # check permissions for user3 - fail as canRead not set to True
+        response = self.client3.get('/experiment/view/%i/'
+                                   % (self.experiment1.id))
+        self.assertEqual(response.status_code, 403)
+
+
+        # give user3 read permissions for experiment1 effective TOMORROW
+        url = ("/experiment/control_panel/%i/access_list"
+               "/change/user/%s/?authMethod=%s")
+
+        response = self.client1.post(url % (self.experiment1.id,
+                                            self.user3.username,
+                                            localdb_auth_key),
+                          {'canRead': True,
+                           'effectiveDate_year':  tomorrow.year,
+                           'effectiveDate_month': tomorrow.month,
+                           'effectiveDate_day':   tomorrow.day,
+                           })
+        self.assertEqual(response.status_code, 302)
+
+        # check permissions for user3
+        response = self.client3.get('/experiment/view/%i/'
+                                   % (self.experiment1.id))
+        self.assertEqual(response.status_code, 403)
+
+        # user1 should be see experiment1
+        response = self.client1.get('/experiment/view/%i/'
+                                   % (self.experiment1.id))
+        self.assertEqual(response.status_code, 200)
+
+        # give user3 read permissions for experiment1 effective YESTERDAY
+        url = ("/experiment/control_panel/%i/access_list"
+               "/change/user/%s/?authMethod=%s")
+
+        response = self.client1.post(url % (self.experiment1.id,
+                                            self.user3.username,
+                                            localdb_auth_key),
+                          {'canRead': True,
+                           'effectiveDate_year':  yesterday.year,
+                           'effectiveDate_month': yesterday.month,
+                           'effectiveDate_day':   yesterday.day,
+                           })
+        self.assertEqual(response.status_code, 302)
+
+        # check permissions for user3
+        response = self.client3.get('/experiment/view/%i/'
+                                   % (self.experiment1.id))
+        self.assertEqual(response.status_code, 200)
+
 
     def testReadAccess(self):
         login = self.client1.login(username=self.user1.username,
@@ -160,13 +253,14 @@ class ObjectACLTestCase(TestCase):
                                     % ('group1'))
         self.assertEqual(response.status_code, 200)
 
+        # make the group1 a full read/write/owner of the experiment1
         response = self.client1.get('/experiment/control_panel/%i'
                                     '/access_list/add/group/%s/?canRead=true'
-                                    '&canWrite=true&canDelete=false&isOwner=undefined'
+                                    '&canWrite=true&canDelete=false&isOwner=true'
                                     % (self.experiment1.id, 'group1'))
         self.assertEqual(response.status_code, 200)
 
-        # add user2 as admin to the newly created group
+        # add user2 as admin to the newly created group1
         group = Group.objects.get(name='group1')
         response = self.client1.get('/group/%i/add/%s/?isAdmin=true&authMethod=%s'
                                     % (group.id,
@@ -181,7 +275,6 @@ class ObjectACLTestCase(TestCase):
                                        localdb_auth_key))
         self.assertEqual(response.content, 'User %s is already member of that'
                          ' group.' % self.user2.username)
-        self.assertEqual(response.status_code, 200)
 
         # user1 is not allowed to modify acls for experiment2
         response = self.client1.get('/experiment/control_panel/%i/access_list'
@@ -190,6 +283,22 @@ class ObjectACLTestCase(TestCase):
                                        self.user1.username,
                                        localdb_auth_key))
         self.assertEqual(response.status_code, 403)
+
+        # user2 *IS* allowed to modify acls for experiment1, since they are part
+        # of an owning group (we add then remove access for user3)
+        response = self.client1.get('/experiment/control_panel/%i/access_list'
+                                    '/add/user/%s/?authMethod=%s'
+                                    % (self.experiment1.id,
+                                       self.user3.username,
+                                       localdb_auth_key))
+        self.assertEqual(response.status_code, 200)
+        response = self.client1.get('/experiment/control_panel/%i/access_list'
+                                    '/remove/user/%s/?authMethod=%s'
+                                    % (self.experiment1.id,
+                                       self.user3.username,
+                                       localdb_auth_key))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.content, 'OK')
 
         # test add non-existent user
         non_existant = 'test_boozer'
@@ -213,8 +322,8 @@ class ObjectACLTestCase(TestCase):
         # it. This could possibly be changed to a 404 error.
 
         response = self.client1.get('/experiment/control_panel/%i/access_list'
-                                    '/add/user/%s/?authMethod=%s'
-                                    % (9999, self.user1.username, localdb_auth_key))
+                                    '/add/user/%s/?authMethod=%s' %
+                                    (9999, self.user1.username, localdb_auth_key))
         self.assertEqual(response.status_code, 403)
 
         self.client1.logout()
@@ -226,7 +335,7 @@ class ObjectACLTestCase(TestCase):
 
         # user2 should be able to see experiment1 now
         response = self.client2.get('/experiment/view/%i/'
-                                   % (self.experiment1.id))
+                                    % (self.experiment1.id))
         self.assertEqual(response.status_code, 200)
 
         # user2 should be also able to see experiment2
@@ -240,8 +349,10 @@ class ObjectACLTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
 
         # user2 should be able to add user3 to group1 (experiment1)
-        response = self.client2.get('/group/%i/add/%s/?isAdmin=false&authMethod=%s'
-                                   % (group.id, self.user3.username, localdb_auth_key))
+        response = self.client2.get(
+            '/group/%i/add/%s/?isAdmin=false&authMethod=%s'
+            % (group.id, self.user3.username, localdb_auth_key))
+        self.assertEqual(response.status_code, 200)
 
         self.client2.logout()
 
@@ -266,8 +377,9 @@ class ObjectACLTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
 
         # user3 should not be able to add another user4 to group1
-        response = self.client3.get('/group/%i/add/%s/?isAdmin=false&authMethod=%s'
-                                   % (group.id, 'testuser4', localdb_auth_key))
+        response = self.client3.get(
+            '/group/%i/add/%s/?isAdmin=false&authMethod=%s'
+            % (group.id, 'testuser4', localdb_auth_key))
         self.assertEqual(response.status_code, 403)
 
         self.client3.logout()
@@ -277,7 +389,9 @@ class ObjectACLTestCase(TestCase):
         yesterday = today - datetime.timedelta(days=1)
         tomorrow = today + datetime.timedelta(days=1)
 
-        url = '/experiment/control_panel/%i/access_list/change/user/%s/'
+        url = ("/experiment/control_panel/%i/access_list"
+               "/change/user/%s/?authMethod=%s")
+
         login = self.client1.login(username=self.user1.username,
                                    password='secret')
         self.assertTrue(login)
@@ -296,13 +410,16 @@ class ObjectACLTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, '<div class="access_list_user')
 
-        # give user3 read permissions for experiment1 effictive TOMORROW
-        response = self.client1.post(url % (self.experiment1.id, self.user3.username),
+        # give user3 read permissions for experiment1 effective TOMORROW
+        response = self.client1.post(url % (self.experiment1.id,
+                                            self.user3.username,
+                                            localdb_auth_key),
                           {'canRead': True,
                            'effectiveDate_year': tomorrow.year,
                            'effectiveDate_month': tomorrow.month,
                            'effectiveDate_day': tomorrow.day,
                            })
+        # logger.debug('[1] response =' + str(response))
         self.assertEqual(response.status_code, 302)
 
         # check permissions for user3
@@ -314,8 +431,10 @@ class ObjectACLTestCase(TestCase):
                                    % (self.experiment1.id))
         self.assertEqual(response.status_code, 403)
 
-        # change effictive date to TODAY
-        response = self.client1.post(url % (self.experiment1.id, self.user3.username),
+        # change effective date to TODAY
+        response = self.client1.post(url % (self.experiment1.id,
+                                            self.user3.username,
+                                            localdb_auth_key),
                           {'canRead': True,
                            'effectiveDate_year': today.year,
                            'effectiveDate_month': today.month,
@@ -328,7 +447,9 @@ class ObjectACLTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
 
         # change effictive date to YESTERDAY
-        self.client1.post(url % (self.experiment1.id, self.user3.username),
+        self.client1.post(url % (self.experiment1.id,
+                                 self.user3.username,
+                                 localdb_auth_key),
                           {'canRead': True,
                            'effectiveDate_year': yesterday.year,
                            'effectiveDate_month': yesterday.month,
@@ -340,7 +461,9 @@ class ObjectACLTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
 
         # set expiry date to TOMORROW
-        self.client1.post(url % (self.experiment1.id, self.user3.username),
+        self.client1.post(url % (self.experiment1.id,
+                                 self.user3.username,
+                                 localdb_auth_key),
                           {'canRead': True,
                            'expiryDate_year': tomorrow.year,
                            'expiryDate_month': tomorrow.month,
@@ -352,7 +475,9 @@ class ObjectACLTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
 
         # set expiry date to TODAY
-        self.client1.post(url % (self.experiment1.id, self.user3.username),
+        self.client1.post(url % (self.experiment1.id,
+                                 self.user3.username,
+                                 localdb_auth_key),
                           {'canRead': True,
                            'expiryDate_year': today.year,
                            'expiryDate_month': today.month,
@@ -364,7 +489,9 @@ class ObjectACLTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
 
         # set expiry date to YESTERDAY
-        self.client1.post(url % (self.experiment1.id, self.user3.username),
+        self.client1.post(url % (self.experiment1.id,
+                                 self.user3.username,
+                                 localdb_auth_key),
                           {'canRead': True,
                            'expiryDate_year': yesterday.year,
                            'expiryDate_month': yesterday.month,
@@ -386,7 +513,6 @@ class ObjectACLTestCase(TestCase):
         response = self.client1.get('/experiment/control_panel/%i/access_list'
                                     '/remove/user/%s/'
                                     % (self.experiment1.id, self.user3.username))
-        self.assertEqual(response.status_code, 200)
         self.assertEqual(response.content,
                          'The user %s does not have access to this experiment.'
                          % self.user3.username)
@@ -397,12 +523,97 @@ class ObjectACLTestCase(TestCase):
                                     % (9999, self.user3.username))
         self.assertEqual(response.status_code, 403)
 
-        # try to remove the owner
+        # try to remove the only owner
         response = self.client1.get('/experiment/control_panel/%i/access_list'
                                     '/remove/user/%s/'
                                     % (self.experiment1.id, self.user1.username))
+        self.assertEqual(response.content, 'All experiments must have at least '
+                                           'one user as owner. Add an '
+                                           'additional owner first before '
+                                           'removing this one.')
+
+        # create a group2 and add it to experiment1
+        response = self.client1.get('/experiment/control_panel'
+                                    '/create/group/?group=%s&authMethod=localdb'
+                                    % ('group2'))
+        self.assertEqual(response.status_code, 200)
+
+        # give group2 read-only access to experiment1
+        response = self.client1.get('/experiment/control_panel/%i'
+                                    '/access_list/add/group/%s/?canRead=true'
+                                    '&canWrite=false&canDelete=false&isOwner=false'
+                                    % (self.experiment1.id, 'group2'))
+        self.assertEqual(response.status_code, 200)
+
+        # add user3 as admin to group2
+        self.group2 = Group.objects.get(name='group2')
+        response = self.client1.get(
+            '/group/%i/add/%s/?isAdmin=true&authMethod=%s'
+            % (self.group2.id,
+               self.user3.username,
+               localdb_auth_key))
+        self.assertEqual(response.status_code, 200)
+
+        # as user3, try to add myself as an owner of the experiment1
+        response = self.client3.get('/experiment/control_panel/%i/access_list'
+                                    '/add/user/%s/?authMethod=%s&canRead=true'
+                                    '&canWrite=true&canDelete=false&'
+                                    'isOwner=true'
+                                    % (self.experiment1.id,
+                                       self.user3.username,
+                                       localdb_auth_key))
+        # this should fail since the group2, of which user3 is a member, is
+        # not an 'owner' group, just a read-only group
+        self.assertEqual(response.status_code, 403)
+
+        # as user3, attempt to remove user1 as the owner of experiment1
+        response = self.client3.get('/experiment/control_panel/%i/access_list'
+                                    '/remove/user/%s/?authMethod=%s'
+                                    % (self.experiment1.id,
+                                       self.user1.username,
+                                       localdb_auth_key))
+        # this should fail since the group2, of which user3 is a member, is
+        # not an 'owner' group, just a read-only group
+        self.assertEqual(response.status_code, 403)
+
+        # as user1, add user3 as an owner of experiment1
+        response = self.client1.get('/experiment/control_panel/%i/access_list'
+                                    '/add/user/%s/?authMethod=%s&canRead=true'
+                                    '&canWrite=true&canDelete=false&'
+                                    'isOwner=true'
+                                    % (self.experiment1.id,
+                                       self.user3.username,
+                                       localdb_auth_key))
+        # since user1 is an owner user of experiment1, we can add additional
+        # owner users to the experiment
+        self.assertEqual(response.status_code, 200)
+
+        # as user3 (now an owner), attempt to remove user1 as the owner of
+        # experiment1, leaving user3 as the sole owner
+        response = self.client3.get('/experiment/control_panel/%i/access_list'
+                                    '/remove/user/%s/?authMethod=%s'
+                                    % (self.experiment1.id,
+                                       self.user1.username,
+                                       localdb_auth_key))
+        # this should now succeed since both user3 and user1 are owners of
+        # experiment1, and user3 is allowed to remove other owners (unless they
+        # are the only owner user)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.content, 'OK')
+
+        # as user3 (now the only owner), attempts to remove myself as the owner
+        # of experiment1
+        response = self.client3.get('/experiment/control_panel/%i/access_list'
+                                    '/remove/user/%s/?authMethod=%s'
+                                    % (self.experiment1.id,
+                                       self.user3.username,
+                                       localdb_auth_key))
+        # this should fail with an error since every experiment must have at
+        # least one user owner
         self.assertEqual(response.content,
-                         'Cannot remove your own user access.')
+                         'All experiments must have at least one user as '
+                         'owner. Add an additional owner first before '
+                         'removing this one.')
 
         self.client1.logout()
         self.client3.logout()

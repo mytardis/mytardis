@@ -199,6 +199,9 @@ app.controller('FacilityCtrl', function ($scope, $resource, $interval, $log) {
 
     // Group facilities data by user
     function groupByUser(data) {
+        // Clone data, so we don't mess up the ordering
+        // for the "Latest data" view.
+        data = data.slice(0);
         // Sort by username, group name
         data.sort(function (a, b) {
             var aOwnerGroup = a.owner + ', ' + a.group;
@@ -248,6 +251,9 @@ app.controller('FacilityCtrl', function ($scope, $resource, $interval, $log) {
 
     // Group facilities data by instrument
     function groupByInstrument(data) {
+        // Clone data, so we don't mess up the ordering
+        // for the "Latest data" view.
+        data = data.slice(0);
         // Sort by instrument ID
         data.sort(function (a, b) {
             return a.instrument.id - b.instrument.id;

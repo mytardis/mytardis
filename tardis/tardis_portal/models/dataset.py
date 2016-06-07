@@ -29,7 +29,7 @@ class Dataset(models.Model):
 
     experiments = models.ManyToManyField(Experiment, related_name='datasets')
     description = models.TextField(blank=True)
-    directory = DirectoryField(blank=True, null=True)
+    directory = DirectoryField(blank=True, null=True, max_length=255)
     immutable = models.BooleanField(default=False)
     instrument = models.ForeignKey(Instrument, null=True, blank=True)
     objects = OracleSafeManager()
@@ -92,15 +92,7 @@ class Dataset(models.Model):
 
     def get_images(self):
         from .datafile import IMAGE_FILTER
-        images = self.datafile_set.order_by('filename')\
-                                  .filter(IMAGE_FILTER)
-        render_image_size_limit = getattr(settings, 'RENDER_IMAGE_SIZE_LIMIT',
-                                          0)
-        if render_image_size_limit:
-            images = images.extra(where=['CAST(size AS BIGINT) <= %d'
-                                         % render_image_size_limit])
-
-        return images
+        return self.datafile_set.order_by('filename').filter(IMAGE_FILTER)
 
     def _get_image(self):
         try:

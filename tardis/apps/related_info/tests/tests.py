@@ -3,7 +3,7 @@ import re
 
 from compare import expect, ensure, matcher
 
-from django.test import TestCase
+from django.test import TestCase, TransactionTestCase
 from django.test.client import Client
 from django.core.urlresolvers import reverse
 
@@ -61,7 +61,7 @@ class TabTestCase(TestCase):
         expect(response.status_code).to_equal(200)
 
 
-class ListTestCase(TestCase):
+class ListTestCase(TransactionTestCase):
 
     def setUp(self):
         user, client = _create_user_and_login()
@@ -146,7 +146,7 @@ class ListTestCase(TestCase):
             expect(obj['notes']).to_match(r'note #\d+\.$')
 
 
-class GetTestCase(TestCase):
+class GetTestCase(TransactionTestCase):
 
     def setUp(self):
         user, client = _create_user_and_login()
@@ -196,7 +196,7 @@ class GetTestCase(TestCase):
             expect(obj[k]).to_equal(params[k])
 
 
-class CreateTestCase(TestCase):
+class CreateTestCase(TransactionTestCase):
 
     def setUp(self):
         user, client = _create_user_and_login()
@@ -280,7 +280,7 @@ class CreateTestCase(TestCase):
         expect(response.status_code).to_equal(201)
 
 
-class UpdateTestCase(TestCase):
+class UpdateTestCase(TransactionTestCase):
 
     def setUp(self):
         user, client = _create_user_and_login()
@@ -353,7 +353,7 @@ class UpdateTestCase(TestCase):
         expect(response.status_code).to_equal(201)
 
 
-class DeleteTestCase(TestCase):
+class DeleteTestCase(TransactionTestCase):
 
     def setUp(self):
         user, client = _create_user_and_login()

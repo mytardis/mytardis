@@ -203,6 +203,23 @@ class PubFormConfig():
                                             data_type=ParameterName.STRING,
                                             immutable=True)
 
+    def _setup_GENERIC_PUBLICATION_DATASET_SCHEMA(self, namespace):
+        schema, _ = Schema.objects.get_or_create(namespace=namespace,
+                                                 name='Dataset details',
+                                                 hidden=False,
+                                                 immutable=True)
+
+        ParameterName.objects.get_or_create(schema=schema,
+                                            name='dataset',
+                                            full_name='Dataset',
+                                            data_type=ParameterName.STRING,
+                                            immutable=True)
+        ParameterName.objects.get_or_create(schema=schema,
+                                            name='description',
+                                            full_name='Description',
+                                            data_type=ParameterName.STRING,
+                                            immutable=True)
+
     def do_setup(self, force=False):
         logger.info('Checking for required django settings.')
 
@@ -226,7 +243,9 @@ class PubFormConfig():
             ('PDB_CITATION_PUBLICATION_SCHEMA',
              'Citation data that is extracted from the PDB record'),
             ('MX_PUBLICATION_DATASET_SCHEMA',
-             'Macromolecular crystallography dataset publication schema')]
+             'Macromolecular crystallography dataset publication schema'),
+            ('GENERIC_PUBLICATION_DATASET_SCHEMA',
+             'Generic dataset publication schema')]
 
         recommended_settings = [('PUBLICATION_FORM_MAPPINGS', ''),
                                 ('PDB_REFRESH_INTERVAL', ''),

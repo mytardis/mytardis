@@ -1,4 +1,5 @@
-from datetime import timedelta
+# pylint: disable=wildcard-import
+from datetime import timedelta  # noqa # pylint: disable=W0614
 from os import path
 from tempfile import gettempdir
 
@@ -267,36 +268,48 @@ INSTALLED_APPS = (
     'djangosaml2',
 )
 
-# Here you can define any custom view overrides provided by apps.
-# Index page overrides are associated with a Django 'Site', specified
-# by SITE_ID (an integer) or the domain name of the incoming request.
-# Overriding index views are encouraged to subclass
-# tardis.tardis_portal.views.pages.IndexView. However, in order to reference
-# this class-based view from settings you need to create a wrapper function
-# which returns MySubclassedView.as_view() (since class-based views cannot
-# be referenced by module path strings like traditional view functions).
-# eg
-# def my_custom_index_wrapper(request, *args, **kwargs):
-#     from tardis.tardis_portal.views.pages import class_to_view
-#     return class_to_view(MySubclassedView, request, *args, **kwargs):
-#
-# Dataset and Experiment view overrides are mapped via a Schema
-# namespace.
-#
-# INDEX_VIEWS = {
-#     1: 'tardis.apps.my_custom_app.views.my_custom_index_wrapper',
-#     'store.example.com': 'tardis.apps.myapp.my_custom_index_wrapper'
-# }
-#
-# DATASET_VIEWS = [
-#     ('http://www.tardis.edu.au/schemas/dataset/my_example_schema',
-#      'tardis.apps.my_custom_app.views.dataset_view_wrapper_fn'),
-# ]
-#
-# EXPERIMENT_VIEWS = [
-#     ('http://www.tardis.edu.au/schemas/expt/my_example_schema',
-#      'tardis.apps.my_custom_app.views.expt_view_wrapper_fn'),
-# ]
+INDEX_VIEWS = {}
+'''
+A custom index page override is defined in as dictionary mapping a class-based
+view (or view function) to a Django ``Site``, specified by SITE_ID (an integer)
+or the domain name of the incoming request.
+See: https://mytardis.readthedocs.org/en/develop/contextual_views.html#custom-index-view
+
+eg:
+::
+        INDEX_VIEWS = {
+            1: 'tardis.apps.my_custom_app.views.MyCustomIndexSubclass',
+            'store.example.com': 'tardis.apps.myapp.AnotherCustomIndexSubclass'
+        }
+'''
+
+DATASET_VIEWS = []
+'''
+Dataset view overrides ('contextual views') are specified as tuples mapping
+a Schema namespace to a class-based view (or view function).
+See: https://mytardis.readthedocs.org/en/develop/contextual_views.html#dataset-and-experiment-views
+
+eg:
+::
+        DATASET_VIEWS = [
+            ('http://example.org/schemas/dataset/my_awesome_schema',
+             'tardis.apps.my_awesome_app.views.CustomDatasetViewSubclass'),
+        ]
+'''
+
+EXPERIMENT_VIEWS = []
+'''
+Experiment view overrides ('contextual views') are specified as tuples mapping
+a Schema namespace to a class-based view (or view function).
+See: https://mytardis.readthedocs.org/en/develop/contextual_views.html#dataset-and-experiment-views
+
+eg:
+::
+        EXPERIMENT_VIEWS = [
+            ('http://example.org/schemas/expt/my_awesome_schema',
+             'tardis.apps.my_awesome_app.views.CustomExptViewSubclass'),
+        ]
+'''
 
 JASMINE_TEST_DIRECTORY = path.abspath(path.join(path.dirname(__file__),
                                                 'tardis_portal',
@@ -335,6 +348,12 @@ AUTH_PROVIDERS = (
     ('cas', 'CAS Server',
      'django_cas_ng.backends.CASBackend'),
 )
+
+SFTP_USERNAME_ATTRIBUTE = 'email'
+'''
+The attribute from the User model ('email' or 'username') used to generate
+the SFTP login example on the sftp_access help page.
+'''
 
 # default authentication module for experiment ownership user during
 # ingestion? Must be one of the above authentication provider names
@@ -467,6 +486,9 @@ DOWNLOAD_ARCHIVE_SIZE_LIMIT = 0
 # Render image file size limit: zero means no limit
 RENDER_IMAGE_SIZE_LIMIT = 0
 
+# Max number of images in dataset view's carousel: zero means no limit
+MAX_IMAGES_IN_CAROUSEL = 100
+
 # temporary download file location
 DOWNLOAD_TEMP_DIR = gettempdir()
 
@@ -474,7 +496,9 @@ DOWNLOAD_TEMP_DIR = gettempdir()
 # file size + safety_margin must be less that available disk space ...)
 DOWNLOAD_SPACE_SAFETY_MARGIN = 8388608
 
-# Disable registration (copy to your settings.py first!)
+# Turn on/off the self-registration link and form
+REGISTRATION_OPEN = True
+# or disable registration app (copy to your settings.py first!)
 # INSTALLED_APPS = filter(lambda x: x != 'registration', INSTALLED_APPS)
 
 # Settings for the single search box
@@ -719,6 +743,28 @@ SFTP_HOST_KEY = (
 public, useless key, debugging use only
 '''
 
+<<<<<<< HEAD
+=======
+# Show the Rapid Connect login button.
+RAPID_CONNECT_ENABLED = False
+
+RAPID_CONNECT_CONFIG = {}
+
+RAPID_CONNECT_CONFIG['secret'] = 'CHANGE_ME'
+RAPID_CONNECT_CONFIG['authnrequest_url'] = ''
+'''something like
+'https://rapid.test.aaf.edu.au/jwt/authnrequest/research/XXXXXXXXXXXXXXXX'
+'''
+
+RAPID_CONNECT_CONFIG['iss'] = 'https://rapid.test.aaf.edu.au'
+''' 'https://rapid.test.aaf.edu.au' or 'https://rapid.aaf.edu.au'
+'''
+RAPID_CONNECT_CONFIG['aud'] = 'https://example.com/rc/'
+'''Public facing URL that accepts the HTTP/HTTPS POST request from
+Rapid Connect.
+'''
+
+>>>>>>> 7191d921ad9a3abf348b893da826dc226585a75c
 MANAGE_ACCOUNT_ENABLED = True
 
 # Example settings for the publication form workflow. Also requires the

@@ -190,6 +190,12 @@
     <input type="date" ng-model="formData.embargo"><a class="btn btn-primary btn-mini"
                                                       ng-click="setEmbargoToToday()">today</a>
   </div>
+  <div class="well">
+       <input type="checkbox" ng-model="formData.acknowledge" value="true">
+      I am authorised to publish the selected datasets with the license and
+      embargo period selected and have received the appropriate consent from
+      co-authors and other relevant parties.
+  </div>
 </script>
 <script type="text/ng-template" id="form_page5.html">
   <p><strong>Done!</strong> Your publication has been submitted and will be accessible

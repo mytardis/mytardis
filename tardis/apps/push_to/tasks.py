@@ -1,17 +1,15 @@
-from datetime import datetime
-
 from celery.task import task
-from django.contrib.auth.models import User
 from django.conf import settings
+from django.contrib.auth.models import User
 
 from tardis.tardis_portal.models import Experiment, Dataset, DataFile
-
+from tardis.tardis_portal.util import split_path
 from .models import Credential, RemoteHost
 
 
 @task
 def push_experiment_to_host(
-    user_id, credential_id, remote_host_id, experiment_id
+        user_id, credential_id, remote_host_id, experiment_id, base_dir=None
 ):
     try:
         files_to_copy = []
@@ -23,7 +21,7 @@ def push_experiment_to_host(
             for df in datafiles:
                 files_to_copy.append((path, df))
 
-        do_file_copy(credential_id, remote_host_id, files_to_copy)
+        do_file_copy(credential_id, remote_host_id, files_to_copy, base_dir)
         notify_user(user_id, remote_host_id, success=True)
     except:
         notify_user(user_id, remote_host_id, success=False)
@@ -31,7 +29,8 @@ def push_experiment_to_host(
 
 
 @task
-def push_dataset_to_host(user_id, credential_id, remote_host_id, dataset_id):
+def push_dataset_to_host(user_id, credential_id, remote_host_id, dataset_id,
+                         base_dir=None):
     try:
         files_to_copy = []
         datasets = Dataset.objects.filter(pk=dataset_id)
@@ -41,7 +40,7 @@ def push_dataset_to_host(user_id, credential_id, remote_host_id, dataset_id):
             for df in datafiles:
                 files_to_copy.append((path, df))
 
-        do_file_copy(credential_id, remote_host_id, files_to_copy)
+        do_file_copy(credential_id, remote_host_id, files_to_copy, base_dir)
         notify_user(user_id, remote_host_id, success=True)
     except:
         notify_user(user_id, remote_host_id, success=False)
@@ -49,10 +48,11 @@ def push_dataset_to_host(user_id, credential_id, remote_host_id, dataset_id):
 
 
 @task
-def push_datafile_to_host(user_id, credential_id, remote_host_id, datafile_id):
+def push_datafile_to_host(user_id, credential_id, remote_host_id, datafile_id,
+                          base_dir=None):
     try:
         file_to_copy = [([], DataFile.objects.get(pk=datafile_id))]
-        do_file_copy(credential_id, remote_host_id, file_to_copy)
+        do_file_copy(credential_id, remote_host_id, file_to_copy, base_dir)
         notify_user(user_id, remote_host_id, success=True)
     except:
         notify_user(user_id, remote_host_id, success=False)
@@ -73,14 +73,30 @@ def notify_user(user_id, remote_host_id, success=True):
                    'Contact your system administrator for more information.')
     message %= remote_host.nickname
     user.email_user(subject, message,
-                    from_email=getattr(settings, 'PUSH_TO_FROM_EMAIL', None))
+                    from_email=getattr(settings, 'PUSH_TO_FROM_EMAIL', None), fail_silently=True)
 
 
-def do_file_copy(credential_id, remote_host_id, datafile_map):
+def make_dirs(sftp_client, dir_list):
+    full_path = ''
+    for directory in dir_list:
+        if full_path:
+            full_path += directory + '/'
+        elif directory:
+            full_path = directory
+        else:
+            full_path = '/'
 
-    base_dir = [
-        'mytardis-data', datetime.now().strftime("%Y-%m-%d_%H:%M:%S.%f")
-    ]
+        try:
+            sftp_client.stat(full_path)
+        except IOError:  # Raised when the directory doesn't exist
+            sftp_client.mkdir(full_path)
+
+
+def do_file_copy(credential_id, remote_host_id, datafile_map, base_dir=None):
+    if base_dir is None:
+        base_dir = ['mytardis-data']
+    elif isinstance(base_dir, basestring):
+        base_dir = split_path(base_dir) + ['mytardis-data']
 
     credential = Credential.objects.get(pk=credential_id)
     ssh = credential.get_client_for_host(
@@ -88,24 +104,28 @@ def do_file_copy(credential_id, remote_host_id, datafile_map):
             pk=remote_host_id))
     sftp_client = ssh.open_sftp()
 
-    def make_dirs(dir_list):
-        full_path = ''
-        for directory in dir_list:
-            if full_path:
-                full_path += '/' + directory
+    def unique_base_path(base, increment=0):
+        base_copy = list(base)
+        try:
+            if increment > 0:
+                suffix = "_%i" % increment
             else:
-                full_path = directory
-            try:
-                sftp_client.stat(full_path)
-            except IOError:  # Raised when the directory doesn't exist
-                sftp_client.mkdir(full_path)
+                suffix = ""
+            base_copy[-1] += suffix
+            sftp_client.stat('/'.join(base_copy))
+            return unique_base_path(base, increment+1)
+        except IOError:
+            return base_copy
 
-    make_dirs(base_dir)
+    base_dir = unique_base_path(base_dir)
 
-    for (path, datafile) in datafile_map:
+    make_dirs(sftp_client, base_dir)
+
+    for (_path, datafile) in datafile_map:
+        path = list(_path)
         if datafile.directory is not None:
             path += datafile.directory.split('/')
         path = base_dir + path
         path_str = '/'.join(path + [datafile.filename])
-        make_dirs(path)
+        make_dirs(sftp_client, path)
         sftp_client.putfo(datafile.file_object, path_str, datafile.size)

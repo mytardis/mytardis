@@ -12,6 +12,7 @@ class Instrument(models.Model):
     class Meta:
         app_label = 'tardis_portal'
         verbose_name_plural = 'Instruments'
+        unique_together = ['name', 'facility']
 
     def __unicode__(self):
         return self.name
@@ -27,3 +28,10 @@ class Instrument(models.Model):
                 schema__type=Schema.INSTRUMENT)
         else:
             raise Schema.UnsupportedType
+
+    def _has_change_perm(self, user_obj):
+        """
+        Instrument objects should only be modified by members of the facility
+        managers group.
+        """
+        return self.facility.manager_group in user_obj.groups.all()

@@ -14,6 +14,7 @@
   <div class="span12">
   	<form enctype="multipart/form-data" action="" method="post"
           class="form-horizontal">
+      {% csrf_token %}
       {% load bootstrap %}
       <fieldset>
   		  {{ form|bootstrap }}
