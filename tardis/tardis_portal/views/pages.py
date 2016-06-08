@@ -111,26 +111,27 @@ def use_multimodal_login(fn):
         c['CAS_ENABLED'] = getattr(settings,'CAS_ENABLED', False)
         c['LOCALDB_ENABLED'] = getattr(settings,'LOCALDB_ENABLED', False)
         c['RAPID_CONNECT_ENABLED'] = getattr(settings,
-                                             'RAPID_CONNECT_ENABLED', False)
+                                               'RAPID_CONNECT_ENABLED', False)
         c['SAML2_ENABLED'] = getattr(settings,'SAML2_ENABLED', False)
         
         if c['LOCALDB_ENABLED']:
-            c['LOCALDB_DISPLAY'] = getattr(settings,'LOCALDB_DISPLAY','Local')
+            c['LOCAL_LOGIN_DISPLAY'] = getattr(settings,
+                                               'LOCAL_LOGIN_DISPLAY',' Local')
         
         if c['RAPID_CONNECT_ENABLED']:
-            c['RAPID_CONNECT_LOGIN_URL'] = getattr(
-                    settings.RAPID_CONNECT_CONFIG,
-                    'authnrequest_url')
-            c['RAPID_CONNECT_DISPLAY'] = getattr(
-                    settings.RAPID_CONNECT_DISPLAY, 'AAF')
+            c['RAPID_CONNECT_LOGIN_URL'] = settings.RAPID_CONNECT_CONFIG[
+                                                           'authnrequest_url']
+            c['RAPID_CONNECT_DISPLAY'] = getattr(settings, 
+                                               'RAPID_CONNECT_DISPLAY', 'AAF')
              
         if c['CAS_ENABLED']:
-            c['CAS_SERVER_URL'] = getattr(settings.CAS_SERVER_URL, '')
-            c['CAS_SERVICE_URL'] = getattr(settings.CAS_SERVICE_URL, '')
-            c['CAS_DISPLAY'] = getattr(settings.CAS_DISPLAY, 'CAS')
+            c['CAS_DISPLAY'] = getattr(settings, 'CAS_DISPLAY', 'CAS')
+            c['CAS_SERVER_URL'] = getattr(settings, 'CAS_SERVER_URL', '')
+            c['CAS_SERVICE_URL'] = getattr(settings, 'CAS_SERVICE_URL', '')
             
         if c['SAML2_ENABLED']:
-            c['SAML2_DISPLAY'] = getattr(settings.SAML2_DISPLAY, 'SAML2')
+            c['SAML2_DISPLAY'] = getattr(settings, 'SAML2_DISPLAY', 'SAML2')
+            c['SAML2_LOGIN_URL'] = getattr(settings, 'SAML2_LOGIN_URL', '')
             
         return c
 

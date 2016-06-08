@@ -386,7 +386,7 @@ SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 
 # local db login settings
 LOCALDB_ENABLED = True
-LOCALDB_DISPLAY = "Local"
+LOCAL_LOGIN_DISPLAY = "Local"
 
 # SAML2 settings
 SAML2_ENABLED = False
