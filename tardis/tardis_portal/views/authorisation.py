@@ -186,8 +186,9 @@ def retrieve_access_list_external(request, experiment_id):
 def retrieve_access_list_tokens(request, experiment_id):
     tokens = Token.objects.filter(experiment=experiment_id)
 
-    def token_url(token):
-        url = request.META['HTTP_REFERER']
+    def token_url(url, token):
+        if not url:
+            return ''
         u = urlparse(url)
         query = parse_qs(u.query)
         query.pop('token', None)
@@ -195,15 +196,29 @@ def retrieve_access_list_tokens(request, experiment_id):
         u = u._replace(query=urlencode(query, True))
         return u.geturl()
         # return '%s?token=%s' % (request.META['HTTP_REFERER'], token.token)
+
+    page_url = request.META['HTTP_REFERER']
+    download_urls = Experiment.objects.get(id=experiment_id).get_download_urls()
+
     tokens = [{'expiry_date': token.expiry_date,
                'user': token.user,
-               'url': request.build_absolute_uri(token_url(token)),
+               'url': request.build_absolute_uri(token_url(page_url, token)),
+               'download_url': request.build_absolute_uri(
+                   token_url(download_urls.get('tar', None), token)),
                'id': token.id,
                'experiment_id': experiment_id,
                'is_owner': request.user.has_perm('tardis_acls.owns_experiment',
                                                  token.experiment),
                } for token in tokens]
-    c = {'tokens': tokens}
+
+    has_archive_download_url = False
+    for t in tokens:
+        if t.get('download_url', False):
+            has_archive_download_url = True
+
+    c = {'tokens': tokens,
+         'has_archive_download_url': has_archive_download_url}
+
     return HttpResponse(render_response_index(
         request, 'tardis_portal/ajax/access_list_tokens.html', c))
 
