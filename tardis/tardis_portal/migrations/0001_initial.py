@@ -4,7 +4,6 @@ from __future__ import unicode_literals
 from django.db import models, migrations
 from django.conf import settings
 import tardis.tardis_portal.models.parameters
-import tardis.tardis_portal.models.fields
 import tardis.tardis_portal.models.token
 
 
@@ -22,7 +21,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('filename', models.CharField(max_length=400)),
-                ('directory', tardis.tardis_portal.models.fields.DirectoryField(null=True, blank=True)),
+                ('directory', models.TextField(null=True, blank=True)),
                 ('size', models.CharField(max_length=400, blank=True)),
                 ('created_time', models.DateTimeField(null=True, blank=True)),
                 ('modification_time', models.DateTimeField(null=True, blank=True)),
@@ -80,7 +79,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('description', models.TextField(blank=True)),
-                ('directory', tardis.tardis_portal.models.fields.DirectoryField(null=True, blank=True)),
+                ('directory', models.TextField(null=True, blank=True)),
                 ('immutable', models.BooleanField(default=False)),
             ],
             options={
