@@ -386,14 +386,14 @@ SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 
 # local db login settings
 LOCALDB_ENABLED = True
-LOCAL_LOGIN_DISPLAY = "Local"
+LOCALDB_DISPLAY = "Local"
 
 # SAML2 settings
 SAML2_ENABLED = False
 SAML2_DISPLAY = "SAML2"
 SAML2_LOGIN_URL = '/saml2/login/'
 SAML2_CONFIG = {}
-SAML2_CONFIG[''] = ''
+#SAML2_CONFIG[''] = ''
 
 # CAS Server default settings
 ''' CAS SERVER configuration parameters...
