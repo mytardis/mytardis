@@ -32,6 +32,7 @@ def get_local_time(dt):
 
     return result
 
+
 def get_utc_time(dt):
     '''
     Ensure datetime is timezone-aware and in UTC time.

@@ -1,18 +1,14 @@
 import json
-import re
 
-from bs4 import BeautifulSoup
-from compare import expect, ensure, matcher
+from compare import expect
 
-from django.test import TestCase, TransactionTestCase
+from django.test import TransactionTestCase
 from django.test.client import Client
 from django.core.urlresolvers import reverse
 
 from lxml import etree
 
-from tardis.tardis_portal.models import \
-    Experiment, License, ObjectACL, User, UserProfile
-from tardis.tardis_portal.ParameterSetManager import ParameterSetManager
+from tardis.tardis_portal.models import Experiment, License, ObjectACL, User
 
 
 def _create_user_and_login(username='testuser', password='testpass'):
@@ -21,7 +17,8 @@ def _create_user_and_login(username='testuser', password='testpass'):
 
     client = Client()
     client.login(username=username, password=password)
-    return (user, client)
+    return user, client
+
 
 class RifCSTestCase(TransactionTestCase):
 
@@ -30,8 +27,10 @@ class RifCSTestCase(TransactionTestCase):
                    'o': 'http://www.openarchives.org/OAI/2.0/'}
         user, client = _create_user_and_login()
 
-        license_ = License(name='Creative Commons Attribution-NoDerivs 2.5 Australia',
-                           url='http://creativecommons.org/licenses/by-nd/2.5/au/',
+        license_ = License(name='Creative Commons Attribution-NoDerivs '
+                                '2.5 Australia',
+                           url='http://creativecommons.org/licenses/by-nd/'
+                               '2.5/au/',
                            internal_description='CC BY 2.5 AU',
                            allows_distribution=True)
         license_.save()
@@ -56,8 +55,8 @@ class RifCSTestCase(TransactionTestCase):
                   'title': 'Google',
                   'notes': 'This is a note.'}
         response = client.post(\
-                    reverse('tardis.apps.related_info.views.'\
-                            +'list_or_create_related_info',
+                    reverse('tardis.apps.related_info.views.' +
+                            'list_or_create_related_info',
                             args=[experiment.id]),
                     data=json.dumps(params),
                     content_type='application/json')
@@ -77,8 +76,8 @@ class RifCSTestCase(TransactionTestCase):
             'identifier': 'experiment/%d' % self.experiment.id
         }
         response = self.client.get('/apps/oaipmh/?%s' %
-                                        '&'.join(['%s=%s' % (k,v)
-                                                  for k,v in args.items()]))
+                                   '&'.join(['%s=%s' % (k, v)
+                                             for k, v in args.items()]))
         self.assertEqual(response.status_code, 200)
         # Check the response content is good
         xml = etree.fromstring(response.content)
@@ -93,7 +92,7 @@ class RifCSTestCase(TransactionTestCase):
             .to_equal('experiment/%d' % exp_id)
         # <registryObject group="MyTARDIS Default Group">
         registryObject = metadata.xpath('r:registryObjects/r:registryObject',
-                                           namespaces=ns)[0]
+                                        namespaces=ns)[0]
         # <collection type="dataset">
         expect(registryObject.xpath('r:collection/@type',
                                     namespaces=ns)[0]).to_equal('dataset')
