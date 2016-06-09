@@ -115,8 +115,8 @@ def use_multimodal_login(fn):
         c['SAML2_ENABLED'] = getattr(settings,'SAML2_ENABLED', False)
         
         if c['LOCALDB_ENABLED']:
-            c['LOCAL_LOGIN_DISPLAY'] = getattr(settings,
-                                               'LOCAL_LOGIN_DISPLAY',' Local')
+            c['LOCALDB_DISPLAY'] = getattr(settings,
+                                               'LOCALDB_DISPLAY',' Local')
         
         if c['RAPID_CONNECT_ENABLED']:
             c['RAPID_CONNECT_LOGIN_URL'] = settings.RAPID_CONNECT_CONFIG[
@@ -131,7 +131,8 @@ def use_multimodal_login(fn):
             
         if c['SAML2_ENABLED']:
             c['SAML2_DISPLAY'] = getattr(settings, 'SAML2_DISPLAY', 'SAML2')
-            c['SAML2_LOGIN_URL'] = getattr(settings, 'SAML2_LOGIN_URL', '')
+            c['SAML2_LOGIN_URL'] = getattr(settings, 'SAML2_LOGIN_URL', 
+                                           '/saml2/login')
             
         return c
 
