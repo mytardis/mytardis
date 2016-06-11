@@ -2,7 +2,7 @@
 
 
 <div class="pull-right">
-    {% if has_write_permissions and not experiment.locked %}
+    {% if has_write_permissions and not experiment.locked and not experiment.is_publication %}
         <a title="Add" class="add-metadata btn btn-mini"
            href="{% url 'tardis.tardis_portal.views.add_experiment_par' experiment.id %}">
           <i class="icon-plus"></i>
