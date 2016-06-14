@@ -1,3 +1,5 @@
+import os
+
 
 class PublishService():
 
@@ -51,6 +53,7 @@ class PublishService():
     def _write_rifcs_to_oai_dir(self, oaipath):
         from tardis.tardis_portal.xmlwriter import XMLWriter
         xmlwriter = XMLWriter()
+        os.path.isdir(oaipath) or os.makedirs(oaipath)
         xmlwriter.write_template_to_dir(oaipath, "MyTARDIS-%s.xml" % self.experiment.id,
                                         self.get_template(), self.get_context())
 
