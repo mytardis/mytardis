@@ -4,12 +4,12 @@ services:
     build:
       context: .
       dockerfile: Dockerfile-run
-    image: mytardis-run
+    image: mytardis/mytardis-run
   test:
     build:
       context: .
       dockerfile: Dockerfile-test
-    image: mytardis-test
+    image: mytardis/mytardis-test
     volumes:
       - ./tardis:/home/webapp/tardis
       - ./docs:/home/webapp/docs

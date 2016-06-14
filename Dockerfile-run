@@ -1,4 +1,4 @@
-FROM mytardis-base
+FROM mytardis/mytardis-base
 
 # prebuilt wheels from django-build.yml
 ADD wheelhouse /wheelhouse

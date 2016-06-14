@@ -4,7 +4,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile-base
-    image: mytardis-base
+    image: mytardis/mytardis-base
   builder:
     build:
       context: .
