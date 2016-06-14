@@ -7,7 +7,7 @@ Tardis comes with a single search option which provides users with a
 search field that returns a list of matching Experiments, Datasets and
 Datafiles.
 
-The single search box uses Elasticsearc, with a django-haystack frontent, and
+The single search box uses Elasticsearch, with a django-haystack frontend, and
 accordingly requires some setup.
 The single search box is disabled by default.
 
@@ -55,7 +55,7 @@ The default value is
 HAYSTACK_SIGNAL_PROCESSOR
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-This setting determins when the information in Elasticsearch is updated.
+This setting determines when the information in Elasticsearch is updated.
 The default value updates it in real time with db changes
 
 .. code-block:: python
@@ -83,7 +83,7 @@ to manually trigger a rebuild of the indexes (automatic indexing only happens
 through signals when models are added or changed).
 
 Haystack registers a number of management commands with the Django framework,
-the import one here being the rebuild_index command. To rebuild, navigate to
+the important one here being the *rebuild_index* command. To rebuild, navigate to
 your checkout and call the following command ::
 
     python mytardis.py rebuild_index
