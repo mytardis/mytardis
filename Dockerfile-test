@@ -1,5 +1,6 @@
 FROM mytardis-base
 
+# prebuilt wheels from django-build.yml
 ADD wheelhouse /wheelhouse
 RUN chown -R webapp:webapp /wheelhouse
 
@@ -15,6 +16,8 @@ RUN . /appenv/bin/activate; \
     pip install --no-index -f /wheelhouse -r requirements.txt
 RUN . /appenv/bin/activate; \
     pip install --no-index -f /wheelhouse psycopg2 mysql-python
+RUN . /appenv/bin/activate; \
+    pip install coveralls codacy-coverage
 VOLUME /home/webapp/tardis
 VOLUME /home/webapp/docs
 
