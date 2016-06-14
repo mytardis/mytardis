@@ -8,8 +8,6 @@ from django.db import models
 from django.db.utils import DatabaseError
 import django.core.files.storage as django_storage
 
-#from celery.contrib.methods import task
-
 
 logger = logging.getLogger(__name__)
 
@@ -24,11 +22,20 @@ class StorageBox(models.Model):
 
     django_storage_class = models.TextField(
         default=getattr(settings, 'DEFAULT_FILE_STORAGE',
-                        'django.core.files.storage.FileSystemStorage'))
-    max_size = models.BigIntegerField()  # Bytes
-    status = models.CharField(max_length=100)
-    name = models.TextField(default='default', unique=True)
-    description = models.TextField(default='Default Storage')
+                        'django.core.files.storage.FileSystemStorage'),
+        help_text='''
+        Django storage backend. See https://docs.djangoproject.com/en/dev/ref/files/storage/''')
+    name = models.TextField(default='default',
+                            unique=True,
+                            help_text="Unique label for this storage")
+    max_size = models.BigIntegerField(default=0, blank=True, help_text="Max size in Bytes")
+    description = models.TextField(default='',
+                                   blank=True,
+                                   help_text="Optional human readable description for this storage")
+    status = models.CharField(default='',
+                              max_length=100,
+                              blank=True,
+                              help_text="Optional advisory status label for this storage")
     master_box = models.ForeignKey('self', null=True, blank=True,
                                    related_name='child_boxes')
 
