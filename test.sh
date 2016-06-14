@@ -17,9 +17,13 @@ function run_test {
 	if [ -n "$PULL_REQUEST_NUMBER" ]; then
 	    export TRAVIS_PULL_REQUEST=$PULL_REQUEST_NUMBER;
 	else export TRAVIS_PULL_REQUEST='false'; fi
-	coveralls
-	coverage xml
-	python-codacy-coverage -r coverage.xml
+	if [ -v COVERALLS_REPO_TOKEN ]; then
+	    coveralls
+	fi
+	if [ -v CODACY_PROJECT_TOKEN ]; then
+	    coverage xml
+	    python-codacy-coverage -r coverage.xml
+	fi
     fi
     return $result
 }
