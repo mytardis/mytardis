@@ -1,14 +1,20 @@
 version: "2"
 services:
+  run:
+    build:
+      context: .
+      dockerfile: Dockerfile-run
+    image: mytardis-run
   test:
     build:
       context: .
       dockerfile: Dockerfile-test
+    image: mytardis-test
     volumes:
-      - ./wheelhouse:/wheelhouse
       - ./tardis:/home/webapp/tardis
       - ./docs:/home/webapp/docs
     depends_on:
+      - run
       - pg
       - mysql
     links:
