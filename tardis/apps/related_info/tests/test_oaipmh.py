@@ -4,7 +4,7 @@ import re
 from bs4 import BeautifulSoup
 from compare import expect, ensure, matcher
 
-from django.test import TestCase
+from django.test import TestCase, TransactionTestCase
 from django.test.client import Client
 from django.core.urlresolvers import reverse
 
@@ -23,7 +23,7 @@ def _create_user_and_login(username='testuser', password='testpass'):
     client.login(username=username, password=password)
     return (user, client)
 
-class RifCSTestCase(TestCase):
+class RifCSTestCase(TransactionTestCase):
 
     def setUp(self):
         self.ns = {'r': 'http://ands.org.au/standards/rif-cs/registryObjects',

@@ -1,7 +1,7 @@
 from os import path
 from compare import expect
 
-from django.test import TestCase
+from django.test import TestCase, TransactionTestCase
 
 from tardis.tardis_portal.filters.jeolsem import JEOLSEMFilter
 from tardis.tardis_portal.models import User, UserProfile, \
@@ -11,7 +11,7 @@ from tardis.tardis_portal.ParameterSetManager import ParameterSetManager
 from tardis.tardis_portal.tests.test_download import get_size_and_sha512sum
 
 
-class JEOLSEMFilterTestCase(TestCase):
+class JEOLSEMFilterTestCase(TransactionTestCase):
 
     def setUp(self):
         # Create test owner without enough details
