@@ -2,14 +2,10 @@ FROM mytardis/mytardis-base
 
 # prebuilt wheels from django-build.yml
 ADD wheelhouse /wheelhouse
-RUN chown -R webapp:webapp /wheelhouse
-
-WORKDIR /home/webapp
 
 USER webapp
-ENV WHEELHOUSE=/wheelhouse
-ENV PIP_WHEEL_DIR=/wheelhouse
-ENV PIP_FIND_LINKS=/wheelhouse
+
+WORKDIR /home/webapp
 
 ENV DOCKER_BUILD true
 RUN . /appenv/bin/activate; \

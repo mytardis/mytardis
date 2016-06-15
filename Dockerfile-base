@@ -34,15 +34,15 @@ RUN apt-get update && apt-get install \
     python-virtualenv \
     python-wand \
     python-yaml \
-    zlib1g
+    zlib1g \
+    && apt-get clean
 
-RUN virtualenv --system-site-packages /appenv
+RUN mkdir /appenv
 RUN chown -R webapp:webapp /appenv
 
-COPY . /home/webapp/
 RUN chown -R webapp:webapp /home/webapp
-
 USER webapp
-WORKDIR /home/webapp
+RUN virtualenv --system-site-packages /appenv
 RUN . /appenv/bin/activate; pip install -U -e "git+https://github.com/pypa/pip.git#egg=pip" wheel
+COPY . /home/webapp/
 USER root
