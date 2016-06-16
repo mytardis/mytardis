@@ -102,7 +102,7 @@ def rcauth(request):
                 'first_name': first_name,
                 'last_name': request.session['attributes']['surname'],
             }
-            
+
             # if a principal domain is set 
             # strip domain from edupersonprincipalname
             # and use remainder as user id    
@@ -286,6 +286,7 @@ def login(request):
         next_page = '/'
     c = {'loginForm': LoginForm(),
          'next_page': next_page}
+
     c['DEFAULT_LOGIN'] = settings.DEFAULT_LOGIN
     c['CAS_ENABLED'] = settings.CAS_ENABLED
     c['RAPID_CONNECT_ENABLED'] = settings.RAPID_CONNECT_ENABLED

@@ -122,7 +122,7 @@ def use_multimodal_login(fn):
             c['RAPID_CONNECT_LOGIN_URL'] = settings.RAPID_CONNECT_CONFIG[
                                                            'authnrequest_url']
             c['RAPID_CONNECT_DISPLAY'] = getattr(settings, 
-                                               'RAPID_CONNECT_DISPLAY', 'AAF')
+                                             'RAPID_CONNECT_DISPLAY', 'AAF')
              
         if c['CAS_ENABLED']:
             c['CAS_DISPLAY'] = getattr(settings, 'CAS_DISPLAY', 'CAS')
@@ -137,6 +137,7 @@ def use_multimodal_login(fn):
         return c
 
     return add_multimodal_login_settings
+
 
 class IndexView(TemplateView):
     template_name = 'tardis_portal/index.html'

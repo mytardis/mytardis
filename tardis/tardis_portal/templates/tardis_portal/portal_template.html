@@ -209,7 +209,7 @@
               <!-- ==================== -->
               <!--   Optional  Logins   -->
               <!-- ==================== -->
-              {% if RAPID_CONNECT_ENABLED or CAS_ENABLED %}
+              {% if RAPID_CONNECT_ENABLED or CAS_ENABLED or SAML2_ENABLED %}
               <li id="login-menu" class="dropdown">
                 <a class="dropdown-toggle" data-toggle="dropdown" 
 					href="#login-menu">
@@ -260,7 +260,7 @@
                   		{{ LOCALDB_DISPLAY }}
                 	</a>
                   </li>
-                  {% endif %}	
+                  {% endif %}
                 </ul>
               </li>
               <!-- ==================== -->
