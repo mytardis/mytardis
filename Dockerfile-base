@@ -1,0 +1,48 @@
+FROM ubuntu:14.04
+
+RUN mkdir -p /home/webapp
+RUN groupadd -r webapp && useradd -r -g webapp webapp
+
+ENV DEBIAN_FRONTEND noninteractive
+RUN echo 'APT::Get::Assume-Yes "true";' > /etc/apt/apt.conf.d/90assumeyes
+
+RUN apt-get update && apt-get install \
+    -qy \
+    -o APT::Install-Recommends=false \
+    -o APT::Install-Suggests=false \
+    git \
+    libfreetype6 \
+    libjpeg8 \
+    libldap-2.4-2 \
+    libmysqlclient18 \
+    libpq5 \
+    libsasl2-2 \
+    libssl1.0.0 \
+    libxml2 \
+    libxslt1.1 \
+    python-anyjson \
+    python-billiard \
+    python-bs4 \
+    python-crypto \
+    python-dateutil \
+    python-feedparser \
+    python-flexmock \
+    python-html5lib \
+    python-httplib2 \
+    python-pip \
+    python-pystache \
+    python-virtualenv \
+    python-wand \
+    python-yaml \
+    zlib1g \
+    && apt-get clean
+
+RUN mkdir /appenv
+RUN chown -R webapp:webapp /appenv
+
+RUN chown -R webapp:webapp /home/webapp
+USER webapp
+RUN virtualenv --system-site-packages /appenv
+RUN . /appenv/bin/activate; pip install -U -e "git+https://github.com/pypa/pip.git#egg=pip" wheel
+COPY . /home/webapp/
+USER root

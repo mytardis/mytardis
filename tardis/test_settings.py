@@ -103,7 +103,7 @@ SYSTEM_LOG_FILENAME = 'request-test.log'
 MODULE_LOG_FILENAME = 'tardis-test.log'
 
 # RIF-CS Settings
-OAI_DOCS_PATH = 'tardis/tardis_portal/tests/rifcs/'
+OAI_DOCS_PATH = '/tmp/mytardis/rifcs'
 RIFCS_TEMPLATE_DIR = 'tardis/tardis_portal/tests/rifcs/'
 RIFCS_GROUP = 'MyTardis Test Group'
 RIFCS_KEY = "keydomain.test.example"
