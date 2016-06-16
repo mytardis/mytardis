@@ -251,6 +251,7 @@ def login(request):
         return HttpResponseRedirect(request.POST.get('next_page', '/'))
 
     # TODO: put me in SETTINGS
+
     if 'username' in request.POST and \
             'password' in request.POST:
         authMethod = request.POST.get('authMethod', None)

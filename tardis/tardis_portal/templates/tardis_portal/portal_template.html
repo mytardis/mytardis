@@ -166,7 +166,7 @@
                   {% endif %}
                   <li class="divider"></li>
                   {% endif %}
-                  <li> 
+                  <li>
                     <a href="{% url 'django.contrib.auth.views.logout' %}">
                       <i class="icon-signout"></i>
                       Log Out
@@ -175,9 +175,9 @@
                 </ul>
               </li>
             {% else %}
-              <!-- -------------------- -->
+              <!-- ==================== -->
               <!-- Registration Button  -->
-              <!-- -------------------- -->
+              <!-- ==================== -->
               {% if registration_enabled %}
               <li>
                 <a href="{% url 'register' %}">
@@ -185,9 +185,9 @@
                 </a>
               </li>
               {% endif %}
-              <!-- -------------------- -->
+              <!-- ==================== -->
               <!-- Default Login Button -->
-              <!-- -------------------- -->
+              <!-- ==================== -->
               <li>
                   <a id="login-button" 
                   		class="btn btn-info"
@@ -206,9 +206,9 @@
                   	Log In
                 </a>
               </li>
-              <!-- -------------------- -->
-              <!-- Optional Logins -->
-              <!-- -------------------- -->
+              <!-- ==================== -->
+              <!--   Optional  Logins   -->
+              <!-- ==================== -->
               {% if RAPID_CONNECT_ENABLED or CAS_ENABLED %}
               <li id="login-menu" class="dropdown">
                 <a class="dropdown-toggle" data-toggle="dropdown" 
@@ -263,7 +263,7 @@
                   {% endif %}	
                 </ul>
               </li>
-              <!-- -------------------- -->
+              <!-- ==================== -->
               {% endif %}
             {% endif %}
             </ul>

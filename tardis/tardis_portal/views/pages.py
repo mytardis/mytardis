@@ -96,7 +96,7 @@ def use_multimodal_login(fn):
     """
     A decorator that adds appropriate settings to the get_context_data 
     method.
-    
+
     :param fn: A get_context_data function/method.
     :type fn: types.FunctionType
     :return: A get_context_data function that adds CAS*, SAML2, and LOGIN keys 
