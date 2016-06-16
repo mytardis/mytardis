@@ -2,7 +2,6 @@
 from __future__ import unicode_literals
 
 from django.db import migrations, models
-import tardis.tardis_portal.models.fields
 
 
 class Migration(migrations.Migration):
@@ -15,12 +14,12 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='datafile',
             name='directory',
-            field=tardis.tardis_portal.models.fields.DirectoryField(max_length=255, null=True, blank=True),
+            field=models.CharField(max_length=255, null=True, blank=True),
         ),
         migrations.AlterField(
             model_name='dataset',
             name='directory',
-            field=tardis.tardis_portal.models.fields.DirectoryField(max_length=255, null=True, blank=True),
+            field=models.CharField(max_length=255, null=True, blank=True),
         ),
         migrations.AlterField(
             model_name='experimentauthor',

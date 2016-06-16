@@ -22,7 +22,7 @@
 </h3>
 {% if has_download_permissions or has_write_permissions %}
 
-  {% if has_write_permissions %}
+  {% if has_write_permissions and not experiment.is_publication %}
   <a class="add-dataset btn btn-mini pull-right"
      href="{% url 'tardis.tardis_portal.views.add_dataset' experiment.id %}">
     <i class="icon-plus"></i>

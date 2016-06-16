@@ -11,51 +11,50 @@ Sets*, which are defined by a *Schema*.
 Managing Schema
 ---------------
 
-MyTardis administration, including Schema management, is based on the in-build
-Django administrative interface.  The administrative interface is accesible
-from a link similar to::
+Schema are managed through the Django administrative interface. 
+The administrative interface is normally accesible from a link similar to::
 
-   http://localhost:8000/admin/
-
-Schema definitions are the combination of two tables, Schema and
-ParameterName.
+   http://domain.com:8000/admin/
 
 Selecting "Schemas" in the adminstrative interface will display a list of the
-installed schemas, clicking on a schema displays the editor for that schema.
+installed schemas. Clicking on a schema displays the editor for that schema.
 
-The Schema fields are:
+Schema definitions are the combination of two tables, *Schema* and
+*ParameterName*.
+
+The *Schema* fields are:
 
 Namespace
    The namespace uniquely identifies the schema.  When exporting an
    experiment as a METS file the namespace is used as an XML Namespace, and
    thus must follow the XML standard, i.e. in the form of a URL.
 
-   The MyTardis naming convention is:
+   The MyTardis naming convention is::
 
-   http://domain.com/localidentifiers/schemaname/version
+      http://domain.com/localidentifiers/schemaname/version
 
 Name
    The display name of the schema.
 
 Type
-   Experiment, Dataset or Datafile
+   Experiment, Dataset or Datafile.
 
 Subtype
-   Used to group and identify schema for forms based searching
+   Used to group and identify schema for forms based searching.
 
-The ParameterName fields are:
+The *ParameterName* fields are:
 
 Schema
    The namespace of the schema which this parameter belongs to.
 
 Name
-   The identifier used to ingest parameters
+   The identifier used to ingest parameters.
 
 Full Name
-   The display name of the parameter
+   The display name of the parameter.
 
 Units
-   The display name of the units for numerical values
+   The display name of the units for numerical values.
 
 Data Type
    One of:

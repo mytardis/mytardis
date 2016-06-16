@@ -1,10 +1,10 @@
 from os import path
 from compare import expect
 
-from django.test import TestCase, TransactionTestCase
+from django.test import TransactionTestCase
 
 from tardis.tardis_portal.filters.jeolsem import JEOLSEMFilter
-from tardis.tardis_portal.models import User, UserProfile, \
+from tardis.tardis_portal.models import User, \
     ObjectACL, Experiment, Dataset, DataFile, DataFileObject, StorageBox
 from tardis.tardis_portal.ParameterSetManager import ParameterSetManager
 
