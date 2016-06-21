@@ -157,6 +157,8 @@ TEMPLATES = [
                 '.registration_processor',
                 'tardis.tardis_portal.context_processors'
                 '.user_details_processor',
+                'tardis.tardis_portal.context_processors'
+                '.manage_account_processor',
             ],
             'loaders': [
                 'django.template.loaders.app_directories.Loader',
