@@ -438,7 +438,7 @@ def streaming_download_experiment(request, experiment_id, comptype='tgz',
 def streaming_download_dataset(request, dataset_id, comptype='tgz',
                                organization=DEFAULT_ORGANIZATION):
     dataset = Dataset.objects.get(id=dataset_id)
-    rootdir = dataset.description.replace(' ', '_')
+    rootdir = urllib.quote(dataset.description.replace(' ', '_'), safe='')
     filename = '%s-complete.tar' % rootdir
 
     datafiles = DataFile.objects.filter(dataset=dataset)

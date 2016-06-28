@@ -7,6 +7,7 @@ from tempfile import NamedTemporaryFile
 
 from os import path
 import mimetypes
+from urllib import quote
 
 from django.conf import settings
 from django.core.files import File
@@ -514,11 +515,11 @@ class DataFileObject(models.Model):
         '''
 
         def default_identifier(dfo):
-            path_parts = ["%s-%s" % (dfo.datafile.dataset.description
-                                     or 'untitled',
-                                     dfo.datafile.dataset.id)]
+            path_parts = ["%s-%s" % (
+                quote(dfo.datafile.dataset.description, safe='') or 'untitled',
+                dfo.datafile.dataset.id)]
             if dfo.datafile.directory is not None:
-                path_parts += [dfo.datafile.directory]
+                path_parts += [quote(dfo.datafile.directory)]
             path_parts += [dfo.datafile.filename.strip()]
             uri = path.join(*path_parts)
             return uri
