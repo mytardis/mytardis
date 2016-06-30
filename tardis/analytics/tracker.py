@@ -10,3 +10,4 @@ service = ga
 
 track_login = service.track_login
 track_logout = service.track_logout
+track_download = service.track_download

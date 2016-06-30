@@ -75,3 +75,31 @@ def track_logout(label, session_id, ip, user):
         'el': label,
     },
         uid=user.id)
+
+
+def track_download(label, session_id, ip, user,
+                   total_size=None, num_files=None,
+                   ua=None):
+    payload = {
+        't': 'event',
+        'cid': session_id,
+        'uip': ip,
+        'ec': 'transfer',
+        'ea': 'download',
+        'el': label,
+    }
+    if total_size is not None:
+        payload.update({
+            'ev': total_size,
+        })
+    if num_files is not None:
+        payload.update({
+            'cd1': 'num_files',
+            'cm1': num_files,
+        })
+    if ua is not None:
+        payload.update({
+            'ua': ua,
+        })
+    _track_event(payload,
+                 uid=user.id)

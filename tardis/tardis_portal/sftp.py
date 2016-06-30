@@ -256,6 +256,9 @@ class MyTSFTPServerInterface(SFTPServerInterface):
         @rtype L{SFTPHandle}
         """
         leaf = self.tree.get_leaf(path)
+        tracker.track_download(
+            'sftp', session_id=self.uuid, ip=self.client_ip, user=self.user,
+            total_size=leaf.obj.size, num_files=1)
         return MyTSFTPHandle(leaf.obj, flags, attr)
 
     def list_folder(self, path):

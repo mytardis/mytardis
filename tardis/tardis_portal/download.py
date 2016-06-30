@@ -13,6 +13,8 @@ import os
 import cStringIO as StringIO
 import time
 
+from tardis.analytics import tracker
+
 try:
     import zlib  # We may need its compression method
     crc32 = zlib.crc32
@@ -268,7 +270,7 @@ class UncachedTarStream(TarFile):
                 fileobj = df.file_object
                 mtime = os.fstat(fileobj.fileno()).st_mtime
             except:
-                raise Exception('cannot read size for downloads')
+                raise ValueError('cannot read size for downloads')
         if mtime is None:
             mtime = time.time()
         tarinfo.mtime = mtime
@@ -406,6 +408,14 @@ def _streaming_downloader(request, datafiles, rootdir, filename,
             files,
             filename=filename,
             do_gzip=comptype != 'tar')
+        tracker.track_download(
+            'tar',
+            session_id=request.COOKIES.get('_ga'),
+            ip=request.META.get('REMOTE_ADDR', ''),
+            user=request.user,
+            total_size=tfs.tar_size,
+            num_files=len(datafiles),
+            ua=request.META.get('HTTP_USER_AGENT', None))
         return tfs.get_response()
     except ValueError:  # raised when replica not verified TODO: custom excptn
         redirect = request.META.get('HTTP_REFERER',
