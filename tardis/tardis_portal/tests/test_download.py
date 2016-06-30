@@ -69,13 +69,13 @@ class DownloadTestCase(TestCase):
         self.experiment2.save()
 
         # dataset1 belongs to experiment1
-        self.dataset1 = Dataset()
+        self.dataset1 = Dataset(description='dangerous;name')
         self.dataset1.save()
         self.dataset1.experiments.add(self.experiment1)
         self.dataset1.save()
 
         # dataset2 belongs to experiment2
-        self.dataset2 = Dataset()
+        self.dataset2 = Dataset(description='terrible\nname')
         self.dataset2.save()
         self.dataset2.experiments.add(self.experiment2)
         self.dataset2.save()
@@ -214,6 +214,8 @@ class DownloadTestCase(TestCase):
     def _check_names(self, datafiles, names, rootdir, simpleNames, noTxt):
         # SimpleNames says if we expect basenames or pathnames
         # NoTxt says if we expect '.txt' files to be filtered out
+        for name in names:
+            self.assertNotRegexpMatches(name, '\n|;')
         expect(len(names)).to_equal(len(datafiles))
 
     def testDownload(self):

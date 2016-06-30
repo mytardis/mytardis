@@ -35,6 +35,8 @@ http://docs.djangoproject.com/en/dev/topics/testing/
 .. moduleauthor::  Russell Sim <russell.sim@monash.edu>
 
 """
+from StringIO import StringIO
+
 from django.conf import settings
 from django.test import TestCase
 from tastypie.utils import trailing_slash
@@ -160,11 +162,14 @@ class ModelTestCase(TestCase):
     def test_datafile(self):
         from tardis.tardis_portal.models import Experiment, Dataset, DataFile
 
-        def _build(dataset, filename, url):
-            from tardis.tardis_portal.models import \
-                DataFileObject
+        def _build(dataset, filename, url=None):
             datafile = DataFile(dataset=dataset, filename=filename)
             datafile.save()
+            if url is None:
+                datafile.file_object = StringIO('bla')
+                return datafile
+            from tardis.tardis_portal.models import \
+                DataFileObject
             dfo = DataFileObject(
                 datafile=datafile,
                 storage_box=datafile.get_default_storage_box(),
@@ -179,7 +184,7 @@ class ModelTestCase(TestCase):
                          public_access=Experiment.PUBLIC_ACCESS_NONE)
         exp.save()
 
-        dataset = Dataset(description="dataset description...")
+        dataset = Dataset(description="dataset description...\nwith; issues")
         dataset.save()
         dataset.experiments.add(exp)
         dataset.save()
@@ -226,6 +231,16 @@ class ModelTestCase(TestCase):
             self.assertEqual(df_file.get_download_url(),
                              '/api/v1/dataset_file/%d/download%s' %
                              (first_id + 3, trailing_slash()))
+
+            df_file = _build(dataset, 'f-bad-ds.txt')
+            self.assertEqual(df_file.filename, 'f-bad-ds.txt')
+            self.assertEqual(df_file.dataset, dataset)
+            self.assertEqual(df_file.size, None)
+            self.assertEqual(df_file.get_download_url(),
+                             '/api/v1/dataset_file/%d/download%s' %
+                             (first_id + 4, trailing_slash()))
+            self.assertNotRegexpMatches(df_file.file_objects.first().uri,
+                                        '\n|;')
 
             # check that can't save negative byte sizes
             with self.assertRaises(Exception):

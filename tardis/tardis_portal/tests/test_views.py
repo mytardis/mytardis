@@ -38,6 +38,7 @@ http://docs.djangoproject.com/en/dev/topics/testing/
 
 """
 import json
+from urllib import quote
 from urlparse import urlparse
 
 from flexmock import flexmock
@@ -92,7 +93,8 @@ class UploadTestCase(TestCase):
         self.dataset.save()
 
         path_parts = [settings.FILE_STORE_PATH,
-                      "%s-%s" % (self.dataset.description or 'untitled',
+                      "%s-%s" % (quote(self.dataset.description, safe='')
+                                 or 'untitled',
                                  self.dataset.id)]
         self.dataset_path = path.join(*path_parts)
 
@@ -135,11 +137,11 @@ class UploadTestCase(TestCase):
         self.assertTrue(path.exists(path.join(self.dataset_path,
                         self.filename)))
         target_id = Dataset.objects.first().id
-        self.assertTrue(self.dataset.id == target_id)
+        self.assertEqual(self.dataset.id, target_id)
         url = test_files_db[0].file_objects.all()[0].uri
-        self.assertTrue(url ==
-                        path.relpath('%s/testfile.txt' % self.dataset_path,
-                                     settings.FILE_STORE_PATH))
+        self.assertEqual(url, path.relpath(
+            '%s/testfile.txt' % self.dataset_path,
+            settings.FILE_STORE_PATH))
         self.assertTrue(test_files_db[0].file_objects.all()[0].verified)
 
     def testUploadComplete(self):

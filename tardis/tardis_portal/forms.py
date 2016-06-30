@@ -357,6 +357,8 @@ class RegisterExperimentForm(forms.Form):
 
 class DatasetForm(forms.ModelForm):
 
+    description = forms.CharField()
+
     class Meta:
         model = models.Dataset
         fields = [

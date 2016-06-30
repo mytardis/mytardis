@@ -3,6 +3,7 @@ import hashlib
 import os
 import platform
 import warnings
+from urllib import quote
 
 import pystache
 import pytz
@@ -164,7 +165,7 @@ def render_public_access_badge(experiment):
 
 
 def sanitise_name(name):
-    return name.replace(' ', '_').replace('/', ':')
+    return quote(name.replace(' ', '_').replace('/', ':'), safe='')
 
 
 def dirname_with_id(obj_name, obj_id):
