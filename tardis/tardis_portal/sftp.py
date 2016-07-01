@@ -10,17 +10,20 @@ import logging
 import os
 import stat
 import time
+import uuid
 from cStringIO import StringIO
 
+from django.conf import settings
 from paramiko import InteractiveQuery,  RSAKey, ServerInterface,\
     SFTPAttributes, SFTPHandle,\
     SFTPServer, SFTPServerInterface, Transport
 from paramiko import OPEN_SUCCEEDED, OPEN_FAILED_ADMINISTRATIVELY_PROHIBITED,\
     SFTP_OP_UNSUPPORTED, SFTP_NO_SUCH_FILE
 from paramiko.common import AUTH_FAILED, AUTH_SUCCESSFUL
-from django.conf import settings
 
-from tardis.tardis_portal.util import sanitise_name, dirname_with_id
+from tardis.analytics import tracker
+from tardis.tardis_portal.util import sanitise_name, dirname_with_id, \
+    split_path
 
 logger = logging.getLogger(__name__)
 
@@ -31,18 +34,15 @@ if not paramiko_log.handlers:
 
 if getattr(settings, 'SFTP_GEVENT', False):
     from gevent import monkey
+    from django.db import connection
     monkey.patch_all()
+    connection.allow_thread_sharing = True
 
 # django db related modules must be imported after monkey-patching
 from django.contrib.sites.models import Site
 from django.contrib.auth.models import AnonymousUser
 
 from tardis.tardis_portal.models import DataFile, Experiment
-
-
-def split_path(p):
-    base, top = os.path.split(os.path.normpath(p))
-    return (split_path(base) if len(base) and len(top) else []) + [top]
 
 
 class DynamicTree(object):
@@ -179,6 +179,7 @@ class MyTSFTPServerInterface(SFTPServerInterface):
         @type server: L{ServerInterface}
         """
         self.server = server
+        self.client_ip = kwargs.get('client_ip', '')
 
     @property
     def experiments(self):
@@ -198,6 +199,9 @@ class MyTSFTPServerInterface(SFTPServerInterface):
         run on connection initialisation
         """
         self.user = self.server.user
+        self.uuid = str(uuid.uuid4())
+        tracker.track_login('sftp', session_id=self.uuid, ip=self.client_ip,
+                            user=self.user)
         self.username = self.server.user.username
         self.cwd = "/home/%s" % self.username
         self.tree = DynamicTree(self)
@@ -211,7 +215,8 @@ class MyTSFTPServerInterface(SFTPServerInterface):
         run cleanup on exceptions or disconnection.
         idea: collect stats and store them in this function
         """
-        pass
+        tracker.track_logout('sftp', session_id=self.uuid, ip=self.client_ip,
+                             user=self.user)
 
     def open(self, path, flags, attr):
         """
@@ -251,6 +256,9 @@ class MyTSFTPServerInterface(SFTPServerInterface):
         @rtype L{SFTPHandle}
         """
         leaf = self.tree.get_leaf(path)
+        tracker.track_download(
+            'sftp', session_id=self.uuid, ip=self.client_ip, user=self.user,
+            total_size=leaf.obj.size, num_files=1)
         return MyTSFTPHandle(leaf.obj, flags, attr)
 
     def list_folder(self, path):
@@ -422,13 +430,21 @@ class MyTServerInterface(ServerInterface):
         return OPEN_FAILED_ADMINISTRATIVELY_PROHIBITED
 
 
+class MyTSFTPServer(SFTPServer):
+    """
+    override SFTPServer to provide channel information to the SFTP subsystem
+    """
+
+    def __init__(self, *args, **kwargs):
+        kwargs['client_ip'] = args[0].transport.getpeername()[0]
+        super(MyTSFTPServer, self).__init__(*args, **kwargs)
+
+
 class MyTSFTPRequestHandler(SocketServer.BaseRequestHandler):
     timeout = 60
     auth_timeout = 60
 
     def setup(self):
-        #import ipdb; ipdb.set_trace()
-
         self.transport = Transport(self.request)
         self.transport.load_server_moduli()
         so = self.transport.get_security_options()
@@ -436,7 +452,7 @@ class MyTSFTPRequestHandler(SocketServer.BaseRequestHandler):
         so.compression = ('zlib@openssh.com', 'none')
         self.transport.add_server_key(self.server.host_key)
         self.transport.set_subsystem_handler(
-            'sftp', SFTPServer, MyTSFTPServerInterface)
+            'sftp', MyTSFTPServer, MyTSFTPServerInterface)
 
     def handle(self):
         self.transport.start_server(server=MyTServerInterface())
@@ -448,7 +464,7 @@ class MyTSFTPRequestHandler(SocketServer.BaseRequestHandler):
             super(MyTSFTPRequestHandler, self).handle_timeout()
 
 
-class MyTSFTPServer(SocketServer.TCPServer):
+class MyTSFTPTCPServer(SocketServer.TCPServer):
     # If the server stops/starts quickly, don't fail because of
     # "port in use" error.
     allow_reuse_address = True
@@ -492,7 +508,7 @@ def start_server(host=None, port=None, keyfile=None):
         "-----END RSA PRIVATE KEY-----\n")
     host_key = RSAKey.from_private_key(
         keyfile or StringIO(host_key_string))
-    server = MyTSFTPServer((host, port), host_key=host_key)
+    server = MyTSFTPTCPServer((host, port), host_key=host_key)
     try:
         server.serve_forever()
     except (SystemExit, KeyboardInterrupt):

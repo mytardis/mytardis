@@ -3,6 +3,7 @@ import os
 from StringIO import StringIO
 from tarfile import TarFile
 from tempfile import NamedTemporaryFile
+from urllib import quote
 
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
@@ -71,9 +72,12 @@ class TarDownloadTestCase(TestCase):
             tf = TarFile(tarfile.name)
             for df in self.dfs:
                 full_path = os.path.join(
-                    self.exp.title.replace(' ', '_'), self.ds.description,
+                    self.exp.title.replace(' ', '_'),
+                    quote(self.ds.description, safe=''),
                     df.directory, df.filename)
-                tf.extract(full_path, '/tmp')
-                self.assertEqual(
-                    os.stat(os.path.join('/tmp', full_path)).st_size,
-                    int(df.size))
+                # docker has a file path limit of ~240 characters
+                if os.environ.get('DOCKER_BUILD', 'false') != 'true':
+                    tf.extract(full_path, '/tmp')
+                    self.assertEqual(
+                        os.stat(os.path.join('/tmp', full_path)).st_size,
+                        int(df.size))

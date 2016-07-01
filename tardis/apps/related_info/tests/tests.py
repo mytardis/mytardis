@@ -3,12 +3,11 @@ import re
 
 from compare import expect, ensure, matcher
 
-from django.test import TestCase
+from django.test import TestCase, TransactionTestCase
 from django.test.client import Client
 from django.core.urlresolvers import reverse
 
-from tardis.tardis_portal.models import \
-    Experiment, ObjectACL, User, UserProfile
+from tardis.tardis_portal.models import Experiment, ObjectACL, User
 from tardis.tardis_portal.ParameterSetManager import ParameterSetManager
 
 
@@ -23,7 +22,7 @@ def _create_user_and_login(username='testuser', password='testpass'):
 
     client = Client()
     client.login(username=username, password=password)
-    return (user, client)
+    return user, client
 
 
 class TabTestCase(TestCase):
@@ -61,7 +60,7 @@ class TabTestCase(TestCase):
         expect(response.status_code).to_equal(200)
 
 
-class ListTestCase(TestCase):
+class ListTestCase(TransactionTestCase):
 
     def setUp(self):
         user, client = _create_user_and_login()
@@ -104,8 +103,8 @@ class ListTestCase(TestCase):
             psm.set_param(k, v)
 
         response = self.client.get(
-            reverse('tardis.apps.related_info.views.'
-                    + 'list_or_create_related_info',
+            reverse('tardis.apps.related_info.views.' +
+                    'list_or_create_related_info',
                     args=[self.experiment.id]))
         expect(response.status_code).to_equal(200)
         expect(response['Content-Type'])\
@@ -146,7 +145,7 @@ class ListTestCase(TestCase):
             expect(obj['notes']).to_match(r'note #\d+\.$')
 
 
-class GetTestCase(TestCase):
+class GetTestCase(TransactionTestCase):
 
     def setUp(self):
         user, client = _create_user_and_login()
@@ -169,8 +168,8 @@ class GetTestCase(TestCase):
 
     def testHandlesNotFound(self):
         response = self.client.get(
-            reverse('tardis.apps.related_info.views.'
-                    + 'get_or_update_or_delete_related_info',
+            reverse('tardis.apps.related_info.views.' +
+                    'get_or_update_or_delete_related_info',
                     args=[self.experiment.id, 0]))
         expect(response.status_code).to_equal(404)
 
@@ -186,8 +185,8 @@ class GetTestCase(TestCase):
             psm.set_param(k, v)
 
         response = self.client.get(
-            reverse('tardis.apps.related_info.views.'
-                    + 'get_or_update_or_delete_related_info',
+            reverse('tardis.apps.related_info.views.' +
+                    'get_or_update_or_delete_related_info',
                     args=[self.experiment.id, psm.parameterset.id]))
         expect(response.status_code).to_equal(200)
 
@@ -196,7 +195,7 @@ class GetTestCase(TestCase):
             expect(obj[k]).to_equal(params[k])
 
 
-class CreateTestCase(TestCase):
+class CreateTestCase(TransactionTestCase):
 
     def setUp(self):
         user, client = _create_user_and_login()
@@ -280,7 +279,7 @@ class CreateTestCase(TestCase):
         expect(response.status_code).to_equal(201)
 
 
-class UpdateTestCase(TestCase):
+class UpdateTestCase(TransactionTestCase):
 
     def setUp(self):
         user, client = _create_user_and_login()
@@ -307,8 +306,8 @@ class UpdateTestCase(TestCase):
                   'identifier': 'https://www.google.com/',
                   'title': 'Google',
                   'notes': 'This is a note.'}
-        response = self.client.post(reverse('tardis.apps.related_info.views.'
-                                            + 'list_or_create_related_info',
+        response = self.client.post(reverse('tardis.apps.related_info.views.' +
+                                            'list_or_create_related_info',
                                             args=[self.experiment.id]),
                                     data=json.dumps(params),
                                     content_type='application/json')
@@ -322,8 +321,8 @@ class UpdateTestCase(TestCase):
         params = {'type': 'website',
                   'identifier': 'https://www.google.com/'}
         response = self.client.put(
-            reverse('tardis.apps.related_info.views.'
-                    + 'get_or_update_or_delete_related_info',
+            reverse('tardis.apps.related_info.views.' +
+                    'get_or_update_or_delete_related_info',
                     args=[self.experiment.id, related_info_id]),
             data=json.dumps(params),
             content_type='application/json')
@@ -332,8 +331,8 @@ class UpdateTestCase(TestCase):
     def testDetectsBadInput(self):
         def do_put(params):
             return self.client.put(
-                reverse('tardis.apps.related_info.views.'
-                        + 'get_or_update_or_delete_related_info',
+                reverse('tardis.apps.related_info.views.' +
+                        'get_or_update_or_delete_related_info',
                         args=[self.experiment.id,
                               self._create_initial_entry()['id']]),
                 data=json.dumps(params),
@@ -353,7 +352,7 @@ class UpdateTestCase(TestCase):
         expect(response.status_code).to_equal(201)
 
 
-class DeleteTestCase(TestCase):
+class DeleteTestCase(TransactionTestCase):
 
     def setUp(self):
         user, client = _create_user_and_login()
@@ -380,8 +379,8 @@ class DeleteTestCase(TestCase):
                   'identifier': 'https://www.google.com/',
                   'title': 'Google',
                   'notes': 'This is a note.'}
-        response = self.client.post(reverse('tardis.apps.related_info.views.'
-                                            + 'list_or_create_related_info',
+        response = self.client.post(reverse('tardis.apps.related_info.views.' +
+                                            'list_or_create_related_info',
                                             args=[self.experiment.id]),
                                     data=json.dumps(params),
                                     content_type='application/json')
@@ -393,15 +392,15 @@ class DeleteTestCase(TestCase):
         self.acl.canWrite = False
         self.acl.save()
         response = self.client.delete(
-            reverse('tardis.apps.related_info.views.'
-                    + 'get_or_update_or_delete_related_info',
+            reverse('tardis.apps.related_info.views.' +
+                    'get_or_update_or_delete_related_info',
                     args=[self.experiment.id, related_info_id]))
         expect(response.status_code).to_equal(403)
 
     def testCanDelete(self):
         response = self.client.delete(
-            reverse('tardis.apps.related_info.views.'
-                    + 'get_or_update_or_delete_related_info',
+            reverse('tardis.apps.related_info.views.' +
+                    'get_or_update_or_delete_related_info',
                     args=[self.experiment.id,
                           self._create_initial_entry()['id']]))
         expect(response.status_code).to_equal(200)

@@ -186,8 +186,9 @@ def retrieve_access_list_external(request, experiment_id):
 def retrieve_access_list_tokens(request, experiment_id):
     tokens = Token.objects.filter(experiment=experiment_id)
 
-    def token_url(token):
-        url = request.META['HTTP_REFERER']
+    def token_url(url, token):
+        if not url:
+            return ''
         u = urlparse(url)
         query = parse_qs(u.query)
         query.pop('token', None)
@@ -195,15 +196,29 @@ def retrieve_access_list_tokens(request, experiment_id):
         u = u._replace(query=urlencode(query, True))
         return u.geturl()
         # return '%s?token=%s' % (request.META['HTTP_REFERER'], token.token)
+
+    page_url = request.META['HTTP_REFERER']
+    download_urls = Experiment.objects.get(id=experiment_id).get_download_urls()
+
     tokens = [{'expiry_date': token.expiry_date,
                'user': token.user,
-               'url': request.build_absolute_uri(token_url(token)),
+               'url': request.build_absolute_uri(token_url(page_url, token)),
+               'download_url': request.build_absolute_uri(
+                   token_url(download_urls.get('tar', None), token)),
                'id': token.id,
                'experiment_id': experiment_id,
                'is_owner': request.user.has_perm('tardis_acls.owns_experiment',
                                                  token.experiment),
                } for token in tokens]
-    c = {'tokens': tokens}
+
+    has_archive_download_url = False
+    for t in tokens:
+        if t.get('download_url', False):
+            has_archive_download_url = True
+
+    c = {'tokens': tokens,
+         'has_archive_download_url': has_archive_download_url}
+
     return HttpResponse(render_response_index(
         request, 'tardis_portal/ajax/access_list_tokens.html', c))
 
@@ -453,23 +468,32 @@ def change_user_permissions(request, experiment_id, username):
 
     try:
         expt_acls = Experiment.safe.user_acls(experiment_id)
-
-        acl = expt_acls.filter(entityId=str(user.id))
-        owner_acls = [acl for acl in expt_acls if acl.isOwner]
+        acl = None
+        for eacl in expt_acls:
+            if eacl.pluginId == 'django_user' and \
+               eacl.get_related_object().id == user.id:
+                acl = eacl
+        #acl = expt_acls.filter(entityId=str(user.id))
+        if acl is None:
+            raise ObjectACL.DoesNotExist
+        owner_acls = [oacl for oacl in expt_acls if oacl.isOwner]
     except ObjectACL.DoesNotExist:
         return return_response_error(request)
 
     if request.method == 'POST':
         form = ChangeUserPermissionsForm(request.POST, instance=acl)
 
-        if form.is_valid:
+        if form.is_valid():
             if 'isOwner' in form.changed_data and \
                             form.cleaned_data['isOwner'] is False and \
                             len(owner_acls) == 1:
-                return render_error_message(
-                    request,
-                    'Cannot remove ownership, every experiment must have at '
-                    'least one user owner.', status=409)
+                owner = owner_acls[0].get_related_object()
+                plugin = owner_acls[0].pluginId
+                if plugin == 'django_user' and owner.id == user.id:
+                    return render_error_message(
+                        request,
+                        'Cannot remove ownership, every experiment must have at '
+                        'least one user owner.', status=409)
             form.save()
             url = reverse('tardis.tardis_portal.views.control_panel')
             return HttpResponseRedirect(url)

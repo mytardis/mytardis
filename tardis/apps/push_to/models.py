@@ -1,17 +1,17 @@
 # pylint: disable=R0204
-from StringIO import StringIO
 import base64
+from StringIO import StringIO
 
 from django import forms
 from django.apps import apps
 from django.contrib import admin
+from django.contrib.auth.models import User, Group
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.contrib.auth.models import User, Group
-
-from paramiko import RSAKey, RSACert, SSHClient, MissingHostKeyPolicy,\
+from paramiko import RSAKey, RSACert, SSHClient, MissingHostKeyPolicy, \
     AutoAddPolicy, PKey, DSSKey, ECDSAKey
 from paramiko.config import SSH_PORT
+
 from .apps import PushToConfig
 from .exceptions import NoSuitableCredential
 
@@ -22,12 +22,12 @@ class KeyPair(models.Model):
     """
 
     key_type = models.CharField('Key type',
-                                max_length=25,
+                                max_length=100,
                                 blank=True,
                                 null=True)
     public_key = models.TextField('Public key',
-                                   blank=True,
-                                   null=True)
+                                  blank=True,
+                                  null=True)
     private_key = models.TextField('Private key', blank=True, null=True)
 
     class Meta:
@@ -43,7 +43,7 @@ class KeyPair(models.Model):
             elif self.private_key.startswith(
                     '-----BEGIN DSA PRIVATE KEY-----'):
                 self.key_type = 'ssh-dss'
-            # TODO: work out what to do with EC keys
+                # TODO: work out what to do with EC keys
         if self.key_type and self.private_key and not self.public_key:
             self.public_key = self.key.get_base64()
 
@@ -57,7 +57,8 @@ class KeyPair(models.Model):
 
     def __setattr__(self, attrname, val):
         if attrname == 'public_key':
-            super(KeyPair, self).__setattr__(attrname, self._validate_public_key(val))
+            super(KeyPair, self).__setattr__(attrname,
+                                             self._validate_public_key(val))
         else:
             super(KeyPair, self).__setattr__(attrname, val)
 
@@ -80,8 +81,10 @@ class KeyPair(models.Model):
         """
 
         # Check if the key pair exists: at least a public or private part of
-        # the key is required.
-        if self.public_key is None and self.private_key is None:
+        # the key is required, as well as the key type.
+        if not self.key_type:
+            return None
+        if not self.public_key and not self.private_key:
             return None
 
         public_key = None
@@ -190,9 +193,12 @@ class OAuthSSHCertSigningService(models.Model):
         @type user: User
         @type service_id: int
         """
-        return OAuthSSHCertSigningService.objects.get(
+        return (OAuthSSHCertSigningService.objects.filter(
             allowed_users=user,
-            pk=service_id)
+            pk=service_id) |
+                OAuthSSHCertSigningService.objects.filter(
+                    allow_for_all=True,
+                    pk=service_id)).first()
 
 
 class DBHostKeyPolicy(MissingHostKeyPolicy):
@@ -233,7 +239,7 @@ class Credential(KeyPair):
     def __unicode__(self):
         hosts = str.join(', ', self._hostname_list())
         return self.user.username + ' | ' + \
-            self.remote_user + ' (' + hosts + ')'
+               self.remote_user + ' (' + hosts + ')'
 
     @staticmethod
     def get_suitable_credential(tardis_user, remote_host, remote_user=None):
@@ -252,7 +258,7 @@ class Credential(KeyPair):
 
     @staticmethod
     def generate_keypair_credential(
-        tardis_user, remote_user, remote_hosts,
+            tardis_user, remote_user, remote_hosts,
             bit_length=2048):
         """
         Generates and saves an RSA key pair credential. Credentials returned
@@ -316,36 +322,24 @@ class Credential(KeyPair):
         return True
 
 
-class KeyPairModelAdmin(admin.ModelAdmin):
-    """
-    A base ModelAdmin class for models extending KeyPair
-    """
-
-    def save_model(self, request, obj, form, change):
-        """
-        Ensures the public key is validated on form save in the django admin
-        """
-        obj.public_key = obj._public_key
-        obj.save()
-
-
-class RemoteHostAdmin(KeyPairModelAdmin):
+class RemoteHostAdmin(admin.ModelAdmin):
     """
     Hides the private key field, which is not necessary for host keys
     """
     fields = ['nickname', 'administrator', 'host_name', 'port', 'key_type',
-              '_public_key', 'logo_img']
+              'public_key', 'logo_img']
 
 
 class CredentialForm(forms.ModelForm):
     class Meta:
         fields = '__all__'
         model = Credential
-        widgets = {'password': forms.PasswordInput(), }
+        widgets = {'password': forms.PasswordInput(),}
 
 
-class CredentialAdmin(KeyPairModelAdmin):
+class CredentialAdmin(admin.ModelAdmin):
     form = CredentialForm
+
 
 # Register the models with the admin
 if apps.is_installed(PushToConfig.name):

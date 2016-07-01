@@ -7,6 +7,7 @@ from tempfile import NamedTemporaryFile
 
 from os import path
 import mimetypes
+from urllib import quote
 
 from django.conf import settings
 from django.core.files import File
@@ -22,7 +23,6 @@ from django.utils import timezone
 import magic
 
 from tardis.tardis_portal import tasks
-from .fields import DirectoryField
 from .dataset import Dataset
 from .storage import StorageBox, StorageBoxOption, StorageBoxAttribute
 
@@ -51,11 +51,11 @@ class DataFile(models.Model):
 
     dataset = models.ForeignKey(Dataset)
     filename = models.CharField(max_length=400)
-    directory = DirectoryField(blank=True, null=True)
+    directory = models.CharField(blank=True, null=True, max_length=255)
     size = models.BigIntegerField(blank=True, null=True)
     created_time = models.DateTimeField(null=True, blank=True)
     modification_time = models.DateTimeField(null=True, blank=True)
-    mimetype = models.CharField(blank=True, max_length=80)
+    mimetype = models.CharField(db_index=True, blank=True, max_length=80)
     md5sum = models.CharField(blank=True, max_length=32)
     sha512sum = models.CharField(blank=True, max_length=128)
     deleted = models.BooleanField(default=False)
@@ -101,8 +101,16 @@ class DataFile(models.Model):
 
     @property
     def is_online(self):
+        """
+        return False if a file is on tape.
+        At this stage it checks it returns true for no file objects, because
+        those files are offline through other checks
+        """
+        dfos = self.file_objects.filter(verified=True)
+        if dfos.count() == 0:
+            return True
         return any(dfo.storage_type not in StorageBox.offline_types
-                   for dfo in self.file_objects.filter(verified=True))
+                   for dfo in dfos)
 
     def cache_file(self):
         if self.is_online:
@@ -507,11 +515,11 @@ class DataFileObject(models.Model):
         '''
 
         def default_identifier(dfo):
-            path_parts = ["%s-%s" % (dfo.datafile.dataset.description
-                                     or 'untitled',
-                                     dfo.datafile.dataset.id)]
+            path_parts = ["%s-%s" % (
+                quote(dfo.datafile.dataset.description, safe='') or 'untitled',
+                dfo.datafile.dataset.id)]
             if dfo.datafile.directory is not None:
-                path_parts += [dfo.datafile.directory]
+                path_parts += [quote(dfo.datafile.directory)]
             path_parts += [dfo.datafile.filename.strip()]
             uri = path.join(*path_parts)
             return uri

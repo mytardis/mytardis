@@ -6,7 +6,6 @@ from django.core.urlresolvers import reverse
 from django.db import models
 
 from tardis.tardis_portal.managers import OracleSafeManager
-from tardis.tardis_portal.models.fields import DirectoryField
 from tardis.tardis_portal.models.storage import StorageBox
 
 from .experiment import Experiment
@@ -29,7 +28,7 @@ class Dataset(models.Model):
 
     experiments = models.ManyToManyField(Experiment, related_name='datasets')
     description = models.TextField(blank=True)
-    directory = DirectoryField(blank=True, null=True)
+    directory = models.CharField(blank=True, null=True, max_length=255)
     immutable = models.BooleanField(default=False)
     instrument = models.ForeignKey(Instrument, null=True, blank=True)
     objects = OracleSafeManager()

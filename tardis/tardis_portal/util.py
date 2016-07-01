@@ -3,6 +3,7 @@ import hashlib
 import os
 import platform
 import warnings
+from urllib import quote
 
 import pystache
 import pytz
@@ -19,11 +20,18 @@ def get_local_time(dt):
     If the USE_TZ setting in the current dev version of Django comes in,
     this *should* keep providing correct behaviour.
     '''
+
+    # truncate microseconds
+    result = dt.replace(microsecond=0)
+
     # If datetime is already naive, simply set TZ
     if dt.tzinfo is None:
-        return dt.replace(tzinfo=LOCAL_TZ)
-    # Otherwise convert
-    return dt.astimezone(LOCAL_TZ)
+        result = result.replace(tzinfo=LOCAL_TZ)
+    else:
+        # Otherwise convert
+        result = result.astimezone(LOCAL_TZ)
+
+    return result
 
 
 def get_utc_time(dt):
@@ -33,10 +41,16 @@ def get_utc_time(dt):
     If the USE_TZ setting in the current dev version of Django comes in,
     this *should* keep providing correct behaviour.
     '''
+
+    # truncate microseconds
+    result = dt.replace(microsecond=0)
+
     # If datetime is already naive, set TZ
     if dt.tzinfo is None:
-        dt = dt.replace(tzinfo=LOCAL_TZ)
-    return dt.astimezone(pytz.utc)
+        result = result.replace(tzinfo=LOCAL_TZ)
+
+    result = result.astimezone(pytz.utc)
+    return result
 
 
 def get_free_space(fs_dir):
@@ -151,8 +165,13 @@ def render_public_access_badge(experiment):
 
 
 def sanitise_name(name):
-    return name.replace(' ', '_').replace('/', ':')
+    return quote(name.replace(' ', '_').replace('/', ':'), safe='')
 
 
 def dirname_with_id(obj_name, obj_id):
     return "%s_%d" % (sanitise_name(obj_name), obj_id)
+
+
+def split_path(p):
+    base, top = os.path.split(os.path.normpath(p))
+    return (split_path(base) if len(base) and len(top) else []) + [top]

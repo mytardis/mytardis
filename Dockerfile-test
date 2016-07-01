@@ -1,0 +1,12 @@
+FROM mytardis/mytardis-run
+
+RUN . /appenv/bin/activate; \
+    pip install --no-index -f /wheelhouse psycopg2 mysql-python
+RUN . /appenv/bin/activate; \
+    pip install coveralls codacy-coverage
+VOLUME /home/webapp/tardis
+VOLUME /home/webapp/docs
+
+RUN mkdir -p var/store
+
+CMD bash -c '. /appenv/bin/activate; source ./test.sh'

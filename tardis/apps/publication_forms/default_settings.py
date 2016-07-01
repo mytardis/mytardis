@@ -41,7 +41,12 @@ PDB_CITATION_PUBLICATION_SCHEMA = PDB_PUBLICATION_SCHEMA_ROOT + 'citation/'
 # Used by the Australian Synchrotron for MX datasets
 MX_PUBLICATION_DATASET_SCHEMA = 'http://synchrotron.org.au/pub/mx/dataset/'
 
+# Used for generic dataset descriptions (all datasets that are not MX)
+GENERIC_PUBLICATION_DATASET_SCHEMA = PUBLICATION_SCHEMA_ROOT + 'generic/'
+
 PDB_REFRESH_INTERVAL = timedelta(days=7)
+
+PUBLICATIONS_REQUIRE_APPROVAL = True
 
 PUBLICATION_FORM_MAPPINGS = [
     {'dataset_schema': r'^http://synchrotron.org.au/mx/',

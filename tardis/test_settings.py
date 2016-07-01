@@ -1,8 +1,7 @@
-# pylint: disable=W0401,W0614
-from os import listdir
+# pylint: disable=wildcard-import,unused-wildcard-import
 import logging
-
-from tardis.default_settings import *  # noqa
+from os import listdir
+from tardis.default_settings import *  # noqa # pylint: disable=W0401,W0614
 
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 
@@ -104,7 +103,7 @@ SYSTEM_LOG_FILENAME = 'request-test.log'
 MODULE_LOG_FILENAME = 'tardis-test.log'
 
 # RIF-CS Settings
-OAI_DOCS_PATH = 'tardis/tardis_portal/tests/rifcs/'
+OAI_DOCS_PATH = '/tmp/mytardis/rifcs'
 RIFCS_TEMPLATE_DIR = 'tardis/tardis_portal/tests/rifcs/'
 RIFCS_GROUP = 'MyTardis Test Group'
 RIFCS_KEY = "keydomain.test.example"

@@ -6,8 +6,8 @@ Filter Setup
 :mod:`~tardis.tardis_portal.filters`
 
 
-Filters are called once an object has been saved to the database, they
-build on the Django signal infrastrcture.
+Filters are called once an object has been saved to the database. They
+build on the `Django Signals Infrastructure`_.
 
 In the *settings.py* file filters are activated by specifying them
 within the ``POST_SAVE_FILTERS`` variable, for example
@@ -26,3 +26,6 @@ The format they are specified in is
    (<filter class path>, [args], {kwargs})
 
 Where ``args`` and ``kwargs`` are both optional.
+
+.. _`Django Signals Infrastructure`: https://docs.djangoproject.com/en/dev/topics/signals/
+
