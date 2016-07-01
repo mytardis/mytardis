@@ -55,12 +55,12 @@ def track_login(label, session_id, ip, user):
     _track_event({
         't': 'event',
         'sc': 'start',
-        'cid': session_id,
         'uip': ip,
         'ec': 'auth',
         'ea': 'login',
         'el': label,
     },
+        cid=session_id,
         uid=user.id)
 
 
@@ -68,12 +68,12 @@ def track_logout(label, session_id, ip, user):
     _track_event({
         't': 'event',
         'sc': 'end',
-        'cid': session_id,
         'uip': ip,
         'ec': 'auth',
         'ea': 'logout',
         'el': label,
     },
+        cid=session_id,
         uid=user.id)
 
 
@@ -82,7 +82,6 @@ def track_download(label, session_id, ip, user,
                    ua=None):
     payload = {
         't': 'event',
-        'cid': session_id,
         'uip': ip,
         'ec': 'transfer',
         'ea': 'download',
@@ -102,4 +101,5 @@ def track_download(label, session_id, ip, user,
             'ua': ua,
         })
     _track_event(payload,
+                 cid=session_id,
                  uid=user.id)
