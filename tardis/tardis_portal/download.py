@@ -13,8 +13,6 @@ import os
 import cStringIO as StringIO
 import time
 
-from tardis.analytics.tracker import IteratorTracker
-
 try:
     import zlib  # We may need its compression method
     crc32 = zlib.crc32
@@ -37,7 +35,7 @@ from django.utils.importlib import import_module
 from django.core.exceptions import ImproperlyConfigured
 from django.contrib.auth.decorators import login_required
 
-from tardis.analytics import tracker
+from tardis.analytics.tracker import IteratorTracker
 from tardis.tardis_portal.models import Dataset
 from tardis.tardis_portal.models import DataFile
 from tardis.tardis_portal.models import Experiment
