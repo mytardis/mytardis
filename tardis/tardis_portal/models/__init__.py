@@ -64,4 +64,4 @@ from .parameters import DatafileParameter, DatafileParameterSet, \
                         FreeTextSearchField, ParameterName, Schema
 from .token import Token
 
-import hooks
+import tardis.tardis_portal.hooks
