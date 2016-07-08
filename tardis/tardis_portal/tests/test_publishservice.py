@@ -100,6 +100,3 @@ class PublishServiceTestCase(TestCase):
         self.e1.public_access = Experiment.PUBLIC_ACCESS_NONE
         service.manage_rifcs(settings.OAI_DOCS_PATH)
         self.assertFalse(os.path.exists(rifcs_file))
-
-
-
