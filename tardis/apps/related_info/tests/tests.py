@@ -112,8 +112,8 @@ class ListTestCase(TransactionTestCase):
 
         objs = json.loads(response.content)
         expect(len(objs)).to_be(1)
-        for k in params.keys():
-            expect(objs[0][k]).to_equal(params[k])
+        for k, v in params.items():
+            expect(objs[0][k]).to_equal(v)
 
     def testHandlesMultipleEntries(self):
         from ..views import SCHEMA_URI
@@ -191,8 +191,8 @@ class GetTestCase(TransactionTestCase):
         expect(response.status_code).to_equal(200)
 
         obj = json.loads(response.content)
-        for k in params.keys():
-            expect(obj[k]).to_equal(params[k])
+        for k, v in params.items():
+            expect(obj[k]).to_equal(v)
 
 
 class CreateTestCase(TransactionTestCase):
@@ -248,8 +248,8 @@ class CreateTestCase(TransactionTestCase):
         obj = json.loads(response.content)
         ensure(isinstance(obj['id'], int), True,
                message='Created object should have an ID.')
-        for k in params.keys():
-            expect(obj[k]).to_equal(params[k])
+        for k, v in params.items():
+            expect(obj[k]).to_equal(v)
         # Check that creation really did persist
         response = self.client.get(
             reverse('tardis.apps.related_info.views.'
