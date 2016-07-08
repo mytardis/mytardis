@@ -767,8 +767,8 @@ def compute_checksums(file_object,
                   'sha512sum': lambda x, y: x.update(y)}
     file_object.seek(0)
     for chunk in iter(lambda: file_object.read(32 * blocksize), ''):
-        for key in results.keys():
-            update_fns[key](results[key], chunk)
+        for key, val in results.items():
+            update_fns[key](val, chunk)
     if close_file:
         file_object.close()
     else:
