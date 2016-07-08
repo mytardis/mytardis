@@ -458,10 +458,10 @@ $('#modal-metadata .submit-button').live('click', function() {
 <div class="row-fluid" >
   <div class="span8">
     {% block dataset_content_preview %}
+    {% if dataset.get_images.exists %}
     <div class="row-fluid" style="margin-bottom: 20px">
     <h3>Preview Images</h3>
     <div class="info-box">
-    {% if dataset.get_images.exists %}
       <div id="preview" class="carousel" style="margin: 20px auto 20px auto">
         <!-- Carousel items -->
         <div class="carousel-inner" style="background-color: white;">
@@ -487,11 +487,9 @@ $('#modal-metadata .submit-button').live('click', function() {
             <a class="carousel-control right" href="#preview" data-slide="next">&rsaquo;</a>
         {% endif %}
       </div>
-    {% else %}
-          <div class="alert">No previews available</div>
-    {% endif %}
       </div>
     </div>
+    {% endif %}
     {% endblock dataset_content_preview %}
     <div id="metadata-pane-datafile" class="row-fluid">
        <h3>Datafile Information</h3>
