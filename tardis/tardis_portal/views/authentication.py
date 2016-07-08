@@ -281,5 +281,3 @@ def manage_auth_methods(request):
     else:
         # if GET, we'll just give the initial list of auth methods for the user
         return list_auth_methods(request)
-
-
