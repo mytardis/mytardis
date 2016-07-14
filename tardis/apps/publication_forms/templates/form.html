@@ -25,7 +25,7 @@
     </li>
     <li>{{ currentPageIdx + 1 }} of {{ totalPages - 1 }}</li>
     <li class="next">
-      <a href="#" ng-click="nextPage()"><span ng-show="currentPageIdx == 0">Accept and continue</span><span ng-hide="currentPageIdx == 0 || isLastPage()">Save and continue</span><span ng-show="isLastPage()">Submit</span></a>
+      <a href="#" ng-click="nextPage()"><span ng-show="currentPageIdx == 0">Agree</span><span ng-hide="currentPageIdx == 0 || isLastPage()">Save and continue</span><span ng-show="isLastPage()">Submit</span></a>
     </li>
     <li class="next" ng-show="isLastPage()">
       <a href="#" ng-click="saveAndClose()">Save and finish later</a>
@@ -47,7 +47,7 @@
       <div class="span12">
         <label>Publication title</label>
         <input type="text"
-               placeholder="Something snappy..."
+               placeholder="concise description"
                ng-model="formData.publicationTitle"
                ng-change="setTitle(formData.publicationTitle)"
                style="width:100%;"
