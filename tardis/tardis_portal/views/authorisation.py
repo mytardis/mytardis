@@ -197,7 +197,7 @@ def retrieve_access_list_tokens(request, experiment_id):
         return u.geturl()
         # return '%s?token=%s' % (request.META['HTTP_REFERER'], token.token)
 
-    page_url = request.META['HTTP_REFERER']
+    page_url = request.META.get('HTTP_REFERER')
     download_urls = Experiment.objects.get(id=experiment_id).get_download_urls()
 
     tokens = [{'expiry_date': token.expiry_date,
