@@ -169,7 +169,7 @@ def process_form(request):
             form_state['authors'] = [
                 {'name': ' '.join([request.user.first_name,
                                    request.user.last_name]),
-                 'institution': '',
+                 'institution': getattr(settings, 'DEFAULT_INSTITUTION', ''),
                  'email': request.user.email}]
 
     elif form_state['action'] == 'submit':
