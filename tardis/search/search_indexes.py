@@ -42,7 +42,8 @@ import os
 import datetime
 from haystack import indexes
 
-from tardis.tardis_portal.models import DataFile, Dataset, Experiment
+from tardis.tardis_portal.models import DataFile, Dataset, Experiment, \
+    ExperimentParameter
 
 logger = logging.getLogger(__name__)
 
@@ -104,3 +105,18 @@ class DataFileIndex(indexes.SearchIndex, indexes.Indexable):
 
     def get_model(self):
         return DataFile
+
+
+class ExperimentParameterIndex(indexes.SearchIndex, indexes.Indexable):
+    text = indexes.CharField(document=True)
+    experiment_id_stored = indexes.IntegerField()
+    parameter_name = indexes.CharField()
+
+    def prepare_text(self, obj):
+        return obj.get()
+
+    def prepare_experiment_id_stored(self, obj):
+        return obj.parameterset.experiment.id
+
+    def get_model(self):
+        return ExperimentParameter
