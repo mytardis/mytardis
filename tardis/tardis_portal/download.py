@@ -35,7 +35,7 @@ from django.utils.importlib import import_module
 from django.core.exceptions import ImproperlyConfigured
 from django.contrib.auth.decorators import login_required
 
-from tardis.analytics import tracker
+from tardis.analytics.tracker import IteratorTracker
 from tardis.tardis_portal.models import Dataset
 from tardis.tardis_portal.models import DataFile
 from tardis.tardis_portal.models import Experiment
@@ -372,7 +372,7 @@ class UncachedTarStream(TarFile):
         if self.do_gzip:
             yield self.close_gzip()
 
-    def get_response(self):
+    def get_response(self, tracker_data=None):
         if self.do_gzip:
             content_type = 'application/x-gzip'
             content_length = None
@@ -380,7 +380,8 @@ class UncachedTarStream(TarFile):
         else:
             content_type = 'application/x-tar'
             content_length = self.tar_size
-        response = StreamingHttpResponse(self.make_tar(),
+        file_iterator = IteratorTracker(self.make_tar(), tracker_data)
+        response = StreamingHttpResponse(file_iterator,
                                          content_type=content_type)
         response['Content-Disposition'] = 'attachment; filename="%s"' % \
                                           self.filename
@@ -407,15 +408,15 @@ def _streaming_downloader(request, datafiles, rootdir, filename,
             files,
             filename=filename,
             do_gzip=comptype != 'tar')
-        tracker.track_download(
-            'tar',
+        tracker_data = dict(
+            label='tar',
             session_id=request.COOKIES.get('_ga'),
             ip=request.META.get('REMOTE_ADDR', ''),
             user=request.user,
             total_size=tfs.tar_size,
             num_files=len(datafiles),
             ua=request.META.get('HTTP_USER_AGENT', None))
-        return tfs.get_response()
+        return tfs.get_response(tracker_data)
     except ValueError:  # raised when replica not verified TODO: custom excptn
         redirect = request.META.get('HTTP_REFERER',
                                     'http://%s/' %
