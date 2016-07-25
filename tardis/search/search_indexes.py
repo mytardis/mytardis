@@ -62,10 +62,11 @@ class ExperimentIndex(indexes.SearchIndex, indexes.Indexable):
     experiment_author = indexes.MultiValueField()
 
     def prepare_text(self, obj):
-        return '{} {} {}'.format(obj.title.encode('utf-8'),
-                                 ', '.join(self.prepare_experimentauthor(
-                                     obj)).encode('utf-8'),
-                                 obj.description.encode('utf-8'))
+        return '{}<br/>{}<br/>{}'.format(obj.title.encode('utf-8'),
+                                         ', '.join(
+                                             self.prepare_experimentauthor(obj)
+                                         ).encode('utf-8'),
+                                         obj.description.encode('utf-8'))
 
     def prepare_experimentauthor(self, obj):
         return [author.author for author in obj.experimentauthor_set.all()]
@@ -120,6 +121,9 @@ class ExperimentParameterIndex(indexes.SearchIndex, indexes.Indexable):
 
     def prepare_experiment_id_stored(self, obj):
         return obj.parameterset.experiment.id
+
+    def prepare_parameter_name(self, obj):
+        return obj.name.name
 
     def get_model(self):
         return ExperimentParameter

@@ -14,7 +14,8 @@
         {% for result in object_list %}
             {% if result.content_type == 'tardis_portal.experiment' %}
                 <div class="search_result">
-                    <div>Experiment <a href="{{ result.object.get_absolute_url }}">{{ result.highlighted.0|bleach|default:result.experiment_title }}</a>
+                    <div>Experiment <a href="{{ result.object.get_absolute_url }}">{{ result.object }}</a><br/>
+                        <div>{{ result.highlighted.0|bleach|default:result.text }}</div>
                     </div>
                 </div>
             {% elif result.content_type == 'tardis_portal.dataset' %}
@@ -34,6 +35,15 @@
                         {% endfor %}
                         <div>Dataset <a href="{{ result.object.dataset.get_absolute_url }}">{{ result.object.dataset.description }}</a>
                         <div>File <a href="{{ result.object.get_absolute_url }}">{{ result.highlighted.0|bleach|default:result.text }}</a></div></div>
+                    </div>
+                </div>
+            {% elif result.content_type == 'tardis_portal.experimentparameter' %}
+                <div class="search_result">
+                    <div>Experiments with matching metadata:<br/>
+                        {% for experiment in result.experiments %}
+                            <a href="{{ experiment.get_absolute_url }}">{{ experiment }}</a><br/>
+                        {% endfor %}
+                        <div>{{ result.parameter_name }}: {{ result.highlighted.0|bleach|default:result.text }}</div>
                     </div>
                 </div>
             {% endif %}
