@@ -1,6 +1,7 @@
+# pylint: disable=wildcard-import,unused-wildcard-import
 import os
 import dj_database_url
-from tardis.default_settings import * 
+from tardis.default_settings import *
 
 DEBUG = bool(os.getenv('DEBUG', False))
 
@@ -14,7 +15,7 @@ STATIC_ROOT = '/static/'
 BROKER_URL = os.getenv('BROKER_URL')
 
 # Don't use pickle as serializer, json is safer
-CELERY_TASK_SERIALIZER = 'json'  
+CELERY_TASK_SERIALIZER = 'json'
 CELERY_ACCEPT_CONTENT = ['application/json']
 
 SITE_TITLE = os.getenv('SITE_TITLE', 'MyTardis')
