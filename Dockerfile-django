@@ -1,0 +1,18 @@
+FROM mytardis/mytardis-run
+
+USER root
+
+RUN mkdir -p /static ; chown webapp:webapp /static
+
+USER webapp
+
+RUN . /appenv/bin/activate; \
+    pip install --no-index -f /wheelhouse psycopg2 mysql-python
+RUN . /appenv/bin/activate; pip install dj-database-url
+
+VOLUME /home/webapp/tardis
+
+RUN mkdir -p /home/webapp/var/store
+VOLUME /home/webapp/var/store
+
+COPY wait-for-db.sh /home/webapp/

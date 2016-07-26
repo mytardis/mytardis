@@ -1,0 +1,79 @@
+version: "2"
+services:
+  pg:
+    image: postgres
+    env_file: ./docker.env
+  rabbitmq:
+    image: rabbitmq
+    env_file: ./docker.env
+  nginx:
+    image: nginx
+    command: /bin/bash -c "while ! ping -c 1 webapp; do sleep 0.1; done;
+      sleep 1 && echo Starting && nginx -g 'daemon off;'"
+    links:
+      - webapp
+    volumes_from:
+      - webapp
+    volumes:
+      - ./docker-nginx/conf.d:/etc/nginx/conf.d
+    ports:
+        - "8080:80"
+    depends_on:
+      - webapp
+  webapp:
+    build:
+      context: .
+      dockerfile: Dockerfile-django
+    image: mytardis/mytardis-django
+    command: /appenv/bin/gunicorn -c /home/webapp/gunicorn_settings.py
+      -u webapp -g webapp -b unix:/tmp/gunicorn.socket -b 0.0.0.0:8000
+      wsgi:application
+    volumes:
+      - ./tardis:/home/webapp/tardis
+      - ./static:/static
+      - ./var/store:/home/webapp/var/store
+    tty: true
+    env_file: ./docker.env
+    expose:
+      - "8000"
+    links:
+        - pg
+    depends_on:
+      - pg
+  celeryd:
+    build:
+      context: .
+      dockerfile: Dockerfile-django
+    image: mytardis/mytardis-django
+    command: /appenv/bin/python mytardis.py celeryd -c 1
+      -Q celery,default,low_priority_queue -n "allqueues.%%h"
+      --loglevel INFO
+    volumes:
+      - ./tardis:/home/webapp/tardis
+      - ./var/store:/home/webapp/var/store
+    tty: true
+    env_file: ./docker.env
+    links:
+        - pg
+        - rabbitmq
+    depends_on:
+      - pg
+      - rabbitmq
+  celerybeat:
+    build:
+      context: .
+      dockerfile: Dockerfile-django
+    image: mytardis/mytardis-django
+    command: /appenv/bin/python mytardis.py celerybeat
+    command: /bin/bash -c "while ! ping -c 1 rabbitmq; do sleep 0.1; done;
+      sleep 1 && echo Starting && /appenv/bin/python mytardis.py celerybeat"
+    volumes:
+      - ./tardis:/home/webapp/tardis
+    tty: true
+    env_file: ./docker.env
+    links:
+        - pg
+        - rabbitmq
+    depends_on:
+      - pg
+      - rabbitmq
