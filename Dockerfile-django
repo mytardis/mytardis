@@ -15,4 +15,5 @@ VOLUME /home/webapp/tardis
 RUN mkdir -p /home/webapp/var/store
 VOLUME /home/webapp/var/store
 
-COPY wait-for-db.sh /home/webapp/
+COPY scripts/wait-for-db.sh /home/webapp/
+COPY scripts/docker-webapp.sh /home/webapp/

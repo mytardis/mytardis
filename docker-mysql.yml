@@ -15,20 +15,21 @@ services:
     volumes_from:
       - webapp
     volumes:
-      - ./docker-nginx/conf.d:/etc/nginx/conf.d
+      - ./etc/docker-nginx/conf.d:/etc/nginx/conf.d
     ports:
         - "8080:80"
+    depends_on:
+      - webapp
   webapp:
     build:
       context: .
       dockerfile: Dockerfile-django
     image: mytardis/mytardis-django
-    command: /appenv/bin/gunicorn -c /home/webapp/gunicorn_settings.py
-      -u webapp -g webapp -b unix:/tmp/gunicorn.socket -b 0.0.0.0:8000
-      wsgi:application
+    command: /home/webapp/docker-webapp.sh
     volumes:
       - ./tardis:/home/webapp/tardis
       - ./static:/static
+      - ./var/store:/home/webapp/var/store
     tty: true
     env_file: ./docker-mysql.env
     expose:
