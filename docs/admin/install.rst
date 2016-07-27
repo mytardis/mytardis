@@ -676,7 +676,7 @@ View logs:
 .. code-block:: bash
 
    docker-compose logs
-   docker-compose logs webapp
+   docker-compose logs -f webapp
    docker-compose exec webapp tail /home/webapp/request.log
    docker-compose exec webapp tail /home/webapp/tardis.log
 
@@ -699,7 +699,9 @@ If a container exits quickly with an error, you won't see it in the
 ``docker-compose ps`` list, but you will see it in the ``docker ps -a``
 list.  You can then run ``docker logs [container_id]``.
 
-If http://localhost:8080 returns an HTTP 502 status code, then it's
+If http://localhost:8080 returns an HTTP 502 status code, even after
+waiting for the webapp container to finish its initialization (as
+observed by ``docker-compose logs -f webapp``), then it's
 possible that the nginx service attempted to start up before the
 "webapp" host was resolvable.  In this case, you can restart nginx
 with ``docker-compose restart nginx``.
