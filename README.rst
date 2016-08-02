@@ -50,7 +50,8 @@ To try out MyTardis, install Docker and run
 This will download pre-built images from Docker Hub and start a complete
 MyTardis service in your Docker host.
 
-Log in with username ``demo`` and password ``demo``.
+Open the web interface in your browser: http://localhost:8080 and
+log in with username ``demo`` and password ``demo``.
 
 Find out more
 -------------

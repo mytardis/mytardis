@@ -13,7 +13,7 @@ then
     done
 elif [[ $DB_ENGINE == "mysql" ]]
 then
-    until nc -z db 3306; do
+    until nc -z mysql 3306; do
         echo "$(date) - waiting for $DB_ENGINE..."
         sleep 1
     done
