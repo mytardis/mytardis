@@ -37,8 +37,11 @@ RUN apt-get update && apt-get install \
     zlib1g \
     && apt-get clean
 
-RUN mkdir /appenv
-RUN chown -R webapp:webapp /appenv
+RUN mkdir /appenv && chown webapp:webapp /appenv
+RUN mkdir /static && chown webapp:webapp /static
+VOLUME /static
+RUN mkdir /store && chown webapp:webapp /store
+VOLUME /store
 
 RUN chown -R webapp:webapp /home/webapp
 USER webapp
@@ -46,3 +49,4 @@ RUN virtualenv --system-site-packages /appenv
 RUN . /appenv/bin/activate; pip install -U -e "git+https://github.com/pypa/pip.git#egg=pip" wheel
 COPY . /home/webapp/
 USER root
+RUN chown -R webapp:webapp /home/webapp

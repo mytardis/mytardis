@@ -1,77 +1,89 @@
 version: "2"
 services:
-  pg:
+  db:
     image: postgres
-    env_file: ./docker.env
+    env_file: ./docker-demo.env
+    networks:
+      - policeboxnet
   rabbitmq:
     image: rabbitmq
-    env_file: ./docker.env
+    env_file: ./docker-demo.env
+    networks:
+      - policeboxnet
+  elasticsearch:
+    image: elasticsearch
+    env_file: ./docker-demo.env
+    networks:
+      - policeboxnet
   nginx:
     image: nginx
-    command: /bin/bash -c "while ! ping -c 1 webapp; do sleep 0.1; done;
-      sleep 1 && echo Starting && nginx -g 'daemon off;'"
-    links:
-      - webapp
     volumes_from:
       - webapp
     volumes:
-      - ./etc/docker-nginx/conf.d:/etc/nginx/conf.d
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
     ports:
-        - "8080:80"
+      - "8080:80"
     depends_on:
       - webapp
+    networks:
+      - policeboxnet
   webapp:
-    build:
-      context: .
-      dockerfile: Dockerfile-django
-    image: mytardis/mytardis-django
-    command: /home/webapp/docker-webapp.sh
+    image: mytardis/mytardis-run
+    entrypoint:
+      - scripts/docker-cmd.sh
+      - gunicorn
     volumes:
-      - ./tardis:/home/webapp/tardis
       - ./static:/static
       - ./var/store:/home/webapp/var/store
     tty: true
-    env_file: ./docker.env
-    expose:
-      - "8000"
-    links:
-        - pg
+    env_file: ./docker-demo.env
     depends_on:
-      - pg
-  celeryd:
-    build:
-      context: .
-      dockerfile: Dockerfile-django
-    image: mytardis/mytardis-django
-    command: /appenv/bin/python mytardis.py celeryd -c 1
-      -Q celery,default,low_priority_queue -n "allqueues.%%h"
-      --loglevel INFO
+      - db
+      - elasticsearch
+      - rabbitmq
+    networks:
+      - policeboxnet
+  sftpd:
+    image: mytardis/mytardis-run
+    entrypoint:
+      - scripts/docker-cmd.sh
+      - sftpd
     volumes:
-      - ./tardis:/home/webapp/tardis
       - ./var/store:/home/webapp/var/store
-    tty: true
-    env_file: ./docker.env
-    links:
-        - pg
-        - rabbitmq
+    env_file: ./docker-demo.env
+    ports:
+      - "2200:2200"
     depends_on:
-      - pg
+      - db
+      - elasticsearch
       - rabbitmq
-  celerybeat:
-    build:
-      context: .
-      dockerfile: Dockerfile-django
-    image: mytardis/mytardis-django
-    command: /appenv/bin/python mytardis.py celerybeat
-    command: /bin/bash -c "while ! ping -c 1 rabbitmq; do sleep 0.1; done;
-      sleep 1 && echo Starting && /appenv/bin/python mytardis.py celerybeat"
+    networks:
+      - policeboxnet
+  celeryd:
+    image: mytardis/mytardis-run
+    entrypoint:
+      - scripts/docker-cmd.sh
+      - celeryd
     volumes:
-      - ./tardis:/home/webapp/tardis
-    tty: true
-    env_file: ./docker.env
-    links:
-        - pg
-        - rabbitmq
+      - ./var/store:/home/webapp/var/store
+    env_file: ./docker-demo.env
     depends_on:
-      - pg
+      - db
+      - elasticsearch
       - rabbitmq
+    networks:
+      - policeboxnet
+  celerybeat:
+    image: mytardis/mytardis-run
+    entrypoint:
+      - scripts/docker-cmd.sh
+      - celerybeat
+    env_file: ./docker-demo.env
+    depends_on:
+      - db
+      - elasticsearch
+      - rabbitmq
+    networks:
+      - policeboxnet
+networks:
+  policeboxnet:

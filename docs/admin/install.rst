@@ -12,7 +12,7 @@ Prerequisites
 -------------
 
 Ubuntu 14.04
-~~~~~~~~~~~~ 
+~~~~~~~~~~~~
 
 Run the script::
 
@@ -617,22 +617,6 @@ MyTardis's automated tests are run using:
    docker-compose -f docker-build.yml run builder
    docker-compose -f docker-test.yml run -e TEST_TYPE=memory test
 
-mytardis/mytardis-django
-~~~~~~~~~~~~~~~~~~~~~~~~
-
-The mytardis/mytardis-django image extends the mytardis/mytardis-run image,
-providing a /static volume which can be used to share static content
-between the webapp (gunicorn) container and an nginx web server container.
-The default command for this image waits for a database connection (Postgres
-or MySQL) to become available, creates the database tables required by
-MyTardis, installs MyTardis's static content, and starts up a MyTardis server
-using gunicorn.
-
-This image can be built with docker-compose:
-
-.. code-block:: bash
-
-   docker-compose build webapp
 
 Docker Demo
 ~~~~~~~~~~~
@@ -657,14 +641,14 @@ You can list running containers:
 
    $ docker-compose ps
 
-           Name                       Command               State                    Ports                  
+           Name                       Command               State                    Ports
    --------------------------------------------------------------------------------------------------------
-   mytardis_celerybeat_1   /bin/bash -c while ! ping  ...   Up                                              
-   mytardis_celeryd_1      /appenv/bin/python mytardi ...   Up                                              
-   mytardis_nginx_1        /bin/bash -c while ! ping  ...   Up      443/tcp, 0.0.0.0:8080->80/tcp           
-   mytardis_pg_1           /docker-entrypoint.sh postgres   Up      5432/tcp                                
-   mytardis_rabbitmq_1     docker-entrypoint.sh rabbi ...   Up      25672/tcp, 4369/tcp, 5671/tcp, 5672/tcp 
-   mytardis_webapp_1       /home/webapp/docker-webapp.sh    Up      8000/tcp                                
+   mytardis_celerybeat_1   /bin/bash -c while ! ping  ...   Up
+   mytardis_celeryd_1      /appenv/bin/python mytardi ...   Up
+   mytardis_nginx_1        /bin/bash -c while ! ping  ...   Up      443/tcp, 0.0.0.0:8080->80/tcp
+   mytardis_pg_1           /docker-entrypoint.sh postgres   Up      5432/tcp
+   mytardis_rabbitmq_1     docker-entrypoint.sh rabbi ...   Up      25672/tcp, 4369/tcp, 5671/tcp, 5672/tcp
+   mytardis_webapp_1       /home/webapp/docker-webapp.sh    Up      8000/tcp
 
 The "mytardis_" prefix is the project name, and since we did not use
 `docker-compose's -p command-line option
@@ -705,3 +689,17 @@ observed by ``docker-compose logs -f webapp``), then it's
 possible that the nginx service attempted to start up before the
 "webapp" host was resolvable.  In this case, you can restart nginx
 with ``docker-compose restart nginx``.
+
+Build your own demo images
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The demo uses pre-built images downloaded from Docker Hub. To build the images
+locally, e.g. after you made changes to the code, run these commands:
+
+.. code-block:: bash
+
+   docker-compose -f docker-build.yml build
+   docker-compose -f docker-build.yml run builder
+   docker-compose -f docker-test.yml build
+
+And then again just ``docker-compose up`` to run them.

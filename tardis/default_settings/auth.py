@@ -1,0 +1,77 @@
+USER_PROVIDERS = (
+    'tardis.tardis_portal.auth.localdb_auth.DjangoUserProvider',
+)
+
+GROUP_PROVIDERS = (
+    'tardis.tardis_portal.auth.localdb_auth.DjangoGroupProvider',
+    'tardis.tardis_portal.auth.token_auth.TokenGroupProvider',
+)
+
+# AUTH_PROVIDERS entry format:
+# ('name', 'display name', 'backend implementation')
+#   name - used as the key for the entry
+#   display name - used as the displayed value in the login form
+#   backend implementation points to the actual backend implementation
+#
+#   In most cases, the backend implementation should be a fully
+#   qualified class name string, whose class can be instantiated without
+#   any arguments.  For LDAP authentication, the
+#       'tardis.tardis_portal.auth.ldap_auth.LDAPBackend'
+#   class can't be instantiated without any arguments, so the
+#       'tardis.tardis_portal.auth.ldap_auth.ldap_auth'
+#   wrapper function should be used instead.
+#
+# We will assume that localdb will always be a default AUTH_PROVIDERS entry
+
+AUTH_PROVIDERS = (
+    ('localdb', 'Local DB',
+     'tardis.tardis_portal.auth.localdb_auth.DjangoAuthBackend'),
+)
+
+
+AUTHENTICATION_BACKENDS = (
+    'django.contrib.auth.backends.ModelBackend',
+    'tardis.tardis_portal.auth.authorisation.ACLAwareBackend',
+)
+
+MANAGE_ACCOUNT_ENABLED = True
+
+AUTOGENERATE_API_KEY = False
+'''
+Generate a tastypie API key with user post_save
+(tardis/tardis_portal/models/hooks.py)
+'''
+
+# default authentication module for experiment ownership user during
+# ingestion? Must be one of the above authentication provider names
+DEFAULT_AUTH = 'localdb'
+
+AUTH_PROFILE_MODULE = 'tardis_portal.UserProfile'
+
+# New users are added to these groups by default.
+NEW_USER_INITIAL_GROUPS = []
+
+# Turn on/off the self-registration link and form
+REGISTRATION_OPEN = True
+# or disable registration app (copy to your settings.py first!)
+# INSTALLED_APPS = filter(lambda x: x != 'registration', INSTALLED_APPS)
+ACCOUNT_ACTIVATION_DAYS = 3
+
+# Show the Rapid Connect login button.
+RAPID_CONNECT_ENABLED = False
+
+RAPID_CONNECT_CONFIG = {}
+
+RAPID_CONNECT_CONFIG['secret'] = 'CHANGE_ME'
+RAPID_CONNECT_CONFIG['authnrequest_url'] = ''
+'''something like
+'https://rapid.test.aaf.edu.au/jwt/authnrequest/research/XXXXXXXXXXXXXXXX'
+'''
+
+RAPID_CONNECT_CONFIG['iss'] = 'https://rapid.test.aaf.edu.au'
+''' 'https://rapid.test.aaf.edu.au' or 'https://rapid.aaf.edu.au'
+'''
+RAPID_CONNECT_CONFIG['aud'] = 'https://example.com/rc/'
+'''Public facing URL that accepts the HTTP/HTTPS POST request from
+Rapid Connect.
+'''
