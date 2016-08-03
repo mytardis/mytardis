@@ -30,6 +30,7 @@ from tastypie.serializers import Serializer
 from tastypie.utils import trailing_slash
 from tastypie.contrib.contenttypes.fields import GenericForeignKeyField
 
+from tardis.analytics.tracker import IteratorTracker
 from tardis.tardis_portal import tasks
 from tardis.tardis_portal.auth.decorators import \
     get_accessible_datafiles_for_user
@@ -927,8 +928,17 @@ class DataFileResource(MyTardisModelResource):
             self.build_bundle(obj=file_record, request=request))
         file_object = file_record.get_file()
         wrapper = FileWrapper(file_object)
+        tracker_data = dict(
+            label='file',
+            session_id=request.COOKIES.get('_ga'),
+            ip=request.META.get('REMOTE_ADDR', ''),
+            user=request.user,
+            total_size=file_record.size,
+            num_files=1,
+            ua=request.META.get('HTTP_USER_AGENT', None))
         response = StreamingHttpResponse(
-            wrapper, content_type=file_record.mimetype)
+            IteratorTracker(wrapper, tracker_data),
+            content_type=file_record.mimetype)
         response['Content-Length'] = file_record.size
         response['Content-Disposition'] = 'attachment; filename="%s"' % \
                                           file_record.filename

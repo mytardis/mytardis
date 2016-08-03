@@ -388,7 +388,7 @@ $('#modal-metadata .submit-button').live('click', function() {
   <h4>Dataset</h4>
     <div class="pull-right">
   {% if push_to_enabled and is_authenticated %}
-    <a class="btn btn-mini btn-danger" title="Push to..."
+    <a class="btn btn-mini btn-primary" title="Push to..."
        onclick="window.open('{{ push_to_url }}', 'push-to', 'width=800, height=600'); return false;"
        href="{{ push_to_url }}" target="_blank">
       <i class="icon-upload"></i>
@@ -458,10 +458,10 @@ $('#modal-metadata .submit-button').live('click', function() {
 <div class="row-fluid" >
   <div class="span8">
     {% block dataset_content_preview %}
+    {% if dataset.get_images.exists %}
     <div class="row-fluid" style="margin-bottom: 20px">
     <h3>Preview Images</h3>
     <div class="info-box">
-    {% if dataset.get_images.exists %}
       <div id="preview" class="carousel" style="margin: 20px auto 20px auto">
         <!-- Carousel items -->
         <div class="carousel-inner" style="background-color: white;">
@@ -487,11 +487,9 @@ $('#modal-metadata .submit-button').live('click', function() {
             <a class="carousel-control right" href="#preview" data-slide="next">&rsaquo;</a>
         {% endif %}
       </div>
-    {% else %}
-          <div class="alert">No previews available</div>
-    {% endif %}
       </div>
     </div>
+    {% endif %}
     {% endblock dataset_content_preview %}
     <div id="metadata-pane-datafile" class="row-fluid">
        <h3>Datafile Information</h3>

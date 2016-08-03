@@ -7,6 +7,7 @@ from tempfile import NamedTemporaryFile
 
 from os import path
 import mimetypes
+from urllib import quote
 
 from django.conf import settings
 from django.core.files import File
@@ -514,11 +515,11 @@ class DataFileObject(models.Model):
         '''
 
         def default_identifier(dfo):
-            path_parts = ["%s-%s" % (dfo.datafile.dataset.description
-                                     or 'untitled',
-                                     dfo.datafile.dataset.id)]
+            path_parts = ["%s-%s" % (
+                quote(dfo.datafile.dataset.description, safe='') or 'untitled',
+                dfo.datafile.dataset.id)]
             if dfo.datafile.directory is not None:
-                path_parts += [dfo.datafile.directory]
+                path_parts += [quote(dfo.datafile.directory)]
             path_parts += [dfo.datafile.filename.strip()]
             uri = path.join(*path_parts)
             return uri
@@ -766,8 +767,8 @@ def compute_checksums(file_object,
                   'sha512sum': lambda x, y: x.update(y)}
     file_object.seek(0)
     for chunk in iter(lambda: file_object.read(32 * blocksize), ''):
-        for key in results.keys():
-            update_fns[key](results[key], chunk)
+        for key, val in results.items():
+            update_fns[key](val, chunk)
     if close_file:
         file_object.close()
     else:

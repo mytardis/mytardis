@@ -63,12 +63,13 @@ def global_contexts(request):
             'sponsored_by': sponsored_by,
             'site_styles': site_styles, }
 
+
 def google_analytics(request):
-    '''
+    """
     adds context for portal_template.html
-    '''
+    """
     ga_id = getattr(settings, 'GOOGLE_ANALYTICS_ID', '')
-    ga_host = getattr(settings, 'GOOGLE_ANALYTICS_HOST', '')
+    ga_host = getattr(settings, 'GOOGLE_ANALYTICS_HOST', 'auto')
     ga_enabled = ga_id != '' and ga_host != ''
     return {'ga_enabled': ga_enabled,
             'ga_id': ga_id,

@@ -296,4 +296,3 @@ class SingleSearchView(SearchView):
             'object_list': sqs,
         })
         return self.render_to_response(context)
-

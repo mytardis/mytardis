@@ -159,6 +159,8 @@ TEMPLATES = [
                 '.user_details_processor',
                 'tardis.tardis_portal.context_processors'
                 '.manage_account_processor',
+                'tardis.tardis_portal.context_processors'
+                '.google_analytics',
             ],
             'loaders': [
                 'django.template.loaders.app_directories.Loader',
@@ -262,6 +264,7 @@ INSTALLED_APPS = (
     'tardis.tardis_portal',
     'tardis.tardis_portal.templatetags',
     'tardis.search',
+    'tardis.analytics',
     # these optional apps, may require extra settings
     'tardis.apps.publication_forms',
     'tardis.apps.oaipmh',
