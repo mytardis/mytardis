@@ -55,7 +55,6 @@ ua-parser==0.3.3
 user-agents==0.1.1
 wsgiref==0.1.2
 django-cas-ng
-djangosaml2
 
 # apps go here
 -r tardis/apps/publication_forms/requirements.txt
