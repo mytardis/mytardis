@@ -39,6 +39,7 @@ from tardis.tardis_portal.shortcuts import render_response_index, \
 from tardis.tardis_portal.util import dirname_with_id
 from tardis.tardis_portal.views.utils import (
     _redirect_303, _add_protocols_and_organizations, HttpResponseSeeAlso)
+from tardis.default_settings import RAPID_CONNECT_CONFIG
 
 logger = logging.getLogger(__name__)
 
@@ -107,36 +108,67 @@ def use_multimodal_login(fn):
     def add_multimodal_login_settings(cxt, *args, **kwargs):
         c = fn(cxt, *args, **kwargs)
 
-        c['DEFAULT_LOGIN'] = getattr(settings,'DEFAULT_LOGIN', 'localdb')
-        c['CAS_ENABLED'] = getattr(settings,'CAS_ENABLED', False)
-        c['LOCALDB_ENABLED'] = getattr(settings,'LOCALDB_ENABLED', False)
-        c['RAPID_CONNECT_ENABLED'] = getattr(settings,
-                                               'RAPID_CONNECT_ENABLED', False)
-        c['SAML2_ENABLED'] = getattr(settings,'SAML2_ENABLED', False)
+        c['LOGIN_FRONTEND_DEFAULT'] = getattr(settings,
+                                        'LOGIN_FRONTEND_DEFAULT', 'local')
         
-        if c['LOCALDB_ENABLED']:
-            c['LOCALDB_DISPLAY'] = getattr(settings,
-                                               'LOCALDB_DISPLAY',' Local')
+        c['LOGIN_MULTIMODAL'] = False
+        c['LOCAL_ENABLED'] = False
+        c['AAF_ENABLED'] = False
+        c['AAFE_ENABLED'] = False
+        c['CAS_ENABLED'] = False
         
-        if c['RAPID_CONNECT_ENABLED']:
-            c['RAPID_CONNECT_LOGIN_URL'] = settings.RAPID_CONNECT_CONFIG[
-                                                           'authnrequest_url']
-            c['RAPID_CONNECT_DISPLAY'] = getattr(settings, 
-                                             'RAPID_CONNECT_DISPLAY', 'AAF')
-             
-        if c['CAS_ENABLED']:
-            c['CAS_DISPLAY'] = getattr(settings, 'CAS_DISPLAY', 'CAS')
-            c['CAS_SERVER_URL'] = getattr(settings, 'CAS_SERVER_URL', '')
-            c['CAS_SERVICE_URL'] = getattr(settings, 'CAS_SERVICE_URL', '')
+        enabled_count = 0
+        for key in settings.LOGIN_FRONTENDS:
+            label = settings.LOGIN_FRONTENDS['key']['label']
+            enabled = settings.LOGIN_FRONTENDS['key']['enabled']
             
-        if c['SAML2_ENABLED']:
-            c['SAML2_DISPLAY'] = getattr(settings, 'SAML2_DISPLAY', 'SAML2')
-            c['SAML2_LOGIN_URL'] = getattr(settings, 'SAML2_LOGIN_URL', 
-                                           '/saml2/login')
-            
+            if enabled:
+                enabled_count += 1
+                
+                if key == 'local':
+                    c['LOCAL_ENABLED'] = True
+                    c['LOCAL_DISPLAY'] = label
+                    
+                if key == 'aaf' or key == 'aafe':
+                    c['AAF_LOGIN_URL'] = settings.RAPID_CONNECT_CONFIG[
+                                                  'authnrequest_url']
+                    
+                    if not c['AAF_LOGIN_URL']:
+                        raise ImproperlyConfigured(
+                              "RAPID_CONNECT_CONFIG['authnrequest_url'] "
+                              "must be configured in settings "
+                              "if AAF or AAFE is enabled.")
+                        
+                    if key == "aaf":
+                        c['AAF_ENABLED'] = True
+                        c['AAF_DISPLAY'] = label
+                       
+                    if key == "aafe":
+                        c['AAFE_ENABLED'] = True
+                        c['AAFE_DISPLAY'] = label
+                        c['AAF_ENTITY_URL'] = settings. \
+                                RAPID_CONNECT_CONFIG['entityID']
+                        if not c['AAF_ENTITY_URL']:
+                            raise ImproperlyConfigured(
+                              "RAPID_CONNECT_CONFIG['entityID'] "
+                              "must be configured in settings "
+                              "if AAFE is enabled.")
+
+                if key == 'cas':
+                    c['CAS_ENABLED'] = True
+                    c['CAS_DISPLAY'] = label
+                    
+        if enabled_count > 1:
+            c['LOGIN_MULTIMODAL'] = True 
+                    
         return c
 
     return add_multimodal_login_settings
+
+
+@use_multimodal_login
+def get_multimodal_context_data(cxt, **kwargs):
+    return cxt
 
 
 class IndexView(TemplateView):
@@ -353,6 +385,7 @@ def about(request):
              settings, 'CUSTOM_ABOUT_SECTION_TEMPLATE',
              'tardis_portal/about_include.html'),
          }
+    c = get_multimodal_context_data(c)
     return HttpResponse(render_response_index(request,
                         'tardis_portal/about.html', c))
 
@@ -586,6 +619,7 @@ def stats(request):
         'datafile_count': DataFile.objects.all().count(),
         'datafile_size': datafile_size,
     }
+    c = get_multimodal_context_data(c)
     return HttpResponse(render_response_index(request,
                         'tardis_portal/stats.html', c))
 
@@ -595,6 +629,7 @@ def user_guide(request):
         'user_guide_location': getattr(
             settings, 'CUSTOM_USER_GUIDE', 'user_guide/index.html'),
     }
+    c = get_multimodal_context_data(c)
     return HttpResponse(render_response_index(request,
                         'tardis_portal/user_guide.html', c))
 
@@ -675,6 +710,7 @@ def public_data(request):
     '''
     c = {'public_experiments':
          Experiment.safe.public().order_by('-update_time'), }
+    c = get_multimodal_context_data(c)
     return HttpResponse(render_response_index(
         request, 'tardis_portal/public_data.html', c))
 
@@ -726,6 +762,7 @@ def experiment_list_public(request):
         'experiments': Experiment.objects.exclude(private_filter)
                                          .order_by('-update_time'),
     }
+    c = get_multimodal_context_data(c)
 
     return HttpResponse(render_response_search(request,
                         'tardis_portal/experiment/list_public.html', c))
