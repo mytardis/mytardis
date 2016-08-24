@@ -430,8 +430,13 @@ class ParameterSet(models.Model, ParameterSetManagerMixin):
 
 class Parameter(models.Model):
     name = models.ForeignKey(ParameterName)
+<<<<<<< HEAD
     # string_value has a custom index created via migrations (for Postgresql)
     string_value = models.TextField(null=True, blank=True)
+=======
+    string_value = models.CharField(max_length=255, null=True, blank=True
+                                    , db_index=True)
+>>>>>>> origin
     numerical_value = models.FloatField(null=True, blank=True, db_index=True)
     datetime_value = models.DateTimeField(null=True, blank=True, db_index=True)
     link_id = models.PositiveIntegerField(null=True, blank=True)

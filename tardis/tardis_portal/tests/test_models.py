@@ -212,8 +212,13 @@ class ModelTestCase(TestCase):
             self.assertEqual(df_file.dataset, dataset)
             self.assertEqual(df_file.size, None)
             self.assertEqual(df_file.get_download_url(),
+<<<<<<< HEAD
                              '/api/v1/dataset_file/%d/download%s' %
                              (first_id + 1, trailing_slash()))
+=======
+                             '/api/v1/dataset_file/2/download%s' %
+                             trailing_slash())
+>>>>>>> origin
 
             df_file = _build(dataset, 'file2.txt', 'path/file2#txt')
             self.assertEqual(df_file.filename, 'file2.txt')
