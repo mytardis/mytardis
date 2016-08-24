@@ -1,3 +1,16 @@
+<script type="text/javascript" src="/static/clipboard/clipboard.min.js"></script>
+<script type="text/javascript">
+    var clipboard = new Clipboard('.btn.clipboard');
+    {% comment %}
+    clipboard.on('success', function(e) {
+        console.log(e);
+    });
+    clipboard.on('error', function(e) {
+        console.log(e);
+    });
+    {% endcomment %}
+</script>
+
 <div class="access_list3">
 <div class="tokens table table-condensed">
   <div class="access_list_tokens">
@@ -9,6 +22,11 @@
                 <th style="width: 40%;">
                     Temporary Link
                 </th>
+                {% if has_archive_download_url %}
+                <th style="width: 40%;">
+                    Archive direct download
+                </th>
+                {% endif %}
                 <th>
                     Expiry
                 </th>
@@ -20,8 +38,18 @@
             <tr>
                 <td>
                     <a href="{{ token.url }}"
-                    style="font-weight: bold;">Right click.. copy link</a>
+                    style="font-weight: bold;">Page link</a><br/>
+                    <button class="btn clipboard" data-clipboard-text="{{ token.url }}">
+                        <span class="icon-share"></span> Copy to clipboard</button>
                 </td>
+               {% if token.download_url %}
+                <td>
+                    <a href="{{ token.download_url }}"
+                    style="font-weight: bold;">Archive link</a><br/>
+                    <button class="btn clipboard" data-clipboard-text="{{ token.download_url }}">
+                        <span class="icon-share"></span> Copy to clipboard</button>
+                </td>
+                {% endif %}
                 <td align="center">
                     {{ token.expiry_date }}
                 </td>

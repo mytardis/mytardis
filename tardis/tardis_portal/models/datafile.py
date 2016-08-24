@@ -7,6 +7,7 @@ from tempfile import NamedTemporaryFile
 
 from os import path
 import mimetypes
+from urllib import quote
 
 from django.conf import settings
 from django.core.files import File
@@ -22,7 +23,6 @@ from django.utils import timezone
 import magic
 
 from tardis.tardis_portal import tasks
-from .fields import DirectoryField
 from .dataset import Dataset
 from .storage import StorageBox, StorageBoxOption, StorageBoxAttribute
 
@@ -51,7 +51,7 @@ class DataFile(models.Model):
 
     dataset = models.ForeignKey(Dataset)
     filename = models.CharField(max_length=400)
-    directory = DirectoryField(blank=True, null=True, max_length=255)
+    directory = models.CharField(blank=True, null=True, max_length=255)
     size = models.BigIntegerField(blank=True, null=True)
     created_time = models.DateTimeField(null=True, blank=True)
     modification_time = models.DateTimeField(null=True, blank=True)
@@ -515,11 +515,11 @@ class DataFileObject(models.Model):
         '''
 
         def default_identifier(dfo):
-            path_parts = ["%s-%s" % (dfo.datafile.dataset.description
-                                     or 'untitled',
-                                     dfo.datafile.dataset.id)]
+            path_parts = ["%s-%s" % (
+                quote(dfo.datafile.dataset.description, safe='') or 'untitled',
+                dfo.datafile.dataset.id)]
             if dfo.datafile.directory is not None:
-                path_parts += [dfo.datafile.directory]
+                path_parts += [quote(dfo.datafile.directory)]
             path_parts += [dfo.datafile.filename.strip()]
             uri = path.join(*path_parts)
             return uri
@@ -767,8 +767,8 @@ def compute_checksums(file_object,
                   'sha512sum': lambda x, y: x.update(y)}
     file_object.seek(0)
     for chunk in iter(lambda: file_object.read(32 * blocksize), ''):
-        for key in results.keys():
-            update_fns[key](results[key], chunk)
+        for key, val in results.items():
+            update_fns[key](val, chunk)
     if close_file:
         file_object.close()
     else:

@@ -121,7 +121,7 @@ def rcauth(request):
                 'first_name': first_name,
                 'last_name': request.session['attributes']['surname'],
             }
-            
+
             # if a principal domain is set 
             # strip domain from edupersonprincipalname
             # and use remainder as user id    
@@ -329,5 +329,3 @@ def manage_auth_methods(request):
     else:
         # if GET, we'll just give the initial list of auth methods for the user
         return list_auth_methods(request)
-
-

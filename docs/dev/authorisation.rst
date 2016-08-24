@@ -14,8 +14,8 @@ the custom object level permission framework described below.
 
     AUTHENTICATION_BACKENDS = (
         'django.contrib.auth.backends.ModelBackend',
-        'tardis.tardis_portal.auth.cas.backends.CASBackend',
     	'tardis.tardis_portal.auth.authorisation.ACLAwareBackend',
+        'tardis.tardis_portal.auth.cas.backends.CASBackend',
     )
 
 Using the Central Authentication Service (CAS) Backend

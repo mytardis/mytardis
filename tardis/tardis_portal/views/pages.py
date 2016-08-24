@@ -39,6 +39,7 @@ from tardis.tardis_portal.shortcuts import render_response_index, \
 from tardis.tardis_portal.util import dirname_with_id
 from tardis.tardis_portal.views.utils import (
     _redirect_303, _add_protocols_and_organizations, HttpResponseSeeAlso)
+from tardis.default_settings import RAPID_CONNECT_CONFIG
 
 logger = logging.getLogger(__name__)
 
@@ -96,7 +97,7 @@ def use_multimodal_login(fn):
     """
     A decorator that adds appropriate settings to the get_context_data 
     method.
-    
+
     :param fn: A get_context_data function/method.
     :type fn: types.FunctionType
     :return: A get_context_data function that adds CAS*, SAML2, and LOGIN keys 
@@ -108,44 +109,45 @@ def use_multimodal_login(fn):
         c = fn(cxt, *args, **kwargs)
 
         c['LOGIN_FRONTEND_DEFAULT'] = getattr(settings,
-					'LOGIN_FRONTEND_DEFAULT', 'local')
-
+                                        'LOGIN_FRONTEND_DEFAULT', 'local')
+        
         c['LOGIN_MULTIMODAL'] = False
         c['LOCAL_ENABLED'] = False
         c['AAF_ENABLED'] = False
         c['AAFE_ENABLED'] = False
         c['CAS_ENABLED'] = False
-       
+        
         enabled_count = 0
         for key in settings.LOGIN_FRONTENDS:
-            label = settings.LOGIN_FRONTENDS[key]['label']
-            enabled = settings.LOGIN_FRONTENDS[key]['enabled']
-
+            label = settings.LOGIN_FRONTENDS['key']['label']
+            enabled = settings.LOGIN_FRONTENDS['key']['enabled']
+            
             if enabled:
                 enabled_count += 1
-
+                
                 if key == 'local':
                     c['LOCAL_ENABLED'] = True
                     c['LOCAL_DISPLAY'] = label
-
+                    
                 if key == 'aaf' or key == 'aafe':
                     c['AAF_LOGIN_URL'] = settings.RAPID_CONNECT_CONFIG[
                                                   'authnrequest_url']
+                    
                     if not c['AAF_LOGIN_URL']:
                         raise ImproperlyConfigured(
                               "RAPID_CONNECT_CONFIG['authnrequest_url'] "
                               "must be configured in settings "
-                              "if AAF or AAFE is enabled.") 
-
-	            if key == 'aaf':
+                              "if AAF or AAFE is enabled.")
+                        
+                    if key == "aaf":
                         c['AAF_ENABLED'] = True
                         c['AAF_DISPLAY'] = label
-
-                    if key == 'aafe':
+                       
+                    if key == "aafe":
                         c['AAFE_ENABLED'] = True
                         c['AAFE_DISPLAY'] = label
                         c['AAF_ENTITY_URL'] = settings. \
- 				RAPID_CONNECT_CONFIG['entityID']
+                                RAPID_CONNECT_CONFIG['entityID']
                         if not c['AAF_ENTITY_URL']:
                             raise ImproperlyConfigured(
                               "RAPID_CONNECT_CONFIG['entityID'] "
@@ -155,10 +157,10 @@ def use_multimodal_login(fn):
                 if key == 'cas':
                     c['CAS_ENABLED'] = True
                     c['CAS_DISPLAY'] = label
-
+                    
         if enabled_count > 1:
-            c['LOGIN_MULTIMODAL'] = True
-
+            c['LOGIN_MULTIMODAL'] = True 
+                    
         return c
 
     return add_multimodal_login_settings
@@ -167,7 +169,7 @@ def use_multimodal_login(fn):
 @use_multimodal_login
 def get_multimodal_context_data(cxt, **kwargs):
     return cxt
- 
+
 
 class IndexView(TemplateView):
     template_name = 'tardis_portal/index.html'

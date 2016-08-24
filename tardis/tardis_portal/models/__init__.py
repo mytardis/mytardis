@@ -42,26 +42,27 @@ models/__init__.py
 
 from django.contrib.auth.models import User, Group
 
-from .access_control import UserAuthentication, UserProfile, GroupAdmin
-from .access_control import ObjectACL
-from .facility import Facility
-from .instrument import Instrument
-from .experiment import Experiment, ExperimentAuthor
-from .dataset import Dataset
-from .datafile import DataFile
-from .datafile import DataFileObject
-from .storage import StorageBox
-from .storage import StorageBoxOption
-from .storage import StorageBoxAttribute
+from tardis.tardis_portal.models.access_control import (
+    UserAuthentication, UserProfile, GroupAdmin)
+from tardis.tardis_portal.models.access_control import ObjectACL
+from tardis.tardis_portal.models.facility import Facility
+from tardis.tardis_portal.models.instrument import Instrument
+from tardis.tardis_portal.models.experiment import Experiment, ExperimentAuthor
+from tardis.tardis_portal.models.dataset import Dataset
+from tardis.tardis_portal.models.datafile import DataFile
+from tardis.tardis_portal.models.datafile import DataFileObject
+from tardis.tardis_portal.models.storage import StorageBox
+from tardis.tardis_portal.models.storage import StorageBoxOption
+from tardis.tardis_portal.models.storage import StorageBoxAttribute
 
-from .jti import JTI
+from tardis.tardis_portal.models.jti import JTI
 
-from .license import License
-from .parameters import DatafileParameter, DatafileParameterSet, \
-                        DatasetParameter, DatasetParameterSet, \
-                        ExperimentParameter, ExperimentParameterSet, \
-                        InstrumentParameter, InstrumentParameterSet, \
-                        FreeTextSearchField, ParameterName, Schema
-from .token import Token
+from tardis.tardis_portal.models.license import License
+from tardis.tardis_portal.models.parameters import (
+    DatafileParameter, DatafileParameterSet, DatasetParameter,
+    DatasetParameterSet, ExperimentParameter, ExperimentParameterSet,
+    InstrumentParameter, InstrumentParameterSet, FreeTextSearchField,
+    ParameterName, Schema)
+from tardis.tardis_portal.models.token import Token
 
-import hooks
+import tardis.tardis_portal.models.hooks
