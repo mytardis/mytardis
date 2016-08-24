@@ -157,6 +157,8 @@ TEMPLATES = [
                 '.registration_processor',
                 'tardis.tardis_portal.context_processors'
                 '.user_details_processor',
+                'tardis.tardis_portal.context_processors'
+                '.manage_account_processor',
             ],
             'loaders': [
                 'django.template.loaders.app_directories.Loader',
@@ -240,6 +242,7 @@ STATICFILES_STORAGE = \
 # this Django installation.
 TARDIS_APP_ROOT = 'tardis.apps'
 INSTALLED_APPS = (
+    'tardis.tardis_portal',
     'django_extensions',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -257,7 +260,6 @@ INSTALLED_APPS = (
     'mustachejs',
     'tastypie',
     'tastypie_swagger',
-    'tardis.tardis_portal',
     'tardis.tardis_portal.templatetags',
     'tardis.search',
     # these optional apps, may require extra settings
@@ -345,8 +347,6 @@ GROUP_PROVIDERS = (
 AUTH_PROVIDERS = (
     ('localdb', 'Local DB',
      'tardis.tardis_portal.auth.localdb_auth.DjangoAuthBackend'),
-    ('cas', 'CAS Server',
-     'django_cas_ng.backends.CASBackend'),
 )
 
 SFTP_USERNAME_ATTRIBUTE = 'email'
@@ -376,24 +376,38 @@ AUTHENTICATION_BACKENDS = (
 # ---------------------------------
 # Log In Method settings
 # ---------------------------------
-''' Sets the method used by the default login button on the portal_template.
-Options include: 'aaf', 'cas', 'localdb', and 'saml2'.
+''' Sets the label of the login method used by the default login button on the portal_template.
+Options are defined in LOGIN_METHODS.
 '''
 
-DEFAULT_LOGIN = "localdb"
+LOGIN_FRONTEND_DEFAULT = "local"
+
+''' The home organization is used for the stripping the domain from emails to identify the 
+organization user id.
+'''
+LOGIN_HOME_ORGANIZATION = ''
 
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 
-# local db login settings
-LOCALDB_ENABLED = True
-LOCALDB_DISPLAY = "Local"
+''' LOGIN_METHODS define the different methods that are supported by the 
+multi-modal interface. By default only the localdb login is enabled. 
+Fields include: label, display name, is method enabled.
+'''
+LOGIN_FRONTENDS = { 
+   'local': {'label':'Local',      'enabled':False },
+   'aaf':   {'label':'AFF',        'enabled':False },
+   'aafe':  {'label':'HOME',       'enabled':False },
+   'cas':   {'label':'CAS Server', 'enabled':False },
+   'saml2': {'label':'SAML2 IDP',  'enabled':False },
+}
 
-# SAML2 settings
-SAML2_ENABLED = False
-SAML2_DISPLAY = "SAML2"
-SAML2_LOGIN_URL = '/saml2/login/'
-SAML2_CONFIG = {}
-#SAML2_CONFIG[''] = ''
+# SAML2 Server default settings
+''' Saml2 SERVER configuration parameters...
+server_url: the base url of the SAML2 IDP Service.
+login_url: the url of the login request.
+'''
+SAML2_SERVER_URL = 'https//<url of the SAML2 IDP Service>/'
+SAML2_LOGIN_URL = '/saml2/login'
 
 # CAS Server default settings
 ''' CAS SERVER configuration parameters...
@@ -401,8 +415,6 @@ server_url: the base url of the CAS Service.
 service_url: the base url of the mytardis instance.
 logout_completely: set to false to enable single sign-on (sso) sessions.
 '''
-CAS_ENABLED = False
-CAS_DISPLAY = "CAS"
 CAS_SERVER_URL = 'https//<url of the CAS Service>/'
 CAS_SERVICE_URL = 'http://<url of the tardis instance>/'
 CAS_LOGOUT_COMPLETELY = True
@@ -421,19 +433,17 @@ e.g. 'https://rapid.test.aaf.edu.au/jwt/authnrequest/research/XXXXXXXXXXXXXXXX'
 NOTE: when registering the service use the following callback url:
      'https://<url of the mytardis instance>/rc/auth/jwt/'
 
-NOTE: if set the RAPID_CONNECT_PRINCIPAL_DOMAIN will be strip from the 
+NOTE: if set the LOGIN_PRINCIPAL_DOMAIN will be stripped from the 
       edupersonprincipalname to extract the user id within the domain. 
       eg. set the domain to 'example.com' to convert 'u99999@example.com' 
       into a user id of 'u99999'. 
 '''
-RAPID_CONNECT_ENABLED = False
-RAPID_CONNECT_DISPLAY = "AAF"
-RAPID_CONNECT_PRINCIPAL_DOMAIN = ''
 RAPID_CONNECT_CONFIG = {}
 RAPID_CONNECT_CONFIG['iss'] = 'https://rapid.test.aaf.edu.au'
 RAPID_CONNECT_CONFIG['aud'] = 'https://<url of the tardis instance>/'
 RAPID_CONNECT_CONFIG['secret'] = 'CHANGE_ME'
 RAPID_CONNECT_CONFIG['authnrequest_url'] = 'CHANGE_ME'
+RAPID_CONNECT_CONFIG['entityID'] = 'OPTIONAL'
 
 # ---------------------------------
 # Email Configuration
