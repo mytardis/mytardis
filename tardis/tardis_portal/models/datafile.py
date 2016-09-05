@@ -718,6 +718,10 @@ class DataFileObject(models.Model):
     def delete_data(self):
         self._storage.delete(self.uri)
 
+    @property
+    def modified_time(self):
+        return self._storage.modified_time(self.uri)
+
 
 @receiver(pre_delete, sender=DataFileObject, dispatch_uid='dfo_delete')
 def delete_dfo(sender, instance, **kwargs):
