@@ -28,11 +28,7 @@ class Dataset(models.Model):
 
     experiments = models.ManyToManyField(Experiment, related_name='datasets')
     description = models.TextField(blank=True)
-<<<<<<< HEAD
     directory = models.CharField(blank=True, null=True, max_length=255)
-=======
-    directory = DirectoryField(blank=True, null=True, max_length=255)
->>>>>>> origin
     immutable = models.BooleanField(default=False)
     instrument = models.ForeignKey(Instrument, null=True, blank=True)
     objects = OracleSafeManager()
