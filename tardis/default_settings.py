@@ -270,7 +270,6 @@ INSTALLED_APPS = (
     'tardis.apps.oaipmh',
     # 'tardis.apps.push_to',
     'django_cas_ng',
-    'djangosaml2',
 )
 
 INDEX_VIEWS = {}
@@ -373,7 +372,6 @@ AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
     'tardis.tardis_portal.auth.authorisation.ACLAwareBackend',
     'django_cas_ng.backends.CASBackend',
-    'djangosaml2.backends.Saml2Backend',
 )
 
 # ---------------------------------
@@ -403,14 +401,6 @@ LOGIN_FRONTENDS = {
    'cas':   {'label':'CAS Server', 'enabled':False },
    'saml2': {'label':'SAML2 IDP',  'enabled':False },
 }
-
-# SAML2 Server default settings
-''' Saml2 SERVER configuration parameters...
-server_url: the base url of the SAML2 IDP Service.
-login_url: the url of the login request.
-'''
-SAML2_SERVER_URL = 'https//<url of the SAML2 IDP Service>/'
-SAML2_LOGIN_URL = '/saml2/login'
 
 # CAS Server default settings
 ''' CAS SERVER configuration parameters...

@@ -412,9 +412,6 @@ urlpatterns = patterns(
     # CAS
     (r'^cas/', include(cas_urls)),
 
-    # SAML2 
-    (r'^saml2/', include('djangosaml2.urls')),
-
     # Admin
     (r'^admin/doc/', include('django.contrib.admindocs.urls')),
     (r'^admin/', include(admin.site.urls)),
