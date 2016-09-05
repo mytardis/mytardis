@@ -270,7 +270,6 @@ INSTALLED_APPS = (
     'tardis.apps.oaipmh',
     # 'tardis.apps.push_to',
     'django_cas_ng',
-    'djangosaml2',
 )
 
 INDEX_VIEWS = {}
@@ -375,7 +374,6 @@ AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
     'tardis.tardis_portal.auth.authorisation.ACLAwareBackend',
     'django_cas_ng.backends.CASBackend',
-    'djangosaml2.backends.Saml2Backend',
 )
 
 # ---------------------------------
@@ -392,13 +390,6 @@ SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 # local db login settings
 LOCALDB_ENABLED = True
 LOCALDB_DISPLAY = "Local"
-
-# SAML2 settings
-SAML2_ENABLED = False
-SAML2_DISPLAY = "SAML2"
-SAML2_LOGIN_URL = '/saml2/login/'
-SAML2_CONFIG = {}
-#SAML2_CONFIG[''] = ''
 
 # CAS Server default settings
 ''' CAS SERVER configuration parameters...
