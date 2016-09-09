@@ -1,7 +1,9 @@
 # pylint: disable=wildcard-import,unused-wildcard-import
-import logging
-from os import listdir
+
+from os import listdir, path
+
 from tardis.default_settings import *  # noqa # pylint: disable=W0401,W0614
+import logging  # pylint: disable=wrong-import-order
 
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 
@@ -28,7 +30,7 @@ ROOT_URLCONF = 'tardis.urls'
 
 TEMPLATES[0]['DIRS'].append('.')
 
-del(STATICFILES_STORAGE)  # noqa
+del STATICFILES_STORAGE  # noqa
 
 STAGING_PATH = path.abspath(path.join(path.dirname(__file__),
                                       "../var/test/staging/"))
