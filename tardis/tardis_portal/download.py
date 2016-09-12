@@ -234,8 +234,7 @@ class UncachedTarStream(TarFile):
             self.binary_buffer = io.BytesIO()
             self.gzipfile = gzip.GzipFile(bytes(filename), 'w',
                                           comp_level, self.binary_buffer)
-        else:
-            self.tar_size = self.compute_size()
+        self.tar_size = self.compute_size()
 
     def compute_size(self):
         total_size = 0
@@ -260,19 +259,17 @@ class UncachedTarStream(TarFile):
     def tarinfo_for_df(self, df, name):
         tarinfo = self.tarinfo(name)
         tarinfo.size = int(df.get_size())
-        mtime = None
-        dj_mtime = df.modification_time
+        try:
+            dj_mtime = df.modification_time or \
+                       df.get_preferred_dfo().modified_time
+        except Exception as e:
+            dj_mtime = None
+            logger.debug('cannot read m_time for file id'
+                         ' %d, exception %s' % (df.id, str(e)))
         if dj_mtime is not None:
-            mtime = dateformatter(dj_mtime, 'U')
+            tarinfo.mtime = float(dateformatter(dj_mtime, 'U'))
         else:
-            try:
-                fileobj = df.file_object
-                mtime = os.fstat(fileobj.fileno()).st_mtime
-            except:
-                raise ValueError('cannot read size for downloads')
-        if mtime is None:
-            mtime = time.time()
-        tarinfo.mtime = mtime
+            tarinfo.mtime = time.time()
         return tarinfo
 
     def compress(self, buf):
