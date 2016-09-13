@@ -38,48 +38,48 @@ views.py
 """
 import time
 import re
-from celery import chord, group
-from django.contrib.contenttypes.models import ContentType
-
-from tardis.apps.push_to.apps import PushToConfig
-from tardis.apps.push_to.views import initiate_push_experiment, initiate_push_dataset
-
-from tardis.tardis_portal.auth.decorators import \
-    has_experiment_write, has_dataset_write
-
-from base64 import b64decode
+import jwt
+import pwgen
 import urllib2
-from urllib import urlencode
-from urlparse import urlparse, parse_qs
-
-from os import path
 import logging
 import json
+
+from os import path
+from base64 import b64decode
+from celery import chord, group
+from urllib import urlencode
+from urlparse import urlparse, parse_qs
 from operator import itemgetter
+from haystack.views import SearchView
+from haystack.query import SearchQuerySet
+
+import django.contrib.auth as djauth
 
 from django.conf import settings
-from django.db import connection
-from django.db import transaction
-from django.db.models import Q
-from django.shortcuts import render_to_response, redirect, render
+from django.contrib.contenttypes.models import ContentType
+from django.contrib.auth import logout as django_logout
 from django.contrib.auth.models import User, Group
-from django.http import HttpResponseRedirect, HttpResponse,\
-    HttpResponseForbidden, HttpResponseNotFound
 from django.contrib.auth.decorators import login_required, permission_required
+from django.contrib.sites.models import Site
+from django.core.validators import validate_email
+from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 from django.core.paginator import Paginator, InvalidPage, EmptyPage
 from django.core.exceptions import PermissionDenied
 from django.core.mail import EmailMessage
+from django.db import connection
+from django.db import transaction
+from django.db.models import Q
 from django.forms.models import model_to_dict
-from django.views.decorators.http import require_POST
-from django.views.decorators.cache import never_cache, cache_page
-from django.contrib.sites.models import Site
-from django.core.validators import validate_email
-from django.core.exceptions import ValidationError
+from django.http import HttpResponseRedirect, HttpResponse,\
+    HttpResponseForbidden, HttpResponseNotFound
+from django.shortcuts import render_to_response, redirect, render
 from django.template.defaultfilters import filesizeformat
 from django.utils import timezone
+from django.views.decorators.http import require_POST
+from django.views.decorators.cache import never_cache, cache_page
+from django.views.decorators.csrf import csrf_exempt
 
-from tardis.urls import getTardisApps
 from tardis.tardis_portal.forms import ExperimentForm, DatasetForm, \
     createSearchDatafileForm, createSearchDatafileSelectionForm, \
     LoginForm, createSearchExperimentForm, \
@@ -89,23 +89,21 @@ from tardis.tardis_portal.forms import ExperimentForm, DatasetForm, \
     save_datafile_add_form, MXDatafileSearchForm, RightsForm,\
     ManageAccountForm, CreateGroupPermissionsForm,\
     CreateUserPermissionsForm
+from tardis.urls import getTardisApps
 
+from tardis.tardis_portal.auth.decorators import \
+    has_experiment_write, has_dataset_write
 from tardis.tardis_portal.errors import UnsupportedSearchQueryTypeError
-
-from tardis.tardis_portal.staging import get_full_staging_path, \
-    staging_list
-
+from tardis.tardis_portal.staging import get_full_staging_path, staging_list
 from tardis.tardis_portal.tasks import create_staging_datafiles, \
     cache_done_notify
-
 from tardis.tardis_portal.models import Experiment, ExperimentParameter, \
     DatafileParameter, DatasetParameter, ObjectACL, DataFile, \
     DatafileParameterSet, ParameterName, GroupAdmin, Schema, \
     Dataset, ExperimentParameterSet, DatasetParameterSet, \
     License, UserProfile, UserAuthentication, Token
-
 from tardis.tardis_portal.models.facility import facilities_managed_by
-
+from tardis.tardis_portal.models.jti import JTI
 from tardis.tardis_portal import constants
 from tardis.tardis_portal.auth.localdb_auth import django_user
 from tardis.tardis_portal.auth.localdb_auth import auth_key as localdb_auth_key
@@ -116,19 +114,15 @@ from tardis.tardis_portal.shortcuts import render_response_index, \
     render_response_search, get_experiment_referer
 from tardis.tardis_portal.hacks import oracle_dbops_hack
 from tardis.tardis_portal.util import render_public_access_badge
-
-from haystack.views import SearchView
-from haystack.query import SearchQuerySet
+from tardis.tardis_portal.views.pages import use_multimodal_login
 from tardis.tardis_portal.search_query import FacetFixedSearchQuery
 from tardis.tardis_portal.forms import RawSearchForm
 from tardis.tardis_portal.search_backend import HighlightSearchBackend
-from django.contrib.auth import logout as django_logout
 
-from django.views.decorators.csrf import csrf_exempt
-import django.contrib.auth as djauth
-import jwt
-import pwgen
-from tardis.tardis_portal.models.jti import JTI
+from tardis.apps.push_to.apps import PushToConfig
+from tardis.apps.push_to.views import \
+    initiate_push_experiment, initiate_push_dataset
+
 
 logger = logging.getLogger(__name__)
 
@@ -229,7 +223,7 @@ def index(request):
     c['RAPID_CONNECT_ENABLED'] = settings.RAPID_CONNECT_ENABLED
     c['RAPID_CONNECT_LOGIN_URL'] = settings.RAPID_CONNECT_CONFIG[
                                         'authnrequest_url']
-    
+
     return HttpResponse(render_response_index(request,
                         'tardis_portal/index.html', c))
 
@@ -1172,7 +1166,6 @@ def edit_experiment(request, experiment_id,
 
 
 # todo complete....
-from tardis.tardis_portal.views.pages import use_multimodal_login
 @use_multimodal_login
 def login(request):
     '''
@@ -1225,7 +1218,7 @@ def login(request):
     c['RAPID_CONNECT_ENABLED'] = settings.RAPID_CONNECT_ENABLED
     c['RAPID_CONNECT_LOGIN_URL'] = settings.RAPID_CONNECT_CONFIG[
                                         'authnrequest_url']
-    
+
     return HttpResponse(render_response_index(request,
                         'tardis_portal/login.html', c))
 

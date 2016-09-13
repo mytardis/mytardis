@@ -95,12 +95,11 @@ def site_routed_view(request, _default_view, _site_mappings, *args, **kwargs):
 
 def use_multimodal_login(fn):
     """
-    A decorator that adds appropriate settings to the get_context_data 
-    method.
+    A decorator that adds appropriate settings to the get_context_data method.
 
     :param fn: A get_context_data function/method.
     :type fn: types.FunctionType
-    :return: A get_context_data function that adds CAS*, SAML2, and LOGIN keys 
+    :return: A get_context_data function that adds CAS*, SAML2, and LOGIN keys
              to its output context.
     :rtype: types.FunctionType
     """
@@ -110,13 +109,13 @@ def use_multimodal_login(fn):
 
         c['LOGIN_FRONTEND_DEFAULT'] = getattr(settings,
                                         'LOGIN_FRONTEND_DEFAULT', 'local')
-        
+
         c['LOGIN_MULTIMODAL'] = False
         c['LOCAL_ENABLED'] = False
         c['AAF_ENABLED'] = False
         c['AAFE_ENABLED'] = False
         c['CAS_ENABLED'] = False
-        
+
         enabled_count = 0
         for key in settings.LOGIN_FRONTENDS:
             label = settings.LOGIN_FRONTENDS[key]['label']
@@ -124,25 +123,25 @@ def use_multimodal_login(fn):
 
             if enabled:
                 enabled_count += 1
-                
+
                 if key == 'local':
                     c['LOCAL_ENABLED'] = True
                     c['LOCAL_DISPLAY'] = label
-                    
+
                 if key == 'aaf' or key == 'aafe':
                     c['AAF_LOGIN_URL'] = settings.RAPID_CONNECT_CONFIG[
                                                   'authnrequest_url']
-                    
+
                     if not c['AAF_LOGIN_URL']:
                         raise ImproperlyConfigured(
                               "RAPID_CONNECT_CONFIG['authnrequest_url'] "
                               "must be configured in settings "
                               "if AAF or AAFE is enabled.")
-                        
+
                     if key == "aaf":
                         c['AAF_ENABLED'] = True
                         c['AAF_DISPLAY'] = label
-                       
+
                     if key == "aafe":
                         c['AAFE_ENABLED'] = True
                         c['AAFE_DISPLAY'] = label
@@ -157,10 +156,10 @@ def use_multimodal_login(fn):
                 if key == 'cas':
                     c['CAS_ENABLED'] = True
                     c['CAS_DISPLAY'] = label
-                    
+
         if enabled_count > 1:
-            c['LOGIN_MULTIMODAL'] = True 
-                    
+            c['LOGIN_MULTIMODAL'] = True
+
         return c
 
     return add_multimodal_login_settings

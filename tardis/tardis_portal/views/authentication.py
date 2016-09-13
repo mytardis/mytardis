@@ -5,9 +5,9 @@ views that have to do with authentication
 from urlparse import urlparse
 
 import logging
+import sys
 import jwt
 import pwgen
-import sys
 
 from django.conf import settings
 from django.contrib import auth as djauth
@@ -42,23 +42,23 @@ logger = logging.getLogger(__name__)
 def cas_callback(sender, **kwargs):
     logger.debug('_cas_callback() start!')
     for key,value in kwargs.iteritems():
-        logger.debug('kwargs[%s] = %s' % ( str(key), str(value) ))    
+        logger.debug('kwargs[%s] = %s' % ( str(key), str(value) ))
         if key == 'user':
             try:
-                email = '%s@%s' % (value, settings.LOGIN_HOME_ORGANIZATION) 
+                email = '%s@%s' % (value, settings.LOGIN_HOME_ORGANIZATION)
                 authMethod = 'cas'
                 logger.debug("user[%s] authMethod[%s] email[%s]"% (
 			value,authMethod,email))
                 user, created = get_or_create_user('cas', value, email)
                 if created:
-                    logger.debug('user created = %s' % pprint(user))
+                    logger.debug('user created = %s' % str(user))
                 else:
                     logger.debug('user creation failed!')
             except Exception, e:
                 logger.error("get_or_create_user['%s'] failed with %s" % (
                              value, e))
 
-    return 
+    return
 
 @csrf_exempt
 def rcauth(request):
@@ -67,9 +67,8 @@ def rcauth(request):
     if request.method != 'POST':
         raise PermissionDenied
 
-    # Rapid Connect authorization is disabled, so don't
-    # process anything.
-    if ( not settings.LOGIN_FRONTENDS['aaf']['enabled'] and 
+    # Rapid Connect authorization is disabled, so don't process anything.
+    if ( not settings.LOGIN_FRONTENDS['aaf']['enabled'] and
          not settings.LOGIN_FRONTENDS['aafe']['enabled'] ):
         raise PermissionDenied
 
@@ -122,9 +121,8 @@ def rcauth(request):
                 'last_name': request.session['attributes']['surname'],
             }
 
-            # if a principal domain is set 
-            # strip domain from edupersonprincipalname
-            # and use remainder as user id    
+            # if a principal domain is set strip domain from
+            # 'edupersonprincipalname' and use remainder as user id.
             try:
                 if settings.LOGIN_HOME_ORGANIZATION:
                     domain = "@" + settings.LOGIN_HOME_ORGANIZATION
@@ -135,7 +133,7 @@ def rcauth(request):
             except:
                 logger.debug('check principal domain failed with: %s' %
                              sys.exc_info()[0])
-                
+
             # Check for an email collision.
             for matching_user in UserProfile.objects.filter(
                     user__email__iexact=user_args['email']):
@@ -287,7 +285,7 @@ def login(request):
         c = {'status': "Sorry, username and password don't match.",
              'error': True,
              'loginForm': LoginForm()}
-        
+
         c = get_multimodal_context_data(c)
 
         return HttpResponseForbidden(
