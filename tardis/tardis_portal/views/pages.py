@@ -119,9 +119,9 @@ def use_multimodal_login(fn):
         
         enabled_count = 0
         for key in settings.LOGIN_FRONTENDS:
-            label = settings.LOGIN_FRONTENDS['key']['label']
-            enabled = settings.LOGIN_FRONTENDS['key']['enabled']
-            
+            label = settings.LOGIN_FRONTENDS[key]['label']
+            enabled = settings.LOGIN_FRONTENDS[key]['enabled']
+
             if enabled:
                 enabled_count += 1
                 
