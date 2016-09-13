@@ -60,12 +60,8 @@ def _create_test_dataset(nosDatafiles):
     ds_ = Dataset(description='happy snaps of plumage')
     ds_.save()
     for i in range(0, nosDatafiles):
-<<<<<<< HEAD
         df_ = DataFile(dataset=ds_, filename='file_%d' % i, size='21',
                        sha512sum='bogus')
-=======
-        df_ = DataFile(dataset=ds_, filename='file_%d' % i, size='21', sha512sum='bogus')
->>>>>>> origin
         df_.save()
     ds_.save()
     return ds_
