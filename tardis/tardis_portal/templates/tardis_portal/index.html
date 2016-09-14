@@ -15,14 +15,17 @@
     {% if not is_authenticated %}
     <p>
     	Please 
-        {% if RAPID_CONNECT_ENABLED and DEFAULT_LOGIN|lower == 'aaf' %}
-            <a href={{ RAPID_CONNECT_LOGIN_URL }}>
-        {% elif CAS_ENABLED and DEFAULT_LOGIN|lower == 'cas' %}
-            <a href="{% url 'django_cas_ng.views.login' %}">
-        {% else %}
-            <a href="{% url 'tardis.tardis_portal.views.login' %}">
-        {% endif %}
-        Log In</a>
+    	<a 	class="btn btn-info"
+            {% if LOGIN_FRONTEND_DEFAULT|lower = 'aaf' %}
+           		href={{ AAF_LOGIN_URL }}
+           	{% elif LOGIN_FRONTEND_DEFAULT|lower = 'aafe' %}
+           		href={{ AAF_LOGIN_URL }}?entityID={{ AAF_ENTITY_URL }}
+          	{% elif LOGIN_FRONTEND_DEFAULT|lower = 'cas' %}
+           		href={% url 'django_cas_ng.views.login' %}
+           	{% else %}
+           		href="{% url 'tardis.tardis_portal.views.login' %}"
+          	{% endif %}
+		>Log In</a>
         to see your experiment data.
     </p>
     {% endif %}
