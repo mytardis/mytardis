@@ -244,7 +244,6 @@ STATICFILES_STORAGE = \
 # this Django installation.
 TARDIS_APP_ROOT = 'tardis.apps'
 INSTALLED_APPS = (
-    'tardis.tardis_portal',
     'django_extensions',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -262,6 +261,7 @@ INSTALLED_APPS = (
     'mustachejs',
     'tastypie',
     'tastypie_swagger',
+    'tardis.tardis_portal',
     'tardis.tardis_portal.templatetags',
     'tardis.search',
     'tardis.analytics',
