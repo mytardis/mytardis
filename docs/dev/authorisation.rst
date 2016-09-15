@@ -79,6 +79,85 @@ created using custom methods:
 
 These permissions apply in general and are augmented by ACLs
 
+
+Other Authentication Methods
+============================
+
+
+Users can be authenticated via the following additional methods:
+
+Australian Access Federation (AAF)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Before AAF authentication can be used, the MyTardis instance must be registered
+as a service with the AAF at `https://rapid.aaf.edu.au/registration`. 
+When registering the service use the following urls:
+
+* URL: 	 		`https://<url of the mytardis instance>/`
+* Callback URL: `https://<url of the mytardis instance>/rc/auth/jwt/`
+     
+To enable AAF authentication the following settings must be overridden:
+
+* ``RAPID_CONNECT_CONFIG['iss']`` must be set to the appropriate AAF url, 
+	such as: `https://rapid.test.aaf.edu.au` for testing, or 
+	`https://rapid.aaf.edu.au` for production.
+	
+* ``RAPID_CONNECT_CONFIG['aud']`` must be set to the service URL entered as part
+	of the AAF registration process.
+	
+* ``RAPID_CONNECT_CONFIG['secret']`` must be set to the key entered as part of 
+	the AAF registration process.
+
+* ``RAPID_CONNECT_CONFIG['authnrequest_url']`` must be set to the url generated 
+	by the AAF as confirmation of successful service registration,
+
+
+Australian Access Federation (AAF) with defined entityID
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+In addition to the above process, AAF authentication can be used with a 
+defined entityID. This allows MyTardis to bypass the Organization selection
+page and force AAF to use a specific identity provider. This can be enabled 
+by overriding the following setting:
+
+* ``RAPID_CONNECT_CONFIG['entityID']`` can be set to a identity provider url,
+	which can be found at the following url:
+	`https://manager.test.aaf.edu.au/federationregistry/membership/identityprovider/list`
+
+
+Multi-Modal Login
+=================
+
+
+MyTardis allows users to authenticate via multiple methods. Each method can 
+be enabled independently using the ``LOGIN_FRONTENDS`` settings.
+
+The method associated with the `Log In` button, on the portal template, can be 
+changed using the setting:
+
+* ``LOGIN_FRONTEND_DEFAULT`` which by default is set to `local`.
+
+The home organization, if set, is used to stripp the domain from emails to
+identify the organization user id. 
+
+* e.g. ``LOGIN_HOME_ORGANIZATION = 'rmit.edu.au'`
+
+The valid authentication methods are defined using the appropriate 
+``LOGIN_FRONTENDS`` settings. Valid keys include: `aaf`, `aafe`, `cas`, and 
+`local`. 
+
+* ``LOGIN_FRONTENDS['<key>']['enabled'] = True/False``
+	By default only `local` is enabled.
+	
+* ``LOGIN_FRONTENDS['<key>']['label'] = '<value>'``
+	The default values are as follows: `local` is 'Local', `aaf` is 'AAF', 
+	`aafe` is 'Home', and `cas` is 'CAS Server'.
+
+If more than one method is enabled, then a dropdown menu will be enabled on the
+portal template, next to the default `Log In` button. This menu will include 
+buttons for the additional login methods.
+
+
 Object Level Permissions and Access Control Lists
 =================================================
 

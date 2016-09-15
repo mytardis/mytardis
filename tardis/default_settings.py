@@ -399,7 +399,6 @@ LOGIN_FRONTENDS = {
    'aaf':   {'label':'AFF',        'enabled':False },
    'aafe':  {'label':'HOME',       'enabled':False },
    'cas':   {'label':'CAS Server', 'enabled':False },
-   'saml2': {'label':'SAML2 IDP',  'enabled':False },
 }
 
 # CAS Server default settings
