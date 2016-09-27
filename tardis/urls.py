@@ -55,6 +55,13 @@ rapidconnect_urls = patterns(
     (r'^auth/jwt$', 'rcauth'),
 )
 
+cas_urls = patterns(
+    'django_cas_ng.views',
+    (r'^login/$','login'),
+    (r'^logout/$','logout'),
+    (r'^callback/$','callback'),
+)
+
 overridable_urls = patterns(
     '',
     url(r'^$', site_routed_view, {'_default_view': IndexView.as_view(),
@@ -401,6 +408,9 @@ urlpatterns = patterns(
 
     # Rapid Connect
     (r'^rc/', include(rapidconnect_urls)),
+
+    # CAS
+    (r'^cas/', include(cas_urls)),
 
     # Admin
     (r'^admin/doc/', include('django.contrib.admindocs.urls')),

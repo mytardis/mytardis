@@ -5,6 +5,7 @@ views that have to do with authentication
 from urlparse import urlparse
 
 import logging
+import sys
 import jwt
 import pwgen
 
@@ -21,27 +22,54 @@ from django.http import HttpResponse, HttpResponseRedirect, \
 from django.shortcuts import redirect
 from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import csrf_exempt
+from django.dispatch import receiver
+from django_cas_ng.signals import cas_user_authenticated
 
 from tardis.tardis_portal.auth import auth_service
+from tardis.tardis_portal.auth.utils import get_or_create_user
 from tardis.tardis_portal.auth.localdb_auth import auth_key as localdb_auth_key
 from tardis.tardis_portal.forms import ManageAccountForm, CreateUserPermissionsForm, \
     LoginForm
 from tardis.tardis_portal.models import JTI, UserProfile, UserAuthentication
 from tardis.tardis_portal.shortcuts import render_response_index
 from tardis.tardis_portal.views.utils import _redirect_303
+from tardis.tardis_portal.views.pages import get_multimodal_context_data
 
 logger = logging.getLogger(__name__)
 
 
+@receiver(cas_user_authenticated)
+def cas_callback(sender, **kwargs):
+    logger.debug('_cas_callback() start!')
+    for key,value in kwargs.iteritems():
+        logger.debug('kwargs[%s] = %s' % ( str(key), str(value) ))
+        if key == 'user':
+            try:
+                email = '%s@%s' % (value, settings.LOGIN_HOME_ORGANIZATION)
+                authMethod = 'cas'
+                logger.debug("user[%s] authMethod[%s] email[%s]"% (
+			value,authMethod,email))
+                user, created = get_or_create_user('cas', value, email)
+                if created:
+                    logger.debug('user created = %s' % str(user))
+                else:
+                    logger.debug('user creation failed!')
+            except Exception, e:
+                logger.error("get_or_create_user['%s'] failed with %s" % (
+                             value, e))
+
+    return
+
 @csrf_exempt
 def rcauth(request):
+    logger.debug('rcauth() start!')
     # Only POST is supported on this URL.
     if request.method != 'POST':
         raise PermissionDenied
 
-    # Rapid Connect authorization is disabled, so don't
-    # process anything.
-    if not settings.RAPID_CONNECT_ENABLED:
+    # Rapid Connect authorization is disabled, so don't process anything.
+    if ( not settings.LOGIN_FRONTENDS['aaf']['enabled'] and
+         not settings.LOGIN_FRONTENDS['aafe']['enabled'] ):
         raise PermissionDenied
 
     try:
@@ -71,6 +99,10 @@ def rcauth(request):
             request.session['jws'] = request.POST['assertion']
 
             institution_email = request.session['attributes']['mail']
+            edupersontargetedid = request.session['attributes'][
+                                                'edupersontargetedid']
+            principalname = request.session['attributes'][
+                                                'edupersonprincipalname']
 
             logger.debug('Successfully authenticated %s via Rapid Connect.' %
                          institution_email)
@@ -89,9 +121,20 @@ def rcauth(request):
                 'last_name': request.session['attributes']['surname'],
             }
 
+            # if a principal domain is set strip domain from
+            # 'edupersonprincipalname' and use remainder as user id.
+            try:
+                if settings.LOGIN_HOME_ORGANIZATION:
+                    domain = "@" + settings.LOGIN_HOME_ORGANIZATION
+                    if ';' not in principalname and \
+                        principalname.endswith(domain):
+                        user_id = principalname.replace(domain,'').lower()
+                        user_args['id'] = user_id
+            except:
+                logger.debug('check principal domain failed with: %s' %
+                             sys.exc_info()[0])
+
             # Check for an email collision.
-            edupersontargetedid = request.session['attributes'][
-                'edupersontargetedid']
             for matching_user in UserProfile.objects.filter(
                     user__email__iexact=user_args['email']):
                 if (matching_user.rapidConnectEduPersonTargetedID is not None
@@ -103,7 +146,7 @@ def rcauth(request):
                     django_logout(request)
                     raise PermissionDenied
 
-            user = auth_service.get_or_create_user(user_args)
+            user = auth_service.get_or_create_user(user_args,authMethod='aaf')
             if user is not None:
                 user.backend = 'django.contrib.auth.backends.ModelBackend'
                 djauth.login(request, user)
@@ -120,6 +163,9 @@ def rcauth(request):
         del request.session['jws']
         django_logout(request)
         raise PermissionDenied  # Error: Security cookie has expired
+    except Exception, e:
+        logger.debug('rcauth() failed with: %s' % e)
+        raise PermissionDenied
 
 
 @login_required
@@ -214,7 +260,7 @@ def login(request):
     '''
     handler for login page
     '''
-    from tardis.tardis_portal.auth import auth_service
+    logger.debug("start!")
 
     if request.user.is_authenticated():
         # redirect the user to the home page if he is trying to go to the
@@ -240,6 +286,8 @@ def login(request):
              'error': True,
              'loginForm': LoginForm()}
 
+        c = get_multimodal_context_data(c)
+
         return HttpResponseForbidden(
             render_response_index(request, 'tardis_portal/login.html', c))
 
@@ -252,9 +300,7 @@ def login(request):
     c = {'loginForm': LoginForm(),
          'next_page': next_page}
 
-    c['RAPID_CONNECT_ENABLED'] = settings.RAPID_CONNECT_ENABLED
-    c['RAPID_CONNECT_LOGIN_URL'] = settings.RAPID_CONNECT_CONFIG[
-        'authnrequest_url']
+    c = get_multimodal_context_data(c)
 
     return HttpResponse(render_response_index(request,
                         'tardis_portal/login.html', c))

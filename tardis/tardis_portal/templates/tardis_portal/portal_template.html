@@ -175,6 +175,9 @@
                 </ul>
               </li>
             {% else %}
+              <!-- ==================== -->
+              <!-- Registration Button  -->
+              <!-- ==================== -->
               {% if registration_enabled %}
               <li>
                 <a href="{% url 'register' %}">
@@ -182,19 +185,86 @@
                 </a>
               </li>
               {% endif %}
+              <!-- ==================== -->
+              <!-- Default Login Button -->
+              <!-- ==================== -->
               <li>
-              {% if RAPID_CONNECT_ENABLED %}
-                  <a id="login-button" class="btn btn-info" href={{ RAPID_CONNECT_LOGIN_URL }}>
-                    <i class="icon-signin"></i>
-                    Log In
-                  </a>
-              {% else %}
-                <a id="login-button" class="btn btn-info" href="{% url 'tardis.tardis_portal.views.login' %}">
-                  <i class="icon-signin"></i>
-                  Log In
+                  <a id="login-button" 
+                  		class="btn btn-info"
+                  		style="width: 80px; text-align: center;" 
+              	{% if LOGIN_FRONTEND_DEFAULT|lower = 'aaf' %}
+                  		href={{ AAF_LOGIN_URL }}
+              	{% elif LOGIN_FRONTEND_DEFAULT|lower = 'aafe' %}
+                  		href={{ AAF_LOGIN_URL }}?entityID={{ AAF_ENTITY_URL }}
+              	{% elif LOGIN_FRONTEND_DEFAULT|lower = 'cas' %}
+                  		href={% url 'django_cas_ng.views.login' %}
+              	{% else %}
+                  		href="{% url 'tardis.tardis_portal.views.login' %}"
+              	{% endif %}
+		  			>
+                  	<i class="icon-signin"></i>
+                  	Log In
                 </a>
-              {% endif %}
               </li>
+              <!-- ==================== -->
+              <!--   Optional  Logins   -->
+              <!-- ==================== -->
+              {% if LOGIN_MULTIMODAL %}
+              <li id="login-menu" class="dropdown">
+                <a class="dropdown-toggle" data-toggle="dropdown" 
+					href="#login-menu">
+                  	Other Log Ins 
+                  <b class="caret"></b>
+                </a>
+				<ul class="dropdown-menu"  >
+                  {% if AAF_ENABLED and LOGIN_FRONTEND_DEFAULT|lower != 'aaf' %}
+        	  	  <li>      
+					<a id="login-button" 
+						class="btn btn-info btn-block"
+                  		style="width: 80px; text-align: center;"
+                  		href={{ AAF_LOGIN_URL }} >
+                  		<i class="icon-signin"></i>
+                  		{{ AAF_DISPLAY }}
+                	</a>
+                  </li>
+                  {% endif %}
+              	  {% if AAFE_ENABLED and LOGIN_FRONTEND_DEFAULT|lower != 'aafe' %}
+        	  	  <li>      
+					<a id="login-button" 
+						class="btn btn-info btn-block"
+                  		style="width: 80px; text-align: center;"
+                  		href={{ AAF_LOGIN_URL }}?entityID={{ AAF_ENTITY_URL }} >
+                  		<i class="icon-signin"></i>
+                  		{{ AAFE_DISPLAY }}
+                	</a>
+                  </li>
+                  {% endif %}
+              	  {% if CAS_ENABLED and LOGIN_FRONTEND_DEFAULT|lower != 'cas' %}
+        	  	  <li>      
+              	  	<a id="login-button"   
+						class="btn btn-info btn-block"
+				   		style="width: 80px; text-align: center;"
+				   		href={% url 'django_cas_ng.views.login' %} >
+                  		<i class="icon-signin"></i>
+                  		{{ CAS_DISPLAY }}
+                	</a>
+                  </li>
+                  {% endif %}
+              	  {% if LOCAL_ENABLED and LOGIN_FRONTEND_DEFAULT|lower != 'local' %}
+        	      <li>      
+              	  	<a id="login-button"  
+						class="btn btn-info btn-block"
+                  		style="width: 80px; text-align: center;"
+                  		href="{% url 'tardis.tardis_portal.views.login' %}" >
+                  		<i class="icon-signin"></i>
+                  		{{ LOCAL_DISPLAY }}
+                	</a>
+                  </li>
+                  {% endif %}
+                </ul>
+              </li>
+              <!-- ==================== -->
+              {% endif %}
             {% endif %}
             </ul>
             {% if search_form %}

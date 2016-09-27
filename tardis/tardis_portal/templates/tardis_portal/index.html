@@ -14,14 +14,7 @@
   </div>
     {% if not is_authenticated %}
     <p>
-        {% if RAPID_CONNECT_ENABLED %}
-            Please <a href={{ RAPID_CONNECT_LOGIN_URL }}>login</a>
-            to see your experiment data.
-        {% else %}
-            Please
-            <a href="{% url 'tardis.tardis_portal.views.login' %}">login</a>
-            to see your experiment data.
-        {% endif %}
+    	Please <emph>Log In</emph> to see your experiment data.
     </p>
     {% endif %}
   <div class="row-fluid">
