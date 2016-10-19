@@ -132,7 +132,7 @@ class LDAPBackend(AuthProvider, UserProvider, GroupProvider):
             userRDN = self._login_attr + '=' + username
             l = ldap.initialize(self._url)
             l.protocol_version = ldap.VERSION3
-            l.simple_bind_s(userRDN + ',' + self._base, password)
+            l.simple_bind_s(userRDN + ',' + self._user_base, password)
 
             # No LDAPError raised so far, so authentication was successful.
             # Now let's get the attributes we need for this user:
@@ -140,7 +140,7 @@ class LDAPBackend(AuthProvider, UserProvider, GroupProvider):
                 l.simple_bind_s(self._admin_user, self._admin_pass)
             retrieveAttributes = self._user_attr_map.keys() + \
                                  [self._login_attr]
-            ldap_result = l.search_s(self._user_base, ldap.SCOPE_SUBTREE,
+            ldap_result = l.search_s(self._base, ldap.SCOPE_SUBTREE,
                                      userRDN, retrieveAttributes)
 
             if ldap_result[0][1]['uid'][0] == username:
@@ -205,7 +205,7 @@ class LDAPBackend(AuthProvider, UserProvider, GroupProvider):
             l.protocol_version = ldap.VERSION3
             searchFilter = '(|(mail=%s)(mailalternateaddress=%s))' % (email,
                                                                       email)
-            ldap_result = l.search_s(self._user_base, ldap.SCOPE_SUBTREE,
+            ldap_result = l.search_s(self._base, ldap.SCOPE_SUBTREE,
                                       searchFilter, retrieveAttributes)
 
             logger.debug(ldap_result)

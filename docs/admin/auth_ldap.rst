@@ -59,12 +59,12 @@ initialising the LDAP backend.
 
 .. attribute:: tardis.default_settings.LDAP_USER_BASE
 
-   Sets the search base of user related LDAP queries e.g. *"ou=People,
+   Sets the suffix to append to the user RDN (e.g. uid=jsmith) to construct the DN e.g. *"ou=People,
    " + LDAP_BASE*
 
 .. attribute:: tardis.default_settings.LDAP_GROUP_BASE
 
-   Sets the search base of group related LDAP queries e.g. *"ou=Group,
+   Sets the suffix to append to the group RDN (e.g. cn=group1) to construct the DN e.g. *"ou=Group,
    " + LDAP_BASE*
 
 
