@@ -211,27 +211,39 @@ def create_user(request):
 
 
 def login(request):
-    '''
+    """
     handler for login page
-    '''
+    """
     from tardis.tardis_portal.auth import auth_service
+
+    """
+    get next page from request, try POST, GET and HTTP_REFERER
+    """
+
+    next_page = request.POST.get('next', request.GET.get('next', None))
+
+    if next_page is None:
+        url = request.META.get('HTTP_REFERER', '/')
+        u = urlparse(url)
+        if u.netloc == request.META.get('HTTP_HOST', ""):
+            next_page = u.path
+        else:
+            next_page = '/'
 
     if request.user.is_authenticated():
         # redirect the user to the home page if he is trying to go to the
         # login page
-        return HttpResponseRedirect(request.POST.get('next_page', '/'))
+        return HttpResponseRedirect(next_page)
 
     # TODO: put me in SETTINGS
     if 'username' in request.POST and \
             'password' in request.POST:
-        authMethod = request.POST.get('authMethod', None)
+        auth_method = request.POST.get('authMethod', None)
 
         user = auth_service.authenticate(
-            authMethod=authMethod, request=request)
+            authMethod=auth_method, request=request)
 
         if user:
-            next_page = request.POST.get(
-                'next_page', request.GET.get('next_page', '/'))
             user.backend = 'django.contrib.auth.backends.ModelBackend'
             djauth.login(request, user)
             return HttpResponseRedirect(next_page)
@@ -243,18 +255,11 @@ def login(request):
         return HttpResponseForbidden(
             render_response_index(request, 'tardis_portal/login.html', c))
 
-    url = request.META.get('HTTP_REFERER', '/')
-    u = urlparse(url)
-    if u.netloc == request.META.get('HTTP_HOST', ""):
-        next_page = u.path
-    else:
-        next_page = '/'
     c = {'loginForm': LoginForm(),
-         'next_page': next_page}
-
-    c['RAPID_CONNECT_ENABLED'] = settings.RAPID_CONNECT_ENABLED
-    c['RAPID_CONNECT_LOGIN_URL'] = settings.RAPID_CONNECT_CONFIG[
-        'authnrequest_url']
+         'next': next_page,
+         'RAPID_CONNECT_ENABLED': settings.RAPID_CONNECT_ENABLED,
+         'RAPID_CONNECT_LOGIN_URL': settings.RAPID_CONNECT_CONFIG[
+             'authnrequest_url']}
 
     return HttpResponse(render_response_index(request,
                         'tardis_portal/login.html', c))

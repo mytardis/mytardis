@@ -16,7 +16,7 @@
 {% else %}
 
     <form action="" method="post" class="form-horizontal">{% csrf_token %}
-      <input name="next_page" type="hidden" value="{{ next_page }}" />
+      <input name="next" type="hidden" value="{{ next }}" />
       <fieldset>
         <legend>Please Log In</legend>
         {{ loginForm|bootstrap }}
