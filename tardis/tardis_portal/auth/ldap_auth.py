@@ -96,9 +96,9 @@ class LDAPBackend(AuthProvider, UserProvider, GroupProvider):
 
         try:
             if self._admin_user and self._admin_pass:
-                l.simple_bind(self._admin_user, self._admin_pass)
+                l.simple_bind_s(self._admin_user, self._admin_pass)
             else:
-                l.simple_bind()
+                l.simple_bind_s()
         except ldap.LDAPError, e:
             logger.error(e.args[0]['desc'])
             if l:
@@ -129,18 +129,18 @@ class LDAPBackend(AuthProvider, UserProvider, GroupProvider):
         l = None
 
         try:
-            retrieveAttributes = self._user_attr_map.keys() + \
-                                 [self._login_attr]
             userRDN = self._login_attr + '=' + username
             l = ldap.initialize(self._url)
             l.protocol_version = ldap.VERSION3
-            l.simple_bind(userRDN + ',' + self._base, password)
-            ldap_result = l.search_s(self._user_base, ldap.SCOPE_SUBTREE,
-                                     userRDN, retrieveAttributes)
+            l.simple_bind_s(userRDN + ',' + self._user_base, password)
 
-            bind_dn = ldap_result[0][0]
-            l.simple_bind_s(bind_dn, password)
-            ldap_result = l.search_s(self._user_base, ldap.SCOPE_SUBTREE,
+            # No LDAPError raised so far, so authentication was successful.
+            # Now let's get the attributes we need for this user:
+            if self._admin_user and self._admin_pass:
+                l.simple_bind_s(self._admin_user, self._admin_pass)
+            retrieveAttributes = self._user_attr_map.keys() + \
+                                 [self._login_attr]
+            ldap_result = l.search_s(self._base, ldap.SCOPE_SUBTREE,
                                      userRDN, retrieveAttributes)
 
             if ldap_result[0][1]['uid'][0] == username:
@@ -205,7 +205,7 @@ class LDAPBackend(AuthProvider, UserProvider, GroupProvider):
             l.protocol_version = ldap.VERSION3
             searchFilter = '(|(mail=%s)(mailalternateaddress=%s))' % (email,
                                                                       email)
-            ldap_result = l.search_s(self._user_base, ldap.SCOPE_SUBTREE,
+            ldap_result = l.search_s(self._base, ldap.SCOPE_SUBTREE,
                                       searchFilter, retrieveAttributes)
 
             logger.debug(ldap_result)
