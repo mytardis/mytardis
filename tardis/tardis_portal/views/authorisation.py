@@ -743,6 +743,8 @@ def token_delete(request, token_id):
     if authz.has_experiment_ownership(request, token.experiment_id):
         token.delete()
         return HttpResponse('{"success": true}', content_type='application/json')
+    else:
+        return HttpResponse('{"success": false}', content_type='application/json')
 
 
 def token_login(request, token):
