@@ -132,7 +132,25 @@ class LDAPBackend(AuthProvider, UserProvider, GroupProvider):
             userRDN = self._login_attr + '=' + username
             l = ldap.initialize(self._url)
             l.protocol_version = ldap.VERSION3
-            l.simple_bind_s(userRDN + ',' + self._user_base, password)
+
+            # To authenticate, we need the user's distinguished name (DN).
+            try:
+                # If all of your users share the same organizational unit,
+                # e.g. "ou=People,dc=example,dc=com", then the DN can be
+                # constructed by concatening the user's relative DN
+                # e.g. "uid=jsmith" with self._user_base, separated by
+                # a comma.
+                userDN = userRDN + ',' + self._user_base
+                l.simple_bind_s(userDN, password)
+            except ldap.LDAPError:
+                # We failed to bind using the simple method of constructing
+                # the userDN, so let's query the directory for the userDN.
+                if self._admin_user and self._admin_pass:
+                    l.simple_bind_s(self._admin_user, self._admin_pass)
+                ldap_result = l.search_s(self._base, ldap.SCOPE_SUBTREE,
+                                         userRDN)
+                userDN = ldap_result[0][0]
+                l.simple_bind_s(userDN, password)
 
             # No LDAPError raised so far, so authentication was successful.
             # Now let's get the attributes we need for this user:
