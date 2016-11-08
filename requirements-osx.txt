@@ -9,5 +9,5 @@ mock
 psycopg2==2.4.5
 pycrypto==2.6.1
 pystache
-virtualenv
+virtualenv==15.0.3
 virtualenvwrapper
