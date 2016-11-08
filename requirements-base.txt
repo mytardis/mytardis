@@ -10,7 +10,7 @@ compare
 django-bootstrap-form==3.2.1 #apt: 3.1.0
 django-celery
 django-extensions==1.7.4
-django-form-utils==0.2.0
+django-form-utils==1.0.3
 django-haystack>=2
 #django-jasmine==0.4.1
 -e git+https://github.com/Aquasys/django-jasmine.git#egg=django-jasmine
