@@ -21,7 +21,7 @@ django-registration-redux
 django-tastypie-swagger==0.1.4
 django-user-agents==0.2.2
 ecdsa==0.11 #apt: 0.10
-elasticsearch
+elasticsearch==5.0.1
 #elementtree
 gunicorn==19.6.0
 gevent
