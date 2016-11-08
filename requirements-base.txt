@@ -44,7 +44,7 @@ pysolr>=2.1.0,<3 #apt: 2.0.15
 python-dateutil==2.4.0 #apt: 1.5
 # python-magic==0.4.6 #apt: 1:5.14
 -e git+https://github.com/grischa/python-magic.git#egg=python-magic
-pytz  #apt: 2012c
+pytz==2016.7 #apt: 2012c
 rdfextras==0.4
 rdflib==4.0.1 #apt: 2.4.2
 six>=1.9.0 #apt: 1.5.2
