@@ -1,5 +1,5 @@
 Django>=1.8,<1.9
-SPARQLWrapper==1.6.4 #apt: 1.4.1
+SPARQLWrapper==1.7.6 #apt: 1.4.1
 Sphinx
 Wand==0.4.4
 amqp==2.1.1
