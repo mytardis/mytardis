@@ -6,7 +6,7 @@ amqp==2.1.1
 argparse==1.4.0 #apt: libpython2.7-stdlib
 bleach==1.5.0 #apt: 1.2.2
 celery==4.0.0 #apt: 3.1.6
-compare
+compare==0.2b
 django-bootstrap-form==3.2.1 #apt: 3.1.0
 django-celery==3.1.17
 django-extensions==1.7.4
