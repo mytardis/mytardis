@@ -19,7 +19,7 @@ django-nose==1.4.4
 django-registration-redux==1.4
 -e git+https://github.com/grischa/django-tastypie.git@mytardis-dj1.7#egg=django-tastypie
 django-tastypie-swagger==0.1.4
-django-user-agents==0.2.2
+django-user-agents==0.3.0
 ecdsa==0.11 #apt: 0.10
 elasticsearch==5.0.1
 #elementtree
