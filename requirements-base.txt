@@ -1,4 +1,4 @@
-Django>=1.8,<1.9
+Django==1.10.3
 SPARQLWrapper==1.6.4 #apt: 1.4.1
 Sphinx
 Wand
