@@ -3,7 +3,7 @@ anyjson==0.3.3
 beautifulsoup4==4.5.1
 feedparser==5.1.3
 flexmock==0.10.2
-html5lib
+html5lib==0.999999999
 httplib2==0.8
 mock
 psycopg2==2.4.5
