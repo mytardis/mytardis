@@ -16,7 +16,7 @@ django-haystack>=2
 -e git+https://github.com/Aquasys/django-jasmine.git#egg=django-jasmine
 django-mustachejs==0.6.0
 django-nose
-django-registration-redux
+django-registration-redux==1.4
 -e git+https://github.com/grischa/django-tastypie.git@mytardis-dj1.7#egg=django-tastypie
 django-tastypie-swagger
 django-user-agents==0.2.2
