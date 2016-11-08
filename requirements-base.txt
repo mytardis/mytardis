@@ -3,7 +3,7 @@ SPARQLWrapper==1.7.6 #apt: 1.4.1
 Sphinx==1.4.8
 Wand==0.4.4
 amqp==2.1.1
-argparse==1.2.1 #apt: libpython2.7-stdlib
+argparse==1.4.0 #apt: libpython2.7-stdlib
 bleach==1.5.0 #apt: 1.2.2
 celery==4.0.0 #apt: 3.1.6
 compare
