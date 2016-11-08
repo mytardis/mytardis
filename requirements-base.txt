@@ -7,7 +7,7 @@ argparse==1.2.1 #apt: libpython2.7-stdlib
 bleach==1.4.1 #apt: 1.2.2
 celery==3.1.17 #apt: 3.1.6
 compare
-django-bootstrap-form==2.0.6 #apt: 3.1.0
+django-bootstrap-form==3.2.1 #apt: 3.1.0
 django-celery
 django-extensions
 django-form-utils==0.2.0
