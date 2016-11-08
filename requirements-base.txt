@@ -36,7 +36,7 @@ nosexcover
 # paramiko==1.15.2 #apt: 1.10.1
 -e git+https://github.com/jasonrig/paramiko.git@rsacert_tardis#egg=paramiko
 pillow
-pwgen==0.4
+pwgen==0.7
 pylint
 pyoai==2.4.4
 pyparsing==1.5.7 #apt: 2.0.1
