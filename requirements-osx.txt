@@ -1,4 +1,4 @@
-PyYAML
+PyYAML==3.12
 anyjson==0.3.3
 beautifulsoup4==4.2.1
 feedparser==5.1.3
