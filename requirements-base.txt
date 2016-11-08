@@ -8,7 +8,7 @@ bleach==1.5.0 #apt: 1.2.2
 celery==4.0.0 #apt: 3.1.6
 compare
 django-bootstrap-form==3.2.1 #apt: 3.1.0
-django-celery
+django-celery==3.1.17
 django-extensions==1.7.4
 django-form-utils==1.0.3
 django-haystack>=2
