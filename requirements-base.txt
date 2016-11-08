@@ -1,6 +1,6 @@
 Django>=1.8,<1.9
 SPARQLWrapper==1.7.6 #apt: 1.4.1
-Sphinx
+Sphinx==1.4.8
 Wand==0.4.4
 amqp==2.1.1
 argparse==1.2.1 #apt: libpython2.7-stdlib
