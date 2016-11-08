@@ -38,7 +38,7 @@ nosexcover
 pillow
 pwgen==0.7
 pylint==1.6.4
-pyoai==2.4.4
+pyoai==2.4.5
 pyparsing==1.5.7 #apt: 2.0.1
 pysolr==3.6.0 #apt: 2.0.15
 python-dateutil==2.5.3 #apt: 1.5
