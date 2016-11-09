@@ -9,7 +9,7 @@ celery==3.1.17 #apt: 3.1.6
 compare
 django-bootstrap-form==2.0.6 #apt: 3.1.0
 django-celery
-django-extensions
+django-extensions==1.7.4
 django-form-utils==0.2.0
 django-haystack>=2
 #django-jasmine==0.4.1
