@@ -40,7 +40,7 @@ pwgen==0.4
 pylint==1.6.4
 pyoai==2.4.4
 pyparsing==1.5.7 #apt: 2.0.1
-pysolr # pyup: >=2.1.0,<3
+pysolr==2.1.0 # pyup: >=2.1.0,<3
 python-dateutil==2.4.0 #apt: 1.5
 # python-magic==0.4.6 #apt: 1:5.14
 -e git+https://github.com/grischa/python-magic.git#egg=python-magic
