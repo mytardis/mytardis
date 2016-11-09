@@ -23,7 +23,7 @@ django-user-agents==0.2.2
 ecdsa==0.11 #apt: 0.10
 elasticsearch
 #elementtree
-gunicorn
+gunicorn==19.6.0
 gevent
 html2text
 html5lib==0.9999999
