@@ -1,4 +1,4 @@
-Django==1.10.3
+Django # pyup: >=1.8,<1.9
 SPARQLWrapper==1.6.4 #apt: 1.4.1
 Sphinx
 Wand
