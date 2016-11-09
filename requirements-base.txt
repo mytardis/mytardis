@@ -24,7 +24,7 @@ ecdsa==0.11 #apt: 0.10
 elasticsearch
 #elementtree
 gunicorn
-gevent
+gevent==1.1.2
 html2text
 html5lib==0.9999999
 isodate==0.5.1 #apt: 0.4.6
