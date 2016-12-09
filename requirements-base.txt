@@ -46,7 +46,7 @@ python-dateutil==2.4.0
 pytz==2016.7
 rdfextras==0.4
 rdflib==4.0.1
-six
+six==1.10.0
 ua-parser==0.3.3
 user-agents==0.1.1
 wsgiref==0.1.2
