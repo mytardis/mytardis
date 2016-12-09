@@ -1,52 +1,52 @@
 Django==1.8.16 # pyup: >=1.8,<1.9
-SPARQLWrapper==1.6.4 #apt: 1.4.1
+SPARQLWrapper==1.6.4
 Sphinx==1.4.8
 Wand==0.4.4
 amqp==1.4.9 # pyup: <2
-argparse==1.2.1 #apt: libpython2.7-stdlib
-bleach==1.4.1 #apt: 1.2.2
-celery==3.1.17 #apt: 3.1.6
+argparse==1.2.1
+bleach==1.4.1
+celery==3.1.17 # pyup: <4
 compare==0.2b
-django-bootstrap-form==2.0.6 #apt: 3.1.0
-django-celery==3.1.17
+django-bootstrap-form==2.0.6
+django-celery==3.1.17 # pyup: <4
 django-extensions==1.7.4
 django-form-utils==0.2.0
-django-haystack>=2
-#django-jasmine==0.4.1
+django-haystack==2.5.1
+# django-jasmine
 -e git+https://github.com/Aquasys/django-jasmine.git#egg=django-jasmine
 django-mustachejs==0.6.0
 django-nose==1.4.4
 django-registration-redux==1.4
+# django-tastypie
 -e git+https://github.com/grischa/django-tastypie.git@mytardis-dj1.7#egg=django-tastypie
 django-tastypie-swagger==0.1.4
 django-user-agents==0.2.2
-ecdsa==0.11 #apt: 0.10
+ecdsa==0.11
 elasticsearch==5.0.1
-#elementtree
 gunicorn==19.6.0
 gevent==1.1.2
 html2text==2016.9.19
 html5lib==0.9999999
-isodate==0.5.1 #apt: 0.4.6
+isodate==0.5.1
 pyjwt==1.3.0
-lxml==3.2.1 #apt: 3.3.3
+lxml==3.2.1
 nose==1.3.7
 nosexcover==1.0.11
-# paramiko==1.15.2 #apt: 1.10.1
+# paramiko
 -e git+https://github.com/jasonrig/paramiko.git@rsacert_tardis#egg=paramiko
 pillow==3.4.2
 pwgen==0.4
 pylint==1.6.4
 pyoai==2.4.4
-pyparsing==1.5.7 #apt: 2.0.1
+pyparsing==1.5.7
 pysolr==2.1.0 # pyup: >=2.1.0,<3
-python-dateutil==2.4.0 #apt: 1.5
-# python-magic==0.4.6 #apt: 1:5.14
+python-dateutil==2.4.0
+# python-magic
 -e git+https://github.com/grischa/python-magic.git#egg=python-magic
-pytz==2016.7 #apt: 2012c
+pytz==2016.7
 rdfextras==0.4
-rdflib==4.0.1 #apt: 2.4.2
-six>=1.9.0 #apt: 1.5.2
+rdflib==4.0.1
+six==1.10.0
 ua-parser==0.3.3
 user-agents==0.1.1
 wsgiref==0.1.2
