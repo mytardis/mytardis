@@ -5,7 +5,7 @@ Wand==0.4.4
 amqp==1.4.9 # pyup: <2
 argparse==1.2.1
 bleach==1.4.1
-celery==3.1.17 # pyup: <4
+celery==3.1.25 # pyup: <4
 compare==0.2b
 django-bootstrap-form==2.0.6
 django-celery==3.1.17 # pyup: <4
