@@ -10,4 +10,4 @@ psycopg2==2.4.5
 pycrypto==2.6.1
 pystache==0.5.4
 virtualenv
-virtualenvwrapper
+virtualenvwrapper==4.7.2
