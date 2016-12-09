@@ -5,7 +5,7 @@ Wand==0.4.4
 amqp==1.4.9 # pyup: <2
 argparse==1.2.1 #apt: libpython2.7-stdlib
 bleach==1.4.1 #apt: 1.2.2
-celery==3.1.17 #apt: 3.1.6
+celery==4.0.1 #apt: 3.1.6
 compare==0.2b
 django-bootstrap-form==2.0.6 #apt: 3.1.0
 django-celery==3.1.17
