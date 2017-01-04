@@ -11,7 +11,7 @@ django-bootstrap-form==2.0.6
 django-celery==3.1.17 # pyup: <4
 django-extensions==1.7.4
 django-form-utils==0.2.0
-django-haystack==2.5.1
+django-haystack==2.6.0
 # django-jasmine
 -e git+https://github.com/Aquasys/django-jasmine.git#egg=django-jasmine
 django-mustachejs==0.6.0
