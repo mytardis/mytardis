@@ -1,6 +1,6 @@
 Django==1.8.16 # pyup: >=1.8,<1.9
 SPARQLWrapper==1.6.4
-Sphinx==1.4.8
+Sphinx==1.5.1
 Wand==0.4.4
 amqp==1.4.9 # pyup: <2
 argparse==1.2.1
