@@ -2,7 +2,6 @@ PyYAML==3.12
 anyjson==0.3.3
 beautifulsoup4==4.2.1
 flexmock==0.10.2
-html5lib
 mock==2.0.0
 psycopg2==2.4.5
 pycrypto==2.6.1
