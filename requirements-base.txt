@@ -31,7 +31,7 @@ nosexcover==1.0.11
 # paramiko
 -e git+https://github.com/jasonrig/paramiko.git@rsacert_tardis#egg=paramiko
 pillow==3.4.2
-pwgen==0.4
+pwgen==0.7
 pylint==1.6.4
 pyoai==2.4.4
 pysolr==2.1.0 # pyup: >=2.1.0,<3
