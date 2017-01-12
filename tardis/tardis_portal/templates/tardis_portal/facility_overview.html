@@ -7,15 +7,16 @@
 {% load bleach_tag %}
 
 {% block content %}
+    <div class="page-header">
+        <h1 class="title">Facility Overview</h1>
+    </div>
+
     {% with request|check_if_facility_manager as facility_manager %}
         <script type="text/javascript"
                 src="{% static 'js/facility_view.js' %}"></script>
         <div id="content" ng-controller="FacilityCtrl">
         {% verbatim %}
         <div class="row-fluid">
-            <div class="span12">
-                <h1>Facility Overview</h1>
-            </div>
             <div class="pull-left"><h2 style="color:#999999">
                 {{selectedFacilityName | capitalise}}</h2></div>
             <div class="btn-group pull-right" ng-show="showFacilitySelector()">
@@ -34,7 +35,6 @@
                 </ul>
             </div>
         </div>
-        <hr/>
         {% endverbatim %}
         {% if not facility_manager %}
             <div class="row-fluid">
