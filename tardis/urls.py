@@ -90,6 +90,7 @@ experiment_lists = patterns(
         name="tardis_portal.experiment_list_shared"),
     )
 
+user_pattern = '[\w\-][\w\-\.]+(@[\w\-][\w\-\.]+[a-zA-Z]{1,4})*'
 experiment_urls = patterns(
     'tardis.tardis_portal.views',
     url(r'^view/(?P<experiment_id>\d+)/$', ExperimentView.as_view(),
@@ -99,12 +100,12 @@ experiment_urls = patterns(
     (r'^view/$', 'experiment_index'),  # Legacy URL
     (r'^create/$', 'create_experiment'),
     (r'^control_panel/(?P<experiment_id>\d+)/access_list/add/user/'
-     '(?P<username>[\w\-][\w\-\.]+(@[\w\-][\w\-\.]+[a-zA-Z]{1,4})*)/$',
+     '(?P<username>%s)/$' % user_pattern,
      'add_experiment_access_user'),
     (r'^control_panel/(?P<experiment_id>\d+)/access_list/remove/user/'
-     '(?P<username>[\w\.]+)/$', 'remove_experiment_access_user'),
+     '(?P<username>%s)/$' % user_pattern, 'remove_experiment_access_user'),
     (r'^control_panel/(?P<experiment_id>\d+)/access_list/change/user/'
-     '(?P<username>[\w\.]+)/$', 'change_user_permissions'),
+     '(?P<username>%s)/$' % user_pattern, 'change_user_permissions'),
     (r'^control_panel/(?P<experiment_id>\d+)/access_list/user/$',
      'retrieve_access_list_user'),
     (r'^control_panel/(?P<experiment_id>\d+)/access_list/user/readonly/$',
