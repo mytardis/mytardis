@@ -25,10 +25,8 @@ RUN apt-get update && apt-get install \
     python-bs4 \
     python-crypto \
     python-dateutil \
-    python-feedparser \
     python-flexmock \
     python-html5lib \
-    python-httplib2 \
     python-pip \
     python-pystache \
     python-virtualenv \
