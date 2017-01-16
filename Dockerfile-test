@@ -1,5 +1,11 @@
 FROM mytardis/mytardis-run
 
+USER root
+RUN apt-get update && apt-get install \
+    -qy \
+    phantomjs
+USER webapp
+
 RUN . /appenv/bin/activate; \
     pip install --no-index -f /wheelhouse psycopg2 mysql-python
 RUN . /appenv/bin/activate; \
