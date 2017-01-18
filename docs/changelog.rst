@@ -1,6 +1,13 @@
 Releases
 ========
 
+unreleased changes
+------------------
+
+* Docker based tests
+* Docker based demo
+
+
 3.7 - 17 March 2016
 -------------------
 

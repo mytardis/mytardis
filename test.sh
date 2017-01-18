@@ -38,6 +38,8 @@ case "$TEST_TYPE" in
 	(( exit_status = exit_status || $? ))
     ;;
     mysql)
+    export DB_ENGINE=mysql
+    ./scripts/wait-for-db.sh
 	run_test tardis.test_on_mysql_settings
 	(( exit_status = exit_status || $? ))
     ;;

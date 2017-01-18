@@ -1,0 +1,89 @@
+version: "2"
+services:
+  db:
+    image: postgres
+    env_file: ./docker-demo.env
+    networks:
+      - policeboxnet
+  rabbitmq:
+    image: rabbitmq
+    env_file: ./docker-demo.env
+    networks:
+      - policeboxnet
+  elasticsearch:
+    image: elasticsearch
+    env_file: ./docker-demo.env
+    networks:
+      - policeboxnet
+  nginx:
+    image: nginx
+    volumes_from:
+      - webapp
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+    ports:
+      - "8080:80"
+    depends_on:
+      - webapp
+    networks:
+      - policeboxnet
+  webapp:
+    image: mytardis/mytardis-run
+    entrypoint:
+      - scripts/docker-cmd.sh
+      - gunicorn
+    volumes:
+      - ./static:/static
+      - ./var/store:/home/webapp/var/store
+    tty: true
+    env_file: ./docker-demo.env
+    depends_on:
+      - db
+      - elasticsearch
+      - rabbitmq
+    networks:
+      - policeboxnet
+  sftpd:
+    image: mytardis/mytardis-run
+    entrypoint:
+      - scripts/docker-cmd.sh
+      - sftpd
+    volumes:
+      - ./var/store:/home/webapp/var/store
+    env_file: ./docker-demo.env
+    ports:
+      - "2200:2200"
+    depends_on:
+      - db
+      - elasticsearch
+      - rabbitmq
+    networks:
+      - policeboxnet
+  celeryd:
+    image: mytardis/mytardis-run
+    entrypoint:
+      - scripts/docker-cmd.sh
+      - celeryd
+    volumes:
+      - ./var/store:/home/webapp/var/store
+    env_file: ./docker-demo.env
+    depends_on:
+      - db
+      - elasticsearch
+      - rabbitmq
+    networks:
+      - policeboxnet
+  celerybeat:
+    image: mytardis/mytardis-run
+    entrypoint:
+      - scripts/docker-cmd.sh
+      - celerybeat
+    env_file: ./docker-demo.env
+    depends_on:
+      - db
+      - elasticsearch
+      - rabbitmq
+    networks:
+      - policeboxnet
+networks:
+  policeboxnet:

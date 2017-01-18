@@ -8,5 +8,9 @@ USER webapp
 WORKDIR /home/webapp
 
 ENV DOCKER_BUILD true
-RUN . /appenv/bin/activate; \
-    pip install --no-index -f /wheelhouse -r requirements.txt
+RUN /appenv/bin/pip install --no-index -f /wheelhouse \
+    -r requirements.txt \
+    psycopg2 \
+    MySQL-python
+
+ENTRYPOINT ["scripts/docker-cmd.sh"]

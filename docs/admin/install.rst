@@ -546,3 +546,160 @@ Serving with Apache HTTPD + mod_wsgi
 
 We do not support the use of Apache. If you need this and want to support this
 use case, we welcome your contribution of any relevant documentation.
+
+Docker Images and Demo
+----------------------
+A series of docker images is available for automated testing and demos.
+
+The following images are provided on the public Docker Hub:
+
+- https://hub.docker.com/r/mytardis/mytardis-base/
+- https://hub.docker.com/r/mytardis/mytardis-run/
+- https://hub.docker.com/r/mytardis/mytardis-test/
+
+The following image can be built locally, and may be available on the
+public Docker Hub soon:
+
+- mytardis/mytardis-django
+
+mytardis/mytardis-base
+~~~~~~~~~~~~~~~~~~~~~~
+
+The mytardis/mytardis-base image is built from the public ubuntu:14.04 image,
+and provides build prerequisites for MyTardis's required Python packages.
+
+This image can be built with docker-compose:
+
+.. code-block:: bash
+
+   docker-compose -f docker-build.yml build base
+
+mytardis/mytardis-run
+~~~~~~~~~~~~~~~~~~~~~
+
+The mytardis/mytardis-run image provides all of the Python packages required to run
+a minimal MyTardis (including automated tests).
+
+This image can be built with docker-compose:
+
+.. code-block:: bash
+
+   docker-compose -f docker-build.yml run builder
+   docker-compose -f docker-test.yml build run
+
+This will also generate a "mytardis_builder" image.  (The name will vary if
+you have cloned mytardis into a directory other than "mytardis").
+The mytardis_builder image can be discarded after successfully building the
+mytardis/mytardis-run image.  A container spawned from the mytardis_builder
+image is used to build binary wheels of MyTardis's Python package prerequisites
+which are then pip-installed during creation of the mytardis/mytardis-run image.
+
+mytardis/mytardis-test
+~~~~~~~~~~~~~~~~~~~~~~
+
+The mytardis/mytardis-test image adds test-related Python packages to the
+mytardis/mytardis-run image and sets the default command to run
+MyTardis's 'test.sh'.
+
+This image can be built with docker-compose:
+
+.. code-block:: bash
+
+   docker-compose -f docker-test.yml build test
+
+If the required mytardis/mytardis-run image isn't available locally, it will
+be pulled from the public Docker Hub.
+
+MyTardis's automated tests are run using:
+
+.. code-block:: bash
+
+   docker-compose -f docker-build.yml run builder
+   docker-compose -f docker-test.yml run -e TEST_TYPE=memory test
+
+
+Docker Demo
+~~~~~~~~~~~
+
+If you have Docker (https://www.docker.com/products/docker) installed and
+running, after cloning the MyTardis repository, you should be able to get
+a working MyTardis server up and running with the following command:
+
+.. code-block:: bash
+
+   docker-compose up -d
+
+**Please note the security warnings in docker.env!  The default
+SECRET_KEY and passwords should NOT be used in production!**
+
+You can access the resulting MyTardis service at http://localhost:8080
+with username: demo, password: demo (set in docker.env).
+
+You can list running containers:
+
+.. code-block:: bash
+
+   $ docker-compose ps
+
+           Name                       Command               State                    Ports
+   --------------------------------------------------------------------------------------------------------
+   mytardis_celerybeat_1   /bin/bash -c while ! ping  ...   Up
+   mytardis_celeryd_1      /appenv/bin/python mytardi ...   Up
+   mytardis_nginx_1        /bin/bash -c while ! ping  ...   Up      443/tcp, 0.0.0.0:8080->80/tcp
+   mytardis_pg_1           /docker-entrypoint.sh postgres   Up      5432/tcp
+   mytardis_rabbitmq_1     docker-entrypoint.sh rabbi ...   Up      25672/tcp, 4369/tcp, 5671/tcp, 5672/tcp
+   mytardis_webapp_1       /home/webapp/docker-webapp.sh    Up      8000/tcp
+
+The "mytardis_" prefix is the project name, and since we did not use
+`docker-compose's -p command-line option
+<https://docs.docker.com/compose/reference/overview/>`_, the default prefix
+is the working directory name.
+
+View logs:
+
+.. code-block:: bash
+
+   docker-compose logs
+   docker-compose logs -f webapp
+   docker-compose exec webapp tail /home/webapp/request.log
+   docker-compose exec webapp tail /home/webapp/tardis.log
+
+Run a shell inside the webapp container:
+
+.. code-block:: bash
+
+   docker-compose exec webapp /bin/bash
+
+Bring down the services:
+
+.. code-block:: bash
+
+   docker-compose down
+
+Docker Demo Troubleshooting
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If a container exits quickly with an error, you won't see it in the
+``docker-compose ps`` list, but you will see it in the ``docker ps -a``
+list.  You can then run ``docker logs [container_id]``.
+
+If http://localhost:8080 returns an HTTP 502 status code, even after
+waiting for the webapp container to finish its initialization (as
+observed by ``docker-compose logs -f webapp``), then it's
+possible that the nginx service attempted to start up before the
+"webapp" host was resolvable.  In this case, you can restart nginx
+with ``docker-compose restart nginx``.
+
+Build your own demo images
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The demo uses pre-built images downloaded from Docker Hub. To build the images
+locally, e.g. after you made changes to the code, run these commands:
+
+.. code-block:: bash
+
+   docker-compose -f docker-build.yml build
+   docker-compose -f docker-build.yml run builder
+   docker-compose -f docker-test.yml build
+
+And then again just ``docker-compose up`` to run them.

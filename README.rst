@@ -36,6 +36,22 @@ summarised as:
    the best ways of ensuring that this data is not lost (laboratory
    archives are typically volatile).
 
+Demo
+----
+
+To try out MyTardis, install Docker and run
+
+.. code-block:: bash
+
+   git clone https://github.com/mytardis/mytardis.git
+   cd mytardis
+   docker-compose up
+
+This will download pre-built images from Docker Hub and start a complete
+MyTardis service in your Docker host.
+
+Open the web interface in your browser: http://localhost:8080 and
+log in with username ``demo`` and password ``demo``.
 
 Find out more
 -------------
