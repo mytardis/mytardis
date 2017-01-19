@@ -1,6 +1,11 @@
 Releases
 ========
 
+In development
+--------------
+* Revert behaviour that allowed 'Staff' users to modify experiment ownership and
+  sharing permissions via the web UI.
+
 3.7 - 17 March 2016
 -------------------
 

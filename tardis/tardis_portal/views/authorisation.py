@@ -777,7 +777,6 @@ def share(request, experiment_id):
     if user.is_authenticated():
         c['is_owner'] = authz.has_experiment_ownership(request, experiment_id)
         c['is_superuser'] = user.is_superuser
-        c['is_staff'] = user.is_staff
 
     domain = Site.objects.get_current().domain
     public_link = experiment.public_access >= Experiment.PUBLIC_ACCESS_METADATA
