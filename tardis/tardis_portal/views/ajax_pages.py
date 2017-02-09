@@ -15,10 +15,10 @@ from django.http import HttpResponse, HttpResponseNotFound, \
     HttpResponseForbidden
 from django.shortcuts import render
 from django.views.decorators.cache import never_cache
+from django.contrib.auth.decorators import login_required
 from haystack.query import SearchQuerySet
 from tardis.search.utils import SearchQueryString
 from tardis.tardis_portal.auth import decorators as authz
-from django.contrib.auth.decorators import login_required
 from tardis.tardis_portal.forms import RightsForm
 from tardis.tardis_portal.models import Experiment, DataFile, Dataset, Schema, \
     DatafileParameterSet, UserProfile
