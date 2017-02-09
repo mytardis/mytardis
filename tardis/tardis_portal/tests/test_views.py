@@ -1,3 +1,4 @@
+# pylint: disable=C0302
 # -*- coding: utf-8 -*-
 #
 # Copyright (c) 2010-2011, Monash e-Research Centre
@@ -37,8 +38,6 @@ http://docs.djangoproject.com/en/dev/topics/testing/
 .. moduleauthor::  Steve Androulakis <steve.androulakis@monash.edu>
 
 """
-# pylint: disable=too-many-lines
-
 import json
 from urllib import quote
 from urlparse import urlparse
