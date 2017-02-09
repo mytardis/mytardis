@@ -25,12 +25,13 @@
 {#          <i class="icon-search"></i>#}
 {#          Search#}
 {#        </a>#}
-      </div>
+      </div>  <!-- class="pull-right" -->
       <div class="pull-left">
 	<h2 class="hidden-phone" style="text-align: center">Experiments</h2>
       </div>
-    </div>
-  </div>
+    </div>  <!-- class="span9" -->
+  </div>  <!-- class="row-fluid" -->
+
   <div class="row-fluid">
     <div class="span9">
       {% if not shared_experiments and not owned_experiments %}
@@ -56,9 +57,9 @@
       <div class="clearfix"></div>
       <div id="myowned" class="mydata accordion"></div>
       <br/>
-    {% endif %}
+      {% endif %}
 
-    {% if shared_experiments %}
+      {% if shared_experiments %}
       <div class="pull-left">
 	<h3><strong>{{ shared_experiments.count }}</strong>
 	Shared Experiment{{ shared_experiments.count|pluralize }}</h3>
@@ -73,8 +74,10 @@
       </div>
       <div class="clearfix"></div>
       <div id="myshared" class="mydata accordion"></div>
-    {% endif %}
-</div>
+      {% endif %}
+    </div>  <!-- class="span9" -->
+  </div>  <!-- class="row-fluid" -->
+</div>  <!-- id="content" -->
 <script type="text/javascript">
 $(function(){
     $("#experiments .accordion-body").collapse({parent:"#experiments", toggle: true});
