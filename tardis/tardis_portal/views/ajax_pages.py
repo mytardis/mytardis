@@ -400,7 +400,7 @@ def choose_rights(request, experiment_id):
                         'tardis_portal/ajax/choose_rights.html', c))
 
 
-@never_cache  # too complex # noqa
+@never_cache
 @login_required
 def retrieve_owned_exps_list(
         request, template_name='tardis_portal/ajax/owned_exps_list.html'):
@@ -425,7 +425,7 @@ def retrieve_owned_exps_list(
     return HttpResponse(render_response_index(request, template_name, c))
 
 
-@never_cache  # too complex # noqa
+@never_cache
 @login_required
 def retrieve_shared_exps_list(
         request, template_name='tardis_portal/ajax/shared_exps_list.html'):
