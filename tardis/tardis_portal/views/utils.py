@@ -60,7 +60,7 @@ def _add_protocols_and_organizations(request, collection_object, c):
     from tardis.tardis_portal.download import get_download_organizations
     c['organization'] = get_download_organizations()
     c['default_organization'] = getattr(
-        settings, 'DEFAULT_ARCHIVE_ORGANIZATION', 'classic')
+        settings, 'DEFAULT_PATH_MAPPER', 'classic')
 
 
 def __getFilteredDatafiles(request, searchQueryType, searchFilterData):
