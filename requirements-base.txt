@@ -1,5 +1,5 @@
 Django==1.8.16 # pyup: >=1.8,<1.9
-Sphinx==1.4.8
+Sphinx==1.5.2
 Wand==0.4.4
 amqp==1.4.9 # pyup: <2
 bleach==1.4.1
