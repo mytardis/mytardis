@@ -350,11 +350,35 @@ def my_data(request):
     delegate to custom views depending on settings
     '''
 
+    owned_experiments = \
+        Experiment.safe.owned(request.user).order_by('-update_time')
+    shared_experiments = \
+        Experiment.safe.shared(request.user).order_by('-update_time')
+
+    try:
+        page_number = int(request.GET.get('page', '1'))
+    except ValueError:
+        page_number = 1
+
+    owned_paginator = \
+        Paginator(owned_experiments, settings.OWNED_EXPS_PER_PAGE)
+    try:
+        owned_exps_page = owned_paginator.page(page_number)
+    except (EmptyPage, InvalidPage):
+        owned_exps_page = owned_paginator.page(owned_paginator.num_pages)
+
+    shared_paginator = \
+        Paginator(shared_experiments, settings.SHARED_EXPS_PER_PAGE)
+    try:
+        shared_exps_page = shared_paginator.page(page_number)
+    except (EmptyPage, InvalidPage):
+        shared_exps_page = shared_paginator.page(owned_paginator.num_pages)
+
     c = {
-        'owned_experiments': Experiment.safe.owned(request.user)
-        .order_by('-update_time'),
-        'shared_experiments': Experiment.safe.shared(request.user)
-        .order_by('-update_time'),
+        'owned_experiments': owned_exps_page,
+        'owned_paginator': owned_paginator,
+        'shared_experiments': shared_exps_page,
+        'shared_paginator': shared_paginator
     }
     return HttpResponse(render_response_index(
         request, 'tardis_portal/my_data.html', c))
