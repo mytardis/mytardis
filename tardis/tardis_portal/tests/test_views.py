@@ -1,3 +1,4 @@
+# pylint: disable=C0302
 # -*- coding: utf-8 -*-
 #
 # Copyright (c) 2010-2011, Monash e-Research Centre
@@ -953,6 +954,129 @@ class ViewTemplateContextsTest(TestCase):
                 setattr(settings, "USER_AGENT_SENSING", saved_setting)
             else:
                 delattr(settings, "USER_AGENT_SENSING")
+
+
+class ExperimentListsTest(TestCase):
+
+    def setUp(self):
+        """
+        setting up essential objects, copied from tests above
+        """
+
+        self.username = 'tardis_user1'
+        self.password = 'secret'
+        email = ''
+        self.user = User.objects.create_user(self.username, email, self.password)
+        self.exps = []
+        self.acls = []
+        for exp_num in range(1, 301):
+            exp = Experiment.objects.create(title="Experiment %s" % exp_num,
+                                            created_by=self.user)
+            self.exps.append(exp)
+            isOwner = exp_num <= 100
+            acl = ObjectACL.objects.create(
+                pluginId=django_user,
+                entityId=str(self.user.id),
+                content_object=exp,
+                canRead=True,
+                isOwner=isOwner,
+                aclOwnershipType=ObjectACL.OWNER_OWNED)
+            self.acls.append(acl)
+
+    def tearDown(self):
+        self.user.delete()
+        for exp in self.exps:
+            exp.delete()
+        for acl in self.acls:
+            acl.delete()
+
+    def testMyDataView(self):
+        """
+        Test My Data view
+        """
+        from django.http import QueryDict, HttpRequest
+        from tardis.tardis_portal.views import my_data
+        from tardis.tardis_portal.views import retrieve_owned_exps_list
+        from tardis.tardis_portal.views import retrieve_shared_exps_list
+
+        request = HttpRequest()
+        request.method = 'GET'
+        request.user = self.user
+        response = my_data(request)
+        self.assertEqual(response.status_code, 200)
+        # jQuery hasn't populated the divs yet:
+        self.assertIn('<div id="myowned" class="mydata accordion"></div>',
+                      response.content)
+        self.assertIn('<div id="myshared" class="mydata accordion"></div>',
+                      response.content)
+
+        # Owned experiments:
+        self.assertEqual(settings.OWNED_EXPS_PER_PAGE, 20)
+        self.assertEqual(len([acl for acl in self.acls if acl.isOwner]),
+                         100)
+        request.GET = QueryDict('')
+        response = retrieve_owned_exps_list(request)
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('<div class="pagination">', response.content)
+        self.assertIn('Page 1 of 5', response.content)
+
+        # Test page number greater than num_pages,
+        # should just give the last page (5).
+        request.GET = QueryDict('page=6')
+        response = retrieve_owned_exps_list(request)
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('<div class="pagination">', response.content)
+        self.assertIn('Page 5 of 5', response.content)
+
+        # Now let's reduce the number of owned experiments from
+        # 100 to 10, so pagination isn't needed:
+        deleted_count = 0
+        for acl in list(self.acls):
+            exp = Experiment.objects.get(id=acl.object_id)
+            if acl.isOwner and deleted_count < 90:
+                self.exps.remove(exp)
+                self.acls.remove(acl)
+                exp.delete()
+                acl.delete()
+                deleted_count += 1
+        request.GET = QueryDict('')
+        response = retrieve_owned_exps_list(request)
+        self.assertEqual(response.status_code, 200)
+        self.assertNotIn('<div class="pagination">', response.content)
+
+        # Shared experiments:
+        self.assertEqual(settings.SHARED_EXPS_PER_PAGE, 20)
+        self.assertEqual(len([acl for acl in self.acls if not acl.isOwner]),
+                         200)
+        request.GET = QueryDict('')
+        response = retrieve_shared_exps_list(request)
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('<div class="pagination">', response.content)
+        self.assertIn('Page 1 of 10', response.content)
+
+        # Test page number greater than num_pages,
+        # should just give the last page (10).
+        request.GET = QueryDict('page=12')
+        response = retrieve_shared_exps_list(request)
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('<div class="pagination">', response.content)
+        self.assertIn('Page 10 of 10', response.content)
+
+        # Now let's reduce the number of shared experiments from
+        # 200 to 10, so pagination isn't needed:
+        deleted_count = 0
+        for acl in list(self.acls):
+            exp = Experiment.objects.get(id=acl.object_id)
+            if not acl.isOwner and deleted_count < 190:
+                self.exps.remove(exp)
+                self.acls.remove(acl)
+                exp.delete()
+                acl.delete()
+                deleted_count += 1
+        request.GET = QueryDict('')
+        response = retrieve_shared_exps_list(request)
+        self.assertEqual(response.status_code, 200)
+        self.assertNotIn('<div class="pagination">', response.content)
 
 
 class _ContextMatcher(object):

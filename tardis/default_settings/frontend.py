@@ -35,3 +35,7 @@ These are the default bleach values and shown here as an example.
 
 JASMINE_TEST_DIRECTORY = path.abspath(path.join(
     path.dirname(__file__), '..', 'tardis_portal', 'tests', 'jasmine'))
+
+# Used in "My Data" view:
+OWNED_EXPS_PER_PAGE = 20
+SHARED_EXPS_PER_PAGE = 20

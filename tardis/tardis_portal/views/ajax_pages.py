@@ -15,6 +15,7 @@ from django.http import HttpResponse, HttpResponseNotFound, \
     HttpResponseForbidden
 from django.shortcuts import render
 from django.views.decorators.cache import never_cache
+from django.contrib.auth.decorators import login_required
 from haystack.query import SearchQuerySet
 from tardis.search.utils import SearchQueryString
 from tardis.tardis_portal.auth import decorators as authz
@@ -397,3 +398,53 @@ def choose_rights(request, experiment_id):
     c = {'form': form, 'experiment': experiment}
     return HttpResponse(render_response_index(request,
                         'tardis_portal/ajax/choose_rights.html', c))
+
+
+@never_cache
+@login_required
+def retrieve_owned_exps_list(
+        request, template_name='tardis_portal/ajax/owned_exps_list.html'):
+
+    experiments = Experiment.safe.owned(request.user).order_by('-update_time')
+
+    try:
+        page_number = int(request.GET.get('page', '1'))
+    except ValueError:
+        page_number = 1
+
+    paginator = Paginator(experiments, settings.OWNED_EXPS_PER_PAGE)
+    try:
+        exps_page = paginator.page(page_number)
+    except (EmptyPage, InvalidPage):
+        exps_page = paginator.page(paginator.num_pages)
+
+    c = {
+        'owned_experiments': exps_page,
+        'paginator': paginator
+    }
+    return HttpResponse(render_response_index(request, template_name, c))
+
+
+@never_cache
+@login_required
+def retrieve_shared_exps_list(
+        request, template_name='tardis_portal/ajax/shared_exps_list.html'):
+
+    experiments = Experiment.safe.shared(request.user).order_by('-update_time')
+
+    try:
+        page_number = int(request.GET.get('page', '1'))
+    except ValueError:
+        page_number = 1
+
+    paginator = Paginator(experiments, settings.SHARED_EXPS_PER_PAGE)
+    try:
+        exps_page = paginator.page(page_number)
+    except (EmptyPage, InvalidPage):
+        exps_page = paginator.page(paginator.num_pages)
+
+    c = {
+        'shared_experiments': exps_page,
+        'paginator': paginator
+    }
+    return HttpResponse(render_response_index(request, template_name, c))
