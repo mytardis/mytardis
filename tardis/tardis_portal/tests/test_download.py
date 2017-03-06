@@ -6,6 +6,7 @@ from shutil import rmtree
 from zipfile import is_zipfile, ZipFile
 from tarfile import is_tarfile, TarFile
 from tempfile import NamedTemporaryFile
+from urllib import quote
 
 from compare import expect
 
@@ -224,13 +225,18 @@ class DownloadTestCase(TestCase):
         # check download for experiment1 as tar
         response = client.get('/download/experiment/%i/tar/' %
                               self.experiment1.id)
+        if settings.EXP_SPACES_TO_UNDERSCORES:
+            exp1_title = self.experiment1.title.replace(' ', '_')
+        else:
+            exp1_title = self.experiment1.title
+        exp1_title = quote(exp1_title,
+                           safe=settings.SAFE_FILESYSTEM_CHARACTERS)
         self.assertEqual(response['Content-Disposition'],
                          'attachment; filename="%s-complete.tar"'
-                         % self.experiment1.title.replace(' ', '_'))
+                         % exp1_title)
         self.assertEqual(response.status_code, 200)
         self._check_tar_file(
-            response.streaming_content, str(self.experiment1.title
-                                            .replace(' ', '_')),
+            response.streaming_content, exp1_title,
             reduce(lambda x, y: x + y,
                    [ds.datafile_set.all()
                     for ds in self.experiment1.datasets.all()]))
@@ -311,7 +317,7 @@ class DownloadTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response['Content-Disposition'],
                          'attachment; filename="%s-complete.tar"'
-                         % self.experiment1.title.replace(' ', '_'))
+                         % exp1_title)
         self._check_tar_file(
             response.streaming_content, str(self.experiment1.id),
             reduce(lambda x, y: x + y,
@@ -325,12 +331,18 @@ class DownloadTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
 
         # check experiment2 download with '.txt' filtered out
+        if settings.EXP_SPACES_TO_UNDERSCORES:
+            exp2_title = self.experiment2.title.replace(' ', '_')
+        else:
+            exp2_title = self.experiment2.title
+        exp2_title = quote(exp2_title,
+                           safe=settings.SAFE_FILESYSTEM_CHARACTERS)
         response = client.get('/download/experiment/%i/tar/' %
                               self.experiment2.id)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response['Content-Disposition'],
                          'attachment; filename="%s-complete.tar"'
-                         % self.experiment2.title.replace(' ', '_'))
+                         % exp2_title)
         self._check_tar_file(
             response.streaming_content, str(self.experiment2.id),
             reduce(lambda x, y: x + y,
@@ -374,16 +386,24 @@ class DownloadTestCase(TestCase):
         # We are setting size/checksums that don't match the actual file, so
         # the
         pdf2 = self._build_datafile(filename, filename, dataset,
-                                    checksum='cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e',
+                                    checksum=('cf83e1357eefb8bdf1542850d66d800'
+                                              '7d620e4050b5715dc83f4a921d36ce9'
+                                              'ce47d0d13c5d85f2b0ff8318d2877ee'
+                                              'c2f63b931bd47417a81a538327af927'
+                                              'da3e'),
                                     size=0,
-                                    mimetype='application/vnd.openxmlformats-officedocument.presentationml.presentation')  # noqa
+                                    mimetype=('application/vnd.openxmlformats-'
+                                              'officedocument.presentationml.'
+                                              'presentation'))
         self.assertEqual(pdf2.size, 0)
         self.assertEqual(pdf2.md5sum, '')
         self.assertEqual(pdf2.file_objects.get().verified, False)
         pdf2 = DataFile.objects.get(pk=pdf2.pk)
         try:
             from magic import Magic  # noqa
-            self.assertEqual(pdf2.mimetype, 'application/vnd.openxmlformats-officedocument.presentationml.presentation')  # noqa
+            self.assertEqual(pdf2.mimetype, ('application/vnd.openxmlformats-'
+                                             'officedocument.presentationml.'
+                                             'presentation'))
         except:
             # XXX Test disabled because lib magic can't be loaded
             pass

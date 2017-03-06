@@ -132,14 +132,15 @@ def render_public_access_badge(experiment):
             'private': True,
         })
     elif experiment.public_access == experiment.PUBLIC_ACCESS_NONE and\
-       experiment.is_publication() and not experiment.is_publication_draft():
+            experiment.is_publication() and\
+            not experiment.is_publication_draft():
         return render_mustache('tardis_portal/badges/public_access', {
             'title': 'No public access, awaiting approval',
             'label': '[PUBLICATION] Awaiting approval',
             'private': True,
         })
     elif experiment.public_access == experiment.PUBLIC_ACCESS_NONE and\
-       experiment.is_publication_draft():
+            experiment.is_publication_draft():
         return render_mustache('tardis_portal/badges/public_access', {
             'title': 'No public access',
             'label': '[PUBLICATION] Draft',
@@ -162,14 +163,6 @@ def render_public_access_badge(experiment):
             'label': 'Public',
             'public': True,
         })
-
-
-def sanitise_name(name):
-    return quote(name.replace(' ', '_').replace('/', ':'), safe='')
-
-
-def dirname_with_id(obj_name, obj_id):
-    return "%s_%d" % (sanitise_name(obj_name), obj_id)
 
 
 def split_path(p):

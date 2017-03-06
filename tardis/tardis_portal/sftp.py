@@ -22,10 +22,11 @@ from paramiko import OPEN_SUCCEEDED, OPEN_FAILED_ADMINISTRATIVELY_PROHIBITED,\
 from paramiko.common import AUTH_FAILED, AUTH_SUCCESSFUL
 
 from tardis.analytics import tracker
-from tardis.tardis_portal.util import sanitise_name, dirname_with_id, \
-    split_path
+from tardis.tardis_portal.download import make_mapper
+from tardis.tardis_portal.util import split_path
 
 logger = logging.getLogger(__name__)
+path_mapper = make_mapper(settings.DEFAULT_PATH_MAPPER, rootdir=None)
 
 paramiko_log = logging.getLogger('paramiko.transport')
 if not paramiko_log.handlers:
@@ -39,10 +40,10 @@ if getattr(settings, 'SFTP_GEVENT', False):
     connection.allow_thread_sharing = True
 
 # django db related modules must be imported after monkey-patching
-from django.contrib.sites.models import Site
-from django.contrib.auth.models import AnonymousUser
+from django.contrib.sites.models import Site  # noqa
+from django.contrib.auth.models import AnonymousUser  # noqa
 
-from tardis.tardis_portal.models import DataFile, Experiment
+from tardis.tardis_portal.models import DataFile, Experiment  # noqa
 
 
 class DynamicTree(object):
@@ -94,7 +95,7 @@ class DynamicTree(object):
         return leaf
 
     def update_experiments(self):
-        exps = [(dirname_with_id(exp.title, exp.id), exp)
+        exps = [(path_mapper(exp), exp)
                 for exp in self.host_obj.experiments]
         self.clear_children()
         for exp_name, exp in exps:
@@ -105,7 +106,7 @@ class DynamicTree(object):
 
     def update_datasets(self):
         all_files_name = '00_all_files'
-        datasets = [(dirname_with_id(ds.description, ds.id), ds)
+        datasets = [(path_mapper(ds), ds)
                     for ds in self.obj.datasets.all()]
         self.clear_children()
         for ds_name, ds in datasets:
@@ -132,7 +133,7 @@ class DynamicTree(object):
             self._add_file_entry(df)
 
     def _add_file_entry(self, datafile):
-        df_name = sanitise_name(datafile.filename)
+        df_name = path_mapper(datafile)
         # try:
         #     file_obj = df.file_object
         #     file_name = df_name
@@ -190,7 +191,7 @@ class MyTSFTPServerInterface(SFTPServerInterface):
             self._exps_cache[u]['all'] = Experiment.safe.all(self.user)
             self._exps_cache[u]['last_update'] = time.time()
         elif self._exps_cache[u]['last_update'] - time.time() > \
-             self._cache_time:
+                self._cache_time:
             self._exps_cache[u]['all']._result_cache = None
         return self._exps_cache[u]['all']
 
