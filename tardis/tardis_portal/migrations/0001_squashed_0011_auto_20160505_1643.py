@@ -29,8 +29,6 @@ def cast_string_to_integer(apps, schema_editor):
 
 class Migration(migrations.Migration):
 
-    replaces = [(b'tardis_portal', '0001_initial'), (b'tardis_portal', '0002_auto_20150528_1128'), (b'tardis_portal', '0003_auto_20150907_1315'), (b'tardis_portal', '0004_storageboxoption_value_type'), (b'tardis_portal', '0005_datafile_add_size_int_column'), (b'tardis_portal', '0006_datafile_remove_size_string_column'), (b'tardis_portal', '0007_remove_parameter_string_value_index'), (b'tardis_portal', '0008_string_value_partial_index_postgres'), (b'tardis_portal', '0009_auto_20160128_1119'), (b'tardis_portal', '0010_auto_20160503_1443'), (b'tardis_portal', '0011_auto_20160505_1643')]
-
     dependencies = [
         ('contenttypes', '0002_remove_content_type_name'),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
