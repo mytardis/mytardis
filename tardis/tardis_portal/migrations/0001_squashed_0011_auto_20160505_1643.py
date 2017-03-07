@@ -28,6 +28,9 @@ def cast_string_to_integer(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
+    # this migration has been squashed and transition to a normal migration
+    # in case you need to run any of the individual/historic parts of it, please
+    # check out a previous version, migrate, then continue with this one
 
     dependencies = [
         ('contenttypes', '0002_remove_content_type_name'),
