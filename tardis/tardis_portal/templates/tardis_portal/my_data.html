@@ -79,16 +79,6 @@
   </div>  <!-- class="row-fluid" -->
 </div>  <!-- id="content" -->
 <script type="text/javascript">
-$(function(){
-    $("#experiments .accordion-body").collapse({parent:"#experiments", toggle: true});
-    $(".explink").click(function(e){
-	e.stopPropagation();
-    });
-    $(".dllink").click(function(e){
-	e.stopPropagation();
-    });
-    });
-
 $(document).ready(function(){
   // Load owned exps on page load
   $('#myowned').load('{% url 'tardis.tardis_portal.views.retrieve_owned_exps_list' %}');
