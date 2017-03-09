@@ -1,4 +1,4 @@
-Django==1.8.16 # pyup: >=1.8,<1.9
+Django==1.8.17 # pyup: >=1.8,<1.9
 Sphinx==1.4.8
 Wand==0.4.4
 amqp==1.4.9 # pyup: <2
