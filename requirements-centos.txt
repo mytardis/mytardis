@@ -1,3 +1,2 @@
 pystache==0.5.4
-beautifulsoup4==4.4.1
 flexmock==0.10.2
