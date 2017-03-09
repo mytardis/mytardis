@@ -79,3 +79,5 @@ RAPID_CONNECT_CONFIG['aud'] = 'https://example.com/rc/'
 '''Public facing URL that accepts the HTTP/HTTPS POST request from
 Rapid Connect.
 '''
+
+OIDC_USERINFO = 'tardis.accounts.oidc.userinfo'
