@@ -13,6 +13,7 @@ from django.contrib.auth.models import AnonymousUser
 from django.contrib.auth.models import User
 from django.contrib.auth.models import Group
 from django.core.servers.basehttp import FileWrapper
+from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseForbidden, \
     StreamingHttpResponse
 
@@ -22,6 +23,7 @@ from tastypie.authentication import SessionAuthentication
 from tastypie.authentication import ApiKeyAuthentication
 from tastypie.authorization import Authorization
 from tastypie.constants import ALL_WITH_RELATIONS
+from tastypie.exceptions import ImmediateHttpResponse
 from tastypie.exceptions import NotFound
 from tastypie.exceptions import Unauthorized
 from tastypie.http import HttpUnauthorized
@@ -983,7 +985,17 @@ class DataFileResource(MyTardisModelResource):
         return bundle
 
     def obj_create(self, bundle, **kwargs):
-        retval = super(DataFileResource, self).obj_create(bundle, **kwargs)
+        '''
+        Creates a new DataFile object from the provided bundle.data dict.
+
+        If a duplicate key error occurs, responds with HTTP Error 409: CONFLICT
+        '''
+        try:
+            retval = super(DataFileResource, self).obj_create(bundle, **kwargs)
+        except IntegrityError as err:
+            if "duplicate key" in str(err):
+                raise ImmediateHttpResponse(HttpResponse(status=409))
+            raise
         if 'replicas' not in bundle.data or not bundle.data['replicas']:
             # no replica specified: return upload path and create dfo for
             # new path
