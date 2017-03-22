@@ -41,3 +41,16 @@ run in verbose mode, print out a traceback, etc.). Run the test or django test
 command with --help flag to see the the full list of options::
 
     ./test.py test --help
+
+
+Running BDD tests
+-----------------
+
+To run BDD tests with the default settings and a headless browser, call::
+
+    ./test.py behave
+
+To use another browser, e.g. Chrome, follow the steps to install "chromedriver"
+in http://splinter.readthedocs.io/en/latest/drivers/chrome.html and then call::
+
+    ./test.py behave -D browser=chrome
