@@ -39,7 +39,7 @@ pysolr==2.1.0 # pyup: >=2.1.0,<3
 python-dateutil==2.4.0
 # python-magic
 -e git+https://github.com/grischa/python-magic.git#egg=python-magic
-pytz==2016.10
+pytz==2017.2
 rdflib==4.2.2
 six==1.10.0
 wsgiref==0.1.2
