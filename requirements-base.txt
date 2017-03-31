@@ -20,7 +20,7 @@ django-registration-redux==1.4
 -e git+https://github.com/grischa/django-tastypie.git@mytardis-dj1.7#egg=django-tastypie
 django-tastypie-swagger==0.1.4
 django-user-agents==0.2.2
-elasticsearch==5.0.1
+elasticsearch==5.3.0
 gunicorn==19.7.0
 gevent==1.2.1
 html2text==2016.9.19
