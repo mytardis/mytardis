@@ -19,6 +19,7 @@ from django.core.urlresolvers import reverse
 from django.db import connection
 from django.db.models import Q
 from django.http import HttpResponse, HttpResponseForbidden
+from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from django.views.decorators.cache import cache_page
 from django.views.generic.base import TemplateView, View
@@ -917,3 +918,34 @@ def control_panel(request):
 
     return HttpResponse(render_response_index(request,
                         'tardis_portal/control_panel.html', c))
+
+
+def _get_dataset_checksums(dataset, type='md5'):
+    hash_attr = type+'sum'
+    checksums = [(getattr(df, hash_attr), path.join(df.directory or '', df.filename))
+                 for df in dataset.get_datafiles()]
+    return checksums
+
+
+@authz.dataset_access_required  # too complex # noqa
+def checksums_download(request, dataset_id, **kwargs):
+    dataset = Dataset.objects.get(id=dataset_id)
+    if not dataset:
+        return return_response_not_found(request)
+
+    type = request.GET.get('type', 'md5')
+    format = request.GET.get('format', 'text')
+
+    checksums = _get_dataset_checksums(dataset, type)
+    if format == 'text':
+        checksum_doc = ''.join(["%s  %s\n" % c for c in checksums])
+        checksum_doc += '\n'
+        return HttpResponse(checksum_doc, content_type='text/plain')
+
+    if format == 'json':
+        jdict = {'checksums': []}
+        for c in checksums:
+            jdict['checksums'].append({'checksum': c[0], 'file': c[1], 'type': type})
+
+        return JsonResponse(jdict)
+

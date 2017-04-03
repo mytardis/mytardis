@@ -584,6 +584,9 @@ $('#modal-metadata .submit-button').live('click', function() {
                     <a target="_blank"
                        href="{% url "sftp_access" %}?object_id={{ dataset.id }}&object_type=dataset"
                        class="btn btn-primary btn-mini" title="Download with SFTP">SFTP</a>
+                    <a class="btn btn-mini btn-primary"
+                       href="{% url 'tardis_portal.dataset_checksums' dataset.id %}"
+                       title="Download MD5 checksums for all files in this Dataset">MD5</a>
                 </p>
             {%  elif has_download_permissions and not dataset.is_online %}
                 <p>Some or all files in this dataset are archived.
