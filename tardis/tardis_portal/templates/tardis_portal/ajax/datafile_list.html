@@ -57,7 +57,7 @@
                     Select: <a class="dataset_selector_all btn btn-mini">All</a> / <a class="dataset_selector_none btn btn-mini">None</a>
                     <div class="pull-right">
                         <button type="submit" class="btn btn-mini download-selected">
-                            <i class="icon-download-alt"></i>
+                            <i class="fa fa-download-alt"></i>
                             Download Selected Files
                         </button>
                         <input type="hidden" name="comptype" value="{{default_format}}"/>
@@ -128,20 +128,20 @@
                             <a class="btn{% if datafile.is_online %}" title="Download"
                                {% else %} archived-file disabled"{% endif %}
                                href="{{ datafile.get_download_url }}">
-                                <i class="icon-download-alt icon-large"></i>
+                                <i class="fa fa-download-alt fa-lg"></i>
                             </a>
                         {% endif %}
                         {% if has_write_permissions and not immutable %}
                             <a title="Add Metadata" href="{% url 'tardis.tardis_portal.views.add_datafile_par' datafile.id %}"
                                data-toggle_selector="#datafile_metadata_toggle_{{datafile.id}}"
                                class="btn add-metadata">
-                                <i class="icon-plus"></i>
+                                <i class="fa fa-plus"></i>
                             </a>
                         {% endif %}
 
                         <a id="datafile_metadata_toggle_{{datafile.id}}" title="Show/Hide Metadata"
                            class="datafile-info-toggle metadata_hidden btn" href="/ajax/datafile_details/{{datafile.id}}/">
-                            <i class="icon-list"></i>
+                            <i class="fa fa-list"></i>
                         </a>
                     </div>
                 </td>

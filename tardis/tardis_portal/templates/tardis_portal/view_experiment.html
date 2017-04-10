@@ -222,7 +222,7 @@ var is_publication_draft='{{ experiment.is_publication_draft }}' === 'True';
 
   <div class="modal-footer">
     <button class="submit-button btn btn-success">
-      <i class="icon-ok"></i>
+      <i class="fa fa-ok"></i>
       Save
     </button>
   </div>
@@ -246,7 +246,7 @@ $('#modal-metadata .submit-button').click(function() {
     {% if has_read_or_owner_ACL and pub_form_enabled %}
     <a class="prepare_to_publish btn btn-mini btn-info"
        title="Prepare To Publish" ng-click="openPublicationForm()" ng-show="isPublicationDraft || !isPublication">
-      <i class="icon-share"></i>
+      <i class="fa fa-share"></i>
       <span ng-hide="isPublication">Create publication</span>
       <span ng-show="isPublicationDraft">Resume draft publication</span>
     </a>
@@ -255,14 +255,14 @@ $('#modal-metadata .submit-button').click(function() {
     <a class="btn btn-mini btn-primary" title="Push to..."
        onclick="window.open('{{ push_to_url }}', 'push-to', 'width=800, height=600'); return false;"
        href="{{ push_to_url }}" target="_blank">
-      <i class="icon-upload"></i>
+      <i class="fa fa-upload"></i>
       Push to...
     </a>
     {% endif %}
     {% if has_write_permissions %}
     <a class="btn btn-mini btn-warning" title="Edit Experiment"
        href="{{ experiment.get_edit_url }}" ng-hide="isPublication">
-      <i class="icon-pencil"></i>
+      <i class="fa fa-pencil"></i>
       Edit Experiment
     </a>
     {% endif %}

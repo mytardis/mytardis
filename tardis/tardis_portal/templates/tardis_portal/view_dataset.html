@@ -342,7 +342,7 @@ $('#modal-metadata .submit-button').live('click', function() {
 
   <div class="modal-footer">
     <button class="submit-button btn btn-success">
-      <i class="icon-ok"></i>
+      <i class="fa fa-ok"></i>
       Save
     </button>
   </div>
@@ -391,14 +391,14 @@ $('#modal-metadata .submit-button').live('click', function() {
     <a class="btn btn-mini btn-primary" title="Push to..."
        onclick="window.open('{{ push_to_url }}', 'push-to', 'width=800, height=600'); return false;"
        href="{{ push_to_url }}" target="_blank">
-      <i class="icon-upload"></i>
+      <i class="fa fa-upload"></i>
       Push to...
     </a>
   {% endif %}
   {% if has_write_permissions and is_authenticated %}
     <a class="btn btn-warning btn-mini" title="Edit Dataset"
        href="{{ dataset.get_edit_url }}">
-      <i class="icon-pencil"></i>
+      <i class="fa fa-pencil"></i>
       Edit Dataset Description
     </a>
   {% endif %}
@@ -496,7 +496,7 @@ $('#modal-metadata .submit-button').live('click', function() {
        <div id="datafile-info">
 	 <div class="info-box">
 	   <em>Click the
-	   <i class="icon-list"></i>
+	   <i class="fa fa-list"></i>
 	   button next to any file to view details and actions.
 	   </em>
 	 </div>
@@ -563,7 +563,7 @@ $('#modal-metadata .submit-button').live('click', function() {
                             {% for o in organization %}
                                 <a class="btn btn-primary btn-mini" href="{{p.1}}{{o}}"
                                    title="Download Entire Experiment as {{p.0|upper}} with {{o}} organization">
-                                    <i class="icon-download-alt"></i>
+                                    <i class="fa fa-download-alt"></i>
                                     {% if o == default_organization %}
                                         {{p.0|upper}}
                                     {% else %}
@@ -576,7 +576,7 @@ $('#modal-metadata .submit-button').live('click', function() {
                         {% for p in protocol %}
                             <a class="btn btn-primary btn-mini" href="{{p.1}}"
                                title="Download Entire Dataset as {{p.0|upper}}">
-                                <i class="icon-download-alt"></i>
+                                <i class="fa fa-download-alt"></i>
                                 {{p.0|upper}}
                             </a>
                         {% endfor %}
@@ -599,7 +599,7 @@ $('#modal-metadata .submit-button').live('click', function() {
         {% if has_write_permissions and not experiment.public and not immutable and has_staging_access %}
             <div class="pull-right" style="margin-top:3px;">
                 <a data-dataset_id="{{dataset.id}}" class="import_staging_files_link btn btn-mini" title="Import Staging Files">
-                    <i class="icon-arrow-right"></i>
+                    <i class="fa fa-arrow-right"></i>
                     Import Staging Files
                 </a>
             </div>

@@ -3,7 +3,7 @@
       <div class="row-fluid group">
         <strong>
           <a href="{% url 'tardis.tardis_portal.views.retrieve_group_userlist_readonly' group.id %}" class="members-hidden member_list_user_toggle fg-button small fg-button-icon-solo ui-corner-all">
-            <i class="icon-folder-close"></i>
+            <i class="fa fa-folder-close"></i>
             {{ group.name }}
           </a>
         </strong>
@@ -26,7 +26,7 @@
     <div class="span4">
     <a class="remove_group btn btn-mini btn-danger"
        href="{% url 'tardis.tardis_portal.views.remove_experiment_access_group' experiment_id group.id %}">
-      <i class="icon-remove"></i> Delete
+      <i class="fa fa-remove"></i> Delete
     </a>
     </div>
     {% endif %}
