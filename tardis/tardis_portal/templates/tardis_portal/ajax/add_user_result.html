@@ -17,12 +17,12 @@
   <div class="span4">
     <a title="Edit Permissions" class="change_user btn btn-warning btn-mini"
       href="{% url 'tardis.tardis_portal.views.change_user_permissions' experiment_id user.username %}">
-      <i class="icon-pencil"></i>
+      <i class="fa fa-pencil"></i>
       Edit
     </a>
     <a title="Remove Access" class="remove_user btn btn-danger btn-mini"
       href="{% url 'tardis.tardis_portal.views.remove_experiment_access_user' experiment_id user.username %}">
-      <i class="icon-remove"></i>
+      <i class="fa fa-remove"></i>
       Delete
     </a>
   </div>

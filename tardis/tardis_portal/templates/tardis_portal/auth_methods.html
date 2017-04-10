@@ -22,13 +22,13 @@
       <td> {{ userAuth.0 }} &nbsp;
       {% if userAuth.1 == 'Local DB' %}
         <a class="edit_auth" id="{{ userAuth.2 }}" href="javascript:void(0);">
-          <i class="username-edit-icon icon-pencil"></i>
-          <i class="username-close-icon icon-minus" style="display:none"></i>
+          <i class="username-edit-icon fa fa-pencil"></i>
+          <i class="username-close-icon fa fa-minus" style="display:none"></i>
         </a>
       {% else %}
         {% if isDjangoAccount %}
           <a class="remove_auth" id="{{ userAuth.2 }}" href="javascript:void(0);">
-            <i class="icon-remove-circle"></i>
+            <i class="fa fa-remove-circle"></i>
           </a>
         {% endif %}
       {% endif %}
@@ -103,7 +103,7 @@
       </fieldset>
       <div class="form-actions">
         <button type="submit" id="edit" class="btn btn-warning">
-          <i class="icon-key"></i>
+          <i class="fa fa-key"></i>
           Change Password
         </button>
       </div>
@@ -116,7 +116,7 @@
         <th>Username:</th>
         <td><span class="username"></span> &nbsp;
         <a class="remove_auth" href="javascript:void(0);">
-          <i class="icon-remove-circle"></i>
+          <i class="fa fa-remove-circle"></i>
         </a>
         </td>
       </tr>

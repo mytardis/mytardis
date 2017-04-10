@@ -6,7 +6,7 @@
      href="{% url 'tardis.tardis_portal.views.add_dataset_par' dataset.id %}"
      class="add-metadata btn btn-mini"
      style="margin-right: 20px">
-    <i class="icon-plus"></i>
+    <i class="fa fa-plus"></i>
     Add Dataset Metadata
   </a>
 </div>
@@ -18,7 +18,7 @@
    {% if has_write_permissions and not parameterset.schema.immutable %}
    <div class="pull-right">
        <a class="edit-metadata btn btn-mini btn-warning" href="{% url 'tardis.tardis_portal.views.edit_dataset_par' parameterset.id %}">
-          <i class="icon-pencil"></i>
+          <i class="fa fa-pencil"></i>
           Edit
        </a>
    </div>

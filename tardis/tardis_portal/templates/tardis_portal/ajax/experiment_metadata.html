@@ -5,7 +5,7 @@
     {% if has_write_permissions and not experiment.locked and not experiment.is_publication %}
         <a title="Add" class="add-metadata btn btn-mini"
            href="{% url 'tardis.tardis_portal.views.add_experiment_par' experiment.id %}">
-          <i class="icon-plus"></i>
+          <i class="fa fa-plus"></i>
           Add Experiment Metadata
         </a>
     {% endif %}
@@ -18,7 +18,7 @@
    <div class="pull-right">
        <a class="edit-metadata btn btn-mini btn-warning"
           href="{% url 'tardis.tardis_portal.views.edit_experiment_par' parameterset.id %}">
-          <i class="icon-pencil"></i>
+          <i class="fa fa-pencil"></i>
           Edit
        </a>
    </div>
