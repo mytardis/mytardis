@@ -18,8 +18,9 @@ from django.core.paginator import Paginator, EmptyPage, InvalidPage
 from django.core.urlresolvers import reverse
 from django.db import connection
 from django.db.models import Q
-from django.http import HttpResponse, HttpResponseForbidden
-from django.http import JsonResponse
+from django.http import (HttpResponse,
+                         HttpResponseForbidden,
+                         JsonResponse)
 from django.shortcuts import render, redirect
 from django.views.decorators.cache import cache_page
 from django.views.generic.base import TemplateView, View
@@ -40,6 +41,7 @@ from tardis.tardis_portal.shortcuts import render_response_index, \
     render_response_search
 from tardis.tardis_portal.views.utils import (
     _redirect_303, _add_protocols_and_organizations, HttpResponseSeeAlso)
+from tardis.tardis_portal.util import get_filesystem_safe_dataset_name
 
 logger = logging.getLogger(__name__)
 
@@ -940,7 +942,12 @@ def checksums_download(request, dataset_id, **kwargs):
     if format == 'text':
         checksum_doc = ''.join(["%s  %s\n" % c for c in checksums])
         checksum_doc += '\n'
-        return HttpResponse(checksum_doc, content_type='text/plain')
+        response = HttpResponse(checksum_doc, content_type='text/plain')
+        response['Content-Disposition'] = \
+            '%s; filename="%s-manifest-md5.txt"' % (
+            'attachment',
+            get_filesystem_safe_dataset_name(dataset))
+        return response
 
     if format == 'json':
         jdict = {'checksums': []}

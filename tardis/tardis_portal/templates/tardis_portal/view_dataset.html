@@ -584,7 +584,7 @@ $('#modal-metadata .submit-button').live('click', function() {
                     <a target="_blank"
                        href="{% url "sftp_access" %}?object_id={{ dataset.id }}&object_type=dataset"
                        class="btn btn-primary btn-mini" title="Download with SFTP">SFTP</a>
-                    <a class="btn btn-mini btn-primary"
+                    <a class="btn btn-primary btn-mini"
                        href="{% url 'tardis_portal.dataset_checksums' dataset.id %}"
                        title="Download MD5 checksums for all files in this Dataset">MD5</a>
                 </p>
@@ -594,6 +594,9 @@ $('#modal-metadata .submit-button').live('click', function() {
                    id="request-fast-access"
                    class="btn btn-success btn-mini">Retrieve All
                     Files</a>
+                <a class="btn btn-primary btn-mini"
+                   href="{% url 'tardis_portal.dataset_checksums' dataset.id %}"
+                   title="Download MD5 checksums for all files in this Dataset">MD5</a>
                 </p>
             {% endif %}
         {% endblock downloads %}
