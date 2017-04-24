@@ -42,8 +42,8 @@ def experiment_description(request, experiment_id):
     :type request: :class:`django.http.HttpRequest`
     :param experiment_id: the ID of the experiment to be edited
     :type experiment_id: string
+    :returns: description of the experiment
     :rtype: :class:`django.http.HttpResponse`
-
     """
     c = {}
 
@@ -241,13 +241,13 @@ def retrieve_datafile_list(
             dataset__pk=dataset_id,
         ).order_by('filename')
 
-    if request.GET.get('limit', False) and len(highlighted_dsf_pks):
+    if request.GET.get('limit', False) and highlighted_dsf_pks:
         dataset_results = dataset_results.filter(pk__in=highlighted_dsf_pks)
         params['limit'] = request.GET['limit']
 
     filename_search = None
 
-    if 'filename' in request.GET and len(request.GET['filename']):
+    if 'filename' in request.GET and request.GET['filename']:
         filename_search = request.GET['filename']
         dataset_results = \
             dataset_results.filter(filename__icontains=filename_search)
@@ -357,8 +357,7 @@ def experiment_public_access_badge(request, experiment_id):
 
     if authz.has_experiment_access(request, experiment_id):
         return HttpResponse(render_public_access_badge(experiment))
-    else:
-        return HttpResponse('')
+    return HttpResponse('')
 
 
 @authz.experiment_ownership_required

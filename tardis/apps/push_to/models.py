@@ -1,4 +1,3 @@
-# pylint: disable=R0204
 import base64
 from StringIO import StringIO
 
@@ -78,6 +77,8 @@ class KeyPair(models.Model):
     def key(self):
         """
         :return: a subclass of PKey of the appropriate key type
+        :rtype: PKey
+        :raises ValidationError:
         """
 
         # Check if the key pair exists: at least a public or private part of
@@ -111,8 +112,9 @@ class KeyPair(models.Model):
     def key(self, pkey):
         """
         Creates a new Key object created from a paramiko pkey object
-        @type pkey: PKey
-        :return: the Key object that has been saved
+        :param pkey: Public Key
+        :type pkey: PKey
+        :raises ValueError:
         """
         if not isinstance(pkey, PKey):
             raise ValueError('invalid PKey object supplied')
@@ -176,8 +178,9 @@ class OAuthSSHCertSigningService(models.Model):
     def get_available_signing_services(user):
         """
         Gets all SSH cert signing services available for a given user
-        @type: user: User
+        :param User user: User
         :return: allowed signing services
+        :rtype: User
         """
         return (
             OAuthSSHCertSigningService.objects.filter(
@@ -269,6 +272,7 @@ class Credential(KeyPair):
         @type bit_length: int
         @type remote_hosts: list[RemoteHost]
         :return: the generated credential
+        :rtype: object
         """
         key = RSAKey.generate(bits=bit_length)
         credential = Credential(user=tardis_user, remote_user=remote_user)
@@ -288,6 +292,7 @@ class Credential(KeyPair):
         the remote_hosts field are expected to work.
         @type remote_host: .RemoteHost
         :return: a connected SSH client
+        :rtype: SSHClient
         """
         ssh = SSHClient()
 

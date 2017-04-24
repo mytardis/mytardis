@@ -441,11 +441,10 @@ def remove_experiment_access_user(request, experiment_id, username):
                 (len(owner_acls) == 1 and not target_acl[0].isOwner):
             target_acl[0].delete()
             return HttpResponse('OK')
-        else:
-            return HttpResponse(
-                'All experiments must have at least one user as '
-                'owner. Add an additional owner first before '
-                'removing this one.')
+        return HttpResponse(
+            'All experiments must have at least one user as '
+            'owner. Add an additional owner first before '
+            'removing this one.')
     elif expt_acls.count() == 0:
         # the user shouldn't really ever see this in normal operation
         return HttpResponse(
@@ -721,10 +720,7 @@ def remove_experiment_access_group(request, experiment_id, group_id):
         return HttpResponse('No ACL available.'
                             'It is likely the group doesnt have access to'
                             'this experiment.')
-    else:
-        return HttpResponse('Multiple ACLs found')
-
-    return HttpResponse('')
+    return HttpResponse('Multiple ACLs found')
 
 
 @require_POST
@@ -743,8 +739,7 @@ def token_delete(request, token_id):
     if authz.has_experiment_ownership(request, token.experiment_id):
         token.delete()
         return HttpResponse('{"success": true}', content_type='application/json')
-    else:
-        return HttpResponse('{"success": false}', content_type='application/json')
+    return HttpResponse('{"success": false}', content_type='application/json')
 
 
 def token_login(request, token):

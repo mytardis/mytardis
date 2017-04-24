@@ -58,9 +58,6 @@ class MockGroupProvider(GroupProvider):
 
 class MockRequest(HttpRequest):
 
-    def __init__(self):
-        super(MockRequest, self).__init__()
-
     def setPost(self, field, value):
         self.POST[field] = value
 

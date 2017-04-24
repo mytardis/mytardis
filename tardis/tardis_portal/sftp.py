@@ -166,18 +166,19 @@ class DynamicTree(object):
 
 
 class MyTSFTPServerInterface(SFTPServerInterface):
-    '''
+    """
     MyTardis data via SFTP
-    '''
+    """
 
     _cache_time = 60  # in seconds
     _exps_cache = {}
 
     def __init__(self, server, *args, **kwargs):
         """
-        @param server: the server object associated with this channel and
-            SFTP subsystem
-        @type server: L{ServerInterface}
+        :param ServerInterface server: the server object associated with this
+            channel and SFTP subsystem
+        :param list args:
+        :param dict kwargs:
         """
         self.server = server
         self.client_ip = kwargs.get('client_ip', '')
@@ -246,15 +247,13 @@ class MyTSFTPServerInterface(SFTPServerInterface):
         @note: The SFTP protocol defines all files to be in "binary" mode.
             There is no equivalent to python's "text" mode.
 
-        @param df: the requested DataFile object
-        @type path: L{DataFile}
-        @param flags: flags or'd together from the C{os} module indicating the
-            requested mode for opening the file.
-        @type flags: int
-        @param attr: requested attributes of the file if it is newly created.
-        @type attr: L{SFTPAttributes}
-        @return: a new L{SFTPHandle} I{or error code}.
-        @rtype L{SFTPHandle}
+        :param basestring path: the requested datafile path
+        :param int flags: flags or'd together from the C{os} module indicating
+            the requested mode for opening the file.
+        :param SFTPAttributes attr: requested attributes of the file if it is
+            newly created.
+        :returns: a new L{SFTPHandle} I{or error code}.
+        :rtype: SFTPHandle
         """
         leaf = self.tree.get_leaf(path)
         tracker.track_download(
@@ -345,8 +344,10 @@ class MyTSFTPHandle(SFTPHandle):
         """
         Create a new file handle
 
-        @param flags: optional flags as passed to L{SFTPServerInterface.open}
-        @type flags: int
+        :param DataFile df: DataFile
+        :param int flags: optional flags as passed
+            to L{SFTPServerInterface.open}
+        :param None optional_args: unused
         """
         super(MyTSFTPHandle, self).__init__(flags=flags)
         try:
@@ -459,10 +460,7 @@ class MyTSFTPRequestHandler(SocketServer.BaseRequestHandler):
         self.transport.start_server(server=MyTServerInterface())
 
     def handle_timeout(self):
-        try:
-            self.transport.close()
-        finally:
-            super(MyTSFTPRequestHandler, self).handle_timeout()
+        self.transport.close()
 
 
 class MyTSFTPTCPServer(SocketServer.TCPServer):

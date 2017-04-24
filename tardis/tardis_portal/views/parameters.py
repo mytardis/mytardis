@@ -23,8 +23,7 @@ def edit_experiment_par(request, parameterset_id):
     parameterset = ExperimentParameterSet.objects.get(id=parameterset_id)
     if authz.has_write_permissions(request, parameterset.experiment.id):
         return edit_parameters(request, parameterset, otype="experiment")
-    else:
-        return return_response_error(request)
+    return return_response_error(request)
 
 
 @login_required
@@ -32,8 +31,7 @@ def edit_dataset_par(request, parameterset_id):
     parameterset = DatasetParameterSet.objects.get(id=parameterset_id)
     if authz.has_dataset_write(request, parameterset.dataset.id):
         return edit_parameters(request, parameterset, otype="dataset")
-    else:
-        return return_response_error(request)
+    return return_response_error(request)
 
 
 @login_required
@@ -41,8 +39,7 @@ def edit_datafile_par(request, parameterset_id):
     parameterset = DatafileParameterSet.objects.get(id=parameterset_id)
     if authz.has_dataset_write(request, parameterset.datafile.dataset.id):
         return edit_parameters(request, parameterset, otype="datafile")
-    else:
-        return return_response_error(request)
+    return return_response_error(request)
 
 
 def edit_parameters(request, parameterset, otype):
@@ -96,8 +93,7 @@ def add_datafile_par(request, datafile_id):
     if authz.has_dataset_write(request, parentObject.dataset.id):
         return add_par(request, parentObject,
                        otype="datafile", stype=Schema.DATAFILE)
-    else:
-        return return_response_error(request)
+    return return_response_error(request)
 
 
 @login_required
@@ -106,8 +102,7 @@ def add_dataset_par(request, dataset_id):
     if authz.has_dataset_write(request, parentObject.id):
         return add_par(request, parentObject, otype="dataset",
                        stype=Schema.DATASET)
-    else:
-        return return_response_error(request)
+    return return_response_error(request)
 
 
 @login_required
@@ -116,8 +111,7 @@ def add_experiment_par(request, experiment_id):
     if authz.has_write_permissions(request, parentObject.id):
         return add_par(request, parentObject, otype="experiment",
                        stype=Schema.EXPERIMENT)
-    else:
-        return return_response_error(request)
+    return return_response_error(request)
 
 
 def add_par(request, parentObject, otype, stype):

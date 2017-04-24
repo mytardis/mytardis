@@ -14,15 +14,20 @@ from tardis.tardis_portal.models.experiment import Experiment
 
 def deep_storage_mapper(obj, rootdir=None):
     """
-    :param obj: The model instance (DataFile, Dataset or Experiment)
-                to generate a path for.
-    :param rootdir: The top-level directory name, or None
-    :return: Filesystem-safe path for the object in the archive or SFTP view.
-
     If rootdir is None, just return a filesystem-safe representation of the
     object, e.g. "DatasetDescription_123" or "strange %2F filename.txt"
 
     For now, only DataFiles are supported when rootdir is not None.
+
+    :param obj: The model instance (DataFile, Dataset or Experiment)
+                to generate a path for.
+    :type obj: DataFile, Dataset or Experiment
+    :param rootdir: The top-level directory name, or None
+    :type rootdir: basestring
+    :return: Filesystem-safe path for the object in the archive or SFTP view.
+    :rtype: basestring
+    :raises Exception:
+    :raises NotImplementedError:
     """
     safe = settings.SAFE_FILESYSTEM_CHARACTERS
     if not rootdir:

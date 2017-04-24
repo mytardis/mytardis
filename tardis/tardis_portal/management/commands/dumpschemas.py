@@ -37,17 +37,17 @@ class Command(BaseCommand):
             raise CommandError("Unknown serialization format: %s" % format)
 
         objects = []
-        if len(args) == 0:
+        if not args:
             objects.extend(models.Schema.objects.all())
             objects.extend(models.ParameterName.objects.all())
         else:
             schemas = models.Schema.objects.filter(namespace__in=args)
-            if len(schemas) == 0:
+            if not schemas:
                 raise CommandError('No schemas found')
             schema_set = set([s.namespace for s in schemas])
             arg_set = set(args)
             skipped = arg_set - schema_set
-            if len(skipped) > 0:
+            if skipped:
                 sys.stderr.write('Schema not found: {0}\n'.format( \
                     ', '.join(skipped)))
             objects.extend(schemas)

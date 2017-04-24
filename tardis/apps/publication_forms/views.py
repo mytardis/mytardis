@@ -40,8 +40,7 @@ def index(request):
             "...</strong></p>")}
         return HttpResponse(render_response_index(
             request, 'form.html', context=context))
-    else:
-        return process_form(request)
+    return process_form(request)
 
 
 @login_required
@@ -484,7 +483,7 @@ def select_forms(datasets):
                 'description': dataset.description
             })
 
-    if len(default_form['datasets']):
+    if default_form['datasets']:
         forms.append(default_form)
 
     return forms
@@ -632,8 +631,7 @@ def approval_view(request):
     if request.method == 'GET':
         return HttpResponse(render_response_index(
             request, 'publication_approval.html'))
-    else:
-        return approval_ajax(request)
+    return approval_ajax(request)
 
 
 def approval_ajax(request):

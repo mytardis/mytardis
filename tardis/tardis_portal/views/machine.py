@@ -25,6 +25,7 @@ def view_rifcs(request, experiment_id):
     :type request: :class:`django.http.HttpRequest`
     :param experiment_id: the ID of the experiment to be viewed
     :type experiment_id: string
+    :returns: a HttpResponse
     :rtype: :class:`django.http.HttpResponse`
 
     """

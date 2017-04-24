@@ -229,8 +229,7 @@ class LDAPBackend(AuthProvider, UserProvider, GroupProvider):
             logger.debug(ldap_result)
             if ldap_result[0][1]['uid'][0]:
                 return ldap_result[0][1]['uid'][0]
-            else:
-                return None
+            return None
 
         except ldap.LDAPError:
             logger.exception("ldap error")

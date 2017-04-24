@@ -48,9 +48,9 @@ def _create_datafile():
     # Create new Datafile
     tempfile = TemporaryUploadedFile('iiif_stored_file', None, None, None)
     with Image(filename='magick:rose') as img:
-            img.format = 'tiff'
-            img.save(file=tempfile.file)
-            tempfile.file.flush()
+        img.format = 'tiff'
+        img.save(file=tempfile.file)
+        tempfile.file.flush()
     datafile = DataFile(dataset=dataset,
                         size=os.path.getsize(tempfile.file.name),
                         filename='iiif_named_file',

@@ -81,10 +81,9 @@ class AbstractExperimentProvider(BaseProvider):
 
     @staticmethod
     def get_id(obj):
-        if (isinstance(obj, User)):
+        if isinstance(obj, User):
             return 'user/%d' % obj.id
-        else:
-            return 'experiment/%d' % obj.id
+        return 'experiment/%d' % obj.id
 
     def _get_id_from_identifier(self, identifier):
         return self._split_type_and_id(identifier, ["experiment", "user"])
@@ -111,10 +110,9 @@ class AbstractExperimentProvider(BaseProvider):
         return Header(self.get_id(obj), timestamp, [], None)
 
     def _get_metadata(self, obj, metadataPrefix):
-        if (isinstance(obj, User)):
+        if isinstance(obj, User):
             return self._get_user_metadata(obj, metadataPrefix)
-        else:
-            return self._get_experiment_metadata(obj, metadataPrefix)
+        return self._get_experiment_metadata(obj, metadataPrefix)
 
     @abstractmethod
     def _get_experiment_metadata(self):
@@ -176,7 +174,7 @@ class DcExperimentProvider(AbstractExperimentProvider):
 
     def _get_experiment_metadata(self, experiment, metadataPrefix):
         return Metadata({
-            '_writeMetadata': lambda e, m: oai_dc_writer(e, m),
+            '_writeMetadata': oai_dc_writer,
             'title': [experiment.title],
             'description': [experiment.description],
         })
