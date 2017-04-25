@@ -8,7 +8,6 @@ from django.http import HttpResponse, HttpResponseForbidden, \
 from django.shortcuts import redirect, render
 from paramiko import RSACert
 
-from ssh_authz import sign_certificate
 from tardis.apps.push_to.utils import bytes_available, list_subdirectories, \
     get_object_size, can_copy, get_default_push_location
 from tardis.tardis_portal.auth import decorators as authz
@@ -17,6 +16,7 @@ from . import tasks
 from .exceptions import NoSuitableCredential
 from .models import OAuthSSHCertSigningService, Credential, RemoteHost
 from .oauth_tokens import get_token, get_token_data, set_token
+from .ssh_authz import sign_certificate
 
 
 # TODO: Remove 'verify=False' for requests

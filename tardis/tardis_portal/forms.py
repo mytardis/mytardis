@@ -561,7 +561,7 @@ class ExperimentForm(forms.ModelForm):
 
 def createSearchDatafileForm(searchQueryType):
 
-    from errors import UnsupportedSearchQueryTypeError
+    from tardis.tardis_portal.errors import UnsupportedSearchQueryTypeError
     from tardis.tardis_portal.models import ParameterName
 
     parameterNames = None

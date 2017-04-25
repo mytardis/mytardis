@@ -8,7 +8,8 @@ from tardis.tardis_portal.ParameterSetManager import ParameterSetManager
 
 from tardis.apps.ands_register.publishing import PublishHandler
 
-import rifcsprovider
+import tardis.tardis_portal.publish.rifcsprovider as rifcsprovider
+
 
 class SchemaRifCsProvider(rifcsprovider.RifCsProvider):
 
