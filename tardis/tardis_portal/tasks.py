@@ -1,4 +1,3 @@
-# pylint: disable=R0204
 import logging
 import os
 from os import path
@@ -29,7 +28,6 @@ logger = logging.getLogger(__name__)
 def init_filters():
     """
     load filters and avoid circular import
-    :return:
     """
     try:
         from tardis.tardis_portal.filters import FilterInitMiddleware

@@ -106,7 +106,7 @@ class Command(BaseCommand):
                     datasets.count(), datafiles.count()))
             self.stdout.write("    {0} non-shared dataset(s), containing {1} file(s)\n".format(
                     len(uniqueDatasets), len(uniqueDatafiles)))
-            if len(uniqueDatasets) > 0 and not listOnly :
+            if uniqueDatasets and not listOnly :
                 self.stdout.write("        (The non-shared datasets and files will be deleted)\n")
 
         # If the user has only requested a listing finish now

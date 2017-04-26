@@ -23,6 +23,7 @@ def upload_complete(request,
     :type request: :class:`django.http.HttpRequest`
     :param template_name: the path of the template to render
     :type template_name: string
+    :returns: an HttpResponse
     :rtype: :class:`django.http.HttpResponse`
     """
 
@@ -80,10 +81,11 @@ def upload_files(request, dataset_id,
 
     :param request: a HTTP Request instance
     :type request: :class:`django.http.HttpRequest`
-    :param template_name: the path of the template to render
+    :param basestring template_name: the path of the template to render
     :param dataset_id: the dataset_id
     :type dataset_id: integer
     :returns: A view containing an Uploadify *create files* button
+    :rtype: HttpResponse
     """
     if 'message' in request.GET:
         message = request.GET['message']

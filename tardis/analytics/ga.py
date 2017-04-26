@@ -24,9 +24,12 @@ def _track_event(payload, cid=None, uid=None):
         'ev': 1,
     }
 
-    :param payload:
+    :param payload: analytics data
+    :type payload: dict
+    :param cid: cid, optional
+    :type cid: basestring or int
     :param uid:
-    :return:
+    :type uid: basestring
 
     """
     if GA_ID is None:

@@ -12,5 +12,4 @@ def check_if_facility_manager(request):
     """
     if (request.user.is_authenticated()):
         return is_facility_manager(request.user)
-    else:
-        return False
+    return False

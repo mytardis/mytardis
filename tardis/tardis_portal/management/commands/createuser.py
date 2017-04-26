@@ -149,4 +149,4 @@ class Command(BaseCommand):
         authentication.save()
 
         if verbosity >= 1:
-          self.stdout.write("MyTardis user created successfully.\n")
+            self.stdout.write("MyTardis user created successfully.\n")

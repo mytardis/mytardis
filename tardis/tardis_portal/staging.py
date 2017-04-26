@@ -129,8 +129,7 @@ def get_sync_url_and_protocol(sync_path, filepath):
     urlObj = urlparse(filepath)
     if urlObj.scheme == '':
         return ('file://'+_os.safe_join(sync_path, filepath), '')
-    else:
-        return (filepath, urlObj.scheme)
+    return (filepath, urlObj.scheme)
 
 
 def get_staging_url_and_size(username, filepath):
@@ -157,12 +156,6 @@ def write_uploaded_file_to_dataset(dataset, uploaded_file_post,
     """
     Broken, now that the storagebox takes care of writing files.
     Writes file POST data to the dataset directory in the file store
-
-    :param dataset: dataset whose directory to be written to
-    :type dataset: models.Model
-    :param uploaded_file_post: uploaded file (either UploadedFile or File)
-    :type uploaded_file_post: types.FileType
-    :rtype: the path of the file written to
     """
     raise DeprecationWarning
 
@@ -183,5 +176,4 @@ def get_full_staging_path(username):
     logger.debug('full staging path returned as ' + str(staging_path))
     if not path.exists(staging_path):
         return None
-    else:
-        return staging_path
+    return staging_path

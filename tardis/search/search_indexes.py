@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-# pylint: disable=R0204
 
 #
 # Copyright (c) 2010-2011, Monash e-Research Centre

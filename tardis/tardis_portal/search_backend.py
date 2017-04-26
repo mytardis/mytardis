@@ -1,4 +1,3 @@
-# pylint: disable=R0204
 from django.conf import settings
 from haystack.backends.elasticsearch_backend import ElasticsearchSearchBackend
 from haystack.backends import EmptyResults
@@ -19,7 +18,7 @@ class HighlightSearchBackend(ElasticsearchSearchBackend):
                fields='', highlight=False, facets=None, date_facets=None, query_facets=None,
                narrow_queries=None, spelling_query=None,
                limit_to_registered_models=None, result_class=None, **kwargs):
-        if len(query_string) == 0:
+        if not query_string:
             return {
                 'results': [],
                 'hits': 0,
@@ -93,7 +92,7 @@ class HighlightSearchBackend(ElasticsearchSearchBackend):
 
             registered_models = self.build_registered_models_list()
 
-            if len(registered_models) > 0:
+            if registered_models:
                 narrow_queries.add('%s:(%s)' % (DJANGO_CT, ' OR '.join(registered_models)))
 
         if narrow_queries is not None:

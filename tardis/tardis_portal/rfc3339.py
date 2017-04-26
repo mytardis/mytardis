@@ -27,8 +27,7 @@ def _timezone(utcoffset):
     minutes = abs(utcoffset) % 3600
     if utcoffset >= 0:
         return '+%02d:%02d' % (hours, minutes)
-    else:
-        return '-%02d:%02d' % (hours, minutes)
+    return '-%02d:%02d' % (hours, minutes)
 
 
 def _utc_offset(date, use_system_timezone):
@@ -53,10 +52,8 @@ def _utc_offset(date, use_system_timezone):
             # multiplying by "-1" had to be done as pep8 wouldn't allow
             # "-time.altzone"
             return time.altzone * -1
-        else:
-            return time.timezone * -1
-    else:
-        return 0
+        return time.timezone * -1
+    return 0
 
 
 def _utc_string(d):
@@ -113,13 +110,12 @@ def rfc3339(date, utc=False, use_system_timezone=True):
         if utc:
             return _utc_string(date
                                + datetime.timedelta(seconds=utcoffset))
-        else:
-            return date.strftime('%Y-%m-%dT%H:%M:%S') \
-                + _timezone(utcoffset)
-    else:
-        raise TypeError('excepted %s, got %s instead'
-                        % (datetime.datetime.__name__,
-                        date.__class__.__name__))
+        return date.strftime('%Y-%m-%dT%H:%M:%S') \
+            + _timezone(utcoffset)
+
+    raise TypeError('excepted %s, got %s instead'
+                    % (datetime.datetime.__name__,
+                    date.__class__.__name__))
 
 
 if __name__ == '__main__':

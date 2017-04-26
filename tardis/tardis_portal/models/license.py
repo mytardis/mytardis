@@ -49,10 +49,9 @@ class License(models.Model):
         if Experiment.public_access_implies_distribution(public_access_method):
             # Only licences which allow distribution
             return cls.objects.filter(is_active=True, allows_distribution=True)
-        else:
-            # Only licenses which don't allow distribution (including none)
-            return with_none(cls.objects.filter(is_active=True,
-                                                allows_distribution=False))
+        # Only licenses which don't allow distribution (including none)
+        return with_none(cls.objects.filter(is_active=True,
+                                            allows_distribution=False))
 
     @classmethod
     def get_none_option_license(cls):

@@ -8,7 +8,6 @@ from django.http import HttpResponse, HttpResponseForbidden, \
 from django.shortcuts import redirect, render
 from paramiko import RSACert
 
-from ssh_authz import sign_certificate
 from tardis.apps.push_to.utils import bytes_available, list_subdirectories, \
     get_object_size, can_copy, get_default_push_location
 from tardis.tardis_portal.auth import decorators as authz
@@ -17,6 +16,7 @@ from . import tasks
 from .exceptions import NoSuitableCredential
 from .models import OAuthSSHCertSigningService, Credential, RemoteHost
 from .oauth_tokens import get_token, get_token_data, set_token
+from .ssh_authz import sign_certificate
 
 
 # TODO: Remove 'verify=False' for requests
@@ -43,10 +43,12 @@ def render_success_message(request, message, status=200):
 def get_push_url_for_host(remote_host, obj_type, push_obj_id):
     """
     Constructs a push-to URL to trigger data transfer
-    :param remote_host: the RemoteHost to which data should be copied
+    :param RemoteHost remote_host: the RemoteHost to which data should be copied
     :param obj_type: data type to be copied (experiment, dataset or datafile)
-    :param push_obj_id: the database object id
+    :type obj_type: object
+    :param int push_obj_id: the database object id
     :return: a push-to URL
+    :rtype: basestring
     """
     push_view = None
     if obj_type == 'experiment':
@@ -62,8 +64,7 @@ def get_push_url_for_host(remote_host, obj_type, push_obj_id):
                            obj_type + '_id': push_obj_id,
                            'remote_host_id': remote_host.pk
                        })
-    else:
-        return None
+    return None
 
 
 @login_required
@@ -72,10 +73,12 @@ def get_accessible_hosts(request, obj_type=None, push_obj_id=None):
     Retrieves all accessible hosts (i.e. hosts for which the user already has
     credentials for) including push-to trigger URLs if the object type and id
     are supplied
-    :param request: request object
-    :param obj_type: data type to be copied (experiment, dataset or datafile)
-    :param push_obj_id: the database object id
+    :param Request request: request object
+    :param object obj_type: data type to be copied
+        (experiment, dataset or datafile)
+    :param int push_obj_id: the database object id
     :return: json object with accessible hosts
+    :rtype: HttpResponse
     """
     hosts = RemoteHost.objects.filter(credential__user=request.user).distinct()
     response = []
@@ -100,10 +103,11 @@ def get_signing_services(request, obj_type=None, push_obj_id=None):
     """
     Retrieves all certificate signing services and associated hosts including
     push-to trigger URLs if the object type and id are supplied
-    :param request: request object
-    :param obj_type: data type to be copied (experiment, dataset or datafile)
-    :param push_obj_id: the database object id
+    :param Request request: request object
+    :param class obj_type: data type to be copied (experiment, dataset or datafile)
+    :param int push_obj_id: the database object id
     :return: json object with signing services and hosts
+    :rtype: HttpResponse
     """
     services = OAuthSSHCertSigningService.get_available_signing_services(
         request.user)
@@ -211,10 +215,11 @@ def validate_remote_path(request, remote_host_id):
 def initiate_push_experiment(request, experiment_id, remote_host_id=None):
     """
     Kicks off push for experiment data
-    :param request: request object
-    :param experiment_id: experiment database id
-    :param remote_host_id: remote host database id
+    :param Request request: request object
+    :param int experiment_id: experiment database id
+    :param int remote_host_id: remote host database id
     :return: redirect or status message
+    :rtype: HttpResponse
     """
     return _initiate_push(
         request, initiate_push_experiment, remote_host_id, 'experiment',
@@ -226,10 +231,11 @@ def initiate_push_experiment(request, experiment_id, remote_host_id=None):
 def initiate_push_dataset(request, dataset_id, remote_host_id=None):
     """
     Kicks off push for dataset data
-    :param request: request object
-    :param dataset_id: dataset database id
-    :param remote_host_id: remote host database id
+    :param Request request: request object
+    :param int dataset_id: dataset database id
+    :param int remote_host_id: remote host database id
     :return: redirect or status message
+    :rtype: HttpResponse
     """
     return _initiate_push(
         request, initiate_push_dataset, remote_host_id, 'dataset', dataset_id)
@@ -240,10 +246,11 @@ def initiate_push_dataset(request, dataset_id, remote_host_id=None):
 def initiate_push_datafile(request, datafile_id, remote_host_id=None):
     """
     Kicks off push for datafile data
-    :param request: request object
-    :param datafile_id: datafile database id
-    :param remote_host_id: remote host database id
+    :param Request request: request object
+    :param int datafile_id: datafile database id
+    :param int remote_host_id: remote host database id
     :return: redirect or status message
+    :rtype: HttpResponse
     """
     return _initiate_push(
         request, initiate_push_datafile, remote_host_id, 'datafile',
@@ -255,13 +262,13 @@ def _initiate_push(
 ):
     """
     Kicks off data push
-    :param request: request object
-    :param callback_view: initiating view (e.g. initiate_push_datafile)
-    :param remote_host_id: database id of remote host
-    :param obj_type: the type of data
-    :param push_obj_id: the data object id
-    :param destination: a path
+    :param Request request: request object
+    :param function callback_view: initiating view (e.g. initiate_push_datafile)
+    :param int remote_host_id: database id of remote host
+    :param class obj_type: the type of data
+    :param int push_obj_id: the data object id
     :return: status message, host list or OAuth2 redirects
+    :rtype: HttpResponse
     """
 
     # If the remote_host_id is not given, render a view to show a list of
@@ -344,9 +351,11 @@ def get_credential(request, remote_host):
     """
     Fetches a suitable credential for the remote host, or raises an exception
     if none found
-    :param request: request object
-    :param remote_host: the RemoteHost for which a credential should be found
+    :param Request request: request object
+    :param RemoteHost remote_host: the RemoteHost for which a credential
+        should be found
     :return: the credential
+    :rtype: object
     :raises NoSuitableCredential: raised when no credential is found
     """
     credential_id = request.GET.get('credential_id', None)
@@ -376,8 +385,9 @@ def get_credential(request, remote_host):
 def oauth_callback_url(request):
     """
     Builds the oauth callback URL
-    :param request: request object
+    :param Request request: request object
     :return: callback URL
+    :rtype: basestring
     """
     return request.build_absolute_uri(reverse(oauth_callback))
 
@@ -386,10 +396,11 @@ def oauth_callback_url(request):
 def authorize_remote_access(request, remote_host_id, service_id=None):
     """
     Generates an SSH certificate using an OAuth2 SSH signing service
-    :param request: request object
-    :param remote_host_id: remote host id
-    :param service_id: OAuth2 SSH certificate signing service id
+    :param Request request: request object
+    :param basestring remote_host_id: remote host id
+    :param basestring service_id: OAuth2 SSH certificate signing service id
     :return: an error message or OAuth2 redirects
+    :rtype: HttpRedirect
     """
     next_redirect = request.GET.get('next', '/')
 
@@ -433,34 +444,33 @@ def authorize_remote_access(request, remote_host_id, service_id=None):
             '?response_type=code&client_id=%s&redirect_uri=%s&state=%s' %
             (oauth_service.oauth_client_id, oauth_callback_url(request),
              (str(service_id) + ',' + next_redirect)))
-    else:
-        # We have a token, so try to create a credential and sign it
-        # remote_user is overwritten once the cert is signed
-        remote_user = 'unknown'
-        credential = Credential.generate_keypair_credential(
-            request.user, remote_user, [remote_host])
-        signing_result = sign_certificate(
-            credential, auth_token,
-            oauth_service.cert_signing_url) and \
-                         credential.verify_remote_access(
-                         )
-        if signing_result:
-            return redirect(
-                next_redirect + '?credential_id=%i' % credential.pk)
-        else:
-            # If key signing failed, delete the credential
-            credential.delete()
-            return render_error_message(
-                request, 'Could not sign SSH certificate',
-                status=500)
+    # We have a token, so try to create a credential and sign it
+    # remote_user is overwritten once the cert is signed
+    remote_user = 'unknown'
+    credential = Credential.generate_keypair_credential(
+        request.user, remote_user, [remote_host])
+    signing_result = sign_certificate(
+        credential, auth_token,
+        oauth_service.cert_signing_url) and \
+                     credential.verify_remote_access(
+                     )
+    if signing_result:
+        return redirect(
+            next_redirect + '?credential_id=%i' % credential.pk)
+    # If key signing failed, delete the credential
+    credential.delete()
+    return render_error_message(
+        request, 'Could not sign SSH certificate',
+        status=500)
 
 
 @login_required
 def oauth_callback(request):
     """
     OAuth2 callback endpoint to continue the SSH certificate signing process
-    :param request: request object
+    :param Request request: request object
     :return: error message or redirect to the signing service with access token
+    :rtype: HttpResponse
     """
     # Check for OAuth error message
     error = request.GET.get('error', None)

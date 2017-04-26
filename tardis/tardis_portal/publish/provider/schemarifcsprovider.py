@@ -8,7 +8,8 @@ from tardis.tardis_portal.ParameterSetManager import ParameterSetManager
 
 from tardis.apps.ands_register.publishing import PublishHandler
 
-import rifcsprovider
+import tardis.tardis_portal.publish.rifcsprovider as rifcsprovider
+
 
 class SchemaRifCsProvider(rifcsprovider.RifCsProvider):
 
@@ -63,14 +64,13 @@ class SchemaRifCsProvider(rifcsprovider.RifCsProvider):
         authors = phandler.custom_authors()
         if authors:
             return "* " + "\n* ".join(authors)
-        else:
-            return self.get_investigator_list(experiment)
+        return self.get_investigator_list(experiment)
 
     def get_url(self, experiment, server_url):
-       """Only public experiments can show the direct link to the experiment
-       in the rif-cs"""
-       if experiment.public_access != experiment.PUBLIC_ACCESS_NONE:
-           return "%s/experiment/view/%s/" % (server_url, experiment.id)
+        """Only public experiments can show the direct link to the experiment
+        in the rif-cs"""
+        if experiment.public_access != experiment.PUBLIC_ACCESS_NONE:
+            return "%s/experiment/view/%s/" % (server_url, experiment.id)
 
     def get_investigator_list(self, experiment):
         authors = [a.author for a in experiment.experimentauthor_set.all()]
@@ -172,7 +172,7 @@ class SchemaRifCsProvider(rifcsprovider.RifCsProvider):
         parameterset = ExperimentParameterSet.objects.filter(
                             schema__namespace=namespace,
                             experiment__id=experiment.id)
-        if len(parameterset) > 0:
+        if parameterset:
             psm = ParameterSetManager(parameterset=parameterset[0])
             try:
                 return psm.get_param(key, True)
@@ -186,8 +186,7 @@ class SchemaRifCsProvider(rifcsprovider.RifCsProvider):
         parameterset = ExperimentParameterSet.objects.filter(
                             schema__namespace=namespace,
                             experiment__id=experiment.id)
-        if len(parameterset) > 0:
+        if parameterset:
             psm = ParameterSetManager(parameterset=parameterset[0])
             return psm.get_params(key, True)
-        else:
-            return []
+        return []

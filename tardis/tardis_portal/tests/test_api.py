@@ -153,18 +153,15 @@ class MyTardisAuthenticationTest(MyTardisResourceTestCase):
 
 
 class SchemaResourceTest(MyTardisResourceTestCase):
-    def setUp(self):
-        super(SchemaResourceTest, self).setUp()
+    pass
 
 
 class ExperimentParameterSetResourceTest(MyTardisResourceTestCase):
-    def setUp(self):
-        super(ExperimentParameterSetResourceTest, self).setUp()
+    pass
 
 
 class ExperimentParameterResourceTest(MyTardisResourceTestCase):
-    def setUp(self):
-        super(ExperimentParameterResourceTest, self).setUp()
+    pass
 
 
 class ExperimentResourceTest(MyTardisResourceTestCase):
@@ -263,13 +260,11 @@ class ExperimentResourceTest(MyTardisResourceTestCase):
 
 
 class DatasetParameterSetResourceTest(MyTardisResourceTestCase):
-    def setUp(self):
-        super(DatasetParameterSetResourceTest, self).setUp()
+    pass
 
 
 class DatasetParameterResourceTest(MyTardisResourceTestCase):
-    def setUp(self):
-        super(DatasetParameterResourceTest, self).setUp()
+    pass
 
 
 class DatasetResourceTest(MyTardisResourceTestCase):
@@ -460,28 +455,22 @@ class DataFileResourceTest(MyTardisResourceTestCase):
 
 
 class DatafileParameterSetResourceTest(MyTardisResourceTestCase):
-    def setUp(self):
-        super(DatafileParameterSetResourceTest, self).setUp()
+    pass
 
 
 class DatafileParameterResourceTest(MyTardisResourceTestCase):
-    def setUp(self):
-        super(DatafileParameterResourceTest, self).setUp()
+    pass
 
 
 class LocationResourceTest(MyTardisResourceTestCase):
-    def setUp(self):
-        super(LocationResourceTest, self).setUp()
+    pass
 
 
 class ReplicaResourceTest(MyTardisResourceTestCase):
-    def setUp(self):
-        super(ReplicaResourceTest, self).setUp()
+    pass
 
 
 class GroupResourceTest(MyTardisResourceTestCase):
-    def setUp(self):
-        super(GroupResourceTest, self).setUp()
 
     def test_get_group_by_id(self):
         group_id = Group.objects.first().id
@@ -512,8 +501,6 @@ class GroupResourceTest(MyTardisResourceTestCase):
 
 
 class FacilityResourceTest(MyTardisResourceTestCase):
-    def setUp(self):
-        super(FacilityResourceTest, self).setUp()
 
     def test_get_facility_by_id(self):
         first_facility = Facility.objects.first().id
@@ -590,8 +577,6 @@ class FacilityResourceTest(MyTardisResourceTestCase):
 
 
 class InstrumentResourceTest(MyTardisResourceTestCase):
-    def setUp(self):
-        super(InstrumentResourceTest, self).setUp()
 
     def test_get_instrument_by_id(self):
         facility_id = Facility.objects.first().id

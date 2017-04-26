@@ -88,8 +88,7 @@ def load_experiment_image(request, parameter_id):
     experiment_id = parameter.parameterset.experiment.id
     if authz.has_experiment_access(request, experiment_id):
         return load_image(request, parameter)
-    else:
-        return return_response_error(request)
+    return return_response_error(request)
 
 
 def load_dataset_image(request, parameter_id):
@@ -97,8 +96,7 @@ def load_dataset_image(request, parameter_id):
     dataset = parameter.parameterset.dataset
     if authz.has_dataset_access(request, dataset.id):
         return load_image(request, parameter)
-    else:
-        return return_response_error(request)
+    return return_response_error(request)
 
 
 def load_datafile_image(request, parameter_id):
@@ -109,8 +107,7 @@ def load_datafile_image(request, parameter_id):
     datafile = parameter.parameterset.datafile
     if authz.has_datafile_access(request, datafile.id):
         return load_image(request, parameter)
-    else:
-        return return_response_error(request)
+    return return_response_error(request)
 
 
 @authz.experiment_access_required

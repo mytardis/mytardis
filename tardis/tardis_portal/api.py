@@ -1,4 +1,4 @@
-# pylint: disable=C0302,R0204
+# pylint: disable=C0302
 '''
 RESTful API for MyTardis models and data.
 Implemented with Tastypie.
@@ -117,18 +117,16 @@ class MyTardisAuthentication(object):
                 if check:
                     if isinstance(check, HttpUnauthorized):
                         return False
-                    else:
-                        request._authentication_backend = basic_auth
-                        return check
+                    request._authentication_backend = basic_auth
+                    return check
             if auth_info.startswith('ApiKey'):
                 apikey_auth = ApiKeyAuthentication()
                 check = apikey_auth.is_authenticated(request, **kwargs)
                 if check:
                     if isinstance(check, HttpUnauthorized):
                         return False
-                    else:
-                        request._authentication_backend = apikey_auth
-                        return check
+                    request._authentication_backend = apikey_auth
+                    return check
 
     def get_identifier(self, request):
         try:
@@ -197,18 +195,16 @@ class ACLAuthorization(Authorization):
             )
         elif bundle.request.user.is_authenticated() and \
                 isinstance(bundle.obj, User):
-            if len(facilities_managed_by(bundle.request.user)) > 0:
+            if facilities_managed_by(bundle.request.user):
                 return object_list
-            else:
-                return [user for user in object_list if
-                        (user == bundle.request.user or
-                         user.experiment_set.filter(public_access__gt=1)
-                         .count() > 0)]
+            return [user for user in object_list if
+                    (user == bundle.request.user or
+                     user.experiment_set.filter(public_access__gt=1)
+                     .count() > 0)]
         elif isinstance(bundle.obj, Group):
             if facilities_managed_by(bundle.request.user).count() > 0:
                 return object_list
-            else:
-                return bundle.request.user.groups.filter(id__in=obj_ids)
+            return bundle.request.user.groups.filter(id__in=obj_ids)
         elif isinstance(bundle.obj, Facility):
             facilities = facilities_managed_by(bundle.request.user)
             return [facility for facility in object_list
@@ -544,9 +540,6 @@ class MyTardisModelResource(ModelResource):
     def lookup_kwargs_with_identifiers(self, bundle, kwargs):
         return lookup_by_unique_id_only(MyTardisModelResource)(
             self, bundle, kwargs)
-
-    def patch_list(self, request, **kwargs):
-        return super(MyTardisModelResource, self).patch_list(request, **kwargs)
 
     class Meta:
         authentication = default_authentication

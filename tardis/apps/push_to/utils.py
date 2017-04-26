@@ -43,8 +43,7 @@ def list_subdirectories(sftp_client, path, show_hidden=False):
                 is_directory(sftp_client, dir)]
     if not show_hidden:
         return [dir for dir in dir_list if not dir.startswith('.')]
-    else:
-        return dir_list
+    return dir_list
 
 
 def get_default_push_location(sftp_client):
@@ -77,7 +76,6 @@ def can_copy(ssh_client, object_type, object_id, path):
         if bytes_available(ssh_client, path) > get_object_size(object_type,
                                                                object_id):
             return True, ''
-        else:
-            return False, 'Insufficient disk space'
+        return False, 'Insufficient disk space'
     except (Experiment.DoesNotExist, Dataset.DoesNotExist, TypeError):
         return False, ''
