@@ -69,10 +69,10 @@ app.controller('publicationFormCtrl', function ($scope, $log, $http, ngDialog, $
 
     // Opens the publication form modal dialogue
     $scope.openPublicationForm = function () {
-	delete publication_id; // Ensure this is undefined when the form loads
+        delete publication_id; // Ensure this is undefined when the form loads
         ngDialog.open({
                           template: '/apps/publication-forms/form/',
-	                  closeByDocument: false,
+                          closeByDocument: false,
                           preCloseCallback: function () {
                               if (typeof publication_id !== 'undefined' &&
                                   publication_id !== experiment_id) {
@@ -100,8 +100,8 @@ app.controller('publicationFormCtrl', function ($scope, $log, $http, ngDialog, $
     $scope.formData.publicationDescription = ""; // Initialise publication description
     $scope.formData.extraInfo = {}; // Stores discipline specific metadata
     $scope.formData.authors = [{'name':'',
-				'institution':'',
-				'email':''}]; // Stores the authors of the publication
+                                'institution':'',
+                                'email':''}]; // Stores the authors of the publication
     $scope.formData.acknowledgements = ""; // Acknowledgements stored here
     $scope.formData.action = ""; // specifies what action is required on form update
 
@@ -137,7 +137,7 @@ app.controller('publicationFormCtrl', function ($scope, $log, $http, ngDialog, $
         $http.post('/apps/publication-forms/form/', $scope.formData).success(function (data) {
             if ('error' in data) { // This happens when the form fails to validate but no server error encountered
                 $scope.errorMessages.push(data.error);
-                onFailure();	      // Since all validation also happens on the client, this should never happen.
+                onFailure();          // Since all validation also happens on the client, this should never happen.
                 $scope.loadingData = false;
                 return;
             }
@@ -149,7 +149,7 @@ app.controller('publicationFormCtrl', function ($scope, $log, $http, ngDialog, $
             // been created, it redirects there on close.
             publication_id = $scope.formData.publication_id;
 
-//	    $scope.infoMessage = "Dataset selection saved!";
+//          $scope.infoMessage = "Dataset selection saved!";
             onComplete();
             $scope.loadingData = false;
         }).error(function (data) {
@@ -230,8 +230,8 @@ app.controller('publicationFormCtrl', function ($scope, $log, $http, ngDialog, $
             errors = true;
         }
 
-	var tmpAuthors = [];
-	for (var a in $scope.formData.authors) {
+        var tmpAuthors = [];
+        for (var a in $scope.formData.authors) {
         if ($scope.formData.authors.hasOwnProperty(a)) {
             var author = $scope.formData.authors[a];
             var x = 0;
@@ -252,10 +252,10 @@ app.controller('publicationFormCtrl', function ($scope, $log, $http, ngDialog, $
                 break;
             }
         }
-	}
-	if (!errors) {
-	    $scope.formData.authors = tmpAuthors;
-	}
+        }
+        if (!errors) {
+            $scope.formData.authors = tmpAuthors;
+        }
 
         if (typeof $scope.formData.embargo === 'undefined' || $scope.formData.embargo == null) {
             $scope.errorMessages.push("Release date cannot be blank.");
@@ -357,7 +357,7 @@ app.controller('publicationFormCtrl', function ($scope, $log, $http, ngDialog, $
 
     // Advance to the next page of the form
     $scope.nextPage = function () {
-	$('.ngdialog').scrollTop(0);
+        $('.ngdialog').scrollTop(0);
         if ($scope.currentPageIdx < $scope.form_pages.length - 1 && !$scope.loadingData) {
             $scope.errorMessages = [];
             $scope.infoMessage = "";
@@ -400,15 +400,15 @@ app.controller('publicationFormCtrl', function ($scope, $log, $http, ngDialog, $
 
     // Scroll the dataset list to top
     $scope.scrollDsSelectorToTop = function() {
-	$('#datasetList').scrollTop(0);
+        $('#datasetList').scrollTop(0);
     };
 
     // Add author to publication
     $scope.addAuthorEntry = function () {
-	$log.info($scope.formData)
-	$scope.formData.authors.push({'name':'',
-				      'institution':'',
-				      'email':''})
+        $log.info($scope.formData)
+        $scope.formData.authors.push({'name':'',
+                                      'institution':'',
+                                      'email':''})
     }
 
     // Remove author from publication
@@ -441,7 +441,7 @@ app.controller('publicationFormCtrl', function ($scope, $log, $http, ngDialog, $
     });
 
     $scope.saveAndClose = function () {
-	$('.ngdialog').scrollTop(0);
+        $('.ngdialog').scrollTop(0);
         saveFormState(function () { // On success
                           $scope.closeThisDialog();
                       }
