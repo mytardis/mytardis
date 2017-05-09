@@ -6,7 +6,7 @@ angular
 .module('MyTardis')
 .filter('removeMatchingDatasets', function () {
     return function (input, compareTo) {
-        if (typeof input === 'undefined') {
+        if (angular.isUndefined(input)) {
             return input;
         }
         var output = [];
@@ -40,7 +40,7 @@ angular
         },
         template: '<div ng-form novalidate><div ng-transclude></div></div>',
         controller: function ($scope, $element, $attrs, $compile) {
-            if (typeof $scope.model === 'undefined') {
+            if (angular.isUndefined($scope.model)) {
                 $scope.model = {}
             }
             $scope.model.schema = $scope.schema;
@@ -77,16 +77,16 @@ angular
 
     // Opens the publication form modal dialogue
     $scope.openPublicationForm = function () {
-        delete publication_id; // Ensure this is undefined when the form loads
+        publication_id = null; // Ensure this is null when the form loads
         ngDialog.open({
                           template: '/apps/publication-forms/form/',
                           closeByDocument: false,
                           preCloseCallback: function () {
-                              if (typeof publication_id !== 'undefined' &&
+                              if (publication_id !== null &&
                                   publication_id !== experiment_id) {
                                   var redirectTo = '/experiment/view/' + publication_id + '/';
                                   $window.location = redirectTo;
-                              } else if (typeof publication_id !== 'undefined') {
+                              } else if (angular.isDefined(publication_id)) {
                                   $window.location.reload();
                               }
                           }
@@ -243,13 +243,13 @@ angular
         if ($scope.formData.authors.hasOwnProperty(a)) {
             var author = $scope.formData.authors[a];
             var x = 0;
-            if (typeof author.email === 'undefined' || author.email.trim().length === 0) {
+            if (angular.isUndefined(author.email) || author.email.trim().length === 0) {
                 x++;
             }
-            if (typeof author.name === 'undefined' || author.name.trim().length === 0) {
+            if (angular.isUndefined(author.name) || author.name.trim().length === 0) {
                 x++;
             }
-            if (typeof author.institution === 'undefined' || author.institution.trim().length === 0) {
+            if (angular.isUndefined(author.institution) || author.institution.trim().length === 0) {
                 x++;
             }
             if (x === 0) {
@@ -265,7 +265,7 @@ angular
             $scope.formData.authors = tmpAuthors;
         }
 
-        if (typeof $scope.formData.embargo === 'undefined' || $scope.formData.embargo == null) {
+        if (angular.isUndefined($scope.formData.embargo) || $scope.formData.embargo == null) {
             $scope.errorMessages.push("Release date cannot be blank.");
             errors = true;
         }
@@ -344,7 +344,7 @@ angular
 
     // Add a dataset to the list of selected datasets
     $scope.addDatasets = function (experiment, datasets) {
-        if (typeof datasets === 'undefined') {
+        if (angular.isUndefined(datasets)) {
             return;
         }
         for (var i = 0; i < datasets.length; i++) {
@@ -435,7 +435,7 @@ angular
     }
 
     $scope.$watch('formData.selectedLicenseId', function (newVal, oldVal) {
-        if (typeof $scope.formData.licenses !== 'undefined') {
+        if (angular.isDefined($scope.formData.licenses)) {
             for (var i in $scope.formData.licenses) {
                 if ($scope.formData.licenses.hasOwnProperty(i)) {
                     var license = $scope.formData.licenses[i];
@@ -464,7 +464,7 @@ angular
     }
     // Ensures that the embargo date is a Date object
     $scope.$watch('formData.embargo', function (newVal, oldVal) {
-        if (typeof newVal === 'string') {
+        if (angular.isString(newVal)) {
             $scope.formData.embargo = new Date(newVal);
         }
     });
@@ -472,7 +472,7 @@ angular
     // #### PDB HELPER ####
     $scope.requirePDBHelper = function () {
         extraInfoHelpers.push(function () {
-            if (typeof $scope.pdbOK === 'undefined' || $scope.pdbOK === false) {
+            if (angular.isUndefined($scope.pdbOK) || $scope.pdbOK === false) {
                 $scope.errorMessages.push("PDB ID invalid or not given");
                 return false;
             } else {
@@ -483,10 +483,10 @@ angular
     $scope.pdbSearching = false;
     $scope.pdbSearchComplete = false;
     $scope.$watch('formData.pdbInfo', function (newVal, oldVal) {
-        if (typeof newVal !== 'undefined') {
+        if (angular.isDefined(newVal)) {
             $scope.pdbSearchComplete = Object.keys(newVal).length;
             $scope.pdbOK = (newVal.status !== 'UNKNOWN')
-        } else if (typeof $scope.pdbOK !== 'undefined' || $scope.hasPDB) {
+        } else if (angular.isDefined($scope.pdbOK) || $scope.hasPDB) {
             delete $scope.pdbOK // unset the variable so the form validator can continue
         }
     });
