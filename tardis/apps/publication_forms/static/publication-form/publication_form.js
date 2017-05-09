@@ -73,7 +73,7 @@ angular
 // Publication form controller
 angular
 .module('MyTardis')
-.controller('publicationFormCtrl', function ($scope, $log, $http, ngDialog, $window, $timeout) {
+.controller('PublicationFormController', function ($scope, $log, $http, ngDialog, $window, $timeout) {
 
     // Opens the publication form modal dialogue
     $scope.openPublicationForm = function () {
