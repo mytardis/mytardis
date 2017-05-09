@@ -212,7 +212,7 @@ angular
                                // extraInfoHelpers are registered elsewhere
     var extraInformationValidator = function (onSuccess, onError) {
 
-        errors = false;
+        var errors = false;
 
         for (var i = 0; i < extraInfoHelpers.length; i++) {
             if (!extraInfoHelpers[i]()) {
@@ -233,7 +233,7 @@ angular
 
         $scope.formData.action = "submit";
 
-        errors = false;
+        var errors = false;
         if ($scope.formData.authors.length === 0) {
             $scope.errorMessages.push("You must add at least one author.");
             errors = true;
