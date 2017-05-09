@@ -17,11 +17,6 @@
 {% mustachejs "tardis_portal/badges/datafile_count" %}
 {% mustachejs "tardis_portal/badges/size" %}
 
-<script type="text/javascript">
-var experiment_id={{ experiment.id }};
-var is_publication='{{ experiment.is_publication }}' === 'True';
-var is_publication_draft='{{ experiment.is_publication_draft }}' === 'True';
-</script>
 <script type="text/javascript" src="/static/publication-form/publication_form.js"></script>
 <script type="text/javascript">
     var toggle_files = function(loadCallback) {
@@ -242,13 +237,17 @@ $('#modal-metadata .submit-button').click(function() {
     {% endif %}
   </h4>
   {% if not experiment.public %}
-  <div class="pull-right" ng-controller="PublicationFormController">
+  <div class="pull-right"
+       ng-controller="PublicationFormController as pubFormCtrl"
+       experiment_id="{{ experiment.id }}"
+       is_publication="{{ experiment.is_publication }}"
+       is_publication_draft="{{ experiment.is_publication_draft }}">
     {% if has_read_or_owner_ACL and pub_form_enabled %}
     <a class="prepare_to_publish btn btn-mini btn-info"
-       title="Prepare To Publish" ng-click="openPublicationForm()" ng-show="isPublicationDraft || !isPublication">
+       title="Prepare To Publish" ng-click="pubFormCtrl.openPublicationForm()" ng-show="pubFormCtrl.isPublicationDraft || !pubFormCtrl.isPublication">
       <i class="fa fa-share"></i>
-      <span ng-hide="isPublication">Create publication</span>
-      <span ng-show="isPublicationDraft">Resume draft publication</span>
+      <span ng-hide="pubFormCtrl.isPublication">Create publication</span>
+      <span ng-show="pubFormCtrl.isPublicationDraft">Resume draft publication</span>
     </a>
     {% endif %}
     {% if push_to_enabled and is_authenticated %}
@@ -261,7 +260,7 @@ $('#modal-metadata .submit-button').click(function() {
     {% endif %}
     {% if has_write_permissions %}
     <a class="btn btn-mini btn-warning" title="Edit Experiment"
-       href="{{ experiment.get_edit_url }}" ng-hide="isPublication">
+       href="{{ experiment.get_edit_url }}" ng-hide="pubFormCtrl.isPublication">
       <i class="fa fa-pencil"></i>
       Edit Experiment
     </a>
