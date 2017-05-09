@@ -30,7 +30,7 @@ angular
 // This code was adapted from http://stackoverflow.com/questions/21943242/child-input-directive-needs-to-compile-in-the-scope-of-its-parent-for-ng-model-t
 angular
 .module('MyTardis')
-.directive('tardisForm', function ($log) {
+.directive('tardisForm', function () {
     return {
         replace: true,
         transclude: true,
@@ -39,7 +39,7 @@ angular
             schema: '='
         },
         template: '<div ng-form novalidate><div ng-transclude></div></div>',
-        controller: function ($scope, $element, $attrs, $compile) {
+        controller: function ($scope, $element, $attrs) {
             if (angular.isUndefined($scope.model)) {
                 $scope.model = {}
             }
@@ -53,7 +53,7 @@ angular
 
 angular
 .module('MyTardis')
-.directive('tardisFormField', function ($compile, $log) {
+.directive('tardisFormField', function ($compile) {
     return {
         require: '^tardisForm',
         restrict: 'A',
@@ -73,7 +73,7 @@ angular
 // Publication form controller
 angular
 .module('MyTardis')
-.controller('publicationFormCtrl', function ($scope, $log, $http, ngDialog, $window, $timeout, $filter) {
+.controller('publicationFormCtrl', function ($scope, $log, $http, ngDialog, $window, $timeout) {
 
     // Opens the publication form modal dialogue
     $scope.openPublicationForm = function () {
@@ -160,7 +160,7 @@ angular
 //          $scope.infoMessage = "Dataset selection saved!";
             onComplete();
             $scope.loadingData = false;
-        }).error(function (data) {
+        }).error(function (data) {  // eslint-disable-line no-unused-vars
             $scope.errorMessages.push("the server could not process your request");
             onFailure();
             $scope.loadingData = false;
@@ -174,6 +174,7 @@ angular
     //   a function to be called when validation succeeds
     //   a function to be called when validation fails
     // Any error messages may be displayed in the $scope.errorMessages array
+    // eslint-disable-next-line no-unused-vars
     var noValidation = function (onSuccess, onError) {
         onSuccess();
     }
@@ -320,7 +321,7 @@ angular
             $scope.formData = data;
             $scope.currentPageIdx = 1; // Once form data is reloaded, advance to the second page
             $scope.current_page = $scope.form_pages[$scope.currentPageIdx];
-        }).error(function (data) {
+        }).error(function (data) {  // eslint-disable-line no-unused-vars
             $scope.errorMessages = ['Could not load publication draft!'];
         });
     }
@@ -434,6 +435,7 @@ angular
         }
     }
 
+    // eslint-disable-next-line no-unused-vars
     $scope.$watch('formData.selectedLicenseId', function (newVal, oldVal) {
         if (angular.isDefined($scope.formData.licenses)) {
             for (var i in $scope.formData.licenses) {
@@ -463,6 +465,7 @@ angular
         $scope.formData.embargo = new Date();
     }
     // Ensures that the embargo date is a Date object
+    // eslint-disable-next-line no-unused-vars
     $scope.$watch('formData.embargo', function (newVal, oldVal) {
         if (angular.isString(newVal)) {
             $scope.formData.embargo = new Date(newVal);
@@ -482,6 +485,7 @@ angular
     }
     $scope.pdbSearching = false;
     $scope.pdbSearchComplete = false;
+    // eslint-disable-next-line no-unused-vars
     $scope.$watch('formData.pdbInfo', function (newVal, oldVal) {
         if (angular.isDefined(newVal)) {
             $scope.pdbSearchComplete = Object.keys(newVal).length;
