@@ -2,7 +2,9 @@
 
 // A filter used to remove items from the list of available datasets
 // when added to the list of datasets to include in the publication
-app.filter('removeMatchingDatasets', function () {
+angular
+.module('MyTardis')
+.filter('removeMatchingDatasets', function () {
     return function (input, compareTo) {
         if (typeof input === 'undefined') {
             return input;
@@ -26,7 +28,9 @@ app.filter('removeMatchingDatasets', function () {
 // The following two tardisForm directives attach appropriate ng-model
 // attributes to form fields
 // This code was adapted from http://stackoverflow.com/questions/21943242/child-input-directive-needs-to-compile-in-the-scope-of-its-parent-for-ng-model-t
-app.directive('tardisForm', function ($log) {
+angular
+.module('MyTardis')
+.directive('tardisForm', function ($log) {
     return {
         replace: true,
         transclude: true,
@@ -47,7 +51,9 @@ app.directive('tardisForm', function ($log) {
     };
 });
 
-app.directive('tardisFormField', function ($compile, $log) {
+angular
+.module('MyTardis')
+.directive('tardisFormField', function ($compile, $log) {
     return {
         require: '^tardisForm',
         restrict: 'A',
@@ -65,7 +71,9 @@ app.directive('tardisFormField', function ($compile, $log) {
 });
 
 // Publication form controller
-app.controller('publicationFormCtrl', function ($scope, $log, $http, ngDialog, $window, $timeout, $filter) {
+angular
+.module('MyTardis')
+.controller('publicationFormCtrl', function ($scope, $log, $http, ngDialog, $window, $timeout, $filter) {
 
     // Opens the publication form modal dialogue
     $scope.openPublicationForm = function () {
