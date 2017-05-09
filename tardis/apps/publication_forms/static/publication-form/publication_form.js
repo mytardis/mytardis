@@ -85,12 +85,13 @@ angular
                   'isPublicationDraft': vm.isPublicationDraft,
               },
               closeByDocument: false,
-              preCloseCallback: function (publication_id) {
-                  if (angular.isDefined(publication_id) &&
-                      publication_id !== vm.experiment) {
-                      var redirectTo = '/experiment/view/' + publication_id + '/';
+              preCloseCallback: function (publicationId) {
+                  if (angular.isDefined(publicationId) &&
+                      angular.isNumber(publicationId) &&
+                      publicationId !== vm.experiment) {
+                      var redirectTo = '/experiment/view/' + publicationId + '/';
                       $window.location = redirectTo;
-                  } else if (angular.isDefined(publication_id)) {
+                  } else if (angular.isDefined(publicationId)) {
                       $window.location.reload();
                   }
               }
@@ -184,10 +185,10 @@ angular
             vm.formData = data;
 
             // If this instance of saveFormState was called by vm.saveAndClose, then
-            // when we call onComplete (a.k.a. onSuccess), vm.formData.publication_id
+            // when we call onComplete (a.k.a. onSuccess), vm.formData.publicationId
             // will be passed to ngDialog's closeThisDialog.
             // (It was formerly saved to a "publication_id" global variable.)
-            // The publication_id passed by closeThisDialog can be received by preCloseCallback
+            // The publicationId passed by closeThisDialog can be received by preCloseCallback
             // and used to redirect to the new publication's experiment view URL.
 
 //          vm.infoMessage = "Dataset selection saved!";
@@ -312,7 +313,7 @@ angular
     }
 
     // A list of available pages of the form, along with a function used to validate the form content
-    vm.form_pages = [{
+    vm.formPages = [{
         title: '',
         url: 'form_page1.html',
         validationFunction: noValidation
@@ -340,20 +341,20 @@ angular
 
     // Keep track of the current page
     vm.currentPageIdx = 0;
-    vm.totalPages = vm.form_pages.length;
-    vm.current_page = vm.form_pages[vm.currentPageIdx];
+    vm.totalPages = vm.formPages.length;
+    vm.currentPage = vm.formPages[vm.currentPageIdx];
 
     // If isPublicationDraft is true, then
     // the form state should be loaded from the database.
     if (vm.isPublicationDraft) {
         // Setting formData.action to "resume" causes the form data to be reloaded
         // rather than overwritten.
-        vm.formData.publication_id = vm.experiment;
+        vm.formData.publicationId = vm.experiment;
         vm.formData.action = "resume";
         $http.post('/apps/publication-forms/form/', vm.formData).success(function (data) {
             vm.formData = data;
             vm.currentPageIdx = 1; // Once form data is reloaded, advance to the second page
-            vm.current_page = vm.form_pages[vm.currentPageIdx];
+            vm.currentPage = vm.formPages[vm.currentPageIdx];
         }).error(function (data) {  // eslint-disable-line no-unused-vars
             vm.errorMessages = ['Could not load publication draft!'];
         });
@@ -400,15 +401,15 @@ angular
     // Advance to the next page of the form
     vm.nextPage = function () {
         angular.element($document[0].querySelector('.ngdialog')).scrollTop(0);
-        if (vm.currentPageIdx < vm.form_pages.length - 1 && !vm.loadingData) {
+        if (vm.currentPageIdx < vm.formPages.length - 1 && !vm.loadingData) {
             vm.errorMessages = [];
             vm.infoMessage = "";
             var onSuccess = function() {
                 vm.currentPageIdx++;
-                vm.current_page = vm.form_pages[vm.currentPageIdx];
+                vm.currentPage = vm.formPages[vm.currentPageIdx];
             };
             var onError = function() {};
-            vm.current_page.validationFunction(onSuccess, onError);
+            vm.currentPage.validationFunction(onSuccess, onError);
         }
     }
     // Move back a page
@@ -417,18 +418,18 @@ angular
             vm.errorMessages = [];
             vm.infoMessage = "";
             vm.currentPageIdx--;
-            vm.current_page = vm.form_pages[vm.currentPageIdx];
+            vm.currentPage = vm.formPages[vm.currentPageIdx];
         } else if (vm.currentPageIdx === 0) {
             ngDialog.close();
         }
     }
 
     vm.isComplete = function () {
-        return vm.currentPageIdx === (vm.form_pages.length - 1);
+        return vm.currentPageIdx === (vm.formPages.length - 1);
     }
 
     vm.isLastPage = function () { // Actually, second last page
-        return vm.currentPageIdx === (vm.form_pages.length - 2);
+        return vm.currentPageIdx === (vm.formPages.length - 2);
     }
 
     // Set the publication title
@@ -489,7 +490,7 @@ angular
             function () { // On success
                 // Preventing using $scope directly silences ESLint's angular/controller-as error:
                 var dialogScope = $scope;
-                dialogScope.closeThisDialog(vm.formData.publication_id);
+                dialogScope.closeThisDialog(vm.formData.publicationId);
             },
             function () {
             } // On error

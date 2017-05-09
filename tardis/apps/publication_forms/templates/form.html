@@ -1,6 +1,6 @@
 {% verbatim %}
 <div ng-controller="PublicationFormController as pubFormCtrl">
-  <h2>{{ pubFormCtrl.current_page.title }}</h2>
+  <h2>{{ pubFormCtrl.currentPage.title }}</h2>
 
   <div class="alert alert-error" ng-show="pubFormCtrl.errorMessages.length">
     <strong>Oops!</strong> Processing error:
@@ -14,7 +14,7 @@
   <div ng-show="pubFormCtrl.loadingData" class="alert alert-info"><img src="/static/publication-form/spinner.gif"/>Hang tight,
     loading data...
   </div>
-  <div ng-include="pubFormCtrl.current_page.url"></div>
+  <div ng-include="pubFormCtrl.currentPage.url"></div>
   <div class="alert alert-info" ng-show="pubFormCtrl.isLastPage()">
     <strong>Almost done,</strong> but make sure all details are correct.
     Once submitted, you cannot make changes.
