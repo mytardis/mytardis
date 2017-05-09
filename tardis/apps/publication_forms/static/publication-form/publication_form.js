@@ -73,7 +73,7 @@ angular
 // Publication form controller
 angular
 .module('MyTardis')
-.controller('PublicationFormController', function ($scope, $log, $http, ngDialog, $window, $timeout) {
+.controller('PublicationFormController', function ($scope, $log, $http, ngDialog, $window, $timeout, $document) {
 
     // Opens the publication form modal dialogue
     $scope.openPublicationForm = function () {
@@ -366,7 +366,7 @@ angular
 
     // Advance to the next page of the form
     $scope.nextPage = function () {
-        $('.ngdialog').scrollTop(0);
+        angular.element($document[0].querySelector('.ngdialog')).scrollTop(0);
         if ($scope.currentPageIdx < $scope.form_pages.length - 1 && !$scope.loadingData) {
             $scope.errorMessages = [];
             $scope.infoMessage = "";
@@ -409,7 +409,7 @@ angular
 
     // Scroll the dataset list to top
     $scope.scrollDsSelectorToTop = function() {
-        $('#datasetList').scrollTop(0);
+        angular.element($document[0].querySelector('#datasetList')).scrollTop(0);
     };
 
     // Add author to publication
@@ -451,7 +451,7 @@ angular
     });
 
     $scope.saveAndClose = function () {
-        $('.ngdialog').scrollTop(0);
+        angular.element($document[0].querySelector('.ngdialog')).scrollTop(0);
         saveFormState(function () { // On success
                           $scope.closeThisDialog();
                       }
