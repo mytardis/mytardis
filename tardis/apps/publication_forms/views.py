@@ -546,14 +546,14 @@ def create_draft_publication(user, publication_title, publication_description):
     return experiment
 
 
-def get_draft_publication(user, publicationId):
+def get_draft_publication(user, publication_id):
     for exp in Experiment.safe.owned(user):
-        if exp.id == publicationId and exp.is_publication_draft():
+        if exp.id == publication_id and exp.is_publication_draft():
             return exp
 
     for group in user.groups.all():
         for exp in Experiment.safe.owned_by_group(group):
-            if exp.id == publicationId and exp.is_publication_draft():
+            if exp.id == publication_id and exp.is_publication_draft():
                 return exp
 
     return None
