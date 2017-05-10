@@ -41,7 +41,7 @@ angular
         template: '<div ng-form novalidate><div ng-transclude></div></div>',
         controller: function ($scope, $element, $attrs) {
             if (angular.isUndefined($scope.model)) {
-                $scope.model = {}
+                $scope.model = {};
             }
             $scope.model.schema = $scope.schema;
             this.getModel = function () {
@@ -199,7 +199,7 @@ angular
             onFailure();
             vm.loadingData = false;
         });
-    }
+    };
 
     // ***************
     // Form validators
@@ -211,7 +211,7 @@ angular
     // eslint-disable-next-line no-unused-vars
     var noValidation = function (onSuccess, onError) {
         onSuccess();
-    }
+    };
     var datasetSelectionValidator = function (onSuccess, onError) {
 
         extraInfoHelpers = []; // This list of helper functions must be cleared in case the discipline specific form info changes
@@ -222,7 +222,7 @@ angular
             vm.errorMessages.push("A title must be given");
         }
 
-        if (vm.formData.publicationDescription.trim().length == 0) {
+        if (vm.formData.publicationDescription.trim().length === 0) {
             vm.errorMessages.push("Provide a description");
         }
 
@@ -239,7 +239,7 @@ angular
                 onError();
             });
         }
-    }
+    };
 
 
     var extraInfoHelpers = []; // array of functions that evaluate to true if there are no errors
@@ -261,7 +261,7 @@ angular
             saveFormState(onSuccess, onError);
         }
 
-    }
+    };
 
     var finalSubmissionValidator = function (onSuccess, onError) {
 
@@ -300,7 +300,7 @@ angular
             vm.formData.authors = tmpAuthors;
         }
 
-        if (angular.isUndefined(vm.formData.embargo) || vm.formData.embargo == null) {
+        if (angular.isUndefined(vm.formData.embargo) || vm.formData.embargo === null) {
             vm.errorMessages.push("Release date cannot be blank.");
             errors = true;
         }
@@ -310,7 +310,7 @@ angular
         } else {
             saveFormState(onSuccess, onError);
         }
-    }
+    };
 
     // A list of available pages of the form, along with a function used to validate the form content
     vm.formPages = [{
@@ -389,14 +389,14 @@ angular
                                                    "dataset": datasets[i]
                                                });
         }
-    }
+    };
     // Remove a dataset from the list of selected datasets
     vm.removeDataset = function (dataset) {
         var index = vm.formData.addedDatasets.indexOf(dataset);
         if (index > -1) {
             vm.formData.addedDatasets.splice(index, 1);
         }
-    }
+    };
 
     // Advance to the next page of the form
     vm.nextPage = function () {
@@ -411,7 +411,7 @@ angular
             var onError = function() {};
             vm.currentPage.validationFunction(onSuccess, onError);
         }
-    }
+    };
     // Move back a page
     vm.previousPage = function () {
         if (vm.currentPageIdx - 1 >= 0 && !vm.loadingData) {
@@ -422,24 +422,24 @@ angular
         } else if (vm.currentPageIdx === 0) {
             ngDialog.close();
         }
-    }
+    };
 
     vm.isComplete = function () {
         return vm.currentPageIdx === (vm.formPages.length - 1);
-    }
+    };
 
     vm.isLastPage = function () { // Actually, second last page
         return vm.currentPageIdx === (vm.formPages.length - 2);
-    }
+    };
 
     // Set the publication title
     vm.setTitle = function (title) {
         vm.formData.publicationTitle = title;
-    }
+    };
 
     vm.setDescription = function (description) {
         vm.formData.publicationDescription = description;
-    }
+    };
 
     // Scroll the dataset list to top
     vm.scrollDsSelectorToTop = function() {
@@ -448,16 +448,16 @@ angular
 
     // Add author to publication
     vm.addAuthorEntry = function () {
-        $log.info(vm.formData)
+        $log.info(vm.formData);
         vm.formData.authors.push({'name':'',
                                       'institution':'',
-                                      'email':''})
-    }
+                                      'email':''});
+    };
 
     // Remove author from publication
     vm.removeAuthorEntry = function (idx) {
         vm.formData.authors.splice(idx, 1);
-    }
+    };
 
     // Copy acknowledgement text to acknowledgement field
     vm.copyAcknowledgement = function (text) {
@@ -467,7 +467,7 @@ angular
             }
             vm.formData.acknowledgements += text;
         }
-    }
+    };
 
     // eslint-disable-next-line no-unused-vars
     $scope.$watch('formData.selectedLicenseId', function (newVal, oldVal) {
@@ -475,7 +475,7 @@ angular
             for (var i in vm.formData.licenses) {
                 if (vm.formData.licenses.hasOwnProperty(i)) {
                     var license = vm.formData.licenses[i];
-                    if (license['id'] === newVal) {
+                    if (license.id === newVal) {
                         vm.formData.selectedLicense = license;
                         break;
                     }
@@ -495,12 +495,12 @@ angular
             function () {
             } // On error
         );
-    }
+    };
 
 
     vm.setEmbargoToToday = function () {
         vm.formData.embargo = new Date();
-    }
+    };
     // Ensures that the embargo date is a Date object
     // eslint-disable-next-line no-unused-vars
     $scope.$watch('formData.embargo', function (newVal, oldVal) {
@@ -519,16 +519,16 @@ angular
                 return true;
             }
         });
-    }
+    };
     vm.pdbSearching = false;
     vm.pdbSearchComplete = false;
     // eslint-disable-next-line no-unused-vars
     $scope.$watch('formData.pdbInfo', function (newVal, oldVal) {
         if (angular.isDefined(newVal)) {
             vm.pdbSearchComplete = Object.keys(newVal).length;
-            vm.pdbOK = (newVal.status !== 'UNKNOWN')
+            vm.pdbOK = (newVal.status !== 'UNKNOWN');
         } else if (angular.isDefined(vm.pdbOK) || vm.hasPDB) {
-            delete vm.pdbOK // unset the variable so the form validator can continue
+            delete vm.pdbOK; // unset the variable so the form validator can continue
         }
     });
 
@@ -549,7 +549,7 @@ angular
                     vm.pdbSearchComplete = true;
                     vm.formData.pdbInfo = data;
                 }
-            )
+            );
         }, 1000);
-    }
+    };
 });
