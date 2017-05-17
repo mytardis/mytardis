@@ -53,8 +53,12 @@ NEW_USER_INITIAL_GROUPS = []
 
 # Turn on/off the self-registration link and form
 REGISTRATION_OPEN = True
-# or disable registration app (copy to your settings.py first!)
-# INSTALLED_APPS = filter(lambda x: x != 'registration', INSTALLED_APPS)
+'''Enable/disable the self-registration link and form in the UI.
+Note - this does not actually disable the URL endpoints for registration.
+You must also remove the `registration` app from `INSTALLED_APPS` to
+disable registration.
+'''
+
 ACCOUNT_ACTIVATION_DAYS = 3
 
 # Show the Rapid Connect login button.
