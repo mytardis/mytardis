@@ -1,34 +1,38 @@
 {% verbatim %}
-<div ng-controller="publicationFormCtrl">
-  <h2>{{ current_page.title }}</h2>
+<div ng-controller="PublicationFormController as pubFormCtrl">
+  <h2>{{ pubFormCtrl.currentPage.title }}</h2>
 
-  <div class="alert alert-error" ng-show="errorMessages.length">
+  <div class="alert alert-error" ng-show="pubFormCtrl.errorMessages.length">
     <strong>Oops!</strong> Processing error:
-    <ul ng-repeat="message in errorMessages">
+    <ul ng-repeat="message in pubFormCtrl.errorMessages">
       <li>{{ message }}</li>
     </ul>
   </div>
-  <div class="alert alert-info" ng-show="infoMessage.length">
-    {{ infoMessage }}
+  <div class="alert alert-info" ng-show="pubFormCtrl.infoMessage.length">
+    {{ pubFormCtrl.infoMessage }}
   </div>
-  <div ng-show="loadingData" class="alert alert-info"><img src="/static/publication-form/spinner.gif"/>Hang tight,
+  <div ng-show="pubFormCtrl.loadingData" class="alert alert-info"><img src="/static/publication-form/spinner.gif"/>Hang tight,
     loading data...
   </div>
-  <div ng-include="current_page.url"></div>
-  <div class="alert alert-info" ng-show="isLastPage()">
+  <div ng-include="pubFormCtrl.currentPage.url"></div>
+  <div class="alert alert-info" ng-show="pubFormCtrl.isLastPage()">
     <strong>Almost done,</strong> but make sure all details are correct.
     Once submitted, you cannot make changes.
   </div>
-  <ul class="pager" ng-hide="isComplete()">
+  <ul class="pager" ng-hide="pubFormCtrl.isComplete()">
     <li class="previous">
-      <a href="#" ng-click="previousPage()">Back</a>
+      <a href="#" ng-click="pubFormCtrl.previousPage()">Back</a>
     </li>
-    <li>{{ currentPageIdx + 1 }} of {{ totalPages - 1 }}</li>
+    <li>{{ pubFormCtrl.currentPageIdx + 1 }} of {{ pubFormCtrl.totalPages - 1 }}</li>
     <li class="next">
-      <a href="#" ng-click="nextPage()"><span ng-show="currentPageIdx == 0">Agree</span><span ng-hide="currentPageIdx == 0 || isLastPage()">Save and continue</span><span ng-show="isLastPage()">Submit</span></a>
+      <a href="#" ng-click="pubFormCtrl.nextPage()">
+          <span ng-show="pubFormCtrl.currentPageIdx == 0">Agree</span>
+          <span ng-hide="pubFormCtrl.currentPageIdx == 0 || pubFormCtrl.isLastPage()">Save and continue</span>
+          <span ng-show="pubFormCtrl.isLastPage()">Submit</span>
+      </a>
     </li>
-    <li class="next" ng-show="isLastPage()">
-      <a href="#" ng-click="saveAndClose()">Save and finish later</a>
+    <li class="next" ng-show="pubFormCtrl.isLastPage()">
+      <a href="#" ng-click="pubFormCtrl.saveAndClose()">Save and finish later</a>
     </li>
   </ul>
 </div>
@@ -48,8 +52,8 @@
         <label>Publication title</label>
         <input type="text"
                placeholder="concise description"
-               ng-model="formData.publicationTitle"
-               ng-change="setTitle(formData.publicationTitle)"
+               ng-model="pubFormCtrl.formData.publicationTitle"
+               ng-change="pubFormCtrl.setTitle(pubFormCtrl.formData.publicationTitle)"
                style="width:100%;"
                class="input-xlarge"/>
       </div>
@@ -58,8 +62,8 @@
       <div class="span12">
         <label>Description</label>
 	<textarea placeholder="Describe your publication..."
-		  ng-model="formData.publicationDescription"
-		  ng-change="setDescription(formData.publicationDescription)"
+		  ng-model="pubFormCtrl.formData.publicationDescription"
+		  ng-change="pubFormCtrl.setDescription(pubFormCtrl.formData.publicationDescription)"
 		  style="width:100%"
 		  class="input-xlarge"
 		  rows="3">
@@ -69,17 +73,17 @@
     <div class="row-fluid">
       <div class="span6">
         <label>Select experiment</label>
-        <select ng-model="selectedExperiment" ng-options="e.title for e in experiments" style="width:100%"
-		id="datasetSelector" ng-change="scrollDsSelectorToTop()"></select>
+        <select ng-model="pubFormCtrl.selectedExperiment" ng-options="e.title for e in pubFormCtrl.experiments" style="width:100%"
+		id="datasetSelector" ng-change="pubFormCtrl.scrollDsSelectorToTop()"></select>
         <label>Select datasets</label>
-	<input type="text" placeholder="Filter" ng-model="dsFilter" ng-change="scrollDsSelectorToTop()" style="width:100%"/>
+	<input type="text" placeholder="Filter" ng-model="removeMatchingDatasets" ng-change="pubFormCtrl.scrollDsSelectorToTop()" style="width:100%"/>
         <select multiple id="datasetList"
 		class="pub-form-ds-selection"
-		ng-dblclick="addDatasets(selectedExperiment, selectedDatasets);
+		ng-dblclick="pubFormCtrl.addDatasets(pubFormCtrl.selectedExperiment, pubFormCtrl.selectedDatasets);
 			     selectedDatasets = [];"
-                ng-model="selectedDatasets"
-                ng-options="(d.description + (d.directory?' - '+ d.directory:'')) for d in selectedExperiment.datasets | removeMatchingDatasets : formData.addedDatasets | filter: dsFilter"></select>
-        <a href="#" class="btn" ng-click="addDatasets(selectedExperiment, selectedDatasets)"><i
+                ng-model="pubFormCtrl.selectedDatasets"
+                ng-options="(d.description + (d.directory?' - '+ d.directory:'')) for d in pubFormCtrl.selectedExperiment.datasets | removeMatchingDatasets : pubFormCtrl.formData.addedDatasets | filter: dsFilter"></select>
+        <a href="#" class="btn" ng-click="pubFormCtrl.addDatasets(pubFormCtrl.selectedExperiment, pubFormCtrl.selectedDatasets)"><i
 												class="icon-plus"></i> Add dataset</a>
       </div>
       <div class="span6">
@@ -91,11 +95,11 @@
               <td>Description</td>
               <td></td>
             </thead>
-            <tr ng-repeat="entry in formData.addedDatasets">
+            <tr ng-repeat="entry in pubFormCtrl.formData.addedDatasets">
               <td>{{ entry.experiment }}</td>
               <td style="display:block;">{{ entry.dataset.description }}
 		<div ng-if="entry.dataset.directory" class="pub-form-ds-directory">{{ entry.dataset.directory }}</div></td>
-              <td><a href="#"><i class="icon-minus" ng-click="removeDataset(entry)"></i></a></td>
+              <td><a href="#"><i class="icon-minus" ng-click="pubFormCtrl.removeDataset(entry)"></i></a></td>
             </tr>
           </table>
 	</div>
@@ -105,7 +109,7 @@
 </script>
 <script type="text/ng-template" id="form_page3.html">
   <p>The following extra information is required based on your dataset selection:</p>
-  <div ng-repeat="formTemplate in formData.disciplineSpecificFormTemplates">
+  <div ng-repeat="formTemplate in pubFormCtrl.formData.disciplineSpecificFormTemplates">
     <div ng-include="formTemplate.template"></div>
   </div>
 </script>
@@ -121,7 +125,7 @@
           <td></td>
         </tr>
         <tbody>
-          <tr ng-repeat="author in formData.authors">
+          <tr ng-repeat="author in pubFormCtrl.formData.authors">
             <td>
 	      <span class="control-group" ng-class="{error: ! author.name}">
 		<input type="text" ng-model="author.name" placeholder="Author name" style="width:10em;" />
@@ -143,7 +147,7 @@
           </tr>
 	  <tr>
 	    <td colspan="4" style="text-align: center;">
-	      <a class="btn" href="#" ng-click="addAuthorEntry()"><i class="icon-plus"></i> Add author</a>
+	      <a class="btn" href="#" ng-click="pubFormCtrl.addAuthorEntry()"><i class="icon-plus"></i> Add author</a>
 	    </td>
 	  </tr>
         </tbody>
@@ -153,33 +157,33 @@
 
     <div class="well">
       <h4>Example acknowledgements</h4>
-      <select ng-model="exampleAcknowledgement" ng-options="ack.agency for ack in exampleAcknowledgements"
+      <select ng-model="pubFormCtrl.exampleAcknowledgement" ng-options="ack.agency for ack in pubFormCtrl.exampleAcknowledgements"
               style="width:100%;"></select>
 
       <div class="small">
-        <span ng-show="exampleAcknowledgement.text">{{ exampleAcknowledgement.text }}</span>
-        <span ng-hide="exampleAcknowledgement.text">Select an option from the list above for example text.</span>
+        <span ng-show="pubFormCtrl.exampleAcknowledgement.text">{{ pubFormCtrl.exampleAcknowledgement.text }}</span>
+        <span ng-hide="pubFormCtrl.exampleAcknowledgement.text">Select an option from the list above for example text.</span>
       </div>
       <a class="btn btn-info"
-         ng-show="exampleAcknowledgement"
-         ng-click="copyAcknowledgement(exampleAcknowledgement.text)">Copy text <i class="icon-chevron-down"></i></a>
+         ng-show="pubFormCtrl.exampleAcknowledgement"
+         ng-click="pubFormCtrl.copyAcknowledgement(exampleAcknowledgement.text)">Copy text <i class="icon-chevron-down"></i></a>
     </div>
     <textarea placeholder="Acknowledge funding agencies, facilities and other contributors here."
 	      style="width:100%;"
 	      rows="5"
-	      ng-model="formData.acknowledgements">
+	      ng-model="pubFormCtrl.formData.acknowledgements">
     </textarea>
     <h3>Select a license</h3>
 
-    <div class="alert" ng-show="formData.selectedLicenseId == -1">No licenses have been configured.</div>
-    <select ng-model="formData.selectedLicenseId" ng-options="l.id as l.name for l in formData.licenses"
+    <div class="alert" ng-show="pubFormCtrl.formData.selectedLicenseId == -1">No licenses have been configured.</div>
+    <select ng-model="pubFormCtrl.formData.selectedLicenseId" ng-options="l.id as l.name for l in pubFormCtrl.formData.licenses"
             style="width:100%"></select>
 
-    <div ng-hide="formData.selectedLicenseId == -1" class="well">
-      <h4>{{ formData.selectedLicense.name }}</h4>
-      <img ng-src="{{formData.selectedLicense.image}}" title="{{formData.selectedLicense.name}}"
-           alt="{{formData.selectedLicense.name}}"/>
-      {{ formData.selectedLicense.description }}
+    <div ng-hide="pubFormCtrl.formData.selectedLicenseId == -1" class="well">
+      <h4>{{ pubFormCtrl.formData.selectedLicense.name }}</h4>
+      <img ng-src="{{ pubFormCtrl.formData.selectedLicense.image }}" title="{{ pubFormCtrl.formData.selectedLicense.name }}"
+           alt="{{ pubFormCtrl.formData.selectedLicense.name }}"/>
+      {{ pubFormCtrl.formData.selectedLicense.description }}
       <a href="{{ formData.selectedLicense.url }}" target="_blank">Read the full license here.</a>
     </div>
     <h3>Release date</h3>
@@ -187,11 +191,11 @@
     <p>
       What is the earliest date that this publication may be released, subject to any additional restrictions?
     </p>
-    <input type="date" ng-model="formData.embargo"><a class="btn btn-primary btn-mini"
-                                                      ng-click="setEmbargoToToday()">today</a>
+    <input type="date" ng-model="pubFormCtrl.formData.embargo">
+    <a class="btn btn-primary btn-mini" ng-click="pubFormCtrl.setEmbargoToToday()">today</a>
   </div>
   <div class="well">
-       <input type="checkbox" ng-model="formData.acknowledge" value="true">
+       <input type="checkbox" ng-model="pubFormCtrl.formData.acknowledge" value="true">
       I am authorised to publish the selected datasets with the license and
       embargo period selected and have received the appropriate consent from
       co-authors and other relevant parties.

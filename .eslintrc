@@ -1,0 +1,6 @@
+{
+    "extends": ["angular", "eslint:recommended"],
+    "rules": {
+        "camelcase": 2
+    }
+}
