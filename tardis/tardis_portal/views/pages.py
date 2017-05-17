@@ -923,6 +923,10 @@ def control_panel(request):
 
 
 def _get_dataset_checksums(dataset, type='md5'):
+    valid_types = ['md5', 'sha512']
+    if type not in valid_types:
+        raise ValueError('Invalid checksum type (%s). Valid values are %s' %
+                         (type, ', '.join(valid_types)))
     hash_attr = type+'sum'
     checksums = [(getattr(df, hash_attr), path.join(df.directory or '', df.filename))
                  for df in dataset.get_datafiles()]
@@ -949,10 +953,12 @@ def checksums_download(request, dataset_id, **kwargs):
             get_filesystem_safe_dataset_name(dataset))
         return response
 
-    if format == 'json':
+    elif format == 'json':
         jdict = {'checksums': []}
         for c in checksums:
             jdict['checksums'].append({'checksum': c[0], 'file': c[1], 'type': type})
 
         return JsonResponse(jdict)
+    else:
+        raise ValueError("Invalid format. Valid formats are 'text' or 'json'")
 
