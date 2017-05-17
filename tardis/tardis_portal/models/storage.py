@@ -106,8 +106,7 @@ class StorageBox(models.Model):
             return caches[0]
         elif len(caches) > 1:
             return caches[random.choice(range(len(caches)))]
-        else:
-            return None
+        return None
 
     def copy_files(self, dest_box=None):
         for dfo in self.file_objects.all():

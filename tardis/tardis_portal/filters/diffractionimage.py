@@ -54,14 +54,14 @@ class DiffractionImageFilter(object):
     If a white list is specified then it takes precidence and all
     other tags will be ignored.
 
-    :param name: the short name of the schema.
-    :type name: string
-    :param schema: the name of the schema to load the EXIF data into.
-    :type schema: string
-    :param tagsToFind: a list of the tags to include.
-    :type tagsToFind: list of strings
-    :param tagsToExclude: a list of the tags to exclude.
-    :type tagsToExclude: list of strings
+    param name: the short name of the schema.
+    type name: string
+    param schema: the name of the schema to load the EXIF data into.
+    type schema: string
+    param tagsToFind: a list of the tags to include.
+    type tagsToFind: list of strings
+    param tagsToExclude: a list of the tags to exclude.
+    type tagsToExclude: list of strings
     """
     def __init__(self, name, schema, diffdump_path, diff2jpeg_path,
                  tagsToFind=[], tagsToExclude=[]):
@@ -100,10 +100,10 @@ class DiffractionImageFilter(object):
     def __call__(self, sender, **kwargs):
         """post save callback entry point.
 
-        :param sender: The model class.
-        :param instance: The actual instance being saved.
-        :param created: A boolean; True if a new record was created.
-        :type created: bool
+        param sender: The model class.
+        param instance: The actual instance being saved.
+        param created: A boolean; True if a new record was created.
+        type created: bool
         """
         instance = kwargs.get('instance')
 
@@ -167,7 +167,7 @@ class DiffractionImageFilter(object):
             if p in self.tagsToExclude:
                 continue
 
-            parameter = filter(lambda x: x.name == p, param_objects)
+            parameter = filter(lambda x, _p=p: x.name == _p, param_objects)
 
             if parameter:
                 parameters.append(parameter[0])

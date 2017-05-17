@@ -56,8 +56,7 @@ class TokenGroupProvider(GroupProvider):
                     _ensure_acl_exists(token.experiment.id)
                     experiment_ids.append(token.experiment.id)
             return experiment_ids
-        else:
-            return []
+        return []
 
     def searchGroups(self, **kwargs):
         """

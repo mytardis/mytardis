@@ -40,8 +40,7 @@ def index(request):
             "...</strong></p>")}
         return HttpResponse(render_response_index(
             request, 'form.html', context=context))
-    else:
-        return process_form(request)
+    return process_form(request)
 
 
 @login_required
@@ -62,16 +61,16 @@ def process_form(request):
     # Check if the form data contains a publication ID
     # If it does, then this publication needs to be updated
     # rather than created.
-    if 'publication_id' not in form_state:
+    if 'publicationId' not in form_state:
         if not form_state['publicationTitle'].strip():
             return validation_error()
         publication = create_draft_publication(
             request.user, form_state['publicationTitle'],
             form_state['publicationDescription'])
-        form_state['publication_id'] = publication.id
+        form_state['publicationId'] = publication.id
     else:
         publication = get_draft_publication(
-            request.user, form_state['publication_id'])
+            request.user, form_state['publicationId'])
         # Check if the publication is finalised (i.e. not in draft)
         # if it is, then refuse to process the form.
         if publication is None or not publication.is_publication_draft():
@@ -484,7 +483,7 @@ def select_forms(datasets):
                 'description': dataset.description
             })
 
-    if len(default_form['datasets']):
+    if default_form['datasets']:
         forms.append(default_form)
 
     return forms
@@ -632,8 +631,7 @@ def approval_view(request):
     if request.method == 'GET':
         return HttpResponse(render_response_index(
             request, 'publication_approval.html'))
-    else:
-        return approval_ajax(request)
+    return approval_ajax(request)
 
 
 def approval_ajax(request):

@@ -111,9 +111,8 @@ def has_experiment_download_access(request, experiment_id):
                       .exists():
 
         return True
-    else:
-        exp = Experiment.objects.get(id=experiment_id)
-        return Experiment.public_access_implies_distribution(exp.public_access)
+    exp = Experiment.objects.get(id=experiment_id)
+    return Experiment.public_access_implies_distribution(exp.public_access)
 
 
 def has_dataset_ownership(request, dataset_id):
@@ -208,10 +207,7 @@ def has_read_or_owner_ACL(request, experiment_id):
     # is there at least one ACL rule which satisfies the rules?
     from tardis.tardis_portal.models import ObjectACL
     acl = ObjectACL.objects.filter(query)
-    if acl.count() == 0:
-        return False
-    else:
-        return True
+    return bool(acl)
 
 
 def has_write_permissions(request, experiment_id):
@@ -414,7 +410,7 @@ def upload_auth(f):
                                           settings.SESSION_COOKIE_NAME,
                                           None))
         sessions = Session.objects.filter(pk=session_id)
-        if len(sessions) != 0 and sessions[0].expire_date > timezone.now():
+        if sessions and sessions[0].expire_date > timezone.now():
             try:
                 request.user = User.objects.get(
                     pk=sessions[0].get_decoded()['_auth_user_id'])

@@ -37,7 +37,7 @@ def search_experiment(request):
 
     """
 
-    if len(request.GET) == 0:
+    if not request.GET:
         return __forwardToSearchExperimentFormPage(request)
 
     form = __getSearchExperimentForm(request)
@@ -74,8 +74,7 @@ def search_quick(request):
 
     if 'results' in request.GET:
         get = True
-        if 'quicksearch' in request.GET \
-           and len(request.GET['quicksearch']) > 0:
+        if 'quicksearch' in request.GET and request.GET['quicksearch']:
             experiments = \
                 experiments.filter(
                     title__icontains=request.GET['quicksearch']) | \

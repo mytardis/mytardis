@@ -73,9 +73,8 @@ def __getFilteredDatafiles(request, searchQueryType, searchFilterData):
     searchFilterData -- the cleaned up search form data
 
     Returns:
-    A list of datafiles as a result of the query or None if the provided search
-      request is invalid
-
+        list: A list of datafiles as a result of the query or None if the
+            provided search request is invalid
     """
 
     datafile_results = authz.get_accessible_datafiles_for_user(request)
@@ -138,8 +137,8 @@ def __getFilteredExperiments(request, searchFilterData):
     searchFilterData -- the cleaned up search experiment form data
 
     Returns:
-    A list of experiments as a result of the query or None if the provided
-      search request is invalid
+        list: A list of experiments as a result of the query or None if the
+            provided search request is invalid
 
     """
 
@@ -194,15 +193,15 @@ def __filterParameters(parameters, datafile_results,  # too complex # noqa
     :param parameters: list of ParameterNames model
     :type parameters: list containing
        :py:class:`tardis.tardis_portal.models.ParameterNames`
-    :param datafile_results: list of datafile to apply the filter
-    :param searchFilterData: the cleaned up search form data
+    :param list datafile_results: list of datafile to apply the filter
+    :param Form searchFilterData: the cleaned up search form data
     :param paramType: either ``datafile`` or ``dataset``
     :type paramType: :py:class:`tardis.tardis_portal.models.Dataset` or
        :py:class:`tardis.tardis_portal.models.DataFile`
 
     :returns: A list of datafiles as a result of the query or None if the
       provided search request is invalid
-
+    :rtype: list
     """
 
     for parameter in parameters:  # pylint: disable=R0101
@@ -334,7 +333,7 @@ def __forwardToSearchDatafileFormPage(request, searchQueryType,
     if not searchForm:
         # if searchQueryType == 'saxs':
         SearchDatafileForm = createSearchDatafileForm(searchQueryType)
-        searchForm = SearchDatafileForm()  # pylint: disable=R0204
+        searchForm = SearchDatafileForm()
         # else:
         #    # TODO: what do we need to do if the user didn't provide a page to
         #            display?
@@ -375,12 +374,13 @@ def __getSearchDatafileForm(request, searchQueryType):
 
     :param request: a HTTP Request instance
     :type request: :class:`django.http.HttpRequest`
-    :param searchQueryType: The search query type: 'mx' or 'saxs'
+    :param basestring searchQueryType: The search query type: 'mx' or 'saxs'
     :raises:
        :py:class:`tardis.tardis_portal.errors.UnsupportedSearchQueryTypeError`
        is the provided searchQueryType is not supported.
     :returns: The supported search datafile form
-
+    :rtype: SearchDatafileForm
+    :raises UnsupportedSearchQueryTypeError:
     """
 
     try:
@@ -397,7 +397,7 @@ def __getSearchExperimentForm(request):
     :param request: a HTTP Request instance
     :type request: :class:`django.http.HttpRequest`
     :returns: The search experiment form.
-
+    :rtype: SearchExperimentForm
     """
 
     SearchExperimentForm = createSearchExperimentForm()
@@ -410,8 +410,8 @@ def __processDatafileParameters(request, searchQueryType, form):
 
     :param request: a HTTP Request instance
     :type request: :class:`django.http.HttpRequest`
-    :param searchQueryType: The search query type
-    :param form: The search form to use
+    :param basestring searchQueryType: The search query type
+    :param Form form: The search form to use
     :raises:
        :py:class:`tardis.tardis_portal.errors.SearchQueryTypeUnprovidedError`
        if searchQueryType is not in the HTTP GET request
@@ -435,8 +435,7 @@ def __processDatafileParameters(request, searchQueryType, form):
         # by the paginator
         request.session['datafileResults'] = datafile_results
         return datafile_results
-    else:
-        return None
+    return None
 
 
 def __processExperimentParameters(request, form):
@@ -445,10 +444,10 @@ def __processExperimentParameters(request, form):
 
     :param request: a HTTP Request instance
     :type request: :class:`django.http.HttpRequest`
-    :param form: The search form to use
+    :param Form form: The search form to use
     :returns: A list of experiments as a result of the query or None if the
       provided search request is invalid.
-
+    :rtype: list
     """
 
     if form.is_valid():
@@ -458,8 +457,7 @@ def __processExperimentParameters(request, form):
         # by the paginator
         request.session['experiments'] = experiments
         return experiments
-    else:
-        return None
+    return None
 
 
 def get_dataset_info(dataset, include_thumbnail=False, exclude=None):  # too complex # noqa
@@ -539,5 +537,4 @@ def feedback(request):
         email.attach('screenshot.png', img, 'image/png')
         email.send()
         return HttpResponse('OK')
-    else:
-        return redirect('/')
+    return redirect('/')

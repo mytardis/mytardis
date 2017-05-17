@@ -89,8 +89,7 @@ def _create_download_response(request, datafile_id, disposition='attachment'):  
                                             "File is unverified, "
                                             "please try again later.",
                                             status=503)
-            else:
-                return return_response_not_found(request)
+            return return_response_not_found(request)
         wrapper = FileWrapper(file_obj, blksize=65535)
         response = StreamingHttpResponse(wrapper,
                                          content_type=datafile.get_mimetype())
@@ -146,7 +145,9 @@ def _get_mapper_makers():
                     myKwarg['rootdir'] = rootdir
 
                     def mapper(datafile):
-                        return mapper_fn(datafile, **myKwarg)
+                        # TODO: remove this complex code. warning silenced for
+                        # now because no time to investigate
+                        return mapper_fn(datafile, **myKwarg)  # pylint: disable=cell-var-from-loop
                     return mapper
                 return mapper_maker
             __mapper_makers[organization] = mapper_maker_maker(kwarg)
@@ -175,13 +176,11 @@ def _safe_import(path):
 def make_mapper(organization, rootdir):
     if organization == 'classic':
         return classic_mapper(rootdir)
-    else:
-        mapper_makers = _get_mapper_makers()
-        mapper_maker = mapper_makers.get(organization)
-        if mapper_maker:
-            return mapper_maker(rootdir)
-        else:
-            return None
+    mapper_makers = _get_mapper_makers()
+    mapper_maker = mapper_makers.get(organization)
+    if mapper_maker:
+        return mapper_maker(rootdir)
+    return None
 
 
 def classic_mapper(rootdir):
@@ -364,7 +363,7 @@ class UncachedTarStream(TarFile):
                 buf, remainder_buf)
             for stream_buf in stream_buffers:
                 yield stream_buf
-        if remainder_buf and len(remainder_buf) > 0:
+        if remainder_buf:
             yield remainder_buf
         if self.do_gzip:
             yield self.close_gzip()
@@ -486,8 +485,7 @@ def streaming_download_datafiles(request):  # too complex # noqa
         organization = request.POST['organization']
 
     if 'datafile' in request.POST or 'dataset' in request.POST:
-        if len(request.POST.getlist('datafile')) > 0 \
-                or len(request.POST.getlist('dataset')) > 0:
+        if request.POST.getlist('datafile') or request.POST.getlist('dataset'):
 
             datasets = request.POST.getlist('dataset')
             datafiles = request.POST.getlist('datafile')
@@ -518,7 +516,7 @@ def streaming_download_datafiles(request):  # too complex # noqa
                 status=404)
 
     elif 'url' in request.POST:
-        if len(request.POST.getlist('url')) != 0:
+        if not request.POST.getlist('url'):
             return render_error_message(
                 request,
                 'No Datasets or Datafiles were selected for downloaded',
@@ -541,7 +539,7 @@ def streaming_download_datafiles(request):  # too complex # noqa
 
     logger.info('Files for archive command: %s' % df_set)
 
-    if len(df_set) == 0:
+    if not df_set:
         return render_error_message(
             request,
             'You do not have download access for any of the '

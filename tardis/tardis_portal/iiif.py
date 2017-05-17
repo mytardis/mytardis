@@ -135,7 +135,7 @@ def download_image(request, datafile_id, region, size, rotation,
                     img = Image(img.sequence[0])
                 # Handle region
                 if region != 'full':
-                    x, y, w, h = map(lambda x: int(x), region.split(','))
+                    x, y, w, h = map(int, region.split(','))
                     img.crop(x, y, width=w, height=h)
                 # Handle size
                 if size != 'full':

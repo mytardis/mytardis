@@ -1,4 +1,3 @@
-# pylint: disable=R0204
 import pytz
 
 from django.conf import settings
@@ -36,12 +35,12 @@ class ParameterSetManager(object):
                  schema=None):
         """
         instantiate new task or existing ParameterSet
-        :param dataset: optional parameter to instanciate task from
-          metadata, will be tested for completeness and copied into
+        :param ParameterSet parameterset: optional parameter to instanciate
+          task from metadata, will be tested for completeness and copied into
           new task if complete
-        :type dataset: Dataset
-        :param schema: Schema namespace
-        :type schema: string
+        :param object parentObject:
+        :param string schema: Schema namespace
+        :raises TypeError:
         """
         from tardis.tardis_portal.models import DatasetParameterSet
         from tardis.tardis_portal.models import DatafileParameterSet
@@ -152,12 +151,11 @@ class ParameterSetManager(object):
     def get_params(self, parname, value=False):
         pars = self.parameters.filter(name__name=parname)
         if value:
-            if len(pars) > 0 and pars[0].name.isNumeric():
+            if pars and pars[0].name.isNumeric():
                 return [par.numerical_value
                         for par in pars]
-            else:
-                return [par.string_value
-                        for par in pars]
+            return [par.string_value
+                    for par in pars]
         return pars
 
     def set_param(self, parname, value, fullparname=None,
