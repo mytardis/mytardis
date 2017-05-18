@@ -45,6 +45,10 @@ case "$TEST_TYPE" in
 	pylint --rcfile .pylintrc tardis
 	(( exit_status = exit_status || $? ))
     ;;
+    behave)
+    python mytardis.py behave --settings=tardis.test_settings
+	(( exit_status = exit_status || $? ))
+    ;;
     *)
 	run_test tardis.test_settings coverage
 	(( exit_status = exit_status || $? ))

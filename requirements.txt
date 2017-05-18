@@ -1,4 +1,5 @@
 -r requirements-base.txt
+-r requirements-test.txt
 python-ldap==2.4.27
 
 # apps go here

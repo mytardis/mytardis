@@ -1,6 +1,6 @@
 # pylint: disable=wildcard-import,unused-wildcard-import
 
-from os import listdir, path
+from os import listdir
 
 from tardis.default_settings import *  # noqa # pylint: disable=W0401,W0614
 import logging  # pylint: disable=wrong-import-order
@@ -25,8 +25,6 @@ DATABASES = {
 
 # During testing it's always eager
 CELERY_ALWAYS_EAGER = True
-
-ROOT_URLCONF = 'tardis.urls'
 
 TEMPLATES[0]['DIRS'].append('.')
 
@@ -75,6 +73,7 @@ def get_all_tardis_apps():
 INSTALLED_APPS += get_all_tardis_apps() + (
     'tardis.apps.equipment',
     'django_nose',
+    'behave_django',
 )
 
 DEDUP_INSTALLED_APPS = []
