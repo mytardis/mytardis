@@ -12,8 +12,6 @@ from django.http import HttpResponse
 
 from registration.backends.default.views import RegistrationView
 
-import django_jasmine.urls
-
 from tastypie.api import Api
 from tastypie.resources import Resource
 
@@ -421,9 +419,6 @@ urlpatterns = patterns(
 
     # Token login
     (r'^token/', include(token_urls)),
-
-    # Jasmine JavaScript Tests
-    (r'^jasmine/', include(django_jasmine.urls)),
 
     # Class-based views that may be overriden by apps
     (r'', include(overridable_urls)),

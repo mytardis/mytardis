@@ -20,7 +20,8 @@ If you haven't::
   find . -name '*.py[co]' -delete
   # Clean install and full test
   python test.py
-  # Run test server then check Jasmine tests @ http://localhost:8000/jasmine/
+  python mytardis.py behave
+  # Run test server
   python mytardis.py testserver
 
 5. Does your change introduce new code? You should have tests covering it.
