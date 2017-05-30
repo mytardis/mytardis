@@ -961,4 +961,3 @@ def checksums_download(request, dataset_id, **kwargs):
         return JsonResponse(jdict)
     else:
         raise ValueError("Invalid format. Valid formats are 'text' or 'json'")
-

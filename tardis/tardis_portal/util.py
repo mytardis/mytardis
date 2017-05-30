@@ -193,12 +193,12 @@ def get_filesystem_safe_dataset_name(dataset):
 
 def get_filesystem_safe_experiment_name(experiment):
     """
-    Given a Dataset, return a filesystem safe string representing the
-    dataset. Useful for filenames for dataset downloads, maybe URLs.
+    Given an Experiment, return a filesystem safe string representing the
+    experiment. Useful for filenames for experiment downloads, maybe URLs.
 
-    :param dataset: A Dataset object.
-    :type dataset: tardis.tardis_portal.models.dataset.Dataset
-    :return: A filesystem safe string as a Dataset name.
+    :param experiment: A Experiment object.
+    :type experiment: tardis.tardis_portal.models.experiment.Experiment
+    :return: A filesystem safe string as a Experiment name.
     :rtype: basestring
     """
     exp_title = experiment.title
