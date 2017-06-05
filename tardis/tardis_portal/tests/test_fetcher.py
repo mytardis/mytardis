@@ -1,10 +1,11 @@
-from SimpleHTTPServer import SimpleHTTPRequestHandler
-import BaseHTTPServer
 import base64
+import BaseHTTPServer
 import os
 import SocketServer
 import threading
 import urllib2
+
+from SimpleHTTPServer import SimpleHTTPRequestHandler
 
 from nose.tools import ok_, eq_
 from django.test import TestCase
