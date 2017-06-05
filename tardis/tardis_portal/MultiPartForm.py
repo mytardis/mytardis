@@ -1,12 +1,14 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import logging
 import itertools
-import mimetools
+import logging
 import mimetypes
-from cStringIO import StringIO
 import urllib2
+
+from cStringIO import StringIO
+
+import mimetools
 
 
 logger = logging.getLogger(__name__)
