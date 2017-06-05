@@ -7,12 +7,13 @@ RUN apt-get update && apt-get install \
 USER webapp
 
 RUN . /appenv/bin/activate; \
-    pip install --no-index -f /wheelhouse psycopg2 mysql-python
+    pip install --no-index -f /wheelhouse psycopg2 mysql-python django-oidc-provider
 RUN . /appenv/bin/activate; \
     pip install coveralls codacy-coverage
 VOLUME /home/webapp/tardis
 VOLUME /home/webapp/docs
 
 RUN mkdir -p var/store
+EXPOSE 8000
 
 CMD bash -c '. /appenv/bin/activate; source ./test.sh'
