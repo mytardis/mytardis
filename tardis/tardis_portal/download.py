@@ -43,8 +43,10 @@ from tardis.tardis_portal.auth.decorators import has_datafile_download_access
 from tardis.tardis_portal.auth.decorators import experiment_download_required
 from tardis.tardis_portal.auth.decorators import dataset_download_required
 from tardis.tardis_portal.shortcuts import render_error_message
-from tardis.tardis_portal.views import return_response_not_found, \
-    return_response_error
+from tardis.tardis_portal.shortcuts import (return_response_not_found,
+                                            return_response_error)
+from tardis.tardis_portal.util import (get_filesystem_safe_dataset_name,
+                                       get_filesystem_safe_experiment_name)
 
 logger = logging.getLogger(__name__)
 
@@ -431,13 +433,7 @@ def _streaming_downloader(request, datafiles, rootdir, filename,
 def streaming_download_experiment(request, experiment_id, comptype='tgz',
                                   organization=DEFAULT_ORGANIZATION):
     experiment = Experiment.objects.get(id=experiment_id)
-    if settings.EXP_SPACES_TO_UNDERSCORES:
-        rootdir = urllib.quote(
-            experiment.title.replace(' ', '_'),
-            safe=settings.SAFE_FILESYSTEM_CHARACTERS)
-    else:
-        rootdir = urllib.quote(
-            experiment.title, safe=settings.SAFE_FILESYSTEM_CHARACTERS)
+    rootdir = get_filesystem_safe_experiment_name(experiment)
     filename = '%s-complete.tar' % rootdir
 
     datafiles = DataFile.objects.filter(
@@ -450,13 +446,7 @@ def streaming_download_experiment(request, experiment_id, comptype='tgz',
 def streaming_download_dataset(request, dataset_id, comptype='tgz',
                                organization=DEFAULT_ORGANIZATION):
     dataset = Dataset.objects.get(id=dataset_id)
-    if settings.DATASET_SPACES_TO_UNDERSCORES:
-        rootdir = urllib.quote(dataset.description.replace(' ', '_'),
-                               safe=settings.SAFE_FILESYSTEM_CHARACTERS)
-    else:
-        rootdir = urllib.quote(
-            dataset.description,
-            safe=settings.SAFE_FILESYSTEM_CHARACTERS)
+    rootdir = get_filesystem_safe_dataset_name(dataset)
     filename = '%s-complete.tar' % rootdir
 
     datafiles = DataFile.objects.filter(dataset=dataset)
@@ -552,12 +542,7 @@ def streaming_download_datafiles(request):  # too complex # noqa
     except (KeyError, Experiment.DoesNotExist):
         experiment = iter(df_set).next().dataset.get_first_experiment()
 
-    if settings.EXP_SPACES_TO_UNDERSCORES:
-        exp_title = experiment.title.replace(' ', '_')
-    else:
-        exp_title = experiment.title
-    exp_title = urllib.quote(exp_title,
-                             safe=settings.SAFE_FILESYSTEM_CHARACTERS)
+    exp_title = get_filesystem_safe_experiment_name(experiment)
     filename = '%s-selection.tar' % exp_title
     rootdir = '%s-selection' % exp_title
     return _streaming_downloader(request, df_set, rootdir, filename,

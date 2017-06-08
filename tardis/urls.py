@@ -156,6 +156,8 @@ dataset_urls = patterns(
         name='tardis_portal.view_dataset'),
     (r'^(?P<dataset_id>\d+)/edit$', 'edit_dataset'),
     (r'^(?P<dataset_id>\d+)/thumbnail$', 'dataset_thumbnail'),
+    url(r'^(?P<dataset_id>\d+)/checksums$', 'checksums_download',
+        name='tardis_portal.dataset_checksums'),
 )
 iiif_urls = patterns(
     'tardis.tardis_portal.iiif',
