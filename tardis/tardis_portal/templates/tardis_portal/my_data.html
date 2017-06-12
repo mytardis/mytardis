@@ -81,18 +81,24 @@
 <script type="text/javascript">
 $(document).ready(function(){
   // Load owned exps on page load
+  var ownedLoadingHTML = $('<img src="{% static 'images/ajax-loader.gif' %}"/><br />');
+  $('#myowned').html(ownedLoadingHTML);
   $('#myowned').load('{% url 'tardis.tardis_portal.views.retrieve_owned_exps_list' %}');
 
   // Create a reload event handler
   $('#myowned').on('reload', function() {
+    $(this).html(ownedLoadingHTML);
     $(this).load('{% url 'tardis.tardis_portal.views.retrieve_owned_exps_list' %}');
   });
 
   // Load shared exps on page load
+  var sharedLoadingHTML = $('<img src="{% static 'images/ajax-loader.gif' %}"/><br />');
+  $('#myshared').html(sharedLoadingHTML);
   $('#myshared').load('{% url 'tardis.tardis_portal.views.retrieve_shared_exps_list' %}');
 
   // Create a reload event handler
   $('#myshared').on('reload', function() {
+    $(this).html(sharedLoadingHTML);
     $(this).load('{% url 'tardis.tardis_portal.views.retrieve_shared_exps_list' %}');
   });
 });
