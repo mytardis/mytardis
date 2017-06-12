@@ -185,12 +185,12 @@
               <li>
               {% if RAPID_CONNECT_ENABLED %}
                   <a id="login-button" class="btn btn-info" href={{ RAPID_CONNECT_LOGIN_URL }}>
-                    <i class="fa fa-signin"></i>
+                    <i class="fa fa-sign-in"></i>
                     Log In
                   </a>
               {% else %}
                 <a id="login-button" class="btn btn-info" href="{% url 'tardis.tardis_portal.views.login' %}">
-                  <i class="fa fa-signin"></i>
+                  <i class="fa fa-sign-in"></i>
                   Log In
                 </a>
               {% endif %}
