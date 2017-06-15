@@ -11,16 +11,16 @@ def shell_escape(s):
 
 def bytes_available(ssh_client, path):
     stdin, stdout, stderr = ssh_client.exec_command(
-        'df %s | tail -n 1' % shell_escape(path))
+        'df -k %s | tail -n 1' % shell_escape(path))
     cmd_output = stdout.read().split()
 
     # df can output the size in a couple of ways; try to detect which
     # and return the bytes available
     try:
         if len(cmd_output) == 5:
-            return int(cmd_output[2])
+            return int(cmd_output[2]) * 1024
         elif len(cmd_output) == 6:
-            return int(cmd_output[3])
+            return int(cmd_output[3]) * 1024
     except ValueError:
         pass
     return "unknown"
