@@ -132,13 +132,14 @@ class LDAPBackend(AuthProvider, UserProvider, GroupProvider):
             userRDN = self._login_attr + '=' + username
             l = ldap.initialize(self._url)
             l.protocol_version = ldap.VERSION3
+	    l.set_option(ldap.OPT_REFERRALS, 0)
 
             # To authenticate, we need the user's distinguished name (DN).
             try:
                 # If all of your users share the same organizational unit,
                 # e.g. "ou=People,dc=example,dc=com", then the DN can be
                 # constructed by concatening the user's relative DN
-                # e.g. "uid=jsmith" with self._user_base, separated by
+                # e.g. "sAMAccountName=jsmith" with self._user_base, separated by
                 # a comma.
                 userDN = userRDN + ',' + self._user_base
                 l.simple_bind_s(userDN, password)
@@ -161,13 +162,13 @@ class LDAPBackend(AuthProvider, UserProvider, GroupProvider):
             ldap_result = l.search_s(self._base, ldap.SCOPE_SUBTREE,
                                      userRDN, retrieveAttributes)
 
-            if ldap_result[0][1]['uid'][0] == username:
+            if ldap_result[0][1]['sAMAccountName'][0] == username:
                 # check if the given username in combination with the LDAP
                 # auth method is already in the UserAuthentication table
                 user = ldap_result[0][1]
                 return {'first_name': user['givenName'][0],
                         'last_name': user['sn'][0],
-                        "id": user['uid'][0],
+                        "id": user['sAMAccountName'][0],
                         "email": user['mail'][0]}
             return None
 
@@ -218,7 +219,7 @@ class LDAPBackend(AuthProvider, UserProvider, GroupProvider):
 
         l = None
         try:
-            retrieveAttributes = ["uid"]
+            retrieveAttributes = ["sAMAccountName"]
             l = ldap.initialize(self._url)
             l.protocol_version = ldap.VERSION3
             searchFilter = '(|(mail=%s)(mailalternateaddress=%s))' % (email,
@@ -227,9 +228,10 @@ class LDAPBackend(AuthProvider, UserProvider, GroupProvider):
                                       searchFilter, retrieveAttributes)
 
             logger.debug(ldap_result)
-            if ldap_result[0][1]['uid'][0]:
-                return ldap_result[0][1]['uid'][0]
-            return None
+            if ldap_result[0][1]['sAMAccountName'][0]:
+                return ldap_result[0][1]['sAMAccountName'][0]
+            else:
+                return None
 
         except ldap.LDAPError:
             logger.exception("ldap error")
