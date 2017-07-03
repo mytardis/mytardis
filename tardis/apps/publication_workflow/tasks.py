@@ -10,10 +10,10 @@ from django.utils import timezone
 from tardis.tardis_portal.models import Schema, Experiment, \
     ExperimentParameter, ExperimentParameterSet, \
     ParameterName
-from tardis.apps.publication_forms.doi import DOI
-from tardis.apps.publication_forms.utils import PDBCifHelper, send_mail_to_authors
-from tardis.apps.publication_forms.email_text import email_pub_released
-from tardis.apps.publication_forms import default_settings
+from tardis.apps.publication_workflow.doi import DOI
+from tardis.apps.publication_workflow.utils import PDBCifHelper, send_mail_to_authors
+from tardis.apps.publication_workflow.email_text import email_pub_released
+from tardis.apps.publication_workflow import default_settings
 
 logger = logging.getLogger(__name__)
 
@@ -21,7 +21,7 @@ LOCK_EXPIRE = 60 * 5  # Lock expires in 5 minutes
 
 
 @task(
-    name="apps.publication_forms.update_publication_records",
+    name="apps.publication_workflow.update_publication_records",
     ignore_result=True)
 def update_publication_records():
     cache = get_cache('celery-locks')

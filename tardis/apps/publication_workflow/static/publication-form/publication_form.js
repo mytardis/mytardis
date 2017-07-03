@@ -78,7 +78,7 @@ angular
     // Opens the publication form modal dialogue
     vm.openPublicationForm = function () {
         ngDialog.open({
-              template: '/apps/publication-forms/form/',
+              template: '/apps/publication-workflow/form/',
               data: {
                   'experimentId': vm.experiment,
                   'isPublication': vm.isPublication,
@@ -174,7 +174,7 @@ angular
     // updated.
     var saveFormState = function (onComplete, onFailure) {
         vm.loadingData = true;
-        $http.post('/apps/publication-forms/form/', vm.formData).success(function (data) {
+        $http.post('/apps/publication-workflow/form/', vm.formData).success(function (data) {
             if ('error' in data) { // This happens when the form fails to validate but no server error encountered
                 vm.errorMessages.push(data.error);
                 onFailure();          // Since all validation also happens on the client, this should never happen.
@@ -351,7 +351,7 @@ angular
         // rather than overwritten.
         vm.formData.publicationId = vm.experiment;
         vm.formData.action = "resume";
-        $http.post('/apps/publication-forms/form/', vm.formData).success(function (data) {
+        $http.post('/apps/publication-workflow/form/', vm.formData).success(function (data) {
             vm.formData = data;
             vm.currentPageIdx = 1; // Once form data is reloaded, advance to the second page
             vm.currentPage = vm.formPages[vm.currentPageIdx];
@@ -362,7 +362,7 @@ angular
 
     // Load the available experiments and datasets
     vm.loadingData = true; // Loading animation shown when this is true
-    $http.get('/apps/publication-forms/data/fetch_experiments_and_datasets/').success(function (data) {
+    $http.get('/apps/publication-workflow/data/fetch_experiments_and_datasets/').success(function (data) {
         vm.experiments = data;
 
         // Set default experiment
@@ -543,7 +543,7 @@ angular
         }
 
         pdbSearchTimeout = $timeout(function () {
-            $http.get('/apps/publication-forms/helper/pdb/' + pdbId + '/').success(
+            $http.get('/apps/publication-workflow/helper/pdb/' + pdbId + '/').success(
                 function (data) {
                     vm.pdbSearching = false;
                     vm.pdbSearchComplete = true;
