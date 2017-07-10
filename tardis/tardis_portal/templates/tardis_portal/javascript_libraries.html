@@ -7,9 +7,17 @@
 <script type="text/javascript" src="{% static 'js/lib/jquery.cookie.js' %}"></script>
 
 <!-- angular and related scripts -->
-<script type="text/javascript" src="{% static 'angular/angular.min.js' %}"></script>
-<script type="text/javascript" src="{% static 'angular/ngDialog.min.js' %}"></script>
-<script type="text/javascript" src="{% static 'angular/angular-resource.min.js' %}"></script>
+{% if debug %}
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.3.2/angular.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.3.2/angular-resource.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/ng-dialog/0.3.4/js/ngDialog.js"></script>
+{% else %}
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.3.2/angular.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.3.2/angular-resource.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/ng-dialog/0.3.4/js/ngDialog.min.js"></script>
+{% endif %}
+<script type="text/javascript" src="https://gitcdn.xyz/repo/jagdeep-singh/angularMultipleSelect/master/build/multiple-select.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/ng-tags-input/2.3.0/ng-tags-input.min.js"></script>
 <script type="text/javascript" src="{% static 'js/angular-mytardis.js' %}"></script>
 
 <script type="text/javascript" src="{% static 'js/lib/jstree/jquery.jstree.js' %}"></script>
@@ -38,9 +46,11 @@
 
 {% block css_libraries %}
 <link type="text/css" href="{% static 'css/lib/smoothness/jquery-ui-1.8.18.custom.css' %}" rel="stylesheet" />
-<link type="text/css" href="{% static 'css/ngDialog.min.css' %}" rel="stylesheet" />
-<link type="text/css" href="{% static 'css/ngDialog-theme-plain.min.css' %}" rel="stylesheet" />
-<link type="text/css" href="{% static 'css/ngDialog-theme-default.css' %}" rel="stylesheet" />
+<link type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/ng-dialog/0.3.4/css/ngDialog.min.css" rel="stylesheet" />
+<link type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/ng-dialog/0.3.4/css/ngDialog-theme-plain.min.css" rel="stylesheet" />
+<link type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/ng-dialog/0.3.4/css/ngDialog-theme-default.min.css" rel="stylesheet" />
+<link type="text/css" href="https://gitcdn.xyz/repo/jagdeep-singh/angularMultipleSelect/master/build/multiple-select.min.css" rel="stylesheet" />
+<link type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/ng-tags-input/2.3.0/ng-tags-input.min.css" rel="stylesheet" />
 <link type="text/css" href="{% static 'publication-form/publication_form.css' %}" rel="stylesheet" />
 
 <!-- Twitter Bootstrap: http://twitter.github.com/bootstrap/ -->
