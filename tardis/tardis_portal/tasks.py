@@ -60,6 +60,18 @@ def ingest_received_files():
         sbox_move_to_master.delay(box.id)
 
 
+@task(name="tardis_portal.storage_box.autocache", ignore_result=True)
+def autocache():
+    init_filters()
+    from tardis.tardis_portal.models import StorageBox
+    autocache_boxes = StorageBox.objects.filter(
+        Q(attributes__key='autocache'),
+        Q(attributes__value__iexact='True'))
+
+    for box in autocache_boxes:
+        sbox_cache_files.delay(box.id)
+
+
 @task(name="tardis_portal.create_staging_datafiles", ignore_result=True)  # too complex # noqa
 def create_staging_datafiles(files, user_id, dataset_id, is_secure):
     init_filters()
@@ -181,6 +193,14 @@ def sbox_move_files(sbox_id, dest_box_id=None, *args, **kwargs):
     else:
         dest_box = None
     return sbox.move_files(dest_box=dest_box, *args, **kwargs)
+
+
+@task(name="tardis_portal.storage_box.cache_files", ignore_result=True)
+def sbox_cache_files(sbox_id):
+    init_filters()
+    from tardis.tardis_portal.models import StorageBox
+    sbox = StorageBox.objects.get(id=sbox_id)
+    return sbox.cache_files()
 
 
 @task(name='tardis_portal.storage_box.copy_to_master', ignore_result=True)
