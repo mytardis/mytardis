@@ -84,7 +84,7 @@ class StorageBox(models.Model):
         """
         Whether to automatically copy data into faster storage
 
-        :return True if data should be automatically cached
+        :return: True if data should be automatically cached
         :rtype: bool
         """
         try:
