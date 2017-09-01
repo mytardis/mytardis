@@ -60,7 +60,7 @@ def ingest_received_files():
         sbox_move_to_master.delay(box.id)
 
 
-@task(name="tardis_portal.storage_box.autocache", ignore_result=True)
+@task(name="tardis_portal.autocache", ignore_result=True)
 def autocache():
     init_filters()
     from tardis.tardis_portal.models import StorageBox
