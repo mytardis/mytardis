@@ -1,6 +1,6 @@
 -r requirements-base.txt
 -r requirements-test.txt
-python-ldap==2.4.27
+python-ldap==2.4.43
 
 # apps go here
 -r tardis/apps/publication_forms/requirements.txt
