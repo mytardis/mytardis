@@ -17,6 +17,7 @@
 {% mustachejs "tardis_portal/badges/datafile_count" %}
 {% mustachejs "tardis_portal/badges/size" %}
 
+<script type="text/javascript" src="/static/publication-actions/publication_actions.js"></script>
 <script type="text/javascript" src="/static/publication-form/publication_form.js"></script>
 <script type="text/javascript">
     var toggle_files = function(loadCallback) {
@@ -150,9 +151,9 @@
           url: form.attr('action'),
           data: form.serialize(),
           success: function(data) {
-                  	contentContainer.html(data);
+                        contentContainer.html(data);
                     if (contentContainer.find('form').length == 0) {
-                  	  contentContainer.parents('.modal').find('.modal-footer').hide();
+                          contentContainer.parents('.modal').find('.modal-footer').hide();
                 }
             },
           async:false
@@ -166,21 +167,21 @@
     });
 
     var refreshMetadataDisplay = function(hash) {
-    	$('#experiment-tab-metadata').trigger('experiment-change');
+        $('#experiment-tab-metadata').trigger('experiment-change');
     };
 
     var loadModalRemoteBody = function(trigger, modal) {
-    	// Hide save buttons
-    	$(modal).find('.modal-footer').hide();
+        // Hide save buttons
+        $(modal).find('.modal-footer').hide();
       // Fill with "loading" placeholder content
-    	$(modal).find('.modal-body').html(
-    	  $(modal).find('.loading-placeholder').html()
-    	);
-    	$(modal).modal('show');
+        $(modal).find('.modal-body').html(
+          $(modal).find('.loading-placeholder').html()
+        );
+        $(modal).modal('show');
       $.ajax({
         url: $(trigger).attr('href'),
         success: function (data, textStatus, jqXHR) {
-        	$(modal).find('.modal-body').html(data);
+                $(modal).find('.modal-body').html(data);
           $(modal).find('.modal-footer').show();
         }
       });
@@ -238,16 +239,23 @@ $('#modal-metadata .submit-button').click(function() {
   </h4>
   {% if not experiment.public %}
   <div class="pull-right"
-       ng-controller="PublicationFormController as pubFormCtrl"
-       experiment_id="{{ experiment.id }}"
-       is_publication="{{ experiment.is_publication }}"
-       is_publication_draft="{{ experiment.is_publication_draft }}">
-    {% if has_read_or_owner_ACL and pub_form_enabled %}
+       ng-controller="PublicationActionsController as pubActionsCtrl"
+       ng-init="pubActionsCtrl.init({{ experiment.id }})">
+       <!-- experiment="{{ experiment.id }}"> -->
+    {% if has_read_or_owner_ACL and pub_workflow_enabled %}
     <a class="prepare_to_publish btn btn-mini btn-info"
-       title="Prepare To Publish" ng-click="pubFormCtrl.openPublicationForm()" ng-show="pubFormCtrl.isPublicationDraft || !pubFormCtrl.isPublication">
+       title="Create Publication"
+       ng-click="pubActionsCtrl.createPublication()"
+       ng-show="!pubActionsCtrl.isPublication">
       <i class="fa fa-share"></i>
-      <span ng-hide="pubFormCtrl.isPublication">Create publication</span>
-      <span ng-show="pubFormCtrl.isPublicationDraft">Resume draft publication</span>
+      <span>Create publication</span>
+    </a>
+    <a class="prepare_to_publish btn btn-mini btn-info"
+       title="Resume Publication"
+       ng-click="pubActionsCtrl.resumePublication()"
+       ng-show="pubActionsCtrl.isPublicationDraft">
+      <i class="fa fa-share"></i>
+      <span>Resume draft publication</span>
     </a>
     {% endif %}
     {% if push_to_enabled and is_authenticated %}
@@ -260,7 +268,7 @@ $('#modal-metadata .submit-button').click(function() {
     {% endif %}
     {% if has_write_permissions %}
     <a class="btn btn-mini btn-warning" title="Edit Experiment"
-       href="{{ experiment.get_edit_url }}" ng-hide="pubFormCtrl.isPublication">
+       href="{{ experiment.get_edit_url }}" ng-hide="pubActionsCtrl.isPublication">
       <i class="fa fa-pencil"></i>
       Edit Experiment
     </a>
@@ -416,7 +424,7 @@ $(document).ready(function() {
 
     if(spanhtml.length > 100)
     {
-	hideAbstract = true;
+        hideAbstract = true;
         $('#abstract-toggle').attr('style', 'display: inline;');
 
         $('#abstractText').empty().html(spanhtml);
@@ -428,7 +436,7 @@ $(document).ready(function() {
            {
              $('#abstractText').parent().attr('style', 'height: 33px;');
              hideAbstract = true;
-	     $('#abstract-toggle').text('Show Description');
+             $('#abstract-toggle').text('Show Description');
            }
            else
            {
@@ -440,7 +448,7 @@ $(document).ready(function() {
     }
     else
     {
-	$('#abstractText').html(spanhtml);
+        $('#abstractText').html(spanhtml);
     }
 
 });
@@ -465,9 +473,9 @@ var datasetTiles = (function() {
     datasets.url = "{% url 'tardis.tardis_portal.views.experiment_datasets_json' experiment.id %}";
 
     var datasetTiles = new MyTardis.DatasetTiles({
-	'id': "datasets",
-	'collection': datasets,
-	'el': $('#datasets').get(0)
+        'id': "datasets",
+        'collection': datasets,
+        'el': $('#datasets').get(0)
     });
 
     datasets.fetch({});
