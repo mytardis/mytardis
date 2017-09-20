@@ -1,0 +1,121 @@
+{% extends "tardis_portal/portal_template.html" %}
+{% load static from staticfiles %}
+{% load experiment_tags %}
+{% load experimentstats %}
+{% load humanize %}
+{% load bleach_tag %}
+{% load capture %}
+
+{% block content %}
+
+{% verbatim %}
+
+<script type="text/javascript">
+var use_figshare = '{{ use_figshare }}' === 'True';
+var figshare_url = '{{ figshare_url }}';
+var figshare_categories_json = '{{ figshare_categories_json }}';
+</script>
+
+<script type="text/javascript" src="/static/my-publications/my_publications.js"></script>
+<script type="text/javascript" src="/static/publication-actions/publication_actions.js"></script>
+<script type="text/javascript" src="/static/publication-tokens/publication_tokens.js"></script>
+<script type="text/javascript" src="/static/publication-form/publication_form.js"></script>
+
+<div id="content" ng-controller="MyPublicationsController as myPubsCtrl">
+  <div class="md-toolbar-tools">
+    <span>My Publications</span>
+    <div flex></div>
+    <button class="btn btn-info"
+       title="Create publication" 
+       ng-controller="PublicationActionsController as pubActionsCtrl"
+       ng-click="pubActionsCtrl.createPublication()">
+      <i class="fa fa-share"></i>
+      <span>Create publication</span>
+    </button>
+  </div>
+
+  <div class="row-fluid">
+    <h3 class="md-title">Drafts</h3>
+  </div>
+
+  <md-content layout="column" flex>
+        <md-table-container>
+          <table md-table md-row-select="false" ng-model="myPubsCtrl.draftPubsTableModel" md-progress="promise">
+            <thead md-head md-order="myPubsCtrl.query.order" md-on-reorder="myPubsCtrl.logOrder">
+              <tr md-row>
+                <th md-column md-numeric md-order-by="id"><span>ID</span></th>
+                <th md-column md-order-by="title"><span>Publication Title</span></th>
+                <th md-column md-order-by="doi">
+                  <span>DOI<md-tooltip md-direction="bottom">Digital Object Identifier</md-tooltip></span>
+                </th>
+                <th md-column md-order-by="releaseDate" md-desc><span>Release Date</span></th>
+                <th md-column><span>Actions</span></th>
+              </tr>
+            </thead>
+            <tbody md-body>
+              <tr md-row md-select="title" md-on-select="myPubsCtrl.logItem" md-auto-select="myPubsCtrl.options.autoSelect" ng-repeat="draftPub in myPubsCtrl.draftPubs | filter: myPubsCtrl.filter.search | orderBy: myPubsCtrl.query.order | limitTo: myPubsCtrl.query.limit : (myPubsCtrl.query.page -1) * myPubsCtrl.query.limit">
+                <td md-cell>{{draftPub.id}}</td>
+                <td md-cell>
+                  <a class="explink"
+                     href="/experiment/view/{{draftPub.id}}/">
+                    {{draftPub.title}}
+                  </a>
+                </td>
+                <td md-cell></td>
+                <td md-cell></td>
+                <td md-cell class="vertical_align_middle"
+                   ng-controller="PublicationActionsController as pubActionsCtrl"
+                   ng-init="pubActionsCtrl.init(draftPub.id)">
+                   <button title="Edit Draft" class="btn btn-info"
+                         ng-click="pubActionsCtrl.resumePublication()">
+                   <i class="fa fa-edit"></i>
+                   Resume draft
+                 </button>
+                 &nbsp;
+                 <button title="Delete Draft" class="btn btn-danger"
+                         ng-click="pubActionsCtrl.deletePublicationDraft()">
+                   <i class="fa fa-trash"></i>
+                   Delete draft
+                 </button>
+                 &nbsp;
+                 <button title="Mint DOI" class="btn btn-info"
+                         ng-click="pubActionsCtrl.mintDOI()">
+                   <i class="ai ai-doi ai-lg" style="margin-top: -2px;"></i>
+                   Mint DOI
+                 </button>
+                 &nbsp;
+                 <button title="Share" class="btn btn-info"
+                         ng-click="pubActionsCtrl.sharePublication()">
+                   <i class="fa fa-share-alt"></i>
+                 Share
+                 </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </md-table-container>
+   </md-content>
+
+  <br/>
+
+  <div class="row-fluid">
+    <h3 class="md-title">Scheduled</h3>
+      <div ng-hide="myPubsCtrl.scheduledPubs.length">
+        <p>You do not have access to any scheduled publications.</p>
+      </div>
+  </div>
+
+  <br/>
+
+  <div class="row-fluid">
+    <h3 class="md-title">Released</h3>
+      <div ng-hide="myPubsCtrl.releasedPubs.length">
+        <p>You do not have access to any released publications.</p>
+      </div>
+  </div>
+
+</div>  <!-- id="content" -->
+
+</script>
+{% endverbatim %}
+{% endblock %}

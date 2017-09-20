@@ -9,17 +9,22 @@ from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
 from django.db import transaction
 from django.views.decorators.cache import never_cache
+from django.views.decorators.http import require_POST
 from django.http import HttpResponse, HttpResponseForbidden
 from django.conf import settings
 from django.contrib.auth.models import User, Group
 from django.core.mail import send_mail
+
+from tardis.tardis_portal.auth import decorators as authz
 from tardis.tardis_portal.shortcuts import return_response_error
 from tardis.tardis_portal.shortcuts import render_response_index
 from tardis.tardis_portal.models import Experiment, Dataset, ObjectACL, \
     Schema, ParameterName, ExperimentParameterSet, ExperimentParameter, \
-    ExperimentAuthor, License
+    ExperimentAuthor, License, Token
 from tardis.tardis_portal.auth.localdb_auth import django_user, django_group
+
 from .doi import DOI
+from .models import Publication
 from .utils import PDBCifHelper, check_pdb_status, get_unreleased_pdb_info, \
     send_mail_to_authors, get_pub_admin_email_addresses, get_site_admin_email
 from .email_text import email_pub_requires_authorisation, \
@@ -40,7 +45,8 @@ def index(request):
             "...</strong></p>")}
         return HttpResponse(render_response_index(
             request, 'form.html', context=context))
-    return process_form(request)
+    else:
+        return process_form(request)
 
 
 @login_required
@@ -483,7 +489,7 @@ def select_forms(datasets):
                 'description': dataset.description
             })
 
-    if default_form['datasets']:
+    if len(default_form['datasets']):
         forms.append(default_form)
 
     return forms
@@ -631,7 +637,8 @@ def approval_view(request):
     if request.method == 'GET':
         return HttpResponse(render_response_index(
             request, 'publication_approval.html'))
-    return approval_ajax(request)
+    else:
+        return approval_ajax(request)
 
 
 def approval_ajax(request):
@@ -747,46 +754,7 @@ def approve_publication(request, publication, message=None, send_email=True):
                 logger.error("Could not change publication owner to "
                              "PUBLICATION_DATA_ADMIN; no such user.")
 
-        doi = None
-        url = request.build_absolute_uri(
-            reverse('tardis_portal.view_experiment',
-                    args=(publication.id,)))
-        if getattr(settings, 'MODC_DOI_ENABLED',
-                   default_settings.MODC_DOI_ENABLED):
-            try:
-                pub_details_schema = getattr(
-                    settings, 'PUBLICATION_DETAILS_SCHEMA',
-                    default_settings.PUBLICATION_DETAILS_SCHEMA)
-
-                doi_parameter_name = ParameterName.objects.get(
-                    schema__namespace=pub_details_schema,
-                    name='doi')
-                pub_details_parameter_set = ExperimentParameterSet.objects.get(
-                    schema__namespace=pub_details_schema,
-                    experiment=publication)
-
-                doi = DOI()
-                ExperimentParameter(name=doi_parameter_name,
-                                    parameterset=pub_details_parameter_set,
-                                    string_value=doi.mint(
-                                        publication.id,
-                                        reverse(
-                                            'tardis_portal.view_experiment',
-                                            args=(publication.id,)))
-                                    ).save()
-                logger.info(
-                    "DOI %s minted for publication ID %i" %
-                    (doi.doi, publication.id))
-                doi.deactivate()
-                logger.info(
-                    "DOI %s deactivated, pending publication release criteria" %
-                    doi.doi)
-            except ParameterName.DoesNotExist:
-                logger.error(
-                    "Could not find the DOI parameter name (check schema definitions)")
-            except ExperimentParameterSet.DoesNotExist:
-                logger.error(
-                    "Could not find the publication details parameter set")
+        mint_doi_and_deactivate(request, publication.id)
 
         if send_email:
             subject, email_message = email_pub_approved(
@@ -799,6 +767,52 @@ def approve_publication(request, publication, message=None, send_email=True):
         return True
 
     return False
+
+
+@login_required
+def mint_doi_and_deactivate(request, experiment_id):
+    doi = None
+    url = request.build_absolute_uri(
+        reverse('tardis_portal.view_experiment',
+                args=(experiment_id,)))
+    if getattr(settings, 'MODC_DOI_ENABLED',
+               default_settings.MODC_DOI_ENABLED):
+        try:
+            pub_details_schema = getattr(
+                settings, 'PUBLICATION_DETAILS_SCHEMA',
+                default_settings.PUBLICATION_DETAILS_SCHEMA)
+
+            doi_parameter_name = ParameterName.objects.get(
+                schema__namespace=pub_details_schema,
+                name='doi')
+            pub_details_parameter_set = ExperimentParameterSet.objects.get(
+                schema__namespace=pub_details_schema,
+                experiment=Experiment.objects.get(id=experiment_id))
+
+            doi = DOI()
+            ExperimentParameter(name=doi_parameter_name,
+                                parameterset=pub_details_parameter_set,
+                                string_value=doi.mint(
+                                    experiment_id,
+                                    reverse(
+                                        'tardis_portal.view_experiment',
+                                        args=(experiment_id,)))
+                                ).save()
+            logger.info(
+                "DOI %s minted for publication ID %i" %
+                (doi.doi, experiment_id))
+            doi.deactivate()
+            logger.info(
+                "DOI %s deactivated, pending publication release criteria" %
+                doi.doi)
+        except ParameterName.DoesNotExist:
+            logger.error(
+                "Could not find the DOI parameter name (check schema definitions)")
+        except ExperimentParameterSet.DoesNotExist:
+            logger.error(
+                "Could not find the publication details parameter set")
+    else:
+        logger.warning("Can't mint DOI, because MODC_DOI_ENABLED is False.")
 
 
 def reject_publication(publication, message=None):
@@ -872,3 +886,142 @@ def revert_publication_to_draft(publication, message=None):
 
     except ExperimentParameter.DoesNotExist:
         return False
+
+
+@login_required
+def my_publications(request):
+    '''
+    Show drafts of public data collections, scheduled publications
+    and published data.
+    '''
+    c = {
+        'pub_workflow_enabled': 'tardis.apps.publication_workflow'
+        in settings.INSTALLED_APPS,
+    }
+
+    return HttpResponse(render_response_index(
+        request, 'my_publications.html', c))
+
+
+@never_cache
+@login_required
+def retrieve_draft_pubs_list(request):
+    '''
+    json list of draft pubs accessible by the current user
+    '''
+    draft_pubs_data = []
+    draft_publications = Publication.safe.draft_publications(request.user)\
+        .order_by('-update_time')
+    for draft_pub in draft_publications:
+        draft_pubs_data.append({'id': draft_pub.id, 'title': draft_pub.title})
+
+    return HttpResponse(json.dumps(draft_pubs_data),
+                        content_type='application/json')
+
+
+@never_cache
+@login_required
+def retrieve_scheduled_pubs_list(request):
+    '''
+    json list of scheduled pubs accessible by the current user
+    '''
+    scheduled_pubs_data = []
+    scheduled_publications = Publication.safe.scheduled_publications(request.user)\
+        .order_by('-update_time')
+    for scheduled_pub in scheduled_publications:
+        scheduled_pubs_data.append({'id': scheduled_pub.id, 'title': scheduled_pub.title})
+
+    return HttpResponse(json.dumps(scheduled_pubs_data),
+                        content_type='application/json')
+
+
+@never_cache
+@login_required
+def retrieve_released_pubs_list(request):
+    '''
+    json list of released pubs accessible by the current user
+    '''
+    released_pubs_data = []
+    released_publications = Publication.safe.released_publications(request.user)\
+        .order_by('-update_time')
+    for released_pub in released_publications:
+        released_pubs_data.append({'id': released_pub.id, 'title': released_pub.title})
+
+    return HttpResponse(json.dumps(released_pubs_data),
+                        content_type='application/json')
+
+
+@login_required
+def tokens(request):
+    context = {}
+    return HttpResponse(render_response_index(
+        request, 'tokens.html', context=context))
+
+
+@never_cache
+@login_required
+def retrieve_access_list_tokens_json(request, experiment_id):
+    '''
+    json list of tokens associated with a given experiment
+    '''
+    exp = Experiment.objects.get(id=experiment_id)
+
+    def token_url(url, token):
+        return "%s?token=%s" % (url, token)
+
+    download_urls = exp.get_download_urls()
+
+    tokens = Token.objects.filter(experiment=experiment_id)
+    token_data = []
+    for token in tokens:
+        token_data.append(
+            {
+                'expiry_date': token.expiry_date.isoformat(),
+                'username': token.user.username,
+                'url': token_url(exp.get_absolute_url(), token),
+                'download_url': request.build_absolute_uri(
+                   token_url(download_urls.get('tar', None), token)),
+                'id': token.id,
+                'experiment_id': experiment_id,
+                'is_owner': request.user.has_perm(
+                    'tardis_acls.owns_experiment', token.experiment),
+               })
+
+    return HttpResponse(json.dumps(token_data),
+                        content_type='application/json')
+
+
+@never_cache
+@login_required
+def is_publication(request, experiment_id):
+    '''
+    Return a JSON response indicating whether the exp ID is a publication
+    '''
+    exp = Experiment.objects.get(id=experiment_id)
+    response_data = dict(is_publication=exp.is_publication())
+    return HttpResponse(json.dumps(response_data),
+                        content_type='application/json')
+
+
+@never_cache
+@login_required
+def is_publication_draft(request, experiment_id):
+    '''
+    Return a JSON response indicating whether the exp ID is a publication draft
+    '''
+    exp = Experiment.objects.get(id=experiment_id)
+    response_data = dict(is_publication_draft=exp.is_publication_draft())
+    return HttpResponse(json.dumps(response_data),
+                        content_type='application/json')
+
+
+@require_POST
+def delete_publication(request, experiment_id):
+    '''
+    Delete the publication draft with the supplied experiment ID
+    '''
+    exp = Experiment.objects.get(id=experiment_id)
+    if authz.has_experiment_ownership(request, exp.id):
+        exp.delete()
+        return HttpResponse('{"success": true}', content_type='application/json')
+    return HttpResponse('{"success": false}', content_type='application/json')
