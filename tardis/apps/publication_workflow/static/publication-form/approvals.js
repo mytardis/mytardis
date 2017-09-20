@@ -35,14 +35,14 @@ angular
                    {   'action':selectedAction,
                        'id':selectedPublicationId,
                        'message':$scope.actionMessage
-                   }).success(function(data){
-                       $scope.pendingPublications = data;
+                   }).success(function(response){
+                       $scope.pendingPublications = response.data;
                        $scope.isProcessing = false;
 
                        selectedPublicationId = null;
                        selectedAction = '';
                        $scope.actionMessage = '';
-                   }).error(function(data, status) {
+                   }).error(function(response, status) {
                        $scope.isPending = false;
                        alert('Could not process this request (error code: '+status+')');
                    });
@@ -56,8 +56,8 @@ angular
     };
 
     $scope.refreshPendingPublications = function() {
-        $http.post('/apps/publication-workflow/approvals/', {}).success(function (data) {
-            $scope.pendingPublications = data;
+        $http.post('/apps/publication-workflow/approvals/', {}).success(function (response) {
+            $scope.pendingPublications = response.data;
         });
     };
 
