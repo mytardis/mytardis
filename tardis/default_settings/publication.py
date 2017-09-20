@@ -32,6 +32,10 @@ OAIPMH_PROVIDERS = [
     'tardis.apps.oaipmh.provider.experiment.RifCsExperimentProvider',
 ]
 
+USE_FIGSHARE = True
+# FIGSHARE_URL = "https://www.monash.edu/library/researchdata/figshare"
+FIGSHARE_URL = "https://figshare.com/"
+
 # Example settings for the publication form workflow. Also requires the
 # corresponding app in 'INSTALLED_APPS' and the corresponding task to be
 # enabled
