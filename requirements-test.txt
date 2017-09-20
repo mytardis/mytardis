@@ -1,2 +1,2 @@
-behave_django
+behave-django==0.5.0
 splinter
