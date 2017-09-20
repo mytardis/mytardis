@@ -59,9 +59,22 @@ def global_contexts(request):
     site_title = getattr(settings, 'SITE_TITLE', None)
     sponsored_by = getattr(settings, 'SPONSORED_TEXT', None)
     site_styles = getattr(settings, 'SITE_STYLES', '')
+    angularjs_version = getattr(settings, 'ANGULARJS_VERSION', '1.6.5')
+    angular_material_version = getattr(settings, 'ANGULAR_MATERIAL_VERSION',
+                                       '1.1.4')
+    ngdialog_version = getattr(settings, 'NGDIALOG_VERSION', '0.3.4')
+    ngMultipleSelect_version = getattr(settings, 'NG_MULTIPLE_SELECT_VERSION',
+                                       '1.1.2')
+    pub_workflow_enabled = ('tardis.apps.publication_workflow'
+                            in settings.INSTALLED_APPS)
     return {'site_title': site_title,
             'sponsored_by': sponsored_by,
-            'site_styles': site_styles, }
+            'site_styles': site_styles,
+            'angularjs_version': angularjs_version,
+            'angular_material_version': angular_material_version,
+            'ngdialog_version': ngdialog_version,
+            'ngMultipleSelect_version': ngMultipleSelect_version,
+            'pub_workflow_enabled': pub_workflow_enabled}
 
 
 def google_analytics(request):
