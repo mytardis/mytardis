@@ -15,4 +15,3 @@ class Publication(Experiment):
         # Don't create a database table for this model:
         proxy = True
         auto_created = True
-
