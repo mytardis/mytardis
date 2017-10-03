@@ -14,3 +14,5 @@ class Publication(Experiment):
     class Meta:
         # Don't create a database table for this model:
         proxy = True
+        auto_created = True
+
