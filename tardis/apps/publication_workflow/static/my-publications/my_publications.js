@@ -4,20 +4,13 @@
  */
 angular
 .module('MyTardis')
-.controller('MyPublicationsController', function ($log, $resource) {
+.controller('MyPublicationsController', function ($log, $resource, $timeout) {
 
     var vm = this;
 
     var draftPubsListRes = $resource('/apps/publication-workflow/draft_pubs_list/', {}, {
                     'get': {method: 'GET', isArray: true}
                         });
-
-    /**
-     * Returns True if there are no publications to show
-     */
-    function noPublications() {
-        return vm.draftPubs.length == 0;
-    }
 
     /**
      * initializeDraftPubsData
@@ -68,16 +61,16 @@ angular
     }
  
     vm.logItem = function (item) {
-      console.log(item.name, 'was selected');
+      $log.debug(item.name + ' was selected');
     };
 
     vm.logOrder = function (order) {
-      console.log('order: ', order);
+      $log.debug('order: ' + order);
     };
 
     vm.logPagination = function (page, limit) {
-      console.log('page: ', page);
-      console.log('limit: ', limit);
+      $log.debug('page: ' + page);
+      $log.debug('limit: ' + limit);
     }
 });
 
