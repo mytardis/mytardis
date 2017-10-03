@@ -1,3 +1,5 @@
+/* csslint ignore:start */
 td.vertical_align_middle * {
     vertical-align: middle!important;
 }
+/* csslint ignore:end */
