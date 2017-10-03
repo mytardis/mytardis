@@ -1,3 +1,4 @@
+#pylint: disable=C0302
 import json
 import logging
 import re
@@ -45,8 +46,7 @@ def index(request):
             "...</strong></p>")}
         return HttpResponse(render_response_index(
             request, 'form.html', context=context))
-    else:
-        return process_form(request)
+    return process_form(request)
 
 
 @login_required
@@ -489,7 +489,7 @@ def select_forms(datasets):
                 'description': dataset.description
             })
 
-    if len(default_form['datasets']):
+    if default_form['datasets']:
         forms.append(default_form)
 
     return forms
@@ -637,8 +637,7 @@ def approval_view(request):
     if request.method == 'GET':
         return HttpResponse(render_response_index(
             request, 'publication_approval.html'))
-    else:
-        return approval_ajax(request)
+    return approval_ajax(request)
 
 
 def approval_ajax(request):
@@ -754,7 +753,7 @@ def approve_publication(request, publication, message=None, send_email=True):
                 logger.error("Could not change publication owner to "
                              "PUBLICATION_DATA_ADMIN; no such user.")
 
-        mint_doi_and_deactivate(request, publication.id)
+        doi, url = mint_doi_and_deactivate(request, publication.id)
 
         if send_email:
             subject, email_message = email_pub_approved(
@@ -805,14 +804,18 @@ def mint_doi_and_deactivate(request, experiment_id):
             logger.info(
                 "DOI %s deactivated, pending publication release criteria" %
                 doi.doi)
+            return doi, url
         except ParameterName.DoesNotExist:
             logger.error(
                 "Could not find the DOI parameter name (check schema definitions)")
+            return None, None
         except ExperimentParameterSet.DoesNotExist:
             logger.error(
                 "Could not find the publication details parameter set")
+            return None, None
     else:
         logger.warning("Can't mint DOI, because MODC_DOI_ENABLED is False.")
+        return None, None
 
 
 def reject_publication(publication, message=None):

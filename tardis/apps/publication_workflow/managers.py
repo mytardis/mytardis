@@ -14,9 +14,11 @@ class PublicationManager(ExperimentManager):
         Return all draft publications which are owned by a particular user,
         including those shared with a group of which the user is a member.
 
-        :param request: a HTTP Request instance
-        :type request: :py:class:`django.http.HttpRequest`
+        :param user: the user who we are retrieving draft publications for
+        :type user: django.contrib.auth.models.User
 
+        :returns: A QuerySet of experiments representing the draft publications
+        :rtype: QuerySet
         """
         from tardis.tardis_portal.models import Experiment
 
@@ -46,9 +48,11 @@ class PublicationManager(ExperimentManager):
         Return all scheduled publications which are owned by a particular user,
         including those shared with a group of which the user is a member.
 
-        :param request: a HTTP Request instance
-        :type request: :py:class:`django.http.HttpRequest`
+        :param user: the user who we are retrieving draft publications for
+        :type user: django.contrib.auth.models.User
 
+        :returns: A QuerySet of experiments representing the draft publications
+        :rtype: QuerySet
         """
         from tardis.tardis_portal.models import Experiment
 
@@ -78,9 +82,11 @@ class PublicationManager(ExperimentManager):
         Return all released publications which are owned by a particular user,
         including those shared with a group of which the user is a member.
 
-        :param request: a HTTP Request instance
-        :type request: :py:class:`django.http.HttpRequest`
+        :param user: the user who we are retrieving draft publications for
+        :type user: django.contrib.auth.models.User
 
+        :returns: A QuerySet of experiments representing the draft publications
+        :rtype: QuerySet
         """
         from tardis.tardis_portal.models import Experiment
 
