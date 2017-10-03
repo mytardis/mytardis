@@ -74,7 +74,7 @@ angular
 // Publication form controller
 angular
 .module('MyTardis')
-.controller('PublicationFormController', function ($scope, $log, $http, $document, ngDialog, $window, $timeout, $attrs) {
+.controller('PublicationFormController', function ($scope, $log, $http, $document, ngDialog, $window, $timeout) {
     var vm = this;  // view model
 
     vm.errorMessages = []; // An array of strings to display to the user on error
@@ -156,9 +156,10 @@ angular
     var saveFormState = function (onComplete, onFailure) {
         vm.loadingData = true;
         $log.debug("Saving form data. vm.formData.publicationId: " + vm.formData.publicationId);
+        /* eslint-disable no-unused-vars */
         $http.post('/apps/publication-workflow/form/', vm.formData).then(function (response) {
             if ('error' in response.data) { // This happens when the form fails to validate but no server error encountered
-                vm.errorMessages.push(data.error);
+                vm.errorMessages.push(response.data.error);
                 onFailure();          // Since all validation also happens on the client, this should never happen.
                 vm.loadingData = false;
                 return;
@@ -193,6 +194,7 @@ angular
             onFailure();
             vm.loadingData = false;
         });
+        /* eslint-enable no-unused-vars */
     };
 
     // ***************
@@ -202,9 +204,11 @@ angular
     //   a function to be called when validation succeeds
     //   a function to be called when validation fails
     // Any error messages may be displayed in the vm.errorMessages array
+    /* eslint-disable no-unused-vars */
     var noValidation = function (onSuccess, onError) {
         onSuccess();
     };
+    /* eslint-enable no-unused-vars */
     var datasetSelectionValidator = function (onSuccess, onError) {
 
         extraInfoHelpers = []; // This list of helper functions must be cleared in case the discipline specific form info changes
@@ -446,6 +450,7 @@ angular
         }
     };
 
+    /* eslint-disable no-unused-vars */
     $scope.$watch('formData.selectedLicenseId', function (newVal, oldVal) {
         if (angular.isDefined(vm.formData.licenses)) {
             for (var i in vm.formData.licenses) {
@@ -459,6 +464,7 @@ angular
             }
         }
     });
+    /* eslint-enable no-unused-vars */
 
     vm.saveAndClose = function () {
         angular.element($document[0].querySelector('.ngdialog')).scrollTop(0);
@@ -478,11 +484,13 @@ angular
         vm.formData.embargo = new Date();
     };
     // Ensures that the embargo date is a Date object
+    /* eslint-disable no-unused-vars */
     $scope.$watch('formData.embargo', function (newVal, oldVal) {
         if (angular.isString(newVal)) {
             vm.formData.embargo = new Date(newVal);
         }
     });
+    /* eslint-enable no-unused-vars */
 
     // #### PDB HELPER ####
     vm.requirePDBHelper = function () {
@@ -497,6 +505,7 @@ angular
     };
     vm.pdbSearching = false;
     vm.pdbSearchComplete = false;
+    /* eslint-disable no-unused-vars */
     $scope.$watch('formData.pdbInfo', function (newVal, oldVal) {
         if (angular.isDefined(newVal)) {
             vm.pdbSearchComplete = Object.keys(newVal).length;
@@ -505,6 +514,7 @@ angular
             delete vm.pdbOK;  // unset the variable so the form validator can continue
         }
     });
+    /* eslint-enable no-unused-vars */
 
 
     var pdbSearchTimeout;
