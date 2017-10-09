@@ -46,17 +46,7 @@ def get_accessible_experiments(request):
 
 def get_accessible_experiments_for_dataset(request, dataset_id):
     experiments = Experiment.safe.all(request.user)
-
-    # probably a much cleverer way of writing this with safe
-    experiment_dataset_access = []
-    for experiment in experiments:
-        experiment_dataset = Experiment.objects.filter(
-            id=experiment.id,
-            datasets__in=[dataset_id])
-        if experiment_dataset.count():
-            experiment_dataset_access.append(experiment_dataset[0])
-
-    return experiment_dataset_access
+    return experiments.filter(datasets__id=dataset_id)
 
 
 def get_shared_experiments(request):
