@@ -3,6 +3,7 @@ import mimetypes
 from StringIO import StringIO
 
 from wand.exceptions import MissingDelegateError
+from wand.exceptions import CoderError
 from wand.image import Image
 
 from lxml import etree
@@ -177,6 +178,8 @@ def download_image(request, datafile_id, region, size, rotation,
     except MissingDelegateError:
         if format:
             return _invalid_media_response()
+        return HttpResponseNotFound()
+    except CoderError:
         return HttpResponseNotFound()
     except ValueError:
         return HttpResponseNotFound()
