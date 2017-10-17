@@ -73,7 +73,10 @@ core_urls = patterns(
         'cybderduck_connection_window', name='cyberduck_connection_window'),
     url(r'^sftp_access/$', 'sftp_access', name='sftp_access'),
     (r'^robots\.txt$', lambda r: HttpResponse(
-        "User-agent: *\nDisallow: /download/\nDisallow: /stats/",
+        ("User-agent: *\n"
+         "Disallow: /download/\n"
+         "Disallow: /stats/\n"
+         "Disallow: /api/"),
         content_type="text/plain"))
 )
 
