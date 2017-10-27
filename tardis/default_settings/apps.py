@@ -22,8 +22,9 @@ INSTALLED_APPS = (
     'tardis.tardis_portal.templatetags',
     'tardis.search',
     'tardis.analytics',
-    # these optional apps, may require extra settings
+    # these optional apps, may require extra settings and extra packages
     'tardis.apps.publication_forms',
     'tardis.apps.oaipmh',
     # 'tardis.apps.push_to',
+    # 'oidc_provider',
 )

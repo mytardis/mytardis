@@ -9,9 +9,11 @@ from .experiment import Experiment
 
 logger = logging.getLogger(__name__)
 
+
 def _token_expiry():
     import datetime as dt
     return dt.datetime.now().date() + dt.timedelta(settings.TOKEN_EXPIRY_DAYS)
+
 
 class Token(models.Model):
 
@@ -20,7 +22,7 @@ class Token(models.Model):
 
     expiry_date = models.DateField(default=_token_expiry)
 
-    user = models.ForeignKey(User)
+    user = models.ForeignKey(User, related_name='mt_token')
 
     _TOKEN_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
 

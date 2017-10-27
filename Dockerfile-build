@@ -28,5 +28,5 @@ WORKDIR /home/webapp
 
 CMD . /appenv/bin/activate; \
     pip wheel -r requirements.txt; \
-    pip wheel psycopg2 MySQL-python; \
+    pip wheel psycopg2 MySQL-python django-oidc-provider; \
     pip wheel -e "git+https://github.com/pypa/pip.git#egg=pip"

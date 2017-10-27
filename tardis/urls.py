@@ -42,6 +42,10 @@ from tardis.tardis_portal.api import (
 from tardis.tardis_portal.views import IndexView, ExperimentView, DatasetView
 from tardis.tardis_portal.views.pages import site_routed_view
 
+if 'oidc_provider' in settings.INSTALLED_APPS:
+    import oidc_provider
+
+
 admin.autodiscover()
 
 logger = logging.getLogger(__name__)
@@ -423,6 +427,16 @@ urlpatterns = patterns(
     # Class-based views that may be overriden by apps
     (r'', include(overridable_urls)),
 )
+
+if 'oidc_provider' in settings.INSTALLED_APPS:
+    urlpatterns += patterns(
+        '',
+        url(r'^openid/', include('oidc_provider.urls',
+                                 namespace='oidc_provider')),
+        url(r'^\.well-known/openid-configuration/?$',
+            oidc_provider.views.ProviderInfoView.as_view(),
+            name='provider_info'),
+    )
 
 # Handle static files from /static
 urlpatterns += staticfiles_urlpatterns()

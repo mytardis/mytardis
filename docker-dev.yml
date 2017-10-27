@@ -1,0 +1,25 @@
+version: "3"
+services:
+  server:
+    build:
+      context: .
+      dockerfile: Dockerfile-test
+    command: bash -c '/appenv/bin/python mytardis.py runserver 0.0.0.0:8000'
+    image: mytardis/mytardis-test
+    volumes:
+      - ./tardis:/home/webapp/tardis
+      - ./docs:/home/webapp/docs
+    depends_on:
+      - pg
+    links:
+      - pg
+    ports:
+      - "8000:8000"
+  pg:
+    image: postgres:9.5
+    environment:
+      POSTGRES_USER: mytardis
+      POSTGRES_PASSWORD: mytardis
+      POSTGRES_DB: mytardis
+    volumes:
+      - ./dev-db:/var/lib/postgresql/data
