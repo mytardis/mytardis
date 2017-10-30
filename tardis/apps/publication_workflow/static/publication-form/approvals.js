@@ -1,4 +1,3 @@
-/*eslint no-unused-vars: ["error", { "argsIgnorePattern": "^_" }]*/
 angular
 .module('MyTardis')
 .controller('PublicationApprovalsController', function ($scope, $log, $http) {
@@ -30,7 +29,7 @@ angular
 
     $scope.isProcessing = false;
 
-    $scope.submitAction = function(publication, _message) {
+    $scope.submitAction = function() {
         $scope.isProcessing = true;
         $http.post('/apps/publication-workflow/approvals/',
                    {   'action':selectedAction,
