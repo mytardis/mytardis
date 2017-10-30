@@ -7,6 +7,7 @@ import dateutil.parser
 
 import CifFile
 from django.contrib.auth.decorators import login_required
+from django.core.exceptions import ObjectDoesNotExist
 from django.core.urlresolvers import reverse
 from django.db import transaction
 from django.views.decorators.cache import never_cache
@@ -805,14 +806,18 @@ def mint_doi_and_deactivate(request, experiment_id):
                 "DOI %s deactivated, pending publication release criteria" %
                 doi.doi)
             return doi, url
-        except ParameterName.DoesNotExist:
-            logger.error(
-                "Could not find the DOI parameter name (check schema definitions)")
-            return None, None
-        except ExperimentParameterSet.DoesNotExist:
-            logger.error(
-                "Could not find the publication details parameter set")
-            return None, None
+        except ObjectDoesNotExist as err:
+            if isinstance(err, ParameterName.DoesNotExist):
+                logger.error(
+                    "Could not find the DOI parameter name "
+                    "(check schema definitions)")
+                return None, None
+            elif isinstance(err, ExperimentParameterSet.DoesNotExist):
+                logger.error(
+                    "Could not find the publication details parameter set")
+                return None, None
+            else:
+                raise
     else:
         logger.warning("Can't mint DOI, because MODC_DOI_ENABLED is False.")
         return None, None
