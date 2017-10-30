@@ -202,16 +202,14 @@ angular
   
         $mdDialog.show(confirmation).then(function() {
             $log.info('OK, deleting publication...');
-            /* eslint-disable no-unused-vars */
             $http.post('/apps/publication-workflow/publication/delete/' + vm.experimentId + '/', {})
-               .then(function (response) {
+               .then(function (_response) {
                    $log.debug("Publication deleted successfully.");
                    $window.location.reload();
                },
-               function(response) {
+               function(_response) {
                    $log.debug("Failed to delete publication.");
                });
-            /* eslint-enable no-unused-vars */
         }, function() {
             $log.info('OK, keeping publication');
         });
@@ -229,16 +227,14 @@ angular
         $mdDialog.show(confirmation).then(function() {
             $log.info('OK, minting a DOI...');
             $log.info('Checking whether approval is required...');
-            /* eslint-disable no-unused-vars */
             $http.post('/apps/publication-workflow/publication/mint_doi/' + vm.experimentId + '/', {})
-               .then(function (response) {
+               .then(function (_response) {
                    $log.debug("DOI minted successfully.");
                    $window.location.reload();
                },
-               function(response) {
+               function(_response) {
                    $log.debug("Failed to mint DOI.");
                });
-            /* eslint-enable no-unused-vars */
         }, function() {
             $log.info('OK, not minting a DOI');
         });

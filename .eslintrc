@@ -1,6 +1,7 @@
 {
     "extends": ["angular", "eslint:recommended"],
     "rules": {
-        "camelcase": 2
+        "camelcase": 2,
+        "no-unused-vars": ["error", { "argsIgnorePattern": "^_" }]
     }
 }

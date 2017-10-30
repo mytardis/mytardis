@@ -22,34 +22,30 @@ angular
 
     // Create a token and open tokens dialog
     vm.createToken = function () {
-        /* eslint-disable no-unused-vars */
         $http.post('/experiment/view/' + vm.publicationId + '/create_token/',
                    {'publication_id': vm.publicationId})
-           .then(function (data) {
+           .then(function (_response) {
                $log.debug("Created token successfully.");
                 vm.tokensListRes.get({'publication_id': vm.publicationId}).$promise.then(function (data) {
                     vm.tokens = data;
                 });
            },
-           function(data) {
+           function(_response) {
                $log.debug("Failed to create token.");
            });
-        /* eslint-enable no-unused-vars */
     };
     // Delete a token
     vm.deleteToken = function(token) {
-        /* eslint-disable no-unused-vars */
         $http.post('/token/delete/' + token.id + '/', {})
-           .then(function (data) {
+           .then(function (_response) {
                $log.debug("Deleted token successfully.");
                 vm.tokensListRes.get({'publication_id': vm.publicationId}).$promise.then(function (data) {
                     vm.tokens = data;
                 });
            },
-           function(data) {
+           function(_response) {
                $log.debug("Failed to delete token.");
            });
-        /* eslint-enable no-unused-vars */
     };
 
 });

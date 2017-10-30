@@ -29,7 +29,7 @@ angular
 
     $scope.isProcessing = false;
 
-    $scope.submitAction = function(publication, message) {
+    $scope.submitAction = function(publication, _message) {
         $scope.isProcessing = true;
         $http.post('/apps/publication-workflow/approvals/',
                    {   'action':selectedAction,

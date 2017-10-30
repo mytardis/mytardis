@@ -105,7 +105,7 @@ angular
         }
     }
     else {
-        $log.debug("PublicationFormController: Defining vm.formData from scratch.")
+        $log.debug("PublicationFormController: Defining vm.formData from scratch.");
         vm.formData = {};
         vm.formData.addedDatasets = []; // List of selected datasets
         vm.formData.publicationTitle = ""; // Initialise publication title
@@ -156,7 +156,6 @@ angular
     var saveFormState = function (onComplete, onFailure) {
         vm.loadingData = true;
         $log.debug("Saving form data. vm.formData.publicationId: " + vm.formData.publicationId);
-        /* eslint-disable no-unused-vars */
         $http.post('/apps/publication-workflow/form/', vm.formData).then(function (response) {
             if ('error' in response.data) { // This happens when the form fails to validate but no server error encountered
                 vm.errorMessages.push(response.data.error);
@@ -189,12 +188,11 @@ angular
             onComplete();
             vm.loadingData = false;
         },
-        function (response) {
+        function (_response) {
             vm.errorMessages.push("the server could not process your request");
             onFailure();
             vm.loadingData = false;
         });
-        /* eslint-enable no-unused-vars */
     };
 
     // ***************
@@ -204,11 +202,9 @@ angular
     //   a function to be called when validation succeeds
     //   a function to be called when validation fails
     // Any error messages may be displayed in the vm.errorMessages array
-    /* eslint-disable no-unused-vars */
-    var noValidation = function (onSuccess, onError) {
+    var noValidation = function (onSuccess, _onError) {
         onSuccess();
     };
-    /* eslint-enable no-unused-vars */
     var datasetSelectionValidator = function (onSuccess, onError) {
 
         extraInfoHelpers = []; // This list of helper functions must be cleared in case the discipline specific form info changes
@@ -450,8 +446,7 @@ angular
         }
     };
 
-    /* eslint-disable no-unused-vars */
-    $scope.$watch('formData.selectedLicenseId', function (newVal, oldVal) {
+    $scope.$watch('formData.selectedLicenseId', function (newVal, _oldVal) {
         if (angular.isDefined(vm.formData.licenses)) {
             for (var i in vm.formData.licenses) {
                 if (vm.formData.licenses.hasOwnProperty(i)) {
@@ -464,7 +459,6 @@ angular
             }
         }
     });
-    /* eslint-enable no-unused-vars */
 
     vm.saveAndClose = function () {
         angular.element($document[0].querySelector('.ngdialog')).scrollTop(0);
@@ -484,13 +478,11 @@ angular
         vm.formData.embargo = new Date();
     };
     // Ensures that the embargo date is a Date object
-    /* eslint-disable no-unused-vars */
-    $scope.$watch('formData.embargo', function (newVal, oldVal) {
+    $scope.$watch('formData.embargo', function (newVal, _oldVal) {
         if (angular.isString(newVal)) {
             vm.formData.embargo = new Date(newVal);
         }
     });
-    /* eslint-enable no-unused-vars */
 
     // #### PDB HELPER ####
     vm.requirePDBHelper = function () {
@@ -505,8 +497,7 @@ angular
     };
     vm.pdbSearching = false;
     vm.pdbSearchComplete = false;
-    /* eslint-disable no-unused-vars */
-    $scope.$watch('formData.pdbInfo', function (newVal, oldVal) {
+    $scope.$watch('formData.pdbInfo', function (newVal, _oldVal) {
         if (angular.isDefined(newVal)) {
             vm.pdbSearchComplete = Object.keys(newVal).length;
             vm.pdbOK = (newVal.status !== 'UNKNOWN');
@@ -514,7 +505,6 @@ angular
             delete vm.pdbOK;  // unset the variable so the form validator can continue
         }
     });
-    /* eslint-enable no-unused-vars */
 
 
     var pdbSearchTimeout;
