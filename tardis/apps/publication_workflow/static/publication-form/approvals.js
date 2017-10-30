@@ -1,3 +1,4 @@
+/*eslint no-unused-vars: ["error", { "argsIgnorePattern": "^_" }]*/
 angular
 .module('MyTardis')
 .controller('PublicationApprovalsController', function ($scope, $log, $http) {

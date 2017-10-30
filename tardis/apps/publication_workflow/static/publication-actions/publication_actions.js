@@ -10,6 +10,7 @@
  * @param {!angular.$window} $window The Angular window service.
  * @constructor
  */
+/*eslint no-unused-vars: ["error", { "argsIgnorePattern": "^_" }]*/
 angular
 .module('MyTardis')
 .controller('PublicationActionsController', function ($resource, $log, ngDialog, $http, $window, $mdDialog) {

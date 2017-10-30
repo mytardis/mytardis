@@ -2,6 +2,7 @@
 
 // A filter used to remove items from the list of available datasets
 // when added to the list of datasets to include in the publication
+/*eslint no-unused-vars: ["error", { "argsIgnorePattern": "^_" }]*/
 angular
 .module('MyTardis')
 .filter('removeMatchingDatasets', function () {

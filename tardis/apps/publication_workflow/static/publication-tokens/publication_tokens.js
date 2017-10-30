@@ -2,6 +2,7 @@
  * Tokens controller
  *
  */
+/*eslint no-unused-vars: ["error", { "argsIgnorePattern": "^_" }]*/
 angular
 .module('MyTardis')
 .controller('PublicationTokensController', function (ngDialog, $scope, $log, $http, $resource) {
