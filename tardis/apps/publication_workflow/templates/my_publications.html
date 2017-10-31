@@ -22,23 +22,27 @@ var figshare_categories_json = '{{ figshare_categories_json }}';
 <script type="text/javascript" src="/static/publication-form/publication_form.js"></script>
 
 <div id="content" ng-controller="MyPublicationsController as myPubsCtrl">
-  <div class="md-toolbar-tools">
-    <span>My Publications</span>
-    <div flex></div>
-    <button class="btn btn-info"
-       title="Create publication" 
-       ng-controller="PublicationActionsController as pubActionsCtrl"
-       ng-click="pubActionsCtrl.createPublication()">
-      <i class="fa fa-share"></i>
-      <span>Create publication</span>
-    </button>
-  </div>
-
   <div class="row-fluid">
-    <h3 class="md-title">Drafts</h3>
+    <h2 class="visible-phone">My Publications</h2>
+      <div class="pull-left">
+        <h2 class="hidden-phone" style="text-align: center">My Publications</h2>
+      </div>  <!-- class="pull-left" -->
+      <div class="pull-right"
+           ng-controller="PublicationActionsController as pubActionsCtrl">
+        <a class="btn btn-info" class="pull-right"
+           title="Prepare To Publish" ng-click="pubActionsCtrl.createPublication()">
+          <i class="fa fa-share"></i>
+          <span>Create publication</span>
+        </a>
+      </div>  <!-- class="pull-right" -->
+  </div>  <!-- class="row-fluid" -->
+
+  <h3 class="md-title">Drafts</h3>
+  <div ng-hide="myPubsCtrl.draftPubs.length">
+    <p>You do not have access to any draft publications.</p>
   </div>
 
-  <md-content layout="column" flex>
+  <md-content layout="column" flex ng-show="myPubsCtrl.draftPubs.length">
         <md-table-container>
           <table md-table md-row-select="false" ng-model="myPubsCtrl.draftPubsTableModel" md-progress="promise">
             <thead md-head md-order="myPubsCtrl.query.order" md-on-reorder="myPubsCtrl.logOrder">
@@ -98,21 +102,17 @@ var figshare_categories_json = '{{ figshare_categories_json }}';
 
   <br/>
 
-  <div class="row-fluid">
-    <h3 class="md-title">Scheduled</h3>
-      <div ng-hide="myPubsCtrl.scheduledPubs.length">
-        <p>You do not have access to any scheduled publications.</p>
-      </div>
-  </div>
+  <h3 class="md-title">Scheduled</h3>
+    <div ng-hide="myPubsCtrl.scheduledPubs.length">
+      <p>You do not have access to any scheduled publications.</p>
+    </div>
 
   <br/>
 
-  <div class="row-fluid">
-    <h3 class="md-title">Released</h3>
-      <div ng-hide="myPubsCtrl.releasedPubs.length">
-        <p>You do not have access to any released publications.</p>
-      </div>
-  </div>
+  <h3 class="md-title">Released</h3>
+    <div ng-hide="myPubsCtrl.releasedPubs.length">
+      <p>You do not have access to any released publications.</p>
+    </div>
 
 </div>  <!-- id="content" -->
 
