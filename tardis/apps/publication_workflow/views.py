@@ -902,13 +902,7 @@ def my_publications(request):
     Show drafts of public data collections, scheduled publications
     and published data.
     '''
-    c = {
-        'pub_workflow_enabled': 'tardis.apps.publication_workflow'
-        in settings.INSTALLED_APPS,
-    }
-
-    return HttpResponse(render_response_index(
-        request, 'my_publications.html', c))
+    return HttpResponse(render_response_index(request, 'my_publications.html'))
 
 
 @never_cache
