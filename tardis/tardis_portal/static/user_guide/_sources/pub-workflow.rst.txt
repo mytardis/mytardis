@@ -6,9 +6,16 @@ MyTardis Publication Workflow
 Basic Usage
 ***********
 
+Listing Existing Publications and Drafts
+========================================
+Click on "My Publications" in the menu bar to see existing publications and drafts which you have access to:
+
+.. image:: _images/my-publications-draft-saved.png
+   :width: 90%
+
 Creating a Draft Publication
 ============================
-From the "My Publications" page, click "Create Publication":
+From the "My Publications" page, click "Create publication" to begin a draft publication:
 
 .. image:: _images/create-publication.png
 
