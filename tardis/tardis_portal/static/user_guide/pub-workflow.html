@@ -41,10 +41,71 @@
             
   <div class="section" id="mytardis-publication-workflow">
 <h1>MyTardis Publication Workflow<a class="headerlink" href="#mytardis-publication-workflow" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="enabling-the-publication-workflow">
-<h2>Enabling the Publication Workflow<a class="headerlink" href="#enabling-the-publication-workflow" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="basic-usage">
+<h2>Basic Usage<a class="headerlink" href="#basic-usage" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="creating-a-draft-publication">
+<h3>Creating a Draft Publication<a class="headerlink" href="#creating-a-draft-publication" title="Permalink to this headline">¶</a></h3>
+<p>From the &#8220;My Publications&#8221; page, click &#8220;Create Publication&#8221;:</p>
+<img alt="_images/create-publication.png" src="_images/create-publication.png" />
+<p>The publication form should appear, showing whatever introductory text has
+been configured by your MyTardis administrator, using the
+<code class="docutils literal"><span class="pre">PUBLICATION_INTRODUCTION</span></code> setting in <code class="docutils literal"><span class="pre">tardis/settings.py</span></code>:</p>
+<img alt="_images/publication-form-introduction.png" src="_images/publication-form-introduction.png" />
+<p>After acknowledging the introductory text, you can begin selecting datasets
+to include in your publication:</p>
+<img alt="_images/pub-form-selecting-datasets.png" src="_images/pub-form-selecting-datasets.png" />
+<p>Selected datasets appear on the right:</p>
+<img alt="_images/pub-form-selected-dataset.png" src="_images/pub-form-selected-dataset.png" />
+<p>You can then describe each included dataset (beyond what is already in the
+dataset&#8217;s description field):</p>
+<img alt="_images/pub-form-extra-info.png" src="_images/pub-form-extra-info.png" />
+<p>The final page allows you to specify the authors, license, acknowledgements and
+release date.  <strong>The last page of the form will be split into two pages in the
+next version of the publication form.</strong></p>
+<img alt="_images/pub-form-final-page.png" src="_images/pub-form-final-page.png" />
+<p>After clicking &#8220;Save and finish Later&#8221;, you can see the publication in the Drafts
+section of the &#8220;My Publications&#8221; page:</p>
+<a class="reference internal image-reference" href="_images/my-publications-draft-saved.png"><img alt="_images/my-publications-draft-saved.png" src="_images/my-publications-draft-saved.png" style="width: 90%;" /></a>
+</div>
+<div class="section" id="resuming-a-draft-publication">
+<h3>Resuming a Draft Publication<a class="headerlink" href="#resuming-a-draft-publication" title="Permalink to this headline">¶</a></h3>
+<p>The &#8220;Resume draft&#8221; button below opens the publication form, allowing you to make further changes:</p>
+<a class="reference internal image-reference" href="_images/my-publications-draft-saved.png"><img alt="_images/my-publications-draft-saved.png" src="_images/my-publications-draft-saved.png" style="width: 90%;" /></a>
+<p>When resuming a draft, you will be taken straight to the second page of the publication form below,
+skipping the introductory text:</p>
+<img alt="_images/pub-form-selected-dataset.png" src="_images/pub-form-selected-dataset.png" />
+</div>
+<div class="section" id="deleting-a-draft-publication">
+<h3>Deleting a Draft Publication<a class="headerlink" href="#deleting-a-draft-publication" title="Permalink to this headline">¶</a></h3>
+<p>The &#8220;Delete draft&#8221; button below allowd you to delete a draft publication:</p>
+<a class="reference internal image-reference" href="_images/my-publications-draft-saved.png"><img alt="_images/my-publications-draft-saved.png" src="_images/my-publications-draft-saved.png" style="width: 90%;" /></a>
+<p>You will be asked to confirm that you really want to delete the draft publication:</p>
+<img alt="_images/delete-confirmation.png" src="_images/delete-confirmation.png" />
+</div>
+<div class="section" id="minting-a-doi-digital-object-identifier">
+<h3>Minting a DOI (Digital Object Identifier)<a class="headerlink" href="#minting-a-doi-digital-object-identifier" title="Permalink to this headline">¶</a></h3>
+<p>The &#8220;Mint DOI&#8221; button below allowd you to mint a DOI (Digital Object Identifier):</p>
+<a class="reference internal image-reference" href="_images/my-publications-draft-saved.png"><img alt="_images/my-publications-draft-saved.png" src="_images/my-publications-draft-saved.png" style="width: 90%;" /></a>
+<p>You will be asked to confirm that you really want to mint a DOI:</p>
+<img alt="_images/mint-doi-confirmation.png" src="_images/mint-doi-confirmation.png" />
+</div>
+<div class="section" id="sharing-a-draft-publication">
+<h3>Sharing a Draft Publication<a class="headerlink" href="#sharing-a-draft-publication" title="Permalink to this headline">¶</a></h3>
+<p>The &#8220;Share&#8221; button below opens temporary links dialog, allowing you grant short-term access (3 months)
+to the draft publication via a temporary URL:</p>
+<a class="reference internal image-reference" href="_images/my-publications-draft-saved.png"><img alt="_images/my-publications-draft-saved.png" src="_images/my-publications-draft-saved.png" style="width: 90%;" /></a>
+<p>The first time you click Share, you won&#8217;t have any tokens for granting temporary access:</p>
+<img alt="_images/temporary-links-no-tokens.png" src="_images/temporary-links-no-tokens.png" />
+<p>After clicking the &#8220;Create New Temporary Link&#8221; button, you should see a temporary link:</p>
+<img alt="_images/temporary-links-one-token.png" src="_images/temporary-links-one-token.png" />
+</div>
+</div>
+<div class="section" id="for-mytardis-system-administrators">
+<h2>For MyTardis System Administrators<a class="headerlink" href="#for-mytardis-system-administrators" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="enabling-or-disabling-the-publication-workflow">
+<h3>Enabling or Disabling the Publication Workflow<a class="headerlink" href="#enabling-or-disabling-the-publication-workflow" title="Permalink to this headline">¶</a></h3>
 <p>The publication workflow is enabled by default in a new MyTardis installation:</p>
-<p><em>tardis/default_settings/apps.py:</em></p>
+<p><code class="docutils literal"><span class="pre">tardis/default_settings/apps.py:</span></code></p>
 <div class="highlight-python"><div class="highlight"><pre><span class="o">...</span>
 <span class="n">INSTALLED_APPS</span> <span class="o">=</span> <span class="p">(</span>
     <span class="o">...</span>
@@ -53,7 +114,7 @@
 <span class="p">)</span>
 </pre></div>
 </div>
-<p>If necessary, it can be disabled in tardis/settings.py with:</p>
+<p>If necessary, it can be disabled in <code class="docutils literal"><span class="pre">tardis/settings.py</span></code> as shown below:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">disabled_apps</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;publication_workflow&#39;</span><span class="p">]</span>
 <span class="k">for</span> <span class="n">app</span> <span class="ow">in</span> <span class="n">disabled_apps</span><span class="p">:</span>
     <span class="n">INSTALLED_APPS</span> <span class="o">=</span> <span class="nb">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">a</span><span class="p">:</span> <span class="n">a</span> <span class="o">!=</span> <span class="n">app</span><span class="p">,</span> <span class="n">INSTALLED_APPS</span><span class="p">)</span>
@@ -63,10 +124,21 @@
 <img alt="_images/my-publications-link.png" src="_images/my-publications-link.png" />
 </div>
 <div class="section" id="publication-workflow-settings">
-<h2>Publication Workflow Settings<a class="headerlink" href="#publication-workflow-settings" title="Permalink to this headline">¶</a></h2>
-<p>To use the default publication workflow settings, add the following to your tardis/settings.py:</p>
+<h3>Publication Workflow Settings<a class="headerlink" href="#publication-workflow-settings" title="Permalink to this headline">¶</a></h3>
+<p>To use the default publication workflow settings, add the following to your <code class="docutils literal"><span class="pre">tardis/settings.py</span></code>:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">tardis.apps.publication_workflow.default_settings</span> <span class="kn">import</span> <span class="o">*</span>
 </pre></div>
+</div>
+</div>
+<div class="section" id="installing-licenses">
+<h3>Installing Licenses<a class="headerlink" href="#installing-licenses" title="Permalink to this headline">¶</a></h3>
+<p>The publication workflow app contains Creative Commons licenses in
+<code class="docutils literal"><span class="pre">tardis/apps/publication_workflow/fixtures/licenses.json</span></code> which
+can be installed with:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">python</span> <span class="n">mytardis</span><span class="o">.</span><span class="n">py</span> <span class="n">loaddata</span> <span class="n">licenses</span>
+</pre></div>
+</div>
+<img alt="_images/licenses.png" src="_images/licenses.png" />
 </div>
 </div>
 </div>
@@ -80,8 +152,20 @@
   <h3><a href="index.html">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">MyTardis Publication Workflow</a><ul>
-<li><a class="reference internal" href="#enabling-the-publication-workflow">Enabling the Publication Workflow</a></li>
+<li><a class="reference internal" href="#basic-usage">Basic Usage</a><ul>
+<li><a class="reference internal" href="#creating-a-draft-publication">Creating a Draft Publication</a></li>
+<li><a class="reference internal" href="#resuming-a-draft-publication">Resuming a Draft Publication</a></li>
+<li><a class="reference internal" href="#deleting-a-draft-publication">Deleting a Draft Publication</a></li>
+<li><a class="reference internal" href="#minting-a-doi-digital-object-identifier">Minting a DOI (Digital Object Identifier)</a></li>
+<li><a class="reference internal" href="#sharing-a-draft-publication">Sharing a Draft Publication</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#for-mytardis-system-administrators">For MyTardis System Administrators</a><ul>
+<li><a class="reference internal" href="#enabling-or-disabling-the-publication-workflow">Enabling or Disabling the Publication Workflow</a></li>
 <li><a class="reference internal" href="#publication-workflow-settings">Publication Workflow Settings</a></li>
+<li><a class="reference internal" href="#installing-licenses">Installing Licenses</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
