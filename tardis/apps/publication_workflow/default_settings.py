@@ -5,6 +5,34 @@ override in main settings
 
 from datetime import timedelta
 
+PUBLICATION_INTRODUCTION = """
+<h2>MyTardis Publishing Form</h2>
+
+<p>This form will help MyTardis to describe and provide online access to your data.</p>
+
+<p>
+Once data has been released for publication, you will receive
+a <a target="_blank"
+href="http://en.wikipedia.org/wiki/Digital_object_identifier">DOI</a>
+link to this data for citation.
+</p>
+
+<p>Follow the form to identify datasets and provide additional information.</p>
+
+<p>
+Data will be released under
+a <a target="_blank"
+href="http://creativecommons.org/licenses/by/3.0/au/deed.en">Creative
+Commons BY</a> license: Whenever a work is copied or redistributed
+under a Creative Commons BY licence, the original creator (and any
+other nominated parties) must be credited and the source linked to.
+</p>
+<p>
+For further enquiries, please contact:
+<a target="_blank" href="mailto:store.star.help@monash.edu">store.star.help@monash.edu</a>.
+</p>
+"""
+
 PUBLICATION_NOTIFICATION_SENDER_EMAIL = 'emailsender@mytardisserver'
 PUBLICATION_OWNER_GROUP = 'publication-admin'
 PUBLICATION_SCHEMA_ROOT = 'http://www.tardis.edu.au/schemas/publication/'
