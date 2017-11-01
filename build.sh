@@ -44,5 +44,11 @@ python mytardis.py runserver
 # os x:
 open http://127.0.0.1:8000/
 
-# build docs into docs (sphinx-build inputfolder outputfolder)
-sphinx-build docs docs
+# building docs:
+mkdir -p /tmp/docs
+sphinx-build docs /tmp/docs
+
+# building user guide (Help page):
+mkdir -p /tmp/userguide
+sphinx-build tardis/tardis_portal/static/user_guide /tmp/userguide
+cp -r /tmp/userguide/* tardis/tardis_portal/static/user_guide/
