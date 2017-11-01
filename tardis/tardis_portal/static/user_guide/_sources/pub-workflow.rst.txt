@@ -1,0 +1,38 @@
+#############################
+MyTardis Publication Workflow
+#############################
+
+Enabling the Publication Workflow
+=================================
+The publication workflow is enabled by default in a new MyTardis installation:
+
+*tardis/default_settings/apps.py:*
+
+.. code-block:: python
+
+  ...
+  INSTALLED_APPS = (
+      ...
+      'tardis.apps.publication_workflow',
+      ...
+  )
+
+If necessary, it can be disabled in tardis/settings.py with:
+
+.. code-block:: python
+
+   disabled_apps = ['publication_workflow']
+   for app in disabled_apps:
+       INSTALLED_APPS = filter(lambda a: a != app, INSTALLED_APPS)
+
+When the publication workflow is enabled, you should see the "My Publications" link in the menu bar:
+
+.. image:: _images/my-publications-link.png
+
+Publication Workflow Settings
+=============================
+To use the default publication workflow settings, add the following to your tardis/settings.py:
+
+.. code-block:: python
+
+  from tardis.apps.publication_workflow.default_settings import *
