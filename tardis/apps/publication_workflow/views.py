@@ -915,7 +915,24 @@ def retrieve_draft_pubs_list(request):
     draft_publications = Publication.safe.draft_publications(request.user)\
         .order_by('-update_time')
     for draft_pub in draft_publications:
-        draft_pubs_data.append({'id': draft_pub.id, 'title': draft_pub.title})
+        try:
+            schema = Schema.objects.get(
+                namespace='http://www.tardis.edu.au/schemas/publication/')
+            form_state_pname = \
+                ParameterName.objects.get(name='form_state', schema=schema)
+            form_state_param = ExperimentParameter.objects.get(
+                parameterset__experiment=draft_pub, name=form_state_pname)
+            form_state = json.loads(form_state_param.string_value)
+            release_date = \
+                dateutil.parser.parse(form_state['embargo']).strftime("%Y-%m-%d")
+        except (ObjectDoesNotExist, KeyError):
+            release_date = None
+        draft_pubs_data.append(
+            {
+                'id': draft_pub.id,
+                'title': draft_pub.title,
+                'release_date': release_date
+            })
 
     return HttpResponse(json.dumps(draft_pubs_data),
                         content_type='application/json')

@@ -68,7 +68,7 @@ var figshare_categories_json = '{{ figshare_categories_json }}';
                   </a>
                 </td>
                 <td md-cell></td>
-                <td md-cell></td>
+                <td md-cell>{{draftPub.release_date}}</td>
                 <td md-cell
                    ng-controller="PublicationActionsController as pubActionsCtrl"
                    ng-init="pubActionsCtrl.init(draftPub.id)">
@@ -118,6 +118,5 @@ var figshare_categories_json = '{{ figshare_categories_json }}';
 
 </div>  <!-- id="content" -->
 
-</script>
 {% endverbatim %}
 {% endblock %}
