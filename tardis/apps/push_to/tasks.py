@@ -40,7 +40,8 @@ def push_dataset_to_host(user_id, credential_id, remote_host_id, dataset_id,
         datasets = Dataset.objects.filter(pk=dataset_id)
         for ds in datasets:
             datafiles = DataFile.objects.filter(dataset=ds)
-            path = [ds.description]
+            dataset_description = get_filesystem_safe_dataset_name(ds)
+            path = [dataset_description]
             for df in datafiles:
                 files_to_copy.append((path, df))
 
