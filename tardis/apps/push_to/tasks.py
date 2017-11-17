@@ -4,6 +4,8 @@ from django.contrib.auth.models import User
 
 from tardis.tardis_portal.models import Experiment, Dataset, DataFile
 from tardis.tardis_portal.util import split_path
+from tardis.tardis_portal.util import get_filesystem_safe_experiment_name
+from tardis.tardis_portal.util import get_filesystem_safe_dataset_name
 from .models import Credential, RemoteHost
 
 
@@ -14,10 +16,12 @@ def push_experiment_to_host(
     try:
         files_to_copy = []
         experiment = Experiment.objects.get(pk=experiment_id)
+        experiment_name = get_filesystem_safe_experiment_name(experiment)
         datasets = Dataset.objects.filter(experiments=experiment)
         for ds in datasets:
             datafiles = DataFile.objects.filter(dataset=ds)
-            path = [experiment.title, ds.description]
+            dataset_description = get_filesystem_safe_dataset_name(ds)
+            path = [experiment_name, dataset_description]
             for df in datafiles:
                 files_to_copy.append((path, df))
 
@@ -36,7 +40,8 @@ def push_dataset_to_host(user_id, credential_id, remote_host_id, dataset_id,
         datasets = Dataset.objects.filter(pk=dataset_id)
         for ds in datasets:
             datafiles = DataFile.objects.filter(dataset=ds)
-            path = [ds.description]
+            dataset_description = get_filesystem_safe_dataset_name(ds)
+            path = [dataset_description]
             for df in datafiles:
                 files_to_copy.append((path, df))
 
@@ -80,9 +85,9 @@ def make_dirs(sftp_client, dir_list):
     full_path = ''
     for directory in dir_list:
         if full_path:
-            full_path += directory + '/'
+            full_path += directory.rstrip('/') + '/'
         elif directory:
-            full_path = directory
+            full_path = directory.rstrip('/') + '/'
         else:
             full_path = '/'
 
