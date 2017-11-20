@@ -26,3 +26,11 @@ STATICFILES_DIRS = (
 # Use cachable copies of static files
 STATICFILES_STORAGE = \
     'django.contrib.staticfiles.storage.CachedStaticFilesStorage'
+
+STATICFILES_FINDERS = (
+    'django.contrib.staticfiles.finders.FileSystemFinder',
+    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+    'npm.finders.NpmFinder',
+)
+
+NPM_ROOT_PATH = path.abspath(path.join(path.dirname(__file__), '../..'))

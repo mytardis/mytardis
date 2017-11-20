@@ -27,6 +27,8 @@ pip install -r requirements.txt
 # for OS X, but might also need some brew requirements.
 pip install -r requirements-osx.txt
 
+npm install
+
 mkdir -p var/store
 
 # execute this wonderful command to have your settings.py created/updated

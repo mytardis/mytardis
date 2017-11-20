@@ -36,9 +36,3 @@ These are the default bleach values and shown here as an example.
 # Used in "My Data" view:
 OWNED_EXPS_PER_PAGE = 20
 SHARED_EXPS_PER_PAGE = 20
-
-# Javascript settings
-ANGULARJS_VERSION = "1.6.5"
-ANGULAR_MATERIAL_VERSION = "1.1.4"
-NGDIALOG_VERSION = "0.3.4"
-NG_MULTIPLE_SELECT_VERSION = "1.1.2"
