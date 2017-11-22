@@ -159,3 +159,93 @@ can be installed with:
 
 .. image:: _images/licenses.png
 
+
+Minting DOIs
+============
+From Wikipedia, "a Digital Object Identifier or DOI is a persistent identifier
+or handle used to uniquely identify objects, standardized by the International
+Organization for Standardization".  For example, a DOI of "10.2196/mhealth.3314"
+can be resolved at http://dx.doi.org/10.2196/mhealth.3314, leading to
+http://mhealth.jmir.org/2014/4/e50/.  DOIs are commonly used to provide permanent
+links to published articles, but they can also be used to provide permanent links
+to published data.
+
+MyTardis's publication workflow provides functionality for minting DOIs using
+Monash University's DOI minting service at https://mod.monash.edu and its
+corresponding test service at https://vera186.its.monash.edu/modc/.  DOIs can
+be minted manually by MyTardis system administrators, or from the user interface
+provided in the "My Publications" view.
+
+To get started, you need to register your MyTardis service as a "Webservice App" in
+Monash's DOI-minting service at https://mod.monash.edu or in its corresponding
+test service at https://vera186.its.monash.edu/modc/.
+
+.. image:: _images/doi-minting-apps.png
+
+Then you need to configure your MyTardis's tardis/settings.py to use the DOI
+minting service.  For the "mytardis-demo" DOI-minting application registered
+above on https://vera186.its.monash.edu/modc/, we can use the following
+settings:
+
+.. code-block:: python
+
+    MODC_DOI_API_ID = '514a087f-30eb-4860-a0ad-79a92e875564'
+    # Use the real API password here:
+    MODC_DOI_API_PASSWORD = '********'
+    MODC_DOI_MINT_DEFINITION = 'https://vera186.its.monash.edu/modc/ws/MintDoiService.wsdl'
+    MODC_DOI_ACTIVATE_DEFINITION = 'https://vera186.its.monash.edu/modc/ws/' \
+                                   'ActivateDoiService.wsdl'
+    MODC_DOI_DEACTIVATE_DEFINITION = 'https://vera186.its.monash.edu/modc/ws/' \
+                                     'DeactivateDoiService.wsdl'
+    MODC_DOI_ENDPOINT = 'https://vera186.its.monash.edu/modc/ws/'
+    # The MODC_DOI_MINT_URL_ROOT should be set to the base URL of your publicly
+    # accessible MyTardis server.  You can't test the DOI-minting functionality
+    # from a local dev environment (http://127.0.0.1:8000), because the URL you
+    # are minting a DOI for needs to be publicly accessible:
+    MODC_DOI_MINT_URL_ROOT = 'https://mytardisdemo.erc.monash.edu'
+
+A DOI can be minted from the Django shell (mytardis.py shell_plus) as follows:
+
+.. code-block:: python
+
+    >>> from tardis.apps.publication_workflow.doi import DOI
+    >>> doi = DOI()
+    >>> experiment_id = 105
+    >>> doi.mint(experiment_id, reverse('tardis_portal.view_experiment', args=(experiment_id,)))
+    10.5072/20/TEST_DOI_5a14bcdd0f309
+
+Now http://dx.doi.org/10.5072/20/TEST_DOI_5a14bcdd0f309 should resolve to
+https://mytardisdemo.erc.monash.edu/experiment/view/105/.
+
+We can then deactivate this DOI until the required publication criteria are met:
+
+.. code-block:: python
+
+    >>> doi.deactivate()
+    (reply){
+       serviceId = "514a087f-30eb-4860-a0ad-79a92e875564"
+       responsecode = "MT003"
+       message = "DOI 10.5072/20/TEST_DOI_5a14bcdd0f309 was successfully deactivated."
+       doi = "10.5072/20/TEST_DOI_5a14bcdd0f309"
+       url = None
+       verbosemessage = None
+     }
+
+
+If we need to look up the same DOI later, e.g. after exiting the Django shell
+and starting a new one, we can create a DOI instance with an existing DOI:
+
+.. code-block:: python
+
+    >>> from tardis.apps.publication_workflow.doi import DOI
+    >>> doi = DOI('10.5072/20/TEST_DOI_5a14bcdd0f309')
+    >>> doi.activate()
+    (reply){
+       serviceId = "514a087f-30eb-4860-a0ad-79a92e875564"
+       responsecode = "MT004"
+       message = "DOI 10.5072/20/TEST_DOI_5a14bcdd0f309 was successfully activated."
+       doi = "10.5072/20/TEST_DOI_5a14bcdd0f309"
+       url = None
+       verbosemessage = None
+     }
+

@@ -145,6 +145,82 @@ can be installed with:</p>
 </div>
 <img alt="_images/licenses.png" src="_images/licenses.png" />
 </div>
+<div class="section" id="minting-dois">
+<h3>Minting DOIs<a class="headerlink" href="#minting-dois" title="Permalink to this headline">¶</a></h3>
+<p>From Wikipedia, &#8220;a Digital Object Identifier or DOI is a persistent identifier
+or handle used to uniquely identify objects, standardized by the International
+Organization for Standardization&#8221;.  For example, a DOI of &#8220;10.2196/mhealth.3314&#8221;
+can be resolved at <a class="reference external" href="http://dx.doi.org/10.2196/mhealth.3314">http://dx.doi.org/10.2196/mhealth.3314</a>, leading to
+<a class="reference external" href="http://mhealth.jmir.org/2014/4/e50/">http://mhealth.jmir.org/2014/4/e50/</a>.  DOIs are commonly used to provide permanent
+links to published articles, but they can also be used to provide permanent links
+to published data.</p>
+<p>MyTardis&#8217;s publication workflow provides functionality for minting DOIs using
+Monash University&#8217;s DOI minting service at <a class="reference external" href="https://mod.monash.edu">https://mod.monash.edu</a> and its
+corresponding test service at <a class="reference external" href="https://vera186.its.monash.edu/modc/">https://vera186.its.monash.edu/modc/</a>.  DOIs can
+be minted manually by MyTardis system administrators, or from the user interface
+provided in the &#8220;My Publications&#8221; view.</p>
+<p>To get started, you need to register your MyTardis service as a &#8220;Webservice App&#8221; in
+Monash&#8217;s DOI-minting service at <a class="reference external" href="https://mod.monash.edu">https://mod.monash.edu</a> or in its corresponding
+test service at <a class="reference external" href="https://vera186.its.monash.edu/modc/">https://vera186.its.monash.edu/modc/</a>.</p>
+<img alt="_images/doi-minting-apps.png" src="_images/doi-minting-apps.png" />
+<p>Then you need to configure your MyTardis&#8217;s tardis/settings.py to use the DOI
+minting service.  For the &#8220;mytardis-demo&#8221; DOI-minting application registered
+above on <a class="reference external" href="https://vera186.its.monash.edu/modc/">https://vera186.its.monash.edu/modc/</a>, we can use the following
+settings:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">MODC_DOI_API_ID</span> <span class="o">=</span> <span class="s">&#39;514a087f-30eb-4860-a0ad-79a92e875564&#39;</span>
+<span class="c"># Use the real API password here:</span>
+<span class="n">MODC_DOI_API_PASSWORD</span> <span class="o">=</span> <span class="s">&#39;********&#39;</span>
+<span class="n">MODC_DOI_MINT_DEFINITION</span> <span class="o">=</span> <span class="s">&#39;https://vera186.its.monash.edu/modc/ws/MintDoiService.wsdl&#39;</span>
+<span class="n">MODC_DOI_ACTIVATE_DEFINITION</span> <span class="o">=</span> <span class="s">&#39;https://vera186.its.monash.edu/modc/ws/&#39;</span> \
+                               <span class="s">&#39;ActivateDoiService.wsdl&#39;</span>
+<span class="n">MODC_DOI_DEACTIVATE_DEFINITION</span> <span class="o">=</span> <span class="s">&#39;https://vera186.its.monash.edu/modc/ws/&#39;</span> \
+                                 <span class="s">&#39;DeactivateDoiService.wsdl&#39;</span>
+<span class="n">MODC_DOI_ENDPOINT</span> <span class="o">=</span> <span class="s">&#39;https://vera186.its.monash.edu/modc/ws/&#39;</span>
+<span class="c"># The MODC_DOI_MINT_URL_ROOT should be set to the base URL of your publicly</span>
+<span class="c"># accessible MyTardis server.  You can&#39;t test the DOI-minting functionality</span>
+<span class="c"># from a local dev environment (http://127.0.0.1:8000), because the URL you</span>
+<span class="c"># are minting a DOI for needs to be publicly accessible:</span>
+<span class="n">MODC_DOI_MINT_URL_ROOT</span> <span class="o">=</span> <span class="s">&#39;https://mytardisdemo.erc.monash.edu&#39;</span>
+</pre></div>
+</div>
+<p>A DOI can be minted from the Django shell (mytardis.py shell_plus) as follows:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">tardis.apps.publication_workflow.doi</span> <span class="kn">import</span> <span class="n">DOI</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">doi</span> <span class="o">=</span> <span class="n">DOI</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">experiment_id</span> <span class="o">=</span> <span class="mi">105</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">doi</span><span class="o">.</span><span class="n">mint</span><span class="p">(</span><span class="n">experiment_id</span><span class="p">,</span> <span class="n">reverse</span><span class="p">(</span><span class="s">&#39;tardis_portal.view_experiment&#39;</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">experiment_id</span><span class="p">,)))</span>
+<span class="go">10.5072/20/TEST_DOI_5a14bcdd0f309</span>
+</pre></div>
+</div>
+<p>Now <a class="reference external" href="http://dx.doi.org/10.5072/20/TEST_DOI_5a14bcdd0f309">http://dx.doi.org/10.5072/20/TEST_DOI_5a14bcdd0f309</a> should resolve to
+<a class="reference external" href="https://mytardisdemo.erc.monash.edu/experiment/view/105/">https://mytardisdemo.erc.monash.edu/experiment/view/105/</a>.</p>
+<p>We can then deactivate this DOI until the required publication criteria are met:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">doi</span><span class="o">.</span><span class="n">deactivate</span><span class="p">()</span>
+<span class="go">(reply){</span>
+<span class="go">   serviceId = &quot;514a087f-30eb-4860-a0ad-79a92e875564&quot;</span>
+<span class="go">   responsecode = &quot;MT003&quot;</span>
+<span class="go">   message = &quot;DOI 10.5072/20/TEST_DOI_5a14bcdd0f309 was successfully deactivated.&quot;</span>
+<span class="go">   doi = &quot;10.5072/20/TEST_DOI_5a14bcdd0f309&quot;</span>
+<span class="go">   url = None</span>
+<span class="go">   verbosemessage = None</span>
+<span class="go"> }</span>
+</pre></div>
+</div>
+<p>If we need to look up the same DOI later, e.g. after exiting the Django shell
+and starting a new one, we can create a DOI instance with an existing DOI:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">tardis.apps.publication_workflow.doi</span> <span class="kn">import</span> <span class="n">DOI</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">doi</span> <span class="o">=</span> <span class="n">DOI</span><span class="p">(</span><span class="s">&#39;10.5072/20/TEST_DOI_5a14bcdd0f309&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">doi</span><span class="o">.</span><span class="n">activate</span><span class="p">()</span>
+<span class="go">(reply){</span>
+<span class="go">   serviceId = &quot;514a087f-30eb-4860-a0ad-79a92e875564&quot;</span>
+<span class="go">   responsecode = &quot;MT004&quot;</span>
+<span class="go">   message = &quot;DOI 10.5072/20/TEST_DOI_5a14bcdd0f309 was successfully activated.&quot;</span>
+<span class="go">   doi = &quot;10.5072/20/TEST_DOI_5a14bcdd0f309&quot;</span>
+<span class="go">   url = None</span>
+<span class="go">   verbosemessage = None</span>
+<span class="go"> }</span>
+</pre></div>
+</div>
+</div>
 </div>
 </div>
 
@@ -170,6 +246,7 @@ can be installed with:</p>
 <li><a class="reference internal" href="#enabling-or-disabling-the-publication-workflow">Enabling or Disabling the Publication Workflow</a></li>
 <li><a class="reference internal" href="#publication-workflow-settings">Publication Workflow Settings</a></li>
 <li><a class="reference internal" href="#installing-licenses">Installing Licenses</a></li>
+<li><a class="reference internal" href="#minting-dois">Minting DOIs</a></li>
 </ul>
 </li>
 </ul>
