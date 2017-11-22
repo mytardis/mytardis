@@ -249,3 +249,5 @@ and starting a new one, we can create a DOI instance with an existing DOI:
        verbosemessage = None
      }
 
+For a complete list of the possible response codes, see:
+https://documentation.ands.org.au/display/DOC/Cite+My+Data+M2M+Service+Responses
