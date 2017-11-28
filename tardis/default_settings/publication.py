@@ -88,6 +88,7 @@ FIGSHARE_URL = "https://figshare.com/"
 
 # Put your API_ID for the Monash DOI minting service here. For other DOI
 # minting, please contact the developers
+# MODC_DOI_ENABLED = False
 # MODC_DOI_API_ID = ''
 # MODC_DOI_API_PASSWORD = ''
 # MODC_DOI_MINT_DEFINITION = 'https://doiserver/modc/ws/MintDoiService.wsdl'

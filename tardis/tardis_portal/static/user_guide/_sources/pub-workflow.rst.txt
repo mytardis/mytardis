@@ -189,6 +189,7 @@ settings:
 
 .. code-block:: python
 
+    MODC_DOI_ENABLED = True
     MODC_DOI_API_ID = '514a087f-30eb-4860-a0ad-79a92e875564'
     # Use the real API password here:
     MODC_DOI_API_PASSWORD = '********'
