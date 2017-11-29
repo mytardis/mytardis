@@ -288,6 +288,11 @@ def process_form(request):
     form_state_parameter.string_value = json.dumps(form_state)
     form_state_parameter.save()
 
+    # Set the authors even if the form hasn't been submitted yet,
+    # because we want to be able to mint DOIs for draft publications
+    # so they need to have at least one author:
+    set_publication_authors(form_state['authors'], publication)
+
     return HttpResponse(json.dumps(form_state), content_type="appication/json")
 
 
@@ -754,7 +759,10 @@ def approve_publication(request, publication, message=None, send_email=True):
                 logger.error("Could not change publication owner to "
                              "PUBLICATION_DATA_ADMIN; no such user.")
 
-        doi, url = mint_doi_and_deactivate(request, publication.id)
+        response = mint_doi_and_deactivate(request, publication.id)
+        response_dict = json.loads(response.content)
+        doi = response_dict.doi
+        url = response_dict.url
 
         if send_email:
             subject, email_message = email_pub_approved(
@@ -778,16 +786,19 @@ def mint_doi_and_deactivate(request, experiment_id):
     if getattr(settings, 'MODC_DOI_ENABLED',
                default_settings.MODC_DOI_ENABLED):
         try:
-            pub_details_schema = getattr(
+            pub_details_schema_namespace = getattr(
                 settings, 'PUBLICATION_DETAILS_SCHEMA',
                 default_settings.PUBLICATION_DETAILS_SCHEMA)
+            pub_details_schema = Schema.objects.get(
+                namespace=pub_details_schema_namespace)
 
             doi_parameter_name = ParameterName.objects.get(
-                schema__namespace=pub_details_schema,
+                schema=pub_details_schema,
                 name='doi')
-            pub_details_parameter_set = ExperimentParameterSet.objects.get(
-                schema__namespace=pub_details_schema,
-                experiment=Experiment.objects.get(id=experiment_id))
+            pub_details_parameter_set = \
+                ExperimentParameterSet.objects.get_or_create(
+                    schema=pub_details_schema,
+                    experiment=Experiment.objects.get(id=experiment_id))[0]
 
             doi = DOI()
             ExperimentParameter(name=doi_parameter_name,
@@ -799,28 +810,30 @@ def mint_doi_and_deactivate(request, experiment_id):
                                         args=(experiment_id,)))
                                 ).save()
             logger.info(
-                "DOI %s minted for publication ID %i" %
+                "DOI %s minted for publication ID %s" %
                 (doi.doi, experiment_id))
             doi.deactivate()
             logger.info(
                 "DOI %s deactivated, pending publication release criteria" %
                 doi.doi)
-            return doi, url
+            return HttpResponse(json.dumps(dict(doi=doi.doi, url=url)),
+                                content_type='application/json')
         except ObjectDoesNotExist as err:
             if isinstance(err, ParameterName.DoesNotExist):
                 logger.error(
                     "Could not find the DOI parameter name "
                     "(check schema definitions)")
-                return None, None
+                raise
             elif isinstance(err, ExperimentParameterSet.DoesNotExist):
                 logger.error(
                     "Could not find the publication details parameter set")
-                return None, None
+                raise
             else:
                 raise
     else:
-        logger.warning("Can't mint DOI, because MODC_DOI_ENABLED is False.")
-        return None, None
+        msg = "Can't mint DOI, because MODC_DOI_ENABLED is False."
+        logger.error(msg)
+        return HttpResponse(msg, status=500)
 
 
 def reject_publication(publication, message=None):
@@ -927,11 +940,18 @@ def retrieve_draft_pubs_list(request):
                 dateutil.parser.parse(form_state['embargo']).strftime("%Y-%m-%d")
         except (ObjectDoesNotExist, KeyError):
             release_date = None
+        schema = Schema.objects.get(
+                namespace='http://www.tardis.edu.au/schemas/publication/details/')
+        doi_pname = ParameterName.objects.get(name='doi', schema=schema)
+        doi_param = ExperimentParameter.objects.filter(
+                parameterset__experiment=draft_pub, name=doi_pname).first()
+        doi = doi_param.string_value if doi_param else None
         draft_pubs_data.append(
             {
                 'id': draft_pub.id,
                 'title': draft_pub.title,
-                'release_date': release_date
+                'release_date': release_date,
+                'doi': doi
             })
 
     return HttpResponse(json.dumps(draft_pubs_data),

@@ -92,11 +92,17 @@ angular
                 'currentPageIdx': vm.currentPageIdx
             },
             closeByDocument: false,
+            // The "redirectTo" code below needs review.
+            // After creating a publication from the My Publications view,
+            // I want it to be displayed in that view, I don't want to be
+            // redirected to that publication's experiment view.
+            // Consider all 4 cases: Create vs Resume from My Pubs vs Exp page.
             preCloseCallback: function (publicationId) {
                 if (angular.isDefined(publicationId) &&
                     angular.isNumber(publicationId) &&
                     publicationId !== vm.experimentId) {
-                    var redirectTo = '/experiment/view/' + publicationId + '/';
+                    // var redirectTo = '/experiment/view/' + publicationId + '/';
+                    var redirectTo = '/apps/publication-workflow/my_publications/';
                     $window.location = redirectTo;
                 } else if (angular.isDefined(publicationId)) {
                     $window.location.reload();
@@ -227,17 +233,22 @@ angular
   
         $mdDialog.show(confirmation).then(function() {
             $log.info('OK, minting a DOI...');
-            $log.info('Checking whether approval is required...');
+            vm.updating = true;
             $http.post('/apps/publication-workflow/publication/mint_doi/' + vm.experimentId + '/', {})
                .then(function (_response) {
+                   vm.updating = false;
                    $log.debug("DOI minted successfully.");
                    $window.location.reload();
                },
                function(_response) {
+                   vm.updating = false;
                    $log.debug("Failed to mint DOI.");
                });
         }, function() {
+            vm.updating = false;
             $log.info('OK, not minting a DOI');
         });
     };
+
+    vm.updating = false;
 });

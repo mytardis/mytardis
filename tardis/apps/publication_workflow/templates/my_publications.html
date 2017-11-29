@@ -59,7 +59,9 @@ var figshare_categories_json = '{{ figshare_categories_json }}';
               </tr>
             </thead>
             <tbody md-body>
-              <tr md-row md-select="title" md-on-select="myPubsCtrl.logItem" md-auto-select="myPubsCtrl.options.autoSelect" ng-repeat="draftPub in myPubsCtrl.draftPubs | filter: myPubsCtrl.filter.search | orderBy: myPubsCtrl.query.order | limitTo: myPubsCtrl.query.limit : (myPubsCtrl.query.page -1) * myPubsCtrl.query.limit">
+              <tr md-row md-select="title" md-on-select="myPubsCtrl.logItem"
+                  md-auto-select="myPubsCtrl.options.autoSelect"
+                  ng-repeat="draftPub in myPubsCtrl.draftPubs | filter: myPubsCtrl.filter.search | orderBy: myPubsCtrl.query.order | limitTo: myPubsCtrl.query.limit : (myPubsCtrl.query.page -1) * myPubsCtrl.query.limit">
                 <td md-cell>{{draftPub.id}}</td>
                 <td md-cell>
                   <a class="explink"
@@ -67,7 +69,7 @@ var figshare_categories_json = '{{ figshare_categories_json }}';
                     {{draftPub.title}}
                   </a>
                 </td>
-                <td md-cell></td>
+                <td md-cell>{{draftPub.doi}}</td>
                 <td md-cell>{{draftPub.release_date}}</td>
                 <td md-cell
                    ng-controller="PublicationActionsController as pubActionsCtrl"
@@ -95,6 +97,15 @@ var figshare_categories_json = '{{ figshare_categories_json }}';
                    <i class="fa fa-share-alt"></i>
                  Share
                  </button>
+                 <!-- For now, we're using Bootstrap (not Angular Material) for buttons -->
+                 <!-- to make them look consistent with the rest of MyTardis. -->
+                 <!-- This requires a few workarounds to make the two frameworks -->
+                 <!-- play nicely together, e.g. using style="inline-block" -->
+                 <md-progress-circular md-mode="indeterminate"
+                                       ng-show="pubActionsCtrl.updating"
+                                       md-diameter="20px"
+                                       style="display:inline-block;">
+                 </md-progress-circular>
                 </td>
               </tr>
             </tbody>
