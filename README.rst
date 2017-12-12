@@ -75,7 +75,7 @@ Known deployments
 - ANSTO: https://tardis.nbi.ansto.gov.au/
 - Monash MyTardis Demo: https://mytardisdemo.erc.monash.edu/
 
-Related Projects and Repositories
+Related projects and repositories
 ---------------------------------
 - MyData: https://github.com/mytardis/mydata
 
