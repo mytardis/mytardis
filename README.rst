@@ -68,29 +68,29 @@ The wiki at https://github.com/mytardis/mytardis/wiki includes
 
 Known deployments
 -----------------
-- Store.Synchrotron: https://store.synchrotron.org.au/
-- Store.Monash: https://store.erc.monash.edu
-- NIF ImageTrove: https://imagetrove.cai.uq.edu.au/
-- MHTP Medical Genomics: https://mhtp-seq.erc.monash.edu/
-- ANSTO: https://tardis.nbi.ansto.gov.au/
-- Monash MyTardis Demo: https://mytardisdemo.erc.monash.edu/
+- **Store.Synchrotron**: https://store.synchrotron.org.au/
+- **Store.Monash**: https://store.erc.monash.edu
+- **NIF ImageTrove**: https://imagetrove.cai.uq.edu.au/
+- **MHTP Medical Genomics**: https://mhtp-seq.erc.monash.edu/
+- **ANSTO**: https://tardis.nbi.ansto.gov.au/
+- **Monash MyTardis Demo**: https://mytardisdemo.erc.monash.edu/
 
 Related projects and repositories
 ---------------------------------
-- MyData: https://github.com/mytardis/mydata
+- **MyData**: https://github.com/mytardis/mydata
 
   - A desktop application for managing uploads to MyTardis
-- NIF ImageTrove: https://github.com/NIF-au/imagetrove
+- **NIF ImageTrove**: https://github.com/NIF-au/imagetrove
 
   - A tool for ingesting and archiving NIF datasets, including
     - Web front end: `MyTardis <http://mytardis.org/>`_
     - A DICOM server: `DICOM <http://dicom.offis.de/dcmtk.php.en>`_
     - A dataset uploader: `imagetrove-uploader <https://github.com/NIF-au/imagetrove-uploader>`_
     - Federated authentication with the Australian Access Federation's `Rapid Connect <https://rapid.aaf.edu.au>`_ service
-- NIF ImageTrove Docker deployment: https://github.com/UWA-FoS/docker-mytardis
+- **NIF ImageTrove Docker deployment**: https://github.com/UWA-FoS/docker-mytardis
 
   - For ease of deployment, all of ImageTrove's components are packaged into a Docker container.
-- NIF Trusted Data Repositories: https://github.com/NIF-au/TDR
+- **NIF Trusted Data Repositories**: https://github.com/NIF-au/TDR
 
   - Delivering durable, reliable, high-quality image data
 
