@@ -83,6 +83,7 @@ Related projects and repositories
 - **NIF ImageTrove**: https://github.com/NIF-au/imagetrove
 
   - A tool for ingesting and archiving NIF datasets, including
+  
     - Web front end: `MyTardis <http://mytardis.org/>`_
     - A DICOM server: `DICOM <http://dicom.offis.de/dcmtk.php.en>`_
     - A dataset uploader: `imagetrove-uploader <https://github.com/NIF-au/imagetrove-uploader>`_
