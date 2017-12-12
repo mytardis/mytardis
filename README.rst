@@ -30,13 +30,13 @@ storage, data access, collaboration and data publication.
 
 Key features for users
 ----------------------
-The MyTardis data management platform is a software solution that manages research data and the associated metadata. MyTardis handles the underlying storage to ensure that data is securely archived and provides access to the data through a web portal. You can also access your data using an SFTP client like `Cyberduck <https://cyberduck.io/>`_.
+The MyTardis data management platform is a software solution that manages research data and the associated metadata. MyTardis handles the underlying storage to ensure that data is securely archived and provides access to the data through a web portal. Data hosted in MyTardis can also be accessed via SFTP.
 
 `Read more... <http://www.mytardis.org/introduction/>`_
 
 Key features for instrument facilities
 --------------------------------------
-MyTardis takes care of distributing data to your users. Its instrument integration technology takes care of securely and automatically shifting data from instrument to repository, accessible by the right users, in real-time.
+MyTardis takes care of distributing data to your users. Its instrument integration technology takes care of securely and automatically shifting data from instrument to repository and makes it accessible by the right users.
 
 `Read more... <http://www.mytardis.org/for-facilities/>`_
 
