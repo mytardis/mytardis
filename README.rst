@@ -85,7 +85,7 @@ Related projects and repositories
   - A tool for ingesting and archiving NIF datasets, including
   
     - Web front end: `MyTardis <http://mytardis.org/>`_
-    - A DICOM server: `DICOM <http://dicom.offis.de/dcmtk.php.en>`_
+    - A DICOM server: `DICOM ToolKit <http://dicom.offis.de/dcmtk.php.en>`_
     - A dataset uploader: `imagetrove-uploader <https://github.com/NIF-au/imagetrove-uploader>`_
     - Federated authentication with the Australian Access Federation's `Rapid Connect <https://rapid.aaf.edu.au>`_ service
 - **NIF ImageTrove Docker deployment**: https://github.com/UWA-FoS/docker-mytardis
