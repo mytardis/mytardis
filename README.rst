@@ -44,7 +44,7 @@ MyTardis is mostly written in the `Python programming language <https://www.pyth
 
 To set up and manage these services we employ the `SaltStack <https://saltstack.com/>`_ orchestration software and cloud technologies.
 
-_`Read more...`: http://www.mytardis.org/for-developers/
+`Read more... <http://www.mytardis.org/for-developers/>`_
 
 Find out more
 -------------
