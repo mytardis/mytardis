@@ -18,6 +18,8 @@ MyTardis
   :target: https://coveralls.io/r/mytardis/mytardis?branch=develop
   :alt: Coveralls Badge
 
+Overview
+--------
 MyTardis began at Monash University to solve the problem of users needing to
 store large datasets and share them with collaborators online. Its particular
 focus is on integration with scientific instruments, instrument facilities and
