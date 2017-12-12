@@ -78,9 +78,21 @@ Known deployments
 Related Projects and Repositories
 ---------------------------------
 - MyData: https://github.com/mytardis/mydata
+
+  - A desktop application for managing uploads to MyTardis
 - NIF ImageTrove: https://github.com/NIF-au/imagetrove
+
+  - A tool for ingesting and archiving NIF datasets, including
+    - Web front end: `MyTardis <http://mytardis.org/>`_
+    - A DICOM server: `DICOM <http://dicom.offis.de/dcmtk.php.en>`_
+    - A dataset uploader: `imagetrove-uploader <https://github.com/NIF-au/imagetrove-uploader>`_
+    - Federated authentication with the Australian Access Federation's `Rapid Connect <https://rapid.aaf.edu.au>`_ service
+- NIF ImageTrove Docker deployment: https://github.com/UWA-FoS/docker-mytardis
+
+  - For ease of deployment, all of ImageTrove's components are packaged into a Docker container.
 - NIF Trusted Data Repositories: https://github.com/NIF-au/TDR
-- Docker deployment: https://github.com/UWA-FoS/docker-mytardis
+
+  - Delivering durable, reliable, high-quality image data
 
 Releases
 --------
