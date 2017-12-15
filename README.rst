@@ -18,24 +18,35 @@ MyTardis
   :target: https://coveralls.io/r/mytardis/mytardis?branch=develop
   :alt: Coveralls Badge
 
-MyTardis is a multi-institutional collaborative venture that facilitates the
-archiving and sharing of data and metadata collected at major facilities such
-as the Australian Synchrotron and ANSTO and within Institutions.
+Overview
+--------
+MyTardis began at Monash University to solve the problem of users needing to
+store large datasets and share them with collaborators online. Its particular
+focus is on integration with scientific instruments, instrument facilities and
+research storage and computing infrastructure; to address the challenges of data
+storage, data access, collaboration and data publication.
 
-An example of the benefit of a system such as MyTardis in the protein
-crystallography community is that while the model coordinates and (less often)
-the structure factors (processed experimental data) are stored in the
-community Protein Data Bank (PDB) the raw diffraction data is often not
-available. There are several reasons why this is important, which can be
-summarised as:
+`Read more... <http://www.mytardis.org/about/>`_
 
--  The availability of raw data is extremely useful for the development
-   of improved methods of image analysis and data processing.
+Key features for users
+----------------------
+The MyTardis data management platform is a software solution that manages research data and the associated metadata. MyTardis handles the underlying storage to ensure that data is securely archived and provides access to the data through a web portal. Data hosted in MyTardis can also be accessed via SFTP.
 
--  Fostering the archival of raw data at an institutional level is one
-   the best ways of ensuring that this data is not lost (laboratory
-   archives are typically volatile).
+`Read more... <http://www.mytardis.org/introduction/>`_
 
+Key features for instrument facilities
+--------------------------------------
+MyTardis takes care of distributing data to your users. Its instrument integration technology takes care of securely and automatically shifting data from instrument to repository and makes it accessible by the right users.
+
+`Read more... <http://www.mytardis.org/for-facilities/>`_
+
+Developing for MyTardis
+-----------------------
+MyTardis is mostly written in the `Python programming language <https://www.python.org/>`_ and is built on top of the `Django web framework <https://www.djangoproject.com/>`_. A complete installation of the service also includes an `Elasticsearch <https://www.elastic.co/>`_ index, a `RabbitMQ <https://www.rabbitmq.com/>`_-based task queue, an `Nginx <http://nginx.org/>`_ server, and a `PostgreSQL <http://www.postgresql.org/>`_ database.
+
+To set up and manage these services we employ the `SaltStack <https://saltstack.com/>`_ orchestration software and cloud technologies.
+
+`Read more... <http://www.mytardis.org/for-developers/>`_
 
 Find out more
 -------------
@@ -49,6 +60,40 @@ Documentation at http://mytardis.readthedocs.org includes
 - User documentation
 - Administrator documentation
 - Developer documentation
+
+The wiki at https://github.com/mytardis/mytardis/wiki includes
+
+- Links to MyTardis add-ons, including apps and post-save filters
+- Information about MyTardis community events
+
+Known deployments
+-----------------
+- **Store.Synchrotron**: https://store.synchrotron.org.au/
+- **Store.Monash**: https://store.erc.monash.edu
+- **NIF ImageTrove**: https://imagetrove.cai.uq.edu.au/
+- **MHTP Medical Genomics**: https://mhtp-seq.erc.monash.edu/
+- **ANSTO**: https://tardis.nbi.ansto.gov.au/
+- **Monash MyTardis Demo**: https://mytardisdemo.erc.monash.edu/
+
+Related projects and repositories
+---------------------------------
+- **MyData**: https://github.com/mytardis/mydata
+
+  - A desktop application for managing uploads to MyTardis
+- **NIF ImageTrove**: https://github.com/NIF-au/imagetrove
+
+  - A tool for ingesting and archiving NIF datasets, including
+  
+    - Web front end: `MyTardis <http://mytardis.org/>`_
+    - A DICOM server: `DICOM ToolKit <http://dicom.offis.de/dcmtk.php.en>`_
+    - A dataset uploader: `imagetrove-uploader <https://github.com/NIF-au/imagetrove-uploader>`_
+    - Federated authentication with the Australian Access Federation's `Rapid Connect <https://rapid.aaf.edu.au>`_ service
+- **NIF ImageTrove Docker deployment**: https://github.com/UWA-FoS/docker-mytardis
+
+  - For ease of deployment, all of ImageTrove's components are packaged into a Docker container.
+- **NIF Trusted Data Repositories**: https://github.com/NIF-au/TDR
+
+  - Delivering durable, reliable, high-quality image data
 
 Releases
 --------
