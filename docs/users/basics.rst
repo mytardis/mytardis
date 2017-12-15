@@ -114,6 +114,8 @@ Data sharing is done at the Experiment level and you can find the options to sha
 under the **Sharing** tab on the left side of an Experiment page.
 
 .. image:: ../images/userguide/sharing_tab.png
+    :width: 500px
+    :align: center
 
 Sharing data with another MyTardis User
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -124,10 +126,14 @@ To share an Experiment with another MyTardis user:
 #. Click the **Change User Sharing** button.
 
 .. image:: ../images/userguide/sharing_user.png
+    :width: 500px
+    :align: center
 
 4. Enter the **Username** of the user with which you want to share the data.
 
 .. image:: ../images/userguide/sharing_view.png
+    :width: 500px
+    :align: center
 
 Note: Entering the users name or email address with activate autocomplete,
    which helps to find the username of the user.
@@ -138,6 +144,8 @@ Note: Entering the users name or email address with activate autocomplete,
    permissions you've given them.
 
 .. image:: ../images/userguide/sharing_view_added.png
+    :width: 500px
+    :align: center
 
 Sharing Data Via a Temporary Link
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -149,11 +157,13 @@ knowledge of the link.
 
 To share an Experiment via a temporary link:
 
-1. Navigate to the Experiement you want to share.
+1. Navigate to the Experiment you want to share.
 #. Click on the **Sharing** tab on the left of the page.
 #. Click the **Create New Temporary Link** button in the links section.
 
 .. image:: ../images/userguide/link_view.png
+    :width: 500px
+    :align: center
 
 4. You should now see a new entry in the **Links** section. The new entry will
    provide links to both the Experiment page and a direct download link. These
@@ -161,6 +171,8 @@ To share an Experiment via a temporary link:
    shared with collaborators using email etc.
 
 .. image:: ../images/userguide/link_created.png
+    :width: 500px
+    :align: center
 
 Publishing Data
 ^^^^^^^^^^^^^^^
@@ -180,6 +192,8 @@ an Experiment publicly available:
    your service provider.
 
 .. image:: ../images/userguide/publish_dialog.png
+    :width: 500px
+    :align: center
 
 5. Agree to the "Terms of Publishing" of your service provider.
 #. Click **Confirm**
