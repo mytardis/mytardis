@@ -21,6 +21,8 @@ class CollectstaticTest(TestCase):
     def tearDown(self):
         if path.exists(self.STATIC_ROOT):
             shutil.rmtree(self.STATIC_ROOT)
+        if path.exists(self.NPM_ROOT_PATH):
+            shutil.rmtree(self.NPM_ROOT_PATH)
 
     def test_collectstatic(self):
         with self.settings(
