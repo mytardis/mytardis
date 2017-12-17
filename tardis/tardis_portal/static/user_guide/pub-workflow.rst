@@ -209,6 +209,7 @@ A DOI can be minted from the Django shell (mytardis.py shell_plus) as follows:
 
 .. code-block:: python
 
+    >>> from django.core.urlresolvers import reverse
     >>> from tardis.apps.publication_workflow.doi import DOI
     >>> doi = DOI()
     >>> experiment_id = 105

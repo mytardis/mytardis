@@ -315,7 +315,8 @@ settings:</p>
 </pre></div>
 </div>
 <p>A DOI can be minted from the Django shell (mytardis.py shell_plus) as follows:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">tardis.apps.publication_workflow.doi</span> <span class="kn">import</span> <span class="n">DOI</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">django.core.urlresolvers</span> <span class="kn">import</span> <span class="n">reverse</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">tardis.apps.publication_workflow.doi</span> <span class="kn">import</span> <span class="n">DOI</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">doi</span> <span class="o">=</span> <span class="n">DOI</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">experiment_id</span> <span class="o">=</span> <span class="mi">105</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">doi</span><span class="o">.</span><span class="n">mint</span><span class="p">(</span><span class="n">experiment_id</span><span class="p">,</span> <span class="n">reverse</span><span class="p">(</span><span class="s1">&#39;tardis_portal.view_experiment&#39;</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">experiment_id</span><span class="p">,)))</span>
