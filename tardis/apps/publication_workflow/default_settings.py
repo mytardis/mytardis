@@ -74,7 +74,15 @@ GENERIC_PUBLICATION_DATASET_SCHEMA = PUBLICATION_SCHEMA_ROOT + 'generic/'
 
 PDB_REFRESH_INTERVAL = timedelta(days=7)
 
-PUBLICATIONS_REQUIRE_APPROVAL = True
+# PUBLICATIONS_REQUIRE_APPROVAL was set to True for Store.Synchrotron, but in
+# the general case, there is no governing body overseeing data publication -
+# it is just up to the researchers who have uploaded the data.
+PUBLICATIONS_REQUIRE_APPROVAL = False
+
+# If set to True, attempting to submit a draft for publication will fail if an
+# email notification can't be sent.  Allowing submission of publications without
+# email notifications is useful for local testing.
+PUBLICATIONS_REQUIRE_EMAIL_SUCCESS = False
 
 PUBLICATION_FORM_MAPPINGS = [
     {'dataset_schema': r'^http://synchrotron.org.au/mx/',

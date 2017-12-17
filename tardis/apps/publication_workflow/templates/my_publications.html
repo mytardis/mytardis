@@ -120,12 +120,120 @@ var figshare_categories_json = '{{ figshare_categories_json }}';
       <p>You do not have access to any scheduled publications.</p>
     </div>
 
+  <md-content layout="column" flex ng-show="myPubsCtrl.scheduledPubs.length">
+        <md-table-container>
+          <table md-table md-row-select="false" ng-model="myPubsCtrl.scheduledPubsTableModel" md-progress="promise">
+            <thead md-head md-order="myPubsCtrl.query.order" md-on-reorder="myPubsCtrl.logOrder">
+              <tr md-row>
+                <th md-column md-numeric md-order-by="id"><span>ID</span></th>
+                <th md-column md-order-by="title"><span>Publication Title</span></th>
+                <th md-column md-order-by="doi">
+                  <span>DOI<md-tooltip md-direction="bottom">Digital Object Identifier</md-tooltip></span>
+                </th>
+                <th md-column md-order-by="releaseDate" md-desc><span>Release Date</span></th>
+                <th md-column><span>Actions</span></th>
+              </tr>
+            </thead>
+            <tbody md-body>
+              <tr md-row md-select="title" md-on-select="myPubsCtrl.logItem"
+                  md-auto-select="myPubsCtrl.options.autoSelect"
+                  ng-repeat="scheduledPub in myPubsCtrl.scheduledPubs | filter: myPubsCtrl.filter.search | orderBy: myPubsCtrl.query.order | limitTo: myPubsCtrl.query.limit : (myPubsCtrl.query.page -1) * myPubsCtrl.query.limit">
+                <td md-cell>{{scheduledPub.id}}</td>
+                <td md-cell>
+                  <a class="explink"
+                     href="/experiment/view/{{scheduledPub.id}}/">
+                    {{scheduledPub.title}}
+                  </a>
+                </td>
+                <td md-cell>{{scheduledPub.doi}}</td>
+                <td md-cell>{{scheduledPub.release_date}}</td>
+                <td md-cell
+                   ng-controller="PublicationActionsController as pubActionsCtrl"
+                   ng-init="pubActionsCtrl.init(scheduledPub.id)">
+                 <button title="Retract" class="btn btn-danger"
+                         ng-click="pubActionsCtrl.retract()">
+                   <i class="fa fa-exclamation-triangle"></i>
+                   Retract
+                 </button>
+                 &nbsp;
+                 <button title="Share" class="btn btn-info"
+                         ng-click="pubActionsCtrl.sharePublication()">
+                   <i class="fa fa-share-alt"></i>
+                 Share
+                 </button>
+                 <!-- For now, we're using Bootstrap (not Angular Material) for buttons -->
+                 <!-- to make them look consistent with the rest of MyTardis. -->
+                 <!-- This requires a few workarounds to make the two frameworks -->
+                 <!-- play nicely together, e.g. using style="inline-block" -->
+                 <md-progress-circular md-mode="indeterminate"
+                                       ng-show="pubActionsCtrl.updating"
+                                       md-diameter="20px"
+                                       style="display:inline-block;">
+                 </md-progress-circular>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </md-table-container>
+   </md-content>
+
   <br/>
 
   <h3 class="md-title">Released</h3>
     <div ng-hide="myPubsCtrl.releasedPubs.length">
       <p>You do not have access to any released publications.</p>
     </div>
+
+  <md-content layout="column" flex ng-show="myPubsCtrl.releasedPubs.length">
+        <md-table-container>
+          <table md-table md-row-select="false" ng-model="myPubsCtrl.scheduledPubsTableModel" md-progress="promise">
+            <thead md-head md-order="myPubsCtrl.query.order" md-on-reorder="myPubsCtrl.logOrder">
+              <tr md-row>
+                <th md-column md-numeric md-order-by="id"><span>ID</span></th>
+                <th md-column md-order-by="title"><span>Publication Title</span></th>
+                <th md-column md-order-by="doi">
+                  <span>DOI<md-tooltip md-direction="bottom">Digital Object Identifier</md-tooltip></span>
+                </th>
+                <th md-column md-order-by="releaseDate" md-desc><span>Release Date</span></th>
+                <th md-column><span>Actions</span></th>
+              </tr>
+            </thead>
+            <tbody md-body>
+              <tr md-row md-select="title" md-on-select="myPubsCtrl.logItem"
+                  md-auto-select="myPubsCtrl.options.autoSelect"
+                  ng-repeat="releasedPub in myPubsCtrl.releasedPubs | filter: myPubsCtrl.filter.search | orderBy: myPubsCtrl.query.order | limitTo: myPubsCtrl.query.limit : (myPubsCtrl.query.page -1) * myPubsCtrl.query.limit">
+                <td md-cell>{{releasedPub.id}}</td>
+                <td md-cell>
+                  <a class="explink"
+                     href="/experiment/view/{{releasedPub.id}}/">
+                    {{releasedPub.title}}
+                  </a>
+                </td>
+                <td md-cell>{{releasedPub.doi}}</td>
+                <td md-cell>{{releasedPub.release_date}}</td>
+                <td md-cell
+                   ng-controller="PublicationActionsController as pubActionsCtrl"
+                   ng-init="pubActionsCtrl.init(releasedPub.id)">
+                 <button title="Retract" class="btn btn-danger"
+                         ng-click="pubActionsCtrl.retract()">
+                   <i class="fa fa-trash"></i>
+                   Retract
+                 </button>
+                 <!-- For now, we're using Bootstrap (not Angular Material) for buttons -->
+                 <!-- to make them look consistent with the rest of MyTardis. -->
+                 <!-- This requires a few workarounds to make the two frameworks -->
+                 <!-- play nicely together, e.g. using style="inline-block" -->
+                 <md-progress-circular md-mode="indeterminate"
+                                       ng-show="pubActionsCtrl.updating"
+                                       md-diameter="20px"
+                                       style="display:inline-block;">
+                 </md-progress-circular>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </md-table-container>
+   </md-content>
 
 </div>  <!-- id="content" -->
 

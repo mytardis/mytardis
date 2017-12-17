@@ -5,7 +5,6 @@ import re
 
 import dateutil.parser
 
-import CifFile
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.urlresolvers import reverse
@@ -27,8 +26,7 @@ from tardis.tardis_portal.auth.localdb_auth import django_user, django_group
 
 from .doi import DOI
 from .models import Publication
-from .utils import PDBCifHelper, check_pdb_status, get_unreleased_pdb_info, \
-    send_mail_to_authors, get_pub_admin_email_addresses, get_site_admin_email
+from .utils import send_mail_to_authors, get_pub_admin_email_addresses, get_site_admin_email
 from .email_text import email_pub_requires_authorisation, \
     email_pub_awaiting_approval, email_pub_approved, email_pub_rejected, \
     email_pub_reverted_to_draft
@@ -256,15 +254,18 @@ def process_form(request):
                 "failed to send publication notification email(s): %s" %
                 repr(e)
             )
-            return HttpResponse(
-                json.dumps({
-                    'error': 'Failed to send notification email - please '
-                             'contact the %s administrator (%s), '
-                             'or try again later. Your draft is saved.'
-                             % (get_site_admin_email(),
-                                getattr(settings, 'SITE_TITLE', 'MyTardis'))
-                }),
-                content_type="application/json")
+            if getattr(settings, 'PUBLICATIONS_REQUIRE_EMAIL_SUCCESS',
+                       default_settings.PUBLICATIONS_REQUIRE_EMAIL_SUCCESS):
+                return HttpResponse(
+                    json.dumps({
+                        'error': 'Failed to send notification email - please '
+                                 'contact the %s administrator (%s), '
+                                 'or try again later. Your draft is saved.'
+                                 % (get_site_admin_email(),
+                                    getattr(settings, 'SITE_TITLE',
+                                            'MyTardis'))
+                    }),
+                    content_type="application/json")
 
         # Remove the draft status
         remove_draft_status(publication)
@@ -281,7 +282,8 @@ def process_form(request):
                                 content_type="appication/json")
 
         # Trigger publication record update
-        tasks.update_publication_records.delay()
+        # tasks.update_publication_records.delay()
+        tasks.update_publication_records()
 
     # Clear the form action and save the state
     form_state['action'] = ''
@@ -596,32 +598,6 @@ def fetch_experiments_and_datasets(request):
                         content_type="appication/json")
 
 
-def pdb_helper(request, pdb_id):
-    try:
-        # Do this if the PDB is already released...
-        pdb = PDBCifHelper(pdb_id)
-        citations = pdb.get_citations()
-        authors = ', '.join(citations[0]['authors'])
-        title = citations[0]['title']
-        result = {
-            'title': title,
-            'authors': authors,
-            'status': 'RELEASED'
-        }
-    except CifFile.StarError:
-        # If it's not released, check if it's a valid PDB ID
-        status = check_pdb_status(pdb_id)
-        if status == 'UNRELEASED':
-            result = get_unreleased_pdb_info(pdb_id)
-            result['status'] = 'UNRELEASED'
-        else:
-            result = {'title': '',
-                      'authors': '',
-                      'status': 'UNKNOWN'}
-
-    return HttpResponse(json.dumps(result), content_type="application/json")
-
-
 def require_publication_admin(f):
     def wrap(request, *args, **kwargs):
         if not request.user.groups.filter(
@@ -761,8 +737,8 @@ def approve_publication(request, publication, message=None, send_email=True):
 
         response = mint_doi_and_deactivate(request, publication.id)
         response_dict = json.loads(response.content)
-        doi = response_dict.doi
-        url = response_dict.url
+        doi = response_dict['doi']
+        url = response_dict['url']
 
         if send_email:
             subject, email_message = email_pub_approved(
@@ -967,8 +943,20 @@ def retrieve_scheduled_pubs_list(request):
     scheduled_pubs_data = []
     scheduled_publications = Publication.safe.scheduled_publications(request.user)\
         .order_by('-update_time')
+    schema = Schema.objects.get(
+            namespace='http://www.tardis.edu.au/schemas/publication/details/')
+    doi_pname = ParameterName.objects.get(name='doi', schema=schema)
     for scheduled_pub in scheduled_publications:
-        scheduled_pubs_data.append({'id': scheduled_pub.id, 'title': scheduled_pub.title})
+        doi_param = ExperimentParameter.objects.filter(
+                parameterset__experiment=scheduled_pub, name=doi_pname).first()
+        doi = doi_param.string_value if doi_param else None
+        scheduled_pubs_data.append(
+            {
+                'id': scheduled_pub.id,
+                'title': scheduled_pub.title,
+                'doi': doi,
+                'release_date': tasks.get_release_date(scheduled_pub).strftime('%Y-%m-%d')
+            })
 
     return HttpResponse(json.dumps(scheduled_pubs_data),
                         content_type='application/json')
@@ -984,7 +972,13 @@ def retrieve_released_pubs_list(request):
     released_publications = Publication.safe.released_publications(request.user)\
         .order_by('-update_time')
     for released_pub in released_publications:
-        released_pubs_data.append({'id': released_pub.id, 'title': released_pub.title})
+        released_pubs_data.append(
+            {
+                'id': released_pub.id,
+                'title': released_pub.title,
+                'doi': doi,
+                'release_date': tasks.get_release_date(released_pub).strftime('%Y-%m-%d')
+            })
 
     return HttpResponse(json.dumps(released_pubs_data),
                         content_type='application/json')

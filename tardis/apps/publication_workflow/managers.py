@@ -74,7 +74,7 @@ class PublicationManager(ExperimentManager):
             experiment__in=exps, schema=publication_root_schema)
         scheduled_pub_exp_ids = \
             [exp_pset.experiment.id for exp_pset in exp_psets
-             if not exp_pset.experiment.is_publication_draft()]
+             if exp_pset.experiment.public_access == Experiment.PUBLIC_ACCESS_EMBARGO]
         return exps.filter(id__in=scheduled_pub_exp_ids).distinct()
 
     def released_publications(self, user):
@@ -108,5 +108,5 @@ class PublicationManager(ExperimentManager):
             experiment__in=exps, schema=publication_root_schema)
         released_pub_exp_ids = \
             [exp_pset.experiment.id for exp_pset in exp_psets
-             if not exp_pset.experiment.is_publication_draft()]
+             if exp_pset.experiment.public_access == Experiment.PUBLIC_ACCESS_FULL]
         return exps.filter(id__in=released_pub_exp_ids).distinct()
