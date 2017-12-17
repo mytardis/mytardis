@@ -150,11 +150,6 @@ def process_form(request):
         # Any unrecognised fields or schemas are ignored!
         map_form_to_schemas(form_state['extraInfo'], publication)
 
-        # *** Synchrotron specific ***
-        # Search for beamline/EPN information associated with each dataset
-        # and add to the publication.
-        synchrotron_search_epn(publication)
-
         # --- Get data for the next page --- #
         licenses_json = get_licenses()
         form_state['licenses'] = licenses_json
@@ -407,50 +402,6 @@ def set_embargo_release_date(publication, release_date):
     ExperimentParameter(name=embargo_parameter_name,
                         parameterset=pub_schema_root_parameter_set,
                         datetime_value=release_date).save()
-
-
-def synchrotron_search_epn(publication):
-    # *** Synchrotron specific ***
-    # Search for beamline/EPN information associated with each dataset
-    # and add to the publication.
-    try:
-        synch_epn_schema = Schema.objects.get(
-            namespace='http://www.tardis.edu.au/schemas/as/'
-                      'experiment/2010/09/21')
-        datasets = Dataset.objects.filter(experiments=publication)
-        synch_experiments = Experiment.objects.filter(
-            datasets__in=datasets,
-            experimentparameterset__schema=synch_epn_schema).exclude(
-            pk=publication.pk).distinct()
-        for exp in [s for s in
-                    synch_experiments if not s.is_publication()]:
-            epn = ExperimentParameter.objects.get(
-                name__name='EPN',
-                name__schema=synch_epn_schema,
-                parameterset__experiment=exp).string_value
-            beamline = ExperimentParameter.objects.get(
-                name__name='beamline',
-                name__schema=synch_epn_schema,
-                parameterset__experiment=exp).string_value
-
-            epn_parameter_set = ExperimentParameterSet(
-                schema=synch_epn_schema,
-                experiment=publication)
-            epn_parameter_set.save()
-            epn_copy = ExperimentParameter(
-                name=ParameterName.objects.get(
-                    name='EPN', schema=synch_epn_schema),
-                parameterset=epn_parameter_set)
-            epn_copy.string_value = epn
-            epn_copy.save()
-            beamline_copy = ExperimentParameter(
-                name=ParameterName.objects.get(
-                    name='beamline', schema=synch_epn_schema),
-                parameterset=epn_parameter_set)
-            beamline_copy.string_value = beamline
-            beamline_copy.save()
-    except Schema.DoesNotExist:
-        pass
 
 
 def select_forms(datasets):
