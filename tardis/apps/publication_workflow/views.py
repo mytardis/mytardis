@@ -1017,7 +1017,8 @@ def retrieve_access_list_tokens_json(request, experiment_id):
             {
                 'expiry_date': token.expiry_date.isoformat(),
                 'username': token.user.username,
-                'url': token_url(exp.get_absolute_url(), token),
+                'url': request.build_absolute_uri(
+                    token_url(exp.get_absolute_url(), token)),
                 'download_url': request.build_absolute_uri(
                    token_url(download_urls.get('tar', None), token)),
                 'id': token.id,
