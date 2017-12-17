@@ -694,7 +694,7 @@ def approve_publication(request, publication, message=None, send_email=True):
         embargo_expired = timezone.now() >= release_date
         if embargo_expired:
             publication.public_access = Experiment.PUBLIC_ACCESS_FULL
-	else:
+        else:
             publication.public_access = Experiment.PUBLIC_ACCESS_EMBARGO
         # Delete the form state (and containing parameter set)
         try:
