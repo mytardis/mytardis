@@ -971,7 +971,13 @@ def retrieve_released_pubs_list(request):
     released_pubs_data = []
     released_publications = Publication.safe.released_publications(request.user)\
         .order_by('-update_time')
+    schema = Schema.objects.get(
+            namespace='http://www.tardis.edu.au/schemas/publication/details/')
+    doi_pname = ParameterName.objects.get(name='doi', schema=schema)
     for released_pub in released_publications:
+        doi_param = ExperimentParameter.objects.filter(
+                parameterset__experiment=released_pub, name=doi_pname).first()
+        doi = doi_param.string_value if doi_param else None
         released_pubs_data.append(
             {
                 'id': released_pub.id,
