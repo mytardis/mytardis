@@ -48,122 +48,6 @@ class PubFormConfig():
                                                  hidden=True,
                                                  immutable=True)
 
-    def _setup_PDB_PUBLICATION_SCHEMA_ROOT(self, namespace):
-        schema, _ = Schema.objects.get_or_create(namespace=namespace,
-                                                 name='Protein Data Bank',
-                                                 hidden=False,
-                                                 immutable=True)
-        ParameterName.objects.get_or_create(schema=schema,
-                                            name='pdb-id',
-                                            full_name='PDB ID',
-                                            data_type=ParameterName.STRING,
-                                            is_searchable=True,
-                                            immutable=True)
-        ParameterName.objects.get_or_create(schema=schema,
-                                            name='title',
-                                            full_name='Title',
-                                            data_type=ParameterName.STRING,
-                                            is_searchable=True,
-                                            immutable=True)
-        ParameterName.objects.get_or_create(schema=schema,
-                                            name='url',
-                                            full_name='URL',
-                                            data_type=ParameterName.URL,
-                                            immutable=True)
-        ParameterName.objects.get_or_create(schema=schema,
-                                            name='resolution',
-                                            full_name='Resolution',
-                                            units='Å',
-                                            data_type=ParameterName.NUMERIC,
-                                            is_searchable=True,
-                                            immutable=True)
-        ParameterName.objects.get_or_create(schema=schema,
-                                            name='r-value',
-                                            full_name='R-Value',
-                                            units='(obs.)',
-                                            data_type=ParameterName.NUMERIC,
-                                            is_searchable=True,
-                                            immutable=True)
-        ParameterName.objects.get_or_create(schema=schema,
-                                            name='r-free',
-                                            full_name='R-Free',
-                                            data_type=ParameterName.NUMERIC,
-                                            is_searchable=True,
-                                            immutable=True)
-        ParameterName.objects.get_or_create(schema=schema,
-                                            name='space-group',
-                                            full_name='Space Group',
-                                            data_type=ParameterName.STRING,
-                                            is_searchable=True,
-                                            immutable=True)
-        ParameterName.objects.get_or_create(schema=schema,
-                                            name='unit-cell',
-                                            full_name='Unit Cell (Å,°)',
-                                            data_type=ParameterName.STRING,
-                                            immutable=True)
-
-    def _setup_PDB_SEQUENCE_PUBLICATION_SCHEMA(self, namespace):
-        schema, _ = Schema.objects.get_or_create(namespace=namespace,
-                                                 name='Sequence Data',
-                                                 hidden=False,
-                                                 immutable=True)
-
-        ParameterName.objects.get_or_create(schema=schema,
-                                            name='expression-system',
-                                            full_name='Expression System',
-                                            data_type=ParameterName.STRING,
-                                            is_searchable=True,
-                                            immutable=True)
-        ParameterName.objects.get_or_create(schema=schema,
-                                            name='organism',
-                                            full_name='Organism',
-                                            data_type=ParameterName.STRING,
-                                            is_searchable=True,
-                                            immutable=True)
-        ParameterName.objects.get_or_create(schema=schema,
-                                            name='sequence',
-                                            full_name='Sequence',
-                                            data_type=ParameterName.STRING,
-                                            is_searchable=True,
-                                            immutable=True)
-
-    def _setup_PDB_CITATION_PUBLICATION_SCHEMA(self, namespace):
-        schema, _ = Schema.objects.get_or_create(namespace=namespace,
-                                                 name='Citation',
-                                                 hidden=False,
-                                                 immutable=True)
-
-        ParameterName.objects.get_or_create(schema=schema,
-                                            name='title',
-                                            full_name='Title',
-                                            data_type=ParameterName.STRING,
-                                            immutable=True)
-        ParameterName.objects.get_or_create(schema=schema,
-                                            name='authors',
-                                            full_name='Authors',
-                                            data_type=ParameterName.STRING,
-                                            immutable=True)
-        ParameterName.objects.get_or_create(schema=schema,
-                                            name='journal',
-                                            full_name='Journal',
-                                            data_type=ParameterName.STRING,
-                                            immutable=True)
-        ParameterName.objects.get_or_create(schema=schema,
-                                            name='volume',
-                                            full_name='Volume',
-                                            data_type=ParameterName.STRING,
-                                            immutable=True)
-        ParameterName.objects.get_or_create(schema=schema,
-                                            name='page-range',
-                                            full_name='Pages',
-                                            data_type=ParameterName.STRING,
-                                            immutable=True)
-        ParameterName.objects.get_or_create(schema=schema,
-                                            name='doi',
-                                            full_name='DOI',
-                                            data_type=ParameterName.URL,
-                                            immutable=True)
-
     def _setup_PUBLICATION_DETAILS_SCHEMA(self, namespace):
         schema, _ = Schema.objects.get_or_create(namespace=namespace,
                                                  name='Publication Details',
@@ -178,28 +62,6 @@ class PubFormConfig():
         ParameterName.objects.get_or_create(schema=schema,
                                             name='acknowledgements',
                                             full_name='Acknowledgements',
-                                            data_type=ParameterName.STRING,
-                                            immutable=True)
-
-    def _setup_MX_PUBLICATION_DATASET_SCHEMA(self, namespace):
-        schema, _ = Schema.objects.get_or_create(namespace=namespace,
-                                                 name='MX dataset details',
-                                                 hidden=False,
-                                                 immutable=True)
-
-        ParameterName.objects.get_or_create(schema=schema,
-                                            name='dataset',
-                                            full_name='Dataset',
-                                            data_type=ParameterName.STRING,
-                                            immutable=True)
-        ParameterName.objects.get_or_create(schema=schema,
-                                            name='description',
-                                            full_name='Description',
-                                            data_type=ParameterName.STRING,
-                                            immutable=True)
-        ParameterName.objects.get_or_create(schema=schema,
-                                            name='additional-information',
-                                            full_name='Additional information',
                                             data_type=ParameterName.STRING,
                                             immutable=True)
 
@@ -235,20 +97,10 @@ class PubFormConfig():
             ('PUBLICATION_DETAILS_SCHEMA',
              'Contains standard bibliographic details, such as DOI and '
              'acknowledgements'),
-            ('PDB_PUBLICATION_SCHEMA_ROOT',
-             'Standard protein crystallographic parameters'),
-            ('PDB_SEQUENCE_PUBLICATION_SCHEMA',
-             'Protein sequence data that might repeat depending on how many '
-             'entities are present'),
-            ('PDB_CITATION_PUBLICATION_SCHEMA',
-             'Citation data that is extracted from the PDB record'),
-            ('MX_PUBLICATION_DATASET_SCHEMA',
-             'Macromolecular crystallography dataset publication schema'),
             ('GENERIC_PUBLICATION_DATASET_SCHEMA',
              'Generic dataset publication schema')]
 
         recommended_settings = [('PUBLICATION_FORM_MAPPINGS', ''),
-                                ('PDB_REFRESH_INTERVAL', ''),
                                 ('PUBLICATION_NOTIFICATION_SENDER_EMAIL', '')]
         for setting, description in (required_settings + required_schemas +
                                      recommended_settings):
