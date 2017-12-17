@@ -15,6 +15,7 @@ from django.http import HttpResponse, HttpResponseForbidden
 from django.conf import settings
 from django.contrib.auth.models import User, Group
 from django.core.mail import send_mail
+from django.utils import timezone
 
 from tardis.tardis_portal.auth import decorators as authz
 from tardis.tardis_portal.shortcuts import return_response_error
@@ -689,8 +690,12 @@ def approve_publication(request, publication, message=None, send_email=True):
     if publication.is_publication() and not publication.is_publication_draft() \
             and publication.public_access == Experiment.PUBLIC_ACCESS_NONE:
         # Change the access level
-        publication.public_access = Experiment.PUBLIC_ACCESS_EMBARGO
-
+        release_date = tasks.get_release_date(publication)
+        embargo_expired = timezone.now() >= release_date
+        if embargo_expired:
+            publication.public_access = Experiment.PUBLIC_ACCESS_FULL
+	else:
+            publication.public_access = Experiment.PUBLIC_ACCESS_EMBARGO
         # Delete the form state (and containing parameter set)
         try:
             ExperimentParameterSet.objects.get(
