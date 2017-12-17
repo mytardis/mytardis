@@ -209,14 +209,17 @@ var figshare_categories_json = '{{ figshare_categories_json }}';
                     {{releasedPub.title}}
                   </a>
                 </td>
-                <td md-cell>{{releasedPub.doi}}</td>
+                <td md-cell>
+                  <a href="http://dx.doi.org/{{releasedPub.doi}}/" target="_blank">
+                    {{releasedPub.doi}}
+                </td>
                 <td md-cell>{{releasedPub.release_date}}</td>
                 <td md-cell
                    ng-controller="PublicationActionsController as pubActionsCtrl"
                    ng-init="pubActionsCtrl.init(releasedPub.id)">
                  <button title="Retract" class="btn btn-danger"
                          ng-click="pubActionsCtrl.retract()">
-                   <i class="fa fa-trash"></i>
+                   <i class="fa fa-exclamation-triangle"></i>
                    Retract
                  </button>
                  <!-- For now, we're using Bootstrap (not Angular Material) for buttons -->
