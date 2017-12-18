@@ -485,46 +485,10 @@ angular
         }
     });
 
-    // #### PDB HELPER ####
-    vm.requirePDBHelper = function () {
-        extraInfoHelpers.push(function () {
-            if (angular.isUndefined(vm.pdbOK) || vm.pdbOK === false) {
-                vm.errorMessages.push("PDB ID invalid or not given");
-                return false;
-            } else {
-                return true;
-            }
-        });
-    };
-    vm.pdbSearching = false;
-    vm.pdbSearchComplete = false;
-    $scope.$watch('formData.pdbInfo', function (newVal, _oldVal) {
-        if (angular.isDefined(newVal)) {
-            vm.pdbSearchComplete = Object.keys(newVal).length;
-            vm.pdbOK = (newVal.status !== 'UNKNOWN');
-        } else if (angular.isDefined(vm.pdbOK) || vm.hasPDB) {
-            delete vm.pdbOK;  // unset the variable so the form validator can continue
-        }
-    });
-
-
-    var pdbSearchTimeout;
-    vm.performPDBSearch = function (pdbId) {
-        vm.pdbSearching = true;
-        vm.pdbSearchComplete = false;
-        vm.pdbOK = false;
-        if (pdbSearchTimeout) {
-            $timeout.cancel(pdbSearchTimeout);
-        }
-
-        pdbSearchTimeout = $timeout(function () {
-            $http.get('/apps/publication-workflow/helper/pdb/' + pdbId + '/').then(
-                function (response) {
-                    vm.pdbSearching = false;
-                    vm.pdbSearchComplete = true;
-                    vm.formData.pdbInfo = response.data;
-                }
-            );
-        }, 1000);
+    vm.initDatasetExtraInfo = function(formIndex, datasetIndex, datasetDescription) {
+         if (angular.isUndefined(vm.formData.extraInfo[formIndex+'.'+datasetIndex])) {
+             vm.formData.extraInfo[formIndex+'.'+datasetIndex] = {};
+         }
+         vm.formData.extraInfo[formIndex+'.'+datasetIndex].dataset = datasetDescription;
     };
 });

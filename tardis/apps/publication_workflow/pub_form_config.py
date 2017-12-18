@@ -27,16 +27,6 @@ class PubFormConfig():
                                             data_type=ParameterName.DATETIME,
                                             immutable=True)
         ParameterName.objects.get_or_create(schema=schema,
-                                            name='pdb-embargo',
-                                            full_name='pdb-embargo',
-                                            data_type=ParameterName.STRING,
-                                            immutable=True)
-        ParameterName.objects.get_or_create(schema=schema,
-                                            name='pdb-last-sync',
-                                            full_name='pdb-last-sync',
-                                            data_type=ParameterName.DATETIME,
-                                            immutable=True)
-        ParameterName.objects.get_or_create(schema=schema,
                                             name='form_state',
                                             full_name='form_state',
                                             data_type=ParameterName.STRING,
