@@ -480,7 +480,8 @@ angular
         vm.formData.embargo = new Date();
     };
     // Ensures that the embargo date is a Date object
-    $scope.$watch('formData.embargo', function (newVal, _oldVal) {
+    // pubFormCtrl is the name of the controller instance used in templates/form.html
+    $scope.$watch('pubFormCtrl.formData.embargo', function (newVal, _oldVal) {
         if (angular.isString(newVal)) {
             vm.formData.embargo = new Date(newVal);
         }
