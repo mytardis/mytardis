@@ -947,8 +947,12 @@ def retrieve_released_pubs_list(request):
 
 
 @login_required
-def tokens(request):
-    context = {}
+def tokens(request, experiment_id):
+    exp = Experiment.objects.get(id=experiment_id)
+    context = {
+        'is_owner': request.user.has_perm(
+            'tardis_acls.owns_experiment', exp),
+    }
     return HttpResponse(render_response_index(
         request, 'tokens.html', context=context))
 

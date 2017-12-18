@@ -5,7 +5,6 @@ from .pub_form_config import PubFormConfig
 urlpatterns = patterns(
     '',
     (r'^form/$', 'tardis.apps.publication_workflow.views.index'),
-    (r'^tokens/$', 'tardis.apps.publication_workflow.views.tokens'),
     (r'^data/fetch_experiments_and_datasets/$',
      'tardis.apps.publication_workflow.views.fetch_experiments_and_datasets'),
     (r'^approvals/$', 'tardis.apps.publication_workflow.views.approval_view'),
@@ -17,6 +16,8 @@ urlpatterns = patterns(
      'tardis.apps.publication_workflow.views.retrieve_scheduled_pubs_list'),
     (r'^released_pubs_list/$',
      'tardis.apps.publication_workflow.views.retrieve_released_pubs_list'),
+    (r'^tokens/(?P<experiment_id>\d+)/$',
+     'tardis.apps.publication_workflow.views.tokens'),
     (r'^tokens_json/(?P<experiment_id>\d+)/$',
      'tardis.apps.publication_workflow.views.retrieve_access_list_tokens_json'),
     (r'^experiment/(?P<experiment_id>\d+)/is_publication/$',

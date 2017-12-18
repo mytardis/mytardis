@@ -173,23 +173,16 @@ angular
     };
 
     /**
-     * Create a token and open tokens dialog
+     * Open tokens dialog, allowing creation of temporary links for sharing.
      *
-     * POST to /experiment/view/100/create_token/ for experiment ID 100 to create a token
-     * It looks like you need to include the experiment ID in the post data, even though
-     * it's already in the URL!
-     * $http.post('/experiment/view/' + experiment_id + '/create_token/',
-     *              {experiment_id: experiment_id})
-     *      .success(function (data) {
-     *          $log.debug("Created token successfully.");
-     *      })
-     *      .error(function(data) {
-     *          $log.debug("Failed to create token.");
-     *      });
+     * The publicationId (a.k.a. experimentId) is passed to the view URL
+     * so the view method can set is_owner in the context passed to the
+     * tokens.html Django template.  The publicationId is also passed via the
+     * ngDialog's data to the PublicationTokensController instance.
      */
     vm.sharePublication = function () {
         ngDialog.open({
-            template: '/apps/publication-workflow/tokens/',
+            template: '/apps/publication-workflow/tokens/' + vm.experimentId + '/',
             data: {
                 'publicationId': parseInt(vm.experimentId)
             },
