@@ -447,7 +447,8 @@ angular
         }
     };
 
-    $scope.$watch('formData.selectedLicenseId', function (newVal, _oldVal) {
+    // pubFormCtrl is the name of the controller instance used in templates/form.html
+    $scope.$watch('pubFormCtrl.formData.selectedLicenseId', function (newVal, _oldVal) {
         if (angular.isDefined(vm.formData.licenses)) {
             for (var i in vm.formData.licenses) {
                 if (vm.formData.licenses.hasOwnProperty(i)) {
