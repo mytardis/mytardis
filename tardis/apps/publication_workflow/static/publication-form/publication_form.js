@@ -127,10 +127,15 @@ angular
         vm.currentPageIdx = 0;
     }
 
-    vm.exampleAcknowledgements = [{
-        'agency': 'Australian Synchrotron facility',
-        'text': 'This research was undertaken on the [insert beamline name] beamline at the Australian Synchrotron, Victoria, Australia.'
-    },
+    vm.exampleAcknowledgements = [
+        {
+            'agency': 'Australian Research Council',
+            'text': 'This research was funded (partially or fully) by the Australian Government through the Australian Research Council.'
+        },
+        {
+            'agency': 'National Health and Medical Research Council',
+            'text': 'This research was funded (partially or fully) by the Australian Government through the National Health and Medical Research Council.'
+        },
         {
             'agency': 'Science and Industry Endowment Fund',
             'text': 'This work is supported by the Science and Industry Endowment Fund.'
@@ -138,14 +143,6 @@ angular
         {
             'agency': 'Multi-modal Australian ScienceS Imaging and Visualisation Environment',
             'text': 'This work was supported by the Multi-modal Australian ScienceS Imaging and Visualisation Environment (MASSIVE) (www.massive.org.au).'
-        },
-        {
-            'agency': 'Australian National Beamline Facility',
-            'text': 'This research was undertaken at the Australian National Beamline Facility at the Photon Factory in Japan, operated by the Australian Synchrotron.  We acknowledge the Australian Research Council for financial support and the High Energy Accelerator Research Organisation (KEK) in Tsukuba, Japan, for operations support.'
-        },
-        {
-            'agency': 'International Synchrotron Access Program',
-            'text': 'We acknowledge travel funding provided by the International Synchrotron Access Program (ISAP) managed by the Australian Synchrotron and funded by the Australian Government.'
         }];
 
     // Save the form state, creating a new publication if necessary
