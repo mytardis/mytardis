@@ -87,7 +87,8 @@ var figshare_categories_json = '{{ figshare_categories_json }}';
                  </button>
                  &nbsp;
                  <button title="Mint DOI" class="btn btn-info"
-                         ng-click="pubActionsCtrl.mintDOI()">
+                         ng-click="pubActionsCtrl.mintDOI()"
+                         ng-hide="draftPub.doi">
                    <i class="ai ai-doi ai-lg" style="margin-top: -2px;"></i>
                    Mint DOI
                  </button>
