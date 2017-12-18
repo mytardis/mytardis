@@ -141,11 +141,6 @@ def process_form(request):
         form_state['disciplineSpecificFormTemplates'] = selected_forms
 
     elif form_state['action'] == 'update-extra-info':
-        # Clear any current parameter sets except for those belonging
-        # to the publication draft schema or containing the form_state
-        # parameter
-        clear_publication_metadata(publication)
-
         # Loop through form data and create associates parameter sets
         # Any unrecognised fields or schemas are ignored!
         map_form_to_schemas(form_state['extraInfo'], publication)
@@ -192,18 +187,18 @@ def process_form(request):
         pub_details_schema = Schema.objects.get(
             namespace=getattr(settings, 'PUBLICATION_DETAILS_SCHEMA',
                               default_settings.PUBLICATION_DETAILS_SCHEMA))
-        pub_details_parameter_set = ExperimentParameterSet(
-            schema=pub_details_schema,
-            experiment=publication)
-        pub_details_parameter_set.save()
+        pub_details_parameter_set = ExperimentParameterSet.objects.get_or_create(
+            schema=pub_details_schema, experiment=publication)[0]
 
         # Add the acknowledgements
         acknowledgements_parameter_name = ParameterName.objects.get(
             schema=pub_details_schema,
             name='acknowledgements')
-        ExperimentParameter(name=acknowledgements_parameter_name,
-                            parameterset=pub_details_parameter_set,
-                            string_value=form_state['acknowledgements']).save()
+        acknowledgements_param = ExperimentParameter.objects.get_or_create(
+            name=acknowledgements_parameter_name,
+            parameterset=pub_details_parameter_set)[0]
+        acknowledgements_param.string_value = form_state['acknowledgements']
+        acknowledgements_param.save()
 
         # Set the release date
         set_embargo_release_date(
@@ -294,53 +289,31 @@ def process_form(request):
     return HttpResponse(json.dumps(form_state), content_type="appication/json")
 
 
-def clear_publication_metadata(publication):
-    schema_root = getattr(settings, 'PUBLICATION_SCHEMA_ROOT',
-                          default_settings.PUBLICATION_SCHEMA_ROOT)
-    schema_draft = getattr(settings, 'PUBLICATION_DRAFT_SCHEMA',
-                           default_settings.PUBLICATION_DRAFT_SCHEMA)
-    for parameter_set in publication.getParameterSets():
-        if parameter_set.schema.namespace != schema_draft and \
-                        parameter_set.schema.namespace != schema_root:
-            parameter_set.delete()
-        elif parameter_set.schema.namespace == schema_root:
-            try:
-                ExperimentParameter.objects.get(
-                    name__name='form_state',
-                    name__schema__namespace=schema_root,
-                    parameterset=parameter_set)
-            except ExperimentParameter.DoesNotExist:
-                parameter_set.delete()
-
-
 def map_form_to_schemas(extraInfo, publication):
     for form_id, form in extraInfo.iteritems():
         try:  # Ignore form if no schema exists with this name
             schema = Schema.objects.get(namespace=form['schema'])
         except Schema.DoesNotExist:
             continue
-        parameter_set = ExperimentParameterSet(
-            schema=schema, experiment=publication)
-        parameter_set.save()
+        parameter_set = ExperimentParameterSet.objects.get_or_create(
+            schema=schema, experiment=publication)[0]
         for key, value in form.iteritems():
             if key != 'schema':
                 try:  # Ignore field if parameter name (key) doesn't match
                     parameter_name = ParameterName.objects.get(
                         schema=schema, name=key)
+                    parameter = ExperimentParameter.objects.get_or_create(
+                        name=parameter_name, parameterset=parameter_set)[0]
                     if parameter_name.isNumeric():
-                        parameter = ExperimentParameter(
-                            name=parameter_name,
-                            parameterset=parameter_set,
-                            numerical_value=float(value))
+                        parameter.numerical_value = float(value)
+                        parameter.save()
                     elif parameter_name.isLongString() or \
                             parameter_name.isString() or \
                             parameter_name.isURL() or \
                             parameter_name.isLink() or \
                             parameter_name.isFilename():
-                        parameter = ExperimentParameter(
-                            name=parameter_name,
-                            parameterset=parameter_set,
-                            string_value=str(value))
+                        parameter.string_value = str(value)
+                        parameter.save()
                     else:
                         # Shouldn't happen, but here in case the parameter type
                         # is non-standard
@@ -405,6 +378,19 @@ def set_embargo_release_date(publication, release_date):
 
 
 def select_forms(datasets):
+    """
+    This method was designed to return form templates for the publication
+    form's Extra Information section, depending on a PUBLICATION_FORM_MAPPINGS
+    setting which supported custom mappings between form templates, dataset
+    schemas and publication schemas.
+
+    These custom mappings have been removed for now, leaving only the generic
+    Extra Information form (a textarea for each dataset).  This is because
+    the way the Extra Information was updated each time the form was processed
+    required deleting all of the publication draft's meatadata (except for the
+    form_state) and repopulating it.  This clashes with the My Publications
+    workflow's desire to add metadata (like a DOI) outside of the form.
+    """
     default_form_schema = getattr(
         settings, 'GENERIC_PUBLICATION_DATASET_SCHEMA',
         default_settings.GENERIC_PUBLICATION_DATASET_SCHEMA)
@@ -412,42 +398,12 @@ def select_forms(datasets):
                     'template': '/static/publication-form/default-form.html',
                     'datasets': []}
 
-    FORM_MAPPINGS = getattr(settings, 'PUBLICATION_FORM_MAPPINGS',
-                            default_settings.PUBLICATION_FORM_MAPPINGS)
     forms = []
     for dataset in datasets:
-        parametersets = dataset.getParameterSets()
-        form_count = 0
-        for parameterset in parametersets:
-            schema_namespace = parameterset.schema.namespace
-            for mapping in FORM_MAPPINGS:
-                if re.match(mapping['dataset_schema'], schema_namespace):
-                    form_count += 1
-                    # The data returned from selected_forms() includes a list
-                    # of datasets that satisfy the criteria for selecting this
-                    # form.
-                    # This allows the frontend to request dataset-specific
-                    # information as well as general information.
-                    if not any(f['name'] == mapping['publication_schema']
-                               for f in forms):
-                        forms.append({'name': mapping['publication_schema'],
-                                      'template': mapping['form_template'],
-                                      'datasets': [{
-                                          'id': dataset.id,
-                                          'description': dataset.description
-                                      }]})
-                    else:
-                        idx = next(index for (index, f) in enumerate(forms)
-                                   if f['name'] ==
-                                   mapping['publication_schema'])
-                        forms[idx]['datasets'].append({
-                            'id': dataset.id,
-                            'description': dataset.description})
-        if not form_count:
-            default_form['datasets'].append({
-                'id': dataset.id,
-                'description': dataset.description
-            })
+        default_form['datasets'].append({
+            'id': dataset.id,
+            'description': dataset.description
+        })
 
     if default_form['datasets']:
         forms.append(default_form)

@@ -90,8 +90,7 @@ class PubFormConfig():
             ('GENERIC_PUBLICATION_DATASET_SCHEMA',
              'Generic dataset publication schema')]
 
-        recommended_settings = [('PUBLICATION_FORM_MAPPINGS', ''),
-                                ('PUBLICATION_NOTIFICATION_SENDER_EMAIL', '')]
+        recommended_settings = [('PUBLICATION_NOTIFICATION_SENDER_EMAIL', '')]
         for setting, description in (required_settings + required_schemas +
                                      recommended_settings):
             if not hasattr(settings, setting):

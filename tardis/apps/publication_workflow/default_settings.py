@@ -45,20 +45,7 @@ PUBLICATION_DETAILS_SCHEMA = PUBLICATION_SCHEMA_ROOT + 'details/'
 # This schema will be created automatically if not present
 PUBLICATION_DRAFT_SCHEMA = PUBLICATION_SCHEMA_ROOT + 'draft/'
 
-# Form mappings
-# PUBLICATION_FORM_MAPPINGS is a list of dictionaries that contain the
-# following parameters:
-# dataset_schema: the namespace of the schema that triggers the form to be used
-# publication_schema: the namspace of the schema that should be added to the
-# publication
-# form_template: a URL to the form template (usually static HTML)
-# PUBLICATION_FORM_MAPPINGS = [
-#    {'dataset_schema': 'http://example.com/a_dataset_schema',
-#     'publication_schema': 'http://example.com/a_publication_schema',
-#     'form_template': '/static/publication-form/form-template.html'}]
-# Note: dataset_schema is treated as a regular expression
-
-# Used for generic dataset descriptions (all datasets that are not MX)
+# Used for recording extra information about datasets
 GENERIC_PUBLICATION_DATASET_SCHEMA = PUBLICATION_SCHEMA_ROOT + 'generic/'
 
 # PUBLICATIONS_REQUIRE_APPROVAL was set to True for Store.Synchrotron, but in
@@ -70,8 +57,6 @@ PUBLICATIONS_REQUIRE_APPROVAL = False
 # email notification can't be sent.  Allowing submission of publications without
 # email notifications is useful for local testing.
 PUBLICATIONS_REQUIRE_EMAIL_SUCCESS = False
-
-PUBLICATION_FORM_MAPPINGS = []
 
 # Put your API_ID for the Monash DOI minting service here. For other DOI
 # minting, please contact the developers
