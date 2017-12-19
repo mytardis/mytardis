@@ -1,10 +1,14 @@
+======
 Basics
 ======
 
+.. _org_data:
+
 Organising Data
 ---------------
-Overview
-^^^^^^^^
+
+Data Structure Overview
+^^^^^^^^^^^^^^^^^^^^^^^
 Data in MyTardis is organised into a uniform hierarchy, which includes Experiments, Datasets and Data Files. Experiments are at the top of the hierarchy and can contain multiple Datasets. Similarly, Datasets can contain multiple Data Files. The hierarchy can be thought of like a directory structure on a typical PC (Fig. 1) in which a the Experiment directory contains multiple Dataset directories, which in turn contain multiple Data Files.
 
 
@@ -117,7 +121,7 @@ under the **Sharing** tab on the left side of an Experiment page.
     :width: 500px
     :align: center
 
-Sharing data with another MyTardis User
+Sharing Data with Another MyTardis User
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 To share an Experiment with another MyTardis user:
 
@@ -147,7 +151,7 @@ Note: Entering the users name or email address with activate autocomplete,
     :width: 500px
     :align: center
 
-Sharing Data Via a Temporary Link
+Sharing Data via a Temporary Link
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 You can also share Data in an Experiment via a temporary (obfuscated) link.
 Temporary links expire after 1 month or can be deleted manually. Note:
