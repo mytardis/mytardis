@@ -1,3 +1,4 @@
+# pylint: disable=W1001
 import logging
 from os import path
 

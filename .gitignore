@@ -22,6 +22,7 @@ docs/html/
 docs/make.bat
 docs/pydoc
 eggs/
+node_modules/
 parts/
 tardis/settings.py
 tardis/tardis_portal/tests/rifcs/MyTARDIS-1.xml
@@ -37,7 +38,7 @@ tardis/apps/*
 !tardis/apps/filepicker
 !tardis/apps/mx_views
 !tardis/apps/oaipmh
-!tardis/apps/publication_forms
+!tardis/apps/publication_workflow
 !tardis/apps/push_to
 !tardis/apps/related_info
 !tardis/apps/slideshow_view

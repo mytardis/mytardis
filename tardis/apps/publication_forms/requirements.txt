@@ -1,3 +1,0 @@
-PyCifRW==4.1.1
-suds==0.4
-suds-passworddigest==0.1.2

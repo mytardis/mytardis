@@ -3,6 +3,7 @@ html{
 }
 body {
   min-height: 100%;
+  -webkit-font-smoothing: auto;
 }
 
 /* Inset brand in nav bar */
