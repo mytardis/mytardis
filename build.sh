@@ -27,6 +27,9 @@ pip install -r requirements.txt
 # for OS X, but might also need some brew requirements.
 pip install -r requirements-osx.txt
 
+# to build docs, requirements-docs must also be installed
+# pip install -r requirements-docs.txt
+
 mkdir -p var/store
 
 # execute this wonderful command to have your settings.py created/updated
@@ -43,6 +46,3 @@ python mytardis.py collectstatic
 python mytardis.py runserver
 # os x:
 open http://127.0.0.1:8000/
-
-# build docs into docs (sphinx-build inputfolder outputfolder)
-sphinx-build docs docs

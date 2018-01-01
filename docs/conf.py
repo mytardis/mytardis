@@ -7,6 +7,7 @@ import os
 import sys
 
 import django
+import sphinx_rtd_theme
 
 sys.path.append(os.path.abspath('..'))
 
@@ -84,6 +85,8 @@ exclude_trees = ['.build']
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = 'sphinx'
 
+# Sphinx theme
+html_theme = "sphinx_rtd_theme"
 
 # API doc generation
 # ------------------
