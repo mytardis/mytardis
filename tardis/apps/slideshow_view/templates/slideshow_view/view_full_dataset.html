@@ -523,18 +523,18 @@ function getImgUrls(thumbImg,width,height) {
 
 //Element Bindings:
 
-$('.btn#play').live("click", function(){
+$(document).on("click", '.btn#play', function(){
     timer.start();
 });
 
-$('.btn#stop').live("click", function(){
+$(document).on("click", '.btn#stop', function(){
     timer.stop();
 });
 
 function encodeLiveAction(className) {
     //This function is required to set up every different class that has it's own image set.
 
-    $('.'+className).live("click",function() { //Need to respecify the class name if using for another place.
+    $(document).on("click", '.'+className, function() { //Need to respecify the class name if using for another place.
         DisableScrolls();
 
         var winWidth = window.innerWidth;
@@ -571,43 +571,43 @@ function encodeLiveAction(className) {
     });
 }
 
-$('.visDisplay#backgroundBuff').live("click",function() {
+$(document).on("click", '.visDisplay#backgroundBuff', function() {
     timer.stop();
     EnableScrolls();
     $('.visDisplay').fadeOut(500).children().fadeOut(500);
 });
 
-$('#prevImg').live("click", function() {
+$(document).on("click", '#prevImg', function() {
     if (!$(this).attr('disabled')) {
         backPic(1, defaultFadeTime)
     }
 });
 
-$('#nxtImg').live("click", function() {
+$(document).on("click", '#nxtImg', function() {
     if (!$(this).attr('disabled')) {
         nextPic(1, defaultFadeTime)
     }
 });
 
-$('#skip10').live("click", function() {
+$(document).on("click", '#skip10', function() {
     if (!$(this).attr('disabled')) {
         nextPic(10, defaultFadeTime)
     }
 });
 
-$('#skip50').live("click", function() {
+$(document).on("click", '#skip50', function() {
     if (!$(this).attr('disabled')) {
         nextPic(50, defaultFadeTime)
     }
 });
 
-$('#return10').live("click", function() {
+$(document).on("click", '#return10', function() {
     if (!$(this).attr('disabled')) {
         backPic(10, defaultFadeTime)
     }
 });
 
-$('#return50').live("click", function() {
+$(document).on("click", '#return50', function() {
     if (!$(this).attr('disabled')) {
         backPic(50, defaultFadeTime)
     }

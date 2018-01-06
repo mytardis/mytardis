@@ -32,25 +32,25 @@ QUnit.test("Test clicking on Public Access button", function(assert) {
         "  <div class=\"modal-body\"></div>\n" +
         "</div>\n" +
    
-	"<div class=\"modal hide fade\" id=\"modal-metadata\">\n" +
-	"  <div class=\"modal-header\">\n" +
-	"    <a class=\"close\" data-dismiss=\"modal\">&times;</a>\n" +
-	"    <h1 class=\"title\">Add Parameters</h1>\n" +
-	"  </div>\n" +
+        "<div class=\"modal hide fade\" id=\"modal-metadata\">\n" +
+        "  <div class=\"modal-header\">\n" +
+        "    <a class=\"close\" data-dismiss=\"modal\">&times;</a>\n" +
+        "    <h1 class=\"title\">Add Parameters</h1>\n" +
+        "  </div>\n" +
 
-	"  <div class=\"loading-placeholder\" style=\"display: none\">\n" +
-	"    <p>Please wait... <img src=\"/static/images/ajax-loader.gif\" alt=\"loading\" /></p>\n" +
-	"  </div>\n" +
+        "  <div class=\"loading-placeholder\" style=\"display: none\">\n" +
+        "    <p>Please wait... <img src=\"/static/images/ajax-loader.gif\" alt=\"loading\" /></p>\n" +
+        "  </div>\n" +
 
-	"  <div class=\"modal-body\"></div>\n" +
+        "  <div class=\"modal-body\"></div>\n" +
 
-	"  <div class=\"modal-footer\">\n" +
-	"    <button class=\"submit-button btn btn-success\">\n" +
-	"      <i class=\"fa fa-ok\"></i>\n" +
-	"      Save\n" +
-	"    </button>\n" +
-	"  </div>\n" +
-	"</div> \n"
+        "  <div class=\"modal-footer\">\n" +
+        "    <button class=\"submit-button btn btn-success\">\n" +
+        "      <i class=\"fa fa-ok\"></i>\n" +
+        "      Save\n" +
+        "    </button>\n" +
+        "  </div>\n" +
+        "</div> \n"
     );
 
     var publicAccessPanelHtml =
