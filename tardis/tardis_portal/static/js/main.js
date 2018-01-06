@@ -25,7 +25,7 @@ var activateSearchAutocomplete = function() {
 
 var activateHoverDetection = function() {
   // Hover events
-  $('.ui-state-default').live('mouseover mouseout', function(evt) {
+  $(document).on('mouseover mouseout', '.ui-state-default', function(evt) {
     if (evt.type == 'mouseover') {
       $(this).addClass('ui-state-hover');
     } else {
