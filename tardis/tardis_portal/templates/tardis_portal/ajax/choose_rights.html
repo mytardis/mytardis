@@ -40,7 +40,7 @@ var populateLicenseOptions = function(public_access, markSameLicense) {
 </script>
 
 <script type="text/javascript">
-$('#publishing-consent').live("change", function() {
+$(document).on("change", '#publishing-consent', function() {
   // (submit disabled) <=> !(consent checked)
   $('#legal-section .submit-button').prop('disabled', !$(this).prop('checked'))
 });
@@ -58,12 +58,12 @@ $.ajax({
   }
 });
 
-$('#legal-section .submit-button').live("click", function() {
+$(document).on("click", '#legal-section .submit-button', function() {
   // Submit form
   $('form.experiment-rights').trigger('submit');
   $('#legal-section').hide();
 });
-$('#legal-section .cancel-button').live("click", function() {
+$(document).on("click", '#legal-section .cancel-button', function() {
   // Just refresh this tab pane to reset previous values
   $('#legal-section').parents('.tab-pane').trigger('experiment-change');
   $('#legal-section').hide();
@@ -124,7 +124,7 @@ $('#legal-section .cancel-button').live("click", function() {
     $('#license-options').hide();
   });
 
-  $('#reselect-license').live('click', function(){
+  $(document).on('click', '#reselect-license', function(){
       $('#selected-license-text').html('');
       $('#license-options').show();
       $('#legal-section').hide();
