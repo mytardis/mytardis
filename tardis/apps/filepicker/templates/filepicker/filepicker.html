@@ -4,7 +4,7 @@
 // end init
 filepicker.setKey('{{ filepicker_api_key }}');
 
-$('.upload_files_link').live('click', function(evt) {
+$(document).on('click', '.upload_files_link', function(evt) {
     filepicker.pickMultiple({container: 'modal'}, function(fpfiles){
 	console.log("successful pick");
 	$.ajax({
