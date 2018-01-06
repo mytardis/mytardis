@@ -5,10 +5,10 @@
 
 
 // file selectors
-jQuery(".dataset_selector_all").live("click", function() {
+jQuery(document).on("click", ".dataset_selector_all", function() {
     $(this).parents(".datafiles").find(".datafile_checkbox").attr("checked", "checked");
 });
-jQuery(".dataset_selector_none").live("click", function() {
+jQuery(document).on("click", ".dataset_selector_none", function() {
     $(this).parents(".datafiles").find(".datafile_checkbox").removeAttr("checked");
 });
 
@@ -36,7 +36,7 @@ function getFormInputHtml(label, name, useTextArea)
     return "<div class=\"fieldWrapper\">" + label + "<br/>" + widget + "</div>";
 }
 
-$(".dataset_checkbox").live("click", function( event ) {
+$(document).on("click", ".dataset_checkbox", function( event ) {
     if ($(this).is(":checked")) {
         $(this).parents(".dataset").find(".datafile_checkbox").attr("disabled", true);
         $(this).parents(".dataset").find(".filename_search").attr("disabled", true);
@@ -46,7 +46,7 @@ $(".dataset_checkbox").live("click", function( event ) {
     }
 });
 
-$("#schemaselect").live("change", function(e) {
+$(document).on("change", "#schemaselect", function(e) {
     e.preventDefault();
 
     var $this = $(this);
@@ -61,7 +61,7 @@ $("#schemaselect").live("change", function(e) {
     return false;
 });
 
-$("#add_new_parameter").live("click", function() {
+$(document).on("click", "#add_new_parameter", function() {
     // assuming whenever add_new_parameter is clicked an option is selected
     var $selectedOption = $("#parameternameselect > option:selected");
     var isLong = $selectedOption.attr("data-longstring");
@@ -82,7 +82,7 @@ var refreshMetadataDisplay = function(hash) {
     $("#experiment-tab-metadata").trigger("experiment-change");
 };
 
-$("#add_metadata_form").live("submit", function(e) {
+$(document).on("submit", "#add_metadata_form", function(e) {
     e.preventDefault();
 
     var form = $(this);
@@ -112,7 +112,7 @@ $("#add_metadata_form").live("submit", function(e) {
     return false;
 });
 
-$("#edit_metadata_form").live("submit", function(e) {
+$(document).on("submit", "#edit_metadata_form", function(e) {
     e.preventDefault();
     var form = $(this);
     var contentContainer = form.closest(".modal-body");
@@ -154,13 +154,13 @@ var loadModalRemoteBody = function(trigger, modal) {
     });
 };
 
-$(".add-metadata").live("click", function(evt) {
+$(document).on("click", ".add-metadata", function(evt) {
     evt.preventDefault();
     $("#modal-metadata .modal-header .title").text("Add Metadata");
     loadModalRemoteBody(this, "#modal-metadata");
 });
 
-$(".edit-metadata").live("click", function(evt) {
+$(document).on("click", ".edit-metadata", function(evt) {
     evt.preventDefault();
     $("#modal-metadata .modal-header .title").text("Edit Metadata");
     loadModalRemoteBody(this, "#modal-metadata");

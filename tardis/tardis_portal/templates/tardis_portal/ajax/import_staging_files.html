@@ -43,7 +43,7 @@ $(document).ready(function(){
 });
 
 //Get checked
-$('.add_files').live('click', function(){
+$(document).on('click', '.add_files', function(){
     file_list = $(this).parents(".dataset_container").find(".datafiles");
 
     $(".jstree-leaf.jstree-checked").each(function(){
