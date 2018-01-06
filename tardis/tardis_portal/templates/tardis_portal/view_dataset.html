@@ -13,10 +13,10 @@
     var prev_file_select = null;
 
     // file selectors
-    jQuery('.dataset_selector_all').live('click', function() {
+    jQuery(document).on('click', '.dataset_selector_all', function() {
         $(this).parents('.datafiles').find('.datafile_checkbox').attr("checked", "checked");
     });
-    jQuery('.dataset_selector_none').live('click', function() {
+    jQuery(document).on('click', '.dataset_selector_none', function() {
         $(this).parents('.datafiles').find('.datafile_checkbox').removeAttr("checked");
     });
 
@@ -44,7 +44,7 @@
         return '<div class="fieldWrapper">' + label + '<br/>' + widget + '</div>';
     }
 
-    $('#schemaselect').live('change', function(e) {
+    $(document).on('change', '#schemaselect', function(e) {
         e.preventDefault();
 
         var $this = $(this);
@@ -59,7 +59,7 @@
         return false;
     });
 
-    $('#add_new_parameter').live('click', function(){
+    $(document).on('click', '#add_new_parameter', function(){
         // assuming whenever add_new_parameter is clicked an option is selected
         var $selected_option = $("#parameternameselect > option:selected");
         var is_long = $selected_option.attr('data-longstring');
@@ -75,7 +75,7 @@
             alert('There are no parameters allowed to be added by users in this schema');
         }
     });
-    $('#add_metadata_form').live('submit', function(e) {
+    $(document).on('submit', '#add_metadata_form', function(e) {
         e.preventDefault();
 
         var form = $(this);
@@ -106,7 +106,7 @@
 
         return false;
     });
-    $('#edit_metadata_form').live('submit', function(e) {
+    $(document).on('submit', '#edit_metadata_form', function(e) {
         e.preventDefault();
         var form = $(this);
         var contentContainer = form.closest('.modal-body')
@@ -132,7 +132,7 @@
     });
 
     // datafile metadata
-    $('#datafiles-pane .datafile-info-toggle').live('click', function(evt){
+    $(document).on('click', '#datafiles-pane .datafile-info-toggle', function(evt){
         evt.preventDefault();
         var $this = $(this);
         var $datafile_metadata_container =
@@ -174,18 +174,18 @@
       });
     };
 
-    $('.add-metadata').live('click', function(evt){
+    $(document).on('click', '.add-metadata', function(evt){
         evt.preventDefault();
         $('#modal-metadata .modal-header .title').text("Add Metadata");
         loadModalRemoteBody(this, '#modal-metadata');
     });
-    $('.edit-metadata').live('click', function(evt) {
+    $(document).on('click', '.edit-metadata', function(evt) {
         evt.preventDefault();
         $('#modal-metadata .modal-header .title').text("Edit Metadata");
         loadModalRemoteBody(this, '#modal-metadata');
     });
 
-    $('#request-fast-access').live('click', function(evt){
+    $(document).on('click', '#request-fast-access', function(evt){
         evt.preventDefault();
         var modal = '#modal-retrieve-files';
         $(modal).find('.modal-footer').hide();
@@ -202,7 +202,7 @@
         });
     });
 
-    $('.pagelink').live('click', function( event ){
+    $(document).on('click', '.pagelink', function( event ){
         var href = $(this).attr("href");
         var html = $(this).html();
         $(this).html(loadingHTML);
@@ -242,9 +242,10 @@
     $('#datafiles-pane').html(loadingHTML);
   }
 
-  $("input[name$='show_search']")
-      .live(
-          'click',
+  $(document)
+      .on(
+        'click',
+        "input[name$='show_search']",
           function() {
             var show_search = $(this).val();
             $('.datafile-pane')
@@ -279,13 +280,13 @@
           });
 
 
-  $("#uploadify").live("allUploadsComplete", function(e, data){
+  $(document).on("allUploadsComplete", "#uploadify", function(e, data){
       // refresh datafile list
       var dataset_id = $(this).attr('data-dataset_id');
       $(this).parents('.datafile_list').load("/ajax/datafile_list/" + dataset_id + "/");
   });
 
-  $('.import_staging_files_link').live('click', function(evt) {
+  $(document).on('click', '.import_staging_files_link', function(evt) {
       var dataset_id = $(this).attr('data-dataset_id');
       var modal = $('#modal-upload-files');
 
@@ -323,7 +324,7 @@
 <div id="upload_button_code" style="display: none"></div>
 
 <script type="text/javascript">
-$('#modal-metadata .submit-button').live('click', function() {
+$(document).on('click', '#modal-metadata .submit-button', function() {
   $('#modal-metadata .modal-body form').submit();
 });
 </script>
@@ -678,7 +679,7 @@ $(document).ready(function(){
                                          .css('height', '240');
 
 {% if upload_method == "uploadify" %}
-  $('.upload_files_link').live('click', function(evt) {
+  $(document).on('click', '.upload_files_link', function(evt) {
       var dataset_id = $(this).attr('data-dataset_id');
       var modal = $('#modal-upload-files');
 
