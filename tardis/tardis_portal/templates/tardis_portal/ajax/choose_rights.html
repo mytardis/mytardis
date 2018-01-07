@@ -118,7 +118,7 @@ $('#legal-section .cancel-button').live("click", function() {
     // Hide any current messages
     $(this).parents('.tab-pane').find('.alert .close').click();
     // Show confirmation window
-    $('#selected-license-text').html($(this).parents('#license-options')
+    $('#selected-license-text').html($(this).parents('.license-option')
            .find('.controls').html());
     $('#legal-section').show();
     $('#license-options').hide();
