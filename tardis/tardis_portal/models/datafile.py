@@ -675,17 +675,19 @@ class DataFileObject(models.Model):
                 if add_size:
                     database_update['size'] = actual['size']
             if same_values.get('size', True):
-                actual.update(compute_checksums(
-                    self.file_object,
-                    compute_md5=True,
-                    compute_sha512=True))
-                for sum_type in ['md5sum', 'sha512sum']:
-                    if empty_value[sum_type]:
+                actual.update(compute_checksums(self.file_object))
+
+                def collate_checksums(sum_type):
+                    if empty_value[sum_type] and add_checksums:
                         # all sums only ever empty when not required
-                        if add_checksums:
-                            database_update[sum_type] = actual[sum_type]
+                        database_update[sum_type] = actual[sum_type]
                     if actual[sum_type] == database[sum_type]:
                         same_values[sum_type] = True
+
+                if getattr(settings, 'COMPUTE_MD5', True):
+                    collate_checksums('md5sum')
+                if getattr(settings, 'COMPUTE_SHA512', True):
+                    collate_checksums('sha512sum')
 
         except IOError as ioe:
             same_values = {key: False for key in same_values.keys()}
@@ -747,22 +749,17 @@ def delete_dfo(sender, instance, **kwargs):
                      '%s, because deletes are disabled' % instance.id)
 
 
-def compute_checksums(file_object,
-                      compute_md5=True,
-                      compute_sha512=True,
-                      close_file=True):
+def compute_checksums(file_object, close_file=True):
     """Computes checksums for a python file object
 
     :param object file_object: Python File object
-    :param compute_md5: whether to compute md5 default=True
-    :type compute_md5: bool
-    :param compute_sha512: whether to compute sha512, default=True
-    :type compute_sha512: bool
     :param bool close_file: whether to close the file_object, default=True
 
     :return: the checksums as {'md5sum': result, 'sha512sum': result}
     :rtype: dict
     """
+    compute_md5 = getattr(settings, 'COMPUTE_MD5', True)
+    compute_sha512 = getattr(settings, 'COMPUTE_SHA512', True)
     blocksize = 0
     results = {}
     if compute_md5:
