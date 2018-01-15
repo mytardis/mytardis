@@ -2,6 +2,7 @@
 import json
 import logging
 import re
+import traceback
 
 import dateutil.parser
 
@@ -52,6 +53,13 @@ def index(request):
 @login_required
 @never_cache
 def process_form(request):
+    try:
+        do_process_form(request)
+    except Exception:
+        logger.error(traceback.format_exc())
+
+
+def do_process_form(request):
     # Decode the form data
     form_state = json.loads(request.body)
 
@@ -270,7 +278,7 @@ def process_form(request):
             # bother saving is and return.
             form_state['action'] = ''
             return HttpResponse(json.dumps(form_state),
-                                content_type="appication/json")
+                                content_type="application/json")
 
         # Trigger publication record update
         # tasks.update_publication_records.delay()
@@ -286,7 +294,7 @@ def process_form(request):
     # so they need to have at least one author:
     set_publication_authors(form_state['authors'], publication)
 
-    return HttpResponse(json.dumps(form_state), content_type="appication/json")
+    return HttpResponse(json.dumps(form_state), content_type="application/json")
 
 
 def map_form_to_schemas(extraInfo, publication):
@@ -503,7 +511,7 @@ def fetch_experiments_and_datasets(request):
             experiment_json['datasets'] = dataset_json
             json_response.append(experiment_json)
     return HttpResponse(json.dumps(json_response),
-                        content_type="appication/json")
+                        content_type="application/json")
 
 
 def require_publication_admin(f):
