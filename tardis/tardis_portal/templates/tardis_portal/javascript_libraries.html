@@ -52,6 +52,10 @@ into static/, e.g. node_modules/angular/angular.min.js becomes static/angular/an
 <link type="text/css" href="{% static 'ng-dialog/css/ngDialog-theme-plain.min.css' %}" rel="stylesheet" />
 <link type="text/css" href="{% static 'ng-dialog/css/ngDialog-theme-default.min.css' %}" rel="stylesheet" />
 
+{% if pub_workflow_enabled %}
+<link type="text/css" href="{% static 'publication-form/publication_workflow.css' %}" rel="stylesheet" />
+{% endif %}
+
 <!-- Twitter Bootstrap: http://twitter.github.com/bootstrap/ -->
 <link href="{% static 'js/lib/bootstrap-2.0.4/css/bootstrap.css' %}" rel="stylesheet">
 <style>
