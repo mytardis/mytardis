@@ -40,11 +40,12 @@ angular
         },
         template: '<div ng-form novalidate><div ng-transclude></div></div>',
         controller: function ($scope, $element, $attrs) {
+            var vm = this;
             if (angular.isUndefined($scope.model)) {
                 $scope.model = {};
             }
             $scope.model.schema = $scope.schema;
-            this.getModel = function () {
+            vm.getModel = function () {
                 return $attrs.myModel;
             };
         }
@@ -73,77 +74,57 @@ angular
 // Publication form controller
 angular
 .module('MyTardis')
-.controller('PublicationFormController', function ($scope, $log, $http, ngDialog, $window, $timeout, $document, $attrs) {
+.controller('PublicationFormController', function ($scope, $log, $http, $document, ngDialog, $window, $timeout, $attrs) {
     var vm = this;  // view model
-    // Opens the publication form modal dialogue
-    vm.openPublicationForm = function () {
-        ngDialog.open({
-              template: '/apps/publication-workflow/form/',
-              data: {
-                  'experimentId': vm.experiment,
-                  'isPublication': vm.isPublication,
-                  'isPublicationDraft': vm.isPublicationDraft,
-              },
-              closeByDocument: false,
-              preCloseCallback: function (publicationId) {
-                  if (angular.isDefined(publicationId) &&
-                      angular.isNumber(publicationId) &&
-                      publicationId !== vm.experiment) {
-                      var redirectTo = '/experiment/view/' + publicationId + '/';
-                      $window.location = redirectTo;
-                  } else if (angular.isDefined(publicationId)) {
-                      $window.location.reload();
-                  }
-              }
-          });
-    };
 
     vm.errorMessages = []; // An array of strings to display to the user on error
 
-    // is_publication, is_publication_draft and experiment_id
-    // are defined in the ng-controller div element's attributes in the experiment
-    // view HTML, and are passed into the publication form using ngDialogData.
-    // AngularJS magically converts attributes from snake_case to camelCase.
-    if (angular.isDefined($attrs.isPublication)) {
-        vm.isPublication = ($attrs.isPublication === 'True');
-    }
-    else if (angular.isDefined($scope.$parent.ngDialogData.isPublication)) {
+    if (angular.isDefined($scope.$parent.ngDialogData)) {
         vm.isPublication = $scope.$parent.ngDialogData.isPublication;
     }
     else {
         throw new Error("isPublication is undefined in PublicationFormController");
     }
-    if (angular.isDefined($attrs.isPublicationDraft)) {
-        vm.isPublicationDraft = ($attrs.isPublicationDraft === 'True');
-    }
-    else if (angular.isDefined($scope.$parent.ngDialogData.isPublicationDraft)) {
+    if (angular.isDefined($scope.$parent.ngDialogData)) {
         vm.isPublicationDraft = $scope.$parent.ngDialogData.isPublicationDraft;
     }
     else {
         throw new Error("isPublicationDraft is undefined in PublicationFormController");
     }
-    if (angular.isDefined($attrs.experimentId)) {
-        vm.experiment = parseInt($attrs.experimentId);
-    }
-    else if (angular.isDefined($scope.$parent.ngDialogData.experimentId)) {
+    if (angular.isDefined($scope.$parent.ngDialogData)) {
         vm.experiment = $scope.$parent.ngDialogData.experimentId;
     }
     else {
         throw new Error("experimentId is undefined in PublicationFormController");
     }
 
-    // Form state saved here. This will be overwritten if the publication form
-    // is resumed.
-    vm.formData = {};
-    vm.formData.addedDatasets = []; // List of selected datasets
-    vm.formData.publicationTitle = ""; // Initialise publication title
-    vm.formData.publicationDescription = ""; // Initialise publication description
-    vm.formData.extraInfo = {}; // Stores discipline specific metadata
-    vm.formData.authors = [{'name':'',
+    if (angular.isDefined($scope.$parent.ngDialogData.formData)) {
+        vm.formData = $scope.$parent.ngDialogData.formData;
+        if (angular.isString(vm.formData.embargo)) {
+            vm.formData.embargo = new Date(vm.formData.embargo);
+        }
+    }
+    else {
+        $log.debug("PublicationFormController: Defining vm.formData from scratch.")
+        vm.formData = {};
+        vm.formData.addedDatasets = []; // List of selected datasets
+        vm.formData.publicationTitle = ""; // Initialise publication title
+        vm.formData.publicationDescription = ""; // Initialise publication description
+        vm.formData.extraInfo = {}; // Stores discipline specific metadata
+        vm.formData.authors = [{'name':'',
                                 'institution':'',
                                 'email':''}]; // Stores the authors of the publication
-    vm.formData.acknowledgements = ""; // Acknowledgements stored here
-    vm.formData.action = ""; // specifies what action is required on form update
+        vm.formData.acknowledgements = ""; // Acknowledgements stored here
+        vm.formData.action = ""; // specifies what action is required on form update
+    }
+
+    // Keep track of the current page
+    if (angular.isDefined($scope.$parent.ngDialogData.currentPageIdx)) {
+        vm.currentPageIdx = $scope.$parent.ngDialogData.currentPageIdx;
+    }
+    else {
+        vm.currentPageIdx = 0;
+    }
 
     vm.exampleAcknowledgements = [{
         'agency': 'Australian Synchrotron facility',
@@ -174,15 +155,27 @@ angular
     // updated.
     var saveFormState = function (onComplete, onFailure) {
         vm.loadingData = true;
-        $http.post('/apps/publication-workflow/form/', vm.formData).success(function (data) {
-            if ('error' in data) { // This happens when the form fails to validate but no server error encountered
+        $log.debug("Saving form data. vm.formData.publicationId: " + vm.formData.publicationId);
+        $http.post('/apps/publication-workflow/form/', vm.formData).then(function (response) {
+            if ('error' in response.data) { // This happens when the form fails to validate but no server error encountered
                 vm.errorMessages.push(data.error);
                 onFailure();          // Since all validation also happens on the client, this should never happen.
                 vm.loadingData = false;
                 return;
             }
 
-            vm.formData = data;
+            vm.formData = response.data;
+            if (angular.isString(vm.formData.embargo)) {
+                vm.formData.embargo = new Date(vm.formData.embargo);
+            }
+
+            // Just for debugging:
+            if (angular.isDate(vm.formData.embargo)) {
+                $log.info("vm.formData.embargo is a date.");
+            }
+            if (angular.isString(vm.formData.embargo)) {
+                $log.info("vm.formData.embargo is a string.");
+            }
 
             // If this instance of saveFormState was called by vm.saveAndClose, then
             // when we call onComplete (a.k.a. onSuccess), vm.formData.publicationId
@@ -194,7 +187,8 @@ angular
 //          vm.infoMessage = "Dataset selection saved!";
             onComplete();
             vm.loadingData = false;
-        }).error(function (data) {  // eslint-disable-line no-unused-vars
+        },
+        function (response) {
             vm.errorMessages.push("the server could not process your request");
             onFailure();
             vm.loadingData = false;
@@ -208,7 +202,6 @@ angular
     //   a function to be called when validation succeeds
     //   a function to be called when validation fails
     // Any error messages may be displayed in the vm.errorMessages array
-    // eslint-disable-next-line no-unused-vars
     var noValidation = function (onSuccess, onError) {
         onSuccess();
     };
@@ -338,32 +331,13 @@ angular
             url: 'form_page5.html',
             validationFunction: noValidation
         }];
-
-    // Keep track of the current page
-    vm.currentPageIdx = 0;
     vm.totalPages = vm.formPages.length;
     vm.currentPage = vm.formPages[vm.currentPageIdx];
 
-    // If isPublicationDraft is true, then
-    // the form state should be loaded from the database.
-    if (vm.isPublicationDraft) {
-        // Setting formData.action to "resume" causes the form data to be reloaded
-        // rather than overwritten.
-        vm.formData.publicationId = vm.experiment;
-        vm.formData.action = "resume";
-        $http.post('/apps/publication-workflow/form/', vm.formData).success(function (data) {
-            vm.formData = data;
-            vm.currentPageIdx = 1; // Once form data is reloaded, advance to the second page
-            vm.currentPage = vm.formPages[vm.currentPageIdx];
-        }).error(function (data) {  // eslint-disable-line no-unused-vars
-            vm.errorMessages = ['Could not load publication draft!'];
-        });
-    }
-
     // Load the available experiments and datasets
     vm.loadingData = true; // Loading animation shown when this is true
-    $http.get('/apps/publication-workflow/data/fetch_experiments_and_datasets/').success(function (data) {
-        vm.experiments = data;
+    $http.get('/apps/publication-workflow/data/fetch_experiments_and_datasets/').then(function (response) {
+        vm.experiments = response.data;
 
         // Set default experiment
         for (var i = 0; i < vm.experiments.length; i++) {
@@ -372,7 +346,6 @@ angular
                 break;
             }
         }
-
         vm.loadingData = false;
     });
 
@@ -384,10 +357,10 @@ angular
         }
         for (var i = 0; i < datasets.length; i++) {
             vm.formData.addedDatasets.push({
-                                                   "experiment": experiment.title,
-                                                   "experiment_id": experiment.id,
-                                                   "dataset": datasets[i]
-                                               });
+                "experiment": experiment.title,
+                "experiment_id": experiment.id,
+                "dataset": datasets[i]
+            });
         }
     };
     // Remove a dataset from the list of selected datasets
@@ -404,12 +377,12 @@ angular
         if (vm.currentPageIdx < vm.formPages.length - 1 && !vm.loadingData) {
             vm.errorMessages = [];
             vm.infoMessage = "";
-            var onSuccess = function() {
+            vm.currentPage.validationFunction(function () { // On success...
                 vm.currentPageIdx++;
                 vm.currentPage = vm.formPages[vm.currentPageIdx];
-            };
-            var onError = function() {};
-            vm.currentPage.validationFunction(onSuccess, onError);
+            }, function () { // On error...
+                // do nothing...
+            });
         }
     };
     // Move back a page
@@ -449,9 +422,13 @@ angular
     // Add author to publication
     vm.addAuthorEntry = function () {
         $log.info(vm.formData);
-        vm.formData.authors.push({'name':'',
-                                      'institution':'',
-                                      'email':''});
+        vm.formData.authors.push(
+            {
+                'name': '',
+                'institution':'',
+                'email': ''
+            }
+        );
     };
 
     // Remove author from publication
@@ -469,7 +446,6 @@ angular
         }
     };
 
-    // eslint-disable-next-line no-unused-vars
     $scope.$watch('formData.selectedLicenseId', function (newVal, oldVal) {
         if (angular.isDefined(vm.formData.licenses)) {
             for (var i in vm.formData.licenses) {
@@ -502,7 +478,6 @@ angular
         vm.formData.embargo = new Date();
     };
     // Ensures that the embargo date is a Date object
-    // eslint-disable-next-line no-unused-vars
     $scope.$watch('formData.embargo', function (newVal, oldVal) {
         if (angular.isString(newVal)) {
             vm.formData.embargo = new Date(newVal);
@@ -522,13 +497,12 @@ angular
     };
     vm.pdbSearching = false;
     vm.pdbSearchComplete = false;
-    // eslint-disable-next-line no-unused-vars
     $scope.$watch('formData.pdbInfo', function (newVal, oldVal) {
         if (angular.isDefined(newVal)) {
             vm.pdbSearchComplete = Object.keys(newVal).length;
             vm.pdbOK = (newVal.status !== 'UNKNOWN');
         } else if (angular.isDefined(vm.pdbOK) || vm.hasPDB) {
-            delete vm.pdbOK; // unset the variable so the form validator can continue
+            delete vm.pdbOK;  // unset the variable so the form validator can continue
         }
     });
 
@@ -543,11 +517,11 @@ angular
         }
 
         pdbSearchTimeout = $timeout(function () {
-            $http.get('/apps/publication-workflow/helper/pdb/' + pdbId + '/').success(
-                function (data) {
+            $http.get('/apps/publication-workflow/helper/pdb/' + pdbId + '/').then(
+                function (response) {
                     vm.pdbSearching = false;
                     vm.pdbSearchComplete = true;
-                    vm.formData.pdbInfo = data;
+                    vm.formData.pdbInfo = response.data;
                 }
             );
         }, 1000);

@@ -33,17 +33,17 @@ app.controller('publicationApprovals', function ($scope, $log, $http) {
 		   {   'action':selectedAction,
                        'id':selectedPublicationId,
                        'message':$scope.actionMessage
-		   }).success(function(data){
-		       $scope.pendingPublications = data;
-		       $scope.isProcessing = false;
+                   }).success(function(response){
+                       $scope.pendingPublications = response.data;
+                       $scope.isProcessing = false;
 
-		       selectedPublicationId = null;
-		       selectedAction = '';
-		       $scope.actionMessage = '';
-		   }).error(function(data, status) {
-		       $scope.isPending = false;
-		       alert('Could not process this request (error code: '+status+')');
-		   });
+                       selectedPublicationId = null;
+                       selectedAction = '';
+                       $scope.actionMessage = '';
+                   }).error(function(response, status) {
+                       $scope.isPending = false;
+                       alert('Could not process this request (error code: '+status+')');
+                   });
 
 //        var idx = $scope.pendingPublications.indexOf(publication);
 //        $scope.pendingPublications.splice(idx, 1);
@@ -54,8 +54,8 @@ app.controller('publicationApprovals', function ($scope, $log, $http) {
     }
 
     $scope.refreshPendingPublications = function() {
-        $http.post('/apps/publication-workflow/approvals/', {}).success(function (data) {
-            $scope.pendingPublications = data;
+        $http.post('/apps/publication-workflow/approvals/', {}).success(function (response) {
+            $scope.pendingPublications = response.data;
         });
     }
 
