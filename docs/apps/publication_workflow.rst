@@ -34,7 +34,7 @@ embargo processing) filter based on the publication schema and act accordingly.
 
 Basic setup
 ===========
-A minimum setup requires the :py:mod:`tardis.apps.publication_forms` app to
+A minimum setup requires the :py:mod:`tardis.apps.publication_workflow` app to
 be added to :py:const:`INSTALLED_APPS` and the following settings to be
 defined:
 
@@ -45,7 +45,7 @@ defined:
  * :py:const:`PUBLICATION_INTRODUCTION` set to an HTML formatted
    introductory text that is displayed to the user before begins the
    publication process
- * the :py:mod:`apps.publication_forms.update_publication_records` task
+ * the :py:mod:`apps.publication_workflow.update_publication_records` task
    should be added to :py:const:`CELERYBEAT_SCHEDULE` and set to a
    reasonable interval for embargo processing
 

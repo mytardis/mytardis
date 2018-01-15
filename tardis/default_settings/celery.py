@@ -22,7 +22,7 @@ CELERYBEAT_SCHEDULE = {
     },
     # enable this task for the publication workflow
     # "update-publication-records": {
-    #     "task": "apps.publication_forms.update_publication_records",
+    #     "task": "apps.publication_workflow.update_publication_records",
     #     "schedule": timedelta(seconds=300)
     # },
 }

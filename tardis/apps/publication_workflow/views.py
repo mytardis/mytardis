@@ -229,7 +229,7 @@ def process_form(request):
                 reverse('tardis_portal.view_experiment',
                         args=(publication.id,))),
             request.build_absolute_uri(
-                '/apps/publication-forms/approvals/'))
+                '/apps/publication-workflow/approvals/'))
 
         try:
             send_mail(subject,

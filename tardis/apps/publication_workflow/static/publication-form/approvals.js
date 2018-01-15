@@ -29,7 +29,7 @@ app.controller('publicationApprovals', function ($scope, $log, $http) {
 
     $scope.submitAction = function(publication, message) {
 	$scope.isProcessing = true;
-        $http.post('/apps/publication-forms/approvals/',
+        $http.post('/apps/publication-workflow/approvals/',
 		   {   'action':selectedAction,
                        'id':selectedPublicationId,
                        'message':$scope.actionMessage
@@ -54,7 +54,7 @@ app.controller('publicationApprovals', function ($scope, $log, $http) {
     }
 
     $scope.refreshPendingPublications = function() {
-        $http.post('/apps/publication-forms/approvals/', {}).success(function (data) {
+        $http.post('/apps/publication-workflow/approvals/', {}).success(function (data) {
             $scope.pendingPublications = data;
         });
     }

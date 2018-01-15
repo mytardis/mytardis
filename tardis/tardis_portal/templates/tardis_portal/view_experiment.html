@@ -17,8 +17,8 @@
 {% mustachejs "tardis_portal/badges/datafile_count" %}
 {% mustachejs "tardis_portal/badges/size" %}
 
-{% if pub_form_enabled %}
-<script type="text/javascript" src="/static/publication-form/publication_form.js"></script>
+{% if pub_workflow_enabled %}
+<script type="text/javascript" src="/static/publication-form/publication_workflow.js"></script>
 {% endif %}
 <script type="text/javascript">
     var toggle_files = function(loadCallback) {
@@ -239,7 +239,7 @@ $('#modal-metadata .submit-button').click(function() {
     {% endif %}
   </h4>
   {% if not experiment.public %}
-  {% if pub_form_enabled %}
+  {% if pub_workflow_enabled %}
   <div class="pull-right"
        ng-controller="PublicationFormController as pubFormCtrl"
        experiment_id="{{ experiment.id }}"
@@ -248,7 +248,7 @@ $('#modal-metadata .submit-button').click(function() {
   {% else %}
   <div class="pull-right">
   {% endif %}
-    {% if has_read_or_owner_ACL and pub_form_enabled %}
+    {% if has_read_or_owner_ACL and pub_workflow_enabled %}
     <a class="prepare_to_publish btn btn-mini btn-info"
        title="Prepare To Publish" ng-click="pubFormCtrl.openPublicationForm()" ng-show="pubFormCtrl.isPublicationDraft || !pubFormCtrl.isPublication">
       <i class="fa fa-share"></i>
