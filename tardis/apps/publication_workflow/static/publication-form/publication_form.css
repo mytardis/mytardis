@@ -1,0 +1,18 @@
+.ngdialog input {
+    box-sizing: unset;
+}
+.pub-form-ds-directory {
+    color: #909090;
+    font-size: small;
+    width: 100%;
+    word-break: break-all;
+}
+
+.pub-form-ds-selection {
+    min-height: 140px;
+    width: 100%;
+}
+
+.ngdialog.ngdialog-theme-default .ngdialog-content {
+    width: 800px; // Override default
+}

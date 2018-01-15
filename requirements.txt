@@ -4,4 +4,5 @@
 -r requirements-ldap.txt
 
 # apps go here:
+-r tardis/apps/publication_workflow/requirements.txt
 -r tardis/apps/social_auth/requirements.txt
