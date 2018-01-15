@@ -1,0 +1,18 @@
+<div class="well">
+    <h3>Dataset description</h3>
+
+    <p>Please provide a description for each dataset.</p>
+
+    <div ng-repeat="ds in formTemplate.datasets"
+         ng-init="f = $parent.$index; formData.extraInfo[f+'.'+$index]['dataset'] = ds.description;">
+        <h4>{{ ds.description }}</h4>
+        <tardis-form my-model="formData.extraInfo[f+'.'+$index]" schema="formTemplate.name">
+            <textarea tardis-form-field parameter-name="description"
+                      rows="3"
+                      style="width:100%;"
+                      placeholder="{{ ds.description }} description">
+            </textarea>
+        </tardis-form>
+        <hr ng-hide="$last"/>
+    </div>
+</div>

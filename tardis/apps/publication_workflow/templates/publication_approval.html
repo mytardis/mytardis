@@ -1,0 +1,58 @@
+{% extends "tardis_portal/portal_template.html" %}
+{% load static from staticfiles %}
+{% block content %}
+<script type="text/javascript" src="{% static 'publication-form/approvals.js' %}"></script>
+{% verbatim %}
+<div ng-controller="publicationApprovals">
+  <h2>Publications pending review</h2>
+  <p>The following publications have been submitted and must be approved prior to release. After reviewing, you may
+    either <strong>approve</strong> the publication, <strong>revert to draft</strong> or <strong>reject</strong> the
+    publication. If the publication has been approved, it will become public once all conditions for release have
+    been met.
+  </p>
+  <table class="table table-striped table-bordered">
+    <thead>
+      <tr><td>Authors</td><td>Publication title</td><td>Action</td></tr>
+    </thead>
+    <tbody>
+      <tr ng-hide="pendingPublications.length"><td colspan="3">No pending publications</td></tr>
+      <tr ng-repeat="publication in pendingPublications">
+        <td>{{ publication.authors }}</td>
+        <td><a href="/experiment/view/{{ publication.id }}/">{{ publication.title }}</a></td>
+        <td>
+	  <div ng-show="isSelected(publication.id) && isProcessing"><img src="/static/publication-form/spinner.gif"/> Processing request, please wait...</div>
+	  <div ng-hide="isSelected(publication.id) && isProcessing">
+            <div>
+              <a class="btn btn-success" href="#" ng-class="{disabled: isProcessing}" ng-click="isProcessing || selectAction(publication.id, 'approve')">Approve</a>
+              <a class="btn btn-warning" href="#" ng-class="{disabled: isProcessing}" ng-click="isProcessing || selectAction(publication.id, 'revert')">Revert to draft</a>
+              <a class="btn btn-danger" href="#" ng-class="{disabled: isProcessing}" ng-click="isProcessing || selectAction(publication.id, 'reject')">Reject</a>
+            </div>
+            <div class="alert alert-success" style="margin-top: 10px;" ng-show="isSelected(publication.id, 'approve')">
+              <strong>Approve</strong><br/>
+              <textarea placeholder="Enter an optional message to be sent to the authors"
+			style="width:100%;"
+			ng-model="$parent.actionMessage"></textarea>
+              <a href="#" class="btn btn-success" ng-click="submitAction(publication)">Confirm</a><a href="#" class="btn" ng-click="cancelAction()">Cancel</a>
+            </div>
+            <div class="alert alert-warning" style="margin-top: 10px;" ng-show="isSelected(publication.id, 'revert')">
+              <strong>Revert to draft</strong><br/>
+              <textarea placeholder="Enter an optional message to be sent to the authors"
+			style="width:100%;"
+			ng-model="$parent.actionMessage"></textarea>
+              <a href="#" class="btn btn-warning" ng-click="submitAction(publication)">Confirm</a><a href="#" class="btn" ng-click="cancelAction()">Cancel</a>
+            </div>
+            <div class="alert alert-danger" style="margin-top: 10px;" ng-show="isSelected(publication.id, 'reject')">
+              <strong>Reject</strong> (will delete the publication, but no data is lost)<br/>
+              <textarea placeholder="Enter an optional message to be sent to the authors"
+			style="width:100%;"
+			ng-model="$parent.actionMessage"></textarea>
+              <a href="#" class="btn btn-danger" ng-click="submitAction(publication)">Confirm</a><a href="#" class="btn" ng-click="cancelAction()">Cancel</a>
+            </div>
+	  </div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+{%  endverbatim %}
+{% endblock %}
