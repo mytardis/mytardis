@@ -1,36 +1,38 @@
-app.controller('publicationApprovals', function ($scope, $log, $http) {
+angular
+.module('MyTardis')
+.controller('PublicationApprovalsController', function ($scope, $log, $http) {
 
     var selectedPublicationId = null;
     var selectedAction = '';
     $scope.actionMessage = '';
-    $scope.isSelected = function(publication_id, action) {
-        if (selectedPublicationId != null && typeof action !== 'undefined') {
-            return (selectedPublicationId == publication_id && selectedAction == action);
-        } else if (selectedPublicationId != null && typeof action === 'undefined') {
-	    return (selectedPublicationId == publication_id);
-	} else {
+    $scope.isSelected = function(publicationId, action) {
+        if (selectedPublicationId !== null && angular.isDefined(action)) {
+            return (selectedPublicationId === publicationId && selectedAction === action);
+        } else if (selectedPublicationId !== null && angular.isUndefined(action)) {
+            return (selectedPublicationId === publicationId);
+        } else {
             return false;
         }
-    }
+    };
 
-    $scope.selectAction = function(publication_id, action) {
-        selectedPublicationId = publication_id;
+    $scope.selectAction = function(publicationId, action) {
+        selectedPublicationId = publicationId;
         selectedAction = action;
         $scope.actionMessage = '';
-    }
+    };
 
     $scope.cancelAction = function() {
         selectedPublicationId = null;
         selectedAction = '';
         $scope.actionMessage = '';
-    }
+    };
 
     $scope.isProcessing = false;
 
-    $scope.submitAction = function(publication, message) {
-	$scope.isProcessing = true;
+    $scope.submitAction = function() {
+        $scope.isProcessing = true;
         $http.post('/apps/publication-workflow/approvals/',
-		   {   'action':selectedAction,
+                   {   'action':selectedAction,
                        'id':selectedPublicationId,
                        'message':$scope.actionMessage
                    }).success(function(response){
@@ -51,13 +53,13 @@ app.controller('publicationApprovals', function ($scope, $log, $http) {
 //        selectedPublicationId = null;
 //        selectedAction = '';
 //        $scope.actionMessage = '';
-    }
+    };
 
     $scope.refreshPendingPublications = function() {
         $http.post('/apps/publication-workflow/approvals/', {}).success(function (response) {
             $scope.pendingPublications = response.data;
         });
-    }
+    };
 
     $scope.refreshPendingPublications();
 });
