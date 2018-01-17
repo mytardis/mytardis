@@ -3,7 +3,7 @@
 {% block content %}
 <script type="text/javascript" src="{% static 'publication-form/approvals.js' %}"></script>
 {% verbatim %}
-<div ng-controller="publicationApprovals">
+<div ng-controller="PublicationApprovalsController">
   <h2>Publications pending review</h2>
   <p>The following publications have been submitted and must be approved prior to release. After reviewing, you may
     either <strong>approve</strong> the publication, <strong>revert to draft</strong> or <strong>reject</strong> the
@@ -32,21 +32,21 @@
               <textarea placeholder="Enter an optional message to be sent to the authors"
 			style="width:100%;"
 			ng-model="$parent.actionMessage"></textarea>
-              <a href="#" class="btn btn-success" ng-click="submitAction(publication)">Confirm</a><a href="#" class="btn" ng-click="cancelAction()">Cancel</a>
+              <a href="#" class="btn btn-success" ng-click="submitAction()">Confirm</a><a href="#" class="btn" ng-click="cancelAction()">Cancel</a>
             </div>
             <div class="alert alert-warning" style="margin-top: 10px;" ng-show="isSelected(publication.id, 'revert')">
               <strong>Revert to draft</strong><br/>
               <textarea placeholder="Enter an optional message to be sent to the authors"
 			style="width:100%;"
 			ng-model="$parent.actionMessage"></textarea>
-              <a href="#" class="btn btn-warning" ng-click="submitAction(publication)">Confirm</a><a href="#" class="btn" ng-click="cancelAction()">Cancel</a>
+              <a href="#" class="btn btn-warning" ng-click="submitAction()">Confirm</a><a href="#" class="btn" ng-click="cancelAction()">Cancel</a>
             </div>
             <div class="alert alert-danger" style="margin-top: 10px;" ng-show="isSelected(publication.id, 'reject')">
               <strong>Reject</strong> (will delete the publication, but no data is lost)<br/>
               <textarea placeholder="Enter an optional message to be sent to the authors"
 			style="width:100%;"
 			ng-model="$parent.actionMessage"></textarea>
-              <a href="#" class="btn btn-danger" ng-click="submitAction(publication)">Confirm</a><a href="#" class="btn" ng-click="cancelAction()">Cancel</a>
+              <a href="#" class="btn btn-danger" ng-click="submitAction()">Confirm</a><a href="#" class="btn" ng-click="cancelAction()">Cancel</a>
             </div>
 	  </div>
         </td>

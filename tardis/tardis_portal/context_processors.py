@@ -51,10 +51,14 @@ def global_contexts(request):
     site_title = getattr(settings, 'SITE_TITLE', None)
     sponsored_by = getattr(settings, 'SPONSORED_TEXT', None)
     site_styles = getattr(settings, 'SITE_STYLES', '')
+    # Enables UI elements for the publication form:
+    pub_workflow_enabled = ('tardis.apps.publication_workflow'
+                            in settings.INSTALLED_APPS)
     version = getattr(settings, 'MYTARDIS_VERSION', None)
     return {'site_title': site_title,
             'sponsored_by': sponsored_by,
             'site_styles': site_styles,
+            'pub_workflow_enabled': pub_workflow_enabled,
             'version': version, }
 
 

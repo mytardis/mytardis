@@ -2,6 +2,7 @@
 
 // A filter used to remove items from the list of available datasets
 // when added to the list of datasets to include in the publication
+/*eslint no-unused-vars: ["error", { "argsIgnorePattern": "^_" }]*/
 angular
 .module('MyTardis')
 .filter('removeMatchingDatasets', function () {
@@ -74,7 +75,7 @@ angular
 // Publication form controller
 angular
 .module('MyTardis')
-.controller('PublicationFormController', function ($scope, $log, $http, $document, ngDialog, $window, $timeout, $attrs) {
+.controller('PublicationFormController', function ($scope, $log, $http, $document, ngDialog) {
     var vm = this;  // view model
 
     vm.errorMessages = []; // An array of strings to display to the user on error
@@ -105,7 +106,7 @@ angular
         }
     }
     else {
-        $log.debug("PublicationFormController: Defining vm.formData from scratch.")
+        $log.debug("PublicationFormController: Defining vm.formData from scratch.");
         vm.formData = {};
         vm.formData.addedDatasets = []; // List of selected datasets
         vm.formData.publicationTitle = ""; // Initialise publication title
@@ -126,10 +127,15 @@ angular
         vm.currentPageIdx = 0;
     }
 
-    vm.exampleAcknowledgements = [{
-        'agency': 'Australian Synchrotron facility',
-        'text': 'This research was undertaken on the [insert beamline name] beamline at the Australian Synchrotron, Victoria, Australia.'
-    },
+    vm.exampleAcknowledgements = [
+        {
+            'agency': 'Australian Research Council',
+            'text': 'This research was funded (partially or fully) by the Australian Government through the Australian Research Council.'
+        },
+        {
+            'agency': 'National Health and Medical Research Council',
+            'text': 'This research was funded (partially or fully) by the Australian Government through the National Health and Medical Research Council.'
+        },
         {
             'agency': 'Science and Industry Endowment Fund',
             'text': 'This work is supported by the Science and Industry Endowment Fund.'
@@ -137,14 +143,6 @@ angular
         {
             'agency': 'Multi-modal Australian ScienceS Imaging and Visualisation Environment',
             'text': 'This work was supported by the Multi-modal Australian ScienceS Imaging and Visualisation Environment (MASSIVE) (www.massive.org.au).'
-        },
-        {
-            'agency': 'Australian National Beamline Facility',
-            'text': 'This research was undertaken at the Australian National Beamline Facility at the Photon Factory in Japan, operated by the Australian Synchrotron.  We acknowledge the Australian Research Council for financial support and the High Energy Accelerator Research Organisation (KEK) in Tsukuba, Japan, for operations support.'
-        },
-        {
-            'agency': 'International Synchrotron Access Program',
-            'text': 'We acknowledge travel funding provided by the International Synchrotron Access Program (ISAP) managed by the Australian Synchrotron and funded by the Australian Government.'
         }];
 
     // Save the form state, creating a new publication if necessary
@@ -158,7 +156,7 @@ angular
         $log.debug("Saving form data. vm.formData.publicationId: " + vm.formData.publicationId);
         $http.post('/apps/publication-workflow/form/', vm.formData).then(function (response) {
             if ('error' in response.data) { // This happens when the form fails to validate but no server error encountered
-                vm.errorMessages.push(data.error);
+                vm.errorMessages.push(response.data.error);
                 onFailure();          // Since all validation also happens on the client, this should never happen.
                 vm.loadingData = false;
                 return;
@@ -188,7 +186,7 @@ angular
             onComplete();
             vm.loadingData = false;
         },
-        function (response) {
+        function (_response) {
             vm.errorMessages.push("the server could not process your request");
             onFailure();
             vm.loadingData = false;
@@ -202,7 +200,7 @@ angular
     //   a function to be called when validation succeeds
     //   a function to be called when validation fails
     // Any error messages may be displayed in the vm.errorMessages array
-    var noValidation = function (onSuccess, onError) {
+    var noValidation = function (onSuccess, _onError) {
         onSuccess();
     };
     var datasetSelectionValidator = function (onSuccess, onError) {
@@ -446,7 +444,8 @@ angular
         }
     };
 
-    $scope.$watch('formData.selectedLicenseId', function (newVal, oldVal) {
+    // pubFormCtrl is the name of the controller instance used in templates/form.html
+    $scope.$watch('pubFormCtrl.formData.selectedLicenseId', function (newVal, _oldVal) {
         if (angular.isDefined(vm.formData.licenses)) {
             for (var i in vm.formData.licenses) {
                 if (vm.formData.licenses.hasOwnProperty(i)) {
@@ -478,52 +477,17 @@ angular
         vm.formData.embargo = new Date();
     };
     // Ensures that the embargo date is a Date object
-    $scope.$watch('formData.embargo', function (newVal, oldVal) {
+    // pubFormCtrl is the name of the controller instance used in templates/form.html
+    $scope.$watch('pubFormCtrl.formData.embargo', function (newVal, _oldVal) {
         if (angular.isString(newVal)) {
             vm.formData.embargo = new Date(newVal);
         }
     });
 
-    // #### PDB HELPER ####
-    vm.requirePDBHelper = function () {
-        extraInfoHelpers.push(function () {
-            if (angular.isUndefined(vm.pdbOK) || vm.pdbOK === false) {
-                vm.errorMessages.push("PDB ID invalid or not given");
-                return false;
-            } else {
-                return true;
-            }
-        });
-    };
-    vm.pdbSearching = false;
-    vm.pdbSearchComplete = false;
-    $scope.$watch('formData.pdbInfo', function (newVal, oldVal) {
-        if (angular.isDefined(newVal)) {
-            vm.pdbSearchComplete = Object.keys(newVal).length;
-            vm.pdbOK = (newVal.status !== 'UNKNOWN');
-        } else if (angular.isDefined(vm.pdbOK) || vm.hasPDB) {
-            delete vm.pdbOK;  // unset the variable so the form validator can continue
-        }
-    });
-
-
-    var pdbSearchTimeout;
-    vm.performPDBSearch = function (pdbId) {
-        vm.pdbSearching = true;
-        vm.pdbSearchComplete = false;
-        vm.pdbOK = false;
-        if (pdbSearchTimeout) {
-            $timeout.cancel(pdbSearchTimeout);
-        }
-
-        pdbSearchTimeout = $timeout(function () {
-            $http.get('/apps/publication-workflow/helper/pdb/' + pdbId + '/').then(
-                function (response) {
-                    vm.pdbSearching = false;
-                    vm.pdbSearchComplete = true;
-                    vm.formData.pdbInfo = response.data;
-                }
-            );
-        }, 1000);
+    vm.initDatasetExtraInfo = function(formIndex, datasetIndex, datasetDescription) {
+         if (angular.isUndefined(vm.formData.extraInfo[formIndex+'.'+datasetIndex])) {
+             vm.formData.extraInfo[formIndex+'.'+datasetIndex] = {};
+         }
+         vm.formData.extraInfo[formIndex+'.'+datasetIndex].dataset = datasetDescription;
     };
 });

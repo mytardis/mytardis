@@ -3,6 +3,11 @@ html{
 }
 body {
   min-height: 100%;
+
+  /* angular-material overrides this, which can make
+   * fonts look worse on macOS.  Setting to auto
+   * preserves the existing behaviour. */
+  -webkit-font-smoothing: auto;
 }
 
 /* Icons */
