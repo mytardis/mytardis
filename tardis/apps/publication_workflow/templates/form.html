@@ -166,7 +166,7 @@
       </div>
       <a class="btn btn-info"
          ng-show="pubFormCtrl.exampleAcknowledgement"
-         ng-click="pubFormCtrl.copyAcknowledgement(exampleAcknowledgement.text)">Copy text <i class="icon-chevron-down"></i></a>
+         ng-click="pubFormCtrl.copyAcknowledgement(pubFormCtrl.exampleAcknowledgement.text)">Copy text <i class="icon-chevron-down"></i></a>
     </div>
     <textarea placeholder="Acknowledge funding agencies, facilities and other contributors here."
 	      style="width:100%;"
@@ -184,7 +184,7 @@
       <img ng-src="{{ pubFormCtrl.formData.selectedLicense.image }}" title="{{ pubFormCtrl.formData.selectedLicense.name }}"
            alt="{{ pubFormCtrl.formData.selectedLicense.name }}"/>
       {{ pubFormCtrl.formData.selectedLicense.description }}
-      <a href="{{ formData.selectedLicense.url }}" target="_blank">Read the full license here.</a>
+      <a href="{{ pubFormCtrl.formData.selectedLicense.url }}" target="_blank">Read the full license here.</a>
     </div>
     <h3>Release date</h3>
 
