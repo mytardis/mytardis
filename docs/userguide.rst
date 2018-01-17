@@ -7,3 +7,4 @@ User Guide
 
   users/basics.rst
   users/sftp.rst
+  users/pub-workflow.rst
