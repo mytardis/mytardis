@@ -1,27 +1,34 @@
+#pylint: disable=C0302
 import json
 import logging
 import re
+import traceback
 
 import dateutil.parser
 
-import CifFile
 from django.contrib.auth.decorators import login_required
+from django.core.exceptions import ObjectDoesNotExist
 from django.core.urlresolvers import reverse
 from django.db import transaction
 from django.views.decorators.cache import never_cache
+from django.views.decorators.http import require_POST
 from django.http import HttpResponse, HttpResponseForbidden
 from django.conf import settings
 from django.contrib.auth.models import User, Group
 from django.core.mail import send_mail
+from django.utils import timezone
+
+from tardis.tardis_portal.auth import decorators as authz
 from tardis.tardis_portal.shortcuts import return_response_error
 from tardis.tardis_portal.shortcuts import render_response_index
 from tardis.tardis_portal.models import Experiment, Dataset, ObjectACL, \
     Schema, ParameterName, ExperimentParameterSet, ExperimentParameter, \
-    ExperimentAuthor, License
+    ExperimentAuthor, License, Token
 from tardis.tardis_portal.auth.localdb_auth import django_user, django_group
+
 from .doi import DOI
-from .utils import PDBCifHelper, check_pdb_status, get_unreleased_pdb_info, \
-    send_mail_to_authors, get_pub_admin_email_addresses, get_site_admin_email
+from .models import Publication
+from .utils import send_mail_to_authors, get_pub_admin_email_addresses, get_site_admin_email
 from .email_text import email_pub_requires_authorisation, \
     email_pub_awaiting_approval, email_pub_approved, email_pub_rejected, \
     email_pub_reverted_to_draft
@@ -46,6 +53,13 @@ def index(request):
 @login_required
 @never_cache
 def process_form(request):
+    try:
+        do_process_form(request)
+    except Exception:
+        logger.error(traceback.format_exc())
+
+
+def do_process_form(request):
     # Decode the form data
     form_state = json.loads(request.body)
 
@@ -135,19 +149,9 @@ def process_form(request):
         form_state['disciplineSpecificFormTemplates'] = selected_forms
 
     elif form_state['action'] == 'update-extra-info':
-        # Clear any current parameter sets except for those belonging
-        # to the publication draft schema or containing the form_state
-        # parameter
-        clear_publication_metadata(publication)
-
         # Loop through form data and create associates parameter sets
         # Any unrecognised fields or schemas are ignored!
         map_form_to_schemas(form_state['extraInfo'], publication)
-
-        # *** Synchrotron specific ***
-        # Search for beamline/EPN information associated with each dataset
-        # and add to the publication.
-        synchrotron_search_epn(publication)
 
         # --- Get data for the next page --- #
         licenses_json = get_licenses()
@@ -191,18 +195,18 @@ def process_form(request):
         pub_details_schema = Schema.objects.get(
             namespace=getattr(settings, 'PUBLICATION_DETAILS_SCHEMA',
                               default_settings.PUBLICATION_DETAILS_SCHEMA))
-        pub_details_parameter_set = ExperimentParameterSet(
-            schema=pub_details_schema,
-            experiment=publication)
-        pub_details_parameter_set.save()
+        pub_details_parameter_set = ExperimentParameterSet.objects.get_or_create(
+            schema=pub_details_schema, experiment=publication)[0]
 
         # Add the acknowledgements
         acknowledgements_parameter_name = ParameterName.objects.get(
             schema=pub_details_schema,
             name='acknowledgements')
-        ExperimentParameter(name=acknowledgements_parameter_name,
-                            parameterset=pub_details_parameter_set,
-                            string_value=form_state['acknowledgements']).save()
+        acknowledgements_param = ExperimentParameter.objects.get_or_create(
+            name=acknowledgements_parameter_name,
+            parameterset=pub_details_parameter_set)[0]
+        acknowledgements_param.string_value = form_state['acknowledgements']
+        acknowledgements_param.save()
 
         # Set the release date
         set_embargo_release_date(
@@ -249,15 +253,18 @@ def process_form(request):
                 "failed to send publication notification email(s): %s" %
                 repr(e)
             )
-            return HttpResponse(
-                json.dumps({
-                    'error': 'Failed to send notification email - please '
-                             'contact the %s administrator (%s), '
-                             'or try again later. Your draft is saved.'
-                             % (get_site_admin_email(),
-                                getattr(settings, 'SITE_TITLE', 'MyTardis'))
-                }),
-                content_type="application/json")
+            if getattr(settings, 'PUBLICATIONS_REQUIRE_EMAIL_SUCCESS',
+                       default_settings.PUBLICATIONS_REQUIRE_EMAIL_SUCCESS):
+                return HttpResponse(
+                    json.dumps({
+                        'error': 'Failed to send notification email - please '
+                                 'contact the %s administrator (%s), '
+                                 'or try again later. Your draft is saved.'
+                                 % (get_site_admin_email(),
+                                    getattr(settings, 'SITE_TITLE',
+                                            'MyTardis'))
+                    }),
+                    content_type="application/json")
 
         # Remove the draft status
         remove_draft_status(publication)
@@ -271,36 +278,23 @@ def process_form(request):
             # bother saving is and return.
             form_state['action'] = ''
             return HttpResponse(json.dumps(form_state),
-                                content_type="appication/json")
+                                content_type="application/json")
 
         # Trigger publication record update
-        tasks.update_publication_records.delay()
+        # tasks.update_publication_records.delay()
+        tasks.update_publication_records()
 
     # Clear the form action and save the state
     form_state['action'] = ''
     form_state_parameter.string_value = json.dumps(form_state)
     form_state_parameter.save()
 
-    return HttpResponse(json.dumps(form_state), content_type="appication/json")
+    # Set the authors even if the form hasn't been submitted yet,
+    # because we want to be able to mint DOIs for draft publications
+    # so they need to have at least one author:
+    set_publication_authors(form_state['authors'], publication)
 
-
-def clear_publication_metadata(publication):
-    schema_root = getattr(settings, 'PUBLICATION_SCHEMA_ROOT',
-                          default_settings.PUBLICATION_SCHEMA_ROOT)
-    schema_draft = getattr(settings, 'PUBLICATION_DRAFT_SCHEMA',
-                           default_settings.PUBLICATION_DRAFT_SCHEMA)
-    for parameter_set in publication.getParameterSets():
-        if parameter_set.schema.namespace != schema_draft and \
-                        parameter_set.schema.namespace != schema_root:
-            parameter_set.delete()
-        elif parameter_set.schema.namespace == schema_root:
-            try:
-                ExperimentParameter.objects.get(
-                    name__name='form_state',
-                    name__schema__namespace=schema_root,
-                    parameterset=parameter_set)
-            except ExperimentParameter.DoesNotExist:
-                parameter_set.delete()
+    return HttpResponse(json.dumps(form_state), content_type="application/json")
 
 
 def map_form_to_schemas(extraInfo, publication):
@@ -309,28 +303,25 @@ def map_form_to_schemas(extraInfo, publication):
             schema = Schema.objects.get(namespace=form['schema'])
         except Schema.DoesNotExist:
             continue
-        parameter_set = ExperimentParameterSet(
-            schema=schema, experiment=publication)
-        parameter_set.save()
+        parameter_set = ExperimentParameterSet.objects.get_or_create(
+            schema=schema, experiment=publication)[0]
         for key, value in form.iteritems():
             if key != 'schema':
                 try:  # Ignore field if parameter name (key) doesn't match
                     parameter_name = ParameterName.objects.get(
                         schema=schema, name=key)
+                    parameter = ExperimentParameter.objects.get_or_create(
+                        name=parameter_name, parameterset=parameter_set)[0]
                     if parameter_name.isNumeric():
-                        parameter = ExperimentParameter(
-                            name=parameter_name,
-                            parameterset=parameter_set,
-                            numerical_value=float(value))
+                        parameter.numerical_value = float(value)
+                        parameter.save()
                     elif parameter_name.isLongString() or \
                             parameter_name.isString() or \
                             parameter_name.isURL() or \
                             parameter_name.isLink() or \
                             parameter_name.isFilename():
-                        parameter = ExperimentParameter(
-                            name=parameter_name,
-                            parameterset=parameter_set,
-                            string_value=str(value))
+                        parameter.string_value = str(value)
+                        parameter.save()
                     else:
                         # Shouldn't happen, but here in case the parameter type
                         # is non-standard
@@ -394,51 +385,20 @@ def set_embargo_release_date(publication, release_date):
                         datetime_value=release_date).save()
 
 
-def synchrotron_search_epn(publication):
-    # *** Synchrotron specific ***
-    # Search for beamline/EPN information associated with each dataset
-    # and add to the publication.
-    try:
-        synch_epn_schema = Schema.objects.get(
-            namespace='http://www.tardis.edu.au/schemas/as/'
-                      'experiment/2010/09/21')
-        datasets = Dataset.objects.filter(experiments=publication)
-        synch_experiments = Experiment.objects.filter(
-            datasets__in=datasets,
-            experimentparameterset__schema=synch_epn_schema).exclude(
-            pk=publication.pk).distinct()
-        for exp in [s for s in
-                    synch_experiments if not s.is_publication()]:
-            epn = ExperimentParameter.objects.get(
-                name__name='EPN',
-                name__schema=synch_epn_schema,
-                parameterset__experiment=exp).string_value
-            beamline = ExperimentParameter.objects.get(
-                name__name='beamline',
-                name__schema=synch_epn_schema,
-                parameterset__experiment=exp).string_value
-
-            epn_parameter_set = ExperimentParameterSet(
-                schema=synch_epn_schema,
-                experiment=publication)
-            epn_parameter_set.save()
-            epn_copy = ExperimentParameter(
-                name=ParameterName.objects.get(
-                    name='EPN', schema=synch_epn_schema),
-                parameterset=epn_parameter_set)
-            epn_copy.string_value = epn
-            epn_copy.save()
-            beamline_copy = ExperimentParameter(
-                name=ParameterName.objects.get(
-                    name='beamline', schema=synch_epn_schema),
-                parameterset=epn_parameter_set)
-            beamline_copy.string_value = beamline
-            beamline_copy.save()
-    except Schema.DoesNotExist:
-        pass
-
-
 def select_forms(datasets):
+    """
+    This method was designed to return form templates for the publication
+    form's Extra Information section, depending on a PUBLICATION_FORM_MAPPINGS
+    setting which supported custom mappings between form templates, dataset
+    schemas and publication schemas.
+
+    These custom mappings have been removed for now, leaving only the generic
+    Extra Information form (a textarea for each dataset).  This is because
+    the way the Extra Information was updated each time the form was processed
+    required deleting all of the publication draft's meatadata (except for the
+    form_state) and repopulating it.  This clashes with the My Publications
+    workflow's desire to add metadata (like a DOI) outside of the form.
+    """
     default_form_schema = getattr(
         settings, 'GENERIC_PUBLICATION_DATASET_SCHEMA',
         default_settings.GENERIC_PUBLICATION_DATASET_SCHEMA)
@@ -446,42 +406,12 @@ def select_forms(datasets):
                     'template': '/static/publication-form/default-form.html',
                     'datasets': []}
 
-    FORM_MAPPINGS = getattr(settings, 'PUBLICATION_FORM_MAPPINGS',
-                            default_settings.PUBLICATION_FORM_MAPPINGS)
     forms = []
     for dataset in datasets:
-        parametersets = dataset.getParameterSets()
-        form_count = 0
-        for parameterset in parametersets:
-            schema_namespace = parameterset.schema.namespace
-            for mapping in FORM_MAPPINGS:
-                if re.match(mapping['dataset_schema'], schema_namespace):
-                    form_count += 1
-                    # The data returned from selected_forms() includes a list
-                    # of datasets that satisfy the criteria for selecting this
-                    # form.
-                    # This allows the frontend to request dataset-specific
-                    # information as well as general information.
-                    if not any(f['name'] == mapping['publication_schema']
-                               for f in forms):
-                        forms.append({'name': mapping['publication_schema'],
-                                      'template': mapping['form_template'],
-                                      'datasets': [{
-                                          'id': dataset.id,
-                                          'description': dataset.description
-                                      }]})
-                    else:
-                        idx = next(index for (index, f) in enumerate(forms)
-                                   if f['name'] ==
-                                   mapping['publication_schema'])
-                        forms[idx]['datasets'].append({
-                            'id': dataset.id,
-                            'description': dataset.description})
-        if not form_count:
-            default_form['datasets'].append({
-                'id': dataset.id,
-                'description': dataset.description
-            })
+        default_form['datasets'].append({
+            'id': dataset.id,
+            'description': dataset.description
+        })
 
     if default_form['datasets']:
         forms.append(default_form)
@@ -581,33 +511,7 @@ def fetch_experiments_and_datasets(request):
             experiment_json['datasets'] = dataset_json
             json_response.append(experiment_json)
     return HttpResponse(json.dumps(json_response),
-                        content_type="appication/json")
-
-
-def pdb_helper(request, pdb_id):
-    try:
-        # Do this if the PDB is already released...
-        pdb = PDBCifHelper(pdb_id)
-        citations = pdb.get_citations()
-        authors = ', '.join(citations[0]['authors'])
-        title = citations[0]['title']
-        result = {
-            'title': title,
-            'authors': authors,
-            'status': 'RELEASED'
-        }
-    except CifFile.StarError:
-        # If it's not released, check if it's a valid PDB ID
-        status = check_pdb_status(pdb_id)
-        if status == 'UNRELEASED':
-            result = get_unreleased_pdb_info(pdb_id)
-            result['status'] = 'UNRELEASED'
-        else:
-            result = {'title': '',
-                      'authors': '',
-                      'status': 'UNKNOWN'}
-
-    return HttpResponse(json.dumps(result), content_type="application/json")
+                        content_type="application/json")
 
 
 def require_publication_admin(f):
@@ -701,8 +605,12 @@ def approve_publication(request, publication, message=None, send_email=True):
     if publication.is_publication() and not publication.is_publication_draft() \
             and publication.public_access == Experiment.PUBLIC_ACCESS_NONE:
         # Change the access level
-        publication.public_access = Experiment.PUBLIC_ACCESS_EMBARGO
-
+        release_date = tasks.get_release_date(publication)
+        embargo_expired = timezone.now() >= release_date
+        if embargo_expired:
+            publication.public_access = Experiment.PUBLIC_ACCESS_FULL
+        else:
+            publication.public_access = Experiment.PUBLIC_ACCESS_EMBARGO
         # Delete the form state (and containing parameter set)
         try:
             ExperimentParameterSet.objects.get(
@@ -747,46 +655,10 @@ def approve_publication(request, publication, message=None, send_email=True):
                 logger.error("Could not change publication owner to "
                              "PUBLICATION_DATA_ADMIN; no such user.")
 
-        doi = None
-        url = request.build_absolute_uri(
-            reverse('tardis_portal.view_experiment',
-                    args=(publication.id,)))
-        if getattr(settings, 'MODC_DOI_ENABLED',
-                   default_settings.MODC_DOI_ENABLED):
-            try:
-                pub_details_schema = getattr(
-                    settings, 'PUBLICATION_DETAILS_SCHEMA',
-                    default_settings.PUBLICATION_DETAILS_SCHEMA)
-
-                doi_parameter_name = ParameterName.objects.get(
-                    schema__namespace=pub_details_schema,
-                    name='doi')
-                pub_details_parameter_set = ExperimentParameterSet.objects.get(
-                    schema__namespace=pub_details_schema,
-                    experiment=publication)
-
-                doi = DOI()
-                ExperimentParameter(name=doi_parameter_name,
-                                    parameterset=pub_details_parameter_set,
-                                    string_value=doi.mint(
-                                        publication.id,
-                                        reverse(
-                                            'tardis_portal.view_experiment',
-                                            args=(publication.id,)))
-                                    ).save()
-                logger.info(
-                    "DOI %s minted for publication ID %i" %
-                    (doi.doi, publication.id))
-                doi.deactivate()
-                logger.info(
-                    "DOI %s deactivated, pending publication release criteria" %
-                    doi.doi)
-            except ParameterName.DoesNotExist:
-                logger.error(
-                    "Could not find the DOI parameter name (check schema definitions)")
-            except ExperimentParameterSet.DoesNotExist:
-                logger.error(
-                    "Could not find the publication details parameter set")
+        response = mint_doi_and_deactivate(request, publication.id)
+        response_dict = json.loads(response.content)
+        doi = response_dict['doi']
+        url = response_dict['url']
 
         if send_email:
             subject, email_message = email_pub_approved(
@@ -799,6 +671,65 @@ def approve_publication(request, publication, message=None, send_email=True):
         return True
 
     return False
+
+
+@login_required
+def mint_doi_and_deactivate(request, experiment_id):
+    doi = None
+    url = request.build_absolute_uri(
+        reverse('tardis_portal.view_experiment',
+                args=(experiment_id,)))
+    if getattr(settings, 'MODC_DOI_ENABLED',
+               default_settings.MODC_DOI_ENABLED):
+        try:
+            pub_details_schema_namespace = getattr(
+                settings, 'PUBLICATION_DETAILS_SCHEMA',
+                default_settings.PUBLICATION_DETAILS_SCHEMA)
+            pub_details_schema = Schema.objects.get(
+                namespace=pub_details_schema_namespace)
+
+            doi_parameter_name = ParameterName.objects.get(
+                schema=pub_details_schema,
+                name='doi')
+            pub_details_parameter_set = \
+                ExperimentParameterSet.objects.get_or_create(
+                    schema=pub_details_schema,
+                    experiment=Experiment.objects.get(id=experiment_id))[0]
+
+            doi = DOI()
+            ExperimentParameter(name=doi_parameter_name,
+                                parameterset=pub_details_parameter_set,
+                                string_value=doi.mint(
+                                    experiment_id,
+                                    reverse(
+                                        'tardis_portal.view_experiment',
+                                        args=(experiment_id,)))
+                                ).save()
+            logger.info(
+                "DOI %s minted for publication ID %s" %
+                (doi.doi, experiment_id))
+            doi.deactivate()
+            logger.info(
+                "DOI %s deactivated, pending publication release criteria" %
+                doi.doi)
+            return HttpResponse(json.dumps(dict(doi=doi.doi, url=url)),
+                                content_type='application/json')
+        except ObjectDoesNotExist as err:
+            if isinstance(err, ParameterName.DoesNotExist):
+                logger.error(
+                    "Could not find the DOI parameter name "
+                    "(check schema definitions)")
+                raise
+            elif isinstance(err, ExperimentParameterSet.DoesNotExist):
+                logger.error(
+                    "Could not find the publication details parameter set")
+                raise
+            else:
+                raise
+    else:
+        msg = "Can't mint DOI, because MODC_DOI_ENABLED is False."
+        logger.error(msg)
+        return HttpResponse(msg, status=500)
 
 
 def reject_publication(publication, message=None):
@@ -872,3 +803,189 @@ def revert_publication_to_draft(publication, message=None):
 
     except ExperimentParameter.DoesNotExist:
         return False
+
+
+@login_required
+def my_publications(request):
+    '''
+    Show drafts of public data collections, scheduled publications
+    and published data.
+    '''
+    return HttpResponse(render_response_index(request, 'my_publications.html'))
+
+
+@never_cache
+@login_required
+def retrieve_draft_pubs_list(request):
+    '''
+    json list of draft pubs accessible by the current user
+    '''
+    draft_pubs_data = []
+    draft_publications = Publication.safe.draft_publications(request.user)\
+        .order_by('-update_time')
+    for draft_pub in draft_publications:
+        try:
+            schema = Schema.objects.get(
+                namespace='http://www.tardis.edu.au/schemas/publication/')
+            form_state_pname = \
+                ParameterName.objects.get(name='form_state', schema=schema)
+            form_state_param = ExperimentParameter.objects.get(
+                parameterset__experiment=draft_pub, name=form_state_pname)
+            form_state = json.loads(form_state_param.string_value)
+            release_date = \
+                dateutil.parser.parse(form_state['embargo']).strftime("%Y-%m-%d")
+        except (ObjectDoesNotExist, KeyError):
+            release_date = None
+        schema = Schema.objects.get(
+                namespace='http://www.tardis.edu.au/schemas/publication/details/')
+        doi_pname = ParameterName.objects.get(name='doi', schema=schema)
+        doi_param = ExperimentParameter.objects.filter(
+                parameterset__experiment=draft_pub, name=doi_pname).first()
+        doi = doi_param.string_value if doi_param else None
+        draft_pubs_data.append(
+            {
+                'id': draft_pub.id,
+                'title': draft_pub.title,
+                'release_date': release_date,
+                'doi': doi
+            })
+
+    return HttpResponse(json.dumps(draft_pubs_data),
+                        content_type='application/json')
+
+
+@never_cache
+@login_required
+def retrieve_scheduled_pubs_list(request):
+    '''
+    json list of scheduled pubs accessible by the current user
+    '''
+    scheduled_pubs_data = []
+    scheduled_publications = Publication.safe.scheduled_publications(request.user)\
+        .order_by('-update_time')
+    schema = Schema.objects.get(
+            namespace='http://www.tardis.edu.au/schemas/publication/details/')
+    doi_pname = ParameterName.objects.get(name='doi', schema=schema)
+    for scheduled_pub in scheduled_publications:
+        doi_param = ExperimentParameter.objects.filter(
+                parameterset__experiment=scheduled_pub, name=doi_pname).first()
+        doi = doi_param.string_value if doi_param else None
+        scheduled_pubs_data.append(
+            {
+                'id': scheduled_pub.id,
+                'title': scheduled_pub.title,
+                'doi': doi,
+                'release_date': tasks.get_release_date(scheduled_pub).strftime('%Y-%m-%d')
+            })
+
+    return HttpResponse(json.dumps(scheduled_pubs_data),
+                        content_type='application/json')
+
+
+@never_cache
+@login_required
+def retrieve_released_pubs_list(request):
+    '''
+    json list of released pubs accessible by the current user
+    '''
+    released_pubs_data = []
+    released_publications = Publication.safe.released_publications(request.user)\
+        .order_by('-update_time')
+    schema = Schema.objects.get(
+            namespace='http://www.tardis.edu.au/schemas/publication/details/')
+    doi_pname = ParameterName.objects.get(name='doi', schema=schema)
+    for released_pub in released_publications:
+        doi_param = ExperimentParameter.objects.filter(
+                parameterset__experiment=released_pub, name=doi_pname).first()
+        doi = doi_param.string_value if doi_param else None
+        released_pubs_data.append(
+            {
+                'id': released_pub.id,
+                'title': released_pub.title,
+                'doi': doi,
+                'release_date': tasks.get_release_date(released_pub).strftime('%Y-%m-%d')
+            })
+
+    return HttpResponse(json.dumps(released_pubs_data),
+                        content_type='application/json')
+
+
+@login_required
+def tokens(request, experiment_id):
+    exp = Experiment.objects.get(id=experiment_id)
+    context = {
+        'is_owner': request.user.has_perm(
+            'tardis_acls.owns_experiment', exp),
+    }
+    return HttpResponse(render_response_index(
+        request, 'tokens.html', context=context))
+
+
+@never_cache
+@login_required
+def retrieve_access_list_tokens_json(request, experiment_id):
+    '''
+    json list of tokens associated with a given experiment
+    '''
+    exp = Experiment.objects.get(id=experiment_id)
+
+    def token_url(url, token):
+        return "%s?token=%s" % (url, token)
+
+    download_urls = exp.get_download_urls()
+
+    tokens = Token.objects.filter(experiment=experiment_id)
+    token_data = []
+    for token in tokens:
+        token_data.append(
+            {
+                'expiry_date': token.expiry_date.isoformat(),
+                'username': token.user.username,
+                'url': request.build_absolute_uri(
+                    token_url(exp.get_absolute_url(), token)),
+                'download_url': request.build_absolute_uri(
+                   token_url(download_urls.get('tar', None), token)),
+                'id': token.id,
+                'experiment_id': experiment_id,
+                'is_owner': request.user.has_perm(
+                    'tardis_acls.owns_experiment', token.experiment),
+               })
+
+    return HttpResponse(json.dumps(token_data),
+                        content_type='application/json')
+
+
+@never_cache
+@login_required
+def is_publication(request, experiment_id):
+    '''
+    Return a JSON response indicating whether the exp ID is a publication
+    '''
+    exp = Experiment.objects.get(id=experiment_id)
+    response_data = dict(is_publication=exp.is_publication())
+    return HttpResponse(json.dumps(response_data),
+                        content_type='application/json')
+
+
+@never_cache
+@login_required
+def is_publication_draft(request, experiment_id):
+    '''
+    Return a JSON response indicating whether the exp ID is a publication draft
+    '''
+    exp = Experiment.objects.get(id=experiment_id)
+    response_data = dict(is_publication_draft=exp.is_publication_draft())
+    return HttpResponse(json.dumps(response_data),
+                        content_type='application/json')
+
+
+@require_POST
+def delete_publication(request, experiment_id):
+    '''
+    Delete the publication draft with the supplied experiment ID
+    '''
+    exp = Experiment.objects.get(id=experiment_id)
+    if authz.has_experiment_ownership(request, exp.id):
+        exp.delete()
+        return HttpResponse('{"success": true}', content_type='application/json')
+    return HttpResponse('{"success": false}', content_type='application/json')

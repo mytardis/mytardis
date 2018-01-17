@@ -4,9 +4,9 @@
     <p>Please provide a description for each dataset.</p>
 
     <div ng-repeat="ds in formTemplate.datasets"
-         ng-init="f = $parent.$index; formData.extraInfo[f+'.'+$index]['dataset'] = ds.description;">
+         ng-init="formIndex = $parent.$index; pubFormCtrl.initDatasetExtraInfo(formIndex, $index, ds.description);">
         <h4>{{ ds.description }}</h4>
-        <tardis-form my-model="formData.extraInfo[f+'.'+$index]" schema="formTemplate.name">
+        <tardis-form my-model="pubFormCtrl.formData.extraInfo[formIndex+'.'+$index]" schema="formTemplate.name">
             <textarea tardis-form-field parameter-name="description"
                       rows="3"
                       style="width:100%;"
