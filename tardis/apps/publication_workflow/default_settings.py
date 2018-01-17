@@ -45,34 +45,8 @@ PUBLICATION_DETAILS_SCHEMA = PUBLICATION_SCHEMA_ROOT + 'details/'
 # This schema will be created automatically if not present
 PUBLICATION_DRAFT_SCHEMA = PUBLICATION_SCHEMA_ROOT + 'draft/'
 
-# Form mappings
-# PUBLICATION_FORM_MAPPINGS is a list of dictionaries that contain the
-# following parameters:
-# dataset_schema: the namespace of the schema that triggers the form to be used
-# publication_schema: the namspace of the schema that should be added to the
-# publication
-# form_template: a URL to the form template (usually static HTML)
-# PUBLICATION_FORM_MAPPINGS = [
-#    {'dataset_schema': 'http://example.com/a_dataset_schema',
-#     'publication_schema': 'http://example.com/a_publication_schema',
-#     'form_template': '/static/publication-form/form-template.html'}]
-# Note: dataset_schema is treated as a regular expression
-
-# The PDB publication schema is used for any experiments that reference a
-# PDB structure
-# It is defined here as a setting because it is used both for the publication
-# form and for fetching data from PDB.org and must always match.
-PDB_PUBLICATION_SCHEMA_ROOT = 'http://synchrotron.org.au/pub/mx/pdb/'
-PDB_SEQUENCE_PUBLICATION_SCHEMA = PDB_PUBLICATION_SCHEMA_ROOT + 'sequence/'
-PDB_CITATION_PUBLICATION_SCHEMA = PDB_PUBLICATION_SCHEMA_ROOT + 'citation/'
-
-# Used by the Australian Synchrotron for MX datasets
-MX_PUBLICATION_DATASET_SCHEMA = 'http://synchrotron.org.au/pub/mx/dataset/'
-
 # Used for recording extra information about datasets
 GENERIC_PUBLICATION_DATASET_SCHEMA = PUBLICATION_SCHEMA_ROOT + 'generic/'
-
-PDB_REFRESH_INTERVAL = timedelta(days=7)
 
 # PUBLICATIONS_REQUIRE_APPROVAL was set to True for Store.Synchrotron, but in
 # the general case, there is no governing body overseeing data publication -
@@ -83,15 +57,6 @@ PUBLICATIONS_REQUIRE_APPROVAL = False
 # email notification can't be sent.  Allowing submission of publications without
 # email notifications is useful for local testing.
 PUBLICATIONS_REQUIRE_EMAIL_SUCCESS = False
-
-PUBLICATION_FORM_MAPPINGS = [
-    {'dataset_schema': r'^http://synchrotron.org.au/mx/',
-     'publication_schema': PDB_PUBLICATION_SCHEMA_ROOT,
-     'form_template': '/static/publication-form/mx-pdb-template.html'},
-    {'dataset_schema': r'^http://synchrotron.org.au/mx/',
-     'publication_schema': MX_PUBLICATION_DATASET_SCHEMA,
-     'form_template':
-         '/static/publication-form/mx-dataset-description-template.html'}]
 
 # Put your API_ID for the Monash DOI minting service here. For other DOI
 # minting, please contact the developers
