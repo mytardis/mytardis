@@ -2,7 +2,7 @@ import json
 import mimetypes
 from StringIO import StringIO
 
-from wand.exceptions import MissingDelegateError
+from wand.exceptions import WandException
 from wand.image import Image
 
 from lxml import etree
@@ -174,9 +174,7 @@ def download_image(request, datafile_id, region, size, rotation,
                 else:
                     patch_cache_control(response, private=True, max_age=MAX_AGE)
                 return response
-    except MissingDelegateError:
-        if format:
-            return _invalid_media_response()
+    except WandException:
         return HttpResponseNotFound()
     except ValueError:
         return HttpResponseNotFound()

@@ -4,6 +4,7 @@ RESTful API for MyTardis models and data.
 Implemented with Tastypie.
 
 .. moduleauthor:: Grischa Meyer <grischa@gmail.com>
+.. moduleauthor:: James Wettenhall <james.wettenhall@monash.edu>
 '''
 import json
 
@@ -844,6 +845,7 @@ class DatasetResource(MyTardisModelResource):
             'experiments': ALL_WITH_RELATIONS,
             'description': ('exact', ),
             'directory': ('exact', ),
+            'instrument': ALL_WITH_RELATIONS,
         }
         ordering = [
             'description'

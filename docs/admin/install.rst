@@ -87,6 +87,10 @@ For Redhat/CentOS 7, also run::
 
   pip install -U -r requirements-centos.txt
 
+Javascript dependencies are then installed with npm::
+
+  npm install
+
 Configuring MyTardis is done through a standard Django *settings.py*
 file. MyTardis comes with a sample configuration file at
 ``tardis/default_settings.py``. You can import this as the basis of your own
