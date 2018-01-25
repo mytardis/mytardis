@@ -106,6 +106,40 @@ After clicking the "Create New Temporary Link" button, you should see a temporar
 .. image:: ../images/pub-workflow/temporary-links-one-token.png  
 
 
+Submitting a Publication for Scheduled Release
+==============================================
+When you are ready to submit your data publication for release, you can click
+the "Submit" button after checking that you have entered all of the required
+information, including the date on which the publication should be released.
+
+.. image:: ../images/pub-workflow/submit_scheduled_release.png
+
+At this point, a DOI (Digital Object Identifier) will be minted and your
+publication will be moved from the Drafts section of the My Publications page
+to the Scheduled or the Released section, depending on the Release Date you
+entered.  In the example below, the Release Date was in the future, so the
+publication appears in the Scheduled section.
+
+.. image:: ../images/pub-workflow/scheduled_release_in_my_pubs.png
+
+
+Submitting a Publication for Immediate Release
+==============================================
+When you are ready to submit your data publication for immediate release, you can
+click the "Submit" button after checking that you have entered all of the required
+information, including the date on which the publication should be released (today).
+
+.. image:: ../images/pub-workflow/submit_immediate_release.png
+
+At this point, a DOI (Digital Object Identifier) will be minted and your
+publication will be moved from the Drafts section of the My Publications page
+to the Scheduled or the Released section, depending on the Release Date you
+entered.  In the example below, the Release Date was set to today, so the
+publication appears in the Released section.
+
+.. image:: ../images/pub-workflow/immediate_release_in_my_pubs.png
+
+
 **********************************
 For MyTardis System Administrators
 **********************************
