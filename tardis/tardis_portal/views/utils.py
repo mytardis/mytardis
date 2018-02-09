@@ -477,6 +477,14 @@ def get_dataset_info(dataset, include_thumbnail=False, exclude=None):  # too com
         obj['size'] = dataset.get_size()
         obj['size_human_readable'] = filesizeformat(obj['size'])
 
+    if exclude is None or 'instrument' not in exclude:
+        obj['instrument'] = dataset.instrument.name
+        obj['show_instr_facil'] = True
+
+    if exclude is None or 'facility' not in exclude:
+        obj['facility'] = dataset.instrument.facility.name
+        obj['show_instr_facil'] = True
+
     if include_thumbnail:
         try:
             obj['thumbnail'] = reverse(
