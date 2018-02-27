@@ -261,6 +261,14 @@ class DatasetView(TemplateView):
         c = super(DatasetView, self).get_context_data(**kwargs)
 
         dataset_id = dataset.id
+        dataset_instrument = dataset.instrument
+        if dataset_instrument:
+            instrument_name = dataset_instrument.name
+            dataset_facility = dataset_instrument.facility
+            facility_name = dataset_facility.name if dataset_facility else None
+        else:
+            instrument_name = None
+            facility_name = None
         upload_method = getattr(settings, "UPLOAD_METHOD", False)
         max_images_in_carousel = getattr(settings, "MAX_IMAGES_IN_CAROUSEL", 0)
         if max_images_in_carousel:
@@ -277,8 +285,8 @@ class DatasetView(TemplateView):
                  request, dataset_id),
              'has_write_permissions': authz.has_dataset_write(request,
                                                               dataset_id),
-             'from_instrument': dataset.instrument.name,
-             'from_facility': dataset.instrument.facility.name,
+             'from_instrument': instrument_name,
+             'from_facility': facility_name,
              'from_experiment': get_experiment_referer(request, dataset_id),
              'other_experiments': authz.get_accessible_experiments_for_dataset(
                  request,
