@@ -410,6 +410,22 @@ $('#modal-metadata .submit-button').live('click', function() {
       <span>Untitled Dataset</span>
     {% endif %}
   </h1>
+  {% if from_instrument or from_facility %}
+    <h4 style="padding-top: 4px">
+        <small>
+          {% if from_instrument %}
+            <span style="margin-right: 2em;">
+              Instrument: {{ from_instrument }}
+            </span>
+          {% endif %}
+          {% if from_facility %}
+            <span style="margin-right: 2em;">
+              Facility: {{  from_facility }}
+            </span>
+          {% endif %}
+        </small>
+    </h4>
+  {% endif %}
   {% if from_experiment %}
   <h4 style="padding-top: 4px">
       <small>
