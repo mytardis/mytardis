@@ -62,8 +62,6 @@ def view_full_dataset(request, dataset_id):
             authz.has_dataset_download_access(request, dataset_id),
         'has_write_permissions':
             authz.has_dataset_write(request, dataset_id),
-        'from_instrument': dataset.instrument.name,
-        'from_facility': dataset.instrument.facility.name,
         'from_experiment': \
             get_experiment_referer(request, dataset_id),
         'other_experiments': \
