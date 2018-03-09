@@ -50,7 +50,7 @@ LOGGING = {
     'handlers': {
         'null': {
             'level': 'DEBUG',
-            'class': 'django.utils.log.NullHandler',
+            'class': 'logging.NullHandler',
         },
         'console': {
             'level': 'INFO',
@@ -91,7 +91,7 @@ LOGGING = {
 
 class LoggingMiddleware(object):
     def __init__(self):
-        from django.utils.log import dictConfig
+        from logging.config import dictConfig
         dictConfig(LOGGING)
         self.logger = logging.getLogger(__name__)
 
