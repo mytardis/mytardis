@@ -35,12 +35,12 @@ import sys
 import traceback
 import logging
 from optparse import make_option
+from importlib import import_module
 
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction, DEFAULT_DB_ALIAS
 from django.core.exceptions import ImproperlyConfigured
-from django.utils.importlib import import_module
 
 from tardis.tardis_portal.models import Experiment, Dataset, DataFile
 

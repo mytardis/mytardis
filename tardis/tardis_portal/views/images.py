@@ -75,7 +75,7 @@ def load_image(request, parameter):
     file_path = path.abspath(path.join(settings.METADATA_STORE_PATH,
                                        parameter.string_value))
 
-    from django.core.servers.basehttp import FileWrapper
+    from wsgiref.util import FileWrapper
     try:
         wrapper = FileWrapper(file(file_path))
     except IOError:
