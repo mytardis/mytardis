@@ -1,6 +1,6 @@
 from compare import expect
 
-from django.contrib.sites.shortcuts import RequestSite
+from django.contrib.sites.requests import RequestSite
 from django.test import TestCase
 
 import oaipmh.error
