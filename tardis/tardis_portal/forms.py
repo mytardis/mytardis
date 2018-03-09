@@ -43,7 +43,7 @@ from UserDict import UserDict
 from django import forms
 from django.contrib.sites.shortcuts import get_current_site
 from django.forms import ValidationError
-from django.forms.util import ErrorList
+from django.forms.utils import ErrorList
 from django.forms.models import ModelChoiceField
 from django.forms.widgets import HiddenInput
 from django.forms import ModelForm
