@@ -2,7 +2,7 @@ from abc import ABCMeta, abstractmethod
 
 from compare import expect
 
-from django.contrib.sites.models import RequestSite
+from django.contrib.sites.shortcuts import RequestSite
 from django.test import TestCase
 
 import oaipmh.error

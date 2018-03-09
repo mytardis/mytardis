@@ -1,8 +1,8 @@
 from datetime import datetime
 import itertools
+from importlib import import_module
 
 from django.conf import settings
-from django.utils.importlib import import_module
 from django.core.exceptions import ImproperlyConfigured
 from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
