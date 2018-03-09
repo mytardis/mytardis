@@ -238,7 +238,7 @@ class ExperimentResourceTest(MyTardisResourceTestCase):
             "created_time": "2013-05-29T13:00:26.626580",
             "description": "",
             "end_time": None,
-            "handle": "",
+            "handle": None,
             "id": exp_id,
             "institution_name": "Monash University",
             "locked": False,
