@@ -401,42 +401,12 @@ class ACLAuthorization(Authorization):
         # return allowed
 
     def update_detail(self, object_list, bundle):  # noqa # too complex
-        if not bundle.request.user.is_authenticated():
-            return False
-        if isinstance(bundle.obj, Experiment):
-            return bundle.request.user.has_perm(
-                'tardis_portal.change_experiment') and \
-                has_write_permissions(bundle.request, bundle.obj.id)
-        elif isinstance(bundle.obj, ExperimentParameterSet):
-            return bundle.request.user.has_perm(
-                'tardis_portal.change_experiment')  # and \
-        #      has_write_permissions(bundle.request, bundle.obj.experiment.id)
-        elif isinstance(bundle.obj, ExperimentParameter):
-            return bundle.request.user.has_perm(
-                'tardis_portal.change_experiment')
-        elif isinstance(bundle.obj, Dataset):
-            return False
-        elif isinstance(bundle.obj, DatasetParameterSet):
-            return False
-        elif isinstance(bundle.obj, DatasetParameter):
-            return False
-        elif isinstance(bundle.obj, DataFile):
-            return bundle.request.user.has_perm('tardis_portal.change_datafile')
-        elif isinstance(bundle.obj, DatafileParameterSet):
-            return False
-        elif isinstance(bundle.obj, DatafileParameter):
-            return False
-        elif isinstance(bundle.obj, Schema):
-            return False
-        elif isinstance(bundle.obj, Group):
-            return False
-        elif isinstance(bundle.obj, Facility):
-            return False
-        elif isinstance(bundle.obj, Instrument):
-            facilities = facilities_managed_by(bundle.request.user)
-            return bundle.obj.facility in facilities and \
-                bundle.request.user.has_perm('tardis_portal.change_instrument')
-        raise NotImplementedError(type(bundle.obj))
+        '''
+        Latest TastyPie requires update_detail permissions to be able to create
+        objects.  Rather than duplicating code here, we'll just use the same
+        authorization rules we use for create_detail.
+        '''
+        return self.create_detail(object_list, bundle)
 
     def delete_list(self, object_list, bundle):
         raise Unauthorized("Sorry, no deletes.")
