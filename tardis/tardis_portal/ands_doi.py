@@ -4,10 +4,10 @@ import re
 import urllib2
 from urllib2 import HTTPError
 import logging
+from importlib import import_module
 
 from django.conf import settings
 from django.template.loader import render_to_string
-from django.utils.importlib import import_module
 
 from tardis.tardis_portal.models import ExperimentParameter, \
     ExperimentParameterSet, ParameterName, Schema
