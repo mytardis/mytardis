@@ -15,7 +15,8 @@ from registration.backends.default.views import RegistrationView
 from tastypie.api import Api
 from tastypie.resources import Resource
 
-from tardis.app_config import get_tardis_apps, format_app_name_for_url
+from tardis.app_config import get_tardis_apps
+from tardis.app_config import format_app_name_for_url
 from tardis.tardis_portal.api import (
     DatafileParameterResource,
     DatafileParameterSetResource,

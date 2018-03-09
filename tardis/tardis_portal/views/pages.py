@@ -25,9 +25,6 @@ from django.shortcuts import render, redirect
 from django.views.decorators.cache import cache_page
 from django.views.generic.base import TemplateView, View
 
-from tardis.apps.push_to.apps import PushToConfig
-from tardis.apps.push_to.views import (
-    initiate_push_experiment, initiate_push_dataset)
 from tardis.search.utils import SearchQueryString
 from tardis.tardis_portal.auth import decorators as authz
 from tardis.tardis_portal.auth.decorators import (
@@ -292,7 +289,7 @@ class DatasetView(TemplateView):
                  request,
                  dataset_id),
              'upload_method': upload_method,
-             'push_to_enabled': PushToConfig.name in settings.INSTALLED_APPS,
+             'push_to_enabled': 'tardis.apps.push_to' in settings.INSTALLED_APPS,
              'carousel_slice': carousel_slice,
              }
         )
@@ -302,6 +299,7 @@ class DatasetView(TemplateView):
             push_to_args = {
                 'dataset_id': dataset.pk
             }
+            from tardis.apps.push_to.views import initiate_push_dataset
             c['push_to_url'] = reverse(initiate_push_dataset,
                                        kwargs=push_to_args)
 
@@ -472,11 +470,12 @@ class ExperimentView(TemplateView):
                 authz.has_read_or_owner_ACL(request, experiment.id)
 
         # Enables UI elements for the push_to app
-        c['push_to_enabled'] = PushToConfig.name in settings.INSTALLED_APPS
+        c['push_to_enabled'] = 'tardis.apps.push_to' in settings.INSTALLED_APPS
         if c['push_to_enabled']:
             push_to_args = {
                 'experiment_id': experiment.pk
             }
+            from tardis.apps.push_to.views import initiate_push_experiment
             c['push_to_url'] = reverse(initiate_push_experiment,
                                        kwargs=push_to_args)
 
