@@ -12,6 +12,7 @@ import urllib
 import os
 import cStringIO as StringIO
 import time
+from importlib import import_module
 
 try:
     import zlib  # We may need its compression method
@@ -26,12 +27,11 @@ import tarfile
 from tarfile import TarFile
 import gzip
 import io
+from wsgiref.util import FileWrapper
 
-from django.core.servers.basehttp import FileWrapper
 from django.http import HttpResponseRedirect, StreamingHttpResponse
 from django.conf import settings
 from django.utils.dateformat import format as dateformatter
-from django.utils.importlib import import_module
 from django.core.exceptions import ImproperlyConfigured
 from django.contrib.auth.decorators import login_required
 
