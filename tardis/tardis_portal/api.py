@@ -7,13 +7,13 @@ Implemented with Tastypie.
 .. moduleauthor:: James Wettenhall <james.wettenhall@monash.edu>
 '''
 import json
+from wsgiref.util import FileWrapper
 
 from django.conf import settings
 from django.conf.urls import url
 from django.contrib.auth.models import AnonymousUser
 from django.contrib.auth.models import User
 from django.contrib.auth.models import Group
-from django.core.servers.basehttp import FileWrapper
 from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseForbidden, \
     StreamingHttpResponse
@@ -547,6 +547,7 @@ class MyTardisModelResource(ModelResource):
         authentication = default_authentication
         authorization = ACLAuthorization()
         serializer = default_serializer
+        object_class = None
 
 
 class SchemaResource(MyTardisModelResource):
