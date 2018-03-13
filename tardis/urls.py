@@ -4,8 +4,9 @@ from os import path
 
 from django.contrib import admin
 
+from django.contrib.auth.views import login
 from django.contrib.auth.views import logout
-from django.conf.urls import patterns, include, url
+from django.conf.urls import include, url
 from django.conf import settings
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.http import HttpResponse
@@ -42,6 +43,8 @@ from tardis.tardis_portal.api import (
 )
 from tardis.tardis_portal.views import IndexView, ExperimentView, DatasetView
 from tardis.tardis_portal.views.pages import site_routed_view
+from tardis.tardis_portal.views import manage_groups
+from tardis.tardis_portal.views import upload
 
 admin.autodiscover()
 
@@ -49,252 +52,428 @@ logger = logging.getLogger(__name__)
 
 handler500 = 'tardis.views.error_handler'
 
-rapidconnect_urls = patterns(
-    'tardis.tardis_portal.views',
-    (r'^auth/jwt$', 'rcauth'),
-)
+from tardis.tardis_portal.views import rcauth
+rapidconnect_urls = [
+    url (r'^auth/jwt$', rcauth),
+]
 
-overridable_urls = patterns(
-    '',
+overridable_urls = [
     url(r'^$', site_routed_view, {'_default_view': IndexView.as_view(),
                                   '_site_mappings':
                                       getattr(settings, 'INDEX_VIEWS', {})},
-        name='index'),
-)
+        name='index')
+]
 
-core_urls = patterns(
-    'tardis.tardis_portal.views',
-    url(r'^site-settings.xml/$', 'site_settings', name='tardis-site-settings'),
-    url(r'^mydata/$', 'my_data', name='mydata'),
-    url(r'^public_data/', 'public_data', name='public_data'),
-    (r'^about/$', 'about'),
-    (r'^stats/$', 'stats'),
-    (r'^help/$', 'user_guide'),
+from tardis.tardis_portal.views import (
+    site_settings,
+    my_data,
+    public_data,
+    about,
+    stats,
+    user_guide,
+    cybderduck_connection_window,
+    sftp_access
+)
+core_urls = [
+    url(r'^site-settings.xml/$', site_settings, name='tardis-site-settings'),
+    url(r'^mydata/$', my_data, name='tardis.tardis_portal.views.my_data'),
+    url(r'^public_data/', public_data,
+        name='tardis.tardis_portal.views.public_data'),
+    url(r'^about/$', about, name='tardis.tardis_portal.views.about'),
+    url(r'^stats/$', stats, name='tardis.tardis_portal.views.stats'),
+    url(r'^help/$', user_guide, name='tardis.tardis_portal.views.user_guide'),
     url(r'^sftp_access/cyberduck/connection.png$',
-        'cybderduck_connection_window', name='cyberduck_connection_window'),
-    url(r'^sftp_access/$', 'sftp_access', name='sftp_access'),
-    (r'^robots\.txt$', lambda r: HttpResponse(
+        cybderduck_connection_window, name='cyberduck_connection_window'),
+    url(r'^sftp_access/$', sftp_access,
+        name='tardis.tardis_portal.views.sftp_access'),
+    url(r'^robots\.txt$', lambda r: HttpResponse(
         "User-agent: *\nDisallow: /download/\nDisallow: /stats/",
         content_type="text/plain"))
-)
+]
 
-experiment_lists = patterns(
-    'tardis.tardis_portal.views',
-    url(r'^$', 'experiment_index'),
-    url(r'^/mine$', 'experiment_list_mine',
-        name="tardis_portal.experiment_list_mine"),
-    url(r'^/public$', 'experiment_list_public',
-        name="tardis_portal.experiment_list_public"),
-    url(r'^/shared$', 'experiment_list_shared',
-        name="tardis_portal.experiment_list_shared"),
-    )
+from tardis.tardis_portal.views import (
+    experiment_index,
+    experiment_list_mine,
+    experiment_list_public,
+    experiment_list_shared
+)
+experiment_lists = [
+    url(r'^$', experiment_index,
+        name='tardis.tardis_portal.views.experiment_index'),
+    url(r'^mine$', experiment_list_mine,
+        name='tardis.tardis_portal.views.experiment_list_mine'),
+    url(r'^public$', experiment_list_public,
+        name='tardis.tardis_portal.views.experiment_list_public'),
+    url(r'^shared$', experiment_list_shared,
+        name='tardis.tardis_portal.views.experiment_list_shared'),
+]
 
 user_pattern = '[\w\-][\w\-\.]+(@[\w\-][\w\-\.]+[a-zA-Z]{1,4})*'
-experiment_urls = patterns(
-    'tardis.tardis_portal.views',
+from tardis.tardis_portal.views import (
+    edit_experiment,
+    experiment_index,
+    create_experiment,
+    add_experiment_access_user,
+    remove_experiment_access_user,
+    change_user_permissions,
+    retrieve_access_list_user,
+    retrieve_access_list_user_readonly,
+    add_experiment_access_group,
+    remove_experiment_access_group,
+    change_group_permissions,
+    retrieve_access_list_group,
+    retrieve_access_list_group_readonly,
+    create_user,
+    create_group,
+    retrieve_access_list_external,
+    retrieve_access_list_tokens,
+    control_panel,
+    create_token,
+    view_rifcs,
+    experiment_public_access_badge,
+    add_dataset
+)
+experiment_urls = [
     url(r'^view/(?P<experiment_id>\d+)/$', ExperimentView.as_view(),
         name='tardis_portal.view_experiment'),
-    (r'^edit/(?P<experiment_id>\d+)/$', 'edit_experiment'),
-    (r'^list', include(experiment_lists)),
-    (r'^view/$', 'experiment_index'),  # Legacy URL
-    (r'^create/$', 'create_experiment'),
-    (r'^control_panel/(?P<experiment_id>\d+)/access_list/add/user/'
-     '(?P<username>%s)/$' % user_pattern,
-     'add_experiment_access_user'),
-    (r'^control_panel/(?P<experiment_id>\d+)/access_list/remove/user/'
-     '(?P<username>%s)/$' % user_pattern, 'remove_experiment_access_user'),
-    (r'^control_panel/(?P<experiment_id>\d+)/access_list/change/user/'
-     '(?P<username>%s)/$' % user_pattern, 'change_user_permissions'),
-    (r'^control_panel/(?P<experiment_id>\d+)/access_list/user/$',
-     'retrieve_access_list_user'),
-    (r'^control_panel/(?P<experiment_id>\d+)/access_list/user/readonly/$',
-     'retrieve_access_list_user_readonly'),
-    (r'^control_panel/(?P<experiment_id>\d+)/access_list/add/group/'
-     '(?P<groupname>.+)/$', 'add_experiment_access_group'),
-    (r'^control_panel/(?P<experiment_id>\d+)/access_list/remove/group/'
-     '(?P<group_id>\d+)/$', 'remove_experiment_access_group'),
-    (r'^control_panel/create/group/$', 'create_group'),
-    (r'^control_panel/(?P<experiment_id>\d+)/access_list/change/group/'
-     '(?P<group_id>\d+)/$', 'change_group_permissions'),
-    (r'^control_panel/(?P<experiment_id>\d+)/access_list/group/$',
-     'retrieve_access_list_group'),
-    (r'^control_panel/(?P<experiment_id>\d+)/access_list/group/readonly/$',
-     'retrieve_access_list_group_readonly'),
-    (r'^control_panel/create/user/$', 'create_user'),
-    (r'^control_panel/(?P<experiment_id>\d+)/access_list/external/$',
-     'retrieve_access_list_external'),
-    (r'^control_panel/(?P<experiment_id>\d+)/access_list/tokens/$',
-     'retrieve_access_list_tokens'),
-    (r'^control_panel/$', 'control_panel'),
-    (r'^view/(?P<experiment_id>\d+)/create_token/$', 'create_token'),
-    (r'^view/(?P<experiment_id>\d+)/rifcs/$', 'view_rifcs'),
-    (r'^view/(?P<experiment_id>\d+)/public_access_badge/$',
-     'experiment_public_access_badge'),
-    (r'^(?P<experiment_id>\d+)/add-dataset$', 'add_dataset'),
-    )
+    url(r'^edit/(?P<experiment_id>\d+)/$', edit_experiment,
+        name='tardis.tardis_portal.views.edit_experiment'),
+    url(r'^list/', include(experiment_lists)),
+    url(r'^view/$', experiment_index,  # Legacy URL
+        name='tardis.tardis_portal.views.experiment_index'),
+    url(r'^create/$', create_experiment,
+        name='tardis.tardis_portal.views.create_experiment'),
+    url(r'^control_panel/(?P<experiment_id>\d+)/access_list/add/user/'
+        '(?P<username>%s)/$' % user_pattern,
+        add_experiment_access_user,
+        name='tardis.tardis_portal.views.add_experiment_access_user'),
+    url(r'^control_panel/(?P<experiment_id>\d+)/access_list/remove/user/'
+        '(?P<username>%s)/$' % user_pattern, remove_experiment_access_user,
+        name='tardis.tardis_portal.views.remove_experiment_access_user'),
+    url(r'^control_panel/(?P<experiment_id>\d+)/access_list/change/user/'
+        '(?P<username>%s)/$' % user_pattern, change_user_permissions,
+        name='tardis.tardis_portal.views.change_user_permissions'),
+    url(r'^control_panel/(?P<experiment_id>\d+)/access_list/user/$',
+        retrieve_access_list_user,
+        name='tardis.tardis_portal.views.retrieve_access_list_user'),
+    url(r'^control_panel/(?P<experiment_id>\d+)/access_list/user/readonly/$',
+        retrieve_access_list_user_readonly,
+        name='tardis.tardis_portal.views.retrieve_access_list_user_readonly'),
+    url(r'^control_panel/(?P<experiment_id>\d+)/access_list/add/group/'
+        '(?P<groupname>.+)/$', add_experiment_access_group,
+        name='tardis.tardis_portal.views.add_experiment_access_group'),
+    url(r'^control_panel/(?P<experiment_id>\d+)/access_list/remove/group/'
+        '(?P<group_id>\d+)/$', remove_experiment_access_group,
+        name='tardis.tardis_portal.views.remove_experiment_access_group'),
+    url(r'^control_panel/create/group/$', create_group,
+        name='tardis.tardis_portal.views.create_group'),
+    url(r'^control_panel/(?P<experiment_id>\d+)/access_list/change/group/'
+        '(?P<group_id>\d+)/$', change_group_permissions,
+        name='tardis.tardis_portal.views.change_group_permissions'),
+    url(r'^control_panel/(?P<experiment_id>\d+)/access_list/group/$',
+        retrieve_access_list_group,
+        name='tardis.tardis_portal.views.retrieve_access_list_group'),
+    url(r'^control_panel/(?P<experiment_id>\d+)/access_list/group/readonly/$',
+        retrieve_access_list_group_readonly,
+        name='tardis.tardis_portal.views.retrieve_access_list_group_readonly'),
+    url(r'^control_panel/create/user/$', create_user,
+        name='tardis.tardis_portal.views.create_user'),
+    url(r'^control_panel/(?P<experiment_id>\d+)/access_list/external/$',
+        retrieve_access_list_external,
+        name='tardis.tardis_portal.views.retrieve_access_list_external'),
+    url(r'^control_panel/(?P<experiment_id>\d+)/access_list/tokens/$',
+        retrieve_access_list_tokens,
+        name='tardis.tardis_portal.views.retrieve_access_list_tokens'),
+    url(r'^control_panel/$', control_panel,
+        name='tardis.tardis_portal.views.control_panel'),
+    url(r'^view/(?P<experiment_id>\d+)/create_token/$', create_token,
+        name='tardis.tardis_portal.views.create_token'),
+    url(r'^view/(?P<experiment_id>\d+)/rifcs/$', view_rifcs,
+        name='tardis.tardis_portal.views.control_panel.view_rifcs'),
+    url(r'^view/(?P<experiment_id>\d+)/public_access_badge/$',
+        experiment_public_access_badge,
+        name='tardis.tardis_portal.views.control_panel.experiment_public_access_badge'),
+    url(r'^(?P<experiment_id>\d+)/add-dataset$', add_dataset,
+        name='tardis.tardis_portal.views.add_dataset'),
+]
 
-token_urls = patterns(
-    'tardis.tardis_portal.views',
-    (r'^login/(?P<token>.+)/', 'token_login'),
-    (r'^delete/(?P<token_id>.+)/', 'token_delete'),
-    )
+from tardis.tardis_portal.views import (
+    token_login,
+    token_delete
+)
+token_urls = [
+    url(r'^login/(?P<token>.+)/', token_login),
+    url(r'^delete/(?P<token_id>.+)/', token_delete),
+]
 
 
-accounts_urls = patterns(
-    'tardis.tardis_portal.views',
-    (r'^login/$', 'login'),
-    (r'^manage$', 'manage_user_account'),
-    (r'^manage_auth_methods/$', 'manage_auth_methods'),
+from tardis.tardis_portal.views import (
+    login,
+    manage_user_account,
+    manage_auth_methods
+)
+
+accounts_urls = [
+    url(r'^login/$', login, name='tardis.tardis_portal.views.login'),
+    url(r'^manage$', manage_user_account,
+        name='tardis.tardis_portal.views.manage_user_account'),
+    url(r'^manage_auth_methods/$', manage_auth_methods,
+        name='tardis.tardis_portal.views.manage_auth_methods'),
     url(r'^register/$', RegistrationView.as_view(),  # pylint: disable=E1120
-        name='register'),
-    (r'', include('registration.backends.default.urls')),
-    )
+        name='tardis.tardis_portal.views.register'),
+    url(r'', include('registration.backends.default.urls')),
+]
 
-dataset_urls = patterns(
-    'tardis.tardis_portal.views',
-    (r'^(?P<dataset_id>\d+)/stage-files$', 'stage_files_to_dataset'),
+
+from tardis.tardis_portal.views import (
+    stage_files_to_dataset,
+    edit_dataset,
+    dataset_thumbnail,
+    checksums_download
+)
+dataset_urls = [
+    url(r'^(?P<dataset_id>\d+)/stage-files$', stage_files_to_dataset,
+        name='tardis.tardis_portal.views.stage_files_to_dataset'),
     url(r'^(?P<dataset_id>\d+)$', DatasetView.as_view(),
         name='tardis_portal.view_dataset'),
-    (r'^(?P<dataset_id>\d+)/edit$', 'edit_dataset'),
-    (r'^(?P<dataset_id>\d+)/thumbnail$', 'dataset_thumbnail'),
-    url(r'^(?P<dataset_id>\d+)/checksums$', 'checksums_download',
+    url(r'^(?P<dataset_id>\d+)/edit$', edit_dataset,
+        name='tardis.tardis_portal.views.edit_dataset'),
+    url(r'^(?P<dataset_id>\d+)/thumbnail$', dataset_thumbnail,
+        name='tardis.tardis_portal.views.dataset_thumbnail'),
+    url(r'^(?P<dataset_id>\d+)/checksums$', checksums_download,
         name='tardis_portal.dataset_checksums'),
+]
+
+from tardis.tardis_portal.iiif import (
+    download_image,
+    download_info
 )
-iiif_urls = patterns(
-    'tardis.tardis_portal.iiif',
+iiif_urls = [
     url(r'^(?P<datafile_id>\d+)/(?P<region>[^\/]+)/(?P<size>[^\/]+)/'
         r'(?P<rotation>[\d\.]+)/(?P<quality>\w+)$',
-        'download_image'),
+        download_image),
     url(r'^(?P<datafile_id>\d+)/(?P<region>[^\/]+)/(?P<size>[^\/]+)/'
         r'(?P<rotation>[\d\.]+)/(?P<quality>\w+).(?P<format>\w+)$',
-        'download_image'),
-    url(r'^(?P<datafile_id>\d+)/info.(?P<format>\w+)$', 'download_info'),
-    )
+        download_image),
+    url(r'^(?P<datafile_id>\d+)/info.(?P<format>\w+)$', download_info),
+]
 
-datafile_urls = patterns(
-    '',
+from tardis.tardis_portal.download import (
+    view_datafile
+)
+datafile_urls = [
     url(r'^view/(?P<datafile_id>\d+)/$',
-        'tardis.tardis_portal.download.view_datafile',
-        name="view_datafile"),
-    (r'^iiif/', include(iiif_urls)),
-)
+        view_datafile,
+        name='view_datafile'),
+    url(r'^iiif/', include(iiif_urls)),
+]
 
-json_urls = patterns(
-    'tardis.tardis_portal.views',
-    (r'^dataset/(?P<dataset_id>\d+)$', 'dataset_json'),
-    (r'^experiment/(?P<experiment_id>\d+)/dataset/$',
-     'experiment_datasets_json'),
-    (r'^experiment/(?P<experiment_id>\d+)/dataset/(?P<dataset_id>\d+)$',
-     'dataset_json'),
+from tardis.tardis_portal.views import (
+    dataset_json,
+    experiment_datasets_json
 )
+json_urls = [
+    url(r'^dataset/(?P<dataset_id>\d+)$', dataset_json,
+        name='tardis.tardis_portal.views.dataset_json'),
+    url(r'^experiment/(?P<experiment_id>\d+)/dataset/$',
+        experiment_datasets_json,
+        name='tardis.tardis_portal.views.experiment_datasets_json'),
+    url(r'^experiment/(?P<experiment_id>\d+)/dataset/(?P<dataset_id>\d+)$',
+        dataset_json,
+        name='tardis.tardis_portal.views.dataset_json'),
+]
 
-ajax_urls = patterns(
-    'tardis.tardis_portal.views',
-    (r'^parameters/(?P<datafile_id>\d+)/$', 'retrieve_parameters'),
-    (r'^datafile_details/(?P<datafile_id>\d+)/$',
-     'display_datafile_details'),
-    (r'^dataset_metadata/(?P<dataset_id>\d+)/$', 'retrieve_dataset_metadata'),
-    (r'^experiment_metadata/(?P<experiment_id>\d+)/$',
-        'retrieve_experiment_metadata'),
-    (r'^datafile_list/(?P<dataset_id>\d+)/$', 'retrieve_datafile_list'),
-    url(r'^cache_dataset/(?P<dataset_id>\d+)/$', 'cache_dataset',
+from tardis.tardis_portal.views import (
+    retrieve_parameters,
+    display_datafile_details,
+    retrieve_experiment_metadata,
+    retrieve_dataset_metadata,
+    retrieve_datafile_list,
+    cache_dataset,
+    retrieve_user_list,
+    retrieve_group_list,
+    retrieve_group_list_by_user,
+    upload_complete,
+    upload_files,
+    import_staging_files,
+    list_staging_files,
+    experiment_description,
+    experiment_datasets,
+    retrieve_owned_exps_list,
+    retrieve_shared_exps_list,
+    edit_datafile_par,
+    edit_dataset_par,
+    edit_experiment_par,
+    add_datafile_par,
+    add_dataset_par,
+    add_experiment_par,
+    choose_rights,
+    share,
+    experiment_dataset_transfer,
+    retrieve_licenses,
+    feedback
+)
+ajax_urls = [
+    url(r'^parameters/(?P<datafile_id>\d+)/$', retrieve_parameters),
+    url(r'^datafile_details/(?P<datafile_id>\d+)/$',
+        display_datafile_details),
+    url(r'^dataset_metadata/(?P<dataset_id>\d+)/$', retrieve_dataset_metadata,
+        name='tardis.tardis_portal.views.retrieve_dataset_metadata'),
+    url(r'^experiment_metadata/(?P<experiment_id>\d+)/$',
+        retrieve_experiment_metadata,
+        name='tardis.tardis_portal.views.retrieve_experiment_metadata'),
+    url(r'^datafile_list/(?P<dataset_id>\d+)/$', retrieve_datafile_list,
+        name='tardis.tardis_portal.views.retrieve_datafile_list'),
+    url(r'^cache_dataset/(?P<dataset_id>\d+)/$', cache_dataset,
         name='cache_dataset'),
-    (r'^user_list/$', 'retrieve_user_list'),
-    (r'^group_list/$', 'retrieve_group_list'),
-    (r'^group_list_by_user/$', 'retrieve_group_list_by_user'),
-    (r'^upload_complete/$', 'upload_complete'),
-    (r'^upload_files/(?P<dataset_id>\d+)/$', 'upload_files'),
-    (r'^import_staging_files/(?P<dataset_id>\d+)/$', 'import_staging_files'),
-    (r'^list_staging_files/(?P<dataset_id>\d+)/$', 'list_staging_files'),
-    (r'^experiment/(?P<experiment_id>\d+)/description$',
-     'experiment_description'),
-    (r'^experiment/(?P<experiment_id>\d+)/datasets$', 'experiment_datasets'),
-    (r'^owned_exps_list/$', 'retrieve_owned_exps_list'),
-    (r'^shared_exps_list/$', 'retrieve_shared_exps_list'),
-    (r'^edit_datafile_parameters/(?P<parameterset_id>\d+)/$',
-        'edit_datafile_par'),
-    (r'^edit_dataset_parameters/(?P<parameterset_id>\d+)/$',
-        'edit_dataset_par'),
-    (r'^edit_experiment_parameters/(?P<parameterset_id>\d+)/$',
-        'edit_experiment_par'),
-    (r'^add_datafile_parameters/(?P<datafile_id>\d+)/$',
-        'add_datafile_par'),
-    (r'^add_dataset_parameters/(?P<dataset_id>\d+)/$',
-        'add_dataset_par'),
-    (r'^add_experiment_parameters/(?P<experiment_id>\d+)/$',
-        'add_experiment_par'),
-    (r'^experiment/(?P<experiment_id>\d+)/rights$', 'choose_rights'),
-    (r'^experiment/(?P<experiment_id>\d+)/share$', 'share'),
-    (r'^experiment/(?P<experiment_id>\d+)/dataset-transfer$',
-     'experiment_dataset_transfer'),
-    (r'^license/list$', 'retrieve_licenses'),
-    (r'^json/', include(json_urls)),
-    (r'^feedback/', 'feedback'),
+    url(r'^user_list/$', retrieve_user_list),
+    url(r'^group_list/$', retrieve_group_list),
+    url(r'^group_list_by_user/$', retrieve_group_list_by_user),
+    url(r'^upload_complete/$', upload_complete),
+    url(r'^upload_files/(?P<dataset_id>\d+)/$', upload_files),
+    url(r'^import_staging_files/(?P<dataset_id>\d+)/$', import_staging_files),
+    url(r'^list_staging_files/(?P<dataset_id>\d+)/$', list_staging_files),
+    url(r'^experiment/(?P<experiment_id>\d+)/description$',
+        experiment_description),
+    url(r'^experiment/(?P<experiment_id>\d+)/datasets$', experiment_datasets),
+    url(r'^owned_exps_list/$', retrieve_owned_exps_list,
+        name='tardis.tardis_portal.views.retrieve_owned_exps_list'),
+    url(r'^shared_exps_list/$', retrieve_shared_exps_list,
+        name='tardis.tardis_portal.views.retrieve_shared_exps_list'),
+    url(r'^edit_datafile_parameters/(?P<parameterset_id>\d+)/$',
+        edit_datafile_par,
+        name='tardis.tardis_portal.views.edit_datafile_par'),
+    url(r'^edit_dataset_parameters/(?P<parameterset_id>\d+)/$',
+        edit_dataset_par,
+        name='tardis.tardis_portal.views.edit_dataset_par'),
+    url(r'^edit_experiment_parameters/(?P<parameterset_id>\d+)/$',
+        edit_experiment_par,
+        name='tardis.tardis_portal.views.edit_experiment_par'),
+    url(r'^add_datafile_parameters/(?P<datafile_id>\d+)/$',
+        add_datafile_par,
+        name='tardis.tardis_portal.views.add_datafile_par'),
+    url(r'^add_dataset_parameters/(?P<dataset_id>\d+)/$',
+        add_dataset_par,
+        name='tardis.tardis_portal.views.add_dataset_par'),
+    url(r'^add_experiment_parameters/(?P<experiment_id>\d+)/$',
+        add_experiment_par,
+        name='tardis.tardis_portal.views.add_experiment_par'),
+    url(r'^experiment/(?P<experiment_id>\d+)/rights$', choose_rights,
+        name='tardis.tardis_portal.views.choose_rights'),
+    url(r'^experiment/(?P<experiment_id>\d+)/share$', share,
+        name='tardis.tardis_portal.views.share'),
+    url(r'^experiment/(?P<experiment_id>\d+)/dataset-transfer$',
+        experiment_dataset_transfer,
+        name='tardis.tardis_portal.views.experiment_dataset_transfer'),
+    url(r'^license/list$', retrieve_licenses,
+        name='tardis.tardis_portal.views.retrieve_licenses'),
+    url(r'^json/', include(json_urls)),
+    url(r'^feedback/', feedback,
+        name='tardis.tardis_portal.views.feedback'),
+]
+
+from tardis.tardis_portal.download import (
+    download_datafile,
+    streaming_download_datafiles,
+    streaming_download_experiment,
+    streaming_download_dataset,
+    download_api_key
 )
+download_urls = [
+    url(r'^datafile/(?P<datafile_id>\d+)/$', download_datafile),
+    url(r'^datafiles/$', streaming_download_datafiles),
+    url(r'^experiment/(?P<experiment_id>\d+)/$',
+        streaming_download_experiment,
+        name='tardis.tardis_portal.download.streaming_download_experiment'),
+    url(r'^experiment/(?P<experiment_id>\d+)/'
+        r'(?P<comptype>[a-z]{3})/$',  # tgz or tar
+        streaming_download_experiment,
+        name='tardis.tardis_portal.download.streaming_download_experiment'),
+    url(r'^experiment/(?P<experiment_id>\d+)/'
+        r'(?P<comptype>[a-z]{3})/(?P<organization>[^/]+)/$',
+     streaming_download_experiment),
+    url(r'^dataset/(?P<dataset_id>\d+)/$',
+        streaming_download_dataset,
+        name='tardis.tardis_portal.download.streaming_download_dataset'),
+    url(r'^dataset/(?P<dataset_id>\d+)/'
+        r'(?P<comptype>[a-z]{3})/$',  # tgz or tar
+        streaming_download_dataset,
+        name='tardis.tardis_portal.download.streaming_download_dataset'),
+    url(r'^dataset/(?P<dataset_id>\d+)/'
+        r'(?P<comptype>[a-z]{3})/(?P<organization>[^/]+)/$',
+        streaming_download_dataset,
+        name='tardis.tardis_portal.download.streaming_download_dataset'),
+    url(r'^api_key/$', download_api_key, name='download_api_key'),
+]
 
-download_urls = patterns(
-    'tardis.tardis_portal.download',
-    (r'^datafile/(?P<datafile_id>\d+)/$', 'download_datafile'),
-    (r'^datafiles/$', 'streaming_download_datafiles'),
-    (r'^experiment/(?P<experiment_id>\d+)/$',
-     'streaming_download_experiment'),
-    (r'^experiment/(?P<experiment_id>\d+)/'
-     r'(?P<comptype>[a-z]{3})/$',  # tgz or tar
-     'streaming_download_experiment'),
-    (r'^experiment/(?P<experiment_id>\d+)/'
-     r'(?P<comptype>[a-z]{3})/(?P<organization>[^/]+)/$',
-     'streaming_download_experiment'),
-    (r'^dataset/(?P<dataset_id>\d+)/$',
-     'streaming_download_dataset'),
-    (r'^dataset/(?P<dataset_id>\d+)/'
-     r'(?P<comptype>[a-z]{3})/$',  # tgz or tar
-     'streaming_download_dataset'),
-    (r'^dataset/(?P<dataset_id>\d+)/'
-     r'(?P<comptype>[a-z]{3})/(?P<organization>[^/]+)/$',
-     'streaming_download_dataset'),
-    (r'^api_key/$', 'download_api_key'),
-    )
-
-group_urls = patterns(
-    'tardis.tardis_portal.views',
-    (r'^(?P<group_id>\d+)/$', 'retrieve_group_userlist'),
-    (r'^(?P<group_id>\d+)/readonly$', 'retrieve_group_userlist_readonly'),
-    (r'^(?P<group_id>\d+)/add/(?P<username>[\w\.]+)/$',
-     'add_user_to_group'),
-    (r'^(?P<group_id>\d+)/remove/(?P<username>[\w\.]+)/$',
-     'remove_user_from_group'),
-    )
-
-facility_urls = patterns(
-    'tardis.tardis_portal.views',
-    (r'^overview/$', 'facility_overview'),
-    (r'^fetch_data/(?P<facility_id>\d+)/count/', 'facility_overview_data_count'),
-    (r'^fetch_data/(?P<facility_id>\d+)/'
-     r'(?P<start_index>\d+)/(?P<end_index>\d+)/$',
-     'facility_overview_experiments'),
-    (r'^fetch_datafiles/(?P<dataset_id>\d+)/$',
-     'facility_overview_dataset_detail'),
-    (r'^fetch_facilities_list/$', 'facility_overview_facilities_list'),
-    )
-
-display_urls = patterns(
-    'tardis.tardis_portal.views',
-    (r'^ExperimentImage/load/(?P<parameter_id>\d+)/$',
-     'load_experiment_image'),
-    (r'^DatasetImage/load/(?P<parameter_id>\d+)/$',
-     'load_dataset_image'),
-    (r'^DatafileImage/load/(?P<parameter_id>\d+)/$',
-     'load_datafile_image'),
-    (r'^ExperimentImage/(?P<experiment_id>\d+)/'
-     '(?P<parameterset_id>\d+)/(?P<parameter_name>\w+)/$',
-     'display_experiment_image'),
-    (r'^DatasetImage/(?P<dataset_id>\d+)/(?P<parameterset_id>\d+)/'
-     '(?P<parameter_name>\w+)/$',
-     'display_dataset_image'),
-    (r'^DatafileImage/(?P<datafile_id>\d+)/'
-     '(?P<parameterset_id>\d+)/(?P<parameter_name>\w+)/$',
-     'display_datafile_image'),
+from tardis.tardis_portal.views import (
+    retrieve_group_userlist,
+    retrieve_group_userlist_readonly,
+    add_user_to_group,
+    remove_user_from_group
 )
+group_urls = [
+    url(r'^(?P<group_id>\d+)/$', retrieve_group_userlist,
+        name='tardis.tardis_portal.views.retrieve_group_userlist'),
+    url(r'^(?P<group_id>\d+)/readonly$', retrieve_group_userlist_readonly,
+        name='tardis.tardis_portal.views.retrieve_group_userlist_readonly'),
+    url(r'^(?P<group_id>\d+)/add/(?P<username>[\w\.]+)/$',
+        add_user_to_group,
+        name='tardis.tardis_portal.views.add_user_to_group'),
+    url(r'^(?P<group_id>\d+)/remove/(?P<username>[\w\.]+)/$',
+        remove_user_from_group,
+        name='tardis.tardis_portal.views.remove_user_from_group'),
+]
+
+from tardis.tardis_portal.views import (
+    facility_overview,
+    facility_overview_data_count,
+    facility_overview_experiments,
+    facility_overview_dataset_detail,
+    facility_overview_facilities_list
+)
+facility_urls = [
+    url(r'^overview/$', facility_overview),
+    url(r'^fetch_data/(?P<facility_id>\d+)/count/', facility_overview_data_count),
+    url(r'^fetch_data/(?P<facility_id>\d+)/'
+        r'(?P<start_index>\d+)/(?P<end_index>\d+)/$',
+        facility_overview_experiments),
+    url(r'^fetch_datafiles/(?P<dataset_id>\d+)/$',
+        facility_overview_dataset_detail),
+    url(r'^fetch_facilities_list/$', facility_overview_facilities_list),
+]
+
+from tardis.tardis_portal.views import (
+    load_experiment_image,
+    load_dataset_image,
+    load_datafile_image,
+    display_experiment_image,
+    display_dataset_image,
+    display_datafile_image
+)
+display_urls = [
+    url(r'^ExperimentImage/load/(?P<parameter_id>\d+)/$',
+        load_experiment_image,
+        name='tardis.tardis_portal.views.load_experiment_image'),
+    url(r'^DatasetImage/load/(?P<parameter_id>\d+)/$',
+        load_dataset_image,
+        name='tardis.tardis_portal.views.load_dataset_image'),
+    url(r'^DatafileImage/load/(?P<parameter_id>\d+)/$',
+        load_datafile_image,
+        name='tardis.tardis_portal.views.load_datafile_image'),
+    url(r'^ExperimentImage/(?P<experiment_id>\d+)/'
+        '(?P<parameterset_id>\d+)/(?P<parameter_name>\w+)/$',
+        display_experiment_image,
+        name='tardis.tardis_portal.views.display_experiment_image'),
+    url(r'^DatasetImage/(?P<dataset_id>\d+)/(?P<parameterset_id>\d+)/'
+        '(?P<parameter_name>\w+)/$',
+        display_dataset_image,
+        name='tardis.tardis_portal.views.display_dataset_image'),
+    url(r'^DatafileImage/(?P<datafile_id>\d+)/'
+        '(?P<parameterset_id>\d+)/(?P<parameter_name>\w+)/$',
+        display_datafile_image,
+        name='tardis.tardis_portal.views.display_datafile_image'),
+]
 
 # # API SECTION
 v1_api = Api(api_name='v1')
@@ -338,13 +517,11 @@ for app_name, app in get_tardis_apps():
     except ImportError as e:
         logger.debug('App API URLs import error: %s' % str(e))
 
-api_urls = patterns(
-    '',
-    (r'^', include(v1_api.urls)),
-)
+api_urls = [
+    url(r'^', include(v1_api.urls)),
+]
 
-tastypie_swagger_urls = patterns(
-    '',
+tastypie_swagger_urls = [
     url(r'v1/swagger/',
         include('tastypie_swagger.urls',
                 namespace='api_v1_tastypie_swagger'),
@@ -353,77 +530,80 @@ tastypie_swagger_urls = patterns(
           "namespace": "api_v1_tastypie_swagger",
           "version": "1"}
         ),
-)
+]
 
 # # END API SECTION
 
-apppatterns = patterns('', )
+app_urls = []
 for app_name, app in get_tardis_apps():
-    apppatterns += patterns('',
-                            (r'^%s/' % format_app_name_for_url(app_name),
-                             include('%s.urls' % app)))
-urlpatterns = patterns(
-    '',
-    (r'', include(core_urls)),
+    app_urls += [
+        url(r'^%s/' % format_app_name_for_url(app_name),
+            include('%s.urls' % app))
+    ]
+
+urlpatterns = [
+    url(r'', include(core_urls)),
+
     # API views
-    (r'^api/', include(api_urls)),
+    url(r'^api/', include(api_urls)),
 
     # tastypie_swagger endpoints for API auto-documentation
-    (r'^api/', include(tastypie_swagger_urls)),
+    url(r'^api/', include(tastypie_swagger_urls)),
 
     # Experiment Views
-    (r'^experiment/', include(experiment_urls)),
+    url(r'^experiment/', include(experiment_urls)),
 
     # Dataset Views
-    (r'^dataset/', include(dataset_urls)),
+    url(r'^dataset/', include(dataset_urls)),
 
     # Datafile Views
-    (r'^datafile/', include(datafile_urls)),
+    url(r'^datafile/', include(datafile_urls)),
 
     # Download Views
-    (r'^download/', include(download_urls)),
+    url(r'^download/', include(download_urls)),
 
     # Ajax Views
-    (r'^ajax/', include(ajax_urls)),
+    url(r'^ajax/', include(ajax_urls)),
 
     # Account Views
-    (r'^accounts/', include(accounts_urls)),
+    url(r'^accounts/', include(accounts_urls)),
 
     # Group Views
-    (r'^groups/$', 'tardis.tardis_portal.views.manage_groups'),
-    (r'^group/', include(group_urls)),
+    url(r'^groups/$', manage_groups,
+        name='tardis.tardis_portal.views.manage_groups'),
+    url(r'^group/', include(group_urls)),
 
     # Facility views
-    (r'^facility/', include(facility_urls)),
+    url(r'^facility/', include(facility_urls)),
 
     # Display Views
-    (r'^display/', include(display_urls)),
+    url(r'^display/', include(display_urls)),
 
     # Login/out
-    (r'^login/$', 'tardis.tardis_portal.views.login'),
+    url(r'^login/$', login),
     url(r'^logout/$', logout, {'next_page': '/'}, name='logout'),
 
     # Rapid Connect
-    (r'^rc/', include(rapidconnect_urls)),
+    url(r'^rc/', include(rapidconnect_urls)),
 
     # Admin
-    (r'^admin/doc/', include('django.contrib.admindocs.urls')),
-    (r'^admin/', include(admin.site.urls)),
+    url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
+    url(r'^admin/', include(admin.site.urls)),
 
-    (r'^upload/(?P<dataset_id>\d+)/$', 'tardis.tardis_portal.views.upload'),
+    url(r'^upload/(?P<dataset_id>\d+)/$', upload),
 
     # Search
     url(r'^search/', include('tardis.search.urls')),
 
     # Apps
-    (r'^apps/', include(apppatterns)),
+    url(r'^apps/', include(app_urls)),
 
     # Token login
-    (r'^token/', include(token_urls)),
+    url(r'^token/', include(token_urls)),
 
     # Class-based views that may be overriden by apps
-    (r'', include(overridable_urls)),
-)
+    url(r'', include(overridable_urls)),
+]
 
 # Handle static files from /static
 urlpatterns += staticfiles_urlpatterns()
@@ -431,10 +611,10 @@ urlpatterns += staticfiles_urlpatterns()
 # Show compiled documentation to developers. Production instances can be
 # enabled to show on readthedocs.org
 if settings.DEBUG:
-    urlpatterns += patterns(
-        '',
-        url(r'^docs/(?P<path>.*)$', 'django.views.static.serve', {
+    from django.views.static import serve
+    urlpatterns += [
+        url(r'^docs/(?P<path>.*)$', serve, {
             'document_root': path.abspath(
                 path.join(path.dirname(__file__), '..', "docs/html/")),
             }),
-    )
+    ]
