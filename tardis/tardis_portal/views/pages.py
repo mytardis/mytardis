@@ -299,8 +299,7 @@ class DatasetView(TemplateView):
             push_to_args = {
                 'dataset_id': dataset.pk
             }
-            from tardis.apps.push_to.views import initiate_push_dataset
-            c['push_to_url'] = reverse(initiate_push_dataset,
+            c['push_to_url'] = reverse('tardis.apps.push_to.views.initiate_push_dataset',
                                        kwargs=push_to_args)
 
         _add_protocols_and_organizations(request, dataset, c)
@@ -480,8 +479,7 @@ class ExperimentView(TemplateView):
             push_to_args = {
                 'experiment_id': experiment.pk
             }
-            from tardis.apps.push_to.views import initiate_push_experiment
-            c['push_to_url'] = reverse(initiate_push_experiment,
+            c['push_to_url'] = reverse('tardis.apps.push_to.views.initiate_push_experiment',
                                        kwargs=push_to_args)
 
         c['subtitle'] = experiment.title

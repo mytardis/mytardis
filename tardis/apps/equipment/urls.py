@@ -1,10 +1,17 @@
-from django.conf.urls import patterns
+from django.conf.urls import url
 
-urlpatterns = patterns('',
-                       (r'^$', 'tardis.apps.equipment.views.index'),
-                       (r'^search/$', 'tardis.apps.equipment.views.search'),
-                       (r'^(?P<object_id>\d+)/$',
-                        'tardis.apps.equipment.views.view_id'),
-                       (r'^(?P<object_key>\w+)/$',
-                        'tardis.apps.equipment.views.view_key'),
-                       )
+from .views import (
+    index,
+    search,
+    view_id,
+    view_key
+)
+
+urlpatterns = [
+   url(r'^$', index, name='tardis.apps.equipment.views.index'),
+   url(r'^search/$', search, name='tardis.apps.equipment.views.search'),
+   url(r'^(?P<object_id>\d+)/$',
+       view_id, name='tardis.apps.equipment.views.view_id'),
+   url(r'^(?P<object_key>\w+)/$',
+       view_key, name='tardis.apps.equipment.views.view_key'),
+]
