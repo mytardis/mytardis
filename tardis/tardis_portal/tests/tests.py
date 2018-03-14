@@ -263,11 +263,16 @@ class UserInterfaceTestCase(TestCase):
             response = c.get(u)
             expect(response.status_code).to_equal(200)
 
-        redirect_urls = ['/experiment/list', '/experiment/view/']
+        # In Django 1.9, the default value of RedirectView.permanent
+        # changed from True to False
 
-        for u in redirect_urls:
-            response = c.get(u)
-            expect(response.status_code).to_equal(302)
+        permanent_redirect_url = '/experiment/list'
+        response = c.get(permanent_redirect_url)
+        expect(response.status_code).to_equal(301)
+
+        temporary_redirect_url = '/experiment/view/'
+        response = c.get(temporary_redirect_url)
+        expect(response.status_code).to_equal(302)
 
     def test_urls_with_some_content(self):
         # Things that might tend to be in a real live system
@@ -316,11 +321,16 @@ class UserInterfaceTestCase(TestCase):
                    "%s should have returned 200 but returned %d"
                    % (u, response.status_code))
 
-        redirect_urls = ['/experiment/list', '/experiment/view/']
+        # In Django 1.9, the default value of RedirectView.permanent
+        # changed from True to False
 
-        for u in redirect_urls:
-            response = c.get(u)
-            expect(response.status_code).to_equal(302)
+        permanent_redirect_url = '/experiment/list'
+        response = c.get(permanent_redirect_url)
+        expect(response.status_code).to_equal(301)
+
+        temporary_redirect_url = '/experiment/view/'
+        response = c.get(temporary_redirect_url)
+        expect(response.status_code).to_equal(302)
 
     @skip('search is undergoing some changes, skip in the meantime')
     def test_search_urls(self):
