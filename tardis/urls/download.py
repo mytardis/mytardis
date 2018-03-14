@@ -12,8 +12,10 @@ from tardis.tardis_portal.download import (
 )
 
 download_urls = [
-    url(r'^datafile/(?P<datafile_id>\d+)/$', download_datafile),
-    url(r'^datafiles/$', streaming_download_datafiles),
+    url(r'^datafile/(?P<datafile_id>\d+)/$', download_datafile,
+        name='tardis.tardis_portal.download.download_datafile'),
+    url(r'^datafiles/$', streaming_download_datafiles,
+        name='tardis.tardis_portal.download.streaming_download_datafiles'),
     url(r'^experiment/(?P<experiment_id>\d+)/$',
         streaming_download_experiment,
         name='tardis.tardis_portal.download.streaming_download_experiment'),
@@ -35,5 +37,6 @@ download_urls = [
         r'(?P<comptype>[a-z]{3})/(?P<organization>[^/]+)/$',
         streaming_download_dataset,
         name='tardis.tardis_portal.download.streaming_download_dataset'),
-    url(r'^api_key/$', download_api_key, name='download_api_key'),
+    url(r'^api_key/$', download_api_key,
+        name='tardis.tardis_portal.download.download_api_key'),
 ]
