@@ -8,7 +8,7 @@ from tardis.search.views import (
 )
 
 urlpatterns = [
-    url(r'^/?$', SingleSearchView.as_view(), name='haystack_search'),
+    url(r'^\?$', SingleSearchView.as_view(), name='haystack_search'),
     url(r'^parameter_field_list/$', retrieve_field_list,
         name='search_retrieve_field_list'),
     url(r'^datafile/$', search_datafile),
