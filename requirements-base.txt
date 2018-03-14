@@ -16,7 +16,7 @@ django-npm==1.0.0
 django-registration-redux==1.10
 # django-tastypie
 -e git+https://github.com/mytardis/django-tastypie.git@mytardis-dj1.9#egg=django-tastypie
-django-tastypie-swagger==0.1.4
+-e git+https://github.com/mytardis/django-tastypie-swagger.git@mytardis-dj1.9#egg=django-tastypie-swagger
 django-user-agents==0.2.2
 elasticsearch==5.0.1
 gunicorn==19.7.0
