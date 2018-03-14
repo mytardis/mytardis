@@ -46,7 +46,7 @@ overridable_urls = [
     url(r'^$', site_routed_view, {'_default_view': IndexView.as_view(),
                                   '_site_mappings':
                                       getattr(settings, 'INDEX_VIEWS', {})},
-        name='index')
+        name='tardis.tardis_portal.views.index')
 ]
 
 app_urls = []
@@ -103,7 +103,8 @@ urlpatterns = [
     url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
     url(r'^admin/', include(admin.site.urls)),
 
-    url(r'^upload/(?P<dataset_id>\d+)/$', upload),
+    url(r'^upload/(?P<dataset_id>\d+)/$', upload,
+        name='tardis.tardis_portal.views.upload'),
 
     # Search
     url(r'^search/', include('tardis.search.urls')),
