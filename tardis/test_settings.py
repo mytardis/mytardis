@@ -8,7 +8,6 @@ import logging  # pylint: disable=wrong-import-order
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 
 DEBUG = True
-TEMPLATE_DEBUG = DEBUG
 
 DATABASES = {
     'default': {
@@ -27,6 +26,7 @@ DATABASES = {
 CELERY_ALWAYS_EAGER = True
 
 TEMPLATES[0]['DIRS'].append('.')
+TEMPLATES[0]['OPTIONS']['debug'] = DEBUG
 
 del STATICFILES_STORAGE  # noqa
 
