@@ -109,7 +109,7 @@ def generate_file_checksums(sourceFile, tempFile=None, leave_open=False):
 
 
 def _load_template(template_name):
-    from jstemplate.loading import find
+    from mustachejs.loading import find
     template_locations = find(template_name)
     # Each returned location is a tuple of (template_name, template_path).
     # We'll just use the template_path of the first location
