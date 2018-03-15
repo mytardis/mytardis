@@ -15,7 +15,7 @@ INSTALLED_APPS = (
     'djcelery',
     'kombu.transport.django',
     'bootstrapform',
-    'jstemplate',
+    'mustachejs',
     'tastypie',
     'tastypie_swagger',
     'tardis.tardis_portal',
