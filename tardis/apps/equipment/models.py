@@ -7,7 +7,7 @@ from tardis.tardis_portal.models import Dataset
 
 class Equipment(models.Model):
     key = models.CharField(unique=True, max_length=30)
-    dataset = models.ManyToManyField(Dataset, null=True, blank=True)
+    dataset = models.ManyToManyField(Dataset, blank=True)
     description = models.TextField(blank=True)
     make = models.CharField(max_length=60, blank=True)
     model = models.CharField(max_length=60, blank=True)
