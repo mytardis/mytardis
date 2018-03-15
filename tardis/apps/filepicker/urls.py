@@ -1,7 +1,11 @@
-from django.conf.urls import patterns
+from django.conf.urls import url
 
-urlpatterns = patterns(
-    'tardis.apps.filepicker',
-    (r'^upload_button/(?P<dataset_id>\d+)/$', 'views.upload_button'),
-    (r'^fpupload/(?P<dataset_id>\d+)/$', 'views.fpupload'),
-)
+from .views import upload_button
+from .views import fpupload
+
+urlpatterns = [
+    url(r'^upload_button/(?P<dataset_id>\d+)/$', upload_button,
+        name='tardis.apps.filepicker.views.upload_button'),
+    url(r'^fpupload/(?P<dataset_id>\d+)/$', fpupload,
+        name='tardis.apps.filepicker.views.fpupload'),
+]
