@@ -462,6 +462,11 @@ def __processExperimentParameters(request, form):
 
 def get_dataset_info(dataset, include_thumbnail=False, exclude=None):  # too complex # noqa
     obj = model_to_dict(dataset)
+
+    # Changed in Django 1.10: Private API django.forms.models.model_to_dict()
+    # returns a queryset rather than a list of primary keys for ManyToManyFields
+    obj['experiments'] = [exp.id for exp in obj['experiments']]
+
     if exclude is None or 'datafiles' not in exclude or 'file_count' \
        not in exclude:
         datafiles = list(
