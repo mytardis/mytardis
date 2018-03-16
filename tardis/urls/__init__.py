@@ -94,7 +94,8 @@ urlpatterns = [
 
     # Login/out
     url(r'^login/$', login),
-    url(r'^logout/$', logout, {'next_page': '/'}, name='logout'),
+    url(r'^logout/$', logout, {'next_page': '/'},
+        name='django.contrib.auth.views.logout'),
 
     # Rapid Connect
     url(r'^rc/', include(rapidconnect_urls)),
