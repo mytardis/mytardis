@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from django.test import TestCase
 from django.test.client import Client
+from django.test.utils import override_settings
 
 from django.http import HttpRequest
 from django.contrib.auth import SESSION_KEY
@@ -70,9 +71,8 @@ class MockAuthProvider():
         return User.objects.get(username=username)
 
 
+@override_settings(ROOT_URLCONF='tardis.tardis_portal.tests.urls')
 class AuthServiceTestCase(TestCase):
-
-    urls = 'tardis.tardis_portal.tests.urls'
 
     def setUp(self):
         from django.contrib.auth.models import User
