@@ -3,10 +3,13 @@ Setting up BDD with Spliner/Selenium and Behave
 """
 
 from django.core import management
+from npm.finders import npm_install
 from splinter.browser import Browser
 
 
 def before_all(context):
+
+    npm_install()
 
     browser = context.config.userdata.get('browser', 'phantomjs')
     context.browser = Browser(browser)
