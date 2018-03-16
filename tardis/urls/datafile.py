@@ -18,7 +18,8 @@ iiif_urls = [
         r'(?P<rotation>[\d\.]+)/(?P<quality>\w+).(?P<format>\w+)$',
         download_image,
         name='tardis.tardis_portal.iiif.download_image'),
-    url(r'^(?P<datafile_id>\d+)/info.(?P<format>\w+)$', download_info),
+    url(r'^(?P<datafile_id>\d+)/info.(?P<format>\w+)$', download_info,
+        name='tardis.tardis_portal.iiif.download_info'),
 ]
 
 datafile_urls = [
