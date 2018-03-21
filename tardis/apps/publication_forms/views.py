@@ -38,8 +38,8 @@ def index(request):
             settings, 'PUBLICATION_INTRODUCTION',
             "<p><strong>... introduction and publication agreement "
             "...</strong></p>")}
-        return HttpResponse(render_response_index(
-            request, 'form.html', context=context))
+        return render_response_index(
+            request, 'form.html', context=context)
     return process_form(request)
 
 
@@ -629,8 +629,8 @@ def require_publication_admin(f):
 @require_publication_admin
 def approval_view(request):
     if request.method == 'GET':
-        return HttpResponse(render_response_index(
-            request, 'publication_approval.html'))
+        return render_response_index(
+            request, 'publication_approval.html')
     return approval_ajax(request)
 
 
