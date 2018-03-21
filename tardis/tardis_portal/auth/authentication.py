@@ -84,8 +84,8 @@ def list_auth_methods(request):
          'allAuthMethods': _getSupportedAuthMethods(),
          'isDjangoAccount': isDjangoAccount}
 
-    return HttpResponse(render_response_index(request,
-                        'tardis_portal/auth_methods.html', c))
+    return render_response_index(
+        request, 'tardis_portal/auth_methods.html', c)
 
 
 def add_auth_method(request):

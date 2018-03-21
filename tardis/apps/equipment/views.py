@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from django.http import HttpResponse
-
 from tardis.tardis_portal.shortcuts import render_response_index, \
     render_response_search
 
@@ -14,21 +12,21 @@ def index(request):
     c = {'object_list': Equipment.objects.all(),
          'paginate_by': 15}
     url = 'equipment/equipment_list.html'
-    return HttpResponse(render_response_index(request, url, c))
+    return render_response_index(request, url, c)
 
 
 def view_id(request, object_id):
 
     c = {'object': Equipment.objects.get(pk=object_id)}
     url = 'equipment/equipment_detail.html'
-    return HttpResponse(render_response_index(request, url, c))
+    return render_response_index(request, url, c)
 
 
 def view_key(request, object_key):
 
     c = {'object': Equipment.objects.get(key=object_key)}
     url = 'equipment/equipment_detail.html'
-    return HttpResponse(render_response_index(request, url, c))
+    return render_response_index(request, url, c)
 
 
 def search(request):
@@ -51,10 +49,10 @@ def search(request):
             c = {'header': 'Search Equipment',
                  'object_list': q}
             url = 'equipment/equipment_list.html'
-            return HttpResponse(render_response_search(request, url, c))
+            return render_response_search(request, url, c)
     else:
         form = EquipmentSearchForm()
 
     c = {'form': form}
     url = 'equipment/equipment_search.html'
-    return HttpResponse(render_response_search(request, url, c))
+    return render_response_search(request, url, c)
