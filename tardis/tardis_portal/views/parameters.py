@@ -83,8 +83,8 @@ def edit_parameters(request, parameterset, otype):
         'valid': valid,
     }
 
-    return HttpResponse(render_response_index(request,
-                        'tardis_portal/ajax/parameteredit.html', c))
+    return render_response_index(
+        request, 'tardis_portal/ajax/parameteredit.html', c)
 
 
 @login_required
@@ -123,8 +123,8 @@ def add_par(request, parentObject, otype, stype):
     elif all_schema.count() > 0:
         schema_id = all_schema[0].id
     else:
-        return HttpResponse(render_response_index(
-            request, 'tardis_portal/ajax/parameter_set_unavailable.html', {}))
+        return render_response_index(
+            request, 'tardis_portal/ajax/parameter_set_unavailable.html', {})
 
     schema = Schema.objects.get(id=schema_id)
 
@@ -170,5 +170,5 @@ def add_par(request, parentObject, otype, stype):
         'schema_id': schema.id,
     }
 
-    return HttpResponse(render_response_index(request,
-                        'tardis_portal/ajax/parameteradd.html', c))
+    return render_response_index(
+        request, 'tardis_portal/ajax/parameteradd.html', c)

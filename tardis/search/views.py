@@ -66,7 +66,7 @@ def search_experiment(request):
          'experiments': results,
          'bodyclass': bodyclass}
     url = 'tardis_portal/search_experiment_results.html'
-    return HttpResponse(render_response_search(request, url, c))
+    return render_response_search(request, url, c)
 
 
 def search_quick(request):
@@ -93,8 +93,8 @@ def search_quick(request):
 
     c = {'submitted': get, 'experiments': experiments,
          'subtitle': 'Search Experiments'}
-    return HttpResponse(render_response_index(request,
-                        'tardis_portal/search_experiment.html', c))
+    return render_response_index(
+        request, 'tardis_portal/search_experiment.html', c)
 
 
 def search_datafile(request):  # too complex # noqa
@@ -199,7 +199,7 @@ def search_datafile(request):  # too complex # noqa
         'search_pressed': True,
         'searchDatafileSelectionForm': getNewSearchDatafileSelectionForm()}
     url = 'tardis_portal/search_experiment_results.html'
-    return HttpResponse(render_response_search(request, url, c))
+    return render_response_search(request, url, c)
 
 
 class ExperimentSearchView(SearchView):
