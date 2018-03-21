@@ -11,8 +11,7 @@ from django.conf import settings
 from django.core.exceptions import PermissionDenied
 from django.core.paginator import Paginator, EmptyPage, InvalidPage
 from django.core.urlresolvers import reverse
-from django.http import HttpResponse, HttpResponseNotFound, \
-    HttpResponseForbidden
+from django.http import HttpResponse, HttpResponseNotFound
 from django.shortcuts import render
 from django.views.decorators.cache import never_cache
 from django.contrib.auth.decorators import login_required
@@ -86,8 +85,8 @@ def experiment_description(request, experiment_id):
     if 'error' in request.GET:
         c['error'] = request.GET['error']
 
-    return HttpResponse(render_response_index(request,
-                        'tardis_portal/ajax/experiment_description.html', c))
+    return render_response_index(
+        request, 'tardis_portal/ajax/experiment_description.html', c)
 
 
 @never_cache
@@ -112,10 +111,10 @@ def experiment_dataset_transfer(request, experiment_id):
     c = {'experiments': experiments.exclude(id=experiment_id),
          'url_pattern': get_json_url_pattern()
     }
-    return HttpResponse(render_response_index(
+    return render_response_index(
         request,
         'tardis_portal/ajax/experiment_dataset_transfer.html',
-        c))
+        c)
 
 
 @authz.dataset_access_required
@@ -128,8 +127,8 @@ def retrieve_dataset_metadata(request, dataset_id):
     c = {'dataset': dataset,
          'parametersets': parametersets,
          'has_write_permissions': has_write_permissions}
-    return HttpResponse(render_response_index(request,
-                        'tardis_portal/ajax/dataset_metadata.html', c))
+    return render_response_index(
+        request, 'tardis_portal/ajax/dataset_metadata.html', c)
 
 
 @never_cache
@@ -144,8 +143,8 @@ def retrieve_experiment_metadata(request, experiment_id):
     c = {'experiment': experiment,
          'parametersets': parametersets,
          'has_write_permissions': has_write_permissions}
-    return HttpResponse(render_response_index(request,
-                        'tardis_portal/ajax/experiment_metadata.html', c))
+    return render_response_index(
+        request, 'tardis_portal/ajax/experiment_metadata.html', c)
 
 
 @never_cache
@@ -180,10 +179,10 @@ def display_datafile_details(request, datafile_id):
         'datafile_id': datafile_id,
         'views': views,
     }
-    return HttpResponse(render_response_index(
+    return render_response_index(
         request,
         "tardis_portal/ajax/datafile_details.html",
-        context))
+        context)
 
 
 @never_cache
@@ -204,8 +203,8 @@ def retrieve_parameters(request, datafile_id):
          'has_download_permissions':
          authz.has_dataset_download_access(request, dataset_id)}
 
-    return HttpResponse(render_response_index(request,
-                        'tardis_portal/ajax/parameters.html', c))
+    return render_response_index(
+        request, 'tardis_portal/ajax/parameters.html', c)
 
 
 @never_cache  # too complex # noqa
@@ -297,7 +296,7 @@ def retrieve_datafile_list(
         'params': urlencode(params),
     }
     _add_protocols_and_organizations(request, None, c)
-    return HttpResponse(render_response_index(request, template_name, c))
+    return render_response_index(request, template_name, c)
 
 
 @authz.dataset_write_permissions_required
@@ -345,8 +344,8 @@ def list_staging_files(request, dataset_id):
         'dataset_id': dataset_id,
         'directory_listing': staging_list(from_path, staging, root=root),
     }
-    return HttpResponse(render(
-        request, 'tardis_portal/ajax/list_staging_files.html', c))
+    return render(
+        request, 'tardis_portal/ajax/list_staging_files.html', c)
 
 
 def experiment_public_access_badge(request, experiment_id):
@@ -356,7 +355,7 @@ def experiment_public_access_badge(request, experiment_id):
         HttpResponse('')
 
     if authz.has_experiment_access(request, experiment_id):
-        return HttpResponse(render_public_access_badge(experiment))
+        return render_public_access_badge(experiment)
     return HttpResponse('')
 
 
@@ -379,9 +378,10 @@ def choose_rights(request, experiment_id):
     # Forbid access if no valid owner is available (and show error message)
     if not any([is_valid_owner(owner) for owner in experiment.get_owners()]):
         c = {'no_valid_owner': True, 'experiment': experiment}
-        return HttpResponseForbidden(render_response_index(
+        return render_response_index(
             request,
-            'tardis_portal/ajax/unable_to_choose_rights.html', c))
+            'tardis_portal/ajax/unable_to_choose_rights.html', c,
+            status=403)
 
     # Process form or prepopulate it
     if request.method == 'POST':
@@ -395,8 +395,8 @@ def choose_rights(request, experiment_id):
                            'license': experiment.license_id})
 
     c = {'form': form, 'experiment': experiment}
-    return HttpResponse(render_response_index(request,
-                        'tardis_portal/ajax/choose_rights.html', c))
+    return render_response_index(
+        request, 'tardis_portal/ajax/choose_rights.html', c)
 
 
 @never_cache
@@ -421,7 +421,7 @@ def retrieve_owned_exps_list(
         'owned_experiments': exps_page,
         'paginator': paginator
     }
-    return HttpResponse(render_response_index(request, template_name, c))
+    return render_response_index(request, template_name, c)
 
 
 @never_cache
@@ -446,4 +446,4 @@ def retrieve_shared_exps_list(
         'shared_experiments': exps_page,
         'paginator': paginator
     }
-    return HttpResponse(render_response_index(request, template_name, c))
+    return render_response_index(request, template_name, c)
