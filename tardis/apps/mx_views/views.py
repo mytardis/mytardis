@@ -1,6 +1,5 @@
 from django.conf import settings
 from django.core.paginator import Paginator, InvalidPage, EmptyPage
-from django.http import HttpResponse
 
 from tardis.tardis_portal.auth import decorators as authz
 from tardis.tardis_portal.models import Dataset
@@ -72,5 +71,5 @@ def view_full_dataset(request, dataset_id):
         'default_format':
             getattr(settings, 'DEFAULT_ARCHIVE_FORMATS', ['tgz', 'tar'])[0]
     }
-    return HttpResponse(render_response_index(
-        request, 'mx_views/view_full_dataset.html', c))
+    return render_response_index(
+        request, 'mx_views/view_full_dataset.html', c)

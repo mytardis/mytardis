@@ -327,7 +327,7 @@ def __forwardToSearchDatafileFormPage(request, searchQueryType,
         searchForm = MXDatafileSearchForm()
         c = {'header': 'Search Datafile',
              'searchForm': searchForm}
-        return HttpResponse(render_response_search(request, url, c))
+        return render_response_search(request, url, c)
 
     url = 'tardis_portal/search_datafile_form.html'
     if not searchForm:
@@ -356,7 +356,7 @@ def __forwardToSearchDatafileFormPage(request, searchQueryType,
     c = {'header': 'Search Datafile',
          'searchForm': searchForm,
          'modifiedSearchForm': modifiedSearchForm}
-    return HttpResponse(render_response_search(request, url, c))
+    return render_response_search(request, url, c)
 
 
 def __forwardToSearchExperimentFormPage(request):
@@ -366,7 +366,7 @@ def __forwardToSearchExperimentFormPage(request):
 
     c = {'searchForm': searchForm}
     url = 'tardis_portal/search_experiment_form.html'
-    return HttpResponse(render_response_search(request, url, c))
+    return render_response_search(request, url, c)
 
 
 def __getSearchDatafileForm(request, searchQueryType):
