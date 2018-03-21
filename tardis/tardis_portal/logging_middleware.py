@@ -102,7 +102,10 @@ class LoggingMiddleware(object):
             user = ''
         ip = request.META['REMOTE_ADDR']
         method = request.method
-        status = response.status_code
+        if hasattr(response, 'status_code'):
+            status = response.status_code
+        else:
+            status = 500
         extra = {'ip': ip, 'user': user, 'method': method, 'status': status}
 
         if status < 400:
