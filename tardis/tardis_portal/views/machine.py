@@ -49,8 +49,8 @@ def view_rifcs(request, experiment_id):
         return return_response_error(request)
 
     template = pservice.get_template()
-    return HttpResponse(render_response_index(request,
-                        template, context), content_type="text/xml")
+    return render_response_index(
+        request, template, context, content_type="text/xml")
 
 
 def site_settings(request):
@@ -69,9 +69,9 @@ def site_settings(request):
                         'baseurl': request.build_absolute_uri('/'),
                         'proxy': x509.read(), 'filestorepath':
                         settings.FILE_STORE_PATH}
-                    return HttpResponse(render_response_index(
+                    return render_response_index(
                         request,
                         'tardis_portal/site_settings.xml',
-                        c), content_type='application/xml')
+                        c, content_type='application/xml')
 
     return return_response_error(request)

@@ -38,7 +38,7 @@ def index(request, experiment_id):
         template = 'related_info/index.html'
     else:
         template = 'related_info/index_ro.html'
-    return HttpResponse(render_response_index(request, template, c))
+    return render_response_index(request, template, c)
 
 
 # Create an object which handles our requests
