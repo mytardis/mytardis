@@ -139,8 +139,8 @@ def manage_user_account(request):
         form = ManageAccountForm(instance=user)
 
     c = {'form': form}
-    return HttpResponse(render_response_index(request,
-                        'tardis_portal/manage_user_account.html', c))
+    return render_response_index(
+        request, 'tardis_portal/manage_user_account.html', c)
 
 
 def logout(request):
@@ -162,9 +162,9 @@ def create_user(request):
         c = {'createUserPermissionsForm':
              CreateUserPermissionsForm()}
 
-        response = HttpResponse(render_response_index(
+        response = render_response_index(
             request,
-            'tardis_portal/ajax/create_user.html', c))
+            'tardis_portal/ajax/create_user.html', c)
         return response
 
     authMethod = localdb_auth_key
@@ -204,9 +204,9 @@ def create_user(request):
     c = {'user_created': username}
     transaction.commit()
 
-    response = HttpResponse(render_response_index(
+    response = render_response_index(
         request,
-        'tardis_portal/ajax/create_user.html', c))
+        'tardis_portal/ajax/create_user.html', c)
     return response
 
 
@@ -256,8 +256,7 @@ def login(request):
     c['RAPID_CONNECT_LOGIN_URL'] = settings.RAPID_CONNECT_CONFIG[
         'authnrequest_url']
 
-    return HttpResponse(render_response_index(request,
-                        'tardis_portal/login.html', c))
+    return render_response_index(request, 'tardis_portal/login.html', c)
 
 
 @permission_required('tardis_portal.change_userauthentication')
