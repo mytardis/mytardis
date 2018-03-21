@@ -39,10 +39,10 @@
     var loadingHTML = '<img src="{% static 'images/ajax-loader.gif' %}"/><br />';
 
     // file selectors
-    jQuery('.dataset_selector_all').live('click', function() {
+    jQuery(document).on('click', '.dataset_selector_all', function() {
         $(this).parents('.datafiles').find('.datafile_checkbox').attr("checked", "checked");
     });
-    jQuery('.dataset_selector_none').live('click', function() {
+    jQuery(document).on('click', '.dataset_selector_none', function() {
         $(this).parents('.datafiles').find('.datafile_checkbox').removeAttr("checked");
     });
 
@@ -70,7 +70,7 @@
         return '<div class="fieldWrapper">' + label + '<br/>' + widget + '</div>';
     }
 
-    $('.dataset_checkbox').live('click', function( event ) {
+    $(document).on('click', '.dataset_checkbox', function( event ) {
     if ($(this).is(':checked')) {
         $(this).parents('.dataset').find('.datafile_checkbox').attr('disabled', true);
         $(this).parents('.dataset').find('.filename_search').attr('disabled', true);
@@ -80,7 +80,7 @@
     }
     })
 
-    $('#schemaselect').live('change', function(e) {
+    $(document).on('change', '#schemaselect', function(e) {
         e.preventDefault();
 
         var $this = $(this);
@@ -95,7 +95,7 @@
         return false;
     });
 
-    $('#add_new_parameter').live('click', function(){
+    $(document).on('click', '#add_new_parameter', function(){
         // assuming whenever add_new_parameter is clicked an option is selected
         var $selected_option = $("#parameternameselect > option:selected");
         var is_long = $selected_option.attr('data-longstring');
@@ -111,7 +111,7 @@
             alert('There are no parameters allowed to be added by users in this schema');
         }
     });
-    $('#add_metadata_form').live('submit', function(e) {
+    $(document).on('submit', '#add_metadata_form', function(e) {
         e.preventDefault();
 
         var form = $(this);
@@ -140,7 +140,7 @@
         form.parents('.modal').find('.modal-footer').hide();
         return false;
     });
-    $('#edit_metadata_form').live('submit', function(e) {
+    $(document).on('submit', '#edit_metadata_form', function(e) {
         e.preventDefault();
         var form = $(this);
         var contentContainer = form.closest('.modal-body')
@@ -186,12 +186,12 @@
       });
     };
 
-    $('.add-metadata').live('click', function(evt){
+    $(document).on('click', '.add-metadata', function(evt){
         evt.preventDefault();
         $('#modal-metadata .modal-header .title').text("Add Metadata");
         loadModalRemoteBody(this, '#modal-metadata');
     });
-    $('.edit-metadata').live('click', function(evt) {
+    $(document).on('click', '.edit-metadata', function(evt) {
         evt.preventDefault();
         $('#modal-metadata .modal-header .title').text("Edit Metadata");
         loadModalRemoteBody(this, '#modal-metadata');
@@ -341,7 +341,7 @@ $('#modal-metadata .submit-button').click(function() {
 
     // Create and insert content pane (if not preloaded)
     var tabContents;
-    if ($('#'+getTabIdFromName(tabName)).size() == 0) {
+    if ($('#'+getTabIdFromName(tabName)).length == 0) {
       tabContents = $('<div></div>').attr('id', getTabIdFromName(tabName))
                                     .addClass('tab-pane');
       tabContents.html(loadingHTML)
@@ -384,7 +384,7 @@ $('#modal-metadata .submit-button').click(function() {
     var tabHref = '#' + tabIdPrefix + _.ltrim(window.location.hash, '#');
     var selected = $('#experiment-tabs li a[href="'+tabHref+'"]');
     // Show selected tab if we have one, otherwise show the first tab
-    if (selected.size() == 1) {
+    if (selected.length == 1) {
       selected.tab('show');
     } else {
       $('#experiment-tabs li a:first').tab('show');
