@@ -75,5 +75,5 @@ def view_full_dataset(request, dataset_id):
             getattr(settings, 'DEFAULT_ARCHIVE_FORMATS', ['tgz', 'tar'])[0]
     }
     _add_protocols_and_organizations(request, dataset, c)
-    return HttpResponse(render_response_index(
-        request, 'slideshow_view/view_full_dataset.html', c))
+    return render_response_index(
+        request, 'slideshow_view/view_full_dataset.html', c)
