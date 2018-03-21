@@ -121,8 +121,8 @@ def retrieve_access_list_user(request, experiment_id):
 
     c = {'user_acls': user_acls, 'experiment_id': experiment_id,
          'addUserPermissionsForm': AddUserPermissionsForm()}
-    return HttpResponse(render_response_index(request,
-                        'tardis_portal/ajax/access_list_user.html', c))
+    return render_response_index(
+        request, 'tardis_portal/ajax/access_list_user.html', c)
 
 
 @never_cache
@@ -130,9 +130,8 @@ def retrieve_access_list_user_readonly(request, experiment_id):
     user_acls = Experiment.safe.user_acls(experiment_id)
 
     c = {'user_acls': user_acls, 'experiment_id': experiment_id}
-    return HttpResponse(
-        render_response_index(
-            request, 'tardis_portal/ajax/access_list_user_readonly.html', c))
+    return render_response_index(
+        request, 'tardis_portal/ajax/access_list_user_readonly.html', c)
 
 
 @never_cache
@@ -151,8 +150,8 @@ def retrieve_access_list_group(request, experiment_id):
          'group_acls_system_owned': group_acls_system_owned,
          'experiment_id': experiment_id,
          'addGroupPermissionsForm': AddGroupPermissionsForm()}
-    return HttpResponse(render_response_index(request,
-                        'tardis_portal/ajax/access_list_group.html', c))
+    return render_response_index(
+        request, 'tardis_portal/ajax/access_list_group.html', c)
 
 
 @never_cache
@@ -167,9 +166,8 @@ def retrieve_access_list_group_readonly(request, experiment_id):
     c = {'experiment_id': experiment_id,
          'group_acls_system_owned': group_acls_system_owned,
          'group_acls_user_owned': group_acls_user_owned}
-    return HttpResponse(render_response_index(
-        request,
-        'tardis_portal/ajax/access_list_group_readonly.html', c))
+    return render_response_index(
+        request, 'tardis_portal/ajax/access_list_group_readonly.html', c)
 
 
 @never_cache
@@ -178,8 +176,8 @@ def retrieve_access_list_external(request, experiment_id):
 
     groups = Experiment.safe.external_users(experiment_id)
     c = {'groups': groups, 'experiment_id': experiment_id}
-    return HttpResponse(render_response_index(request,
-                        'tardis_portal/ajax/access_list_external.html', c))
+    return render_response_index(
+        request, 'tardis_portal/ajax/access_list_external.html', c)
 
 
 @never_cache
@@ -220,8 +218,8 @@ def retrieve_access_list_tokens(request, experiment_id):
     c = {'tokens': tokens,
          'has_archive_download_url': has_archive_download_url}
 
-    return HttpResponse(render_response_index(
-        request, 'tardis_portal/ajax/access_list_tokens.html', c))
+    return render_response_index(
+        request, 'tardis_portal/ajax/access_list_tokens.html', c)
 
 
 @never_cache
@@ -232,8 +230,8 @@ def retrieve_group_userlist(request, group_id):
     users = User.objects.filter(groups__id=group_id)
     c = {'users': users, 'group_id': group_id,
          'manageGroupPermissionsForm': ManageGroupPermissionsForm()}
-    return HttpResponse(render_response_index(request,
-                        'tardis_portal/ajax/group_user_list.html', c))
+    return render_response_index(
+        request, 'tardis_portal/ajax/group_user_list.html', c)
 
 
 @never_cache
@@ -243,8 +241,8 @@ def retrieve_group_userlist_readonly(request, group_id):
     users = User.objects.filter(groups__id=group_id)
     c = {'users': users, 'group_id': group_id,
          'manageGroupPermissionsForm': ManageGroupPermissionsForm()}
-    return HttpResponse(render_response_index(request,
-                        'tardis_portal/ajax/group_user_list_readonly.html', c))
+    return render_response_index(
+        request, 'tardis_portal/ajax/group_user_list_readonly.html', c)
 
 
 @never_cache
@@ -252,8 +250,8 @@ def retrieve_group_list_by_user(request):
 
     groups = Group.objects.filter(groupadmin__user=request.user)
     c = {'groups': groups}
-    return HttpResponse(render_response_index(request,
-                        'tardis_portal/ajax/group_list.html', c))
+    return render_response_index(
+        request, 'tardis_portal/ajax/group_list.html', c)
 
 
 @never_cache
@@ -262,8 +260,8 @@ def retrieve_group_list_by_user(request):
 def manage_groups(request):
 
     c = {}
-    return HttpResponse(render_response_index(request,
-                        'tardis_portal/manage_group_members.html', c))
+    return render_response_index(
+        request, 'tardis_portal/manage_group_members.html', c)
 
 
 @never_cache  # too complex # noqa
@@ -310,9 +308,9 @@ def add_user_to_group(request, group_id, username):
         groupadmin.save()
 
     c = {'user': user, 'group_id': group_id, 'isAdmin': isAdmin}
-    return HttpResponse(render_response_index(
+    return render_response_index(
         request,
-        'tardis_portal/ajax/add_user_to_group_result.html', c))
+        'tardis_portal/ajax/add_user_to_group_result.html', c)
 
 
 @never_cache
@@ -408,9 +406,9 @@ def add_experiment_access_user(request, experiment_id, username):
              'username': username,
              'experiment_id': experiment_id}
 
-        return HttpResponse(render_response_index(
+        return render_response_index(
             request,
-            'tardis_portal/ajax/add_user_result.html', c))
+            'tardis_portal/ajax/add_user_result.html', c)
 
     return HttpResponse('User already has experiment access.')
 
@@ -504,8 +502,8 @@ def change_user_permissions(request, experiment_id, username):
              'header':
              "Change User Permissions for '%s'" % user.username}
 
-    return HttpResponse(render_response_index(
-        request, 'tardis_portal/form_template.html', c))
+    return render_response_index(
+        request, 'tardis_portal/form_template.html', c)
 
 
 @never_cache
@@ -555,8 +553,8 @@ def change_group_permissions(request, experiment_id, group_id):
     c = {'form': form,
          'header': "Change Group Permissions for '%s'" % group.name}
 
-    return HttpResponse(render_response_index(
-        request, 'tardis_portal/form_template.html', c))
+    return render_response_index(
+        request, 'tardis_portal/form_template.html', c)
 
 
 @transaction.atomic  # too complex # noqa
@@ -567,9 +565,9 @@ def create_group(request):
         c = {'createGroupPermissionsForm':
              CreateGroupPermissionsForm()}
 
-        response = HttpResponse(render_response_index(
+        response = render_response_index(
             request,
-            'tardis_portal/ajax/create_group.html', c))
+            'tardis_portal/ajax/create_group.html', c)
         return response
 
     authMethod = localdb_auth_key
@@ -636,9 +634,9 @@ def create_group(request):
 
     c = {'group': group}
 
-    response = HttpResponse(render_response_index(
+    response = render_response_index(
         request,
-        'tardis_portal/ajax/create_group.html', c))
+        'tardis_portal/ajax/create_group.html', c)
     return response
 
 
@@ -689,9 +687,9 @@ def add_experiment_access_group(request, experiment_id, groupname):
     c = {'group': group,
          'group_acl': acl,
          'experiment_id': experiment_id}
-    return HttpResponse(render_response_index(
+    return render_response_index(
         request,
-        'tardis_portal/ajax/add_group_result.html', c))
+        'tardis_portal/ajax/add_group_result.html', c)
 
 
 @never_cache
@@ -782,5 +780,5 @@ def share(request, experiment_id):
     c['public_link'] = public_link
     c['domain'] = domain
 
-    return HttpResponse(render_response_index(request,
-                        'tardis_portal/ajax/share.html', c))
+    return render_response_index(
+        request, 'tardis_portal/ajax/share.html', c)
