@@ -634,9 +634,9 @@ class ExperimentTestCase(TestCase):
             .to_equal(['W. S. Gilbert', 'Arthur Sullivan'])
         expect([a.url for a in experiment.experimentauthor_set.all()])\
             .to_equal(['http://en.wikipedia.org/wiki/W._S._Gilbert',
-                       ''])
+                       None])
         expect([a.email for a in experiment.experimentauthor_set.all()])\
-            .to_equal(['',
+            .to_equal([None,
                        'arthur@sullivansite.net'])
 
     def testDatasetJson(self):
