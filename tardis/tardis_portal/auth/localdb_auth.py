@@ -42,7 +42,7 @@ class DjangoAuthBackend(AuthProvider):
 
         if not username or not password:
             return None
-        return _modelBackend.authenticate(username, password)
+        return _modelBackend.authenticate(request, username, password)
 
     def get_user(self, user_id):
         try:
