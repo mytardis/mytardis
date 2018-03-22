@@ -1,5 +1,4 @@
 from django.test import TestCase
-from django.template import Context
 from django.conf import settings
 from tardis.tardis_portal.models import User, Experiment
 from tardis.tardis_portal.publish.provider.rifcsprovider import RifCsProvider
@@ -23,7 +22,7 @@ class MockRifCsProvider(RifCsProvider):
         return "tardis/tardis_portal/tests/rifcs/default.xml"
 
     def get_rifcs_context(self, experiment):
-        c = Context({})
+        c = dict()
         c['experiment'] = experiment
         c['description'] = experiment.description
         c['beamline'] = self.get_beamline(experiment)
