@@ -130,4 +130,4 @@ class AuthenticationTestCase(TestCase):
                                           'password': 'test',
                                           'authMethod': 'localdb'})
         user = dj_auth.authenticate(request)
-        self.assertTrue(isinstance(user, User))
+        self.assertIsInstance(user, User)
