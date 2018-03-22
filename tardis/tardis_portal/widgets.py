@@ -23,7 +23,9 @@ class Label(Widget):
     def render(self, name, value, attrs=None):
         if value is None:
             value = ''
-        final_attrs = self.build_attrs(attrs, name=name)
+        final_attrs = dict(self.attrs, name=name)
+        if attrs:
+            final_attrs.update(attrs)
         return mark_safe(u'<%(tag)s%(attrs)s>%(value)s</%(tag)s>' %
                          {'attrs': flatatt(final_attrs),
                           'value': value,
