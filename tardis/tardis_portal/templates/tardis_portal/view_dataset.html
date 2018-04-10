@@ -19,6 +19,58 @@
     jQuery('.dataset_selector_none').live('click', function() {
         $(this).parents('.datafiles').find('.datafile_checkbox').removeAttr("checked");
     });
+    jQuery('#download_all_matches_btn').live('click', function(event) {
+        search_val = $('#filename-search-text').val();
+        if (search_val) {
+            nsr_str = $('#num_search_results').text();
+            if (/^[0-9]+$/.test(nsr_str)) {
+                num_search_results = Number(nsr_str);
+            } else {
+                num_search_results = 0;
+            }
+            // If all the search result ids are already on the page, use them
+            if ($(".datafile").length == num_search_results) {
+		file_checkboxes = $(".datafile_checkbox");
+                data = file_checkboxes.map(function() { return this.value; })
+                                      .get().join(' ');
+                $('#download_all_matches_ids').val(data);
+                $('#matches-download').submit();
+                return;
+            }
+            // Else if all the search result ids aren't on the page, fetch them
+            let url = '{% url 'tardis.tardis_portal.views.retrieve_datafile_search_ids' dataset.id %}';
+            $.ajax({
+              async: false,
+              url: url,
+              data: { 'search' : search_val },
+              success: function (data, textStatus, jqXHR) {
+                $('#download_all_matches_ids').val(data);
+                $('#matches-download').submit();
+              }
+            });
+        }
+    });
+    jQuery('#toggle_dirs_btn').live('click', function() {
+        const
+            pane_wide =   "span12",
+            pane_narrow = "span4";
+        let pane = $('#datafiles-wrapper-pane');
+        let old_width, new_width, params;
+        if (pane.hasClass(pane_wide)) {
+            old_width = pane_wide;
+            new_width = pane_narrow;
+            params = '';
+        } else {
+            old_width = pane_narrow;
+            new_width = pane_wide;
+            params = '?dirs=y';
+        }
+        pane.removeClass(old_width);
+        pane.addClass(new_width);
+        $('#datafiles-pane').html(loadingHTML);
+        url = '{% url 'tardis.tardis_portal.views.retrieve_datafile_list' dataset.id %}' + params;
+        $('#datafiles-pane').load(url);
+    });
 
     function get_new_parameter_name(name)
     {
@@ -212,12 +264,9 @@
             // file selectors
             $(document).find('.dataset_selector_all').click(function() {
                 $(this).parent().find('.datafile_checkbox').attr("checked", "checked");
-
             });
-
             $(document).find('.dataset_selector_none').click(function() {
                 $(this).parent().find('.datafile_checkbox').removeAttr("checked");
-
             });
         });
         return false;
@@ -230,8 +279,26 @@
     e.preventDefault();
     // Build form submission, and reload pane with results
     var form = $('#filename-search');
+    var url = form.attr('data-action');
+    // Keep existing show/hide dirs setting when searching
+    const pane_wide = "span12";
+    let pane = $('#datafiles-wrapper-pane');
+    if (pane.hasClass(pane_wide)) { // show dirs
+        if (!/[?&]dirs=y(&|$)/.test(url)) {
+            if (/[&]/.test(url)) {
+                url = url.replace(/([&])/, '$1dirs=y$1');
+            } else if (/[?]/.test(url)) {
+                url = url.replace(/([?])/, '$1dirs=y&');
+            } else {
+                url += '?dirs=y'
+            }
+        }
+    } else { // do not show dirs
+        url = url.replace(/([?&])dirs=y[&]?/,'$1').replace(/[?&]$/,'');
+    }
+    // Search, reloading pane with new set of matching datafiles
     $.ajax({
-      'url': form.attr('data-action'),
+      'url': url,
       'type': form.attr('data-method'),
       'data': form.children('input').serialize(),
       'success': function(data) {
@@ -551,7 +618,7 @@ $('#modal-metadata .submit-button').live('click', function() {
   </div>
   <hr class="visible-phone"/>
 
-  <div class="span4"> {# side bar #}
+  <div id="datafiles-wrapper-pane" class="span4" style="margin-left: 0">
   <div class="row-fluid">
     <div class="span8">
       <h3 style="display: inline">
@@ -654,7 +721,8 @@ $(document).ready(function(){
     }
   });
 
-  // load datafiles on page load
+  // Load datafiles on page load
+  $('#datafiles-pane').html(loadingHTML);
   $('#datafiles-pane').load('{% url 'tardis.tardis_portal.views.retrieve_datafile_list' dataset.id %}');
 
   // Create a reload event handler

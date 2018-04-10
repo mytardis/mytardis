@@ -26,6 +26,7 @@ import tarfile
 from tarfile import TarFile
 import gzip
 import io
+import re
 
 from django.core.servers.basehttp import FileWrapper
 from django.http import HttpResponseRedirect, StreamingHttpResponse
@@ -474,36 +475,49 @@ def streaming_download_datafiles(request):  # too complex # noqa
     if 'organization' in request.POST:
         organization = request.POST['organization']
 
-    if 'datafile' in request.POST or 'dataset' in request.POST:
-        if request.POST.getlist('datafile') or request.POST.getlist('dataset'):
-
-            datasets = request.POST.getlist('dataset')
-            datafiles = request.POST.getlist('datafile')
-
-            # Generator to produce datafiles from dataset id
-            def get_dataset_datafiles(dsid):
-                for datafile in DataFile.objects.filter(dataset=dsid):
-                    if has_datafile_download_access(
-                            request=request, datafile_id=datafile.id):
-                        yield datafile
-
-            # Generator to produce datafile from datafile id
-            def get_datafile(dfid):
-                datafile = DataFile.objects.get(pk=dfid)
-                if has_datafile_download_access(request=request,
-                                                datafile_id=datafile.id):
-                    yield datafile
-
-            # Take chained generators and turn them into a set of datafiles
-            df_set = set(chain(chain.from_iterable(map(get_dataset_datafiles,
-                                                       datasets)),
-                               chain.from_iterable(map(get_datafile,
-                                                       datafiles))))
+    # A datafileids value has precedence over selected datafile checkboxes
+    if 'datafileids' in request.POST:
+        idstr = request.POST['datafileids']
+        logger.debug('datafileids="' + idstr + '"  len=' + str(len(idstr)))
+        if len(idstr) and re.search('[^ 0-9]', idstr) is None:
+            try:
+                datafiles = map(int, idstr.split(' '))
+                logger.debug(str(len(datafiles)) + ' datafileids found')
+            except:
+                datafiles = []
+                logger.error('error parsing datafileids field')
         else:
+            logger.debug('datafileids was empty or had invalid characters')
             return render_error_message(
                 request,
-                'No Datasets or Datafiles were selected for downloaded',
+                'No Datasets or verified Datafiles were selected for download',
                 status=404)
+    elif 'datafile' in request.POST:
+        datafiles = request.POST.getlist('datafile')
+    else:
+        datafiles = []
+
+    datasets = request.POST.getlist('dataset')
+    if (datafiles or datasets):
+        # Generator to produce datafiles from dataset id
+        def get_dataset_datafiles(dsid):
+            for datafile in DataFile.objects.filter(dataset=dsid):
+                if has_datafile_download_access(
+                        request=request, datafile_id=datafile.id):
+                    yield datafile
+
+        # Generator to produce datafile from datafile id
+        def get_datafile(dfid):
+            datafile = DataFile.objects.get(pk=dfid)
+            if has_datafile_download_access(request=request,
+                                            datafile_id=datafile.id):
+                yield datafile
+
+        # Take chained generators and turn them into a set of datafiles
+        df_set = set(chain(chain.from_iterable(map(get_dataset_datafiles,
+                                                   datasets)),
+                           chain.from_iterable(map(get_datafile,
+                                                       datafiles))))
 
     elif 'url' in request.POST:
         if not request.POST.getlist('url'):
