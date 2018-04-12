@@ -352,8 +352,11 @@ def retrieve_datafile_list(
         # The RawQuerySet returned above doesn't implement length(), so fake an
         # obj_list for the Paginator and Page used in the Django view template.
         class RawQueryMinimalObjList(object):
-            def __init__(self, n): self.n = n; self.ordered = True
-            def __len__(self): return self.n
+            def __init__(self, n):
+                self.n = n
+                self.ordered = True
+            def __len__(self):
+                return self.n
         paginator = Paginator(RawQueryMinimalObjList(count), results_per_page)
         dataset = Page(dataset_results, page, paginator)
 
@@ -407,7 +410,8 @@ def retrieve_datafile_search_ids(request, dataset_id):
                          + '") QUERY:\n    ' + ids_query)
             datafiles_results = DataFile.objects.raw(ids_query, [search])
             for row in datafiles_results:
-                if not row.verified: continue
+                if not row.verified:
+                    continue
                 row_id_str = str(row.id)
                 ids_str += (' ' + row_id_str) if ids_str else row_id_str
     return HttpResponse(ids_str)

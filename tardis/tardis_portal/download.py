@@ -479,7 +479,7 @@ def streaming_download_datafiles(request):  # too complex # noqa
     if 'datafileids' in request.POST:
         idstr = request.POST['datafileids']
         logger.debug('datafileids="' + idstr + '"  len=' + str(len(idstr)))
-        if len(idstr) and re.search('[^ 0-9]', idstr) is None:
+        if idstr and re.search('[^ 0-9]', idstr) is None:
             try:
                 datafiles = map(int, idstr.split(' '))
                 logger.debug(str(len(datafiles)) + ' datafileids found')
@@ -517,7 +517,7 @@ def streaming_download_datafiles(request):  # too complex # noqa
         df_set = set(chain(chain.from_iterable(map(get_dataset_datafiles,
                                                    datasets)),
                            chain.from_iterable(map(get_datafile,
-                                                       datafiles))))
+                                                   datafiles))))
 
     elif 'url' in request.POST:
         if not request.POST.getlist('url'):
