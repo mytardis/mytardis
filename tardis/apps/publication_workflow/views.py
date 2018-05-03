@@ -54,7 +54,7 @@ def index(request):
 @never_cache
 def process_form(request):
     try:
-        do_process_form(request)
+        return do_process_form(request)
     except Exception:
         logger.error(traceback.format_exc())
 
