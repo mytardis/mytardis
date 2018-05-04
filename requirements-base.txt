@@ -1,4 +1,4 @@
-Django==1.8.19 # pyup: >=1.8,<1.9
+Django==1.11.13 # pyup: >=1.11,<2.0
 Wand==0.4.4
 amqp==1.4.9 # pyup: <2
 beautifulsoup4==4.6.0
@@ -8,8 +8,8 @@ compare==0.2b
 -e git+https://github.com/mytardis/django-bootstrap-form.git@mytardis-dj1.9-bootstrap-v2#egg=django-bootstrap-form
 django-celery==3.1.17 # pyup: <4
 django-extensions==2.0.7
-django-form-utils==0.2.0
-django-haystack==2.5.1
+django-form-utils==1.0.3
+django-haystack==2.8.1
 -e git+https://github.com/mytardis/django-mustachejs.git@mytardis-dj1.9#egg=django-mustachejs
 django-nose==1.4.5
 django-npm==1.0.0
