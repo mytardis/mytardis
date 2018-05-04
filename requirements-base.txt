@@ -1,4 +1,4 @@
-Django==1.11.11 # pyup: >=1.11,<2.0
+Django==1.11.13 # pyup: >=1.11,<2.0
 Wand==0.4.4
 amqp==1.4.9 # pyup: <2
 beautifulsoup4==4.6.0
@@ -9,7 +9,7 @@ compare==0.2b
 django-celery==3.1.17 # pyup: <4
 django-extensions==2.0.7
 django-form-utils==1.0.3
-django-haystack==2.5.1
+django-haystack==2.8.1
 -e git+https://github.com/mytardis/django-mustachejs.git@mytardis-dj1.9#egg=django-mustachejs
 django-nose==1.4.5
 django-npm==1.0.0
