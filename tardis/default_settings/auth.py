@@ -32,6 +32,9 @@ AUTH_PROVIDERS = (
 AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
     'tardis.tardis_portal.auth.authorisation.ACLAwareBackend',
+    'social_core.backends.open_id.OpenIdAuth',
+    'social_core.backends.google.GoogleOpenId',
+    'social_core.backends.google.GoogleOAuth2',
 )
 
 MANAGE_ACCOUNT_ENABLED = True
