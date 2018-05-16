@@ -1,6 +1,6 @@
 {% extends "tardis_portal/portal_template.html" %}
 {% load bootstrap %}
-
+{% load static from staticfiles %}
 {% block content %}
 
 {% if RAPID_CONNECT_ENABLED %}
@@ -27,6 +27,11 @@
         </div>
       </fieldset>
     </form>
+    <p>
+        <a href="{% url 'social:begin' 'google-oauth2' %}?next=/"/>
+        <img id="signInButton" src="{% static 'images/btn_google_signin_light_pressed_web.png' %}" />
+    </p>
+
 
 {% endif %}
 
