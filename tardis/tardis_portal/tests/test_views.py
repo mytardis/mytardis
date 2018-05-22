@@ -462,8 +462,9 @@ class StageFilesTestCase(TestCase):
         # Expect a redirect to login
         expect(response.status_code).to_equal(302)
         login_url = reverse('tardis.tardis_portal.views.login')
-        ensure(login_url in response['Location'], True,
-               "Redirect URL was not to login.")
+        self.assertTrue(
+            login_url in response['Location'],
+           "Redirect URL was not to login.")
 
     def testPostOnlyMethodAllowed(self):
         client = self._get_authenticated_client()
