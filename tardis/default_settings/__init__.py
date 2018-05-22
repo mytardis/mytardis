@@ -7,7 +7,7 @@ from tardis.default_settings.admins import *
 from tardis.default_settings.analytics import *
 from tardis.default_settings.auth import *
 from tardis.default_settings.caches import *
-from tardis.default_settings.celery import *
+from tardis.default_settings.celery_settings import *
 from tardis.default_settings.custom_views import *
 from tardis.default_settings.database import *
 from tardis.default_settings.debug import *
