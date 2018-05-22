@@ -464,7 +464,7 @@ class StageFilesTestCase(TestCase):
         self.assertEqual(response.status_code, 302)
         login_url = reverse('tardis.tardis_portal.views.login')
         self.assertTrue(
-            login_url in response['Location'], 
+            login_url in response['Location'],
            "Redirect URL was not to login.")
 
     def testPostOnlyMethodAllowed(self):
