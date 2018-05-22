@@ -1,19 +1,8 @@
 # Celery queue
 from datetime import timedelta
 
-import djcelery
-
-BROKER_URL = 'django://'
-'''
-use django:, add kombu.transport.django to INSTALLED_APPS
-or use redis: install redis separately and add the following to a
-custom buildout.cfg:
-    django-celery-with-redis
-    redis
-    hiredis
-'''
-# BROKER_URL = 'redis://localhost:6379/0'
-# CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
+from celery import Celery
+from django.apps import apps
 
 CELERYBEAT_SCHEDULE = {
     "verify-files": {
@@ -27,4 +16,6 @@ CELERYBEAT_SCHEDULE = {
     # },
 }
 
-djcelery.setup_loader()
+celery_app = Celery('tardis_portal')
+celery_app.config_from_object('django.conf:settings')
+celery_app.autodiscover_tasks(lambda: [n.name for n in apps.get_app_configs()])

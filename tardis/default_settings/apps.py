@@ -12,8 +12,6 @@ INSTALLED_APPS = (
     'django.contrib.admindocs',
     'django.contrib.humanize',
     'registration',
-    'djcelery',
-    'kombu.transport.django',
     'bootstrapform',
     'mustachejs',
     'tastypie',
