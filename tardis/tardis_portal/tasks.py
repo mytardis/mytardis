@@ -10,7 +10,6 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.sites.models import Site
 from django.db import transaction
 from django.db.models import Q
-from django.template import Context
 
 from tardis.tardis_portal.staging import get_staging_url_and_size
 from tardis.tardis_portal.email import email_user
@@ -117,11 +116,11 @@ def create_staging_datafiles(files, user_id, dataset_id, is_secure):
     current_site_complete = "http%s://%s" % (protocol,
                                              Site.objects.get_current().domain)
 
-    context = Context({
-        'username': user.username,
-        'current_site': current_site_complete,
-        'dataset_id': dataset_id,
-    })
+    context = dict(
+        username=user.username,
+        current_site=current_site_complete,
+        dataset_id=dataset_id
+    )
     subject = '[MyTardis] Import Successful'
 
     # traverse directory paths (if any to build file list)
@@ -130,9 +129,9 @@ def create_staging_datafiles(files, user_id, dataset_id, is_secure):
         for f in full_file_list)
     if user.email:
         job = chain(job,
-                    email_user_task.s(
+                    email_user_task.si(
                         subject, 'import_staging_success', context, user))
-    job().delay()
+    job.delay()
 
 
 @task(name="tardis_portal.create_staging_datafile", ignore_result=True)
@@ -145,7 +144,7 @@ def create_staging_datafile(filepath, username, dataset_id):
     datafile = DataFile(dataset=dataset,
                         filename=path.basename(filepath),
                         size=size)
-    datafile.save()
+    datafile.save(require_checksums=False)
     datafile.file_object = open(filepath, 'r')
 
 

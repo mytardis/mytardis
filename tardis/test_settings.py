@@ -2,6 +2,9 @@
 
 from os import listdir
 
+from celery import Celery
+from django.apps import apps
+
 from tardis.default_settings import *  # noqa # pylint: disable=W0401,W0614
 import logging  # pylint: disable=wrong-import-order
 
@@ -24,6 +27,11 @@ DATABASES = {
 
 # During testing it's always eager
 CELERY_ALWAYS_EAGER = True
+BROKER_BACKEND = 'memory'
+CELERY_EAGER_PROPAGATES_EXCEPTIONS = True
+celery_app = Celery('tardis_portal')
+celery_app.config_from_object('django.conf:settings')
+celery_app.autodiscover_tasks(lambda: [n.name for n in apps.get_app_configs()])
 
 TEMPLATES[0]['DIRS'].append('.')
 TEMPLATES[0]['OPTIONS']['debug'] = DEBUG
