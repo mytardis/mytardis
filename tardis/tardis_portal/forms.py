@@ -55,7 +55,7 @@ from django.utils.translation import ugettext_lazy as _
 
 from haystack.forms import SearchForm
 
-from form_utils import forms as formutils
+from betterforms.forms import BetterForm
 from registration.models import RegistrationProfile
 
 from tardis.tardis_portal import models
@@ -684,7 +684,7 @@ def createSearchExperimentForm():
         if fieldlist:
             fieldsets.append((name, {'fields': fieldlist}))
 
-    return type('SearchExperimentForm', (formutils.BetterBaseForm, forms.BaseForm, ),
+    return type('SearchExperimentForm', (BetterForm, forms.BaseForm, ),
                 {'base_fields': fields, 'base_fieldsets': fieldsets,
                  'base_row_attrs': {}})
 
