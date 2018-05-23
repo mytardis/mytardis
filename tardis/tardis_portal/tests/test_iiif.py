@@ -1,5 +1,6 @@
 import json
 import os
+import six
 
 from wand.image import Image
 
@@ -75,7 +76,8 @@ def _check_compliance_level(testCase, response):
     """
     Current complies with Level 1 API, so should assert no more.
     """
-    testCase.assertRegexpMatches(
+    six.assertRegex(
+        testCase,
         response['Link'],
         r'\<http:\/\/library.stanford.edu\/iiif\/image-api\/' +
         r'compliance.html#level[01]\>;rel="compliesTo"',
