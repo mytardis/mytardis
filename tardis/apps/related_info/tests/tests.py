@@ -1,5 +1,6 @@
 import json
 import re
+import six
 
 from django.test import TestCase, TransactionTestCase
 from django.test.client import Client
@@ -133,10 +134,11 @@ class ListTestCase(TransactionTestCase):
 
         for obj in objs:
             self.assertEqual(obj['type'], 'website')
-            self.assertRegexpMatches(
+            six.assertRegex(
+                self,
                 obj['identifier'], r'www.example.test/\d+$', obj['identifier'])
-            self.assertRegexpMatches(obj['title'], r'^Title #\d+$')
-            self.assertRegexpMatches(obj['notes'], r'note #\d+\.$')
+            six.assertRegex(self, obj['title'], r'^Title #\d+$')
+            six.assertRegex(self, obj['notes'], r'note #\d+\.$')
 
 
 class GetTestCase(TransactionTestCase):
