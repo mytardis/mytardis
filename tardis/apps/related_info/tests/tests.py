@@ -1,5 +1,6 @@
 import json
 import re
+import six
 
 from compare import expect, ensure, matcher
 
@@ -139,10 +140,12 @@ class ListTestCase(TransactionTestCase):
         expect(len(objs)).to_be(10)
 
         for obj in objs:
-            expect(obj['type']).to_equal('website')
-            expect(obj['identifier']).to_match(r'www.example.test/\d+$')
-            expect(obj['title']).to_match(r'^Title #\d+$')
-            expect(obj['notes']).to_match(r'note #\d+\.$')
+            self.assertEqual(obj['type'], 'website')
+            six.assertRegex(
+                self,
+                obj['identifier'], r'www.example.test/\d+$', obj['identifier'])
+            six.assertRegex(self, obj['title'], r'^Title #\d+$')
+            six.assertRegex(self, obj['notes'], r'note #\d+\.$')
 
 
 class GetTestCase(TransactionTestCase):

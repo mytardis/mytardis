@@ -1,5 +1,6 @@
 import json
 import os
+import six
 
 from wand.image import Image
 
@@ -76,12 +77,12 @@ def _check_compliance_level(response):
     """
     Current complies with Level 1 API, so should assert no more.
     """
-    import re
-    ensure(re.search(r'\<http:\/\/library.stanford.edu\/iiif\/image-api\/' +
-                     r'compliance.html#level[01]\>;rel="compliesTo"',
-                     response['Link']) is not None,
-           True,
-           "Compliance header missing")
+    six.assertRegex(
+        testCase,
+        response['Link'],
+        r'\<http:\/\/library.stanford.edu\/iiif\/image-api\/' +
+        r'compliance.html#level[01]\>;rel="compliesTo"',
+        "Compliance header missing")
 
 
 class Level0TestCase(TestCase):
