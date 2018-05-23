@@ -118,7 +118,7 @@ class AAFOpenId(BaseOAuth2):
     DEFAULT_SCOPE = ['openid', 'email', 'profile']
     AUTHORIZATION_URL = settings.SOCIAL_AUTH_AAF_AUTH_URL
     ACCESS_TOKEN_URL = settings.SOCIAL_AUTH_AAF_TOKEN_URL
-
+    REDIRECT_STATE = False
     def get_user_details(self, response):
         """returns user details from AAF"""
         return {'username': response.get('login'),
