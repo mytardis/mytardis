@@ -2,7 +2,7 @@
 from datetime import timedelta
 
 from celery import Celery
-from django.apps import apps
+from django.apps import apps  # pylint: disable=wrong-import-order
 
 CELERYBEAT_SCHEDULE = {
     "verify-files": {
