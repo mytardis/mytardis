@@ -26,6 +26,7 @@ VOLUME /wheelhouse
 WORKDIR /home/webapp
 
 CMD . /appenv/bin/activate; \
+    pip install -U setuptools; \
     pip wheel -r requirements.txt; \
     pip wheel -r requirements-postgres.txt; \
     pip wheel -r requirements-mysql.txt; \
