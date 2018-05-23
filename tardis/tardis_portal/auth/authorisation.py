@@ -127,6 +127,7 @@ class AAFOpenId(BaseOAuth2):
 
     def user_data(self, access_token, *args, **kwargs):
         """Loads user data from service"""
+        from urllib import urlencode
         url = AAFOpenId.ACCESS_TOKEN_URL + urlencode({
             'access_token': access_token
         })
