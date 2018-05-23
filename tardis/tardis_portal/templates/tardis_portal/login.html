@@ -32,6 +32,11 @@
         <img id="signInButton" src="{% static 'images/btn_google_signin_light_pressed_web.png' %}" />
     </p>
 
+    <p>
+        <a href="{% url 'social:begin' 'aaf' %}?next=/" />
+        <img id="signInButton" src="{% static 'images/aaf_service.png' %}" />
+    </p>
+
 
 {% endif %}
 
