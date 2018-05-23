@@ -35,6 +35,7 @@ AUTHENTICATION_BACKENDS = (
     'social_core.backends.open_id.OpenIdAuth',
     'social_core.backends.google.GoogleOpenId',
     'social_core.backends.google.GoogleOAuth2',
+    'tardis.tardis_portal.auth.authorisation.AAFOpenId',
 )
 
 MANAGE_ACCOUNT_ENABLED = True
