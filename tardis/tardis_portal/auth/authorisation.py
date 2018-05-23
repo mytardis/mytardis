@@ -7,9 +7,12 @@ from django.contrib.auth.models import AnonymousUser
 from django.contrib.contenttypes.models import ContentType
 from django.db.models import Q
 from django.db.models.query import QuerySet
+from django.conf import settings
 
 from ..models.access_control import ObjectACL
 from .token_auth import TokenGroupProvider
+
+from social_core.backends.oauth import BaseOAuth2
 
 
 class ACLAwareBackend(object):
@@ -107,3 +110,24 @@ class ACLAwareBackend(object):
                 query |= Q(pluginId=tgp.name, entityId=str(group))
 
         return obj_acls.filter(query).count() > 0
+
+
+class AAFOpenId(BaseOAuth2):
+    """AAF OpenID Authentication backend"""
+    name = 'aaf'
+    DEFAULT_SCOPE = ['openid', 'email', 'profile']
+    AUTHORIZATION_URL = settings.SOCIAL_AUTH_AAF_AUTH_URL
+    ACCESS_TOKEN_URL = settings.SOCIAL_AUTH_AAF_TOKEN_URL
+
+    def get_user_details(self, response):
+        """returns user details from AAF"""
+        return {'username': response.get('login'),
+                'email': response.get('email') or '',
+                'first_name': response.get('name')}
+
+    def user_data(self, access_token, *args, **kwargs):
+        """Loads user data from service"""
+        url = AAFOpenId.ACCESS_TOKEN_URL + urlencode({
+            'access_token': access_token
+        })
+        return self.get_json(url)
