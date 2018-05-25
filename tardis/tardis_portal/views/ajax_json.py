@@ -5,6 +5,7 @@ views that return JSON data
 import json
 import logging
 
+from django.conf import settings
 from django.forms import model_to_dict
 from django.http import HttpResponseNotFound, HttpResponseForbidden, \
     HttpResponse
@@ -101,10 +102,11 @@ def experiment_datasets_json(request, experiment_id):
     has_download_permissions = \
         authz.has_experiment_download_access(request, experiment_id)
 
+    dataset_ordering = getattr(settings, "DATASET_ORDERING", 'description')
     objects = [
         get_dataset_info(ds, include_thumbnail=has_download_permissions,
                          exclude=['datafiles'])
-        for ds in experiment.datasets.all().order_by('-id')]
+        for ds in experiment.datasets.all().order_by(dataset_ordering)]
 
     return HttpResponse(json.dumps(objects), content_type='application/json')
 

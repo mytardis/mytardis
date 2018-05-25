@@ -36,3 +36,6 @@ These are the default bleach values and shown here as an example.
 # Used in "My Data" view:
 OWNED_EXPS_PER_PAGE = 20
 SHARED_EXPS_PER_PAGE = 20
+
+# Used in "Experiment" view:
+DATASET_ORDERING = 'description'
