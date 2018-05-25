@@ -430,10 +430,13 @@ def __processDatafileParameters(request, searchQueryType, form):
         datafile_results = __getFilteredDatafiles(
             request, searchQueryType, form.cleaned_data)
 
-        # let's cache the query with all the filters in the session so
-        # we won't have to keep running the query all the time it is needed
-        # by the paginator
-        request.session['datafileResults'] = datafile_results
+        # Previously, we cached the query with all the filters in the session
+        # so we wouldn't have to keep running the query each time it is needed
+        # by the paginator, but since Django 1.6, Django uses JSON instead of
+        # pickle to serialize session data, so it can't serialize arbitrary
+        # Python objects unless we write custom JSON serializers for them:
+        # request.session['datafileResults'] = datafile_results
+
         return datafile_results
     return None
 
@@ -452,10 +455,14 @@ def __processExperimentParameters(request, form):
 
     if form.is_valid():
         experiments = __getFilteredExperiments(request, form.cleaned_data)
-        # let's cache the query with all the filters in the session so
-        # we won't have to keep running the query all the time it is needed
-        # by the paginator
-        request.session['experiments'] = experiments
+
+        # Previously, we cached the query with all the filters in the session
+        # so we wouldn't have to keep running the query each time it is needed
+        # by the paginator, but since Django 1.6, Django uses JSON instead of
+        # pickle to serialize session data, so it can't serialize arbitrary
+        # Python objects unless we write custom JSON serializers for them:
+        # request.session['experiments'] = experiments
+
         return experiments
     return None
 
