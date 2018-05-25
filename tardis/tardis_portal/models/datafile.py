@@ -675,7 +675,12 @@ class DataFileObject(models.Model):
                 if add_size:
                     database_update['size'] = actual['size']
             if same_values.get('size', True):
-                actual.update(compute_checksums(self.file_object))
+                compute_md5 = getattr(settings, 'COMPUTE_MD5', True)
+                compute_sha512 = getattr(settings, 'COMPUTE_SHA512', True)
+                actual.update(compute_checksums(
+                    self.file_object,
+                    compute_md5=compute_md5,
+                    compute_sha512=compute_sha512))
 
                 def collate_checksums(sum_type):
                     if empty_value[sum_type] and add_checksums:
@@ -684,9 +689,9 @@ class DataFileObject(models.Model):
                     if actual[sum_type] == database[sum_type]:
                         same_values[sum_type] = True
 
-                if getattr(settings, 'COMPUTE_MD5', True):
+                if compute_md5:
                     collate_checksums('md5sum')
-                if getattr(settings, 'COMPUTE_SHA512', True):
+                if compute_sha512:
                     collate_checksums('sha512sum')
 
         except IOError as ioe:
@@ -749,7 +754,10 @@ def delete_dfo(sender, instance, **kwargs):
                      '%s, because deletes are disabled' % instance.id)
 
 
-def compute_checksums(file_object, close_file=True):
+def compute_checksums(file_object,
+                      compute_md5=True,
+                      compute_sha512=True,
+                      close_file=True):
     """Computes checksums for a python file object
 
     :param object file_object: Python File object

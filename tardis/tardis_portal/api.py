@@ -969,7 +969,11 @@ class DataFileResource(MyTardisModelResource):
             compute_sha512 = getattr(settings, 'COMPUTE_SHA512', True)
             if (compute_md5 and 'md5sum' not in bundle.data) or \
                     (compute_sha512 and 'sha512sum' not in bundle.data):
-                checksums = compute_checksums(newfile, close_file=False)
+                checksums = compute_checksums(
+                    newfile,
+                    compute_md5=compute_md5,
+                    compute_sha512=compute_sha512,
+                    close_file=False)
                 if compute_md5:
                     bundle.data['md5sum'] = checksums['md5sum']
                 if compute_sha512:
