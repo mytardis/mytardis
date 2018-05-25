@@ -761,6 +761,10 @@ def compute_checksums(file_object,
     """Computes checksums for a python file object
 
     :param object file_object: Python File object
+    :param compute_md5: whether to compute md5 default=True
+    :type compute_md5: bool
+    :param compute_sha512: whether to compute sha512, default=True
+    :type compute_sha512: bool
     :param bool close_file: whether to close the file_object, default=True
 
     :return: the checksums as {'md5sum': result, 'sha512sum': result}

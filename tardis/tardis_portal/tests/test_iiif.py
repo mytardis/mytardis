@@ -60,13 +60,13 @@ def _create_datafile():
     compute_md5 = getattr(settings, 'COMPUTE_MD5', True)
     compute_sha512 = getattr(settings, 'COMPUTE_SHA512', True)
     checksums = compute_checksums(
-	open(tempfile.file.name, 'r'),
+        open(tempfile.file.name, 'r'),
         compute_md5=compute_md5,
         compute_sha512=compute_sha512)
     if compute_md5:
         datafile.md5sum = checksums['md5sum']
     if compute_sha512:
-	datafile.sha512sum = checksums['sha512sum']
+        datafile.sha512sum = checksums['sha512sum']
     datafile.save()
     datafile.file_object = tempfile
     return datafile
