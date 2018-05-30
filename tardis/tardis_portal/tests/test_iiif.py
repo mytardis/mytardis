@@ -5,6 +5,8 @@ from wand.image import Image
 
 from lxml import etree
 from compare import ensure, expect
+
+from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.core.files.uploadedfile import TemporaryUploadedFile
 from django.test import TestCase
@@ -55,9 +57,16 @@ def _create_datafile():
                         size=os.path.getsize(tempfile.file.name),
                         filename='iiif_named_file',
                         mimetype='image/tiff')
-    checksums = compute_checksums(open(tempfile.file.name, 'r'))
-    datafile.md5sum = checksums['md5sum']
-    datafile.sha512sum = checksums['sha512sum']
+    compute_md5 = getattr(settings, 'COMPUTE_MD5', True)
+    compute_sha512 = getattr(settings, 'COMPUTE_SHA512', True)
+    checksums = compute_checksums(
+        open(tempfile.file.name, 'r'),
+        compute_md5=compute_md5,
+        compute_sha512=compute_sha512)
+    if compute_md5:
+        datafile.md5sum = checksums['md5sum']
+    if compute_sha512:
+        datafile.sha512sum = checksums['sha512sum']
     datafile.save()
     datafile.file_object = tempfile
     return datafile

@@ -102,7 +102,10 @@ def compute_etag(request, datafile_id, *args, **kwargs):
                                         datafile_id=datafile.id):
         return None
     # OK, we can compute the Etag without giving anything away now
-    signature = datafile.sha512sum + json.dumps((args, kwargs))
+    # Calculating SHA-512 sums is now optional, so use MD5 sums
+    # if SHA-512 sums are unavailable:
+    checksum = datafile.sha512sum or datafile.md5sum
+    signature = checksum + json.dumps((args, kwargs))
     import hashlib
     return hashlib.sha1(signature).hexdigest()
 

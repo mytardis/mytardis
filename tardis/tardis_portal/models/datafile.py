@@ -675,17 +675,24 @@ class DataFileObject(models.Model):
                 if add_size:
                     database_update['size'] = actual['size']
             if same_values.get('size', True):
+                compute_md5 = getattr(settings, 'COMPUTE_MD5', True)
+                compute_sha512 = getattr(settings, 'COMPUTE_SHA512', True)
                 actual.update(compute_checksums(
                     self.file_object,
-                    compute_md5=True,
-                    compute_sha512=True))
-                for sum_type in ['md5sum', 'sha512sum']:
-                    if empty_value[sum_type]:
+                    compute_md5=compute_md5,
+                    compute_sha512=compute_sha512))
+
+                def collate_checksums(sum_type):
+                    if empty_value[sum_type] and add_checksums:
                         # all sums only ever empty when not required
-                        if add_checksums:
-                            database_update[sum_type] = actual[sum_type]
+                        database_update[sum_type] = actual[sum_type]
                     if actual[sum_type] == database[sum_type]:
                         same_values[sum_type] = True
+
+                if compute_md5:
+                    collate_checksums('md5sum')
+                if compute_sha512:
+                    collate_checksums('sha512sum')
 
         except IOError as ioe:
             same_values = {key: False for key in same_values.keys()}

@@ -965,10 +965,19 @@ class DataFileResource(MyTardisModelResource):
         if 'attached_file' in bundle.data:
             # have POSTed file
             newfile = bundle.data['attached_file'][0]
-            if 'md5sum' not in bundle.data and 'sha512sum' not in bundle.data:
-                checksums = compute_checksums(newfile, close_file=False)
-                bundle.data['md5sum'] = checksums['md5sum']
-                bundle.data['sha512sum'] = checksums['sha512sum']
+            compute_md5 = getattr(settings, 'COMPUTE_MD5', True)
+            compute_sha512 = getattr(settings, 'COMPUTE_SHA512', True)
+            if (compute_md5 and 'md5sum' not in bundle.data) or \
+                    (compute_sha512 and 'sha512sum' not in bundle.data):
+                checksums = compute_checksums(
+                    newfile,
+                    compute_md5=compute_md5,
+                    compute_sha512=compute_sha512,
+                    close_file=False)
+                if compute_md5:
+                    bundle.data['md5sum'] = checksums['md5sum']
+                if compute_sha512:
+                    bundle.data['sha512sum'] = checksums['sha512sum']
 
             if 'replicas' in bundle.data:
                 for replica in bundle.data['replicas']:
