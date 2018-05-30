@@ -33,16 +33,18 @@
   </p>
 
 </div>
-<div class="pull-left ds-thumb" style="margin-right: 10px">
-  {{#thumbnail}}
-      <img alt="Thumbnail for Dataset #{{ id }}"
-           src="{{ thumbnail }}"
-           onerror="$(this).parent().append('<canvas></canvas>');$(this).remove();"/>
-  {{/thumbnail}}
-  {{^thumbnail}}
-      <canvas style="width: 100px"></canvas>
-  {{/thumbnail}}
-</div>
+{{#show_dataset_thumbnails}}
+  <div class="pull-left ds-thumb" style="margin-right: 10px">
+    {{#thumbnail}}
+        <img alt="Thumbnail for Dataset #{{ id }}"
+             src="{{ thumbnail }}"
+             onerror="$(this).parent().append('<canvas></canvas>');$(this).remove();"/>
+    {{/thumbnail}}
+    {{^thumbnail}}
+        <canvas style="width: 100px"></canvas>
+    {{/thumbnail}}
+  </div>
+{{/show_dataset_thumbnails}}
 <p>
   <a class="dataset-link" href="{{ url }}">
   {{#description}}
