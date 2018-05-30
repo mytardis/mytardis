@@ -770,8 +770,6 @@ def compute_checksums(file_object,
     :return: the checksums as {'md5sum': result, 'sha512sum': result}
     :rtype: dict
     """
-    compute_md5 = getattr(settings, 'COMPUTE_MD5', True)
-    compute_sha512 = getattr(settings, 'COMPUTE_SHA512', True)
     blocksize = 0
     results = {}
     if compute_md5:
