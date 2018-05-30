@@ -10,9 +10,9 @@ MyTardis
    :target: https://semaphoreapp.com/mytardis/mytardis
    :alt: Semaphore build status
 
-.. image:: https://www.codacy.com/project/badge/c5899f09f2c545edaaf6d474e9e5e11e
-   :target: https://www.codacy.com/public/grischa/mytardis
-   :alt: Codacy Badge
+.. image:: https://api.codacy.com/project/badge/Grade/f945cdf9191d44d2806d14fb55e32ef5
+  :target: https://www.codacy.com/app/keithschulze/mytardis?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=mytardis/mytardis&amp;utm_campaign=Badge_Grade
+  :alt: Codacy Badge
 
 .. image:: https://coveralls.io/repos/mytardis/mytardis/badge.svg?branch=develop
   :target: https://coveralls.io/r/mytardis/mytardis?branch=develop
@@ -83,7 +83,7 @@ Related projects and repositories
 - **NIF ImageTrove**: https://github.com/NIF-au/imagetrove
 
   - A tool for ingesting and archiving NIF datasets, including
-  
+
     - Web front end: `MyTardis <http://mytardis.org/>`_
     - A DICOM server: `DICOM ToolKit <http://dicom.offis.de/dcmtk.php.en>`_
     - A dataset uploader: `imagetrove-uploader <https://github.com/NIF-au/imagetrove-uploader>`_
