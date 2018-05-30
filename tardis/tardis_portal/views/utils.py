@@ -492,6 +492,13 @@ def get_dataset_info(dataset, include_thumbnail=False, exclude=None):  # too com
             and (exclude is None or 'facility' not in exclude)):
             obj['facility'] = dataset.instrument.facility.name
 
+    # Whether dataset thumbnails are enabled, i.e.
+    # include a thumbnail <div> in every tile:
+    obj['show_dataset_thumbnails'] = getattr(
+        settings, "SHOW_DATASET_THUMBNAILS", True)
+
+    # Whether this dataset tile's thumbnail is enabled.
+    # If not, still include a blank thumbnail <div>:
     if include_thumbnail:
         try:
             obj['thumbnail'] = reverse(
