@@ -1,8 +1,8 @@
 import logging
 import traceback
 
-from celery.task import task
 import CifFile
+
 from django.conf import settings
 from django.core.cache import caches
 from django.db import transaction
@@ -10,17 +10,19 @@ from django.utils import timezone
 from tardis.tardis_portal.models import Schema, Experiment, \
     ExperimentParameter, ExperimentParameterSet, \
     ParameterName
+
 from tardis.apps.publication_forms.doi import DOI
 from tardis.apps.publication_forms.utils import PDBCifHelper, send_mail_to_authors
 from tardis.apps.publication_forms.email_text import email_pub_released
 from tardis.apps.publication_forms import default_settings
+from tardis.settings import celery_app
 
 logger = logging.getLogger(__name__)
 
 LOCK_EXPIRE = 60 * 5  # Lock expires in 5 minutes
 
 
-@task(
+@celery_app.task(
     name="apps.publication_forms.update_publication_records",
     ignore_result=True)
 def update_publication_records():
