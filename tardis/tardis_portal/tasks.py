@@ -10,6 +10,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.sites.models import Site
 from django.db import transaction
 from django.db.models import Q
+from django.http import HttpResponse
 
 from tardis.tardis_portal.staging import get_staging_url_and_size
 from tardis.tardis_portal.email import email_user
@@ -17,7 +18,8 @@ from tardis.tardis_portal.email import email_user
 
 try:
     from tardis.tardis_portal.logging_middleware import LoggingMiddleware
-    LoggingMiddleware()
+    get_response = lambda _: HttpResponse('')
+    LoggingMiddleware(get_response)
 except Exception:
     pass
 
@@ -30,7 +32,8 @@ def init_filters():
     """
     try:
         from tardis.tardis_portal.filters import FilterInitMiddleware
-        FilterInitMiddleware()
+        get_response = lambda _: HttpResponse('')
+        FilterInitMiddleware(get_response)
     except Exception as e:
         logger.info('filters not loaded for tasks because: %s' % e)
 
