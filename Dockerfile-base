@@ -14,6 +14,7 @@ RUN apt-get update && apt-get install \
     libfreetype6 \
     libjpeg8 \
     libldap-2.4-2 \
+    libmagickwand-dev \
     libmysqlclient18 \
     libpq5 \
     libsasl2-2 \
