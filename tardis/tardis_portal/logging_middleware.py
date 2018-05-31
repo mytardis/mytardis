@@ -90,10 +90,16 @@ LOGGING = {
 
 
 class LoggingMiddleware(object):
-    def __init__(self):
+    def __init__(self, get_response):
         from logging.config import dictConfig
         dictConfig(LOGGING)
         self.logger = logging.getLogger(__name__)
+        self.get_response = get_response
+
+    def __call__(self, request):
+        response = self.get_response(request)
+        self.process_response(request, response)
+        return response
 
     def process_response(self, request, response):
         try:
