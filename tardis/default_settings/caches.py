@@ -4,7 +4,7 @@
 # is set up, you'll need to add
 # 'django.middleware.cache.UpdateCacheMiddleware' and
 # 'django.middleware.cache.FetchFromCacheMiddleware'
-# to your MIDDLEWARE_CLASSES setting below
+# to your MIDDLEWARE setting
 
 CACHES = {
     'default': {
