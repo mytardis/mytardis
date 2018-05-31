@@ -32,6 +32,7 @@ from os import path
 from django.test import TestCase
 from django.db.models.signals import post_save
 from django.core.exceptions import MiddlewareNotUsed
+from django.http import HttpResponse
 
 from tardis.tardis_portal.filters import FilterInitMiddleware
 from tardis.tardis_portal.models import User, UserProfile, Experiment, \
@@ -103,7 +104,8 @@ class FilterInitTestCase(TestCase):
     def testFiltering(self):
         try:
             try:
-                FilterInitMiddleware(filters=TEST_FILTERS)
+                get_response = lambda _: HttpResponse('')
+                FilterInitMiddleware(get_response, filters=TEST_FILTERS)
             except MiddlewareNotUsed:
                 pass         # expected
             self.datafiles[0].save()
