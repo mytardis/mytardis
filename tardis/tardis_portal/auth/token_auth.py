@@ -70,6 +70,13 @@ class TokenAuthMiddleware(object):
     '''
     adds tokens to the user object and the session from a GET query
     '''
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        self.process_request(request)
+        response = self.get_response(request)
+        return response
 
     def process_request(self, request):
         all_tokens_set = set()
