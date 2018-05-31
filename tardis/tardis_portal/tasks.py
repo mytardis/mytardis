@@ -11,7 +11,7 @@ from django.db import transaction
 from django.db.models import Q
 from django.http import HttpResponse
 
-from tardis.settings import celery_app
+from tardis.celery_app import celery_app
 from tardis.tardis_portal.staging import get_staging_url_and_size
 from tardis.tardis_portal.email import email_user
 
