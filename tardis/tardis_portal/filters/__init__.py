@@ -51,8 +51,9 @@ logger = logging.getLogger(__name__)
 
 class FilterInitMiddleware(object):
 
-    def __init__(self, filters=None):  # noqa # TODO too complex
+    def __init__(self, get_response, filters=None):  # noqa # TODO too complex
         from tardis.tardis_portal.models import DataFile
+        self.get_response = get_response
         if not filters:
             filters = getattr(settings, 'POST_SAVE_FILTERS', [])
         for f in filters:
@@ -126,3 +127,6 @@ class FilterInitMiddleware(object):
 
         filter_instance = filter_class(*args, **kw)
         return filter_instance
+
+    def __call__(self, request):
+        return self.get_response(request)

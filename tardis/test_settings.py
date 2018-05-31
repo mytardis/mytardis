@@ -160,7 +160,7 @@ DEFAULT_ARCHIVE_FORMATS = ['tar']
 
 AUTOGENERATE_API_KEY = True
 
-MIDDLEWARE_CLASSES += ('tardis.tardis_portal.filters.FilterInitMiddleware',)
+MIDDLEWARE += ('tardis.tardis_portal.filters.FilterInitMiddleware',)
 
 SECRET_KEY = 'ij!%7-el^^rptw$b=iol%78okl10ee7zql-()z1r6e)gbxd3gl'
 
