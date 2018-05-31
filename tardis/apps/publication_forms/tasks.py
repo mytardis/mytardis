@@ -15,7 +15,7 @@ from tardis.apps.publication_forms.doi import DOI
 from tardis.apps.publication_forms.utils import PDBCifHelper, send_mail_to_authors
 from tardis.apps.publication_forms.email_text import email_pub_released
 from tardis.apps.publication_forms import default_settings
-from tardis.settings import celery_app
+from tardis.celery_app import celery_app
 
 logger = logging.getLogger(__name__)
 
