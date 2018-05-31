@@ -9,5 +9,5 @@
 #    environ['UA_PARSER_YAML'] = '/opt/mytardis/current/ua_parser_regexes.yaml'
 #
 #    INSTALLED_APPS = INSTALLED_APPS + ('django_user_agents',)
-#    MIDDLEWARE_CLASSES = MIDDLEWARE_CLASSES + \
+#    MIDDLEWARE = MIDDLEWARE + \
 #        ('django_user_agents.middleware.UserAgentMiddleware',)
