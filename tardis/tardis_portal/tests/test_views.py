@@ -43,7 +43,6 @@ from urllib import quote
 from urlparse import urlparse
 
 from flexmock import flexmock
-from compare import expect, ensure
 
 from django.conf import settings
 from django.core.urlresolvers import resolve, reverse
@@ -349,7 +348,7 @@ class RightsTestCase(TestCase):
         rights_url = reverse('tardis.tardis_portal.views.choose_rights',
                              args=[str(experiment.id)])
         response = client.get(rights_url)
-        expect(response.status_code).to_equal(403)
+        self.assertEqual(response.status_code, 403)
 
         # Fill in remaining details
         user.first_name = "Voltaire"  # Mononymous persons are just fine
@@ -357,7 +356,7 @@ class RightsTestCase(TestCase):
 
         # Get "Choose Rights" page, and check that we're now allowed access
         response = client.get(rights_url)
-        expect(response.status_code).to_equal(200)
+        self.assertEqual(response.status_code, 200)
 
 
 class ManageAccountTestCase(TestCase):
@@ -368,7 +367,7 @@ class ManageAccountTestCase(TestCase):
                                      'testuser@example.test',
                                      'password')
         user = User.objects.create_user(username, email, password)
-        expect(user.userprofile.isValidPublicContact()).to_be(False)
+        self.assertFalse(user.userprofile.isValidPublicContact())
 
         manage_url = reverse('tardis.tardis_portal.views.manage_user_account')
 
@@ -376,7 +375,7 @@ class ManageAccountTestCase(TestCase):
         client = Client()
         response = client.get(manage_url)
         # Expect redirect to login
-        expect(response.status_code).to_equal(302)
+        self.assertEqual(response.status_code, 302)
 
         # Login as user
         login = client.login(username=username, password=password)
@@ -384,7 +383,7 @@ class ManageAccountTestCase(TestCase):
 
         response = client.get(manage_url)
         # Expect 200 OK and a form
-        expect(response.status_code).to_equal(200)
+        self.assertEqual(response.status_code, 200)
         response.content.index('name="first_name"')
         response.content.index('name="last_name"')
         response.content.index('name="email"')
@@ -395,10 +394,10 @@ class ManageAccountTestCase(TestCase):
                                {'first_name': 'Tommy',
                                 'email': 'tommy@atkins.net'})
         # Expect 303 See Also redirect on update
-        expect(response.status_code).to_equal(303)
+        self.assertEqual(response.status_code, 303)
 
         user = User.objects.get(id=user.id)
-        expect(user.userprofile.isValidPublicContact()).to_be(True)
+        self.assertTrue(user.userprofile.isValidPublicContact())
 
 
 class StageFilesTestCase(TestCase):
@@ -419,7 +418,9 @@ class StageFilesTestCase(TestCase):
         if not path.exists(staging_dir):
             makedirs(staging_dir)
         # Ensure that staging dir is set up properly
-        expect(get_full_staging_path(username)).to_be_truthy()
+        # assertTrue(x) checks if bool(x) is True which it is
+        # when x is a non-empty string
+        self.assertTrue(get_full_staging_path(username))
 
         # Create test experiment and make user the owner of it
         experiment = Experiment(title='Text Experiment',
@@ -460,10 +461,11 @@ class StageFilesTestCase(TestCase):
         client = Client()
         response = client.get(self._get_staging_url())
         # Expect a redirect to login
-        expect(response.status_code).to_equal(302)
+        self.assertEqual(response.status_code, 302)
         login_url = reverse('tardis.tardis_portal.views.login')
-        ensure(login_url in response['Location'], True,
-               "Redirect URL was not to login.")
+        self.assertTrue(
+            login_url in response['Location'], 
+           "Redirect URL was not to login.")
 
     def testPostOnlyMethodAllowed(self):
         client = self._get_authenticated_client()
@@ -471,7 +473,7 @@ class StageFilesTestCase(TestCase):
         for method in (x.lower() for x in ['GET', 'HEAD', 'PUT', 'OPTIONS']):
             response = getattr(client, method)(self._get_staging_url())
             # Expect a 405 Method Not Allowed
-            expect(response.status_code).to_equal(405)
+            self.assertEqual(response.status_code, 405)
             # Expect valid "Allow" header
             response['Allow'] = 'POST'
 
@@ -488,18 +490,18 @@ class StageFilesTestCase(TestCase):
 
         response = client.post(self._get_staging_url())
         # Expect 400 Bad Request because we didn't have a payload
-        expect(response.status_code).to_equal(400)
+        self.assertEqual(response.status_code, 400)
 
         response = client.post(self._get_staging_url(),
                                data={'files': ['foo', 'bar']})
         # Expect 400 Bad Request because we didn't have a JSON payload
-        expect(response.status_code).to_equal(400)
+        self.assertEqual(response.status_code, 400)
 
         response = client.post(self._get_staging_url(),
                                data=json.dumps({'files': ['foo', 'bar']}),
                                content_type='application/octet-stream')
         # Expect 400 Bad Request because we didn't have a JSON Content-Type
-        expect(response.status_code).to_equal(400)
+        self.assertEqual(response.status_code, 400)
 
     def testStageFile(self):
         client = self._get_authenticated_client()
@@ -519,12 +521,12 @@ class StageFilesTestCase(TestCase):
                                    content_type=content_type)
 
             # Expect 201 Created
-            expect(response.status_code).to_equal(201)
+            self.assertEqual(response.status_code, 201)
             # Expect to get the email address of
             # staging user back
             # Can't test for async file staging
             emails = json.loads(response.content)
-            expect(len(emails)).to_equal(1)
+            self.assertEqual(len(emails), 1)
 
 
 class ExperimentTestCase(TestCase):
@@ -557,7 +559,7 @@ class ExperimentTestCase(TestCase):
 
         # Check the form is accessible
         response = client.get(create_url)
-        expect(response.status_code).to_equal(200)
+        self.assertEqual(response.status_code, 200)
 
         # Create client and go to account management URL
         data = {'title': 'The Elements',
@@ -569,30 +571,31 @@ class ExperimentTestCase(TestCase):
                 }
         response = client.post(create_url, data=data)
         # Expect redirect to created experiment
-        expect(response.status_code).to_equal(303)
+        self.assertEqual(response.status_code, 303)
         created_url = response['Location']
 
         # Check that it redirects to a valid location
         response = client.get(created_url)
-        expect(response.status_code).to_equal(200)
+        self.assertEqual(response.status_code, 200)
 
         experiment_id = resolve(urlparse(created_url).path)\
             .kwargs['experiment_id']
         experiment = Experiment.objects.get(id=experiment_id)
         for attr in ('title', 'description', 'institution_name'):
-            expect(getattr(experiment, attr)).to_equal(data[attr])
+            self.assertEqual(getattr(experiment, attr), data[attr])
 
         # Check authors were created properly
-        expect([a.author for a in experiment.experimentauthor_set.all()])\
-            .to_equal(data['authors'].split(', '))
+        self.assertEqual(
+            [a.author for a in experiment.experimentauthor_set.all()],
+            data['authors'].split(', '))
 
         acl = ObjectACL.objects.get(content_type=experiment.get_ct(),
                                     object_id=experiment.id,
                                     pluginId='django_user',
                                     entityId=self.user.id)
-        expect(acl.canRead).to_be_truthy()
-        expect(acl.canWrite).to_be_truthy()
-        expect(acl.isOwner).to_be_truthy()
+        self.assertTrue(acl.canRead)
+        self.assertTrue(acl.canWrite)
+        self.assertTrue(acl.isOwner)
 
         ########
         # Edit #
@@ -603,7 +606,7 @@ class ExperimentTestCase(TestCase):
 
         # Check the form is accessible
         response = client.get(edit_url)
-        expect(response.status_code).to_equal(200)
+        self.assertEqual(response.status_code, 200)
 
         # Create client and go to account management URL
         data = {'title': 'I Am the Very Model of a Modern Major-General',
@@ -616,28 +619,29 @@ class ExperimentTestCase(TestCase):
                 }
         response = client.post(edit_url, data=data)
         # Expect redirect to created experiment
-        expect(response.status_code).to_equal(303)
+        self.assertEqual(response.status_code, 303)
         edit_url = response['Location']
 
         # Check that it redirects to a valid location
         response = client.get(created_url)
-        expect(response.status_code).to_equal(200)
+        self.assertEqual(response.status_code, 200)
 
         experiment_id = resolve(urlparse(created_url).path)\
             .kwargs['experiment_id']
         experiment = Experiment.objects.get(id=experiment_id)
         for attr in ('title', 'description', 'institution_name'):
-            expect(getattr(experiment, attr)).to_equal(data[attr])
+            self.assertEqual(getattr(experiment, attr), data[attr])
 
         # Check authors were created properly
-        expect([a.author for a in experiment.experimentauthor_set.all()])\
-            .to_equal(['W. S. Gilbert', 'Arthur Sullivan'])
-        expect([a.url for a in experiment.experimentauthor_set.all()])\
-            .to_equal(['http://en.wikipedia.org/wiki/W._S._Gilbert',
-                       None])
-        expect([a.email for a in experiment.experimentauthor_set.all()])\
-            .to_equal([None,
-                       'arthur@sullivansite.net'])
+        self.assertEqual(
+            [a.author for a in experiment.experimentauthor_set.all()],
+            ['W. S. Gilbert', 'Arthur Sullivan'])
+        self.assertEqual(
+            [a.url for a in experiment.experimentauthor_set.all()],
+            ['http://en.wikipedia.org/wiki/W._S._Gilbert', None])
+        self.assertEqual(
+            [a.email for a in experiment.experimentauthor_set.all()],
+            [None, 'arthur@sullivansite.net'])
 
     def testDatasetJson(self):
         user = self.user
@@ -682,33 +686,33 @@ class ExperimentTestCase(TestCase):
 
         # How to check items
         def check_item(item):
-            ensure('id' in item, True, "Missing dataset ID")
+            self.assertIn('id', item, "Missing dataset ID")
             dataset = datasets[item['id']]
             # Check attributes
-            expect(item['description']).to_equal(dataset.description)
-            expect(item['immutable']).to_equal(dataset.immutable)
+            self.assertEqual(item['description'], dataset.description)
+            self.assertEqual(item['immutable'], dataset.immutable)
             # todo - put ye test back
             # Check experiment list is the same
-            expect(frozenset(item['experiments']))\
-                .to_equal(frozenset(dataset.experiments
-                                    .values_list('id', flat=True)))
+            self.assertEqual(
+                frozenset(item['experiments']),
+                frozenset(dataset.experiments .values_list('id', flat=True)))
 
         # Check the JSON
         response = client.get(json_url)
-        expect(response.status_code).to_equal(200)
+        self.assertEqual(response.status_code, 200)
         items = json.loads(response.content)
         for item in items:
             check_item(item)
             # Check there's an individual resource
             response = client.get(json_url+str(item['id']))
-            expect(response.status_code).to_equal(200)
+            self.assertEqual(response.status_code, 200)
             item = json.loads(response.content)
             check_item(item)
             # Attempt to remove the dataset from the original experiment
             # Should fail because it would leave the dataset orphaned
             response = client.delete(json_url+str(item['id']),
                                      content_type='application/json')
-            expect(response.status_code).to_equal(403)
+            self.assertEqual(response.status_code, 403)
             # Add the dataset to another experiment with PUT
             new_url = reverse('tardis.tardis_portal.views.dataset_json',
                               kwargs={'experiment_id': str(experiments[1].id),
@@ -719,32 +723,35 @@ class ExperimentTestCase(TestCase):
             item = json.loads(response.content)
             check_item(item)
             # This dataset should now have two experiments
-            expect(sorted(item['experiments'])).to_equal(
-                   sorted([e.id for e in experiments[:2]]))
+            self.assertEqual(
+                sorted(item['experiments']),
+                sorted([e.id for e in experiments[:2]]))
             # Add the rest of the experiments to the dataset
             item['experiments'] = [e.id for e in experiments]
             # Send the revised dataset back to be altered with PUT
             response = client.put(json_url+str(item['id']),
                                   data=json.dumps(item),
                                   content_type='application/json')
-            expect(response.status_code).to_equal(200)
+            self.assertEqual(response.status_code, 200)
             item = json.loads(response.content)
             check_item(item)
-            expect(sorted(item['experiments'])).to_equal(
-                   sorted([e.id for e in experiments]))
+            self.assertEqual(
+                sorted(item['experiments']),
+                sorted([e.id for e in experiments]))
             # Remove the dataset from the original experiment
             # Should succeed because there are now many more experiments
             response = client.delete(json_url+str(item['id']),
                                      content_type='application/json')
-            expect(response.status_code).to_equal(200)
+            self.assertEqual(response.status_code, 200)
             item = json.loads(response.content)
             check_item(item)
             # Expect the item is now in all but the first experiment
-            expect(sorted(item['experiments'])).to_equal(
-                   sorted([e.id for e in experiments][1:]))
+            self.assertEqual(
+                sorted(item['experiments']),
+                sorted([e.id for e in experiments][1:]))
             # Check it no longer exists
             response = client.get(json_url+str(item['id']))
-            expect(response.status_code).to_equal(404)
+            self.assertEqual(response.status_code, 404)
 
 
 class ContextualViewTest(TestCase):

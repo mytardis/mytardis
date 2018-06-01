@@ -1,7 +1,6 @@
 import hashlib
 from os import path, urandom
 
-from compare import expect
 from django.core.files.base import ContentFile
 from django.test import TestCase
 
@@ -49,10 +48,10 @@ class BackgroundTaskTestCase(TestCase):
         dfo.save(update_fields=['verified'])
 
         # Check that it's not currently verified
-        expect(datafile.verified).to_be(False)
+        self.assertFalse(datafile.verified)
         # Check it verifies
         verify_dfos()
-        expect(datafile.verified).to_be(True)
+        self.assertTrue(datafile.verified)
 
     def test_wrong_size_verification(self):
         content = urandom(1024)
