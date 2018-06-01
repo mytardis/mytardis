@@ -84,16 +84,10 @@ INSTALLED_APPS += get_all_tardis_apps() + (
     'behave_django',
 )
 
-# The publication forms app automatically creates
-# a user group when it's first initialized, which
-# can invalidate assumptions of some of the tests.
-DISABLED_APPS = ('tardis.apps.publication_forms',)
-
 DEDUP_INSTALLED_APPS = []
 for app in INSTALLED_APPS:
     if app not in DEDUP_INSTALLED_APPS:
-        if app not in DISABLED_APPS:
-            DEDUP_INSTALLED_APPS.append(app)
+        DEDUP_INSTALLED_APPS.append(app)
 INSTALLED_APPS = tuple(DEDUP_INSTALLED_APPS)
 
 # LDAP configuration
