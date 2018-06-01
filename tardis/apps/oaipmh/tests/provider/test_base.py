@@ -1,5 +1,3 @@
-from compare import expect
-
 from django.contrib.sites.requests import RequestSite
 from django.test import TestCase
 
@@ -20,41 +18,42 @@ class BaseProviderTestCase(TestCase):
         '''
         Default behaviour should be to not handle the identifier.
         '''
-        expect(lambda: self.provider.getRecord('rif', 'experiment/1'))\
-            .to_raise(oaipmh.error.IdDoesNotExistError)
+        with self.assertRaises(oaipmh.error.IdDoesNotExistError):
+            self.provider.getRecord('rif', 'experiment/1')()
 
     def testIdentify(self):
         """
         There can be only one provider that responds. By default, don't.
         """
-        expect(self.provider.identify).to_raise(NotImplementedError)
+        with self.assertRaises(NotImplementedError):
+            self.provider.identify()
 
     def testListIdentifiers(self):
         """
         By default a provider cannot handle the given metadata prefix.
         """
-        expect(lambda: self.provider.listIdentifiers('oai_dc'))\
-            .to_raise(oaipmh.error.CannotDisseminateFormatError)
+        with self.assertRaises(oaipmh.error.CannotDisseminateFormatError):
+            self.provider.listIdentifiers('oai_dc')()
 
     def testListMetadataFormats(self):
         """
         By default a provider handles no metadata formats.
         """
-        expect(self.provider.listMetadataFormats).to_return([])
+        self.assertEqual(self.provider.listMetadataFormats(), [])
 
     def testListRecords(self):
         """
         By default a provider cannot handle the given metadata prefix.
         """
-        expect(lambda: self.provider.listRecords('oai_dc'))\
-            .to_raise(oaipmh.error.CannotDisseminateFormatError)
+        with self.assertRaises(oaipmh.error.CannotDisseminateFormatError):
+            self.provider.listRecords('oai_dc')()
 
     def testListSets(self):
         """
         By default a provider does not implement sets.
         """
-        expect(self.provider.listSets).to_raise(
-            oaipmh.error.NoSetHierarchyError)
+        with self.assertRaises(oaipmh.error.NoSetHierarchyError):
+            self.provider.listSets()
 
     def tearDown(self):
         self.provider = None
