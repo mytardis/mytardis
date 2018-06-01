@@ -5,7 +5,6 @@ if [ -v EXTRA_REQS ]; then
 fi
 
 # select test to run with TEST_TYPE, memory pg mysql pylint
-# only memory will report coverage for now
 
 function run_test {
     python test.py test --settings=$1
@@ -47,7 +46,7 @@ case "$TEST_TYPE" in
 	(( exit_status = exit_status || $? ))
     ;;
     *)
-	run_test tardis.test_settings coverage
+	run_test tardis.test_settings
 	(( exit_status = exit_status || $? ))
 	run_test tardis.test_on_postgresql_settings
 	(( exit_status = exit_status || $? ))
