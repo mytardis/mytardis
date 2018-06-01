@@ -3,8 +3,6 @@ from __future__ import print_function
 import os
 import sys
 
-import coverage
-
 
 def run():
     custom_settings = 'tardis.settings'
@@ -25,21 +23,7 @@ def run():
 if __name__ == "__main__":
     from django.core.exceptions import ImproperlyConfigured
     try:
-        is_testing = 'test' in sys.argv
-        if is_testing:
-            # https://github.com/django-nose/django-nose/issues/180#issuecomment-93371418
-            # Without this, coverage reporting starts after many modules have
-            # already been imported, so module-level code is excluded from
-            # coverage reports:
-            cov = coverage.coverage(source=['tardis'], omit=['*/tests/*'])
-            cov.set_option('report:show_missing', True)
-            cov.erase()
-            cov.start()
         run()
-        if is_testing:
-            cov.stop()
-            cov.save()
-            cov.report()
     except ImproperlyConfigured as e:
         if 'SECRET_KEY' in e.message:
             print(r'''
