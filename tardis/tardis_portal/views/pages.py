@@ -466,10 +466,6 @@ class ExperimentView(TemplateView):
             c['has_read_or_owner_ACL'] = \
                 authz.has_read_or_owner_ACL(request, experiment.id)
 
-        # Enables UI elements for the publication form
-        c['pub_form_enabled'] = 'tardis.apps.publication_forms' in \
-                                settings.INSTALLED_APPS
-
         # Enables UI elements for the push_to app
         c['push_to_enabled'] = 'tardis.apps.push_to' in settings.INSTALLED_APPS
         if c['push_to_enabled']:

@@ -17,7 +17,6 @@
 {% mustachejs "tardis_portal/badges/datafile_count" %}
 {% mustachejs "tardis_portal/badges/size" %}
 
-<script type="text/javascript" src="/static/publication-form/publication_form.js"></script>
 <script type="text/javascript">
     var toggle_files = function(loadCallback) {
         var $this = $(this);
@@ -230,26 +229,9 @@ $('#modal-metadata .submit-button').click(function() {
 </script>
 
 <div class="page-header">
-  <h4>
-    {% if experiment.is_publication %}
-    Publication{% if experiment.is_publication_draft %}<small style="font-style:italic;"> draft</small>{% endif %}
-    {% else %}Experiment
-    {% endif %}
-  </h4>
+  <h4>Experiment</h4>
   {% if not experiment.public %}
-  <div class="pull-right"
-       ng-controller="PublicationFormController as pubFormCtrl"
-       experiment_id="{{ experiment.id }}"
-       is_publication="{{ experiment.is_publication }}"
-       is_publication_draft="{{ experiment.is_publication_draft }}">
-    {% if has_read_or_owner_ACL and pub_form_enabled %}
-    <a class="prepare_to_publish btn btn-mini btn-info"
-       title="Prepare To Publish" ng-click="pubFormCtrl.openPublicationForm()" ng-show="pubFormCtrl.isPublicationDraft || !pubFormCtrl.isPublication">
-      <i class="fa fa-share"></i>
-      <span ng-hide="pubFormCtrl.isPublication">Create publication</span>
-      <span ng-show="pubFormCtrl.isPublicationDraft">Resume draft publication</span>
-    </a>
-    {% endif %}
+  <div class="pull-right">
     {% if push_to_enabled and is_authenticated %}
     <a class="btn btn-mini btn-primary" title="Push to..."
        onclick="window.open('{{ push_to_url }}', 'push-to', 'width=800, height=600'); return false;"
@@ -260,7 +242,7 @@ $('#modal-metadata .submit-button').click(function() {
     {% endif %}
     {% if has_write_permissions %}
     <a class="btn btn-mini btn-warning" title="Edit Experiment"
-       href="{{ experiment.get_edit_url }}" ng-hide="pubFormCtrl.isPublication">
+       href="{{ experiment.get_edit_url }}">
       <i class="fa fa-pencil"></i>
       Edit Experiment
     </a>
