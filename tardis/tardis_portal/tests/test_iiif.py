@@ -4,7 +4,6 @@ import os
 from wand.image import Image
 
 from lxml import etree
-from compare import ensure, expect
 
 from django.conf import settings
 from django.core.urlresolvers import reverse
@@ -72,16 +71,15 @@ def _create_datafile():
     return datafile
 
 
-def _check_compliance_level(response):
+def _check_compliance_level(testCase, response):
     """
     Current complies with Level 1 API, so should assert no more.
     """
-    import re
-    ensure(re.search(r'\<http:\/\/library.stanford.edu\/iiif\/image-api\/' +
-                     r'compliance.html#level[01]\>;rel="compliesTo"',
-                     response['Link']) is not None,
-           True,
-           "Compliance header missing")
+    testCase.assertRegexpMatches(
+        response['Link'],
+        r'\<http:\/\/library.stanford.edu\/iiif\/image-api\/' +
+        r'compliance.html#level[01]\>;rel="compliesTo"',
+        "Compliance header missing")
 
 
 class Level0TestCase(TestCase):
@@ -99,18 +97,18 @@ class Level0TestCase(TestCase):
         response = client.get(
             reverse('tardis.tardis_portal.iiif.download_info',
                     kwargs=kwargs))
-        expect(response.status_code).to_equal(200)
+        self.assertEqual(response.status_code, 200)
         # Check the response content is good
         nsmap = {'i': 'http://library.stanford.edu/iiif/image-api/ns/'}
         xml = etree.fromstring(response.content)
         identifier = xml.xpath('/i:info/i:identifier', namespaces=nsmap)[0]
-        expect(int(identifier.text)).to_equal(self.datafile.id)
+        self.assertEqual(int(identifier.text), self.datafile.id)
         height = xml.xpath('/i:info/i:height', namespaces=nsmap)[0]
-        expect(int(height.text)).to_equal(self.height)
+        self.assertEqual(int(height.text), self.height)
         width = xml.xpath('/i:info/i:width', namespaces=nsmap)[0]
-        expect(int(width.text)).to_equal(self.width)
+        self.assertEqual(int(width.text), self.width)
         # Check compliance level
-        _check_compliance_level(response)
+        _check_compliance_level(self, response)
 
     def testCanGetInfoAsJSON(self):
         client = Client()
@@ -119,14 +117,14 @@ class Level0TestCase(TestCase):
         response = client.get(
             reverse('tardis.tardis_portal.iiif.download_info',
                     kwargs=kwargs))
-        expect(response.status_code).to_equal(200)
+        self.assertEqual(response.status_code, 200)
         # Check the response content is good
         data = json.loads(response.content)
-        expect(data['identifier']).to_equal(self.datafile.id)
-        expect(data['height']).to_equal(self.height)
-        expect(data['width']).to_equal(self.width)
+        self.assertEqual(data['identifier'], self.datafile.id)
+        self.assertEqual(data['height'], self.height)
+        self.assertEqual(data['width'], self.width)
         # Check compliance level
-        _check_compliance_level(response)
+        _check_compliance_level(self, response)
 
     def testCanGetOriginalImage(self):
         client = Client()
@@ -138,13 +136,13 @@ class Level0TestCase(TestCase):
         response = client.get(
             reverse('tardis.tardis_portal.iiif.download_image',
                     kwargs=kwargs))
-        expect(response.status_code).to_equal(200)
+        self.assertEqual(response.status_code, 200)
         with Image(blob=response.content) as img:
-            expect(img.format).to_equal('TIFF')
-            expect(img.width).to_equal(self.width)
-            expect(img.height).to_equal(self.height)
+            self.assertEqual(img.format, 'TIFF')
+            self.assertEqual(img.width, self.width)
+            self.assertEqual(img.height, self.height)
         # Check compliance level
-        _check_compliance_level(response)
+        _check_compliance_level(self, response)
 
 
 class Level1TestCase(TestCase):
@@ -166,13 +164,13 @@ class Level1TestCase(TestCase):
         response = client.get(
             reverse('tardis.tardis_portal.iiif.download_image',
                     kwargs=kwargs))
-        expect(response.status_code).to_equal(200)
+        self.assertEqual(response.status_code, 200)
         with Image(blob=response.content) as img:
-            expect(img.format).to_equal('JPEG')
-            expect(img.width).to_equal(self.width)
-            expect(img.height).to_equal(self.height)
+            self.assertEqual(img.format, 'JPEG')
+            self.assertEqual(img.width, self.width)
+            self.assertEqual(img.height, self.height)
         # Check compliance level
-        _check_compliance_level(response)
+        _check_compliance_level(self, response)
 
     def testHandleRegions(self):
         client = Client()
@@ -186,10 +184,10 @@ class Level1TestCase(TestCase):
         response = client.get(
             reverse('tardis.tardis_portal.iiif.download_image',
                     kwargs=kwargs))
-        expect(response.status_code).to_equal(200)
+        self.assertEqual(response.status_code, 200)
         with Image(blob=response.content) as img:
-            expect(img.width).to_equal(25)
-            expect(img.height).to_equal(20)
+            self.assertEqual(img.width, 25)
+            self.assertEqual(img.height, 20)
         # Partly outside box
         kwargs = {'datafile_id': self.datafile.id,
                   'region': '60,41,20,20',
@@ -200,12 +198,12 @@ class Level1TestCase(TestCase):
         response = client.get(
             reverse('tardis.tardis_portal.iiif.download_image',
                     kwargs=kwargs))
-        expect(response.status_code).to_equal(200)
+        self.assertEqual(response.status_code, 200)
         with Image(blob=response.content) as img:
-            expect(img.width).to_equal(10)
-            expect(img.height).to_equal(5)
+            self.assertEqual(img.width, 10)
+            self.assertEqual(img.height, 5)
         # Check compliance level
-        _check_compliance_level(response)
+        _check_compliance_level(self, response)
 
     def testHandleSizing(self):
         client = Client()
@@ -220,7 +218,7 @@ class Level1TestCase(TestCase):
             response = client.get(
                 reverse('tardis.tardis_portal.iiif.download_image',
                         kwargs=kwargs))
-            expect(response.status_code).to_equal(200)
+            self.assertEqual(response.status_code, 200)
             return response
 
         permutations = [
@@ -234,8 +232,8 @@ class Level1TestCase(TestCase):
         for data in permutations:
             response = get_with_size(data['arg'])
             with Image(blob=response.content) as img:
-                expect(img.width).to_equal(data['width'])
-                expect(img.height).to_equal(data['height'])
+                self.assertEqual(img.width, data['width'])
+                self.assertEqual(img.height, data['height'])
 
     def testHandleRotation(self):
         client = Client()
@@ -250,18 +248,18 @@ class Level1TestCase(TestCase):
             response = client.get(
                 reverse('tardis.tardis_portal.iiif.download_image',
                         kwargs=kwargs))
-            expect(response.status_code).to_equal(200)
+            self.assertEqual(response.status_code, 200)
             return response
 
         rotations = [get_with_rotation(i) for i in [0, 90, 180, 270]]
         for response in rotations[::2]:
             with Image(blob=response.content) as img:
-                expect(img.width).to_equal(self.width)
-                expect(img.height).to_equal(self.height)
+                self.assertEqual(img.width, self.width)
+                self.assertEqual(img.height, self.height)
         for response in rotations[1::2]:
             with Image(blob=response.content) as img:
-                expect(img.width).to_equal(self.height)
-                expect(img.height).to_equal(self.width)
+                self.assertEqual(img.width, self.height)
+                self.assertEqual(img.height, self.width)
 
 
 class Level2TestCase(TestCase):
@@ -285,13 +283,13 @@ class Level2TestCase(TestCase):
             response = client.get(reverse('tardis.tardis_portal.iiif.' +
                                           'download_image',
                                           kwargs=kwargs))
-            expect(response.status_code).to_equal(200)
+            self.assertEqual(response.status_code, 200)
             with Image(blob=response.content) as img:
-                expect(img.format).to_equal(format)
-                expect(img.width).to_equal(self.width)
-                expect(img.height).to_equal(self.height)
+                self.assertEqual(img.format, format)
+                self.assertEqual(img.width, self.width)
+                self.assertEqual(img.height, self.height)
             # Check compliance level
-            _check_compliance_level(response)
+            _check_compliance_level(self, response)
 
     def testHandleSizing(self):
         client = Client()
@@ -306,7 +304,7 @@ class Level2TestCase(TestCase):
             response = client.get(
                 reverse('tardis.tardis_portal.iiif.download_image',
                         kwargs=kwargs))
-            expect(response.status_code).to_equal(200)
+            self.assertEqual(response.status_code, 200)
             return response
 
         permutations = [
@@ -320,8 +318,8 @@ class Level2TestCase(TestCase):
         for data in permutations:
             response = get_with_size(data['arg'])
             with Image(blob=response.content) as img:
-                expect(img.width).to_equal(data['width'])
-                expect(img.height).to_equal(data['height'])
+                self.assertEqual(img.width, data['width'])
+                self.assertEqual(img.height, data['height'])
 
     # def testCanGetRequiredQualities(self):
     #     client = Client()
@@ -349,9 +347,9 @@ class ExtraTestCases(TestCase):
             url = reverse('tardis.tardis_portal.iiif.download_info',
                           kwargs=kwargs)
             response = client.get(url)
-            expect(response.status_code).to_equal(200)
+            self.assertEqual(response.status_code, 200)
             # Check etag exists
-            ensure('Etag' in response, True, "Info should have an etag")
+            self.assertIn('Etag', response, "Info should have an etag")
 
     def testImageHasEtags(self):
         client = Client()
@@ -363,9 +361,9 @@ class ExtraTestCases(TestCase):
         url = reverse('tardis.tardis_portal.iiif.download_image',
                       kwargs=kwargs)
         response = client.get(url)
-        expect(response.status_code).to_equal(200)
+        self.assertEqual(response.status_code, 200)
         # Check etag exists
-        ensure('Etag' in response, True, "Image should have an etag")
+        self.assertIn('Etag', response, "Image should have an etag")
 
     def testImageCacheControl(self):
         client = Client()
@@ -377,18 +375,21 @@ class ExtraTestCases(TestCase):
         url = reverse('tardis.tardis_portal.iiif.download_image',
                       kwargs=kwargs)
         response = client.get(url)
-        expect(response.status_code).to_equal(200)
+        self.assertEqual(response.status_code, 200)
         # Check etag exists
-        ensure('Cache-Control' in response, True,
-               "Image should have a Cache-Control header")
-        ensure('max-age' in response['Cache-Control'], True,
-               "Image should have a Cache-Control header")
+        self.assertIn(
+            'Cache-Control', response,
+            "Image should have a Cache-Control header")
+        self.assertIn(
+            'max-age', response['Cache-Control'],
+            "Image should have a Cache-Control header")
         # By default the image is public, so
-        ensure('public' in response['Cache-Control'], True,
-               "Image should have a Cache-Control header")
+        self.assertIn(
+            'public', response['Cache-Control'],
+            "Image should have a Cache-Control header")
 
         is_logged_in = client.login(username='testuser', password='pwd')
-        expect(is_logged_in).to_be_truthy()
+        self.assertTrue(is_logged_in)
 
         experiment = self.datafile.dataset.get_first_experiment()
         experiment.public_access = Experiment.PUBLIC_ACCESS_NONE
@@ -397,12 +398,15 @@ class ExtraTestCases(TestCase):
         url = reverse('tardis.tardis_portal.iiif.download_image',
                       kwargs=kwargs)
         response = client.get(url)
-        expect(response.status_code).to_equal(200)
+        self.assertEqual(response.status_code, 200)
         # Check etag exists
-        ensure('Cache-Control' in response, True,
-               "Image should have a Cache-Control header")
-        ensure('max-age' in response['Cache-Control'], True,
-               "Image should have a Cache-Control header")
+        self.assertIn(
+            'Cache-Control', response,
+            "Image should have a Cache-Control header")
+        self.assertIn(
+            'max-age', response['Cache-Control'],
+            "Image should have a Cache-Control header")
         # By default the image is now private, so
-        ensure('private' in response['Cache-Control'], True,
-               "Image should have a Cache-Control header")
+        self.assertIn(
+            'private', response['Cache-Control'],
+            "Image should have a Cache-Control header")
