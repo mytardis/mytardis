@@ -38,7 +38,6 @@ http://docs.djangoproject.com/en/dev/topics/testing/
 """
 
 from datetime import datetime
-from compare import expect
 from django.core.exceptions import SuspiciousOperation
 from django.test import TestCase
 from django.contrib.contenttypes.models import ContentType
@@ -320,8 +319,9 @@ class ParameterSetManagerTestCase(TestCase):
 
         psm.new_param("parameter3", str(datetime(1970, 01, 01, 10, 0, 0)))
 
-        expect(psm.get_param("parameter3", True))\
-            .to_equal(datetime(1970, 01, 01, 0, 0, 0, tzinfo=pytz.utc))
+        self.assertEqual(
+            psm.get_param("parameter3", True),
+            datetime(1970, 01, 01, 0, 0, 0, tzinfo=pytz.utc))
 
     def test_tz_aware_date_handling(self):
         """
@@ -332,5 +332,6 @@ class ParameterSetManagerTestCase(TestCase):
         psm.new_param("parameter3",
                       '1970-01-01T08:00:00+08:00')
 
-        expect(psm.get_param("parameter3", True))\
-            .to_equal(datetime(1970, 01, 01, 0, 0, 0, tzinfo=pytz.utc))
+        self.assertEqual(
+            psm.get_param("parameter3", True),
+            datetime(1970, 01, 01, 0, 0, 0, tzinfo=pytz.utc))
