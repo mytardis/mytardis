@@ -40,7 +40,6 @@ http://docs.djangoproject.com/en/dev/topics/testing/
 
 import unittest
 from unittest import skip
-from compare import expect, ensure
 
 from django.test import TestCase
 from django.test.client import Client
@@ -248,7 +247,7 @@ class SearchTestCase(TestCase):
 class UserInterfaceTestCase(TestCase):
 
     def test_root(self):
-        ensure(Client().get('/').status_code, 200)
+        self.assertEqual(Client().get('/').status_code, 200)
 
     def test_urls(self):
         c = Client()
@@ -261,18 +260,18 @@ class UserInterfaceTestCase(TestCase):
 
         for u in urls:
             response = c.get(u)
-            expect(response.status_code).to_equal(200)
+            self.assertEqual(response.status_code, 200)
 
         # In Django 1.9, the default value of RedirectView.permanent
         # changed from True to False
 
         permanent_redirect_url = '/experiment/list'
         response = c.get(permanent_redirect_url)
-        expect(response.status_code).to_equal(301)
+        self.assertEqual(response.status_code, 301)
 
         temporary_redirect_url = '/experiment/view/'
         response = c.get(temporary_redirect_url)
-        expect(response.status_code).to_equal(302)
+        self.assertEqual(response.status_code, 302)
 
     def test_urls_with_some_content(self):
         # Things that might tend to be in a real live system
@@ -317,20 +316,21 @@ class UserInterfaceTestCase(TestCase):
 
         for u in urls:
             response = c.get(u)
-            ensure(response.status_code, 200,
-                   "%s should have returned 200 but returned %d"
-                   % (u, response.status_code))
+            self.assertEqual(
+                response.status_code, 200,
+                "%s should have returned 200 but returned %d"
+                % (u, response.status_code))
 
         # In Django 1.9, the default value of RedirectView.permanent
         # changed from True to False
 
         permanent_redirect_url = '/experiment/list'
         response = c.get(permanent_redirect_url)
-        expect(response.status_code).to_equal(301)
+        self.assertEqual(response.status_code, 301)
 
         temporary_redirect_url = '/experiment/view/'
         response = c.get(temporary_redirect_url)
-        expect(response.status_code).to_equal(302)
+        self.assertEqual(response.status_code, 302)
 
     @skip('search is undergoing some changes, skip in the meantime')
     def test_search_urls(self):
@@ -344,7 +344,7 @@ class UserInterfaceTestCase(TestCase):
         for u in urls:
             response = c.get(u)
             print str(response)
-            ensure(response.status_code, 200)
+            self.assertEqual(response.status_code, 200)
 
     def test_login(self):
         from django.contrib.auth.models import User
@@ -353,7 +353,7 @@ class UserInterfaceTestCase(TestCase):
         email = ''
         User.objects.create_user(user, email, pwd)
 
-        ensure(self.client.login(username=user, password=pwd), True)
+        self.assertEqual(self.client.login(username=user, password=pwd), True)
 
 
 def suite():
