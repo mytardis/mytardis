@@ -32,12 +32,14 @@ if __name__ == "__main__":
             # already been imported, so module-level code is excluded from
             # coverage reports:
             cov = coverage.coverage(source=['tardis'], omit=['*/tests/*'])
+            cov.set_option('report:show_missing', True)
             cov.erase()
             cov.start()
         run()
         if is_testing:
             cov.stop()
             cov.save()
+            cov.report()
     except ImproperlyConfigured as e:
         if 'SECRET_KEY' in e.message:
             print(r'''
