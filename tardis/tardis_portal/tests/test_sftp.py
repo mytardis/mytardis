@@ -11,7 +11,7 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.test.testcases import TransactionTestCase
 
-from mock import Mock
+from flexmock import flexmock
 from paramiko.common import AUTH_SUCCESSFUL
 
 from tardis.tardis_portal.download import make_mapper
@@ -79,7 +79,7 @@ class SFTPTest(TransactionTestCase):
     def test_sftp(self):
         path_mapper = make_mapper(settings.DEFAULT_PATH_MAPPER, rootdir=None)
 
-        server = Mock(user=self.user)
+        server = flexmock(user=self.user)
         sftp_interface = MyTSFTPServerInterface(server=server)
         sftp_interface.session_started()
 
