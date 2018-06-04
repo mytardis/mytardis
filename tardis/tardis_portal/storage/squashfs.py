@@ -13,13 +13,13 @@ set up autofs to auto-mount squashfiles
 
 import logging
 import os
+from importlib import import_module
 
 from celery.task import task
 
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from django.core.files.storage import FileSystemStorage
-from django.utils.importlib import import_module
 
 from tardis.tardis_portal.models import DataFile, DatafileParameterSet, \
     StorageBoxOption

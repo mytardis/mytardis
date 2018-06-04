@@ -8,7 +8,6 @@ import logging  # pylint: disable=wrong-import-order
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 
 DEBUG = True
-TEMPLATE_DEBUG = DEBUG
 
 DATABASES = {
     'default': {
@@ -27,6 +26,7 @@ DATABASES = {
 CELERY_ALWAYS_EAGER = True
 
 TEMPLATES[0]['DIRS'].append('.')
+TEMPLATES[0]['OPTIONS']['debug'] = DEBUG
 
 del STATICFILES_STORAGE  # noqa
 
@@ -76,10 +76,16 @@ INSTALLED_APPS += get_all_tardis_apps() + (
     'behave_django',
 )
 
+# The publication forms app automatically creates
+# a user group when it's first initialized, which
+# can invalidate assumptions of some of the tests.
+DISABLED_APPS = ('tardis.apps.publication_forms',)
+
 DEDUP_INSTALLED_APPS = []
 for app in INSTALLED_APPS:
     if app not in DEDUP_INSTALLED_APPS:
-        DEDUP_INSTALLED_APPS.append(app)
+        if app not in DISABLED_APPS:
+            DEDUP_INSTALLED_APPS.append(app)
 INSTALLED_APPS = tuple(DEDUP_INSTALLED_APPS)
 
 # LDAP configuration

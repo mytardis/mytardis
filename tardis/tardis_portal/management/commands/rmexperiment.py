@@ -23,25 +23,33 @@ from tardis.tardis_portal.models import DatafileParameterSet
 class Command(BaseCommand):
     args = '<MyTardis Exp ID>'
     help = 'Delete the supplied MyTardis Experiment ID'
-    option_list = BaseCommand.option_list + (
-        make_option('--list',
-                    action='store_true',
-                    dest='list',
-                    default=False,
-                    help="Only list the experiment to be deleted, don't actually delete"),
-        ) + (
-        make_option('--confirmed',
-                    action='store_true',
-                    dest='confirmed',
-                    default=False,
-                    help="Don't ask the user, just do the deletion"),
+
+    def add_arguments(self, parser):
+        # Positional arguments
+        parser.add_argument('experiment_id', type=int)
+
+        # Named (optional) arguments
+        parser.add_argument(
+            '--list',
+            action='store_true',
+            default=False,
+            dest='list',
+            help="Only list the experiment to be deleted, don't actually delete"
+        )
+        parser.add_argument(
+            '--confirmed',
+            action='store_true',
+            default=False,
+            dest='confirmed',
+            help="Don't ask the user, just do the deletion"
         )
 
     def handle(self, *args, **options):
-        if len(args) != 1:
+        experiment_id = options.get('experiment_id', None)
+        if not experiment_id:
             raise CommandError("Expected exactly 1 argument - Experiment ID")
         try:
-            exp = Experiment.objects.get(pk=int(args[0]))
+            exp = Experiment.objects.get(pk=experiment_id)
         except Experiment.DoesNotExist:
             raise CommandError("Experiment ID %s not found" % args[0])
 

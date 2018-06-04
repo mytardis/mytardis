@@ -4,10 +4,10 @@ import re
 import urllib2
 from urllib2 import HTTPError
 import logging
+from importlib import import_module
 
 from django.conf import settings
 from django.template.loader import render_to_string
-from django.utils.importlib import import_module
 
 from tardis.tardis_portal.models import ExperimentParameter, \
     ExperimentParameterSet, ParameterName, Schema
@@ -158,10 +158,10 @@ class DOIXMLProvider(object):
         template = os.path.join(settings.DOI_TEMPLATE_DIR, 'default.xml')
 
         ex = self.experiment
-        c = Context()
+        c = dict()
         c['title'] = ex.title
         c['institution_name'] = ex.institution_name
         c['publication_year'] = date.today().year
         c['creator_names'] = [a.author for a in ex.experimentauthor_set.all()]
-        doi_xml = render_to_string(template, context_instance=c)
+        doi_xml = render_to_string(template, context=c)
         return doi_xml

@@ -327,7 +327,7 @@ def __forwardToSearchDatafileFormPage(request, searchQueryType,
         searchForm = MXDatafileSearchForm()
         c = {'header': 'Search Datafile',
              'searchForm': searchForm}
-        return HttpResponse(render_response_search(request, url, c))
+        return render_response_search(request, url, c)
 
     url = 'tardis_portal/search_datafile_form.html'
     if not searchForm:
@@ -356,7 +356,7 @@ def __forwardToSearchDatafileFormPage(request, searchQueryType,
     c = {'header': 'Search Datafile',
          'searchForm': searchForm,
          'modifiedSearchForm': modifiedSearchForm}
-    return HttpResponse(render_response_search(request, url, c))
+    return render_response_search(request, url, c)
 
 
 def __forwardToSearchExperimentFormPage(request):
@@ -366,7 +366,7 @@ def __forwardToSearchExperimentFormPage(request):
 
     c = {'searchForm': searchForm}
     url = 'tardis_portal/search_experiment_form.html'
-    return HttpResponse(render_response_search(request, url, c))
+    return render_response_search(request, url, c)
 
 
 def __getSearchDatafileForm(request, searchQueryType):
@@ -469,6 +469,11 @@ def __processExperimentParameters(request, form):
 
 def get_dataset_info(dataset, include_thumbnail=False, exclude=None):  # too complex # noqa
     obj = model_to_dict(dataset)
+
+    # Changed in Django 1.10: Private API django.forms.models.model_to_dict()
+    # returns a queryset rather than a list of primary keys for ManyToManyFields
+    obj['experiments'] = [exp.id for exp in obj['experiments']]
+
     if exclude is None or 'datafiles' not in exclude or 'file_count' \
        not in exclude:
         datafiles = list(

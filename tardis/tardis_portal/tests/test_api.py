@@ -15,7 +15,7 @@ from django.contrib.auth.models import Group
 from django.test.client import Client
 from django.test import TestCase
 
-from tastypie.test import ResourceTestCase
+from tastypie.test import ResourceTestCaseMixin
 
 from tardis.tardis_portal.auth.authservice import AuthService
 from tardis.tardis_portal.auth.localdb_auth import django_user
@@ -63,7 +63,7 @@ class ACLAuthorizationTest(TestCase):
     pass
 
 
-class MyTardisResourceTestCase(ResourceTestCase):
+class MyTardisResourceTestCase(ResourceTestCaseMixin, TestCase):
     '''
     abstract class without tests to combine common settings in one place
     '''
@@ -238,7 +238,7 @@ class ExperimentResourceTest(MyTardisResourceTestCase):
             "created_time": "2013-05-29T13:00:26.626580",
             "description": "",
             "end_time": None,
-            "handle": "",
+            "handle": None,
             "id": exp_id,
             "institution_name": "Monash University",
             "locked": False,
