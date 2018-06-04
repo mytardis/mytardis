@@ -34,7 +34,7 @@ pwgen==0.7
 pylint==1.7.1
 pyoai==2.4.4
 pysolr==2.1.0 # pyup: >=2.1.0,<3
-python-dateutil==2.4.0
+python-dateutil==2.7.3
 # python-magic
 -e git+https://github.com/grischa/python-magic.git#egg=python-magic
 pytz==2016.10
