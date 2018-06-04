@@ -1,2 +1,2 @@
 behave_django==1.1.0
-splinter
+splinter==0.8.0
