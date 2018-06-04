@@ -7,7 +7,6 @@ urlpatterns = patterns(
     (r'^form/$', 'tardis.apps.publication_workflow.views.index'),
     (r'^data/fetch_experiments_and_datasets/$',
      'tardis.apps.publication_workflow.views.fetch_experiments_and_datasets'),
-    (r'^approvals/$', 'tardis.apps.publication_workflow.views.approval_view'),
     (r'^my_publications/$',
      'tardis.apps.publication_workflow.views.my_publications'),
     (r'^draft_pubs_list/$',

@@ -48,16 +48,6 @@ PUBLICATION_DRAFT_SCHEMA = PUBLICATION_SCHEMA_ROOT + 'draft/'
 # Used for recording extra information about datasets
 GENERIC_PUBLICATION_DATASET_SCHEMA = PUBLICATION_SCHEMA_ROOT + 'generic/'
 
-# PUBLICATIONS_REQUIRE_APPROVAL was set to True for Store.Synchrotron, but in
-# the general case, there is no governing body overseeing data publication -
-# it is just up to the researchers who have uploaded the data.
-PUBLICATIONS_REQUIRE_APPROVAL = False
-
-# If set to True, attempting to submit a draft for publication will fail if an
-# email notification can't be sent.  Allowing submission of publications without
-# email notifications is useful for local testing.
-PUBLICATIONS_REQUIRE_EMAIL_SUCCESS = False
-
 # Put your API_ID for the Monash DOI minting service here. For other DOI
 # minting, please contact the developers
 MODC_DOI_ENABLED = False  # Change me to true if you use this service
@@ -70,50 +60,9 @@ MODC_DOI_DEACTIVATE_DEFINITION = 'https://doiserver/modc/ws/' \
                                  'DeactivateDoiService.wsdl'
 MODC_DOI_MINT_URL_ROOT = 'http://mytardisserver/'
 
-# Change this to the user name of the data administrator if it should be someone other than the
-# publication creator
-PUBLICATION_DATA_ADMIN = None
-
 # A dictionary of length=2 tuples, where the first entry is the email
 # subject line, and the second is the message text
 PUBLICATION_EMAIL_MESSAGES = {
-    'requires_authorisation': ('[TARDIS] Publication requires authorisation',
-                               '''\
-Hello!
-A publication has been submitted by "{user_name}" and requires approval by a \
-publication administrator.
-You may view the publication here: {pub_url}
-
-This publication will not be publicly accessible until all embargo conditions \
-are met following approval.
-To approve this publication, please access the publication approvals \
-interface here: {approvals_url}
-'''),
-    'awaiting_approval': ('[TARDIS] Publication submitted',
-                          '''\
-Hello!
-Your publication, "{pub_title}", has been submitted and is awaiting approval \
-by an administrator.
-You will receive a notification once his has occurred.
-'''),
-    'approved': ('[TARDIS] Publication approved',
-                 '''\
-Hello!
-Your publication, "{pub_title}", has been approved for release and will appear \
-online following any embargo conditions. You may view your publication here: \
-{pub_url}
-'''),
-    'approved_with_doi': ('[TARDIS] Publication approved',
-                          '''\
-Hello!
-Your publication, "{pub_title}", has been approved for release and will appear \
-online following any embargo conditions. You may view your publication here: \
-{pub_url}
-
-A DOI has been assigned to this publication ({doi}) \
-and will become active once your publication is released.
-You may use cite using this DOI immediately.
-'''),
     'rejected': ('[TARDIS] Publication rejected',
                  '''\
 Hello!
