@@ -3,7 +3,7 @@ Wand==0.4.4
 amqp==1.4.9 # pyup: <2
 beautifulsoup4==4.6.0
 bleach==2.1.3
-celery==3.1.25 # pyup: <4
+celery==3.1.26.post2 # pyup: <4
 compare==0.2b
 django-bootstrap-form==2.0.6 # pyup: <3
 django-celery==3.1.17 # pyup: <4
