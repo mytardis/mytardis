@@ -14,7 +14,7 @@ django-haystack==2.8.1
 -e git+https://github.com/mytardis/django-mustachejs.git@mytardis-dj1.9#egg=django-mustachejs
 django-nose==1.4.5
 django-npm==1.0.0
-django-registration-redux==1.10
+django-registration-redux==2.4
 # django-tastypie
 -e git+https://github.com/mytardis/django-tastypie.git@mytardis-dj1.9#egg=django-tastypie
 -e git+https://github.com/mytardis/django-tastypie-swagger.git@mytardis-dj1.9#egg=django-tastypie-swagger
