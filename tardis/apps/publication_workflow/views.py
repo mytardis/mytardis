@@ -27,9 +27,7 @@ from tardis.tardis_portal.auth.localdb_auth import django_user, django_group
 from .doi import DOI
 from .models import Publication
 from .utils import send_mail_to_authors, get_pub_admin_email_addresses, get_site_admin_email
-from .email_text import email_pub_requires_authorisation, \
-    email_pub_awaiting_approval, email_pub_approved, email_pub_rejected, \
-    email_pub_reverted_to_draft
+from .email_text import email_pub_released, email_pub_rejected, email_pub_reverted_to_draft
 from . import tasks
 from . import default_settings
 
@@ -240,63 +238,16 @@ def submit_form(request, form_state, publication):
 
     publication.save()
 
-    # Send emails about publication in draft
-    subject, message_content = email_pub_requires_authorisation(
-        request.user.username,
-        request.build_absolute_uri(
-            reverse('tardis_portal.view_experiment',
-                    args=(publication.id,))),
-        request.build_absolute_uri(
-            '/apps/publication-workflow/approvals/'))
-
-    try:
-        send_mail(subject,
-                  message_content,
-                  getattr(
-                      settings, 'PUBLICATION_NOTIFICATION_SENDER_EMAIL',
-                      default_settings.PUBLICATION_NOTIFICATION_SENDER_EMAIL),
-                  get_pub_admin_email_addresses(),
-                  fail_silently=False)
-
-        subject, message_content = email_pub_awaiting_approval(
-            publication.title)
-        send_mail_to_authors(publication, subject, message_content,
-                             fail_silently=False)
-    except Exception as e:
-        logger.error(
-            "failed to send publication notification email(s): %s" %
-            repr(e)
-        )
-        if getattr(settings, 'PUBLICATIONS_REQUIRE_EMAIL_SUCCESS',
-                   default_settings.PUBLICATIONS_REQUIRE_EMAIL_SUCCESS):
-            return HttpResponse(
-                json.dumps({
-                    'error': 'Failed to send notification email - please '
-                             'contact the %s administrator (%s), '
-                             'or try again later. Your draft is saved.'
-                             % (get_site_admin_email(),
-                                getattr(settings, 'SITE_TITLE',
-                                        'MyTardis'))
-                }),
-                content_type="application/json")
-
     # Remove the draft status
     remove_draft_status(publication)
 
-    # Automatically approve publications if approval is not required
-    if not getattr(settings, 'PUBLICATIONS_REQUIRE_APPROVAL',
-                   default_settings.PUBLICATIONS_REQUIRE_APPROVAL):
-        approve_publication(request, publication, message=None,
-                            send_email=False)
-        # approve_publication will delete the form state, so don't
-        # bother saving is and return.
-        form_state['action'] = ''
-        return HttpResponse(json.dumps(form_state),
-                            content_type="application/json")
-
-    # Trigger publication record update
-    # tasks.update_publication_records.delay()
-    tasks.update_publication_records()
+    finalize_publication(request, publication, message=None,
+                        send_email=False)
+    # finalize_publication will delete the form state, so don't
+    # bother saving it and return.
+    form_state['action'] = ''
+    return HttpResponse(json.dumps(form_state),
+                        content_type="application/json")
 
 
 def map_form_to_schemas(extraInfo, publication):
@@ -531,79 +482,8 @@ def require_publication_admin(f):
     return wrap
 
 
-@login_required
-@require_publication_admin
-def approval_view(request):
-    if request.method == 'GET':
-        return HttpResponse(render_response_index(
-            request, 'publication_approval.html'))
-    return approval_ajax(request)
-
-
-def approval_ajax(request):
-    # Decode the form data
-    json_request = json.loads(request.body)
-
-    # wrapper to return json
-    def response(obj):
-        return HttpResponse(json.dumps(obj), content_type="application/json")
-
-    def json_get_publications_awaiting_approval():
-        pubs = []
-        for pub in get_publications_awaiting_approval():
-            pubs.append({
-                'id': pub.id,
-                'title': pub.title,
-                'description': pub.description,
-                'authors': '; '.join([author.author for author in
-                                      ExperimentAuthor.objects.filter(
-                                          experiment=pub)])
-            })
-        return pubs
-
-    if 'action' in json_request:
-        if json_request['action'] == 'approve':
-            pub_id = json_request['id']
-            message = json_request['message']
-            try:
-                approve_publication(request, Experiment.objects.get(pk=pub_id),
-                                    message)
-            except Experiment.DoesNotExist:
-                pass
-        elif json_request['action'] == 'revert':
-            pub_id = json_request['id']
-            message = json_request['message']
-            try:
-                revert_publication_to_draft(
-                    Experiment.objects.get(pk=pub_id), message)
-            except Experiment.DoesNotExist:
-                pass
-        elif json_request['action'] == 'reject':
-            pub_id = json_request['id']
-            message = json_request['message']
-            try:
-                reject_publication(Experiment.objects.get(pk=pub_id), message)
-            except Experiment.DoesNotExist:
-                pass
-
-    return response(json_get_publications_awaiting_approval())
-
-
-def get_publications_awaiting_approval():
-    pub_schema = getattr(settings, 'PUBLICATION_SCHEMA_ROOT',
-                         default_settings.PUBLICATION_SCHEMA_ROOT)
-    pub_schema_draft = getattr(settings, 'PUBLICATION_DRAFT_SCHEMA',
-                               default_settings.PUBLICATION_DRAFT_SCHEMA)
-    pubs = Experiment.objects.filter(
-        public_access=Experiment.PUBLIC_ACCESS_NONE,
-        experimentparameterset__schema__namespace=pub_schema).exclude(
-        experimentparameterset__schema__namespace=pub_schema_draft
-    ).distinct()
-    return pubs
-
-
 @transaction.atomic
-def approve_publication(request, publication, message=None, send_email=True):
+def finalize_publication(request, publication, message=None, send_email=True):
     if publication.is_publication() and not publication.is_publication_draft() \
             and publication.public_access == Experiment.PUBLIC_ACCESS_NONE:
         # Change the access level
@@ -620,46 +500,11 @@ def approve_publication(request, publication, message=None, send_email=True):
             pass
         publication.save()
 
-        # Set the publication owner appropriately
-        # (sets the managedBy relatedObject in rif-cs)
-        pub_data_admin_username = getattr(
-            settings, 'PUBLICATION_DATA_ADMIN',
-            default_settings.PUBLICATION_DATA_ADMIN)
-        if pub_data_admin_username is not None:
-            try:
-                pub_data_admin = User.objects.get(
-                    username=pub_data_admin_username)
-                # Remove ownership status for all current owners
-                current_owners = ObjectACL.objects.filter(
-                    pluginId='django_user',
-                    content_type=publication.get_ct(),
-                    object_id=publication.id,
-                    isOwner=True)
-                for owner in current_owners:
-                    owner.isOwner = False
-                    owner.save()
-
-                # Add the data administrator as an owner
-                data_admin_acl, _ = ObjectACL.objects.get_or_create(
-                    content_type=publication.get_ct(),
-                    object_id=publication.id,
-                    pluginId=django_user,
-                    entityId=str(pub_data_admin.id),
-                    aclOwnershipType=ObjectACL.OWNER_OWNED)
-                data_admin_acl.canRead = True
-                data_admin_acl.canWrite = True
-                data_admin_acl.canDelete = True
-                data_admin_acl.isOwner = True
-                data_admin_acl.save()
-            except User.DoesNotExist:
-                logger.error("Could not change publication owner to "
-                             "PUBLICATION_DATA_ADMIN; no such user.")
-
         response = mint_doi_and_deactivate(request, publication.id)
         response_dict = json.loads(response.content)
 
         if send_email:
-            subject, email_message = email_pub_approved(
+            subject, email_message = email_pub_released(
                 publication.title, response_dict['url'], response_dict['doi'],
                 message)
             send_mail_to_authors(publication, subject, email_message)

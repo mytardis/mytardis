@@ -100,8 +100,5 @@ def process_embargos():
                     "failed to send publication notification email(s): %s" %
                     repr(e)
                 )
-                if getattr(settings, 'PUBLICATIONS_REQUIRE_EMAIL_SUCCESS',
-                           default_settings.PUBLICATIONS_REQUIRE_EMAIL_SUCCESS):
-                    raise
 
             pub.save()
