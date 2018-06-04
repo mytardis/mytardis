@@ -8,7 +8,7 @@ compare==0.2b
 django-bootstrap-form==2.0.6 # pyup: <3
 django-celery==3.2.2 # pyup: <4
 django-extensions==2.0.7
-django-form-utils==0.2.0
+django-form-utils==1.0.3
 django-haystack==2.5.1
 django-mustachejs==0.6.0
 django-nose==1.4.4
