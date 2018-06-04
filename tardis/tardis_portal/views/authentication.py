@@ -134,7 +134,7 @@ def manage_user_account(request):
             user.last_name = form.cleaned_data['last_name']
             user.email = form.cleaned_data['email']
             user.save()
-            return _redirect_303('index')
+            return _redirect_303('tardis.tardis_portal.views.index')
     else:
         form = ManageAccountForm(instance=user)
 
@@ -152,7 +152,7 @@ def logout(request):
     del request.session['jwt']
     del request.session['jws']
 
-    return redirect('index')
+    return redirect('tardis.tardis_portal.views.index')
 
 
 @never_cache

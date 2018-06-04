@@ -1,5 +1,5 @@
 from django.utils.safestring import mark_safe
-from django.forms.util import flatatt
+from django.forms.utils import flatatt
 from django.forms.widgets import TextInput, Widget
 
 
