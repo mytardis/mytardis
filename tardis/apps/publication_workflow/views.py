@@ -1,7 +1,6 @@
 #pylint: disable=C0302
 import json
 import logging
-import traceback
 
 import dateutil.parser
 
@@ -49,15 +48,6 @@ def index(request):
     return process_form(request)
 
 
-@login_required
-@never_cache
-def process_form(request):
-    try:
-        return do_process_form(request)
-    except Exception:
-        logger.error(traceback.format_exc())
-
-
 def validation_error(error=None):
     if error is None:
         error = 'Invalid form data was submitted ' \
@@ -68,7 +58,9 @@ def validation_error(error=None):
         content_type="application/json")
 
 
-def do_process_form(request):
+@login_required
+@never_cache
+def process_form(request):
     # Decode the form data
     form_state = json.loads(request.body)
 
