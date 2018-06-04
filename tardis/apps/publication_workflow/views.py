@@ -1,7 +1,6 @@
 #pylint: disable=C0302
 import json
 import logging
-import re
 import traceback
 
 import dateutil.parser
@@ -605,9 +604,7 @@ def approve_publication(request, publication, message=None, send_email=True):
     if publication.is_publication() and not publication.is_publication_draft() \
             and publication.public_access == Experiment.PUBLIC_ACCESS_NONE:
         # Change the access level
-        release_date = tasks.get_release_date(publication)
-        embargo_expired = timezone.now() >= release_date
-        if embargo_expired:
+        if timezone.now() >= tasks.get_release_date(publication):
             publication.public_access = Experiment.PUBLIC_ACCESS_FULL
         else:
             publication.public_access = Experiment.PUBLIC_ACCESS_EMBARGO
@@ -657,12 +654,11 @@ def approve_publication(request, publication, message=None, send_email=True):
 
         response = mint_doi_and_deactivate(request, publication.id)
         response_dict = json.loads(response.content)
-        doi = response_dict['doi']
-        url = response_dict['url']
 
         if send_email:
             subject, email_message = email_pub_approved(
-                publication.title, url, doi, message)
+                publication.title, response_dict['url'], response_dict['doi'],
+                message)
             send_mail_to_authors(publication, subject, email_message)
 
         # Trigger publication update
