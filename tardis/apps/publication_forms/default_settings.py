@@ -67,7 +67,6 @@ MODC_DOI_ACTIVATE_DEFINITION = 'https://doiserver/modc/ws/' \
                                'ActivateDoiService.wsdl'
 MODC_DOI_DEACTIVATE_DEFINITION = 'https://doiserver/modc/ws/' \
                                  'DeactivateDoiService.wsdl'
-MODC_DOI_ENDPOINT = 'https://doiserver/modc/ws/'
 MODC_DOI_MINT_URL_ROOT = 'http://mytardisserver/'
 
 # Change this to the user name of the data administrator if it should be someone other than the
