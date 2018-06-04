@@ -11,32 +11,6 @@ def interpolate_template(template_name, **kwargs):
     return subject, template.format(**kwargs)
 
 
-def email_pub_requires_authorisation(user_name, pub_url, approvals_url):
-    return interpolate_template('requires_authorisation', user_name=user_name,
-                                pub_url=pub_url, approvals_url=approvals_url)
-
-
-def email_pub_awaiting_approval(pub_title):
-    return interpolate_template('awaiting_approval', pub_title=pub_title)
-
-
-def email_pub_approved(pub_title, pub_url, doi=None, message=None):
-    if doi:
-        subject, email_message = interpolate_template(
-            'approved_with_doi', pub_title=pub_title, pub_url=pub_url,
-            doi=doi)
-    else:
-        subject, email_message = interpolate_template(
-            'approved', pub_title=pub_title, pub_url=pub_url)
-
-    if message:
-        email_message += '''
----
-%s''' % message
-
-    return subject, email_message
-
-
 def email_pub_rejected(pub_title, message=None):
     subject, email_message = interpolate_template(
         'rejected', pub_title=pub_title)
