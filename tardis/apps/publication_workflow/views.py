@@ -58,18 +58,19 @@ def process_form(request):
         logger.error(traceback.format_exc())
 
 
+def validation_error(error=None):
+    if error is None:
+        error = 'Invalid form data was submitted ' \
+                '(server-side validation failed)'
+    return HttpResponse(
+        json.dumps({
+            'error': error}),
+        content_type="application/json")
+
+
 def do_process_form(request):
     # Decode the form data
     form_state = json.loads(request.body)
-
-    def validation_error(error=None):
-        if error is None:
-            error = 'Invalid form data was submitted ' \
-                    '(server-side validation failed)'
-        return HttpResponse(
-            json.dumps({
-                'error': error}),
-            content_type="application/json")
 
     # Check if the form data contains a publication ID
     # If it does, then this publication needs to be updated
@@ -106,182 +107,11 @@ def do_process_form(request):
                             content_type="application/json")
 
     if form_state['action'] == 'update-dataset-selection':
-        # Update the publication title/description if changed.
-        # Must not be blank.
-        if not form_state['publicationTitle'].strip() or \
-                not form_state['publicationDescription'].strip():
-            return validation_error()
-
-        if publication.title != form_state['publicationTitle']:
-            publication.title = form_state['publicationTitle']
-            publication.save()
-        if publication.description != form_state['publicationDescription']:
-            publication.description = form_state['publicationDescription']
-            publication.save()
-
-        # Update associated datasets
-        # (note: might not be efficient re: db queries)
-        # ... first clear all current associations
-        current_datasets = Dataset.objects.filter(experiments=publication)
-        for current_dataset in current_datasets:
-            current_dataset.experiments.remove(publication)
-        # ... now (re)add all datasets
-        selected_datasets = [ds['dataset']['id']
-                             for ds in form_state['addedDatasets']]
-        datasets = Dataset.objects.filter(
-            experiments__in=Experiment.safe.owned_and_shared(request.user),
-            pk__in=selected_datasets).distinct()
-
-        for dataset in datasets:
-            dataset.experiments.add(publication)
-
-        # --- Get data for the next page --- #
-        # Construct the disclipline-specific form based on the
-        # selected datasets
-        selected_forms = select_forms(datasets)
-        if 'disciplineSpecificFormTemplates' in form_state:
-            # clear extraInfo if the selected forms differ
-            # (i.e. datasets have changed)
-            if json.dumps(selected_forms) != json.dumps(
-                    form_state['disciplineSpecificFormTemplates']):
-                form_state['extraInfo'] = {}
-        form_state['disciplineSpecificFormTemplates'] = selected_forms
-
+        update_dataset_selection(request, form_state, publication)
     elif form_state['action'] == 'update-extra-info':
-        # Loop through form data and create associates parameter sets
-        # Any unrecognised fields or schemas are ignored!
-        map_form_to_schemas(form_state['extraInfo'], publication)
-
-        # --- Get data for the next page --- #
-        licenses_json = get_licenses()
-        form_state['licenses'] = licenses_json
-
-        # Select the first license as default
-        if licenses_json:
-            if 'selectedLicenseId' not in form_state:
-                form_state['selectedLicenseId'] = licenses_json[0]['id']
-        else:  # No licenses configured...
-            form_state['selectedLicenseId'] = -1
-
-        # Set a default author (current user) if no previously saved data
-        # By default, the form sends a list of authors of one element
-        # with blank fields
-        if len(form_state['authors']) == 1 and \
-                not form_state['authors'][0]['name']:
-            form_state['authors'] = [
-                {'name': ' '.join([request.user.first_name,
-                                   request.user.last_name]),
-                 'institution': getattr(settings, 'DEFAULT_INSTITUTION', ''),
-                 'email': request.user.email}]
-
+        update_extra_info(request, form_state, publication)
     elif form_state['action'] == 'submit':
-        # any final form validation should occur here
-        # and specific error messages can be returned
-        # to the browser before the publication's draft
-        # status is removed.
-
-        if 'acknowledge' not in form_state or not form_state['acknowledge']:
-            return validation_error('You must confirm that you are '
-                                    'authorised to submit this publication')
-
-        set_publication_authors(form_state['authors'], publication)
-
-        institutions = '; '.join(
-            set([author['institution'] for author in form_state['authors']]))
-        publication.institution_name = institutions
-
-        # Attach the publication details schema
-        pub_details_schema = Schema.objects.get(
-            namespace=getattr(settings, 'PUBLICATION_DETAILS_SCHEMA',
-                              default_settings.PUBLICATION_DETAILS_SCHEMA))
-        pub_details_parameter_set = ExperimentParameterSet.objects.get_or_create(
-            schema=pub_details_schema, experiment=publication)[0]
-
-        # Add the acknowledgements
-        acknowledgements_parameter_name = ParameterName.objects.get(
-            schema=pub_details_schema,
-            name='acknowledgements')
-        acknowledgements_param = ExperimentParameter.objects.get_or_create(
-            name=acknowledgements_parameter_name,
-            parameterset=pub_details_parameter_set)[0]
-        acknowledgements_param.string_value = form_state['acknowledgements']
-        acknowledgements_param.save()
-
-        # Set the release date
-        set_embargo_release_date(
-            publication,
-            dateutil.parser.parse(
-                form_state[
-                    'embargo']))
-
-        # Set the license
-        try:
-            publication.license = License.objects.get(
-                pk=form_state['selectedLicenseId'],
-                is_active=True,
-                allows_distribution=True)
-        except License.DoesNotExist:
-            publication.license = License.get_none_option_license()
-
-        publication.save()
-
-        # Send emails about publication in draft
-        subject, message_content = email_pub_requires_authorisation(
-            request.user.username,
-            request.build_absolute_uri(
-                reverse('tardis_portal.view_experiment',
-                        args=(publication.id,))),
-            request.build_absolute_uri(
-                '/apps/publication-workflow/approvals/'))
-
-        try:
-            send_mail(subject,
-                      message_content,
-                      getattr(
-                          settings, 'PUBLICATION_NOTIFICATION_SENDER_EMAIL',
-                          default_settings.PUBLICATION_NOTIFICATION_SENDER_EMAIL),
-                      get_pub_admin_email_addresses(),
-                      fail_silently=False)
-
-            subject, message_content = email_pub_awaiting_approval(
-                publication.title)
-            send_mail_to_authors(publication, subject, message_content,
-                                 fail_silently=False)
-        except Exception as e:
-            logger.error(
-                "failed to send publication notification email(s): %s" %
-                repr(e)
-            )
-            if getattr(settings, 'PUBLICATIONS_REQUIRE_EMAIL_SUCCESS',
-                       default_settings.PUBLICATIONS_REQUIRE_EMAIL_SUCCESS):
-                return HttpResponse(
-                    json.dumps({
-                        'error': 'Failed to send notification email - please '
-                                 'contact the %s administrator (%s), '
-                                 'or try again later. Your draft is saved.'
-                                 % (get_site_admin_email(),
-                                    getattr(settings, 'SITE_TITLE',
-                                            'MyTardis'))
-                    }),
-                    content_type="application/json")
-
-        # Remove the draft status
-        remove_draft_status(publication)
-
-        # Automatically approve publications if approval is not required
-        if not getattr(settings, 'PUBLICATIONS_REQUIRE_APPROVAL',
-                       default_settings.PUBLICATIONS_REQUIRE_APPROVAL):
-            approve_publication(request, publication, message=None,
-                                send_email=False)
-            # approve_publication will delete the form state, so don't
-            # bother saving is and return.
-            form_state['action'] = ''
-            return HttpResponse(json.dumps(form_state),
-                                content_type="application/json")
-
-        # Trigger publication record update
-        # tasks.update_publication_records.delay()
-        tasks.update_publication_records()
+        submit_form(request, form_state, publication)
 
     # Clear the form action and save the state
     form_state['action'] = ''
@@ -294,6 +124,187 @@ def do_process_form(request):
     set_publication_authors(form_state['authors'], publication)
 
     return HttpResponse(json.dumps(form_state), content_type="application/json")
+
+
+def update_dataset_selection(request, form_state, publication):
+    # Update the publication title/description if changed.
+    # Must not be blank.
+    if not form_state['publicationTitle'].strip() or \
+            not form_state['publicationDescription'].strip():
+        return validation_error()
+
+    if publication.title != form_state['publicationTitle']:
+        publication.title = form_state['publicationTitle']
+        publication.save()
+    if publication.description != form_state['publicationDescription']:
+        publication.description = form_state['publicationDescription']
+        publication.save()
+
+    # Update associated datasets
+    # (note: might not be efficient re: db queries)
+    # ... first clear all current associations
+    current_datasets = Dataset.objects.filter(experiments=publication)
+    for current_dataset in current_datasets:
+        current_dataset.experiments.remove(publication)
+    # ... now (re)add all datasets
+    selected_datasets = [ds['dataset']['id']
+                         for ds in form_state['addedDatasets']]
+    datasets = Dataset.objects.filter(
+        experiments__in=Experiment.safe.owned_and_shared(request.user),
+        pk__in=selected_datasets).distinct()
+
+    for dataset in datasets:
+        dataset.experiments.add(publication)
+
+    # --- Get data for the next page --- #
+    # Construct the disclipline-specific form based on the
+    # selected datasets
+    selected_forms = select_forms(datasets)
+    if 'disciplineSpecificFormTemplates' in form_state:
+        # clear extraInfo if the selected forms differ
+        # (i.e. datasets have changed)
+        if json.dumps(selected_forms) != json.dumps(
+                form_state['disciplineSpecificFormTemplates']):
+            form_state['extraInfo'] = {}
+    form_state['disciplineSpecificFormTemplates'] = selected_forms
+
+
+def update_extra_info(request, form_state, publication):
+    # Loop through form data and create associates parameter sets
+    # Any unrecognised fields or schemas are ignored!
+    map_form_to_schemas(form_state['extraInfo'], publication)
+
+    # --- Get data for the next page --- #
+    licenses_json = get_licenses()
+    form_state['licenses'] = licenses_json
+
+    # Select the first license as default
+    if licenses_json:
+        if 'selectedLicenseId' not in form_state:
+            form_state['selectedLicenseId'] = licenses_json[0]['id']
+    else:  # No licenses configured...
+        form_state['selectedLicenseId'] = -1
+
+    # Set a default author (current user) if no previously saved data
+    # By default, the form sends a list of authors of one element
+    # with blank fields
+    if len(form_state['authors']) == 1 and \
+            not form_state['authors'][0]['name']:
+        form_state['authors'] = [
+            {'name': ' '.join([request.user.first_name,
+                               request.user.last_name]),
+             'institution': getattr(settings, 'DEFAULT_INSTITUTION', ''),
+             'email': request.user.email}]
+
+
+def submit_form(request, form_state, publication):
+    # any final form validation should occur here
+    # and specific error messages can be returned
+    # to the browser before the publication's draft
+    # status is removed.
+
+    if 'acknowledge' not in form_state or not form_state['acknowledge']:
+        return validation_error('You must confirm that you are '
+                                'authorised to submit this publication')
+
+    set_publication_authors(form_state['authors'], publication)
+
+    institutions = '; '.join(
+        set([author['institution'] for author in form_state['authors']]))
+    publication.institution_name = institutions
+
+    # Attach the publication details schema
+    pub_details_schema = Schema.objects.get(
+        namespace=getattr(settings, 'PUBLICATION_DETAILS_SCHEMA',
+                          default_settings.PUBLICATION_DETAILS_SCHEMA))
+    pub_details_parameter_set = ExperimentParameterSet.objects.get_or_create(
+        schema=pub_details_schema, experiment=publication)[0]
+
+    # Add the acknowledgements
+    acknowledgements_parameter_name = ParameterName.objects.get(
+        schema=pub_details_schema,
+        name='acknowledgements')
+    acknowledgements_param = ExperimentParameter.objects.get_or_create(
+        name=acknowledgements_parameter_name,
+        parameterset=pub_details_parameter_set)[0]
+    acknowledgements_param.string_value = form_state['acknowledgements']
+    acknowledgements_param.save()
+
+    # Set the release date
+    set_embargo_release_date(
+        publication,
+        dateutil.parser.parse(
+            form_state[
+                'embargo']))
+
+    # Set the license
+    try:
+        publication.license = License.objects.get(
+            pk=form_state['selectedLicenseId'],
+            is_active=True,
+            allows_distribution=True)
+    except License.DoesNotExist:
+        publication.license = License.get_none_option_license()
+
+    publication.save()
+
+    # Send emails about publication in draft
+    subject, message_content = email_pub_requires_authorisation(
+        request.user.username,
+        request.build_absolute_uri(
+            reverse('tardis_portal.view_experiment',
+                    args=(publication.id,))),
+        request.build_absolute_uri(
+            '/apps/publication-workflow/approvals/'))
+
+    try:
+        send_mail(subject,
+                  message_content,
+                  getattr(
+                      settings, 'PUBLICATION_NOTIFICATION_SENDER_EMAIL',
+                      default_settings.PUBLICATION_NOTIFICATION_SENDER_EMAIL),
+                  get_pub_admin_email_addresses(),
+                  fail_silently=False)
+
+        subject, message_content = email_pub_awaiting_approval(
+            publication.title)
+        send_mail_to_authors(publication, subject, message_content,
+                             fail_silently=False)
+    except Exception as e:
+        logger.error(
+            "failed to send publication notification email(s): %s" %
+            repr(e)
+        )
+        if getattr(settings, 'PUBLICATIONS_REQUIRE_EMAIL_SUCCESS',
+                   default_settings.PUBLICATIONS_REQUIRE_EMAIL_SUCCESS):
+            return HttpResponse(
+                json.dumps({
+                    'error': 'Failed to send notification email - please '
+                             'contact the %s administrator (%s), '
+                             'or try again later. Your draft is saved.'
+                             % (get_site_admin_email(),
+                                getattr(settings, 'SITE_TITLE',
+                                        'MyTardis'))
+                }),
+                content_type="application/json")
+
+    # Remove the draft status
+    remove_draft_status(publication)
+
+    # Automatically approve publications if approval is not required
+    if not getattr(settings, 'PUBLICATIONS_REQUIRE_APPROVAL',
+                   default_settings.PUBLICATIONS_REQUIRE_APPROVAL):
+        approve_publication(request, publication, message=None,
+                            send_email=False)
+        # approve_publication will delete the form state, so don't
+        # bother saving is and return.
+        form_state['action'] = ''
+        return HttpResponse(json.dumps(form_state),
+                            content_type="application/json")
+
+    # Trigger publication record update
+    # tasks.update_publication_records.delay()
+    tasks.update_publication_records()
 
 
 def map_form_to_schemas(extraInfo, publication):
