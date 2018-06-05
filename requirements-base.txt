@@ -31,6 +31,7 @@ nosexcover==1.0.11
 # paramiko
 -e git+https://github.com/jasonrig/paramiko.git@rsacert_tardis#egg=paramiko
 pillow==3.4.2
+psycopg2-binary==2.7.4
 pwgen==0.7
 pylint==1.7.1
 pyoai==2.4.4

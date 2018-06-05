@@ -10,7 +10,7 @@ RUN patch -N /usr/share/npm/node_modules/npmconf/config-defs.js npm.patch
 USER webapp
 
 RUN . /appenv/bin/activate; \
-    pip install --no-index -f /wheelhouse psycopg2 mysql-python
+    pip install --no-index -f /wheelhouse mysql-python
 RUN . /appenv/bin/activate; \
     pip install coveralls codacy-coverage
 VOLUME /home/webapp/tardis
