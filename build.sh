@@ -20,7 +20,7 @@ exit
 # for OS X
 # source /usr/local/bin/virtualenvwrapper.sh
 
-mkvirtualenv --system-site-packages mytardis
+mkvirtualenv mytardis
 
 pip install -U pip
 pip install -r requirements.txt
