@@ -22,17 +22,8 @@ RUN apt-get update && apt-get install \
     libxslt1.1 \
     nodejs \
     npm \
-    python-anyjson \
-    python-billiard \
-    python-bs4 \
-    python-crypto \
-    python-dateutil \
-    python-flexmock \
     python-pip \
-    python-pystache \
     python-virtualenv \
-    python-wand \
-    python-yaml \
     zlib1g \
     && apt-get clean
 
