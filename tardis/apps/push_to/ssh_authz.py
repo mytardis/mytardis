@@ -4,6 +4,7 @@ from StringIO import StringIO
 
 import requests
 from paramiko import RSAKey
+from paramiko.message import Message
 
 
 def sign_certificate(credential, token, url):
@@ -39,7 +40,7 @@ def sign_certificate(credential, token, url):
     cert = RSAKey(
         data=base64.b64decode(cert_data),
         file_obj=private_key)
-    cert.load_certificate(base64.b64decode(cert_data))
+    cert.load_certificate(Message(base64.b64decode(cert_data)))
     credential.key = cert
     credential.remote_user = remote_user_name
     credential.save()

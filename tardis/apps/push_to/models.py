@@ -10,6 +10,7 @@ from django.db import models
 from paramiko import RSAKey, SSHClient, MissingHostKeyPolicy, \
     AutoAddPolicy, PKey, DSSKey, ECDSAKey
 from paramiko.config import SSH_PORT
+from paramiko.message import Message
 
 from .apps import PushToConfig
 from .exceptions import NoSuitableCredential
@@ -103,7 +104,7 @@ class KeyPair(models.Model):
             pkey = ECDSAKey(data=public_key, file_obj=private_key)
         elif self.key_type == 'ssh-rsa-cert-v01@openssh.com':
             pkey = RSAKey(data=public_key, file_obj=private_key)
-            pkey.load_certificate(public_key)
+            pkey.load_certificate(Message(public_key))
         else:
             raise ValidationError('Unsupported key type: ' + self.key_type)
 
