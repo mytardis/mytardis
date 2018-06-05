@@ -27,5 +27,6 @@ WORKDIR /home/webapp
 
 CMD . /appenv/bin/activate; \
     pip wheel -r requirements.txt; \
+    pip wheel -r requirements-postgres.txt; \
     pip wheel MySQL-python; \
     pip wheel -e "git+https://github.com/pypa/pip.git#egg=pip"
