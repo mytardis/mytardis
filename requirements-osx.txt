@@ -5,4 +5,4 @@ mock==2.0.0
 psycopg2==2.7
 pycrypto==2.6.1
 pystache==0.5.4
-html5lib==0.9999999
+html5lib==1.0.1
