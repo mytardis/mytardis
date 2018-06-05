@@ -2,4 +2,3 @@
 -r ../requirements-test.txt
 
 -r ../tardis/apps/publication_forms/requirements.txt
--r ../tardis/apps/push_to/requirements.txt
