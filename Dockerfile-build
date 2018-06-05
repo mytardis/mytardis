@@ -14,7 +14,6 @@ RUN apt-get update && apt-get install \
     libxslt1-dev \
     python-dev \
     zlib1g-dev \
-    postgresql-server-dev-all \
     libmysqlclient-dev
 
 ENV WHEELHOUSE=/wheelhouse
@@ -28,5 +27,6 @@ WORKDIR /home/webapp
 
 CMD . /appenv/bin/activate; \
     pip wheel -r requirements.txt; \
-    pip wheel psycopg2 MySQL-python; \
+    pip wheel -r requirements-postgres.txt; \
+    pip wheel MySQL-python; \
     pip wheel -e "git+https://github.com/pypa/pip.git#egg=pip"
