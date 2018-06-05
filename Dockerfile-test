@@ -12,7 +12,7 @@ USER webapp
 RUN . /appenv/bin/activate; \
     pip install --no-index -f /wheelhouse -r requirements-postgres.txt
 RUN . /appenv/bin/activate; \
-    pip install --no-index -f /wheelhouse mysql-python
+    pip install --no-index -f /wheelhouse -r requirements-mysql.txt
 RUN . /appenv/bin/activate; \
     pip install coveralls codacy-coverage
 VOLUME /home/webapp/tardis
