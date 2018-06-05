@@ -22,6 +22,7 @@ elasticsearch==5.0.1
 gunicorn==19.7.0
 gevent==1.2.1
 html2text==2016.9.19
+html5lib==1.0.1
 isodate==0.5.1
 pyjwt==1.6.4
 lxml==4.1.1
