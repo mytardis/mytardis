@@ -5,7 +5,6 @@ python-ldap==2.4.27
 
 # apps go here
 -r tardis/apps/publication_forms/requirements.txt
--r tardis/apps/push_to/requirements.txt
 
 # OS specific packages go here (as build.sh only defines ubuntu packages)
 # -r requirements-centos.txt

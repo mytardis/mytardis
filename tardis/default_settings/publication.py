@@ -91,7 +91,6 @@ OAIPMH_PROVIDERS = [
 #     'ActivateDoiService.wsdl'
 # MODC_DOI_DEACTIVATE_DEFINITION = 'https://doiserver/modc/ws/' \
 #     'DeactivateDoiService.wsdl'
-# MODC_DOI_ENDPOINT = 'https://doiserver/modc/ws/'
 # MODC_DOI_MINT_URL_ROOT = 'http://mytardisserver/'
 
 # Push-to app settings
