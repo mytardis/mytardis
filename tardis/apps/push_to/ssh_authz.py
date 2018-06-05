@@ -3,7 +3,7 @@ import json
 from StringIO import StringIO
 
 import requests
-from paramiko import RSACert
+from paramiko import RSAKey
 
 
 def sign_certificate(credential, token, url):
@@ -36,9 +36,10 @@ def sign_certificate(credential, token, url):
     private_key = StringIO()
     old_key.write_private_key(private_key)
     private_key.seek(0)
-    cert = RSACert(
+    cert = RSAKey(
         data=base64.b64decode(cert_data),
-        privkey_file_obj=private_key)
+        file_obj=private_key)
+    cert.load_certificate(base64.b64decode(cert_data))
     credential.key = cert
     credential.remote_user = remote_user_name
     credential.save()

@@ -7,7 +7,7 @@ from django.contrib import admin
 from django.contrib.auth.models import User, Group
 from django.core.exceptions import ValidationError
 from django.db import models
-from paramiko import RSAKey, RSACert, SSHClient, MissingHostKeyPolicy, \
+from paramiko import RSAKey, SSHClient, MissingHostKeyPolicy, \
     AutoAddPolicy, PKey, DSSKey, ECDSAKey
 from paramiko.config import SSH_PORT
 
@@ -102,7 +102,8 @@ class KeyPair(models.Model):
         elif self.key_type.startswith('ecdsa'):
             pkey = ECDSAKey(data=public_key, file_obj=private_key)
         elif self.key_type == 'ssh-rsa-cert-v01@openssh.com':
-            pkey = RSACert(data=public_key, privkey_file_obj=private_key)
+            pkey = RSAKey(data=public_key, file_obj=private_key)
+            pkey.load_certificate(public_key)
         else:
             raise ValidationError('Unsupported key type: ' + self.key_type)
 

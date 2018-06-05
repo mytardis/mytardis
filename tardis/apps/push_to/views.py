@@ -6,7 +6,6 @@ from django.core.urlresolvers import reverse
 from django.http import HttpResponse, HttpResponseForbidden, \
     HttpResponseNotFound
 from django.shortcuts import redirect, render
-from paramiko import RSACert
 
 from tardis.apps.push_to.utils import bytes_available, list_subdirectories, \
     get_object_size, can_copy, get_default_push_location
@@ -371,9 +370,9 @@ def get_credential(request, remote_host):
                 user=request.user,
                 remote_hosts=remote_host)
             if not credential.verify_remote_access(remote_host):
-                # If the credential contains a certificate, it's probably not
+                # If the credential contains a certificate, it's probably no
                 # longer valid - delete it
-                if isinstance(credential.key, RSACert):
+                if credential.key.public_blob:
                     credential.delete()
                     raise NoSuitableCredential()
         except Credential.DoesNotExist:
