@@ -28,7 +28,6 @@ RUN apt-get update && apt-get install \
     python-crypto \
     python-dateutil \
     python-flexmock \
-    python-html5lib \
     python-pip \
     python-pystache \
     python-virtualenv \
