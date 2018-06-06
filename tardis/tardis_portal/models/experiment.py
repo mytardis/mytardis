@@ -212,6 +212,8 @@ class Experiment(models.Model):
         if self.public_access >= self.PUBLIC_ACCESS_METADATA:
             return True
 
+        return False
+
     def _has_change_perm(self, user_obj):
         if not hasattr(self, 'id'):
             return False

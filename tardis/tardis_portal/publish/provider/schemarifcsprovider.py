@@ -71,6 +71,7 @@ class SchemaRifCsProvider(rifcsprovider.RifCsProvider):
         in the rif-cs"""
         if experiment.public_access != experiment.PUBLIC_ACCESS_NONE:
             return "%s/experiment/view/%s/" % (server_url, experiment.id)
+        return None
 
     def get_investigator_list(self, experiment):
         authors = [a.author for a in experiment.experimentauthor_set.all()]
@@ -180,6 +181,7 @@ class SchemaRifCsProvider(rifcsprovider.RifCsProvider):
                 return psm.get_params(key, True)
             except ObjectDoesNotExist:
                 return None
+        return None
 
 
     def _get_params(self, key, namespace, experiment):

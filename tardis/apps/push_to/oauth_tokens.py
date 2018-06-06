@@ -35,7 +35,7 @@ def get_token_data(oauth_service, token):
     :rtype: dict
     """
     if token is None:
-        return
+        return None
     # Verify=False is a bad thing, but I need it for now
     r = requests.get(
         oauth_service.oauth_check_token_url, {
@@ -44,7 +44,7 @@ def get_token_data(oauth_service, token):
         verify=False)
     decoded_token = json.loads(r.text)
     if 'error' in decoded_token:
-        return
+        return None
     return decoded_token
 
 

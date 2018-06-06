@@ -73,6 +73,7 @@ class KeyPair(models.Model):
                 # Extract the key type
             self.key_type = KeyPair._get_key_type_from_public_key(public_key)
             return public_key
+        raise ValidationError("Can't validate public key")
 
     @property
     def key(self):

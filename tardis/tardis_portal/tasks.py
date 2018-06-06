@@ -172,7 +172,7 @@ def cache_done_notify(results, user_id, site_id, ct_id, obj_ids):
 # "method tasks"
 # StorageBox
 @task(name="tardis_portal.storage_box.copy_files", ignore_result=True)
-def sbox_copy_files(sbox_id, dest_box_id=None, *args, **kwargs):
+def sbox_copy_files(sbox_id, dest_box_id=None):
     init_filters()
     from tardis.tardis_portal.models import StorageBox
     sbox = StorageBox.objects.get(id=sbox_id)
@@ -180,11 +180,11 @@ def sbox_copy_files(sbox_id, dest_box_id=None, *args, **kwargs):
         dest_box = StorageBox.objects.get(id=dest_box_id)
     else:
         dest_box = None
-    return sbox.copy_files(dest_box=dest_box, *args, **kwargs)
+    return sbox.copy_files(dest_box=dest_box)
 
 
 @task(name="tardis_portal.storage_box.move_files", ignore_result=True)
-def sbox_move_files(sbox_id, dest_box_id=None, *args, **kwargs):
+def sbox_move_files(sbox_id, dest_box_id=None):
     init_filters()
     from tardis.tardis_portal.models import StorageBox
     sbox = StorageBox.objects.get(id=sbox_id)
@@ -192,7 +192,7 @@ def sbox_move_files(sbox_id, dest_box_id=None, *args, **kwargs):
         dest_box = StorageBox.objects.get(id=dest_box_id)
     else:
         dest_box = None
-    return sbox.move_files(dest_box=dest_box, *args, **kwargs)
+    return sbox.move_files(dest_box=dest_box)
 
 
 @task(name="tardis_portal.storage_box.cache_files", ignore_result=True)
@@ -242,7 +242,7 @@ def dfo_move_file(dfo_id, dest_box_id=None):
 
 
 @task(name='tardis_portal.dfo.copy_file', ignore_result=True)
-def dfo_copy_file(dfo_id, dest_box_id=None, *args, **kwargs):
+def dfo_copy_file(dfo_id, dest_box_id=None):
     init_filters()
     from tardis.tardis_portal.models import DataFileObject, StorageBox
     dfo = DataFileObject.objects.get(id=dfo_id)
@@ -250,7 +250,7 @@ def dfo_copy_file(dfo_id, dest_box_id=None, *args, **kwargs):
         dest_box = StorageBox.objects.get(id=dest_box_id)
     else:
         dest_box = None
-    return dfo.copy_file(dest_box=dest_box, *args, **kwargs)
+    return dfo.copy_file(dest_box=dest_box)
 
 
 @task(name='tardis_portal.dfo.cache_file', ignore_result=True)
@@ -271,4 +271,4 @@ def dfo_verify(dfo_id, *args, **kwargs):
             dfo = DataFileObject.objects.select_for_update().get(id=dfo_id)
             return dfo.verify(*args, **kwargs)
     dfo = DataFileObject.objects.get(id=dfo_id)
-    dfo.verify(*args, **kwargs)
+    return dfo.verify(*args, **kwargs)

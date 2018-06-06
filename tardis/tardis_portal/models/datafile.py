@@ -118,6 +118,7 @@ class DataFile(models.Model):
         for dfo in self.file_objects.filter(verified=True):
             if dfo.cache_file():
                 return True
+        return False
 
     def get_default_storage_box(self):
         '''
