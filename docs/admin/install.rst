@@ -139,7 +139,7 @@ commands can be found at :doc:`admin`.
 
 Next, create a superuser::
 
-  python mytardis.py createmysuperuser
+  python mytardis.py createsuperuser
 
 MyTardis can now be executed in its simplest form using::
 
