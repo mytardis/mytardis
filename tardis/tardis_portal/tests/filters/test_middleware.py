@@ -32,7 +32,9 @@ from compare import expect
 
 from django.test import TestCase
 from django.db.models.signals import post_save
+from django.conf import settings
 from django.core.exceptions import MiddlewareNotUsed
+from django.core.management import call_command
 from django.http import HttpResponse
 
 from tardis.tardis_portal.filters import FilterInitMiddleware
@@ -147,6 +149,43 @@ class FilterInitTestCase(TestCase):
                                      dispatch_uid=f[0] + ".datafile")
                 post_save.disconnect(sender=DataFileObject, weak=False,
                                      dispatch_uid=f[0] + ".dfo")
+
+
+
+class RunFiltersTestCase(TestCase):
+
+    def setUp(self):
+        self.previous_post_save_filters = \
+            getattr(settings, 'POST_SAVE_FILTERS', None)
+        settings.POST_SAVE_FILTERS = TEST_FILTERS
+
+    def tearDown(self):
+        if self.previous_post_save_filters:
+            settings.POST_SAVE_FILTERS = self.previous_post_save_filters
+
+    def testList(self):
+        '''
+        Just test that we can run
+        ./mytardis.py runfilters --list
+        without any runtime exceptions
+        '''
+        call_command('runfilters', list=True)
+
+    def testAll(self):
+        '''
+        Just test that we can run
+        ./mytardis.py runfilters --all
+        without any runtime exceptions
+        '''
+        call_command('runfilters', all=True)
+
+    def testDryRun(self):
+        '''
+        Just test that we can run
+        ./mytardis.py runfilters --dryRun
+        without any runtime exceptions
+        '''
+        call_command('runfilters', dryRun=True)
 
 
 class Filter1:
