@@ -63,6 +63,15 @@ class KeyPair(models.Model):
             super(KeyPair, self).__setattr__(attrname, val)
 
     def _validate_public_key(self, value):
+        """
+        This method is called when we attempt to assign a value to the
+        public_key field of the KeyPair model.  If we attempt to assign
+        a non-empty string, this method, checks if it has multiple
+        components, e.g. "ssh-rsa AAA...", and if so, saves the key type
+        e.g. "ssh-rsa" in self.key_type, and returns the public key string
+        e.g. "AAA...".  If we are attempting to assing an empty (None)
+        value, we just return that value.
+        """
         if value:
             # Check if the public key is in the id_rsa.pub format
             pub_key_fields = value.split()
@@ -73,7 +82,10 @@ class KeyPair(models.Model):
                 # Extract the key type
             self.key_type = KeyPair._get_key_type_from_public_key(public_key)
             return public_key
-        raise ValidationError("Can't validate public key")
+
+        # It's OK for an empty value (None) to be assigned to the public_key
+        # field whtn the model instance is initialized:
+        return value
 
     @property
     def key(self):
