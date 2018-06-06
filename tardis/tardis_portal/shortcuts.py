@@ -86,6 +86,8 @@ def get_experiment_referer(request, dataset_id):
     except:
         pass
 
+    return None
+
 
 def render_to_file(template, filename, context):
     string_for_output = render_to_string(template, context)

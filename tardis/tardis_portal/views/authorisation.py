@@ -445,7 +445,7 @@ def remove_experiment_access_user(request, experiment_id, username):
             'All experiments must have at least one user as '
             'owner. Add an additional owner first before '
             'removing this one.')
-    elif expt_acls.count() == 0:
+    else:
         # the user shouldn't really ever see this in normal operation
         return HttpResponse(
             'Experiment has no permissions (of type OWNER_OWNED) !')

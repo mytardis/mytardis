@@ -121,6 +121,8 @@ def rcauth(request):
         django_logout(request)
         raise PermissionDenied  # Error: Security cookie has expired
 
+    raise PermissionDenied
+
 
 @login_required
 def manage_user_account(request):
