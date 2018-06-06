@@ -11,6 +11,7 @@ from django.contrib.auth.models import User
 from django.core import exceptions
 from django.core.management.base import BaseCommand, CommandError
 from django.utils.translation import ugettext as _
+from six.moves import input
 
 from tardis.tardis_portal.models import UserProfile, UserAuthentication
 from tardis.tardis_portal.auth.localdb_auth \
@@ -67,9 +68,9 @@ class Command(BaseCommand):
         interactive = options.get('interactive')
         verbosity = int(options.get('verbosity', 1))
         get_username = options.get(
-            'get_username', lambda input_msg: raw_input(input_msg + ': '))
+            'get_username', lambda input_msg: input(input_msg + ': '))
         get_email = options.get(
-            'get_email', lambda: raw_input('E-mail address: '))
+            'get_email', lambda: input('E-mail address: '))
         get_password = options.get('get_password', getpass.getpass)
 
         # Do quick and dirty validation if --noinput
