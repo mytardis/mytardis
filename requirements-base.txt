@@ -30,7 +30,7 @@ nose==1.3.7
 paramiko==2.4.1
 pillow==3.4.2
 pwgen==0.7
-pylint==1.7.1
+pylint==1.9.2
 pyoai==2.4.4
 pysolr==2.1.0 # pyup: >=2.1.0,<3
 python-dateutil==2.4.0
