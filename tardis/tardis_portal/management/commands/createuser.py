@@ -32,17 +32,32 @@ def is_valid_email(value):
 
 class Command(BaseCommand):
 
-    option_list = BaseCommand.option_list + (
-        make_option('--username', dest='username', default=None,
-            help='Specifies the username for the user.'),
-        make_option('--email', dest='email', default=None,
-            help='Specifies the email address for the user.'),
-        make_option('--noinput', action='store_false', dest='interactive', default=True,
+    def add_arguments(self, parser):
+        # Positional arguments
+
+        # Named (optional) arguments
+        parser.add_argument(
+            '--username',
+            default=None,
+            dest='username',
+            help='Specifies the username for the user.'
+        )
+        parser.add_argument(
+            '--email',
+            default=None,
+            dest='email',
+            help='Specifies the email address for the user.'
+        )
+        parser.add_argument(
+            '--noinput',
+            default=True,
+            dest='interactive',
+            action='store_false',
             help=('Tells Django to NOT prompt the user for input of any kind. '
                   'You must use --username and --email with --noinput, and '
                   'users created with --noinput will not be able to log '
-                  'in until they\'re given a valid password.')),
-    )
+                  'in until they\'re given a valid password.')
+        )
 
     help = 'Used to create a MyTardis user.'
 
@@ -51,6 +66,11 @@ class Command(BaseCommand):
         email = options.get('email', None)
         interactive = options.get('interactive')
         verbosity = int(options.get('verbosity', 1))
+        get_username = options.get(
+            'get_username', lambda input_msg: raw_input(input_msg + ': '))
+        get_email = options.get(
+            'get_email', lambda: raw_input('E-mail address: '))
+        get_password = options.get('get_password', getpass.getpass)
 
         # Do quick and dirty validation if --noinput
         if not interactive:
@@ -96,7 +116,7 @@ class Command(BaseCommand):
                         input_msg = 'Username'
                         if default_username:
                             input_msg += ' (Leave blank to use %r)' % default_username
-                        username = raw_input(input_msg + ': ')
+                        username = get_username(input_msg)
                     if default_username and username == '':
                         username = default_username
                     if not RE_VALID_USERNAME.match(username):
@@ -114,7 +134,7 @@ class Command(BaseCommand):
                 # Get an email
                 while 1:
                     if not email:
-                        email = raw_input('E-mail address: ')
+                        email = get_email()
                     try:
                         is_valid_email(email)
                     except exceptions.ValidationError:
@@ -126,8 +146,8 @@ class Command(BaseCommand):
                 # Get a password
                 while 1:
                     if not password:
-                        password = getpass.getpass()
-                        password2 = getpass.getpass('Password (again): ')
+                        password = get_password('Password: ')
+                        password2 = get_password('Password (again): ')
                         if password != password2:
                             sys.stderr.write("Error: Your passwords didn't match.\n")
                             password = None
