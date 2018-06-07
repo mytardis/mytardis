@@ -162,6 +162,7 @@ class DataFile(models.Model):
             location=getattr(settings, 'DEFAULT_RECEIVING_DIR', '/tmp'))
         new_attr = StorageBoxAttribute(storage_box=new_box,
                                        key='type', value='receiving')
+        new_attr.save()
         new_box.attributes.add(new_attr)
         new_box.master_box = default_box
         new_box.save()
