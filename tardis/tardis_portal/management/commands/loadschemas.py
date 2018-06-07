@@ -3,10 +3,8 @@
 """
 import sys
 
-from optparse import make_option
-
 from django.core.management.base import BaseCommand
-from django.db import connections, transaction, DEFAULT_DB_ALIAS
+from django.db import connections, DEFAULT_DB_ALIAS
 from django.core import serializers
 
 from tardis.tardis_portal import models
@@ -16,15 +14,30 @@ class Command(BaseCommand):
     help = "Load soft schema definitions"
     args = "schema [schema ...]"
 
-    option_list = BaseCommand.option_list + (
-        make_option('--database', action='store', dest='database',
-                    default=DEFAULT_DB_ALIAS,
-                    help='Nominates a specific database'),
-        make_option('--replace', action="store_true", dest="replace",
-                    default=False,
-                    help=("Replace the schema and parameter names with the same pk.  "
-                          "Warning: This will overwrite the entries with the same "
-                          "primary keys, even if the entries don't match."))
+    def add_arguments(self, parser):
+        # Positional arguments
+        parser.add_argument(
+            'schemas',
+            nargs='*',
+            help=('Path(s) to one or more schema definition files, '
+                  'e.g. tardis/tardis_portal/fixtures/jeol_metadata_schema.json')
+        )
+
+        # Named (optional) arguments
+        parser.add_argument(
+            '--database',
+            default=DEFAULT_DB_ALIAS,
+            dest='database',
+            help='Nominates a specific database'
+        )
+        parser.add_argument(
+            '--replace',
+            action='store_true',
+            default=False,
+            dest='replace',
+            help=("Replace the schema and parameter names with the same pk.  "
+                  "Warning: This will overwrite the entries with the same "
+                  "primary keys, even if the entries don't match.")
         )
 
     def handle(self, *args, **options):
@@ -35,25 +48,11 @@ class Command(BaseCommand):
         verbosity = int(options.get('verbosity', 1))
         show_traceback = options.get('traceback', False)
 
-        # commit is a stealth option - it isn't really useful as
-        # a command line option, but it can be useful when invoking
-        # loaddata from within another script.
-        # If commit=True, loaddata will use its own transaction;
-        # if commit=False, the data load SQL will become part of
-        # the transaction in place when loaddata was invoked.
-        commit = options.get('commit', True)
-
         humanize = lambda dirname: dirname and "'%s'" % dirname or 'absolute path'
 
-        # Start transaction management. All fixtures are installed in a
-        # single transaction to ensure that all references are resolved.
-        if commit:
-            transaction.commit_unless_managed(using=using)
-            transaction.enter_transaction_management(using=using)
-            transaction.managed(True, using=using)
-
         formats = []
-        for name in args:
+        schemas = options.get('schemas', [])
+        for name in schemas:
             parts = name.split('.')
             format = parts[-1]
             if format in serializers.get_public_serializer_formats():
@@ -62,9 +61,6 @@ class Command(BaseCommand):
                 self.stderr.write(
                     self.style.ERROR("Problem installing schema '%s': %s is not a known serialization format.\n" %
                         (name, format)))
-                if commit:
-                    transaction.rollback(using=using)
-                    transaction.leave_transaction_management(using=using)
                 return
 
             try:
@@ -81,26 +77,8 @@ class Command(BaseCommand):
                 except Exception:
                     import traceback
                     data.close()
-                    if commit:
-                        transaction.rollback(using=using)
-                        transaction.leave_transaction_management(using=using)
-                        if show_traceback:
-                            traceback.print_exc()
-                        else:
-                            self.stderr.write(
-                                self.style.ERROR("Problem installing schema '%s': %s\n" %
-                                                 (full_path, ''.join(traceback.format_exception(sys.exc_type,
-                                                                                                sys.exc_value, sys.exc_traceback)))))
-                        return
-
                 data.close()
 
             except Exception, e:
                 self.stdout.write("No %s schema '%s' in %s.\n" % \
                                       (parts[-1], name, humanize(full_path)))
-
-
-        if commit:
-            transaction.commit(using=using)
-            transaction.leave_transaction_management(using=using)
-            connection.close()
