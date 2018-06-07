@@ -59,9 +59,7 @@ def retrieve_user_list(request):
         q |= Q(first_name__icontains=' '.join(tokens[:-1])) &\
             Q(last_name__icontains=tokens[-1])
 
-    q_tokenuser = Q(username=settings.TOKEN_USERNAME)
     users_query = User.objects\
-                      .exclude(q_tokenuser)\
                       .filter(q).distinct() .select_related('userprofile')
 
     # HACK FOR ORACLE - QUERY GENERATED DOES NOT WORK WITH LIMIT SO USING
@@ -268,9 +266,6 @@ def manage_groups(request):
 @authz.group_ownership_required
 def add_user_to_group(request, group_id, username):
 
-    if username == settings.TOKEN_USERNAME:
-        return HttpResponse('User does not exist: %s' % username)
-
     authMethod = localdb_auth_key
     isAdmin = False
 
@@ -373,7 +368,7 @@ def add_experiment_access_user(request, experiment_id, username):
 
     authMethod = request.GET['authMethod']
     user = auth_service.getUser(authMethod, username)
-    if user is None or username == settings.TOKEN_USERNAME:
+    if user is None:
         return HttpResponse('User %s does not exist.' % (username))
 
     try:
@@ -598,9 +593,6 @@ def create_group(request):
 
     adminuser = None
     if admin:
-        if admin == settings.TOKEN_USERNAME:
-            return HttpResponse('User %s does not exist' %
-                                (settings.TOKEN_USERNAME))
         try:
             authMethod = request.GET['authMethod']
             if authMethod == localdb_auth_key:
