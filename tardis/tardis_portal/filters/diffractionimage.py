@@ -122,7 +122,6 @@ class DiffractionImageFilter(object):
             self.saveDiffractionImageMetadata(instance, schema, metadata)
         except Exception, e:
             logger.debug(e)
-            return None
 
     def saveDiffractionImageMetadata(self, instance, schema, metadata):
         """Save all the metadata to a DataFiles paramamter set.

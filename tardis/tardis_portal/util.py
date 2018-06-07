@@ -163,6 +163,7 @@ def render_public_access_badge(experiment):
             'label': 'Public',
             'public': True,
         })
+    return None
 
 
 def split_path(p):
