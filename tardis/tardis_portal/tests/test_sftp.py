@@ -9,10 +9,12 @@ import threading
 
 from django.conf import settings
 from django.contrib.auth.models import User
-from django.test.testcases import TransactionTestCase
+from django.core.management import call_command
+from django.test import TestCase
 
 from flexmock import flexmock
 from paramiko.common import AUTH_SUCCESSFUL
+from paramiko.ssh_exception import SSHException
 
 from tardis.tardis_portal.download import make_mapper
 
@@ -26,7 +28,7 @@ from tardis.tardis_portal.sftp import MyTSFTPServerInterface
 from tardis.tardis_portal.sftp import MyTServerInterface
 
 
-class SFTPTest(TransactionTestCase):
+class SFTPTest(TestCase):
     def setUp(self):
         self.hostname = '127.0.0.1'
         self.username = 'tardis_user1'
@@ -116,3 +118,17 @@ class SFTPTest(TransactionTestCase):
     def tearDown(self):
         # self.server.stop()
         pass
+
+
+class SFTPDManagementTestCase(TestCase):
+
+    def testSFTPDWithoutHostKey(self):
+        '''
+        Attempting to start the SFTPD service without a host key
+        should raise an SSHException
+        '''
+        saved_setting = settings.SFTP_HOST_KEY
+        settings.SFTP_HOST_KEY = ''
+        with self.assertRaises(SSHException):
+            call_command('sftpd')
+        settings.SFTP_HOST_KEY = saved_setting
