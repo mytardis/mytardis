@@ -7,6 +7,8 @@ http://docs.djangoproject.com/en/dev/topics/testing/
 """
 from django.test import TestCase
 from tardis.tardis_portal.models import StorageBox, StorageBoxOption
+from tardis.tardis_portal.models import Dataset
+from tardis.tardis_portal.models import DataFile
 
 
 class ModelTestCase(TestCase):
@@ -35,6 +37,18 @@ class ModelTestCase(TestCase):
         options_dict = self.test_box.get_options_as_dict()
         self.assertEqual(options_dict['an_option'], string_input)
         self.assertEqual(options_dict['optional'], object_input)
+
+    def test_get_receiving_box(self):
+        dataset = Dataset(description="dataset description")
+        dataset.save()
+
+        df_file = DataFile(
+            dataset=dataset, filename='file.txt', size=42, md5sum='bogus')
+        df_file.save()
+
+        receiving_box = df_file.get_receiving_storage_box()
+        self.assertEqual(
+            receiving_box.attributes.get(key='type').value, 'receiving')
 
     def tearDown(self):
         self.test_box.delete()
