@@ -787,12 +787,3 @@ class ObjectACLTestCase(TestCase):
         request.user = user
         num_exps = Experiment.safe.owned(request.user).count()
         self.assertEqual(num_exps, 0)
-
-    def testCantAddTokenuserToGroups(self):
-        from django.conf import settings
-        login = self.client3.login(username=self.user3.username, password='secret')
-        self.assertTrue(login)
-        g = Group()
-        g.save()
-        self.client3.get('/group/%s/%s/' % (g.id, settings.TOKEN_USERNAME))
-        self.assertEqual(0, g.user_set.count())  # user should not be added
