@@ -1,5 +1,8 @@
+import json
+
 from django.test import TestCase
 from django.core.management import call_command
+from django.core.management.base import CommandError
 
 from tardis.tardis_portal.models.parameters import Schema
 
@@ -7,10 +10,14 @@ from tardis.tardis_portal.models.parameters import Schema
 class DumpSchemasTestCase(TestCase):
 
     def setUp(self):
-        self.schema = Schema(
+        self.schema1 = Schema(
             namespace='http://www.example.com/schema1.xml',
             type=Schema.DATAFILE)
-        self.schema.save()
+        self.schema1.save()
+        self.schema2 = Schema(
+            namespace='http://www.example.com/schema2.xml',
+            type=Schema.DATAFILE)
+        self.schema2.save()
 
     def testDumpSchemas(self):
         '''
@@ -18,8 +25,15 @@ class DumpSchemasTestCase(TestCase):
         ./mytardis.py dumpschemas
         without any runtime exceptions
         '''
-        call_command('dumpschemas')
-        call_command('dumpschemas', namespaces=['http://www.example.com/schema1.xml'])
+        schemas = json.loads(call_command('dumpschemas'))
+        self.assertEqual(len(schemas), 2)
+        schemas = json.loads(
+            call_command('dumpschemas',
+                         namespaces=['http://www.example.com/schema1.xml']))
+        self.assertEqual(len(schemas), 1)
+        with self.assertRaises(CommandError):
+            call_command('dumpschemas', namespaces=['invalid'])
 
     def tearDown(self):
-        self.schema.delete()
+        self.schema1.delete()
+        self.schema2.delete()
