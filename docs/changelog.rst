@@ -1,6 +1,10 @@
 Releases
 ========
 
+3.9
+---
+
+
 3.8
 ---
 * Refactored settings
