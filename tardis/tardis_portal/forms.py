@@ -55,14 +55,13 @@ from django.utils.translation import ugettext_lazy as _
 
 from haystack.forms import SearchForm
 
-from betterforms.forms import BetterForm
+from form_utils import forms as formutils
 from registration.models import RegistrationProfile
 
 from tardis.tardis_portal import models
 from tardis.tardis_portal.fields import MultiValueCommaSeparatedField
 from tardis.tardis_portal.widgets import CommaSeparatedInput
-from tardis.tardis_portal.models import UserProfile, UserAuthentication, \
-    Experiment, License
+from tardis.tardis_portal.models import UserAuthentication, Experiment, License
 from tardis.tardis_portal.auth.localdb_auth \
     import auth_key as locabdb_auth_key
 
@@ -274,38 +273,6 @@ class CreateUserPermissionsForm(RegistrationForm):
         label='Authentication Method')
 
 
-class DatafileSearchForm(forms.Form):
-
-    filename = forms.CharField(required=False, max_length=100)
-
-
-# microscopy
-class MXDatafileSearchForm(DatafileSearchForm):
-
-    __DIFFRACTOMETER_CHOICES = (
-        ('-', '-'),
-        ('Synchrotron', 'Synchrotron'),
-        ('Rotating Anode', 'Rotating Anode'),
-        ('Tube', 'Tube'))
-    diffractometerType = forms.CharField(
-        widget=forms.Select(choices=__DIFFRACTOMETER_CHOICES),
-        label='Diffractometer Type')
-    xraySource = forms.CharField(
-        required=False, label='X-ray Source', max_length=20)
-    crystalName = forms.CharField(
-        required=False, label='Crystal Name', max_length=20)
-    resolutionLimit = forms.IntegerField(
-        required=False, label='Max Resolution Limit')
-    xrayWavelengthFrom = forms.IntegerField(
-        required=False, label='X-ray Wavelength From',
-        widget=forms.TextInput(attrs={'size': '4'})
-        )
-    xrayWavelengthTo = forms.IntegerField(
-        required=False, label='X-ray Wavelength To',
-        widget=forms.TextInput(attrs={'size': '4'})
-        )
-
-
 def createLinkedUserAuthenticationForm(authMethods):
     """Create a LinkedUserAuthenticationForm and use the contents of
     authMethods to the list of options in the dropdown menu for
@@ -330,11 +297,6 @@ def createLinkedUserAuthenticationForm(authMethods):
 
     return type('LinkedUserAuthenticationForm', (forms.BaseForm, ),
                 {'base_fields': fields})
-
-
-# infrared
-class IRDatafileSearchForm(DatafileSearchForm):
-    pass
 
 
 class ImportParamsForm(forms.Form):
@@ -559,66 +521,6 @@ class ExperimentForm(forms.ModelForm):
         return True
 
 
-def createSearchDatafileForm(searchQueryType):
-
-    from tardis.tardis_portal.errors import UnsupportedSearchQueryTypeError
-    from tardis.tardis_portal.models import ParameterName
-
-    parameterNames = None
-
-    if searchQueryType in models.Schema.getSubTypes():
-        parameterNames = \
-            ParameterName.objects.filter(
-            schema__namespace__in=models.Schema.getNamespaces(
-            models.Schema.DATAFILE, searchQueryType) +
-            models.Schema.getNamespaces(models.Schema.DATASET,
-            searchQueryType), is_searchable='True')
-
-        fields = {}
-
-        fields['filename'] = forms.CharField(label='Filename',
-                max_length=100, required=False)
-        fields['type'] = forms.CharField(widget=forms.HiddenInput,
-                initial=searchQueryType)
-
-        for parameterName in parameterNames:
-            fieldName = parameterName.getUniqueShortName()
-            if parameterName.data_type == ParameterName.NUMERIC:
-                if parameterName.comparison_type \
-                    == ParameterName.RANGE_COMPARISON:
-                    fields[fieldName + 'From'] = \
-                        forms.DecimalField(label=parameterName.full_name
-                            + ' From', required=False)
-                    fields[fieldName + 'To'] = \
-                        forms.DecimalField(label=parameterName.full_name
-                            + ' To', required=False)
-                else:
-                    # note that we'll also ignore the choices text box entry
-                    # even if it's filled if the parameter is of numeric type
-                    # TODO: decide if we are to raise an exception if
-                    #       parameterName.choices is not empty
-                    fields[fieldName] = \
-                        forms.DecimalField(label=parameterName.full_name,
-                            required=False)
-            else:  # parameter is a string
-                if parameterName.choices != '':
-                    fields[fieldName] = \
-                        forms.CharField(label=parameterName.full_name,
-                        widget=forms.Select(choices=__getParameterChoices(
-                        parameterName.choices)), required=False)
-                else:
-                    fields[fieldName] = \
-                        forms.CharField(label=parameterName.full_name,
-                        max_length=255, required=False)
-
-        return type('SearchDatafileForm', (forms.BaseForm, ),
-                    {'base_fields': fields})
-    else:
-        raise UnsupportedSearchQueryTypeError(
-            "'%s' search query type is currently unsupported" %
-            (searchQueryType, ))
-
-
 def createSearchExperimentForm():
 
     from django.forms.extras.widgets import SelectDateWidget
@@ -684,7 +586,7 @@ def createSearchExperimentForm():
         if fieldlist:
             fieldsets.append((name, {'fields': fieldlist}))
 
-    return type('SearchExperimentForm', (BetterForm, forms.BaseForm, ),
+    return type('SearchExperimentForm', (formutils.BetterBaseForm, forms.BaseForm, ),
                 {'base_fields': fields, 'base_fieldsets': fieldsets,
                  'base_row_attrs': {}})
 
@@ -714,22 +616,6 @@ def __getParameterChoices(choicesString):
         paramChoices += ((str(key), str(value)),)
 
     return paramChoices
-
-
-def createSearchDatafileSelectionForm(initial=None):
-
-    supportedDatafileSearches = (('-', 'Datafile'),)
-    for key in models.Schema.getSubTypes():
-        supportedDatafileSearches += ((key, key.upper()),)
-
-    fields = {}
-    fields['type'] = \
-        forms.CharField(label='type',
-        widget=forms.Select(choices=supportedDatafileSearches),
-        required=False, initial=initial)
-    fields['type'].widget.attrs['class'] = 'searchdropdown'
-    return type('DatafileSelectionForm', (forms.BaseForm, ),
-                    {'base_fields': fields})
 
 
 class NoInput(forms.Widget):
