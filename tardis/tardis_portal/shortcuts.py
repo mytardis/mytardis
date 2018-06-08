@@ -20,8 +20,6 @@ def render_response_index(request, *args, **kwargs):
 
 def render_response_search(request, url, c):
 
-    from tardis.search.views import getNewSearchDatafileSelectionForm
-
     links = {}
     for app in settings.INSTALLED_APPS:
         if app.startswith('tardis.apps.'):
@@ -31,8 +29,6 @@ def render_response_search(request, url, c):
             except:
                 pass
 
-    c['searchDatafileSelectionForm'] = \
-        getNewSearchDatafileSelectionForm(request.GET.get('type', None))
     c['links'] = links
 
     return render(request, url, c)
