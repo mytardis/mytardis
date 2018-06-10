@@ -97,11 +97,15 @@ def process_form(request):
                             content_type="application/json")
 
     if form_state['action'] == 'update-dataset-selection':
-        update_dataset_selection(request, form_state, publication)
+        response = update_dataset_selection(request, form_state, publication)
+        if response:
+            return response
     elif form_state['action'] == 'update-extra-info':
         update_extra_info(request, form_state, publication)
     elif form_state['action'] == 'submit':
-        submit_form(request, form_state, publication)
+        response = submit_form(request, form_state, publication)
+        if response:
+            return response
 
     # Clear the form action and save the state
     form_state['action'] = ''
@@ -158,6 +162,9 @@ def update_dataset_selection(request, form_state, publication):
             form_state['extraInfo'] = {}
     form_state['disciplineSpecificFormTemplates'] = selected_forms
 
+    # No need to return an HttpResponse yet, continue processing form:
+    return None
+
 
 def update_extra_info(request, form_state, publication):
     # Loop through form data and create associates parameter sets
@@ -185,6 +192,9 @@ def update_extra_info(request, form_state, publication):
                                request.user.last_name]),
              'institution': getattr(settings, 'DEFAULT_INSTITUTION', ''),
              'email': request.user.email}]
+
+    # No need to return an HttpResponse yet, continue processing form:
+    return None
 
 
 def submit_form(request, form_state, publication):
