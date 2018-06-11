@@ -5,10 +5,13 @@ import itertools
 import logging
 import mimetypes
 import urllib2
+import warnings
 
 from cStringIO import StringIO
 
 import mimetools
+
+from tardis.tardis_portal.deprecations import RemovedInMyTardis311Warning
 
 
 logger = logging.getLogger(__name__)
@@ -18,6 +21,10 @@ class MultiPartForm(object):
     """Accumulate the data to be used when posting a form."""
 
     def __init__(self):
+        warnings.warn(
+            "The MultiPartForm class will be removed in MyTardis 3.11. ",
+            RemovedInMyTardis311Warning
+        )
         self.form_fields = []
         self.files = []
         self.boundary = mimetools.choose_boundary()
