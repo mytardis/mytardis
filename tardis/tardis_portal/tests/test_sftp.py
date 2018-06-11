@@ -10,6 +10,7 @@ import threading
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.management import call_command
+from django.test import RequestFactory
 from django.test import TestCase
 
 from flexmock import flexmock
@@ -26,6 +27,9 @@ from tardis.tardis_portal.models import ObjectACL
 
 from tardis.tardis_portal.sftp import MyTSFTPServerInterface
 from tardis.tardis_portal.sftp import MyTServerInterface
+
+from tardis.tardis_portal.views.pages import sftp_access
+from tardis.tardis_portal.views.images import cybderduck_connection_window
 
 
 class SFTPTest(TestCase):
@@ -115,9 +119,40 @@ class SFTPTest(TestCase):
             server_interface.check_auth_password(self.username, self.password),
             AUTH_SUCCESSFUL)
 
-    def tearDown(self):
-        # self.server.stop()
-        pass
+    def test_sftp_dynamic_docs_experiment(self):
+        factory = RequestFactory()
+        request = factory.get(
+            '/sftp_access/?object_type=experiment&object_id=%s'
+            % self.exp.id)
+        request.user = self.user
+        response = sftp_access(request)
+        path_mapper = make_mapper(settings.DEFAULT_PATH_MAPPER, rootdir=None)
+        self.assertIn(
+            "sftp://tardis_user1@testserver:2200"
+            "/home/tardis_user1/experiments/%s"
+            % path_mapper(self.exp),
+            response.content)
+
+    def test_sftp_dynamic_docs_dataset(self):
+        factory = RequestFactory()
+        request = factory.get(
+            '/sftp_access/?object_type=dataset&object_id=%s'
+            % self.dataset.id)
+        request.user = self.user
+        response = sftp_access(request)
+        path_mapper = make_mapper(settings.DEFAULT_PATH_MAPPER, rootdir=None)
+        self.assertIn(
+            "sftp://tardis_user1@testserver:2200"
+            "/home/tardis_user1/experiments/%s/%s"
+            % (path_mapper(self.exp), path_mapper(self.dataset)),
+            response.content)
+
+    def test_cybderduck_connection_window(self):
+        factory = RequestFactory()
+        request = factory.get('/sftp_access/cyberduck/connection.png')
+        request.user = self.user
+        response = cybderduck_connection_window(request)
+        self.assertEqual(response.status_code, 200)
 
 
 class SFTPDManagementTestCase(TestCase):
