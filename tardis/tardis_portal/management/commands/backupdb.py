@@ -5,9 +5,12 @@ from os import makedirs
 from os.path import exists, join
 import subprocess
 import time
+import warnings
 
 from optparse import make_option
 from django.core.management.base import BaseCommand
+
+from tardis.tardis_portal.deprecations import RemovedInMyTardis310Warning
 
 
 class Command(BaseCommand):
@@ -22,6 +25,16 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         from django.conf import settings
+
+        warnings.warn(
+            "The backupdb command will be removed in MyTardis 3.10. "
+            "Database engines commonly used with MyTardis provide their "
+            "own database backup commands, e.g. pg_dump, mysqldump. "
+            "There are Python packages for doing backups via Django, "
+            "e.g. django-backup, but they are not currently used by the "
+            "MyTardis core developers.",
+            RemovedInMyTardis310Warning
+        )
 
         database = options.get('database')
         if not database:

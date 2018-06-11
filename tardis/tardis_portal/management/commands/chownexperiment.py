@@ -33,12 +33,14 @@ Management command to change the owner of some experiments
 
 import sys
 import traceback
+import warnings
 from optparse import make_option
 
 from django.core.management.base import BaseCommand, CommandError
 from django.contrib.auth.models import User
 from django.db import transaction, DEFAULT_DB_ALIAS
 
+from tardis.tardis_portal.deprecations import RemovedInMyTardis310Warning
 from tardis.tardis_portal.models import Experiment
 
 
@@ -66,6 +68,11 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
+        warnings.warn(
+            "The chownexperiment command has been broken since ExperimentACLs were "
+            "replaced by ObjectACLs.  It will be removed in MyTardis 3.10.",
+            RemovedInMyTardis310Warning
+        )
         if len(args) < 1:
             raise CommandError("Expected a user name and some experiment ids")
         try:

@@ -1,9 +1,10 @@
 import logging
 import operator
 import json
-import pytz
+import warnings
 
 import dateutil.parser
+import pytz
 
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
@@ -14,6 +15,7 @@ from django.db import models
 from django.utils.safestring import mark_safe
 from django.utils.timezone import is_aware, is_naive, make_aware, make_naive
 
+from tardis.tardis_portal.deprecations import RemovedInMyTardis310Warning
 from tardis.tardis_portal.ParameterSetManager import ParameterSetManager
 from tardis.tardis_portal.managers import OracleSafeManager,\
     ParameterNameManager, SchemaManager
@@ -113,6 +115,10 @@ class Schema(models.Model):
 
     @classmethod
     def get_internal_schema(cls, schema_type):
+        warnings.warn(
+            "This method is no longer used and will be removed in MyTardis 3.10.",
+            RemovedInMyTardis310Warning
+        )
         name_prefix, ns_prefix = getattr(
             settings, 'INTERNAL_SCHEMA_PREFIXES',
             ('internal schema', 'http://mytardis.org/schemas/internal'))
@@ -247,6 +253,11 @@ def _get_string_parameter_as_image_element(parameter):
     :return: An HTML formated img element, or None
     :rtype: basestring | types.NoneType
     """
+    warnings.warn(
+	"This method is no longer used and will be removed in MyTardis 3.10. "
+        "It was previously used for storing thumbnails in Base64 format.",
+	RemovedInMyTardis310Warning
+    )
     assert parameter.name.isString(), \
         "'*Image' parameters are expected to be of type STRING"
 
