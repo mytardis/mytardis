@@ -8,7 +8,7 @@ from urllib2 import urlopen
 
 from django.core.management.base import BaseCommand, CommandError
 
-from tardis.tardis_portal.deprecations import RemovedInMyTardis310Warning
+from tardis.tardis_portal.deprecations import RemovedInMyTardis311Warning
 from tardis.tardis_portal.models import DataFile
 
 CHUNK_SIZE = 32*1024
@@ -28,11 +28,11 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         warnings.warn(
-            "The checkhashes command will be removed in MyTardis 3.10. "
+            "The checkhashes command will be removed in MyTardis 3.11. "
             "Attempting to iterate through DataFile.objects.all() and compute "
             "hashes for all files from a management command is not scalable "
             "or useful in large MyTardis deployments.",
-            RemovedInMyTardis310Warning
+            RemovedInMyTardis311Warning
         )
         verbosity = int(options.get('verbosity', 1))
 

@@ -15,7 +15,7 @@ from django.db import models
 from django.utils.safestring import mark_safe
 from django.utils.timezone import is_aware, is_naive, make_aware, make_naive
 
-from tardis.tardis_portal.deprecations import RemovedInMyTardis310Warning
+from tardis.tardis_portal.deprecations import RemovedInMyTardis311Warning
 from tardis.tardis_portal.ParameterSetManager import ParameterSetManager
 from tardis.tardis_portal.managers import OracleSafeManager,\
     ParameterNameManager, SchemaManager
@@ -116,8 +116,8 @@ class Schema(models.Model):
     @classmethod
     def get_internal_schema(cls, schema_type):
         warnings.warn(
-            "This method is no longer used and will be removed in MyTardis 3.10.",
-            RemovedInMyTardis310Warning
+            "This method is no longer used and will be removed in MyTardis 3.11.",
+            RemovedInMyTardis311Warning
         )
         name_prefix, ns_prefix = getattr(
             settings, 'INTERNAL_SCHEMA_PREFIXES',
@@ -254,9 +254,9 @@ def _get_string_parameter_as_image_element(parameter):
     :rtype: basestring | types.NoneType
     """
     warnings.warn(
-	"This method is no longer used and will be removed in MyTardis 3.10. "
+	"This method is no longer used and will be removed in MyTardis 3.11. "
         "It was previously used for storing thumbnails in Base64 format.",
-	RemovedInMyTardis310Warning
+	RemovedInMyTardis311Warning
     )
     assert parameter.name.isString(), \
         "'*Image' parameters are expected to be of type STRING"

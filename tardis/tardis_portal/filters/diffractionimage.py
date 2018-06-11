@@ -42,7 +42,7 @@ import subprocess
 import tempfile
 import warnings
 
-from tardis.tardis_portal.deprecations import RemovedInMyTardis310Warning
+from tardis.tardis_portal.deprecations import RemovedInMyTardis311Warning
 from tardis.tardis_portal.models import Schema, DatafileParameterSet
 from tardis.tardis_portal.models import ParameterName, DatafileParameter
 
@@ -108,11 +108,11 @@ class DiffractionImageFilter(object):
         type created: bool
         """
         warnings.warn(
-            "The diffractionimage filter will be removed in MyTardis 3.10. "
+            "The diffractionimage filter will be removed in MyTardis 3.11. "
             "It is no longer used in the MyTardis deployment it was developed "
             "for, and it is too deployment-specific to be included in the "
             "core MyTardis repository.",
-            RemovedInMyTardis310Warning
+            RemovedInMyTardis311Warning
         )
         instance = kwargs.get('instance')
 

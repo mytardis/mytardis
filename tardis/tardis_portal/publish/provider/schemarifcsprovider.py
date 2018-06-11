@@ -5,7 +5,7 @@ from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from html2text import html2text
 
-from tardis.tardis_portal.deprecations import RemovedInMyTardis310Warning
+from tardis.tardis_portal.deprecations import RemovedInMyTardis311Warning
 from tardis.tardis_portal.models import ExperimentParameter, ExperimentParameterSet, ParameterName, Schema
 from tardis.tardis_portal.ParameterSetManager import ParameterSetManager
 
@@ -27,10 +27,10 @@ class SchemaRifCsProvider(rifcsprovider.RifCsProvider):
         self.creative_commons_schema_ns = 'http://www.tardis.edu.au/schemas/creative_commons/2011/05/17'
         self.annotation_schema_ns = 'http://www.tardis.edu.au/schemas/experiment/annotation/2011/07/07'
         warnings.warn(
-            "The SchemaRifCsProvider class will be removed in MyTardis 3.10. "
+            "The SchemaRifCsProvider class will be removed in MyTardis 3.11. "
             "Please use "
             "tardis.tardis_portal.publish.provider.rifcsprovider.RifCsProvider ",
-            RemovedInMyTardis310Warning
+            RemovedInMyTardis311Warning
         )
 
     def can_publish(self, experiment):
