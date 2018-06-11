@@ -696,6 +696,9 @@ def remove_experiment_access_group(request, experiment_id, group_id):
     try:
         experiment = Experiment.objects.get(pk=experiment_id)
     except Experiment.DoesNotExist:
+        # This will never be reached because the
+        # @authz.experiment_ownership_required has already
+        # checked this.
         return HttpResponse('Experiment does not exist')
 
     acl = ObjectACL.objects.filter(
