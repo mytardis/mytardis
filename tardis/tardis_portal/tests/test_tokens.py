@@ -31,15 +31,22 @@
 """
 test_tokens.py
 """
+import re
 import sys
 
 import datetime
 from datetime import datetime as old_datetime
 
+from django.test import RequestFactory
 from django.test import TestCase
 from django.conf import settings
+from django.contrib.auth.models import User
 
+from tardis.tardis_portal.models import Experiment
+from tardis.tardis_portal.models import ObjectACL
 from tardis.tardis_portal.models import Token
+
+from tardis.tardis_portal.views.authorisation import retrieve_access_list_tokens
 
 
 class FrozenTime:
@@ -75,8 +82,6 @@ class TokenTestCase(TestCase):
     urls = 'tardis.tardis_portal.tests.urls'
 
     def setUp(self):
-        from django.contrib.auth.models import User
-        from tardis.tardis_portal.models import Experiment
         user = 'tardis_user1'
         pwd = 'secret'
         email = ''
@@ -201,3 +206,38 @@ class TokenTestCase(TestCase):
         t = Token(user=self.user, experiment=self.experiment)
         t.save_with_random_token()
         self.assertTrue(len(t.token) > 0)
+
+    def test_retrieve_access_list_tokens(self):
+        sys.modules['datetime'].datetime = old_datetime
+        experiment = Experiment(title='test exp1', created_by=self.user)
+        experiment.save()
+        acl = ObjectACL(pluginId='django_user',
+                        entityId=str(self.user.id),
+                        content_object=experiment,
+                        canRead=True,
+                        canWrite=True,
+                        canDelete=True,
+                        isOwner=True)
+        acl.save()
+
+        now = old_datetime.now()
+        today = now.date()
+        tomorrow = today + datetime.timedelta(1)
+
+        token = Token(experiment=experiment, user=self.user)
+        token.expiry_date = tomorrow
+        token.save()
+
+        factory = RequestFactory()
+        request = factory.get(
+            '/experiment/control_panel/%s/access_list/tokens/'
+            % experiment.id)
+        request.user = self.user
+        response = retrieve_access_list_tokens(
+            request, experiment_id=experiment.id)
+        matches = re.findall(
+            'href="/token/delete/[0-9]+/"', response.content)
+        self.assertEqual(len(matches), 1)
+        self.assertIn(
+            'href="/token/delete/%s/"' % token.id,
+            response.content)
