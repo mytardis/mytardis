@@ -764,7 +764,7 @@ def share(request, experiment_id):
         authz.has_write_permissions(request, experiment_id)
     c['has_download_permissions'] = \
         authz.has_experiment_download_access(request, experiment_id)
-    if user.is_authenticated():
+    if user.is_authenticated:
         c['is_owner'] = authz.has_experiment_ownership(request, experiment_id)
         c['is_superuser'] = user.is_superuser
 
