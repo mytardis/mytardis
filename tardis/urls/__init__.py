@@ -102,7 +102,7 @@ urlpatterns = [
 
     # Admin
     url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
-    url(r'^admin/', include(admin.site.urls)),
+    url(r'^admin/', admin.site.urls),
 
     url(r'^upload/(?P<dataset_id>\d+)/$', upload,
         name='tardis.tardis_portal.views.upload'),
