@@ -35,12 +35,12 @@ import sys
 import traceback
 import logging
 from optparse import make_option
+from importlib import import_module
 
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction, DEFAULT_DB_ALIAS
 from django.core.exceptions import ImproperlyConfigured
-from django.utils.importlib import import_module
 
 from tardis.tardis_portal.models import Experiment, Dataset, DataFile
 
@@ -55,27 +55,34 @@ Note that a typical ingestion filter sets a 'flag' parameter in its
 Datafile's parameter set to avoid adding multiple copies of the ingested
 metadata parameters.  This command cannot override that flag to force
 metadata to be reingested."""
-    option_list = BaseCommand.option_list + (
-        make_option('--dryRun', '-n',
-                    action='store_true',
-                    dest='dryRun',
-                    default=False,
-                    help="Don't commit the results of running the " \
-                        "filters to the database.  Warning: does not " \
-                        "handle non-database changes made by a filter!"),
-        ) + (
-        make_option('--list', '-l',
-                    action='store_true',
-                    dest='list',
-                    default=False,
-                    help="List the ingestion filters configured in "
-                         "settings.POST_SAVE_FILTERS"),
-        ) + (
-        make_option('--all', '-a',
-                    action='store_true',
-                    dest='all',
-                    default=False,
-                    help="Run all available filters"),
+
+    def add_arguments(self, parser):
+        # Positional arguments
+
+        # Named (optional) arguments
+        parser.add_argument(
+            '--dryRun', '-n',
+            action='store_true',
+            default=False,
+            dest='dryRun',
+	    help="Don't commit the results of running the " \
+		"filters to the database.  Warning: does not " \
+		"handle non-database changes made by a filter!"
+        )
+        parser.add_argument(
+            '--list',
+            action='store_true',
+            default=False,
+            dest='list',
+	    help="List the ingestion filters configured in "
+		 "settings.POST_SAVE_FILTERS"
+        )
+        parser.add_argument(
+            '--all',
+            action='store_true',
+            default=False,
+            dest='all',
+	    help="Run all available filters"
         )
 
     def handle(self, *args, **options):
@@ -143,8 +150,7 @@ metadata to be reingested."""
 
     def runFilters(self, filters, dryRun=False):
         using = DEFAULT_DB_ALIAS
-        transaction.enter_transaction_management(using=using)
-        try:
+        with transaction.atomic(using=using):
             for datafile in DataFile.objects.all():
                 # Use a transaction to process each Datafile
                 transaction.managed(True, using=using)
@@ -163,8 +169,6 @@ metadata to be reingested."""
                                            "rolled back transaction" % \
                                                (exc or exc_class))
                     raise new_exc.__class__, new_exc, tb
-        finally:
-            transaction.leave_transaction_management(using=using)
 
     def listFilters(self):
         if self.availableFilters:

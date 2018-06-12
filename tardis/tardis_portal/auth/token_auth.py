@@ -21,25 +21,6 @@ def _ensure_acl_exists(experiment_id):
         aclOwnershipType=ObjectACL.OWNER_OWNED)
 
 
-# def authenticate(request, token_string):
-#     try:
-#         token = Token.objects.get(token=token_string)
-#     except Token.DoesNotExist:
-#         return None
-#     else:
-#         if token.is_expired():
-#             return None
-
-#     user = User.objects.get(username=settings.TOKEN_USERNAME)
-#     user.backend = 'django.contrib.auth.backends.ModelBackend'
-
-#     request.session[TOKEN_EXPERIMENT] = token.experiment.id
-#     _ensure_acl_exists(token.experiment.id)
-#     request.session.set_expiry(token.get_session_expiry())
-
-#     return user
-
-
 class TokenGroupProvider(GroupProvider):
     '''
     Transforms tokens into auth groups
@@ -70,6 +51,13 @@ class TokenAuthMiddleware(object):
     '''
     adds tokens to the user object and the session from a GET query
     '''
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        self.process_request(request)
+        response = self.get_response(request)
+        return response
 
     def process_request(self, request):
         all_tokens_set = set()

@@ -113,25 +113,6 @@ class Schema(models.Model):
             type_list = cls._SCHEMA_TYPES
         return dict(type_list).get(schema_type, None)
 
-    @classmethod
-    def get_internal_schema(cls, schema_type):
-        warnings.warn(
-            "This method is no longer used and will be removed in MyTardis 3.11.",
-            RemovedInMyTardis311Warning
-        )
-        name_prefix, ns_prefix = getattr(
-            settings, 'INTERNAL_SCHEMA_PREFIXES',
-            ('internal schema', 'http://mytardis.org/schemas/internal'))
-        type_name = cls.get_schema_type_name(schema_type)
-        name = name_prefix + ': ' + type_name
-        type_name_short = cls.get_schema_type_name(schema_type, short=True)
-        ns = '/'.join([ns_prefix, type_name_short])
-        return Schema.objects.get_or_create(
-            name=name,
-            namespace=ns,
-            type=schema_type,
-            hidden=True)[0]
-
     def __unicode__(self):
         return self._getSchemaTypeName(self.type) + (
             self.subtype and ' for ' + self.subtype.upper() or ''
@@ -185,7 +166,7 @@ class ParameterName(models.Model):
         (JSON, 'JSON'),
         )
 
-    schema = models.ForeignKey(Schema)
+    schema = models.ForeignKey(Schema, on_delete=models.CASCADE)
     name = models.CharField(max_length=60)
     full_name = models.CharField(max_length=60)
     units = models.CharField(max_length=60, blank=True)
@@ -239,60 +220,6 @@ class ParameterName(models.Model):
         return self.data_type == self.JSON
 
 
-def _get_string_parameter_as_image_element(parameter):
-    """
-    Detect if a parameter name contains the suffix 'Image' in a parameter set
-    associated with an Experiment, Dataset or DataFile.
-    If so, return an associated HTML <img> element.
-
-    Associated ParameterName must be of type STRING, however the
-    string_value is not used.
-
-    :param parameter: The Parameter instance
-    :type parameter: tardis.tardis_portal.models.parameters.Parameter
-    :return: An HTML formated img element, or None
-    :rtype: basestring | types.NoneType
-    """
-    warnings.warn(
-	"This method is no longer used and will be removed in MyTardis 3.11. "
-        "It was previously used for storing thumbnails in Base64 format.",
-	RemovedInMyTardis311Warning
-    )
-    assert parameter.name.isString(), \
-        "'*Image' parameters are expected to be of type STRING"
-
-    if parameter.name.isString() and parameter.name.name.endswith('Image'):
-        parset = type(parameter.parameterset).__name__
-        viewname = None
-        args = []
-        if parset == 'DatafileParameterSet':
-            dfid = parameter.parameterset.datafile.id
-            psid = parameter.parameterset.id
-            viewname = 'tardis.tardis_portal.views.display_datafile_image'
-            args = [dfid, psid, parameter.name]
-        elif parset == 'DatasetParameterSet':
-            dsid = parameter.parameterset.dataset.id
-            psid = parameter.parameterset.id
-            viewname = 'tardis.tardis_portal.views.display_dataset_image'
-            args = [dsid, psid, parameter.name]
-        elif parset == 'ExperimentParameterSet':
-            eid = parameter.parameterset.dataset.id
-            psid = parameter.parameterset.id
-            viewname = 'tardis.tardis_portal.views.display_experiment_image'
-            args = [eid, psid, parameter.name]
-        # elif parset == 'InstrumentParameterSet':
-        #     iid = parameter.parameterset.instrument.id
-        #     psid = parameter.parameterset.id
-        #     viewname = 'tardis.tardis_portal.views.display_instrument_image'
-        #     args = [iid, psid, parameter.name]
-        if viewname is not None:
-            value = "<img src='%s' />" % reverse(viewname=viewname,
-                                                 args=args)
-            return mark_safe(value)
-
-    return None
-
-
 def _get_filename_parameter_as_image_element(parameter):
     """
     Detect if a parameter name contains the prefix 'image' in a parameter set
@@ -342,14 +269,8 @@ def _get_parameter(parameter):
             value += ' %s' % units
         return value
 
-    elif parameter.name.isLongString():
+    elif parameter.name.isLongString() or parameter.name.isString():
         return parameter.string_value
-
-    elif parameter.name.isString():
-        as_img_element = _get_string_parameter_as_image_element(parameter)
-
-        return as_img_element if as_img_element is not None else \
-            parameter.string_value
 
     elif parameter.name.isFilename():
         as_img_element = _get_filename_parameter_as_image_element(parameter)
@@ -385,7 +306,7 @@ def _get_parameter(parameter):
 
 
 class ParameterSet(models.Model, ParameterSetManagerMixin):
-    schema = models.ForeignKey(Schema)
+    schema = models.ForeignKey(Schema, on_delete=models.CASCADE)
     storage_box = models.ManyToManyField(
         StorageBox, related_name='%(class)ss')
     parameter_class = None
@@ -439,13 +360,14 @@ class ParameterSet(models.Model, ParameterSetManagerMixin):
 
 
 class Parameter(models.Model):
-    name = models.ForeignKey(ParameterName)
+    name = models.ForeignKey(ParameterName, on_delete=models.CASCADE)
     # string_value has a custom index created via migrations (for Postgresql)
     string_value = models.TextField(null=True, blank=True)
     numerical_value = models.FloatField(null=True, blank=True, db_index=True)
     datetime_value = models.DateTimeField(null=True, blank=True, db_index=True)
     link_id = models.PositiveIntegerField(null=True, blank=True)
-    link_ct = models.ForeignKey(ContentType, null=True, blank=True)
+    link_ct = models.ForeignKey(
+        ContentType, null=True, blank=True, on_delete=models.CASCADE)
     link_gfk = GenericForeignKey('link_ct', 'link_id')
     objects = OracleSafeManager()
     parameter_type = 'Abstract'
@@ -566,17 +488,20 @@ class Parameter(models.Model):
 
 
 class DatafileParameter(Parameter):
-    parameterset = models.ForeignKey('DatafileParameterSet')
+    parameterset = models.ForeignKey(
+        'DatafileParameterSet', on_delete=models.CASCADE)
     parameter_type = 'Datafile'
 
 
 class DatasetParameter(Parameter):
-    parameterset = models.ForeignKey('DatasetParameterSet')
+    parameterset = models.ForeignKey(
+        'DatasetParameterSet', on_delete=models.CASCADE)
     parameter_type = 'Dataset'
 
 
 class ExperimentParameter(Parameter):
-    parameterset = models.ForeignKey('ExperimentParameterSet')
+    parameterset = models.ForeignKey(
+        'ExperimentParameterSet', on_delete=models.CASCADE)
     parameter_type = 'Experiment'
 
     def save(self, *args, **kwargs):
@@ -589,12 +514,13 @@ class ExperimentParameter(Parameter):
 
 
 class InstrumentParameter(Parameter):
-    parameterset = models.ForeignKey('InstrumentParameterSet')
+    parameterset = models.ForeignKey(
+        'InstrumentParameterSet', on_delete=models.CASCADE)
     parameter_type = 'Instrument'
 
 
 class DatafileParameterSet(ParameterSet):
-    datafile = models.ForeignKey(DataFile)
+    datafile = models.ForeignKey(DataFile, on_delete=models.CASCADE)
     parameter_class = DatafileParameter
 
     def _get_label(self):
@@ -602,7 +528,7 @@ class DatafileParameterSet(ParameterSet):
 
 
 class DatasetParameterSet(ParameterSet):
-    dataset = models.ForeignKey(Dataset)
+    dataset = models.ForeignKey(Dataset, on_delete=models.CASCADE)
     parameter_class = DatasetParameter
 
     def _get_label(self):
@@ -610,7 +536,7 @@ class DatasetParameterSet(ParameterSet):
 
 
 class InstrumentParameterSet(ParameterSet):
-    instrument = models.ForeignKey(Instrument)
+    instrument = models.ForeignKey(Instrument, on_delete=models.CASCADE)
     parameter_class = InstrumentParameter
 
     def _get_label(self):
@@ -618,7 +544,7 @@ class InstrumentParameterSet(ParameterSet):
 
 
 class ExperimentParameterSet(ParameterSet):
-    experiment = models.ForeignKey(Experiment)
+    experiment = models.ForeignKey(Experiment, on_delete=models.CASCADE)
     parameter_class = ExperimentParameter
 
     def _get_label(self):
@@ -627,7 +553,7 @@ class ExperimentParameterSet(ParameterSet):
 
 class FreeTextSearchField(models.Model):
 
-    parameter_name = models.ForeignKey(ParameterName)
+    parameter_name = models.ForeignKey(ParameterName, on_delete=models.CASCADE)
 
     class Meta:
         app_label = 'tardis_portal'

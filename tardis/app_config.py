@@ -43,7 +43,8 @@ def get_tardis_apps():
     """
     tardis_apps = []
     for app_name, app_config in apps.app_configs.items():
-        if is_tardis_app(app_config):
+        if is_tardis_app(app_config) and \
+                app_config.name in settings.INSTALLED_APPS:
             tardis_apps.append((app_name, app_config.name))
     return tardis_apps
 

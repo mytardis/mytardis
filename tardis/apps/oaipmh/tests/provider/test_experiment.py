@@ -1,8 +1,6 @@
 from abc import ABCMeta, abstractmethod
 
-from compare import expect
-
-from django.contrib.sites.models import RequestSite
+from django.contrib.sites.requests import RequestSite
 from django.test import TestCase
 
 import oaipmh.error
@@ -79,8 +77,8 @@ class AbstractExperimentProviderTC():
         '''
         There can be only one provider that responds. This one does not.
         '''
-        expect(lambda: self._getProvider().identify())\
-            .to_raise(NotImplementedError)
+        with self.assertRaises(NotImplementedError):
+            self._getProvider().identify()()
 
     def testGetRecordHandlesInvalidIdentifiers(self):
         for id_ in ['experiment-1', 'MyTardis/1']:
@@ -100,27 +98,30 @@ class AbstractExperimentProviderTC():
                 continue
             e = self._experiment if header.identifier() == _get_first_exp_id() \
                 else self._experiment2
-            expect(header.identifier()).to_contain(str(e.id))
-            expect(header.datestamp().replace(tzinfo=pytz.utc)) \
-                .to_equal(get_local_time(e.update_time))
+            self.assertIn(str(e.id), header.identifier())
+            self.assertEquals(
+                header.datestamp().replace(tzinfo=pytz.utc),
+                get_local_time(e.update_time))
         # Remove public flag on first experiment
         self._experiment.public_access = Experiment.PUBLIC_ACCESS_NONE
         self._experiment.save()
         headers = self._getProvider() \
             .listIdentifiers(self._getProviderMetadataPrefix())
         # First is not public, so should not appear
-        expect(len(headers)).to_equal(1)
+        self.assertEqual(len(headers), 1)
 
     def testListIdentifiersDoesNotHandleSets(self):
         def call_with_set():
             self._getProvider() \
                 .listIdentifiers(self._getProviderMetadataPrefix(),
                                  set='foo')
-        expect(call_with_set).to_raise(oaipmh.error.NoSetHierarchyError)
+            with self.assertRaises(oaipmh.error.NoSetHierarchyError):
+                call_with_set()
 
     def testListMetadataFormats(self):
-        expect(map(lambda t: t[0], self._getProvider().listMetadataFormats())) \
-            .to_equal([self._getProviderMetadataPrefix()])
+        self.assertEqual(
+            map(lambda t: t[0], self._getProvider().listMetadataFormats()),
+            [self._getProviderMetadataPrefix()])
 
     def testListSets(self):
         try:
@@ -147,14 +148,16 @@ class DcExperimentProviderTestCase(AbstractExperimentProviderTC, TestCase):
     def testGetRecord(self):
         header, metadata, about = self._getProvider().getRecord('oai_dc', \
                                                     _get_first_exp_id())
-        expect(header.identifier()).to_contain(str(self._experiment.id))
-        expect(header.datestamp().replace(tzinfo=pytz.utc))\
-            .to_equal(get_local_time(self._experiment.update_time))
-        expect(metadata.getField('title'))\
-            .to_equal([str(self._experiment.title)])
-        expect(metadata.getField('description'))\
-            .to_equal([str(self._experiment.description)])
-        expect(about).to_equal(None)
+        self.assertIn(str(self._experiment.id), header.identifier())
+        self.assertEqual(
+            header.datestamp().replace(tzinfo=pytz.utc),
+            get_local_time(self._experiment.update_time))
+        self.assertEqual(
+            metadata.getField('title'), [str(self._experiment.title)])
+        self.assertEqual(
+            metadata.getField('description'),
+            [str(self._experiment.description)])
+        self.assertIsNone(about)
 
     def testListRecords(self):
         results = self._getProvider().listRecords('oai_dc')
@@ -162,21 +165,22 @@ class DcExperimentProviderTestCase(AbstractExperimentProviderTC, TestCase):
         for header, metadata, _ in results:
             e = self._experiment if header.identifier() == _get_first_exp_id() \
                 else self._experiment2
-            expect(header.identifier()).to_contain(str(e.id))
-            expect(header.datestamp().replace(tzinfo=pytz.utc))\
-                .to_equal(get_local_time(e.update_time))
-            expect(metadata.getField('title'))\
-                .to_equal([str(e.title)])
-            expect(metadata.getField('description'))\
-                .to_equal([str(e.description)])
+            self.assertIn(str(e.id), header.identifier())
+            self.assertEqual(
+                header.datestamp().replace(tzinfo=pytz.utc),
+                get_local_time(e.update_time))
+            self.assertEqual(
+                metadata.getField('title'), [str(e.title)])
+            self.assertEqual(
+                metadata.getField('description'), [str(e.description)])
         # There should have been two
-        expect(len(results)).to_equal(2)
+        self.assertEqual(len(results), 2)
         # Remove public flag on first one
         self._experiment.public_access = Experiment.PUBLIC_ACCESS_NONE
         self._experiment.save()
         headers = self._getProvider().listRecords('oai_dc')
         # First one not public, so should not appear
-        expect(len(headers)).to_equal(1)
+        self.assertEqual(len(headers), 1)
 
 
 class RifCsExperimentProviderTestCase(AbstractExperimentProviderTC, TestCase):
@@ -193,30 +197,36 @@ class RifCsExperimentProviderTestCase(AbstractExperimentProviderTC, TestCase):
     def testGetRecord(self):
         header, metadata, about = self._getProvider().getRecord('rif',
                                                      _get_first_exp_id())
-        expect(header.identifier()).to_contain(str(self._experiment.id))
-        expect(header.datestamp().replace(tzinfo=pytz.utc))\
-            .to_equal(get_local_time(self._experiment.update_time))
+        self.assertIn(str(self._experiment.id), header.identifier())
+        self.assertEqual(
+            header.datestamp().replace(tzinfo=pytz.utc),
+            get_local_time(self._experiment.update_time))
         ns = 'http://ands.org.au/standards/rif-cs/registryObjects#relatedInfo'
         ps_id = ExperimentParameterSet.objects\
                 .filter(experiment=self._experiment,schema__namespace=ns).first().id
-        expect(metadata.getField('id')).to_equal(self._experiment.id)
-        expect(metadata.getField('title'))\
-            .to_equal(str(self._experiment.title))
-        expect(metadata.getField('description'))\
-            .to_equal(str(self._experiment.description))
-        expect(metadata.getField('licence_uri'))\
-            .to_equal(License.get_none_option_license().url)
-        expect(metadata.getField('licence_name'))\
-            .to_equal(License.get_none_option_license().name)
-        expect(metadata.getField('related_info'))\
-            .to_equal([{'notes': 'This is a note.', \
-                        'identifier': 'https://www.example.com/', \
-                        'type': 'website', \
-                        'id': ps_id, \
-                        'title': 'Google'}])
-        expect(len(metadata.getField('collectors')))\
-            .to_equal(2)
-        expect(about).to_equal(None)
+        self.assertEqual(
+            metadata.getField('id'), self._experiment.id)
+        self.assertEqual(
+            metadata.getField('title'), str(self._experiment.title))
+        self.assertEqual(
+            metadata.getField('description'),
+            str(self._experiment.description))
+        self.assertEqual(
+            metadata.getField('licence_uri'),
+            License.get_none_option_license().url)
+        self.assertEqual(
+            metadata.getField('licence_name'),
+            License.get_none_option_license().name)
+        self.assertEqual(
+            metadata.getField('related_info'),
+            [{'notes': 'This is a note.', \
+                       'identifier': 'https://www.example.com/', \
+                       'type': 'website', \
+                       'id': ps_id, \
+                       'title': 'Google'}])
+        self.assertEqual(
+            len(metadata.getField('collectors')), 2)
+        self.assertIsNone(about)
 
     def testListRecords(self):
         results = self._getProvider().listRecords('rif')
@@ -225,48 +235,56 @@ class RifCsExperimentProviderTestCase(AbstractExperimentProviderTC, TestCase):
             if header.identifier().startswith('experiment'):
                 e = self._experiment if header.identifier() == _get_first_exp_id() \
                     else self._experiment2
-                expect(header.identifier()).to_contain(str(e.id))
-                expect(header.datestamp().replace(tzinfo=pytz.utc))\
-                    .to_equal(get_local_time(e.update_time))
-                expect(metadata.getField('title'))\
-                    .to_equal(str(e.title))
-                expect(metadata.getField('description'))\
-                    .to_equal(str(e.description))
-                expect(metadata.getField('licence_uri'))\
-                    .to_equal(License.get_none_option_license().url)
-                expect(metadata.getField('licence_name'))\
-                    .to_equal(License.get_none_option_license().name)
+                self.assertIn(str(e.id), header.identifier())
+                self.assertEqual(
+                    header.datestamp().replace(tzinfo=pytz.utc),
+                    get_local_time(e.update_time))
+                self.assertEqual(
+                    metadata.getField('title'), str(e.title))
+                self.assertEqual(
+                    metadata.getField('description'), str(e.description))
+                self.assertEqual(
+                    metadata.getField('licence_uri'),
+                    License.get_none_option_license().url)
+                self.assertEqual(
+                    metadata.getField('licence_name'),
+                    License.get_none_option_license().name)
                 if e == self._experiment:
                     ns = 'http://ands.org.au/standards/rif-cs/registryObjects#relatedInfo'
                     ps_id = ExperimentParameterSet.objects\
                       .filter(experiment=self._experiment,schema__namespace=ns).first().id
-                    expect(metadata.getField('related_info'))\
-                        .to_equal([{'notes': 'This is a note.', \
-                                        'identifier': 'https://www.example.com/', \
-                                        'type': 'website', \
-                                        'id': ps_id, \
-                                        'title': 'Google'}])
+                    self.assertEqual(
+                        metadata.getField('related_info'),
+                        [{'notes': 'This is a note.', \
+                                   'identifier': 'https://www.example.com/', \
+                                   'type': 'website', \
+                                   'id': ps_id, \
+                                   'title': 'Google'}])
                 else:
-                    expect(metadata.getField('related_info')).to_equal([{}])
+                    self.assertEqual(
+                        metadata.getField('related_info'), [{}])
             else:
-                expect(header.identifier()).to_contain(str(self._user.id))
-                expect(header.datestamp().replace(tzinfo=pytz.utc))\
-                    .to_equal(get_local_time(self._user.last_login))
-                expect(metadata.getField('id')).to_equal(self._user.id)
-                expect(metadata.getField('email'))\
-                    .to_equal(str(self._user.email))
-                expect(metadata.getField('given_name'))\
-                    .to_equal(str(self._user.first_name))
-                expect(metadata.getField('family_name'))\
-                    .to_equal(str(self._user.last_name))
+                self.assertIn(str(self._user.id), header.identifier())
+                self.assertEqual(
+                    header.datestamp().replace(tzinfo=pytz.utc),
+                    get_local_time(self._user.last_login))
+                self.assertEqual(metadata.getField('id'), self._user.id)
+                self.assertEqual(
+                    metadata.getField('email'), str(self._user.email))
+                self.assertEqual(
+                    metadata.getField('given_name'),
+                    str(self._user.first_name))
+                self.assertEqual(
+                    metadata.getField('family_name'),
+                    str(self._user.last_name))
         # There should have been two
-        expect(len(results)).to_equal(2)
+        self.assertEqual(len(results), 2)
         # Remove public flag on first experiment
         self._experiment.public_access = Experiment.PUBLIC_ACCESS_NONE
         self._experiment.save()
         headers = self._getProvider().listRecords('rif')
         # Should now be one
-        expect(len(headers)).to_equal(1)
+        self.assertEqual(len(headers), 1)
 
     def tearDown(self):
         pass

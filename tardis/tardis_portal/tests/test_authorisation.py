@@ -749,6 +749,24 @@ class ObjectACLTestCase(TestCase):
         response = self.client3.get('/experiment/edit/%i/' % (self.experiment1.id))
         self.assertEqual(response.status_code, 200)
 
+        # Now remove group from experiment1:
+        response = self.client1.get('/experiment/control_panel/%i'
+                                    '/access_list/remove/group/%s/'
+                                    % (self.experiment1.id, group.id))
+        self.assertEqual(response.status_code, 200)
+
+        # Try to remove the same group we just removed:
+        response = self.client1.get('/experiment/control_panel/%i'
+                                    '/access_list/remove/group/%s/'
+                                    % (self.experiment1.id, group.id))
+        self.assertIn('No ACL available', response.content)
+
+        # Try to remove a group ID which doesn't exist
+        response = self.client1.get('/experiment/control_panel/%i'
+                                    '/access_list/remove/group/0/'
+                                    % self.experiment1.id)
+        self.assertIn('Group does not exist', response.content)
+
         self.client1.logout()
         self.client2.logout()
         self.client3.logout()
@@ -787,12 +805,3 @@ class ObjectACLTestCase(TestCase):
         request.user = user
         num_exps = Experiment.safe.owned(request.user).count()
         self.assertEqual(num_exps, 0)
-
-    def testCantAddTokenuserToGroups(self):
-        from django.conf import settings
-        login = self.client3.login(username=self.user3.username, password='secret')
-        self.assertTrue(login)
-        g = Group()
-        g.save()
-        self.client3.get('/group/%s/%s/' % (g.id, settings.TOKEN_USERNAME))
-        self.assertEqual(0, g.user_set.count())  # user should not be added

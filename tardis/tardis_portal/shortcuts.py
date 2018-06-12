@@ -5,8 +5,7 @@ import re
 from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.shortcuts import render
-from django.http import HttpResponse, \
-    HttpResponseForbidden, HttpResponseNotFound, HttpResponseServerError
+from django.http import HttpResponse
 from django.template.loader import render_to_string
 from django.contrib.sites.models import Site
 
@@ -21,8 +20,6 @@ def render_response_index(request, *args, **kwargs):
 
 def render_response_search(request, url, c):
 
-    from tardis.search.views import getNewSearchDatafileSelectionForm
-
     links = {}
     for app in settings.INSTALLED_APPS:
         if app.startswith('tardis.apps.'):
@@ -32,8 +29,6 @@ def render_response_search(request, url, c):
             except:
                 pass
 
-    c['searchDatafileSelectionForm'] = \
-        getNewSearchDatafileSelectionForm(request.GET.get('type', None))
     c['links'] = links
 
     return render(request, url, c)
@@ -50,16 +45,15 @@ def render_error_message(request, message, status=400):
 
 
 def return_response_not_found(request):
-    return HttpResponseNotFound(render_response_index(request, '404.html', {}))
+    return render_response_index(request, '404.html', {}, status=404)
 
 
 def return_response_error_message(request, redirect_path, context):
-    return HttpResponseServerError(render_response_index(request,
-                                   redirect_path, context))
+    return render_response_index(request, redirect_path, context, status=500)
 
 
 def return_response_error(request):
-    return HttpResponseForbidden(render_response_index(request, '403.html', {}))
+    return render_response_index(request, '403.html', {}, status=403)
 
 
 def get_experiment_referer(request, dataset_id):

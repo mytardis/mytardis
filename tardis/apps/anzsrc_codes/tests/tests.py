@@ -1,7 +1,5 @@
 import re
 
-from compare import expect, ensure, matcher
-
 from django.test import TestCase
 from django.test.client import Client
 from django.core.urlresolvers import reverse
@@ -46,10 +44,10 @@ class TabTestCase(TestCase):
         response = client.get(\
                     reverse('tardis.apps.anzsrc_codes.views.index',
                             args=[self.experiment.id]))
-        expect(response.status_code).to_equal(403)
+        self.assertEqual(response.status_code, 403)
 
     def testAccessWithReadPerms(self):
         response = self.client.get(\
                     reverse('tardis.apps.anzsrc_codes.views.index',
                             args=[self.experiment.id]))
-        expect(response.status_code).to_equal(200)
+        self.assertEqual(response.status_code, 200)

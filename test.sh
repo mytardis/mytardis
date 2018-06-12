@@ -5,15 +5,11 @@ if [ -v EXTRA_REQS ]; then
 fi
 
 # select test to run with TEST_TYPE, memory pg mysql pylint
-# only memory will include coverage for now
 
 function run_test {
-    if [ "$2" == "coverage" ]; then
-	TEST_ARGS="--with-coverage --cover-package=tardis $TEST_ARGS"
-    fi
-    python test.py test --settings=$1 $TEST_ARGS
+    python test.py test --settings=$1
     result=$?
-    if [ "$2" == "coverage" ]; then
+    if [ "$TEST_TYPE" == "memory" ]; then
 	if [ -n "$PULL_REQUEST_NUMBER" ]; then
 	    export TRAVIS_PULL_REQUEST=$PULL_REQUEST_NUMBER;
 	else export TRAVIS_PULL_REQUEST='false'; fi
@@ -30,7 +26,7 @@ function run_test {
 
 case "$TEST_TYPE" in
     memory)
-	run_test tardis.test_settings coverage
+	run_test tardis.test_settings
 	(( exit_status = exit_status || $? ))
     ;;
     pg)
@@ -50,7 +46,7 @@ case "$TEST_TYPE" in
 	(( exit_status = exit_status || $? ))
     ;;
     *)
-	run_test tardis.test_settings coverage
+	run_test tardis.test_settings
 	(( exit_status = exit_status || $? ))
 	run_test tardis.test_on_postgresql_settings
 	(( exit_status = exit_status || $? ))
