@@ -144,10 +144,10 @@ class FilterInitTestCase(TestCase):
         finally:
             # Remove our hooks!
             for f in TEST_FILTERS:
-                post_save.disconnect(sender=DataFile, weak=False,
-                                     dispatch_uid=f[0] + ".datafile")
-                post_save.disconnect(sender=DataFileObject, weak=False,
-                                     dispatch_uid=f[0] + ".dfo")
+                post_save.disconnect(
+                    sender=DataFile, dispatch_uid=f[0] + ".datafile")
+                post_save.disconnect(
+                    sender=DataFileObject, dispatch_uid=f[0] + ".dfo")
 
 
 
