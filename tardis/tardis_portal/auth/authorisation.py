@@ -17,7 +17,7 @@ class ACLAwareBackend(object):
     supports_anonymous_user = True
     app_label = 'tardis_acls'
 
-    def authenticate(self, username, password):
+    def authenticate(self, request):
         '''
         do not use this backend for authentication
         '''
