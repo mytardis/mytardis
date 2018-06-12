@@ -51,7 +51,7 @@ class FacilityOverviewTestCase(TestCase):
         self.dataset = Dataset(description='test dataset1')
         self.dataset.instrument = self.instrument
         self.dataset.save()
-        self.dataset.experiments = [self.exp, self.exp2]
+        self.dataset.experiments.set([self.exp, self.exp2])
         self.dataset.save()
 
         def _build(dataset, filename, url):
