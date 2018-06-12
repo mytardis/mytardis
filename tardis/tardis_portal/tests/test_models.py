@@ -108,7 +108,7 @@ class ModelTestCase(TestCase):
         dataset = Dataset(description='test dataset1')
         dataset.instrument = instrument
         dataset.save()
-        dataset.experiments = [exp, exp2]
+        dataset.experiments.set([exp, exp2])
         dataset.save()
         dataset_id = dataset.id
 
