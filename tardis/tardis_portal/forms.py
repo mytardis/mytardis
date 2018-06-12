@@ -53,6 +53,7 @@ from django.conf import settings
 from django.db import transaction
 from django.contrib.auth.models import User
 from django.utils.translation import ugettext_lazy as _
+from django.forms.widgets import SelectDateWidget
 
 from haystack.forms import SearchForm
 
@@ -183,7 +184,6 @@ class RegistrationForm(forms.Form):
 class ChangeUserPermissionsForm(ModelForm):
 
     class Meta:
-        from django.forms.extras.widgets import SelectDateWidget
         from tardis.tardis_portal.models import ObjectACL
         model = ObjectACL
         fields = [
@@ -200,8 +200,6 @@ class ChangeUserPermissionsForm(ModelForm):
 
 
 class ChangeGroupPermissionsForm(forms.Form):
-
-    from django.forms.extras.widgets import SelectDateWidget
 
     canRead = forms.BooleanField(label='canRead', required=False)
     canWrite = forms.BooleanField(label='canWrite', required=False)
@@ -524,7 +522,6 @@ class ExperimentForm(forms.ModelForm):
 
 def createSearchExperimentForm():
 
-    from django.forms.extras.widgets import SelectDateWidget
     from tardis.tardis_portal.models import ParameterName
 
     fields = {}
