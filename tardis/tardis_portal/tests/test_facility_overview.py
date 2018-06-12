@@ -24,7 +24,7 @@ from tardis.tardis_portal.views.facilities import facility_overview_experiments
 class FacilityOverviewTestCase(TestCase):
     def setUp(self):
         username = 'tardis_user1'
-        pwd = 'secret'
+        pwd = 'secret'  # nosec
         email = ''
         self.user = User.objects.create_user(username, email, pwd)
 
