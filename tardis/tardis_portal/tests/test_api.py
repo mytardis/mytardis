@@ -370,6 +370,11 @@ class DataFileResourceTest(MyTardisResourceTestCase):
                                            data_type=ParameterName.NUMERIC)
         self.test_parname2.save()
 
+        self.datafile = DataFile(dataset=self.testds,
+                                 filename="testfile.txt",
+                                 size="42", md5sum='bogus')
+        self.datafile.save()
+
     def test_post_single_file(self):
         ds_id = Dataset.objects.first().id
         post_data = """{
@@ -474,6 +479,16 @@ class DataFileResourceTest(MyTardisResourceTestCase):
         for sent_file, new_file in zip(
                 reversed(files), DataFile.objects.order_by('-pk')[0:2]):
             self.assertEqual(sent_file['content'], new_file.get_file().read())
+
+    def test_download_file(self):
+        '''
+        Doesn't actually check the content downloaded yet
+        Just checks if the download API endpoint responds with 200
+        '''
+        output = self.api_client.get(
+	    '/api/v1/dataset_file/%d/download/' % self.datafile.id,
+            authentication=self.get_credentials())
+        self.assertEqual(output.status_code, 200)
 
 
 class DatafileParameterSetResourceTest(MyTardisResourceTestCase):
