@@ -57,7 +57,7 @@ class Migration(migrations.Migration):
                 ('logo_img', models.CharField(max_length=255, null=True, verbose_name=b'Image url', blank=True)),
                 ('host_name', models.CharField(max_length=50, verbose_name=b'Host name')),
                 ('port', models.IntegerField(default=22, verbose_name=b'Port')),
-                ('administrator', models.ForeignKey(to=settings.AUTH_USER_MODEL)),
+                ('administrator', models.ForeignKey(to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE)),
             ],
             options={
                 'abstract': False,
@@ -81,6 +81,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='credential',
             name='user',
-            field=models.ForeignKey(to=settings.AUTH_USER_MODEL),
+            field=models.ForeignKey(to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE),
         ),
     ]
