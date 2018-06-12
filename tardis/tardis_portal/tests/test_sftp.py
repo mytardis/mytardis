@@ -57,7 +57,7 @@ class SFTPTest(TestCase):
 
         self.dataset = Dataset(description='test dataset1')
         self.dataset.save()
-        self.dataset.experiments = [self.exp]
+        self.dataset.experiments.set([self.exp])
         self.dataset.save()
 
         def _build(dataset, filename, url):
