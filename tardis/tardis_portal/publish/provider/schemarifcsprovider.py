@@ -1,11 +1,18 @@
+import warnings
+
 from django.template import Context
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from html2text import html2text
 
+from tardis.tardis_portal.deprecations import RemovedInMyTardis311Warning
 from tardis.tardis_portal.models import ExperimentParameter, ExperimentParameterSet, ParameterName, Schema
 from tardis.tardis_portal.ParameterSetManager import ParameterSetManager
 
+# This schemarifcsprovider module is broken, since it depends on an old
+# unmaintained "ands_register" app which is not included in MyTardis,
+# (see PublishHandler import below), hence the deprecation warning in
+# SchemaRifCsProvider.__init__
 from tardis.apps.ands_register.publishing import PublishHandler
 
 import tardis.tardis_portal.publish.rifcsprovider as rifcsprovider
@@ -19,6 +26,12 @@ class SchemaRifCsProvider(rifcsprovider.RifCsProvider):
         self.related_info_schema_ns = settings.RELATED_INFO_SCHEMA_NAMESPACE
         self.creative_commons_schema_ns = 'http://www.tardis.edu.au/schemas/creative_commons/2011/05/17'
         self.annotation_schema_ns = 'http://www.tardis.edu.au/schemas/experiment/annotation/2011/07/07'
+        warnings.warn(
+            "The SchemaRifCsProvider class will be removed in MyTardis 3.11. "
+            "Please use "
+            "tardis.tardis_portal.publish.provider.rifcsprovider.RifCsProvider ",
+            RemovedInMyTardis311Warning
+        )
 
     def can_publish(self, experiment):
         return experiment.public_access != experiment.PUBLIC_ACCESS_NONE
