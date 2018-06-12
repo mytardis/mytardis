@@ -1,10 +1,24 @@
 Releases
 ========
 
-In development
---------------
-* Revert behaviour that allowed 'Staff' users to modify experiment ownership and
-  sharing permissions via the web UI.
+3.9
+---
+
+
+3.8
+---
+* Refactored settings
+* Added pagination to My Data view
+* BDD tests using behave and phantomjs
+* Added download MD5 checksum buttons to Dataset View
+* Add `autocaching` task that allows data from a StorageBox to be cached to
+  another StorageBox
+* Re-wrote user documentation and switched to hosting docs on RTD
+* Switched to using NPM to manage JS deps.
+* Facility and instrument are now visible on Experiment and dataset views -
+  thanks @avrljk
+* Added setting that allows datasets ordered by id on the Experiment page.
+* Added setting to make sha512 checksums optional.
 
 3.7 - 17 March 2016
 -------------------

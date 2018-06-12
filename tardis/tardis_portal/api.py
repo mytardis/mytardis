@@ -128,6 +128,7 @@ class MyTardisAuthentication(object):
                         return False
                     request._authentication_backend = apikey_auth
                     return check
+        return False
 
     def get_identifier(self, request):
         try:

@@ -13,6 +13,7 @@ set up autofs to auto-mount squashfiles
 
 import logging
 import os
+import warnings
 
 from celery.task import task
 
@@ -21,6 +22,7 @@ from django.core.exceptions import ImproperlyConfigured
 from django.core.files.storage import FileSystemStorage
 from django.utils.importlib import import_module
 
+from tardis.tardis_portal.deprecations import RemovedInMyTardis311Warning
 from tardis.tardis_portal.models import DataFile, DatafileParameterSet, \
     StorageBoxOption
 
@@ -39,6 +41,11 @@ class SquashFSStorage(FileSystemStorage):
     squashfs_dirs = getattr(settings, 'SQUASHFS_DIRS', None)
 
     def __init__(self, sq_filename=None, datafile_id=None, sq_dir=None):
+        warnings.warn(
+            "The SquashFSStorage class will be removed in MyTardis 3.11. "
+            "It is available in https://github.com/mytardis/aus_synch_app.git",
+            RemovedInMyTardis311Warning
+        )
         if SquashFSStorage.squashfs_dirs is None:
             raise ImproperlyConfigured('Please configure SQUASHFS_DIRS')
         autofs_dir, name = None, None
