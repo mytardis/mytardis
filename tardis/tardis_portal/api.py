@@ -144,7 +144,7 @@ class ACLAuthorization(Authorization):
     '''
     def read_list(self, object_list, bundle):  # noqa # too complex
         obj_ids = [obj.id for obj in object_list]
-        if bundle.request.user.is_authenticated() and \
+        if bundle.request.user.is_authenticated and \
            bundle.request.user.is_superuser:
             return object_list
         if isinstance(bundle.obj, Experiment):
@@ -195,7 +195,7 @@ class ACLAuthorization(Authorization):
                 object_id__in=experiment_ids,
                 id__in=obj_ids
             )
-        elif bundle.request.user.is_authenticated() and \
+        elif bundle.request.user.is_authenticated and \
                 isinstance(bundle.obj, User):
             if facilities_managed_by(bundle.request.user):
                 return object_list
@@ -227,7 +227,7 @@ class ACLAuthorization(Authorization):
             return []
 
     def read_detail(self, object_list, bundle):  # noqa # too complex
-        if bundle.request.user.is_authenticated() and \
+        if bundle.request.user.is_authenticated and \
            bundle.request.user.is_superuser:
             return True
         if isinstance(bundle.obj, Experiment):
@@ -256,7 +256,7 @@ class ACLAuthorization(Authorization):
         elif isinstance(bundle.obj, User):
             # allow all authenticated users to read public user info
             # the dehydrate function also adds/removes some information
-            authenticated = bundle.request.user.is_authenticated()
+            authenticated = bundle.request.user.is_authenticated
             public_user = bundle.obj.experiment_set.filter(
                 public_access__gt=1).count() > 0
             return public_user or authenticated
@@ -265,12 +265,12 @@ class ACLAuthorization(Authorization):
         elif isinstance(bundle.obj, ParameterName):
             return True
         elif isinstance(bundle.obj, StorageBox):
-            return bundle.request.user.is_authenticated()
+            return bundle.request.user.is_authenticated
         elif isinstance(bundle.obj, StorageBoxOption):
-            return bundle.request.user.is_authenticated() and \
+            return bundle.request.user.is_authenticated and \
                 bundle.obj.key in StorageBoxOptionResource.accessible_keys
         elif isinstance(bundle.obj, StorageBoxAttribute):
-            return bundle.request.user.is_authenticated()
+            return bundle.request.user.is_authenticated
         elif isinstance(bundle.obj, Group):
             return bundle.obj in bundle.request.user.groups.all()
         elif isinstance(bundle.obj, Facility):
@@ -284,9 +284,9 @@ class ACLAuthorization(Authorization):
         raise NotImplementedError(type(bundle.obj))
 
     def create_detail(self, object_list, bundle):  # noqa # too complex
-        if not bundle.request.user.is_authenticated():
+        if not bundle.request.user.is_authenticated:
             return False
-        if bundle.request.user.is_authenticated() and \
+        if bundle.request.user.is_authenticated and \
            bundle.request.user.is_superuser:
             return True
         if isinstance(bundle.obj, Experiment):
@@ -481,7 +481,7 @@ class UserResource(ModelResource):
               name, uri, email, id, username
         '''
         authuser = bundle.request.user
-        authenticated = authuser.is_authenticated()
+        authenticated = authuser.is_authenticated
         queried_user = bundle.obj
         public_user = queried_user.experiment_set.filter(
             public_access__gt=1).count() > 0
