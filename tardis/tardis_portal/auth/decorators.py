@@ -231,7 +231,7 @@ def group_ownership_required(f):
     """
     def wrap(request, *args, **kwargs):
         user = request.user
-        if not request.user.is_authenticated():
+        if not request.user.is_authenticated:
             return HttpResponseRedirect('/login?next=%s' % request.path)
         if not (is_group_admin(request, kwargs['group_id']) or
                 user.is_superuser):
@@ -258,7 +258,7 @@ def experiment_ownership_required(f):
     """
     def wrap(request, *args, **kwargs):
         user = request.user
-        if not user.is_authenticated():
+        if not user.is_authenticated:
             return HttpResponseRedirect('/login?next=%s' % request.path)
         if not (has_experiment_ownership(request, kwargs['experiment_id']) or
                 user.is_superuser):
