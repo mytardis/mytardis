@@ -113,7 +113,7 @@ class RemoteHost(KeyPair):
     """
     A remote host that may be connected to via SSH
     """
-    administrator = models.ForeignKey(User)
+    administrator = models.ForeignKey(User, on_delete=models.CASCADE)
     nickname = models.CharField(
         'Nickname',
         max_length=50,
@@ -209,7 +209,7 @@ class Credential(KeyPair):
     depends on the credentials available, allowed auth methods, and priorities
     defined by the SSH client.
     """
-    user = models.ForeignKey(User)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     remote_hosts = models.ManyToManyField(RemoteHost)
     remote_user = models.CharField('User name', max_length=50)
     password = models.CharField(
