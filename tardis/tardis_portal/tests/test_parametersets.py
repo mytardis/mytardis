@@ -29,7 +29,7 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 """
-test_views.py
+test_parametersets.py
 http://docs.djangoproject.com/en/dev/topics/testing/
 
 .. moduleauthor::  Russell Sim <russell.sim@monash.edu>
@@ -38,25 +38,33 @@ http://docs.djangoproject.com/en/dev/topics/testing/
 """
 
 from datetime import datetime
+
+from django.contrib.auth.models import User
 from django.core.exceptions import SuspiciousOperation
+from django.test import RequestFactory
 from django.test import TestCase
 from django.contrib.contenttypes.models import ContentType
 import pytz
+
 from tardis.tardis_portal.models import Experiment, Dataset, DataFile, \
     DataFileObject, Schema, ParameterName, DatafileParameterSet, \
-    DatafileParameter
-
+    DatafileParameter, DatasetParameterSet, ExperimentParameterSet, ObjectACL
 from tardis.tardis_portal.ParameterSetManager import ParameterSetManager
+from tardis.tardis_portal.views.parameters import edit_datafile_par
+from tardis.tardis_portal.views.parameters import edit_dataset_par
+from tardis.tardis_portal.views.parameters import edit_experiment_par
+from tardis.tardis_portal.views.parameters import add_datafile_par
+from tardis.tardis_portal.views.parameters import add_dataset_par
+from tardis.tardis_portal.views.parameters import add_experiment_par
 
 
 class ParameterSetManagerTestCase(TestCase):
 
     def setUp(self):
-        from django.contrib.auth.models import User
         from tempfile import mkdtemp
 
         user = 'tardis_user1'
-        pwd = 'secret'
+        pwd = 'secret'  # nosec
         email = ''
         self.user = User.objects.create_user(user, email, pwd)
 
@@ -335,3 +343,203 @@ class ParameterSetManagerTestCase(TestCase):
         self.assertEqual(
             psm.get_param("parameter3", True),
             datetime(1970, 01, 01, 0, 0, 0, tzinfo=pytz.utc))
+
+
+class EditParameterSetTestCase(TestCase):
+    def setUp(self):
+        username = 'tardis_user1'
+        pwd = 'secret'  # nosec
+        email = ''
+        self.user = User.objects.create_user(username, email, pwd)
+
+        self.schema = Schema(
+            namespace="http://localhost/psmtest/df/",
+            name="Parameter Set Manager", type=3)
+        self.schema.save()
+
+        self.parametername1 = ParameterName(
+            schema=self.schema, name="parameter1",
+            full_name="Parameter 1")
+        self.parametername1.save()
+
+        self.parametername2 = ParameterName(
+            schema=self.schema, name="parameter2",
+            full_name="Parameter 2",
+            data_type=ParameterName.NUMERIC)
+        self.parametername2.save()
+
+        self.parametername3 = ParameterName(
+            schema=self.schema, name="parameter3",
+            full_name="Parameter 3",
+            data_type=ParameterName.DATETIME)
+        self.parametername3.save()
+
+        self.experiment = Experiment(
+            title='test exp1', institution_name='monash', created_by=self.user)
+        self.experiment.save()
+
+        self.dataset = Dataset(description='test dataset1')
+        self.dataset.save()
+        self.dataset.experiments.add(self.experiment)
+        self.dataset.save()
+
+        self.acl = ObjectACL(
+            pluginId='django_user',
+            entityId=str(self.user.id),
+            content_object=self.experiment,
+            canRead=True,
+            isOwner=True,
+            aclOwnershipType=ObjectACL.OWNER_OWNED)
+        self.acl.save()
+
+        self.experimentparameterset = ExperimentParameterSet(
+            schema=self.schema, experiment=self.experiment)
+        self.experimentparameterset.save()
+
+        self.datasetparameterset = DatasetParameterSet(
+            schema=self.schema, dataset=self.dataset)
+        self.datasetparameterset.save()
+
+        self.datafile = DataFile(dataset=self.dataset,
+                                 filename="testfile.txt",
+                                 size="42", md5sum='bogus')
+        self.datafile.save()
+
+        self.datafileparameterset = DatafileParameterSet(
+            schema=self.schema, datafile=self.datafile)
+        self.datafileparameterset.save()
+
+    def test_edit_experiment_params(self):
+        factory = RequestFactory()
+
+        request = factory.get(
+            '/ajax/edit_experiment_parameters/%s/'
+            % self.experimentparameterset.id)
+        request.user = self.user
+        response = edit_experiment_par(request, self.experimentparameterset.id)
+        self.assertEqual(response.status_code, 200)
+
+        request = factory.post(
+            '/ajax/edit_experiment_parameters/%s/'
+            % self.experimentparameterset.id,
+            data={'csrfmiddlewaretoken': 'bogus'})
+        request.user = self.user
+        response = edit_experiment_par(request, self.experimentparameterset.id)
+        self.assertEqual(response.status_code, 200)
+
+    def test_add_experiment_params(self):
+        factory = RequestFactory()
+
+        request = factory.get(
+            '/ajax/add_experiment_parameters/%s/'
+            % self.experiment.id)
+        request.user = self.user
+        response = add_experiment_par(request, self.experiment.id)
+        self.assertEqual(response.status_code, 200)
+
+        request = factory.get(
+            '/ajax/add_experiment_parameters/%s/?schema_id=%s'
+            % (self.experiment.id, self.schema.id))
+        request.user = self.user
+        response = add_experiment_par(request, self.experiment.id)
+        self.assertEqual(response.status_code, 200)
+
+        request = factory.post(
+            '/ajax/add_experiment_parameters/%s/?schema_id=%s'
+            % (self.experiment.id, self.schema.id),
+            data={'csrfmiddlewaretoken': 'bogus'})
+        request.user = self.user
+        response = add_experiment_par(request, self.experiment.id)
+        self.assertEqual(response.status_code, 200)
+
+    def test_edit_dataset_params(self):
+        factory = RequestFactory()
+
+        request = factory.get(
+            '/ajax/edit_dataset_parameters/%s/'
+            % self.datasetparameterset.id)
+        request.user = self.user
+        response = edit_dataset_par(request, self.datasetparameterset.id)
+        self.assertEqual(response.status_code, 200)
+
+        request = factory.post(
+            '/ajax/edit_dataset_parameters/%s/'
+            % self.datasetparameterset.id,
+            data={'csrfmiddlewaretoken': 'bogus'})
+        request.user = self.user
+        response = edit_dataset_par(request, self.datasetparameterset.id)
+        self.assertEqual(response.status_code, 200)
+
+    def test_add_dataset_params(self):
+        factory = RequestFactory()
+
+        request = factory.get(
+            '/ajax/add_dataset_parameters/%s/'
+            % self.dataset.id)
+        request.user = self.user
+        response = add_dataset_par(request, self.dataset.id)
+        self.assertEqual(response.status_code, 200)
+
+        request = factory.get(
+            '/ajax/add_dataset_parameters/%s/?schema_id=%s'
+            % (self.dataset.id, self.schema.id))
+        request.user = self.user
+        response = add_dataset_par(request, self.dataset.id)
+        self.assertEqual(response.status_code, 200)
+
+        request = factory.post(
+            '/ajax/add_dataset_parameters/%s/?schema_id=%s'
+            % (self.dataset.id, self.schema.id),
+            data={'csrfmiddlewaretoken': 'bogus'})
+        request.user = self.user
+        response = add_dataset_par(request, self.dataset.id)
+        self.assertEqual(response.status_code, 200)
+
+    def test_edit_datafile_params(self):
+        factory = RequestFactory()
+
+        request = factory.get(
+            '/ajax/edit_datafile_parameters/%s/'
+            % self.datafileparameterset.id)
+        request.user = self.user
+        response = edit_datafile_par(request, self.datafileparameterset.id)
+        self.assertEqual(response.status_code, 200)
+
+        request = factory.post(
+            '/ajax/edit_datafile_parameters/%s/'
+            % self.datafileparameterset.id,
+            data={'csrfmiddlewaretoken': 'bogus'})
+        request.user = self.user
+        response = edit_datafile_par(request, self.datafileparameterset.id)
+        self.assertEqual(response.status_code, 200)
+
+    def test_add_datafile_params(self):
+        factory = RequestFactory()
+
+        request = factory.get(
+            '/ajax/add_datafile_parameters/%s/'
+            % self.datafile.id)
+        request.user = self.user
+        response = add_datafile_par(request, self.datafile.id)
+        self.assertEqual(response.status_code, 200)
+
+        request = factory.get(
+            '/ajax/add_datafile_parameters/%s/?schema_id=%s'
+            % (self.datafile.id, self.schema.id))
+        request.user = self.user
+        response = add_datafile_par(request, self.datafile.id)
+        self.assertEqual(response.status_code, 200)
+
+        request = factory.post(
+            '/ajax/add_datafile_parameters/%s/?schema_id=%s'
+            % (self.datafile.id, self.schema.id),
+            data={'csrfmiddlewaretoken': 'bogus'})
+        request.user = self.user
+        response = add_datafile_par(request, self.datafile.id)
+        self.assertEqual(response.status_code, 200)
+
+    def tearDown(self):
+        self.experiment.delete()
+        self.dataset.delete()
+        self.user.delete()
+        self.schema.delete()
