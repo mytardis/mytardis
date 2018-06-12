@@ -218,7 +218,7 @@ def login(request):
     '''
     from tardis.tardis_portal.auth import auth_service
 
-    if request.user.is_authenticated():
+    if request.user.is_authenticated:
         # redirect the user to the home page if he is trying to go to the
         # login page
         return HttpResponseRedirect(request.POST.get('next_page', '/'))

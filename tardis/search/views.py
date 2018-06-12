@@ -103,7 +103,7 @@ class ExperimentSearchView(SearchView):
 
         access_list = []
 
-        if self.request.user.is_authenticated():
+        if self.request.user.is_authenticated:
             access_list.extend(
                 [e.pk for e in
                  authz.get_accessible_experiments(self.request)])
