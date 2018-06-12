@@ -5,10 +5,10 @@ from django.forms.widgets import TextInput, Widget
 
 class CommaSeparatedInput(TextInput):
 
-    def render(self, name, value, attrs=None):
+    def render(self, name, value, attrs=None, renderer=None):
         if isinstance(value, list):
             value = ', '.join(value)
-        return super(CommaSeparatedInput, self).render(name, value, attrs)
+        return super(CommaSeparatedInput, self).render(name, value, attrs, renderer=None)
 
     def value_from_datadict(self, data, files, name):
         value = super(CommaSeparatedInput, self).value_from_datadict(data,
