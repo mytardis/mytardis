@@ -2,6 +2,7 @@ import logging
 from django.conf import settings
 from django.db import models
 from django.contrib.auth.models import User
+from django.urls import reverse
 
 from tardis.tardis_portal.managers import OracleSafeManager
 
@@ -56,10 +57,8 @@ class Token(models.Model):
         logger.warning('failed to generate a random token')
         self.save()  # give up and raise the exception
 
-    @models.permalink
     def get_absolute_url(self):
-        return ('tardis.tardis_portal.views.token_login', (),
-                {'token': self.token})
+        return reverse('tardis.tardis_portal.views.token_login', args=(self.token,))
 
     def is_expired(self):
         import datetime as dt
