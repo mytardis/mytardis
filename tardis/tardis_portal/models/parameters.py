@@ -166,7 +166,7 @@ class ParameterName(models.Model):
         (JSON, 'JSON'),
         )
 
-    schema = models.ForeignKey(Schema)
+    schema = models.ForeignKey(Schema, on_delete=models.CASCADE)
     name = models.CharField(max_length=60)
     full_name = models.CharField(max_length=60)
     units = models.CharField(max_length=60, blank=True)
@@ -306,7 +306,7 @@ def _get_parameter(parameter):
 
 
 class ParameterSet(models.Model, ParameterSetManagerMixin):
-    schema = models.ForeignKey(Schema)
+    schema = models.ForeignKey(Schema, on_delete=models.CASCADE)
     storage_box = models.ManyToManyField(
         StorageBox, related_name='%(class)ss')
     parameter_class = None
@@ -360,13 +360,14 @@ class ParameterSet(models.Model, ParameterSetManagerMixin):
 
 
 class Parameter(models.Model):
-    name = models.ForeignKey(ParameterName)
+    name = models.ForeignKey(ParameterName, on_delete=models.CASCADE)
     # string_value has a custom index created via migrations (for Postgresql)
     string_value = models.TextField(null=True, blank=True)
     numerical_value = models.FloatField(null=True, blank=True, db_index=True)
     datetime_value = models.DateTimeField(null=True, blank=True, db_index=True)
     link_id = models.PositiveIntegerField(null=True, blank=True)
-    link_ct = models.ForeignKey(ContentType, null=True, blank=True)
+    link_ct = models.ForeignKey(
+        ContentType, null=True, blank=True, on_delete=models.CASCADE)
     link_gfk = GenericForeignKey('link_ct', 'link_id')
     objects = OracleSafeManager()
     parameter_type = 'Abstract'
@@ -487,17 +488,20 @@ class Parameter(models.Model):
 
 
 class DatafileParameter(Parameter):
-    parameterset = models.ForeignKey('DatafileParameterSet')
+    parameterset = models.ForeignKey(
+        'DatafileParameterSet', on_delete=models.CASCADE)
     parameter_type = 'Datafile'
 
 
 class DatasetParameter(Parameter):
-    parameterset = models.ForeignKey('DatasetParameterSet')
+    parameterset = models.ForeignKey(
+        'DatasetParameterSet', on_delete=models.CASCADE)
     parameter_type = 'Dataset'
 
 
 class ExperimentParameter(Parameter):
-    parameterset = models.ForeignKey('ExperimentParameterSet')
+    parameterset = models.ForeignKey(
+        'ExperimentParameterSet', on_delete=models.CASCADE)
     parameter_type = 'Experiment'
 
     def save(self, *args, **kwargs):
@@ -510,12 +514,13 @@ class ExperimentParameter(Parameter):
 
 
 class InstrumentParameter(Parameter):
-    parameterset = models.ForeignKey('InstrumentParameterSet')
+    parameterset = models.ForeignKey(
+        'InstrumentParameterSet', on_delete=models.CASCADE)
     parameter_type = 'Instrument'
 
 
 class DatafileParameterSet(ParameterSet):
-    datafile = models.ForeignKey(DataFile)
+    datafile = models.ForeignKey(DataFile, on_delete=models.CASCADE)
     parameter_class = DatafileParameter
 
     def _get_label(self):
@@ -523,7 +528,7 @@ class DatafileParameterSet(ParameterSet):
 
 
 class DatasetParameterSet(ParameterSet):
-    dataset = models.ForeignKey(Dataset)
+    dataset = models.ForeignKey(Dataset, on_delete=models.CASCADE)
     parameter_class = DatasetParameter
 
     def _get_label(self):
@@ -531,7 +536,7 @@ class DatasetParameterSet(ParameterSet):
 
 
 class InstrumentParameterSet(ParameterSet):
-    instrument = models.ForeignKey(Instrument)
+    instrument = models.ForeignKey(Instrument, on_delete=models.CASCADE)
     parameter_class = InstrumentParameter
 
     def _get_label(self):
@@ -539,7 +544,7 @@ class InstrumentParameterSet(ParameterSet):
 
 
 class ExperimentParameterSet(ParameterSet):
-    experiment = models.ForeignKey(Experiment)
+    experiment = models.ForeignKey(Experiment, on_delete=models.CASCADE)
     parameter_class = ExperimentParameter
 
     def _get_label(self):
@@ -548,7 +553,7 @@ class ExperimentParameterSet(ParameterSet):
 
 class FreeTextSearchField(models.Model):
 
-    parameter_name = models.ForeignKey(ParameterName)
+    parameter_name = models.ForeignKey(ParameterName, on_delete=models.CASCADE)
 
     class Meta:
         app_label = 'tardis_portal'
