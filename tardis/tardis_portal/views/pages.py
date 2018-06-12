@@ -144,7 +144,7 @@ class IndexView(TemplateView):
         status = ''
         limit = 8
         c['status'] = status
-        if request.user.is_authenticated():
+        if request.user.is_authenticated:
             private_experiments = Experiment.safe.owned_and_shared(
                     request.user).order_by('-update_time')[:limit]
             c['private_experiments'] = private_experiments
@@ -459,7 +459,7 @@ class ExperimentView(TemplateView):
             authz.has_write_permissions(request, experiment.id)
         c['has_download_permissions'] = \
             authz.has_experiment_download_access(request, experiment.id)
-        if request.user.is_authenticated():
+        if request.user.is_authenticated:
             c['is_owner'] = \
                 authz.has_experiment_ownership(request, experiment.id)
             c['has_read_or_owner_ACL'] = \
@@ -685,7 +685,7 @@ def public_data(request):
 
 
 def experiment_index(request):
-    if request.user.is_authenticated():
+    if request.user.is_authenticated:
         return redirect('tardis.tardis_portal.views.experiment_list_mine')
     return redirect('tardis.tardis_portal.views.experiment_list_public')
 

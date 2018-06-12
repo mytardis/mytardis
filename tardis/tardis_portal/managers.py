@@ -88,7 +88,7 @@ class ExperimentManager(OracleSafeManager):
         # if the user is not authenticated, only tokens apply
         # this is almost duplicate code of end of has_perm in authorisation.py
         # should be refactored, but cannot think of good way atm
-        if not user.is_authenticated():
+        if not user.is_authenticated:
             from tardis.tardis_portal.auth.token_auth import TokenGroupProvider
             query = Q(id=None)
             tgp = TokenGroupProvider()
@@ -158,7 +158,7 @@ class ExperimentManager(OracleSafeManager):
         """
 
         # the user must be authenticated
-        if not user.is_authenticated():
+        if not user.is_authenticated:
             return super(ExperimentManager, self).get_queryset().none()
 
         query = self._query_owned(user)
