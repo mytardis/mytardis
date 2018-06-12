@@ -66,7 +66,7 @@ class Migration(migrations.Migration):
                 ('created_time', models.DateTimeField(auto_now_add=True)),
                 ('verified', models.BooleanField(default=False)),
                 ('last_verified_time', models.DateTimeField(null=True, blank=True)),
-                ('datafile', models.ForeignKey(related_name='file_objects', to='tardis_portal.DataFile')),
+                ('datafile', models.ForeignKey(related_name='file_objects', to='tardis_portal.DataFile', on_delete=models.CASCADE)),
             ],
         ),
         migrations.CreateModel(
@@ -77,7 +77,7 @@ class Migration(migrations.Migration):
                 ('numerical_value', models.FloatField(db_index=True, null=True, blank=True)),
                 ('datetime_value', models.DateTimeField(db_index=True, null=True, blank=True)),
                 ('link_id', models.PositiveIntegerField(null=True, blank=True)),
-                ('link_ct', models.ForeignKey(blank=True, to='contenttypes.ContentType', null=True)),
+                ('link_ct', models.ForeignKey(blank=True, to='contenttypes.ContentType', null=True, on_delete=models.CASCADE)),
             ],
             options={
                 'ordering': ['name'],
@@ -88,7 +88,7 @@ class Migration(migrations.Migration):
             name='DatafileParameterSet',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('datafile', models.ForeignKey(to='tardis_portal.DataFile')),
+                ('datafile', models.ForeignKey(to='tardis_portal.DataFile', on_delete=models.CASCADE)),
             ],
             options={
                 'ordering': ['id'],
@@ -116,7 +116,7 @@ class Migration(migrations.Migration):
                 ('numerical_value', models.FloatField(db_index=True, null=True, blank=True)),
                 ('datetime_value', models.DateTimeField(db_index=True, null=True, blank=True)),
                 ('link_id', models.PositiveIntegerField(null=True, blank=True)),
-                ('link_ct', models.ForeignKey(blank=True, to='contenttypes.ContentType', null=True)),
+                ('link_ct', models.ForeignKey(blank=True, to='contenttypes.ContentType', null=True, on_delete=models.CASCADE)),
             ],
             options={
                 'ordering': ['name'],
@@ -127,7 +127,7 @@ class Migration(migrations.Migration):
             name='DatasetParameterSet',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('dataset', models.ForeignKey(to='tardis_portal.Dataset')),
+                ('dataset', models.ForeignKey(to='tardis_portal.Dataset', on_delete=models.CASCADE)),
             ],
             options={
                 'ordering': ['id'],
@@ -151,7 +151,7 @@ class Migration(migrations.Migration):
                 ('handle', models.TextField(null=True, blank=True)),
                 ('locked', models.BooleanField(default=False)),
                 ('public_access', models.PositiveSmallIntegerField(default=1, choices=[(1, b'No public access (hidden)'), (25, b'Ready to be released pending embargo expiry'), (50, b'Public Metadata only (no data file access)'), (100, b'Public')])),
-                ('created_by', models.ForeignKey(to=settings.AUTH_USER_MODEL)),
+                ('created_by', models.ForeignKey(to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE)),
             ],
         ),
         migrations.CreateModel(
@@ -163,7 +163,7 @@ class Migration(migrations.Migration):
                 ('email', models.CharField(max_length=255, null=True, blank=True)),
                 ('order', models.PositiveIntegerField()),
                 ('url', models.URLField(help_text=b'URL identifier for the author', max_length=2000, null=True, blank=True)),
-                ('experiment', models.ForeignKey(to='tardis_portal.Experiment')),
+                ('experiment', models.ForeignKey(to='tardis_portal.Experiment', on_delete=models.CASCADE)),
             ],
             options={
                 'ordering': ['order'],
@@ -177,7 +177,7 @@ class Migration(migrations.Migration):
                 ('numerical_value', models.FloatField(db_index=True, null=True, blank=True)),
                 ('datetime_value', models.DateTimeField(db_index=True, null=True, blank=True)),
                 ('link_id', models.PositiveIntegerField(null=True, blank=True)),
-                ('link_ct', models.ForeignKey(blank=True, to='contenttypes.ContentType', null=True)),
+                ('link_ct', models.ForeignKey(blank=True, to='contenttypes.ContentType', null=True, on_delete=models.CASCADE)),
             ],
             options={
                 'ordering': ['name'],
@@ -188,7 +188,7 @@ class Migration(migrations.Migration):
             name='ExperimentParameterSet',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('experiment', models.ForeignKey(to='tardis_portal.Experiment')),
+                ('experiment', models.ForeignKey(to='tardis_portal.Experiment', on_delete=models.CASCADE)),
             ],
             options={
                 'ordering': ['id'],
@@ -201,7 +201,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('name', models.CharField(max_length=100)),
-                ('manager_group', models.ForeignKey(to='auth.Group')),
+                ('manager_group', models.ForeignKey(to='auth.Group', on_delete=models.CASCADE)),
             ],
             options={
                 'verbose_name_plural': 'Facilities',
@@ -217,8 +217,8 @@ class Migration(migrations.Migration):
             name='GroupAdmin',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('group', models.ForeignKey(to='auth.Group')),
-                ('user', models.ForeignKey(to=settings.AUTH_USER_MODEL)),
+                ('group', models.ForeignKey(to='auth.Group', on_delete=models.CASCADE)),
+                ('user', models.ForeignKey(to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE)),
             ],
         ),
         migrations.CreateModel(
@@ -226,7 +226,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('name', models.CharField(max_length=100)),
-                ('facility', models.ForeignKey(to='tardis_portal.Facility')),
+                ('facility', models.ForeignKey(to='tardis_portal.Facility', on_delete=models.CASCADE)),
             ],
             options={
                 'verbose_name_plural': 'Instruments',
@@ -240,7 +240,7 @@ class Migration(migrations.Migration):
                 ('numerical_value', models.FloatField(db_index=True, null=True, blank=True)),
                 ('datetime_value', models.DateTimeField(db_index=True, null=True, blank=True)),
                 ('link_id', models.PositiveIntegerField(null=True, blank=True)),
-                ('link_ct', models.ForeignKey(blank=True, to='contenttypes.ContentType', null=True)),
+                ('link_ct', models.ForeignKey(blank=True, to='contenttypes.ContentType', null=True, on_delete=models.CASCADE)),
             ],
             options={
                 'ordering': ['name'],
@@ -251,7 +251,7 @@ class Migration(migrations.Migration):
             name='InstrumentParameterSet',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('instrument', models.ForeignKey(to='tardis_portal.Instrument')),
+                ('instrument', models.ForeignKey(to='tardis_portal.Instrument', on_delete=models.CASCADE)),
             ],
             options={
                 'ordering': ['id'],
@@ -293,7 +293,7 @@ class Migration(migrations.Migration):
                 ('effectiveDate', models.DateField(null=True, blank=True)),
                 ('expiryDate', models.DateField(null=True, blank=True)),
                 ('aclOwnershipType', models.IntegerField(default=1, choices=[(1, b'Owner-owned'), (2, b'System-owned')])),
-                ('content_type', models.ForeignKey(to='contenttypes.ContentType')),
+                ('content_type', models.ForeignKey(to='contenttypes.ContentType', on_delete=models.CASCADE)),
             ],
             options={
                 'ordering': ['content_type', 'object_id'],
@@ -339,7 +339,7 @@ class Migration(migrations.Migration):
                 ('status', models.CharField(max_length=100)),
                 ('name', models.CharField(max_length=255, default=b'default', unique=True)),
                 ('description', models.TextField(default=b'Default Storage')),
-                ('master_box', models.ForeignKey(related_name='child_boxes', blank=True, to='tardis_portal.StorageBox', null=True)),
+                ('master_box', models.ForeignKey(related_name='child_boxes', blank=True, to='tardis_portal.StorageBox', null=True, on_delete=models.CASCADE)),
             ],
             options={
                 'verbose_name_plural': 'storage boxes',
@@ -351,7 +351,7 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('key', models.TextField()),
                 ('value', models.TextField()),
-                ('storage_box', models.ForeignKey(related_name='attributes', to='tardis_portal.StorageBox')),
+                ('storage_box', models.ForeignKey(related_name='attributes', to='tardis_portal.StorageBox', on_delete=models.CASCADE)),
             ],
         ),
         migrations.CreateModel(
@@ -360,7 +360,7 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('key', models.TextField()),
                 ('value', models.TextField()),
-                ('storage_box', models.ForeignKey(related_name='options', to='tardis_portal.StorageBox')),
+                ('storage_box', models.ForeignKey(related_name='options', to='tardis_portal.StorageBox', on_delete=models.CASCADE)),
                 ('value_type', models.CharField(default=b'string', max_length=6, choices=[(b'string', b'String value'), (b'pickle', b'Pickled value')])),
             ],
         ),
@@ -370,8 +370,8 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('token', models.CharField(unique=True, max_length=30)),
                 ('expiry_date', models.DateField(default=tardis.tardis_portal.models.token._token_expiry)),
-                ('experiment', models.ForeignKey(to='tardis_portal.Experiment')),
-                ('user', models.ForeignKey(to=settings.AUTH_USER_MODEL)),
+                ('experiment', models.ForeignKey(to='tardis_portal.Experiment', on_delete=models.CASCADE)),
+                ('user', models.ForeignKey(to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE)),
             ],
         ),
         migrations.CreateModel(
@@ -388,23 +388,23 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('isDjangoAccount', models.BooleanField(default=True)),
                 ('rapidConnectEduPersonTargetedID', models.CharField(max_length=400, null=True, blank=True)),
-                ('user', models.OneToOneField(to=settings.AUTH_USER_MODEL)),
+                ('user', models.OneToOneField(to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE)),
             ],
         ),
         migrations.AddField(
             model_name='userauthentication',
             name='userProfile',
-            field=models.ForeignKey(to='tardis_portal.UserProfile'),
+            field=models.ForeignKey(to='tardis_portal.UserProfile', on_delete=models.CASCADE),
         ),
         migrations.AddField(
             model_name='parametername',
             name='schema',
-            field=models.ForeignKey(to='tardis_portal.Schema'),
+            field=models.ForeignKey(to='tardis_portal.Schema', on_delete=models.CASCADE),
         ),
         migrations.AddField(
             model_name='instrumentparameterset',
             name='schema',
-            field=models.ForeignKey(to='tardis_portal.Schema'),
+            field=models.ForeignKey(to='tardis_portal.Schema', on_delete=models.CASCADE),
         ),
         migrations.AddField(
             model_name='instrumentparameterset',
@@ -414,22 +414,22 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='instrumentparameter',
             name='name',
-            field=models.ForeignKey(to='tardis_portal.ParameterName'),
+            field=models.ForeignKey(to='tardis_portal.ParameterName', on_delete=models.CASCADE),
         ),
         migrations.AddField(
             model_name='instrumentparameter',
             name='parameterset',
-            field=models.ForeignKey(to='tardis_portal.InstrumentParameterSet'),
+            field=models.ForeignKey(to='tardis_portal.InstrumentParameterSet', on_delete=models.CASCADE),
         ),
         migrations.AddField(
             model_name='freetextsearchfield',
             name='parameter_name',
-            field=models.ForeignKey(to='tardis_portal.ParameterName'),
+            field=models.ForeignKey(to='tardis_portal.ParameterName', on_delete=models.CASCADE),
         ),
         migrations.AddField(
             model_name='experimentparameterset',
             name='schema',
-            field=models.ForeignKey(to='tardis_portal.Schema'),
+            field=models.ForeignKey(to='tardis_portal.Schema', on_delete=models.CASCADE),
         ),
         migrations.AddField(
             model_name='experimentparameterset',
@@ -439,22 +439,22 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='experimentparameter',
             name='name',
-            field=models.ForeignKey(to='tardis_portal.ParameterName'),
+            field=models.ForeignKey(to='tardis_portal.ParameterName', on_delete=models.CASCADE),
         ),
         migrations.AddField(
             model_name='experimentparameter',
             name='parameterset',
-            field=models.ForeignKey(to='tardis_portal.ExperimentParameterSet'),
+            field=models.ForeignKey(to='tardis_portal.ExperimentParameterSet', on_delete=models.CASCADE),
         ),
         migrations.AddField(
             model_name='experiment',
             name='license',
-            field=models.ForeignKey(blank=True, to='tardis_portal.License', null=True),
+            field=models.ForeignKey(blank=True, to='tardis_portal.License', null=True, on_delete=models.CASCADE),
         ),
         migrations.AddField(
             model_name='datasetparameterset',
             name='schema',
-            field=models.ForeignKey(to='tardis_portal.Schema'),
+            field=models.ForeignKey(to='tardis_portal.Schema', on_delete=models.CASCADE),
         ),
         migrations.AddField(
             model_name='datasetparameterset',
@@ -464,12 +464,12 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='datasetparameter',
             name='name',
-            field=models.ForeignKey(to='tardis_portal.ParameterName'),
+            field=models.ForeignKey(to='tardis_portal.ParameterName', on_delete=models.CASCADE),
         ),
         migrations.AddField(
             model_name='datasetparameter',
             name='parameterset',
-            field=models.ForeignKey(to='tardis_portal.DatasetParameterSet'),
+            field=models.ForeignKey(to='tardis_portal.DatasetParameterSet', on_delete=models.CASCADE),
         ),
         migrations.AddField(
             model_name='dataset',
@@ -479,12 +479,12 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='dataset',
             name='instrument',
-            field=models.ForeignKey(blank=True, to='tardis_portal.Instrument', null=True),
+            field=models.ForeignKey(blank=True, to='tardis_portal.Instrument', null=True, on_delete=models.CASCADE),
         ),
         migrations.AddField(
             model_name='datafileparameterset',
             name='schema',
-            field=models.ForeignKey(to='tardis_portal.Schema'),
+            field=models.ForeignKey(to='tardis_portal.Schema', on_delete=models.CASCADE),
         ),
         migrations.AddField(
             model_name='datafileparameterset',
@@ -494,22 +494,22 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='datafileparameter',
             name='name',
-            field=models.ForeignKey(to='tardis_portal.ParameterName'),
+            field=models.ForeignKey(to='tardis_portal.ParameterName', on_delete=models.CASCADE),
         ),
         migrations.AddField(
             model_name='datafileparameter',
             name='parameterset',
-            field=models.ForeignKey(to='tardis_portal.DatafileParameterSet'),
+            field=models.ForeignKey(to='tardis_portal.DatafileParameterSet', on_delete=models.CASCADE),
         ),
         migrations.AddField(
             model_name='datafileobject',
             name='storage_box',
-            field=models.ForeignKey(related_name='file_objects', to='tardis_portal.StorageBox'),
+            field=models.ForeignKey(related_name='file_objects', to='tardis_portal.StorageBox', on_delete=models.CASCADE),
         ),
         migrations.AddField(
             model_name='datafile',
             name='dataset',
-            field=models.ForeignKey(to='tardis_portal.Dataset'),
+            field=models.ForeignKey(to='tardis_portal.Dataset', on_delete=models.CASCADE),
         ),
         migrations.AlterUniqueTogether(
             name='parametername',
