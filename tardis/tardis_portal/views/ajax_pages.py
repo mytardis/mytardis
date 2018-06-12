@@ -75,7 +75,7 @@ def experiment_description(request, experiment_id):
     c['has_write_permissions'] = \
         authz.has_write_permissions(request, experiment_id)
 
-    if request.user.is_authenticated():
+    if request.user.is_authenticated:
         c['is_owner'] = authz.has_experiment_ownership(request, experiment_id)
 
     _add_protocols_and_organizations(request, experiment, c)
@@ -276,7 +276,7 @@ def retrieve_datafile_list(
                                                                  dataset_id)
     has_write_permissions = False
 
-    if request.user.is_authenticated():
+    if request.user.is_authenticated:
         is_owner = authz.has_dataset_ownership(request, dataset_id)
         has_write_permissions = authz.has_dataset_write(request, dataset_id)
 

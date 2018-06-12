@@ -36,7 +36,7 @@ def manage_account_processor(request):
 
 
 def user_details_processor(request):
-    is_authenticated = request.user.is_authenticated()
+    is_authenticated = request.user.is_authenticated
     if is_authenticated:
         is_superuser = request.user.is_superuser
         username = request.user.username
