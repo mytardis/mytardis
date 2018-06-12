@@ -16,11 +16,11 @@ def _token_expiry():
 class Token(models.Model):
 
     token = models.CharField(max_length=30, unique=True)
-    experiment = models.ForeignKey(Experiment)
+    experiment = models.ForeignKey(Experiment, on_delete=models.CASCADE)
 
     expiry_date = models.DateField(default=_token_expiry)
 
-    user = models.ForeignKey(User)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
 
     _TOKEN_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
 
