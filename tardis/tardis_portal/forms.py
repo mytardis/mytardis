@@ -36,6 +36,7 @@ forms module
 .. moduleauthor::  Gerson Galang <gerson.galang@versi.edu.au>
 
 '''
+from collections import OrderedDict
 import logging
 
 from UserDict import UserDict
@@ -639,8 +640,7 @@ def create_parameterset_edit_form(parameterset, request=None):
 
     # if POST data to save
     if request:
-        from django.utils.datastructures import SortedDict
-        fields = SortedDict()
+        fields = OrderedDict()
 
         for key, value in sorted(request.POST.iteritems()):
 
@@ -674,8 +674,7 @@ def create_parameterset_edit_form(parameterset, request=None):
 
         return type('DynamicForm', (forms.BaseForm, ), {'base_fields': fields})
 
-    from django.utils.datastructures import SortedDict
-    fields = SortedDict()
+    fields = OrderedDict()
     psm = ParameterSetManager(parameterset=parameterset)
 
     for dfp in psm.parameters:
@@ -739,8 +738,7 @@ def create_datafile_add_form(schema, parentObject, request=None):
 
     # if POST data to save
     if request:
-        from django.utils.datastructures import SortedDict
-        fields = SortedDict()
+        fields = OrderedDict()
 
         for key, value in sorted(request.POST.iteritems()):
 
@@ -780,8 +778,7 @@ def create_datafile_add_form(schema, parentObject, request=None):
 
         return type('DynamicForm', (forms.BaseForm, ), {'base_fields': fields})
 
-    from django.utils.datastructures import SortedDict
-    fields = SortedDict()
+    fields = OrderedDict()
 
     parameternames = ParameterName.objects.filter(
         schema__namespace=schema,
