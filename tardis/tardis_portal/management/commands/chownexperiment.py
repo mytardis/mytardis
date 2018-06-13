@@ -40,7 +40,7 @@ from django.core.management.base import BaseCommand, CommandError
 from django.contrib.auth.models import User
 from django.db import transaction, DEFAULT_DB_ALIAS
 
-from tardis.tardis_portal.deprecations import RemovedInMyTardis311Warning
+from tardis.tardis_portal.deprecations import RemovedInMyTardis40Warning
 from tardis.tardis_portal.models import Experiment
 
 
@@ -70,8 +70,8 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         warnings.warn(
             "The chownexperiment command has been broken since ExperimentACLs were "
-            "replaced by ObjectACLs.  It will be removed in MyTardis 3.11.",
-            RemovedInMyTardis311Warning
+            "replaced by ObjectACLs.  It will be removed in MyTardis 4.0.",
+            RemovedInMyTardis40Warning
         )
         if len(args) < 1:
             raise CommandError("Expected a user name and some experiment ids")

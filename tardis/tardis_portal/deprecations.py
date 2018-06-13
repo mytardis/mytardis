@@ -7,7 +7,7 @@ warnings.simplefilter('always', category=DeprecationWarning)
 warnings.simplefilter('always', category=PendingDeprecationWarning)
 
 
-class RemovedInMyTardis311Warning(PendingDeprecationWarning):
+class RemovedInMyTardis40Warning(PendingDeprecationWarning):
     '''
     Used to raise warnings about deprecated functionality.
 
@@ -16,9 +16,9 @@ class RemovedInMyTardis311Warning(PendingDeprecationWarning):
     import warnings
 
     warnings.warn(
-        "This method will be removed in MyTardis 3.11. "
+        "This method will be removed in MyTardis 4.0. "
         "Please use method2 instead.",
-        RemovedInMyTardis311Warning
+        RemovedInMyTardis40Warning
     )
     '''
     pass
