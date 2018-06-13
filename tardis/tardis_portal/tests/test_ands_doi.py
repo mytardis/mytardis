@@ -37,7 +37,7 @@ from django.conf import settings
 from django.test import TestCase
 
 from tardis.tardis_portal.ands_doi import DOIService
-from tardis.tardis_portal.deprecations import RemovedInMyTardis311Warning
+from tardis.tardis_portal.deprecations import RemovedInMyTardis40Warning
 from tardis.tardis_portal.models import User, Experiment, Schema, ParameterName
 
 
@@ -61,7 +61,7 @@ class ANDSDOITestCase(TestCase):
         with warnings.catch_warnings(record=True) as caught_warnings:
             doi_service = DOIService(self.expt)
         for warning in caught_warnings:
-            self.assertEqual(warning.category, RemovedInMyTardis311Warning)
+            self.assertEqual(warning.category, RemovedInMyTardis40Warning)
 
     def test_get_doi_none(self):
         doi_service = DOIService(self.expt)

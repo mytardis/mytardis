@@ -10,7 +10,7 @@ import warnings
 from optparse import make_option
 from django.core.management.base import BaseCommand
 
-from tardis.tardis_portal.deprecations import RemovedInMyTardis311Warning
+from tardis.tardis_portal.deprecations import RemovedInMyTardis40Warning
 
 
 class Command(BaseCommand):
@@ -27,13 +27,13 @@ class Command(BaseCommand):
         from django.conf import settings
 
         warnings.warn(
-            "The backupdb command will be removed in MyTardis 3.11. "
+            "The backupdb command will be removed in MyTardis 4.0. "
             "Database engines commonly used with MyTardis provide their "
             "own database backup commands, e.g. pg_dump, mysqldump. "
             "There are Python packages for doing backups via Django, "
             "e.g. django-backup, but they are not currently used by the "
             "MyTardis core developers.",
-            RemovedInMyTardis311Warning
+            RemovedInMyTardis40Warning
         )
 
         database = options.get('database')

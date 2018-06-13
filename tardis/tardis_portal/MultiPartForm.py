@@ -11,7 +11,7 @@ from cStringIO import StringIO
 
 import mimetools
 
-from tardis.tardis_portal.deprecations import RemovedInMyTardis311Warning
+from tardis.tardis_portal.deprecations import RemovedInMyTardis40Warning
 
 
 logger = logging.getLogger(__name__)
@@ -22,8 +22,8 @@ class MultiPartForm(object):
 
     def __init__(self):
         warnings.warn(
-            "The MultiPartForm class will be removed in MyTardis 3.11. ",
-            RemovedInMyTardis311Warning
+            "The MultiPartForm class will be removed in MyTardis 4.0. ",
+            RemovedInMyTardis40Warning
         )
         self.form_fields = []
         self.files = []

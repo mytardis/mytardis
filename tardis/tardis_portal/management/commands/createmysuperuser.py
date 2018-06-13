@@ -13,7 +13,7 @@ from django.core import exceptions
 from django.core.management.base import BaseCommand, CommandError
 from django.utils.translation import ugettext as _
 
-from tardis.tardis_portal.deprecations import RemovedInMyTardis311Warning
+from tardis.tardis_portal.deprecations import RemovedInMyTardis40Warning
 from tardis.tardis_portal.models import UserProfile, UserAuthentication
 from tardis.tardis_portal.auth.localdb_auth \
     import auth_key as locabdb_auth_key
@@ -50,9 +50,9 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         warnings.warn(
-            "The createmysuperuser command will be removed in MyTardis 3.11. "
+            "The createmysuperuser command will be removed in MyTardis 4.0. "
             "Please use the createsuperuser command instead.",
-            RemovedInMyTardis311Warning
+            RemovedInMyTardis40Warning
         )
         username = options.get('username', None)
         email = options.get('email', None)

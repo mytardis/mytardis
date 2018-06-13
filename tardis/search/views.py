@@ -11,7 +11,7 @@ from haystack.generic_views import SearchView
 from tardis.search.forms import GroupedSearchForm
 from tardis.search.utils import SearchQueryString
 from tardis.tardis_portal.auth import decorators as authz
-from tardis.tardis_portal.deprecations import RemovedInMyTardis311Warning
+from tardis.tardis_portal.deprecations import RemovedInMyTardis40Warning
 from tardis.tardis_portal.forms import createSearchDatafileSelectionForm
 from tardis.tardis_portal.hacks import oracle_dbops_hack
 from tardis.tardis_portal.models import Experiment
@@ -106,7 +106,7 @@ def search_datafile(request):  # too complex # noqa
         "The old DataFile search form (triggered by the /search/datafile/ "
         "URL) was only useful for X-Ray Diffraction data.  It needs to be "
         "rewritten if it is to be useful for other data types.",
-        RemovedInMyTardis311Warning
+        RemovedInMyTardis40Warning
     )
     if 'type' in request.GET:
         searchQueryType = request.GET.get('type')
