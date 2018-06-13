@@ -20,6 +20,9 @@ function run_test {
 	if [ -v COVERALLS_REPO_TOKEN ]; then
 	    coveralls
 	fi
+	if [ -v CODECOV_TOKEN ]; then
+	    codecov -X gcov
+	fi
 	if [ -v CODACY_PROJECT_TOKEN ]; then
 	    coverage xml
 	    python-codacy-coverage -r coverage.xml
