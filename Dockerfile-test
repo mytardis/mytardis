@@ -14,7 +14,7 @@ RUN . /appenv/bin/activate; \
 RUN . /appenv/bin/activate; \
     pip install --no-index -f /wheelhouse -r requirements-mysql.txt
 RUN . /appenv/bin/activate; \
-    pip install coveralls codacy-coverage
+    pip install codecov coveralls codacy-coverage
 VOLUME /home/webapp/tardis
 VOLUME /home/webapp/docs
 
