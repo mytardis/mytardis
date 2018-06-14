@@ -353,7 +353,6 @@ def about(request):
     c = {'subtitle': 'About',
          'about_pressed': True,
          'nav': [{'name': 'About', 'link': '/about/'}],
-         'version': settings.MYTARDIS_VERSION,
          'custom_about_section': getattr(
              settings, 'CUSTOM_ABOUT_SECTION_TEMPLATE',
              'tardis_portal/about_include.html'),
