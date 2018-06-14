@@ -101,7 +101,7 @@
               {% if facility_manager %}
               <li><a href="{% url 'tardis.tardis_portal.views.facility_overview' %}">Facility Overview</a></li>
               {% endif %}{% endwith %}
-              <li><a href="http://mytardis.readthedocs.io/en/develop/userguide.html" target="_blank"><b>Help</b></a></li>
+              <li><a href="http://mytardis.readthedocs.io/en/{{ version.tag|lower }}/userguide.html" target="_blank"><b>Help</b></a></li>
             </ul>
             <ul class="login-nav nav pull-right">
             {% if is_authenticated %}
