@@ -59,9 +59,11 @@ def global_contexts(request):
     site_title = getattr(settings, 'SITE_TITLE', None)
     sponsored_by = getattr(settings, 'SPONSORED_TEXT', None)
     site_styles = getattr(settings, 'SITE_STYLES', '')
+    version = getattr(settings, 'MYTARDIS_VERSION', None)
     return {'site_title': site_title,
             'sponsored_by': sponsored_by,
-            'site_styles': site_styles, }
+            'site_styles': site_styles,
+            'version': version, }
 
 
 def google_analytics(request):
