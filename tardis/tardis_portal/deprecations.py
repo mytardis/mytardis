@@ -18,6 +18,7 @@ class RemovedInMyTardis42Warning(PendingDeprecationWarning):
         "This method will be removed in MyTardis 4.2. "
         "Please use method2 instead.",
         RemovedInMyTardis42Warning
+    )
     '''
     pass
 
