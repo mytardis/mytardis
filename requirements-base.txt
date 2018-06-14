@@ -38,7 +38,7 @@ python-dateutil==2.4.0
 -e git+https://github.com/grischa/python-magic.git#egg=python-magic
 pytz==2016.10
 rdflib==4.2.2
-requests==2.19.0
+requests==2.19.1
 six==1.11.0
 urllib3==1.22
 wsgiref==0.1.2
