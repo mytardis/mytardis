@@ -38,26 +38,36 @@ http://docs.djangoproject.com/en/dev/topics/testing/
 from StringIO import StringIO
 
 from django.conf import settings
+from django.contrib.auth.models import Group
+from django.contrib.auth.models import User
 from django.test import TestCase
 from tastypie.utils import trailing_slash
+
+from ..models import Facility, Instrument
+
+from ..models import Experiment, ExperimentAuthor
+
+from ..models import Dataset, DataFile, DataFileObject
+
+from ..models import (
+    Schema, ParameterName, DatafileParameterSet, DatafileParameter,
+    DatasetParameterSet, DatasetParameter, ExperimentParameterSet,
+    ExperimentParameter)
 
 
 class ModelTestCase(TestCase):
 
     def setUp(self):
-        from django.contrib.auth.models import User
         user = 'tardis_user1'
         pwd = 'secret'
         email = ''
         self.user = User.objects.create_user(user, email, pwd)
 
     def test_experiment(self):
-        from tardis.tardis_portal import models
         from os import path
-        exp = models.Experiment(title='test exp1',
-                                institution_name='monash',
-                                created_by=self.user,
-                                )
+        exp = Experiment(title='test exp1',
+                         institution_name='monash',
+                         created_by=self.user)
         exp.save()
         self.assertEqual(exp.title, 'test exp1')
         self.assertEqual(exp.url, None)
@@ -66,8 +76,8 @@ class ModelTestCase(TestCase):
         self.assertEqual(exp.handle, None)
         self.assertEqual(exp.created_by, self.user)
         self.assertEqual(exp.public_access,
-                         models.Experiment.PUBLIC_ACCESS_NONE)
-        target_id = models.Experiment.objects.first().id
+                         Experiment.PUBLIC_ACCESS_NONE)
+        target_id = Experiment.objects.first().id
         self.assertEqual(
             exp.get_absolute_url(), '/experiment/view/%d/' % target_id,
             exp.get_absolute_url() + ' != /experiment/view/%d/' % target_id)
@@ -75,30 +85,27 @@ class ModelTestCase(TestCase):
                          path.join(settings.FILE_STORE_PATH, str(exp.id)))
 
     def test_dataset(self):
-        from tardis.tardis_portal import models
-        exp = models.Experiment(title='test exp1',
-                                institution_name='monash',
-                                created_by=self.user,
-                                )
+        exp = Experiment(title='test exp1',
+                         institution_name='monash',
+                         created_by=self.user)
 
         exp.save()
-        exp2 = models.Experiment(title='test exp2',
-                                 institution_name='monash',
-                                 created_by=self.user,
-                                 )
+        exp2 = Experiment(title='test exp2',
+                          institution_name='monash',
+                          created_by=self.user)
         exp2.save()
 
-        group = models.Group(name="Test Manager Group")
+        group = Group(name="Test Manager Group")
         group.save()
         group.user_set.add(self.user)
-        facility = models.Facility(name="Test Facility",
-                                   manager_group=group)
+        facility = Facility(name="Test Facility",
+                            manager_group=group)
         facility.save()
-        instrument = models.Instrument(name="Test Instrument",
-                                       facility=facility)
+        instrument = Instrument(name="Test Instrument",
+                                facility=facility)
         instrument.save()
 
-        dataset = models.Dataset(description='test dataset1')
+        dataset = Dataset(description='test dataset1')
         dataset.instrument = instrument
         dataset.save()
         dataset.experiments.set([exp, exp2])
@@ -106,49 +113,48 @@ class ModelTestCase(TestCase):
         dataset_id = dataset.id
 
         del dataset
-        dataset = models.Dataset.objects.get(pk=dataset_id)
+        dataset = Dataset.objects.get(pk=dataset_id)
 
         self.assertEqual(dataset.description, 'test dataset1')
         self.assertEqual(dataset.experiments.count(), 2)
         self.assertIn(exp, list(dataset.experiments.iterator()))
         self.assertIn(exp2, list(dataset.experiments.iterator()))
         self.assertEqual(instrument, dataset.instrument)
-        target_id = models.Dataset.objects.first().id
+        target_id = Dataset.objects.first().id
         self.assertEqual(
             dataset.get_absolute_url(), '/dataset/%d' % target_id,
             dataset.get_absolute_url() + ' != /dataset/%d' % target_id)
 
     def test_authors(self):
-        from tardis.tardis_portal import models
-        exp = models.Experiment(title='test exp2',
-                                institution_name='monash',
-                                created_by=self.user,
-                                )
+        exp = Experiment(title='test exp2',
+                         institution_name='monash',
+                         created_by=self.user,
+                         )
         exp.save()
 
-        models.ExperimentAuthor(experiment=exp,
-                                author='nigel',
-                                order=0).save()
+        ExperimentAuthor(experiment=exp,
+                         author='nigel',
+                         order=0).save()
 
-        exp = models.Experiment(title='test exp1',
-                                institution_name='monash',
-                                created_by=self.user,
-                                )
+        exp = Experiment(title='test exp1',
+                         institution_name='monash',
+                         created_by=self.user,
+                         )
         exp.save()
 
-        ae1 = models.ExperimentAuthor(experiment=exp,
-                                      author='steve',
-                                      order=100)
+        ae1 = ExperimentAuthor(experiment=exp,
+                               author='steve',
+                               order=100)
         ae1.save()
 
-        ae2 = models.ExperimentAuthor(experiment=exp,
-                                      author='russell',
-                                      order=1)
+        ae2 = ExperimentAuthor(experiment=exp,
+                               author='russell',
+                               order=1)
         ae2.save()
 
-        ae3 = models.ExperimentAuthor(experiment=exp,
-                                      author='uli',
-                                      order=50)
+        ae3 = ExperimentAuthor(experiment=exp,
+                               author='uli',
+                               order=50)
         ae3.save()
 
         authors = exp.experimentauthor_set.all()
@@ -160,7 +166,6 @@ class ModelTestCase(TestCase):
         self.assertTrue(ae3 == authors[1])
 
     def test_datafile(self):
-        from tardis.tardis_portal.models import Experiment, Dataset, DataFile
 
         def _build(dataset, filename, url=None):
             datafile = DataFile(dataset=dataset, filename=filename)
@@ -168,8 +173,6 @@ class ModelTestCase(TestCase):
             if url is None:
                 datafile.file_object = StringIO('bla')
                 return datafile
-            from tardis.tardis_portal.models import \
-                DataFileObject
             dfo = DataFileObject(
                 datafile=datafile,
                 storage_box=datafile.get_default_storage_box(),
@@ -264,96 +267,118 @@ class ModelTestCase(TestCase):
             settings.REQUIRE_DATAFILE_SIZES = save1
             settings.REQUIRE_DATAFILE_CHECKSUMS = save2
 
+    def test_deleting_dfo_without_uri(self):
+        dataset = Dataset(description="dataset description")
+        dataset.save()
+        save1 = settings.REQUIRE_DATAFILE_SIZES
+        save2 = settings.REQUIRE_DATAFILE_CHECKSUMS
+        try:
+            settings.REQUIRE_DATAFILE_SIZES = False
+            settings.REQUIRE_DATAFILE_CHECKSUMS = False
+            datafile = DataFile(dataset=dataset, filename='test1.txt')
+            datafile.save()
+        finally:
+            settings.REQUIRE_DATAFILE_SIZES = save1
+            settings.REQUIRE_DATAFILE_CHECKSUMS = save2
+        dfo = DataFileObject(
+                datafile=datafile,
+                storage_box=datafile.get_default_storage_box(),
+                uri=None)
+        dfo.save()
+        self.assertIsNone(dfo.uri)
+        self.assertIsNotNone(dfo.id)
+        dfo.delete()
+        self.assertIsNone(dfo.id)
+
     # check conversion of b64encoded images back into files
     def test_parameter(self):
-        from tardis.tardis_portal import models
-        exp = models.Experiment(
+        exp = Experiment(
             title='test exp1',
             institution_name='Australian Synchrotron',
             approved=True,
             created_by=self.user,
-            public_access=models.Experiment.PUBLIC_ACCESS_NONE,
+            public_access=Experiment.PUBLIC_ACCESS_NONE,
         )
         exp.save()
 
-        dataset = models.Dataset(description="dataset description")
+        dataset = Dataset(description="dataset description")
         dataset.save()
         dataset.experiments.add(exp)
         dataset.save()
 
-        df_file = models.DataFile(dataset=dataset,
-                                  filename='file.txt',
-                                  size=42,
-                                  md5sum='bogus')
+        df_file = DataFile(dataset=dataset,
+                           filename='file.txt',
+                           size=42,
+                           md5sum='bogus')
         df_file.save()
 
-        df_schema = models.Schema(
+        df_schema = Schema(
             namespace='http://www.cern.ch/felzmann/schema1.xml',
-            type=models.Schema.DATAFILE)
+            type=Schema.DATAFILE)
         df_schema.save()
 
-        ds_schema = models.Schema(
+        ds_schema = Schema(
             namespace='http://www.cern.ch/felzmann/schema2.xml',
-            type=models.Schema.DATASET)
+            type=Schema.DATASET)
         ds_schema.save()
 
-        exp_schema = models.Schema(
+        exp_schema = Schema(
             namespace='http://www.cern.ch/felzmann/schema3.xml',
-            type=models.Schema.EXPERIMENT)
+            type=Schema.EXPERIMENT)
         exp_schema.save()
 
-        df_parname = models.ParameterName(
+        df_parname = ParameterName(
             schema=df_schema,
             name='name',
             full_name='full_name',
             units='image/jpg',
-            data_type=models.ParameterName.FILENAME)
+            data_type=ParameterName.FILENAME)
         df_parname.save()
 
-        ds_parname = models.ParameterName(
+        ds_parname = ParameterName(
             schema=ds_schema,
             name='name',
             full_name='full_name',
             units='image/jpg',
-            data_type=models.ParameterName.FILENAME)
+            data_type=ParameterName.FILENAME)
         ds_parname.save()
 
-        exp_parname = models.ParameterName(
+        exp_parname = ParameterName(
             schema=exp_schema,
             name='name',
             full_name='full_name',
             units='image/jpg',
-            data_type=models.ParameterName.FILENAME)
+            data_type=ParameterName.FILENAME)
         exp_parname.save()
 
-        df_parset = models.DatafileParameterSet(schema=df_schema,
-                                                datafile=df_file)
+        df_parset = DatafileParameterSet(schema=df_schema,
+                                         datafile=df_file)
         df_parset.save()
 
-        ds_parset = models.DatasetParameterSet(schema=ds_schema,
-                                               dataset=dataset)
+        ds_parset = DatasetParameterSet(schema=ds_schema,
+                                        dataset=dataset)
         ds_parset.save()
 
-        exp_parset = models.ExperimentParameterSet(schema=exp_schema,
-                                                   experiment=exp)
+        exp_parset = ExperimentParameterSet(schema=exp_schema,
+                                            experiment=exp)
         exp_parset.save()
 
         from os import path
         with self.settings(METADATA_STORE_PATH=path.dirname(__file__)):
             filename = 'test.jpg'
-            df_parameter = models.DatafileParameter(name=df_parname,
-                                                    parameterset=df_parset,
-                                                    string_value=filename)
+            df_parameter = DatafileParameter(name=df_parname,
+                                             parameterset=df_parset,
+                                             string_value=filename)
             df_parameter.save()
 
-            ds_parameter = models.DatasetParameter(name=ds_parname,
-                                                   parameterset=ds_parset,
-                                                   string_value=filename)
+            ds_parameter = DatasetParameter(name=ds_parname,
+                                            parameterset=ds_parset,
+                                            string_value=filename)
             ds_parameter.save()
 
-            exp_parameter = models.ExperimentParameter(name=exp_parname,
-                                                       parameterset=exp_parset,
-                                                       string_value=filename)
+            exp_parameter = ExperimentParameter(name=exp_parname,
+                                                parameterset=exp_parset,
+                                                string_value=filename)
             exp_parameter.save()
 
             self.assertEqual(
@@ -370,7 +395,6 @@ class ModelTestCase(TestCase):
 
     # Verify that create a new user will generate an api_key automtically
     def test_create_user_automatically_generate_api_key(self):
-        from django.contrib.auth.models import User
         user = User.objects.create_user('test', 'test@example.com', 'passw0rd')
         user.save()
 
