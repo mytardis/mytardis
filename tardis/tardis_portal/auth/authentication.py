@@ -269,8 +269,9 @@ def merge_auth_method(request):
         for group in groups:
             request.user.groups.add(group)
 
-        # we can now delete 'user'
-        user.delete()
+        # we can now make user inactive
+        user.is_active = False
+        user.save()
 
     data = _setupJsonData(authForm, authenticationMethod, supportedAuthMethods)
     return _getJsonSuccessResponse(data)
@@ -317,8 +318,9 @@ def _getSupportedAuthMethods():
     for authKey, authDisplayName, authBackend in settings.AUTH_PROVIDERS:
         # we will only add non-localDB authentication methods to the
         # supportedAuthMethods list.
-        if authKey != localdb_auth.auth_key:
-            supportedAuthMethods[authKey] = authDisplayName
+        #commenting this to support merging local accounts
+        #if authKey != localdb_auth.auth_key:
+        supportedAuthMethods[authKey] = authDisplayName
 
     return supportedAuthMethods
 
