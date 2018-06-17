@@ -107,7 +107,7 @@ class AbstractExperimentProvider(BaseProvider):
             timestamp = datetime.datetime.now()
         else:
             timestamp = get_utc_time(timestamp).replace(tzinfo=None)
-        return Header(self.get_id(obj), timestamp, [], None)
+        return Header(obj, self.get_id(obj), timestamp, [], None)
 
     def _get_metadata(self, obj, metadataPrefix):
         if isinstance(obj, User):
@@ -173,11 +173,13 @@ class DcExperimentProvider(AbstractExperimentProvider):
         return self._split_type_and_id(identifier, ["experiment"])
 
     def _get_experiment_metadata(self, experiment, metadataPrefix):
-        return Metadata({
-            '_writeMetadata': oai_dc_writer,
-            'title': [experiment.title],
-            'description': [experiment.description],
-        })
+        return Metadata(
+            experiment,
+            {
+                '_writeMetadata': oai_dc_writer,
+                'title': [experiment.title],
+                'description': [experiment.description],
+	    })
 
     def _get_user_metadata(self):
         raise NotImplementedError
@@ -242,33 +244,37 @@ class RifCsExperimentProvider(AbstractExperimentProvider):
                                                 .filter(experiment=experiment,
                                                         schema__namespace=ns)]
         collectors = experiment.experimentauthor_set.exclude(url='')
-        return Metadata({
-            '_writeMetadata': self._get_experiment_writer_func(),
-            'id': experiment.id,
-            'title': experiment.title,
-            'description': experiment.description,
-            # Note: Property names are US-spelling, but RIF-CS is Australian
-            'licence_name': license_.name,
-            'licence_uri': license_.url,
-            'access': access,
-            'access_type': access_type,
-            'collectors': collectors,
-            'managers': experiment.get_owners(),
-            'related_info': related_info,
-            'subjects': subjects
-        })
+        return Metadata(
+            experiment,
+            {
+                '_writeMetadata': self._get_experiment_writer_func(),
+                'id': experiment.id,
+                'title': experiment.title,
+                'description': experiment.description,
+                # Note: Property names are US-spelling, but RIF-CS is Australian
+                'licence_name': license_.name,
+                'licence_uri': license_.url,
+                'access': access,
+                'access_type': access_type,
+                'collectors': collectors,
+                'managers': experiment.get_owners(),
+                'related_info': related_info,
+                'subjects': subjects
+            })
 
     def _get_user_metadata(self, user, metadataPrefix):
         owns_experiments = Experiment.safe.owned_by_user_id(user.id)\
                                           .exclude(public_access=Experiment.PUBLIC_ACCESS_NONE)
-        return Metadata({
-            '_writeMetadata': self._get_user_writer_func(),
-            'id': user.id,
-            'email': user.email,
-            'given_name': user.first_name,
-            'family_name': user.last_name,
-            'owns_experiments': owns_experiments,
-        })
+        return Metadata(
+            user,
+            {
+                '_writeMetadata': self._get_user_writer_func(),
+                'id': user.id,
+                'email': user.email,
+                'given_name': user.first_name,
+                'family_name': user.last_name,
+                'owns_experiments': owns_experiments,
+            })
 
 
     def _handles_metadata_prefix(self, metadataPrefix):

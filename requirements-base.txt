@@ -31,7 +31,7 @@ paramiko==2.4.1
 pillow==5.1.0
 pwgen==0.8.2.post0
 pylint==1.9.2
-pyoai==2.4.4
+pyoai==2.5.0
 pysolr==2.1.0 # pyup: >=2.1.0,<3
 python-dateutil==2.7.3
 # python-magic
