@@ -10,7 +10,6 @@ from tardis.tardis_portal.views import (
     public_data,
     about,
     stats,
-    user_guide,
     cybderduck_connection_window,
     sftp_access
 )
@@ -22,7 +21,6 @@ core_urls = [
         name='tardis.tardis_portal.views.public_data'),
     url(r'^about/$', about, name='tardis.tardis_portal.views.about'),
     url(r'^stats/$', stats, name='tardis.tardis_portal.views.stats'),
-    url(r'^help/$', user_guide, name='tardis.tardis_portal.views.user_guide'),
     url(r'^sftp_access/cyberduck/connection.png$',
         cybderduck_connection_window, name='cyberduck_connection_window'),
     url(r'^sftp_access/$', sftp_access,
