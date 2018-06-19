@@ -292,7 +292,7 @@ def createLinkedUserAuthenticationForm(authMethods):
         label='Username', max_length=75, required=True)
     fields['password'] = forms.CharField(
         required=True, widget=forms.PasswordInput(),
-        label='Password', max_length=12)
+        label='Password')
 
     return type('LinkedUserAuthenticationForm', (forms.BaseForm, ),
                 {'base_fields': fields})
