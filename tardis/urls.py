@@ -68,7 +68,6 @@ core_urls = patterns(
     url(r'^public_data/', 'public_data', name='public_data'),
     (r'^about/$', 'about'),
     (r'^stats/$', 'stats'),
-    (r'^help/$', 'user_guide'),
     url(r'^sftp_access/cyberduck/connection.png$',
         'cybderduck_connection_window', name='cyberduck_connection_window'),
     url(r'^sftp_access/$', 'sftp_access', name='sftp_access'),
