@@ -120,15 +120,18 @@ class AAFOpenId(BaseOAuth2):
     ACCESS_TOKEN_URL = getattr(settings, 'SOCIAL_AUTH_AAF_TOKEN_URL', None)
     USER_INFO_URL = getattr(settings, 'SOCIAL_AUTH_AAF_USER_INFO_URL', None)
     REDIRECT_STATE = False
+    ACCESS_TOKEN_METHOD = 'POST'
+    ACCESS_TOKEN_METHOD = 'POST'
 
     def get_user_details(self, response):
         """returns user details from AAF"""
-        return {'username': response.get('login'),
+        return {'username': response.get('email'),
                 'email': response.get('email') or '',
                 'first_name': response.get('name')}
 
     def user_data(self, access_token, *args, **kwargs):
         """Loads user data from service"""
+        """
         import requests
         import json
         try:
@@ -139,11 +142,11 @@ class AAFOpenId(BaseOAuth2):
             return d
         except ValueError:
             return None
-        """
+       """
         return self.get_json(self.USER_INFO_URL,
                              headers={'Content-Type': 'application/x-www-form-urlencoded',
                                       'Authorization': 'Bearer ' + access_token})
-        """
+
     def auth_headers(self):
         return {'Content-Type': 'application/x-www-form-urlencoded'}
 
