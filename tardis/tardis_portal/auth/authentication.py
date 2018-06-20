@@ -222,10 +222,6 @@ def merge_auth_method(request):
             userProfile__user=user)
 
         for userAuth in userAuths:
-
-            userAuth.userProfile = userProfile
-            userAuth.save()
-
             # also remove the current userAuth from the list of authentication
             # method options that can be added by this user
             del supportedAuthMethods[userAuth.authenticationMethod]
