@@ -36,23 +36,22 @@ def list_auth_methods(request):
     supportedAuthMethods = _getSupportedAuthMethods()
 
     try:
+        """
         userProfile = UserProfile.objects.get(user=request.user)
-
+        
         if userProfile.isDjangoAccount:
             # if the main account for this user is a django account, add his
             # details in the userAuthMethodList (a list of user authentication
             # methods that the user can modify or delete)
             userAuthMethodList.append((request.user.username,
                 localdb_auth.auth_display_name, localdb_auth.auth_key))
-
+        """
         # get the user authentication methods for the current user
         userAuths = UserAuthentication.objects.filter(
             userProfile__user=request.user)
 
         # ... and append it to our list
         for userAuth in userAuths:
-            # localdb is already represented above
-            if userAuth.authenticationMethod != "localdb":
                 userAuthMethodList.append((userAuth.username,
                     userAuth.getAuthMethodDescription(),
                     userAuth.authenticationMethod))
