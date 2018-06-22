@@ -33,6 +33,7 @@
 import logging
 
 from django.conf import settings
+from ipware.ip2 import get_client_ip
 
 LOGGING = {
     'version': 1,
@@ -100,7 +101,7 @@ class LoggingMiddleware(object):
             user = request.user
         except:
             user = ''
-        ip = request.META['REMOTE_ADDR']
+        ip = get_client_ip(request)[0]
         method = request.method
         status = response.status_code
         extra = {'ip': ip, 'user': user, 'method': method, 'status': status}
@@ -125,7 +126,7 @@ class LoggingMiddleware(object):
             user = request.user
         except:
             user = ''
-        ip = request.META['REMOTE_ADDR']
+        ip = get_client_ip(request)[0]
         method = request.method
         status = 500
 
