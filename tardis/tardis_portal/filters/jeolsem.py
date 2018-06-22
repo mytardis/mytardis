@@ -14,10 +14,10 @@ logger = logging.getLogger(__name__)
 class JEOLSEMFilter(object):
     """This filter collects metadata from JEOL SEM text files.
 
-    :param name: the short name of the schema.
-    :type name: string
-    :param schema: the name of the schema to load the EXIF data into.
-    :type schema: string
+    param name: the short name of the schema.
+    type name: string
+    param schema: the name of the schema to load the EXIF data into.
+    type schema: string
     """
 
     ATTR_PREFIXES = ('$CM_', '$$SM_')
@@ -31,10 +31,10 @@ class JEOLSEMFilter(object):
     def __call__(self, sender, **kwargs):
         """post save callback entry point.
 
-        :param sender: The model class.
-        :param instance: The actual instance being saved.
-        :param created: A boolean; True if a new record was created.
-        :type created: bool
+        param sender: The model class.
+        param instance: The actual instance being saved.
+        param created: A boolean; True if a new record was created.
+        type created: bool
         """
         datafile = kwargs.get('instance')
 

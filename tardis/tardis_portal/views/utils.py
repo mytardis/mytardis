@@ -60,7 +60,7 @@ def _add_protocols_and_organizations(request, collection_object, c):
     from tardis.tardis_portal.download import get_download_organizations
     c['organization'] = get_download_organizations()
     c['default_organization'] = getattr(
-        settings, 'DEFAULT_ARCHIVE_ORGANIZATION', 'classic')
+        settings, 'DEFAULT_PATH_MAPPER', 'classic')
 
 
 def __getFilteredDatafiles(request, searchQueryType, searchFilterData):
@@ -73,9 +73,8 @@ def __getFilteredDatafiles(request, searchQueryType, searchFilterData):
     searchFilterData -- the cleaned up search form data
 
     Returns:
-    A list of datafiles as a result of the query or None if the provided search
-      request is invalid
-
+        list: A list of datafiles as a result of the query or None if the
+            provided search request is invalid
     """
 
     datafile_results = authz.get_accessible_datafiles_for_user(request)
@@ -138,8 +137,8 @@ def __getFilteredExperiments(request, searchFilterData):
     searchFilterData -- the cleaned up search experiment form data
 
     Returns:
-    A list of experiments as a result of the query or None if the provided
-      search request is invalid
+        list: A list of experiments as a result of the query or None if the
+            provided search request is invalid
 
     """
 
@@ -194,15 +193,15 @@ def __filterParameters(parameters, datafile_results,  # too complex # noqa
     :param parameters: list of ParameterNames model
     :type parameters: list containing
        :py:class:`tardis.tardis_portal.models.ParameterNames`
-    :param datafile_results: list of datafile to apply the filter
-    :param searchFilterData: the cleaned up search form data
+    :param list datafile_results: list of datafile to apply the filter
+    :param Form searchFilterData: the cleaned up search form data
     :param paramType: either ``datafile`` or ``dataset``
     :type paramType: :py:class:`tardis.tardis_portal.models.Dataset` or
        :py:class:`tardis.tardis_portal.models.DataFile`
 
     :returns: A list of datafiles as a result of the query or None if the
       provided search request is invalid
-
+    :rtype: list
     """
 
     for parameter in parameters:  # pylint: disable=R0101
@@ -334,7 +333,7 @@ def __forwardToSearchDatafileFormPage(request, searchQueryType,
     if not searchForm:
         # if searchQueryType == 'saxs':
         SearchDatafileForm = createSearchDatafileForm(searchQueryType)
-        searchForm = SearchDatafileForm()  # pylint: disable=R0204
+        searchForm = SearchDatafileForm()
         # else:
         #    # TODO: what do we need to do if the user didn't provide a page to
         #            display?
@@ -375,12 +374,13 @@ def __getSearchDatafileForm(request, searchQueryType):
 
     :param request: a HTTP Request instance
     :type request: :class:`django.http.HttpRequest`
-    :param searchQueryType: The search query type: 'mx' or 'saxs'
+    :param basestring searchQueryType: The search query type: 'mx' or 'saxs'
     :raises:
        :py:class:`tardis.tardis_portal.errors.UnsupportedSearchQueryTypeError`
        is the provided searchQueryType is not supported.
     :returns: The supported search datafile form
-
+    :rtype: SearchDatafileForm
+    :raises UnsupportedSearchQueryTypeError:
     """
 
     try:
@@ -397,7 +397,7 @@ def __getSearchExperimentForm(request):
     :param request: a HTTP Request instance
     :type request: :class:`django.http.HttpRequest`
     :returns: The search experiment form.
-
+    :rtype: SearchExperimentForm
     """
 
     SearchExperimentForm = createSearchExperimentForm()
@@ -410,8 +410,8 @@ def __processDatafileParameters(request, searchQueryType, form):
 
     :param request: a HTTP Request instance
     :type request: :class:`django.http.HttpRequest`
-    :param searchQueryType: The search query type
-    :param form: The search form to use
+    :param basestring searchQueryType: The search query type
+    :param Form form: The search form to use
     :raises:
        :py:class:`tardis.tardis_portal.errors.SearchQueryTypeUnprovidedError`
        if searchQueryType is not in the HTTP GET request
@@ -430,13 +430,15 @@ def __processDatafileParameters(request, searchQueryType, form):
         datafile_results = __getFilteredDatafiles(
             request, searchQueryType, form.cleaned_data)
 
-        # let's cache the query with all the filters in the session so
-        # we won't have to keep running the query all the time it is needed
-        # by the paginator
-        request.session['datafileResults'] = datafile_results
+        # Previously, we cached the query with all the filters in the session
+        # so we wouldn't have to keep running the query each time it is needed
+        # by the paginator, but since Django 1.6, Django uses JSON instead of
+        # pickle to serialize session data, so it can't serialize arbitrary
+        # Python objects unless we write custom JSON serializers for them:
+        # request.session['datafileResults'] = datafile_results
+
         return datafile_results
-    else:
-        return None
+    return None
 
 
 def __processExperimentParameters(request, form):
@@ -445,21 +447,24 @@ def __processExperimentParameters(request, form):
 
     :param request: a HTTP Request instance
     :type request: :class:`django.http.HttpRequest`
-    :param form: The search form to use
+    :param Form form: The search form to use
     :returns: A list of experiments as a result of the query or None if the
       provided search request is invalid.
-
+    :rtype: list
     """
 
     if form.is_valid():
         experiments = __getFilteredExperiments(request, form.cleaned_data)
-        # let's cache the query with all the filters in the session so
-        # we won't have to keep running the query all the time it is needed
-        # by the paginator
-        request.session['experiments'] = experiments
+
+        # Previously, we cached the query with all the filters in the session
+        # so we wouldn't have to keep running the query each time it is needed
+        # by the paginator, but since Django 1.6, Django uses JSON instead of
+        # pickle to serialize session data, so it can't serialize arbitrary
+        # Python objects unless we write custom JSON serializers for them:
+        # request.session['experiments'] = experiments
+
         return experiments
-    else:
-        return None
+    return None
 
 
 def get_dataset_info(dataset, include_thumbnail=False, exclude=None):  # too complex # noqa
@@ -478,6 +483,14 @@ def get_dataset_info(dataset, include_thumbnail=False, exclude=None):  # too com
     if exclude is None or 'size' not in exclude:
         obj['size'] = dataset.get_size()
         obj['size_human_readable'] = filesizeformat(obj['size'])
+
+    if (dataset.instrument
+        and (exclude is None or 'instrument' not in exclude)):
+        obj['instrument'] = dataset.instrument.name
+        obj['show_instr_facil'] = True
+        if (dataset.instrument.facility
+            and (exclude is None or 'facility' not in exclude)):
+            obj['facility'] = dataset.instrument.facility.name
 
     if include_thumbnail:
         try:
@@ -539,5 +552,4 @@ def feedback(request):
         email.attach('screenshot.png', img, 'image/png')
         email.send()
         return HttpResponse('OK')
-    else:
-        return redirect('/')
+    return redirect('/')

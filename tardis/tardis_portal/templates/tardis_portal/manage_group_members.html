@@ -109,7 +109,8 @@ $(document).ready(function() {
         evt.preventDefault()
 
         var icon = $(this).find('i');
-        icon.toggleClass('icon-folder-open icon-folder-close');
+        icon.toggleClass('fa fa-folder-open');
+        icon.toggleClass('fa fa-folder-close');
         $(this).toggleClass('members-shown members-hidden');
 
         var user_list = $(this).parents('.group').find('.access_list');
@@ -264,7 +265,7 @@ $(document).ready(function() {
 {% if perms.auth.add_group %}
 <div class="pull-right">
 <a style="margin-left: 10px;" class="create_group_link btn btn-warning" title="Create Group">
-  <i class="icon-plus"></i>
+  <i class="fa fa-plus"></i>
   Create Group
 </a>
 </div>
@@ -272,7 +273,7 @@ $(document).ready(function() {
 {% if perms.auth.add_user %}
 <div class="pull-right">
 <a class="create_user_link btn btn-warning" title="Create User">
-  <i class="icon-plus"></i>
+  <i class="fa fa-plus"></i>
   Create User
 </a>
 </div>

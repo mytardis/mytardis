@@ -1,0 +1,14 @@
+{
+  "name": "mytardis",
+  "version": "3.8.0",
+  "license": "SEE LICENSE IN COPYING.rst",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mytardis/mytardis.git"
+  },
+  "dependencies": {
+    "angular": "1.3.2",
+    "angular-resource": "1.3.2",
+    "ng-dialog": "0.3.4"
+  }
+}

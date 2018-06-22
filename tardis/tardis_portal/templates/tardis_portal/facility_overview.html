@@ -7,15 +7,16 @@
 {% load bleach_tag %}
 
 {% block content %}
+    <div class="page-header">
+        <h1 class="title">Facility Overview</h1>
+    </div>
+
     {% with request|check_if_facility_manager as facility_manager %}
         <script type="text/javascript"
                 src="{% static 'js/facility_view.js' %}"></script>
         <div id="content" ng-controller="FacilityCtrl">
         {% verbatim %}
         <div class="row-fluid">
-            <div class="span12">
-                <h1>Facility Overview</h1>
-            </div>
             <div class="pull-left"><h2 style="color:#999999">
                 {{selectedFacilityName | capitalise}}</h2></div>
             <div class="btn-group pull-right" ng-show="showFacilitySelector()">
@@ -34,7 +35,6 @@
                 </ul>
             </div>
         </div>
-        <hr/>
         {% endverbatim %}
         {% if not facility_manager %}
             <div class="row-fluid">
@@ -66,7 +66,7 @@
                             <div class="btn-group pull-right">
                                 <a class="btn" href="#"
                                    ng-click="fetchFacilityData(0,defaultFetchLimit); refreshCountdown = refreshInterval"><i
-                                        class="icon-refresh"></i> Refresh</a>
+                                        class="fa fa-refresh"></i> Refresh</a>
                                 <a class="btn dropdown-toggle"
                                    data-toggle="dropdown" href="#">
                                     Auto refresh <span
@@ -128,7 +128,7 @@
                                            ng-model="search_instrument.instrument.name">
                                     <a class="btn"
                                        ng-click="filterFormReset()"><i
-                                            class="icon-remove"></i> Clear
+                                            class="fa fa-remove"></i> Clear
                                         filters</a>
                                 </form>
                             </div>
@@ -162,7 +162,7 @@
                                         <td>
                                             <a class="btn btn-small btn-info"
                                                ng-click="toggleFileList(dataset)">
-                                                <i class="icon-list-alt"></i>
+                                                <i class="fa fa-list-alt"></i>
                                                 <span ng-hide="isFileListVisible(dataset.id)">Show</span><span
                                                     ng-show="isFileListVisible(dataset.id)">Hide</span>
                                                 file list
@@ -222,7 +222,7 @@
                                         <td>
                                             <a class="btn btn-small btn-info"
                                                ng-click="toggleFileList(dataset)">
-                                                <i class="icon-list-alt"></i>
+                                                <i class="fa fa-list-alt"></i>
                                                 <span ng-hide="isFileListVisible(dataset.id)">Show</span><span
                                                     ng-show="isFileListVisible(dataset.id)">Hide</span>
                                                 file list
@@ -280,7 +280,7 @@
                                         <td>
                                             <a class="btn btn-small btn-info"
                                                ng-click="toggleFileList(dataset)">
-                                                <i class="icon-list-alt"></i>
+                                                <i class="fa fa-list-alt"></i>
                                                 <span ng-hide="isFileListVisible(dataset.id)">Show</span><span
                                                     ng-show="isFileListVisible(dataset.id)">Hide</span>
                                                 file list

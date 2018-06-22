@@ -48,7 +48,7 @@ class CreativeCommonsHandler():
         schema__namespace=self.schema,
         experiment__id=self.experiment_id)
 
-        if not len(parameterset):
+        if not parameterset:
             if create:
                 experiment = Experiment.objects.get(id=self.experiment_id)
                 self.psm = ParameterSetManager(schema=self.schema,
@@ -71,10 +71,7 @@ class CreativeCommonsHandler():
         experiment__id=self.experiment_id)
 
         self.psm = None
-        if not len(parameterset):
-            return False
-        else:
-            return True
+        return bool(parameterset)
 
     def save_license(self, request):
         """

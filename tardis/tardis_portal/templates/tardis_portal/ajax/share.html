@@ -243,7 +243,7 @@ $('.share_link_group').bind('click', function(evt) {
                 evt.preventDefault()
 
                 var icon = $(this).find('i');
-                icon.toggleClass('icon-folder-open icon-folder-close');
+                icon.toggleClass('fa fa-folder-open icon-folder-close');
                 $(this).toggleClass('members-shown members-hidden');
 
                 var user_list = $(this).parents('.group').find('.access_list');
@@ -329,7 +329,7 @@ $('.share_link_group').bind('click', function(evt) {
                     evt.preventDefault()
 
                     var icon = $(this).find('i');
-                    icon.toggleClass('icon-folder-open icon-folder-close');
+                    icon.toggleClass('fa fa-folder-open icon-folder-close');
                     $(this).toggleClass('members-shown members-hidden');
 
                     var user_list = $(this).parents('.access_list_group').find('.access_list');
@@ -556,9 +556,9 @@ $(document).ready(function() {
               </dd>
             </dl>
         </p>
-        {% if is_owner or is_superuser or is_staff %}
+        {% if is_owner or is_superuser %}
         <a data-experiment_id="{{experiment.id}}" class="public_access_link btn btn-mini" title="Change">
-          <i class="icon-cog"></i>
+          <i class="fa fa-cog"></i>
           Change Public Access
         </a>
         {% endif %}
@@ -569,9 +569,9 @@ $(document).ready(function() {
     <h4>Users</h4>
     <p>Users who have a share in this experiment:</p>
     <div id="experiment_user_list"/>
-    {% if is_owner or is_superuser or is_staff %}
+    {% if is_owner or is_superuser %}
     <a data-experiment_id="{{experiment.id}}" class="share_link btn btn-mini" title="Change">
-        <i class="icon-share"></i>
+        <i class="fa fa-share"></i>
         Change User Sharing
     </a>
     {% endif %}
@@ -579,9 +579,9 @@ $(document).ready(function() {
     <h4>Groups</h4>
     <p>Groups who have a share in this experiment:</p>
     <div id="experiment_group_list"/>
-    {% if is_owner or is_superuser or is_staff %}
+    {% if is_owner or is_superuser %}
     <a data-experiment_id="{{experiment.id}}" class="share_link_group btn btn-mini" title="Change">
-        <i class="icon-share"></i>
+        <i class="fa fa-share"></i>
         Change Group Sharing
     </a>
     {% endif %}
@@ -605,11 +605,11 @@ $(document).ready(function() {
     <p>Temporary access links provide full access to recipients regardless of an experiment's public status.</p>
     <div id="experiment_token_list"/>
 
-        {% if is_owner or is_superuser or is_staff %}
+        {% if is_owner or is_superuser %}
         <a title="Create New Temporary Link"
             href="{{ experiment.get_create_token_url }}"
             class="create_token_link btn btn-mini">
-            <i class="icon-plus-sign"></i>
+            <i class="fa fa-plus-sign"></i>
             Create New Temporary Link
         </a>
         {% endif %}

@@ -1,7 +1,18 @@
 FROM mytardis/mytardis-run
 
+USER root
+RUN apt-get update && apt-get install \
+    -qy \
+    phantomjs wget patch
+# Workaround for https://bugs.launchpad.net/ubuntu/+source/npm/+bug/1760840
+RUN wget https://launchpadlibrarian.net/363079369/npm.patch
+RUN patch -N /usr/share/npm/node_modules/npmconf/config-defs.js npm.patch
+USER webapp
+
 RUN . /appenv/bin/activate; \
-    pip install --no-index -f /wheelhouse psycopg2 mysql-python
+    pip install --no-index -f /wheelhouse -r requirements-postgres.txt
+RUN . /appenv/bin/activate; \
+    pip install --no-index -f /wheelhouse -r requirements-mysql.txt
 RUN . /appenv/bin/activate; \
     pip install coveralls codacy-coverage
 VOLUME /home/webapp/tardis

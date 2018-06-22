@@ -100,9 +100,8 @@ class Schema(models.Model):
         if subtype:
             return [schema.namespace for schema in
                     Schema.objects.filter(type=type_, subtype=subtype)]
-        else:
-            return [schema.namespace for schema in
-                    Schema.objects.filter(type=type_)]
+        return [schema.namespace for schema in
+                Schema.objects.filter(type=type_)]
 
     @classmethod
     def get_schema_type_name(cls, schema_type, short=False):
@@ -480,8 +479,8 @@ class Parameter(models.Model):
         Deals with date/time strings that are timezone naive or aware, based
         on the USE_TZ setting.
 
-        :param value: a string (or string-like) representing the value
-        :return:
+        :param basestring value: a string (or string-like) repr of the value
+        :raises SuspiciousOperation:
         """
         if self.name.isNumeric():
             self.numerical_value = float(value)

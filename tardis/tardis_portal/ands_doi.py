@@ -29,6 +29,7 @@ class DOIService(object):
         """
         :param experiment: The experiment model object
         :type experiment: :class: `tardis.tardis_portal.models.Experiment`
+        :raises Exception:
         """
         if hasattr(settings, 'DOI_ENABLE') and settings.DOI_ENABLE:
             self.experiment = experiment
@@ -52,7 +53,7 @@ class DOIService(object):
         :param url: the URL the DOI will resolve to
         :type url: string
         :return: the DOI string
-        :rtype string
+        :rtype: string
         """
         doi = self.get_doi()
         if not doi:
@@ -64,7 +65,7 @@ class DOIService(object):
     def get_doi(self):
         """
         :return: DOI or None
-        :rtype string
+        :rtype: string
         """
         doi_params = ExperimentParameter.objects.filter(
             name=self.doi_name,

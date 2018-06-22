@@ -43,12 +43,14 @@ from tardis.tardis_portal.auth.decorators import has_datafile_download_access
 from tardis.tardis_portal.auth.decorators import experiment_download_required
 from tardis.tardis_portal.auth.decorators import dataset_download_required
 from tardis.tardis_portal.shortcuts import render_error_message
-from tardis.tardis_portal.views import return_response_not_found, \
-    return_response_error
+from tardis.tardis_portal.shortcuts import (return_response_not_found,
+                                            return_response_error)
+from tardis.tardis_portal.util import (get_filesystem_safe_dataset_name,
+                                       get_filesystem_safe_experiment_name)
 
 logger = logging.getLogger(__name__)
 
-DEFAULT_ORGANIZATION = settings.DEFAULT_ARCHIVE_ORGANIZATION
+DEFAULT_ORGANIZATION = settings.DEFAULT_PATH_MAPPER
 
 
 def _create_download_response(request, datafile_id, disposition='attachment'):  # too complex # noqa
@@ -89,8 +91,7 @@ def _create_download_response(request, datafile_id, disposition='attachment'):  
                                             "File is unverified, "
                                             "please try again later.",
                                             status=503)
-            else:
-                return return_response_not_found(request)
+            return return_response_not_found(request)
         wrapper = FileWrapper(file_obj, blksize=65535)
         response = StreamingHttpResponse(wrapper,
                                          content_type=datafile.get_mimetype())
@@ -132,7 +133,7 @@ def _get_mapper_makers():
     global __mapper_makers
     if not __mapper_makers:
         __mapper_makers = {}
-        mappers = getattr(settings, 'ARCHIVE_FILE_MAPPERS', [])
+        mappers = getattr(settings, 'DOWNLOAD_PATH_MAPPERS', {})
         for (organization, mapper_desc) in mappers.items():
             mapper_fn = _safe_import(mapper_desc[0])
             if len(mapper_desc) >= 2:
@@ -146,7 +147,9 @@ def _get_mapper_makers():
                     myKwarg['rootdir'] = rootdir
 
                     def mapper(datafile):
-                        return mapper_fn(datafile, **myKwarg)
+                        # TODO: remove this complex code. warning silenced for
+                        # now because no time to investigate
+                        return mapper_fn(datafile, **myKwarg)  # pylint: disable=cell-var-from-loop
                     return mapper
                 return mapper_maker
             __mapper_makers[organization] = mapper_maker_maker(kwarg)
@@ -172,16 +175,14 @@ def _safe_import(path):
             (mapper_module, mapper_fname))
 
 
-def _make_mapper(organization, rootdir):
+def make_mapper(organization, rootdir):
     if organization == 'classic':
         return classic_mapper(rootdir)
-    else:
-        mapper_makers = _get_mapper_makers()
-        mapper_maker = mapper_makers.get(organization)
-        if mapper_maker:
-            return mapper_maker(rootdir)
-        else:
-            return None
+    mapper_makers = _get_mapper_makers()
+    mapper_maker = mapper_makers.get(organization)
+    if mapper_maker:
+        return mapper_maker(rootdir)
+    return None
 
 
 def classic_mapper(rootdir):
@@ -205,7 +206,6 @@ def _get_datafile_details_for_archive(mapper, datafiles):
     return res
 
 
-########### NEW DOWNLOAD ##############
 class UncachedTarStream(TarFile):
     '''
     Stream files into a compressed tar stream on the fly
@@ -242,7 +242,8 @@ class UncachedTarStream(TarFile):
             df, name = fobj
             tarinfo = self.tarinfo_for_df(df, name)
             self.tarinfos[num] = tarinfo
-            tarinfo_buf = tarinfo.tobuf(self.format, self.encoding, self.errors)
+            tarinfo_buf = tarinfo.tobuf(self.format, self.encoding,
+                                        self.errors)
             self.tarinfo_bufs[num] = tarinfo_buf
             total_size += len(tarinfo_buf)
             size = int(tarinfo.size)
@@ -364,7 +365,7 @@ class UncachedTarStream(TarFile):
                 buf, remainder_buf)
             for stream_buf in stream_buffers:
                 yield stream_buf
-        if remainder_buf and len(remainder_buf) > 0:
+        if remainder_buf:
             yield remainder_buf
         if self.do_gzip:
             yield self.close_gzip()
@@ -394,7 +395,7 @@ def _streaming_downloader(request, datafiles, rootdir, filename,
     private function to be called by wrappers
     creates download response with given files and names
     '''
-    mapper = _make_mapper(organization, rootdir)
+    mapper = make_mapper(organization, rootdir)
     if not mapper:
         return render_error_message(
             request, 'Unknown download organization: %s' % organization,
@@ -432,7 +433,7 @@ def _streaming_downloader(request, datafiles, rootdir, filename,
 def streaming_download_experiment(request, experiment_id, comptype='tgz',
                                   organization=DEFAULT_ORGANIZATION):
     experiment = Experiment.objects.get(id=experiment_id)
-    rootdir = experiment.title.replace(' ', '_')
+    rootdir = get_filesystem_safe_experiment_name(experiment)
     filename = '%s-complete.tar' % rootdir
 
     datafiles = DataFile.objects.filter(
@@ -445,7 +446,7 @@ def streaming_download_experiment(request, experiment_id, comptype='tgz',
 def streaming_download_dataset(request, dataset_id, comptype='tgz',
                                organization=DEFAULT_ORGANIZATION):
     dataset = Dataset.objects.get(id=dataset_id)
-    rootdir = urllib.quote(dataset.description.replace(' ', '_'), safe='')
+    rootdir = get_filesystem_safe_dataset_name(dataset)
     filename = '%s-complete.tar' % rootdir
 
     datafiles = DataFile.objects.filter(dataset=dataset)
@@ -467,15 +468,14 @@ def streaming_download_datafiles(request):  # too complex # noqa
     # TODO: intelligent selection of temp file versus in-memory buffering.
     logger.error('In download_datafiles !!')
     comptype = getattr(settings, 'DEFAULT_ARCHIVE_FORMATS', ['tar'])[0]
-    organization = getattr(settings, 'DEFAULT_ARCHIVE_ORGANIZATION', 'classic')
+    organization = getattr(settings, 'DEFAULT_PATH_MAPPER', 'classic')
     if 'comptype' in request.POST:
         comptype = request.POST['comptype']
     if 'organization' in request.POST:
         organization = request.POST['organization']
 
     if 'datafile' in request.POST or 'dataset' in request.POST:
-        if (len(request.POST.getlist('datafile')) > 0
-                or len(request.POST.getlist('dataset'))) > 0:
+        if request.POST.getlist('datafile') or request.POST.getlist('dataset'):
 
             datasets = request.POST.getlist('dataset')
             datafiles = request.POST.getlist('datafile')
@@ -506,7 +506,7 @@ def streaming_download_datafiles(request):  # too complex # noqa
                 status=404)
 
     elif 'url' in request.POST:
-        if len(request.POST.getlist('url')) != 0:
+        if not request.POST.getlist('url'):
             return render_error_message(
                 request,
                 'No Datasets or Datafiles were selected for downloaded',
@@ -529,7 +529,7 @@ def streaming_download_datafiles(request):  # too complex # noqa
 
     logger.info('Files for archive command: %s' % df_set)
 
-    if len(df_set) == 0:
+    if not df_set:
         return render_error_message(
             request,
             'You do not have download access for any of the '
@@ -542,8 +542,9 @@ def streaming_download_datafiles(request):  # too complex # noqa
     except (KeyError, Experiment.DoesNotExist):
         experiment = iter(df_set).next().dataset.get_first_experiment()
 
-    filename = '%s-selection.tar' % experiment.title.replace(' ', '_')
-    rootdir = '%s-selection' % experiment.title.replace(' ', '_')
+    exp_title = get_filesystem_safe_experiment_name(experiment)
+    filename = '%s-selection.tar' % exp_title
+    rootdir = '%s-selection' % exp_title
     return _streaming_downloader(request, df_set, rootdir, filename,
                                  comptype, organization)
 

@@ -4,7 +4,7 @@ var activateSearchAutocomplete = function() {
   $.ajax({
     'global': false,
     'data': data,
-    'url': '/ajax/parameter_field_list/',
+    'url': '/search/parameter_field_list/',
     'success': function (data) {
         data = data.split("+");
         var list = _.map(data, function(line) {

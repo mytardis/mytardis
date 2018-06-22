@@ -98,5 +98,4 @@ class Token(models.Model):
 
         if expire_tomorrow_morning < token_as_datetime:
             return expire_tomorrow_morning
-        else:
-            return token_as_datetime
+        return token_as_datetime

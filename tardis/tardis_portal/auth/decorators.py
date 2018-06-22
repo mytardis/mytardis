@@ -46,17 +46,7 @@ def get_accessible_experiments(request):
 
 def get_accessible_experiments_for_dataset(request, dataset_id):
     experiments = Experiment.safe.all(request.user)
-
-    # probably a much cleverer way of writing this with safe
-    experiment_dataset_access = []
-    for experiment in experiments:
-        experiment_dataset = Experiment.objects.filter(
-            id=experiment.id,
-            datasets__in=[dataset_id])
-        if experiment_dataset.count():
-            experiment_dataset_access.append(experiment_dataset[0])
-
-    return experiment_dataset_access
+    return experiments.filter(datasets__id=dataset_id)
 
 
 def get_shared_experiments(request):
@@ -111,9 +101,8 @@ def has_experiment_download_access(request, experiment_id):
                       .exists():
 
         return True
-    else:
-        exp = Experiment.objects.get(id=experiment_id)
-        return Experiment.public_access_implies_distribution(exp.public_access)
+    exp = Experiment.objects.get(id=experiment_id)
+    return Experiment.public_access_implies_distribution(exp.public_access)
 
 
 def has_dataset_ownership(request, dataset_id):
@@ -208,10 +197,7 @@ def has_read_or_owner_ACL(request, experiment_id):
     # is there at least one ACL rule which satisfies the rules?
     from tardis.tardis_portal.models import ObjectACL
     acl = ObjectACL.objects.filter(query)
-    if acl.count() == 0:
-        return False
-    else:
-        return True
+    return bool(acl)
 
 
 def has_write_permissions(request, experiment_id):
@@ -232,8 +218,8 @@ def is_group_admin(request, group_id):
 
 def group_ownership_required(f):
     """
-    A decorator for Django views that validates if a user is a group admin,
-    'staff' or 'superuser' prior to further processing the request.
+    A decorator for Django views that validates if a user is a group admin
+    or 'superuser' prior to further processing the request.
     Unauthenticated requests are redirected to the login page. If the
     user making the request satisfies none of these criteria, an error response
     is returned.
@@ -248,7 +234,6 @@ def group_ownership_required(f):
         if not request.user.is_authenticated():
             return HttpResponseRedirect('/login?next=%s' % request.path)
         if not (is_group_admin(request, kwargs['group_id']) or
-                user.is_staff or
                 user.is_superuser):
             return return_response_error(request)
         return f(request, *args, **kwargs)
@@ -261,7 +246,7 @@ def group_ownership_required(f):
 def experiment_ownership_required(f):
     """
     A decorator for Django views that validates if a user is an owner of an
-    experiment, 'staff' or 'superuser' prior to further processing the request.
+    experiment or 'superuser' prior to further processing the request.
     Unauthenticated requests are redirected to the login page. If the
     user making the request satisfies none of these criteria, an error response
     is returned.
@@ -276,7 +261,6 @@ def experiment_ownership_required(f):
         if not user.is_authenticated():
             return HttpResponseRedirect('/login?next=%s' % request.path)
         if not (has_experiment_ownership(request, kwargs['experiment_id']) or
-                user.is_staff or
                 user.is_superuser):
             return return_response_error(request)
         return f(request, *args, **kwargs)
@@ -416,7 +400,7 @@ def upload_auth(f):
                                           settings.SESSION_COOKIE_NAME,
                                           None))
         sessions = Session.objects.filter(pk=session_id)
-        if len(sessions) != 0 and sessions[0].expire_date > timezone.now():
+        if sessions and sessions[0].expire_date > timezone.now():
             try:
                 request.user = User.objects.get(
                     pk=sessions[0].get_decoded()['_auth_user_id'])

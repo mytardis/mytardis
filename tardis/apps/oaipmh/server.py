@@ -84,6 +84,7 @@ class ProxyingServer(IOAI):
             :py:exc:`oaipmh.error.IdDoesNotExistError`
 
         :returns: first successful provider response
+        :rtype: response
         """
         id_exists = False
         # Try the providers until we succeed
@@ -106,6 +107,7 @@ class ProxyingServer(IOAI):
 
         :returns: an :py:class:`oaipmh.common.Identify` object describing the
             repository.
+        :rtype: oaipmh.common.Identify
         """
         current_site = Site.objects.get_current().domain
         if getattr(settings, 'CSRF_COOKIE_SECURE', False):
@@ -135,6 +137,7 @@ class ProxyingServer(IOAI):
             repository does not support sets.
 
         :returns: a :py:class:`set.Set` of headers.
+        :rtype: set
         """
         if kwargs.has_key('set') and kwargs['set']:
             raise oaipmh.error.NoSetHierarchyError
@@ -159,6 +162,7 @@ class ProxyingServer(IOAI):
 
         :returns: a `frozenset` of ``metadataPrefix``, ``schema``,
             ``metadataNamespace`` tuples (each entry in the tuple is a string).
+        :rtype: frozenset
         """
         id_known = False
         def appendFormats(list_, p):
@@ -171,7 +175,7 @@ class ProxyingServer(IOAI):
                 return list_
         formats = frozenset(reduce(appendFormats, self.providers, []))
         if kwargs.has_key('identifier'):
-            if len(formats) == 0:
+            if not formats:
                 if id_known:
                     raise oaipmh.error.NoMetadataFormatsError
                 else:
@@ -190,6 +194,7 @@ class ProxyingServer(IOAI):
 
         :returns: a :py:class:`set.Set` of ``header``, ``metadata``, ``about``
             tuples.
+        :rtype: set
         """
         if kwargs.has_key('set') and kwargs['set']:
             raise oaipmh.error.NoSetHierarchyError

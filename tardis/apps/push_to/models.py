@@ -1,4 +1,3 @@
-# pylint: disable=R0204
 import base64
 from StringIO import StringIO
 
@@ -8,9 +7,10 @@ from django.contrib import admin
 from django.contrib.auth.models import User, Group
 from django.core.exceptions import ValidationError
 from django.db import models
-from paramiko import RSAKey, RSACert, SSHClient, MissingHostKeyPolicy, \
+from paramiko import RSAKey, SSHClient, MissingHostKeyPolicy, \
     AutoAddPolicy, PKey, DSSKey, ECDSAKey
 from paramiko.config import SSH_PORT
+from paramiko.message import Message
 
 from .apps import PushToConfig
 from .exceptions import NoSuitableCredential
@@ -63,6 +63,15 @@ class KeyPair(models.Model):
             super(KeyPair, self).__setattr__(attrname, val)
 
     def _validate_public_key(self, value):
+        """
+        This method is called when we attempt to assign a value to the
+        public_key field of the KeyPair model.  If we attempt to assign
+        a non-empty string, this method, checks if it has multiple
+        components, e.g. "ssh-rsa AAA...", and if so, saves the key type
+        e.g. "ssh-rsa" in self.key_type, and returns the public key string
+        e.g. "AAA...".  If we are attempting to assing an empty (None)
+        value, we just return that value.
+        """
         if value:
             # Check if the public key is in the id_rsa.pub format
             pub_key_fields = value.split()
@@ -74,10 +83,16 @@ class KeyPair(models.Model):
             self.key_type = KeyPair._get_key_type_from_public_key(public_key)
             return public_key
 
+        # It's OK for an empty value (None) to be assigned to the public_key
+        # field whtn the model instance is initialized:
+        return value
+
     @property
     def key(self):
         """
         :return: a subclass of PKey of the appropriate key type
+        :rtype: PKey
+        :raises ValidationError:
         """
 
         # Check if the key pair exists: at least a public or private part of
@@ -101,7 +116,8 @@ class KeyPair(models.Model):
         elif self.key_type.startswith('ecdsa'):
             pkey = ECDSAKey(data=public_key, file_obj=private_key)
         elif self.key_type == 'ssh-rsa-cert-v01@openssh.com':
-            pkey = RSACert(data=public_key, privkey_file_obj=private_key)
+            pkey = RSAKey(data=public_key, file_obj=private_key)
+            pkey.load_certificate(Message(public_key))
         else:
             raise ValidationError('Unsupported key type: ' + self.key_type)
 
@@ -111,8 +127,9 @@ class KeyPair(models.Model):
     def key(self, pkey):
         """
         Creates a new Key object created from a paramiko pkey object
-        @type pkey: PKey
-        :return: the Key object that has been saved
+        :param pkey: Public Key
+        :type pkey: PKey
+        :raises ValueError:
         """
         if not isinstance(pkey, PKey):
             raise ValueError('invalid PKey object supplied')
@@ -176,8 +193,9 @@ class OAuthSSHCertSigningService(models.Model):
     def get_available_signing_services(user):
         """
         Gets all SSH cert signing services available for a given user
-        @type: user: User
+        :param User user: User
         :return: allowed signing services
+        :rtype: User
         """
         return (
             OAuthSSHCertSigningService.objects.filter(
@@ -269,6 +287,7 @@ class Credential(KeyPair):
         @type bit_length: int
         @type remote_hosts: list[RemoteHost]
         :return: the generated credential
+        :rtype: object
         """
         key = RSAKey.generate(bits=bit_length)
         credential = Credential(user=tardis_user, remote_user=remote_user)
@@ -288,6 +307,7 @@ class Credential(KeyPair):
         the remote_hosts field are expected to work.
         @type remote_host: .RemoteHost
         :return: a connected SSH client
+        :rtype: SSHClient
         """
         ssh = SSHClient()
 

@@ -1,9 +1,10 @@
-# pylint: disable=C0302,R0204
+# pylint: disable=C0302
 '''
 RESTful API for MyTardis models and data.
 Implemented with Tastypie.
 
 .. moduleauthor:: Grischa Meyer <grischa@gmail.com>
+.. moduleauthor:: James Wettenhall <james.wettenhall@monash.edu>
 '''
 import json
 
@@ -13,6 +14,7 @@ from django.contrib.auth.models import AnonymousUser
 from django.contrib.auth.models import User
 from django.contrib.auth.models import Group
 from django.core.servers.basehttp import FileWrapper
+from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseForbidden, \
     StreamingHttpResponse
 
@@ -22,6 +24,7 @@ from tastypie.authentication import SessionAuthentication
 from tastypie.authentication import ApiKeyAuthentication
 from tastypie.authorization import Authorization
 from tastypie.constants import ALL_WITH_RELATIONS
+from tastypie.exceptions import ImmediateHttpResponse
 from tastypie.exceptions import NotFound
 from tastypie.exceptions import Unauthorized
 from tastypie.http import HttpUnauthorized
@@ -115,18 +118,17 @@ class MyTardisAuthentication(object):
                 if check:
                     if isinstance(check, HttpUnauthorized):
                         return False
-                    else:
-                        request._authentication_backend = basic_auth
-                        return check
+                    request._authentication_backend = basic_auth
+                    return check
             if auth_info.startswith('ApiKey'):
                 apikey_auth = ApiKeyAuthentication()
                 check = apikey_auth.is_authenticated(request, **kwargs)
                 if check:
                     if isinstance(check, HttpUnauthorized):
                         return False
-                    else:
-                        request._authentication_backend = apikey_auth
-                        return check
+                    request._authentication_backend = apikey_auth
+                    return check
+        return False
 
     def get_identifier(self, request):
         try:
@@ -195,18 +197,16 @@ class ACLAuthorization(Authorization):
             )
         elif bundle.request.user.is_authenticated() and \
                 isinstance(bundle.obj, User):
-            if len(facilities_managed_by(bundle.request.user)) > 0:
+            if facilities_managed_by(bundle.request.user):
                 return object_list
-            else:
-                return [user for user in object_list if
-                        (user == bundle.request.user or
-                         user.experiment_set.filter(public_access__gt=1)
-                         .count() > 0)]
+            return [user for user in object_list if
+                    (user == bundle.request.user or
+                     user.experiment_set.filter(public_access__gt=1)
+                     .count() > 0)]
         elif isinstance(bundle.obj, Group):
             if facilities_managed_by(bundle.request.user).count() > 0:
                 return object_list
-            else:
-                return bundle.request.user.groups.filter(id__in=obj_ids)
+            return bundle.request.user.groups.filter(id__in=obj_ids)
         elif isinstance(bundle.obj, Facility):
             facilities = facilities_managed_by(bundle.request.user)
             return [facility for facility in object_list
@@ -543,9 +543,6 @@ class MyTardisModelResource(ModelResource):
         return lookup_by_unique_id_only(MyTardisModelResource)(
             self, bundle, kwargs)
 
-    def patch_list(self, request, **kwargs):
-        return super(MyTardisModelResource, self).patch_list(request, **kwargs)
-
     class Meta:
         authentication = default_authentication
         authorization = ACLAuthorization()
@@ -849,6 +846,7 @@ class DatasetResource(MyTardisModelResource):
             'experiments': ALL_WITH_RELATIONS,
             'description': ('exact', ),
             'directory': ('exact', ),
+            'instrument': ALL_WITH_RELATIONS,
         }
         ordering = [
             'description'
@@ -968,10 +966,19 @@ class DataFileResource(MyTardisModelResource):
         if 'attached_file' in bundle.data:
             # have POSTed file
             newfile = bundle.data['attached_file'][0]
-            if 'md5sum' not in bundle.data and 'sha512sum' not in bundle.data:
-                checksums = compute_checksums(newfile, close_file=False)
-                bundle.data['md5sum'] = checksums['md5sum']
-                bundle.data['sha512sum'] = checksums['sha512sum']
+            compute_md5 = getattr(settings, 'COMPUTE_MD5', True)
+            compute_sha512 = getattr(settings, 'COMPUTE_SHA512', True)
+            if (compute_md5 and 'md5sum' not in bundle.data) or \
+                    (compute_sha512 and 'sha512sum' not in bundle.data):
+                checksums = compute_checksums(
+                    newfile,
+                    compute_md5=compute_md5,
+                    compute_sha512=compute_sha512,
+                    close_file=False)
+                if compute_md5:
+                    bundle.data['md5sum'] = checksums['md5sum']
+                if compute_sha512:
+                    bundle.data['sha512sum'] = checksums['sha512sum']
 
             if 'replicas' in bundle.data:
                 for replica in bundle.data['replicas']:
@@ -983,7 +990,17 @@ class DataFileResource(MyTardisModelResource):
         return bundle
 
     def obj_create(self, bundle, **kwargs):
-        retval = super(DataFileResource, self).obj_create(bundle, **kwargs)
+        '''
+        Creates a new DataFile object from the provided bundle.data dict.
+
+        If a duplicate key error occurs, responds with HTTP Error 409: CONFLICT
+        '''
+        try:
+            retval = super(DataFileResource, self).obj_create(bundle, **kwargs)
+        except IntegrityError as err:
+            if "duplicate key" in str(err):
+                raise ImmediateHttpResponse(HttpResponse(status=409))
+            raise
         if 'replicas' not in bundle.data or not bundle.data['replicas']:
             # no replica specified: return upload path and create dfo for
             # new path

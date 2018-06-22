@@ -79,6 +79,20 @@ class StorageBox(models.Model):
         except StorageBoxAttribute.DoesNotExist:
             return StorageBox.TYPE_UNKNOWN
 
+    @property
+    def autocache(self):
+        """
+        Whether to automatically copy data into faster storage
+
+        :return: True if data should be automatically cached
+        :rtype: bool
+        """
+        try:
+            autocache_attr = self.attributes.get(key='autocache').value
+            return autocache_attr.lower() == 'true'
+        except StorageBoxAttribute.DoesNotExist:
+            return False
+
     def get_options_as_dict(self):
         opts_dict = {}
         # using ugly for loop for python 2.6 compatibility
@@ -106,8 +120,7 @@ class StorageBox(models.Model):
             return caches[0]
         elif len(caches) > 1:
             return caches[random.choice(range(len(caches)))]
-        else:
-            return None
+        return None
 
     def copy_files(self, dest_box=None):
         for dfo in self.file_objects.all():
@@ -116,6 +129,18 @@ class StorageBox(models.Model):
     def move_files(self, dest_box=None):
         for dfo in self.file_objects.all():
             dfo.move_file(dest_box)
+
+    def cache_files(self):
+        """
+        Copy all files to faster storage.
+
+        This can be used to copy data from a Vault cache (containing data
+        which will soon be pushed to tape) to Object Storage, so that the
+        data can always be accessed quickly from Object Storage, and the
+        Vault can be used for disaster recovery if necessary.
+        """
+        for dfo in self.file_objects.all():
+            dfo.cache_file()
 
     def copy_to_master(self):
         if getattr(self, 'master_box'):

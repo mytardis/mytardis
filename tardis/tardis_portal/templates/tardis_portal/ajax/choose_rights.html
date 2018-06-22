@@ -118,7 +118,7 @@ $('#legal-section .cancel-button').live("click", function() {
     // Hide any current messages
     $(this).parents('.tab-pane').find('.alert .close').click();
     // Show confirmation window
-    $('#selected-license-text').html($(this).parents('#license-options')
+    $('#selected-license-text').html($(this).parents('.license-option')
            .find('.controls').html());
     $('#legal-section').show();
     $('#license-options').hide();
@@ -198,11 +198,11 @@ $('form.experiment-rights').submit(function(evt) {
   </div>
   <div class="footer">
     <button class="submit-button btn btn-success">
-      <i class="icon-ok"></i>
+      <i class="fa fa-ok"></i>
       Confirm
     </button>
     <button class="cancel-button btn">
-      <i class="icon-cancel"></i>
+      <i class="fa fa-cancel"></i>
       Cancel
     </button>
   </div>

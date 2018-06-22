@@ -87,6 +87,10 @@ For Redhat/CentOS 7, also run::
 
   pip install -U -r requirements-centos.txt
 
+Javascript dependencies are then installed with npm::
+
+  npm install
+
 Configuring MyTardis is done through a standard Django *settings.py*
 file. MyTardis comes with a sample configuration file at
 ``tardis/default_settings.py``. You can import this as the basis of your own
@@ -311,21 +315,21 @@ Archive Organizations
    "download selected" buttons.  (The list allows for using different
    archive formats depending on the user's platform.)
 
-.. attribute:: tardis.default_settings.DEFAULT_ARCHIVE_ORGANIZATION.
+.. attribute:: tardis.default_settings.DEFAULT_PATH_MAPPER.
 
    This gives the default archive "organization" to be used.
    Organizations are defined via the next attribute.
 
-.. attribute:: tardis.default_settings.ARCHIVE_FILE_MAPPERS.
+.. attribute:: tardis.default_settings.DOWNLOAD_PATH_MAPPERS.
 
    This is a hash that maps archive organization names to Datafile filename
    mapper functions.  These functions are reponsible for generating the
    archive pathnames used for files written to "tar" and "zip" archives
    by the downloads module.
 
-   The **ARCHIVE_FILE_MAPPERS** variable is specified like::
+   The **DOWNLOAD_PATH_MAPPERS** variable is specified like::
 
-       ARCHIVE_FILE_MAPPERS = {
+       DOWNLOAD_PATH_MAPPERS = {
            'test': ('tardis.apps.example.ExampleMapper',),
            'test2': ('tardis.apps.example.ExampleMapper', {'foo': 1})
        }

@@ -86,6 +86,8 @@ def get_experiment_referer(request, dataset_id):
     except:
         pass
 
+    return None
+
 
 def render_to_file(template, filename, context):
     string_for_output = render_to_string(template, context)
@@ -144,16 +146,15 @@ class RestfulExperimentParameterSet(object):
         def list_or_create(request, *args, **kwargs):
             if request.method == 'POST':
                 return context._create(request, *args, **kwargs)
-            else:
-                return context._list(request, *args, **kwargs)
+            return context._list(request, *args, **kwargs)
+
         # Item resource
         def get_or_update_or_delete(request, *args, **kwargs):
             if request.method == 'PUT':
                 return context._update(request, *args, **kwargs)
             elif request.method == 'DELETE':
                 return context._delete(request, *args, **kwargs)
-            else:
-                return context._get(request, *args, **kwargs)
+            return context._get(request, *args, **kwargs)
 
         return {'list_or_create': list_or_create,
                 'get_or_update_or_delete': get_or_update_or_delete }

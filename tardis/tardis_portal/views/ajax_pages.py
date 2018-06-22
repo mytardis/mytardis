@@ -15,6 +15,7 @@ from django.http import HttpResponse, HttpResponseNotFound, \
     HttpResponseForbidden
 from django.shortcuts import render
 from django.views.decorators.cache import never_cache
+from django.contrib.auth.decorators import login_required
 from haystack.query import SearchQuerySet
 from tardis.search.utils import SearchQueryString
 from tardis.tardis_portal.auth import decorators as authz
@@ -41,8 +42,8 @@ def experiment_description(request, experiment_id):
     :type request: :class:`django.http.HttpRequest`
     :param experiment_id: the ID of the experiment to be edited
     :type experiment_id: string
+    :returns: description of the experiment
     :rtype: :class:`django.http.HttpResponse`
-
     """
     c = {}
 
@@ -240,13 +241,13 @@ def retrieve_datafile_list(
             dataset__pk=dataset_id,
         ).order_by('filename')
 
-    if request.GET.get('limit', False) and len(highlighted_dsf_pks):
+    if request.GET.get('limit', False) and highlighted_dsf_pks:
         dataset_results = dataset_results.filter(pk__in=highlighted_dsf_pks)
         params['limit'] = request.GET['limit']
 
     filename_search = None
 
-    if 'filename' in request.GET and len(request.GET['filename']):
+    if 'filename' in request.GET and request.GET['filename']:
         filename_search = request.GET['filename']
         dataset_results = \
             dataset_results.filter(filename__icontains=filename_search)
@@ -356,8 +357,7 @@ def experiment_public_access_badge(request, experiment_id):
 
     if authz.has_experiment_access(request, experiment_id):
         return HttpResponse(render_public_access_badge(experiment))
-    else:
-        return HttpResponse('')
+    return HttpResponse('')
 
 
 @authz.experiment_ownership_required
@@ -397,3 +397,53 @@ def choose_rights(request, experiment_id):
     c = {'form': form, 'experiment': experiment}
     return HttpResponse(render_response_index(request,
                         'tardis_portal/ajax/choose_rights.html', c))
+
+
+@never_cache
+@login_required
+def retrieve_owned_exps_list(
+        request, template_name='tardis_portal/ajax/owned_exps_list.html'):
+
+    experiments = Experiment.safe.owned(request.user).order_by('-update_time')
+
+    try:
+        page_number = int(request.GET.get('page', '1'))
+    except ValueError:
+        page_number = 1
+
+    paginator = Paginator(experiments, settings.OWNED_EXPS_PER_PAGE)
+    try:
+        exps_page = paginator.page(page_number)
+    except (EmptyPage, InvalidPage):
+        exps_page = paginator.page(paginator.num_pages)
+
+    c = {
+        'owned_experiments': exps_page,
+        'paginator': paginator
+    }
+    return HttpResponse(render_response_index(request, template_name, c))
+
+
+@never_cache
+@login_required
+def retrieve_shared_exps_list(
+        request, template_name='tardis_portal/ajax/shared_exps_list.html'):
+
+    experiments = Experiment.safe.shared(request.user).order_by('-update_time')
+
+    try:
+        page_number = int(request.GET.get('page', '1'))
+    except ValueError:
+        page_number = 1
+
+    paginator = Paginator(experiments, settings.SHARED_EXPS_PER_PAGE)
+    try:
+        exps_page = paginator.page(page_number)
+    except (EmptyPage, InvalidPage):
+        exps_page = paginator.page(paginator.num_pages)
+
+    c = {
+        'shared_experiments': exps_page,
+        'paginator': paginator
+    }
+    return HttpResponse(render_response_index(request, template_name, c))

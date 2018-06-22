@@ -24,11 +24,11 @@ def list_auth_methods(request):
     """Generate a list of authentication methods that request.user uses to
     authenticate to the system and send it back in a HttpResponse.
 
-    :param request: the HTTP request object
+    :param Request request: the HTTP request object
 
     :returns: The HttpResponse which contains request.user's list of
         authentication methods
-
+    :rtype: HttpResponse
     """
     userAuthMethodList = []
 
@@ -94,11 +94,11 @@ def add_auth_method(request):
     wants to merge two accounts if the authentication method he provided
     already exists as a method for another user.
 
-    :param request: the HTTP request object
+    :param Request request: the HTTP request object
 
     :returns: The HttpResponse which contains request.user's new list of
         authentication methods
-
+    :rtype: HttpResponse
     """
     from tardis.tardis_portal.auth import auth_service
 
@@ -150,13 +150,13 @@ def _setupJsonData(authForm, authenticationMethod, supportedAuthMethods):
     """Sets up the JSON data dictionary that will be sent back to the web
     client.
 
-    :param authForm: the Authentication Form
-    :param authenticationMethod: the user's authentication method
-    :param supportedAuthMethods: is what's left of the list of authentication
-        methods that the user is not using yet
+    :param Form authForm: the Authentication Form
+    :param basestring authenticationMethod: the user's authentication method
+    :param list supportedAuthMethods: is what's left of the list of
+        authentication methods that the user is not using yet
 
     :returns: The data dictionary
-
+    :rtype: dict
     """
     data = {}
     username = authForm.cleaned_data['username']
@@ -179,11 +179,11 @@ def merge_auth_method(request):
     to the merged account, changing the Group memberships and deleting the
     unneeded account.
 
-    :param request: the HTTP request object
+    :param Request request: the HTTP request object
 
     :returns: The HttpResponse which contains request.user's new list of
         authentication methods
-
+    :rtype: HttpResponse
     """
 
     from tardis.tardis_portal.auth import auth_service
@@ -279,11 +279,11 @@ def merge_auth_method(request):
 def remove_auth_method(request):
     """Removes the non-local DB auth method from the UserAuthentication model.
 
-    :param request: the HTTP request object
+    :param Request request: the HTTP request object
 
     :returns: The HttpResponse which contains request.user's new list of
         authentication methods
-
+    :rtype: HttpResponse
     """
     authMethod = request.POST['authMethod']
     try:
@@ -305,9 +305,8 @@ def edit_auth_method(request):
         u.set_password(newPassword)
         u.save()
         return _getJsonSuccessResponse()
-    else:
-        errorMessage = 'The current password you entered is wrong.'
-        return _getJsonFailedResponse(errorMessage)
+    errorMessage = 'The current password you entered is wrong.'
+    return _getJsonFailedResponse(errorMessage)
 
 
 def _getSupportedAuthMethods():

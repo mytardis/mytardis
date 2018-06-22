@@ -145,8 +145,7 @@ class AuthService():
                 user_dict, authMethod)
         if isinstance(user_obj_or_dict, User):
             return user_obj_or_dict
-        else:
-            return None
+        return None
 
     def authenticate(self, authMethod, **credentials):
         """Try and authenticate the user using the auth type he/she
@@ -154,23 +153,25 @@ class AuthService():
 
         :param authMethod: the shortname of the auth method.
         :type authMethod: string
-        :param **credentials: the credentials as expected by the auth plugin
-        :type **credentials: kwargs
+        :param credentials: the credentials as expected by the auth plugin
+        :type credentials: kwargs
+        :returns: authenticated User or None
+        :rtype: User or None
         """
         if not self._initialised:
             self._manual_init()
 
         if authMethod is None or authMethod == "None":
-            authMethods = self._authentication_backends.keys()
+            auth_methods = self._authentication_backends.keys()
         else:
-            authMethods = [authMethod]
-        for authMethod in authMethods:
+            auth_methods = [authMethod]
+        for auth_method in auth_methods:
             # authenticate() returns either a User or a dictionary describing a
             # user (id, email, first_name, last_name).
             authenticate_retval = self._authentication_backends[
-                authMethod].authenticate(**credentials)
+                auth_method].authenticate(**credentials)
             user = self.get_or_create_user(authenticate_retval,
-                                           authMethod)
+                                           auth_method)
             if user is not None:
                 return user
         return None
@@ -259,10 +260,10 @@ class AuthService():
         return username
 
     def getGroups(self, user):
-        """Return a list of tuples containing pluginname and group id
-
-        :param request: a HTTP Request instance
-        :type request: :class:`django.http.HttpRequest`
+        """
+        :param User user: User
+        :returns: a list of tuples containing pluginname and group id
+        :rtype: list
         """
         if not self._initialised:
             self._manual_init()
@@ -288,13 +289,15 @@ class AuthService():
             self._manual_init()
 
     def searchGroups(self, **kw):
-        """Return a list of users and/or groups
-
-        :param id: the value of the id to search for
-        :param name: the value of the displayname to search for
-        :param max_results: the maximum number of elements to return
-        :param sort_by: the attribute the users should be sorted on
-        :param plugin: restrict the search to the specific group provider
+        """
+        basestring id: the value of the id to search for
+        basestring name: the value of the displayname to search for
+        int max_results: the maximum number of elements to return
+        basestring sort_by: the attribute the users should be sorted on
+        basestring plugin: restrict the search to the specific group
+            provider
+        returns a list of users and/or groups
+        rtype list
         """
         if not self._initialised:
             self._manual_init()
@@ -338,6 +341,8 @@ class AuthService():
 
         :param entity: the entity to earch for, user or group.
         :type entity: string
+        :returns: groups
+        :rtype: Group
 
         The groups will be reurned as a list similar to::
 

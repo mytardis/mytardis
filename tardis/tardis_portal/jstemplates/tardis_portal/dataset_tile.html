@@ -1,12 +1,12 @@
 <div class="pull-left" style="margin-right: 10px">
   <div style="text-align: center; font-size: 32px">
-    <i class="icon-folder-open"></i>
+    <i class="fa fa-folder-open"></i>
   </div>
   <br/>
   <label class="dataset-download-box badge badge-info"
          for="dataset-checkbox-{{id}}"
          title="Mark dataset for download">
-    <i class="icon-download-alt"></i>
+    <i class="fa fa-download"></i>
     <input id="dataset-checkbox-{{id}}"
            name="dataset"
            type="checkbox"
@@ -53,6 +53,17 @@
   {{/description}}
   </a>
 </p>
+{{#show_instr_facil}}
+<p style="color:grey;font-size:100%;">
+  {{#instrument}}
+  Instrument: {{instrument}}
+  {{/instrument}}
+  {{#facility}}
+  {{#instrument}}<br>{{/instrument}}
+  Facility: {{facility}}
+  {{/facility}}
+</p>
+{{/show_instr_facil}}
 {{#directory}}
 <p style="color:grey;font-size:100%;">Folder:
 <span style="color:#3a87ad;font-weight:bold;" id="folder">{{directory}}</span></p>

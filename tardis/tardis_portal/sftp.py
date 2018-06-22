@@ -22,10 +22,11 @@ from paramiko import OPEN_SUCCEEDED, OPEN_FAILED_ADMINISTRATIVELY_PROHIBITED,\
 from paramiko.common import AUTH_FAILED, AUTH_SUCCESSFUL
 
 from tardis.analytics import tracker
-from tardis.tardis_portal.util import sanitise_name, dirname_with_id, \
-    split_path
+from tardis.tardis_portal.download import make_mapper
+from tardis.tardis_portal.util import split_path
 
 logger = logging.getLogger(__name__)
+path_mapper = make_mapper(settings.DEFAULT_PATH_MAPPER, rootdir=None)
 
 paramiko_log = logging.getLogger('paramiko.transport')
 if not paramiko_log.handlers:
@@ -39,10 +40,10 @@ if getattr(settings, 'SFTP_GEVENT', False):
     connection.allow_thread_sharing = True
 
 # django db related modules must be imported after monkey-patching
-from django.contrib.sites.models import Site
-from django.contrib.auth.models import AnonymousUser
+from django.contrib.sites.models import Site  # noqa
+from django.contrib.auth.models import AnonymousUser  # noqa
 
-from tardis.tardis_portal.models import DataFile, Experiment
+from tardis.tardis_portal.models import DataFile, Experiment  # noqa
 
 
 class DynamicTree(object):
@@ -94,7 +95,7 @@ class DynamicTree(object):
         return leaf
 
     def update_experiments(self):
-        exps = [(dirname_with_id(exp.title, exp.id), exp)
+        exps = [(path_mapper(exp), exp)
                 for exp in self.host_obj.experiments]
         self.clear_children()
         for exp_name, exp in exps:
@@ -105,7 +106,7 @@ class DynamicTree(object):
 
     def update_datasets(self):
         all_files_name = '00_all_files'
-        datasets = [(dirname_with_id(ds.description, ds.id), ds)
+        datasets = [(path_mapper(ds), ds)
                     for ds in self.obj.datasets.all()]
         self.clear_children()
         for ds_name, ds in datasets:
@@ -132,7 +133,7 @@ class DynamicTree(object):
             self._add_file_entry(df)
 
     def _add_file_entry(self, datafile):
-        df_name = sanitise_name(datafile.filename)
+        df_name = path_mapper(datafile)
         # try:
         #     file_obj = df.file_object
         #     file_name = df_name
@@ -165,18 +166,19 @@ class DynamicTree(object):
 
 
 class MyTSFTPServerInterface(SFTPServerInterface):
-    '''
+    """
     MyTardis data via SFTP
-    '''
+    """
 
     _cache_time = 60  # in seconds
     _exps_cache = {}
 
     def __init__(self, server, *args, **kwargs):
         """
-        @param server: the server object associated with this channel and
-            SFTP subsystem
-        @type server: L{ServerInterface}
+        :param ServerInterface server: the server object associated with this
+            channel and SFTP subsystem
+        :param list args:
+        :param dict kwargs:
         """
         self.server = server
         self.client_ip = kwargs.get('client_ip', '')
@@ -190,7 +192,7 @@ class MyTSFTPServerInterface(SFTPServerInterface):
             self._exps_cache[u]['all'] = Experiment.safe.all(self.user)
             self._exps_cache[u]['last_update'] = time.time()
         elif self._exps_cache[u]['last_update'] - time.time() > \
-             self._cache_time:
+                self._cache_time:
             self._exps_cache[u]['all']._result_cache = None
         return self._exps_cache[u]['all']
 
@@ -245,15 +247,13 @@ class MyTSFTPServerInterface(SFTPServerInterface):
         @note: The SFTP protocol defines all files to be in "binary" mode.
             There is no equivalent to python's "text" mode.
 
-        @param df: the requested DataFile object
-        @type path: L{DataFile}
-        @param flags: flags or'd together from the C{os} module indicating the
-            requested mode for opening the file.
-        @type flags: int
-        @param attr: requested attributes of the file if it is newly created.
-        @type attr: L{SFTPAttributes}
-        @return: a new L{SFTPHandle} I{or error code}.
-        @rtype L{SFTPHandle}
+        :param basestring path: the requested datafile path
+        :param int flags: flags or'd together from the C{os} module indicating
+            the requested mode for opening the file.
+        :param SFTPAttributes attr: requested attributes of the file if it is
+            newly created.
+        :returns: a new L{SFTPHandle} I{or error code}.
+        :rtype: SFTPHandle
         """
         leaf = self.tree.get_leaf(path)
         tracker.track_download(
@@ -344,8 +344,10 @@ class MyTSFTPHandle(SFTPHandle):
         """
         Create a new file handle
 
-        @param flags: optional flags as passed to L{SFTPServerInterface.open}
-        @type flags: int
+        :param DataFile df: DataFile
+        :param int flags: optional flags as passed
+            to L{SFTPServerInterface.open}
+        :param None optional_args: unused
         """
         super(MyTSFTPHandle, self).__init__(flags=flags)
         try:
@@ -458,10 +460,7 @@ class MyTSFTPRequestHandler(SocketServer.BaseRequestHandler):
         self.transport.start_server(server=MyTServerInterface())
 
     def handle_timeout(self):
-        try:
-            self.transport.close()
-        finally:
-            super(MyTSFTPRequestHandler, self).handle_timeout()
+        self.transport.close()
 
 
 class MyTSFTPTCPServer(SocketServer.TCPServer):
@@ -485,27 +484,17 @@ class MyTSFTPTCPServer(SocketServer.TCPServer):
 
 
 def start_server(host=None, port=None, keyfile=None):
+    '''
+    The SFTP_HOST_KEY setting is required for configuring SFTP access.
+    The SFTP_PORT setting defaults to 2200.
+
+    See: tardis/default_settings/sftp.py
+    '''
     if host is None:
         current_site = Site.objects.get_current()
         host = current_site.domain
     port = port or getattr(settings, 'SFTP_PORT', 2200)
-    host_key_string = getattr(
-        settings, 'SFTP_HOST_KEY',
-        "-----BEGIN RSA PRIVATE KEY-----\n"
-        "MIICXgIBAAKCAIEAl7sAF0x2O/HwLhG68b1uG8KHSOTqe3Cdlj5i/1RhO7E2BJ4B\n"
-        "3jhKYDYtupRnMFbpu7fb21A24w3Y3W5gXzywBxR6dP2HgiSDVecoDg2uSYPjnlDk\n"
-        "HrRuviSBG3XpJ/awn1DObxRIvJP4/sCqcMY8Ro/3qfmid5WmMpdCZ3EBeC0CAwEA\n"
-        "AQKCAIBSGefUs5UOnr190C49/GiGMN6PPP78SFWdJKjgzEHI0P0PxofwPLlSEj7w\n"
-        "RLkJWR4kazpWE7N/bNC6EK2pGueMN9Ag2GxdIRC5r1y8pdYbAkuFFwq9Tqa6j5B0\n"
-        "GkkwEhrcFNBGx8UfzHESXe/uE16F+e8l6xBMcXLMJVo9Xjui6QJBAL9MsJEx93iO\n"
-        "zwjoRpSNzWyZFhiHbcGJ0NahWzc3wASRU6L9M3JZ1VkabRuWwKNuEzEHNK8cLbRl\n"
-        "TyH0mceWXcsCQQDLDEuWcOeoDteEpNhVJFkXJJfwZ4Rlxu42MDsQQ/paJCjt2ONU\n"
-        "WBn/P6iYDTvxrt/8+CtLfYc+QQkrTnKn3cLnAkEAk3ixXR0h46Rj4j/9uSOfyyow\n"
-        "qHQunlZ50hvNz8GAm4TU7v82m96449nFZtFObC69SLx/VsboTPsUh96idgRrBQJA\n"
-        "QBfGeFt1VGAy+YTLYLzTfnGnoFQcv7+2i9ZXnn/Gs9N8M+/lekdBFYgzoKN0y4pG\n"
-        "2+Q+Tlr2aNlAmrHtkT13+wJAJVgZATPI5X3UO0Wdf24f/w9+OY+QxKGl86tTQXzE\n"
-        "4bwvYtUGufMIHiNeWP66i6fYCucXCMYtx6Xgu2hpdZZpFw==\n"
-        "-----END RSA PRIVATE KEY-----\n")
+    host_key_string = settings.SFTP_HOST_KEY
     host_key = RSAKey.from_private_key(
         keyfile or StringIO(host_key_string))
     server = MyTSFTPTCPServer((host, port), host_key=host_key)

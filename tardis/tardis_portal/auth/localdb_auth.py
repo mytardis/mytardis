@@ -34,6 +34,8 @@ class DjangoAuthBackend(AuthProvider):
 
         :param request: a HTTP Request instance
         :type request: :class:`django.http.HttpRequest`
+        :returns: authenticated User
+        :rtype: User
         """
         username = request.POST['username']
         password = request.POST['password']

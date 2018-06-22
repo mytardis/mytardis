@@ -124,22 +124,23 @@ def render_mustache(template_name, data):
 
 
 def render_public_access_badge(experiment):
-    if experiment.public_access == experiment.PUBLIC_ACCESS_NONE and\
-       not experiment.is_publication():
+    if experiment.public_access == experiment.PUBLIC_ACCESS_NONE and \
+            not experiment.is_publication():
         return render_mustache('tardis_portal/badges/public_access', {
             'title': 'No public access',
             'label': 'Private',
             'private': True,
         })
-    elif experiment.public_access == experiment.PUBLIC_ACCESS_NONE and\
-       experiment.is_publication() and not experiment.is_publication_draft():
+    elif experiment.public_access == experiment.PUBLIC_ACCESS_NONE and \
+            experiment.is_publication() and \
+            not experiment.is_publication_draft():
         return render_mustache('tardis_portal/badges/public_access', {
             'title': 'No public access, awaiting approval',
             'label': '[PUBLICATION] Awaiting approval',
             'private': True,
         })
-    elif experiment.public_access == experiment.PUBLIC_ACCESS_NONE and\
-       experiment.is_publication_draft():
+    elif experiment.public_access == experiment.PUBLIC_ACCESS_NONE and \
+            experiment.is_publication_draft():
         return render_mustache('tardis_portal/badges/public_access', {
             'title': 'No public access',
             'label': '[PUBLICATION] Draft',
@@ -162,16 +163,50 @@ def render_public_access_badge(experiment):
             'label': 'Public',
             'public': True,
         })
-
-
-def sanitise_name(name):
-    return quote(name.replace(' ', '_').replace('/', ':'), safe='')
-
-
-def dirname_with_id(obj_name, obj_id):
-    return "%s_%d" % (sanitise_name(obj_name), obj_id)
+    return None
 
 
 def split_path(p):
     base, top = os.path.split(os.path.normpath(p))
-    return (split_path(base) if len(base) and len(top) else []) + [top]
+    return (split_path(base) if base and top else []) + [top]
+
+
+def get_filesystem_safe_dataset_name(dataset):
+    """
+    Given a Dataset, return a filesystem safe string representing the
+    dataset. Useful for filenames for dataset downloads, maybe URLs.
+
+    :param dataset: A Dataset object.
+    :type dataset: tardis.tardis_portal.models.dataset.Dataset
+    :return: A filesystem safe string as a Dataset name.
+    :rtype: basestring
+    """
+    dataset_filename = dataset.description
+    if settings.DATASET_SPACES_TO_UNDERSCORES:
+        dataset_filename = dataset_filename.replace(' ', '_')
+
+    dataset_filename = quote(
+        dataset_filename,
+        safe=settings.SAFE_FILESYSTEM_CHARACTERS)
+
+    return dataset_filename
+
+
+def get_filesystem_safe_experiment_name(experiment):
+    """
+    Given an Experiment, return a filesystem safe string representing the
+    experiment. Useful for filenames for experiment downloads, maybe URLs.
+
+    :param experiment: A Experiment object.
+    :type experiment: tardis.tardis_portal.models.experiment.Experiment
+    :return: A filesystem safe string as a Experiment name.
+    :rtype: basestring
+    """
+    exp_title = experiment.title
+    if settings.EXP_SPACES_TO_UNDERSCORES:
+        exp_title = exp_title.replace(' ', '_')
+
+    expt_filename = quote(exp_title,
+                          safe=settings.SAFE_FILESYSTEM_CHARACTERS)
+
+    return expt_filename

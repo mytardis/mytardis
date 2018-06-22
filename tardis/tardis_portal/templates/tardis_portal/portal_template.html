@@ -83,9 +83,9 @@
       <div class="navbar-inner">
         <div class="container-fluid">
           <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
+            <span class="fa fa-bar"></span>
+            <span class="fa fa-bar"></span>
+            <span class="fa fa-bar"></span>
           </a>
           {% block site_brand %}
           <span class="brand"><a href="{% url 'index' %}">{{ site_title|default:'MyTardis' }}</a></span>
@@ -101,7 +101,7 @@
               {% if facility_manager %}
               <li><a href="{% url 'tardis.tardis_portal.views.facility_overview' %}">Facility Overview</a></li>
               {% endif %}{% endwith %}
-              <li><a href="{% url 'tardis.tardis_portal.views.user_guide' %}"><b>Help</b></a></li>
+              <li><a href="http://mytardis.readthedocs.io/en/{{ version.tag|lower }}/userguide.html" target="_blank"><b>Help</b></a></li>
             </ul>
             <ul class="login-nav nav pull-right">
             {% if is_authenticated %}
@@ -115,7 +115,7 @@
                       <li>
                         <a href="{% url 'tardis.tardis_portal.views.manage_user_account' %}">
                           <!-- Font Awesome needs a "link" icon! -->
-                          <i class="icon-user"></i>
+                          <i class="fa fa-user"></i>
                           Manage Account
                         </a>
                       </li>
@@ -124,7 +124,7 @@
                   <li>
                     <a href="{% url 'tardis.tardis_portal.download.download_api_key' %}">
                       <!-- Font Awesome needs a "link" icon! -->
-                      <i class="icon-key"></i>
+                      <i class="fa fa-key"></i>
                       Download Api Key
                     </a>
                   </li>
@@ -133,7 +133,7 @@
                   <li>
                     <a href="{% url 'tardis.tardis_portal.views.manage_auth_methods' %}">
                       <!-- Font Awesome needs a "link" icon! -->
-                      <i class="icon-tags"></i>
+                      <i class="fa fa-tags"></i>
                       Link Accounts
                     </a>
                   </li>
@@ -141,7 +141,7 @@
                   {% if is_superuser %}
                   <li>
                     <a href="{% url 'admin:index' %}">
-                      <i class="icon-key"></i>
+                      <i class="fa fa-key"></i>
                         Admin Interface
                     </a>
                   </li>
@@ -151,7 +151,7 @@
                   <!-- {% if perms.tardis_portal.change_objectacl %}
                   <li>
                     <a href="{% url 'tardis.tardis_portal.views.control_panel' %}">
-                      <i class="icon-user"></i>
+                      <i class="fa fa-user"></i>
                       Experiment Access
                     </a>
                   </li>
@@ -159,7 +159,7 @@
                   {% if perms.auth.change_group or perms.auth.change_user %}
                   <li>
                     <a href="{% url 'tardis.tardis_portal.views.manage_groups' %}">
-                      <i class="icon-user" style="text-shadow: 2px -2px #666666"></i>
+                      <i class="fa fa-user" style="text-shadow: 2px -2px #666666"></i>
                       Group Management
                     </a>
                   </li>
@@ -168,7 +168,7 @@
                   {% endif %}
                   <li>
                     <a href="{% url 'django.contrib.auth.views.logout' %}">
-                      <i class="icon-signout"></i>
+                      <i class="fa fa-signout"></i>
                       Log Out
                     </a>
                   </li>
@@ -185,12 +185,12 @@
               <li>
               {% if RAPID_CONNECT_ENABLED %}
                   <a id="login-button" class="btn btn-info" href={{ RAPID_CONNECT_LOGIN_URL }}>
-                    <i class="icon-signin"></i>
+                    <i class="fa fa-sign-in"></i>
                     Log In
                   </a>
               {% else %}
                 <a id="login-button" class="btn btn-info" href="{% url 'tardis.tardis_portal.views.login' %}">
-                  <i class="icon-signin"></i>
+                  <i class="fa fa-sign-in"></i>
                   Log In
                 </a>
               {% endif %}
@@ -311,7 +311,7 @@
 	</div>
 	<div class="span6">
 	  <div class="pull-right">
-	  Powered by <a href="https://github.com/mytardis/mytardis">MyTardis
+	  Powered by <a href="https://github.com/mytardis/mytardis">MyTardis</a>
 	  </div>
 	</div>
       </div>

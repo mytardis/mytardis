@@ -61,7 +61,9 @@ def configure_user(user):
     """ Configure a user account that has just been created by adding
     the user to the default groups and creating a UserProfile.
 
-    :param user: the User instance for the newly created account
+    :param User user: the User instance for the newly created account
+    :returns: User profile for user
+    :rtype: UserProfile
     """
     for group_name in settings.NEW_USER_INITIAL_GROUPS:
         try:

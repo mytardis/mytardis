@@ -433,9 +433,9 @@ class ExperimentForm(forms.ModelForm):
 
         # fix up experiment form
         if instance and not data:
-                authors = instance.experimentauthor_set.all()
-                self.initial['authors'] = ', '.join([self._format_author(a)
-                                                     for a in authors])
+            authors = instance.experimentauthor_set.all()
+            self.initial['authors'] = ', '.join(
+                [self._format_author(a) for a in authors])
 
         self.experiment_authors = []
 
@@ -497,17 +497,17 @@ class ExperimentForm(forms.ModelForm):
 
     def _update_authors(self, data):
         # For each author in the POST in a position
-        for data in self._parse_authors(data):
+        for author_data in self._parse_authors(data):
             try:
                 # Get the current author for that position
-                o_ae = self.experiment_authors[data['order']]
-                # Update the author form for that position with the new data
-                self.experiment_authors[data['order']] = \
-                    ExperimentAuthor(data=data,
+                o_ae = self.experiment_authors[author_data['order']]
+                # Update the author form for that position with the new author_data
+                self.experiment_authors[author_data['order']] = \
+                    ExperimentAuthor(data=author_data,
                                      instance=o_ae.instance)
             except IndexError:
                 # Or create an author for that position
-                o_ae = ExperimentAuthor(data=data,
+                o_ae = ExperimentAuthor(data=author_data,
                                         instance=models.ExperimentAuthor())
                 self.experiment_authors.append(o_ae)
 
@@ -543,6 +543,7 @@ class ExperimentForm(forms.ModelForm):
         This validity also takes into account forign keys that might be
         dependent on an unsaved model.
 
+        :return: validity
         :rtype: bool
         """
         if self.is_bound and bool(self.errors):
@@ -560,7 +561,7 @@ class ExperimentForm(forms.ModelForm):
 
 def createSearchDatafileForm(searchQueryType):
 
-    from errors import UnsupportedSearchQueryTypeError
+    from tardis.tardis_portal.errors import UnsupportedSearchQueryTypeError
     from tardis.tardis_portal.models import ParameterName
 
     parameterNames = None
@@ -787,51 +788,50 @@ def create_parameterset_edit_form(parameterset, request=None):
 
         return type('DynamicForm', (forms.BaseForm, ), {'base_fields': fields})
 
-    else:
-        from django.utils.datastructures import SortedDict
-        fields = SortedDict()
-        psm = ParameterSetManager(parameterset=parameterset)
+    from django.utils.datastructures import SortedDict
+    fields = SortedDict()
+    psm = ParameterSetManager(parameterset=parameterset)
 
-        for dfp in psm.parameters:
+    for dfp in psm.parameters:
 
-            x = 1
+        x = 1
+        form_id = dfp.name.name + "__" + str(x)
+
+        while form_id in fields:
+            x = x + 1
             form_id = dfp.name.name + "__" + str(x)
 
-            while form_id in fields:
-                x = x + 1
-                form_id = dfp.name.name + "__" + str(x)
+        units = ""
+        if dfp.name.units:
+            units = " (" + dfp.name.units + ")"
 
-            units = ""
-            if dfp.name.units:
-                units = " (" + dfp.name.units + ")"
+        form_id = form_id.replace('/', '_s47_')
+        if dfp.name.isNumeric():
+            fields[form_id] = \
+                forms.DecimalField(label=dfp.name.full_name + units,
+                                   required=False,
+                                   initial=dfp.numerical_value)
+        elif dfp.name.isLongString():
+            fields[form_id] = \
+                forms.CharField(widget=forms.Textarea, label=dfp.name.full_name + units,
+                                max_length=255,
+                                required=False,
+                                initial=dfp.string_value)
 
-            form_id = form_id.replace('/', '_s47_')
-            if dfp.name.isNumeric():
-                fields[form_id] = \
-                    forms.DecimalField(label=dfp.name.full_name + units,
-                                       required=False,
-                                       initial=dfp.numerical_value)
-            elif dfp.name.isLongString():
-                fields[form_id] = \
-                    forms.CharField(widget=forms.Textarea, label=dfp.name.full_name + units,
-                                    max_length=255,
-                                    required=False,
-                                    initial=dfp.string_value)
+        else:
+            fields[form_id] = \
+                forms.CharField(label=dfp.name.full_name + units,
+                                max_length=255,
+                                required=False,
+                                initial=dfp.string_value)
 
-            else:
-                fields[form_id] = \
-                    forms.CharField(label=dfp.name.full_name + units,
-                                    max_length=255,
-                                    required=False,
-                                    initial=dfp.string_value)
+        if dfp.name.immutable or dfp.name.schema.immutable:
+            fields[form_id].widget.attrs['readonly'] = True
+            fields[form_id].label = \
+                fields[form_id].label + " (read only)"
 
-            if dfp.name.immutable or dfp.name.schema.immutable:
-                fields[form_id].widget.attrs['readonly'] = True
-                fields[form_id].label = \
-                    fields[form_id].label + " (read only)"
-
-        return type('DynamicForm', (forms.BaseForm, ),
-                    {'base_fields': fields})
+    return type('DynamicForm', (forms.BaseForm, ),
+                {'base_fields': fields})
 
 
 def save_datafile_edit_form(parameterset, request):
@@ -894,43 +894,42 @@ def create_datafile_add_form(schema, parentObject, request=None):
 
         return type('DynamicForm', (forms.BaseForm, ), {'base_fields': fields})
 
-    else:
-        from django.utils.datastructures import SortedDict
-        fields = SortedDict()
+    from django.utils.datastructures import SortedDict
+    fields = SortedDict()
 
-        parameternames = ParameterName.objects.filter(
-            schema__namespace=schema,
-            immutable=False).order_by('name')
+    parameternames = ParameterName.objects.filter(
+        schema__namespace=schema,
+        immutable=False).order_by('name')
 
-        for dfp in parameternames:
+    for dfp in parameternames:
 
-            x = 1
+        x = 1
 
+        form_id = dfp.name + "__" + str(x)
+
+        while form_id in fields:
+            x = x + 1
             form_id = dfp.name + "__" + str(x)
 
-            while form_id in fields:
-                x = x + 1
-                form_id = dfp.name + "__" + str(x)
+        units = ""
+        if dfp.units:
+            units = " (" + dfp.units + ")"
 
-            units = ""
-            if dfp.units:
-                units = " (" + dfp.units + ")"
+        form_id = form_id.replace('/', '_s47_')
 
-            form_id = form_id.replace('/', '_s47_')
+        if dfp.isNumeric():
+            fields[form_id] = \
+            forms.DecimalField(label=dfp.full_name + units,
+            required=False)
+        elif dfp.isLongString():
+            fields[form_id] = forms.CharField(label=dfp.full_name + units, widget=forms.Textarea, required=False, max_length=255)
+        else:
+            fields[form_id] = \
+            forms.CharField(label=dfp.full_name + units,
+            max_length=255, required=False)
 
-            if dfp.isNumeric():
-                fields[form_id] = \
-                forms.DecimalField(label=dfp.full_name + units,
-                required=False)
-            elif dfp.isLongString():
-                fields[form_id] = forms.CharField(label=dfp.full_name + units, widget=forms.Textarea, required=False, max_length=255)
-            else:
-                fields[form_id] = \
-                forms.CharField(label=dfp.full_name + units,
-                max_length=255, required=False)
-
-        return type('DynamicForm', (forms.BaseForm, ),
-                    {'base_fields': fields})
+    return type('DynamicForm', (forms.BaseForm, ),
+                {'base_fields': fields})
 
 
 def save_datafile_add_form(schema, parentObject, request):

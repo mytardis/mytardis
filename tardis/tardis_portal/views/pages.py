@@ -18,7 +18,9 @@ from django.core.paginator import Paginator, EmptyPage, InvalidPage
 from django.core.urlresolvers import reverse
 from django.db import connection
 from django.db.models import Q
-from django.http import HttpResponse, HttpResponseForbidden
+from django.http import (HttpResponse,
+                         HttpResponseForbidden,
+                         JsonResponse)
 from django.shortcuts import render, redirect
 from django.views.decorators.cache import cache_page
 from django.views.generic.base import TemplateView, View
@@ -32,13 +34,14 @@ from tardis.tardis_portal.auth.decorators import (
     has_experiment_download_access, has_experiment_write, has_dataset_write)
 from tardis.tardis_portal.auth.localdb_auth import django_user
 from tardis.tardis_portal.forms import ExperimentForm, DatasetForm
-from tardis.tardis_portal.models import Experiment, Dataset, DataFile, ObjectACL
+from tardis.tardis_portal.models import Experiment, Dataset, DataFile, \
+    ObjectACL
 from tardis.tardis_portal.shortcuts import render_response_index, \
     return_response_error, return_response_not_found, get_experiment_referer, \
     render_response_search
-from tardis.tardis_portal.util import dirname_with_id
 from tardis.tardis_portal.views.utils import (
     _redirect_303, _add_protocols_and_organizations, HttpResponseSeeAlso)
+from tardis.tardis_portal.util import get_filesystem_safe_dataset_name
 
 logger = logging.getLogger(__name__)
 
@@ -52,8 +55,8 @@ def site_routed_view(request, _default_view, _site_mappings, *args, **kwargs):
     default.
 
     The intention is to define {site: view} mappings in settings.py, and use
-    this wrapper view in urls.py to allow a single URL to be routed to different
-    views depending on the Site in the request.
+    this wrapper view in urls.py to allow a single URL to be routed to
+    different views depending on the Site in the request.
 
     :param request: a HTTP request object
     :type request: :class:`django.http.HttpRequest`
@@ -136,6 +139,7 @@ class IndexView(TemplateView):
 
         :param request: a HTTP request object
         :type request: :class:`django.http.HttpRequest`
+        :param dict kwargs: kwargs
         :return: A dictionary of values for the view/template.
         :rtype: dict
         """
@@ -162,12 +166,14 @@ class IndexView(TemplateView):
         The index view, intended to render the front page of the MyTardis site
         listing recent experiments.
 
-        This default view can be overriden by defining a dictionary INDEX_VIEWS in
-        settings which maps SITE_ID's or domain names to an alternative view
+        This default view can be overriden by defining a dictionary INDEX_VIEWS
+        in settings which maps SITE_ID's or domain names to an alternative view
         function (similar to the DATASET_VIEWS or EXPERIMENT_VIEWS overrides).
 
         :param request: a HTTP request object
         :type request: :class:`django.http.HttpRequest`
+        :param list args:
+        :param dict kwargs:
         :return: The Django response object
         :rtype: :class:`django.http.HttpResponse`
         """
@@ -228,6 +234,7 @@ class DatasetView(TemplateView):
         :type request: :class:`django.http.HttpRequest`
         :param dataset: the Dataset model instance
         :type dataset: tardis.tardis_portal.models.dataset.Dataset
+        :param dict kwargs:
         :return: A dictionary of values for the view/template.
         :rtype: dict
         """
@@ -254,6 +261,14 @@ class DatasetView(TemplateView):
         c = super(DatasetView, self).get_context_data(**kwargs)
 
         dataset_id = dataset.id
+        dataset_instrument = dataset.instrument
+        if dataset_instrument:
+            instrument_name = dataset_instrument.name
+            dataset_facility = dataset_instrument.facility
+            facility_name = dataset_facility.name if dataset_facility else None
+        else:
+            instrument_name = None
+            facility_name = None
         upload_method = getattr(settings, "UPLOAD_METHOD", False)
         max_images_in_carousel = getattr(settings, "MAX_IMAGES_IN_CAROUSEL", 0)
         if max_images_in_carousel:
@@ -270,6 +285,8 @@ class DatasetView(TemplateView):
                  request, dataset_id),
              'has_write_permissions': authz.has_dataset_write(request,
                                                               dataset_id),
+             'from_instrument': instrument_name,
+             'from_facility': facility_name,
              'from_experiment': get_experiment_referer(request, dataset_id),
              'other_experiments': authz.get_accessible_experiments_for_dataset(
                  request,
@@ -298,12 +315,14 @@ class DatasetView(TemplateView):
         The index view, intended to render the front page of the MyTardis site
         listing recent experiments.
 
-        This default view can be overriden by defining a dictionary INDEX_VIEWS in
-        settings which maps SITE_ID's or domain names to an alternative view
+        This default view can be overriden by defining a dictionary INDEX_VIEWS
+        in settings which maps SITE_ID's or domain names to an alternative view
         function (similar to the DATASET_VIEWS or EXPERIMENT_VIEWS overrides).
 
         :param request: a HTTP request object
         :type request: :class:`django.http.HttpRequest`
+        :param list args:
+        :param dict kwargs:
         :return: The Django response object
         :rtype: :class:`django.http.HttpResponse`
         """
@@ -334,7 +353,6 @@ def about(request):
     c = {'subtitle': 'About',
          'about_pressed': True,
          'nav': [{'name': 'About', 'link': '/about/'}],
-         'version': settings.MYTARDIS_VERSION,
          'custom_about_section': getattr(
              settings, 'CUSTOM_ABOUT_SECTION_TEMPLATE',
              'tardis_portal/about_include.html'),
@@ -350,11 +368,14 @@ def my_data(request):
     delegate to custom views depending on settings
     '''
 
+    owned_experiments = \
+        Experiment.safe.owned(request.user).order_by('-update_time')
+    shared_experiments = \
+        Experiment.safe.shared(request.user).order_by('-update_time')
+
     c = {
-        'owned_experiments': Experiment.safe.owned(request.user)
-        .order_by('-update_time'),
-        'shared_experiments': Experiment.safe.shared(request.user)
-        .order_by('-update_time'),
+        'owned_experiments': owned_experiments,
+        'shared_experiments': shared_experiments
     }
     return HttpResponse(render_response_index(
         request, 'tardis_portal/my_data.html', c))
@@ -377,6 +398,7 @@ def _resolve_view(view_function_or_string):
     :type view_function_or_string: basestring | types.FunctionType
     :return: The view function
     :rtype: types.FunctionType
+    :raises TypeError:
     """
     if isinstance(view_function_or_string, basestring):
         x = view_function_or_string.split('.')
@@ -431,6 +453,7 @@ class ExperimentView(TemplateView):
         :type request: :class:`django.http.HttpRequest`
         :param experiment: the experiment model instance
         :type experiment: tardis.tardis_portal.models.experiment.Experiment
+        :param dict kwargs: kwargs
         :return: A dictionary of values for the view/template.
         :rtype: dict
         """
@@ -443,9 +466,10 @@ class ExperimentView(TemplateView):
         c['has_download_permissions'] = \
             authz.has_experiment_download_access(request, experiment.id)
         if request.user.is_authenticated():
-            c['is_owner'] = authz.has_experiment_ownership(request, experiment.id)
-            c['has_read_or_owner_ACL'] = authz.has_read_or_owner_ACL(request,
-                                                                     experiment.id)
+            c['is_owner'] = \
+                authz.has_experiment_ownership(request, experiment.id)
+            c['has_read_or_owner_ACL'] = \
+                authz.has_read_or_owner_ACL(request, experiment.id)
 
         # Enables UI elements for the publication form
         c['pub_form_enabled'] = 'tardis.apps.publication_forms' in \
@@ -482,10 +506,12 @@ class ExperimentView(TemplateView):
             {'name': 'Description',
              'viewfn': 'tardis.tardis_portal.views.experiment_description'},
             {'name': 'Metadata',
-             'viewfn': 'tardis.tardis_portal.views.retrieve_experiment_metadata'},
+             'viewfn':
+             'tardis.tardis_portal.views.retrieve_experiment_metadata'},
             {'name': 'Sharing', 'viewfn': 'tardis.tardis_portal.views.share'},
             {'name': 'Transfer Datasets',
-             'viewfn': 'tardis.tardis_portal.views.experiment_dataset_transfer'},
+             'viewfn':
+             'tardis.tardis_portal.views.experiment_dataset_transfer'},
         ]
         appnames = []
         appurls = []
@@ -494,7 +520,8 @@ class ExperimentView(TemplateView):
             try:
                 appnames.append(app['name'])
                 if 'viewfn' in app:
-                    appurls.append(reverse(app['viewfn'], args=[experiment.id]))
+                    appurls.append(reverse(app['viewfn'],
+                                   args=[experiment.id]))
                 elif 'url' in app:
                     appurls.append(app['url'])
             except:
@@ -522,7 +549,10 @@ class ExperimentView(TemplateView):
 
         :param request: a HTTP Request instance
         :type request: :class:`django.http.HttpRequest`
-        :param experiment_id: the ID of the experiment
+        :param list args:
+        :param dict kwargs:
+        in kwargs: param int experiment_id: the ID of the experiment
+        :returns: an HttpResponse
         :rtype: :class:`django.http.HttpResponse`
         """
 
@@ -589,9 +619,11 @@ def user_guide(request):
 def sftp_access(request):
     """
     Show dynamically generated instructions on how to connect to SFTP
-    :param request: HttpRequest
+    :param Request request: HttpRequest
     :return: HttpResponse
+    :rtype: HttpResponse
     """
+    from tardis.tardis_portal.download import make_mapper
     object_type = request.GET.get('object_type')
     object_id = request.GET.get('object_id')
     sftp_start_dir = ''
@@ -615,13 +647,14 @@ def sftp_access(request):
         for exp in exps:
             if has_experiment_download_access(request, exp.id):
                 allowed_exps.append(exp)
-        if len(allowed_exps) > 0:
+        if allowed_exps:
+            path_mapper = make_mapper(settings.DEFAULT_PATH_MAPPER,
+                                      rootdir=None)
             exp = allowed_exps[0]
             path_parts = ['/home', request.user.username, 'experiments',
-                          dirname_with_id(exp.title, exp.id)]
+                          path_mapper(exp)]
             if dataset is not None:
-                path_parts.append(
-                    dirname_with_id(dataset.description, dataset.id))
+                path_parts.append(path_mapper(dataset))
             if datafile is not None:
                 path_parts.append(datafile.directory)
             sftp_start_dir = path.join(*path_parts)
@@ -668,8 +701,7 @@ def public_data(request):
 def experiment_index(request):
     if request.user.is_authenticated():
         return redirect('tardis_portal.experiment_list_mine')
-    else:
-        return redirect('tardis_portal.experiment_list_public')
+    return redirect('tardis_portal.experiment_list_public')
 
 
 @login_required
@@ -728,8 +760,8 @@ def create_experiment(request,
     :type request: :class:`django.http.HttpRequest`
     :param template_name: the path of the template to render
     :type template_name: string
+    :returns: an HttpResponse
     :rtype: :class:`django.http.HttpResponse`
-
     """
 
     c = {
@@ -786,8 +818,8 @@ def edit_experiment(request, experiment_id,
     :type experiment_id: str | int
     :param template: the path of the template to render
     :type template: str | int
+    :returns: an HttpResponse
     :rtype: :class:`django.http.HttpResponse`
-
     """
     experiment = Experiment.objects.get(id=experiment_id)
 
@@ -876,3 +908,44 @@ def control_panel(request):
 
     return HttpResponse(render_response_index(request,
                         'tardis_portal/control_panel.html', c))
+
+
+def _get_dataset_checksums(dataset, type='md5'):
+    valid_types = ['md5', 'sha512']
+    if type not in valid_types:
+        raise ValueError('Invalid checksum type (%s). Valid values are %s' %
+                         (type, ', '.join(valid_types)))
+    hash_attr = type+'sum'
+    checksums = [(getattr(df, hash_attr), path.join(df.directory or '', df.filename))
+                 for df in dataset.get_datafiles()]
+    return checksums
+
+
+@authz.dataset_access_required  # too complex # noqa
+def checksums_download(request, dataset_id, **kwargs):
+    dataset = Dataset.objects.get(id=dataset_id)
+    if not dataset:
+        return return_response_not_found(request)
+
+    type = request.GET.get('type', 'md5')
+    format = request.GET.get('format', 'text')
+
+    checksums = _get_dataset_checksums(dataset, type)
+    if format == 'text':
+        checksum_doc = ''.join(["%s  %s\n" % c for c in checksums])
+        checksum_doc += '\n'
+        response = HttpResponse(checksum_doc, content_type='text/plain')
+        response['Content-Disposition'] = \
+            '%s; filename="%s-manifest-md5.txt"' % (
+            'attachment',
+            get_filesystem_safe_dataset_name(dataset))
+        return response
+
+    elif format == 'json':
+        jdict = {'checksums': []}
+        for c in checksums:
+            jdict['checksums'].append({'checksum': c[0], 'file': c[1], 'type': type})
+
+        return JsonResponse(jdict)
+    else:
+        raise ValueError("Invalid format. Valid formats are 'text' or 'json'")

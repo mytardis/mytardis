@@ -2,7 +2,7 @@ import json
 import mimetypes
 from StringIO import StringIO
 
-from wand.exceptions import MissingDelegateError
+from wand.exceptions import WandException
 from wand.image import Image
 
 from lxml import etree
@@ -102,7 +102,10 @@ def compute_etag(request, datafile_id, *args, **kwargs):
                                         datafile_id=datafile.id):
         return None
     # OK, we can compute the Etag without giving anything away now
-    signature = datafile.sha512sum + json.dumps((args, kwargs))
+    # Calculating SHA-512 sums is now optional, so use MD5 sums
+    # if SHA-512 sums are unavailable:
+    checksum = datafile.sha512sum or datafile.md5sum
+    signature = checksum + json.dumps((args, kwargs))
     import hashlib
     return hashlib.sha1(signature).hexdigest()
 
@@ -135,7 +138,7 @@ def download_image(request, datafile_id, region, size, rotation,
                     img = Image(img.sequence[0])
                 # Handle region
                 if region != 'full':
-                    x, y, w, h = map(lambda x: int(x), region.split(','))
+                    x, y, w, h = map(int, region.split(','))
                     img.crop(x, y, width=w, height=h)
                 # Handle size
                 if size != 'full':
@@ -174,9 +177,7 @@ def download_image(request, datafile_id, region, size, rotation,
                 else:
                     patch_cache_control(response, private=True, max_age=MAX_AGE)
                 return response
-    except MissingDelegateError:
-        if format:
-            return _invalid_media_response()
+    except WandException:
         return HttpResponseNotFound()
     except ValueError:
         return HttpResponseNotFound()

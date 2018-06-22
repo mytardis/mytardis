@@ -94,7 +94,7 @@ metadata to be reingested."""
                 if id < 0 or id >= len(self.availableFilters):
                     raise CommandError("Invalid filter-no: '%s'" % arg)
                 filterIds = filterIds + [id]
-        if len(filterIds):
+        if filterIds:
             self.runFilters(self.instantiateFilters(filterIds),
                             dryRun=options['dryRun'])
         else:
@@ -104,7 +104,7 @@ metadata to be reingested."""
         filters = []
         for id in filterIds:
             f = self.availableFilters[id]
-            if f and len(f):
+            if f:
                 cls = f[0]
                 args = []
                 kw = {}
@@ -167,7 +167,7 @@ metadata to be reingested."""
             transaction.leave_transaction_management(using=using)
 
     def listFilters(self):
-        if len(self.availableFilters):
+        if self.availableFilters:
             print 'The following filters are available\n'
             for i in range(0, len(self.availableFilters)):
                 filter = self.availableFilters[i]

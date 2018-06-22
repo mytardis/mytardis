@@ -79,14 +79,14 @@ class DataFile(models.Model):
         if self.file_objects.count() > 0:
             oldobjs = list(self.file_objects.all())
         s_boxes = [obj.storage_box for obj in oldobjs]
-        if len(s_boxes) == 0:
+        if not s_boxes:
             s_boxes = [self.get_default_storage_box()]
         for box in s_boxes:
             newfile = DataFileObject(datafile=self,
                                      storage_box=box)
             newfile.save()
             newfile.file_object = file_object
-        if len(oldobjs) > 0:
+        if oldobjs:
             for obj in oldobjs:
                 obj.delete()
 
@@ -118,21 +118,22 @@ class DataFile(models.Model):
         for dfo in self.file_objects.filter(verified=True):
             if dfo.cache_file():
                 return True
+        return False
 
     def get_default_storage_box(self):
         '''
         try to guess appropriate box from files, dataset or experiment
         '''
         boxes_used = StorageBox.objects.filter(file_objects__datafile=self)
-        if len(boxes_used) > 0:
+        if boxes_used:
             return boxes_used[0]
         dataset_boxes = self.dataset.get_all_storage_boxes_used()
-        if len(dataset_boxes) > 0:
+        if dataset_boxes:
             return dataset_boxes[0]
         experiment_boxes = StorageBox.objects.filter(
             file_objects__datafile__dataset__experiments__in=self
             .dataset.experiments.all())
-        if len(experiment_boxes) > 0:
+        if experiment_boxes:
             return experiment_boxes[0]
         # TODO: select one accessible to the owner of the file
         return StorageBox.get_default_storage()
@@ -143,7 +144,7 @@ class DataFile(models.Model):
             box for box in default_box.child_boxes.all()
             if box.attributes.filter(
                 key="type", value="receiving").count() == 1]
-        if len(child_boxes) > 0:
+        if child_boxes:
             return child_boxes[0]
 
         loc_boxes = StorageBoxOption.objects.filter(
@@ -154,7 +155,7 @@ class DataFile(models.Model):
             key="type", value="receiving")\
             .values_list('storage_box', flat=True)
         existing_default = set(loc_boxes) & set(attr_boxes)
-        if len(existing_default) > 0:
+        if existing_default:
             return StorageBox.objects.get(id=existing_default.pop())
 
         new_box = StorageBox.create_local_box(
@@ -260,7 +261,9 @@ class DataFile(models.Model):
         If verified_only=False, the return of files without a verified checksum
         is allowed, otherwise None is returned for unverified files.
 
-        :type verified_only: bool
+        :param bool verified_only: if False return files without verified
+             checksums
+        :returns: Python file object
         :rtype: Python File object
         """
 
@@ -290,10 +293,9 @@ class DataFile(models.Model):
 
     def get_absolute_filepath(self):
         dfos = self.file_objects.all()
-        if len(dfos) > 0:
+        if dfos:
             return dfos[0].get_full_path()
-        else:
-            return None
+        return None
 
     @contextmanager
     def get_as_temporary_file(self, directory=None):
@@ -301,8 +303,10 @@ class DataFile(models.Model):
         Returns a traditional file-system-based file object
         that is a copy of the original data. The file is deleted
         when the context is destroyed.
-        :param directory: the directory in which to create the temp file
+        :param basestring directory: the directory in which to create the temp
+            file
         :return: the temporary file object
+        :rtype: NamedTemporaryFile
         """
         temp_file = NamedTemporaryFile(delete=True, dir=directory)
         try:
@@ -333,7 +337,7 @@ class DataFile(models.Model):
                 parameterset=ps, name__data_type=5,
                 name__units__startswith="image")
 
-            if len(dps):
+            if dps:
                 return True
 
         return False
@@ -370,7 +374,7 @@ class DataFile(models.Model):
                 parameterset=ps, name__data_type=5,
                 name__units__startswith="image")
 
-            if len(dps):
+            if dps:
                 preview_image_par = dps[0]
 
         if preview_image_par:
@@ -380,9 +384,7 @@ class DataFile(models.Model):
             preview_image_file = file(file_path)
 
             return preview_image_file
-
-        else:
-            return None
+        return None
 
     def is_public(self):
         from .experiment import Experiment
@@ -431,8 +433,7 @@ class DataFile(models.Model):
         dfos = [dfo.verified for dfo in self.file_objects.all()]
         if all_dfos:
             return all(dfos)
-        else:
-            return any(dfos)
+        return any(dfos)
 
     def verify(self, reverify=False):
         return all([obj.verify() for obj in self.file_objects.all()
@@ -537,8 +538,10 @@ class DataFileObject(models.Model):
     def create_set_uri(self, force=False, save=False):
         """
         sets the uri as well as building it
-        :param force:
+        :param bool force:
+        :param book save:
         :return:
+        :rtype: basestring
         """
         if force or self.uri is None or self.uri.strip() != '':
             self.uri = self._create_uri()
@@ -553,6 +556,7 @@ class DataFileObject(models.Model):
         standard Python file object for reading and copy the contents of an
         existing file_object into the storage backend.
 
+        :returns: a file object
         :rtype: Python File object
         """
         cached_file_object = getattr(self, '_cached_file_object', None)
@@ -596,13 +600,15 @@ class DataFileObject(models.Model):
         return None
 
     def copy_file(self, dest_box=None, verify=True):
-        '''
+        """
         copies verified file to new storage box
         checks for existing copy
         triggers async verification if not disabled
-        :param dest_box: StorageBox instance
-        :param verify: bool
-        '''
+        :param StorageBox dest_box: StorageBox instance
+        :param bool verify:
+        :returns: DataFileObject of copy
+        :rtype: DataFileObject
+        """
         if not self.verified:
             logger.debug('DFO (id: %d) could not be copied.'
                          ' Source not verified' % self.id)
@@ -631,13 +637,15 @@ class DataFileObject(models.Model):
         return copy
 
     def move_file(self, dest_box=None):
-        '''
+        """
         moves a file
         copies first, then synchronously verifies
         deletes file if copy is true copy and has been verified
 
-        :param dest_box: StorageBox instance
-        '''
+        :param StorageBox dest_box: StorageBox instance
+        :returns: moved file dfo
+        :rtype: DataFileObject
+        """
         copy = self.copy_file(dest_box=dest_box, verify=False)
         if copy and copy.id != self.id and (copy.verified or copy.verify()):
             self.delete()
@@ -668,17 +676,24 @@ class DataFileObject(models.Model):
                 if add_size:
                     database_update['size'] = actual['size']
             if same_values.get('size', True):
+                compute_md5 = getattr(settings, 'COMPUTE_MD5', True)
+                compute_sha512 = getattr(settings, 'COMPUTE_SHA512', True)
                 actual.update(compute_checksums(
                     self.file_object,
-                    compute_md5=True,
-                    compute_sha512=True))
-                for sum_type in ['md5sum', 'sha512sum']:
-                    if empty_value[sum_type]:
+                    compute_md5=compute_md5,
+                    compute_sha512=compute_sha512))
+
+                def collate_checksums(sum_type):
+                    if empty_value[sum_type] and add_checksums:
                         # all sums only ever empty when not required
-                        if add_checksums:
-                            database_update[sum_type] = actual[sum_type]
+                        database_update[sum_type] = actual[sum_type]
                     if actual[sum_type] == database[sum_type]:
                         same_values[sum_type] = True
+
+                if compute_md5:
+                    collate_checksums('md5sum')
+                if compute_sha512:
+                    collate_checksums('sha512sum')
 
         except IOError as ioe:
             same_values = {key: False for key in same_values.keys()}
@@ -687,7 +702,7 @@ class DataFileObject(models.Model):
 
         result = all(same_value for same_value in same_values.values())
         if result:
-            if len(database_update) > 0:
+            if database_update:
                 for key, val in database_update.items():
                     setattr(df, key, val)
                 df.save()
@@ -746,16 +761,15 @@ def compute_checksums(file_object,
                       close_file=True):
     """Computes checksums for a python file object
 
-    :param file_object: Python File object
+    :param object file_object: Python File object
     :param compute_md5: whether to compute md5 default=True
     :type compute_md5: bool
     :param compute_sha512: whether to compute sha512, default=True
     :type compute_sha512: bool
-    :param close_file: whether to close the file_object, default=True
-    :type leave_open: bool
+    :param bool close_file: whether to close the file_object, default=True
 
     :return: the checksums as {'md5sum': result, 'sha512sum': result}
-    :rtype : dict
+    :rtype: dict
     """
     blocksize = 0
     results = {}

@@ -33,5 +33,4 @@ def _patched_cast(self, db_type):
     #  see https://code.djangoproject.com/ticket/11580
     if db_type and db_type.endswith('LOB'):
         return "DBMS_LOB.SUBSTR(%s,2000,1)"
-    else:
-        return "%s"
+    return "%s"

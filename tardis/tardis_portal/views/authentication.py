@@ -121,6 +121,8 @@ def rcauth(request):
         django_logout(request)
         raise PermissionDenied  # Error: Security cookie has expired
 
+    raise PermissionDenied
+
 
 @login_required
 def manage_user_account(request):
@@ -276,8 +278,6 @@ def manage_auth_methods(request):
             return merge_auth_method(request)
         elif operation == 'removeAuth':
             return remove_auth_method(request)
-        else:
-            return edit_auth_method(request)
-    else:
-        # if GET, we'll just give the initial list of auth methods for the user
-        return list_auth_methods(request)
+        return edit_auth_method(request)
+    # if GET, we'll just give the initial list of auth methods for the user
+    return list_auth_methods(request)

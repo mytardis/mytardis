@@ -153,18 +153,15 @@ class MyTardisAuthenticationTest(MyTardisResourceTestCase):
 
 
 class SchemaResourceTest(MyTardisResourceTestCase):
-    def setUp(self):
-        super(SchemaResourceTest, self).setUp()
+    pass
 
 
 class ExperimentParameterSetResourceTest(MyTardisResourceTestCase):
-    def setUp(self):
-        super(ExperimentParameterSetResourceTest, self).setUp()
+    pass
 
 
 class ExperimentParameterResourceTest(MyTardisResourceTestCase):
-    def setUp(self):
-        super(ExperimentParameterResourceTest, self).setUp()
+    pass
 
 
 class ExperimentResourceTest(MyTardisResourceTestCase):
@@ -263,18 +260,20 @@ class ExperimentResourceTest(MyTardisResourceTestCase):
 
 
 class DatasetParameterSetResourceTest(MyTardisResourceTestCase):
-    def setUp(self):
-        super(DatasetParameterSetResourceTest, self).setUp()
+    pass
 
 
 class DatasetParameterResourceTest(MyTardisResourceTestCase):
-    def setUp(self):
-        super(DatasetParameterResourceTest, self).setUp()
+    pass
 
 
 class DatasetResourceTest(MyTardisResourceTestCase):
     def setUp(self):
         super(DatasetResourceTest, self).setUp()
+        self.extra_instrument = Instrument()
+        self.extra_instrument = Instrument(name="Extra Instrument",
+                                           facility=self.testfacility)
+        self.extra_instrument.save()
         self.ds_no_instrument = Dataset()
         self.ds_no_instrument.description = "Dataset no instrument"
         self.ds_no_instrument.save()
@@ -284,6 +283,11 @@ class DatasetResourceTest(MyTardisResourceTestCase):
         self.ds_with_instrument.instrument = self.testinstrument
         self.ds_with_instrument.save()
         self.ds_with_instrument.experiments.add(self.testexp)
+        self.ds_with_instrument2 = Dataset()
+        self.ds_with_instrument2.description = "Dataset with a different instrument"
+        self.ds_with_instrument2.instrument = self.extra_instrument
+        self.ds_with_instrument2.save()
+        self.ds_with_instrument2.experiments.add(self.testexp)
 
     def test_get_dataset_no_instrument(self):
         uri = '/api/v1/dataset/?description=%s' \
@@ -314,6 +318,19 @@ class DatasetResourceTest(MyTardisResourceTestCase):
         self.assertTrue('id' in returned_object['instrument'])
         self.assertEqual(returned_object['instrument']['id'],
                          self.testinstrument.id)
+
+    def test_get_dataset_filter_instrument(self):
+        uri = '/api/v1/dataset/?instrument=%s' \
+            % self.extra_instrument.id
+        output = self.api_client.get(uri,
+                                     authentication=self.get_credentials())
+        returned_data = json.loads(output.content)
+        self.assertEqual(returned_data['meta']['total_count'], 1)
+        returned_object = returned_data['objects'][0]
+        self.assertTrue('instrument' in returned_object)
+        self.assertTrue('id' in returned_object['instrument'])
+        self.assertEqual(returned_object['instrument']['id'],
+                         self.extra_instrument.id)
 
     def test_post_dataset(self):
         exp_id = Experiment.objects.first().id
@@ -460,28 +477,22 @@ class DataFileResourceTest(MyTardisResourceTestCase):
 
 
 class DatafileParameterSetResourceTest(MyTardisResourceTestCase):
-    def setUp(self):
-        super(DatafileParameterSetResourceTest, self).setUp()
+    pass
 
 
 class DatafileParameterResourceTest(MyTardisResourceTestCase):
-    def setUp(self):
-        super(DatafileParameterResourceTest, self).setUp()
+    pass
 
 
 class LocationResourceTest(MyTardisResourceTestCase):
-    def setUp(self):
-        super(LocationResourceTest, self).setUp()
+    pass
 
 
 class ReplicaResourceTest(MyTardisResourceTestCase):
-    def setUp(self):
-        super(ReplicaResourceTest, self).setUp()
+    pass
 
 
 class GroupResourceTest(MyTardisResourceTestCase):
-    def setUp(self):
-        super(GroupResourceTest, self).setUp()
 
     def test_get_group_by_id(self):
         group_id = Group.objects.first().id
@@ -512,8 +523,6 @@ class GroupResourceTest(MyTardisResourceTestCase):
 
 
 class FacilityResourceTest(MyTardisResourceTestCase):
-    def setUp(self):
-        super(FacilityResourceTest, self).setUp()
 
     def test_get_facility_by_id(self):
         first_facility = Facility.objects.first().id
@@ -590,8 +599,6 @@ class FacilityResourceTest(MyTardisResourceTestCase):
 
 
 class InstrumentResourceTest(MyTardisResourceTestCase):
-    def setUp(self):
-        super(InstrumentResourceTest, self).setUp()
 
     def test_get_instrument_by_id(self):
         facility_id = Facility.objects.first().id

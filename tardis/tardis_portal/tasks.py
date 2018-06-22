@@ -1,4 +1,3 @@
-# pylint: disable=R0204
 import logging
 import os
 from os import path
@@ -29,7 +28,6 @@ logger = logging.getLogger(__name__)
 def init_filters():
     """
     load filters and avoid circular import
-    :return:
     """
     try:
         from tardis.tardis_portal.filters import FilterInitMiddleware
@@ -60,6 +58,18 @@ def ingest_received_files():
                                              ~Q(master_box=None))
     for box in ingest_boxes:
         sbox_move_to_master.delay(box.id)
+
+
+@task(name="tardis_portal.autocache", ignore_result=True)
+def autocache():
+    init_filters()
+    from tardis.tardis_portal.models import StorageBox
+    autocache_boxes = StorageBox.objects.filter(
+        Q(attributes__key='autocache'),
+        Q(attributes__value__iexact='True'))
+
+    for box in autocache_boxes:
+        sbox_cache_files.delay(box.id)
 
 
 @task(name="tardis_portal.create_staging_datafiles", ignore_result=True)  # too complex # noqa
@@ -162,7 +172,7 @@ def cache_done_notify(results, user_id, site_id, ct_id, obj_ids):
 # "method tasks"
 # StorageBox
 @task(name="tardis_portal.storage_box.copy_files", ignore_result=True)
-def sbox_copy_files(sbox_id, dest_box_id=None, *args, **kwargs):
+def sbox_copy_files(sbox_id, dest_box_id=None):
     init_filters()
     from tardis.tardis_portal.models import StorageBox
     sbox = StorageBox.objects.get(id=sbox_id)
@@ -170,11 +180,11 @@ def sbox_copy_files(sbox_id, dest_box_id=None, *args, **kwargs):
         dest_box = StorageBox.objects.get(id=dest_box_id)
     else:
         dest_box = None
-    return sbox.copy_files(dest_box=dest_box, *args, **kwargs)
+    return sbox.copy_files(dest_box=dest_box)
 
 
 @task(name="tardis_portal.storage_box.move_files", ignore_result=True)
-def sbox_move_files(sbox_id, dest_box_id=None, *args, **kwargs):
+def sbox_move_files(sbox_id, dest_box_id=None):
     init_filters()
     from tardis.tardis_portal.models import StorageBox
     sbox = StorageBox.objects.get(id=sbox_id)
@@ -182,7 +192,15 @@ def sbox_move_files(sbox_id, dest_box_id=None, *args, **kwargs):
         dest_box = StorageBox.objects.get(id=dest_box_id)
     else:
         dest_box = None
-    return sbox.move_files(dest_box=dest_box, *args, **kwargs)
+    return sbox.move_files(dest_box=dest_box)
+
+
+@task(name="tardis_portal.storage_box.cache_files", ignore_result=True)
+def sbox_cache_files(sbox_id):
+    init_filters()
+    from tardis.tardis_portal.models import StorageBox
+    sbox = StorageBox.objects.get(id=sbox_id)
+    return sbox.cache_files()
 
 
 @task(name='tardis_portal.storage_box.copy_to_master', ignore_result=True)
@@ -224,7 +242,7 @@ def dfo_move_file(dfo_id, dest_box_id=None):
 
 
 @task(name='tardis_portal.dfo.copy_file', ignore_result=True)
-def dfo_copy_file(dfo_id, dest_box_id=None, *args, **kwargs):
+def dfo_copy_file(dfo_id, dest_box_id=None):
     init_filters()
     from tardis.tardis_portal.models import DataFileObject, StorageBox
     dfo = DataFileObject.objects.get(id=dfo_id)
@@ -232,7 +250,7 @@ def dfo_copy_file(dfo_id, dest_box_id=None, *args, **kwargs):
         dest_box = StorageBox.objects.get(id=dest_box_id)
     else:
         dest_box = None
-    return dfo.copy_file(dest_box=dest_box, *args, **kwargs)
+    return dfo.copy_file(dest_box=dest_box)
 
 
 @task(name='tardis_portal.dfo.cache_file', ignore_result=True)
@@ -253,4 +271,4 @@ def dfo_verify(dfo_id, *args, **kwargs):
             dfo = DataFileObject.objects.select_for_update().get(id=dfo_id)
             return dfo.verify(*args, **kwargs)
     dfo = DataFileObject.objects.get(id=dfo_id)
-    dfo.verify(*args, **kwargs)
+    return dfo.verify(*args, **kwargs)

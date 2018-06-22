@@ -1,5 +1,7 @@
+# pylint: disable=redundant-returns-doc,missing-returns-doc,missing-raises-doc,missing-return-type-doc
 import oaipmh.error
 import oaipmh.interfaces
+
 
 class BaseProvider(oaipmh.interfaces.IOAI, object):
     """
@@ -81,7 +83,6 @@ class BaseProvider(oaipmh.interfaces.IOAI, object):
             ``metadataNamespace`` tuples (each entry in the tuple is a string).
         """
         return []
-
 
     def listRecords(self, metadataPrefix, set=None, from_=None, until=None):
         """

@@ -12,8 +12,6 @@ from django.http import HttpResponse
 
 from registration.backends.default.views import RegistrationView
 
-import django_jasmine.urls
-
 from tastypie.api import Api
 from tastypie.resources import Resource
 
@@ -70,7 +68,6 @@ core_urls = patterns(
     url(r'^public_data/', 'public_data', name='public_data'),
     (r'^about/$', 'about'),
     (r'^stats/$', 'stats'),
-    (r'^help/$', 'user_guide'),
     url(r'^sftp_access/cyberduck/connection.png$',
         'cybderduck_connection_window', name='cyberduck_connection_window'),
     url(r'^sftp_access/$', 'sftp_access', name='sftp_access'),
@@ -90,6 +87,7 @@ experiment_lists = patterns(
         name="tardis_portal.experiment_list_shared"),
     )
 
+user_pattern = '[\w\-][\w\-\.]+(@[\w\-][\w\-\.]+[a-zA-Z]{1,4})*'
 experiment_urls = patterns(
     'tardis.tardis_portal.views',
     url(r'^view/(?P<experiment_id>\d+)/$', ExperimentView.as_view(),
@@ -99,12 +97,12 @@ experiment_urls = patterns(
     (r'^view/$', 'experiment_index'),  # Legacy URL
     (r'^create/$', 'create_experiment'),
     (r'^control_panel/(?P<experiment_id>\d+)/access_list/add/user/'
-     '(?P<username>[\w\-][\w\-\.]+(@[\w\-][\w\-\.]+[a-zA-Z]{1,4})*)/$',
+     '(?P<username>%s)/$' % user_pattern,
      'add_experiment_access_user'),
     (r'^control_panel/(?P<experiment_id>\d+)/access_list/remove/user/'
-     '(?P<username>[\w\.]+)/$', 'remove_experiment_access_user'),
+     '(?P<username>%s)/$' % user_pattern, 'remove_experiment_access_user'),
     (r'^control_panel/(?P<experiment_id>\d+)/access_list/change/user/'
-     '(?P<username>[\w\.]+)/$', 'change_user_permissions'),
+     '(?P<username>%s)/$' % user_pattern, 'change_user_permissions'),
     (r'^control_panel/(?P<experiment_id>\d+)/access_list/user/$',
      'retrieve_access_list_user'),
     (r'^control_panel/(?P<experiment_id>\d+)/access_list/user/readonly/$',
@@ -157,6 +155,8 @@ dataset_urls = patterns(
         name='tardis_portal.view_dataset'),
     (r'^(?P<dataset_id>\d+)/edit$', 'edit_dataset'),
     (r'^(?P<dataset_id>\d+)/thumbnail$', 'dataset_thumbnail'),
+    url(r'^(?P<dataset_id>\d+)/checksums$', 'checksums_download',
+        name='tardis_portal.dataset_checksums'),
 )
 iiif_urls = patterns(
     'tardis.tardis_portal.iiif',
@@ -207,6 +207,8 @@ ajax_urls = patterns(
     (r'^experiment/(?P<experiment_id>\d+)/description$',
      'experiment_description'),
     (r'^experiment/(?P<experiment_id>\d+)/datasets$', 'experiment_datasets'),
+    (r'^owned_exps_list/$', 'retrieve_owned_exps_list'),
+    (r'^shared_exps_list/$', 'retrieve_shared_exps_list'),
     (r'^edit_datafile_parameters/(?P<parameterset_id>\d+)/$',
         'edit_datafile_par'),
     (r'^edit_dataset_parameters/(?P<parameterset_id>\d+)/$',
@@ -416,9 +418,6 @@ urlpatterns = patterns(
 
     # Token login
     (r'^token/', include(token_urls)),
-
-    # Jasmine JavaScript Tests
-    (r'^jasmine/', include(django_jasmine.urls)),
 
     # Class-based views that may be overriden by apps
     (r'', include(overridable_urls)),

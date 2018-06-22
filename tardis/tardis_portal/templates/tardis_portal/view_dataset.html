@@ -342,7 +342,7 @@ $('#modal-metadata .submit-button').live('click', function() {
 
   <div class="modal-footer">
     <button class="submit-button btn btn-success">
-      <i class="icon-ok"></i>
+      <i class="fa fa-ok"></i>
       Save
     </button>
   </div>
@@ -391,14 +391,14 @@ $('#modal-metadata .submit-button').live('click', function() {
     <a class="btn btn-mini btn-primary" title="Push to..."
        onclick="window.open('{{ push_to_url }}', 'push-to', 'width=800, height=600'); return false;"
        href="{{ push_to_url }}" target="_blank">
-      <i class="icon-upload"></i>
+      <i class="fa fa-upload"></i>
       Push to...
     </a>
   {% endif %}
   {% if has_write_permissions and is_authenticated %}
     <a class="btn btn-warning btn-mini" title="Edit Dataset"
        href="{{ dataset.get_edit_url }}">
-      <i class="icon-pencil"></i>
+      <i class="fa fa-pencil"></i>
       Edit Dataset Description
     </a>
   {% endif %}
@@ -410,6 +410,22 @@ $('#modal-metadata .submit-button').live('click', function() {
       <span>Untitled Dataset</span>
     {% endif %}
   </h1>
+  {% if from_instrument or from_facility %}
+    <h4 style="padding-top: 4px">
+        <small>
+          {% if from_instrument %}
+            <span style="margin-right: 2em;">
+              Instrument: {{ from_instrument }}
+            </span>
+          {% endif %}
+          {% if from_facility %}
+            <span style="margin-right: 2em;">
+              Facility: {{  from_facility }}
+            </span>
+          {% endif %}
+        </small>
+    </h4>
+  {% endif %}
   {% if from_experiment %}
   <h4 style="padding-top: 4px">
       <small>
@@ -496,7 +512,7 @@ $('#modal-metadata .submit-button').live('click', function() {
        <div id="datafile-info">
 	 <div class="info-box">
 	   <em>Click the
-	   <i class="icon-list"></i>
+	   <i class="fa fa-list"></i>
 	   button next to any file to view details and actions.
 	   </em>
 	 </div>
@@ -554,16 +570,16 @@ $('#modal-metadata .submit-button').live('click', function() {
   </div>
 </div>
 <div class="row-fluid">
-    <div class="span8">
+    <div class="span12">
         {% block downloads %}
-            {% if has_download_permissions and dataset.is_online %}
+            {% if has_download_permissions %}
                 <p><b>Download Dataset:</b>
                     {% if organization|length > 1 %}
                         {% for p in protocol %}
                             {% for o in organization %}
                                 <a class="btn btn-primary btn-mini" href="{{p.1}}{{o}}"
                                    title="Download Entire Experiment as {{p.0|upper}} with {{o}} organization">
-                                    <i class="icon-download-alt"></i>
+                                    <i class="fa fa-download"></i>
                                     {% if o == default_organization %}
                                         {{p.0|upper}}
                                     {% else %}
@@ -576,7 +592,7 @@ $('#modal-metadata .submit-button').live('click', function() {
                         {% for p in protocol %}
                             <a class="btn btn-primary btn-mini" href="{{p.1}}"
                                title="Download Entire Dataset as {{p.0|upper}}">
-                                <i class="icon-download-alt"></i>
+                                <i class="fa fa-download"></i>
                                 {{p.0|upper}}
                             </a>
                         {% endfor %}
@@ -584,13 +600,9 @@ $('#modal-metadata .submit-button').live('click', function() {
                     <a target="_blank"
                        href="{% url "sftp_access" %}?object_id={{ dataset.id }}&object_type=dataset"
                        class="btn btn-primary btn-mini" title="Download with SFTP">SFTP</a>
-                </p>
-            {%  elif has_download_permissions and not dataset.is_online %}
-                <p>Some or all files in this dataset are archived.
-                <a href="{% url "cache_dataset" dataset.id %}"
-                   id="request-fast-access"
-                   class="btn btn-success btn-mini">Retrieve All
-                    Files</a>
+                    <a class="btn btn-primary btn-mini"
+                       href="{% url 'tardis_portal.dataset_checksums' dataset.id %}"
+                       title="Download MD5 checksums for all files in this Dataset">MD5</a>
                 </p>
             {% endif %}
         {% endblock downloads %}
@@ -599,7 +611,7 @@ $('#modal-metadata .submit-button').live('click', function() {
         {% if has_write_permissions and not experiment.public and not immutable and has_staging_access %}
             <div class="pull-right" style="margin-top:3px;">
                 <a data-dataset_id="{{dataset.id}}" class="import_staging_files_link btn btn-mini" title="Import Staging Files">
-                    <i class="icon-arrow-right"></i>
+                    <i class="fa fa-arrow-right"></i>
                     Import Staging Files
                 </a>
             </div>

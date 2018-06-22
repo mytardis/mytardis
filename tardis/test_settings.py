@@ -1,7 +1,9 @@
 # pylint: disable=wildcard-import,unused-wildcard-import
-import logging
+
 from os import listdir
+
 from tardis.default_settings import *  # noqa # pylint: disable=W0401,W0614
+import logging  # pylint: disable=wrong-import-order
 
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 
@@ -24,11 +26,9 @@ DATABASES = {
 # During testing it's always eager
 CELERY_ALWAYS_EAGER = True
 
-ROOT_URLCONF = 'tardis.urls'
-
 TEMPLATES[0]['DIRS'].append('.')
 
-del(STATICFILES_STORAGE)  # noqa
+del STATICFILES_STORAGE  # noqa
 
 STAGING_PATH = path.abspath(path.join(path.dirname(__file__),
                                       "../var/test/staging/"))
@@ -73,6 +73,7 @@ def get_all_tardis_apps():
 INSTALLED_APPS += get_all_tardis_apps() + (
     'tardis.apps.equipment',
     'django_nose',
+    'behave_django',
 )
 
 DEDUP_INSTALLED_APPS = []

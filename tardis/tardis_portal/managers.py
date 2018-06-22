@@ -32,8 +32,7 @@ class OracleSafeManager(models.Manager):
                       if a.db_type(connection=connection) == 'NCLOB']
             return \
                 super(OracleSafeManager, self).get_queryset().defer(*fields)
-        else:
-            return super(OracleSafeManager, self).get_queryset()
+        return super(OracleSafeManager, self).get_queryset()
 
 
 class ExperimentManager(OracleSafeManager):
@@ -55,8 +54,9 @@ class ExperimentManager(OracleSafeManager):
         Returns all experiments a user - either authenticated or
         anonymous - is allowed to see and search
 
-        :param user: a User instance
-        :type request: :py:class:`django.http.HttpRequest`
+        :param User user: a User instance
+        :returns: QuerySet of Experiments
+        :rtype: QuerySet
         """
 
         query = self._query_all_public() |\
@@ -134,13 +134,13 @@ class ExperimentManager(OracleSafeManager):
         Returns an experiment under the consideration of the ACL rules
         Raises PermissionDenied if the user does not have access.
 
-        :param user: a User instance
-        :param experiment_id: the ID of the experiment to be edited
-        :type experiment_id: string
-
+        :param User user: a User instance
+        :param int experiment_id: the ID of the experiment to be edited
+        :returns: Experiment
+        :rtype: Experiment
+        :raises PermissionDenied:
         """
-        experiment = \
-            super(ExperimentManager, self).get(pk=experiment_id)
+        experiment = super(ExperimentManager, self).get(pk=experiment_id)
 
         if user.has_perm('tardis_acls.view_experiment', experiment):
             return experiment
@@ -152,9 +152,9 @@ class ExperimentManager(OracleSafeManager):
         Return all experiments which are owned by a particular user, including
         those shared with a group of which the user is a member.
 
-        :param request: a HTTP Request instance
-        :type request: :py:class:`django.http.HttpRequest`
-
+        :param User user: a User instance
+        :returns: QuerySet of Experiments owned by user
+        :rtype: QuerySet
         """
 
         # the user must be authenticated
@@ -194,9 +194,9 @@ class ExperimentManager(OracleSafeManager):
         """
         Return all experiments which are owned by a particular user id
 
-        :param userId: a User Object
-        :type userId: User
-
+        :param User user: a User Object
+        :return: QuerySet of Experiments owned by user
+        :rtype: QuerySet
         """
         query = self._query_owned(user)
         return super(ExperimentManager, self).get_queryset().filter(query)
@@ -212,9 +212,9 @@ class ExperimentManager(OracleSafeManager):
         """
         Return all experiments which are owned by a particular user id
 
-        :param userId: a User ID
-        :type userId: integer
-
+        :param int userId: a User ID
+        :returns: QuerySet of Experiments owned by user id
+        :rtype: QuerySet
         """
         query = self._query_owned(user=None, user_id=userId)
         return super(ExperimentManager, self).get_queryset().filter(query)
@@ -225,10 +225,10 @@ class ExperimentManager(OracleSafeManager):
 
         :param experiment_id: the ID of the experiment
         :type experiment_id: string
-
+        :returns: QuerySet of ACLs
+        :rtype: QuerySet
         """
-        experiment = \
-            super(ExperimentManager, self).get(pk=experiment_id)
+        experiment = super(ExperimentManager, self).get(pk=experiment_id)
 
         return ObjectACL.objects.filter(
             pluginId=django_user,
@@ -241,9 +241,9 @@ class ExperimentManager(OracleSafeManager):
         Returns a list of users who have ACL rules associated with this
         experiment.
 
-        :param experiment_id: the ID of the experiment
-        :type experiment_id: string
-
+        :param int experiment_id: the ID of the experiment
+        :returns: QuerySet of Users with experiment access
+        :rtype: QuerySet
         """
         acl = self.user_acls(experiment_id)
         return User.objects.filter(pk__in=[int(a.entityId) for a in acl])
@@ -253,9 +253,9 @@ class ExperimentManager(OracleSafeManager):
         returns a list of user owned-groups which have ACL rules
         associated with this experiment
 
-        :param experiment_id: the ID of the experiment to be edited
-        :type experiment_id: string
-
+        :param int experiment_id: the ID of the experiment to be edited
+        :returns: QuerySet of non system Groups
+        :rtype: QuerySet
         """
 
         acl = ObjectACL.objects.filter(
@@ -270,9 +270,9 @@ class ExperimentManager(OracleSafeManager):
         """
         Returns a list of ACL rules associated with this experiment.
 
-        :param experiment_id: the ID of the experiment
-        :type experiment_id: string
-
+        :param int experiment_id: the ID of the experiment
+        :returns: QuerySet of ACLs
+        :rtype: QuerySet
         """
         return ObjectACL.objects.filter(
             pluginId='django_group',
@@ -284,9 +284,9 @@ class ExperimentManager(OracleSafeManager):
         """
         Returns a list of ACL rules associated with this experiment.
 
-        :param experiment_id: the ID of the experiment
-        :type experiment_id: string
-
+        :param int experiment_id: the ID of the experiment
+        :returns: QuerySet of system-owned ACLs for experiment
+        :rtype: QuerySet
         """
         return ObjectACL.objects.filter(
             pluginId='django_group',
@@ -301,7 +301,8 @@ class ExperimentManager(OracleSafeManager):
 
         :param experiment_id: the ID of the experiment to be edited
         :type experiment_id: string
-
+        :returns: system owned groups for experiment
+        :rtype: QuerySet
         """
         from tardis.tardis_portal.models import ObjectACL
         acl = ObjectACL.objects.filter(
@@ -316,9 +317,9 @@ class ExperimentManager(OracleSafeManager):
         """
         returns a list of groups which have external ACL rules
 
-        :param experiment_id: the ID of the experiment to be edited
-        :type experiment_id: string
-
+        :param int experiment_id: the ID of the experiment to be edited
+        :returns: list of groups with external ACLs
+        :rtype: list
         """
 
         from tardis.tardis_portal.models import ObjectACL

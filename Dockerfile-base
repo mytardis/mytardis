@@ -20,15 +20,14 @@ RUN apt-get update && apt-get install \
     libssl1.0.0 \
     libxml2 \
     libxslt1.1 \
+    nodejs \
+    npm \
     python-anyjson \
     python-billiard \
     python-bs4 \
     python-crypto \
     python-dateutil \
-    python-feedparser \
     python-flexmock \
-    python-html5lib \
-    python-httplib2 \
     python-pip \
     python-pystache \
     python-virtualenv \
