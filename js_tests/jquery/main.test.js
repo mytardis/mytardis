@@ -1,6 +1,6 @@
 /* global QUnit */
 /* eslint global-strict: 0, strict: 0 */
-'use strict';
+"use strict";
 
 // Tests for tardis/tardis_portal/static/js/main.js
 
