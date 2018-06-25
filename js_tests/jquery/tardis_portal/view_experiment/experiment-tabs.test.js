@@ -1,6 +1,6 @@
-/* global QUnit */
-/* eslint global-strict: 0, strict: 0 */
-'use strict';
+/* eslint global-strict: 0, strict: 0, no-console: 0 */
+/* global QUnit, _ */
+"use strict";
 
 // Tests for tardis/tardis_portal/static/js/jquery/tardis_portal/view_experiment/experiment-tabs.js
 // which used to be embedded within
@@ -26,9 +26,9 @@ QUnit.test("Load experiment tabs", function(assert) {
         "</ul>\n" +
         "<div class=\"tab-content\">\n" +
         "  <div id=\"experiment-tab-description\">\n" +
-	"    <div id=\"experiment_description\" class=\"dl-horizontal\">\n" +
-	"      <!-- ... -->\n" +
-	"    </div>\n" +
+ "    <div id=\"experiment_description\" class=\"dl-horizontal\">\n" +
+ "      <!-- ... -->\n" +
+ "    </div>\n" +
         "  </div>\n" +
         "</div>\n"
     );
@@ -56,13 +56,13 @@ QUnit.test("Load experiment tabs", function(assert) {
     assert.ok(_.isEmpty({}));
 
     // Ensure that the tab panes which haven't been loaded yet are not in the fixture:
-    var expMetadataDiv = $('#qunit-fixture').find('#experiment-tab-metadata');
+    var expMetadataDiv = $("#qunit-fixture").find("#experiment-tab-metadata");
     assert.equal(expMetadataDiv.length, 0);
 
-    var expSharingDiv = $('#qunit-fixture').find('#experiment-tab-sharing');
+    var expSharingDiv = $("#qunit-fixture").find("#experiment-tab-sharing");
     assert.equal(expSharingDiv.length, 0);
 
-    var expDatasetTransferDiv = $('#qunit-fixture').find('#experiment-tab-transfer-datasets');
+    var expDatasetTransferDiv = $("#qunit-fixture").find("#experiment-tab-transfer-datasets");
     assert.equal(expDatasetTransferDiv.length, 0);
 
     // Load the view_experiment/experiment-tabs.js script:
@@ -77,14 +77,14 @@ QUnit.test("Load experiment tabs", function(assert) {
         });
 
     // Ensure that experiment metadata tab pane's content has been loaded:
-    expMetadataDiv = $('#qunit-fixture').find('#experiment-tab-metadata');
+    expMetadataDiv = $("#qunit-fixture").find("#experiment-tab-metadata");
     assert.equal(expMetadataDiv.html(), "Experiment metadata pane mock content");
 
     // Ensure that experiment sharing tab pane's content has been loaded:
-    expSharingDiv = $('#qunit-fixture').find('#experiment-tab-sharing');
+    expSharingDiv = $("#qunit-fixture").find("#experiment-tab-sharing");
     assert.equal(expSharingDiv.html(), "Experiment sharing pane mock content");
 
     // Ensure that experiment dataset transfer tab pane's content has been loaded:
-    expDatasetTransferDiv = $('#qunit-fixture').find('#experiment-tab-transfer-datasets');
+    expDatasetTransferDiv = $("#qunit-fixture").find("#experiment-tab-transfer-datasets");
     assert.equal(expDatasetTransferDiv.html(), "Experiment dataset transfer pane mock content");
 });
