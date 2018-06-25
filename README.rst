@@ -10,10 +10,10 @@ MyTardis
    :target: https://semaphoreapp.com/mytardis/mytardis
    :alt: Semaphore build status
 
-.. image:: https://api.codacy.com/project/badge/Grade/f945cdf9191d44d2806d14fb55e32ef5
-  :target: https://www.codacy.com/app/keithschulze/mytardis?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=mytardis/mytardis&amp;utm_campaign=Badge_Grade
-  :alt: Codacy Badge
-
+.. image:: https://api.codacy.com/project/badge/Grade/c27bad18abaf443c93e58192757c2025
+   :alt: Codacy Badge
+   :target: https://app.codacy.com/app/mytardis/mytardis?utm_source=github.com&utm_medium=referral&utm_content=mytardis/mytardis&utm_campaign=badger
+   
 .. image:: https://coveralls.io/repos/mytardis/mytardis/badge.svg?branch=develop
   :target: https://coveralls.io/r/mytardis/mytardis?branch=develop
   :alt: Coveralls Badge
