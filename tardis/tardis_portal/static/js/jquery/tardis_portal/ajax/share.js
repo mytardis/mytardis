@@ -1,6 +1,6 @@
 /* tardis/tardis_portal/static/js/jquery/tardis_portal/ajax/share.js */
 
-/* eslint global-strict: 0, strict: 0, object-shorthand: 0 */
+/* eslint global-strict: 0, strict: 0, object-shorthand: 0, no-extend-native: [2, {"exceptions": ["Date", "String"]}] */
 /* global userAutocompleteHandler, _ */
 
 var loadingHTML = "<img src=\"/static/images/ajax-loader.gif\"/><br />";
@@ -96,6 +96,7 @@ $(".share_link").bind("click", function(evt) {
 
 
             $("#user.form_submit").unbind("click");
+            // eslint-disable-next-line complexity
             $("#user.form_submit").click(function(event) {
                 event.preventDefault();
                 var enteredUser = $(this).siblings("#id_entered_user").val();
