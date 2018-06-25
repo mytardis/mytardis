@@ -54,3 +54,19 @@ To use another browser, e.g. Chrome, follow the steps to install "chromedriver"
 in http://splinter.readthedocs.io/en/latest/drivers/chrome.html and then call::
 
     ./test.py behave -D browser=chrome
+
+Running QUnit tests
+-------------------
+
+The QUnit tests reside in the ``js_tests/`` directory.
+
+You can run the Qunit tests with::
+
+    npm install
+    npm test
+
+Or by running a web server::
+
+    python -m SimpleHTTPServer
+
+and opening http://127.0.0.1:8000/js_tests/tests.html in your browser.
