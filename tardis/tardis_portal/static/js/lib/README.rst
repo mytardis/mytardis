@@ -29,6 +29,10 @@ with Django integration.
 If you're about to send HTML to the client, consider using a Mustache template
 and some JSON first. (Reusing JSON services is much easier!)
 
+For Javascript tests, mustache-0.3.0.js is copied into this directory, because
+we can't use {% static ... %} to access it in the django-mustachejs package
+because Django is not running during the Javascript tests.
+
 
 Underscore.js
 -------------
