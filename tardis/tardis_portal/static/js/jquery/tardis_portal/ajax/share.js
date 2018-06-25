@@ -1,6 +1,6 @@
 /* tardis/tardis_portal/static/js/jquery/tardis_portal/ajax/share.js */
 
-/* eslint global-strict: 0, strict: 0 */
+/* eslint global-strict: 0, strict: 0, object-shorthand: 0 */
 /* global userAutocompleteHandler, _ */
 
 var loadingHTML = "<img src=\"/static/images/ajax-loader.gif\"/><br />";
@@ -18,7 +18,7 @@ $(".public_access_link").bind("click", function(evt) {
         .load("/ajax/experiment/" + $("#experiment-id").val() + "/rights", function(response, status, xhr) {
             modal.find(".loading-placeholder").hide();
 
-            if (status == "error") {
+            if (status === "error") {
                 $(this).html(response);
             }
 
@@ -35,18 +35,18 @@ $("#modal-public-access").bind("hidden", function() {
 
 // beginswith, endswith
 String.prototype.beginsWith = function(t, i) {
-    if (i == false) {
-        return (t == this.substring(0, t.length));
+    if (i === false) {
+        return (t === this.substring(0, t.length));
     } else {
-        return (t.toLowerCase() == this.substring(0, t.length).toLowerCase());
+        return (t.toLowerCase() === this.substring(0, t.length).toLowerCase());
     }
 };
 
 String.prototype.endsWith = function(t, i) {
-    if (i == false) {
-        return (t == this.substring(this.length - t.length));
+    if (i === false) {
+        return (t === this.substring(this.length - t.length));
     } else {
-        return (t.toLowerCase() == this.substring(this.length - t.length).toLowerCase());
+        return (t.toLowerCase() === this.substring(this.length - t.length).toLowerCase());
     }
 };
 
@@ -69,7 +69,7 @@ $(".share_link").bind("click", function(evt) {
                 $(this).siblings("#id_autocomp_user").val("");
                 $(this).siblings("#id_authMethod").attr("disabled", "");
 
-                if (e.keyCode == 13)
+                if (e.keyCode === 13)
                 {
                     $("#user.form_submit").click();
                 }
@@ -79,7 +79,7 @@ $(".share_link").bind("click", function(evt) {
                 "dataType": "json",
                 "url": "/ajax/user_list/",
                 "success": function(users) {
-                    if($("select#id_authMethod option").length == 1) {
+                    if($("select#id_authMethod option").length === 1) {
                         $("#id_authMethod_label").hide();
                         $("#id_authMethod").hide();
                     }
@@ -98,21 +98,21 @@ $(".share_link").bind("click", function(evt) {
             $("#user.form_submit").unbind("click");
             $("#user.form_submit").click(function(event) {
                 event.preventDefault();
-                var entered_user = $(this).siblings("#id_entered_user").val();
-                var autocomp_user = $(this).siblings("#id_autocomp_user").val();
+                var enteredUser = $(this).siblings("#id_entered_user").val();
+                var autocompUser = $(this).siblings("#id_autocomp_user").val();
                 var username = null;
                 var authMethod = null;
-                if (autocomp_user != "") {
+                if (autocompUser !== "") {
                     // Use the details from the autocomplete.
-                    autocomp_user = autocomp_user.split(":");
-                    username = autocomp_user[0];
-                    authMethod = autocomp_user[1];
+                    autocompUser = autocompUser.split(":");
+                    username = autocompUser[0];
+                    authMethod = autocompUser[1];
                 } else {
                     // Autocomplete failed. Use the entered username as-is.
-                    username = entered_user;
+                    username = enteredUser;
                     authMethod = $(this).siblings("#id_authMethod").val();
                 }
-                var users_div = $(this).parents(".access_list1").children(".users");
+                var usersDiv = $(this).parents(".access_list1").children(".users");
 
                 var permissions = $(this).siblings("#id_permission").val();
 
@@ -120,16 +120,16 @@ $(".share_link").bind("click", function(evt) {
                 var canWrite = false;
                 var isOwner = false;
                 var canDelete = false;
-                if (permissions == "read")
+                if (permissions === "read")
                 {
                     canRead = true;
                 }
-                else if (permissions == "edit")
+                else if (permissions === "edit")
                 {
                     canRead = true;
                     canWrite = true;
                 }
-                else if (permissions == "owner")
+                else if (permissions === "owner")
                 {
                     canRead = true;
                     canWrite = true;
@@ -147,20 +147,20 @@ $(".share_link").bind("click", function(evt) {
                     type: "GET",
                     url: action,
                     success: function(data) {
-                        users_div.hide().append(data).fadeIn();
+                        usersDiv.hide().append(data).fadeIn();
                         // todo this is a duplicate function..
                         $(".remove_user").unbind("click");
                         $(".remove_user").click(function() {
                             var href = $(this).attr("href");
-                            var remove_user = $(this);
+                            var removeUser = $(this);
                             $.ajax({
                                 "async": false,
                                 "global": false,
                                 "url": href,
                                 "success": function(data2) {
                                     var val = data2;
-                                    if(val == "OK") {
-                                        remove_user.fadeOut(300, function() { remove_user.parents(".access_list_user").remove(); });
+                                    if(val === "OK") {
+                                        removeUser.fadeOut(300, function() { removeUser.parents(".access_list_user").remove(); });
                                     }
                                     else { alert(val); }
                                 }
@@ -176,15 +176,15 @@ $(".share_link").bind("click", function(evt) {
             $(".remove_user").unbind("click");
             $(".remove_user").click(function() {
                 var href = $(this).attr("href");
-                var remove_user = $(this);
+                var removeUser = $(this);
                 $.ajax({
                     "async": false,
                     "global": false,
                     "url": href,
                     "success": function(data) {
                         var val = data;
-                        if(val == "OK") {
-                            remove_user.fadeOut(300, function() { remove_user.parents(".access_list_user").remove(); });
+                        if(val === "OK") {
+                            removeUser.fadeOut(300, function() { removeUser.parents(".access_list_user").remove(); });
                         }
                         else { alert(val); }
                     }
@@ -230,10 +230,10 @@ $(".share_link_group").bind("click", function(evt) {
                     "success": function(data) { val = data; }
                 });
                 return val;
-            })();
+            }());
 
             $("#id_addgroup").keypress(function(e) {
-                if (e.keyCode == 13)
+                if (e.keyCode === 13)
                 {
                     $("#group.form_submit").click();
                 }
@@ -254,16 +254,16 @@ $(".share_link_group").bind("click", function(evt) {
                 icon.toggleClass("fa fa-folder-open icon-folder-close");
                 $(this).toggleClass("members-shown members-hidden");
 
-                var user_list = $(this).parents(".group").find(".access_list");
+                var userList = $(this).parents(".group").find(".access_list");
                 // If not showing members, just hide user list
                 if (!$(this).hasClass("members-shown")) {
-                    user_list.hide();
+                    userList.hide();
                     return;
                 }
 
-                user_list.html(loadingHTML);
+                userList.html(loadingHTML);
                 // Load (jQuery AJAX "load()") and show access list
-                user_list.load(this.href, function() {
+                userList.load(this.href, function() {
                     // Load user list and activate field autocompletion
                     $.ajax({
                         "dataType": "json",
@@ -290,7 +290,7 @@ $(".share_link_group").bind("click", function(evt) {
                 // var usersuggest = $(this).parents('.access_list2').find(".usersuggest").val();
                 var groupsuggest = $(this).parents(".access_list2").find(".groupsuggest").val();
                 // var authMethod = $(this).parents('.access_list2').find("#id_authMethod").val();
-                var groups_div = $(this).parents(".access_list2").children(".groups");
+                var groupsDiv = $(this).parents(".access_list2").children(".groups");
                 // var create = $(this).parents('.access_list2').find(".creategroup").is(':checked');
                 // var canRead = $(this).parents('.access_list2').find(".canRead").is(':checked');
                 // var canWrite = $(this).parents('.access_list2').find(".canWrite").is(':checked');
@@ -305,16 +305,16 @@ $(".share_link_group").bind("click", function(evt) {
                 var canWrite = false;
                 var isOwner = false;
                 var canDelete = false;
-                if(permissions == "read")
+                if(permissions === "read")
                 {
                     canRead = true;
                 }
-                else if(permissions == "edit")
+                else if(permissions === "edit")
                 {
                     canRead = true;
                     canWrite = true;
                 }
-                else if(permissions == "owner")
+                else if(permissions === "owner")
                 {
                     canRead = true;
                     canWrite = true;
@@ -331,7 +331,7 @@ $(".share_link_group").bind("click", function(evt) {
                     type: "GET",
                     url: action,
                     success: function(data) {
-                        groups_div.hide().append(data).fadeIn();
+                        groupsDiv.hide().append(data).fadeIn();
 
                         // view group members
                         $(".member_list_user_toggle").unbind("click");
@@ -342,16 +342,16 @@ $(".share_link_group").bind("click", function(evt) {
                             icon.toggleClass("fa fa-folder-open icon-folder-close");
                             $(this).toggleClass("members-shown members-hidden");
 
-                            var user_list = $(this).parents(".access_list_group").find(".access_list");
+                            var userList = $(this).parents(".access_list_group").find(".access_list");
                             // If not showing members, just hide user list
                             if (!$(this).hasClass("members-shown")) {
-                                user_list.hide();
+                                userList.hide();
                                 return;
                             }
 
-                            user_list.html(loadingHTML);
+                            userList.html(loadingHTML);
                             // Load (jQuery AJAX "load()") and show access list
-                            user_list.load(this.href, function() {
+                            userList.load(this.href, function() {
                                 // Load user list and activate field autocompletion
                                 $.ajax({
                                     "dataType": "json",
@@ -374,7 +374,7 @@ $(".share_link_group").bind("click", function(evt) {
                         $(".remove_group").unbind("click");
                         $(".remove_group").click(function() {
                             var href = $(this).attr("href");
-                            var remove_group = $(this);
+                            var removeGroup = $(this);
    
                             $.ajax({
                                 "async": false,
@@ -382,9 +382,9 @@ $(".share_link_group").bind("click", function(evt) {
                                 "url": href,
                                 "success": function(data2) {
                                     var val = data2;
-                                    if(val == "OK") {
-                                        remove_group.fadeOut(300, function() {
-                                            remove_group.parents(".access_list_group").remove();
+                                    if(val === "OK") {
+                                        removeGroup.fadeOut(300, function() {
+                                            removeGroup.parents(".access_list_group").remove();
                                         });
                                     }
                                     else { alert(val); }
@@ -403,7 +403,7 @@ $(".share_link_group").bind("click", function(evt) {
 
                 var href = $(this).attr("href");
 
-                var remove_group = $(this);
+                var removeGroup = $(this);
 
                 $.ajax({
                     "async": false,
@@ -411,9 +411,9 @@ $(".share_link_group").bind("click", function(evt) {
                     "url": href,
                     "success": function(data) {
                         var val = data;
-                        if(val == "OK") {
-                            remove_group.fadeOut(300, function() {
-                                remove_group.parents(".access_list_group").remove();
+                        if(val === "OK") {
+                            removeGroup.fadeOut(300, function() {
+                                removeGroup.parents(".access_list_group").remove();
                             });
                         }
                         else { alert("val"); }
@@ -429,22 +429,22 @@ $(".share_link_group").bind("click", function(evt) {
 $(document).ready(function() {
 
     // user access list
-    var $target_user = $("#experiment_user_list");
-    $target_user.html(loadingHTML + "</br>");
+    var $targetUser = $("#experiment_user_list");
+    $targetUser.html(loadingHTML + "</br>");
     var href = "/experiment/control_panel/" + $("#experiment-id").val() + "/access_list/user/readonly/";
-    $target_user.load(href);
+    $targetUser.load(href);
 
     // group access list
-    var $target_group = $("#experiment_group_list");
-    $target_group.html(loadingHTML + "</br>");
+    var $targetGroup = $("#experiment_group_list");
+    $targetGroup.html(loadingHTML + "</br>");
     href = "/experiment/control_panel/" + $("#experiment-id").val() + "/access_list/group/readonly/";
-    $target_group.load(href);
+    $targetGroup.load(href);
 
     // token access list
-    var $target_token = $("#experiment_token_list");
-    $target_token.html(loadingHTML + "</br>");
+    var $targetToken = $("#experiment_token_list");
+    $targetToken.html(loadingHTML + "</br>");
     href = "/experiment/control_panel/" + $("#experiment-id").val() + "/access_list/tokens/";
-    $target_token.load(href);
+    $targetToken.load(href);
 
 
     $(".token_delete").live("click", function(evt) {
@@ -459,13 +459,13 @@ $(document).ready(function() {
     $(".create_token_link").unbind("click");
     $(".create_token_link").bind("click", function(evt) {
         evt.preventDefault();
-        var $target_token = $("#experiment_token_list"); // eslint-disable-line no-shadow
-        $target_token.html(loadingHTML + "</br>");
+        var $targetToken = $("#experiment_token_list"); // eslint-disable-line no-shadow
+        $targetToken.html(loadingHTML + "</br>");
         $.post(this.href, {csrfmiddlewaretoken: $("#csrf-token").val()}, function(data)
         {
             // eslint-disable-next-line no-shadow
             var href = "/experiment/control_panel/" + $("#experiment-id").val() + "/access_list/tokens/";
-            $target_token.load(href);
+            $targetToken.load(href);
         }); // TODO error-handling
     });
 });
