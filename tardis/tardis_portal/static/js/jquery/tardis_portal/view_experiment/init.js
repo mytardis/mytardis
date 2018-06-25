@@ -1,6 +1,6 @@
 /* tardis/tardis_portal/static/js/jquery/tardis_portal/view_experiment/init.js */
   
-/* eslint global-strict: 0, strict: 0 */
+/* eslint global-strict: 0, strict: 0, object-shorthand: 0 */
 
 
 // file selectors
@@ -11,22 +11,22 @@ jQuery(".dataset_selector_none").live("click", function() {
     $(this).parents(".datafiles").find(".datafile_checkbox").removeAttr("checked");
 });
 
-function get_new_parameter_name(name)
+function getNewParameterName(name)
 {
-    var new_name = name;
+    var newName = name;
 
     var i = 1;
-    while($("[name=" + new_name + "__" + i + "]").length == 1)
+    while($("[name=" + newName + "__" + i + "]").length === 1)
     {
         i++;
     }
-    return new_name + "__" + i;
+    return newName + "__" + i;
 }
 
-function get_form_input_html(label, name, use_textarea)
+function getFormInputHtml(label, name, useTextArea)
 {
     var widget;
-    if (use_textarea) {
+    if (useTextArea) {
         widget = "<textarea " + "name=\"" + name + "\" id=\"" + name + "\"/>";
     } else {
         widget = "<input type=\"text\" name=\"" + name + "\" value=\"\" id=\"" + name + "\" />";
@@ -49,27 +49,27 @@ $("#schemaselect").live("change", function(e) {
     e.preventDefault();
 
     var $this = $(this);
-    var $jqm_content_div = $this.closest(".modal-body");
+    var $jqmContentDiv = $this.closest(".modal-body");
 
     var type = $this.attr("data-type");
-    var parent_object_id = $this.attr("data-parent_object_id");
-    var href = "/ajax/add_" + type + "_parameters/" + parent_object_id + "/?schema_id=" + $this.val();
+    var parentObjectId = $this.attr("data-parent_object_id");
+    var href = "/ajax/add_" + type + "_parameters/" + parentObjectId + "/?schema_id=" + $this.val();
     $.get(href, function(data) {
-        $jqm_content_div.html(data);
+        $jqmContentDiv.html(data);
     });
     return false;
 });
 
 $("#add_new_parameter").live("click", function() {
     // assuming whenever add_new_parameter is clicked an option is selected
-    var $selected_option = $("#parameternameselect > option:selected");
-    var is_long = $selected_option.attr("data-longstring");
-    var new_element_name = get_new_parameter_name($selected_option.val());
+    var $selectedOption = $("#parameternameselect > option:selected");
+    var isLong = $selectedOption.attr("data-longstring");
+    var newElementName = getNewParameterName($selectedOption.val());
 
-    if($selected_option.text())
+    if($selectedOption.text())
     {
-        $("#parameternameselect").before(get_form_input_html($selected_option.text(), new_element_name, is_long));
-        $("#" + new_element_name).focus();
+        $("#parameternameselect").before(getFormInputHtml($selectedOption.text(), newElementName, isLong));
+        $("#" + newElementName).focus();
     }
     else
     {
@@ -83,10 +83,10 @@ $("#add_metadata_form").live("submit", function(e) {
     var form = $(this);
     var contentContainer = form.closest(".modal-body");
 
-    var schema_id = $("#schemaselect").val();
+    var schemaId = $("#schemaselect").val();
     var type = form.attr("data-type");
-    var parent_object_id = form.attr("data-parent_object_id");
-    var href = "/ajax/add_" + type + "_parameters/" + parent_object_id + "/?schema_id=" + schema_id;
+    var parentObjectId = form.attr("data-parent_object_id");
+    var href = "/ajax/add_" + type + "_parameters/" + parentObjectId + "/?schema_id=" + schemaId;
 
     $.ajax({
         type: "POST",
@@ -94,7 +94,7 @@ $("#add_metadata_form").live("submit", function(e) {
         data: form.serialize(),
         success: function(data) {
             contentContainer.html(data);
-            if (contentContainer.find("form").length == 0) {
+            if (contentContainer.find("form").length === 0) {
                 contentContainer.parents(".modal").find(".modal-footer").hide();
             }
         },
@@ -118,7 +118,7 @@ $("#edit_metadata_form").live("submit", function(e) {
         data: form.serialize(),
         success: function(data) {
             contentContainer.html(data);
-            if (contentContainer.find("form").length == 0) {
+            if (contentContainer.find("form").length === 0) {
                 contentContainer.parents(".modal").find(".modal-footer").hide();
             }
         },

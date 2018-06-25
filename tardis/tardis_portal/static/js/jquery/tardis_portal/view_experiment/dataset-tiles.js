@@ -29,4 +29,4 @@ $(function() {
     datasets.fetch({});
 
     return datasetTiles;
-})();
+}());
