@@ -1,5 +1,5 @@
-/* global QUnit */
-/* eslint global-strict: 0, strict: 0 */
+/* global QUnit activateSearchAutocomplete */
+/* eslint global-strict: 0, strict: 0, no-console: 0, object-shorthand: 0 */
 "use strict";
 
 // Tests for tardis/tardis_portal/static/js/main.js
