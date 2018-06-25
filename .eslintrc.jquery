@@ -3,9 +3,10 @@
     "rules": {
         "camelcase": [1, {"properties": "always"}],
         "comma-spacing": [2, {"before": false, "after": true}],
-        "dot-notation": [2, {"allowKeywords": true}],
-        "eqeqeq": 1,
+        "complexity": ["error", { "max": 4 }],
         "curly": [2, "all"],
+        "dot-notation": [2, {"allowKeywords": true}],
+        "eqeqeq": [1],
         "indent": [2, 4],
         "key-spacing": [2, {"beforeColon": false, "afterColon": true}],
         "new-cap": [0, {"newIsCap": true, "capIsNew": true}],
@@ -18,6 +19,7 @@
         "no-unused-vars": [2, {"vars": "local", "args": "none"}],
         "no-script-url": [2],
         "no-shadow": [2, {"hoist": "functions"}],
+        "no-use-before-define": [1],
         "object-shorthand": 1,
         "quotes": [1, "double"],
         "linebreak-style": [2, "unix"],
@@ -26,7 +28,7 @@
         "space-before-function-paren": [2, {"anonymous": "never", "named": "never"}],
         "space-infix-ops": [2, {"int32Hint": false}],
         "strict": [1, "function"],
-        "wrap-iife": 1
+        "wrap-iife": [1]
     },
     "env": {
         "browser": true,
