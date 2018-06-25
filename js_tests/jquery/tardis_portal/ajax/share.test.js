@@ -1,6 +1,6 @@
-/* global QUnit */
-/* eslint global-strict: 0, strict: 0 */
-'use strict';
+/* eslint global-strict: 0, strict: 0, no-console: 0 */
+/* global QUnit, _ */
+"use strict";
 
 // Tests for tardis/tardis_portal/static/js/jquery/tardis_portal/ajax/share.js
 // which used to be embedded within
@@ -81,14 +81,14 @@ QUnit.test("Test clicking on Public Access button", function(assert) {
     $.mockjax({
         url: "/ajax/license/list?public_access=1",
         contentType: "text/json",
-        responseText: '[{' +
-            '"name": "Unspecified License", ' +
-            '"url": "http://en.wikipedia.org/wiki/Copyright#Exclusive_rights", ' +
-            '"is_active": true, ' +
-            '"allows_distribution": false, ' +
-            '"internal_description": "\n No license is explicitly specified. You implicitly retain all rights\n under copyright.\n ", ' +
-            '"image_url": "", "id": ""' +
-            '}]'
+        responseText: "[{" +
+            "\"name\": \"Unspecified License\", " +
+            "\"url\": \"http://en.wikipedia.org/wiki/Copyright#Exclusive_rights\", " +
+            "\"is_active\": true, " +
+            "\"allows_distribution\": false, " +
+            "\"internal_description\": \"\n No license is explicitly specified. You implicitly retain all rights\n under copyright.\n \", " +
+            "\"image_url\": \"\", \"id\": \"\"" +
+            "}]"
     });
 
     $.mockjax({
@@ -127,9 +127,9 @@ QUnit.test("Test clicking on Public Access button", function(assert) {
             throw exception;
         });
 
-    var modalPublicAccessBody = $('#qunit-fixture').find('#modal-public-access').find('.modal-body');
+    var modalPublicAccessBody = $("#qunit-fixture").find("#modal-public-access").find(".modal-body");
     assert.equal(modalPublicAccessBody.html(), "");
-    var publicAccessLink = $('#qunit-fixture').find('.public_access_link');
+    var publicAccessLink = $("#qunit-fixture").find(".public_access_link");
     publicAccessLink.click();
 
     // Below, we check if the panel's heading can be found within the
@@ -177,13 +177,13 @@ QUnit.test("Test clicking on Change User Sharing button", function(assert) {
     $.mockjax({
         url: "/ajax/user_list/",
         contentType: "test/json",
-        responseText: '[{' +
-            '"username": "testuser1", ' +
-            '"first_name": "Test", ' +
-            '"last_name": "User1", ' +
-            '"email": "testuser1@example.com", ' +
-            '"auth_methods": ["testuser1:localdb:Local DB"]' +
-            '}]'
+        responseText: "[{" +
+            "\"username\": \"testuser1\", " +
+            "\"first_name\": \"Test\", " +
+            "\"last_name\": \"User1\", " +
+            "\"email\": \"testuser1@example.com\", " +
+            "\"auth_methods\": [\"testuser1:localdb:Local DB\"]" +
+            "}]"
     });
 
     $.getScript("../tardis/tardis_portal/static/js/jquery/tardis_portal/view_experiment/init.js")
@@ -208,9 +208,9 @@ QUnit.test("Test clicking on Change User Sharing button", function(assert) {
             throw exception;
         });
 
-    var modalShareBody = $('#qunit-fixture').find('#modal-share').find('.modal-body');
+    var modalShareBody = $("#qunit-fixture").find("#modal-share").find(".modal-body");
     assert.equal(modalShareBody.html(), "");
-    var shareLink = $('#qunit-fixture').find('.share_link');
+    var shareLink = $("#qunit-fixture").find(".share_link");
     shareLink.click();
 
     // Below, we check if the panel's heading can be found within the
@@ -281,9 +281,9 @@ QUnit.test("Test clicking on Change Group Sharing button", function(assert) {
             throw exception;
         });
 
-    var modalShareGroupBody = $('#qunit-fixture').find('#modal-share-group').find('.modal-body');
+    var modalShareGroupBody = $("#qunit-fixture").find("#modal-share-group").find(".modal-body");
     assert.equal(modalShareGroupBody.html(), "");
-    var shareLinkGroup = $('#qunit-fixture').find('.share_link_group');
+    var shareLinkGroup = $("#qunit-fixture").find(".share_link_group");
     shareLinkGroup.click();
 
     // Below, we check if the panel's heading can be found within the
