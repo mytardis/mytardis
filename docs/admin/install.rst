@@ -11,7 +11,7 @@ capabilities of MyTardis.
 Prerequisites
 -------------
 
-Ubuntu 14.04
+Ubuntu 16.04
 ~~~~~~~~~~~~
 
 Run the script::
