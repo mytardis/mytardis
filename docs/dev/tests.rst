@@ -51,3 +51,20 @@ headless Chrome, download ChromeDriver from http://chromedriver.chromium.org/dow
 and make it available in your PATH (e.g. in /usr/local/bin/) and run::
 
     ./test.py behave
+
+
+Running QUnit tests
+-------------------
+
+The QUnit tests reside in the ``js_tests/`` directory.
+
+You can run the Qunit tests with::
+
+    npm install
+    npm test
+
+Or by running a web server::
+
+    python -m SimpleHTTPServer
+
+and opening http://127.0.0.1:8000/js_tests/tests.html in your browser.
