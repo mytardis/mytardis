@@ -1,6 +1,6 @@
 /* tardis/tardis_portal/static/js/jquery/tardis_portal/view_experiment/experiment_tabs.js */
 
-/* eslint global-strict: 0, strict: 0 */
+/* eslint global-strict: 0, strict: 0, object-shorthand: 0 */
 /* global _ */
 
 
@@ -25,7 +25,7 @@
 
         // Create and insert content pane (if not preloaded)
         var tabContents;
-        if ($("#" + getTabIdFromName(tabName)).size() == 0) {
+        if ($("#" + getTabIdFromName(tabName)).size() === 0) {
             tabContents = $("<div></div>")
                 .attr("id", getTabIdFromName(tabName))
                 .addClass("tab-pane");
@@ -70,7 +70,7 @@
         var tabHref = "#" + tabIdPrefix + _.ltrim(window.location.hash, "#");
         var selected = $("#experiment-tabs li a[href=\"" + tabHref + "\"]");
         // Show selected tab if we have one, otherwise show the first tab
-        if (selected.size() == 1) {
+        if (selected.size() === 1) {
             selected.tab("show");
         } else {
             $("#experiment-tabs li a:first").tab("show");
@@ -86,4 +86,4 @@
 
     // Handle back and forward buttons for tab locations
     $(window).bind("hashchange", showTabForWindowLocation);
-})();
+}());
