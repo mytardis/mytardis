@@ -10,7 +10,6 @@
 $(document).ready(function() {
 
     $('.create_group_link').live('click', function(evt) {
-        var experiment_id = $(this).attr('data-experiment_id');
         var modal = $('#modal-create-group');
 
         modal.find('.modal-body').html('');
@@ -143,7 +142,6 @@ $(document).ready(function() {
 
     // add user
     $('.create_user_link').live('click', function(evt) {
-        var experiment_id = $(this).attr('data-experiment_id');
         var modal = $('#modal-create-user');
 
         modal.find('.modal-body').html('');
