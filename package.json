@@ -20,7 +20,7 @@
     "jquery-mockjax": "^2.4.0",
     "minimatch": "^3.0.2",
     "qunit-fixture": "0.0.3",
-    "qunitjs": "^2.0.1"
+    "qunit": "^2.6.1"
   },
   "scripts": {
     "pretest": "eslint -c .eslintrc.jquery tardis/tardis_portal/static/js/jquery/tardis_portal/ js_tests/jquery/tardis_portal/",
