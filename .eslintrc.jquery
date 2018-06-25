@@ -1,4 +1,5 @@
 {
+    "extends": "eslint:recommended",
     "rules": {
         "camelcase": [0, {"properties": "always"}],
         "comma-spacing": [2, {"before": false, "after": true}],
@@ -16,7 +17,7 @@
         "no-unused-vars": [2, {"vars": "local", "args": "none"}],
         "no-script-url": [2],
         "no-shadow": [2, {"hoist": "functions"}],
-        "quotes": [0, "single"],
+        "quotes": [1, "double"],
         "linebreak-style": [2, "unix"],
         "semi": [2, "always"],
         "space-before-blocks": [2, "always"],
