@@ -1,4 +1,4 @@
-FROM ubuntu:14.04
+FROM ubuntu:16.04
 
 RUN mkdir -p /home/webapp
 RUN groupadd -r webapp && useradd -r -g webapp webapp
@@ -11,16 +11,11 @@ RUN apt-get update && apt-get install \
     -o APT::Install-Recommends=false \
     -o APT::Install-Suggests=false \
     git \
-    libfreetype6 \
-    libjpeg8 \
-    libldap-2.4-2 \
-    libmagickwand-dev \
-    libmysqlclient18 \
-    libpq5 \
-    libsasl2-2 \
-    libssl1.0.0 \
-    libxml2 \
-    libxslt1.1 \
+    libldap2-dev \
+    libsasl2-dev \
+    libssl-dev \
+    libxml2-dev \
+    libxslt1-dev \
     nodejs \
     npm \
     python-anyjson \
@@ -32,9 +27,9 @@ RUN apt-get update && apt-get install \
     python-pip \
     python-pystache \
     python-virtualenv \
-    python-wand \
-    python-yaml \
-    zlib1g \
+    virtualenvwrapper \
+    libmagic-dev \
+    libmagickwand-dev \
     && apt-get clean
 
 RUN mkdir /appenv
