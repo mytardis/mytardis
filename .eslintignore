@@ -1,0 +1,3 @@
+**/*.min.js
+node_modules/**.js
+tardis/tardis_portal/static/js/lib/**.js

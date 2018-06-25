@@ -1,4 +1,4 @@
-/* eslint global-strict: 0, strict: 0, no-console: 0 */
+/* eslint global-strict: 0, strict: 0, no-console: 0, object-shorthand: 0 */
 /* global QUnit, _ */
 "use strict";
 
