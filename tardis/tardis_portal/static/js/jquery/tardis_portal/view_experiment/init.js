@@ -77,6 +77,10 @@ $("#add_new_parameter").live("click", function() {
     }
 });
 
+var refreshMetadataDisplay = function(hash) {
+    $("#experiment-tab-metadata").trigger("experiment-change");
+};
+
 $("#add_metadata_form").live("submit", function(e) {
     e.preventDefault();
 
@@ -131,10 +135,6 @@ $("#edit_metadata_form").live("submit", function(e) {
     form.parents(".modal").find(".modal-footer").hide();
     return false;
 });
-
-var refreshMetadataDisplay = function(hash) {
-    $("#experiment-tab-metadata").trigger("experiment-change");
-};
 
 var loadModalRemoteBody = function(trigger, modal) {
     // Hide save buttons
