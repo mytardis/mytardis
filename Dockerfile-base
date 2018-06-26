@@ -30,6 +30,7 @@ RUN apt-get update && apt-get install \
     virtualenvwrapper \
     libmagic-dev \
     libmagickwand-dev \
+    libmysqlclient20 \
     && apt-get clean
 
 RUN mkdir /appenv
