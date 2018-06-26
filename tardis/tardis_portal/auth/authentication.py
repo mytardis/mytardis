@@ -16,6 +16,7 @@ from . import localdb_auth
 from ..forms import createLinkedUserAuthenticationForm
 from ..shortcuts import render_response_index
 
+from tardis.apps.openid_migration.models import OpenidUserMigration,OpenidACLMigration
 
 logger = logging.getLogger(__name__)
 
@@ -230,7 +231,11 @@ def merge_auth_method(request):
         # to request.user
         userIdToBeReplaced = user.id
         replacementUserId = request.user.id
-
+        # for logging migration event
+        user_migration_record = OpenidUserMigration(old_user=user, new_user=request.user,
+                                                    old_user_auth_method=authenticationMethod,
+                                                    new_user_auth_method='')
+        user_migration_record.save()
         # TODO: note that django_user here has been hardcoded. Uli's going
         # to change the implementation on his end so that I can just use a key
         # in here instead of a hardcoded string.
@@ -253,10 +258,18 @@ def merge_auth_method(request):
                 acl.canWrite = acl.canWrite or experimentACL.canWrite
                 acl.canDelete = acl.canDelete or acl.canDelete
                 acl.save()
+                #record acl migration event
+                acl_migration_record = OpenidACLMigration(user_migration=user_migration_record,
+                                                          acl_id=acl)
+                acl_migration_record.save()
                 experimentACL.delete()
             except ObjectACL.DoesNotExist:
                 experimentACL.entityId = replacementUserId
                 experimentACL.save()
+                #record acl migration event
+                acl_migration_record = OpenidACLMigration(user_migration=user_migration_record,
+                                                          acl_id=experimentACL)
+                acl_migration_record.save()
 
         # let's also change the group memberships of all the groups that 'user'
         # is a member of
@@ -267,6 +280,8 @@ def merge_auth_method(request):
         # we can now make user inactive
         user.is_active = False
         user.save()
+        user_migration_record.migration_status = True
+        user_migration_record.save()
 
     data = _setupJsonData(authForm, authenticationMethod, supportedAuthMethods)
     return _getJsonSuccessResponse(data)
