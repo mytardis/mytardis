@@ -1,25 +1,26 @@
 """
-Setting up BDD with Spliner/Selenium and Behave
+Setting up BDD with Selenium and Behave
 """
 
 from django.core import management
 from npm.finders import npm_install
-from splinter.browser import Browser
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
 
 
 def before_all(context):
 
     npm_install()
 
-    browser = context.config.userdata.get('browser', 'phantomjs')
-    context.browser = Browser(browser)
+    chrome_options = Options()
+    chrome_options.add_argument('--headless')
+    chrome_options.add_argument('--no-sandbox')
+    chrome_options.add_argument('--disable-dev-shm-usage')
 
-    # When we're running with PhantomJS we need to specify the window size.
-    # This is a workaround for an issue where PhantomJS cannot find elements
-    # by text - see: https://github.com/angular/protractor/issues/585
-    if context.browser.driver_name == 'PhantomJS':
-        context.browser.driver.set_window_size(1280, 1024)
-
+    context.browser = webdriver.Chrome(executable_path="/usr/local/bin/chromedriver", chrome_options=chrome_options)
+    context.browser.set_page_load_timeout(10)
+    context.browser.implicitly_wait(10)
+    context.browser.maximize_window()
 
 def before_scenario(context, scenario):
     # Reset the database before each scenario
