@@ -2,7 +2,7 @@ import json
 import requests
 
 from django.contrib.auth.decorators import login_required
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.http import HttpResponse, HttpResponseForbidden, \
     HttpResponseNotFound
 from django.shortcuts import redirect, render

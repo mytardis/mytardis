@@ -15,7 +15,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.exceptions import PermissionDenied, ImproperlyConfigured
 from django.core.paginator import Paginator, EmptyPage, InvalidPage
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.db import connection
 from django.db.models import Q
 from django.http import (HttpResponse,

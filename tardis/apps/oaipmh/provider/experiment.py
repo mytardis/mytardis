@@ -2,7 +2,7 @@ from abc import abstractmethod
 import datetime
 
 from django.conf import settings
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from lxml.etree import SubElement
 
 from oaipmh.common import Identify, Header, Metadata
