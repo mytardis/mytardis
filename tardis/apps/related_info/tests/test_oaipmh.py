@@ -4,7 +4,7 @@ from compare import expect
 
 from django.test import TransactionTestCase
 from django.test.client import Client
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 
 from lxml import etree
 

@@ -6,7 +6,7 @@ from compare import expect, ensure, matcher
 
 from django.test import TestCase
 from django.test.client import Client
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 
 from lxml import etree
 

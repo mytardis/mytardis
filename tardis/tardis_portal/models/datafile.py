@@ -11,7 +11,7 @@ from urllib import quote
 
 from django.conf import settings
 from django.core.files import File
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.db import models
 from django.db import transaction
 from django.db.models import Q, Sum
@@ -49,7 +49,7 @@ class DataFile(models.Model):
         digits
     """
 
-    dataset = models.ForeignKey(Dataset)
+    dataset = models.ForeignKey(Dataset, on_delete=models.CASCADE)
     filename = models.CharField(max_length=400)
     directory = models.CharField(blank=True, null=True, max_length=255)
     size = models.BigIntegerField(blank=True, null=True)
@@ -446,8 +446,10 @@ class DataFileObject(models.Model):
     holds one copy of the data for a datafile
     '''
 
-    datafile = models.ForeignKey(DataFile, related_name='file_objects')
-    storage_box = models.ForeignKey(StorageBox, related_name='file_objects')
+    datafile = models.ForeignKey(DataFile, related_name='file_objects',
+                                 on_delete=models.CASCADE)
+    storage_box = models.ForeignKey(StorageBox, related_name='file_objects',
+                                    on_delete=models.CASCADE)
     uri = models.TextField(blank=True, null=True)  # optional
     created_time = models.DateTimeField(auto_now_add=True)
     verified = models.BooleanField(default=False)

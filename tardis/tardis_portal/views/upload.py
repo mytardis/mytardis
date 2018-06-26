@@ -4,7 +4,7 @@ views for uploading files via HTTP
 
 import logging
 
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.http import HttpResponse
 from django.shortcuts import render_to_response
 
