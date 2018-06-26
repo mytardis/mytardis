@@ -2,7 +2,7 @@ import logging
 from os import path
 
 from django.conf import settings
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.db import models
 
 from tardis.tardis_portal.managers import OracleSafeManager
@@ -30,7 +30,8 @@ class Dataset(models.Model):
     description = models.TextField(blank=True)
     directory = models.CharField(blank=True, null=True, max_length=255)
     immutable = models.BooleanField(default=False)
-    instrument = models.ForeignKey(Instrument, null=True, blank=True)
+    instrument = models.ForeignKey(Instrument, null=True, blank=True,
+                                   on_delete=models.CASCADE)
     objects = OracleSafeManager()
 
     class Meta:
