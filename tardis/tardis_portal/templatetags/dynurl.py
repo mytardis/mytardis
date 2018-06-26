@@ -1,5 +1,5 @@
 from django.template import Library, Node, Variable
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 
 register = Library()
 

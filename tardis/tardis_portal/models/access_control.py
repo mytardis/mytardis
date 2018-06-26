@@ -19,7 +19,7 @@ class UserProfile(models.Model):
     :attribute user: a foreign key to the
        :class:`django.contrib.auth.models.User`
     """
-    user = models.OneToOneField(User)
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
 
     # This flag will tell us if the main User account was created using any
     # non localdb auth methods. For example, if a first time user authenticates
@@ -79,8 +79,8 @@ class GroupAdmin(models.Model):
        :class:`django.contrib.auth.models.Group`
     """
 
-    user = models.ForeignKey(User)
-    group = models.ForeignKey(Group)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    group = models.ForeignKey(Group, on_delete=models.CASCADE)
 
     class Meta:
         app_label = 'tardis_portal'
@@ -92,7 +92,7 @@ class GroupAdmin(models.Model):
 # TODO: Generalise auth methods
 class UserAuthentication(models.Model):
     CHOICES = ()
-    userProfile = models.ForeignKey(UserProfile)
+    userProfile = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
     username = models.CharField(max_length=50)
     authenticationMethod = models.CharField(max_length=30, choices=CHOICES)
 
@@ -172,7 +172,7 @@ class ObjectACL(models.Model):
     pluginId = models.CharField(null=False, blank=False, max_length=30)
     entityId = models.CharField(null=False, blank=False, max_length=320)
 #    experiment = models.ForeignKey('Experiment')
-    content_type = models.ForeignKey(ContentType)
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     object_id = models.PositiveIntegerField()
     content_object = GenericForeignKey('content_type', 'object_id')
     canRead = models.BooleanField(default=False)
