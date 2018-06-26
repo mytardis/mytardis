@@ -4,6 +4,7 @@ Releases
 4.0-prerelease
 --------------
 * Django 1.11
+* jQuery 3.3.1
 * Improved test coverage
 * Continuous Integration tests run against Ubuntu 16.04 (MyTardis v3.x used 14.04)
     TO DO: Switch to Ubuntu 18.04 before v4.0 is released.
