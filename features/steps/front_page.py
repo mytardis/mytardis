@@ -1,13 +1,13 @@
 from behave import *
 
 
-@given("an anoonymous user")
+@given("an anonymous user")
 def step_impl(context):
     """
     :type context: behave.runner.Context
     """
-    context.browser.visit(context.base_url)
-    assert context.browser.is_text_present('MyTardis')
+    context.browser.get(context.base_url)
+    assert 'MyTardis' in context.browser.page_source
 
 
 @when("they open the url")
