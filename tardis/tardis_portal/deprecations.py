@@ -4,6 +4,7 @@ Deprecation warnings
 import warnings
 
 warnings.simplefilter('always', category=DeprecationWarning)
+# warnings.simplefilter('always', category=PendingDeprecationWarning)
 
 
 class RemovedInMyTardis42Warning(PendingDeprecationWarning):
