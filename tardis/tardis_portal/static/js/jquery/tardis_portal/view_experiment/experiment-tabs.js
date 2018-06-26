@@ -50,9 +50,10 @@
             // Load content for the pane, based on the link HREF
             $.ajax({
                 url: url,
-                dataType: "html"
-            }).complete(function(jqXHR) {
-                tabPane.html(jqXHR.responseText);
+                dataType: "html",
+                success: function(data) {
+                    tabPane.html(data);
+                }
             });
         });
 
