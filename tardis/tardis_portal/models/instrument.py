@@ -7,7 +7,7 @@ class Instrument(models.Model):
     Represents an instrument belonging to a facility that produces data
     '''
     name = models.CharField(max_length=100)
-    facility = models.ForeignKey(Facility)
+    facility = models.ForeignKey(Facility, on_delete=models.CASCADE)
 
     class Meta:
         app_label = 'tardis_portal'

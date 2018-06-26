@@ -30,7 +30,8 @@ class StorageBox(models.Model):
     name = models.CharField(max_length=255, default='default', unique=True)
     description = models.TextField(default='Default Storage')
     master_box = models.ForeignKey('self', null=True, blank=True,
-                                   related_name='child_boxes')
+                                   related_name='child_boxes',
+                                   on_delete=models.CASCADE)
 
     # state values for different types of storage:
     DISK = 1
@@ -223,7 +224,8 @@ class StorageBoxOption(models.Model):
     TYPE_CHOICES = ((STRING, 'String value'),
                     (PICKLE, 'Pickled value'))
 
-    storage_box = models.ForeignKey(StorageBox, related_name='options')
+    storage_box = models.ForeignKey(StorageBox, related_name='options',
+                                    on_delete=models.CASCADE)
     key = models.TextField()
     value = models.TextField()
     value_type = models.CharField(max_length=6,
@@ -267,7 +269,8 @@ class StorageBoxAttribute(models.Model):
           cache       holds files for fast access
     '''
 
-    storage_box = models.ForeignKey(StorageBox, related_name='attributes')
+    storage_box = models.ForeignKey(StorageBox, related_name='attributes',
+                                    on_delete=models.CASCADE)
     key = models.TextField()
     value = models.TextField()
 
