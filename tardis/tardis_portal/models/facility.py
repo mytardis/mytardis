@@ -7,7 +7,7 @@ class Facility(models.Model):
     Represents a facility that produces data
     """
     name = models.CharField(max_length=100)
-    manager_group = models.ForeignKey(Group)
+    manager_group = models.ForeignKey(Group, on_delete=models.CASCADE)
 
     class Meta:
         app_label = 'tardis_portal'
