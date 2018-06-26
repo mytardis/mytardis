@@ -1,6 +1,15 @@
 Releases
 ========
 
+4.0-prerelease
+--------------
+* Django 1.11
+* Improved test coverage
+* Continuous Integration tests run against Ubuntu 16.04 (MyTardis v3.x used 14.04)
+    TO DO: Switch to Ubuntu 18.04 before v4.0 is released.
+* ChromeDriver is used for BDD (Behaviour Driven Development) tests
+
+
 3.9
 ---
 
