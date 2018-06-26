@@ -121,7 +121,7 @@ class AAFOpenId(BaseOAuth2):
     USER_INFO_URL = getattr(settings, 'SOCIAL_AUTH_AAF_USER_INFO_URL', None)
     REDIRECT_STATE = False
     ACCESS_TOKEN_METHOD = 'POST'
-    ACCESS_TOKEN_METHOD = 'POST'
+    ID_KEY = 'email'
 
     def get_user_details(self, response):
         """returns user details from AAF"""
