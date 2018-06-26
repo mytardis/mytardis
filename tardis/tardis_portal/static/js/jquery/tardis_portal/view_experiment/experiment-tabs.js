@@ -25,7 +25,7 @@
 
         // Create and insert content pane (if not preloaded)
         var tabContents;
-        if ($("#" + getTabIdFromName(tabName)).size() === 0) {
+        if ($("#" + getTabIdFromName(tabName)).length === 0) {
             tabContents = $("<div></div>")
                 .attr("id", getTabIdFromName(tabName))
                 .addClass("tab-pane");
@@ -50,9 +50,10 @@
             // Load content for the pane, based on the link HREF
             $.ajax({
                 url: url,
-                dataType: "html"
-            }).complete(function(jqXHR) {
-                tabPane.html(jqXHR.responseText);
+                dataType: "html",
+                success: function(data) {
+                    tabPane.html(data);
+                }
             });
         });
 
@@ -70,7 +71,7 @@
         var tabHref = "#" + tabIdPrefix + _.ltrim(window.location.hash, "#");
         var selected = $("#experiment-tabs li a[href=\"" + tabHref + "\"]");
         // Show selected tab if we have one, otherwise show the first tab
-        if (selected.size() === 1) {
+        if (selected.length === 1) {
             selected.tab("show");
         } else {
             $("#experiment-tabs li a:first").tab("show");

@@ -450,8 +450,7 @@ $(document).ready(function() {
     href = "/experiment/control_panel/" + $("#experiment-id").val() + "/access_list/tokens/";
     $targetToken.load(href);
 
-
-    $(".token_delete").live("click", function(evt) {
+    $(document).on("click", ".token_delete", function(evt) {
         var delRow = $(this).parents("tr");
         evt.preventDefault();
         $.post(this.href, { csrfmiddlewaretoken: $("#csrf-token").val()}, function()

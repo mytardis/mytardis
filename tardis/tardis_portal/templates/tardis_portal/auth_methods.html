@@ -278,9 +278,9 @@ var display_error = function(msg, elem) {
 };
 
 $("#link").click(link_account);
-$("#edit").live('click', edit_account);
-$(".edit_auth").live('click', edit_auth);
-$(".remove_auth").live('click', remove_auth);
+$(document).on('click', "#edit", edit_account);
+$(document).on('click', ".edit_auth", edit_auth);
+$(document).on('click', ".remove_auth", remove_auth);
 
 </script>
 {% endblock content %}
