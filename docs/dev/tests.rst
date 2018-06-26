@@ -46,11 +46,8 @@ command with --help flag to see the the full list of options::
 Running BDD tests
 -----------------
 
-To run BDD tests with the default settings and a headless browser, call::
+To run BDD (Behaviour Driven Development) tests with the default settings and
+headless Chrome, download ChromeDriver from http://chromedriver.chromium.org/downloads
+and make it available in your PATH (e.g. in /usr/local/bin/) and run::
 
     ./test.py behave
-
-To use another browser, e.g. Chrome, follow the steps to install "chromedriver"
-in http://splinter.readthedocs.io/en/latest/drivers/chrome.html and then call::
-
-    ./test.py behave -D browser=chrome
