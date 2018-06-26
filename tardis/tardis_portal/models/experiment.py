@@ -5,7 +5,7 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.fields import GenericRelation
 from django.contrib.contenttypes.models import ContentType
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.db import models
 from django.utils.safestring import SafeUnicode
 
@@ -62,7 +62,7 @@ class Experiment(models.Model):
     end_time = models.DateTimeField(null=True, blank=True)
     created_time = models.DateTimeField(auto_now_add=True)
     update_time = models.DateTimeField(auto_now=True)
-    created_by = models.ForeignKey(User)
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE)
     handle = models.TextField(null=True, blank=True)
     locked = models.BooleanField(default=False)
     public_access = \
@@ -70,7 +70,8 @@ class Experiment(models.Model):
                                          null=False,
                                          default=PUBLIC_ACCESS_NONE)
     license = models.ForeignKey(License,  # @ReservedAssignment
-                                blank=True, null=True)
+                                blank=True, null=True,
+                                on_delete=models.CASCADE)
     objectacls = GenericRelation(ObjectACL)
     objects = OracleSafeManager()
     safe = ExperimentManager()  # The acl-aware specific manager.
@@ -256,7 +257,7 @@ class Experiment(models.Model):
 
 class ExperimentAuthor(models.Model):
 
-    experiment = models.ForeignKey(Experiment)
+    experiment = models.ForeignKey(Experiment, on_delete=models.CASCADE)
     author = models.CharField(max_length=255)
     institution = models.CharField(max_length=255,
                                    blank=True, null=True)
