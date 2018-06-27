@@ -37,11 +37,11 @@ python -c "import os; from random import choice; key_line = '%sSECRET_KEY=\"%s\"
 
 python test.py
 # for empty databases, sync all and fake migrate, otherwise run a real migration
-python mytardis.py migrate
-python mytardis.py createcachetable default_cache
-python mytardis.py createcachetable celery_lock_cache
-python mytardis.py collectstatic
+python manage.py migrate
+python manage.py createcachetable default_cache
+python manage.py createcachetable celery_lock_cache
+python manage.py collectstatic
 
-python mytardis.py runserver
+python manage.py runserver
 # os x:
 open http://127.0.0.1:8000/
