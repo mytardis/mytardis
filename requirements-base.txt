@@ -1,5 +1,4 @@
 Django==1.11.13 # pyup: >=1.11,<2.0
-PyYAML==3.12
 Wand==0.4.4
 amqp==1.4.9 # pyup: <2
 anyjson==0.3.3
