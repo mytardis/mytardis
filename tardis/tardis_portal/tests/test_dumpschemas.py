@@ -22,7 +22,7 @@ class DumpSchemasTestCase(TestCase):
     def testDumpSchemas(self):
         '''
         Just test that we can run
-        ./mytardis.py dumpschemas
+        ./manage.py dumpschemas
         without any runtime exceptions
         '''
         schemas = json.loads(call_command('dumpschemas'))

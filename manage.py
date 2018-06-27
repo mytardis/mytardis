@@ -2,17 +2,9 @@
 from __future__ import print_function
 import os
 import sys
-import warnings
-
-from tardis.tardis_portal.deprecations import RemovedInMyTardis42Warning
 
 
 def run():
-    warnings.warn(
-       "mytardis.py will be removed in MyTardis 4.2. "
-        "Please use manage.py instead.",
-       RemovedInMyTardis42Warning
-    )
     custom_settings = 'tardis.settings'
     custom_settings_file = custom_settings.replace('.', '/') + '.py'
     demo_settings = 'tardis.settings_changeme'

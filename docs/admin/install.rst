@@ -131,7 +131,7 @@ Initialisation
 
 Create and configure the database::
 
-  python mytardis.py migrate
+  python manage.py migrate
 
 This avoids creating a superuser before the MyTardis specific ``UserProfile``
 table has been created. More information about the ``migrate``
@@ -139,11 +139,11 @@ commands can be found at :doc:`admin`.
 
 Next, create a superuser::
 
-  python mytardis.py createsuperuser
+  python manage.py createsuperuser
 
 MyTardis can now be executed in its simplest form using::
 
-  python mytardis.py runserver
+  python manage.py runserver
 
 This will start the Django web server at http://localhost:8000/.
 
@@ -170,7 +170,7 @@ These settings are essential if you want to run MyTardis in production mode
 
    A new one can be conveniently generated with the command::
 
-     echo "SECRET_KEY='`python mytardis.py generate_secret_key`'" >> tardis/settings.py
+     echo "SECRET_KEY='`python manage.py generate_secret_key`'" >> tardis/settings.py
 
 However, the more complex command shown above needs to be used at installation
 time.
@@ -269,7 +269,7 @@ assigning a licence, but they cannot allow public access to their data.
 
 Creative Commons licences (for Australia) are available in
 ``tardis/tardis_portal/fixtures/cc_licenses.json``. You can load them with
- ``python mytardis.py loaddata``.
+ ``python manage.py loaddata``.
 
 You can use the admin interface to add other licences. Please ensure
 ``allows_distribution`` is set to the correct value to ensure the licence
@@ -419,7 +419,7 @@ application, and instead serve them directly through the webserver.
 
 To collect all the static files to a single directory::
 
-  python mytardis.py collectstatic
+  python manage.py collectstatic
 
 
 .. attribute:: tardis.default_settings.STATIC_ROOT
@@ -534,7 +534,7 @@ permissions. The location is set in the ``settings.py`` file.
 .. code-block:: bash
 
    # Collect static files to ``settings.STATIC_ROOT``
-   python mytardis.py collectstatic
+   python manage.py collectstatic
    # Allow Nginx read permissions
    setfacl -R -m user:nginx:rx static_dir
 
