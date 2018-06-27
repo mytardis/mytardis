@@ -1,5 +1,4 @@
 Django==1.8.19 # pyup: >=1.8,<1.9
-PyYAML==3.12
 Wand==0.4.4
 amqp==1.4.9 # pyup: <2
 anyjson==0.3.3
