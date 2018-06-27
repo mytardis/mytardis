@@ -35,7 +35,7 @@
 
 {{ paginator_block }}
 
-<p id="filename-search" class="js-required" data-action="/ajax/datafile_list/{{dataset.id}}/" data-method="GET" style="padding: 5px 0 5px 10px; border: 1px solid #DDDDDD;">
+<p id="filename-search" class="js-required" data-action="/ajax/datafile_list/{{dataset.id}}/{% if show_dirs %}?dirs=y{% endif %}" data-method="GET" style="padding: 5px 0 5px 10px; border: 1px solid #DDDDDD;">
   <input id="filename-search-text" style="width: 95%; font-size: 120%; margin-top: 5px;"
       title='Enter part or all of a filename, then press enter. e.g. Enter "175" to show only files containing "175" in their filename.'
       placeholder='Search: Enter part or all of a filename, then press enter.'
@@ -44,6 +44,25 @@
       name="filename"
       onkeypress="javascript:filename_search_handler(event)"
       value="{{filename_search|default:''}}" />
+
+  <form id="matches-download" method="POST" action="{% url 'tardis.tardis_portal.download.streaming_download_datafiles' %}" target="_blank">{% csrf_token %}
+      {% if filename_search %}
+      <div class="row-fluid">
+	<span id="num_search_results">{{ num_search_results|default:'0' }}</span> match{% if not num_search_results or num_search_results != 1 %}es{% endif %}
+	{% if has_download_permissions and num_search_results > 0 %}
+	<div class="pull-right">
+	  <button type="submit" id="download_all_matches_btn" class="btn btn-mini download-selected">
+	    <i class="fa fa-download"></i>
+	    Download All Matches
+	  </button>
+	  <input type="hidden" name="datafileids" id="download_all_matches_ids"/>
+	  <input type="hidden" name="comptype" value="{{default_format}}"/>
+	  <input type="hidden" name="organization" value="{{default_organization}}"/>
+	</div>
+	{% endif %}
+      </div>
+      {% endif %}
+  </form>
 </p>
 
 <form id="datafile-download" method="POST" action="{% url 'tardis.tardis_portal.download.streaming_download_datafiles' %}" target="_blank">{% csrf_token %}
@@ -51,9 +70,13 @@
     <div class="clearfix"></div>
     <table class="datafiles table table-condensed">
         {% if has_download_permissions %}
-            <thead>
+        <thead>
             <tr id="datafile-selectors" class="js-required">
                 <td colspan="3">
+		    <div style="margin-bottom: 1ex;">
+		      Directories: <a id="toggle_dirs_btn" class="btn btn-mini">{% if show_dirs %}Hide{% else %}Show{% endif %}</a>
+		    </div>
+		    {% if has_download_permissions %}
                     Select: <a class="dataset_selector_all btn btn-mini">All</a> / <a class="dataset_selector_none btn btn-mini">None</a>
                     <div class="pull-right">
                         <button type="submit" class="btn btn-mini download-selected">
@@ -62,14 +85,16 @@
                         </button>
                         <input type="hidden" name="comptype" value="{{default_format}}"/>
                         <input type="hidden" name="organization" value="{{default_organization}}"/>
-                    </div></td>
-            </tr>
-            </thead>
+                    </div>
+		    {% endif %}
+		</td>
+	    </tr>
+        </thead>
         {% endif %}
         <tbody>
         {% for datafile in datafiles.object_list %}
             <tr class="datafile search_match_file">
-                <td>
+                <td style="width: 2.5ex;" >
                     {% if has_download_permissions and datafile.verified %}
                         <input type="checkbox" style="" class="datafile_checkbox" name="datafile" value="{{datafile.id}}" />
                     {% endif %}
@@ -79,12 +104,12 @@
                         <a class="filelink datafile_name"
                            href="{{ datafile.get_view_url }}"
                            title="View"
-                           target="_blank">{{ datafile.filename }}</a>
+                           target="_blank">{% if show_dirs %}{{ datafile.file_path }}{% else %}{{ datafile.filename }}{% endif %}</a>
                     {% else %}
                         {% if datafile.verified %}
-                            <span class="datafile_name{% if not datafile.is_online %} archived-file{% endif %}">{{ datafile.filename }}</span>
+                            <span class="datafile_name">{% if not datafile.is_online %} archived-file{% endif %}{% if show_dirs %}{{ datafile.file_path }}{% else %}{{ datafile.filename }}{% endif %}</span>
                         {% else %}
-                            <span class="datafile_name" style="color:red;">{{ datafile.filename }}</span>
+                            <span class="datafile_name" style="color:red;">{% if show_dirs %}{{ datafile.file_path }}{% else %}{{ datafile.filename }}{% endif %}</span>
                         {% endif %}
                     {% endif %}
                     {% if datafile.verified %}
