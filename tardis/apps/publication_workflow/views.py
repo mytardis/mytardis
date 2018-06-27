@@ -2,8 +2,6 @@
 import json
 import logging
 
-import dateutil.parser
-
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.urlresolvers import reverse
@@ -15,6 +13,8 @@ from django.conf import settings
 from django.contrib.auth.models import User, Group
 from django.core.mail import send_mail
 from django.utils import timezone
+
+import dateutil.parser
 
 from tardis.tardis_portal.auth import decorators as authz
 from tardis.tardis_portal.shortcuts import return_response_error
