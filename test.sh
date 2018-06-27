@@ -42,7 +42,7 @@ case "$TEST_TYPE" in
 	(( exit_status = exit_status || $? ))
     ;;
     behave)
-    python mytardis.py behave --settings=tardis.test_settings
+    python manage.py behave --settings=tardis.test_settings
 	(( exit_status = exit_status || $? ))
     ;;
     *)

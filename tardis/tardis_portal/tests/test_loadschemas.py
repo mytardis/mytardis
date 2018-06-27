@@ -9,7 +9,7 @@ class LoadSchemasTestCase(TestCase):
     def testLoadSchemas(self):
         '''
         Test that we can run
-        ./mytardis.py loadschemas tardis/tardis_portal/fixtures/jeol_metadata_schema.json
+        ./manage.py loadschemas tardis/tardis_portal/fixtures/jeol_metadata_schema.json
         '''
         self.assertEqual(Schema.objects.count(), 0)
         call_command(
