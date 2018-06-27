@@ -1,9 +1,10 @@
 import urllib
 
-from bs4 import BeautifulSoup
 from django.core.mail import EmailMultiAlternatives
 from django.conf import settings
 from django.contrib.auth.models import Group
+
+from bs4 import BeautifulSoup
 
 from tardis.tardis_portal.models import ExperimentAuthor
 

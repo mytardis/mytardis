@@ -1,11 +1,13 @@
 import logging
 import traceback
 
-from celery.task import task
 from django.conf import settings
 from django.core.cache import get_cache
 from django.db import transaction
 from django.utils import timezone
+
+from celery.task import task
+
 from tardis.tardis_portal.models import Schema, Experiment, \
     ExperimentParameter, ExperimentParameterSet, \
     ParameterName
