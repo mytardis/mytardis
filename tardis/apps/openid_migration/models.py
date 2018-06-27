@@ -8,9 +8,9 @@ from .apps import OpenidMigrationConfig
 
 
 class OpenidUserMigration(models.Model):
-    old_user = models.ForeignKey(User, null=True, related_name='old_user')
+    old_user = models.ForeignKey(User, null=True, related_name='old_user', on_delete=models.CASCADE)
     old_user_auth_method = models.CharField(null=False, blank=False, max_length=30)
-    new_user = models.ForeignKey(User, null=True, related_name='new_user')
+    new_user = models.ForeignKey(User, null=True, related_name='new_user', on_delete=models.CASCADE)
     new_user_auth_method = models.CharField(null=False, blank=False, max_length=30)
     migration_timestamp = models.DateTimeField(auto_now_add=True)
     migration_status = models.BooleanField(default=False)
@@ -20,7 +20,7 @@ class OpenidUserMigration(models.Model):
 
 
 class OpenidACLMigration(models.Model):
-    user_migration = models.ForeignKey(OpenidUserMigration)
+    user_migration = models.ForeignKey(OpenidUserMigration, on_delete=models.CASCADE)
     acl_id = models.ForeignKey(ObjectACL)
 
 
