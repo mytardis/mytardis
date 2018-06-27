@@ -7,7 +7,7 @@ class CreateUserTestCase(TestCase):
     def testNoInput(self):
         '''
         Just test that we can run
-        ./mytardis.py createuser --username testuser1 --email testuser1@example.com --noinput
+        ./manage.py createuser --username testuser1 --email testuser1@example.com --noinput
         without any runtime exceptions
         '''
         call_command('createuser', username='testuser1', email='testuser1@example.com', interactive=False)
@@ -15,7 +15,7 @@ class CreateUserTestCase(TestCase):
     def testInteractive(self):
         '''
         Just test that we can run
-        ./mytardis.py createuser
+        ./manage.py createuser
         without any runtime exceptions by mocking the raw_input username and
         email entry
         '''

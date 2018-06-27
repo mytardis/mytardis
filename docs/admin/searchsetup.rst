@@ -86,7 +86,7 @@ Haystack registers a number of management commands with the Django framework,
 the important one here being the *rebuild_index* command. To rebuild, navigate to
 your checkout and call the following command ::
 
-    python mytardis.py rebuild_index
+    python manage.py rebuild_index
 
 Haystack will then ask you to confirm your decision (Note: Rebuilding will
 destroy your existing indexes, and will take a while for large datasets, so
