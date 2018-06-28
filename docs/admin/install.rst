@@ -11,8 +11,8 @@ capabilities of MyTardis.
 Prerequisites
 -------------
 
-Ubuntu 16.04
-~~~~~~~~~~~~
+Ubuntu (18.04 LTS is recommended)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Run the script::
 
@@ -22,23 +22,6 @@ It will install required packages with this command:
 
 .. literalinclude:: ../../install-ubuntu-requirements.sh
    :language: bash
-
-Redhat/CentOS 7
-~~~~~~~~~~~~~~~
-
-Redhat based distributions are not actively supported. Here is a starting
-point, but you may require additional packages::
-
-  sudo yum install epel-release
-  sudo yum install cyrus-sasl-ldap cyrus-sasl-devel openldap-devel \
-  libxslt libxslt-devel libxslt-python git gcc graphviz-devel \
-  python-virtualenv python-virtualenvwrapper python-pip php-devel php-pear \
-  ImageMagick ImageMagick-devel libevent-devel compat-libevent14-devel
-
-
-Note that at least one of ``libevent-devel`` and ``compat-libevent14-devel``
-needs to be successfully installed as they are alternatives of the same package
-for different distributions.
 
 Download
 --------
@@ -63,13 +46,13 @@ It is recommended that you use a virtualenv. The list of packages above
 includes the ``virtualenvwrapper`` toolkit. Set up your environment with these
 commands::
 
-Ubuntu 14.04::
+Ubuntu 18.04::
+
+  source /etc/bash_completion.d/virtualenvwrapper
+
+For Ubuntu 16.04::
 
   source /usr/share/virtualenvwrapper/virtualenvwrapper.sh
-
-Redhat/CentOS 7::
-
-  source /usr/bin/virtualenvwrapper.sh
 
 Then create the ``mytardis`` virtual environment ::
 
@@ -82,10 +65,6 @@ Note: the next time you want to work with this virtualenv, run the appropriate
 MyTardis dependencies are then installed with pip::
 
   pip install -U -r requirements.txt
-
-For Redhat/CentOS 7, also run::
-
-  pip install -U -r requirements-centos.txt
 
 Javascript dependencies are then installed with npm::
 
@@ -118,7 +97,7 @@ This is important for security reasons.
 A convenient method is to run the following command in your mytardis
 installation location::
 
-  python -c "import os; from random import choice; key_line = '%sSECRET_KEY=\"%s\"  # generated from build.sh\n' % ('from tardis.default_settings import * \n\n' if not os.path.isfile('tardis/settings.py') else '', ''.join([choice('abcdefghijklmnopqrstuvwxyz0123456789\\!@#$%^&*(-_=+)') for i in range(50)])); f=open('tardis/settings.py', 'a+'); f.write(key_line); f.close()"
+  python -c "import os; from random import choice; key_line = '%sSECRET_KEY=\"%s\"  # generated from build.sh\n' % ('from tardis.default_settings import * \n\n' if not os.path.isfile('tardis/settings.py') else '', ''.join([choice('abcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*(-_=+)') for i in range(50)])); f=open('tardis/settings.py', 'a+'); f.write(key_line); f.close()"
 
 
 This is the minimum set of changes required to successfully run the
@@ -512,8 +491,6 @@ for your own needs and understand the settings before deploying it.::
           proxy_set_header Host $http_host;
           proxy_redirect off;
           proxy_pass http://mytardis;
-          # this is to solve centos 6 error:
-          # upstream prematurely closed
           client_max_body_size 4G;
           client_body_buffer_size 8192k;
           proxy_connect_timeout 2000;
