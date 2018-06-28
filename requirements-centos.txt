@@ -1,2 +1,0 @@
-pystache==0.5.4
-flexmock==0.10.2

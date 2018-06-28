@@ -3,7 +3,7 @@
 echo This is a guide only, please either edit or run appropriate commands manually
 exit
 
-# for Ubuntu 14.04
+# for Ubuntu 16.04 or 18.04
 # sudo bash install-ubuntu-requirements.sh
 # # optionally:
 # # sudo apt-get install memcached python-memcache
@@ -15,7 +15,9 @@ exit
 # brew install postgresql
 # or for a local development server, install http://postgresapp.com/
 
-# for Ubuntu 14.04
+# for Ubuntu 18.04:
+# source /etc/bash_completion.d/virtualenvwrapper
+# for Ubuntu 16.04:
 # source /usr/share/virtualenvwrapper/virtualenvwrapper.sh
 # for OS X
 # source /usr/local/bin/virtualenvwrapper.sh

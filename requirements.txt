@@ -6,5 +6,4 @@ python-ldap==2.4.27
 # apps go here
 
 # OS specific packages go here (as build.sh only defines ubuntu packages)
-# -r requirements-centos.txt
 # -r requirements-osx.txt
