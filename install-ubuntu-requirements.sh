@@ -1,3 +1,6 @@
+# for Ubuntu 16.04 or 18.04
+# sudo bash install-ubuntu-requirements.sh
+
 apt-get update
 apt-get install git ipython libldap2-dev libmagickwand-dev libsasl2-dev \
   libssl-dev libxml2-dev libxslt1-dev libmagic-dev nodejs npm \
