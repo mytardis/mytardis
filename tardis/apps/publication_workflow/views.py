@@ -136,8 +136,7 @@ def update_dataset_selection(request, form_state, publication):
     # Update associated datasets
     # (note: might not be efficient re: db queries)
     # ... first clear all current associations
-    current_datasets = Dataset.objects.filter(experiments=publication)
-    for current_dataset in current_datasets:
+    for current_dataset in Dataset.objects.filter(experiments=publication):
         current_dataset.experiments.remove(publication)
     # ... now (re)add all datasets
     selected_datasets = [ds['dataset']['id']
@@ -223,11 +222,17 @@ def submit_form(request, form_state, publication):
     acknowledgements_parameter_name = ParameterName.objects.get(
         schema=pub_details_schema,
         name='acknowledgements')
-    acknowledgements_param = ExperimentParameter.objects.get_or_create(
-        name=acknowledgements_parameter_name,
-        parameterset=pub_details_parameter_set)[0]
-    acknowledgements_param.string_value = form_state['acknowledgements']
-    acknowledgements_param.save()
+    try:
+        acknowledgements_param = ExperimentParameter.objects.get(
+            name=acknowledgements_parameter_name,
+            parameterset=pub_details_parameter_set)
+        acknowledgements_param.string_value = form_state['acknowledgements']
+        acknowledgements_param.save()
+    except ExperimentParameter.DoesNotExist:
+        ExperimentParameter.objects.create(
+            name=acknowledgements_parameter_name,
+            parameterset=pub_details_parameter_set,
+            string_value = form_state['acknowledgements'])
 
     # Set the release date
     set_embargo_release_date(
@@ -272,8 +277,12 @@ def map_form_to_schemas(extraInfo, publication):
                 try:  # Ignore field if parameter name (key) doesn't match
                     parameter_name = ParameterName.objects.get(
                         schema=schema, name=key)
-                    parameter = ExperimentParameter.objects.get_or_create(
-                        name=parameter_name, parameterset=parameter_set)[0]
+                    try:
+                        parameter = ExperimentParameter.objects.get(
+                            name=parameter_name, parameterset=parameter_set)
+                    except ExperimentParameter.DoesNotExist:
+                        parameter = ExperimentParameter.objects.create(
+                            name=parameter_name, parameterset=parameter_set)
                     if parameter_name.isNumeric():
                         parameter.numerical_value = float(value)
                         parameter.save()
