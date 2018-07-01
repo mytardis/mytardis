@@ -1,4 +1,4 @@
-#pylint: disable=C0302
+# pylint: disable=C0302
 import json
 import logging
 
@@ -136,7 +136,7 @@ def update_dataset_selection(request, form_state, publication):
     # Update associated datasets
     # (note: might not be efficient re: db queries)
     # ... first clear all current associations
-    for current_dataset in Dataset.objects.filter(experiments=publication):
+    for current_dataset in Dataset.objects.filter(experiments=publication):  # pylint: disable=not-an-iterable
         current_dataset.experiments.remove(publication)
     # ... now (re)add all datasets
     selected_datasets = [ds['dataset']['id']
@@ -232,7 +232,7 @@ def submit_form(request, form_state, publication):
         ExperimentParameter.objects.create(
             name=acknowledgements_parameter_name,
             parameterset=pub_details_parameter_set,
-            string_value = form_state['acknowledgements'])
+            string_value=form_state['acknowledgements'])
 
     # Set the release date
     set_embargo_release_date(
@@ -256,7 +256,7 @@ def submit_form(request, form_state, publication):
     remove_draft_status(publication)
 
     finalize_publication(request, publication, message=None,
-                        send_email=False)
+                         send_email=False)
     # finalize_publication will delete the form state, so don't
     # bother saving it and return.
     form_state['action'] = ''
