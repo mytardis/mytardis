@@ -1,5 +1,4 @@
 import logging
-import traceback
 
 from django.conf import settings
 from django.core.cache import get_cache
@@ -8,9 +7,7 @@ from django.utils import timezone
 
 from celery.task import task
 
-from tardis.tardis_portal.models import Schema, Experiment, \
-    ExperimentParameter, ExperimentParameterSet, \
-    ParameterName
+from tardis.tardis_portal.models import Experiment, ExperimentParameter
 from tardis.apps.publication_workflow.doi import DOI
 from tardis.apps.publication_workflow.utils import send_mail_to_authors
 from tardis.apps.publication_workflow.email_text import email_pub_released
