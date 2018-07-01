@@ -1,10 +1,6 @@
-import urllib
-
 from django.core.mail import EmailMultiAlternatives
 from django.conf import settings
 from django.contrib.auth.models import Group
-
-from bs4 import BeautifulSoup
 
 from tardis.tardis_portal.models import ExperimentAuthor
 
@@ -19,10 +15,6 @@ def get_pub_admin_email_addresses():
                          default_settings.PUBLICATION_OWNER_GROUP))
             .user_set.all()
         if user.email]
-
-
-def get_site_admin_email():
-    return getattr(settings, 'ADMINS', [('', '')])[0][1]
 
 
 def send_mail_to_authors(publication, subject, message, fail_silently=False):

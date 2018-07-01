@@ -10,8 +10,7 @@ from django.views.decorators.cache import never_cache
 from django.views.decorators.http import require_POST
 from django.http import HttpResponse, HttpResponseForbidden
 from django.conf import settings
-from django.contrib.auth.models import User, Group
-from django.core.mail import send_mail
+from django.contrib.auth.models import Group
 from django.utils import timezone
 
 import dateutil.parser
@@ -26,7 +25,7 @@ from tardis.tardis_portal.auth.localdb_auth import django_user, django_group
 
 from .doi import DOI
 from .models import Publication
-from .utils import send_mail_to_authors, get_pub_admin_email_addresses, get_site_admin_email
+from .utils import send_mail_to_authors
 from .email_text import email_pub_released, email_pub_rejected, email_pub_reverted_to_draft
 from . import tasks
 from . import default_settings
@@ -404,8 +403,8 @@ def create_draft_publication(user, publication_title, publication_description):
               entityId=str(
                   Group.objects.get_or_create(
                       name=getattr(
-                          settings, 'PUBLICATION_OWNER_GROUP',
-                          default_settings.PUBLICATION_OWNER_GROUP))[0].id),
+                          settings, 'PUBLICATION_ADMIN_GROUP',
+                          default_settings.PUBLICATION_ADMIN_GROUP))[0].id),
               canRead=True,
               canWrite=True,
               canDelete=True,
@@ -481,8 +480,8 @@ def require_publication_admin(f):
     def wrap(request, *args, **kwargs):
         if not request.user.groups.filter(
                 name=getattr(
-                    settings, 'PUBLICATION_OWNER_GROUP',
-                    default_settings.PUBLICATION_OWNER_GROUP)).exists():
+                    settings, 'PUBLICATION_ADMIN_GROUP',
+                    default_settings.PUBLICATION_ADMIN_GROUP)).exists():
             return return_response_error(request)
         return f(request, *args, **kwargs)
 
@@ -677,12 +676,17 @@ def retrieve_draft_pubs_list(request):
     draft_pubs_data = []
     draft_publications = Publication.safe.draft_publications(request.user)\
         .order_by('-update_time')
+    pub_root_schema = Schema.objects.get(
+        namespace=getattr(settings, 'PUBLICATION_SCHEMA_ROOT',
+                          default_settings.PUBLICATION_SCHEMA_ROOT))
+    form_state_pname = \
+        ParameterName.objects.get(name='form_state', schema=pub_root_schema)
+    pub_details_schema = Schema.objects.get(
+        namespace=getattr(settings, 'PUBLICATION_DETAILS_SCHEMA',
+                          default_settings.PUBLICATION_DETAILS_SCHEMA))
+    doi_pname = ParameterName.objects.get(name='doi', schema=pub_details_schema)
     for draft_pub in draft_publications:
         try:
-            schema = Schema.objects.get(
-                namespace='http://www.tardis.edu.au/schemas/publication/')
-            form_state_pname = \
-                ParameterName.objects.get(name='form_state', schema=schema)
             form_state_param = ExperimentParameter.objects.get(
                 parameterset__experiment=draft_pub, name=form_state_pname)
             form_state = json.loads(form_state_param.string_value)
@@ -690,9 +694,6 @@ def retrieve_draft_pubs_list(request):
                 dateutil.parser.parse(form_state['embargo']).strftime("%Y-%m-%d")
         except (ObjectDoesNotExist, KeyError):
             release_date = None
-        schema = Schema.objects.get(
-                namespace='http://www.tardis.edu.au/schemas/publication/details/')
-        doi_pname = ParameterName.objects.get(name='doi', schema=schema)
         doi_param = ExperimentParameter.objects.filter(
                 parameterset__experiment=draft_pub, name=doi_pname).first()
         doi = doi_param.string_value if doi_param else None
@@ -717,9 +718,10 @@ def retrieve_scheduled_pubs_list(request):
     scheduled_pubs_data = []
     scheduled_publications = Publication.safe.scheduled_publications(request.user)\
         .order_by('-update_time')
-    schema = Schema.objects.get(
-            namespace='http://www.tardis.edu.au/schemas/publication/details/')
-    doi_pname = ParameterName.objects.get(name='doi', schema=schema)
+    pub_details_schema = Schema.objects.get(
+        namespace=getattr(settings, 'PUBLICATION_DETAILS_SCHEMA',
+                          default_settings.PUBLICATION_DETAILS_SCHEMA))
+    doi_pname = ParameterName.objects.get(name='doi', schema=pub_details_schema)
     for scheduled_pub in scheduled_publications:
         doi_param = ExperimentParameter.objects.filter(
                 parameterset__experiment=scheduled_pub, name=doi_pname).first()
@@ -745,9 +747,10 @@ def retrieve_released_pubs_list(request):
     released_pubs_data = []
     released_publications = Publication.safe.released_publications(request.user)\
         .order_by('-update_time')
-    schema = Schema.objects.get(
-            namespace='http://www.tardis.edu.au/schemas/publication/details/')
-    doi_pname = ParameterName.objects.get(name='doi', schema=schema)
+    pub_details_schema = Schema.objects.get(
+        namespace=getattr(settings, 'PUBLICATION_DETAILS_SCHEMA',
+                          default_settings.PUBLICATION_DETAILS_SCHEMA))
+    doi_pname = ParameterName.objects.get(name='doi', schema=pub_details_schema)
     for released_pub in released_publications:
         doi_param = ExperimentParameter.objects.filter(
                 parameterset__experiment=released_pub, name=doi_pname).first()

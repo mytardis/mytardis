@@ -30,7 +30,7 @@ OAIPMH_PROVIDERS = [
 
 # PUBLICATION_OWNER_GROUP = 'publication-admin'
 
-# PUBLICATION_SCHEMA_ROOT = 'http://www.tardis.edu.au/schemas/publication/'
+# PUBLICATION_SCHEMA_ROOT = 'http://www.mytardis.org/schemas/publication/'
 
 # This schema holds bibliographic details including authors and
 # acknowledgements

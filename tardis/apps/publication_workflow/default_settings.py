@@ -2,9 +2,6 @@
 default settings for publication app
 override in main settings
 '''
-
-from datetime import timedelta
-
 PUBLICATION_INTRODUCTION = """
 <h2>MyTardis Publishing Form</h2>
 
@@ -34,8 +31,8 @@ For further enquiries, please contact:
 """
 
 PUBLICATION_NOTIFICATION_SENDER_EMAIL = 'emailsender@mytardisserver'
-PUBLICATION_OWNER_GROUP = 'publication-admin'
-PUBLICATION_SCHEMA_ROOT = 'http://www.tardis.edu.au/schemas/publication/'
+PUBLICATION_ADMIN_GROUP = 'publication-admin'
+PUBLICATION_SCHEMA_ROOT = 'http://www.mytardis.org/schemas/publication/'
 
 # This schema holds bibliographic details including authors and
 # acknowledgements
