@@ -11,8 +11,8 @@ class LoadSchemasTestCase(TestCase):
         Test that we can run
         ./manage.py loadschemas tardis/tardis_portal/fixtures/jeol_metadata_schema.json
         '''
-        self.assertEqual(Schema.objects.count(), 0)
+        schema_count = Schema.objects.count()
         call_command(
             'loadschemas',
             'tardis/tardis_portal/fixtures/jeol_metadata_schema.json')
-        self.assertEqual(Schema.objects.count(), 1)
+        self.assertEqual(Schema.objects.count(), schema_count + 1)
