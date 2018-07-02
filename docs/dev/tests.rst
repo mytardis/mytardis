@@ -58,9 +58,13 @@ Running QUnit tests
 
 The QUnit tests reside in the ``js_tests/`` directory.
 
-You can run the Qunit tests with::
+``package.json`` contains ``devDependencies`` required for running these tests.
 
-    npm install
+Running ``npm install`` will install everything you need, whereas
+``npm install --production`` will skip the ``devDependencies``.
+
+You can run the QUnit tests with::
+
     npm test
 
 Or by running a web server::
