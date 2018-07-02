@@ -14,5 +14,5 @@
 }
 
 .ngdialog.ngdialog-theme-default .ngdialog-content {
-    width: 800px; // Override default
+    width: 800px; /* Override default */
 }
