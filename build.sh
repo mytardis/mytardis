@@ -29,7 +29,11 @@ pip install -r requirements.txt
 # for OS X, but might also need some brew requirements.
 pip install -r requirements-osx.txt
 
-npm install
+# To install minimal Javascript dependencies for production:
+npm install --production
+
+# To install Javascript dependencies for production and for testing:
+npm install && npm test
 
 mkdir -p var/store
 

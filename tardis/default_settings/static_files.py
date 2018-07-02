@@ -34,3 +34,15 @@ STATICFILES_FINDERS = (
 )
 
 NPM_ROOT_PATH = path.abspath(path.join(path.dirname(__file__), '../..'))
+# If we have run "npm install", rather than "npm install --production",
+# we will get a lot of devDependencies installed in node_modules/ which
+# are only needed for development/testing (e.g. "npm test") and don't
+# need to be copied when running collectstatic.  NPM_FILE_PATTERNS
+# specifies the folders within node_modules/ which do need to be copied.
+NPM_FILE_PATTERNS = {
+    'angular': ['*'],
+    'angular-resource': ['*'],
+    'jquery': ['*'],
+    'jquery-migrate': ['*'],
+    'ng-dialog': ['*']
+}
