@@ -1,7 +1,7 @@
 from django.conf.urls import url
 
 from .views import (
-    index,
+    form_view,
     fetch_experiments_and_datasets,
     my_publications,
     retrieve_draft_pubs_list,
@@ -16,8 +16,8 @@ from .views import (
 )
 
 urlpatterns = [
-    url(r'^form/$', index,
-        name='tardis.apps.publication_workflow.views.index'),
+    url(r'^form/$', form_view,
+        name='tardis.apps.publication_workflow.views.form_view'),
     url(r'^data/fetch_experiments_and_datasets/$', fetch_experiments_and_datasets,
         name='tardis.apps.publication_workflow.views.fetch_experiments_and_datasets'),
     url(r'^my_publications/$', my_publications,

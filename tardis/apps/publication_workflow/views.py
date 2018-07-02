@@ -34,7 +34,7 @@ logger = logging.getLogger(__name__)
 
 
 @login_required
-def index(request):
+def form_view(request):
     if request.method == 'GET':
         context = {'introduction': getattr(
             settings, 'PUBLICATION_INTRODUCTION',
@@ -519,13 +519,14 @@ def finalize_publication(request, publication, message=None, send_email=True):
         publication.save()
 
         response = mint_doi_and_deactivate(request, publication.id)
-        response_dict = json.loads(response.content)
+        if response.status_code == 200:
+            response_dict = json.loads(response.content)
 
-        if send_email:
-            subject, email_message = email_pub_released(
-                publication.title, response_dict['url'], response_dict['doi'],
-                message)
-            send_mail_to_authors(publication, subject, email_message)
+            if send_email:
+                subject, email_message = email_pub_released(
+                    publication.title, response_dict['url'], response_dict['doi'],
+                    message)
+                send_mail_to_authors(publication, subject, email_message)
 
         # Trigger publication update
         tasks.update_publication_records.delay()
