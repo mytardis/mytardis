@@ -11,6 +11,7 @@ from paramiko import RSAKey, SSHClient, MissingHostKeyPolicy, \
     AutoAddPolicy, PKey, DSSKey, ECDSAKey
 from paramiko.config import SSH_PORT
 from paramiko.message import Message
+from paramiko.py3compat import encodebytes
 
 from .apps import PushToConfig
 from .exceptions import NoSuitableCredential
@@ -48,44 +49,6 @@ class KeyPair(models.Model):
             self.public_key = self.key.get_base64()
 
         super(KeyPair, self).save(*args, **kwargs)
-
-    @staticmethod
-    def _get_key_type_from_public_key(public_key):
-        public_key = StringIO(base64.b64decode(public_key))
-        length = int(public_key.read(4).encode('hex'), 16)
-        return public_key.read(length)
-
-    def __setattr__(self, attrname, val):
-        if attrname == 'public_key':
-            super(KeyPair, self).__setattr__(attrname,
-                                             self._validate_public_key(val))
-        else:
-            super(KeyPair, self).__setattr__(attrname, val)
-
-    def _validate_public_key(self, value):
-        """
-        This method is called when we attempt to assign a value to the
-        public_key field of the KeyPair model.  If we attempt to assign
-        a non-empty string, this method, checks if it has multiple
-        components, e.g. "ssh-rsa AAA...", and if so, saves the key type
-        e.g. "ssh-rsa" in self.key_type, and returns the public key string
-        e.g. "AAA...".  If we are attempting to assing an empty (None)
-        value, we just return that value.
-        """
-        if value:
-            # Check if the public key is in the id_rsa.pub format
-            pub_key_fields = value.split()
-            if len(pub_key_fields) >= 2:
-                public_key = pub_key_fields[1]
-            else:
-                public_key = value
-                # Extract the key type
-            self.key_type = KeyPair._get_key_type_from_public_key(public_key)
-            return public_key
-
-        # It's OK for an empty value (None) to be assigned to the public_key
-        # field whtn the model instance is initialized:
-        return value
 
     @property
     def key(self):
@@ -133,8 +96,12 @@ class KeyPair(models.Model):
         """
         if not isinstance(pkey, PKey):
             raise ValueError('invalid PKey object supplied')
-        self.key_type = pkey.get_name()
-        self.public_key = pkey.get_base64()
+        if pkey.public_blob is not None:
+            self.key_type = pkey.public_blob.key_type
+            self.public_key = encodebytes(pkey.public_blob.key_blob)
+        else:
+            self.key_type = pkey.get_name()
+            self.public_key = pkey.get_base64()
         self.private_key = None
         if pkey.can_sign():
             key_data = StringIO()
