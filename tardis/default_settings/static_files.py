@@ -33,7 +33,9 @@ STATICFILES_FINDERS = (
     'npm.finders.NpmFinder',
 )
 
+# django-npm settings:
 NPM_ROOT_PATH = path.abspath(path.join(path.dirname(__file__), '../..'))
+
 # If you have run "npm install", rather than "npm install --production",
 # you will get a lot of devDependencies installed in node_modules/ which
 # are only needed for development/testing (e.g. "npm test") and don't
@@ -46,3 +48,4 @@ NPM_FILE_PATTERNS = {
     'jquery-migrate': ['*'],
     'ng-dialog': ['*']
 }
+NPM_STATIC_FILES_PREFIX = path.join('js', 'lib')
