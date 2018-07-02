@@ -15,7 +15,7 @@ django-nose==1.4.5
 django-npm==1.0.0
 django-registration-redux==1.10
 # django-tastypie
--e git+https://github.com/grischa/django-tastypie.git@mytardis-dj1.7#egg=django-tastypie
+-e git+https://github.com/mytardis/django-tastypie.git@mytardis-dj1.7#egg=django-tastypie
 django-tastypie-swagger==0.1.4
 django-user-agents==0.3.2
 elasticsearch==5.0.1
@@ -35,7 +35,7 @@ pyoai==2.5.0
 pysolr==2.1.0 # pyup: >=2.1.0,<3
 python-dateutil==2.7.3
 # python-magic
--e git+https://github.com/grischa/python-magic.git#egg=python-magic
+-e git+https://github.com/mytardis/python-magic.git#egg=python-magic
 pytz==2018.5
 rdflib==4.2.2
 requests==2.19.1
