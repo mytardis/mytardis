@@ -40,8 +40,8 @@ def form_view(request):
             settings, 'PUBLICATION_INTRODUCTION',
             "<p><strong>... introduction and publication agreement "
             "...</strong></p>")}
-        return HttpResponse(render_response_index(
-            request, 'form.html', context=context))
+        return render_response_index(
+            request, 'form.html', context=context)
     return process_form(request)
 
 
@@ -674,7 +674,7 @@ def my_publications(request):
     Show drafts of public data collections, scheduled publications
     and published data.
     '''
-    return HttpResponse(render_response_index(request, 'my_publications.html'))
+    return render_response_index(request, 'my_publications.html')
 
 
 @never_cache
@@ -784,8 +784,8 @@ def tokens(request, experiment_id):
         'is_owner': request.user.has_perm(
             'tardis_acls.owns_experiment', exp),
     }
-    return HttpResponse(render_response_index(
-        request, 'tokens.html', context=context))
+    return render_response_index(
+        request, 'tokens.html', context=context)
 
 
 @never_cache
