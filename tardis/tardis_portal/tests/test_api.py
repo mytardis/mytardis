@@ -495,7 +495,7 @@ class ReplicaResourceTest(MyTardisResourceTestCase):
 class GroupResourceTest(MyTardisResourceTestCase):
 
     def test_get_group_by_id(self):
-        group_id = Group.objects.first().id
+        group_id = Group.objects.get(name='Test Group').id
         expected_output = {
             "id": group_id,
             "name": "Test Group",
@@ -508,7 +508,7 @@ class GroupResourceTest(MyTardisResourceTestCase):
             self.assertEqual(returned_data[key], value)
 
     def test_get_group_by_name(self):
-        group_id = Group.objects.first().id
+        group_id = Group.objects.get(name='Test Group').id
         expected_output = {
             "id": group_id,
             "name": "Test Group",
@@ -526,13 +526,13 @@ class FacilityResourceTest(MyTardisResourceTestCase):
 
     def test_get_facility_by_id(self):
         first_facility = Facility.objects.first().id
-        first_group = Group.objects.first().id
+        test_group_id = Group.objects.get(name='Test Group').id
         expected_output = {
             "id": first_facility,
             "manager_group": {
-                "id": first_group,
+                "id": test_group_id,
                 "name": "Test Group",
-                "resource_uri": "/api/v1/group/%d/" % first_group
+                "resource_uri": "/api/v1/group/%d/" % test_group_id
             },
             "name": "Test Facility",
             "resource_uri": "/api/v1/facility/%d/" % first_facility
@@ -546,13 +546,13 @@ class FacilityResourceTest(MyTardisResourceTestCase):
 
     def test_get_facility_by_name(self):
         first_facility = Facility.objects.first().id
-        first_group = Group.objects.first().id
+        test_group_id = Group.objects.get(name='Test Group').id
         expected_output = {
             "id": first_facility,
             "manager_group": {
-                "id": first_group,
+                "id": test_group_id,
                 "name": "Test Group",
-                "resource_uri": "/api/v1/group/%d/" % first_group
+                "resource_uri": "/api/v1/group/%d/" % test_group_id
             },
             "name": "Test Facility",
             "resource_uri": "/api/v1/facility/%d/" % first_facility
@@ -576,7 +576,7 @@ class FacilityResourceTest(MyTardisResourceTestCase):
         via the API
         """
         facility_id = Facility.objects.first().id
-        group_id = Group.objects.first().id
+        group_id = Group.objects.get(name='Test Group').id
         expected_output = {
             "manager_group": {
                 "id": group_id,
@@ -602,7 +602,7 @@ class InstrumentResourceTest(MyTardisResourceTestCase):
 
     def test_get_instrument_by_id(self):
         facility_id = Facility.objects.first().id
-        group_id = Group.objects.first().id
+        group_id = Group.objects.get(name='Test Group').id
         instrument_id = Instrument.objects.first().id
         expected_output = {
             "facility": {
@@ -629,7 +629,7 @@ class InstrumentResourceTest(MyTardisResourceTestCase):
 
     def test_get_instrument_by_name(self):
         facility_id = Facility.objects.first().id
-        group_id = Group.objects.first().id
+        group_id = Group.objects.get(name='Test Group').id
         instrument_id = Instrument.objects.first().id
         expected_output = {
             "facility": {

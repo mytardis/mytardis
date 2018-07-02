@@ -23,7 +23,7 @@ INSTALLED_APPS = (
     'tardis.search',
     'tardis.analytics',
     # these optional apps, may require extra settings
-    # 'tardis.apps.publication_forms',
+    # 'tardis.apps.publication_workflow',
     'tardis.apps.oaipmh',
     # 'tardis.apps.push_to',
 )
