@@ -66,9 +66,13 @@ MyTardis dependencies are then installed with pip::
 
   pip install -U -r requirements.txt
 
-Javascript dependencies are then installed with npm::
+To install minimal Javascript dependencies for production::
 
-  npm install
+  npm install --production
+
+To install Javascript dependencies for production and for testing::
+
+  npm install && npm test
 
 Configuring MyTardis is done through a standard Django *settings.py*
 file. MyTardis comes with a sample configuration file at
