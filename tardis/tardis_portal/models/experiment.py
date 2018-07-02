@@ -53,7 +53,7 @@ class Experiment(models.Model):
         (PUBLIC_ACCESS_FULL, 'Public'),
     )
 
-    PUBLICATION_SCHEMA_ROOT = 'http://www.tardis.edu.au/schemas/publication/'
+    PUBLICATION_SCHEMA_ROOT = 'http://www.mytardis.org/schemas/publication/'
     PUBLICATION_DETAILS_SCHEMA = PUBLICATION_SCHEMA_ROOT + 'details/'
     PUBLICATION_DRAFT_SCHEMA = PUBLICATION_SCHEMA_ROOT + 'draft/'
 
