@@ -1,7 +1,7 @@
 import logging
 
 from django.conf import settings
-from django.core.cache import get_cache
+from django.core.cache import caches
 from django.db import transaction
 from django.utils import timezone
 
@@ -22,7 +22,7 @@ LOCK_EXPIRE = 60 * 5  # Lock expires in 5 minutes
     name="apps.publication_workflow.update_publication_records",
     ignore_result=True)
 def update_publication_records():
-    cache = get_cache('celery-locks')
+    cache = caches['celery-locks']
 
     # Locking functions to ensure only one worker operates
     # on publication records at a time.
