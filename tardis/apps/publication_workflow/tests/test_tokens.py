@@ -15,8 +15,8 @@ from tardis.tardis_portal.views.authorisation import (
     create_token,
     token_delete)
 
+from ..models import Publication
 from ..views import (
-    create_draft_publication,
     retrieve_access_list_tokens_json,
     tokens)
 
@@ -28,7 +28,7 @@ class PublicationTokensTestCase(TestCase):
         email = ''
         self.user = User.objects.create_user(username, email, pwd)
 
-        self.draft_pub1 = create_draft_publication(
+        self.draft_pub1 = Publication.safe.create_draft_publication(
             self.user,
             'Test Publication Draft1',
             'Publication draft description1')

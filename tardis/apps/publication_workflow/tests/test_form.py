@@ -18,7 +18,6 @@ from tardis.tardis_portal.models.parameters import Schema
 
 from .. import default_settings
 from ..models import Publication
-from ..views import create_draft_publication
 from ..views import fetch_experiments_and_datasets
 from ..views import form_view
 
@@ -72,7 +71,7 @@ class PublicationFormTestCase(TestCase):
         '''
         Test creating draft publication
         '''
-        self.draft_pub = create_draft_publication(
+        self.draft_pub = Publication.safe.create_draft_publication(
             self.user,
             'Test Publication',
             'Publication description')
@@ -82,7 +81,7 @@ class PublicationFormTestCase(TestCase):
         '''
         Test resuming draft publication
         '''
-        self.draft_pub = create_draft_publication(
+        self.draft_pub = Publication.safe.create_draft_publication(
             self.user,
             'Test Publication',
             'Publication description')
@@ -130,7 +129,7 @@ class PublicationFormTestCase(TestCase):
         '''
         Test updating dataset selection in publication form
         '''
-        self.draft_pub = create_draft_publication(
+        self.draft_pub = Publication.safe.create_draft_publication(
             self.user,
             'Test Publication',
             'Publication description')
@@ -189,7 +188,7 @@ class PublicationFormTestCase(TestCase):
         '''
         Test updating extra info in publication form
         '''
-        self.draft_pub = create_draft_publication(
+        self.draft_pub = Publication.safe.create_draft_publication(
             self.user,
             'Test Publication',
             'Publication description')
@@ -253,7 +252,7 @@ class PublicationFormTestCase(TestCase):
         '''
         Test submitting publication form
         '''
-        self.draft_pub = create_draft_publication(
+        self.draft_pub = Publication.safe.create_draft_publication(
             self.user,
             'Test Publication',
             'Publication description')
