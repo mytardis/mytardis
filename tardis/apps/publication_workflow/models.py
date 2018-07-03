@@ -148,7 +148,7 @@ class Publication(Experiment):
         try:
             # Check that the publication is currently finalised but not released
             if self.is_publication_draft() and self.is_publication() \
-                    and self.public_access == Experiment.PUBLIC_ACCESS_NONE:
+                    and self.public_access == Experiment.PUBLIC_ACCESS_NONE:  # pylint: disable=E0203
                 return False
 
             # Check that form_state exists (raises an exception if not)
