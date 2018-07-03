@@ -7,8 +7,6 @@ from django.contrib.auth.models import User
 from django.test import RequestFactory
 from django.test import TestCase
 
-from tardis.tardis_portal.models.experiment import Experiment
-
 from ..views import create_draft_publication
 from ..views import retrieve_draft_pubs_list
 from ..views import retrieve_scheduled_pubs_list
