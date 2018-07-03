@@ -6,13 +6,13 @@ import json
 from datetime import timedelta
 from datetime import datetime
 
-import dateutil.parser
-import pytz
-
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.test import RequestFactory
 from django.test import TestCase
+
+import dateutil.parser
+import pytz
 
 from tardis.tardis_portal.models.experiment import Experiment
 from tardis.tardis_portal.models.access_control import ObjectACL
