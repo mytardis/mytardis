@@ -18,8 +18,9 @@ from tardis.tardis_portal.models.parameters import Schema
 
 from .. import default_settings
 from ..models import Publication
-from ..views import form_view
 from ..views import create_draft_publication
+from ..views import fetch_experiments_and_datasets
+from ..views import form_view
 
 
 class PublicationFormTestCase(TestCase):
@@ -326,3 +327,31 @@ class PublicationFormTestCase(TestCase):
         response = form_view(request)
         self.assertEqual(response.status_code, 200)
         # Add more assertions here...
+
+    def test_fetch_experiments_and_datasets(self):
+        '''
+        Test fetching experiments and datasets for publication form
+        '''
+        factory = RequestFactory()
+        request = factory.get('/apps/publication-workflow/data/fetch_experiments_and_datasets/')
+        request.user = self.user
+        response = fetch_experiments_and_datasets(request)
+        self.assertEqual(response.status_code, 200)
+        expected = [
+            {
+                "id": 1,
+                "title": "test exp1",
+                "institution_name": "monash",
+                "description": "",
+                "datasets": [
+                    {
+                        "id": 1,
+                        "description": "test dataset1",
+                        "directory": None
+                    }
+                ]
+            }
+        ]
+        self.assertEqual(
+            json.loads(response.content),
+            expected)
