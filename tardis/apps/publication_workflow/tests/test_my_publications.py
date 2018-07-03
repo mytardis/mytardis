@@ -43,14 +43,14 @@ class MyPublicationsTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         expected = [
             {
-                "id": 1,
-                "title": "Test Publication Draft1",
+                "id": self.draft_pub1.id,
+                "title": self.draft_pub1.title,
                 "release_date": None,
                 "doi": None
             },
 	    {
-                "id": 2,
-                "title": "Test Publication Draft2",
+                "id": self.draft_pub2.id,
+                "title": self.draft_pub2.title,
                 "release_date": None,
                 "doi": None
             }
