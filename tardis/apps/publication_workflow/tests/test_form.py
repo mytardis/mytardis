@@ -46,10 +46,10 @@ class PublicationFormTestCase(TestCase):
         )
         self.acl.save()
 
-        self.dataset = Dataset(description='test dataset1')
-        self.dataset.save()
-        self.dataset.experiments.set([self.test_exp1])
-        self.dataset.save()
+        self.test_dataset1 = Dataset(description='test dataset1')
+        self.test_dataset1.save()
+        self.test_dataset1.experiments.set([self.test_exp1])
+        self.test_dataset1.save()
 
 
     def test_open_blank_publication_form(self):
@@ -156,8 +156,8 @@ class PublicationFormTestCase(TestCase):
                     "experiment_id": self.test_exp1.id,
                     "dataset": {
                         "directory": None,
-                        "id": self.dataset.id,
-                        "description": self.dataset.description
+                        "id": self.test_dataset1.id,
+                        "description": self.test_dataset1.description
                     }
                 }
             ]
@@ -221,8 +221,8 @@ class PublicationFormTestCase(TestCase):
                     "experiment_id": self.test_exp1.id,
                     "dataset": {
                         "directory": None,
-                        "id": self.dataset.id,
-                        "description": self.dataset.description
+                        "id": self.test_dataset1.id,
+                        "description": self.test_dataset1.description
                     }
                 }
             ]
@@ -285,8 +285,8 @@ class PublicationFormTestCase(TestCase):
                     "experiment_id": self.test_exp1.id,
                     "dataset": {
                         "directory": None,
-                        "id": self.dataset.id,
-                        "description": self.dataset.description
+                        "id": self.test_dataset1.id,
+                        "description": self.test_dataset1.description
                     }
                 }
             ],
@@ -339,14 +339,14 @@ class PublicationFormTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         expected = [
             {
-                "id": 1,
-                "title": "test exp1",
-                "institution_name": "monash",
+                "id": self.test_exp1.id,
+                "title": self.test_exp1.title,
+                "institution_name": self.test_exp1.institution_name,
                 "description": "",
                 "datasets": [
                     {
-                        "id": 1,
-                        "description": "test dataset1",
+                        "id": self.test_dataset1.id,
+                        "description": self.test_dataset1.description,
                         "directory": None
                     }
                 ]
