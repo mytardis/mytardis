@@ -699,9 +699,12 @@ def retrieve_draft_pubs_list(request):
         try:
             form_state_param = ExperimentParameter.objects.get(
                 parameterset__experiment=draft_pub, name=form_state_pname)
-            form_state = json.loads(form_state_param.string_value)
-            release_date = \
-                dateutil.parser.parse(form_state['embargo']).strftime("%Y-%m-%d")
+            if form_state_param.string_value:
+                form_state = json.loads(form_state_param.string_value)
+                release_date = \
+                    dateutil.parser.parse(form_state['embargo']).strftime("%Y-%m-%d")
+            else:
+                release_date = None
         except (ObjectDoesNotExist, KeyError):
             release_date = None
         doi_param = ExperimentParameter.objects.filter(
