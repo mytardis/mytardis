@@ -28,7 +28,7 @@ OAIPMH_PROVIDERS = [
 # Publication form settings #
 # PUBLICATION_NOTIFICATION_SENDER_EMAIL = 'emailsender@mytardisserver'
 
-# PUBLICATION_OWNER_GROUP = 'publication-admin'
+# PUBLICATION_ADMIN_GROUP = 'publication-admin'
 
 # PUBLICATION_SCHEMA_ROOT = 'http://www.mytardis.org/schemas/publication/'
 

@@ -11,8 +11,8 @@ def get_pub_admin_email_addresses():
     return [
         user.email
         for user in Group.objects.get(
-            name=getattr(settings, 'PUBLICATION_OWNER_GROUP',
-                         default_settings.PUBLICATION_OWNER_GROUP))
+            name=getattr(settings, 'PUBLICATION_ADMIN_GROUP',
+                         default_settings.PUBLICATION_ADMIN_GROUP))
             .user_set.all()
         if user.email]
 
