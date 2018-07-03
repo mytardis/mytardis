@@ -110,3 +110,73 @@ class PublicationManager(ExperimentManager):
             [exp_pset.experiment.id for exp_pset in exp_psets
              if exp_pset.experiment.public_access == Experiment.PUBLIC_ACCESS_FULL]
         return exps.filter(id__in=released_pub_exp_ids).distinct()
+
+    def create_draft_publication(self, user, publication_title, publication_description):
+        """
+        Create a new draft publication
+        """
+        from django.contrib.auth.models import Group
+
+        from tardis.tardis_portal.models.access_control import ObjectACL
+        from tardis.tardis_portal.models.parameters import Schema
+        from tardis.tardis_portal.models.parameters import ExperimentParameterSet
+        from tardis.tardis_portal.models.parameters import ExperimentParameter
+        from tardis.tardis_portal.models.parameters import ParameterName
+        from tardis.tardis_portal.auth.localdb_auth import django_user
+        from tardis.tardis_portal.auth.localdb_auth import django_group
+
+        from .models import Publication
+        from . import default_settings
+
+        publication = Publication(created_by=user,
+                                  title=publication_title,
+                                  description=publication_description)
+        publication.save()
+
+        ObjectACL(content_object=publication,
+                  pluginId=django_user,
+                  entityId=str(user.id),
+                  canRead=True,
+                  canWrite=False,
+                  canDelete=False,
+                  isOwner=True,
+                  aclOwnershipType=ObjectACL.OWNER_OWNED).save()
+
+        ObjectACL(content_object=publication,
+                  pluginId=django_group,
+                  entityId=str(
+                      Group.objects.get_or_create(
+                          name=getattr(
+                              settings, 'PUBLICATION_ADMIN_GROUP',
+                              default_settings.PUBLICATION_ADMIN_GROUP))[0].id),
+                  canRead=True,
+                  canWrite=True,
+                  canDelete=True,
+                  isOwner=True,
+                  aclOwnershipType=ObjectACL.OWNER_OWNED).save()
+
+        publication_schema = Schema.objects.get(
+            namespace=getattr(settings, 'PUBLICATION_SCHEMA_ROOT',
+                              default_settings.PUBLICATION_SCHEMA_ROOT))
+
+        # Attach draft schema
+        draft_publication_schema = Schema.objects.get(
+            namespace=getattr(settings, 'PUBLICATION_DRAFT_SCHEMA',
+                              default_settings.PUBLICATION_DRAFT_SCHEMA))
+        ExperimentParameterSet(schema=draft_publication_schema,
+                               experiment=publication).save()
+
+        # Attach root schema and blank form_state parameter
+        publication_root_schema = Schema.objects.get(
+            namespace=getattr(settings, 'PUBLICATION_SCHEMA_ROOT',
+                              default_settings.PUBLICATION_SCHEMA_ROOT))
+        publication_root_parameter_set = ExperimentParameterSet(
+            schema=publication_schema,
+            experiment=publication)
+        publication_root_parameter_set.save()
+        form_state_param_name = ParameterName.objects.get(
+            schema=publication_root_schema, name='form_state')
+        ExperimentParameter(name=form_state_param_name,
+                            parameterset=publication_root_parameter_set).save()
+
+        return publication
