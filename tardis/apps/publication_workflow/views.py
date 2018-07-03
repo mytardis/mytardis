@@ -26,7 +26,7 @@ from tardis.tardis_portal.auth.localdb_auth import django_user, django_group
 from .doi import DOI
 from .models import Publication
 from .utils import send_mail_to_authors
-from .email_text import email_pub_released, email_pub_rejected, email_pub_reverted_to_draft
+from .email_text import email_pub_released
 from . import tasks
 from . import default_settings
 
@@ -67,7 +67,7 @@ def process_form(request):
     if 'publicationId' not in form_state:
         if not form_state['publicationTitle'].strip():
             return validation_error()
-        publication = create_draft_publication(
+        publication = Publication.safe.create_draft_publication(
             request.user, form_state['publicationTitle'],
             form_state['publicationDescription'])
         form_state['publicationId'] = publication.id
@@ -80,12 +80,7 @@ def process_form(request):
             return HttpResponseForbidden()
 
     # Get the form state database object
-    form_state_parameter = ExperimentParameter.objects.get(
-        name__name='form_state',
-        name__schema__namespace=getattr(
-            settings, 'PUBLICATION_SCHEMA_ROOT',
-            default_settings.PUBLICATION_SCHEMA_ROOT),
-        parameterset__experiment=publication)
+    form_state_parameter = publication.get_form_state_parameter()
 
     # Check if the form state needs to be loaded (i.e. a publication draft
     # is resumed)
@@ -212,34 +207,19 @@ def submit_form(request, form_state, publication):
     publication.institution_name = institutions
 
     # Attach the publication details schema
-    pub_details_schema = Schema.objects.get(
-        namespace=getattr(settings, 'PUBLICATION_DETAILS_SCHEMA',
-                          default_settings.PUBLICATION_DETAILS_SCHEMA))
-    pub_details_parameter_set = ExperimentParameterSet.objects.get_or_create(
-        schema=pub_details_schema, experiment=publication)[0]
+    pub_details_parameter_set = publication.add_details_schema_pset()
 
     # Add the acknowledgements
-    acknowledgements_parameter_name = ParameterName.objects.get(
-        schema=pub_details_schema,
-        name='acknowledgements')
-    try:
-        acknowledgements_param = ExperimentParameter.objects.get(
-            name=acknowledgements_parameter_name,
-            parameterset=pub_details_parameter_set)
-        acknowledgements_param.string_value = form_state['acknowledgements']
-        acknowledgements_param.save()
-    except ExperimentParameter.DoesNotExist:
-        ExperimentParameter.objects.create(
-            name=acknowledgements_parameter_name,
-            parameterset=pub_details_parameter_set,
-            string_value=form_state['acknowledgements'])
+    publication.add_acknowledgements(form_state['acknowledgements'])
+
+    # Add a parameter set with the publication root schema:
+    # add_publication_root_schema_pset(publication)
+    publication.add_root_schema_pset()
 
     # Set the release date
-    set_embargo_release_date(
-        publication,
+    publication.set_embargo_release_date(
         dateutil.parser.parse(
-            form_state[
-                'embargo']))
+            form_state['embargo']))
 
     # Set the license
     try:
@@ -253,12 +233,10 @@ def submit_form(request, form_state, publication):
     publication.save()
 
     # Remove the draft status
-    remove_draft_status(publication)
+    publication.remove_draft_status()
 
     finalize_publication(request, publication, message=None,
                          send_email=False)
-    # finalize_publication will delete the form state, so don't
-    # bother saving it and return.
     form_state['action'] = ''
     return HttpResponse(json.dumps(form_state),
                         content_type="application/json")
@@ -317,14 +295,6 @@ def get_licenses():
     return licenses_json
 
 
-def remove_draft_status(publication):
-    ExperimentParameterSet.objects.get(
-        schema__namespace=getattr(
-            settings, 'PUBLICATION_DRAFT_SCHEMA',
-            default_settings.PUBLICATION_DRAFT_SCHEMA),
-        experiment=publication).delete()
-
-
 def set_publication_authors(author_list, publication):
     # Clear all current authors
     ExperimentAuthor.objects.filter(experiment=publication).delete()
@@ -338,22 +308,6 @@ def set_publication_authors(author_list, publication):
                          url='',
                          order=authorOrder).save()
         authorOrder += 1
-
-
-def set_embargo_release_date(publication, release_date):
-    pub_schema_root = Schema.objects.get(
-        namespace=getattr(settings, 'PUBLICATION_SCHEMA_ROOT',
-                          default_settings.PUBLICATION_SCHEMA_ROOT))
-    pub_schema_root_parameter_set = ExperimentParameterSet(
-        schema=pub_schema_root,
-        experiment=publication)
-    pub_schema_root_parameter_set.save()
-    embargo_parameter_name = ParameterName.objects.get(
-        schema=pub_schema_root,
-        name='embargo')
-    ExperimentParameter(name=embargo_parameter_name,
-                        parameterset=pub_schema_root_parameter_set,
-                        datetime_value=release_date).save()
 
 
 def select_forms(datasets):
@@ -390,72 +344,15 @@ def select_forms(datasets):
     return forms
 
 
-def create_draft_publication(user, publication_title, publication_description):
-    # Note: Maybe this logic can be taken from the tardis_portal/views.py?
-
-    experiment = Experiment(created_by=user,
-                            title=publication_title,
-                            description=publication_description)
-    experiment.save()
-
-    ObjectACL(content_object=experiment,
-              pluginId=django_user,
-              entityId=str(user.id),
-              canRead=True,
-              canWrite=False,
-              canDelete=False,
-              isOwner=True,
-              aclOwnershipType=ObjectACL.OWNER_OWNED).save()
-
-    ObjectACL(content_object=experiment,
-              pluginId=django_group,
-              entityId=str(
-                  Group.objects.get_or_create(
-                      name=getattr(
-                          settings, 'PUBLICATION_ADMIN_GROUP',
-                          default_settings.PUBLICATION_ADMIN_GROUP))[0].id),
-              canRead=True,
-              canWrite=True,
-              canDelete=True,
-              isOwner=True,
-              aclOwnershipType=ObjectACL.OWNER_OWNED).save()
-
-    publication_schema = Schema.objects.get(
-        namespace=getattr(settings, 'PUBLICATION_SCHEMA_ROOT',
-                          default_settings.PUBLICATION_SCHEMA_ROOT))
-
-    # Attach draft schema
-    draft_publication_schema = Schema.objects.get(
-        namespace=getattr(settings, 'PUBLICATION_DRAFT_SCHEMA',
-                          default_settings.PUBLICATION_DRAFT_SCHEMA))
-    ExperimentParameterSet(schema=draft_publication_schema,
-                           experiment=experiment).save()
-
-    # Attach root schema and blank form_state parameter
-    publication_root_schema = Schema.objects.get(
-        namespace=getattr(settings, 'PUBLICATION_SCHEMA_ROOT',
-                          default_settings.PUBLICATION_SCHEMA_ROOT))
-    publication_root_parameter_set = ExperimentParameterSet(
-        schema=publication_schema,
-        experiment=experiment)
-    publication_root_parameter_set.save()
-    form_state_param_name = ParameterName.objects.get(
-        schema=publication_root_schema, name='form_state')
-    ExperimentParameter(name=form_state_param_name,
-                        parameterset=publication_root_parameter_set).save()
-
-    return experiment
-
-
 def get_draft_publication(user, publication_id):
-    for exp in Experiment.safe.owned(user):
-        if exp.id == publication_id and exp.is_publication_draft():
-            return exp
+    for pub in Publication.safe.owned(user):
+        if pub.id == publication_id and pub.is_publication_draft():
+            return pub
 
     for group in user.groups.all():
-        for exp in Experiment.safe.owned_by_group(group):
-            if exp.id == publication_id and exp.is_publication_draft():
-                return exp
+        for pub in Publication.safe.owned_by_group(group):
+            if pub.id == publication_id and pub.is_publication_draft():
+                return pub
 
     return None
 
@@ -485,21 +382,6 @@ def fetch_experiments_and_datasets(request):
                         content_type="application/json")
 
 
-def require_publication_admin(f):
-    def wrap(request, *args, **kwargs):
-        if not request.user.groups.filter(
-                name=getattr(
-                    settings, 'PUBLICATION_ADMIN_GROUP',
-                    default_settings.PUBLICATION_ADMIN_GROUP)).exists():
-            return return_response_error(request)
-        return f(request, *args, **kwargs)
-
-    wrap.__doc__ = f.__doc__
-    wrap.__name__ = f.__name__
-
-    return wrap
-
-
 @transaction.atomic
 def finalize_publication(request, publication, message=None, send_email=True):
     if publication.is_publication() and not publication.is_publication_draft() \
@@ -509,13 +391,6 @@ def finalize_publication(request, publication, message=None, send_email=True):
             publication.public_access = Experiment.PUBLIC_ACCESS_FULL
         else:
             publication.public_access = Experiment.PUBLIC_ACCESS_EMBARGO
-        # Delete the form state (and containing parameter set)
-        try:
-            ExperimentParameterSet.objects.get(
-                experimentparameter__name__name='form_state',
-                experiment=publication).delete()
-        except ExperimentParameterSet.DoesNotExist:
-            pass
         publication.save()
 
         response = mint_doi_and_deactivate(request, publication.id)
@@ -545,21 +420,13 @@ def mint_doi_and_deactivate(request, experiment_id):
     if getattr(settings, 'MODC_DOI_ENABLED',
                default_settings.MODC_DOI_ENABLED):
         try:
-            pub_details_schema_namespace = getattr(
-                settings, 'PUBLICATION_DETAILS_SCHEMA',
-                default_settings.PUBLICATION_DETAILS_SCHEMA)
-            pub_details_schema = Schema.objects.get(
-                namespace=pub_details_schema_namespace)
-
-            doi_parameter_name = ParameterName.objects.get(
-                schema=pub_details_schema,
-                name='doi')
+            pub_details_schema = Publication.get_details_schema()
             pub_details_parameter_set = \
-                ExperimentParameterSet.objects.get_or_create(
-                    schema=pub_details_schema,
-                    experiment=Experiment.objects.get(id=experiment_id))[0]
+                Publication.objects.get(id=experiment_id).get_details_schema_pset()
 
             doi = DOI()
+            doi_parameter_name = ParameterName.objects.get(
+                schema=pub_details_schema, name='doi')
             ExperimentParameter(name=doi_parameter_name,
                                 parameterset=pub_details_parameter_set,
                                 string_value=doi.mint(
@@ -595,79 +462,6 @@ def mint_doi_and_deactivate(request, experiment_id):
         return HttpResponse(msg, status=500)
 
 
-def reject_publication(publication, message=None):
-    if publication.is_publication() and not publication.is_publication_draft() \
-            and publication.public_access == Experiment.PUBLIC_ACCESS_NONE:
-        subject, email_message = email_pub_rejected(publication.title, message)
-
-        send_mail_to_authors(publication, subject, email_message)
-
-        publication.delete()
-
-        return True
-    return False
-
-
-def revert_publication_to_draft(publication, message=None):
-    # Anything with the form_state parameter can be reverted to draft
-    try:
-        # Check that the publication is currently finalised but not released
-        if publication.is_publication_draft() and publication.is_publication() \
-                and publication.public_access == Experiment.PUBLIC_ACCESS_NONE:
-            return False
-
-        # Check that form_state exists (raises an exception if not)
-        schema_ns_root = getattr(settings, 'PUBLICATION_SCHEMA_ROOT',
-                                 default_settings.PUBLICATION_SCHEMA_ROOT)
-        ExperimentParameter.objects.get(
-            name__name='form_state',
-            name__schema__namespace=schema_ns_root,
-            parameterset__experiment=publication)
-
-        # Reduce access level to none
-        publication.public_access = Experiment.PUBLIC_ACCESS_NONE
-        publication.save()
-
-        # Add the draft schema
-        draft_schema_ns = getattr(settings, 'PUBLICATION_DRAFT_SCHEMA',
-                                  default_settings.PUBLICATION_DRAFT_SCHEMA)
-        draft_publication_schema = Schema.objects.get(
-            namespace=draft_schema_ns)
-        ExperimentParameterSet(schema=draft_publication_schema,
-                               experiment=publication).save()
-
-        # Delete all metadata except for the form_state
-        # Clear any current parameter sets except for those belonging
-        # to the publication draft schema or containing the form_state
-        # parameter
-        for parameter_set in publication.getParameterSets():
-            if parameter_set.schema.namespace != draft_schema_ns and \
-                            parameter_set.schema.namespace != schema_ns_root:
-                parameter_set.delete()
-            elif parameter_set.schema.namespace == schema_ns_root:
-                try:
-                    ExperimentParameter.objects.get(
-                        name__name='form_state',
-                        name__schema__namespace=schema_ns_root,
-                        parameterset=parameter_set)
-                except ExperimentParameter.DoesNotExist:
-                    parameter_set.delete()
-
-        # Send notification emails -- must be done before authors are deleted
-        subject, email_message = email_pub_reverted_to_draft(
-            publication.title, message)
-
-        send_mail_to_authors(publication, subject, email_message)
-
-        # Delete all author records
-        ExperimentAuthor.objects.filter(experiment=publication).delete()
-
-        return True
-
-    except ExperimentParameter.DoesNotExist:
-        return False
-
-
 @login_required
 def my_publications(request):
     '''
@@ -686,19 +480,11 @@ def retrieve_draft_pubs_list(request):
     draft_pubs_data = []
     draft_publications = Publication.safe.draft_publications(request.user)\
         .order_by('-update_time')
-    pub_root_schema = Schema.objects.get(
-        namespace=getattr(settings, 'PUBLICATION_SCHEMA_ROOT',
-                          default_settings.PUBLICATION_SCHEMA_ROOT))
-    form_state_pname = \
-        ParameterName.objects.get(name='form_state', schema=pub_root_schema)
-    pub_details_schema = Schema.objects.get(
-        namespace=getattr(settings, 'PUBLICATION_DETAILS_SCHEMA',
-                          default_settings.PUBLICATION_DETAILS_SCHEMA))
+    pub_details_schema = Publication.get_details_schema()
     doi_pname = ParameterName.objects.get(name='doi', schema=pub_details_schema)
     for draft_pub in draft_publications:
         try:
-            form_state_param = ExperimentParameter.objects.get(
-                parameterset__experiment=draft_pub, name=form_state_pname)
+            form_state_param = draft_pub.get_form_state_parameter()
             if form_state_param.string_value:
                 form_state = json.loads(form_state_param.string_value)
                 release_date = \
@@ -731,9 +517,7 @@ def retrieve_scheduled_pubs_list(request):
     scheduled_pubs_data = []
     scheduled_publications = Publication.safe.scheduled_publications(request.user)\
         .order_by('-update_time')
-    pub_details_schema = Schema.objects.get(
-        namespace=getattr(settings, 'PUBLICATION_DETAILS_SCHEMA',
-                          default_settings.PUBLICATION_DETAILS_SCHEMA))
+    pub_details_schema = Publication.get_details_schema()
     doi_pname = ParameterName.objects.get(name='doi', schema=pub_details_schema)
     for scheduled_pub in scheduled_publications:
         doi_param = ExperimentParameter.objects.filter(
@@ -760,9 +544,7 @@ def retrieve_released_pubs_list(request):
     released_pubs_data = []
     released_publications = Publication.safe.released_publications(request.user)\
         .order_by('-update_time')
-    pub_details_schema = Schema.objects.get(
-        namespace=getattr(settings, 'PUBLICATION_DETAILS_SCHEMA',
-                          default_settings.PUBLICATION_DETAILS_SCHEMA))
+    pub_details_schema = Publication.get_details_schema()
     doi_pname = ParameterName.objects.get(name='doi', schema=pub_details_schema)
     for released_pub in released_publications:
         doi_param = ExperimentParameter.objects.filter(

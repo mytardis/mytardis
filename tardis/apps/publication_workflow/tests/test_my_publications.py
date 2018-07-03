@@ -7,7 +7,8 @@ from django.contrib.auth.models import User
 from django.test import RequestFactory
 from django.test import TestCase
 
-from ..views import create_draft_publication
+from ..models import Publication
+
 from ..views import retrieve_draft_pubs_list
 from ..views import retrieve_scheduled_pubs_list
 from ..views import retrieve_released_pubs_list
@@ -20,12 +21,12 @@ class MyPublicationsTestCase(TestCase):
         email = ''
         self.user = User.objects.create_user(username, email, pwd)
 
-        self.draft_pub1 = create_draft_publication(
+        self.draft_pub1 = Publication.safe.create_draft_publication(
             self.user,
             'Test Publication Draft1',
             'Publication draft description1')
 
-        self.draft_pub2 = create_draft_publication(
+        self.draft_pub2 = Publication.safe.create_draft_publication(
             self.user,
             'Test Publication Draft2',
             'Publication draft description2')
