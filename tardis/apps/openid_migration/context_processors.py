@@ -3,6 +3,9 @@ from tardis.tardis_portal.context_processors import user_menu_processor
 
 
 def openid_migration_menu_processor(request):
+    if not request.user.has_perm('tardis_portal.change_userauthentication'):
+        return dict()
+
     context = user_menu_processor(request)
     user_menu = context['user_menu']
     migrate_menu_item = dict(
