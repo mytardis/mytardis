@@ -59,7 +59,7 @@
   {% else %}
   <div class="pull-right">
   {% endif %}
-    {% if has_read_or_owner_ACL and pub_workflow_enabled %}
+    {% if is_owner and pub_workflow_enabled %}
     <a class="prepare_to_publish btn btn-mini btn-info"
        title="Create Publication"
        ng-click="pubActionsCtrl.createPublication()"
