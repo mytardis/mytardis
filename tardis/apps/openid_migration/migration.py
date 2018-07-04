@@ -101,7 +101,7 @@ def do_migration(request):
                 acl.canWrite = acl.canWrite or experimentACL.canWrite
                 acl.canDelete = acl.canDelete or acl.canDelete
                 acl.save()
-                #record acl migration event
+                # record acl migration event
                 acl_migration_record = OpenidACLMigration(user_migration=user_migration_record,
                                                           acl_id=acl)
                 acl_migration_record.save()
@@ -109,7 +109,7 @@ def do_migration(request):
             except ObjectACL.DoesNotExist:
                 experimentACL.entityId = replacementUserId
                 experimentACL.save()
-                #record acl migration event
+                # record acl migration event
                 acl_migration_record = OpenidACLMigration(user_migration=user_migration_record,
                                                           acl_id=experimentACL)
                 acl_migration_record.save()
@@ -119,10 +119,17 @@ def do_migration(request):
         groups = Group.objects.filter(user=user)
         for group in groups:
             request.user.groups.add(group)
-
-        # we can now make user inactive
+        # change old user username to username_authmethod amd make it inactive
+        old_username = user.username
+        user.username = old_username + '_' + authenticationMethod
         user.is_active = False
         user.save()
+
+        # change new user username to old user
+        new_user = request.user
+        new_user.username = old_username
+        new_user.save()
+        # Add migration event record
         user_migration_record.migration_status = True
         user_migration_record.save()
 
