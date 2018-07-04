@@ -137,7 +137,7 @@ def update_dataset_selection(request, form_state, publication):
     selected_datasets = [ds['dataset']['id']
                          for ds in form_state['addedDatasets']]
     datasets = Dataset.objects.filter(
-        experiments__in=Experiment.safe.owned_and_shared(request.user),
+        experiments__in=Experiment.safe.owned(request.user),
         pk__in=selected_datasets).distinct()
 
     for dataset in datasets:
@@ -360,7 +360,7 @@ def get_draft_publication(user, publication_id):
 @login_required
 @never_cache
 def fetch_experiments_and_datasets(request):
-    experiments = Experiment.safe.owned_and_shared(request.user) \
+    experiments = Experiment.safe.owned(request.user) \
         .order_by('title')
     json_response = []
     for experiment in experiments:
