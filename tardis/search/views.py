@@ -157,7 +157,11 @@ def retrieve_field_list(request):
 
     users = User.objects.all()
 
-    usernames = [u.first_name + ' ' + u.last_name + ':username' for u in users]
+    usernames = [
+        u.first_name.encode('utf-8') +
+        ' ' +
+        u.last_name.encode('utf-8') +
+        ':username' for u in users]
 
     # Collect all of the indexed (searchable) fields, except
     # for the main search document ('text')
