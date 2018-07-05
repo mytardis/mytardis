@@ -208,7 +208,7 @@ var MyTardis = (function(){
 		$(v).parent().replaceWith(view.el);
             }, this);
             // Add filter control if necessary
-            if ($(this._datasetFilter.el).parent().size() == 0)
+            if ($(this._datasetFilter.el).parent().length == 0)
 		$(this.el).prepend(this._datasetFilter.el);
             // Remove all contents except the filter and add new contents
             $(this.el).children().not(this._datasetFilter.el).remove();

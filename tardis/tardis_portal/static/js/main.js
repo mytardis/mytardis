@@ -64,7 +64,7 @@ var userAutocompleteHandler = function(term, users, authMethod) {
 };
 
 var isLoggedIn = function() {
-  return $('#user-menu').size() > 0;
+  return $('#user-menu').length > 0;
 }
 
 $(document).ready(function(){
