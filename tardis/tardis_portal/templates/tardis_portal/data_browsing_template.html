@@ -48,7 +48,7 @@
   $('.sidebar-toggle-close .sidebar-toggle-button').click(closeSidebarHandler);
   $('.sidebar-toggle-open  .sidebar-toggle-button').click(openSidebarHandler);
 
-  var shouldHideInitially = $('#sidebar-canary').filter(':visible').size() == 0;
+  var shouldHideInitially = $('#sidebar-canary').filter(':visible').length == 0;
 
   // Initial state
   if (shouldHideInitially || $.cookie('hide_sidebar')) {
