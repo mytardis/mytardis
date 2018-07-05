@@ -47,6 +47,7 @@ NPM_FILE_PATTERNS = {
     'jquery': ['*'],
     'jquery-migrate': ['*'],
     'ng-dialog': ['*'],
-    'jquery-ui-dist': ['jquery-ui.min.js']
+    'jquery-ui-dist': ['jquery-ui.min.js'],
+    'blueimp-file-upload': ['*']
 }
 NPM_STATIC_FILES_PREFIX = path.join('js', 'lib')

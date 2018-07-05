@@ -555,7 +555,7 @@ $(document).on('click', '#modal-metadata .submit-button', function() {
   <div class="span4"> {# side bar #}
   <div class="row-fluid">
     <div class="span8">
-      <h3 style="display: inline">
+      <h3 id="total-count" style="display: inline">
       {{dataset.datafile_set.count}} File{% if dataset.datafile_set.count != 1 %}s{%endif%}
       </h3>
     </div>
@@ -660,7 +660,16 @@ $(document).ready(function(){
 
   // Create a reload event handler
   $('#datafiles-pane').on('reload', function() {
-    $(this).load('{% url 'tardis.tardis_portal.views.retrieve_datafile_list' dataset.id %}');
+    $(this).load('{% url 'tardis.tardis_portal.views.retrieve_datafile_list' dataset.id %}', function () {
+      var datafileCount = parseInt($('#datafile-count').val());
+      var fileCountString = "" + datafileCount + " File";
+      if (datafileCount != 1) {
+          fileCountString += "s"
+      }
+      $('#total-count').html(fileCountString);
+      // Reset progress bar after datafiles-pane has reloaded:
+      $('#progress .progress-bar').css('width', '0%');
+    });
   });
 
   // Reload data file list when we close the upload modal
@@ -705,14 +714,12 @@ $(document).ready(function(){
 
 });
 </script>
+<!-- jQuery UI widgets -->
+<script src="{% static 'js/lib/blueimp-file-upload/js/vendor/jquery.ui.widget.js' %}"></script>
 <!-- The Iframe Transport is required for browsers without support for XHR file uploads -->
-<script src="{% static 'js/lib/jquery.iframe-transport.js' %}"></script>
+<script src="{% static 'js/lib/blueimp-file-upload/js/jquery.iframe-transport.js' %}"></script>
 <!-- The basic File Upload plugin -->
-<script src="{% static 'js/lib/jquery.fileupload.js' %}"></script>
-<!-- The File Upload processing plugin -->
-<script src="{% static 'js/lib/jquery.fileupload-process.js' %}"></script>
-<!-- The File Upload validation plugin -->
-<script src="{% static 'js/lib/jquery.fileupload-validate.js' %}"></script>
+<script src="{% static 'js/lib/blueimp-file-upload/js/jquery.fileupload.js' %}"></script>
 <script type="text/javascript">
 $(function () {
     $('#dropzone').hide();
@@ -749,6 +756,11 @@ $(function () {
             'width',
             progress + '%'
         );
+        if (progress === 100) {
+            setTimeout(function() {
+              $('#datafiles-pane').trigger('reload');
+            }, 500);
+        }
     });
 });
 var showDropzone = function() {

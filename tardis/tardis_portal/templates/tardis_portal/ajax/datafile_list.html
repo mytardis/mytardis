@@ -1,4 +1,5 @@
 {% load capture %}
+<input type="hidden" id="datafile-count" value="{{datafile_count}}"/>
 {% capture as paginator_block %}
 {% if datafiles.paginator.num_pages > 1 %}
   <div class="pagination">
