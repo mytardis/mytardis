@@ -44,10 +44,11 @@ NPM_ROOT_PATH = path.abspath(path.join(path.dirname(__file__), '../..'))
 NPM_FILE_PATTERNS = {
     'angular': ['*'],
     'angular-resource': ['*'],
+    'blueimp-file-upload': ['*'],
+    'clipboard': ['*'],
     'jquery': ['*'],
     'jquery-migrate': ['*'],
-    'ng-dialog': ['*'],
     'jquery-ui-dist': ['jquery-ui.min.js'],
-    'blueimp-file-upload': ['*']
+    'ng-dialog': ['*']
 }
 NPM_STATIC_FILES_PREFIX = path.join('js', 'lib')
