@@ -48,6 +48,7 @@ python manage.py createcachetable default_cache
 python manage.py createcachetable celery_lock_cache
 python manage.py collectstatic
 
+python manage.py createsuperuser
 python manage.py runserver
 # os x:
 open http://127.0.0.1:8000/
