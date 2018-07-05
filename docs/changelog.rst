@@ -1,6 +1,10 @@
 Releases
 ========
 
+3.8.1
+-----
+* Fix regression in Push To app
+
 3.8
 ---
 * Refactored settings

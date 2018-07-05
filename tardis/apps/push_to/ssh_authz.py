@@ -37,9 +37,7 @@ def sign_certificate(credential, token, url):
     private_key = StringIO()
     old_key.write_private_key(private_key)
     private_key.seek(0)
-    cert = RSAKey(
-        data=base64.b64decode(cert_data),
-        file_obj=private_key)
+    cert = RSAKey.from_private_key(private_key)
     cert.load_certificate(Message(base64.b64decode(cert_data)))
     credential.key = cert
     credential.remote_user = remote_user_name
