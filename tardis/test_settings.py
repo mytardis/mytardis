@@ -27,7 +27,7 @@ DATABASES = {
 
 # During testing it's always eager
 CELERY_ALWAYS_EAGER = True
-BROKER_BACKEND = 'memory'
+BROKER_URL = 'memory://'
 CELERY_EAGER_PROPAGATES_EXCEPTIONS = True
 tardis_portal_app = Celery('tardis_portal')
 tardis_portal_app.config_from_object('django.conf:settings')
