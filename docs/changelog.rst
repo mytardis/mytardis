@@ -1,9 +1,6 @@
 Releases
 ========
 
-4.0
----
-
 3.9
 ---
 * Added deprecation warnings for functionality which will be removed in 4.0

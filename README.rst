@@ -107,11 +107,12 @@ included. It will move to newer versions automatically. Follow this branch
 if you want to stay up to date in a production environment.
 
 Each version has its own branch named by version number. At the time of
-writing this is ``3.7``. Follow this branch for your production installation and
+writing, the latest release is ``3.9``, tagged from the ``series-3.9``
+branch. Follow this branch for your production installation and
 perform version upgradres manually.
 
 Each bugfix or set of fixes bumps the minor version and each new release is
-tagged, eg. ``3.7.2``. Use tagged releases if you are paranoid about changes to
+tagged, eg. ``3.9.1``. Use tagged releases if you are paranoid about changes to
 the code you have not tested yourself.
 
 To follow development, please see the contributing section below.
