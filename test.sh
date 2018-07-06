@@ -42,6 +42,7 @@ case "$TEST_TYPE" in
 	(( exit_status = exit_status || $? ))
     ;;
     behave)
+    npm install && npm test
     python manage.py behave --settings=tardis.test_settings
 	(( exit_status = exit_status || $? ))
     ;;
