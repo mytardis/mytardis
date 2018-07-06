@@ -1,15 +1,13 @@
 import logging
 from itertools import chain
-from os import path
 from StringIO import StringIO
-from urllib2 import urlopen
 
-from tardis.tardis_portal.models import Schema, DatafileParameterSet,\
-    ParameterName, DatasetParameter
+from tardis.tardis_portal.models import Schema, ParameterName
 from tardis.tardis_portal.ParameterSetManager import ParameterSetManager
 from tardis.tardis_portal.models.parameters import DatasetParameter
 
 logger = logging.getLogger(__name__)
+
 
 class JEOLSEMFilter(object):
     """This filter collects metadata from JEOL SEM text files.
@@ -26,7 +24,6 @@ class JEOLSEMFilter(object):
 
     def __init__(self):
         pass
-
 
     def __call__(self, sender, **kwargs):
         """post save callback entry point.
@@ -97,7 +94,6 @@ class JEOLSEMFilter(object):
                 return True
         return False
 
-
     def get_metadata(self, schema, filedata):
         known_attributes = [pn.name
                             for pn
@@ -121,7 +117,6 @@ class JEOLSEMFilter(object):
 
         return chain.from_iterable(map(process_line, StringIO(filedata)))
 
-
     def save_metadata(self, datafile, schema, metadata):
         psm = ParameterSetManager(parentObject=datafile.dataset,
                                   schema=schema.namespace)
@@ -129,6 +124,6 @@ class JEOLSEMFilter(object):
         for key, value in metadata:
             try:
                 psm.set_param(key, value)
-            except ValueError, e:
+            except ValueError:
                 pn = ParameterName.objects.get(name=key, schema=schema)
                 psm.set_param(key, value.strip(pn.units))

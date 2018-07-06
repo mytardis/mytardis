@@ -5,7 +5,6 @@ views to do with metadata, parameters etc. Mostly ajax page inclusions
 import logging
 
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponse
 
 from tardis.tardis_portal.auth import decorators as authz
 from tardis.tardis_portal.forms import create_parameterset_edit_form, \

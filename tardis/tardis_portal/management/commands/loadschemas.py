@@ -1,13 +1,9 @@
 """
  Command for loading soft schema definitions
 """
-import sys
-
 from django.core.management.base import BaseCommand
 from django.db import connections, DEFAULT_DB_ALIAS
 from django.core import serializers
-
-from tardis.tardis_portal import models
 
 
 class Command(BaseCommand):
@@ -45,12 +41,9 @@ class Command(BaseCommand):
 
         connection = connections[using]
 
-        verbosity = int(options.get('verbosity', 1))
-        show_traceback = options.get('traceback', False)
+        def humanize(dirname):
+            return "'%s'" % dirname if dirname else 'absolute path'
 
-        humanize = lambda dirname: dirname and "'%s'" % dirname or 'absolute path'
-
-        formats = []
         schemas = options.get('schemas', [])
         for name in schemas:
             parts = name.split('.')
@@ -59,8 +52,9 @@ class Command(BaseCommand):
                 self.stdout.write("Loading '%s' schema...\n" % name)
             else:
                 self.stderr.write(
-                    self.style.ERROR("Problem installing schema '%s': %s is not a known serialization format.\n" %
-                        (name, format)))
+                    self.style.ERROR(
+                        "Problem installing schema '%s': %s is not a known serialization format.\n"
+                        % (name, format)))
                 return
 
             try:
@@ -75,10 +69,10 @@ class Command(BaseCommand):
                 except (SystemExit, KeyboardInterrupt):
                     raise
                 except Exception:
-                    import traceback
                     data.close()
                 data.close()
 
-            except Exception, e:
-                self.stdout.write("No %s schema '%s' in %s.\n" % \
-                                      (parts[-1], name, humanize(full_path)))
+            except Exception:
+                self.stdout.write(
+                    "No %s schema '%s' in %s.\n"
+                    % (parts[-1], name, humanize(full_path)))

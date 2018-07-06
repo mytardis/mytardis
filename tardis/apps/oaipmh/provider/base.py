@@ -1,4 +1,4 @@
-# pylint: disable=redundant-returns-doc,missing-returns-doc,missing-raises-doc,missing-return-type-doc
+# pylint: disable=redundant-returns-doc,missing-return-type-doc
 import oaipmh.error
 import oaipmh.interfaces
 

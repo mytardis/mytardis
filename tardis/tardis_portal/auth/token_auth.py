@@ -1,9 +1,6 @@
 """
 token authentication module
 """
-
-from django.conf import settings
-from django.contrib.auth.models import User
 from tardis.tardis_portal.models import Token, ObjectACL, Experiment
 from tardis.tardis_portal.auth.interfaces import GroupProvider
 

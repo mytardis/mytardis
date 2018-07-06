@@ -6,7 +6,6 @@ import logging
 
 from django.conf import settings
 from django.core.exceptions import PermissionDenied
-from django.http import HttpResponse
 
 from tardis.tardis_portal.auth import decorators as authz, auth_service
 from tardis.tardis_portal.auth.localdb_auth import auth_key as localdb_auth_key

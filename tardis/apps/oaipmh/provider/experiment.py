@@ -5,20 +5,19 @@ from django.conf import settings
 from django.urls import reverse
 from lxml.etree import SubElement
 
-from oaipmh.common import Identify, Header, Metadata
+from oaipmh.common import Header, Metadata
 import oaipmh.error
-from oaipmh.interfaces import IOAI
-from oaipmh.metadata import global_metadata_registry
-from oaipmh.server import Server, oai_dc_writer, NS_XSI
+from oaipmh.server import oai_dc_writer, NS_XSI
 
 import pytz
 
 from tardis.tardis_portal.ParameterSetManager import ParameterSetManager
-from tardis.tardis_portal.models import ExperimentAuthor, Experiment,\
+from tardis.tardis_portal.models import Experiment, \
     ExperimentParameterSet, ExperimentParameter, License, User
 from tardis.tardis_portal.util import get_local_time, get_utc_time
 
 from .base import BaseProvider
+
 
 class AbstractExperimentProvider(BaseProvider):
 
@@ -67,6 +66,7 @@ class AbstractExperimentProvider(BaseProvider):
         if not self._handles_metadata_prefix(metadataPrefix):
             raise oaipmh.error.CannotDisseminateFormatError
         objects = self._get_in_range(from_, until)
+
         def get_tuple(obj):
             header = self._get_header(obj)
             metadata = self._get_metadata(obj, metadataPrefix)
@@ -98,9 +98,13 @@ class AbstractExperimentProvider(BaseProvider):
 
     def _get_header(self, obj):
         if isinstance(obj, User):
-            time_func = lambda u: u.last_login
+
+            def time_func(u):
+                return u.last_login
         else:
-            time_func = lambda e: e.update_time
+
+            def time_func(e):
+                return e.update_time
         # Get UTC timestamp
         timestamp = time_func(obj)
         if timestamp is None:
@@ -130,11 +134,12 @@ class AbstractExperimentProvider(BaseProvider):
             .exclude(description='')
         # Filter based on boundaries provided
         if from_:
-            from_ = get_local_time(from_.replace(tzinfo=pytz.utc)) # UTC->local
+            from_ = get_local_time(from_.replace(tzinfo=pytz.utc))  # UTC->local
             experiments = experiments.filter(update_time__gte=from_)
         if until:
-            until = get_local_time(until.replace(tzinfo=pytz.utc)) # UTC->local
+            until = get_local_time(until.replace(tzinfo=pytz.utc))  # UTC->local
             experiments = experiments.filter(update_time__lte=until)
+
         def get_users_from_experiment(experiment):
             return filter(lambda u: u.userprofile.isValidPublicContact(),
                           experiment.get_owners())
@@ -154,7 +159,7 @@ class DcExperimentProvider(AbstractExperimentProvider):
         is a valid experiment.
         """
         try:
-            if identifier != None:
+            if identifier is not None:
                 self._get_id_from_identifier(identifier)
             return [
                 ('oai_dc',
@@ -166,8 +171,8 @@ class DcExperimentProvider(AbstractExperimentProvider):
 
     def _get_in_range(self, from_, until):
         return filter(lambda obj: isinstance(obj, Experiment),
-                      super(DcExperimentProvider, self)\
-                        ._get_in_range(from_, until))
+                      super(DcExperimentProvider, self)
+                      ._get_in_range(from_, until))
 
     def _get_id_from_identifier(self, identifier):
         return self._split_type_and_id(identifier, ["experiment"])
@@ -179,14 +184,13 @@ class DcExperimentProvider(AbstractExperimentProvider):
                 '_writeMetadata': oai_dc_writer,
                 'title': [experiment.title],
                 'description': [experiment.description],
-	    })
+            })
 
     def _get_user_metadata(self):
         raise NotImplementedError
 
     def _handles_metadata_prefix(self, metadataPrefix):
         return metadataPrefix == 'oai_dc'
-
 
 
 class RifCsExperimentProvider(AbstractExperimentProvider):
@@ -198,7 +202,7 @@ class RifCsExperimentProvider(AbstractExperimentProvider):
         """
         from . import RIFCS_NS, RIFCS_SCHEMA
         try:
-            if identifier != None:
+            if identifier is not None:
                 self._get_id_from_identifier(identifier)
             return [('rif', RIFCS_SCHEMA, RIFCS_NS)]
         except oaipmh.error.IdDoesNotExistError:
@@ -209,8 +213,8 @@ class RifCsExperimentProvider(AbstractExperimentProvider):
         # Access Rights statement
         access_type = None
         if experiment.public_access == Experiment.PUBLIC_ACCESS_METADATA:
-            access = "Only metadata is publicly available online."+\
-                    " Requests for further access should be directed to a"+\
+            access = "Only metadata is publicly available online." + \
+                    " Requests for further access should be directed to a" + \
                     " listed data manager."
             access_type = "restricted"
         else:
@@ -219,30 +223,30 @@ class RifCsExperimentProvider(AbstractExperimentProvider):
 
         def get_related_info(ps):
             psm = ParameterSetManager(ps)
-            parameter_names = ['type','identifier','title','notes']
+            parameter_names = ['type', 'identifier', 'title', 'notes']
             try:
-                return dict([('id', ps.id)] + # Use set ID
+                return dict([('id', ps.id)] +  # Use set ID
                             zip(parameter_names,
                                 (psm.get_param(k, True) \
-                                     for k in parameter_names)))
+                                 for k in parameter_names)))
             except ExperimentParameter.DoesNotExist:
-                return dict() # drop Related_Info record with missing fields
+                return dict()  # drop Related_Info record with missing fields
 
         ns = 'http://ands.org.au/standards/rif-cs/registryObjects#relatedInfo'
-        related_info = map(get_related_info, ExperimentParameterSet.objects\
-                                                .filter(experiment=experiment,
-                                                        schema__namespace=ns))
+        related_info = map(
+            get_related_info,
+            ExperimentParameterSet.objects.filter(experiment=experiment,
+                                                  schema__namespace=ns))
 
         def get_subject(ps, type_):
             psm = ParameterSetManager(ps)
-            return { 'text': psm.get_param('code', True),
-                     'type': type_ }
+            return {'text': psm.get_param('code', True),
+                    'type': type_}
 
         ns = 'http://purl.org/asc/1297.0/2008/for/'
         subjects = [get_subject(ps, 'anzsrc-for')
-                    for ps in ExperimentParameterSet.objects\
-                                                .filter(experiment=experiment,
-                                                        schema__namespace=ns)]
+                    for ps in ExperimentParameterSet.objects.filter(
+                        experiment=experiment, schema__namespace=ns)]
         collectors = experiment.experimentauthor_set.exclude(url='')
         return Metadata(
             experiment,
@@ -275,7 +279,6 @@ class RifCsExperimentProvider(AbstractExperimentProvider):
                 'family_name': user.last_name,
                 'owns_experiments': owns_experiments,
             })
-
 
     def _handles_metadata_prefix(self, metadataPrefix):
         return metadataPrefix == 'rif'
@@ -352,20 +355,20 @@ class RifCsExperimentProvider(AbstractExperimentProvider):
             SubElement(obj, _nsrif('originatingSource')).text = \
                 _get_originating_source(metadata)
             # collection
-            collection = SubElement(obj, _nsrif('collection') )
+            collection = SubElement(obj, _nsrif('collection'))
             collection.set('type', 'dataset')
             # name
-            name = SubElement(collection, _nsrif('name') )
+            name = SubElement(collection, _nsrif('name'))
             name.set('type', 'primary')
             SubElement(name, _nsrif('namePart')).text = \
-                                                    metadata.getMap().get('title')
+                metadata.getMap().get('title')
             # description
-            description = SubElement(collection, _nsrif('description') )
+            description = SubElement(collection, _nsrif('description'))
             description.set('type', 'brief')
             description.text = metadata.getMap().get('description')
             # location
             electronic = SubElement(SubElement(SubElement(collection,
-                                                          _nsrif('location') ),
+                                                          _nsrif('location')),
                                                _nsrif('address')),
                                     _nsrif('electronic'))
             electronic.set('type', 'url')
@@ -373,11 +376,11 @@ class RifCsExperimentProvider(AbstractExperimentProvider):
             electronic_value.text = _get_location(metadata)
 
             # rights
-            rights = SubElement(collection, _nsrif('rights') )
-            access = SubElement(rights, _nsrif('accessRights') )
+            rights = SubElement(collection, _nsrif('rights'))
+            access = SubElement(rights, _nsrif('accessRights'))
             access.set('type', metadata.getMap().get('access_type', 'restricted'))
             access.text = metadata.getMap().get('access')
-            licence_ = SubElement(rights, _nsrif('licence') )
+            licence_ = SubElement(rights, _nsrif('licence'))
             licence_.set('rightsUri', metadata.getMap().get('licence_uri'))
             licence_.text = metadata.getMap().get('licence_name')
             # related object - collectors
@@ -400,8 +403,8 @@ class RifCsExperimentProvider(AbstractExperimentProvider):
             #        http://services.ands.org.au/documentation/rifcs/schema/registryObjects.xsd"
             #    xmlns="http://ands.org.au/standards/rif-cs/registryObjects">
             from . import RIFCS_NS, RIFCS_SCHEMA
-            wrapper = SubElement(self.root, self._nsrif('registryObjects'), \
-                           nsmap={None: RIFCS_NS, 'xsi': NS_XSI} )
+            wrapper = SubElement(self.root, self._nsrif('registryObjects'),
+                                 nsmap={None: RIFCS_NS, 'xsi': NS_XSI})
             wrapper.set('{%s}schemaLocation' % NS_XSI,
                         '%s %s' % (RIFCS_NS, RIFCS_SCHEMA))
             return wrapper
@@ -413,7 +416,7 @@ class RifCsExperimentProvider(AbstractExperimentProvider):
             # </relatedObjexperimentect>
             if not obj.url:
                 return
-            relatedObject = SubElement(element, self._nsrif('relatedObject') )
+            relatedObject = SubElement(element, self._nsrif('relatedObject'))
             SubElement(relatedObject, self._nsrif('key')).text = obj.url
             SubElement(relatedObject, self._nsrif('relation')) \
                 .set('type', relation)
@@ -424,13 +427,12 @@ class RifCsExperimentProvider(AbstractExperimentProvider):
             #     <relation type="isManagedBy"/>
             # </relatedObjexperimentect>
             def get_user_rifcs_id(identifier, site):
-                return "%s/user/%s" % (getattr(settings,
-                                           'RIFCS_KEY',
-                                           site.domain),
-                                           identifier)
+                return "%s/user/%s" % (
+                    getattr(settings, 'RIFCS_KEY', site.domain),
+                    identifier)
             if not obj.userprofile.isValidPublicContact():
                 return
-            relatedObject = SubElement(element, self._nsrif('relatedObject') )
+            relatedObject = SubElement(element, self._nsrif('relatedObject'))
             SubElement(relatedObject, self._nsrif('key')).text = \
                 get_user_rifcs_id(obj.id, self.site)
             SubElement(relatedObject, self._nsrif('relation')) \
@@ -442,7 +444,7 @@ class RifCsExperimentProvider(AbstractExperimentProvider):
             #   <title>Website title</title>
             #   <notes>Some text...</notes>
             # </relatedInfo>
-            relatedInfo = SubElement(element, self._nsrif('relatedInfo') )
+            relatedInfo = SubElement(element, self._nsrif('relatedInfo'))
             relatedInfo.set('type', obj['type'])
             for e in ['identifier', 'title', 'notes']:
                 se = SubElement(relatedInfo, self._nsrif(e))
@@ -452,7 +454,7 @@ class RifCsExperimentProvider(AbstractExperimentProvider):
 
         def writeSubject(self, element, obj):
             # <subject type="anzsrc-for">0101</subject>
-            subject = SubElement(element, self._nsrif('subject') )
+            subject = SubElement(element, self._nsrif('subject'))
             subject.set('type', obj['type'])
             subject.text = obj['text']
 
@@ -463,16 +465,20 @@ class RifCsExperimentProvider(AbstractExperimentProvider):
     @staticmethod
     def writeUserMetadata(element, metadata, site=None):
         from . import RIFCS_NS, RIFCS_SCHEMA
+
         def _nsrif(name):
             return '{%s}%s' % (RIFCS_NS, name)
+
         def _get_id(metadata):
             return "%s/user/%s" % (getattr(settings,
                                            'RIFCS_KEY',
                                            site.domain),
                                    metadata.getMap().get('id'))
+
         def _get_group(metadata):
             return metadata.getMap().get('group', getattr(settings,
                                                           'RIFCS_GROUP', ''))
+
         def _get_originating_source(metadata):
             # TODO: Handle repository data from federated MyTardis instances
             if getattr(settings, 'CSRF_COOKIE_SECURE', False):
@@ -486,7 +492,7 @@ class RifCsExperimentProvider(AbstractExperimentProvider):
         wrapper.set('{%s}schemaLocation' % NS_XSI,
                     '%s %s' % (RIFCS_NS, RIFCS_SCHEMA))
         # registryObject
-        obj = SubElement(wrapper, _nsrif('registryObject') )
+        obj = SubElement(wrapper, _nsrif('registryObject'))
         obj.set('group', _get_group(metadata))
         # key
         SubElement(obj, _nsrif('key')).text = _get_id(metadata)
@@ -494,22 +500,22 @@ class RifCsExperimentProvider(AbstractExperimentProvider):
         SubElement(obj, _nsrif('originatingSource')).text = \
             _get_originating_source(metadata)
         # collection
-        collection = SubElement(obj, _nsrif('party') )
+        collection = SubElement(obj, _nsrif('party'))
         collection.set('type', 'person')
         # name
-        name = SubElement(collection, _nsrif('name') )
+        name = SubElement(collection, _nsrif('name'))
         name.set('type', 'primary')
         namePartMap = {'given': metadata.getMap().get('given_name'),
                        'family': metadata.getMap().get('family_name')}
-        for k,v in namePartMap.items():
-            if v == '': # Exclude empty parts
+        for k, v in namePartMap.items():
+            if v == '':  # Exclude empty parts
                 continue
             namePart = SubElement(name, _nsrif('namePart'))
             namePart.set('type', k)
             namePart.text = v
         # location
         electronic = SubElement(SubElement(SubElement(collection,
-                                                      _nsrif('location') ),
+                                                      _nsrif('location')),
                                            _nsrif('address')),
                                 _nsrif('electronic'))
         electronic.set('type', 'email')
@@ -517,7 +523,7 @@ class RifCsExperimentProvider(AbstractExperimentProvider):
         electronic_value.text = metadata.getMap().get('email')
 
         for experiment in metadata.getMap().get('owns_experiments'):
-            relatedObject = SubElement(collection, _nsrif('relatedObject') )
+            relatedObject = SubElement(collection, _nsrif('relatedObject'))
             SubElement(relatedObject, _nsrif('key')).text = \
                 RifCsExperimentProvider.get_rifcs_id(experiment.id, site)
             SubElement(relatedObject, _nsrif('relation')) \

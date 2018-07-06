@@ -1,5 +1,4 @@
 from django.core.exceptions import PermissionDenied
-from django.http import HttpResponse
 
 from tardis.tardis_portal.auth import decorators as authz
 from tardis.tardis_portal.models import \
@@ -13,6 +12,7 @@ from .forms import RelatedInfoForm
 SCHEMA_URI = 'http://ands.org.au/standards/rif-cs/registryObjects#relatedInfo'
 PARAMETER_NAMES = RelatedInfoForm().fields.keys()
 
+
 def _get_schema_func(schema_uri):
     def get_schema():
         try:
@@ -22,6 +22,7 @@ def _get_schema_func(schema_uri):
             call_command('loaddata', 'related_info_schema')
             return get_schema()
     return get_schema
+
 
 @authz.experiment_access_required
 def index(request, experiment_id):

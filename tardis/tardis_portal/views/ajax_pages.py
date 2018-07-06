@@ -21,7 +21,6 @@ from tardis.tardis_portal.auth import decorators as authz
 from tardis.tardis_portal.forms import RightsForm
 from tardis.tardis_portal.models import Experiment, DataFile, Dataset, Schema, \
     DatafileParameterSet, UserProfile
-from tardis.tardis_portal.search_backend import HighlightSearchBackend
 from tardis.tardis_portal.search_query import FacetFixedSearchQuery
 from tardis.tardis_portal.shortcuts import return_response_error, \
     return_response_not_found, render_response_index
@@ -109,8 +108,7 @@ def experiment_dataset_transfer(request, experiment_id):
                                                    '{{experiment_id}}')
 
     c = {'experiments': experiments.exclude(id=experiment_id),
-         'url_pattern': get_json_url_pattern()
-    }
+         'url_pattern': get_json_url_pattern()}
     return render_response_index(
         request,
         'tardis_portal/ajax/experiment_dataset_transfer.html',

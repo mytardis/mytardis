@@ -1,4 +1,3 @@
-from importlib import import_module
 import logging
 from os import path
 
@@ -39,7 +38,7 @@ logger = logging.getLogger(__name__)
 handler500 = 'tardis.views.error_handler'
 
 rapidconnect_urls = [
-    url (r'^auth/jwt$', rcauth),
+    url(r'^auth/jwt$', rcauth),
 ]
 
 overridable_urls = [

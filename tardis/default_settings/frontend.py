@@ -1,5 +1,3 @@
-from os import path
-
 # Render image file size limit: zero means no limit
 RENDER_IMAGE_SIZE_LIMIT = 0
 
