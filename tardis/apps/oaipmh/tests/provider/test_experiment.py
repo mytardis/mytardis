@@ -11,7 +11,7 @@ import oaipmh.interfaces
 import pytz
 
 from tardis.tardis_portal.models import Experiment, License, User, \
-     UserProfile, ExperimentParameterSet
+     ExperimentParameterSet
 from tardis.tardis_portal.ParameterSetManager import ParameterSetManager
 from tardis.tardis_portal.util import get_local_time
 

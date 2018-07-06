@@ -40,7 +40,7 @@ from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction, DEFAULT_DB_ALIAS
 from django.core.exceptions import ImproperlyConfigured
 
-from tardis.tardis_portal.models import Experiment, DataFile
+from tardis.tardis_portal.models import DataFile
 
 
 logger = logging.getLogger(__name__)

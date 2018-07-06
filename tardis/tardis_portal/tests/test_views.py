@@ -53,7 +53,7 @@ from django.contrib.auth.models import User, Group, Permission
 
 from tardis.tardis_portal.staging import get_full_staging_path
 from tardis.tardis_portal.auth.localdb_auth import django_user
-from tardis.tardis_portal.models import UserProfile, UserAuthentication, \
+from tardis.tardis_portal.models import UserAuthentication, \
     ObjectACL, Experiment, Dataset, DataFile, Schema, \
     DatafileParameterSet
 

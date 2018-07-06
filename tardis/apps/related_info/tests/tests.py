@@ -1,5 +1,4 @@
 import json
-import re
 import six
 
 from compare import expect, ensure, matcher

@@ -1,6 +1,6 @@
 from haystack.forms import ModelSearchForm
 
-from tardis.tardis_portal.models import Experiment, Dataset
+from tardis.tardis_portal.models import Experiment
 
 
 class GroupedSearchForm(ModelSearchForm):

@@ -14,7 +14,7 @@ from django.test import TestCase
 from django.test.client import Client
 # from nose.plugins.skip import SkipTest
 
-from tardis.tardis_portal.models import User, UserProfile, \
+from tardis.tardis_portal.models import User, \
     Experiment, ObjectACL, Dataset, DataFile
 from tardis.tardis_portal.models.datafile import compute_checksums
 

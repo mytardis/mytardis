@@ -8,7 +8,7 @@ from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
 from django.urls import reverse
 
-from oaipmh.common import Identify, Metadata
+from oaipmh.common import Identify
 import oaipmh.error
 from oaipmh.interfaces import IOAI
 from oaipmh.metadata import MetadataRegistry

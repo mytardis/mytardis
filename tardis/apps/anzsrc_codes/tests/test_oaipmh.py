@@ -1,8 +1,4 @@
 import json
-import re
-
-from bs4 import BeautifulSoup
-from compare import expect, ensure, matcher
 
 from django.test import TestCase
 from django.test.client import Client
@@ -10,9 +6,7 @@ from django.urls import reverse
 
 from lxml import etree
 
-from tardis.tardis_portal.models import \
-    Experiment, License, ObjectACL, User, UserProfile
-from tardis.tardis_portal.ParameterSetManager import ParameterSetManager
+from tardis.tardis_portal.models import Experiment, License, ObjectACL, User
 
 
 def _create_user_and_login(username='testuser', password='testpass'):
@@ -65,7 +59,7 @@ class RifCSTestCase(TestCase):
             from nose.plugins.skip import SkipTest
             raise SkipTest
         # Check related info was created
-        expect(response.status_code).to_equal(201)
+        self.assertEqual(response.status_code, 201)
 
         self.acl = acl
         self.client = client
@@ -91,16 +85,20 @@ class RifCSTestCase(TestCase):
         assert xml.xpath('/o:OAI-PMH/o:GetRecord/o:record', namespaces=ns)
         header, metadata = xml.xpath('/o:OAI-PMH/o:GetRecord/o:record/o:*',
                                      namespaces=ns)[0:2]
-        expect(header.xpath('o:identifier/text()',namespaces=ns)[0]) \
-            .to_equal('experiment/1')
+        self.assertEqual(
+            header.xpath('o:identifier/text()',namespaces=ns)[0],
+            'experiment/1')
         # <registryObject group="MyTARDIS Default Group">
         registryObject = metadata.xpath('r:registryObjects/r:registryObject',
                                            namespaces=ns)[0]
         # <collection type="dataset">
-        expect(registryObject.xpath('r:collection/@type',
-                                    namespaces=ns)[0]).to_equal('dataset')
+        self.assertEqual(
+            registryObject.xpath('r:collection/@type', namespaces=ns)[0],
+            'dataset')
         collection = registryObject.xpath('r:collection', namespaces=ns)[0]
-        expect(collection.xpath('r:subject/@type', namespaces=ns)) \
-            .to_equal(['anzsrc-for'])
-        expect(collection.xpath('r:subject/text()', namespaces=ns)) \
-            .to_equal([self.params['code']])
+        self.assertEqual(
+            collection.xpath('r:subject/@type', namespaces=ns),
+            ['anzsrc-for'])
+        self.assertEqual(
+            collection.xpath('r:subject/text()', namespaces=ns),
+            [self.params['code']])

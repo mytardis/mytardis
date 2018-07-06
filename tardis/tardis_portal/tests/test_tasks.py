@@ -1,12 +1,11 @@
 import hashlib
-from os import path, urandom
+from os import urandom
 
 from compare import expect
 from django.core.files.base import ContentFile
 from django.test import TestCase
 
-from tardis.tardis_portal.models import Experiment, Dataset, DataFile, \
-    User, UserProfile, DataFileObject, StorageBox
+from tardis.tardis_portal.models import Experiment, Dataset, DataFile, User
 
 from tardis.tardis_portal.tasks import verify_dfos
 

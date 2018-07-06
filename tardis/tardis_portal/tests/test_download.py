@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from os import makedirs
-from os.path import abspath, basename, dirname, join, exists, getsize
+from os.path import abspath, basename, join, exists, getsize
 from shutil import rmtree
 from zipfile import is_zipfile, ZipFile
 from tarfile import is_tarfile, TarFile
