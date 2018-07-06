@@ -131,18 +131,8 @@ def do_migration(request):
         new_user.username = old_username
         new_user.save()
         # copy api key from old user to new user so that MyData works seamlessly post migration
-        old_user_api_key = get_api_key(user)
-        # if old user had an apikey, we need to copy this to new user
-        if old_user_api_key:
-            new_user_api_key = get_api_key(request.user)
-            # if new user already have an api key, update the key with old user key
-            if new_user_api_key:
-                new_user_api_key.key = old_user_api_key.key
-                new_user_api_key.save()
-            # if new user does not have an api key, change old user apikey to point to new user
-            else:
-                old_user_api_key.user = request.user
-                old_user_api_key.save()
+        migrate_api_key(user, request.user)
+        #migrate user permissions
 
         # Add migration event record
         user_migration_record.migration_status = True
@@ -150,6 +140,21 @@ def do_migration(request):
 
     data = _setupJsonData(authForm, authenticationMethod, supportedAuthMethods)
     return _getJsonSuccessResponse(data)
+
+
+def migrate_api_key(old_user, new_user):
+    old_user_api_key = get_api_key(old_user)
+    # if old user had an apikey, we need to copy this to new user
+    if old_user_api_key:
+        new_user_api_key = get_api_key(new_user)
+        # if new user already have an api key, update the key with old user key
+        if new_user_api_key:
+            new_user_api_key.key = old_user_api_key.key
+            new_user_api_key.save()
+        # if new user does not have an api key, change old user apikey to point to new user
+        else:
+            old_user_api_key.user = new_user
+            old_user_api_key.save()
 
 
 def list_auth_methods(request):
