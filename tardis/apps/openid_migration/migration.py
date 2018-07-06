@@ -1,6 +1,7 @@
 import logging
 
 from django.http import HttpResponse
+from django.contrib.auth.models import Permission
 
 from tardis.tardis_portal.models import UserProfile, UserAuthentication, \
     ObjectACL, Group
@@ -130,9 +131,12 @@ def do_migration(request):
         new_user = request.user
         new_user.username = old_username
         new_user.save()
+
         # copy api key from old user to new user so that MyData works seamlessly post migration
         migrate_api_key(user, request.user)
+
         #migrate user permissions
+        migrate_user_permissions(user, request.user)
 
         # Add migration event record
         user_migration_record.migration_status = True
@@ -142,9 +146,22 @@ def do_migration(request):
     return _getJsonSuccessResponse(data)
 
 
+def migrate_user_permissions(old_user, new_user):
+    # get old user permissions
+    old_user_perms = Permission.objects.filter(user=old_user)
+    for perms in old_user_perms:
+        # find if permission already exist
+        try:
+            new_user.user_permissions.get(codename=perms.codename)
+        # add old user permissions to new user
+        except Permission.DoesNotExist:
+            new_user.user_permissions.add(perms)
+            new_user.save()
+
+
 def migrate_api_key(old_user, new_user):
     old_user_api_key = get_api_key(old_user)
-    # if old user had an apikey, we need to copy this to new user
+    # if old user had an apikey, we need to copy this to the new user
     if old_user_api_key:
         new_user_api_key = get_api_key(new_user)
         # if new user already have an api key, update the key with old user key
