@@ -136,5 +136,7 @@ class BaseProvider(oaipmh.interfaces.IOAI, object):
 
         :param metadata: metadata to turn into XML
         :type metadata: oaipmh.common.Metadata
+
+        :raises NotImplementedError: not implemented
         """
         raise NotImplementedError
