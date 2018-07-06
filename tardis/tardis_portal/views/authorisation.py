@@ -9,7 +9,6 @@ from urllib import urlencode
 from urlparse import urlparse, parse_qs
 
 from django.conf import settings
-from django.contrib.auth import logout as django_logout
 from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.auth.models import User, Group
 from django.contrib.sites.models import Site
@@ -736,20 +735,6 @@ def token_delete(request, token_id):
         token.delete()
         return HttpResponse('{"success": true}', content_type='application/json')
     return HttpResponse('{"success": false}', content_type='application/json')
-
-
-def token_login(request, token):
-    django_logout(request)
-
-    from tardis.tardis_portal.auth import login, token_auth
-    logger.debug('token login')
-
-    user = token_auth.authenticate(request, token)
-    if not user:
-        return return_response_error(request)
-    login(request, user)
-    experiment = Experiment.objects.get(token__token=token)
-    return HttpResponseRedirect(experiment.get_absolute_url())
 
 
 def share(request, experiment_id):

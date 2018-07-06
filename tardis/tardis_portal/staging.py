@@ -105,11 +105,6 @@ def staging_list(pathname=settings.STAGING_PATH,
     return directory_listing
 
 
-def get_sync_location():
-    from tardis.tardis_portal.models import Location
-    return Location.get_location('sync')
-
-
 def get_sync_root(prefix=''):
     from uuid import uuid4 as uuid
 
