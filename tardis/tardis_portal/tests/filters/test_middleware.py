@@ -37,7 +37,7 @@ from django.core.management import call_command
 from django.http import HttpResponse
 
 from tardis.tardis_portal.filters import FilterInitMiddleware
-from tardis.tardis_portal.models import User, UserProfile, Experiment, \
+from tardis.tardis_portal.models import User, Experiment, \
     ObjectACL, Dataset, DataFile, DataFileObject, StorageBox
 
 from tardis.tardis_portal.tests.test_download import get_size_and_sha512sum

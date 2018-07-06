@@ -6,7 +6,6 @@ from django.test.utils import override_settings
 from django.http import HttpRequest
 from django.contrib.auth import SESSION_KEY
 from tardis.tardis_portal.models import User
-from tardis.tardis_portal.models import UserProfile
 from tardis.tardis_portal.auth.interfaces import GroupProvider
 
 

@@ -20,7 +20,6 @@ from tastypie.test import ResourceTestCaseMixin
 from tardis.tardis_portal.auth.authservice import AuthService
 from tardis.tardis_portal.auth.localdb_auth import django_user
 from tardis.tardis_portal.models import ObjectACL
-from tardis.tardis_portal.models import UserProfile
 from tardis.tardis_portal.models.datafile import DataFile, DataFileObject
 from tardis.tardis_portal.models.dataset import Dataset
 from tardis.tardis_portal.models.experiment import Experiment

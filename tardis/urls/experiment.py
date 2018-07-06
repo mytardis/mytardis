@@ -14,7 +14,6 @@ from tardis.tardis_portal.views import (
 
 from tardis.tardis_portal.views import (
     edit_experiment,
-    experiment_index,
     create_experiment,
     add_experiment_access_user,
     remove_experiment_access_user,

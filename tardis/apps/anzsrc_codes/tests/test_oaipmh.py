@@ -1,7 +1,4 @@
 import json
-import re
-
-from bs4 import BeautifulSoup
 
 from django.test import TestCase
 from django.test.client import Client
@@ -9,9 +6,7 @@ from django.urls import reverse
 
 from lxml import etree
 
-from tardis.tardis_portal.models import \
-    Experiment, License, ObjectACL, User, UserProfile
-from tardis.tardis_portal.ParameterSetManager import ParameterSetManager
+from tardis.tardis_portal.models import Experiment, License, ObjectACL, User
 
 
 def _create_user_and_login(username='testuser', password='testpass'):

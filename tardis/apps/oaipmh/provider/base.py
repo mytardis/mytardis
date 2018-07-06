@@ -1,4 +1,4 @@
-# pylint: disable=redundant-returns-doc,missing-returns-doc,missing-raises-doc,missing-return-type-doc
+# pylint: disable=redundant-returns-doc,missing-return-type-doc
 import oaipmh.error
 import oaipmh.interfaces
 
@@ -136,5 +136,7 @@ class BaseProvider(oaipmh.interfaces.IOAI, object):
 
         :param metadata: metadata to turn into XML
         :type metadata: oaipmh.common.Metadata
+
+        :raises NotImplementedError: not implemented
         """
         raise NotImplementedError

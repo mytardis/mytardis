@@ -13,28 +13,30 @@ from django.http import HttpResponse, HttpResponseNotFound
 from django.views.decorators.http import etag
 from django.utils.cache import patch_cache_control
 
-from tardis.tardis_portal.models import Experiment, DataFile
+from tardis.tardis_portal.models import DataFile
 from tardis.tardis_portal.auth.decorators import has_datafile_download_access
 
 
 MAX_AGE = getattr(settings, 'DATAFILE_CACHE_MAX_AGE', 60*60*24*7)
 
-NSMAP = { None: 'http://library.stanford.edu/iiif/image-api/ns/' }
+NSMAP = {None: 'http://library.stanford.edu/iiif/image-api/ns/'}
 ALLOWED_MIMETYPES = ['image/jpeg', 'image/png', 'image/tiff',
                      'image/gif', 'image/jp2', 'application/pdf']
 
 mimetypes.add_type('image/jp2', '.jp2')
 
+
 def compliance_header(f):
     def wrap(*args, **kwargs):
         response = f(*args, **kwargs)
         if response:
-            response['Link'] = r'<http://library.stanford.edu/iiif/image-api/'+\
+            response['Link'] = r'<http://library.stanford.edu/iiif/image-api/' + \
                                r'compliance.html#level1>;rel="compliesTo"'
         return response
     wrap.__doc__ = f.__doc__
     wrap.__name__ = f.__name__
     return wrap
+
 
 def _get_iiif_error(parameter, text):
     error = Element('error', nsmap=NSMAP)
@@ -42,13 +44,15 @@ def _get_iiif_error(parameter, text):
     SubElement(error, 'text').text = text
     return etree.tostring(error, method='xml')
 
+
 def _bad_request(parameter, text):
     return HttpResponse(_get_iiif_error(parameter, text),
                         status=400, content_type='application/xml')
 
+
 def _invalid_media_response():
-    xml = _get_iiif_error('format',
-                          'Image cannot be converted to this format')
+    xml = _get_iiif_error(
+        'format', 'Image cannot be converted to this format')
     return HttpResponse(xml, status=415, content_type='application/xml')
 
 
@@ -93,6 +97,7 @@ def _do_resize(img, size):
             return True
     return False
 
+
 def compute_etag(request, datafile_id, *args, **kwargs):
     try:
         datafile = DataFile.objects.get(pk=datafile_id)
@@ -109,10 +114,11 @@ def compute_etag(request, datafile_id, *args, **kwargs):
     import hashlib
     return hashlib.sha1(signature).hexdigest()
 
+
 @etag(compute_etag)
 @compliance_header
 def download_image(request, datafile_id, region, size, rotation,
-                   quality, format=None): #@ReservedAssignment
+                   quality, format=None):  # @ReservedAssignment
     # Get datafile (and return 404 if absent)
     try:
         datafile = DataFile.objects.get(pk=datafile_id)
@@ -154,8 +160,9 @@ def download_image(request, datafile_id, region, size, rotation,
                     img.rotate(float(rotation))
                 # Handle quality (mostly by rejecting it)
                 if quality not in ['native', 'color']:
-                    return _get_iiif_error('quality',
-                    'This server does not support greyscale or bitonal quality.')
+                    return _get_iiif_error(
+                        'quality',
+                        'This server does not support greyscale or bitonal quality.')
                 # Handle format
                 if format:
                     mimetype = mimetypes.types_map['.%s' % format.lower()]
@@ -187,7 +194,7 @@ def download_image(request, datafile_id, region, size, rotation,
 
 @etag(compute_etag)
 @compliance_header
-def download_info(request, datafile_id, format): #@ReservedAssignment
+def download_info(request, datafile_id, format):  # @ReservedAssignment
     # Get datafile (and return 404 if absent)
     try:
         datafile = DataFile.objects.get(pk=datafile_id)
@@ -206,7 +213,7 @@ def download_info(request, datafile_id, format): #@ReservedAssignment
         with Image(file=f) as img:
             data = {'identifier': datafile.id,
                     'height': img.height,
-                    'width':  img.width }
+                    'width':  img.width}
 
     if format == 'xml':
         info = Element('info', nsmap=NSMAP)

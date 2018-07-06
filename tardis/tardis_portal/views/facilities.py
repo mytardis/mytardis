@@ -76,14 +76,14 @@ def dataset_aggregate_info(dataset):
         .order_by('id').count()
     verified_datafiles_size = \
         DataFile.objects.filter(dataset=dataset) \
-            .values('id') \
-            .annotate(min_verified=Min(Case(When(file_objects__verified=True,
-                                                 then=1),
-                                            default=0,
-                                            output_field=IntegerField()))) \
-            .filter(min_verified=1) \
-            .order_by('id') \
-            .aggregate(Sum('size'))['size__sum'] or 0
+        .values('id') \
+        .annotate(min_verified=Min(Case(When(file_objects__verified=True,
+                                             then=1),
+                                        default=0,
+                                        output_field=IntegerField()))) \
+        .filter(min_verified=1) \
+        .order_by('id') \
+        .aggregate(Sum('size'))['size__sum'] or 0
     return {
         "dataset_size": DataFile.sum_sizes(datafiles_all),
         "verified_datafiles_count": verified_datafiles_count,
@@ -112,7 +112,7 @@ def facility_overview_datafile_list(dataset):
             except AttributeError:
                 verified = "No (0 of %s bytes uploaded)" \
                     % '{:,}'.format(int(datafile.size))
-            except IOError, e:
+            except IOError:
                 verified = "No (0 of %s bytes uploaded)" \
                     % '{:,}'.format(int(datafile.size))
         datafiles.append({

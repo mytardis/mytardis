@@ -4,7 +4,6 @@ views that render full pages
 
 import logging
 import re
-import sys
 from os import path
 import inspect
 import types

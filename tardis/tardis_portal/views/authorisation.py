@@ -407,6 +407,7 @@ def add_experiment_access_user(request, experiment_id, username):
 
     return HttpResponse('User already has experiment access.')
 
+
 @never_cache
 @authz.experiment_ownership_required
 def remove_experiment_access_user(request, experiment_id, username):
@@ -416,7 +417,7 @@ def remove_experiment_access_user(request, experiment_id, username):
         return HttpResponse('User %s does not exist' % username)
 
     try:
-        experiment = Experiment.objects.get(pk=experiment_id)
+        Experiment.objects.get(pk=experiment_id)
     except Experiment.DoesNotExist:
         return HttpResponse('Experiment does not exist')
 
@@ -466,7 +467,7 @@ def change_user_permissions(request, experiment_id, username):
             if eacl.pluginId == 'django_user' and \
                eacl.get_related_object().id == user.id:
                 acl = eacl
-        #acl = expt_acls.filter(entityId=str(user.id))
+        # acl = expt_acls.filter(entityId=str(user.id))
         if acl is None:
             raise ObjectACL.DoesNotExist
         owner_acls = [oacl for oacl in expt_acls if oacl.isOwner]

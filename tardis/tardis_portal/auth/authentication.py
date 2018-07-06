@@ -8,7 +8,6 @@ import logging
 
 from django.conf import settings
 from django.http import HttpResponse
-from django.template import Context
 
 from tardis.tardis_portal.models import UserProfile, UserAuthentication, \
     ObjectACL, Group

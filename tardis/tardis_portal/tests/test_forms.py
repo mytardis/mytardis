@@ -37,7 +37,6 @@ http://docs.djangoproject.com/en/dev/topics/testing/
 
 """
 from django.test import TestCase
-from nose.plugins.skip import SkipTest
 
 from tardis.tardis_portal.forms import RightsForm
 from tardis.tardis_portal.models import Experiment, License

@@ -56,7 +56,7 @@ AUTH_PROVIDERS = (('localdb', 'Local DB',
 
 #if (optional) ldap doesn't exist then don't enable ldap auth
 try:
-    import ldap  # noqa # pylint: disable=C0411,C0413
+    import ldap  # noqa # pylint: disable=C0411,C0413,W0611
     AUTH_PROVIDERS += (('ldap', 'LDAP',
                         'tardis.tardis_portal.auth.ldap_auth.ldap_auth'),)
 except ImportError:

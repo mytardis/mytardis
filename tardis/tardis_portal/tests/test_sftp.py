@@ -2,10 +2,7 @@
 
 .. moduleauthor:: James Wettenhall <james.wettenhall@monash.edu>
 """
-import os
-import sys
 from StringIO import StringIO
-import threading
 
 from django.conf import settings
 from django.contrib.auth.models import User
