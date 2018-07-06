@@ -33,8 +33,6 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
-        using = options.get('database', DEFAULT_DB_ALIAS)
-        connection = connections[using]
         namespaces = options.get('namespaces', [])
         show_traceback = options.get('traceback', False)
         format = options.get('format', 'json')
@@ -58,13 +56,13 @@ class Command(BaseCommand):
             arg_set = set(args)
             skipped = arg_set - schema_set
             if skipped:
-                sys.stderr.write('Schema not found: {0}\n'.format( \
+                sys.stderr.write('Schema not found: {0}\n'.format(
                     ', '.join(skipped)))
             objects.extend(schemas)
             objects.extend(models.ParameterName.objects.filter(schema__namespace__in=args))
         try:
-            return serializers.serialize(format, objects, indent=4,
-                        use_natural_foreign_keys=True)
+            return serializers.serialize(
+                format, objects, indent=4, use_natural_foreign_keys=True)
         except Exception, e:
             if show_traceback:
                 raise

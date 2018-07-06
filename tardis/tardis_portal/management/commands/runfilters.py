@@ -32,9 +32,7 @@ Management command to (re-)run the ingestion filters by hand.
 """
 
 import sys
-import traceback
 import logging
-from optparse import make_option
 from importlib import import_module
 
 from django.conf import settings
@@ -42,7 +40,7 @@ from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction, DEFAULT_DB_ALIAS
 from django.core.exceptions import ImproperlyConfigured
 
-from tardis.tardis_portal.models import Experiment, Dataset, DataFile
+from tardis.tardis_portal.models import Experiment, DataFile
 
 
 logger = logging.getLogger(__name__)
@@ -65,24 +63,24 @@ metadata to be reingested."""
             action='store_true',
             default=False,
             dest='dryRun',
-	    help="Don't commit the results of running the " \
-		"filters to the database.  Warning: does not " \
-		"handle non-database changes made by a filter!"
+            help=("Don't commit the results of running the "
+                  "filters to the database.  Warning: does not "
+                  "handle non-database changes made by a filter!")
         )
         parser.add_argument(
             '--list',
             action='store_true',
             default=False,
             dest='list',
-	    help="List the ingestion filters configured in "
-		 "settings.POST_SAVE_FILTERS"
+            help="List the ingestion filters configured in "
+                 "settings.POST_SAVE_FILTERS"
         )
         parser.add_argument(
             '--all',
             action='store_true',
             default=False,
             dest='all',
-	    help="Run all available filters"
+            help="Run all available filters"
         )
 
     def handle(self, *args, **options):
@@ -166,8 +164,8 @@ metadata to be reingested."""
                     transaction.rollback(using=using)
                     exc_class, exc, tb = sys.exc_info()
                     new_exc = CommandError("Exception %s has occurred: "
-                                           "rolled back transaction" % \
-                                               (exc or exc_class))
+                                           "rolled back transaction"
+                                           % (exc or exc_class))
                     raise new_exc.__class__, new_exc, tb
 
     def listFilters(self):

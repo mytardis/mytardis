@@ -1,7 +1,6 @@
 import logging
 import operator
 import json
-import warnings
 
 import dateutil.parser
 import pytz
