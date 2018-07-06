@@ -119,11 +119,11 @@ class AbstractExperimentProvider(BaseProvider):
         return self._get_experiment_metadata(obj, metadataPrefix)
 
     @abstractmethod
-    def _get_experiment_metadata(self):
+    def _get_experiment_metadata(self, experiment, metadataPrefix):
         raise NotImplementedError
 
     @abstractmethod
-    def _get_user_metadata(self):
+    def _get_user_metadata(self, user, metadataPrefix):
         raise NotImplementedError
 
     def _get_in_range(self, from_, until):
@@ -147,7 +147,7 @@ class AbstractExperimentProvider(BaseProvider):
         return frozenset(chain(experiments, *users))
 
     @abstractmethod
-    def _handles_metadata_prefix(self):
+    def _handles_metadata_prefix(self, metadataPrefix):
         return False
 
 
@@ -186,7 +186,7 @@ class DcExperimentProvider(AbstractExperimentProvider):
                 'description': [experiment.description],
             })
 
-    def _get_user_metadata(self):
+    def _get_user_metadata(self, user, metadataPrefix):
         raise NotImplementedError
 
     def _handles_metadata_prefix(self, metadataPrefix):
