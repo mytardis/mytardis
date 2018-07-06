@@ -9,8 +9,9 @@ from tardis.tardis_portal.auth.authentication import _getSupportedAuthMethods, \
 from tardis.tardis_portal.forms import createLinkedUserAuthenticationForm
 from tardis.tardis_portal.auth import localdb_auth
 from tardis.tardis_portal.shortcuts import render_response_index
-
 from tardis.apps.openid_migration.models import OpenidUserMigration, OpenidACLMigration
+
+from tastypie.models import ApiKey
 
 logger = logging.getLogger(__name__)
 
@@ -129,6 +130,20 @@ def do_migration(request):
         new_user = request.user
         new_user.username = old_username
         new_user.save()
+        # copy api key from old user to new user so that MyData works seamlessly post migration
+        old_user_api_key = get_api_key(user)
+        # if old user had an apikey, we need to copy this to new user
+        if old_user_api_key:
+            new_user_api_key = get_api_key(request.user)
+            # if new user already have an api key, update the key with old user key
+            if new_user_api_key:
+                new_user_api_key.key = old_user_api_key.key
+                new_user_api_key.save()
+            # if new user does not have an api key, change old user apikey to point to new user
+            else:
+                old_user_api_key.user = request.user
+                old_user_api_key.save()
+
         # Add migration event record
         user_migration_record.migration_status = True
         user_migration_record.save()
@@ -259,3 +274,12 @@ def add_auth_method(request):
 
     data = _setupJsonData(authForm, authenticationMethod, supportedAuthMethods)
     return _getJsonSuccessResponse(data)
+
+
+def get_api_key(user):
+    try:
+        apikey = ApiKey.objects.get(user=user)
+    except ApiKey.DoesNotExist:
+        return None
+
+    return apikey
