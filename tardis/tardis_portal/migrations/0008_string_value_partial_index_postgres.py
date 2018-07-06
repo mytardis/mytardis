@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-from django.db import models, migrations, connection
+from django.db import migrations, connection
 from tardis.tardis_portal.models import ExperimentParameter, DatasetParameter, \
     DatafileParameter, InstrumentParameter
 

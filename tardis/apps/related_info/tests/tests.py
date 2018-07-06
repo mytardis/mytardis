@@ -1,5 +1,4 @@
 import json
-import re
 import six
 
 from django.test import TestCase, TransactionTestCase

@@ -1,12 +1,9 @@
-import re
-
 from django.test import TestCase
 from django.test.client import Client
 from django.urls import reverse
 
 
-from tardis.tardis_portal.models import \
-    Experiment, ObjectACL, User, UserProfile
+from tardis.tardis_portal.models import Experiment, ObjectACL, User
 
 
 def _create_user_and_login(username='testuser', password='testpass'):
