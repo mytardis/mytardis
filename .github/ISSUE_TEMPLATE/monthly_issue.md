@@ -21,8 +21,11 @@ Stable branch should be created after the 7th. The 7th is the last date to relia
     Please submit regression and security fixes as PRs to `develop` and ensure that
     they are labelled with the `Pick into series-X.Y` label.
     ```
-- [ ] Merge any approved PRs into `develop`
+- [ ] Merge any **approved** PRs into `develop`
+- [ ] Ensure that semaphore tests are passing on `develop`
+- [ ] PR any final notable changes to `docs/CHANGELOG.rst` and ping someone to merge it.
 - [ ] Create branch `series-X.Y` from `develop`
+- [ ] Activate the `series-X.Y` branch build on ReadTheDocs.
 - [ ] Create a PR against `develop` that increments the version numbers to `X.{Y + 1}.0`:
   - [ ] `README.md`
   - [ ] `package.json`
@@ -33,8 +36,8 @@ Stable branch should be created after the 7th. The 7th is the last date to relia
 ## RC1
 
 - Follow the [Creating RC1] guide:
-  - [ ] Create an PR on `develop` updating the `docs/admin/install.rst` guide.
-  - [ ] Create an PR on `develop` updating the dependencies license list
+  - [ ] Create an PR on `develop` updating the `docs/admin/install.rst` guide (as needed).
+  - [ ] Create an PR on `develop` updating the dependencies license list (as needed).
 
 
 [Creating RC1]: https://github.com/mytardis/release/blob/master/general/release-candidates.md#creating-rc1
@@ -65,11 +68,13 @@ No new code can added to the release that was not included in the final RC.
   - [ ] [Pick][cherry-pick] changelog changes into a PR against `series-X.Y` branch.
 
 - Before 14:00 AEST:
-  - [ ] Tag the `X.Y.0` version from `series-X.Y` branch
+  - [ ] Tag the `X.Y.0` version from `series-X.Y` branch.
   - [ ] Check tag build passes on Semaphore.
   - [ ] Create a new release on Github releases page that includes changes
       mentioned in the changelog.
+  - [ ] Bring `master` branch up-to-date with the `series-X.Y` branch.
+  - [ ] Announce the release to the `#general` channel on MyTardis Slack.
 
-
+[cherry-pick]: https://github.com/mytardis/release/blob/master/general/pick-changes-into-stable.md
 [changelog]:
 https://github.com/mytardis/mytardis/blob/develop/docs/changelog.rst
