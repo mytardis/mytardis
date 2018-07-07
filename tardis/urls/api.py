@@ -11,6 +11,7 @@ from tastypie.resources import Resource
 
 from tardis.app_config import format_app_name_for_url
 from tardis.app_config import get_tardis_apps
+from tardis.sftp.api import SFTPPublicKeyModelResource
 from tardis.tardis_portal.api import (
     DatafileParameterResource,
     DatafileParameterSetResource,
@@ -59,6 +60,7 @@ v1_api.register(GroupResource())
 v1_api.register(ObjectACLResource())
 v1_api.register(FacilityResource())
 v1_api.register(InstrumentResource())
+v1_api.register(SFTPPublicKeyModelResource())
 
 for app_name, app in get_tardis_apps():
     try:

@@ -9,4 +9,5 @@ urlpatterns = [
          views.cybderduck_connection_window,
          name='cyberduck_connection_window'),
     url(r'^$', views.sftp_access, name='index'),
+    url(r'^keys/$', views.manage_keys, name='manage_keys'),
 ]

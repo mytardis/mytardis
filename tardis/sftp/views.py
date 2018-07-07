@@ -1,15 +1,20 @@
 # -*- coding: utf-8 -*-
 
+import base64
 from os import path
 
+from binascii import hexlify
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.contrib.contenttypes.models import ContentType
 from django.http import HttpResponse
 from django.shortcuts import render
+from paramiko.rsakey import RSAKey
+from paramiko.py3compat import u
 from PIL import Image, ImageFont, ImageDraw
 
 from tardis.tardis_portal.auth.decorators import has_experiment_download_access
+from tardis.sftp.models import SFTPPublicKey
 
 
 @login_required
@@ -75,6 +80,25 @@ def sftp_access(request):
         c['sftp_start_dir'])
     return render(request, template_name='sftp/index.html', context=c)
 
+
+@login_required
+def manage_keys(request):
+    user =  request.user
+    keys = SFTPPublicKey.objects.filter(user=user)
+
+    def _get_key_data(key):
+        k = RSAKey(data=base64.b64decode(key.public_key))
+        return {
+            'id': key.id,
+            'name': key.name,
+            'fingerprint': u(hexlify(k.get_fingerprint())),
+            'added': str(key.added)
+        }
+
+    c = {
+        'keys': map(_get_key_data, keys) if keys.count() > 0 else []
+    }
+    return render(request, template_name='sftp/keys.html', context=c)
 
 @login_required
 def cybderduck_connection_window(request):
