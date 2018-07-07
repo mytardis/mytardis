@@ -1,6 +1,18 @@
 {% load static from staticfiles %}
 {% block js_libraries %}
-{# See js/lib/README.rst for more info #}
+{% comment %}
+
+See tardis/tardis_portal/static/js/lib/README.rst for more info.
+
+Third-party JS dependencies which are not yet npm-installed are in:
+
+    tardis/tardis_portal/static/js/lib/
+
+NPM_STATIC_FILES_PREFIX is set to js/lib/ in tardis/default_settings/static_files.py
+so npm-installed dependencies in node_modules/ will be available in static/js/lib/
+after running collectstatic.
+
+{% endcomment %}
 <script type="text/javascript" src="{% static 'js/lib/jquery/dist/jquery.min.js' %}"></script>
 <script type="text/javascript" src="{% static 'js/lib/jquery-ui-dist/jquery-ui.min.js' %}"></script>
 <script type="text/javascript" src="{% static 'js/lib/jquery.cookie.js' %}"></script>
@@ -23,7 +35,7 @@
 <!-- Modernizr -->
 <script type="text/javascript" src="{% static 'js/lib/modernizr.min.js' %}"></script>
 <!-- Backbone.js -->
-<script type="text/javascript" src="{% static 'js/lib/backbone-min.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/lib/backbone/backbone-min.js' %}"></script>
 <!-- Backbone Forms -->
 <link rel="stylesheet" type="text/css"
         href="{% static 'js/lib/backbone-forms-0.7.3/backbone-forms.css' %}"/>
