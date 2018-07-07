@@ -49,6 +49,8 @@ NPM_FILE_PATTERNS = {
     'jquery': ['*'],
     'jquery-migrate': ['*'],
     'jquery-ui-dist': ['jquery-ui.min.js'],
-    'ng-dialog': ['*']
+    'ng-dialog': ['*'],
+    'underscore': ['*'],
+    'underscore.string': ['*']
 }
 NPM_STATIC_FILES_PREFIX = path.join('js', 'lib')
