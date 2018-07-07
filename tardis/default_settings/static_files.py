@@ -44,6 +44,7 @@ NPM_ROOT_PATH = path.abspath(path.join(path.dirname(__file__), '../..'))
 NPM_FILE_PATTERNS = {
     'angular': ['*'],
     'angular-resource': ['*'],
+    'backbone': ['*'],
     'blueimp-file-upload': ['*'],
     'clipboard': ['*'],
     'jquery': ['*'],
