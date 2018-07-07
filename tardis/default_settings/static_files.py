@@ -45,6 +45,7 @@ NPM_FILE_PATTERNS = {
     'angular': ['*'],
     'angular-resource': ['*'],
     'backbone': ['*'],
+    'backbone-forms': ['*'],
     'blueimp-file-upload': ['*'],
     'clipboard': ['*'],
     'jquery': ['*'],
