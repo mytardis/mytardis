@@ -10,14 +10,14 @@ RUN apt-get update && apt-get install \
     -qy \
     -o APT::Install-Recommends=false \
     -o APT::Install-Suggests=false \
+    curl \
     git \
+    gnupg \
     libldap2-dev \
     libsasl2-dev \
     libssl-dev \
     libxml2-dev \
     libxslt1-dev \
-    nodejs \
-    npm \
     python-pip \
     python-virtualenv \
     virtualenvwrapper \
@@ -25,6 +25,9 @@ RUN apt-get update && apt-get install \
     libmagickwand-dev \
     libmysqlclient20 \
     && apt-get clean
+
+RUN curl -sL https://deb.nodesource.com/setup_10.x | bash -
+RUN apt-get install -y nodejs
 
 RUN mkdir /appenv
 RUN chown -R webapp:webapp /appenv
