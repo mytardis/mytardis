@@ -11,14 +11,15 @@ from django.contrib.auth.models import User
 from django.test import RequestFactory
 from django.test import TestCase
 
-import pytz
+import pytz  # pylint: disable=E0401
 
-from tardis.tardis_portal.models.experiment import Experiment
-from tardis.tardis_portal.models.access_control import ObjectACL
-from tardis.tardis_portal.models.dataset import Dataset
-from tardis.tardis_portal.models.parameters import ExperimentParameter
-from tardis.tardis_portal.models.parameters import ParameterName
-from tardis.tardis_portal.models.parameters import Schema
+from ....tardis_portal.models import (
+    Dataset,
+    Experiment,
+    ObjectACL,
+    ExperimentParameter,
+    ParameterName,
+    Schema)
 
 from .. import default_settings
 from ..models import Publication

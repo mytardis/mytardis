@@ -12,7 +12,7 @@ from django.http import HttpResponse, HttpResponseForbidden
 from django.conf import settings
 from django.utils import timezone
 
-import dateutil.parser
+import dateutil.parser  # pylint: disable=E0401
 
 from tardis.tardis_portal.auth import decorators as authz
 from tardis.tardis_portal.shortcuts import render_response_index

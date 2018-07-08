@@ -5,7 +5,7 @@ from django.core.cache import caches
 from django.db import transaction
 from django.utils import timezone
 
-from celery.task import task
+from celery.task import task  # pylint: disable=E0401
 
 from tardis.tardis_portal.models import Experiment, ExperimentParameter
 from tardis.apps.publication_workflow.doi import DOI
