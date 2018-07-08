@@ -38,8 +38,9 @@ http://docs.djangoproject.com/en/dev/topics/testing/
 """
 from django.test import TestCase
 
-from tardis.tardis_portal.forms import RightsForm
-from tardis.tardis_portal.models import Experiment, License
+from ..forms import RightsForm
+from ..models import Experiment, License
+
 
 class RightsFormTestCase(TestCase):
 

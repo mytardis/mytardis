@@ -1,9 +1,9 @@
 from django import template
 from django.template.defaultfilters import pluralize, filesizeformat
 
-from tardis.tardis_portal.util import render_mustache
-from tardis.tardis_portal.views import get_dataset_info
-from tardis.tardis_portal.models.dataset import Dataset
+from ..util import render_mustache
+from ..views import get_dataset_info
+from ..models.dataset import Dataset
 
 register = template.Library()
 

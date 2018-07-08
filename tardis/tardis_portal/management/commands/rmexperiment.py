@@ -12,11 +12,11 @@ some cascading.
 import sys
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction, DEFAULT_DB_ALIAS
-from tardis.tardis_portal.models import Experiment, Dataset, DataFile
-from tardis.tardis_portal.models import ExperimentAuthor, ObjectACL
-from tardis.tardis_portal.models import ExperimentParameterSet, ExperimentParameter
-from tardis.tardis_portal.models import DatasetParameterSet
-from tardis.tardis_portal.models import DatafileParameterSet
+from ...models import Experiment, Dataset, DataFile
+from ...models import ExperimentAuthor, ObjectACL
+from ...models import ExperimentParameterSet, ExperimentParameter
+from ...models import DatasetParameterSet
+from ...models import DatafileParameterSet
 
 
 class Command(BaseCommand):

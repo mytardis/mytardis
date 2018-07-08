@@ -1,5 +1,5 @@
 from django.conf import settings
-from tardis.tardis_portal.staging import get_full_staging_path
+from .staging import get_full_staging_path
 
 
 def single_search_processor(request):

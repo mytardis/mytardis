@@ -8,7 +8,7 @@ from django.test import TestCase
 from django.test.client import Client
 from django.contrib.auth.models import User, Permission
 
-from tardis.tardis_portal.models import UserAuthentication
+from ..models import UserAuthentication
 
 
 class AuthenticationTestCase(TestCase):
@@ -124,7 +124,7 @@ class AuthenticationTestCase(TestCase):
         from django.test.client import RequestFactory
         factory = RequestFactory()
 
-        from tardis.tardis_portal.auth.localdb_auth import DjangoAuthBackend
+        from ..auth.localdb_auth import DjangoAuthBackend
         dj_auth = DjangoAuthBackend()
         request = factory.post('/login', {'username': 'test',
                                           'password': 'test',

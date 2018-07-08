@@ -1,4 +1,4 @@
-from tardis.default_settings.apps import INSTALLED_APPS
+from .apps import INSTALLED_APPS
 
 # Settings for the single search box
 SINGLE_SEARCH_ENABLED = False

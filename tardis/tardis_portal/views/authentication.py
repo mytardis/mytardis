@@ -22,13 +22,12 @@ from django.shortcuts import redirect
 from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import csrf_exempt
 
-from tardis.tardis_portal.auth import auth_service
-from tardis.tardis_portal.auth.localdb_auth import auth_key as localdb_auth_key
-from tardis.tardis_portal.forms import ManageAccountForm, CreateUserPermissionsForm, \
-    LoginForm
-from tardis.tardis_portal.models import JTI, UserProfile, UserAuthentication
-from tardis.tardis_portal.shortcuts import render_response_index
-from tardis.tardis_portal.views.utils import _redirect_303
+from ..auth import auth_service
+from ..auth.localdb_auth import auth_key as localdb_auth_key
+from ..forms import ManageAccountForm, CreateUserPermissionsForm, LoginForm
+from ..models import JTI, UserProfile, UserAuthentication
+from ..shortcuts import render_response_index
+from ..views.utils import _redirect_303
 
 logger = logging.getLogger(__name__)
 
@@ -216,7 +215,7 @@ def login(request):
     '''
     handler for login page
     '''
-    from tardis.tardis_portal.auth import auth_service
+    from ..auth import auth_service
 
     if request.user.is_authenticated:
         # redirect the user to the home page if he is trying to go to the
@@ -265,7 +264,7 @@ def login(request):
 @login_required()
 def manage_auth_methods(request):
     '''Manage the user's authentication methods using AJAX.'''
-    from tardis.tardis_portal.auth.authentication import add_auth_method, \
+    from ..auth.authentication import add_auth_method, \
         merge_auth_method, remove_auth_method, edit_auth_method, \
         list_auth_methods
 

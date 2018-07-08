@@ -6,11 +6,12 @@ from django.test.client import Client
 
 from django.contrib.auth.models import User, Group, Permission, AnonymousUser
 
-from tardis.tardis_portal.auth.localdb_auth import django_user
-from tardis.tardis_portal.auth.localdb_auth import auth_key as localdb_auth_key
-from tardis.tardis_portal.models import ObjectACL, Experiment
+from ..auth.localdb_auth import django_user
+from ..auth.localdb_auth import auth_key as localdb_auth_key
+from ..models import ObjectACL, Experiment
 
 logger = logging.getLogger(__name__)
+
 
 class ObjectACLTestCase(TestCase):
     urls = 'tardis.urls'

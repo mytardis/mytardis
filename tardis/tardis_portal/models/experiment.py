@@ -9,8 +9,8 @@ from django.urls import reverse
 from django.db import models
 from django.utils.safestring import SafeUnicode
 
-from tardis.tardis_portal.managers import OracleSafeManager, ExperimentManager
-from tardis.tardis_portal.models import ObjectACL
+from ..managers import OracleSafeManager, ExperimentManager
+from .access_control import ObjectACL
 
 from .license import License
 
@@ -102,7 +102,7 @@ class Experiment(models.Model):
         experiment.
 
         """
-        from tardis.tardis_portal.models.parameters import Schema
+        from .parameters import Schema
         if schemaType == Schema.EXPERIMENT or schemaType is None:
             return self.experimentparameterset_set.filter(
                 schema__type=Schema.EXPERIMENT)

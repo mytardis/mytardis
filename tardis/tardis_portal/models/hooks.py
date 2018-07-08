@@ -16,7 +16,7 @@ def publish_public_expt_rifcs(experiment):
         providers = settings.RIFCS_PROVIDERS
     except:
         providers = None
-    from tardis.tardis_portal.publish.publishservice import PublishService
+    from ..publish.publishservice import PublishService
     pservice = PublishService(providers, experiment)
     try:
         pservice.manage_rifcs(settings.OAI_DOCS_PATH)

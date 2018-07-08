@@ -4,9 +4,9 @@ from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils.timezone import is_aware, make_aware
 
-from tardis.tardis_portal.models import Experiment
-from tardis.tardis_portal.models import Dataset
-from tardis.tardis_portal.models import DataFile
+from .models.experiment import Experiment
+from .models.dataset import Dataset
+from .models.datafile import DataFile
 
 LOCAL_TZ = pytz.timezone(settings.TIME_ZONE)
 
@@ -42,13 +42,14 @@ class ParameterSetManager(object):
         :param string schema: Schema namespace
         :raises TypeError:
         """
-        from tardis.tardis_portal.models import DatasetParameterSet
-        from tardis.tardis_portal.models import DatafileParameterSet
-        from tardis.tardis_portal.models import ExperimentParameterSet
-        from tardis.tardis_portal.models import DatasetParameter
-        from tardis.tardis_portal.models import DatafileParameter
-        from tardis.tardis_portal.models import ExperimentParameter
-        from tardis.tardis_portal.models.parameters import ParameterSet
+        from .models.parameters import (
+            DatasetParameterSet,
+            DatafileParameterSet,
+            ExperimentParameterSet,
+            DatasetParameter,
+            DatafileParameter,
+            ExperimentParameter,
+            ParameterSet)
 
         if issubclass(type(self), ParameterSet):
             pass
@@ -124,7 +125,7 @@ class ParameterSetManager(object):
             raise TypeError("Missing arguments")
 
     def get_schema(self):
-        from tardis.tardis_portal.models import Schema
+        from .models.parameters import Schema
         try:
             schema = Schema.objects.get(
                 namespace=self.namespace)
@@ -208,7 +209,7 @@ class ParameterSetManager(object):
 
     def _get_create_parname(self, parname,
                             fullparname=None, example_value=None):
-        from tardis.tardis_portal.models import ParameterName
+        from .models.parameters import ParameterName
         try:
             paramName = ParameterName.objects.get(
                 name=parname, schema__id=self.get_schema().id)

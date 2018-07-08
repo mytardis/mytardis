@@ -1,8 +1,8 @@
 from django.test import TestCase
 from django.conf import settings
-from tardis.tardis_portal.models import User, Experiment
-from tardis.tardis_portal.publish.provider.rifcsprovider import RifCsProvider
-from tardis.tardis_portal.publish.publishservice import PublishService
+from ..models import User, Experiment
+from ..publish.provider.rifcsprovider import RifCsProvider
+from ..publish.publishservice import PublishService
 
 BEAMLINE_VALUE = "myBeamline"
 LICENSE_URL_VALUE = "http://some.uri.com"
@@ -50,7 +50,7 @@ class PublishServiceTestCase(TestCase):
     def testInitialisationNoProvider(self):
         service = PublishService(None, self.e1)
         self.assertIsNone(service.rc_providers)
-        from tardis.tardis_portal.publish.provider.rifcsprovider import RifCsProvider
+        from ..publish.provider.rifcsprovider import RifCsProvider
         self.assertTrue(isinstance(service.provider, RifCsProvider))
         self.assertFalse(isinstance(service.provider, MockRifCsProvider))
 

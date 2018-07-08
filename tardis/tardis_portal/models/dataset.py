@@ -5,8 +5,8 @@ from django.conf import settings
 from django.urls import reverse
 from django.db import models
 
-from tardis.tardis_portal.managers import OracleSafeManager
-from tardis.tardis_portal.models.storage import StorageBox
+from ..managers import OracleSafeManager
+from .storage import StorageBox
 
 from .experiment import Experiment
 from .instrument import Instrument
@@ -47,7 +47,7 @@ class Dataset(models.Model):
         experiment.
 
         """
-        from tardis.tardis_portal.models.parameters import Schema
+        from .parameters import Schema
         if schemaType == Schema.DATASET or schemaType is None:
             return self.datasetparameterset_set.filter(
                 schema__type=Schema.DATASET)

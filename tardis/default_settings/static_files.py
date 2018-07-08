@@ -1,5 +1,5 @@
 from os import path
-from tardis.default_settings.storage import DEFAULT_STORAGE_BASE_DIR
+from .storage import DEFAULT_STORAGE_BASE_DIR
 
 # Absolute path to the directory that holds media.
 # Example: "/home/media/media.lawrence.com/"

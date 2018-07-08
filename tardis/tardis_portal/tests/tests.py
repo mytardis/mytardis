@@ -45,9 +45,9 @@ from django.test import TestCase
 from django.test.client import Client
 from django.contrib.auth.models import User
 
-from tardis.tardis_portal.models import Experiment, ObjectACL, \
+from ..models import Experiment, ObjectACL, \
     Schema, ParameterName, Dataset
-from tardis.tardis_portal.auth.localdb_auth import django_user
+from ..auth.localdb_auth import django_user
 
 
 class SearchTestCase(TestCase):
@@ -146,7 +146,7 @@ class SearchTestCase(TestCase):
 
         self.assertEqual(len(response.context['experiments']), 1)
 
-        from tardis.tardis_portal.models import Experiment
+        from ..models import Experiment
 
         values = response.context['experiments']
         experiment = values[0]

@@ -1,4 +1,4 @@
-from tardis.tardis_portal.auth import auth_service
+from . import auth_service
 
 
 def getGroups(user):

@@ -17,23 +17,23 @@ from django.test import TestCase
 
 from tastypie.test import ResourceTestCaseMixin
 
-from tardis.tardis_portal.auth.authservice import AuthService
-from tardis.tardis_portal.auth.localdb_auth import django_user
-from tardis.tardis_portal.models import ObjectACL
-from tardis.tardis_portal.models.datafile import DataFile, DataFileObject
-from tardis.tardis_portal.models.dataset import Dataset
-from tardis.tardis_portal.models.experiment import Experiment
-from tardis.tardis_portal.models.parameters import ExperimentParameter
-from tardis.tardis_portal.models.parameters import ExperimentParameterSet
-from tardis.tardis_portal.models.parameters import ParameterName
-from tardis.tardis_portal.models.parameters import Schema
-from tardis.tardis_portal.models.facility import Facility
-from tardis.tardis_portal.models.instrument import Instrument
+from ..auth.authservice import AuthService
+from ..auth.localdb_auth import django_user
+from ..models import ObjectACL
+from ..models.datafile import DataFile, DataFileObject
+from ..models.dataset import Dataset
+from ..models.experiment import Experiment
+from ..models.parameters import ExperimentParameter
+from ..models.parameters import ExperimentParameterSet
+from ..models.parameters import ParameterName
+from ..models.parameters import Schema
+from ..models.facility import Facility
+from ..models.instrument import Instrument
 
 
 class SerializerTest(TestCase):
     def test_pretty_serializer(self):
-        from tardis.tardis_portal.api import PrettyJSONSerializer
+        from ..api import PrettyJSONSerializer
         test_serializer = PrettyJSONSerializer()
         test_data = {"ugly": "json data",
                      "reformatted": 2,

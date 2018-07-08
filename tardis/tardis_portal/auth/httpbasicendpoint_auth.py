@@ -7,8 +7,9 @@ Created on Dec 15, 2011
 import urllib2
 from django.conf import settings
 from django.contrib.auth.models import User
-from tardis.tardis_portal.auth.interfaces import AuthProvider
-from tardis.tardis_portal.auth.utils import configure_user
+from .interfaces import AuthProvider
+from .utils import configure_user
+
 
 class HttpBasicEndpointAuth(AuthProvider):
     '''
