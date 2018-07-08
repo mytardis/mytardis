@@ -36,17 +36,16 @@ from django.core.exceptions import ImproperlyConfigured
 from django.contrib.auth.decorators import login_required
 
 from tardis.analytics.tracker import IteratorTracker
-from tardis.tardis_portal.models import Dataset
-from tardis.tardis_portal.models import DataFile
-from tardis.tardis_portal.models import Experiment
-from tardis.tardis_portal.auth.decorators import has_datafile_download_access
-from tardis.tardis_portal.auth.decorators import experiment_download_required
-from tardis.tardis_portal.auth.decorators import dataset_download_required
-from tardis.tardis_portal.shortcuts import render_error_message
-from tardis.tardis_portal.shortcuts import (return_response_not_found,
-                                            return_response_error)
-from tardis.tardis_portal.util import (get_filesystem_safe_dataset_name,
-                                       get_filesystem_safe_experiment_name)
+from .models import Dataset
+from .models import DataFile
+from .models import Experiment
+from .auth.decorators import has_datafile_download_access
+from .auth.decorators import experiment_download_required
+from .auth.decorators import dataset_download_required
+from .shortcuts import render_error_message
+from .shortcuts import return_response_not_found, return_response_error
+from .util import (get_filesystem_safe_dataset_name,
+                   get_filesystem_safe_experiment_name)
 
 logger = logging.getLogger(__name__)
 
@@ -65,7 +64,7 @@ def _create_download_response(request, datafile_id, disposition='attachment'):  
         return return_response_error(request)
     # Send an image that can be seen in the browser
     if disposition == 'inline' and datafile.is_image():
-        from tardis.tardis_portal.iiif import download_image
+        from .iiif import download_image
         args = (request, datafile.id, 'full', 'full', '0', 'native')
         # Send unconverted image if web-compatible
         if datafile.get_mimetype() in ('image/gif', 'image/jpeg', 'image/png'):

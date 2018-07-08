@@ -3,7 +3,7 @@ from django.conf import settings
 from django.db import models
 from django.contrib.auth.models import User
 
-from tardis.tardis_portal.managers import OracleSafeManager
+from ..managers import OracleSafeManager
 
 from .experiment import Experiment
 

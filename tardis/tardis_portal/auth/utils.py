@@ -6,7 +6,8 @@ Created on 15/03/2011
 
 from django.conf import settings
 from django.contrib.auth.models import User, Group
-from tardis.tardis_portal.models import UserAuthentication
+
+from ..models.access_control import UserAuthentication
 
 
 def get_or_create_user(auth_method, user_id, email=''):

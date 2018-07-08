@@ -31,7 +31,7 @@
 import logging
 from os import path
 from django.conf import settings
-from tardis.tardis_portal.shortcuts import render_to_file
+from .shortcuts import render_to_file
 
 logger = logging.getLogger(__name__)
 

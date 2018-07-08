@@ -34,36 +34,33 @@ from tastypie.utils import trailing_slash
 from tastypie.contrib.contenttypes.fields import GenericForeignKeyField
 
 from tardis.analytics.tracker import IteratorTracker
-from tardis.tardis_portal import tasks
-from tardis.tardis_portal.auth.decorators import \
-    get_accessible_datafiles_for_user
-from tardis.tardis_portal.auth.decorators import has_datafile_access
-from tardis.tardis_portal.auth.decorators import has_datafile_download_access
-from tardis.tardis_portal.auth.decorators import has_dataset_access
-from tardis.tardis_portal.auth.decorators import has_dataset_write
-from tardis.tardis_portal.auth.decorators import has_delete_permissions
-from tardis.tardis_portal.auth.decorators import has_experiment_access
-from tardis.tardis_portal.auth.decorators import has_write_permissions
-from tardis.tardis_portal.auth.localdb_auth import django_user
-from tardis.tardis_portal.models import ObjectACL
-from tardis.tardis_portal.models.datafile import DataFile, compute_checksums
-from tardis.tardis_portal.models.datafile import DataFileObject
-from tardis.tardis_portal.models.dataset import Dataset
-from tardis.tardis_portal.models.experiment import Experiment
-from tardis.tardis_portal.models.parameters import DatafileParameter
-from tardis.tardis_portal.models.parameters import DatafileParameterSet
-from tardis.tardis_portal.models.parameters import DatasetParameter
-from tardis.tardis_portal.models.parameters import DatasetParameterSet
-from tardis.tardis_portal.models.parameters import ExperimentParameter
-from tardis.tardis_portal.models.parameters import ExperimentParameterSet
-from tardis.tardis_portal.models.parameters import ParameterName
-from tardis.tardis_portal.models.parameters import Schema
-from tardis.tardis_portal.models.storage import StorageBox
-from tardis.tardis_portal.models.storage import StorageBoxOption
-from tardis.tardis_portal.models.storage import StorageBoxAttribute
-from tardis.tardis_portal.models.facility import Facility
-from tardis.tardis_portal.models.facility import facilities_managed_by
-from tardis.tardis_portal.models.instrument import Instrument
+from . import tasks
+from .auth.decorators import (
+    get_accessible_datafiles_for_user,
+    has_datafile_access,
+    has_datafile_download_access,
+    has_dataset_access,
+    has_dataset_write,
+    has_delete_permissions,
+    has_experiment_access,
+    has_write_permissions)
+from .auth.localdb_auth import django_user
+from .models.access_control import ObjectACL
+from .models.datafile import DataFile, DataFileObject, compute_checksums
+from .models.dataset import Dataset
+from .models.experiment import Experiment
+from .models.parameters import (
+    DatafileParameter,
+    DatafileParameterSet,
+    DatasetParameter,
+    DatasetParameterSet,
+    ExperimentParameter,
+    ExperimentParameterSet,
+    ParameterName,
+    Schema)
+from .models.storage import StorageBox, StorageBoxOption, StorageBoxAttribute
+from .models.facility import Facility, facilities_managed_by
+from .models.instrument import Instrument
 
 
 class PrettyJSONSerializer(Serializer):

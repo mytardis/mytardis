@@ -36,7 +36,7 @@ import django.db
 from django.contrib import admin
 from django.contrib.contenttypes.admin import GenericTabularInline
 
-from tardis.tardis_portal import models
+from . import models
 
 # from south.models import MigrationHistory
 

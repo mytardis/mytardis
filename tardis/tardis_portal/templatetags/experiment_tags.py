@@ -1,10 +1,9 @@
 from django import template
 from django.template.defaultfilters import pluralize, filesizeformat
 from django.contrib.humanize.templatetags.humanize import naturalday
-from tardis.tardis_portal.util import get_local_time
 
-from tardis.tardis_portal.util import render_mustache,\
-    render_public_access_badge
+from ..util import get_local_time
+from ..util import render_mustache, render_public_access_badge
 
 register = template.Library()
 

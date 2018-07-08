@@ -14,9 +14,8 @@ from django.db import models
 from django.utils.safestring import mark_safe
 from django.utils.timezone import is_aware, is_naive, make_aware, make_naive
 
-from tardis.tardis_portal.ParameterSetManager import ParameterSetManager
-from tardis.tardis_portal.managers import OracleSafeManager,\
-    ParameterNameManager, SchemaManager
+from ..ParameterSetManager import ParameterSetManager
+from ..managers import OracleSafeManager, ParameterNameManager, SchemaManager
 
 from .experiment import Experiment
 from .dataset import Dataset

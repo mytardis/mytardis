@@ -22,8 +22,8 @@ from paramiko import OPEN_SUCCEEDED, OPEN_FAILED_ADMINISTRATIVELY_PROHIBITED,\
 from paramiko.common import AUTH_FAILED, AUTH_SUCCESSFUL
 
 from tardis.analytics import tracker
-from tardis.tardis_portal.download import make_mapper
-from tardis.tardis_portal.util import split_path
+from .download import make_mapper
+from .util import split_path
 
 logger = logging.getLogger(__name__)
 path_mapper = make_mapper(settings.DEFAULT_PATH_MAPPER, rootdir=None)
@@ -43,7 +43,7 @@ if getattr(settings, 'SFTP_GEVENT', False):
 from django.contrib.sites.models import Site  # noqa
 from django.contrib.auth.models import AnonymousUser  # noqa
 
-from tardis.tardis_portal.models import DataFile, Experiment  # noqa
+from .models import DataFile, Experiment  # noqa
 
 
 class DynamicTree(object):
@@ -386,7 +386,7 @@ class MyTServerInterface(ServerInterface):
         return ','.join(auth_methods)
 
     def myt_auth(self, username, password):
-        from tardis.tardis_portal.auth import auth_service
+        from .auth import auth_service
 
         class FakeRequest(object):
             POST = {}

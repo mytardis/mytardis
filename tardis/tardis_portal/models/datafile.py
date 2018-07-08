@@ -22,7 +22,7 @@ from django.utils import timezone
 
 import magic
 
-from tardis.tardis_portal import tasks
+from .. import tasks
 from .dataset import Dataset
 from .storage import StorageBox, StorageBoxOption, StorageBoxAttribute
 

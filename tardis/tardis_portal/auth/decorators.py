@@ -29,15 +29,15 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
 from django.contrib.sessions.models import Session
 from django.http import HttpResponse, HttpRequest
 from django.http import HttpResponseRedirect
 from django.db.models import Q
 from django.conf import settings
 
-from tardis.tardis_portal.models import Experiment, Dataset, DataFile, \
-    GroupAdmin, User
-from tardis.tardis_portal.shortcuts import return_response_error
+from ..models import Experiment, Dataset, DataFile, GroupAdmin
+from ..shortcuts import return_response_error
 
 
 def get_accessible_experiments(request):
@@ -160,7 +160,7 @@ def has_read_or_owner_ACL(request, experiment_id):
     general read permission.
     """
     from datetime import datetime
-    from tardis.tardis_portal.auth.localdb_auth import django_user
+    from .localdb_auth import django_user
 
     experiment = Experiment.safe.get(request.user, experiment_id)
 
@@ -195,7 +195,7 @@ def has_read_or_owner_ACL(request, experiment_id):
                       | Q(expiryDate__isnull=True))
 
     # is there at least one ACL rule which satisfies the rules?
-    from tardis.tardis_portal.models import ObjectACL
+    from ..models.access_control import ObjectACL
     acl = ObjectACL.objects.filter(query)
     return bool(acl)
 

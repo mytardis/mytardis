@@ -15,7 +15,8 @@ from django.test import TestCase
 from django.test.client import RequestFactory
 from django.contrib.auth.models import User, Group
 
-from tardis.tardis_portal.auth.httpbasicendpoint_auth import HttpBasicEndpointAuth
+from ...auth.httpbasicendpoint_auth import HttpBasicEndpointAuth
+
 
 class HttpBasicEndpointAuthTestCase(TestCase):
 

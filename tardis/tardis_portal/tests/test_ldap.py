@@ -18,7 +18,7 @@ ldap_auth_provider = ('ldap', 'LDAP',
 class LDAPErrorTest(TestCase):
 
     def test_search(self):
-        from tardis.tardis_portal.auth.ldap_auth import ldap_auth
+        from ..auth.ldap_auth import ldap_auth
         l = ldap_auth()
         self.assertEqual(l._query('', '', ''), None)
 
@@ -29,7 +29,7 @@ class LDAPErrorTest(TestCase):
         'ldap_auth is not enabled, skipping tests')
 class LDAPTest(TestCase):
     def setUp(self):
-        from tardis.tardis_portal.tests.ldap_ldif import test_ldif
+        from .ldap_ldif import test_ldif
         import tardis.tardis_portal.tests.slapd as slapd
         global server
         if not slapd.Slapd.check_paths():
@@ -51,7 +51,7 @@ class LDAPTest(TestCase):
 
     def test_search(self):
         from django.conf import settings
-        from tardis.tardis_portal.auth.ldap_auth import ldap_auth
+        from ..auth.ldap_auth import ldap_auth
 
         l = ldap_auth()
         res = l._query(settings.LDAP_USER_BASE, '(objectClass=*)', ['givenName', 'sn'])
@@ -75,7 +75,7 @@ class LDAPTest(TestCase):
         self.assertEqual(res, res1)
 
     def test_getuserbyid(self):
-        from tardis.tardis_portal.auth.ldap_auth import ldap_auth
+        from ..auth.ldap_auth import ldap_auth
         l = ldap_auth()
         user = l.getUserById('testuser1')
         user1 = {'id': 'testuser1',
@@ -88,7 +88,7 @@ class LDAPTest(TestCase):
         self.assertEqual(user, None)
 
     def test_authenticate(self):
-        from tardis.tardis_portal.auth.ldap_auth import ldap_auth
+        from ..auth.ldap_auth import ldap_auth
         from django.contrib.auth.models import User
 
         # Tests Authenticate API
@@ -106,7 +106,7 @@ class LDAPTest(TestCase):
         self.failUnlessEqual(u, u1)
 
         # Test authservice API
-        from tardis.tardis_portal.auth import auth_service
+        from ..auth import auth_service
         req = rf.post('')
         req._post = {'username': 'testuser1',
                      'password': 'kklk',
@@ -115,7 +115,7 @@ class LDAPTest(TestCase):
         self.assertTrue(isinstance(user, User))
 
         # Check that there is an entry in the user authentication table
-        from tardis.tardis_portal.models import UserAuthentication
+        from ..models import UserAuthentication
         userAuth = UserAuthentication.objects.get(
             userProfile__user=user,
             authenticationMethod=l.name)
@@ -127,7 +127,7 @@ class LDAPTest(TestCase):
 
     def test_getgroups(self):
         from django.contrib.auth.models import User
-        from tardis.tardis_portal.auth import auth_service
+        from ..auth import auth_service
         rf = RequestFactory()
         req = rf.post('')
         req._post = {'username': 'testuser1',
@@ -137,14 +137,14 @@ class LDAPTest(TestCase):
         self.assertTrue(isinstance(user, User))
         req.user = user
 
-        from tardis.tardis_portal.auth.ldap_auth import ldap_auth
+        from ..auth.ldap_auth import ldap_auth
         # Tests getGroups
         l = ldap_auth()
         self.assertEqual([g for g in l.getGroups(req.user)],
                          ['full', 'systems'])
 
     def test_getgroupbyid(self):
-        from tardis.tardis_portal.auth.ldap_auth import ldap_auth
+        from ..auth.ldap_auth import ldap_auth
 
         l = ldap_auth()
         self.assertEqual(l.getGroupById('full'),
@@ -152,14 +152,14 @@ class LDAPTest(TestCase):
         self.assertEqual(l.getGroupById('invalid'), None)
 
     def test_getgroupsforentity(self):
-        from tardis.tardis_portal.auth.ldap_auth import ldap_auth
+        from ..auth.ldap_auth import ldap_auth
         l = ldap_auth()
         self.assertEqual([g for g in l.getGroupsForEntity('testuser1')],
                          [{'id': 'full', 'display': 'Full Group'},
                           {'id': 'systems', 'display': 'Systems Services'}])
 
     def test_searchgroups(self):
-        from tardis.tardis_portal.auth.ldap_auth import ldap_auth
+        from ..auth.ldap_auth import ldap_auth
         l = ldap_auth()
         self.assertEqual([g for g in l.searchGroups(id='fu*')],
                          [{'id': 'full',

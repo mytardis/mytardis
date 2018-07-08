@@ -1,8 +1,8 @@
 """
 token authentication module
 """
-from tardis.tardis_portal.models import Token, ObjectACL, Experiment
-from tardis.tardis_portal.auth.interfaces import GroupProvider
+from ..models import Token, ObjectACL, Experiment
+from ..auth.interfaces import GroupProvider
 
 TOKEN_EXPERIMENT = '_token_experiment'
 
