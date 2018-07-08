@@ -10,18 +10,15 @@ from django.views.decorators.cache import never_cache
 from django.views.decorators.http import require_POST
 from django.http import HttpResponse, HttpResponseForbidden
 from django.conf import settings
-from django.contrib.auth.models import Group
 from django.utils import timezone
 
 import dateutil.parser
 
 from tardis.tardis_portal.auth import decorators as authz
-from tardis.tardis_portal.shortcuts import return_response_error
 from tardis.tardis_portal.shortcuts import render_response_index
-from tardis.tardis_portal.models import Experiment, Dataset, ObjectACL, \
+from tardis.tardis_portal.models import Experiment, Dataset, \
     Schema, ParameterName, ExperimentParameterSet, ExperimentParameter, \
     ExperimentAuthor, License, Token
-from tardis.tardis_portal.auth.localdb_auth import django_user, django_group
 
 from .doi import DOI
 from .models import Publication
@@ -235,8 +232,7 @@ def submit_form(request, form_state, publication):
     # Remove the draft status
     publication.remove_draft_status()
 
-    finalize_publication(request, publication, message=None,
-                         send_email=False)
+    finalize_publication(request, publication, send_email=False)
     form_state['action'] = ''
     return HttpResponse(json.dumps(form_state),
                         content_type="application/json")
@@ -383,7 +379,7 @@ def fetch_experiments_and_datasets(request):
 
 
 @transaction.atomic
-def finalize_publication(request, publication, message=None, send_email=True):
+def finalize_publication(request, publication, send_email=True):
     if publication.is_publication() and not publication.is_publication_draft() \
             and publication.public_access == Experiment.PUBLIC_ACCESS_NONE:
         # Change the access level
@@ -399,8 +395,7 @@ def finalize_publication(request, publication, message=None, send_email=True):
 
             if send_email:
                 subject, email_message = email_pub_released(
-                    publication.title, response_dict['url'], response_dict['doi'],
-                    message)
+                    publication.title, response_dict['doi'])
                 send_mail_to_authors(publication, subject, email_message)
 
         # Trigger publication update

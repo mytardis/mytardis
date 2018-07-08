@@ -11,7 +11,6 @@ from django.contrib.auth.models import User
 from django.test import RequestFactory
 from django.test import TestCase
 
-import dateutil.parser
 import pytz
 
 from tardis.tardis_portal.models.experiment import Experiment
@@ -23,10 +22,7 @@ from tardis.tardis_portal.models.parameters import Schema
 
 from .. import default_settings
 from ..models import Publication
-from ..tasks import process_embargos
-from ..views import (
-    retrieve_released_pubs_list,
-    finalize_publication)
+from ..views import finalize_publication
 
 
 class RevertFinalizeTestCase(TestCase):
