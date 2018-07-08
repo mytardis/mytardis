@@ -7,9 +7,9 @@ from django.contrib.auth.models import User
 from django.test import RequestFactory
 from django.test import TestCase
 
-from tardis.tardis_portal.models.token import Token
+from ....tardis_portal.models.token import Token
 
-from tardis.tardis_portal.views.authorisation import (
+from ....tardis_portal.views.authorisation import (
     create_token,
     token_delete)
 
