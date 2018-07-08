@@ -1,5 +1,5 @@
 from django import template
-from tardis.tardis_portal.rfc3339 import rfc3339
+from ..rfc3339 import rfc3339
 
 register = template.Library()
 

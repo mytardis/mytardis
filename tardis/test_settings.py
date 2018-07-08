@@ -5,7 +5,7 @@ from os import listdir
 from celery import Celery
 from django.apps import apps  # pylint: disable=wrong-import-order
 
-from tardis.default_settings import *  # noqa # pylint: disable=W0401,W0614
+from .default_settings import *  # noqa # pylint: disable=W0401,W0614
 import logging  # pylint: disable=wrong-import-order
 
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'

@@ -42,11 +42,11 @@ from django.test import TestCase
 from django.conf import settings
 from django.contrib.auth.models import User
 
-from tardis.tardis_portal.models import Experiment
-from tardis.tardis_portal.models import ObjectACL
-from tardis.tardis_portal.models import Token
+from ..models import Experiment
+from ..models import ObjectACL
+from ..models import Token
 
-from tardis.tardis_portal.views.authorisation import retrieve_access_list_tokens
+from ..views.authorisation import retrieve_access_list_tokens
 
 
 class FrozenTime:

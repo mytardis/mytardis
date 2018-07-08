@@ -7,10 +7,10 @@ import logging
 from django.conf import settings
 from django.core.exceptions import PermissionDenied
 
-from tardis.tardis_portal.auth import decorators as authz, auth_service
-from tardis.tardis_portal.auth.localdb_auth import auth_key as localdb_auth_key
-from tardis.tardis_portal.models import Experiment
-from tardis.tardis_portal.shortcuts import return_response_error, \
+from ..auth import decorators as authz, auth_service
+from ..auth.localdb_auth import auth_key as localdb_auth_key
+from ..models import Experiment
+from ..shortcuts import return_response_error, \
     return_response_not_found, render_response_index
 
 logger = logging.getLogger(__name__)
@@ -40,7 +40,7 @@ def view_rifcs(request, experiment_id):
     except AttributeError:
         rifcs_provs = ()
 
-    from tardis.tardis_portal.publish.publishservice import PublishService
+    from ..publish.publishservice import PublishService
     pservice = PublishService(rifcs_provs, experiment)
     context = pservice.get_context()
     if context is None:

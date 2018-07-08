@@ -14,19 +14,19 @@ from flexmock import flexmock
 from paramiko.common import AUTH_SUCCESSFUL
 from paramiko.ssh_exception import SSHException
 
-from tardis.tardis_portal.download import make_mapper
+from ..download import make_mapper
 
-from tardis.tardis_portal.models import Dataset
-from tardis.tardis_portal.models import DataFile
-from tardis.tardis_portal.models import DataFileObject
-from tardis.tardis_portal.models import Experiment
-from tardis.tardis_portal.models import ObjectACL
+from ..models import Dataset
+from ..models import DataFile
+from ..models import DataFileObject
+from ..models import Experiment
+from ..models import ObjectACL
 
-from tardis.tardis_portal.sftp import MyTSFTPServerInterface
-from tardis.tardis_portal.sftp import MyTServerInterface
+from ..sftp import MyTSFTPServerInterface
+from ..sftp import MyTServerInterface
 
-from tardis.tardis_portal.views.pages import sftp_access
-from tardis.tardis_portal.views.images import cybderduck_connection_window
+from ..views.pages import sftp_access
+from ..views.images import cybderduck_connection_window
 
 
 class SFTPTest(TestCase):

@@ -1,4 +1,4 @@
-from tardis.default_settings.urls import MEDIA_URL, STATIC_URL
+from .urls import MEDIA_URL, STATIC_URL
 
 UPLOAD_METHOD = False
 '''

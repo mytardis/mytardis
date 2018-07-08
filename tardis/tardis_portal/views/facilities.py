@@ -16,8 +16,8 @@ from django.db.models import Case
 from django.db.models import When
 from django.db.models import IntegerField
 
-from tardis.tardis_portal.models import Dataset, Experiment, DataFile
-from tardis.tardis_portal.models.facility import facilities_managed_by
+from ..models import Dataset, Experiment, DataFile
+from ..models.facility import facilities_managed_by
 
 logger = logging.getLogger(__name__)
 

@@ -1,5 +1,5 @@
 from django.db import models
-from tardis.tardis_portal.models import Facility
+from .facility import Facility
 
 
 class Instrument(models.Model):
@@ -22,7 +22,7 @@ class Instrument(models.Model):
         instrument.
 
         '''
-        from tardis.tardis_portal.models.parameters import Schema
+        from .parameters import Schema
         if schemaType == Schema.INSTRUMENT or schemaType is None:
             return self.instrumentparameterset_set.filter(
                 schema__type=Schema.INSTRUMENT)

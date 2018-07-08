@@ -159,7 +159,7 @@ def get_full_staging_path(username):
     # check if the user is authenticated using the deployment's
     # staging protocol
     try:
-        from tardis.tardis_portal.models import UserAuthentication
+        from .models import UserAuthentication
         UserAuthentication.objects.get(
             userProfile__user__username=username,
             authenticationMethod=settings.STAGING_PROTOCOL)

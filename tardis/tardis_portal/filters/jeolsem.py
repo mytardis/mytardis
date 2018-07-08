@@ -2,9 +2,9 @@ import logging
 from itertools import chain
 from StringIO import StringIO
 
-from tardis.tardis_portal.models import Schema, ParameterName
-from tardis.tardis_portal.ParameterSetManager import ParameterSetManager
-from tardis.tardis_portal.models.parameters import DatasetParameter
+from ..models import Schema, ParameterName
+from ..ParameterSetManager import ParameterSetManager
+from ..models.parameters import DatasetParameter
 
 logger = logging.getLogger(__name__)
 

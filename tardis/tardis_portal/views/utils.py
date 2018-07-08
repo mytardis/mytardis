@@ -13,9 +13,9 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import redirect
 from django.template.defaultfilters import filesizeformat
 
-from tardis.tardis_portal.auth import decorators as authz
-from tardis.tardis_portal.forms import createSearchExperimentForm
-from tardis.tardis_portal.shortcuts import render_response_search
+from ..auth import decorators as authz
+from ..forms import createSearchExperimentForm
+from ..shortcuts import render_response_search
 
 logger = logging.getLogger(__name__)
 
@@ -52,7 +52,7 @@ def _add_protocols_and_organizations(request, collection_object, c):
     c['default_format'] = filter(
         lambda x: not (cannot_do_zip and x == 'zip'), formats)[0]
 
-    from tardis.tardis_portal.download import get_download_organizations
+    from ..download import get_download_organizations
     c['organization'] = get_download_organizations()
     c['default_organization'] = getattr(
         settings, 'DEFAULT_PATH_MAPPER', 'classic')

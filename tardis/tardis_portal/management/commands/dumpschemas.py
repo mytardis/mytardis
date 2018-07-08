@@ -7,7 +7,7 @@ from django.db import DEFAULT_DB_ALIAS
 from django.core import serializers
 
 
-from tardis.tardis_portal import models
+from ... import models
 
 
 class Command(BaseCommand):

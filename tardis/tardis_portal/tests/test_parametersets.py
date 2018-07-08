@@ -46,16 +46,16 @@ from django.test import TestCase
 from django.contrib.contenttypes.models import ContentType
 import pytz
 
-from tardis.tardis_portal.models import Experiment, Dataset, DataFile, \
+from ..models import Experiment, Dataset, DataFile, \
     DataFileObject, Schema, ParameterName, DatafileParameterSet, \
     DatafileParameter, DatasetParameterSet, ExperimentParameterSet, ObjectACL
-from tardis.tardis_portal.ParameterSetManager import ParameterSetManager
-from tardis.tardis_portal.views.parameters import edit_datafile_par
-from tardis.tardis_portal.views.parameters import edit_dataset_par
-from tardis.tardis_portal.views.parameters import edit_experiment_par
-from tardis.tardis_portal.views.parameters import add_datafile_par
-from tardis.tardis_portal.views.parameters import add_dataset_par
-from tardis.tardis_portal.views.parameters import add_experiment_par
+from ..ParameterSetManager import ParameterSetManager
+from ..views.parameters import edit_datafile_par
+from ..views.parameters import edit_dataset_par
+from ..views.parameters import edit_experiment_par
+from ..views.parameters import add_datafile_par
+from ..views.parameters import add_dataset_par
+from ..views.parameters import add_experiment_par
 
 
 class ParameterSetManagerTestCase(TestCase):

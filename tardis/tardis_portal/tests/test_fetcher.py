@@ -10,7 +10,7 @@ from SimpleHTTPServer import SimpleHTTPRequestHandler
 from nose.tools import ok_, eq_
 from django.test import TestCase
 
-from tardis.tardis_portal.fetcher import get_privileged_opener
+from ..fetcher import get_privileged_opener
 
 
 class TestWebServer:

@@ -29,7 +29,7 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
-from tardis.tardis_portal.auth.authservice import AuthService
+from .authservice import AuthService
 
 # The auth_service ``singleton``
 auth_service = AuthService()

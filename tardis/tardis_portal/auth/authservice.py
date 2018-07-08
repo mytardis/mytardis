@@ -44,8 +44,8 @@ from django.core.exceptions import ImproperlyConfigured
 from django.contrib.auth.models import User
 from django.contrib.auth.models import Permission
 
-from tardis.tardis_portal.auth.localdb_auth import auth_key as localdb_auth_key
-from tardis.tardis_portal.auth.utils import get_or_create_user
+from ..auth.localdb_auth import auth_key as localdb_auth_key
+from ..auth.utils import get_or_create_user
 
 logger = logging.getLogger(__name__)
 
@@ -196,7 +196,7 @@ class AuthService():
             except (NotImplementedError, AttributeError):
                 # For backwards compatibility
                 try:
-                    from tardis.tardis_portal.models import UserAuthentication
+                    from ..models.access_control import UserAuthentication
                     # Check if the given username in combination with the
                     # auth method is already in the UserAuthentication table
                     user = UserAuthentication.objects.get(username=user_id,

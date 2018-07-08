@@ -1,35 +1,35 @@
 # pylint: disable=wildcard-import
 
 # first apps, so other files can add to INSTALLED_APPS
-from tardis.default_settings.apps import *
+from .apps import *
 
-from tardis.default_settings.admins import *
-from tardis.default_settings.analytics import *
-from tardis.default_settings.auth import *
-from tardis.default_settings.caches import *
-from tardis.default_settings.celery_settings import *
-from tardis.default_settings.custom_views import *
-from tardis.default_settings.database import *
-from tardis.default_settings.debug import *
-from tardis.default_settings.downloads import *
-from tardis.default_settings.email import *
-from tardis.default_settings.filters import *
-from tardis.default_settings.frontend import *
-from tardis.default_settings.i18n import *
-from tardis.default_settings.localisation import *
-from tardis.default_settings.logging import *
-from tardis.default_settings.middlewares import *
-from tardis.default_settings.publication import *
-from tardis.default_settings.search import *
-from tardis.default_settings.sftp import *
-from tardis.default_settings.sharing import *
-from tardis.default_settings.site_customisations import *
-from tardis.default_settings.staging import *
-from tardis.default_settings.static_files import *
-from tardis.default_settings.storage import *
-from tardis.default_settings.templates import *
-from tardis.default_settings.uploads import *
-from tardis.default_settings.urls import *
+from .admins import *
+from .analytics import *
+from .auth import *
+from .caches import *
+from .celery_settings import *
+from .custom_views import *
+from .database import *
+from .debug import *
+from .downloads import *
+from .email import *
+from .filters import *
+from .frontend import *
+from .i18n import *
+from .localisation import *
+from .logging import *
+from .middlewares import *
+from .publication import *
+from .search import *
+from .sftp import *
+from .sharing import *
+from .site_customisations import *
+from .staging import *
+from .static_files import *
+from .storage import *
+from .templates import *
+from .uploads import *
+from .urls import *
 
 
 # Get version from git to be displayed on About page.

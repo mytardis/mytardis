@@ -10,15 +10,15 @@ from django.contrib.auth.models import Group
 from django.test import RequestFactory
 from django.test import TestCase
 
-from tardis.tardis_portal.models.datafile import DataFile
-from tardis.tardis_portal.models.datafile import DataFileObject
-from tardis.tardis_portal.models.dataset import Dataset
-from tardis.tardis_portal.models.experiment import Experiment
-from tardis.tardis_portal.models.facility import Facility
-from tardis.tardis_portal.models.instrument import Instrument
+from ..models.datafile import DataFile
+from ..models.datafile import DataFileObject
+from ..models.dataset import Dataset
+from ..models.experiment import Experiment
+from ..models.facility import Facility
+from ..models.instrument import Instrument
 
-from tardis.tardis_portal.views.facilities import facility_overview_datafile_list
-from tardis.tardis_portal.views.facilities import facility_overview_experiments
+from ..views.facilities import facility_overview_datafile_list
+from ..views.facilities import facility_overview_experiments
 
 
 class FacilityOverviewTestCase(TestCase):

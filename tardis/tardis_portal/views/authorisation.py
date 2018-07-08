@@ -20,14 +20,14 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.views.decorators.cache import never_cache
 from django.views.decorators.http import require_POST
 
-from tardis.tardis_portal.auth import decorators as authz, auth_service
-from tardis.tardis_portal.auth.localdb_auth import auth_key as localdb_auth_key, \
+from ..auth import decorators as authz, auth_service
+from ..auth.localdb_auth import auth_key as localdb_auth_key, \
     django_user
-from tardis.tardis_portal.forms import ChangeUserPermissionsForm, \
+from ..forms import ChangeUserPermissionsForm, \
     ChangeGroupPermissionsForm, CreateGroupPermissionsForm
-from tardis.tardis_portal.models import UserAuthentication, UserProfile, Experiment, \
+from ..models import UserAuthentication, UserProfile, Experiment, \
     Token, GroupAdmin, ObjectACL
-from tardis.tardis_portal.shortcuts import render_response_index, \
+from ..shortcuts import render_response_index, \
     return_response_error, render_error_message
 
 logger = logging.getLogger(__name__)
@@ -113,7 +113,7 @@ def retrieve_group_list(request):
 @never_cache
 @authz.experiment_ownership_required
 def retrieve_access_list_user(request, experiment_id):
-    from tardis.tardis_portal.forms import AddUserPermissionsForm
+    from ..forms import AddUserPermissionsForm
     user_acls = Experiment.safe.user_acls(experiment_id)
 
     c = {'user_acls': user_acls, 'experiment_id': experiment_id,
@@ -135,7 +135,7 @@ def retrieve_access_list_user_readonly(request, experiment_id):
 @authz.experiment_ownership_required
 def retrieve_access_list_group(request, experiment_id):
 
-    from tardis.tardis_portal.forms import AddGroupPermissionsForm
+    from ..forms import AddGroupPermissionsForm
 
     group_acls_system_owned = Experiment.safe.group_acls_system_owned(
         experiment_id)
@@ -223,7 +223,7 @@ def retrieve_access_list_tokens(request, experiment_id):
 @authz.group_ownership_required
 def retrieve_group_userlist(request, group_id):
 
-    from tardis.tardis_portal.forms import ManageGroupPermissionsForm
+    from ..forms import ManageGroupPermissionsForm
     users = User.objects.filter(groups__id=group_id)
     c = {'users': users, 'group_id': group_id,
          'manageGroupPermissionsForm': ManageGroupPermissionsForm()}
@@ -234,7 +234,7 @@ def retrieve_group_userlist(request, group_id):
 @never_cache
 def retrieve_group_userlist_readonly(request, group_id):
 
-    from tardis.tardis_portal.forms import ManageGroupPermissionsForm
+    from ..forms import ManageGroupPermissionsForm
     users = User.objects.filter(groups__id=group_id)
     c = {'users': users, 'group_id': group_id,
          'manageGroupPermissionsForm': ManageGroupPermissionsForm()}
