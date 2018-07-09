@@ -2,10 +2,11 @@
 views that have to do with authentication
 """
 import logging
-import jwt
-import pwgen
 
 from six.moves import urllib
+
+import jwt
+import pwgen
 
 from django.conf import settings
 from django.contrib import auth as djauth
