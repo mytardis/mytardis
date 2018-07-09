@@ -16,8 +16,8 @@ def add_authentication_method(**kwargs):
     backend = kwargs.get('backend')
     authenticatedBackendName = type(backend).__name__
     user = kwargs.get('user')
-    #get authmethod from backend
-    authMethod = getAuthMethod(authenticatedBackendName)
+    # get auth method from backend
+    authMethod = get_auth_method(authenticatedBackendName)
 
     try:
         authentication = UserAuthentication(userProfile=user.userprofile,
@@ -28,7 +28,7 @@ def add_authentication_method(**kwargs):
         return None
 
 
-def getAuthMethod(authenticatedBackendName):
+def get_auth_method(authenticatedBackendName):
     """Return matching user authentication method from list of authentication methods in settings"""
 
     for authKey, authDisplayName, authBackend in settings.AUTH_PROVIDERS:
