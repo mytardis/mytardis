@@ -21,6 +21,7 @@ from django.db.models.signals import pre_delete
 from django.dispatch import receiver
 from django.forms.models import model_to_dict
 from django.utils import timezone
+from django.utils.encoding import python_2_unicode_compatible
 
 import magic
 
@@ -214,7 +215,8 @@ class DataFile(models.Model):
         else:
             raise Schema.UnsupportedType
 
-    def __unicode__(self):
+    @python_2_unicode_compatible
+    def __str__(self):
         if self.sha512sum is not None and len(self.sha512sum) > 31:
             checksum = str(self.sha512sum)[:32]
         else:
@@ -463,7 +465,8 @@ class DataFileObject(models.Model):
         app_label = 'tardis_portal'
         unique_together = ['datafile', 'storage_box']
 
-    def __unicode__(self):
+    @python_2_unicode_compatible
+    def __str__(self):
         try:
             return 'Box: %(storage_box)s, URI: %(uri)s, verified: %(v)s' % {
                 'storage_box': str(self.storage_box),

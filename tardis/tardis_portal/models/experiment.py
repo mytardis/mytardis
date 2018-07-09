@@ -8,6 +8,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.urls import reverse
 from django.db import models
 from django.utils.safestring import SafeText
+from django.utils.encoding import python_2_unicode_compatible
 
 from ..managers import OracleSafeManager, ExperimentManager
 from .access_control import ObjectACL
@@ -109,7 +110,8 @@ class Experiment(models.Model):
         else:
             raise Schema.UnsupportedType
 
-    def __unicode__(self):
+    @python_2_unicode_compatible
+    def __str__(self):
         return self.title
 
     def get_or_create_directory(self):
@@ -277,7 +279,8 @@ class ExperimentAuthor(models.Model):
         except Exception:
             logger.exception('')
 
-    def __unicode__(self):
+    @python_2_unicode_compatible
+    def __str__(self):
         return SafeText(self.author) + ' | ' \
             + SafeText(self.experiment.id) + ' | ' \
             + SafeText(self.order)

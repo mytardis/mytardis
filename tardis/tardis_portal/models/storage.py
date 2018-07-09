@@ -6,6 +6,7 @@ import random
 from django.conf import settings
 from django.db import models
 from django.db.utils import DatabaseError
+from django.utils.encoding import python_2_unicode_compatible
 import django.core.files.storage as django_storage
 
 #from celery.contrib.methods import task
@@ -68,7 +69,8 @@ class StorageBox(models.Model):
                   TEMPORARY,
                   TYPE_UNKNOWN]
 
-    def __unicode__(self):
+    @python_2_unicode_compatible
+    def __str__(self):
         return self.name or "anonymous Storage Box"
 
     @property
@@ -232,9 +234,10 @@ class StorageBoxOption(models.Model):
                                   choices=TYPE_CHOICES,
                                   default=STRING)
 
-    def __unicode__(self):
+    @python_2_unicode_compatible
+    def __str__(self):
         return '-> '.join([
-            self.storage_box.__unicode__(),
+            self.storage_box.__str__(),
             ': '.join([self.key or 'no key',
                        str(self.unpickled_value) or 'no value'])
         ])
@@ -274,9 +277,10 @@ class StorageBoxAttribute(models.Model):
     key = models.TextField()
     value = models.TextField()
 
-    def __unicode__(self):
+    @python_2_unicode_compatible
+    def __str__(self):
         return '-> '.join([
-            self.storage_box.__unicode__(),
+            self.storage_box.__str__(),
             ': '.join([self.key or 'no key', self.value or 'no value'])
         ])
 

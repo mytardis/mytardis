@@ -1,4 +1,6 @@
 from django.db import models
+from django.utils.encoding import python_2_unicode_compatible
+
 from .facility import Facility
 
 
@@ -14,7 +16,8 @@ class Instrument(models.Model):
         verbose_name_plural = 'Instruments'
         unique_together = ['name', 'facility']
 
-    def __unicode__(self):
+    @python_2_unicode_compatible
+    def __str__(self):
         return self.name
 
     def getParameterSets(self, schemaType=None):

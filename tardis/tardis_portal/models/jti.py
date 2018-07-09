@@ -1,6 +1,8 @@
 import logging
+
 from django.db import models
 from django.utils.safestring import SafeText
+from django.utils.encoding import python_2_unicode_compatible
 
 logger = logging.getLogger(__name__)
 
@@ -12,6 +14,7 @@ class JTI(models.Model):
     class Meta:
         app_label = 'tardis_portal'
 
-    def __unicode__(self):
+    @python_2_unicode_compatible
+    def __str__(self):
         return SafeText(self.jti) + ' | ' \
             + SafeText(self.created_time)
