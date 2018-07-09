@@ -64,11 +64,13 @@ def do_migration(request):
     if user != request.user:
         # TODO: find all the experiments "user" has access to and link
         # "request.user" to them
-
+        logger.info("starting migration from %s to %s", user.username,
+                    request.user.username)
         # check if the "request.user" has a userProfile
         userProfile, created = UserProfile.objects.get_or_create(
             user=request.user)
 
+        logger.info("linking user authentication")
         # if he has, link 'user's UserAuthentication to it
         userAuths = UserAuthentication.objects.filter(
             userProfile__user=user)
@@ -90,58 +92,36 @@ def do_migration(request):
         # TODO: note that django_user here has been hardcoded. Uli's going
         # to change the implementation on his end so that I can just use a key
         # in here instead of a hardcoded string.
-        experimentACLs = ObjectACL.objects.filter(
-            pluginId='django_user',
-            entityId=userIdToBeReplaced)
-
-        for experimentACL in experimentACLs:
-
-            # now let's check if there's already an existing entry in the ACL
-            # for the given experiment and replacementUserId
-            try:
-                acl = ObjectACL.objects.get(
-                    pluginId='django_user',
-                    entityId=replacementUserId,
-                    content_type=experimentACL.content_type,
-                    object_id=experimentACL.object_id
-                )
-                acl.canRead = acl.canRead or experimentACL.canRead
-                acl.canWrite = acl.canWrite or experimentACL.canWrite
-                acl.canDelete = acl.canDelete or acl.canDelete
-                acl.save()
-                # record acl migration event
-                acl_migration_record = OpenidACLMigration(user_migration=user_migration_record,
-                                                          acl_id=acl)
-                acl_migration_record.save()
-                experimentACL.delete()
-            except ObjectACL.DoesNotExist:
-                experimentACL.entityId = replacementUserId
-                experimentACL.save()
-                # record acl migration event
-                acl_migration_record = OpenidACLMigration(user_migration=user_migration_record,
-                                                          acl_id=experimentACL)
-                acl_migration_record.save()
-
+        logger.info("Staring object ACL migration")
+        acl_migration(userIdToBeReplaced, replacementUserId,
+                      user_migration_record)
         # let's also change the group memberships of all the groups that 'user'
         # is a member of
+        logger.info("Migrating user groups")
         groups = Group.objects.filter(user=user)
+        logger.info("Number of groups found : %s", groups.count())
         for group in groups:
             request.user.groups.add(group)
         # change old user username to username_authmethod amd make it inactive
         old_username = user.username
         user.username = old_username + '_' + authenticationMethod
+        logger.info("setting old use to inactive")
         user.is_active = False
         user.save()
 
         # change new user username to old user
         new_user = request.user
         new_user.username = old_username
+        logger.info("changing new username %s to old username %s",
+                    request.user.username, old_username)
         new_user.save()
 
         # copy api key from old user to new user so that MyData works seamlessly post migration
+        logger.info("migrating api key")
         migrate_api_key(user, request.user)
 
-        #migrate user permissions
+        # migrate user permissions
+        logger.info("migrating user permissions")
         migrate_user_permissions(user, request.user)
 
         # Add migration event record
@@ -149,10 +129,46 @@ def do_migration(request):
         user_migration_record.save()
         # send email for successful migration
         # TODO : get request user auth method
+        logger.info("sending email to %s", user.email)
         notify_user(user, old_username, 'AAF')
 
     data = _setupJsonData(authForm, authenticationMethod, supportedAuthMethods)
     return _getJsonSuccessResponse(data)
+
+
+def acl_migration(userIdToBeReplaced, replacementUserId, user_migration_record):
+    experimentACLs = ObjectACL.objects.filter(
+        pluginId='django_user',
+        entityId=userIdToBeReplaced)
+
+    logger.info("Found %s number of ACLs to migrate", experimentACLs.count())
+
+    for experimentACL in experimentACLs:
+
+        # now let's check if there's already an existing entry in the ACL
+        # for the given experiment and replacementUserId
+        try:
+            acl = ObjectACL.objects.get(
+                pluginId='django_user',
+                entityId=replacementUserId,
+                content_type=experimentACL.content_type,
+                object_id=experimentACL.object_id
+            )
+            logger.info("found existing entry in the ACL "
+                        "for the given experiment and replacementUserId")
+            acl.canRead = acl.canRead or experimentACL.canRead
+            acl.canWrite = acl.canWrite or experimentACL.canWrite
+            acl.canDelete = acl.canDelete or acl.canDelete
+            acl.save()
+            experimentACL.delete()
+        except ObjectACL.DoesNotExist:
+            experimentACL.entityId = replacementUserId
+            experimentACL.save()
+            # record acl migration event
+            logger.info("acl migrated %s", experimentACL.object_id)
+            acl_migration_record = OpenidACLMigration(user_migration=user_migration_record,
+                                                      acl_id=experimentACL)
+            acl_migration_record.save()
 
 
 def notify_user(user, old_username, new_authmethod):
@@ -163,6 +179,7 @@ def notify_user(user, old_username, new_authmethod):
                         from_email=getattr(settings, 'OPENID_NOTIFICATION_SENDER_EMAIL',
                                            default_settings.OPENID_NOTIFICATION_SENDER_EMAIL),
                         fail_silently=True)
+        logger.info("email sent")
     except Exception as e:
         logger.error(
             "failed to send migration notification email(s): %s" %
@@ -173,6 +190,9 @@ def notify_user(user, old_username, new_authmethod):
 def migrate_user_permissions(old_user, new_user):
     # get old user permissions
     old_user_perms = Permission.objects.filter(user=old_user)
+    logger.info("found %s number of permissions in old user record",
+                old_user_perms.count())
+
     for perms in old_user_perms:
         # find if permission already exist
         try:
@@ -263,6 +283,7 @@ def list_auth_methods(request):
 
     return HttpResponse(render_response_index(request,
                                               'migrate_accounts.html', c))
+
 
 def add_auth_method(request):
     """Add a new authentication method to request.user's existing list of
