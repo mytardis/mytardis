@@ -2,10 +2,6 @@ import logging
 import operator
 import json
 
-import dateutil.parser
-import pytz
-from six import text_type
-
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ObjectDoesNotExist, SuspiciousOperation
@@ -15,6 +11,10 @@ from django.db import models
 from django.utils.safestring import mark_safe
 from django.utils.timezone import is_aware, is_naive, make_aware, make_naive
 from django.utils.encoding import python_2_unicode_compatible
+
+import dateutil.parser
+import pytz
+from six import text_type
 
 from ..ParameterSetManager import ParameterSetManager
 from ..managers import OracleSafeManager, ParameterNameManager, SchemaManager
