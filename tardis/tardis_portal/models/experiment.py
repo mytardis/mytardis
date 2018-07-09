@@ -18,6 +18,7 @@ from .license import License
 logger = logging.getLogger(__name__)
 
 
+@python_2_unicode_compatible
 class Experiment(models.Model):
     """The ``Experiment`` model inherits from :class:`django.db.models.Model`
 
@@ -110,7 +111,6 @@ class Experiment(models.Model):
         else:
             raise Schema.UnsupportedType
 
-    @python_2_unicode_compatible
     def __str__(self):
         return self.title
 
@@ -257,6 +257,7 @@ class Experiment(models.Model):
         return None
 
 
+@python_2_unicode_compatible
 class ExperimentAuthor(models.Model):
 
     experiment = models.ForeignKey(Experiment, on_delete=models.CASCADE)
@@ -279,7 +280,6 @@ class ExperimentAuthor(models.Model):
         except Exception:
             logger.exception('')
 
-    @python_2_unicode_compatible
     def __str__(self):
         return SafeText(self.author) + ' | ' \
             + SafeText(self.experiment.id) + ' | ' \

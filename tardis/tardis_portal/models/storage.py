@@ -15,6 +15,7 @@ import django.core.files.storage as django_storage
 logger = logging.getLogger(__name__)
 
 
+@python_2_unicode_compatible
 class StorageBox(models.Model):
     '''
     table that holds storage boxes of any type.
@@ -69,7 +70,6 @@ class StorageBox(models.Model):
                   TEMPORARY,
                   TYPE_UNKNOWN]
 
-    @python_2_unicode_compatible
     def __str__(self):
         return self.name or "anonymous Storage Box"
 
@@ -215,6 +215,7 @@ class StorageBox(models.Model):
         return s_box
 
 
+@python_2_unicode_compatible
 class StorageBoxOption(models.Model):
     '''
     holds the options passed to the storage class defined in StorageBox.
@@ -234,7 +235,6 @@ class StorageBoxOption(models.Model):
                                   choices=TYPE_CHOICES,
                                   default=STRING)
 
-    @python_2_unicode_compatible
     def __str__(self):
         return '-> '.join([
             self.storage_box.__str__(),
@@ -261,6 +261,7 @@ class StorageBoxOption(models.Model):
             self.value = pickle.dumps(input_value)
 
 
+@python_2_unicode_compatible
 class StorageBoxAttribute(models.Model):
     '''
     can hold attributes/metadata about different storage locations.
@@ -277,7 +278,6 @@ class StorageBoxAttribute(models.Model):
     key = models.TextField()
     value = models.TextField()
 
-    @python_2_unicode_compatible
     def __str__(self):
         return '-> '.join([
             self.storage_box.__str__(),

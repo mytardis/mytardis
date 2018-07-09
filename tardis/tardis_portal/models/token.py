@@ -14,6 +14,8 @@ def _token_expiry():
     import datetime as dt
     return dt.datetime.now().date() + dt.timedelta(settings.TOKEN_EXPIRY_DAYS)
 
+
+@python_2_unicode_compatible
 class Token(models.Model):
 
     token = models.CharField(max_length=30, unique=True)
@@ -30,7 +32,6 @@ class Token(models.Model):
     class Meta:
         app_label = 'tardis_portal'
 
-    @python_2_unicode_compatible
     def __str__(self):
         return '%s %s' % (self.expiry_date, self.token)
 

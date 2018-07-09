@@ -2,10 +2,9 @@ import logging
 import operator
 import json
 
-from builtins import str
-
 import dateutil.parser
 import pytz
+from six import text_type
 
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
@@ -39,6 +38,7 @@ class ParameterSetManagerMixin(ParameterSetManager):
     pass
 
 
+@python_2_unicode_compatible
 class Schema(models.Model):
 
     EXPERIMENT = 1
@@ -113,7 +113,6 @@ class Schema(models.Model):
             type_list = cls._SCHEMA_TYPES
         return dict(type_list).get(schema_type, None)
 
-    @python_2_unicode_compatible
     def __str__(self):
         return self._getSchemaTypeName(self.type) + (
             self.subtype and ' for ' + self.subtype.upper() or ''
@@ -125,6 +124,7 @@ class Schema(models.Model):
             Exception.__init__(self, msg)
 
 
+@python_2_unicode_compatible
 class ParameterName(models.Model):
 
     EXACT_VALUE_COMPARISON = 1
@@ -187,7 +187,6 @@ class ParameterName(models.Model):
         unique_together = (('schema', 'name'),)
         ordering = ('order', 'name')
 
-    @python_2_unicode_compatible
     def __str__(self):
         return (self.schema.name or self.schema.namespace) + ": " + self.name
 
@@ -216,7 +215,7 @@ class ParameterName(models.Model):
         return self.data_type == self.DATETIME
 
     def getUniqueShortName(self):
-        return self.name + '_' + str(self.id)
+        return self.name + '_' + text_type(self.id)
 
     def is_json(self):
         return self.data_type == self.JSON
@@ -307,6 +306,7 @@ def _get_parameter(parameter):
         return None
 
 
+@python_2_unicode_compatible
 class ParameterSet(models.Model, ParameterSetManagerMixin):
     schema = models.ForeignKey(Schema, on_delete=models.CASCADE)
     storage_box = models.ManyToManyField(
@@ -337,7 +337,6 @@ class ParameterSet(models.Model, ParameterSetManagerMixin):
     def _get_label(self):
         raise NotImplementedError
 
-    @python_2_unicode_compatible
     def __str__(self):
         labelattribute, default = self._get_label()
         try:
@@ -362,6 +361,7 @@ class ParameterSet(models.Model, ParameterSetManagerMixin):
         return self._has_any_perm(user_obj)
 
 
+@python_2_unicode_compatible
 class Parameter(models.Model):
     name = models.ForeignKey(ParameterName, on_delete=models.CASCADE)
     # string_value has a custom index created via migrations (for Postgresql)
@@ -383,7 +383,6 @@ class Parameter(models.Model):
     def get(self):
         return _get_parameter(self)
 
-    @python_2_unicode_compatible
     def __str__(self):
         try:
             return '%s Param: %s=%s' % (self.parameter_type,
@@ -555,6 +554,7 @@ class ExperimentParameterSet(ParameterSet):
         return ('experiment.title', 'Experiment')
 
 
+@python_2_unicode_compatible
 class FreeTextSearchField(models.Model):
 
     parameter_name = models.ForeignKey(ParameterName, on_delete=models.CASCADE)
@@ -562,6 +562,5 @@ class FreeTextSearchField(models.Model):
     class Meta:
         app_label = 'tardis_portal'
 
-    @python_2_unicode_compatible
     def __str__(self):
         return "Index on %s" % (self.parameter_name)
