@@ -1,8 +1,10 @@
 from django.apps import apps
 from django.db import models
-from django.contrib.auth.models import User
-from tardis.tardis_portal.models.access_control import ObjectACL
 from django.contrib import admin
+from django.contrib.auth.models import User
+
+from tardis.tardis_portal.models.access_control import ObjectACL
+
 
 from .apps import OpenidMigrationConfig
 
