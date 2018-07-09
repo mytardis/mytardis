@@ -7,7 +7,6 @@ from django.contrib.auth.models import Permission
 
 def add_authentication_method(**kwargs):
     """Creates an authentication record for OPenID authenticated user"""
-    print(kwargs)
     #add authentication method only if is a new user
     isNewUser = kwargs.get('is_new')
     if not isNewUser:
@@ -24,8 +23,10 @@ def add_authentication_method(**kwargs):
                                             username=user.username,
                                             authenticationMethod=authMethod)
         authentication.save()
+        kwargs['authentication'] = authentication
     except:
-        return None
+        pass
+    return kwargs
 
 
 def get_auth_method(authenticatedBackendName):
@@ -48,3 +49,19 @@ def add_user_permissions(**kwargs):
     user.user_permissions.add(Permission.objects.get(codename='add_datafile'))
     user.user_permissions.add(Permission.objects.get(codename='change_dataset'))
 
+    return kwargs
+
+def require_approval(**kwargs):
+    '''
+    :param kwargs:
+    :return:
+    '''
+
+    isNewUser = kwargs.get('is_new')
+    if not isNewUser:
+        return None
+
+    authentication = kwargs.get('authentication')
+    authentication.approved = False
+    authentication.save()
+    return kwargs
