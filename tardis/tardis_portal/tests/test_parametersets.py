@@ -325,11 +325,11 @@ class ParameterSetManagerTestCase(TestCase):
         """
         psm = ParameterSetManager(parameterset=self.datafileparameterset)
 
-        psm.new_param("parameter3", str(datetime(1970, 01, 01, 10, 0, 0)))
+        psm.new_param("parameter3", str(datetime(1970, 1, 1, 10, 0, 0)))
 
         self.assertEqual(
             psm.get_param("parameter3", True),
-            datetime(1970, 01, 01, 0, 0, 0, tzinfo=pytz.utc))
+            datetime(1970, 1, 1, 0, 0, 0, tzinfo=pytz.utc))
 
     def test_tz_aware_date_handling(self):
         """
@@ -342,7 +342,7 @@ class ParameterSetManagerTestCase(TestCase):
 
         self.assertEqual(
             psm.get_param("parameter3", True),
-            datetime(1970, 01, 01, 0, 0, 0, tzinfo=pytz.utc))
+            datetime(1970, 1, 1, 0, 0, 0, tzinfo=pytz.utc))
 
 
 class EditParameterSetTestCase(TestCase):

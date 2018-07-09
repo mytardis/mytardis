@@ -39,8 +39,9 @@ http://docs.djangoproject.com/en/dev/topics/testing/
 
 """
 import json
-from urllib import quote
-from urlparse import urlparse
+
+from six.moves import urllib
+from six.moves import map
 
 from flexmock import flexmock
 
@@ -93,7 +94,7 @@ class UploadTestCase(TestCase):
         self.dataset.save()
 
         path_parts = [settings.FILE_STORE_PATH,
-                      "%s-%s" % (quote(self.dataset.description, safe='')
+                      "%s-%s" % (urllib.parse.quote(self.dataset.description, safe='')
                                  or 'untitled',
                                  self.dataset.id)]
         self.dataset_path = path.join(*path_parts)
@@ -566,7 +567,7 @@ class ExperimentTestCase(TestCase):
         response = client.get(created_url)
         self.assertEqual(response.status_code, 200)
 
-        experiment_id = resolve(urlparse(created_url).path)\
+        experiment_id = resolve(urllib.parse.urlparse(created_url).path)\
             .kwargs['experiment_id']
         experiment = Experiment.objects.get(id=experiment_id)
         for attr in ('title', 'description', 'institution_name'):
@@ -614,7 +615,7 @@ class ExperimentTestCase(TestCase):
         response = client.get(created_url)
         self.assertEqual(response.status_code, 200)
 
-        experiment_id = resolve(urlparse(created_url).path)\
+        experiment_id = resolve(urllib.parse.urlparse(created_url).path)\
             .kwargs['experiment_id']
         experiment = Experiment.objects.get(id=experiment_id)
         for attr in ('title', 'description', 'institution_name'):
@@ -651,7 +652,7 @@ class ExperimentTestCase(TestCase):
             acl.save()
             return experiment
 
-        experiments = map(create_experiment, range(1, 6))
+        experiments = list(map(create_experiment, range(1, 6)))
         experiment = experiments[0]
 
         # Create some datasets

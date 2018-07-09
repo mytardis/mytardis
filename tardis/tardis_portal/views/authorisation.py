@@ -5,8 +5,9 @@ views that have to do with authorisations
 import json
 import logging
 from operator import itemgetter
-from urllib import urlencode
-from urlparse import urlparse, parse_qs
+from six.moves import urllib
+#from urllib import urlencode
+#from urlparse import urlparse, parse_qs
 
 from django.conf import settings
 from django.contrib.auth.decorators import login_required, permission_required
@@ -185,11 +186,11 @@ def retrieve_access_list_tokens(request, experiment_id):
     def token_url(url, token):
         if not url:
             return ''
-        u = urlparse(url)
-        query = parse_qs(u.query)
+        u = urllib.parse.urlparse(url)
+        query = urllib.parse.parse_qs(u.query)
         query.pop('token', None)
         query['token'] = token.token
-        u = u._replace(query=urlencode(query, True))
+        u = u._replace(query=urllib.parse.urlencode(query, True))
         return u.geturl()
         # return '%s?token=%s' % (request.META['HTTP_REFERER'], token.token)
 

@@ -31,12 +31,15 @@ class IteratorTracker(object):
         if hasattr(self._iterator, 'close'):
             self._iterator.close()
 
-    def next(self):
+    def __next__(self):
         try:
             return self._iterator.next()
         except StopIteration:
             self.complete = True
             raise StopIteration()
+
+    def next(self):
+        return self.__next__()
 
     def __del__(self):
         if not self.complete:

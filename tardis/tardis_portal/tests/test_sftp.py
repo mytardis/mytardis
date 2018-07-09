@@ -2,7 +2,7 @@
 
 .. moduleauthor:: James Wettenhall <james.wettenhall@monash.edu>
 """
-from StringIO import StringIO
+from io import StringIO
 
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -58,7 +58,7 @@ class SFTPTest(TestCase):
         self.dataset.save()
 
         def _build(dataset, filename, url):
-            datafile_content = "\n".join(['some data %d' % i
+            datafile_content = u"\n".join([u'some data %d' % i
                                           for i in range(1000)])
             filesize = len(datafile_content)
             datafile = DataFile(

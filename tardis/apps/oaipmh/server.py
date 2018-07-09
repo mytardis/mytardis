@@ -8,6 +8,8 @@ from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
 from django.urls import reverse
 
+from six.moves import reduce
+
 from oaipmh.common import Identify
 import oaipmh.error
 from oaipmh.interfaces import IOAI
@@ -23,7 +25,7 @@ def _safe_import_class(path):
     module_, classname_ = path[:dot], path[dot + 1:]
     try:
         mod = import_module(module_)
-    except ImportError, e:
+    except ImportError as e:
         raise ImproperlyConfigured('Error importing module %s: "%s"' %
                                    (module_, e))
     try:

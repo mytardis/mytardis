@@ -3,9 +3,8 @@ views that return HTML that is injected into pages
 """
 
 import logging
-import urllib2
 from os import path
-from urllib import urlencode
+from six.moves import urllib
 
 from django.conf import settings
 from django.core.exceptions import PermissionDenied
@@ -292,7 +291,7 @@ def retrieve_datafile_list(
         'has_download_permissions': has_download_permissions,
         'has_write_permissions': has_write_permissions,
         'search_query': query,
-        'params': urlencode(params),
+        'params': urllib.parse.urlencode(params),
     }
     _add_protocols_and_organizations(request, None, c)
     return render_response_index(request, template_name, c)
@@ -335,7 +334,7 @@ def list_staging_files(request, dataset_id):
         path_var = request.GET.get('path', '')
         if not path_var:
             root = True
-        from_path = path.join(staging, urllib2.unquote(path_var))
+        from_path = path.join(staging, urllib.parse.unquote(path_var))
     except ValueError:
         from_path = staging
 

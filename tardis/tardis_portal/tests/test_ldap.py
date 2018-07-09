@@ -103,7 +103,7 @@ class LDAPTest(TestCase):
               'first_name': 'Test',
               'last_name': 'User',
               'id': 'testuser1'}
-        self.failUnlessEqual(u, u1)
+        self.assertEqual(u, u1)
 
         # Test authservice API
         from ..auth import auth_service

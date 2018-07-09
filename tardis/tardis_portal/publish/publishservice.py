@@ -17,7 +17,7 @@ class PublishService():
                 try:
                     module_name, klass_name = pmodule.rsplit('.', 1)
                     module = import_module(module_name)
-                except ImportError, e:
+                except ImportError as e:
                     # TODO Show appropriate error msg
                     raise e
 
@@ -25,7 +25,7 @@ class PublishService():
                 try:
                     provider_class = getattr(module, klass_name)
                     provider = provider_class()
-                except AttributeError, e:
+                except AttributeError as e:
                     # TODO Show appropriate error msg
                     raise e
 

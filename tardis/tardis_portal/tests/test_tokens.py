@@ -152,7 +152,6 @@ class TokenTestCase(TestCase):
         expected_expiry = old_datetime(2011, 8, 20, 23, 59, 59)
 
         actual_expiry = t.get_session_expiry()
-        print actual_expiry
 
         self.assertEqual(expected_expiry.year, actual_expiry.year)
         self.assertEqual(expected_expiry.month, actual_expiry.month)

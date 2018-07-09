@@ -44,7 +44,7 @@ class PublishServiceTestCase(TestCase):
 
     def testInitialisation(self):
         service = PublishService(self.settings, self.e1)
-        self.assertEquals(self.e1, service.experiment)
+        self.assertEqual(self.e1, service.experiment)
         self.assertTrue(isinstance(service.provider, MockRifCsProvider))
 
     def testInitialisationNoProvider(self):
@@ -57,9 +57,9 @@ class PublishServiceTestCase(TestCase):
     def testContext(self):
         service = PublishService(self.settings, self.e1)
         c = service.get_context()
-        self.assertEquals(c['experiment'], self.e1)
-        self.assertEquals(c['beamline'], BEAMLINE_VALUE)
-        self.assertEquals(c['license_url'], LICENSE_URL_VALUE)
+        self.assertEqual(c['experiment'], self.e1)
+        self.assertEqual(c['beamline'], BEAMLINE_VALUE)
+        self.assertEqual(c['license_url'], LICENSE_URL_VALUE)
 
     def testManageRifCsCreateAndRemove(self):
         service = PublishService(self.settings, self.e1)

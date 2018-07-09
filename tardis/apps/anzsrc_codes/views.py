@@ -2,7 +2,8 @@ import json
 import logging
 
 from socket import error as SocketError
-from urllib2 import URLError
+
+from six.moves import urllib
 
 from rdflib import plugin, URIRef
 from rdflib.graph import Graph
@@ -30,7 +31,7 @@ logger = logging.getLogger(__name__)
 for_graph = Graph()
 try:
     for_graph.parse(SCHEMA_URI)
-except (URLError, SocketError):
+except (urllib.error.URLError, SocketError):
     logger.debug('no data connection to get external schema definition')
 
 

@@ -79,10 +79,9 @@ class RifCSTestCase(TransactionTestCase):
         self.assertEqual(response.status_code, 200)
         # Check the response content is good
         xml = etree.fromstring(response.content)
-        print response.content
-        assert xml.xpath('/o:OAI-PMH', namespaces=ns)
-        assert not xml.xpath('o:error', namespaces=ns)
-        assert xml.xpath('/o:OAI-PMH/o:GetRecord/o:record', namespaces=ns)
+        self.assertTrue(xml.xpath('/o:OAI-PMH', namespaces=ns))
+        self.assertFalse(xml.xpath('o:error', namespaces=ns))
+        self.assertTrue(xml.xpath('/o:OAI-PMH/o:GetRecord/o:record', namespaces=ns))
         header, metadata = xml.xpath('/o:OAI-PMH/o:GetRecord/o:record/o:*',
                                      namespaces=ns)[0:2]
         exp_id = Experiment.objects.first().id

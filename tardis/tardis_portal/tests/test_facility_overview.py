@@ -2,13 +2,14 @@
 Tests relating to facility overview
 '''
 import json
-from StringIO import StringIO
 
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.auth.models import Group
 from django.test import RequestFactory
 from django.test import TestCase
+
+from six import BytesIO
 
 from ..models.datafile import DataFile
 from ..models.datafile import DataFileObject
@@ -65,7 +66,7 @@ class FacilityOverviewTestCase(TestCase):
                 datafile=datafile,
                 storage_box=datafile.get_default_storage_box(),
                 uri=url)
-            dfo.file_object = StringIO(datafile_content)
+            dfo.file_object = BytesIO(datafile_content)
             dfo.save()
             return datafile
 

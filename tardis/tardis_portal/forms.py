@@ -39,7 +39,7 @@ forms module
 from collections import OrderedDict
 import logging
 
-from UserDict import UserDict
+from six.moves import UserDict
 
 from django import forms
 from django.contrib.sites.shortcuts import get_current_site
@@ -375,7 +375,6 @@ class ExperimentForm(forms.ModelForm):
             self.data['experiment'].save()
             for ae in self.data['experiment_authors']:
                 ae.experiment = self.data['experiment']
-                print ae
                 ae.save()
 
     def __init__(self, data=None, files=None, auto_id='%s', prefix=None,

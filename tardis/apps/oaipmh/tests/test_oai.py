@@ -73,7 +73,6 @@ class EndpointTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         # Check the response content is good
         xml = etree.fromstring(response.content)
-        print response.content
         assert xml.xpath('/o:OAI-PMH', namespaces=ns)
         assert not xml.xpath('o:error', namespaces=ns)
         assert xml.xpath('/o:OAI-PMH/o:GetRecord/o:record', namespaces=ns)
@@ -218,7 +217,6 @@ class EndpointTestCase(TestCase):
         xml = etree.fromstring(response.content)
         ns = {'r': 'http://ands.org.au/standards/rif-cs/registryObjects',
               'o': 'http://www.openarchives.org/OAI/2.0/'}
-        print response.content
         assert xml.xpath('/o:OAI-PMH', namespaces=ns)
         assert not xml.xpath('o:error', namespaces=ns)
         idents = xml.xpath('/o:OAI-PMH/o:ListIdentifiers/o:header/o:identifier',
@@ -240,7 +238,6 @@ class EndpointTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         # Check the response content is good
         xml = etree.fromstring(response.content)
-        print response.content
         assert xml.xpath('/o:OAI-PMH', namespaces=ns)
         assert not xml.xpath('o:error', namespaces=ns)
         formats = xml.xpath('/o:OAI-PMH/o:ListMetadataFormats' +
@@ -260,7 +257,6 @@ class EndpointTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         # Check the response content is good
         xml = etree.fromstring(response.content)
-        print response.content
         assert xml.xpath('/o:OAI-PMH', namespaces=ns)
         assert not xml.xpath('o:error', namespaces=ns)
         formats = xml.xpath('/o:OAI-PMH/o:ListMetadataFormats' +
@@ -284,7 +280,6 @@ class EndpointTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         # Check the response content is good
         xml = etree.fromstring(response.content)
-        print response.content
         assert xml.xpath('/o:OAI-PMH', namespaces=ns)
         assert not xml.xpath('o:error', namespaces=ns)
         idents = xml.xpath('/o:OAI-PMH/o:ListRecords'+

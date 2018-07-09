@@ -88,9 +88,6 @@ class Token(models.Model):
         expire_tomorrow_morning = self._tomorrow_4am()
         token_as_datetime = self._get_expiry_as_datetime()
 
-        print expire_tomorrow_morning
-        print token_as_datetime
-
         if expire_tomorrow_morning < token_as_datetime:
             return expire_tomorrow_morning
         return token_as_datetime
