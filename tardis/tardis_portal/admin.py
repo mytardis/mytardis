@@ -177,7 +177,7 @@ class ParameterNameAdmin(admin.ModelAdmin):
 class ObjectACLAdmin(admin.ModelAdmin):
     search_fields = ['content_type', 'object_id']
     list_display = [
-        '__unicode__', 'pluginId', 'entityId', 'canRead',
+        '__str__', 'pluginId', 'entityId', 'canRead',
         'canWrite', 'canDelete', 'isOwner'
     ]
 
