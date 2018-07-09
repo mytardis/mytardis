@@ -36,6 +36,7 @@ IMAGE_FILTER = (Q(mimetype__startswith='image/') &
     (Q(datafileparameterset__datafileparameter__name__units__startswith="image"))  # noqa
 
 
+@python_2_unicode_compatible
 class DataFile(models.Model):
     """Class to store meta-data about a file.  The physical copies of a
     file are described by distinct DataFileObject instances.
@@ -215,7 +216,6 @@ class DataFile(models.Model):
         else:
             raise Schema.UnsupportedType
 
-    @python_2_unicode_compatible
     def __str__(self):
         if self.sha512sum is not None and len(self.sha512sum) > 31:
             checksum = str(self.sha512sum)[:32]
@@ -445,6 +445,7 @@ class DataFile(models.Model):
                     if reverify or not obj.verified])
 
 
+@python_2_unicode_compatible
 class DataFileObject(models.Model):
     '''
     holds one copy of the data for a datafile
@@ -465,7 +466,6 @@ class DataFileObject(models.Model):
         app_label = 'tardis_portal'
         unique_together = ['datafile', 'storage_box']
 
-    @python_2_unicode_compatible
     def __str__(self):
         try:
             return 'Box: %(storage_box)s, URI: %(uri)s, verified: %(v)s' % {

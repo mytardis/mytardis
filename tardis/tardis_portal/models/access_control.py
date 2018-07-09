@@ -12,6 +12,7 @@ from django.dispatch import receiver
 from django.utils.encoding import python_2_unicode_compatible
 
 
+@python_2_unicode_compatible
 class UserProfile(models.Model):
     """
     UserProfile class is an extension to the Django standard user model.
@@ -37,7 +38,6 @@ class UserProfile(models.Model):
     class Meta:
         app_label = 'tardis_portal'
 
-    @python_2_unicode_compatible
     def __str__(self):
         return self.user.username
 
@@ -71,6 +71,7 @@ def create_user_profile(sender, instance, created, **kwargs):
         UserProfile(user=instance).save()
 
 
+@python_2_unicode_compatible
 class GroupAdmin(models.Model):
     """GroupAdmin links the Django User and Group tables for group
     administrators
@@ -87,12 +88,12 @@ class GroupAdmin(models.Model):
     class Meta:
         app_label = 'tardis_portal'
 
-    @python_2_unicode_compatible
     def __str__(self):
         return '%s: %s' % (self.user.username, self.group.name)
 
 
 # TODO: Generalise auth methods
+@python_2_unicode_compatible
 class UserAuthentication(models.Model):
     CHOICES = ()
     userProfile = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
@@ -114,7 +115,6 @@ class UserAuthentication(models.Model):
     def getAuthMethodDescription(self):
         return self._comparisonChoicesDict[self.authenticationMethod]
 
-    @python_2_unicode_compatible
     def __str__(self):
         return self.username + ' - ' + self.getAuthMethodDescription()
 
@@ -142,6 +142,7 @@ class UserAuthentication(models.Model):
 #     content_object = GenericForeignKey('content_type', 'object_id')
 
 
+@python_2_unicode_compatible
 class ObjectACL(models.Model):
     """The ObjectACL (formerly ExperimentACL) table is the core of the `Tardis
     Authorisation framework
@@ -208,7 +209,6 @@ class ObjectACL(models.Model):
             return Group.objects.get(pk=self.entityId)
         return None
 
-    @python_2_unicode_compatible
     def __str__(self):
         return '%s | %i' % (self.content_type.name, self.object_id)
 

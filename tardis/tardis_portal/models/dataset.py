@@ -15,6 +15,7 @@ from .instrument import Instrument
 logger = logging.getLogger(__name__)
 
 
+@python_2_unicode_compatible
 class Dataset(models.Model):
     """Class to link datasets to experiments
 
@@ -55,7 +56,6 @@ class Dataset(models.Model):
         else:
             raise Schema.UnsupportedType
 
-    @python_2_unicode_compatible
     def __str__(self):
         return self.description
 

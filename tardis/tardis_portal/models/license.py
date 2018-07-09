@@ -7,6 +7,7 @@ from django.utils.encoding import python_2_unicode_compatible
 logger = logging.getLogger(__name__)
 
 
+@python_2_unicode_compatible
 class License(models.Model):
     '''
     Represents a licence for experiment content.
@@ -36,7 +37,6 @@ class License(models.Model):
         default=True,
         help_text="Can experiments continue to select this license?")
 
-    @python_2_unicode_compatible
     def __str__(self):
         return self.name
 
