@@ -10,13 +10,17 @@ some cascading.
 """
 
 import sys
+
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction, DEFAULT_DB_ALIAS
-from tardis.tardis_portal.models import Experiment, Dataset, DataFile
-from tardis.tardis_portal.models import ExperimentAuthor, ObjectACL
-from tardis.tardis_portal.models import ExperimentParameterSet, ExperimentParameter
-from tardis.tardis_portal.models import DatasetParameterSet
-from tardis.tardis_portal.models import DatafileParameterSet
+
+from six import reraise
+
+from ...models import Experiment, Dataset, DataFile
+from ...models import ExperimentAuthor, ObjectACL
+from ...models import ExperimentParameterSet, ExperimentParameter
+from ...models import DatasetParameterSet
+from ...models import DatafileParameterSet
 
 
 class Command(BaseCommand):
@@ -153,4 +157,4 @@ class Command(BaseCommand):
             new_exc = CommandError(
                 "Exception %s has occurred: rolled back transaction"
                 % (exc or exc_class))
-            raise new_exc.__class__, new_exc, tb
+            reraise(new_exc.__class__, new_exc, tb)

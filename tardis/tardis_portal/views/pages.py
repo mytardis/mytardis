@@ -8,6 +8,8 @@ from os import path
 import inspect
 import types
 
+from six import string_types
+
 from django.conf import settings
 from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.contenttypes.models import ContentType
@@ -25,19 +27,18 @@ from django.views.decorators.cache import cache_page
 from django.views.generic.base import TemplateView, View
 
 from tardis.search.utils import SearchQueryString
-from tardis.tardis_portal.auth import decorators as authz
-from tardis.tardis_portal.auth.decorators import (
+from ..auth import decorators as authz
+from ..auth.decorators import (
     has_experiment_download_access, has_experiment_write, has_dataset_write)
-from tardis.tardis_portal.auth.localdb_auth import django_user
-from tardis.tardis_portal.forms import ExperimentForm, DatasetForm
-from tardis.tardis_portal.models import Experiment, Dataset, DataFile, \
-    ObjectACL
-from tardis.tardis_portal.shortcuts import render_response_index, \
+from ..auth.localdb_auth import django_user
+from ..forms import ExperimentForm, DatasetForm
+from ..models import Experiment, Dataset, DataFile, ObjectACL
+from ..shortcuts import render_response_index, \
     return_response_error, return_response_not_found, get_experiment_referer, \
     render_response_search
-from tardis.tardis_portal.views.utils import (
+from ..views.utils import (
     _redirect_303, _add_protocols_and_organizations, HttpResponseSeeAlso)
-from tardis.tardis_portal.util import get_filesystem_safe_dataset_name
+from ..util import get_filesystem_safe_dataset_name
 
 logger = logging.getLogger(__name__)
 
@@ -393,7 +394,7 @@ def _resolve_view(view_function_or_string):
     :rtype: types.FunctionType
     :raises TypeError:
     """
-    if isinstance(view_function_or_string, basestring):
+    if isinstance(view_function_or_string, string_types):
         x = view_function_or_string.split('.')
         obj_path, obj_name = ('.'.join(x[:-1]), x[-1])
         module = __import__(obj_path, fromlist=[obj_name])
@@ -598,7 +599,7 @@ def sftp_access(request):
     :return: HttpResponse
     :rtype: HttpResponse
     """
-    from tardis.tardis_portal.download import make_mapper
+    from ..download import make_mapper
     object_type = request.GET.get('object_type')
     object_id = request.GET.get('object_id')
     sftp_start_dir = ''

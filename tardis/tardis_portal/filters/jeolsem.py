@@ -1,10 +1,10 @@
 import logging
 from itertools import chain
-from StringIO import StringIO
+from six import BytesIO
 
-from tardis.tardis_portal.models import Schema, ParameterName
-from tardis.tardis_portal.ParameterSetManager import ParameterSetManager
-from tardis.tardis_portal.models.parameters import DatasetParameter
+from ..models import Schema, ParameterName
+from ..ParameterSetManager import ParameterSetManager
+from ..models.parameters import DatasetParameter
 
 logger = logging.getLogger(__name__)
 
@@ -49,7 +49,7 @@ class JEOLSEMFilter(object):
                     logger.debug('Parsing JEOL metadata file')
                     self.save_metadata(datafile, schema,
                                        self.get_metadata(schema, contents))
-        except Exception, e:
+        except Exception as e:
             logger.debug(e)
             return
 
@@ -89,7 +89,7 @@ class JEOLSEMFilter(object):
             return f.read()
 
     def is_jeol_sem_metadata(self, filedata):
-        for line in StringIO(filedata):
+        for line in BytesIO(filedata):
             if line.startswith('$CM_FORMAT '):
                 return True
         return False
@@ -115,7 +115,7 @@ class JEOLSEMFilter(object):
             return filter(None, [get_key_value(line, prefix)
                                  for prefix in self.ATTR_PREFIXES])
 
-        return chain.from_iterable(map(process_line, StringIO(filedata)))
+        return chain.from_iterable(map(process_line, BytesIO(filedata)))
 
     def save_metadata(self, datafile, schema, metadata):
         psm = ParameterSetManager(parentObject=datafile.dataset,

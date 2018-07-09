@@ -1,7 +1,10 @@
 from django.db import models
-from tardis.tardis_portal.models import Facility
+from django.utils.encoding import python_2_unicode_compatible
+
+from .facility import Facility
 
 
+@python_2_unicode_compatible
 class Instrument(models.Model):
     '''
     Represents an instrument belonging to a facility that produces data
@@ -14,7 +17,7 @@ class Instrument(models.Model):
         verbose_name_plural = 'Instruments'
         unique_together = ['name', 'facility']
 
-    def __unicode__(self):
+    def __str__(self):
         return self.name
 
     def getParameterSets(self, schemaType=None):
@@ -22,7 +25,7 @@ class Instrument(models.Model):
         instrument.
 
         '''
-        from tardis.tardis_portal.models.parameters import Schema
+        from .parameters import Schema
         if schemaType == Schema.INSTRUMENT or schemaType is None:
             return self.instrumentparameterset_set.filter(
                 schema__type=Schema.INSTRUMENT)

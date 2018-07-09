@@ -1,5 +1,5 @@
 from django import template
-from tardis.tardis_portal.models.facility import is_facility_manager
+from ..models.facility import is_facility_manager
 
 register = template.Library()
 

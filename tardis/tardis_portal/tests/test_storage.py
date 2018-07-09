@@ -6,9 +6,9 @@ http://docs.djangoproject.com/en/dev/topics/testing/
 
 """
 from django.test import TestCase
-from tardis.tardis_portal.models import StorageBox, StorageBoxOption
-from tardis.tardis_portal.models import Dataset
-from tardis.tardis_portal.models import DataFile
+from ..models import StorageBox, StorageBoxOption
+from ..models import Dataset
+from ..models import DataFile
 
 
 class ModelTestCase(TestCase):

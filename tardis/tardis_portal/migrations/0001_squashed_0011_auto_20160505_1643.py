@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
+from __future__ import print_function
 
 from django.db import migrations, models
 from django.conf import settings
@@ -16,20 +17,20 @@ def cast_string_to_integer(apps, schema_editor):
     DataFile = apps.get_model("tardis_portal", "DataFile")
     total_objects = DataFile.objects.all().count()
 
-    print
+    print()
     current_object = 0
     for df in DataFile.objects.all().iterator():
-        df._size = long(df.size)
+        df._size = int(df.size)
         df.save()
         current_object += 1
         if current_object % 10000 == 0:
-            print "{0} of {1} datafile objects converted".format(
-                    current_object, total_objects)
+            print("{0} of {1} datafile objects converted".format(
+                    current_object, total_objects))
 
 
 class Migration(migrations.Migration):
 
-    replaces = [(b'tardis_portal', '0001_initial'), (b'tardis_portal', '0002_auto_20150528_1128'), (b'tardis_portal', '0003_auto_20150907_1315'), (b'tardis_portal', '0004_storageboxoption_value_type'), (b'tardis_portal', '0005_datafile_add_size_int_column'), (b'tardis_portal', '0006_datafile_remove_size_string_column'), (b'tardis_portal', '0007_remove_parameter_string_value_index'), (b'tardis_portal', '0008_string_value_partial_index_postgres'), (b'tardis_portal', '0009_auto_20160128_1119'), (b'tardis_portal', '0010_auto_20160503_1443'), (b'tardis_portal', '0011_auto_20160505_1643')]
+    replaces = [('tardis_portal', '0001_initial'), ('tardis_portal', '0002_auto_20150528_1128'), ('tardis_portal', '0003_auto_20150907_1315'), ('tardis_portal', '0004_storageboxoption_value_type'), ('tardis_portal', '0005_datafile_add_size_int_column'), ('tardis_portal', '0006_datafile_remove_size_string_column'), ('tardis_portal', '0007_remove_parameter_string_value_index'), ('tardis_portal', '0008_string_value_partial_index_postgres'), ('tardis_portal', '0009_auto_20160128_1119'), ('tardis_portal', '0010_auto_20160503_1443'), ('tardis_portal', '0011_auto_20160505_1643')]
 
     dependencies = [
         ('contenttypes', '0002_remove_content_type_name'),
@@ -142,7 +143,7 @@ class Migration(migrations.Migration):
                 ('url', models.URLField(max_length=255, null=True, blank=True)),
                 ('approved', models.BooleanField(default=False)),
                 ('title', models.CharField(max_length=400)),
-                ('institution_name', models.CharField(default=b'Monash University', max_length=400)),
+                ('institution_name', models.CharField(default='Monash University', max_length=400)),
                 ('description', models.TextField(blank=True)),
                 ('start_time', models.DateTimeField(null=True, blank=True)),
                 ('end_time', models.DateTimeField(null=True, blank=True)),
@@ -150,7 +151,7 @@ class Migration(migrations.Migration):
                 ('update_time', models.DateTimeField(auto_now=True)),
                 ('handle', models.TextField(null=True, blank=True)),
                 ('locked', models.BooleanField(default=False)),
-                ('public_access', models.PositiveSmallIntegerField(default=1, choices=[(1, b'No public access (hidden)'), (25, b'Ready to be released pending embargo expiry'), (50, b'Public Metadata only (no data file access)'), (100, b'Public')])),
+                ('public_access', models.PositiveSmallIntegerField(default=1, choices=[(1, 'No public access (hidden)'), (25, 'Ready to be released pending embargo expiry'), (50, 'Public Metadata only (no data file access)'), (100, 'Public')])),
                 ('created_by', models.ForeignKey(to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE)),
             ],
         ),
@@ -162,7 +163,7 @@ class Migration(migrations.Migration):
                 ('institution', models.CharField(max_length=255, null=True, blank=True)),
                 ('email', models.CharField(max_length=255, null=True, blank=True)),
                 ('order', models.PositiveIntegerField()),
-                ('url', models.URLField(help_text=b'URL identifier for the author', max_length=2000, null=True, blank=True)),
+                ('url', models.URLField(help_text='URL identifier for the author', max_length=2000, null=True, blank=True)),
                 ('experiment', models.ForeignKey(to='tardis_portal.Experiment', on_delete=models.CASCADE)),
             ],
             options={
@@ -272,11 +273,11 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('name', models.CharField(unique=True, max_length=400)),
-                ('url', models.URLField(help_text=b'Link to document outlining licensing details.', unique=True, max_length=255)),
+                ('url', models.URLField(help_text='Link to document outlining licensing details.', unique=True, max_length=255)),
                 ('internal_description', models.TextField()),
                 ('image_url', models.URLField(max_length=255, blank=True)),
-                ('allows_distribution', models.BooleanField(default=False, help_text=b'Does this license provide distribution rights?')),
-                ('is_active', models.BooleanField(default=True, help_text=b'Can experiments continue to select this license?')),
+                ('allows_distribution', models.BooleanField(default=False, help_text='Does this license provide distribution rights?')),
+                ('is_active', models.BooleanField(default=True, help_text='Can experiments continue to select this license?')),
             ],
         ),
         migrations.CreateModel(
@@ -292,7 +293,7 @@ class Migration(migrations.Migration):
                 ('isOwner', models.BooleanField(default=False)),
                 ('effectiveDate', models.DateField(null=True, blank=True)),
                 ('expiryDate', models.DateField(null=True, blank=True)),
-                ('aclOwnershipType', models.IntegerField(default=1, choices=[(1, b'Owner-owned'), (2, b'System-owned')])),
+                ('aclOwnershipType', models.IntegerField(default=1, choices=[(1, 'Owner-owned'), (2, 'System-owned')])),
                 ('content_type', models.ForeignKey(to='contenttypes.ContentType', on_delete=models.CASCADE)),
             ],
             options={
@@ -307,9 +308,9 @@ class Migration(migrations.Migration):
                 ('name', models.CharField(max_length=60)),
                 ('full_name', models.CharField(max_length=60)),
                 ('units', models.CharField(max_length=60, blank=True)),
-                ('data_type', models.IntegerField(default=2, choices=[(1, b'NUMERIC'), (2, b'STRING'), (3, b'URL'), (4, b'LINK'), (5, b'FILENAME'), (6, b'DATETIME'), (7, b'LONGSTRING')])),
+                ('data_type', models.IntegerField(default=2, choices=[(1, 'NUMERIC'), (2, 'STRING'), (3, 'URL'), (4, 'LINK'), (5, 'FILENAME'), (6, 'DATETIME'), (7, 'LONGSTRING')])),
                 ('immutable', models.BooleanField(default=False)),
-                ('comparison_type', models.IntegerField(default=1, choices=[(1, b'Exact value'), (8, b'Contains'), (3, b'Range'), (4, b'Greater than'), (5, b'Greater than or equal'), (6, b'Less than'), (7, b'Less than or equal')])),
+                ('comparison_type', models.IntegerField(default=1, choices=[(1, 'Exact value'), (8, 'Contains'), (3, 'Range'), (4, 'Greater than'), (5, 'Greater than or equal'), (6, 'Less than'), (7, 'Less than or equal')])),
                 ('is_searchable', models.BooleanField(default=False)),
                 ('choices', models.CharField(max_length=500, blank=True)),
                 ('order', models.PositiveIntegerField(default=9999, null=True, blank=True)),
@@ -324,7 +325,7 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('namespace', models.URLField(unique=True, max_length=255)),
                 ('name', models.CharField(max_length=50, null=True, blank=True)),
-                ('type', models.IntegerField(default=1, choices=[(1, b'Experiment schema'), (2, b'Dataset schema'), (3, b'Datafile schema'), (5, b'Instrument schema'), (4, b'None')])),
+                ('type', models.IntegerField(default=1, choices=[(1, 'Experiment schema'), (2, 'Dataset schema'), (3, 'Datafile schema'), (5, 'Instrument schema'), (4, 'None')])),
                 ('subtype', models.CharField(max_length=30, null=True, blank=True)),
                 ('immutable', models.BooleanField(default=False)),
                 ('hidden', models.BooleanField(default=False)),
@@ -334,11 +335,11 @@ class Migration(migrations.Migration):
             name='StorageBox',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('django_storage_class', models.TextField(default=b'tardis.tardis_portal.storage.MyTardisLocalFileSystemStorage')),
+                ('django_storage_class', models.TextField(default='tardis.tardis_portal.storage.MyTardisLocalFileSystemStorage')),
                 ('max_size', models.BigIntegerField()),
                 ('status', models.CharField(max_length=100)),
-                ('name', models.CharField(max_length=255, default=b'default', unique=True)),
-                ('description', models.TextField(default=b'Default Storage')),
+                ('name', models.CharField(max_length=255, default='default', unique=True)),
+                ('description', models.TextField(default='Default Storage')),
                 ('master_box', models.ForeignKey(related_name='child_boxes', blank=True, to='tardis_portal.StorageBox', null=True, on_delete=models.CASCADE)),
             ],
             options={
@@ -361,7 +362,7 @@ class Migration(migrations.Migration):
                 ('key', models.TextField()),
                 ('value', models.TextField()),
                 ('storage_box', models.ForeignKey(related_name='options', to='tardis_portal.StorageBox', on_delete=models.CASCADE)),
-                ('value_type', models.CharField(default=b'string', max_length=6, choices=[(b'string', b'String value'), (b'pickle', b'Pickled value')])),
+                ('value_type', models.CharField(default='string', max_length=6, choices=[('string', 'String value'), ('pickle', 'Pickled value')])),
             ],
         ),
         migrations.CreateModel(
@@ -409,7 +410,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='instrumentparameterset',
             name='storage_box',
-            field=models.ManyToManyField(related_name='instrumentparametersets', to=b'tardis_portal.StorageBox'),
+            field=models.ManyToManyField(related_name='instrumentparametersets', to='tardis_portal.StorageBox'),
         ),
         migrations.AddField(
             model_name='instrumentparameter',
@@ -434,7 +435,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='experimentparameterset',
             name='storage_box',
-            field=models.ManyToManyField(related_name='experimentparametersets', to=b'tardis_portal.StorageBox'),
+            field=models.ManyToManyField(related_name='experimentparametersets', to='tardis_portal.StorageBox'),
         ),
         migrations.AddField(
             model_name='experimentparameter',
@@ -459,7 +460,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='datasetparameterset',
             name='storage_box',
-            field=models.ManyToManyField(related_name='datasetparametersets', to=b'tardis_portal.StorageBox'),
+            field=models.ManyToManyField(related_name='datasetparametersets', to='tardis_portal.StorageBox'),
         ),
         migrations.AddField(
             model_name='datasetparameter',
@@ -474,7 +475,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='dataset',
             name='experiments',
-            field=models.ManyToManyField(related_name='datasets', to=b'tardis_portal.Experiment'),
+            field=models.ManyToManyField(related_name='datasets', to='tardis_portal.Experiment'),
         ),
         migrations.AddField(
             model_name='dataset',
@@ -489,7 +490,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='datafileparameterset',
             name='storage_box',
-            field=models.ManyToManyField(related_name='datafileparametersets', to=b'tardis_portal.StorageBox'),
+            field=models.ManyToManyField(related_name='datafileparametersets', to='tardis_portal.StorageBox'),
         ),
         migrations.AddField(
             model_name='datafileparameter',
@@ -530,7 +531,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='parametername',
             name='data_type',
-            field=models.IntegerField(default=2, choices=[(1, b'NUMERIC'), (2, b'STRING'), (3, b'URL'), (4, b'LINK'), (5, b'FILENAME'), (6, b'DATETIME'), (7, b'LONGSTRING'), (8, b'JSON')]),
+            field=models.IntegerField(default=2, choices=[(1, 'NUMERIC'), (2, 'STRING'), (3, 'URL'), (4, 'LINK'), (5, 'FILENAME'), (6, 'DATETIME'), (7, 'LONGSTRING'), (8, 'JSON')]),
         ),
         migrations.AddField(
             model_name='datafile',
@@ -574,7 +575,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='experimentauthor',
             name='url',
-            field=models.URLField(help_text=b'URL identifier for the author', max_length=255, null=True, blank=True),
+            field=models.URLField(help_text='URL identifier for the author', max_length=255, null=True, blank=True),
         ),
         migrations.AlterField(
             model_name='license',
@@ -589,11 +590,11 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='license',
             name='url',
-            field=models.URLField(help_text=b'Link to document outlining licensing details.', max_length=255),
+            field=models.URLField(help_text='Link to document outlining licensing details.', max_length=255),
         ),
         migrations.AlterField(
             model_name='storagebox',
             name='name',
-            field=models.CharField(default=b'default', unique=True, max_length=255),
+            field=models.CharField(default='default', unique=True, max_length=255),
         ),
     ]

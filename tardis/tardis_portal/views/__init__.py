@@ -4,15 +4,15 @@ when importing from tardis.tardis_portal.views
 """
 # pylint: disable=W0401,W0614
 
-from tardis.tardis_portal.views.ajax_actions import *
-from tardis.tardis_portal.views.ajax_json import *
-from tardis.tardis_portal.views.ajax_pages import *
-from tardis.tardis_portal.views.authentication import *
-from tardis.tardis_portal.views.authorisation import *
-from tardis.tardis_portal.views.facilities import *
-from tardis.tardis_portal.views.images import *
-from tardis.tardis_portal.views.machine import *
-from tardis.tardis_portal.views.pages import *
-from tardis.tardis_portal.views.parameters import *
-from tardis.tardis_portal.views.upload import *
-from tardis.tardis_portal.views.utils import *
+from .ajax_actions import *
+from .ajax_json import *
+from .ajax_pages import *
+from .authentication import *
+from .authorisation import *
+from .facilities import *
+from .images import *
+from .machine import *
+from .pages import *
+from .parameters import *
+from .upload import *
+from .utils import *

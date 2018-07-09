@@ -8,8 +8,8 @@ from django.contrib.contenttypes.models import ContentType
 from django.db.models import Q
 from django.db.models.query import QuerySet
 
-from tardis.tardis_portal.auth.token_auth import TokenGroupProvider
-from tardis.tardis_portal.models import ObjectACL
+from ..models.access_control import ObjectACL
+from .token_auth import TokenGroupProvider
 
 
 class ACLAwareBackend(object):

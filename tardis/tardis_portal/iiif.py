@@ -1,6 +1,7 @@
 import json
 import mimetypes
-from StringIO import StringIO
+
+from six import BytesIO
 
 from wand.exceptions import WandException
 from wand.image import Image
@@ -13,8 +14,8 @@ from django.http import HttpResponse, HttpResponseNotFound
 from django.views.decorators.http import etag
 from django.utils.cache import patch_cache_control
 
-from tardis.tardis_portal.models import DataFile
-from tardis.tardis_portal.auth.decorators import has_datafile_download_access
+from .models import DataFile
+from .auth.decorators import has_datafile_download_access
 
 
 MAX_AGE = getattr(settings, 'DATAFILE_CACHE_MAX_AGE', 60*60*24*7)
@@ -132,7 +133,7 @@ def download_image(request, datafile_id, region, size, rotation,
                                             datafile_id=datafile.id):
             return HttpResponseNotFound()
 
-    buf = StringIO()
+    buf = BytesIO()
     try:
         file_obj = datafile.get_image_data()
         if file_obj is None:

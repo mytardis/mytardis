@@ -42,11 +42,11 @@ from django.test import TestCase
 from django.conf import settings
 from django.contrib.auth.models import User
 
-from tardis.tardis_portal.models import Experiment
-from tardis.tardis_portal.models import ObjectACL
-from tardis.tardis_portal.models import Token
+from ..models import Experiment
+from ..models import ObjectACL
+from ..models import Token
 
-from tardis.tardis_portal.views.authorisation import retrieve_access_list_tokens
+from ..views.authorisation import retrieve_access_list_tokens
 
 
 class FrozenTime:
@@ -152,7 +152,6 @@ class TokenTestCase(TestCase):
         expected_expiry = old_datetime(2011, 8, 20, 23, 59, 59)
 
         actual_expiry = t.get_session_expiry()
-        print actual_expiry
 
         self.assertEqual(expected_expiry.year, actual_expiry.year)
         self.assertEqual(expected_expiry.month, actual_expiry.month)

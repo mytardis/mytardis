@@ -39,7 +39,7 @@ forms module
 from collections import OrderedDict
 import logging
 
-from UserDict import UserDict
+from six.moves import UserDict
 
 from django import forms
 from django.contrib.sites.shortcuts import get_current_site
@@ -60,14 +60,14 @@ from haystack.forms import SearchForm
 from form_utils import forms as formutils
 from registration.models import RegistrationProfile
 
-from tardis.tardis_portal import models
-from tardis.tardis_portal.fields import MultiValueCommaSeparatedField
-from tardis.tardis_portal.widgets import CommaSeparatedInput
-from tardis.tardis_portal.models import UserAuthentication, Experiment, License
-from tardis.tardis_portal.auth.localdb_auth \
+from . import models
+from .fields import MultiValueCommaSeparatedField
+from .widgets import CommaSeparatedInput
+from .models import UserAuthentication, Experiment, License
+from .auth.localdb_auth \
     import auth_key as locabdb_auth_key
 
-from tardis.tardis_portal.ParameterSetManager import ParameterSetManager
+from .ParameterSetManager import ParameterSetManager
 
 logger = logging.getLogger(__name__)
 
@@ -184,7 +184,7 @@ class RegistrationForm(forms.Form):
 class ChangeUserPermissionsForm(ModelForm):
 
     class Meta:
-        from tardis.tardis_portal.models import ObjectACL
+        from .models import ObjectACL
         model = ObjectACL
         fields = [
             'canDelete',
@@ -375,7 +375,6 @@ class ExperimentForm(forms.ModelForm):
             self.data['experiment'].save()
             for ae in self.data['experiment_authors']:
                 ae.experiment = self.data['experiment']
-                print ae
                 ae.save()
 
     def __init__(self, data=None, files=None, auto_id='%s', prefix=None,
@@ -522,7 +521,7 @@ class ExperimentForm(forms.ModelForm):
 
 def createSearchExperimentForm():
 
-    from tardis.tardis_portal.models import ParameterName
+    from .models import ParameterName
 
     fields = {}
     fields['title'] = forms.CharField(label='Title',
@@ -633,7 +632,7 @@ class StaticField(forms.Field):
 
 def create_parameterset_edit_form(parameterset, request=None):
 
-    from tardis.tardis_portal.models import ParameterName
+    from .models import ParameterName
 
     # if POST data to save
     if request:
@@ -731,7 +730,7 @@ def save_datafile_edit_form(parameterset, request):
 
 def create_datafile_add_form(schema, parentObject, request=None):
 
-    from tardis.tardis_portal.models import ParameterName
+    from .models import ParameterName
 
     # if POST data to save
     if request:

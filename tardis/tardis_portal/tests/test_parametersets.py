@@ -46,16 +46,16 @@ from django.test import TestCase
 from django.contrib.contenttypes.models import ContentType
 import pytz
 
-from tardis.tardis_portal.models import Experiment, Dataset, DataFile, \
+from ..models import Experiment, Dataset, DataFile, \
     DataFileObject, Schema, ParameterName, DatafileParameterSet, \
     DatafileParameter, DatasetParameterSet, ExperimentParameterSet, ObjectACL
-from tardis.tardis_portal.ParameterSetManager import ParameterSetManager
-from tardis.tardis_portal.views.parameters import edit_datafile_par
-from tardis.tardis_portal.views.parameters import edit_dataset_par
-from tardis.tardis_portal.views.parameters import edit_experiment_par
-from tardis.tardis_portal.views.parameters import add_datafile_par
-from tardis.tardis_portal.views.parameters import add_dataset_par
-from tardis.tardis_portal.views.parameters import add_experiment_par
+from ..ParameterSetManager import ParameterSetManager
+from ..views.parameters import edit_datafile_par
+from ..views.parameters import edit_dataset_par
+from ..views.parameters import edit_experiment_par
+from ..views.parameters import add_datafile_par
+from ..views.parameters import add_dataset_par
+from ..views.parameters import add_experiment_par
 
 
 class ParameterSetManagerTestCase(TestCase):
@@ -325,11 +325,11 @@ class ParameterSetManagerTestCase(TestCase):
         """
         psm = ParameterSetManager(parameterset=self.datafileparameterset)
 
-        psm.new_param("parameter3", str(datetime(1970, 01, 01, 10, 0, 0)))
+        psm.new_param("parameter3", str(datetime(1970, 1, 1, 10, 0, 0)))
 
         self.assertEqual(
             psm.get_param("parameter3", True),
-            datetime(1970, 01, 01, 0, 0, 0, tzinfo=pytz.utc))
+            datetime(1970, 1, 1, 0, 0, 0, tzinfo=pytz.utc))
 
     def test_tz_aware_date_handling(self):
         """
@@ -342,7 +342,7 @@ class ParameterSetManagerTestCase(TestCase):
 
         self.assertEqual(
             psm.get_param("parameter3", True),
-            datetime(1970, 01, 01, 0, 0, 0, tzinfo=pytz.utc))
+            datetime(1970, 1, 1, 0, 0, 0, tzinfo=pytz.utc))
 
 
 class EditParameterSetTestCase(TestCase):

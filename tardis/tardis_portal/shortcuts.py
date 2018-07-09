@@ -1,4 +1,3 @@
-import cgi
 import json
 import re
 
@@ -9,9 +8,15 @@ from django.http import HttpResponse
 from django.template.loader import render_to_string
 from django.contrib.sites.models import Site
 
-from tardis.tardis_portal.models import \
-    ExperimentParameterSet
-from tardis.tardis_portal.ParameterSetManager import ParameterSetManager
+try:
+    # Python 3
+    from html import escape
+except ImportError:
+    # Python 2
+    from cgi import escape
+
+from .models import ExperimentParameterSet
+from .ParameterSetManager import ParameterSetManager
 
 
 def render_response_index(request, *args, **kwargs):
@@ -39,7 +44,7 @@ def render_error_message(request, message, status=400):
     Render a simple text error message in a generic error page.
     Any newlines are turned into <br>.
     """
-    formatted = cgi.escape(message).replace('\n', '<br/>')
+    formatted = escape(message).replace('\n', '<br/>')
     return render(request, 'tardis_portal/user_error.html',
                   {'error_message': formatted}, status=status)
 
@@ -57,7 +62,7 @@ def return_response_error(request):
 
 
 def get_experiment_referer(request, dataset_id):
-    from tardis.tardis_portal.auth.decorators import get_accessible_experiments_for_dataset
+    from .auth.decorators import get_accessible_experiments_for_dataset
 
     try:
         from_url = request.META['HTTP_REFERER']
@@ -156,7 +161,7 @@ class RestfulExperimentParameterSet(object):
     view_functions = property(_get_view_functions)
 
     def _list(self, request, experiment_id):
-        from tardis.tardis_portal.auth.decorators import has_experiment_access
+        from .auth.decorators import has_experiment_access
         if not has_experiment_access(request, experiment_id):
             return return_response_error(request)
         sets = ExperimentParameterSet.objects.filter(schema=self.schema,
@@ -167,7 +172,7 @@ class RestfulExperimentParameterSet(object):
 
 
     def _get(self, request, experiment_id, ps_id):
-        from tardis.tardis_portal.auth.decorators import has_experiment_access
+        from .auth.decorators import has_experiment_access
         if not has_experiment_access(request, experiment_id):
             return return_response_error(request)
         try:
@@ -181,7 +186,7 @@ class RestfulExperimentParameterSet(object):
 
 
     def _create(self, request, experiment_id):
-        from tardis.tardis_portal.auth.decorators import has_experiment_write
+        from .auth.decorators import has_experiment_write
         if not has_experiment_write(request, experiment_id):
             return return_response_error(request)
         form = self.form_cls(json.loads(request.body))
@@ -197,7 +202,7 @@ class RestfulExperimentParameterSet(object):
 
 
     def _update(self, request, experiment_id, ps_id):
-        from tardis.tardis_portal.auth.decorators import has_experiment_write
+        from .auth.decorators import has_experiment_write
         if not has_experiment_write(request, experiment_id):
             return return_response_error(request)
 
@@ -218,7 +223,7 @@ class RestfulExperimentParameterSet(object):
 
 
     def _delete(self, request, experiment_id, ps_id):
-        from tardis.tardis_portal.auth.decorators import has_experiment_write
+        from .auth.decorators import has_experiment_write
         if not has_experiment_write(request, experiment_id):
             return return_response_error(request)
 

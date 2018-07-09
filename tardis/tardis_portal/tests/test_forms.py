@@ -38,8 +38,9 @@ http://docs.djangoproject.com/en/dev/topics/testing/
 """
 from django.test import TestCase
 
-from tardis.tardis_portal.forms import RightsForm
-from tardis.tardis_portal.models import Experiment, License
+from ..forms import RightsForm
+from ..models import Experiment, License
+
 
 class RightsFormTestCase(TestCase):
 
@@ -80,7 +81,6 @@ class RightsFormTestCase(TestCase):
 
         # Check we accept valid input
         for public_access, license_id in suitableCombinations:
-            print "Suitable combination: %d %s" % (public_access, license_id)
             data = {'public_access': str(public_access),
                     'license': license_id }
             form = RightsForm(data)
@@ -88,7 +88,6 @@ class RightsFormTestCase(TestCase):
 
         # Check we reject invalid input
         for public_access, license_id in unsuitableCombinations:
-            print "Unsuitable combination: %d %s" % (public_access, license_id)
             data = {'public_access': str(public_access),
                     'license': license_id }
             form = RightsForm(data)

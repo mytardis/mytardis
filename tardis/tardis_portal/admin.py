@@ -36,7 +36,7 @@ import django.db
 from django.contrib import admin
 from django.contrib.contenttypes.admin import GenericTabularInline
 
-from tardis.tardis_portal import models
+from . import models
 
 # from south.models import MigrationHistory
 
@@ -177,7 +177,7 @@ class ParameterNameAdmin(admin.ModelAdmin):
 class ObjectACLAdmin(admin.ModelAdmin):
     search_fields = ['content_type', 'object_id']
     list_display = [
-        '__unicode__', 'pluginId', 'entityId', 'canRead',
+        '__str__', 'pluginId', 'entityId', 'canRead',
         'canWrite', 'canDelete', 'isOwner'
     ]
 

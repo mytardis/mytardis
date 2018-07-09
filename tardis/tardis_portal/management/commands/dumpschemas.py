@@ -7,7 +7,7 @@ from django.db import DEFAULT_DB_ALIAS
 from django.core import serializers
 
 
-from tardis.tardis_portal import models
+from ... import models
 
 
 class Command(BaseCommand):
@@ -63,7 +63,7 @@ class Command(BaseCommand):
         try:
             return serializers.serialize(
                 format, objects, indent=4, use_natural_foreign_keys=True)
-        except Exception, e:
+        except Exception as e:
             if show_traceback:
                 raise
             raise CommandError("Unable to serialize database: %s" % e)

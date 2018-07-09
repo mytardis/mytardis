@@ -6,6 +6,7 @@ import random
 from django.conf import settings
 from django.db import models
 from django.db.utils import DatabaseError
+from django.utils.encoding import python_2_unicode_compatible
 import django.core.files.storage as django_storage
 
 #from celery.contrib.methods import task
@@ -14,6 +15,7 @@ import django.core.files.storage as django_storage
 logger = logging.getLogger(__name__)
 
 
+@python_2_unicode_compatible
 class StorageBox(models.Model):
     '''
     table that holds storage boxes of any type.
@@ -68,7 +70,7 @@ class StorageBox(models.Model):
                   TEMPORARY,
                   TYPE_UNKNOWN]
 
-    def __unicode__(self):
+    def __str__(self):
         return self.name or "anonymous Storage Box"
 
     @property
@@ -213,6 +215,7 @@ class StorageBox(models.Model):
         return s_box
 
 
+@python_2_unicode_compatible
 class StorageBoxOption(models.Model):
     '''
     holds the options passed to the storage class defined in StorageBox.
@@ -232,9 +235,9 @@ class StorageBoxOption(models.Model):
                                   choices=TYPE_CHOICES,
                                   default=STRING)
 
-    def __unicode__(self):
+    def __str__(self):
         return '-> '.join([
-            self.storage_box.__unicode__(),
+            self.storage_box.__str__(),
             ': '.join([self.key or 'no key',
                        str(self.unpickled_value) or 'no value'])
         ])
@@ -258,6 +261,7 @@ class StorageBoxOption(models.Model):
             self.value = pickle.dumps(input_value)
 
 
+@python_2_unicode_compatible
 class StorageBoxAttribute(models.Model):
     '''
     can hold attributes/metadata about different storage locations.
@@ -274,9 +278,9 @@ class StorageBoxAttribute(models.Model):
     key = models.TextField()
     value = models.TextField()
 
-    def __unicode__(self):
+    def __str__(self):
         return '-> '.join([
-            self.storage_box.__unicode__(),
+            self.storage_box.__str__(),
             ': '.join([self.key or 'no key', self.value or 'no value'])
         ])
 

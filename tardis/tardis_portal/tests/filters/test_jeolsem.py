@@ -2,12 +2,12 @@ from os import path
 
 from django.test import TransactionTestCase
 
-from tardis.tardis_portal.filters.jeolsem import JEOLSEMFilter
-from tardis.tardis_portal.models import User, \
-    ObjectACL, Experiment, Dataset, DataFile, DataFileObject, StorageBox
-from tardis.tardis_portal.ParameterSetManager import ParameterSetManager
+from ...filters.jeolsem import JEOLSEMFilter
+from ...models import User, ObjectACL, Experiment, Dataset, DataFile, \
+    DataFileObject, StorageBox
+from ...ParameterSetManager import ParameterSetManager
 
-from tardis.tardis_portal.tests.test_download import get_size_and_sha512sum
+from ..test_download import get_size_and_sha512sum
 
 
 class JEOLSEMFilterTestCase(TransactionTestCase):

@@ -7,16 +7,18 @@ from django.contrib.contenttypes.fields import GenericRelation
 from django.contrib.contenttypes.models import ContentType
 from django.urls import reverse
 from django.db import models
-from django.utils.safestring import SafeUnicode
+from django.utils.safestring import SafeText
+from django.utils.encoding import python_2_unicode_compatible
 
-from tardis.tardis_portal.managers import OracleSafeManager, ExperimentManager
-from tardis.tardis_portal.models import ObjectACL
+from ..managers import OracleSafeManager, ExperimentManager
+from .access_control import ObjectACL
 
 from .license import License
 
 logger = logging.getLogger(__name__)
 
 
+@python_2_unicode_compatible
 class Experiment(models.Model):
     """The ``Experiment`` model inherits from :class:`django.db.models.Model`
 
@@ -102,14 +104,14 @@ class Experiment(models.Model):
         experiment.
 
         """
-        from tardis.tardis_portal.models.parameters import Schema
+        from .parameters import Schema
         if schemaType == Schema.EXPERIMENT or schemaType is None:
             return self.experimentparameterset_set.filter(
                 schema__type=Schema.EXPERIMENT)
         else:
             raise Schema.UnsupportedType
 
-    def __unicode__(self):
+    def __str__(self):
         return self.title
 
     def get_or_create_directory(self):
@@ -119,7 +121,7 @@ class Experiment(models.Model):
             from os import chmod, mkdir
             try:
                 mkdir(dirname)
-                chmod(dirname, 0770)
+                chmod(dirname, 0o770)
             except:
                 dirname = None
         return dirname
@@ -255,6 +257,7 @@ class Experiment(models.Model):
         return None
 
 
+@python_2_unicode_compatible
 class ExperimentAuthor(models.Model):
 
     experiment = models.ForeignKey(Experiment, on_delete=models.CASCADE)
@@ -274,13 +277,13 @@ class ExperimentAuthor(models.Model):
         try:
             from .hooks import publish_public_expt_rifcs
             publish_public_expt_rifcs(self.experiment)
-        except StandardError:
+        except Exception:
             logger.exception('')
 
-    def __unicode__(self):
-        return SafeUnicode(self.author) + ' | ' \
-            + SafeUnicode(self.experiment.id) + ' | ' \
-            + SafeUnicode(self.order)
+    def __str__(self):
+        return SafeText(self.author) + ' | ' \
+            + SafeText(self.experiment.id) + ' | ' \
+            + SafeText(self.order)
 
     class Meta:
         app_label = 'tardis_portal'

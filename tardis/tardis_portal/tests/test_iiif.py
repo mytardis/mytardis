@@ -1,21 +1,22 @@
 import json
 import os
-import six
-
-from wand.image import Image
-
-from lxml import etree
 
 from django.conf import settings
+from django.contrib.auth.models import User
 from django.urls import reverse
 from django.core.files.uploadedfile import TemporaryUploadedFile
 from django.test import TestCase
 from django.test.client import Client
 # from nose.plugins.skip import SkipTest
 
-from tardis.tardis_portal.models import User, \
-    Experiment, ObjectACL, Dataset, DataFile
-from tardis.tardis_portal.models.datafile import compute_checksums
+import six
+from wand.image import Image
+from lxml import etree
+
+from ..models.experiment import Experiment
+from ..models.access_control import ObjectACL
+from ..models.dataset import Dataset
+from ..models.datafile import DataFile, compute_checksums
 
 """
 Tests for IIIF API.

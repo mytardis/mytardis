@@ -183,7 +183,8 @@ class Slapd:
             self._log.debug("deleting existing %s", path)
             os.remove(path)
         self._log.debug("writing config to %s", path)
-        file(path, "w").writelines([line + "\n" for line in self._config])
+        with open(path, "w") as config_file:
+            config_file.writelines([line + "\n" for line in self._config])
         return path
 
     def start(self):
@@ -365,7 +366,7 @@ class Slapd:
             else:
                 attr, value = line.split(':', 2)
                 if value.startswith(': '):
-                    value = base64.decodestring(value[2:])
+                    value = base64.b64decode(value[2:])
                 elif value.startswith(' '):
                     value = value[1:]
                 else:

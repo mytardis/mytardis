@@ -3,11 +3,11 @@ from django.contrib.auth.urls import urlpatterns
 from django.http import HttpResponse
 from django.template import Template, RequestContext
 
-from tardis.tardis_portal import download
-from tardis.tardis_portal.views.pages import ExperimentView
-from tardis.tardis_portal.views import load_datafile_image
-from tardis.tardis_portal.views import load_dataset_image
-from tardis.tardis_portal.views import load_experiment_image
+from .. import download
+from ..views.pages import ExperimentView
+from ..views import load_datafile_image
+from ..views import load_dataset_image
+from ..views import load_experiment_image
 from . import mock_vbl_download
 
 def groups_view(request):

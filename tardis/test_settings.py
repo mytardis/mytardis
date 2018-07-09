@@ -1,11 +1,12 @@
 # pylint: disable=wildcard-import,unused-wildcard-import
 
-from os import listdir
+from glob import glob
+from os import path
 
 from celery import Celery
 from django.apps import apps  # pylint: disable=wrong-import-order
 
-from tardis.default_settings import *  # noqa # pylint: disable=W0401,W0614
+from .default_settings import *  # noqa # pylint: disable=W0401,W0614
 import logging  # pylint: disable=wrong-import-order
 
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
@@ -70,13 +71,16 @@ DOWNLOAD_PROVIDERS = (
 
 
 def get_all_tardis_apps():
-    base_dir = path.join(path.dirname(__file__), '..')
+    base_dir = path.normpath(path.join(path.dirname(__file__), '..'))
     tardis_app_dir = path.join(base_dir, *TARDIS_APP_ROOT.split('.'))
-    names = map(lambda name: path.relpath(name, base_dir),
-                filter(path.isdir,
-                       map(lambda name: path.join(tardis_app_dir, name),
-                           listdir(tardis_app_dir))))
-    return tuple(sorted(map(lambda name: name.replace(path.sep, '.'), names)))
+    contents = glob(path.join(tardis_app_dir, '*'))
+    apps = [
+        'tardis.apps.%s' % path.basename(item)
+        for item in contents
+        if (path.isdir(item)
+            and path.basename(item) != '__pycache__')
+    ]
+    return tuple(sorted(apps))
 
 INSTALLED_APPS += get_all_tardis_apps() + (
     'tardis.apps.equipment',

@@ -41,9 +41,8 @@ import ldap
 
 from django.conf import settings
 
-from tardis.tardis_portal.auth.interfaces import AuthProvider, \
-    GroupProvider, UserProvider
-from tardis.tardis_portal.models import UserAuthentication
+from ..models import UserAuthentication
+from .interfaces import AuthProvider, GroupProvider, UserProvider
 
 
 logger = logging.getLogger(__name__)
@@ -89,7 +88,7 @@ class LDAPBackend(AuthProvider, UserProvider, GroupProvider):
 
         try:
             l = ldap.initialize(self._url)
-        except ldap.LDAPError, e:
+        except ldap.LDAPError as e:
             logger.error(e.message['desc'], ": ", self._url)
             return None
         l.protocol_version = ldap.VERSION3
@@ -99,7 +98,7 @@ class LDAPBackend(AuthProvider, UserProvider, GroupProvider):
                 l.simple_bind_s(self._admin_user, self._admin_pass)
             else:
                 l.simple_bind_s()
-        except ldap.LDAPError, e:
+        except ldap.LDAPError as e:
             logger.error(e.args[0]['desc'])
             if l:
                 l.unbind_s()
@@ -110,7 +109,7 @@ class LDAPBackend(AuthProvider, UserProvider, GroupProvider):
                                       filterstr, attrlist)
             result_type, result_data = l.result(ldap_result_id, 1)
             return result_data
-        except ldap.LDAPError, e:
+        except ldap.LDAPError as e:
             logger.error(e.message['desc'])
         finally:
             l and l.unbind_s()
@@ -295,8 +294,6 @@ class LDAPBackend(AuthProvider, UserProvider, GroupProvider):
         result = self._query(self._group_base,
                              "(&(objectClass=posixGroup)%s)" % qstr,
                              self._group_attr_map.keys() + ["memberUid"])
-        print result
-        print "(&(objectClass=posixGroup)%s)" % qstr
         if not result:
             return
 

@@ -5,8 +5,8 @@ from django.test.utils import override_settings
 
 from django.http import HttpRequest
 from django.contrib.auth import SESSION_KEY
-from tardis.tardis_portal.models import User
-from tardis.tardis_portal.auth.interfaces import GroupProvider
+from ..models import User
+from ..auth.interfaces import GroupProvider
 
 
 class MockSettings(object):
@@ -83,7 +83,7 @@ class AuthServiceTestCase(TestCase):
         self.userProfile2 = self.user2.userprofile
         self.userProfile3 = self.user3.userprofile
 
-        from tardis.tardis_portal.auth import AuthService, auth_service
+        from ..auth import AuthService, auth_service
         s = MockSettings()
         s.GROUP_PROVIDERS = \
             ('tardis.tardis_portal.tests.test_authservice.MockGroupProvider',)
@@ -98,12 +98,12 @@ class AuthServiceTestCase(TestCase):
         self.user2.delete()
         self.user3.delete()
 
-        from tardis.tardis_portal.auth import auth_service
+        from ..auth import auth_service
         auth_service._group_providers = self._auth_service_group_providers
         auth_service._manual_init()
 
     def testInitialisation(self):
-        from tardis.tardis_portal.auth import AuthService
+        from ..auth import AuthService
         s = MockSettings()
         s.USER_PROVIDERS = \
             ('tardis.tardis_portal.auth.localdb_auth.DjangoUserProvider',)
@@ -118,7 +118,7 @@ class AuthServiceTestCase(TestCase):
         c = Client()
         login = c.login(username='mockdb_user1', password='secret')
         self.assertTrue(login)
-        self.assert_(SESSION_KEY in c.session)
+        self.assertIn(SESSION_KEY, c.session)
 
         r = str(c.get('/test/groups/'))
         self.assertEqual(r.count('mockdb'), 2)
@@ -127,7 +127,7 @@ class AuthServiceTestCase(TestCase):
 
         login = c.login(username='mockdb_user2', password='secret')
         self.assertTrue(login)
-        self.assert_(SESSION_KEY in c.session)
+        self.assertIn(SESSION_KEY, c.session)
 
         r = str(c.get('/test/groups/'))
         self.assertEqual(r.count('mockdb'), 2, r)
@@ -135,7 +135,7 @@ class AuthServiceTestCase(TestCase):
         self.assertTrue(',3)' in r)
 
     def testGroupSearch(self):
-        from tardis.tardis_portal.auth import AuthService
+        from ..auth import AuthService
         s = MockSettings()
         s.GROUP_PROVIDERS = \
             ('tardis.tardis_portal.tests.test_authservice.MockGroupProvider',)
@@ -158,7 +158,7 @@ class AuthServiceTestCase(TestCase):
                          '1')
 
     def testGetGroupsForEntity(self):
-        from tardis.tardis_portal.auth import AuthService
+        from ..auth import AuthService
         s = MockSettings()
         s.GROUP_PROVIDERS = \
             ('tardis.tardis_portal.tests.test_authservice.MockGroupProvider',)
@@ -174,7 +174,7 @@ class AuthServiceTestCase(TestCase):
                          1)
 
     def testAuthenticate(self):
-        from tardis.tardis_portal.auth import AuthService
+        from ..auth import AuthService
         s = MockSettings()
         s.USER_PROVIDERS = ()
         s.GROUP_PROVIDERS = ()

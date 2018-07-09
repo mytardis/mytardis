@@ -1,5 +1,6 @@
 import base64
-from StringIO import StringIO
+
+from six import BytesIO
 
 from django import forms
 from django.apps import apps
@@ -7,6 +8,8 @@ from django.contrib import admin
 from django.contrib.auth.models import User, Group
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.utils.encoding import python_2_unicode_compatible
+
 from paramiko import RSAKey, SSHClient, MissingHostKeyPolicy, \
     AutoAddPolicy, PKey, DSSKey, ECDSAKey
 from paramiko.config import SSH_PORT
@@ -70,7 +73,7 @@ class KeyPair(models.Model):
         if self.public_key:
             public_key = base64.b64decode(self.public_key)
         if self.private_key:
-            private_key = StringIO(self.private_key)
+            private_key = BytesIO(self.private_key)
 
         if self.key_type == 'ssh-dss':
             pkey = DSSKey(data=public_key, file_obj=private_key)
@@ -104,11 +107,12 @@ class KeyPair(models.Model):
             self.public_key = pkey.get_base64()
         self.private_key = None
         if pkey.can_sign():
-            key_data = StringIO()
+            key_data = BytesIO()
             pkey.write_private_key(key_data)
             self.private_key = key_data.getvalue()
 
 
+@python_2_unicode_compatible
 class RemoteHost(KeyPair):
     """
     A remote host that may be connected to via SSH
@@ -127,10 +131,11 @@ class RemoteHost(KeyPair):
     host_name = models.CharField('Host name', max_length=50)
     port = models.IntegerField('Port', default=SSH_PORT)
 
-    def __unicode__(self):
+    def __str__(self):
         return self.nickname + ' | ' + self.host_name + ':' + str(self.port)
 
 
+@python_2_unicode_compatible
 class OAuthSSHCertSigningService(models.Model):
     """
     Connection parameters for an OAuth2 SSH certificate signing service.
@@ -153,7 +158,7 @@ class OAuthSSHCertSigningService(models.Model):
         verbose_name = 'OAuth2 SSH cert signing service'
         verbose_name_plural = 'OAuth2 SSH cert signing services'
 
-    def __unicode__(self):
+    def __str__(self):
         return self.nickname
 
     @staticmethod
@@ -203,6 +208,7 @@ class DBHostKeyPolicy(MissingHostKeyPolicy):
                 'Host key for host %s not accepted' % hostname)
 
 
+@python_2_unicode_compatible
 class Credential(KeyPair):
     """
     A credential that may contain a password and/or key. The auth method chosen
@@ -221,7 +227,7 @@ class Credential(KeyPair):
     def _hostname_list(self):
         return [h.host_name for h in self.remote_hosts.all()]
 
-    def __unicode__(self):
+    def __str__(self):
         hosts = str.join(', ', self._hostname_list())
         return self.user.username + ' | ' + \
                self.remote_user + ' (' + hosts + ')'

@@ -2,8 +2,9 @@ import logging
 from django.conf import settings
 from django.db import models
 from django.contrib.auth.models import User
+from django.utils.encoding import python_2_unicode_compatible
 
-from tardis.tardis_portal.managers import OracleSafeManager
+from ..managers import OracleSafeManager
 
 from .experiment import Experiment
 
@@ -13,6 +14,8 @@ def _token_expiry():
     import datetime as dt
     return dt.datetime.now().date() + dt.timedelta(settings.TOKEN_EXPIRY_DAYS)
 
+
+@python_2_unicode_compatible
 class Token(models.Model):
 
     token = models.CharField(max_length=30, unique=True)
@@ -29,7 +32,7 @@ class Token(models.Model):
     class Meta:
         app_label = 'tardis_portal'
 
-    def __unicode__(self):
+    def __str__(self):
         return '%s %s' % (self.expiry_date, self.token)
 
     def _randomise_token(self):
@@ -87,9 +90,6 @@ class Token(models.Model):
 
         expire_tomorrow_morning = self._tomorrow_4am()
         token_as_datetime = self._get_expiry_as_datetime()
-
-        print expire_tomorrow_morning
-        print token_as_datetime
 
         if expire_tomorrow_morning < token_as_datetime:
             return expire_tomorrow_morning

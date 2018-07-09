@@ -3,9 +3,8 @@ views that return HTML that is injected into pages
 """
 
 import logging
-import urllib2
 from os import path
-from urllib import urlencode
+from six.moves import urllib
 
 from django.conf import settings
 from django.core.exceptions import PermissionDenied
@@ -17,17 +16,17 @@ from django.views.decorators.cache import never_cache
 from django.contrib.auth.decorators import login_required
 from haystack.query import SearchQuerySet
 from tardis.search.utils import SearchQueryString
-from tardis.tardis_portal.auth import decorators as authz
-from tardis.tardis_portal.forms import RightsForm
-from tardis.tardis_portal.models import Experiment, DataFile, Dataset, Schema, \
+from ..auth import decorators as authz
+from ..forms import RightsForm
+from ..models import Experiment, DataFile, Dataset, Schema, \
     DatafileParameterSet, UserProfile
-from tardis.tardis_portal.search_query import FacetFixedSearchQuery
-from tardis.tardis_portal.shortcuts import return_response_error, \
+from ..search_query import FacetFixedSearchQuery
+from ..shortcuts import return_response_error, \
     return_response_not_found, render_response_index
-from tardis.tardis_portal.staging import get_full_staging_path, staging_list
-from tardis.tardis_portal.util import render_public_access_badge
-from tardis.tardis_portal.views.pages import ExperimentView
-from tardis.tardis_portal.views.utils import _add_protocols_and_organizations
+from ..staging import get_full_staging_path, staging_list
+from ..util import render_public_access_badge
+from ..views.pages import ExperimentView
+from ..views.utils import _add_protocols_and_organizations
 
 logger = logging.getLogger(__name__)
 
@@ -292,7 +291,7 @@ def retrieve_datafile_list(
         'has_download_permissions': has_download_permissions,
         'has_write_permissions': has_write_permissions,
         'search_query': query,
-        'params': urlencode(params),
+        'params': urllib.parse.urlencode(params),
     }
     _add_protocols_and_organizations(request, None, c)
     return render_response_index(request, template_name, c)
@@ -335,7 +334,7 @@ def list_staging_files(request, dataset_id):
         path_var = request.GET.get('path', '')
         if not path_var:
             root = True
-        from_path = path.join(staging, urllib2.unquote(path_var))
+        from_path = path.join(staging, urllib.parse.unquote(path_var))
     except ValueError:
         from_path = staging
 

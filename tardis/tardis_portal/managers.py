@@ -12,9 +12,8 @@ from django.db.models import Q
 from django.core.exceptions import PermissionDenied
 from django.contrib.auth.models import User, Group
 
-from tardis.tardis_portal.auth.localdb_auth import django_user,\
-    django_group
-from tardis.tardis_portal.models import ObjectACL
+from .auth.localdb_auth import django_user, django_group
+from .models.access_control import ObjectACL
 
 
 class OracleSafeManager(models.Manager):
@@ -89,7 +88,7 @@ class ExperimentManager(OracleSafeManager):
         # this is almost duplicate code of end of has_perm in authorisation.py
         # should be refactored, but cannot think of good way atm
         if not user.is_authenticated:
-            from tardis.tardis_portal.auth.token_auth import TokenGroupProvider
+            from .auth.token_auth import TokenGroupProvider
             query = Q(id=None)
             tgp = TokenGroupProvider()
             for group in tgp.getGroups(user):
@@ -126,7 +125,7 @@ class ExperimentManager(OracleSafeManager):
         return query
 
     def _query_all_public(self):
-        from tardis.tardis_portal.models import Experiment
+        from .models import Experiment
         return ~Q(public_access=Experiment.PUBLIC_ACCESS_NONE)
 
     def get(self, user, experiment_id):
@@ -304,7 +303,7 @@ class ExperimentManager(OracleSafeManager):
         :returns: system owned groups for experiment
         :rtype: QuerySet
         """
-        from tardis.tardis_portal.models import ObjectACL
+        from .models import ObjectACL
         acl = ObjectACL.objects.filter(
             pluginId='django_group',
             content_type__model='experiment',
@@ -322,7 +321,7 @@ class ExperimentManager(OracleSafeManager):
         :rtype: list
         """
 
-        from tardis.tardis_portal.models import ObjectACL
+        from .models import ObjectACL
         acl = ObjectACL.objects.exclude(pluginId=django_user)
         acl = acl.exclude(pluginId='django_group')
         acl = acl.filter(content_type__model='experiment',
@@ -331,7 +330,7 @@ class ExperimentManager(OracleSafeManager):
         if not acl:
             return None
 
-        from tardis.tardis_portal.auth import AuthService
+        from .auth import AuthService
         authService = AuthService()
 
         result = []

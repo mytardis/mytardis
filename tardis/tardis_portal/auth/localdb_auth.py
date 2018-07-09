@@ -9,7 +9,7 @@ import logging
 from django.contrib.auth.models import User, Group
 from django.contrib.auth.backends import ModelBackend
 
-from tardis.tardis_portal.auth.interfaces import AuthProvider, GroupProvider, UserProvider
+from .interfaces import AuthProvider, GroupProvider, UserProvider
 
 
 logger = logging.getLogger(__name__)

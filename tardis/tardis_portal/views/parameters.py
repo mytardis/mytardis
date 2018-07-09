@@ -6,13 +6,13 @@ import logging
 
 from django.contrib.auth.decorators import login_required
 
-from tardis.tardis_portal.auth import decorators as authz
-from tardis.tardis_portal.forms import create_parameterset_edit_form, \
+from ..auth import decorators as authz
+from ..forms import create_parameterset_edit_form, \
     save_datafile_edit_form, create_datafile_add_form, save_datafile_add_form
-from tardis.tardis_portal.models import ExperimentParameterSet, DatasetParameterSet, \
+from ..models import ExperimentParameterSet, DatasetParameterSet, \
     DatafileParameterSet, ParameterName, DataFile, Schema, Dataset, Experiment
-from tardis.tardis_portal.shortcuts import return_response_error, render_response_index
-from tardis.tardis_portal.views.utils import remove_csrf_token
+from ..shortcuts import return_response_error, render_response_index
+from ..views.utils import remove_csrf_token
 
 logger = logging.getLogger(__name__)
 

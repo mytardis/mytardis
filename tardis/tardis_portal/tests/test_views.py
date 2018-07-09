@@ -39,8 +39,9 @@ http://docs.djangoproject.com/en/dev/topics/testing/
 
 """
 import json
-from urllib import quote
-from urlparse import urlparse
+
+from six.moves import urllib
+from six.moves import map
 
 from flexmock import flexmock
 
@@ -50,9 +51,9 @@ from django.test import TestCase
 from django.test.client import Client
 from django.contrib.auth.models import User, Group, Permission
 
-from tardis.tardis_portal.staging import get_full_staging_path
-from tardis.tardis_portal.auth.localdb_auth import django_user
-from tardis.tardis_portal.models import UserAuthentication, \
+from ..staging import get_full_staging_path
+from ..auth.localdb_auth import django_user
+from ..models import UserAuthentication, \
     ObjectACL, Experiment, Dataset, DataFile, Schema, \
     DatafileParameterSet
 
@@ -93,7 +94,7 @@ class UploadTestCase(TestCase):
         self.dataset.save()
 
         path_parts = [settings.FILE_STORE_PATH,
-                      "%s-%s" % (quote(self.dataset.description, safe='')
+                      "%s-%s" % (urllib.parse.quote(self.dataset.description, safe='')
                                  or 'untitled',
                                  self.dataset.id)]
         self.dataset_path = path.join(*path_parts)
@@ -146,7 +147,7 @@ class UploadTestCase(TestCase):
 
     def testUploadComplete(self):
         from django.http import QueryDict, HttpRequest
-        from tardis.tardis_portal.views import upload_complete
+        from ..views import upload_complete
         data = [('filesUploaded', '1'), ('speed', 'really fast!'),
                 ('allBytesLoaded', '2'), ('errorCount', '0')]
         post = QueryDict('&'.join(['%s=%s' % (k, v) for (k, v) in
@@ -566,7 +567,7 @@ class ExperimentTestCase(TestCase):
         response = client.get(created_url)
         self.assertEqual(response.status_code, 200)
 
-        experiment_id = resolve(urlparse(created_url).path)\
+        experiment_id = resolve(urllib.parse.urlparse(created_url).path)\
             .kwargs['experiment_id']
         experiment = Experiment.objects.get(id=experiment_id)
         for attr in ('title', 'description', 'institution_name'):
@@ -614,7 +615,7 @@ class ExperimentTestCase(TestCase):
         response = client.get(created_url)
         self.assertEqual(response.status_code, 200)
 
-        experiment_id = resolve(urlparse(created_url).path)\
+        experiment_id = resolve(urllib.parse.urlparse(created_url).path)\
             .kwargs['experiment_id']
         experiment = Experiment.objects.get(id=experiment_id)
         for attr in ('title', 'description', 'institution_name'):
@@ -651,7 +652,7 @@ class ExperimentTestCase(TestCase):
             acl.save()
             return experiment
 
-        experiments = map(create_experiment, range(1, 6))
+        experiments = list(map(create_experiment, range(1, 6)))
         experiment = experiments[0]
 
         # Create some datasets
@@ -798,7 +799,7 @@ class ContextualViewTest(TestCase):
         test display of view for an existing schema and no display for an
         undefined one.
         """
-        from tardis.tardis_portal.views import display_datafile_details
+        from ..views import display_datafile_details
         request = flexmock(user=self.user, groups=[("testgroup", flexmock())])
         with self.settings(DATAFILE_VIEWS=[
                 ("http://test.com/test/schema", "/test/url"),
@@ -856,7 +857,7 @@ class ViewTemplateContextsTest(TestCase):
         """
         test some template context parameters for an experiment view
         """
-        from tardis.tardis_portal.views import ExperimentView
+        from ..views import ExperimentView
         from django.http import HttpRequest
         import sys
 
@@ -908,7 +909,7 @@ class ViewTemplateContextsTest(TestCase):
         """
         test some context parameters for a dataset view
         """
-        from tardis.tardis_portal.views import DatasetView
+        from ..views import DatasetView
         from django.http import HttpRequest
         import sys
 
@@ -990,9 +991,9 @@ class ExperimentListsTest(TestCase):
         Test My Data view
         """
         from django.http import QueryDict, HttpRequest
-        from tardis.tardis_portal.views import my_data
-        from tardis.tardis_portal.views import retrieve_owned_exps_list
-        from tardis.tardis_portal.views import retrieve_shared_exps_list
+        from ..views import my_data
+        from ..views import retrieve_owned_exps_list
+        from ..views import retrieve_shared_exps_list
 
         request = HttpRequest()
         request.method = 'GET'

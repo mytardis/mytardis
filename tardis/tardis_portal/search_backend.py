@@ -100,7 +100,7 @@ class HighlightSearchBackend(ElasticsearchSearchBackend):
 
         try:
             raw_results = self.conn.search(query_string, **kwargs)
-        except (IOError, ElasticsearchException), e:
+        except (IOError, ElasticsearchException) as e:
             if not self.silently_fail:
                 raise
 

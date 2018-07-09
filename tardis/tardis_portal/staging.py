@@ -119,9 +119,9 @@ def get_sync_root(prefix=''):
 
 
 def get_sync_url_and_protocol(sync_path, filepath):
-    from urlparse import urlparse
+    from six.moves import urllib
     from django.utils import _os
-    urlObj = urlparse(filepath)
+    urlObj = urllib.parse.urlparse(filepath)
     if urlObj.scheme == '':
         return ('file://'+_os.safe_join(sync_path, filepath), '')
     return (filepath, urlObj.scheme)
@@ -159,7 +159,7 @@ def get_full_staging_path(username):
     # check if the user is authenticated using the deployment's
     # staging protocol
     try:
-        from tardis.tardis_portal.models import UserAuthentication
+        from .models import UserAuthentication
         UserAuthentication.objects.get(
             userProfile__user__username=username,
             authenticationMethod=settings.STAGING_PROTOCOL)
