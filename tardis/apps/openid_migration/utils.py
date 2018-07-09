@@ -29,4 +29,3 @@ def rollback_migration(user_migration_obj):
     groups = Group.objects.filter(user=new_user)
     for group in groups:
         old_user.groups.add(group)
-
