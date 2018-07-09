@@ -2,6 +2,8 @@ import logging
 
 from django.http import HttpResponse
 from django.contrib.auth.models import Permission
+from django.core.mail import send_mail
+from django.conf import settings
 
 from tardis.tardis_portal.models import UserProfile, UserAuthentication, \
     ObjectACL, Group
@@ -13,6 +15,10 @@ from tardis.tardis_portal.shortcuts import render_response_index
 from tardis.apps.openid_migration.models import OpenidUserMigration, OpenidACLMigration
 
 from tastypie.models import ApiKey
+
+from .email_text import email_migration_success
+from . import default_settings
+
 
 logger = logging.getLogger(__name__)
 
@@ -141,9 +147,27 @@ def do_migration(request):
         # Add migration event record
         user_migration_record.migration_status = True
         user_migration_record.save()
+        # send email for successful migration
+        # TODO : get request user auth method
+        notify_user(user, old_username, 'AAF')
 
     data = _setupJsonData(authForm, authenticationMethod, supportedAuthMethods)
     return _getJsonSuccessResponse(data)
+
+
+def notify_user(user, old_username, new_authmethod):
+    subject, message_content = email_migration_success(old_username, new_authmethod)
+    try:
+        user.email_user(subject,
+                        message_content,
+                        from_email=getattr(settings, 'OPENID_NOTIFICATION_SENDER_EMAIL',
+                                           default_settings.OPENID_NOTIFICATION_SENDER_EMAIL),
+                        fail_silently=True)
+    except Exception as e:
+        logger.error(
+            "failed to send migration notification email(s): %s" %
+            repr(e)
+        )
 
 
 def migrate_user_permissions(old_user, new_user):
