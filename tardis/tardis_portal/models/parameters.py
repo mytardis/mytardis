@@ -2,6 +2,8 @@ import logging
 import operator
 import json
 
+from builtins import str
+
 import dateutil.parser
 import pytz
 
@@ -260,7 +262,7 @@ def _get_filename_parameter_as_image_element(parameter):
 def _get_parameter(parameter):
 
     if parameter.name.isNumeric():
-        value = unicode(parameter.numerical_value)
+        value = str(parameter.numerical_value)
         units = parameter.name.units
         if units:
             value += ' %s' % units
@@ -292,7 +294,7 @@ def _get_parameter(parameter):
         return mark_safe(value)
 
     elif parameter.name.isDateTime():
-        value = unicode(parameter.datetime_value)
+        value = str(parameter.datetime_value)
         return value
 
     elif parameter.name.is_json():
@@ -430,7 +432,7 @@ class Parameter(models.Model):
             # the GenericForeignKey via link_id/link_ct
             if str(value) == '' or value is None:
                 return
-            self.string_value = unicode(value)
+            self.string_value = str(value)
 
             try:
                 # We detect experiment or dataset view URLs
@@ -467,7 +469,7 @@ class Parameter(models.Model):
                 raise SuspiciousOperation('Link parameter could not be set '
                                           'from string: %s' % str(value))
         else:
-            self.string_value = unicode(value)
+            self.string_value = str(value)
 
     def _has_any_perm(self, user_obj):
         if not hasattr(self, 'id'):
@@ -506,7 +508,7 @@ class ExperimentParameter(Parameter):
         try:
             from .hooks import publish_public_expt_rifcs
             publish_public_expt_rifcs(self.parameterset.experiment)
-        except StandardError:
+        except Exception:
             logger.exception('')
 
 

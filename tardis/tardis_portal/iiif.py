@@ -1,6 +1,7 @@
 import json
 import mimetypes
-from StringIO import StringIO
+
+from six import BytesIO
 
 from wand.exceptions import WandException
 from wand.image import Image
@@ -132,7 +133,7 @@ def download_image(request, datafile_id, region, size, rotation,
                                             datafile_id=datafile.id):
             return HttpResponseNotFound()
 
-    buf = StringIO()
+    buf = BytesIO()
     try:
         file_obj = datafile.get_image_data()
         if file_obj is None:

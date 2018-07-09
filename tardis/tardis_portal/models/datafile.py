@@ -7,7 +7,9 @@ from tempfile import NamedTemporaryFile
 
 from os import path
 import mimetypes
-from urllib import quote
+
+from six.moves import urllib
+from six import string_types
 
 from django.conf import settings
 from django.core.files import File
@@ -182,7 +184,7 @@ class DataFile(models.Model):
 
     def save(self, *args, **kwargs):
         if self.size is not None:
-            self.size = long(self.size)
+            self.size = int(self.size)
 
         require_checksums = kwargs.pop('require_checksums', True)
         if settings.REQUIRE_DATAFILE_CHECKSUMS and \
@@ -382,7 +384,7 @@ class DataFile(models.Model):
             file_path = path.abspath(path.join(settings.METADATA_STORE_PATH,
                                                preview_image_par.string_value))
 
-            preview_image_file = file(file_path)
+            preview_image_file = open(file_path)
 
             return preview_image_file
         return None
@@ -520,10 +522,10 @@ class DataFileObject(models.Model):
 
         def default_identifier(dfo):
             path_parts = ["%s-%s" % (
-                quote(dfo.datafile.dataset.description, safe='') or 'untitled',
+                urllib.parse.quote(dfo.datafile.dataset.description, safe='') or 'untitled',
                 dfo.datafile.dataset.id)]
             if dfo.datafile.directory is not None:
-                path_parts += [quote(dfo.datafile.directory)]
+                path_parts += [urllib.parse.quote(dfo.datafile.directory)]
             path_parts += [dfo.datafile.filename.strip()]
             uri = path.join(*path_parts)
             return uri
@@ -662,7 +664,7 @@ class DataFileObject(models.Model):
                     for comp_type in comparisons}
         database_update = {}
         empty_value = {db_key: db_val is None or (
-            isinstance(db_val, basestring) and db_val.strip() == '')
+            isinstance(db_val, string_types) and db_val.strip() == '')
             for db_key, db_val in database.items()}
         same_values = {key: False for key, empty in empty_value.items()
                        if not empty}

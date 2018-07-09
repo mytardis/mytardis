@@ -265,7 +265,6 @@ class UserInterfaceTestCase(TestCase):
 
         for u in urls:
             response = c.get(u)
-            print str(response)
             self.assertEqual(response.status_code, 200)
 
     def test_login(self):

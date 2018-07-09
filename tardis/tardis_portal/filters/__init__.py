@@ -115,7 +115,7 @@ class FilterInitMiddleware(object):
         filter_module, filter_classname = path[:dot], path[dot + 1:]
         try:
             mod = import_module(filter_module)
-        except ImportError, e:
+        except ImportError as e:
             raise ImproperlyConfigured('Error importing filter %s: "%s"' %
                                        (filter_module, e))
         try:

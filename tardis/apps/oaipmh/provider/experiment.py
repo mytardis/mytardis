@@ -52,7 +52,6 @@ class AbstractExperimentProvider(BaseProvider):
         if not self._handles_metadata_prefix(metadataPrefix):
             raise oaipmh.error.CannotDisseminateFormatError
         objects = self._get_in_range(from_, until)
-        print str(objects)
         return map(self._get_header, objects)
 
     def listRecords(self, metadataPrefix, set=None, from_=None, until=None):

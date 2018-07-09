@@ -10,7 +10,6 @@ download.py
 import logging
 import urllib
 import os
-import cStringIO as StringIO
 import time
 from importlib import import_module
 
@@ -163,7 +162,7 @@ def _safe_import(path):
     mapper_module, mapper_fname = path[:dot], path[dot + 1:]
     try:
         mod = import_module(mapper_module)
-    except ImportError, e:
+    except ImportError as e:
         raise ImproperlyConfigured('Error importing mapper %s: "%s"' %
                                    (mapper_module, e))
     try:
@@ -300,7 +299,6 @@ class UncachedTarStream(TarFile):
         result = self.binary_buffer.read()
         self.binary_buffer.seek(0)
         self.binary_buffer.truncate()
-        print len(result)
         return result
 
     def make_tar(self):  # noqa
@@ -326,7 +324,7 @@ class UncachedTarStream(TarFile):
                     continue
                 # split into file read buffer sized chunks
                 blocks, remainder = divmod(tarinfo.size, self.buffersize)
-                for b in xrange(blocks):
+                for b in range(blocks):
                     buf = fileobj.read(self.buffersize)
                     if len(buf) < self.buffersize:
                         raise IOError("end of file reached")
@@ -551,8 +549,8 @@ def streaming_download_datafiles(request):  # too complex # noqa
 @login_required
 def download_api_key(request):
     user = request.user
-    api_key_file = StringIO.StringIO()
-    api_key_file.write("ApiKey {0}:{1}".format(user, user.api_key.key))
+    api_key_file = io.StringIO()
+    api_key_file.write(u"ApiKey {0}:{1}".format(user, user.api_key.key))
     api_key_file.seek(0)
     response = StreamingHttpResponse(FileWrapper(api_key_file),
                                      content_type='text/plain')

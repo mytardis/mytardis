@@ -1,12 +1,11 @@
 """
 views that have to do with authentication
 """
-
-from urlparse import urlparse
-
 import logging
 import jwt
 import pwgen
+
+from six.moves import urllib
 
 from django.conf import settings
 from django.contrib import auth as djauth
@@ -245,7 +244,7 @@ def login(request):
             render_response_index(request, 'tardis_portal/login.html', c))
 
     url = request.META.get('HTTP_REFERER', '/')
-    u = urlparse(url)
+    u = urllib.parse.urlparse(url)
     if u.netloc == request.META.get('HTTP_HOST', ""):
         next_page = u.path
     else:

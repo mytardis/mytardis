@@ -7,7 +7,7 @@ from django.contrib.contenttypes.fields import GenericRelation
 from django.contrib.contenttypes.models import ContentType
 from django.urls import reverse
 from django.db import models
-from django.utils.safestring import SafeUnicode
+from django.utils.safestring import SafeText
 
 from ..managers import OracleSafeManager, ExperimentManager
 from .access_control import ObjectACL
@@ -119,7 +119,7 @@ class Experiment(models.Model):
             from os import chmod, mkdir
             try:
                 mkdir(dirname)
-                chmod(dirname, 0770)
+                chmod(dirname, 0o770)
             except:
                 dirname = None
         return dirname
@@ -274,13 +274,13 @@ class ExperimentAuthor(models.Model):
         try:
             from .hooks import publish_public_expt_rifcs
             publish_public_expt_rifcs(self.experiment)
-        except StandardError:
+        except Exception:
             logger.exception('')
 
     def __unicode__(self):
-        return SafeUnicode(self.author) + ' | ' \
-            + SafeUnicode(self.experiment.id) + ' | ' \
-            + SafeUnicode(self.order)
+        return SafeText(self.author) + ' | ' \
+            + SafeText(self.experiment.id) + ' | ' \
+            + SafeText(self.order)
 
     class Meta:
         app_label = 'tardis_portal'

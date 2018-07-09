@@ -93,7 +93,7 @@ class AuthService():
         auth_module, auth_classname = path[:dot], path[dot + 1:]
         try:
             mod = import_module(auth_module)
-        except ImportError, e:
+        except ImportError as e:
             raise ImproperlyConfigured('Error importing auth module %s: "%s"' %
                                        (auth_module, e))
         try:
@@ -324,6 +324,9 @@ class AuthService():
                 result.append(group)
 
         if sort_by:
+
+            def cmp(x, y):
+                return (x > y) - (x < y)
             result.sort(lambda a, b: cmp(a.get(sort_by, '').lower(),
                                          b.get(sort_by, '').lower()))
 

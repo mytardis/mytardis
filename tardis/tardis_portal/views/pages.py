@@ -8,6 +8,8 @@ from os import path
 import inspect
 import types
 
+from six import string_types
+
 from django.conf import settings
 from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.contenttypes.models import ContentType
@@ -392,7 +394,7 @@ def _resolve_view(view_function_or_string):
     :rtype: types.FunctionType
     :raises TypeError:
     """
-    if isinstance(view_function_or_string, basestring):
+    if isinstance(view_function_or_string, string_types):
         x = view_function_or_string.split('.')
         obj_path, obj_name = ('.'.join(x[:-1]), x[-1])
         module = __import__(obj_path, fromlist=[obj_name])

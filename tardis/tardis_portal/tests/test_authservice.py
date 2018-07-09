@@ -118,7 +118,7 @@ class AuthServiceTestCase(TestCase):
         c = Client()
         login = c.login(username='mockdb_user1', password='secret')
         self.assertTrue(login)
-        self.assert_(SESSION_KEY in c.session)
+        self.assertIn(SESSION_KEY, c.session)
 
         r = str(c.get('/test/groups/'))
         self.assertEqual(r.count('mockdb'), 2)
@@ -127,7 +127,7 @@ class AuthServiceTestCase(TestCase):
 
         login = c.login(username='mockdb_user2', password='secret')
         self.assertTrue(login)
-        self.assert_(SESSION_KEY in c.session)
+        self.assertIn(SESSION_KEY, c.session)
 
         r = str(c.get('/test/groups/'))
         self.assertEqual(r.count('mockdb'), 2, r)

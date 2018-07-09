@@ -3,7 +3,8 @@ import hashlib
 import os
 import platform
 import warnings
-from urllib import quote
+
+from six.moves import urllib
 
 import pystache
 import pytz
@@ -185,7 +186,7 @@ def get_filesystem_safe_dataset_name(dataset):
     if settings.DATASET_SPACES_TO_UNDERSCORES:
         dataset_filename = dataset_filename.replace(' ', '_')
 
-    dataset_filename = quote(
+    dataset_filename = urllib.parse.quote(
         dataset_filename,
         safe=settings.SAFE_FILESYSTEM_CHARACTERS)
 
@@ -206,7 +207,7 @@ def get_filesystem_safe_experiment_name(experiment):
     if settings.EXP_SPACES_TO_UNDERSCORES:
         exp_title = exp_title.replace(' ', '_')
 
-    expt_filename = quote(exp_title,
-                          safe=settings.SAFE_FILESYSTEM_CHARACTERS)
+    expt_filename = urllib.parse.quote(
+        exp_title, safe=settings.SAFE_FILESYSTEM_CHARACTERS)
 
     return expt_filename

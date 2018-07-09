@@ -11,7 +11,8 @@ import os
 import stat
 import time
 import uuid
-from cStringIO import StringIO
+
+from six import BytesIO
 
 from django.conf import settings
 from paramiko import InteractiveQuery,  RSAKey, ServerInterface,\
@@ -143,7 +144,7 @@ class DynamicTree(object):
         #         placeholder = df.file_objects.all()[0].uri
         #     else:
         #         placeholder = 'offline file, contact administrator'
-        #     file_obj = StringIO(placeholder)
+        #     file_obj = BytesIO(placeholder)
         # child = self.children[file_name]
         # child.name = file_name
         # child.obj = file_obj
@@ -311,9 +312,9 @@ class MyTSFTPServerInterface(SFTPServerInterface):
         sftp_stat.filename = leaf.name
         sftp_stat.st_size = int(getattr(leaf.obj, 'size', 1))
         if not isinstance(leaf.obj, DataFile):
-            sftp_stat.st_mode = 0777 | stat.S_IFDIR
+            sftp_stat.st_mode = 0o777 | stat.S_IFDIR
         else:
-            sftp_stat.st_mode = 0777 | stat.S_IFREG
+            sftp_stat.st_mode = 0o777 | stat.S_IFREG
         sftp_stat.st_uid = self.user.id
         sftp_stat.st_gid = 20
         sftp_stat.st_atime = time.time()
@@ -357,7 +358,7 @@ class MyTSFTPHandle(SFTPHandle):
                 fo = df.file_objects.all()[0]
                 error_string = "%s:%s" % (fo.storage_box.name,
                                           fo.uri)
-                self.readfile = StringIO(error_string)
+                self.readfile = BytesIO(error_string)
 
     def stat(self):
         """
@@ -496,7 +497,7 @@ def start_server(host=None, port=None, keyfile=None):
     port = port or getattr(settings, 'SFTP_PORT', 2200)
     host_key_string = settings.SFTP_HOST_KEY
     host_key = RSAKey.from_private_key(
-        keyfile or StringIO(host_key_string))
+        keyfile or BytesIO(host_key_string))
     server = MyTSFTPTCPServer((host, port), host_key=host_key)
     try:
         server.serve_forever()

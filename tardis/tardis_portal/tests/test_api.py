@@ -15,6 +15,8 @@ from django.contrib.auth.models import Group
 from django.test.client import Client
 from django.test import TestCase
 
+from six.moves import reload_module
+
 from tastypie.test import ResourceTestCaseMixin
 
 from ..auth.authservice import AuthService
@@ -47,12 +49,12 @@ class SerializerTest(TestCase):
     def test_debug_serializer(self):
         with self.settings(DEBUG=False):
             import tardis.tardis_portal.api
-            reload(tardis.tardis_portal.api)
+            reload_module(tardis.tardis_portal.api)
             self.assertEqual(
                 type(tardis.tardis_portal.api.default_serializer).__name__,
                 'Serializer')
         with self.settings(DEBUG=True):
-            reload(tardis.tardis_portal.api)
+            reload_module(tardis.tardis_portal.api)
             self.assertEqual(
                 type(tardis.tardis_portal.api.default_serializer).__name__,
                 'PrettyJSONSerializer')
