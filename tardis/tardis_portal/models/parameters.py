@@ -15,6 +15,7 @@ from django.conf import settings
 from django.db import models
 from django.utils.safestring import mark_safe
 from django.utils.timezone import is_aware, is_naive, make_aware, make_naive
+from django.utils.encoding import python_2_unicode_compatible
 
 from ..ParameterSetManager import ParameterSetManager
 from ..managers import OracleSafeManager, ParameterNameManager, SchemaManager
@@ -112,7 +113,8 @@ class Schema(models.Model):
             type_list = cls._SCHEMA_TYPES
         return dict(type_list).get(schema_type, None)
 
-    def __unicode__(self):
+    @python_2_unicode_compatible
+    def __str__(self):
         return self._getSchemaTypeName(self.type) + (
             self.subtype and ' for ' + self.subtype.upper() or ''
         ) + ': ' + self.namespace
@@ -185,7 +187,8 @@ class ParameterName(models.Model):
         unique_together = (('schema', 'name'),)
         ordering = ('order', 'name')
 
-    def __unicode__(self):
+    @python_2_unicode_compatible
+    def __str__(self):
         return (self.schema.name or self.schema.namespace) + ": " + self.name
 
     def natural_key(self):
@@ -334,7 +337,8 @@ class ParameterSet(models.Model, ParameterSetManagerMixin):
     def _get_label(self):
         raise NotImplementedError
 
-    def __unicode__(self):
+    @python_2_unicode_compatible
+    def __str__(self):
         labelattribute, default = self._get_label()
         try:
             namespace = operator.attrgetter('schema.namespace')(self)
@@ -379,7 +383,8 @@ class Parameter(models.Model):
     def get(self):
         return _get_parameter(self)
 
-    def __unicode__(self):
+    @python_2_unicode_compatible
+    def __str__(self):
         try:
             return '%s Param: %s=%s' % (self.parameter_type,
                                         self.name.name, self.get())
@@ -557,5 +562,6 @@ class FreeTextSearchField(models.Model):
     class Meta:
         app_label = 'tardis_portal'
 
-    def __unicode__(self):
+    @python_2_unicode_compatible
+    def __str__(self):
         return "Index on %s" % (self.parameter_name)

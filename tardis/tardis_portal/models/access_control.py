@@ -9,6 +9,7 @@ from django.db import models
 from django.db.models import Q
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from django.utils.encoding import python_2_unicode_compatible
 
 
 class UserProfile(models.Model):
@@ -36,7 +37,8 @@ class UserProfile(models.Model):
     class Meta:
         app_label = 'tardis_portal'
 
-    def __unicode__(self):
+    @python_2_unicode_compatible
+    def __str__(self):
         return self.user.username
 
     def getUserAuthentications(self):
@@ -85,7 +87,8 @@ class GroupAdmin(models.Model):
     class Meta:
         app_label = 'tardis_portal'
 
-    def __unicode__(self):
+    @python_2_unicode_compatible
+    def __str__(self):
         return '%s: %s' % (self.user.username, self.group.name)
 
 
@@ -111,7 +114,8 @@ class UserAuthentication(models.Model):
     def getAuthMethodDescription(self):
         return self._comparisonChoicesDict[self.authenticationMethod]
 
-    def __unicode__(self):
+    @python_2_unicode_compatible
+    def __str__(self):
         return self.username + ' - ' + self.getAuthMethodDescription()
 
 
@@ -204,7 +208,8 @@ class ObjectACL(models.Model):
             return Group.objects.get(pk=self.entityId)
         return None
 
-    def __unicode__(self):
+    @python_2_unicode_compatible
+    def __str__(self):
         return '%s | %i' % (self.content_type.name, self.object_id)
 
     class Meta:

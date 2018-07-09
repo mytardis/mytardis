@@ -1,6 +1,8 @@
 from itertools import chain
 import logging
+
 from django.db import models
+from django.utils.encoding import python_2_unicode_compatible
 
 logger = logging.getLogger(__name__)
 
@@ -34,7 +36,8 @@ class License(models.Model):
         default=True,
         help_text="Can experiments continue to select this license?")
 
-    def __unicode__(self):
+    @python_2_unicode_compatible
+    def __str__(self):
         return self.name
 
     @classmethod

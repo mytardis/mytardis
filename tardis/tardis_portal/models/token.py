@@ -2,6 +2,7 @@ import logging
 from django.conf import settings
 from django.db import models
 from django.contrib.auth.models import User
+from django.utils.encoding import python_2_unicode_compatible
 
 from ..managers import OracleSafeManager
 
@@ -29,7 +30,8 @@ class Token(models.Model):
     class Meta:
         app_label = 'tardis_portal'
 
-    def __unicode__(self):
+    @python_2_unicode_compatible
+    def __str__(self):
         return '%s %s' % (self.expiry_date, self.token)
 
     def _randomise_token(self):

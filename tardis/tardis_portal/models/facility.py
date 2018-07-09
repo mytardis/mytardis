@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import Group
+from django.utils.encoding import python_2_unicode_compatible
 
 
 class Facility(models.Model):
@@ -13,7 +14,8 @@ class Facility(models.Model):
         app_label = 'tardis_portal'
         verbose_name_plural = 'Facilities'
 
-    def __unicode__(self):
+    @python_2_unicode_compatible
+    def __str__(self):
         return self.name
 
 
