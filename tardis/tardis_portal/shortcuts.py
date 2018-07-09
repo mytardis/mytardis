@@ -1,4 +1,3 @@
-import html
 import json
 import re
 
@@ -8,6 +7,13 @@ from django.shortcuts import render
 from django.http import HttpResponse
 from django.template.loader import render_to_string
 from django.contrib.sites.models import Site
+
+try:
+    # Python 3
+    from html import escape
+except ImportError:
+    # Python 2
+    from cgi import escape
 
 from .models import ExperimentParameterSet
 from .ParameterSetManager import ParameterSetManager
@@ -38,7 +44,7 @@ def render_error_message(request, message, status=400):
     Render a simple text error message in a generic error page.
     Any newlines are turned into <br>.
     """
-    formatted = html.escape(message).replace('\n', '<br/>')
+    formatted = escape(message).replace('\n', '<br/>')
     return render(request, 'tardis_portal/user_error.html',
                   {'error_message': formatted}, status=status)
 
