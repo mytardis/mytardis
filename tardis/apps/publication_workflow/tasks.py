@@ -8,10 +8,10 @@ from django.utils import timezone
 from celery.task import task  # pylint: disable=E0401
 
 from tardis.tardis_portal.models import Experiment, ExperimentParameter
-from tardis.apps.publication_workflow.doi import DOI
-from tardis.apps.publication_workflow.utils import send_mail_to_authors
-from tardis.apps.publication_workflow.email_text import email_pub_released
-from tardis.apps.publication_workflow import default_settings
+from .doi import DOI
+from .utils import send_mail_to_authors
+from .email_text import email_pub_released
+from . import default_settings
 
 logger = logging.getLogger(__name__)
 

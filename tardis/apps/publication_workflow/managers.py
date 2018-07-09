@@ -118,12 +118,10 @@ class PublicationManager(ExperimentManager):
         from django.contrib.auth.models import Group
 
         from tardis.tardis_portal.models.access_control import ObjectACL
-        from tardis.tardis_portal.models.parameters import Schema
-        from tardis.tardis_portal.models.parameters import ExperimentParameterSet
-        from tardis.tardis_portal.models.parameters import ExperimentParameter
-        from tardis.tardis_portal.models.parameters import ParameterName
-        from tardis.tardis_portal.auth.localdb_auth import django_user
-        from tardis.tardis_portal.auth.localdb_auth import django_group
+        from tardis.tardis_portal.models.parameters import (
+            Schema, ExperimentParameterSet, ExperimentParameter, ParameterName)
+        from tardis.tardis_portal.auth.localdb_auth import (
+            django_user, django_group)
 
         from .models import Publication
         from . import default_settings

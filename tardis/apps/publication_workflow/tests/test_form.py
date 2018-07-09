@@ -8,7 +8,7 @@ from django.contrib.auth.models import User
 from django.test import RequestFactory
 from django.test import TestCase
 
-from ....tardis_portal.models import (
+from tardis.tardis_portal.models import (
     Dataset,
     Experiment,
     ObjectACL,

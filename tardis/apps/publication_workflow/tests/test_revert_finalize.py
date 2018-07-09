@@ -13,7 +13,7 @@ from django.test import TestCase
 
 import pytz  # pylint: disable=E0401
 
-from ....tardis_portal.models import (
+from tardis.tardis_portal.models import (
     Dataset,
     Experiment,
     ObjectACL,
