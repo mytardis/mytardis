@@ -50,11 +50,6 @@ body {
 	white-space: nowrap;
 }
 
-/* Elements that just don't work without JS */
-.no-js .js-required {
-	display: none;
-}
-
 /* Download checkboxes for datasets */
 .dataset-download-box {
 	display: none;
