@@ -163,7 +163,7 @@ class ExperimentManager(OracleSafeManager):
         query = self._query_owned(user)
         for group in user.groups.all():
             query |= self._query_owned_by_group(group)
-        return super(ExperimentManager, self).get_queryset().filter(query)
+        return super(ExperimentManager, self).get_queryset().filter(query).distinct()
 
         # return self.owned_by_user(user)
 
