@@ -152,7 +152,7 @@ var figshare_categories_json = '{{ figshare_categories_json }}';
                ng-controller="PublicationActionsController as pubActionsCtrl"
                ng-init="pubActionsCtrl.init(scheduledPub.id)">
              <button title="Retract" class="btn btn-danger"
-                     ng-click="pubActionsCtrl.retract()">
+                     ng-click="pubActionsCtrl.retractPublication()">
                <i class="fa fa-exclamation-triangle"></i>
                Retract
              </button>
@@ -220,7 +220,7 @@ var figshare_categories_json = '{{ figshare_categories_json }}';
                ng-controller="PublicationActionsController as pubActionsCtrl"
                ng-init="pubActionsCtrl.init(releasedPub.id)">
              <button title="Retract" class="btn btn-danger"
-                     ng-click="pubActionsCtrl.retract()">
+                     ng-click="pubActionsCtrl.retractPublication()">
                <i class="fa fa-exclamation-triangle"></i>
                Retract
              </button>
@@ -240,6 +240,7 @@ var figshare_categories_json = '{{ figshare_categories_json }}';
     </md-table-container>
   </md-content>
 
+  <br/>
   <h3 class="md-title ng-cloak" ng-show="myPubsCtrl.retractedPubs.length">Retracted</h3>
   <md-content layout="column" flex ng-show="myPubsCtrl.retractedPubs.length" class="ng-cloak">
     <md-table-container>

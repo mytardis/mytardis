@@ -243,5 +243,30 @@ angular
         });
     };
 
+    /*
+     * Retract publication
+     */
+    vm.retractPublication = function () {
+        var confirmation = $mdDialog.confirm()
+            .title('Are you sure you want to retract Publication ID ' + vm.experimentId + '?')
+            .textContent('You cannot undo this action!')
+            .ok('Yes, retract it!')
+            .cancel('No, keep it.');
+
+        $mdDialog.show(confirmation).then(function() {
+            $log.info('OK, retracting publication...');
+            $http.post('/apps/publication-workflow/publication/retract/' + vm.experimentId + '/', {})
+               .then(function (_response) {
+                   $log.debug("Publication retracted successfully.");
+                   $window.location.reload();
+               },
+               function(_response) {
+                   $log.debug("Failed to retract publication.");
+               });
+        }, function() {
+            $log.info('OK, keeping publication');
+        });
+    };
+
     vm.updating = false;
 });

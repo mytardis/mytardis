@@ -59,6 +59,58 @@ def _load_template(template_name):
         return f.read()
 
 
+def _mustache_render(tmpl, data):
+    from django.utils.safestring import mark_safe
+    return mark_safe(pystache.render(tmpl, data))
+
+
+def render_mustache(template_name, data):
+    return _mustache_render(_load_template(template_name), data)
+
+
+def render_public_access_badge(experiment):
+    if experiment.public_access == experiment.PUBLIC_ACCESS_NONE and \
+            not experiment.is_publication():
+        return render_mustache('tardis_portal/badges/public_access', {
+            'title': 'No public access',
+            'label': 'Private',
+            'private': True,
+        })
+    elif experiment.public_access == experiment.PUBLIC_ACCESS_NONE and \
+            experiment.is_publication() and \
+            not experiment.is_publication_draft():
+        return render_mustache('tardis_portal/badges/public_access', {
+            'title': 'No public access, retracted',
+            'label': '[PUBLICATION] Retracted',
+            'private': True,
+        })
+    elif experiment.public_access == experiment.PUBLIC_ACCESS_NONE and \
+            experiment.is_publication_draft():
+        return render_mustache('tardis_portal/badges/public_access', {
+            'title': 'No public access',
+            'label': '[PUBLICATION] Draft',
+            'private': True,
+        })
+
+    if experiment.public_access == experiment.PUBLIC_ACCESS_EMBARGO:
+        return render_mustache('tardis_portal/badges/public_access', {
+            'title': 'Under embargo and awaiting release',
+            'label': '[PUBLICATION] Awaiting release',
+        })
+    if experiment.public_access == experiment.PUBLIC_ACCESS_METADATA:
+        return render_mustache('tardis_portal/badges/public_access', {
+            'title': 'Only descriptions are public, not data',
+            'label': 'Metadata',
+        })
+    if experiment.public_access == experiment.PUBLIC_ACCESS_FULL:
+        return render_mustache('tardis_portal/badges/public_access', {
+            'title': 'All data is public',
+            'label': 'Public',
+            'public': True,
+        })
+    return None
+
+
 def split_path(p):
     base, top = os.path.split(os.path.normpath(p))
     return (split_path(base) if base and top else []) + [top]

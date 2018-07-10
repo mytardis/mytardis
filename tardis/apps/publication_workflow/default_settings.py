@@ -86,5 +86,10 @@ Your publication, "{pub_title}", is now public!
 Hello,
 Your publication, "{pub_title}", is now public!
 You may view your publication here: http://dx.doi.org/{doi}
+'''),
+    'retracted': ('[TARDIS] Publication retracted',
+                          '''\
+Hello!
+Your publication, "{pub_title}", has been retracted and is no longer public.
 ''')
 }

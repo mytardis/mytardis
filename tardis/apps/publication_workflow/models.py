@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.utils import timezone
 
 from tardis.tardis_portal.models import (
     Experiment,
@@ -202,3 +203,37 @@ class Publication(Experiment):
 
         except ExperimentParameter.DoesNotExist:
             return False
+
+    def retract(self):
+        '''
+        Retract a publication
+        '''
+        from .utils import send_mail_to_authors
+        from .email_text import email_pub_retracted
+
+        # Reduce access level to none
+        # FIXME: Maybe better to display to message saying why it was retracted
+        self.public_access = Experiment.PUBLIC_ACCESS_NONE
+        self.save()
+
+        # Add the retracted schema
+        retracted_schema_ns = getattr(settings, 'PUBLICATION_RETRACTED_SCHEMA',
+                                  default_settings.PUBLICATION_RETRACTED_SCHEMA)
+        retracted_publication_schema = Schema.objects.get(
+            namespace=retracted_schema_ns)
+        retracted_pset = ExperimentParameterSet.objects.create(
+            schema=retracted_publication_schema, experiment=self)
+
+        retracted_parameter_name = ParameterName.objects.get(
+            schema=retracted_publication_schema,
+            name='retracted')
+        retracted_param = ExperimentParameter.objects.create(
+            name=retracted_parameter_name,
+            parameterset=retracted_pset)
+        retracted_param.datetime_value = timezone.now()
+        retracted_param.save()
+
+        # Send notification emails
+        subject, email_message = email_pub_retracted(self.title)
+
+        send_mail_to_authors(self, subject, email_message)

@@ -570,13 +570,29 @@ def retrieve_retracted_pubs_list(request):
         doi_param = ExperimentParameter.objects.filter(
                 parameterset__experiment=retracted_pub, name=doi_pname).first()
         doi = doi_param.string_value if doi_param else None
+        try:
+            retracted_schema_ns = getattr(settings, 'PUBLICATION_RETRACTED_SCHEMA',
+                                      default_settings.PUBLICATION_RETRACTED_SCHEMA)
+            retracted_publication_schema = Schema.objects.get(
+                namespace=retracted_schema_ns)
+            retracted_pset = ExperimentParameterSet.objects.get(
+                schema=retracted_publication_schema, experiment=retracted_pub)
+            retracted_parameter_name = ParameterName.objects.get(
+                schema=retracted_publication_schema,
+                name='retracted')
+            retracted_param = ExperimentParameter.objects.get(
+                name=retracted_parameter_name,
+                parameterset=retracted_pset)
+            retracted_date = retracted_param.datetime_value.strftime('%Y-%m-%d')
+        except (ExperimentParameterSet.DoesNotExist, ExperimentParameter.DoesNotExist):
+            retracted_date = None
         retracted_pubs_data.append(
             {
                 'id': retracted_pub.id,
                 'title': retracted_pub.title,
                 'doi': doi,
                 'release_date': tasks.get_release_date(retracted_pub).strftime('%Y-%m-%d'),
-                'retracted_date': None
+                'retracted_date': retracted_date
             })
 
     return JsonResponse(retracted_pubs_data, safe=False)
@@ -656,5 +672,17 @@ def delete_publication(request, experiment_id):
     exp = Experiment.objects.get(id=experiment_id)
     if authz.has_experiment_ownership(request, exp.id):
         exp.delete()
+        return JsonResponse({"success": True})
+    return JsonResponse({"success": False})
+
+
+@require_POST
+def retract_publication(request, publication_id):
+    '''
+    Retract the publication with the supplied publication ID
+    '''
+    pub = Publication.objects.get(id=publication_id)
+    if authz.has_experiment_ownership(request, pub.id):
+        pub.retract()
         return JsonResponse({"success": True})
     return JsonResponse({"success": False})

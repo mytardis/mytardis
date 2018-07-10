@@ -17,7 +17,7 @@ def get_pub_admin_email_addresses():
         if user.email]
 
 
-def send_mail_to_authors(publication, subject, message, fail_silently=False):
+def send_mail_to_authors(publication, subject, message, fail_silently=True):
     recipients = [author.email for author in
                   ExperimentAuthor.objects.filter(experiment=publication)]
     from_email = getattr(settings, 'PUBLICATION_NOTIFICATION_SENDER_EMAIL',
