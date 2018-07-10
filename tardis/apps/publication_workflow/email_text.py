@@ -42,3 +42,13 @@ def email_pub_released(pub_title, doi=None):
             'released', pub_title=pub_title)
 
     return subject, message
+
+def email_pub_retracted(pub_title, message=None):
+    subject, email_message = interpolate_template(
+        'retracted', pub_title=pub_title)
+
+    if message:
+        email_message += ''' ---
+%s''' % message
+
+    return subject, email_message
