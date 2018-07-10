@@ -1,8 +1,14 @@
+import logging
+
 from django.conf import settings
-from django.http import HttpResponse
+from django.contrib.sites.models import Site
+from django.core import mail
+from django.core.mail import get_connection
+from django.contrib.auth.models import Permission
 
 from tardis.tardis_portal.models import UserAuthentication
-from django.contrib.auth.models import Permission
+
+logger = logging.getLogger(__name__)
 
 
 def add_authentication_method(**kwargs):
@@ -51,10 +57,12 @@ def add_user_permissions(**kwargs):
 
     return kwargs
 
+
 def require_approval(**kwargs):
+    """Sets approved status to false in user authentication"""
     '''
     :param kwargs:
-    :return:
+    :return: kwargs
     '''
 
     isNewUser = kwargs.get('is_new')
@@ -65,3 +73,36 @@ def require_approval(**kwargs):
     authentication.approved = False
     authentication.save()
     return kwargs
+
+
+def send_admin_email(**kwargs):
+    """sends MyTardis admin an email for approving account"""
+
+    isNewUser = kwargs.get('is_new')
+    if not isNewUser:
+        return None
+
+    # get user
+    user = kwargs.get('user')
+    authentication = kwargs.get('authentication')
+    # send email to admin
+    site = Site.objects.get_current().domain
+    subject = '[MyTardis] User account needs admin approval'
+    message = \
+        "Hi, This message is for MyTardis Admins.\n\n" \
+        "A MyTardis user account with username as \"%s\" and userId as \"%s\" was recently " \
+        "created and needs admin approval.\n\n" \
+        "%s/admin/tardis_portal/userauthentication/%s\n\n" \
+        "Thanks,\n" \
+        "MyTardis\n" \
+        % (user.username, user.id, site, authentication.id)
+
+    try:
+        mail.mail_admins(subject, message,
+                         connection=get_connection(fail_silently=True))
+
+    except Exception as e:
+        logger.error("There was an error sending mail:", e)
+
+    return kwargs
+
