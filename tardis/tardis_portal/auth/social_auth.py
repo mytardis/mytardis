@@ -59,8 +59,11 @@ def add_user_permissions(**kwargs):
     return kwargs
 
 
-def require_approval(**kwargs):
-    """Sets approved status to false in user authentication"""
+def approve_user_auth(**kwargs):
+    """
+    Sets approved status to True in user authentication
+    This will add user permissions as well.
+    """
     '''
     :param kwargs:
     :return: kwargs
@@ -71,7 +74,7 @@ def require_approval(**kwargs):
         return None
 
     authentication = kwargs.get('authentication')
-    authentication.approved = False
+    authentication.approved = True
     authentication.save()
     return kwargs
 
