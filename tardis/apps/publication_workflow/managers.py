@@ -23,7 +23,7 @@ class PublicationManager(ExperimentManager):
         from tardis.tardis_portal.models import Experiment
 
         # the user must be authenticated
-        if not user.is_authenticated():
+        if not user.is_authenticated:
             return self.get_queryset().none()
 
         query = self._query_owned(user)
@@ -57,7 +57,7 @@ class PublicationManager(ExperimentManager):
         from tardis.tardis_portal.models import Experiment
 
         # the user must be authenticated
-        if not user.is_authenticated():
+        if not user.is_authenticated:
             return self.get_queryset().none()
 
         query = self._query_owned(user)
@@ -91,7 +91,7 @@ class PublicationManager(ExperimentManager):
         from tardis.tardis_portal.models import Experiment
 
         # the user must be authenticated
-        if not user.is_authenticated():
+        if not user.is_authenticated:
             return self.get_queryset().none()
 
         query = self._query_owned(user)
@@ -110,6 +110,40 @@ class PublicationManager(ExperimentManager):
             [exp_pset.experiment.id for exp_pset in exp_psets
              if exp_pset.experiment.public_access == Experiment.PUBLIC_ACCESS_FULL]
         return exps.filter(id__in=released_pub_exp_ids).distinct()
+
+    def retracted_publications(self, user):
+        """
+        Return all retracted publications which are owned by a particular user,
+        including those shared with a group of which the user is a member.
+
+        :param user: the user who we are retrieving retracted publications for
+        :type user: django.contrib.auth.models.User
+
+        :returns: A QuerySet of experiments representing the retracted publications
+        :rtype: QuerySet
+        """
+        from tardis.tardis_portal.models import Experiment
+
+        # the user must be authenticated
+        if not user.is_authenticated:
+            return self.get_queryset().none()
+
+        query = self._query_owned(user)
+        for group in user.groups.all():
+            query |= self._query_owned_by_group(group)
+        exps = self.get_queryset().filter(query)
+        Schema = apps.get_model('tardis_portal', 'Schema')
+        ExperimentParameterSet = apps.get_model('tardis_portal',
+                                                'ExperimentParameterSet')
+        publication_schema_root = Schema.objects.get(
+            namespace=getattr(settings, 'PUBLICATION_SCHEMA_ROOT',
+                              Experiment.PUBLICATION_SCHEMA_ROOT))
+        exp_psets = ExperimentParameterSet.objects.filter(
+            experiment__in=exps, schema=publication_schema_root)
+        retracted_pub_exp_ids = \
+            [exp_pset.experiment.id for exp_pset in exp_psets
+             if exp_pset.experiment.is_retracted_publication()]
+        return exps.filter(id__in=retracted_pub_exp_ids).distinct()
 
     def create_draft_publication(self, user, publication_title, publication_description):
         """

@@ -29,7 +29,7 @@ var figshare_categories_json = '{{ figshare_categories_json }}';
       </div>  <!-- class="pull-left" -->
       <div class="pull-right"
            ng-controller="PublicationActionsController as pubActionsCtrl">
-        <a class="btn btn-info" class="pull-right"
+        <a class="btn btn-info pull-right"
            title="Prepare To Publish" ng-click="pubActionsCtrl.createPublication()">
           <i class="fa fa-share"></i>
           <span>Create publication</span>
@@ -45,74 +45,74 @@ var figshare_categories_json = '{{ figshare_categories_json }}';
   </div>
 
   <md-content layout="column" flex ng-show="myPubsCtrl.draftPubs.length">
-        <md-table-container>
-          <table md-table md-row-select="false" ng-model="myPubsCtrl.draftPubsTableModel" md-progress="promise">
-            <thead md-head md-order="myPubsCtrl.query.order" md-on-reorder="myPubsCtrl.logOrder">
-              <tr md-row>
-                <th md-column md-numeric md-order-by="id"><span>ID</span></th>
-                <th md-column md-order-by="title"><span>Publication Title</span></th>
-                <th md-column md-order-by="doi">
-                  <span>DOI<md-tooltip md-direction="bottom">Digital Object Identifier</md-tooltip></span>
-                </th>
-                <th md-column md-order-by="releaseDate" md-desc><span>Release Date</span></th>
-                <th md-column><span>Actions</span></th>
-              </tr>
-            </thead>
-            <tbody md-body>
-              <tr md-row md-select="title" md-on-select="myPubsCtrl.logItem"
-                  md-auto-select="myPubsCtrl.options.autoSelect"
-                  ng-repeat="draftPub in myPubsCtrl.draftPubs | filter: myPubsCtrl.filter.search | orderBy: myPubsCtrl.query.order | limitTo: myPubsCtrl.query.limit : (myPubsCtrl.query.page -1) * myPubsCtrl.query.limit">
-                <td md-cell>{{draftPub.id}}</td>
-                <td md-cell>
-                  <a class="explink"
-                     href="/experiment/view/{{draftPub.id}}/">
-                    {{draftPub.title}}
-                  </a>
-                </td>
-                <td md-cell>{{draftPub.doi}}</td>
-                <td md-cell>{{draftPub.release_date}}</td>
-                <td md-cell
-                   ng-controller="PublicationActionsController as pubActionsCtrl"
-                   ng-init="pubActionsCtrl.init(draftPub.id)">
-                   <button title="Edit Draft" class="btn btn-info"
-                         ng-click="pubActionsCtrl.resumePublication()">
-                   <i class="fa fa-edit"></i>
-                   Resume draft
-                 </button>
-                 &nbsp;
-                 <button title="Delete Draft" class="btn btn-danger"
-                         ng-click="pubActionsCtrl.deletePublicationDraft()">
-                   <i class="fa fa-trash"></i>
-                   Delete draft
-                 </button>
-                 &nbsp;
-                 <button title="Mint DOI" class="btn btn-info"
-                         ng-click="pubActionsCtrl.mintDOI()"
-                         ng-hide="draftPub.doi">
-                   <i class="ai ai-doi ai-lg" style="margin-top: -2px;"></i>
-                   Mint DOI
-                 </button>
-                 &nbsp;
-                 <button title="Share" class="btn btn-info"
-                         ng-click="pubActionsCtrl.sharePublication()">
-                   <i class="fa fa-share-alt"></i>
-                 Share
-                 </button>
-                 <!-- For now, we're using Bootstrap (not Angular Material) for buttons -->
-                 <!-- to make them look consistent with the rest of MyTardis. -->
-                 <!-- This requires a few workarounds to make the two frameworks -->
-                 <!-- play nicely together, e.g. using style="inline-block" -->
-                 <md-progress-circular md-mode="indeterminate"
-                                       ng-show="pubActionsCtrl.updating"
-                                       md-diameter="20px"
-                                       style="display:inline-block;">
-                 </md-progress-circular>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </md-table-container>
-   </md-content>
+    <md-table-container>
+      <table md-table md-row-select="false" ng-model="myPubsCtrl.draftPubsTableModel" md-progress="promise">
+        <thead md-head md-order="myPubsCtrl.query.order" md-on-reorder="myPubsCtrl.logOrder">
+          <tr md-row>
+            <th md-column md-numeric md-order-by="id"><span>ID</span></th>
+            <th md-column md-order-by="title"><span>Publication Title</span></th>
+            <th md-column md-order-by="doi">
+              <span>DOI<md-tooltip md-direction="bottom">Digital Object Identifier</md-tooltip></span>
+            </th>
+            <th md-column md-order-by="releaseDate" md-desc><span>Release Date</span></th>
+            <th md-column><span>Actions</span></th>
+          </tr>
+        </thead>
+        <tbody md-body>
+          <tr md-row md-select="title" md-on-select="myPubsCtrl.logItem"
+              md-auto-select="myPubsCtrl.options.autoSelect"
+              ng-repeat="draftPub in myPubsCtrl.draftPubs | filter: myPubsCtrl.filter.search | orderBy: myPubsCtrl.query.order | limitTo: myPubsCtrl.query.limit : (myPubsCtrl.query.page -1) * myPubsCtrl.query.limit">
+            <td md-cell>{{draftPub.id}}</td>
+            <td md-cell>
+              <a class="explink"
+                 href="/experiment/view/{{draftPub.id}}/">
+                {{draftPub.title}}
+              </a>
+            </td>
+            <td md-cell>{{draftPub.doi}}</td>
+            <td md-cell>{{draftPub.release_date}}</td>
+            <td md-cell
+               ng-controller="PublicationActionsController as pubActionsCtrl"
+               ng-init="pubActionsCtrl.init(draftPub.id)">
+               <button title="Edit Draft" class="btn btn-info"
+                     ng-click="pubActionsCtrl.resumePublication()">
+               <i class="fa fa-edit"></i>
+               Resume draft
+             </button>
+             &nbsp;
+             <button title="Delete Draft" class="btn btn-danger"
+                     ng-click="pubActionsCtrl.deletePublicationDraft()">
+               <i class="fa fa-trash"></i>
+               Delete draft
+             </button>
+             &nbsp;
+             <button title="Mint DOI" class="btn btn-info"
+                     ng-click="pubActionsCtrl.mintDOI()"
+                     ng-hide="draftPub.doi">
+               <i class="ai ai-doi ai-lg" style="margin-top: -2px;"></i>
+               Mint DOI
+             </button>
+             &nbsp;
+             <button title="Share" class="btn btn-info"
+                     ng-click="pubActionsCtrl.sharePublication()">
+               <i class="fa fa-share-alt"></i>
+             Share
+             </button>
+             <!-- For now, we're using Bootstrap (not Angular Material) for buttons -->
+             <!-- to make them look consistent with the rest of MyTardis. -->
+             <!-- This requires a few workarounds to make the two frameworks -->
+             <!-- play nicely together, e.g. using style="inline-block" -->
+             <md-progress-circular md-mode="indeterminate"
+                                   ng-show="pubActionsCtrl.updating"
+                                   md-diameter="20px"
+                                   style="display:inline-block;">
+             </md-progress-circular>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </md-table-container>
+  </md-content>
 
   <br/>
 
@@ -122,61 +122,61 @@ var figshare_categories_json = '{{ figshare_categories_json }}';
     </div>
 
   <md-content layout="column" flex ng-show="myPubsCtrl.scheduledPubs.length">
-        <md-table-container>
-          <table md-table md-row-select="false" ng-model="myPubsCtrl.scheduledPubsTableModel" md-progress="promise">
-            <thead md-head md-order="myPubsCtrl.query.order" md-on-reorder="myPubsCtrl.logOrder">
-              <tr md-row>
-                <th md-column md-numeric md-order-by="id"><span>ID</span></th>
-                <th md-column md-order-by="title"><span>Publication Title</span></th>
-                <th md-column md-order-by="doi">
-                  <span>DOI<md-tooltip md-direction="bottom">Digital Object Identifier</md-tooltip></span>
-                </th>
-                <th md-column md-order-by="releaseDate" md-desc><span>Release Date</span></th>
-                <th md-column><span>Actions</span></th>
-              </tr>
-            </thead>
-            <tbody md-body>
-              <tr md-row md-select="title" md-on-select="myPubsCtrl.logItem"
-                  md-auto-select="myPubsCtrl.options.autoSelect"
-                  ng-repeat="scheduledPub in myPubsCtrl.scheduledPubs | filter: myPubsCtrl.filter.search | orderBy: myPubsCtrl.query.order | limitTo: myPubsCtrl.query.limit : (myPubsCtrl.query.page -1) * myPubsCtrl.query.limit">
-                <td md-cell>{{scheduledPub.id}}</td>
-                <td md-cell>
-                  <a class="explink"
-                     href="/experiment/view/{{scheduledPub.id}}/">
-                    {{scheduledPub.title}}
-                  </a>
-                </td>
-                <td md-cell>{{scheduledPub.doi}}</td>
-                <td md-cell>{{scheduledPub.release_date}}</td>
-                <td md-cell
-                   ng-controller="PublicationActionsController as pubActionsCtrl"
-                   ng-init="pubActionsCtrl.init(scheduledPub.id)">
-                 <button title="Retract" class="btn btn-danger"
-                         ng-click="pubActionsCtrl.retract()">
-                   <i class="fa fa-exclamation-triangle"></i>
-                   Retract
-                 </button>
-                 &nbsp;
-                 <button title="Share" class="btn btn-info"
-                         ng-click="pubActionsCtrl.sharePublication()">
-                   <i class="fa fa-share-alt"></i>
-                 Share
-                 </button>
-                 <!-- For now, we're using Bootstrap (not Angular Material) for buttons -->
-                 <!-- to make them look consistent with the rest of MyTardis. -->
-                 <!-- This requires a few workarounds to make the two frameworks -->
-                 <!-- play nicely together, e.g. using style="inline-block" -->
-                 <md-progress-circular md-mode="indeterminate"
-                                       ng-show="pubActionsCtrl.updating"
-                                       md-diameter="20px"
-                                       style="display:inline-block;">
-                 </md-progress-circular>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </md-table-container>
-   </md-content>
+     md-table-container>
+      <table md-table md-row-select="false" ng-model="myPubsCtrl.scheduledPubsTableModel" md-progress="promise">
+        <thead md-head md-order="myPubsCtrl.query.order" md-on-reorder="myPubsCtrl.logOrder">
+          <tr md-row>
+            <th md-column md-numeric md-order-by="id"><span>ID</span></th>
+            <th md-column md-order-by="title"><span>Publication Title</span></th>
+            <th md-column md-order-by="doi">
+              <span>DOI<md-tooltip md-direction="bottom">Digital Object Identifier</md-tooltip></span>
+            </th>
+            <th md-column md-order-by="releaseDate" md-desc><span>Release Date</span></th>
+            <th md-column><span>Actions</span></th>
+          </tr>
+        </thead>
+        <tbody md-body>
+          <tr md-row md-select="title" md-on-select="myPubsCtrl.logItem"
+              md-auto-select="myPubsCtrl.options.autoSelect"
+              ng-repeat="scheduledPub in myPubsCtrl.scheduledPubs | filter: myPubsCtrl.filter.search | orderBy: myPubsCtrl.query.order | limitTo: myPubsCtrl.query.limit : (myPubsCtrl.query.page -1) * myPubsCtrl.query.limit">
+            <td md-cell>{{scheduledPub.id}}</td>
+            <td md-cell>
+              <a class="explink"
+                 href="/experiment/view/{{scheduledPub.id}}/">
+                {{scheduledPub.title}}
+              </a>
+            </td>
+            <td md-cell>{{scheduledPub.doi}}</td>
+            <td md-cell>{{scheduledPub.release_date}}</td>
+            <td md-cell
+               ng-controller="PublicationActionsController as pubActionsCtrl"
+               ng-init="pubActionsCtrl.init(scheduledPub.id)">
+             <button title="Retract" class="btn btn-danger"
+                     ng-click="pubActionsCtrl.retract()">
+               <i class="fa fa-exclamation-triangle"></i>
+               Retract
+             </button>
+             &nbsp;
+             <button title="Share" class="btn btn-info"
+                     ng-click="pubActionsCtrl.sharePublication()">
+               <i class="fa fa-share-alt"></i>
+             Share
+             </button>
+             <!-- For now, we're using Bootstrap (not Angular Material) for buttons -->
+             <!-- to make them look consistent with the rest of MyTardis. -->
+             <!-- This requires a few workarounds to make the two frameworks -->
+             <!-- play nicely together, e.g. using style="inline-block" -->
+             <md-progress-circular md-mode="indeterminate"
+                                   ng-show="pubActionsCtrl.updating"
+                                   md-diameter="20px"
+                                   style="display:inline-block;">
+             </md-progress-circular>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </md-table-container>
+  </md-content>
 
   <br/>
 
@@ -186,58 +186,98 @@ var figshare_categories_json = '{{ figshare_categories_json }}';
     </div>
 
   <md-content layout="column" flex ng-show="myPubsCtrl.releasedPubs.length">
-        <md-table-container>
-          <table md-table md-row-select="false" ng-model="myPubsCtrl.scheduledPubsTableModel" md-progress="promise">
-            <thead md-head md-order="myPubsCtrl.query.order" md-on-reorder="myPubsCtrl.logOrder">
-              <tr md-row>
-                <th md-column md-numeric md-order-by="id"><span>ID</span></th>
-                <th md-column md-order-by="title"><span>Publication Title</span></th>
-                <th md-column md-order-by="doi">
-                  <span>DOI<md-tooltip md-direction="bottom">Digital Object Identifier</md-tooltip></span>
-                </th>
-                <th md-column md-order-by="releaseDate" md-desc><span>Release Date</span></th>
-                <th md-column><span>Actions</span></th>
-              </tr>
-            </thead>
-            <tbody md-body>
-              <tr md-row md-select="title" md-on-select="myPubsCtrl.logItem"
-                  md-auto-select="myPubsCtrl.options.autoSelect"
-                  ng-repeat="releasedPub in myPubsCtrl.releasedPubs | filter: myPubsCtrl.filter.search | orderBy: myPubsCtrl.query.order | limitTo: myPubsCtrl.query.limit : (myPubsCtrl.query.page -1) * myPubsCtrl.query.limit">
-                <td md-cell>{{releasedPub.id}}</td>
-                <td md-cell>
-                  <a class="explink"
-                     href="/experiment/view/{{releasedPub.id}}/">
-                    {{releasedPub.title}}
-                  </a>
-                </td>
-                <td md-cell>
-                  <a href="http://dx.doi.org/{{releasedPub.doi}}" target="_blank">
-                    {{releasedPub.doi}}
-                </td>
-                <td md-cell>{{releasedPub.release_date}}</td>
-                <td md-cell
-                   ng-controller="PublicationActionsController as pubActionsCtrl"
-                   ng-init="pubActionsCtrl.init(releasedPub.id)">
-                 <button title="Retract" class="btn btn-danger"
-                         ng-click="pubActionsCtrl.retract()">
-                   <i class="fa fa-exclamation-triangle"></i>
-                   Retract
-                 </button>
-                 <!-- For now, we're using Bootstrap (not Angular Material) for buttons -->
-                 <!-- to make them look consistent with the rest of MyTardis. -->
-                 <!-- This requires a few workarounds to make the two frameworks -->
-                 <!-- play nicely together, e.g. using style="inline-block" -->
-                 <md-progress-circular md-mode="indeterminate"
-                                       ng-show="pubActionsCtrl.updating"
-                                       md-diameter="20px"
-                                       style="display:inline-block;">
-                 </md-progress-circular>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </md-table-container>
-   </md-content>
+    <md-table-container>
+      <table md-table md-row-select="false" ng-model="myPubsCtrl.scheduledPubsTableModel" md-progress="promise">
+        <thead md-head md-order="myPubsCtrl.query.order" md-on-reorder="myPubsCtrl.logOrder">
+          <tr md-row>
+            <th md-column md-numeric md-order-by="id"><span>ID</span></th>
+            <th md-column md-order-by="title"><span>Publication Title</span></th>
+            <th md-column md-order-by="doi">
+              <span>DOI<md-tooltip md-direction="bottom">Digital Object Identifier</md-tooltip></span>
+            </th>
+            <th md-column md-order-by="releaseDate" md-desc><span>Release Date</span></th>
+            <th md-column><span>Actions</span></th>
+          </tr>
+        </thead>
+        <tbody md-body>
+          <tr md-row md-select="title" md-on-select="myPubsCtrl.logItem"
+              md-auto-select="myPubsCtrl.options.autoSelect"
+              ng-repeat="releasedPub in myPubsCtrl.releasedPubs | filter: myPubsCtrl.filter.search | orderBy: myPubsCtrl.query.order | limitTo: myPubsCtrl.query.limit : (myPubsCtrl.query.page -1) * myPubsCtrl.query.limit">
+            <td md-cell>{{releasedPub.id}}</td>
+            <td md-cell>
+              <a class="explink"
+                 href="/experiment/view/{{releasedPub.id}}/">
+                {{releasedPub.title}}
+              </a>
+            </td>
+            <td md-cell>
+              <a href="http://dx.doi.org/{{releasedPub.doi}}" target="_blank">
+                {{releasedPub.doi}}
+              </a>
+            </td>
+            <td md-cell>{{releasedPub.release_date}}</td>
+            <td md-cell
+               ng-controller="PublicationActionsController as pubActionsCtrl"
+               ng-init="pubActionsCtrl.init(releasedPub.id)">
+             <button title="Retract" class="btn btn-danger"
+                     ng-click="pubActionsCtrl.retract()">
+               <i class="fa fa-exclamation-triangle"></i>
+               Retract
+             </button>
+             <!-- For now, we're using Bootstrap (not Angular Material) for buttons -->
+             <!-- to make them look consistent with the rest of MyTardis. -->
+             <!-- This requires a few workarounds to make the two frameworks -->
+             <!-- play nicely together, e.g. using style="inline-block" -->
+             <md-progress-circular md-mode="indeterminate"
+                                   ng-show="pubActionsCtrl.updating"
+                                   md-diameter="20px"
+                                   style="display:inline-block;">
+             </md-progress-circular>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </md-table-container>
+  </md-content>
+
+  <h3 class="md-title" ng-show="myPubsCtrl.retractedPubs.length">Retracted</h3>
+  <md-content layout="column" flex ng-show="myPubsCtrl.retractedPubs.length">
+    <md-table-container>
+      <table md-table md-row-select="false" ng-model="myPubsCtrl.scheduledPubsTableModel" md-progress="promise">
+        <thead md-head md-order="myPubsCtrl.query.order" md-on-reorder="myPubsCtrl.logOrder">
+          <tr md-row>
+            <th md-column md-numeric md-order-by="id"><span>ID</span></th>
+            <th md-column md-order-by="title"><span>Publication Title</span></th>
+            <th md-column md-order-by="doi">
+              <span>DOI<md-tooltip md-direction="bottom">Digital Object Identifier</md-tooltip></span>
+            </th>
+            <th md-column md-order-by="releaseDate" md-desc><span>Release Date</span></th>
+            <th md-column md-order-by="retractedData" md-desc><span>Retracted Date</span></th>
+          </tr>
+        </thead>
+        <tbody md-body>
+          <tr md-row md-select="title" md-on-select="myPubsCtrl.logItem"
+              md-auto-select="myPubsCtrl.options.autoSelect"
+              ng-repeat="retractedPub in myPubsCtrl.retractedPubs | filter: myPubsCtrl.filter.search | orderBy: myPubsCtrl.query.order | limitTo: myPubsCtrl.query.limit : (myPubsCtrl.query.page -1) * myPubsCtrl.query.limit">
+            <td md-cell>{{retractedPub.id}}</td>
+            <td md-cell>
+              <a class="explink"
+                 href="/experiment/view/{{retractedPub.id}}/">
+                {{retractedPub.title}}
+              </a>
+            </td>
+            <td md-cell>
+              <a href="http://dx.doi.org/{{retractedPub.doi}}" target="_blank">
+                {{retractedPub.doi}}
+              </a>
+            </td>
+            <td md-cell>{{retractedPub.release_date}}</td>
+            <td md-cell>{{retractedPub.retracted_date}}</td>
+          </tr>
+        </tbody>
+      </table>
+    </md-table-container>
+  </md-content>
 
 </div>  <!-- id="content" -->
 

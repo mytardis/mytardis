@@ -12,6 +12,7 @@ from ..models import Publication
 from ..views import retrieve_draft_pubs_list
 from ..views import retrieve_scheduled_pubs_list
 from ..views import retrieve_released_pubs_list
+from ..views import retrieve_retracted_pubs_list
 
 
 class MyPublicationsTestCase(TestCase):
@@ -80,6 +81,20 @@ class MyPublicationsTestCase(TestCase):
         request = factory.get('/apps/publication-workflow/retrieve_released_pubs_list/')
         request.user = self.user
         response = retrieve_released_pubs_list(request)
+        self.assertEqual(response.status_code, 200)
+        expected = []
+        self.assertEqual(
+            sorted(json.loads(response.content), key=lambda k: k['id']),
+            expected)
+
+    def test_retrieve_retracted_pubs_list(self):
+        '''
+        Test retrieving list of retracted publications
+        '''
+        factory = RequestFactory()
+        request = factory.get('/apps/publication-workflow/retrieve_retracted_pubs_list/')
+        request.user = self.user
+        response = retrieve_retracted_pubs_list(request)
         self.assertEqual(response.status_code, 200)
         expected = []
         self.assertEqual(

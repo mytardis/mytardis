@@ -17,6 +17,9 @@ angular
     var releasedPubsListRes = $resource('/apps/publication-workflow/released_pubs_list/', {}, {
                     'get': {method: 'GET', isArray: true}
                         });
+    var retractedPubsListRes = $resource('/apps/publication-workflow/retracted_pubs_list/', {}, {
+                    'get': {method: 'GET', isArray: true}
+                        });
 
     /**
      * initializeDraftPubsData
@@ -63,10 +66,26 @@ angular
             });
     }
 
+    /**
+     * initializeRetractedPubsData
+     *
+     * Fetch the list of retracted pubs available to the user
+     */
+    function initializeRetractedPubsData() {
+        retractedPubsListRes.get().$promise.then(function (data) {
+                $log.debug("MyPublicationsController: Retracted pubs list fetched successfully!");
+                vm.retractedPubs = data;
+            },
+            function () {
+                $log.error("Could not load retracted pubs list");
+            });
+    }
+
     // Do initial data fetch
     initializeDraftPubsData();
     initializeScheduledPubsData();
     initializeReleasedPubsData();
+    initializeRetractedPubsData();
 
     vm.selected = [];
     vm.limitOptions = [5, 10, 15];
