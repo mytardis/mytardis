@@ -14,6 +14,7 @@ from django.conf import settings
 from django.utils import timezone
 
 import dateutil.parser  # pylint: disable=E0401
+from requests.exceptions import SSLError
 
 from tardis.tardis_portal.auth import decorators as authz
 from tardis.tardis_portal.shortcuts import render_response_index
@@ -417,22 +418,28 @@ def mint_doi_and_deactivate(request, experiment_id):
             doi = DOI()
             doi_parameter_name = ParameterName.objects.get(
                 schema=pub_details_schema, name='doi')
-            ExperimentParameter(name=doi_parameter_name,
-                                parameterset=pub_details_parameter_set,
-                                string_value=doi.mint(
-                                    experiment_id,
-                                    reverse(
-                                        'tardis_portal.view_experiment',
-                                        args=(experiment_id,)))
-                                ).save()
-            logger.info(
-                "DOI %s minted for publication ID %s" %
-                (doi.doi, experiment_id))
-            doi.deactivate()
-            logger.info(
-                "DOI %s deactivated, pending publication release criteria" %
-                doi.doi)
-            return JsonResponse(dict(doi=doi.doi, url=url))
+            try:
+                ExperimentParameter(
+                    name=doi_parameter_name,
+                    parameterset=pub_details_parameter_set,
+                    string_value=doi.mint(
+                        experiment_id,
+                        reverse(
+                            'tardis_portal.view_experiment',
+                            args=(experiment_id,)))
+                ).save()
+                logger.info(
+                    "DOI %s minted for publication ID %s" %
+                    (doi.doi, experiment_id))
+                doi.deactivate()
+                logger.info(
+                    "DOI %s deactivated, pending publication release criteria" %
+                    doi.doi)
+                return JsonResponse(dict(doi=doi.doi, url=url))
+            except SSLError:
+                # FIXME: Give the user some feedback here:
+                logger.error("SSL error occurred while attempting to mint DOI")
+                return JsonResponse(dict(doi=None, url=url))
         except ObjectDoesNotExist as err:
             if isinstance(err, ParameterName.DoesNotExist):
                 logger.error(
