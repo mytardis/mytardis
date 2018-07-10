@@ -39,12 +39,12 @@ var figshare_categories_json = '{{ figshare_categories_json }}';
 
   <br/>
 
-  <h3 class="md-title">Drafts</h3>
-  <div ng-hide="myPubsCtrl.draftPubs.length">
+  <h3 class="md-title ng-cloak">Drafts</h3>
+  <div ng-hide="myPubsCtrl.draftPubs.length" class="ng-cloak">
     <p>You do not have access to any draft publications.</p>
   </div>
 
-  <md-content layout="column" flex ng-show="myPubsCtrl.draftPubs.length">
+  <md-content layout="column" flex ng-show="myPubsCtrl.draftPubs.length" class="ng-cloak">
     <md-table-container>
       <table md-table md-row-select="false" ng-model="myPubsCtrl.draftPubsTableModel" md-progress="promise">
         <thead md-head md-order="myPubsCtrl.query.order" md-on-reorder="myPubsCtrl.logOrder">
@@ -116,12 +116,12 @@ var figshare_categories_json = '{{ figshare_categories_json }}';
 
   <br/>
 
-  <h3 class="md-title">Scheduled</h3>
-    <div ng-hide="myPubsCtrl.scheduledPubs.length">
+  <h3 class="md-title ng-cloak">Scheduled</h3>
+    <div ng-hide="myPubsCtrl.scheduledPubs.length" class="ng-cloak">
       <p>You do not have access to any scheduled publications.</p>
     </div>
 
-  <md-content layout="column" flex ng-show="myPubsCtrl.scheduledPubs.length">
+  <md-content layout="column" flex ng-show="myPubsCtrl.scheduledPubs.length" class="ng-cloak">
      md-table-container>
       <table md-table md-row-select="false" ng-model="myPubsCtrl.scheduledPubsTableModel" md-progress="promise">
         <thead md-head md-order="myPubsCtrl.query.order" md-on-reorder="myPubsCtrl.logOrder">
@@ -180,12 +180,12 @@ var figshare_categories_json = '{{ figshare_categories_json }}';
 
   <br/>
 
-  <h3 class="md-title">Released</h3>
-    <div ng-hide="myPubsCtrl.releasedPubs.length">
+  <h3 class="md-title ng-cloak">Released</h3>
+    <div ng-hide="myPubsCtrl.releasedPubs.length" class="ng-cloak">
       <p>You do not have access to any released publications.</p>
     </div>
 
-  <md-content layout="column" flex ng-show="myPubsCtrl.releasedPubs.length">
+  <md-content layout="column" flex ng-show="myPubsCtrl.releasedPubs.length" class="ng-cloak">
     <md-table-container>
       <table md-table md-row-select="false" ng-model="myPubsCtrl.scheduledPubsTableModel" md-progress="promise">
         <thead md-head md-order="myPubsCtrl.query.order" md-on-reorder="myPubsCtrl.logOrder">
@@ -240,8 +240,8 @@ var figshare_categories_json = '{{ figshare_categories_json }}';
     </md-table-container>
   </md-content>
 
-  <h3 class="md-title" ng-show="myPubsCtrl.retractedPubs.length">Retracted</h3>
-  <md-content layout="column" flex ng-show="myPubsCtrl.retractedPubs.length">
+  <h3 class="md-title ng-cloak" ng-show="myPubsCtrl.retractedPubs.length">Retracted</h3>
+  <md-content layout="column" flex ng-show="myPubsCtrl.retractedPubs.length" class="ng-cloak">
     <md-table-container>
       <table md-table md-row-select="false" ng-model="myPubsCtrl.scheduledPubsTableModel" md-progress="promise">
         <thead md-head md-order="myPubsCtrl.query.order" md-on-reorder="myPubsCtrl.logOrder">
