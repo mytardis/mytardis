@@ -42,6 +42,10 @@ PUBLICATION_DETAILS_SCHEMA = PUBLICATION_SCHEMA_ROOT + 'details/'
 # This schema will be created automatically if not present
 PUBLICATION_DRAFT_SCHEMA = PUBLICATION_SCHEMA_ROOT + 'draft/'
 
+# Any experiment with this schema is treated as a retracted publication
+# This schema will be created automatically if not present
+PUBLICATION_RETRACTED_SCHEMA = PUBLICATION_SCHEMA_ROOT + 'retracted/'
+
 # Used for recording extra information about datasets
 GENERIC_PUBLICATION_DATASET_SCHEMA = PUBLICATION_SCHEMA_ROOT + 'generic/'
 

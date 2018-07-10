@@ -40,6 +40,10 @@ OAIPMH_PROVIDERS = [
 # This schema will be created automatically if not present
 # PUBLICATION_DRAFT_SCHEMA = PUBLICATION_SCHEMA_ROOT + 'draft/'
 
+# Any experiment with this schema is treated as a retracted publication
+# This schema will be created automatically if not present
+# PUBLICATION_RETRACTED_SCHEMA = PUBLICATION_SCHEMA_ROOT + 'retracted/'
+
 # Put your API_ID for the Monash DOI minting service here. For other DOI
 # minting, please contact the developers
 # MODC_DOI_ENABLED = False

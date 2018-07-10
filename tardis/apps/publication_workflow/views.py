@@ -9,6 +9,7 @@ from django.db import transaction
 from django.views.decorators.cache import never_cache
 from django.views.decorators.http import require_POST
 from django.http import HttpResponse, HttpResponseForbidden
+from django.http import JsonResponse
 from django.conf import settings
 from django.utils import timezone
 
@@ -46,10 +47,7 @@ def validation_error(error=None):
     if error is None:
         error = 'Invalid form data was submitted ' \
                 '(server-side validation failed)'
-    return HttpResponse(
-        json.dumps({
-            'error': error}),
-        content_type="application/json")
+    return JsonResponse({'error': error})
 
 
 @login_required
@@ -84,8 +82,7 @@ def process_form(request):
     # no database changes are made if the form is resumed
     if form_state['action'] == 'resume':
         form_state = json.loads(form_state_parameter.string_value)
-        return HttpResponse(json.dumps(form_state),
-                            content_type="application/json")
+        return JsonResponse(form_state)
 
     if form_state['action'] == 'update-dataset-selection':
         response = update_dataset_selection(request, form_state, publication)
@@ -108,7 +105,7 @@ def process_form(request):
     # so they need to have at least one author:
     set_publication_authors(form_state['authors'], publication)
 
-    return HttpResponse(json.dumps(form_state), content_type="application/json")
+    return JsonResponse(form_state)
 
 
 def update_dataset_selection(request, form_state, publication):
@@ -234,8 +231,7 @@ def submit_form(request, form_state, publication):
 
     finalize_publication(request, publication, send_email=False)
     form_state['action'] = ''
-    return HttpResponse(json.dumps(form_state),
-                        content_type="application/json")
+    return JsonResponse(form_state)
 
 
 def map_form_to_schemas(extraInfo, publication):
@@ -374,8 +370,7 @@ def fetch_experiments_and_datasets(request):
                                      'directory': dataset.directory})
             experiment_json['datasets'] = dataset_json
             json_response.append(experiment_json)
-    return HttpResponse(json.dumps(json_response),
-                        content_type="application/json")
+    return JsonResponse(json_response, safe=False)
 
 
 @transaction.atomic
@@ -437,8 +432,7 @@ def mint_doi_and_deactivate(request, experiment_id):
             logger.info(
                 "DOI %s deactivated, pending publication release criteria" %
                 doi.doi)
-            return HttpResponse(json.dumps(dict(doi=doi.doi, url=url)),
-                                content_type='application/json')
+            return JsonResponse(dict(doi=doi.doi, url=url))
         except ObjectDoesNotExist as err:
             if isinstance(err, ParameterName.DoesNotExist):
                 logger.error(
@@ -499,8 +493,7 @@ def retrieve_draft_pubs_list(request):
                 'doi': doi
             })
 
-    return HttpResponse(json.dumps(draft_pubs_data),
-                        content_type='application/json')
+    return JsonResponse(draft_pubs_data, safe=False)
 
 
 @never_cache
@@ -526,8 +519,7 @@ def retrieve_scheduled_pubs_list(request):
                 'release_date': tasks.get_release_date(scheduled_pub).strftime('%Y-%m-%d')
             })
 
-    return HttpResponse(json.dumps(scheduled_pubs_data),
-                        content_type='application/json')
+    return JsonResponse(scheduled_pubs_data, safe=False)
 
 
 @never_cache
@@ -553,8 +545,34 @@ def retrieve_released_pubs_list(request):
                 'release_date': tasks.get_release_date(released_pub).strftime('%Y-%m-%d')
             })
 
-    return HttpResponse(json.dumps(released_pubs_data),
-                        content_type='application/json')
+    return JsonResponse(released_pubs_data, safe=False)
+
+
+@never_cache
+@login_required
+def retrieve_retracted_pubs_list(request):
+    '''
+    json list of retracted pubs accessible by the current user
+    '''
+    retracted_pubs_data = []
+    retracted_publications = Publication.safe.retracted_publications(request.user)\
+        .order_by('-update_time')
+    pub_details_schema = Publication.get_details_schema()
+    doi_pname = ParameterName.objects.get(name='doi', schema=pub_details_schema)
+    for retracted_pub in retracted_publications:
+        doi_param = ExperimentParameter.objects.filter(
+                parameterset__experiment=retracted_pub, name=doi_pname).first()
+        doi = doi_param.string_value if doi_param else None
+        retracted_pubs_data.append(
+            {
+                'id': retracted_pub.id,
+                'title': retracted_pub.title,
+                'doi': doi,
+                'release_date': tasks.get_release_date(retracted_pub).strftime('%Y-%m-%d'),
+                'retracted_date': None
+            })
+
+    return JsonResponse(retracted_pubs_data, safe=False)
 
 
 @login_required
@@ -598,8 +616,7 @@ def retrieve_access_list_tokens_json(request, experiment_id):
                     'tardis_acls.owns_experiment', token.experiment),
                })
 
-    return HttpResponse(json.dumps(token_data),
-                        content_type='application/json')
+    return JsonResponse(token_data, safe=False)
 
 
 @never_cache
@@ -610,8 +627,7 @@ def is_publication(request, experiment_id):
     '''
     exp = Experiment.objects.get(id=experiment_id)
     response_data = dict(is_publication=exp.is_publication())
-    return HttpResponse(json.dumps(response_data),
-                        content_type='application/json')
+    return JsonResponse(response_data)
 
 
 @never_cache
@@ -622,8 +638,7 @@ def is_publication_draft(request, experiment_id):
     '''
     exp = Experiment.objects.get(id=experiment_id)
     response_data = dict(is_publication_draft=exp.is_publication_draft())
-    return HttpResponse(json.dumps(response_data),
-                        content_type='application/json')
+    return JsonResponse(response_data)
 
 
 @require_POST
@@ -634,5 +649,5 @@ def delete_publication(request, experiment_id):
     exp = Experiment.objects.get(id=experiment_id)
     if authz.has_experiment_ownership(request, exp.id):
         exp.delete()
-        return HttpResponse('{"success": true}', content_type='application/json')
-    return HttpResponse('{"success": false}', content_type='application/json')
+        return JsonResponse({"success": True})
+    return JsonResponse({"success": False})

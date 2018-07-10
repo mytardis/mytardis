@@ -8,7 +8,6 @@ from tardis.tardis_portal.models import (
     ExperimentParameter,
     ExperimentParameterSet)
 
-from .managers import PublicationManager
 from . import default_settings
 
 
@@ -19,6 +18,8 @@ class Publication(Experiment):
     a publication-specific manager, so we can retrieve publication records with
     Publication.safe.draft_publications(user)
     """
+    from .managers import PublicationManager
+
     safe = PublicationManager()  # The acl-aware specific manager.
     class Meta:
         # Don't create a database table for this model:
