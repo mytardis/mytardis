@@ -27,7 +27,8 @@ def add_authentication_method(**kwargs):
     try:
         authentication = UserAuthentication(userProfile=user.userprofile,
                                             username=user.username,
-                                            authenticationMethod=authMethod)
+                                            authenticationMethod=authMethod,
+                                            approved=False)
         authentication.save()
         kwargs['authentication'] = authentication
     except:
