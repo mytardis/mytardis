@@ -1,3 +1,5 @@
+import warnings
+
 import pytz
 
 from django.conf import settings
@@ -122,7 +124,10 @@ class ParameterSetManager(object):
                                 + str(type(parentObject)))
 
         else:
-            raise TypeError("Missing arguments")
+            # Don't raise an exception here, as initializing without arguments
+            # is needed for some migrations, in particular for reversing
+            # the publication_workflow app's migration:
+            warnings.warn("Missing arguments")
 
     def get_schema(self):
         from .models.parameters import Schema
