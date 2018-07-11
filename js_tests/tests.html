@@ -75,10 +75,13 @@
     <!-- MyTardis's Backbone.js models -->
     <script type="text/javascript" src="../tardis/tardis_portal/static/js/backbone-models.js"></script>
 
-    <!-- mustache-0.3.0.js has traditionally been provided by django-mustache, but we don't want to make -->
-    <!-- the Javascript tests dependent on the virtualenv, so we have copied mustache-0.3.0.js into -->
-    <!-- tardis/tardis_portal/static/js/lib/ along with other vendored Javascript dependencies. -->
-    <script type="text/javascript" src="../tardis/tardis_portal/static/js/lib/mustache-0.3.0.js"></script>
+    <!-- Mustache.js -->
+    <script type="text/javascript" src="../node_modules/mustache/mustache.min.js"></script>
+
+    <!-- django.mustache.js is provided by django-jstemplate, but we don't want to make -->
+    <!-- the Javascript tests dependent on the virtualenv, so we have copied django.mustache.js into -->
+    <!-- tardis/tardis_portal/static/js/lib/ along with other third party Javascript dependencies. -->
+    <script type="text/javascript" src="../tardis/tardis_portal/static/js/lib/django.mustache.js"></script>
 
     <!-- bootstrap.js is normally loaded in -->
     <!-- tardis/tardis_portal/templates/tardis_portal/portal_template.html -->

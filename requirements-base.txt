@@ -10,7 +10,7 @@ celery==3.1.26.post2 # pyup: <4
 django-extensions==2.0.7
 -e git+https://github.com/mytardis/django-form-utils.git@django-1.11-upgrade#egg=django-form-utils
 django-haystack==2.8.1
--e git+https://github.com/mytardis/django-mustachejs.git@mytardis-dj1.9#egg=django-mustachejs
+django-jstemplate==1.3.8
 django-nose==1.4.5
 django-npm==1.0.0
 django-registration-redux==2.4
