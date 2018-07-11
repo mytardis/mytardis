@@ -1,7 +1,5 @@
 {% load static from staticfiles %}
 {% load experiment_tags %}
-<input type="hidden" id="experiment-id" value="{{ experiment.id }}">
-<input type="hidden" id="csrf-token" value="{{ csrf_token }}">
 {% block script %}
 <script type="text/javascript"
         src="{% static 'js/jquery/tardis_portal/ajax/share.js' %}">
