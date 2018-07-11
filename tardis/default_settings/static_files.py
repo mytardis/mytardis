@@ -40,4 +40,3 @@ NPM_FILE_PATTERNS = {
     'underscore': ['*'],
     'underscore.string': ['*']
 }
-NPM_STATIC_FILES_PREFIX = path.join('js', 'lib')

@@ -8,38 +8,37 @@ Third-party JS dependencies which are not yet npm-installed are in:
 
     tardis/tardis_portal/static/js/lib/
 
-NPM_STATIC_FILES_PREFIX is set to js/lib/ in tardis/default_settings/static_files.py
-so npm-installed dependencies in node_modules/ will be available in static/js/lib/
-after running collectstatic.
+For JS dependencies installed by npm, collectstatic will copy them from node_modules/
+into static/, e.g. node_modules/angular/angular.min.js becomes static/angular/angular.min.js
 
 {% endcomment %}
-<script type="text/javascript" src="{% static 'js/lib/jquery/dist/jquery.min.js' %}"></script>
-<script type="text/javascript" src="{% static 'js/lib/jquery-ui-dist/jquery-ui.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'jquery/dist/jquery.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'jquery-ui-dist/jquery-ui.min.js' %}"></script>
 <script type="text/javascript" src="{% static 'js/lib/jquery.cookie.js' %}"></script>
 
 <!-- angular and related scripts -->
-<script type="text/javascript" src="{% static 'js/lib/angular/angular.min.js' %}"></script>
-<script type="text/javascript" src="{% static 'js/lib/angular-resource/angular-resource.min.js' %}"></script>
-<script type="text/javascript" src="{% static 'js/lib/ng-dialog/js/ngDialog.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'angular/angular.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'angular-resource/angular-resource.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'ng-dialog/js/ngDialog.min.js' %}"></script>
 <script type="text/javascript" src="{% static 'js/angular-mytardis.js' %}"></script>
 
 <script type="text/javascript" src="{% static 'js/lib/jstree/jquery.jstree.js' %}"></script>
 <script type="text/javascript" src="{% static 'js/lib/flash_detect_min.js' %}"></script>
 <script type="text/javascript" src="{% static 'js/lib/async.min.js' %}"></script>
-<script type="text/javascript" src="{% static 'js/lib/underscore/underscore-min.js' %}"></script>
-<script type="text/javascript" src="{% static 'js/lib/underscore.string/lib/underscore.string.js' %}"></script>
+<script type="text/javascript" src="{% static 'underscore/underscore-min.js' %}"></script>
+<script type="text/javascript" src="{% static 'underscore.string/lib/underscore.string.js' %}"></script>
 <script type="text/javascript">
   // Mixin Underscore.String to Underscore.js
   _.mixin(_.string.exports());
 </script>
 <!-- Backbone.js -->
-<script type="text/javascript" src="{% static 'js/lib/backbone/backbone-min.js' %}"></script>
+<script type="text/javascript" src="{% static 'backbone/backbone-min.js' %}"></script>
 <!-- Backbone Forms -->
 <link rel="stylesheet" type="text/css"
-        href="{% static 'js/lib/backbone-forms/distribution/templates/default.css' %}"/>
-<script src="{% static 'js/lib/backbone-forms/distribution/backbone-forms.js' %}"></script>
-<script src="{% static 'js/lib/backbone-forms/distribution/editors/jquery-ui.js' %}"></script>
-<script src="{% static 'js/lib/backbone-forms/distribution/templates/bootstrap.js' %}"></script>
+        href="{% static 'backbone-forms/distribution/templates/default.css' %}"/>
+<script src="{% static 'backbone-forms/distribution/backbone-forms.js' %}"></script>
+<script src="{% static 'backbone-forms/distribution/editors/jquery-ui.js' %}"></script>
+<script src="{% static 'backbone-forms/distribution/templates/bootstrap.js' %}"></script>
 
 {# Supplied by django-mustachejs #}
 <script type="text/javascript" src="{% static 'mustache/js/mustache-0.3.0.js' %}"></script>
@@ -47,9 +46,9 @@ after running collectstatic.
 
 {% block css_libraries %}
 <link type="text/css" href="{% static 'css/lib/smoothness/jquery-ui-1.8.18.custom.css' %}" rel="stylesheet" />
-<link type="text/css" href="{% static 'js/lib/ng-dialog/css/ngDialog.min.css' %}" rel="stylesheet" />
-<link type="text/css" href="{% static 'js/lib/ng-dialog/css/ngDialog-theme-plain.min.css' %}" rel="stylesheet" />
-<link type="text/css" href="{% static 'js/lib/ng-dialog/css/ngDialog-theme-default.min.css' %}" rel="stylesheet" />
+<link type="text/css" href="{% static 'ng-dialog/css/ngDialog.min.css' %}" rel="stylesheet" />
+<link type="text/css" href="{% static 'ng-dialog/css/ngDialog-theme-plain.min.css' %}" rel="stylesheet" />
+<link type="text/css" href="{% static 'ng-dialog/css/ngDialog-theme-default.min.css' %}" rel="stylesheet" />
 
 <!-- Twitter Bootstrap: http://twitter.github.com/bootstrap/ -->
 <link href="{% static 'js/lib/bootstrap-2.0.4/css/bootstrap.css' %}" rel="stylesheet">
@@ -74,7 +73,7 @@ Academicons are licensed under the SIL OFL 1.1 license:
 -->
 <link href="{% static 'academicons-1.8.0/css/academicons.css' %}" rel="stylesheet"/>
 
-<link rel="stylesheet" href="{% static 'js/lib/blueimp-file-upload/css/jquery.fileupload.css' %}"/>
+<link rel="stylesheet" href="{% static 'blueimp-file-upload/css/jquery.fileupload.css' %}"/>
 
 {% endblock %}
 
