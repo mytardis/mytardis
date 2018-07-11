@@ -20,9 +20,10 @@
 <input type="hidden" id="csrf-token" value="{{ csrf_token }}">
 <script type="text/javascript"
         src="{% static 'js/jquery/tardis_portal/view_experiment/init.js' %}">
+</script>
 {% if pub_workflow_enabled %}
-<script type="text/javascript" src="/static/publication-actions/publication_actions.js"></script>
-<script type="text/javascript" src="/static/publication-form/publication_form.js"></script>
+<script type="text/javascript" src="{% static 'publication-actions/publication_actions.js' %}"></script>
+<script type="text/javascript" src="{% static 'publication-form/publication_form.js' %}"></script>
 {% endif %}
 
 {% endblock %}
@@ -154,4 +155,5 @@
 </script>
 <script type="text/javascript"
         src="{% static 'js/jquery/tardis_portal/view_experiment/abbreviate-abstract.js' %}">
+</script>
 {% endblock %}
