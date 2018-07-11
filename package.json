@@ -30,7 +30,7 @@
     "qunit": "^2.6.1"
   },
   "scripts": {
-    "pretest": "eslint -c .eslintrc.jquery tardis/tardis_portal/static/js/jquery/tardis_portal/ js_tests/jquery/tardis_portal/",
+    "pretest": "eslint -c .eslintrc.jquery tardis/tardis_portal/static/js/jquery/tardis_portal/ tardis/tardis_portal/static/js/main.js js_tests/jquery/tardis_portal/",
     "test": "grunt test --verbose"
   }
 }
