@@ -305,15 +305,12 @@ class DatasetView(TemplateView):
 
         return c
 
-    @authz.dataset_access_required  # too complex # noqa
     def get(self, request, *args, **kwargs):
         """
-        The index view, intended to render the front page of the MyTardis site
-        listing recent experiments.
+        View an existing dataset.
 
-        This default view can be overriden by defining a dictionary INDEX_VIEWS
-        in settings which maps SITE_ID's or domain names to an alternative view
-        function (similar to the DATASET_VIEWS or EXPERIMENT_VIEWS overrides).
+        This default view can be overriden by defining a dictionary
+        DATASET_VIEWS in settings.
 
         :param request: a HTTP request object
         :type request: :class:`django.http.HttpRequest`
@@ -322,13 +319,18 @@ class DatasetView(TemplateView):
         :return: The Django response object
         :rtype: :class:`django.http.HttpResponse`
         """
+        if not request.user.is_authenticated:
+            return return_response_error(request)
 
         dataset_id = kwargs.get('dataset_id', None)
         if dataset_id is None:
             return return_response_error(request)
 
-        dataset = Dataset.objects.get(id=dataset_id)
-        if not dataset:
+        try:
+            dataset = Dataset.objects.get(id=dataset_id)
+        except PermissionDenied:
+            return return_response_error(request)
+        except Dataset.DoesNotExist:
             return return_response_not_found(request)
 
         view_override = self.find_custom_view_override(request, dataset)
@@ -521,10 +523,12 @@ class ExperimentView(TemplateView):
 
         return c
 
-    @authz.experiment_access_required  # too complex # noqa
     def get(self, request, *args, **kwargs):
         """
         View an existing experiment.
+
+        This default view can be overriden by defining a dictionary
+        EXPERIMENT_VIEWS in settings.
 
         :param request: a HTTP Request instance
         :type request: :class:`django.http.HttpRequest`
@@ -534,6 +538,8 @@ class ExperimentView(TemplateView):
         :returns: an HttpResponse
         :rtype: :class:`django.http.HttpResponse`
         """
+        if not request.user.is_authenticated:
+            return return_response_error(request)
 
         experiment_id = kwargs.get('experiment_id', None)
         if experiment_id is None:
