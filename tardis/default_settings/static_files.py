@@ -36,6 +36,7 @@ NPM_FILE_PATTERNS = {
     'jquery': ['*'],
     'jquery-migrate': ['*'],
     'jquery-ui-dist': ['jquery-ui.min.js'],
+    'mustache': ['mustache.min.js'],
     'ng-dialog': ['*'],
     'underscore': ['*'],
     'underscore.string': ['*']

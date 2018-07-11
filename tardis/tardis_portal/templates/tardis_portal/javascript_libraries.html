@@ -40,8 +40,11 @@ into static/, e.g. node_modules/angular/angular.min.js becomes static/angular/an
 <script src="{% static 'backbone-forms/distribution/editors/jquery-ui.js' %}"></script>
 <script src="{% static 'backbone-forms/distribution/templates/bootstrap.js' %}"></script>
 
-{# Supplied by django-mustachejs #}
-<script type="text/javascript" src="{% static 'mustache/js/mustache-0.3.0.js' %}"></script>
+<!-- Mustache.js -->
+<script src="{% static 'mustache/mustache.min.js' %}"></script>
+
+{# Supplied by django-jstemplate #}
+<script type="text/javascript" src="{% static 'libs/django.mustache.js' %}"></script>
 {% endblock %}
 
 {% block css_libraries %}

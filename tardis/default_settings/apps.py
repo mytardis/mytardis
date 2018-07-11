@@ -13,7 +13,7 @@ INSTALLED_APPS = (
     'django.contrib.humanize',
     'registration',
     'bootstrapform',
-    'mustachejs',
+    'jstemplate',
     'tastypie',
     'tastypie_swagger',
     'tardis.tardis_portal',
