@@ -115,6 +115,8 @@ Initialisation
 Create and configure the database::
 
   python manage.py migrate
+  python manage.py createcachetable default_cache
+  python manage.py createcachetable celery_lock_cache
 
 This avoids creating a superuser before the MyTardis specific ``UserProfile``
 table has been created. More information about the ``migrate``
