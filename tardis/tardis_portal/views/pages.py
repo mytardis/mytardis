@@ -835,6 +835,8 @@ def add_dataset(request, experiment_id):
         if form.is_valid():
             dataset = Dataset()
             dataset.description = form.cleaned_data['description']
+            dataset.instrument = form.cleaned_data['instrument']
+            dataset.directory = form.cleaned_data['directory']
             dataset.save()
             experiment = Experiment.objects.get(id=experiment_id)
             dataset.experiments.add(experiment)
@@ -860,6 +862,8 @@ def edit_dataset(request, dataset_id):
         form = DatasetForm(request.POST)
         if form.is_valid():
             dataset.description = form.cleaned_data['description']
+            dataset.instrument = form.cleaned_data['instrument']
+            dataset.directory = form.cleaned_data['directory']
             dataset.save()
             return _redirect_303('tardis_portal.view_dataset',
                                  dataset.id)
