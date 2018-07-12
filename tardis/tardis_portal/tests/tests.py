@@ -176,24 +176,13 @@ class UserInterfaceTestCase(TestCase):
         urls = ['/login/',
                 '/about/',
                 '/stats/',
-                '/experiment/list/public',
+                '/public_data/',
                 # '/experiment/search/',
         ]
 
         for u in urls:
             response = c.get(u)
             self.assertEqual(response.status_code, 200)
-
-        # In Django 1.9, the default value of RedirectView.permanent
-        # changed from True to False
-
-        permanent_redirect_url = '/experiment/list'
-        response = c.get(permanent_redirect_url)
-        self.assertEqual(response.status_code, 301)
-
-        temporary_redirect_url = '/experiment/view/'
-        response = c.get(temporary_redirect_url)
-        self.assertEqual(response.status_code, 302)
 
     def test_urls_with_some_content(self):
         # Things that might tend to be in a real live system
@@ -226,10 +215,7 @@ class UserInterfaceTestCase(TestCase):
         c = Client()
         c.login(username=user, password=pwd)
         urls = ['/about/', '/stats/']
-        urls += ['/experiment/list/%s' % part
-                 for part in ('mine', 'shared', 'public')]
-        # urls += ['/experiment/%s/' % part
-        #          for part in ('search',)]
+        urls += ['/mydata/']
         urls += ['/experiment/view/%d/' % experiment.id]
         urls += ['/ajax/experiment/%d/%s' % (experiment.id, tabpane)
                  for tabpane in ('description', 'datasets', 'rights')]
@@ -242,17 +228,6 @@ class UserInterfaceTestCase(TestCase):
                 response.status_code, 200,
                 "%s should have returned 200 but returned %d"
                 % (u, response.status_code))
-
-        # In Django 1.9, the default value of RedirectView.permanent
-        # changed from True to False
-
-        permanent_redirect_url = '/experiment/list'
-        response = c.get(permanent_redirect_url)
-        self.assertEqual(response.status_code, 301)
-
-        temporary_redirect_url = '/experiment/view/'
-        response = c.get(temporary_redirect_url)
-        self.assertEqual(response.status_code, 302)
 
     @skip('search is undergoing some changes, skip in the meantime')
     def test_search_urls(self):

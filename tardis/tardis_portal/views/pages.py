@@ -18,11 +18,10 @@ from django.core.exceptions import PermissionDenied, ImproperlyConfigured
 from django.core.paginator import Paginator, EmptyPage, InvalidPage
 from django.urls import reverse
 from django.db import connection
-from django.db.models import Q
 from django.http import (HttpResponse,
                          HttpResponseForbidden,
                          JsonResponse)
-from django.shortcuts import render, redirect
+from django.shortcuts import render
 from django.views.decorators.cache import cache_page
 from django.views.generic.base import TemplateView, View
 
@@ -34,8 +33,7 @@ from ..auth.localdb_auth import django_user
 from ..forms import ExperimentForm, DatasetForm
 from ..models import Experiment, Dataset, DataFile, ObjectACL
 from ..shortcuts import render_response_index, \
-    return_response_error, return_response_not_found, get_experiment_referer, \
-    render_response_search
+    return_response_error, return_response_not_found, get_experiment_referer
 from ..views.utils import (
     _redirect_303, _add_protocols_and_organizations, HttpResponseSeeAlso)
 from ..util import get_filesystem_safe_dataset_name
@@ -677,57 +675,6 @@ def public_data(request):
     c = {'public_experiments':
          Experiment.safe.public().order_by('-update_time'), }
     return render_response_index(request, 'tardis_portal/public_data.html', c)
-
-
-def experiment_index(request):
-    if request.user.is_authenticated:
-        return redirect('tardis.tardis_portal.views.experiment_list_mine')
-    return redirect('tardis.tardis_portal.views.experiment_list_public')
-
-
-@login_required
-def experiment_list_mine(request):
-
-    c = {
-        'subtitle': 'My Experiments',
-        'can_see_private': True,
-        'experiments': authz.get_owned_experiments(request)
-                            .order_by('-update_time'),
-    }
-
-    # TODO actually change loaders to load this based on stuff
-    return render_response_search(
-        request, 'tardis_portal/experiment/list_mine.html', c)
-
-
-@login_required
-def experiment_list_shared(request):
-
-    c = {
-        'subtitle': 'Shared Experiments',
-        'can_see_private': True,
-        'experiments': authz.get_shared_experiments(request)
-                            .order_by('-update_time'),
-    }
-
-    # TODO actually change loaders to load this based on stuff
-    return render_response_search(
-        request, 'tardis_portal/experiment/list_shared.html', c)
-
-
-def experiment_list_public(request):
-
-    private_filter = Q(public_access=Experiment.PUBLIC_ACCESS_NONE)
-
-    c = {
-        'subtitle': 'Public Experiments',
-        'can_see_private': False,
-        'experiments': Experiment.objects.exclude(private_filter)
-                                         .order_by('-update_time'),
-    }
-
-    return render_response_search(
-        request, 'tardis_portal/experiment/list_public.html', c)
 
 
 @permission_required('tardis_portal.add_experiment')
