@@ -105,7 +105,7 @@ $(document).ready(function(){
 
 var loadingHTML = $('<img src="{% static 'images/ajax-loader.gif' %}"/><br />');
 
-$('.pagelink').live('click', function( event ){
+$(document).on('click', '.pagelink', function( event ){
   var href = $(this).attr("href");
   var html = $(this).html();
   $(this).html(loadingHTML);

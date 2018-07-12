@@ -9,7 +9,7 @@
 
 $(document).ready(function() {
 
-    $('.create_group_link').live('click', function(evt) {
+    $(document).on('click', '.create_group_link', function(evt) {
         var experiment_id = $(this).attr('data-experiment_id');
         var modal = $('#modal-create-group');
 
@@ -65,7 +65,7 @@ $(document).ready(function() {
     });
 
 
-    $("form.add-user-form").live('submit', function(evt) {
+    $(document).on('submit', "form.add-user-form", function(evt) {
         evt.preventDefault();
         var form = $(this);
         var authMethod = form.find("[name=authMethod]").val();
@@ -85,7 +85,7 @@ $(document).ready(function() {
           }
         });
     });
-    $(".remove_user").live('click', function(evt) {
+    $(document).on('click', ".remove_user", function(evt) {
         evt.preventDefault();
 
         var access_list = $(this).parents('.access_list_user');
@@ -110,7 +110,7 @@ $(document).ready(function() {
 
     var loadingHTML = "<img src=\"{% static 'images/ajax-loader.gif' %}\"/>";
 
-    $(".member_list_user_toggle").live('click', function(evt){
+    $(document).on('click', ".member_list_user_toggle", function(evt){
         evt.preventDefault()
 
         var icon = $(this).find('i');
@@ -147,7 +147,7 @@ $(document).ready(function() {
     });
 
     // add user
-    $('.create_user_link').live('click', function(evt) {
+    $(document).on('click', '.create_user_link', function(evt) {
         var experiment_id = $(this).attr('data-experiment_id');
         var modal = $('#modal-create-user');
 
