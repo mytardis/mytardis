@@ -3,7 +3,7 @@ import six
 
 from django.test import TestCase, TransactionTestCase
 from django.test.client import Client
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 
 from tardis.tardis_portal.models import Experiment, ObjectACL, User
 from tardis.tardis_portal.ParameterSetManager import ParameterSetManager

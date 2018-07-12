@@ -46,7 +46,7 @@ from six.moves import map
 from flexmock import flexmock
 
 from django.conf import settings
-from django.core.urlresolvers import resolve, reverse
+from django.urls import resolve, reverse
 from django.test import TestCase
 from django.test.client import Client
 from django.contrib.auth.models import User, Group, Permission
