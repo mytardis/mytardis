@@ -1,3 +1,4 @@
+# pylint: disable=http-response-with-json-dumps,http-response-with-content-type-json
 import json
 import mimetypes
 

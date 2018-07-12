@@ -1,3 +1,4 @@
+# pylint: disable=model-no-explicit-unicode
 import logging
 import operator
 import json

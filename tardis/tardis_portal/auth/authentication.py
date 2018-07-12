@@ -1,3 +1,4 @@
+# pylint: disable=http-response-with-json-dumps,http-response-with-content-type-json
 '''
 A module containing helper methods for the manage_auth_methods function in
 views.py.

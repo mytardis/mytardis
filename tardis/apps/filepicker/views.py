@@ -1,3 +1,4 @@
+# pylint: disable=http-response-with-json-dumps
 '''
 Filepicker.io button view and upload handler
 '''
