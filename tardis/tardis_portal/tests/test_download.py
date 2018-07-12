@@ -8,8 +8,6 @@ from tarfile import is_tarfile, TarFile
 from tempfile import NamedTemporaryFile
 from urllib import quote
 
-from compare import expect
-
 from django.test import TestCase
 from django.test.client import Client
 
@@ -186,7 +184,7 @@ class DownloadTestCase(TestCase):
                 tempfile.write(c)
             tempfile.flush()
             if getsize(tempfile.name) > 0:
-                expect(is_tarfile(tempfile.name)).to_be_truthy()
+                self.assertTrue(is_tarfile(tempfile.name))
                 try:
                     tf = TarFile(tempfile.name, 'r')
                     self._check_names(datafiles, tf.getnames(),
@@ -204,7 +202,7 @@ class DownloadTestCase(TestCase):
                 tempfile.write(c)
             tempfile.flush()
             # It should be a zip file
-            expect(is_zipfile(tempfile.name)).to_be_truthy()
+            self.assertTrue(is_zipfile(tempfile.name))
             try:
                 zf = ZipFile(tempfile.name, 'r')
                 self._check_names(datafiles, zf.namelist(),
@@ -217,7 +215,7 @@ class DownloadTestCase(TestCase):
         # NoTxt says if we expect '.txt' files to be filtered out
         for name in names:
             self.assertNotRegexpMatches(name, '\n|;')
-        expect(len(names)).to_equal(len(datafiles))
+        self.assertEqual(len(names), len(datafiles))
 
     def testDownload(self):
         client = Client()

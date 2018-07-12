@@ -28,7 +28,6 @@
 #
 
 from os import path
-from compare import expect
 
 from django.test import TestCase
 from django.db.models.signals import post_save
@@ -113,34 +112,34 @@ class FilterInitTestCase(TestCase):
                 pass         # expected
             self.datafiles[0].save()
             t = Filter1.getTuples()
-            expect(len(t)).to_equal(1)
-            expect(t[0][0]).to_equal(self.datafiles[0])
-            expect(t[0][1]).to_be_none()
+            self.assertEqual(len(t), 1)
+            self.assertEqual(t[0][0], self.datafiles[0])
+            self.assertIsNone(t[0][1])
             t = Filter2.getTuples()
-            expect(len(t)).to_equal(1)
-            expect(t[0][0]).to_equal(self.datafiles[0])
-            expect(t[0][1]).to_be_none()
+            self.assertEqual(len(t), 1)
+            self.assertEqual(t[0][0], self.datafiles[0])
+            self.assertIsNone(t[0][1])
 
             self.datafiles[1].save()
             t = Filter1.getTuples()
-            expect(len(t)).to_equal(0)
+            self.assertEqual(len(t), 0)
             t = Filter2.getTuples()
-            expect(len(t)).to_equal(0)
+            self.assertEqual(len(t), 0)
             self.datafiles[0].file_objects.all()[0].save()
             t = Filter1.getTuples()
-            expect(len(t)).to_equal(1)
-            expect(t[0][0]).to_equal(self.datafiles[0])
-            expect(t[0][1]).to_be_truthy()
+            self.assertEqual(len(t), 1)
+            self.assertEqual(t[0][0], self.datafiles[0])
+            self.assertTrue(t[0][1])
             t = Filter2.getTuples()
-            expect(len(t)).to_equal(1)
-            expect(t[0][0]).to_equal(self.datafiles[0])
-            expect(t[0][1]).to_be_truthy()
+            self.assertEqual(len(t), 1)
+            self.assertEqual(t[0][0], self.datafiles[0])
+            self.assertTrue(t[0][1])
 
             self.datafiles[1].file_objects.all()[0].save(reverify=True)
             t = Filter1.getTuples()
-            expect(len(t)).to_equal(1)
+            self.assertEqual(len(t), 1)
             t = Filter2.getTuples()
-            expect(len(t)).to_equal(1)
+            self.assertEqual(len(t), 1)
 
         finally:
             # Remove our hooks!
@@ -166,7 +165,7 @@ class RunFiltersTestCase(TestCase):
     def testList(self):
         '''
         Just test that we can run
-        ./manage.py runfilters --list
+        ./mytardis.py runfilters --list
         without any runtime exceptions
         '''
         call_command('runfilters', list=True)
@@ -174,7 +173,7 @@ class RunFiltersTestCase(TestCase):
     def testAll(self):
         '''
         Just test that we can run
-        ./manage.py runfilters --all
+        ./mytardis.py runfilters --all
         without any runtime exceptions
         '''
         call_command('runfilters', all=True)
@@ -182,7 +181,7 @@ class RunFiltersTestCase(TestCase):
     def testDryRun(self):
         '''
         Just test that we can run
-        ./manage.py runfilters --dryRun
+        ./mytardis.py runfilters --dryRun
         without any runtime exceptions
         '''
         call_command('runfilters', dryRun=True)

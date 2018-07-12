@@ -327,8 +327,9 @@ class ParameterSetManagerTestCase(TestCase):
 
         psm.new_param("parameter3", str(datetime(1970, 01, 01, 10, 0, 0)))
 
-        expect(psm.get_param("parameter3", True))\
-            .to_equal(datetime(1970, 01, 01, 0, 0, 0, tzinfo=pytz.utc))
+        self.assertEqual(
+            psm.get_param("parameter3", True),
+            datetime(1970, 01, 01, 0, 0, 0, tzinfo=pytz.utc))
 
     def test_tz_aware_date_handling(self):
         """
@@ -542,4 +543,3 @@ class EditParameterSetTestCase(TestCase):
         self.dataset.delete()
         self.user.delete()
         self.schema.delete()
->>>>>>> 9bb81fbd... Renamed test_parametersetmanager.py to test_parametersets.py and:tardis/tardis_portal/tests/test_parametersets.py

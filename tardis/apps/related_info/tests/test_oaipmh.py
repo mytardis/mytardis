@@ -1,10 +1,8 @@
 import json
 
-from compare import expect
-
 from django.test import TransactionTestCase
 from django.test.client import Client
-from django.urls import reverse
+from django.core.urlresolvers import reverse
 
 from lxml import etree
 
@@ -61,7 +59,7 @@ class RifCSTestCase(TransactionTestCase):
                     data=json.dumps(params),
                     content_type='application/json')
         # Check related info was created
-        expect(response.status_code).to_equal(201)
+        self.assertEqual(response.status_code, 201)
 
         self.acl = acl
         self.client = client
@@ -88,22 +86,24 @@ class RifCSTestCase(TransactionTestCase):
         header, metadata = xml.xpath('/o:OAI-PMH/o:GetRecord/o:record/o:*',
                                      namespaces=ns)[0:2]
         exp_id = Experiment.objects.first().id
-        expect(header.xpath('o:identifier/text()',namespaces=ns)[0]) \
-            .to_equal('experiment/%d' % exp_id)
+        self.assertEqual(
+            header.xpath('o:identifier/text()',namespaces=ns)[0],
+            'experiment/%d' % exp_id)
         # <registryObject group="MyTARDIS Default Group">
         registryObject = metadata.xpath('r:registryObjects/r:registryObject',
                                         namespaces=ns)[0]
         # <collection type="dataset">
-        expect(registryObject.xpath('r:collection/@type',
-                                    namespaces=ns)[0]).to_equal('dataset')
+        self.assertEqual(registryObject.xpath('r:collection/@type',
+                                    namespaces=ns)[0], 'dataset')
         collection = registryObject.xpath('r:collection', namespaces=ns)[0]
-        expect(collection.xpath('r:relatedInfo/@type', namespaces=ns)) \
-            .to_equal([self.params['type']])
+        self.assertEqual(
+            collection.xpath('r:relatedInfo/@type', namespaces=ns),
+            [self.params['type']])
         relatedInfo = collection.xpath('r:relatedInfo', namespaces=ns)[0]
         for k, v in self.params.items():
             if k == 'type':
                 continue
-            expect(relatedInfo.xpath('r:'+k+'/text()', namespaces=ns)) \
-                .to_equal([v])
-        expect(relatedInfo.xpath('r:identifier/@type', namespaces=ns)) \
-            .to_equal(['uri'])
+            self.assertEqual(
+                relatedInfo.xpath('r:'+k+'/text()', namespaces=ns), [v])
+        self.assertEqual(
+            relatedInfo.xpath('r:identifier/@type', namespaces=ns), ['uri'])
