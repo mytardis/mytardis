@@ -1,18 +1,33 @@
 Releases
 ========
 
-4.0-prerelease
---------------
+4.0
+---
 * Django 1.11
 * jQuery 3.3.1
 * Improved test coverage
 * Continuous Integration tests run against Ubuntu 18.04 (MyTardis v3.x used 14.04)
 * ChromeDriver is used for BDD (Behaviour Driven Development) tests
 
-
 3.9
 ---
+* Added deprecation warnings for functionality which will be removed in 4.0
+* Added INTERNAL_IPS to default settings for template debugging on localhost
+* Disabled the old publication forms app in default settings, and ensured
+  that MyTardis didn't attempt to access its static content when disabled
+* Removed apps code from ExperimentView's get_context_data which assumed
+  that each app would provide a views module with an index
+* Fixed a bug where creating a group which already existed gave a 500 error
+* Fixed a bug where non-ASCII characters in experiment names could break SFTP
+* Made dataset thumbnails optional - disabling them can improve page load times
+* Fixed a bug which had made it difficult to delete a DataFileObject without
+  a URI from the Django shell
+* Fixed a bug which made search indexing fail when there were users with
+  non-ASCII characters in their first or last name
 
+3.8.1
+-----
+* Fix regression in Push To app
 
 3.8
 ---
