@@ -1,16 +1,9 @@
 '''
 URLs for experiments
 '''
-from django.conf.urls import include, url
+from django.conf.urls import url
 
 from tardis.tardis_portal.views import ExperimentView
-
-from tardis.tardis_portal.views import (
-    experiment_index,
-    experiment_list_mine,
-    experiment_list_public,
-    experiment_list_shared
-)
 
 from tardis.tardis_portal.views import (
     edit_experiment,
@@ -38,25 +31,11 @@ from tardis.tardis_portal.views import (
 
 user_pattern = '[\w\-][\w\-\.]+(@[\w\-][\w\-\.]+[a-zA-Z]{1,4})*'
 
-experiment_list_urls = [
-    url(r'^$', experiment_index,
-        name='tardis.tardis_portal.views.experiment_index'),
-    url(r'^mine$', experiment_list_mine,
-        name='tardis.tardis_portal.views.experiment_list_mine'),
-    url(r'^public$', experiment_list_public,
-        name='tardis.tardis_portal.views.experiment_list_public'),
-    url(r'^shared$', experiment_list_shared,
-        name='tardis.tardis_portal.views.experiment_list_shared'),
-]
-
 experiment_urls = [
     url(r'^view/(?P<experiment_id>\d+)/$', ExperimentView.as_view(),
         name='tardis_portal.view_experiment'),
     url(r'^edit/(?P<experiment_id>\d+)/$', edit_experiment,
         name='tardis.tardis_portal.views.edit_experiment'),
-    url(r'^list/', include(experiment_list_urls)),
-    url(r'^view/$', experiment_index,  # Legacy URL
-        name='tardis.tardis_portal.views.experiment_index'),
     url(r'^create/$', create_experiment,
         name='tardis.tardis_portal.views.create_experiment'),
     url(r'^control_panel/(?P<experiment_id>\d+)/access_list/add/user/'
