@@ -56,7 +56,7 @@ For Ubuntu 16.04::
 
 Then create the ``mytardis`` virtual environment ::
 
-  mkvirtualenv --system-site-packages mytardis
+  mkvirtualenv mytardis
   pip install -U pip
 
 Note: the next time you want to work with this virtualenv, run the appropriate
