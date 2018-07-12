@@ -165,7 +165,7 @@ class RunFiltersTestCase(TestCase):
     def testList(self):
         '''
         Just test that we can run
-        ./mytardis.py runfilters --list
+        ./manage.py runfilters --list
         without any runtime exceptions
         '''
         call_command('runfilters', list=True)
@@ -173,7 +173,7 @@ class RunFiltersTestCase(TestCase):
     def testAll(self):
         '''
         Just test that we can run
-        ./mytardis.py runfilters --all
+        ./manage.py runfilters --all
         without any runtime exceptions
         '''
         call_command('runfilters', all=True)
@@ -181,7 +181,7 @@ class RunFiltersTestCase(TestCase):
     def testDryRun(self):
         '''
         Just test that we can run
-        ./mytardis.py runfilters --dryRun
+        ./manage.py runfilters --dryRun
         without any runtime exceptions
         '''
         call_command('runfilters', dryRun=True)
