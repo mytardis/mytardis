@@ -18,56 +18,34 @@
     </div>
   </div>
   <div class="row-fluid">
-    {% for key in keys %}
-    {% if forloop.first %}
-    <table class="table table-striped table-bordered">
-      <thead>
-        <tr>
-          <th>Key</th>
-        </tr>
-      </thead>
-      {% endif %}
-      <tr id="keyRow{{key.id}}">
-        <td>
-          <div class="pull-left">
-            <h4>{{key.name}}</h4>
-            <p>Fingerprint: {{key.fingerprint}}</p>
-            <p>Date added: {{key.added}}</p>
-          </div>
-          <button class="btn btn-large btn-danger pull-right" onclick="handleKeyDelete({{key.id}})">
-            <i class="fa fa-trash"></i>
-            <!--<span>Delete</span>-->
-          </button>
-        </td>
-      </tr>
-    {% if forloop.last %}
-    </table>
-    {% endif %}
-    {% empty %}
-    <div class="alert alert-block alert-warning">
-      <span class="message">You don't have any public keys registered. Please add keys using the Add key button above.</span>
+    <div id='keyTable'>
+      <p><img src=/static/images/ajax-loader-big.gif alt='loading...'/> Load keys...</p>
     </div>
-    {% endfor %}
   </div>
 </div>
 <div class="modal hide" id="keyCreateModal">
   <div class="modal-header">
-    <button type="button" class="close" data-dismiss="modal">×</button>
+    <button type="button" class="close" data-dismiss="modal" onclick="clearKeyAddForm()">×</button>
     <h3>Create or Add SSH Keys</h3>
     <span>You can either (1) add your own public SSH Key or (2) allow us to create you a key pair and download the private key.
   </div>
   <div class="modal-body">
+    <h4>Add a public key</h4>
     <div class="row-fluid">
-      <div class="span6">
-        <h4>Create </h4>
-      </div>
-      <div class="span6">
+      <form id="keyAddForm">
+        <label for="keyName">Device Name:</label>
+        <input type="type" id="keyName" class="span5" name="name">
+        <label for="key">Public Key:</label>
+        <textarea id="key" class="span12" rows="6" name="public_key"></textarea>
+      </form>
+      <div id="keyAddAlert" class="alert alert-error hide">
+        <div id="keyAddAlertMessage"></div>
       </div>
     </div>
   </div>
   <div class="modal-footer">
-    <a href="#" class="btn" data-dismiss="modal">Close</a>
-    <a href="#" class="btn btn-primary">Save changes</a>
+    <button class="btn" data-dismiss="modal" onclick="clearKeyAddForm()">Close</a>
+    <button class="btn btn-primary" onclick="addKey()">Add Key</button>
   </div>
 </div>
 {% endblock content %}

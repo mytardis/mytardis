@@ -83,22 +83,7 @@ def sftp_access(request):
 
 @login_required
 def manage_keys(request):
-    user =  request.user
-    keys = SFTPPublicKey.objects.filter(user=user)
-
-    def _get_key_data(key):
-        k = RSAKey(data=base64.b64decode(key.public_key))
-        return {
-            'id': key.id,
-            'name': key.name,
-            'fingerprint': u(hexlify(k.get_fingerprint())),
-            'added': str(key.added)
-        }
-
-    c = {
-        'keys': map(_get_key_data, keys) if keys.count() > 0 else []
-    }
-    return render(request, template_name='sftp/keys.html', context=c)
+    return render(request, template_name='sftp/keys.html')
 
 @login_required
 def cybderduck_connection_window(request):

@@ -1,14 +1,19 @@
 # -*- coding: utf-8 -*-
 
+import base64
 
+from binascii import hexlify
+from paramiko import RSAKey, DSSKey, ECDSAKey
+from paramiko.py3compat import u
 from tardis.tardis_portal.api import (
     default_authentication
 )
 from tastypie import fields
 from tastypie.authorization import Authorization
-from tastypie.exceptions import Unauthorized
+from tastypie.exceptions import Unauthorized, HydrationError
 from tastypie.resources import ModelResource
 
+from .forms import key_add_form
 from .models import SFTPPublicKey
 
 
@@ -36,10 +41,31 @@ class SFTPPublicKeyModelResource(ModelResource):
         queryset = SFTPPublicKey.objects.all()
         authentication = default_authentication
         authorization = SFTPACLAuthorization()
+        validation = key_add_form
         resource_name = 'sftp/key'
         filtering = {
             'id': ('exact',),
             'name': ('exact',),
         }
-        list_allowed_methods = ['get']
-        detail_allowed_methods = ['get', 'post', 'delete']
+        list_allowed_methods = ['get', 'post']
+        detail_allowed_methods = ['get', 'delete']
+
+    def hydrate(self, bundle):
+        bundle.obj.user = bundle.request.user
+        return bundle
+
+    def dehydrate(self, bundle):
+        if bundle.obj.key_type == "ssh-rsa":
+            key = RSAKey(data=base64.b64decode(bundle.obj.public_key))
+        elif bundle.obj.key_type == "ssh-rsa":
+            key = DSSKey(data=base64.b64decode(bundle.obj.public_key))
+        elif bundle.obj.key_type.startswith("ecdsa"):
+            key = ECDSAKey(data=base64.b64decode(bundle.obj.public_key))
+        else:
+            raise HydrationError(
+                "Unknown key type: %s" % bundle.object.key_type
+            )
+
+        bundle.data['fingerprint'] = u(hexlify(key.get_fingerprint()))
+
+        return bundle
