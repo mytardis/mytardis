@@ -306,7 +306,7 @@ def confirm_migration(request):
 
     # let's try and authenticate here
     authentication_method = 'localdb'
-    user = auth_service.authenticate(authMethod=authentication_method,
+    user = auth_service.authenticate(authMethod="None",
                                      request=request)
 
     if user is None:
