@@ -97,13 +97,9 @@ class AbstractExperimentProvider(BaseProvider):
 
     def _get_header(self, obj):
         if isinstance(obj, User):
-
-            def time_func(u):
-                return u.last_login
+            time_func = lambda u: u.last_login
         else:
-
-            def time_func(e):
-                return e.update_time
+            time_func = lambda e: e.update_time
         # Get UTC timestamp
         timestamp = time_func(obj)
         if timestamp is None:
