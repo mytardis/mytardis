@@ -126,6 +126,7 @@ class UserAuthentication(models.Model):
             user_profile = self.userProfile
             user = user_profile.user
             # add user permissions
+            # TODO : get user permission from settings
             user.user_permissions.add(Permission.objects.get(codename='add_experiment'))
             user.user_permissions.add(Permission.objects.get(codename='change_experiment'))
             user.user_permissions.add(Permission.objects.get(codename='change_group'))

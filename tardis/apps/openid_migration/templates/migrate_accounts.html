@@ -11,7 +11,7 @@
 <p class="alert alert-info">
   This page allows you to migrate accounts.
 </p>
-
+<!--
 <div id="authList">
 
 {% for userAuth in userAuthMethodList %}
@@ -44,12 +44,13 @@
 
 </div> <!--  authList -->
 
+
 <div id="authForm">
-  {% if supportedAuthMethods|length > 0 %}
+
 
     <form id="authForm" action="." method="post" class="form-horizontal">{% csrf_token %}
       <fieldset>
-        <legend>Add a new account</legend>
+        <legend>Enter account details</legend>
         {% load bootstrap %}
         {% for field in authForm %}
           {{ field|bootstrap }}
@@ -57,77 +58,95 @@
       </fieldset>
       <div class="form-actions">
         <button type="submit" id="link" class="btn btn-success">
-          Link the Accounts
+         Migrate Accounts
         </button>
       </div>
     </form>
-
-  {% endif %}
 </div> <!-- authForm -->
 
-<div id="template-block" style="display: none">
-
-  <!-- alert-password-changed -->
-  <p class="alert-password-changed alert alert-success">
-    <a class="close" data-dismiss="alert">&times;</a>
-    Password successfully changed
-  </p>
-
-  <p class="alert-error-msg alert alert-error">
-    <a class="close" data-dismiss="alert">&times;</a>
-    <span class="msg"></span>
-  </p>
-
-  <div class="form-change-password">
-    <form action="." method="post" class="form-horizontal">{% csrf_token %}
-      <fieldset>
-        <legend>Change Password</legend>
-        <div class="control-group">
-          <label class="control-label" for="id_currentPassword">Current Password</label>
-          <div class="controls">
-            <input id="id_currentPassword" type="password" name="currentPassword" />
-          </div>
+    <div id="template-block" style="display: none">
+        <p class="alert-error-msg alert alert-error">
+            <a class="close" data-dismiss="alert">&times;</a>
+            <span class="msg"></span>
+        </p>
+    </div>
+    <div id="confirm-migrate" style="display: none">
+         <p class="alert-info-msg alert alert-warning">
+             <span class="msg">This process would involve merging the two accounts you own. <strong>Would you like to continue?</strong></span>
+        </p>
+        <div class="container" style="margin-left: 10px ; width: min-content">
+              <h2>Old User</h2>
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Username</th>
+                    <th>Email</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>mani0001</td>
+                    <td>manish.kumar@monash.edu</td>
+                  </tr>
+                </tbody>
+              </table>
         </div>
-        <div class="control-group">
-          <label class="control-label" for="id_newPassword">New Password</label>
-          <div class="controls">
-            <input id="id_newPassword" type="password" name="password" />
-          </div>
+        <div class="container" style="margin-left: 10px; width: min-content">
+              <h2>New User</h2>
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Username</th>
+                    <th>Email</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>manish.kumar@monash.edu</td>
+                    <td>manish.kumar@monash.edu</td>
+                  </tr>
+                </tbody>
+              </table>
         </div>
-        <div class="control-group">
-          <label class="control-label" for="id_newPassword1">Confirm Password</label>
-          <div class="controls">
-            <input id="id_newPassword1" type="password" name="password1" />
-          </div>
+        <div id="confirm_button" style="display: block">
+        <button type="button" class="btn btn-success" id="confirm_true" style="margin-right: 20px ; width: 100px">Confirm</button>
+        <button type="button" class="btn btn-danger"  id="confirm_false" style="margin-left: 20px ; width: 100px">Cancel</button>
         </div>
-      </fieldset>
-      <div class="form-actions">
-        <button type="submit" id="edit" class="btn btn-warning">
-          <i class="fa fa-key"></i>
-          Change Password
-        </button>
-      </div>
-    </form>
-  </div>
-
-  <div class="authMethod">
-    <table class="table table-condensed table-bordered">
-      <tr>
-        <th>Username:</th>
-        <td><span class="username"></span> &nbsp;
-        <a class="remove_auth" href="javascript:void(0);">
-          <i class="fa fa-remove-circle"></i>
-        </a>
-        </td>
-      </tr>
-      <tr>
-        <th>Authentication Method:</th>
-        <td><span class="auth-method"></span></td>
-      </tr>
-    </table>
-  </div>
-
-</div>
+   </div>
+    <div id="migration-message" style="display: none">
+        <p class="alert-info-msg alert alert-success">
+             <span class="msg"><strong>Congratulations !!</strong> your account has been successfully migrated</span>
+        </p>
+        <p class="alert-info-msg alert alert-warning">
+             <span class="msg">Please use <strong>'Login via AAF'</strong> for all your future login to Store.Monash</span>
+        </p>
+    </div>
+    <div id="spinner" style="display: none">
+        <div class="center-parent" style="
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        width: 100%;
+        height: 100%;
+        z-index: -1;">
+            <div class="center-container" style="
+        width: 60px;
+        height: 60px;
+        font-size: 60px;
+        position: absolute;
+        top: 34%;
+        left: 62%;
+        margin-top: -30px;
+        margin-right: 0;
+        margin-bottom: 0;
+        margin-left: -30px;
+        z-index: -1;">
+                <i id="mo-spin-icon" class="fa fa-cog fa-spin"></i>
+            </div>
+        </div>
+    </div>
 
 
 <script>
@@ -232,7 +251,7 @@ var link_account = function() {
     var password = $("#id_password").val();
     var authenticationMethod = $("#id_authenticationMethod").val();
 
-    if (username != "" && password != "" && authenticationMethod != "") {
+    if (username != "" && password != "") {
       var data = {operation: 'addAuth', username: username, password: password, authenticationMethod: authenticationMethod,
                   csrfmiddlewaretoken: '{{csrf_token}}'
       };
@@ -242,11 +261,15 @@ var link_account = function() {
             process_new_auth_entry(data);
           }
           else if (status == "confirm") {
-            var confirmMessage = "This process would involve merging the two accounts you own.\nWould you like to continue?"
-            if (confirm(confirmMessage)) {
+
+              $("#authForm").css('display','none')
+              $('.alert-info').css('display','none')
+              $("#confirm-migrate").css('display','block')
+            if (false) {
               data = {operation: 'mergeAuth', username: username, password: password, authenticationMethod: authenticationMethod,
 	              csrfmiddlewaretoken: '{{csrf_token}}'
-	      };
+	            };
+
               $.post("{% url 'tardis.apps.openid_migration.views.migrate_accounts' %}", data, function(data) {
                 var status = data.status
                 if (status == "success") {
@@ -268,6 +291,29 @@ var link_account = function() {
   return false;
 };
 
+var migrate_account= function () {
+    $("#spinner").css('display', 'block')
+    $("#confirm-migrate").css('opacity','.5')
+    var username = $("#id_username").val();
+    var password = $("#id_password").val();
+    var authenticationMethod = $("#id_authenticationMethod").val();
+    var data = {
+        operation: 'migrateAccount', username: username, password: password, authenticationMethod: authenticationMethod,
+        csrfmiddlewaretoken: '{{csrf_token}}'
+    }
+        $.post("{% url 'tardis.apps.openid_migration.views.migrate_accounts' %}", data, function(data) {
+                var status = data.status
+                if (status == "success") {
+                    $("#spinner").css('display', 'none')
+                  $("#confirm-migrate").css('display','none')
+                  $("#migration-message").css('display','block')
+                }
+                else {
+                  display_error("Account merging failed!", $("#authForm"));
+                }
+              }, "json");
+}
+
 var display_error = function(msg, elem) {
   // Create box from template
   var msgBox = $('#template-block .alert-error-msg').clone();
@@ -278,6 +324,7 @@ var display_error = function(msg, elem) {
 };
 
 $("#link").click(link_account);
+$("#confirm_true").click(migrate_account)
 $("#edit").live('click', edit_account);
 $(".edit_auth").live('click', edit_auth);
 $(".remove_auth").live('click', remove_auth);
