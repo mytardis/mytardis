@@ -36,12 +36,11 @@ http://docs.djangoproject.com/en/dev/topics/testing/
 .. moduleauthor::  Russell Sim <russell.sim@monash.edu>
 
 """
-from compare import ensure
 from django.test import TestCase
-from nose.plugins.skip import SkipTest
 
-from tardis.tardis_portal.forms import RightsForm
-from tardis.tardis_portal.models import Experiment, License
+from ..forms import RightsForm
+from ..models import Experiment, License
+
 
 class RightsFormTestCase(TestCase):
 
@@ -82,19 +81,17 @@ class RightsFormTestCase(TestCase):
 
         # Check we accept valid input
         for public_access, license_id in suitableCombinations:
-            print "Suitable combination: %d %s" % (public_access, license_id)
             data = {'public_access': str(public_access),
                     'license': license_id }
             form = RightsForm(data)
-            ensure(form.is_valid(), True, form.errors)
+            self.assertTrue(form.is_valid(), form.errors)
 
         # Check we reject invalid input
         for public_access, license_id in unsuitableCombinations:
-            print "Unsuitable combination: %d %s" % (public_access, license_id)
             data = {'public_access': str(public_access),
                     'license': license_id }
             form = RightsForm(data)
-            ensure(form.is_valid(), False)
+            self.assertFalse(form.is_valid())
 
     def test_needs_confirmation(self):
         suitable_data = {'public_access': str(Experiment.PUBLIC_ACCESS_NONE),

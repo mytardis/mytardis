@@ -1,10 +1,10 @@
 """
 views that have to do with authentication
 """
-
-from urlparse import urlparse
-
 import logging
+
+from six.moves import urllib
+
 import jwt
 import pwgen
 
@@ -22,13 +22,12 @@ from django.shortcuts import redirect
 from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import csrf_exempt
 
-from tardis.tardis_portal.auth import auth_service
-from tardis.tardis_portal.auth.localdb_auth import auth_key as localdb_auth_key
-from tardis.tardis_portal.forms import ManageAccountForm, CreateUserPermissionsForm, \
-    LoginForm
-from tardis.tardis_portal.models import JTI, UserProfile, UserAuthentication
-from tardis.tardis_portal.shortcuts import render_response_index
-from tardis.tardis_portal.views.utils import _redirect_303
+from ..auth import auth_service
+from ..auth.localdb_auth import auth_key as localdb_auth_key
+from ..forms import ManageAccountForm, CreateUserPermissionsForm, LoginForm
+from ..models import JTI, UserProfile, UserAuthentication
+from ..shortcuts import render_response_index
+from ..views.utils import _redirect_303
 
 logger = logging.getLogger(__name__)
 
@@ -136,13 +135,13 @@ def manage_user_account(request):
             user.last_name = form.cleaned_data['last_name']
             user.email = form.cleaned_data['email']
             user.save()
-            return _redirect_303('index')
+            return _redirect_303('tardis.tardis_portal.views.index')
     else:
         form = ManageAccountForm(instance=user)
 
     c = {'form': form}
-    return HttpResponse(render_response_index(request,
-                        'tardis_portal/manage_user_account.html', c))
+    return render_response_index(
+        request, 'tardis_portal/manage_user_account.html', c)
 
 
 def logout(request):
@@ -154,7 +153,7 @@ def logout(request):
     del request.session['jwt']
     del request.session['jws']
 
-    return redirect('index')
+    return redirect('tardis.tardis_portal.views.index')
 
 
 @never_cache
@@ -164,9 +163,9 @@ def create_user(request):
         c = {'createUserPermissionsForm':
              CreateUserPermissionsForm()}
 
-        response = HttpResponse(render_response_index(
+        response = render_response_index(
             request,
-            'tardis_portal/ajax/create_user.html', c))
+            'tardis_portal/ajax/create_user.html', c)
         return response
 
     authMethod = localdb_auth_key
@@ -206,9 +205,9 @@ def create_user(request):
     c = {'user_created': username}
     transaction.commit()
 
-    response = HttpResponse(render_response_index(
+    response = render_response_index(
         request,
-        'tardis_portal/ajax/create_user.html', c))
+        'tardis_portal/ajax/create_user.html', c)
     return response
 
 
@@ -216,9 +215,9 @@ def login(request):
     '''
     handler for login page
     '''
-    from tardis.tardis_portal.auth import auth_service
+    from ..auth import auth_service
 
-    if request.user.is_authenticated():
+    if request.user.is_authenticated:
         # redirect the user to the home page if he is trying to go to the
         # login page
         return HttpResponseRedirect(request.POST.get('next_page', '/'))
@@ -246,7 +245,7 @@ def login(request):
             render_response_index(request, 'tardis_portal/login.html', c))
 
     url = request.META.get('HTTP_REFERER', '/')
-    u = urlparse(url)
+    u = urllib.parse.urlparse(url)
     if u.netloc == request.META.get('HTTP_HOST', ""):
         next_page = u.path
     else:
@@ -258,15 +257,14 @@ def login(request):
     c['RAPID_CONNECT_LOGIN_URL'] = settings.RAPID_CONNECT_CONFIG[
         'authnrequest_url']
 
-    return HttpResponse(render_response_index(request,
-                        'tardis_portal/login.html', c))
+    return render_response_index(request, 'tardis_portal/login.html', c)
 
 
 @permission_required('tardis_portal.change_userauthentication')
 @login_required()
 def manage_auth_methods(request):
     '''Manage the user's authentication methods using AJAX.'''
-    from tardis.tardis_portal.auth.authentication import add_auth_method, \
+    from ..auth.authentication import add_auth_method, \
         merge_auth_method, remove_auth_method, edit_auth_method, \
         list_auth_methods
 

@@ -1,5 +1,5 @@
 from django.conf import settings
-from tardis.tardis_portal.staging import get_full_staging_path
+from .staging import get_full_staging_path
 
 
 def single_search_processor(request):
@@ -19,11 +19,6 @@ def single_search_processor(request):
     return context
 
 
-def tokenuser_processor(request):
-    is_token_user = request.user.username == settings.TOKEN_USERNAME
-    return {'is_token_user': is_token_user}
-
-
 def registration_processor(request):
     def is_registration_enabled():
         try:
@@ -41,7 +36,7 @@ def manage_account_processor(request):
 
 
 def user_details_processor(request):
-    is_authenticated = request.user.is_authenticated()
+    is_authenticated = request.user.is_authenticated
     if is_authenticated:
         is_superuser = request.user.is_superuser
         username = request.user.username
@@ -59,9 +54,6 @@ def global_contexts(request):
     site_title = getattr(settings, 'SITE_TITLE', None)
     sponsored_by = getattr(settings, 'SPONSORED_TEXT', None)
     site_styles = getattr(settings, 'SITE_STYLES', '')
-    # Enables UI elements for the publication form:
-    pub_form_enabled = ('tardis.apps.publication_forms'
-                        in settings.INSTALLED_APPS)
     version = getattr(settings, 'MYTARDIS_VERSION', None)
     return {'site_title': site_title,
             'sponsored_by': sponsored_by,

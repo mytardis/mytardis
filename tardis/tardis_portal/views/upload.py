@@ -4,12 +4,12 @@ views for uploading files via HTTP
 
 import logging
 
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.http import HttpResponse
 from django.shortcuts import render_to_response
 
-from tardis.tardis_portal.auth import decorators as authz
-from tardis.tardis_portal.models import Dataset, DataFile
+from ..auth import decorators as authz
+from ..models import Dataset, DataFile
 
 logger = logging.getLogger(__name__)
 

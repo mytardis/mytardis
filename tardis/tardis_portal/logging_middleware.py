@@ -50,7 +50,7 @@ LOGGING = {
     'handlers': {
         'null': {
             'level': 'DEBUG',
-            'class': 'django.utils.log.NullHandler',
+            'class': 'logging.NullHandler',
         },
         'console': {
             'level': 'INFO',
@@ -90,10 +90,16 @@ LOGGING = {
 
 
 class LoggingMiddleware(object):
-    def __init__(self):
-        from django.utils.log import dictConfig
+    def __init__(self, get_response):
+        from logging.config import dictConfig
         dictConfig(LOGGING)
         self.logger = logging.getLogger(__name__)
+        self.get_response = get_response
+
+    def __call__(self, request):
+        response = self.get_response(request)
+        self.process_response(request, response)
+        return response
 
     def process_response(self, request, response):
         try:
@@ -102,7 +108,10 @@ class LoggingMiddleware(object):
             user = ''
         ip = request.META['REMOTE_ADDR']
         method = request.method
-        status = response.status_code
+        if hasattr(response, 'status_code'):
+            status = response.status_code
+        else:
+            status = 500
         extra = {'ip': ip, 'user': user, 'method': method, 'status': status}
 
         if status < 400:

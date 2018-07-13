@@ -1,19 +1,12 @@
 import json
-import re
-
-from compare import expect, ensure, matcher
+import six
 
 from django.test import TestCase, TransactionTestCase
 from django.test.client import Client
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 
 from tardis.tardis_portal.models import Experiment, ObjectACL, User
 from tardis.tardis_portal.ParameterSetManager import ParameterSetManager
-
-
-@matcher
-def to_match(self, regex):
-    assert re.search(regex, self.value)
 
 
 def _create_user_and_login(username='testuser', password='testpass'):
@@ -51,13 +44,13 @@ class TabTestCase(TestCase):
         response = client.get(
             reverse('tardis.apps.related_info.views.index',
                     args=[self.experiment.id]))
-        expect(response.status_code).to_equal(403)
+        self.assertEqual(response.status_code, 403)
 
     def testAccessWithReadPerms(self):
         response = self.client.get(
             reverse('tardis.apps.related_info.views.index',
                     args=[self.experiment.id]))
-        expect(response.status_code).to_equal(200)
+        self.assertEqual(response.status_code, 200)
 
 
 class ListTestCase(TransactionTestCase):
@@ -86,10 +79,10 @@ class ListTestCase(TransactionTestCase):
             reverse('tardis.apps.related_info.views.'
                     + 'list_or_create_related_info',
                     args=[self.experiment.id]))
-        expect(response.status_code).to_equal(200)
-        expect(response['Content-Type'])\
-            .to_equal('application/json; charset=utf-8')
-        expect(response.content).to_equal('[]')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response['Content-Type'], 'application/json; charset=utf-8')
+        self.assertEqual(response.content, '[]')
 
     def testHandlesSingleEntry(self):
         from ..views import SCHEMA_URI
@@ -106,14 +99,14 @@ class ListTestCase(TransactionTestCase):
             reverse('tardis.apps.related_info.views.' +
                     'list_or_create_related_info',
                     args=[self.experiment.id]))
-        expect(response.status_code).to_equal(200)
-        expect(response['Content-Type'])\
-            .to_equal('application/json; charset=utf-8')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response['Content-Type'], 'application/json; charset=utf-8')
 
         objs = json.loads(response.content)
-        expect(len(objs)).to_be(1)
+        self.assertEqual(len(objs), 1)
         for k, v in params.items():
-            expect(objs[0][k]).to_equal(v)
+            self.assertEqual(objs[0][k], v)
 
     def testHandlesMultipleEntries(self):
         from ..views import SCHEMA_URI
@@ -131,18 +124,20 @@ class ListTestCase(TransactionTestCase):
             reverse('tardis.apps.related_info.views.'
                     + 'list_or_create_related_info',
                     args=[self.experiment.id]))
-        expect(response.status_code).to_equal(200)
-        expect(response['Content-Type'])\
-            .to_equal('application/json; charset=utf-8')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response['Content-Type'], 'application/json; charset=utf-8')
 
         objs = json.loads(response.content)
-        expect(len(objs)).to_be(10)
+        self.assertEqual(len(objs), 10)
 
         for obj in objs:
-            expect(obj['type']).to_equal('website')
-            expect(obj['identifier']).to_match(r'www.example.test/\d+$')
-            expect(obj['title']).to_match(r'^Title #\d+$')
-            expect(obj['notes']).to_match(r'note #\d+\.$')
+            self.assertEqual(obj['type'], 'website')
+            six.assertRegex(
+                self,
+                obj['identifier'], r'www.example.test/\d+$', obj['identifier'])
+            six.assertRegex(self, obj['title'], r'^Title #\d+$')
+            six.assertRegex(self, obj['notes'], r'note #\d+\.$')
 
 
 class GetTestCase(TransactionTestCase):
@@ -171,7 +166,7 @@ class GetTestCase(TransactionTestCase):
             reverse('tardis.apps.related_info.views.' +
                     'get_or_update_or_delete_related_info',
                     args=[self.experiment.id, 0]))
-        expect(response.status_code).to_equal(404)
+        self.assertEqual(response.status_code, 404)
 
     def testHandlesFound(self):
         from ..views import SCHEMA_URI
@@ -188,11 +183,11 @@ class GetTestCase(TransactionTestCase):
             reverse('tardis.apps.related_info.views.' +
                     'get_or_update_or_delete_related_info',
                     args=[self.experiment.id, psm.parameterset.id]))
-        expect(response.status_code).to_equal(200)
+        self.assertEqual(response.status_code, 200)
 
         obj = json.loads(response.content)
         for k, v in params.items():
-            expect(obj[k]).to_equal(v)
+            self.assertEqual(obj[k], v)
 
 
 class CreateTestCase(TransactionTestCase):
@@ -230,7 +225,7 @@ class CreateTestCase(TransactionTestCase):
                     args=[self.experiment.id]),
             data=json.dumps(params),
             content_type='application/json')
-        expect(response.status_code).to_equal(403)
+        self.assertEqual(response.status_code, 403)
 
     def testCanCreate(self):
         params = {'type': 'website',
@@ -244,18 +239,18 @@ class CreateTestCase(TransactionTestCase):
             data=json.dumps(params),
             content_type='application/json')
         # Check that content reports as created, returns the created object
-        expect(response.status_code).to_equal(201)
+        self.assertEqual(response.status_code, 201)
         obj = json.loads(response.content)
-        ensure(isinstance(obj['id'], int), True,
-               message='Created object should have an ID.')
+        self.assertIsInstance(
+            obj['id'], int, 'Created object should have an ID.')
         for k, v in params.items():
-            expect(obj[k]).to_equal(v)
+            self.assertEqual(obj[k], v)
         # Check that creation really did persist
         response = self.client.get(
             reverse('tardis.apps.related_info.views.'
                     + 'get_or_update_or_delete_related_info',
                     args=[self.experiment.id, obj['id']]))
-        expect(response.status_code).to_equal(200)
+        self.assertEqual(response.status_code, 200)
 
     def testDetectsBadInput(self):
         def do_post(params):
@@ -268,15 +263,15 @@ class CreateTestCase(TransactionTestCase):
         # We need an identifier
         params = {'type': 'website'}
         response = do_post(params)
-        expect(response.status_code).to_equal(400)
+        self.assertEqual(response.status_code, 400)
         # We need a type
         params = {'identifier': 'http://www.google.com/'}
         response = do_post(params)
-        expect(response.status_code).to_equal(400)
+        self.assertEqual(response.status_code, 400)
         # We need an identifier and URL
         params = {'type': 'website', 'identifier': 'http://www.google.com/'}
         response = do_post(params)
-        expect(response.status_code).to_equal(201)
+        self.assertEqual(response.status_code, 201)
 
 
 class UpdateTestCase(TransactionTestCase):
@@ -311,7 +306,7 @@ class UpdateTestCase(TransactionTestCase):
                                             args=[self.experiment.id]),
                                     data=json.dumps(params),
                                     content_type='application/json')
-        expect(response.status_code).to_equal(201)
+        self.assertEqual(response.status_code, 201)
         return json.loads(response.content)
 
     def testMustHaveWrite(self):
@@ -326,7 +321,7 @@ class UpdateTestCase(TransactionTestCase):
                     args=[self.experiment.id, related_info_id]),
             data=json.dumps(params),
             content_type='application/json')
-        expect(response.status_code).to_equal(403)
+        self.assertEqual(response.status_code, 403)
 
     def testDetectsBadInput(self):
         def do_put(params):
@@ -340,16 +335,16 @@ class UpdateTestCase(TransactionTestCase):
         # We need an identifier
         params = {'type': 'website'}
         response = do_put(params)
-        expect(response.status_code).to_equal(400)
+        self.assertEqual(response.status_code, 400)
         # We need a type
         params = {'identifier': 'http://www.google.com/'}
         response = do_put(params)
-        expect(response.status_code).to_equal(400)
+        self.assertEqual(response.status_code, 400)
         # We need an identifier and URL
         params = {'type': 'website',
                   'identifier': 'http://www.google.com/'}
         response = do_put(params)
-        expect(response.status_code).to_equal(201)
+        self.assertEqual(response.status_code, 201)
 
 
 class DeleteTestCase(TransactionTestCase):
@@ -384,7 +379,7 @@ class DeleteTestCase(TransactionTestCase):
                                             args=[self.experiment.id]),
                                     data=json.dumps(params),
                                     content_type='application/json')
-        expect(response.status_code).to_equal(201)
+        self.assertEqual(response.status_code, 201)
         return json.loads(response.content)
 
     def testMustHaveWrite(self):
@@ -395,7 +390,7 @@ class DeleteTestCase(TransactionTestCase):
             reverse('tardis.apps.related_info.views.' +
                     'get_or_update_or_delete_related_info',
                     args=[self.experiment.id, related_info_id]))
-        expect(response.status_code).to_equal(403)
+        self.assertEqual(response.status_code, 403)
 
     def testCanDelete(self):
         response = self.client.delete(
@@ -403,6 +398,6 @@ class DeleteTestCase(TransactionTestCase):
                     'get_or_update_or_delete_related_info',
                     args=[self.experiment.id,
                           self._create_initial_entry()['id']]))
-        expect(response.status_code).to_equal(200)
+        self.assertEqual(response.status_code, 200)
         obj = json.loads(response.content)
-        expect(obj.keys()).to_be_greater_than(1)
+        self.assertGreater(obj.keys(), 1)

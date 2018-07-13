@@ -4,10 +4,7 @@ Created on 24/01/2011
 @author: gerson
 '''
 from django.contrib.auth.models import User
-from tardis.tardis_portal.models import (
-    UserAuthentication,
-    UserProfile,
-)
+from ..models import UserAuthentication, UserProfile
 
 
 auth_key = 'vbl'
@@ -49,7 +46,7 @@ class MockBackend():
             # if request.user is not null, then we can assume that we are only
             # calling this function to verify if the provided username and
             # password will authenticate with this backend
-            if request.user.is_authenticated():
+            if request.user.is_authenticated:
                 user = request.user
 
             # else, create a new user with a random password

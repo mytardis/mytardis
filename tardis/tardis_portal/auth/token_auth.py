@@ -1,11 +1,8 @@
 """
 token authentication module
 """
-
-from django.conf import settings
-from django.contrib.auth.models import User
-from tardis.tardis_portal.models import Token, ObjectACL, Experiment
-from tardis.tardis_portal.auth.interfaces import GroupProvider
+from ..models import Token, ObjectACL, Experiment
+from ..auth.interfaces import GroupProvider
 
 TOKEN_EXPERIMENT = '_token_experiment'
 
@@ -19,25 +16,6 @@ def _ensure_acl_exists(experiment_id):
         content_type=experiment.get_ct(),
         object_id=experiment.id,
         aclOwnershipType=ObjectACL.OWNER_OWNED)
-
-
-# def authenticate(request, token_string):
-#     try:
-#         token = Token.objects.get(token=token_string)
-#     except Token.DoesNotExist:
-#         return None
-#     else:
-#         if token.is_expired():
-#             return None
-
-#     user = User.objects.get(username=settings.TOKEN_USERNAME)
-#     user.backend = 'django.contrib.auth.backends.ModelBackend'
-
-#     request.session[TOKEN_EXPERIMENT] = token.experiment.id
-#     _ensure_acl_exists(token.experiment.id)
-#     request.session.set_expiry(token.get_session_expiry())
-
-#     return user
 
 
 class TokenGroupProvider(GroupProvider):
@@ -70,6 +48,13 @@ class TokenAuthMiddleware(object):
     '''
     adds tokens to the user object and the session from a GET query
     '''
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        self.process_request(request)
+        response = self.get_response(request)
+        return response
 
     def process_request(self, request):
         all_tokens_set = set()

@@ -46,11 +46,33 @@ command with --help flag to see the the full list of options::
 Running BDD tests
 -----------------
 
-To run BDD tests with the default settings and a headless browser, call::
+To run BDD (Behaviour Driven Development) tests with the default settings and
+headless Chrome, download ChromeDriver from http://chromedriver.chromium.org/downloads
+and make it available in your PATH (e.g. in /usr/local/bin/) and run::
 
     ./test.py behave
 
-To use another browser, e.g. Chrome, follow the steps to install "chromedriver"
-in http://splinter.readthedocs.io/en/latest/drivers/chrome.html and then call::
 
-    ./test.py behave -D browser=chrome
+Running QUnit tests
+-------------------
+
+The QUnit tests reside in the ``js_tests/`` directory.
+
+``package.json`` contains ``devDependencies`` required for running these tests.
+
+Running ``npm install`` will install everything you need, whereas
+``npm install --production`` will skip the ``devDependencies``.
+
+You will need PhantomJS to run the QUnit tests, which can be installed with::
+
+    npm install -g phantomjs-prebuilt
+
+You can run the QUnit tests with::
+
+    npm test
+
+Or by running a web server::
+
+    python -m SimpleHTTPServer
+
+and opening http://127.0.0.1:8000/js_tests/tests.html in your browser.

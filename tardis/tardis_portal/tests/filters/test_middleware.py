@@ -28,17 +28,19 @@
 #
 
 from os import path
-from compare import expect
 
 from django.test import TestCase
 from django.db.models.signals import post_save
+from django.conf import settings
 from django.core.exceptions import MiddlewareNotUsed
+from django.core.management import call_command
+from django.http import HttpResponse
 
-from tardis.tardis_portal.filters import FilterInitMiddleware
-from tardis.tardis_portal.models import User, UserProfile, Experiment, \
+from ...filters import FilterInitMiddleware
+from ...models import User, Experiment, \
     ObjectACL, Dataset, DataFile, DataFileObject, StorageBox
 
-from tardis.tardis_portal.tests.test_download import get_size_and_sha512sum
+from ..test_download import get_size_and_sha512sum
 
 TEST_FILTERS = [
     ('tardis.tardis_portal.tests.filters.test_middleware.Filter1',),
@@ -104,47 +106,85 @@ class FilterInitTestCase(TestCase):
     def testFiltering(self):
         try:
             try:
-                FilterInitMiddleware(filters=TEST_FILTERS)
+                get_response = lambda _: HttpResponse('')
+                FilterInitMiddleware(get_response, filters=TEST_FILTERS)
             except MiddlewareNotUsed:
                 pass         # expected
             self.datafiles[0].save()
             t = Filter1.getTuples()
-            expect(len(t)).to_equal(1)
-            expect(t[0][0]).to_equal(self.datafiles[0])
-            expect(t[0][1]).to_be_none()
+            self.assertEqual(len(t), 1)
+            self.assertEqual(t[0][0], self.datafiles[0])
+            self.assertIsNone(t[0][1])
             t = Filter2.getTuples()
-            expect(len(t)).to_equal(1)
-            expect(t[0][0]).to_equal(self.datafiles[0])
-            expect(t[0][1]).to_be_none()
+            self.assertEqual(len(t), 1)
+            self.assertEqual(t[0][0], self.datafiles[0])
+            self.assertIsNone(t[0][1])
 
             self.datafiles[1].save()
             t = Filter1.getTuples()
-            expect(len(t)).to_equal(0)
+            self.assertEqual(len(t), 0)
             t = Filter2.getTuples()
-            expect(len(t)).to_equal(0)
+            self.assertEqual(len(t), 0)
             self.datafiles[0].file_objects.all()[0].save()
             t = Filter1.getTuples()
-            expect(len(t)).to_equal(1)
-            expect(t[0][0]).to_equal(self.datafiles[0])
-            expect(t[0][1]).to_be_truthy()
+            self.assertEqual(len(t), 1)
+            self.assertEqual(t[0][0], self.datafiles[0])
+            self.assertTrue(t[0][1])
             t = Filter2.getTuples()
-            expect(len(t)).to_equal(1)
-            expect(t[0][0]).to_equal(self.datafiles[0])
-            expect(t[0][1]).to_be_truthy()
+            self.assertEqual(len(t), 1)
+            self.assertEqual(t[0][0], self.datafiles[0])
+            self.assertTrue(t[0][1])
 
             self.datafiles[1].file_objects.all()[0].save(reverify=True)
             t = Filter1.getTuples()
-            expect(len(t)).to_equal(1)
+            self.assertEqual(len(t), 1)
             t = Filter2.getTuples()
-            expect(len(t)).to_equal(1)
+            self.assertEqual(len(t), 1)
 
         finally:
             # Remove our hooks!
             for f in TEST_FILTERS:
-                post_save.disconnect(sender=DataFile, weak=False,
-                                     dispatch_uid=f[0] + ".datafile")
-                post_save.disconnect(sender=DataFileObject, weak=False,
-                                     dispatch_uid=f[0] + ".dfo")
+                post_save.disconnect(
+                    sender=DataFile, dispatch_uid=f[0] + ".datafile")
+                post_save.disconnect(
+                    sender=DataFileObject, dispatch_uid=f[0] + ".dfo")
+
+
+
+class RunFiltersTestCase(TestCase):
+
+    def setUp(self):
+        self.previous_post_save_filters = \
+            getattr(settings, 'POST_SAVE_FILTERS', None)
+        settings.POST_SAVE_FILTERS = TEST_FILTERS
+
+    def tearDown(self):
+        if self.previous_post_save_filters:
+            settings.POST_SAVE_FILTERS = self.previous_post_save_filters
+
+    def testList(self):
+        '''
+        Just test that we can run
+        ./manage.py runfilters --list
+        without any runtime exceptions
+        '''
+        call_command('runfilters', list=True)
+
+    def testAll(self):
+        '''
+        Just test that we can run
+        ./manage.py runfilters --all
+        without any runtime exceptions
+        '''
+        call_command('runfilters', all=True)
+
+    def testDryRun(self):
+        '''
+        Just test that we can run
+        ./manage.py runfilters --dryRun
+        without any runtime exceptions
+        '''
+        call_command('runfilters', dryRun=True)
 
 
 class Filter1:

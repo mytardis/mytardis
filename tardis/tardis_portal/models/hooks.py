@@ -4,7 +4,6 @@ from django.conf import settings
 from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
 
-from .datafile import DataFileObject
 from .experiment import Experiment, ExperimentAuthor
 from .parameters import ExperimentParameter, ExperimentParameterSet
 
@@ -17,7 +16,7 @@ def publish_public_expt_rifcs(experiment):
         providers = settings.RIFCS_PROVIDERS
     except:
         providers = None
-    from tardis.tardis_portal.publish.publishservice import PublishService
+    from ..publish.publishservice import PublishService
     pservice = PublishService(providers, experiment)
     try:
         pservice.manage_rifcs(settings.OAI_DOCS_PATH)
@@ -54,15 +53,3 @@ def post_save_experiment_parameter(sender, **kwargs):
 def post_save_experiment(sender, **kwargs):
     experiment = kwargs['instance']
     publish_public_expt_rifcs(experiment)
-
-
-# THIS MUST BE DEFINED BEFORE GENERATING RIF-CS
-@receiver(post_save, sender=Experiment)
-def ensure_doi_exists(sender, **kwargs):
-    experiment = kwargs['instance']
-    if settings.DOI_ENABLE and \
-       experiment.public_access != Experiment.PUBLIC_ACCESS_NONE:
-        doi_url = settings.DOI_BASE_URL + experiment.get_absolute_url()
-        from tardis.tardis_portal.ands_doi import DOIService
-        doi_service = DOIService(experiment)
-        doi_service.get_or_mint_doi(doi_url)

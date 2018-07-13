@@ -1,7 +1,7 @@
 # encoding: utf-8
 from django.db import models
-from south.db import db
-from south.v2 import SchemaMigration
+from south.db import db  # pylint: disable=E0401
+from south.v2 import SchemaMigration  # pylint: disable=E0401
 
 
 class Migration(SchemaMigration):

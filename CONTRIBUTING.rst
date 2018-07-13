@@ -20,9 +20,9 @@ If you haven't::
   find . -name '*.py[co]' -delete
   # Clean install and full test
   python test.py
-  python mytardis.py behave
+  python manage.py behave --settings=tardis.test_settings
   # Run test server
-  python mytardis.py testserver
+  python manage.py runserver
 
 5. Does your change introduce new code? You should have tests covering it.
 6. Does your change introduce new features? You should update the documentation in `docs/` accordingly.

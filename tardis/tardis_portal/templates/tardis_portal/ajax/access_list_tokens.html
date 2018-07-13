@@ -1,4 +1,5 @@
-<script type="text/javascript" src="/static/clipboard/clipboard.min.js"></script>
+{% load static from staticfiles %}
+<script type="text/javascript" src="{% static 'clipboard/dist/clipboard.min.js' %}"></script>
 <script type="text/javascript">
     var clipboard = new Clipboard('.btn.clipboard');
     {% comment %}

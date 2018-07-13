@@ -1,3 +1,4 @@
+# pylint: disable=http-response-with-json-dumps
 '''
 Filepicker.io button view and upload handler
 '''
@@ -28,8 +29,8 @@ def upload_button(request, dataset_id):
     c = {'filepicker_api_key': filepicker_api_key,
          'dataset_id': dataset_id, }
 
-    return HttpResponse(render_response_index(
-        request, 'filepicker/filepicker.html', c))
+    return render_response_index(
+        request, 'filepicker/filepicker.html', c)
 
 
 @authz.upload_auth

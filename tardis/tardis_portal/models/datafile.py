@@ -7,11 +7,13 @@ from tempfile import NamedTemporaryFile
 
 from os import path
 import mimetypes
-from urllib import quote
+
+from six.moves import urllib
+from six import string_types
 
 from django.conf import settings
 from django.core.files import File
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.db import models
 from django.db import transaction
 from django.db.models import Q, Sum
@@ -19,10 +21,11 @@ from django.db.models.signals import pre_delete
 from django.dispatch import receiver
 from django.forms.models import model_to_dict
 from django.utils import timezone
+from django.utils.encoding import python_2_unicode_compatible
 
 import magic
 
-from tardis.tardis_portal import tasks
+from .. import tasks
 from .dataset import Dataset
 from .storage import StorageBox, StorageBoxOption, StorageBoxAttribute
 
@@ -33,6 +36,7 @@ IMAGE_FILTER = (Q(mimetype__startswith='image/') &
     (Q(datafileparameterset__datafileparameter__name__units__startswith="image"))  # noqa
 
 
+@python_2_unicode_compatible
 class DataFile(models.Model):
     """Class to store meta-data about a file.  The physical copies of a
     file are described by distinct DataFileObject instances.
@@ -49,7 +53,7 @@ class DataFile(models.Model):
         digits
     """
 
-    dataset = models.ForeignKey(Dataset)
+    dataset = models.ForeignKey(Dataset, on_delete=models.CASCADE)
     filename = models.CharField(max_length=400)
     directory = models.CharField(blank=True, null=True, max_length=255)
     size = models.BigIntegerField(blank=True, null=True)
@@ -162,6 +166,7 @@ class DataFile(models.Model):
             location=getattr(settings, 'DEFAULT_RECEIVING_DIR', '/tmp'))
         new_attr = StorageBoxAttribute(storage_box=new_box,
                                        key='type', value='receiving')
+        new_attr.save()
         new_box.attributes.add(new_attr)
         new_box.master_box = default_box
         new_box.save()
@@ -181,7 +186,7 @@ class DataFile(models.Model):
 
     def save(self, *args, **kwargs):
         if self.size is not None:
-            self.size = long(self.size)
+            self.size = int(self.size)
 
         require_checksums = kwargs.pop('require_checksums', True)
         if settings.REQUIRE_DATAFILE_CHECKSUMS and \
@@ -211,7 +216,7 @@ class DataFile(models.Model):
         else:
             raise Schema.UnsupportedType
 
-    def __unicode__(self):
+    def __str__(self):
         if self.sha512sum is not None and len(self.sha512sum) > 31:
             checksum = str(self.sha512sum)[:32]
         else:
@@ -381,7 +386,7 @@ class DataFile(models.Model):
             file_path = path.abspath(path.join(settings.METADATA_STORE_PATH,
                                                preview_image_par.string_value))
 
-            preview_image_file = file(file_path)
+            preview_image_file = open(file_path)
 
             return preview_image_file
         return None
@@ -440,13 +445,16 @@ class DataFile(models.Model):
                     if reverify or not obj.verified])
 
 
+@python_2_unicode_compatible
 class DataFileObject(models.Model):
     '''
     holds one copy of the data for a datafile
     '''
 
-    datafile = models.ForeignKey(DataFile, related_name='file_objects')
-    storage_box = models.ForeignKey(StorageBox, related_name='file_objects')
+    datafile = models.ForeignKey(DataFile, related_name='file_objects',
+                                 on_delete=models.CASCADE)
+    storage_box = models.ForeignKey(StorageBox, related_name='file_objects',
+                                    on_delete=models.CASCADE)
     uri = models.TextField(blank=True, null=True)  # optional
     created_time = models.DateTimeField(auto_now_add=True)
     verified = models.BooleanField(default=False)
@@ -458,7 +466,7 @@ class DataFileObject(models.Model):
         app_label = 'tardis_portal'
         unique_together = ['datafile', 'storage_box']
 
-    def __unicode__(self):
+    def __str__(self):
         try:
             return 'Box: %(storage_box)s, URI: %(uri)s, verified: %(v)s' % {
                 'storage_box': str(self.storage_box),
@@ -517,10 +525,10 @@ class DataFileObject(models.Model):
 
         def default_identifier(dfo):
             path_parts = ["%s-%s" % (
-                quote(dfo.datafile.dataset.description, safe='') or 'untitled',
+                urllib.parse.quote(dfo.datafile.dataset.description, safe='') or 'untitled',
                 dfo.datafile.dataset.id)]
             if dfo.datafile.directory is not None:
-                path_parts += [quote(dfo.datafile.directory)]
+                path_parts += [urllib.parse.quote(dfo.datafile.directory)]
             path_parts += [dfo.datafile.filename.strip()]
             uri = path.join(*path_parts)
             return uri
@@ -659,7 +667,7 @@ class DataFileObject(models.Model):
                     for comp_type in comparisons}
         database_update = {}
         empty_value = {db_key: db_val is None or (
-            isinstance(db_val, basestring) and db_val.strip() == '')
+            isinstance(db_val, string_types) and db_val.strip() == '')
             for db_key, db_val in database.items()}
         same_values = {key: False for key, empty in empty_value.items()
                        if not empty}
@@ -735,7 +743,7 @@ class DataFileObject(models.Model):
 
     @property
     def modified_time(self):
-        return self._storage.modified_time(self.uri)
+        return self._storage.get_modified_time(self.uri)
 
 
 @receiver(pre_delete, sender=DataFileObject, dispatch_uid='dfo_delete')

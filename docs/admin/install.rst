@@ -11,8 +11,8 @@ capabilities of MyTardis.
 Prerequisites
 -------------
 
-Ubuntu 14.04
-~~~~~~~~~~~~
+Ubuntu (18.04 LTS is recommended)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Run the script::
 
@@ -22,23 +22,6 @@ It will install required packages with this command:
 
 .. literalinclude:: ../../install-ubuntu-requirements.sh
    :language: bash
-
-Redhat/CentOS 7
-~~~~~~~~~~~~~~~
-
-Redhat based distributions are not actively supported. Here is a starting
-point, but you may require additional packages::
-
-  sudo yum install epel-release
-  sudo yum install cyrus-sasl-ldap cyrus-sasl-devel openldap-devel \
-  libxslt libxslt-devel libxslt-python git gcc graphviz-devel \
-  python-virtualenv python-virtualenvwrapper python-pip php-devel php-pear \
-  ImageMagick ImageMagick-devel libevent-devel compat-libevent14-devel
-
-
-Note that at least one of ``libevent-devel`` and ``compat-libevent14-devel``
-needs to be successfully installed as they are alternatives of the same package
-for different distributions.
 
 Download
 --------
@@ -63,17 +46,17 @@ It is recommended that you use a virtualenv. The list of packages above
 includes the ``virtualenvwrapper`` toolkit. Set up your environment with these
 commands::
 
-Ubuntu 14.04::
+Ubuntu 18.04::
+
+  source /etc/bash_completion.d/virtualenvwrapper
+
+For Ubuntu 16.04::
 
   source /usr/share/virtualenvwrapper/virtualenvwrapper.sh
 
-Redhat/CentOS 7::
-
-  source /usr/bin/virtualenvwrapper.sh
-
 Then create the ``mytardis`` virtual environment ::
 
-  mkvirtualenv --system-site-packages mytardis
+  mkvirtualenv mytardis
   pip install -U pip
 
 Note: the next time you want to work with this virtualenv, run the appropriate
@@ -83,13 +66,13 @@ MyTardis dependencies are then installed with pip::
 
   pip install -U -r requirements.txt
 
-For Redhat/CentOS 7, also run::
+To install minimal Javascript dependencies for production::
 
-  pip install -U -r requirements-centos.txt
+  npm install --production
 
-Javascript dependencies are then installed with npm::
+To install Javascript dependencies for production and for testing::
 
-  npm install
+  npm install && npm test
 
 Configuring MyTardis is done through a standard Django *settings.py*
 file. MyTardis comes with a sample configuration file at
@@ -118,7 +101,7 @@ This is important for security reasons.
 A convenient method is to run the following command in your mytardis
 installation location::
 
-  python -c "import os; from random import choice; key_line = '%sSECRET_KEY=\"%s\"  # generated from build.sh\n' % ('from tardis.default_settings import * \n\n' if not os.path.isfile('tardis/settings.py') else '', ''.join([choice('abcdefghijklmnopqrstuvwxyz0123456789\\!@#$%^&*(-_=+)') for i in range(50)])); f=open('tardis/settings.py', 'a+'); f.write(key_line); f.close()"
+  python -c "import os; from random import choice; key_line = '%sSECRET_KEY=\"%s\"  # generated from build.sh\n' % ('from tardis.default_settings import * \n\n' if not os.path.isfile('tardis/settings.py') else '', ''.join([choice('abcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*(-_=+)') for i in range(50)])); f=open('tardis/settings.py', 'a+'); f.write(key_line); f.close()"
 
 
 This is the minimum set of changes required to successfully run the
@@ -131,7 +114,9 @@ Initialisation
 
 Create and configure the database::
 
-  python mytardis.py migrate
+  python manage.py migrate
+  python manage.py createcachetable default_cache
+  python manage.py createcachetable celery_lock_cache
 
 This avoids creating a superuser before the MyTardis specific ``UserProfile``
 table has been created. More information about the ``migrate``
@@ -139,11 +124,11 @@ commands can be found at :doc:`admin`.
 
 Next, create a superuser::
 
-  python mytardis.py createmysuperuser
+  python manage.py createsuperuser
 
 MyTardis can now be executed in its simplest form using::
 
-  python mytardis.py runserver
+  python manage.py runserver
 
 This will start the Django web server at http://localhost:8000/.
 
@@ -170,7 +155,7 @@ These settings are essential if you want to run MyTardis in production mode
 
    A new one can be conveniently generated with the command::
 
-     echo "SECRET_KEY='`python mytardis.py generate_secret_key`'" >> tardis/settings.py
+     echo "SECRET_KEY='`python manage.py generate_secret_key`'" >> tardis/settings.py
 
 However, the more complex command shown above needs to be used at installation
 time.
@@ -269,7 +254,7 @@ assigning a licence, but they cannot allow public access to their data.
 
 Creative Commons licences (for Australia) are available in
 ``tardis/tardis_portal/fixtures/cc_licenses.json``. You can load them with
- ``python mytardis.py loaddata``.
+ ``python manage.py loaddata``.
 
 You can use the admin interface to add other licences. Please ensure
 ``allows_distribution`` is set to the correct value to ensure the licence
@@ -419,7 +404,7 @@ application, and instead serve them directly through the webserver.
 
 To collect all the static files to a single directory::
 
-  python mytardis.py collectstatic
+  python manage.py collectstatic
 
 
 .. attribute:: tardis.default_settings.STATIC_ROOT
@@ -512,8 +497,6 @@ for your own needs and understand the settings before deploying it.::
           proxy_set_header Host $http_host;
           proxy_redirect off;
           proxy_pass http://mytardis;
-          # this is to solve centos 6 error:
-          # upstream prematurely closed
           client_max_body_size 4G;
           client_body_buffer_size 8192k;
           proxy_connect_timeout 2000;
@@ -534,7 +517,7 @@ permissions. The location is set in the ``settings.py`` file.
 .. code-block:: bash
 
    # Collect static files to ``settings.STATIC_ROOT``
-   python mytardis.py collectstatic
+   python manage.py collectstatic
    # Allow Nginx read permissions
    setfacl -R -m user:nginx:rx static_dir
 

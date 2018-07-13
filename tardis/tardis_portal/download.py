@@ -10,8 +10,8 @@ download.py
 import logging
 import urllib
 import os
-import cStringIO as StringIO
 import time
+from importlib import import_module
 
 try:
     import zlib  # We may need its compression method
@@ -26,27 +26,25 @@ import tarfile
 from tarfile import TarFile
 import gzip
 import io
+from wsgiref.util import FileWrapper
 
-from django.core.servers.basehttp import FileWrapper
 from django.http import HttpResponseRedirect, StreamingHttpResponse
 from django.conf import settings
 from django.utils.dateformat import format as dateformatter
-from django.utils.importlib import import_module
 from django.core.exceptions import ImproperlyConfigured
 from django.contrib.auth.decorators import login_required
 
 from tardis.analytics.tracker import IteratorTracker
-from tardis.tardis_portal.models import Dataset
-from tardis.tardis_portal.models import DataFile
-from tardis.tardis_portal.models import Experiment
-from tardis.tardis_portal.auth.decorators import has_datafile_download_access
-from tardis.tardis_portal.auth.decorators import experiment_download_required
-from tardis.tardis_portal.auth.decorators import dataset_download_required
-from tardis.tardis_portal.shortcuts import render_error_message
-from tardis.tardis_portal.shortcuts import (return_response_not_found,
-                                            return_response_error)
-from tardis.tardis_portal.util import (get_filesystem_safe_dataset_name,
-                                       get_filesystem_safe_experiment_name)
+from .models import Dataset
+from .models import DataFile
+from .models import Experiment
+from .auth.decorators import has_datafile_download_access
+from .auth.decorators import experiment_download_required
+from .auth.decorators import dataset_download_required
+from .shortcuts import render_error_message
+from .shortcuts import return_response_not_found, return_response_error
+from .util import (get_filesystem_safe_dataset_name,
+                   get_filesystem_safe_experiment_name)
 
 logger = logging.getLogger(__name__)
 
@@ -65,7 +63,7 @@ def _create_download_response(request, datafile_id, disposition='attachment'):  
         return return_response_error(request)
     # Send an image that can be seen in the browser
     if disposition == 'inline' and datafile.is_image():
-        from tardis.tardis_portal.iiif import download_image
+        from .iiif import download_image
         args = (request, datafile.id, 'full', 'full', '0', 'native')
         # Send unconverted image if web-compatible
         if datafile.get_mimetype() in ('image/gif', 'image/jpeg', 'image/png'):
@@ -164,7 +162,7 @@ def _safe_import(path):
     mapper_module, mapper_fname = path[:dot], path[dot + 1:]
     try:
         mod = import_module(mapper_module)
-    except ImportError, e:
+    except ImportError as e:
         raise ImproperlyConfigured('Error importing mapper %s: "%s"' %
                                    (mapper_module, e))
     try:
@@ -301,7 +299,6 @@ class UncachedTarStream(TarFile):
         result = self.binary_buffer.read()
         self.binary_buffer.seek(0)
         self.binary_buffer.truncate()
-        print len(result)
         return result
 
     def make_tar(self):  # noqa
@@ -327,7 +324,7 @@ class UncachedTarStream(TarFile):
                     continue
                 # split into file read buffer sized chunks
                 blocks, remainder = divmod(tarinfo.size, self.buffersize)
-                for b in xrange(blocks):
+                for b in range(blocks):
                     buf = fileobj.read(self.buffersize)
                     if len(buf) < self.buffersize:
                         raise IOError("end of file reached")
@@ -552,8 +549,8 @@ def streaming_download_datafiles(request):  # too complex # noqa
 @login_required
 def download_api_key(request):
     user = request.user
-    api_key_file = StringIO.StringIO()
-    api_key_file.write("ApiKey {0}:{1}".format(user, user.api_key.key))
+    api_key_file = io.StringIO()
+    api_key_file.write(u"ApiKey {0}:{1}".format(user, user.api_key.key))
     api_key_file.seek(0)
     response = StreamingHttpResponse(FileWrapper(api_key_file),
                                      content_type='text/plain')

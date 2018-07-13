@@ -12,10 +12,10 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, HttpResponseNotFound, HttpResponseRedirect
 from django.views.decorators.cache import never_cache
 
-from tardis.tardis_portal.auth import decorators as authz
-from tardis.tardis_portal.models import ExperimentParameter, DatasetParameter, \
+from ..auth import decorators as authz
+from ..models import ExperimentParameter, DatasetParameter, \
     DatafileParameter, Dataset
-from tardis.tardis_portal.shortcuts import return_response_error
+from ..shortcuts import return_response_error
 
 logger = logging.getLogger(__name__)
 
@@ -75,9 +75,9 @@ def load_image(request, parameter):
     file_path = path.abspath(path.join(settings.METADATA_STORE_PATH,
                                        parameter.string_value))
 
-    from django.core.servers.basehttp import FileWrapper
+    from wsgiref.util import FileWrapper
     try:
-        wrapper = FileWrapper(file(file_path))
+        wrapper = FileWrapper(open(file_path))
     except IOError:
         return HttpResponseNotFound()
     return HttpResponse(wrapper, content_type=parameter.name.units)

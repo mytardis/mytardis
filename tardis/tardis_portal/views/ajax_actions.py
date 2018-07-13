@@ -1,3 +1,4 @@
+# pylint: disable=http-response-with-json-dumps,http-response-with-content-type-json
 """
 views that perform some action and don't return anything very useful
 """
@@ -12,11 +13,10 @@ from django.contrib.sites.models import Site
 from django.http import HttpResponse, HttpResponseForbidden
 from django.views.decorators.cache import never_cache
 
-from tardis.tardis_portal.auth import decorators as authz
-from tardis.tardis_portal.auth.decorators import has_dataset_write
-from tardis.tardis_portal.models import Dataset
-from tardis.tardis_portal.tasks import (
-    cache_done_notify, create_staging_datafiles)
+from ..auth import decorators as authz
+from ..auth.decorators import has_dataset_write
+from ..models import Dataset
+from ..tasks import cache_done_notify, create_staging_datafiles
 
 logger = logging.getLogger(__name__)
 

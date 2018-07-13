@@ -1,3 +1,4 @@
+# pylint: disable=http-response-with-json-dumps,http-response-with-content-type-json
 """
 views that have to do with authorisations
 """
@@ -5,15 +6,15 @@ views that have to do with authorisations
 import json
 import logging
 from operator import itemgetter
-from urllib import urlencode
-from urlparse import urlparse, parse_qs
+from six.moves import urllib
+#from urllib import urlencode
+#from urlparse import urlparse, parse_qs
 
 from django.conf import settings
-from django.contrib.auth import logout as django_logout
 from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.auth.models import User, Group
 from django.contrib.sites.models import Site
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.db import transaction
 from django.db import IntegrityError
 from django.db.models import Q
@@ -21,14 +22,14 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.views.decorators.cache import never_cache
 from django.views.decorators.http import require_POST
 
-from tardis.tardis_portal.auth import decorators as authz, auth_service
-from tardis.tardis_portal.auth.localdb_auth import auth_key as localdb_auth_key, \
+from ..auth import decorators as authz, auth_service
+from ..auth.localdb_auth import auth_key as localdb_auth_key, \
     django_user
-from tardis.tardis_portal.forms import ChangeUserPermissionsForm, \
+from ..forms import ChangeUserPermissionsForm, \
     ChangeGroupPermissionsForm, CreateGroupPermissionsForm
-from tardis.tardis_portal.models import UserAuthentication, UserProfile, Experiment, \
+from ..models import UserAuthentication, UserProfile, Experiment, \
     Token, GroupAdmin, ObjectACL
-from tardis.tardis_portal.shortcuts import render_response_index, \
+from ..shortcuts import render_response_index, \
     return_response_error, render_error_message
 
 logger = logging.getLogger(__name__)
@@ -59,9 +60,7 @@ def retrieve_user_list(request):
         q |= Q(first_name__icontains=' '.join(tokens[:-1])) &\
             Q(last_name__icontains=tokens[-1])
 
-    q_tokenuser = Q(username=settings.TOKEN_USERNAME)
     users_query = User.objects\
-                      .exclude(q_tokenuser)\
                       .filter(q).distinct() .select_related('userprofile')
 
     # HACK FOR ORACLE - QUERY GENERATED DOES NOT WORK WITH LIMIT SO USING
@@ -116,13 +115,13 @@ def retrieve_group_list(request):
 @never_cache
 @authz.experiment_ownership_required
 def retrieve_access_list_user(request, experiment_id):
-    from tardis.tardis_portal.forms import AddUserPermissionsForm
+    from ..forms import AddUserPermissionsForm
     user_acls = Experiment.safe.user_acls(experiment_id)
 
     c = {'user_acls': user_acls, 'experiment_id': experiment_id,
          'addUserPermissionsForm': AddUserPermissionsForm()}
-    return HttpResponse(render_response_index(request,
-                        'tardis_portal/ajax/access_list_user.html', c))
+    return render_response_index(
+        request, 'tardis_portal/ajax/access_list_user.html', c)
 
 
 @never_cache
@@ -130,16 +129,15 @@ def retrieve_access_list_user_readonly(request, experiment_id):
     user_acls = Experiment.safe.user_acls(experiment_id)
 
     c = {'user_acls': user_acls, 'experiment_id': experiment_id}
-    return HttpResponse(
-        render_response_index(
-            request, 'tardis_portal/ajax/access_list_user_readonly.html', c))
+    return render_response_index(
+        request, 'tardis_portal/ajax/access_list_user_readonly.html', c)
 
 
 @never_cache
 @authz.experiment_ownership_required
 def retrieve_access_list_group(request, experiment_id):
 
-    from tardis.tardis_portal.forms import AddGroupPermissionsForm
+    from ..forms import AddGroupPermissionsForm
 
     group_acls_system_owned = Experiment.safe.group_acls_system_owned(
         experiment_id)
@@ -151,8 +149,8 @@ def retrieve_access_list_group(request, experiment_id):
          'group_acls_system_owned': group_acls_system_owned,
          'experiment_id': experiment_id,
          'addGroupPermissionsForm': AddGroupPermissionsForm()}
-    return HttpResponse(render_response_index(request,
-                        'tardis_portal/ajax/access_list_group.html', c))
+    return render_response_index(
+        request, 'tardis_portal/ajax/access_list_group.html', c)
 
 
 @never_cache
@@ -167,9 +165,8 @@ def retrieve_access_list_group_readonly(request, experiment_id):
     c = {'experiment_id': experiment_id,
          'group_acls_system_owned': group_acls_system_owned,
          'group_acls_user_owned': group_acls_user_owned}
-    return HttpResponse(render_response_index(
-        request,
-        'tardis_portal/ajax/access_list_group_readonly.html', c))
+    return render_response_index(
+        request, 'tardis_portal/ajax/access_list_group_readonly.html', c)
 
 
 @never_cache
@@ -178,8 +175,8 @@ def retrieve_access_list_external(request, experiment_id):
 
     groups = Experiment.safe.external_users(experiment_id)
     c = {'groups': groups, 'experiment_id': experiment_id}
-    return HttpResponse(render_response_index(request,
-                        'tardis_portal/ajax/access_list_external.html', c))
+    return render_response_index(
+        request, 'tardis_portal/ajax/access_list_external.html', c)
 
 
 @never_cache
@@ -190,11 +187,11 @@ def retrieve_access_list_tokens(request, experiment_id):
     def token_url(url, token):
         if not url:
             return ''
-        u = urlparse(url)
-        query = parse_qs(u.query)
+        u = urllib.parse.urlparse(url)
+        query = urllib.parse.parse_qs(u.query)
         query.pop('token', None)
         query['token'] = token.token
-        u = u._replace(query=urlencode(query, True))
+        u = u._replace(query=urllib.parse.urlencode(query, True))
         return u.geturl()
         # return '%s?token=%s' % (request.META['HTTP_REFERER'], token.token)
 
@@ -220,31 +217,31 @@ def retrieve_access_list_tokens(request, experiment_id):
     c = {'tokens': tokens,
          'has_archive_download_url': has_archive_download_url}
 
-    return HttpResponse(render_response_index(
-        request, 'tardis_portal/ajax/access_list_tokens.html', c))
+    return render_response_index(
+        request, 'tardis_portal/ajax/access_list_tokens.html', c)
 
 
 @never_cache
 @authz.group_ownership_required
 def retrieve_group_userlist(request, group_id):
 
-    from tardis.tardis_portal.forms import ManageGroupPermissionsForm
+    from ..forms import ManageGroupPermissionsForm
     users = User.objects.filter(groups__id=group_id)
     c = {'users': users, 'group_id': group_id,
          'manageGroupPermissionsForm': ManageGroupPermissionsForm()}
-    return HttpResponse(render_response_index(request,
-                        'tardis_portal/ajax/group_user_list.html', c))
+    return render_response_index(
+        request, 'tardis_portal/ajax/group_user_list.html', c)
 
 
 @never_cache
 def retrieve_group_userlist_readonly(request, group_id):
 
-    from tardis.tardis_portal.forms import ManageGroupPermissionsForm
+    from ..forms import ManageGroupPermissionsForm
     users = User.objects.filter(groups__id=group_id)
     c = {'users': users, 'group_id': group_id,
          'manageGroupPermissionsForm': ManageGroupPermissionsForm()}
-    return HttpResponse(render_response_index(request,
-                        'tardis_portal/ajax/group_user_list_readonly.html', c))
+    return render_response_index(
+        request, 'tardis_portal/ajax/group_user_list_readonly.html', c)
 
 
 @never_cache
@@ -252,8 +249,8 @@ def retrieve_group_list_by_user(request):
 
     groups = Group.objects.filter(groupadmin__user=request.user)
     c = {'groups': groups}
-    return HttpResponse(render_response_index(request,
-                        'tardis_portal/ajax/group_list.html', c))
+    return render_response_index(
+        request, 'tardis_portal/ajax/group_list.html', c)
 
 
 @never_cache
@@ -262,16 +259,13 @@ def retrieve_group_list_by_user(request):
 def manage_groups(request):
 
     c = {}
-    return HttpResponse(render_response_index(request,
-                        'tardis_portal/manage_group_members.html', c))
+    return render_response_index(
+        request, 'tardis_portal/manage_group_members.html', c)
 
 
 @never_cache  # too complex # noqa
 @authz.group_ownership_required
 def add_user_to_group(request, group_id, username):
-
-    if username == settings.TOKEN_USERNAME:
-        return HttpResponse('User does not exist: %s' % username)
 
     authMethod = localdb_auth_key
     isAdmin = False
@@ -310,9 +304,9 @@ def add_user_to_group(request, group_id, username):
         groupadmin.save()
 
     c = {'user': user, 'group_id': group_id, 'isAdmin': isAdmin}
-    return HttpResponse(render_response_index(
+    return render_response_index(
         request,
-        'tardis_portal/ajax/add_user_to_group_result.html', c))
+        'tardis_portal/ajax/add_user_to_group_result.html', c)
 
 
 @never_cache
@@ -375,7 +369,7 @@ def add_experiment_access_user(request, experiment_id, username):
 
     authMethod = request.GET['authMethod']
     user = auth_service.getUser(authMethod, username)
-    if user is None or username == settings.TOKEN_USERNAME:
+    if user is None:
         return HttpResponse('User %s does not exist.' % (username))
 
     try:
@@ -408,11 +402,12 @@ def add_experiment_access_user(request, experiment_id, username):
              'username': username,
              'experiment_id': experiment_id}
 
-        return HttpResponse(render_response_index(
+        return render_response_index(
             request,
-            'tardis_portal/ajax/add_user_result.html', c))
+            'tardis_portal/ajax/add_user_result.html', c)
 
     return HttpResponse('User already has experiment access.')
+
 
 @never_cache
 @authz.experiment_ownership_required
@@ -423,7 +418,7 @@ def remove_experiment_access_user(request, experiment_id, username):
         return HttpResponse('User %s does not exist' % username)
 
     try:
-        experiment = Experiment.objects.get(pk=experiment_id)
+        Experiment.objects.get(pk=experiment_id)
     except Experiment.DoesNotExist:
         return HttpResponse('Experiment does not exist')
 
@@ -473,7 +468,7 @@ def change_user_permissions(request, experiment_id, username):
             if eacl.pluginId == 'django_user' and \
                eacl.get_related_object().id == user.id:
                 acl = eacl
-        #acl = expt_acls.filter(entityId=str(user.id))
+        # acl = expt_acls.filter(entityId=str(user.id))
         if acl is None:
             raise ObjectACL.DoesNotExist
         owner_acls = [oacl for oacl in expt_acls if oacl.isOwner]
@@ -504,8 +499,8 @@ def change_user_permissions(request, experiment_id, username):
              'header':
              "Change User Permissions for '%s'" % user.username}
 
-    return HttpResponse(render_response_index(
-        request, 'tardis_portal/form_template.html', c))
+    return render_response_index(
+        request, 'tardis_portal/form_template.html', c)
 
 
 @never_cache
@@ -555,8 +550,8 @@ def change_group_permissions(request, experiment_id, group_id):
     c = {'form': form,
          'header': "Change Group Permissions for '%s'" % group.name}
 
-    return HttpResponse(render_response_index(
-        request, 'tardis_portal/form_template.html', c))
+    return render_response_index(
+        request, 'tardis_portal/form_template.html', c)
 
 
 @transaction.atomic  # too complex # noqa
@@ -567,9 +562,9 @@ def create_group(request):
         c = {'createGroupPermissionsForm':
              CreateGroupPermissionsForm()}
 
-        response = HttpResponse(render_response_index(
+        response = render_response_index(
             request,
-            'tardis_portal/ajax/create_group.html', c))
+            'tardis_portal/ajax/create_group.html', c)
         return response
 
     authMethod = localdb_auth_key
@@ -600,9 +595,6 @@ def create_group(request):
 
     adminuser = None
     if admin:
-        if admin == settings.TOKEN_USERNAME:
-            return HttpResponse('User %s does not exist' %
-                                (settings.TOKEN_USERNAME))
         try:
             authMethod = request.GET['authMethod']
             if authMethod == localdb_auth_key:
@@ -636,9 +628,9 @@ def create_group(request):
 
     c = {'group': group}
 
-    response = HttpResponse(render_response_index(
+    response = render_response_index(
         request,
-        'tardis_portal/ajax/create_group.html', c))
+        'tardis_portal/ajax/create_group.html', c)
     return response
 
 
@@ -689,9 +681,9 @@ def add_experiment_access_group(request, experiment_id, groupname):
     c = {'group': group,
          'group_acl': acl,
          'experiment_id': experiment_id}
-    return HttpResponse(render_response_index(
+    return render_response_index(
         request,
-        'tardis_portal/ajax/add_group_result.html', c))
+        'tardis_portal/ajax/add_group_result.html', c)
 
 
 @never_cache
@@ -706,6 +698,9 @@ def remove_experiment_access_group(request, experiment_id, group_id):
     try:
         experiment = Experiment.objects.get(pk=experiment_id)
     except Experiment.DoesNotExist:
+        # This will never be reached because the
+        # @authz.experiment_ownership_required has already
+        # checked this.
         return HttpResponse('Experiment does not exist')
 
     acl = ObjectACL.objects.filter(
@@ -744,20 +739,6 @@ def token_delete(request, token_id):
     return HttpResponse('{"success": false}', content_type='application/json')
 
 
-def token_login(request, token):
-    django_logout(request)
-
-    from tardis.tardis_portal.auth import login, token_auth
-    logger.debug('token login')
-
-    user = token_auth.authenticate(request, token)
-    if not user:
-        return return_response_error(request)
-    login(request, user)
-    experiment = Experiment.objects.get(token__token=token)
-    return HttpResponseRedirect(experiment.get_absolute_url())
-
-
 def share(request, experiment_id):
     '''
     Choose access rights and licence.
@@ -771,7 +752,7 @@ def share(request, experiment_id):
         authz.has_write_permissions(request, experiment_id)
     c['has_download_permissions'] = \
         authz.has_experiment_download_access(request, experiment_id)
-    if user.is_authenticated():
+    if user.is_authenticated:
         c['is_owner'] = authz.has_experiment_ownership(request, experiment_id)
         c['is_superuser'] = user.is_superuser
 
@@ -782,5 +763,5 @@ def share(request, experiment_id):
     c['public_link'] = public_link
     c['domain'] = domain
 
-    return HttpResponse(render_response_index(request,
-                        'tardis_portal/ajax/share.html', c))
+    return render_response_index(
+        request, 'tardis_portal/ajax/share.html', c)

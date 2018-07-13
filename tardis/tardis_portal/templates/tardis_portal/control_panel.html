@@ -5,7 +5,7 @@
 
   <script type="text/javascript">
 
-    $('.canWrite').live('click', function(){
+    $(document).on('click', '.canWrite', function(){
        if($(this).is(':checked'))
        {
            var canReadBox = $(this).siblings(".canRead");
@@ -35,7 +35,7 @@
             }
         };
     };
-    $('.token_delete').live('click', function(evt){
+    $(document).on('click', '.token_delete', function(evt){
         evt.preventDefault();
         var $toggle = $($(this).attr('data-toggle_selector'));
         $.post(this.href, {}, refreshFunctionFor($toggle));
@@ -76,10 +76,10 @@
             $access_list.hide();
         }
     });
-    $('.token_url').live('click', function(evt) {
+    $(document).on('click', '.token_url', function(evt) {
         evt.preventDefault();
     });
-    $('.token_url').live('mouseup', function(evt) {
+    $(document).on('mouseup', '.token_url', function(evt) {
         if (evt.which == 1) { // left-click
             if (confirm('Click OK to login as a token user.\nOr click cancel and right-click and "copy shortcut" or "copy link location" or similar')) {
                 window.location.href = this.href;
@@ -273,7 +273,7 @@
           return val;
         })();
 
-        $(".creategroup").live('click', function()
+        $(document).on('click', ".creategroup", function()
         {
             if($(this).is(':checked'))
             {

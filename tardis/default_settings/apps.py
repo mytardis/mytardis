@@ -12,10 +12,8 @@ INSTALLED_APPS = (
     'django.contrib.admindocs',
     'django.contrib.humanize',
     'registration',
-    'djcelery',
-    'kombu.transport.django',
     'bootstrapform',
-    'mustachejs',
+    'jstemplate',
     'tastypie',
     'tastypie_swagger',
     'tardis.tardis_portal',
@@ -23,7 +21,6 @@ INSTALLED_APPS = (
     'tardis.search',
     'tardis.analytics',
     # these optional apps, may require extra settings
-    # 'tardis.apps.publication_forms',
     'tardis.apps.oaipmh',
     # 'tardis.apps.push_to',
 )

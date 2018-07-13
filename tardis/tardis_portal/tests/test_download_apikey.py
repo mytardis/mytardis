@@ -1,13 +1,14 @@
 # -*- coding: utf-8 -*-
 
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.test.client import Client
 from django.contrib.auth.models import User
+from django.test import TestCase
 
-from tastypie.test import ResourceTestCase
+from tastypie.test import ResourceTestCaseMixin
 
 
-class ApiKeyDownloadTestCase(ResourceTestCase):
+class ApiKeyDownloadTestCase(ResourceTestCaseMixin, TestCase):
 
     def setUp(self):
         # create a test user

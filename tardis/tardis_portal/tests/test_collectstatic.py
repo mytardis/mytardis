@@ -3,7 +3,6 @@ from os import mkdir
 from os import path
 from tempfile import mkdtemp
 from django.test import TestCase
-from django.conf import settings
 from django.contrib.staticfiles.management.commands import collectstatic
 
 

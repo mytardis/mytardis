@@ -1,17 +1,17 @@
 from django import template
-from django.conf import settings
 from django.template.defaultfilters import pluralize, filesizeformat
 from django.contrib.humanize.templatetags.humanize import naturalday
-from tardis.tardis_portal.util import get_local_time
 
-from tardis.tardis_portal.util import render_mustache,\
-    render_public_access_badge
+from ..util import get_local_time
+from ..util import render_mustache, render_public_access_badge
 
 register = template.Library()
 
 # -----------------------------------------------------------------------------
 #   multi_file_upload
 # -----------------------------------------------------------------------------
+
+
 @register.inclusion_tag('tardis_portal/experiment_tags/experiment_browse_item.html')
 def experiment_browse_item(experiment, **kwargs):
     """
@@ -24,6 +24,7 @@ def experiment_browse_item(experiment, **kwargs):
         'show_images': show_images
     }
 
+
 @register.filter
 def experiment_datasets_badge(experiment):
     """
@@ -34,6 +35,7 @@ def experiment_datasets_badge(experiment):
         'title': "%d dataset%s" % (count, pluralize(count)),
         'count': count,
     })
+
 
 @register.filter
 def experiment_datafiles_badge(experiment):
@@ -46,6 +48,7 @@ def experiment_datafiles_badge(experiment):
         'count': count,
     })
 
+
 @register.filter
 def experiment_last_updated_badge(experiment):
     return render_mustache('tardis_portal/badges/last_updated_badge', {
@@ -53,6 +56,7 @@ def experiment_last_updated_badge(experiment):
         'iso_time': get_local_time(experiment.update_time).isoformat(),
         'natural_time': naturalday(experiment.update_time),
     })
+
 
 @register.filter
 def experiment_public_access_badge(experiment):

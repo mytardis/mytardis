@@ -1,3 +1,4 @@
+# pylint: disable=http-response-with-json-dumps,http-response-with-content-type-json
 '''
 A module containing helper methods for the manage_auth_methods function in
 views.py.
@@ -7,14 +8,13 @@ views.py.
 import logging
 
 from django.conf import settings
+from django.contrib.auth.models import Group
 from django.http import HttpResponse
-from django.template import Context
 
-from tardis.tardis_portal.models import UserProfile, UserAuthentication, \
-    ObjectACL, Group
-from tardis.tardis_portal.auth import localdb_auth
-from tardis.tardis_portal.forms import createLinkedUserAuthenticationForm
-from tardis.tardis_portal.shortcuts import render_response_index
+from ..models import UserProfile, UserAuthentication, ObjectACL
+from . import localdb_auth
+from ..forms import createLinkedUserAuthenticationForm
+from ..shortcuts import render_response_index
 
 
 logger = logging.getLogger(__name__)
@@ -84,8 +84,8 @@ def list_auth_methods(request):
          'allAuthMethods': _getSupportedAuthMethods(),
          'isDjangoAccount': isDjangoAccount}
 
-    return HttpResponse(render_response_index(request,
-                        'tardis_portal/auth_methods.html', c))
+    return render_response_index(
+        request, 'tardis_portal/auth_methods.html', c)
 
 
 def add_auth_method(request):
@@ -100,7 +100,7 @@ def add_auth_method(request):
         authentication methods
     :rtype: HttpResponse
     """
-    from tardis.tardis_portal.auth import auth_service
+    from . import auth_service
 
     supportedAuthMethods = _getSupportedAuthMethods()
     LinkedUserAuthenticationForm = \
@@ -186,7 +186,7 @@ def merge_auth_method(request):
     :rtype: HttpResponse
     """
 
-    from tardis.tardis_portal.auth import auth_service
+    from . import auth_service
 
     supportedAuthMethods = _getSupportedAuthMethods()
     LinkedUserAuthenticationForm = \

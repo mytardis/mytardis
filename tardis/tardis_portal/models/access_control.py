@@ -9,8 +9,10 @@ from django.db import models
 from django.db.models import Q
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from django.utils.encoding import python_2_unicode_compatible
 
 
+@python_2_unicode_compatible
 class UserProfile(models.Model):
     """
     UserProfile class is an extension to the Django standard user model.
@@ -19,7 +21,7 @@ class UserProfile(models.Model):
     :attribute user: a foreign key to the
        :class:`django.contrib.auth.models.User`
     """
-    user = models.OneToOneField(User)
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
 
     # This flag will tell us if the main User account was created using any
     # non localdb auth methods. For example, if a first time user authenticates
@@ -36,7 +38,7 @@ class UserProfile(models.Model):
     class Meta:
         app_label = 'tardis_portal'
 
-    def __unicode__(self):
+    def __str__(self):
         return self.user.username
 
     def getUserAuthentications(self):
@@ -69,6 +71,7 @@ def create_user_profile(sender, instance, created, **kwargs):
         UserProfile(user=instance).save()
 
 
+@python_2_unicode_compatible
 class GroupAdmin(models.Model):
     """GroupAdmin links the Django User and Group tables for group
     administrators
@@ -79,20 +82,21 @@ class GroupAdmin(models.Model):
        :class:`django.contrib.auth.models.Group`
     """
 
-    user = models.ForeignKey(User)
-    group = models.ForeignKey(Group)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    group = models.ForeignKey(Group, on_delete=models.CASCADE)
 
     class Meta:
         app_label = 'tardis_portal'
 
-    def __unicode__(self):
+    def __str__(self):
         return '%s: %s' % (self.user.username, self.group.name)
 
 
 # TODO: Generalise auth methods
+@python_2_unicode_compatible
 class UserAuthentication(models.Model):
     CHOICES = ()
-    userProfile = models.ForeignKey(UserProfile)
+    userProfile = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
     username = models.CharField(max_length=50)
     authenticationMethod = models.CharField(max_length=30, choices=CHOICES)
 
@@ -111,7 +115,7 @@ class UserAuthentication(models.Model):
     def getAuthMethodDescription(self):
         return self._comparisonChoicesDict[self.authenticationMethod]
 
-    def __unicode__(self):
+    def __str__(self):
         return self.username + ' - ' + self.getAuthMethodDescription()
 
 
@@ -138,6 +142,7 @@ class UserAuthentication(models.Model):
 #     content_object = GenericForeignKey('content_type', 'object_id')
 
 
+@python_2_unicode_compatible
 class ObjectACL(models.Model):
     """The ObjectACL (formerly ExperimentACL) table is the core of the `Tardis
     Authorisation framework
@@ -172,7 +177,7 @@ class ObjectACL(models.Model):
     pluginId = models.CharField(null=False, blank=False, max_length=30)
     entityId = models.CharField(null=False, blank=False, max_length=320)
 #    experiment = models.ForeignKey('Experiment')
-    content_type = models.ForeignKey(ContentType)
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     object_id = models.PositiveIntegerField()
     content_object = GenericForeignKey('content_type', 'object_id')
     canRead = models.BooleanField(default=False)
@@ -204,7 +209,7 @@ class ObjectACL(models.Model):
             return Group.objects.get(pk=self.entityId)
         return None
 
-    def __unicode__(self):
+    def __str__(self):
         return '%s | %i' % (self.content_type.name, self.object_id)
 
     class Meta:

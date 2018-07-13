@@ -7,13 +7,13 @@ Implemented with Tastypie.
 .. moduleauthor:: James Wettenhall <james.wettenhall@monash.edu>
 '''
 import json
+from wsgiref.util import FileWrapper
 
 from django.conf import settings
 from django.conf.urls import url
 from django.contrib.auth.models import AnonymousUser
 from django.contrib.auth.models import User
 from django.contrib.auth.models import Group
-from django.core.servers.basehttp import FileWrapper
 from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseForbidden, \
     StreamingHttpResponse
@@ -34,36 +34,33 @@ from tastypie.utils import trailing_slash
 from tastypie.contrib.contenttypes.fields import GenericForeignKeyField
 
 from tardis.analytics.tracker import IteratorTracker
-from tardis.tardis_portal import tasks
-from tardis.tardis_portal.auth.decorators import \
-    get_accessible_datafiles_for_user
-from tardis.tardis_portal.auth.decorators import has_datafile_access
-from tardis.tardis_portal.auth.decorators import has_datafile_download_access
-from tardis.tardis_portal.auth.decorators import has_dataset_access
-from tardis.tardis_portal.auth.decorators import has_dataset_write
-from tardis.tardis_portal.auth.decorators import has_delete_permissions
-from tardis.tardis_portal.auth.decorators import has_experiment_access
-from tardis.tardis_portal.auth.decorators import has_write_permissions
-from tardis.tardis_portal.auth.localdb_auth import django_user
-from tardis.tardis_portal.models import ObjectACL
-from tardis.tardis_portal.models.datafile import DataFile, compute_checksums
-from tardis.tardis_portal.models.datafile import DataFileObject
-from tardis.tardis_portal.models.dataset import Dataset
-from tardis.tardis_portal.models.experiment import Experiment
-from tardis.tardis_portal.models.parameters import DatafileParameter
-from tardis.tardis_portal.models.parameters import DatafileParameterSet
-from tardis.tardis_portal.models.parameters import DatasetParameter
-from tardis.tardis_portal.models.parameters import DatasetParameterSet
-from tardis.tardis_portal.models.parameters import ExperimentParameter
-from tardis.tardis_portal.models.parameters import ExperimentParameterSet
-from tardis.tardis_portal.models.parameters import ParameterName
-from tardis.tardis_portal.models.parameters import Schema
-from tardis.tardis_portal.models.storage import StorageBox
-from tardis.tardis_portal.models.storage import StorageBoxOption
-from tardis.tardis_portal.models.storage import StorageBoxAttribute
-from tardis.tardis_portal.models.facility import Facility
-from tardis.tardis_portal.models.facility import facilities_managed_by
-from tardis.tardis_portal.models.instrument import Instrument
+from . import tasks
+from .auth.decorators import (
+    get_accessible_datafiles_for_user,
+    has_datafile_access,
+    has_datafile_download_access,
+    has_dataset_access,
+    has_dataset_write,
+    has_delete_permissions,
+    has_experiment_access,
+    has_write_permissions)
+from .auth.localdb_auth import django_user
+from .models.access_control import ObjectACL
+from .models.datafile import DataFile, DataFileObject, compute_checksums
+from .models.dataset import Dataset
+from .models.experiment import Experiment
+from .models.parameters import (
+    DatafileParameter,
+    DatafileParameterSet,
+    DatasetParameter,
+    DatasetParameterSet,
+    ExperimentParameter,
+    ExperimentParameterSet,
+    ParameterName,
+    Schema)
+from .models.storage import StorageBox, StorageBoxOption, StorageBoxAttribute
+from .models.facility import Facility, facilities_managed_by
+from .models.instrument import Instrument
 
 
 class PrettyJSONSerializer(Serializer):
@@ -144,7 +141,7 @@ class ACLAuthorization(Authorization):
     '''
     def read_list(self, object_list, bundle):  # noqa # too complex
         obj_ids = [obj.id for obj in object_list]
-        if bundle.request.user.is_authenticated() and \
+        if bundle.request.user.is_authenticated and \
            bundle.request.user.is_superuser:
             return object_list
         if isinstance(bundle.obj, Experiment):
@@ -195,7 +192,7 @@ class ACLAuthorization(Authorization):
                 object_id__in=experiment_ids,
                 id__in=obj_ids
             )
-        elif bundle.request.user.is_authenticated() and \
+        elif bundle.request.user.is_authenticated and \
                 isinstance(bundle.obj, User):
             if facilities_managed_by(bundle.request.user):
                 return object_list
@@ -227,7 +224,7 @@ class ACLAuthorization(Authorization):
             return []
 
     def read_detail(self, object_list, bundle):  # noqa # too complex
-        if bundle.request.user.is_authenticated() and \
+        if bundle.request.user.is_authenticated and \
            bundle.request.user.is_superuser:
             return True
         if isinstance(bundle.obj, Experiment):
@@ -256,7 +253,7 @@ class ACLAuthorization(Authorization):
         elif isinstance(bundle.obj, User):
             # allow all authenticated users to read public user info
             # the dehydrate function also adds/removes some information
-            authenticated = bundle.request.user.is_authenticated()
+            authenticated = bundle.request.user.is_authenticated
             public_user = bundle.obj.experiment_set.filter(
                 public_access__gt=1).count() > 0
             return public_user or authenticated
@@ -265,12 +262,12 @@ class ACLAuthorization(Authorization):
         elif isinstance(bundle.obj, ParameterName):
             return True
         elif isinstance(bundle.obj, StorageBox):
-            return bundle.request.user.is_authenticated()
+            return bundle.request.user.is_authenticated
         elif isinstance(bundle.obj, StorageBoxOption):
-            return bundle.request.user.is_authenticated() and \
+            return bundle.request.user.is_authenticated and \
                 bundle.obj.key in StorageBoxOptionResource.accessible_keys
         elif isinstance(bundle.obj, StorageBoxAttribute):
-            return bundle.request.user.is_authenticated()
+            return bundle.request.user.is_authenticated
         elif isinstance(bundle.obj, Group):
             return bundle.obj in bundle.request.user.groups.all()
         elif isinstance(bundle.obj, Facility):
@@ -284,9 +281,9 @@ class ACLAuthorization(Authorization):
         raise NotImplementedError(type(bundle.obj))
 
     def create_detail(self, object_list, bundle):  # noqa # too complex
-        if not bundle.request.user.is_authenticated():
+        if not bundle.request.user.is_authenticated:
             return False
-        if bundle.request.user.is_authenticated() and \
+        if bundle.request.user.is_authenticated and \
            bundle.request.user.is_superuser:
             return True
         if isinstance(bundle.obj, Experiment):
@@ -401,42 +398,12 @@ class ACLAuthorization(Authorization):
         # return allowed
 
     def update_detail(self, object_list, bundle):  # noqa # too complex
-        if not bundle.request.user.is_authenticated():
-            return False
-        if isinstance(bundle.obj, Experiment):
-            return bundle.request.user.has_perm(
-                'tardis_portal.change_experiment') and \
-                has_write_permissions(bundle.request, bundle.obj.id)
-        elif isinstance(bundle.obj, ExperimentParameterSet):
-            return bundle.request.user.has_perm(
-                'tardis_portal.change_experiment')  # and \
-        #      has_write_permissions(bundle.request, bundle.obj.experiment.id)
-        elif isinstance(bundle.obj, ExperimentParameter):
-            return bundle.request.user.has_perm(
-                'tardis_portal.change_experiment')
-        elif isinstance(bundle.obj, Dataset):
-            return False
-        elif isinstance(bundle.obj, DatasetParameterSet):
-            return False
-        elif isinstance(bundle.obj, DatasetParameter):
-            return False
-        elif isinstance(bundle.obj, DataFile):
-            return bundle.request.user.has_perm('tardis_portal.change_datafile')
-        elif isinstance(bundle.obj, DatafileParameterSet):
-            return False
-        elif isinstance(bundle.obj, DatafileParameter):
-            return False
-        elif isinstance(bundle.obj, Schema):
-            return False
-        elif isinstance(bundle.obj, Group):
-            return False
-        elif isinstance(bundle.obj, Facility):
-            return False
-        elif isinstance(bundle.obj, Instrument):
-            facilities = facilities_managed_by(bundle.request.user)
-            return bundle.obj.facility in facilities and \
-                bundle.request.user.has_perm('tardis_portal.change_instrument')
-        raise NotImplementedError(type(bundle.obj))
+        '''
+        Latest TastyPie requires update_detail permissions to be able to create
+        objects.  Rather than duplicating code here, we'll just use the same
+        authorization rules we use for create_detail.
+        '''
+        return self.create_detail(object_list, bundle)
 
     def delete_list(self, object_list, bundle):
         raise Unauthorized("Sorry, no deletes.")
@@ -511,7 +478,7 @@ class UserResource(ModelResource):
               name, uri, email, id, username
         '''
         authuser = bundle.request.user
-        authenticated = authuser.is_authenticated()
+        authenticated = authuser.is_authenticated
         queried_user = bundle.obj
         public_user = queried_user.experiment_set.filter(
             public_access__gt=1).count() > 0
@@ -547,6 +514,7 @@ class MyTardisModelResource(ModelResource):
         authentication = default_authentication
         authorization = ACLAuthorization()
         serializer = default_serializer
+        object_class = None
 
 
 class SchemaResource(MyTardisModelResource):
@@ -714,26 +682,6 @@ class ExperimentResource(MyTardisModelResource):
         bundle.data['created_by'] = user
         bundle = super(ExperimentResource, self).obj_create(bundle, **kwargs)
         return bundle
-
-    def obj_get_list(self, bundle, **kwargs):
-        '''
-        responds to EPN query for Australian Synchrotron
-        '''
-        if hasattr(bundle.request, 'GET') and 'EPN' in bundle.request.GET:
-            epn = bundle.request.GET['EPN']
-            exp_schema = Schema.objects.get(
-                namespace='http://www.tardis.edu.au'
-                '/schemas/as/experiment/2010/09/21')
-            epn_pn = ParameterName.objects.get(schema=exp_schema, name='EPN')
-            parameter = ExperimentParameter.objects.get(name=epn_pn,
-                                                        string_value=epn)
-            experiment_id = parameter.parameterset.experiment.id
-            experiment = Experiment.objects.filter(pk=experiment_id)
-            if experiment[0] in Experiment.safe.all(bundle.request.user):
-                return experiment
-
-        return super(ExperimentResource, self).obj_get_list(bundle,
-                                                            **kwargs)
 
 
 class DatasetParameterSetResource(ParameterSetResource):

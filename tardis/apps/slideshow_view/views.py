@@ -1,12 +1,11 @@
 from django.core.paginator import Paginator, InvalidPage, EmptyPage
-from django.http import HttpResponse
 from django.conf import settings
 
 from tardis.tardis_portal.auth import decorators as authz
 from tardis.tardis_portal.models import Dataset
 from tardis.tardis_portal.shortcuts import get_experiment_referer
 from tardis.tardis_portal.shortcuts import render_response_index
-from tardis.tardis_portal.views import _add_protocols_and_organizations
+from tardis.tardis_portal.views.utils import _add_protocols_and_organizations
 
 
 @authz.dataset_access_required
@@ -75,5 +74,5 @@ def view_full_dataset(request, dataset_id):
             getattr(settings, 'DEFAULT_ARCHIVE_FORMATS', ['tgz', 'tar'])[0]
     }
     _add_protocols_and_organizations(request, dataset, c)
-    return HttpResponse(render_response_index(
-        request, 'slideshow_view/view_full_dataset.html', c))
+    return render_response_index(
+        request, 'slideshow_view/view_full_dataset.html', c)

@@ -19,14 +19,8 @@
 <div class="page-header">
 	<h1 class="title">Search</h1>
 </div>
-<div class="searchmenu" style="padding-left: 10px">Search <a href="{% url 'tardis.search.views.search_experiment' %}">Experiment</a>
-  | <form action="{% url 'tardis.search.views.search_datafile' %}" method="GET" style="display: inline">
-    {{ searchDatafileSelectionForm.type }}
-    <noscript><input type="submit" value="Submit"></noscript>
-  </form>
-  {% for key,value in links.items %}
-  | <a href="{{ value }}">{{ key|capfirst }}</a>
-  {% endfor %}
+<div class="searchmenu" style="padding-left: 10px">
+    Search Experiment
 </div> <!-- searchmenu -->
 <br/>
 <div>

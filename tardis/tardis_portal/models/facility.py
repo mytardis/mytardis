@@ -1,19 +1,21 @@
 from django.db import models
 from django.contrib.auth.models import Group
+from django.utils.encoding import python_2_unicode_compatible
 
 
+@python_2_unicode_compatible
 class Facility(models.Model):
     """
     Represents a facility that produces data
     """
     name = models.CharField(max_length=100)
-    manager_group = models.ForeignKey(Group)
+    manager_group = models.ForeignKey(Group, on_delete=models.CASCADE)
 
     class Meta:
         app_label = 'tardis_portal'
         verbose_name_plural = 'Facilities'
 
-    def __unicode__(self):
+    def __str__(self):
         return self.name
 
 

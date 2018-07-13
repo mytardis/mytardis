@@ -44,15 +44,16 @@ from django.core.exceptions import ImproperlyConfigured
 from django.db.models.signals import post_save
 from django.core.exceptions import MiddlewareNotUsed
 
-from tardis.tardis_portal.models.datafile import DataFileObject
+from ..models.datafile import DataFileObject
 
 logger = logging.getLogger(__name__)
 
 
 class FilterInitMiddleware(object):
 
-    def __init__(self, filters=None):  # noqa # TODO too complex
-        from tardis.tardis_portal.models import DataFile
+    def __init__(self, get_response, filters=None):  # noqa # TODO too complex
+        from ..models import DataFile
+        self.get_response = get_response
         if not filters:
             filters = getattr(settings, 'POST_SAVE_FILTERS', [])
         for f in filters:
@@ -114,7 +115,7 @@ class FilterInitMiddleware(object):
         filter_module, filter_classname = path[:dot], path[dot + 1:]
         try:
             mod = import_module(filter_module)
-        except ImportError, e:
+        except ImportError as e:
             raise ImproperlyConfigured('Error importing filter %s: "%s"' %
                                        (filter_module, e))
         try:
@@ -126,3 +127,6 @@ class FilterInitMiddleware(object):
 
         filter_instance = filter_class(*args, **kw)
         return filter_instance
+
+    def __call__(self, request):
+        return self.get_response(request)

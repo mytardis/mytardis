@@ -1,8 +1,9 @@
+# pylint: disable=http-response-with-json-dumps,http-response-with-content-type-json
 import json
 import requests
 
 from django.contrib.auth.decorators import login_required
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.http import HttpResponse, HttpResponseForbidden, \
     HttpResponseNotFound
 from django.shortcuts import redirect, render
@@ -22,21 +23,19 @@ from .ssh_authz import sign_certificate
 
 
 def render_error_message(request, message, status=500):
-    return HttpResponse(
-        render(
-            request, 'error.html', {
-                'message': message
-            },
-            status=status))
+    return render(
+        request, 'error.html', {
+            'message': message
+        },
+        status=status)
 
 
 def render_success_message(request, message, status=200):
-    return HttpResponse(
-        render(
-            request, 'success.html', {
-                'message': message
-            },
-            status=status))
+    return render(
+        request, 'success.html', {
+            'message': message
+        },
+        status=status)
 
 
 def get_push_url_for_host(remote_host, obj_type, push_obj_id):
@@ -282,7 +281,7 @@ def _initiate_push(
                 get_accessible_hosts,
                 kwargs=args)
         }
-        return HttpResponse(render(request, 'host_list.html', c))
+        return render(request, 'host_list.html', c)
 
     try:
         remote_host = RemoteHost.objects.get(pk=remote_host_id)
@@ -300,8 +299,7 @@ def _initiate_push(
                                                   kwargs=args),
                 'remote_destination_name': remote_host.nickname
             }
-            return HttpResponse(
-                render(request, 'destination_selector.html', c))
+            return render(request, 'destination_selector.html', c)
 
         destination_ok, message = can_copy(ssh_client, obj_type, push_obj_id,
                                            destination)

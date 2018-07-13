@@ -6,14 +6,16 @@ Created on 15/03/2011
 
 from django.conf import settings
 from django.contrib.auth.models import User, Group
-from tardis.tardis_portal.models import UserProfile, UserAuthentication
+
+from ..models.access_control import UserAuthentication
 
 
 def get_or_create_user(auth_method, user_id, email=''):
     try:
         # check if the given username in combination with the
         # auth method is already in the UserAuthentication table
-        user = UserAuthentication.objects.get(username=user_id,
+        user = UserAuthentication.objects.get(
+            username=user_id,
             authenticationMethod=auth_method).userProfile.user
         created = False
     except UserAuthentication.DoesNotExist:
@@ -59,7 +61,8 @@ def create_user(auth_method, user_id, email=''):
 
 def configure_user(user):
     """ Configure a user account that has just been created by adding
-    the user to the default groups and creating a UserProfile.
+    the user to the default groups and marking it as a not a Django
+    account.
 
     :param User user: the User instance for the newly created account
     :returns: User profile for user

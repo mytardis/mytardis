@@ -1,18 +1,20 @@
 from datetime import datetime
 import itertools
+from importlib import import_module
 
 from django.conf import settings
-from django.utils.importlib import import_module
 from django.core.exceptions import ImproperlyConfigured
 from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 
-from oaipmh.common import Identify, Header, Metadata
+from six.moves import reduce
+
+from oaipmh.common import Identify
 import oaipmh.error
 from oaipmh.interfaces import IOAI
 from oaipmh.metadata import MetadataRegistry
-from oaipmh.server import Server, oai_dc_writer
+from oaipmh.server import Server
 
 
 def _safe_import_class(path):
@@ -23,7 +25,7 @@ def _safe_import_class(path):
     module_, classname_ = path[:dot], path[dot + 1:]
     try:
         mod = import_module(module_)
-    except ImportError, e:
+    except ImportError as e:
         raise ImproperlyConfigured('Error importing module %s: "%s"' %
                                    (module_, e))
     try:
@@ -51,7 +53,7 @@ class ProxyingMetadataRegistry(MetadataRegistry):
         return False
 
     def hasWriter(self, metadata_prefix):
-        formats = itertools.chain(*[p.listMetadataFormats() \
+        formats = itertools.chain(*[p.listMetadataFormats()
                                     for p in self._providers])
         return metadata_prefix in [f[0] for f in formats]
 
@@ -139,10 +141,11 @@ class ProxyingServer(IOAI):
         :returns: a :py:class:`set.Set` of headers.
         :rtype: set
         """
-        if kwargs.has_key('set') and kwargs['set']:
+        if 'set' in kwargs and kwargs['set']:
             raise oaipmh.error.NoSetHierarchyError
         if metadataPrefix not in [f[0] for f in self.listMetadataFormats()]:
             raise oaipmh.error.CannotDisseminateFormatError
+
         def appendIdents(list_, p):
             try:
                 return list_ + p.listIdentifiers(metadataPrefix, **kwargs)
@@ -165,6 +168,7 @@ class ProxyingServer(IOAI):
         :rtype: frozenset
         """
         id_known = False
+
         def appendFormats(list_, p):
             try:
                 return list_ + p.listMetadataFormats(**kwargs)
@@ -174,7 +178,7 @@ class ProxyingServer(IOAI):
                 id_known = True
                 return list_
         formats = frozenset(reduce(appendFormats, self.providers, []))
-        if kwargs.has_key('identifier'):
+        if 'identifier' in kwargs:
             if not formats:
                 if id_known:
                     raise oaipmh.error.NoMetadataFormatsError
@@ -196,10 +200,11 @@ class ProxyingServer(IOAI):
             tuples.
         :rtype: set
         """
-        if kwargs.has_key('set') and kwargs['set']:
+        if 'set' in kwargs and kwargs['set']:
             raise oaipmh.error.NoSetHierarchyError
         if metadataPrefix not in [f[0] for f in self.listMetadataFormats()]:
             raise oaipmh.error.CannotDisseminateFormatError
+
         def appendRecords(list_, p):
             try:
                 return list_ + p.listRecords(metadataPrefix, **kwargs)
@@ -238,10 +243,12 @@ class ProxyingServer(IOAI):
 
 _servers = {}
 
+
 def get_server(current_site):
     # Lookup for existing server first
-    if _servers.has_key(current_site.domain):
+    if current_site.domain in _servers:
         return _servers[current_site.domain]
+
     def create_provider(provider_name):
         class_ = _safe_import_class(provider_name)
         return class_(current_site)

@@ -30,19 +30,20 @@
 """
 Management command to (re-)run the ingestion filters by hand.
 """
+from __future__ import print_function
 
 import sys
-import traceback
 import logging
-from optparse import make_option
+from importlib import import_module
+
+from six import reraise
 
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction, DEFAULT_DB_ALIAS
 from django.core.exceptions import ImproperlyConfigured
-from django.utils.importlib import import_module
 
-from tardis.tardis_portal.models import Experiment, Dataset, DataFile
+from ...models import DataFile
 
 
 logger = logging.getLogger(__name__)
@@ -55,27 +56,34 @@ Note that a typical ingestion filter sets a 'flag' parameter in its
 Datafile's parameter set to avoid adding multiple copies of the ingested
 metadata parameters.  This command cannot override that flag to force
 metadata to be reingested."""
-    option_list = BaseCommand.option_list + (
-        make_option('--dryRun', '-n',
-                    action='store_true',
-                    dest='dryRun',
-                    default=False,
-                    help="Don't commit the results of running the " \
-                        "filters to the database.  Warning: does not " \
-                        "handle non-database changes made by a filter!"),
-        ) + (
-        make_option('--list', '-l',
-                    action='store_true',
-                    dest='list',
-                    default=False,
-                    help="List the ingestion filters configured in "
-                         "settings.POST_SAVE_FILTERS"),
-        ) + (
-        make_option('--all', '-a',
-                    action='store_true',
-                    dest='all',
-                    default=False,
-                    help="Run all available filters"),
+
+    def add_arguments(self, parser):
+        # Positional arguments
+
+        # Named (optional) arguments
+        parser.add_argument(
+            '--dryRun', '-n',
+            action='store_true',
+            default=False,
+            dest='dryRun',
+            help=("Don't commit the results of running the "
+                  "filters to the database.  Warning: does not "
+                  "handle non-database changes made by a filter!")
+        )
+        parser.add_argument(
+            '--list',
+            action='store_true',
+            default=False,
+            dest='list',
+            help="List the ingestion filters configured in "
+                 "settings.POST_SAVE_FILTERS"
+        )
+        parser.add_argument(
+            '--all',
+            action='store_true',
+            default=False,
+            dest='all',
+            help="Run all available filters"
         )
 
     def handle(self, *args, **options):
@@ -117,8 +125,8 @@ metadata to be reingested."""
                 try:
                     filters += [self._safe_import(cls, args, kw)]
                 except ImproperlyConfigured as e:
-                    print "Skipping improperly configured filter %s : %s" % \
-                        (id + 1, e)
+                    print("Skipping improperly configured filter %s : %s" %
+                          (id + 1, e))
         return filters
 
     def _safe_import(self, path, args, kw):
@@ -129,7 +137,7 @@ metadata to be reingested."""
         filter_module, filter_classname = path[:dot], path[dot + 1:]
         try:
             mod = import_module(filter_module)
-        except ImportError, e:
+        except ImportError as e:
             raise ImproperlyConfigured('Error importing filter %s: "%s"' %
                                        (filter_module, e))
         try:
@@ -143,8 +151,7 @@ metadata to be reingested."""
 
     def runFilters(self, filters, dryRun=False):
         using = DEFAULT_DB_ALIAS
-        transaction.enter_transaction_management(using=using)
-        try:
+        with transaction.atomic(using=using):
             for datafile in DataFile.objects.all():
                 # Use a transaction to process each Datafile
                 transaction.managed(True, using=using)
@@ -160,23 +167,21 @@ metadata to be reingested."""
                     transaction.rollback(using=using)
                     exc_class, exc, tb = sys.exc_info()
                     new_exc = CommandError("Exception %s has occurred: "
-                                           "rolled back transaction" % \
-                                               (exc or exc_class))
-                    raise new_exc.__class__, new_exc, tb
-        finally:
-            transaction.leave_transaction_management(using=using)
+                                           "rolled back transaction"
+                                           % (exc or exc_class))
+                    reraise(new_exc.__class__, new_exc, tb)
 
     def listFilters(self):
         if self.availableFilters:
-            print 'The following filters are available\n'
+            print('The following filters are available\n')
             for i in range(0, len(self.availableFilters)):
                 filter = self.availableFilters[i]
                 if len(filter) == 1:
-                    print '%d - %s\n' % (i + 1, filter[0])
+                    print('%d - %s\n' % (i + 1, filter[0]))
                 elif len(filter) == 2:
-                    print '%d - %s, %s\n' % (i + 1, filter[0], filter[1])
+                    print('%d - %s, %s\n' % (i + 1, filter[0], filter[1]))
                 elif len(filter) >= 3:
-                    print '%d - %s, %s, %s\n' % (i + 1, filter[0],
-                                                 filter[1], filter[2])
+                    print('%d - %s, %s, %s\n' % (i + 1, filter[0],
+                                                 filter[1], filter[2]))
         else:
-            print 'No filters are available\n'
+            print('No filters are available\n')

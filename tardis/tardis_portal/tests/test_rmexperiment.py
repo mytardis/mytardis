@@ -1,10 +1,8 @@
-from compare import expect
-
 from django.contrib.auth.models import User
 from django.test import TestCase
 from django.core.management import call_command
 
-from tardis.tardis_portal.models import \
+from ..models import \
     Experiment, Dataset, DataFile, ObjectACL, License, \
     ExperimentParameterSet, ExperimentParameter, DatasetParameterSet, \
     DatafileParameterSet
@@ -102,35 +100,35 @@ class RmExperimentTestCase(TestCase):
 
     def testList(self):
         (exp1_, exp2_) = _create_test_data()
-        expect(DataFile.objects.all().count()).to_be(6)
-        expect(len(exp1_.get_datafiles())).to_be(3)
-        expect(len(exp2_.get_datafiles())).to_be(5)
+        self.assertEqual(DataFile.objects.all().count(), 6)
+        self.assertEqual(len(exp1_.get_datafiles()), 3)
+        self.assertEqual(len(exp2_.get_datafiles()), 5)
 
         # Check that --list doesn't remove anything
         call_command('rmexperiment', exp1_.pk, list=True)
-        expect(DataFile.objects.all().count()).to_be(6)
-        expect(len(exp1_.get_datafiles())).to_be(3)
-        expect(len(exp2_.get_datafiles())).to_be(5)
+        self.assertEqual(DataFile.objects.all().count(), 6)
+        self.assertEqual(len(exp1_.get_datafiles()), 3)
+        self.assertEqual(len(exp2_.get_datafiles()), 5)
 
     def testRemove(self):
         (exp1_, exp2_) = _create_test_data()
-        expect(DataFile.objects.all().count()).to_be(6)
-        expect(len(exp1_.get_datafiles())).to_be(3)
-        expect(len(exp2_.get_datafiles())).to_be(5)
+        self.assertEqual(DataFile.objects.all().count(), 6)
+        self.assertEqual(len(exp1_.get_datafiles()), 3)
+        self.assertEqual(len(exp2_.get_datafiles()), 5)
 
         # Remove first experiment and check that the shared dataset hasn't
         # been removed
         call_command('rmexperiment', exp1_.pk, confirmed=True)
-        expect(DataFile.objects.all().count()).to_be(5)
-        expect(len(exp2_.get_datafiles())).to_be(5)
+        self.assertEqual(DataFile.objects.all().count(), 5)
+        self.assertEqual(len(exp2_.get_datafiles()), 5)
 
         #Remove second experiment
         call_command('rmexperiment', exp2_.pk, confirmed=True)
-        expect(DataFile.objects.all().count()).to_be(0)
+        self.assertEqual(DataFile.objects.all().count(), 0)
 
         #Check that everything else has been removed too
-        expect(ObjectACL.objects.all().count()).to_be(0)
-        expect(ExperimentParameterSet.objects.all().count()).to_be(0)
-        expect(ExperimentParameter.objects.all().count()).to_be(0)
-        expect(DatasetParameterSet.objects.all().count()).to_be(0)
-        expect(DatafileParameterSet.objects.all().count()).to_be(0)
+        self.assertEqual(ObjectACL.objects.all().count(), 0)
+        self.assertEqual(ExperimentParameterSet.objects.all().count(), 0)
+        self.assertEqual(ExperimentParameter.objects.all().count(), 0)
+        self.assertEqual(DatasetParameterSet.objects.all().count(), 0)
+        self.assertEqual(DatafileParameterSet.objects.all().count(), 0)

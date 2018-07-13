@@ -6,6 +6,7 @@ import random
 from django.conf import settings
 from django.db import models
 from django.db.utils import DatabaseError
+from django.utils.encoding import python_2_unicode_compatible
 import django.core.files.storage as django_storage
 
 #from celery.contrib.methods import task
@@ -14,6 +15,7 @@ import django.core.files.storage as django_storage
 logger = logging.getLogger(__name__)
 
 
+@python_2_unicode_compatible
 class StorageBox(models.Model):
     '''
     table that holds storage boxes of any type.
@@ -30,7 +32,8 @@ class StorageBox(models.Model):
     name = models.CharField(max_length=255, default='default', unique=True)
     description = models.TextField(default='Default Storage')
     master_box = models.ForeignKey('self', null=True, blank=True,
-                                   related_name='child_boxes')
+                                   related_name='child_boxes',
+                                   on_delete=models.CASCADE)
 
     # state values for different types of storage:
     DISK = 1
@@ -67,7 +70,7 @@ class StorageBox(models.Model):
                   TEMPORARY,
                   TYPE_UNKNOWN]
 
-    def __unicode__(self):
+    def __str__(self):
         return self.name or "anonymous Storage Box"
 
     @property
@@ -212,6 +215,7 @@ class StorageBox(models.Model):
         return s_box
 
 
+@python_2_unicode_compatible
 class StorageBoxOption(models.Model):
     '''
     holds the options passed to the storage class defined in StorageBox.
@@ -223,16 +227,17 @@ class StorageBoxOption(models.Model):
     TYPE_CHOICES = ((STRING, 'String value'),
                     (PICKLE, 'Pickled value'))
 
-    storage_box = models.ForeignKey(StorageBox, related_name='options')
+    storage_box = models.ForeignKey(StorageBox, related_name='options',
+                                    on_delete=models.CASCADE)
     key = models.TextField()
     value = models.TextField()
     value_type = models.CharField(max_length=6,
                                   choices=TYPE_CHOICES,
                                   default=STRING)
 
-    def __unicode__(self):
+    def __str__(self):
         return '-> '.join([
-            self.storage_box.__unicode__(),
+            self.storage_box.__str__(),
             ': '.join([self.key or 'no key',
                        str(self.unpickled_value) or 'no value'])
         ])
@@ -256,6 +261,7 @@ class StorageBoxOption(models.Model):
             self.value = pickle.dumps(input_value)
 
 
+@python_2_unicode_compatible
 class StorageBoxAttribute(models.Model):
     '''
     can hold attributes/metadata about different storage locations.
@@ -267,13 +273,14 @@ class StorageBoxAttribute(models.Model):
           cache       holds files for fast access
     '''
 
-    storage_box = models.ForeignKey(StorageBox, related_name='attributes')
+    storage_box = models.ForeignKey(StorageBox, related_name='attributes',
+                                    on_delete=models.CASCADE)
     key = models.TextField()
     value = models.TextField()
 
-    def __unicode__(self):
+    def __str__(self):
         return '-> '.join([
-            self.storage_box.__unicode__(),
+            self.storage_box.__str__(),
             ': '.join([self.key or 'no key', self.value or 'no value'])
         ])
 

@@ -9,7 +9,7 @@ import logging
 from django.contrib.auth.models import User, Group
 from django.contrib.auth.backends import ModelBackend
 
-from tardis.tardis_portal.auth.interfaces import AuthProvider, GroupProvider, UserProvider
+from .interfaces import AuthProvider, GroupProvider, UserProvider
 
 
 logger = logging.getLogger(__name__)
@@ -42,7 +42,7 @@ class DjangoAuthBackend(AuthProvider):
 
         if not username or not password:
             return None
-        return _modelBackend.authenticate(username, password)
+        return _modelBackend.authenticate(request, username, password)
 
     def get_user(self, user_id):
         try:

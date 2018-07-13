@@ -2,9 +2,17 @@
 from __future__ import print_function
 import os
 import sys
+import warnings
+
+from tardis.tardis_portal.deprecations import RemovedInMyTardis42Warning
 
 
 def run():
+    warnings.warn(
+       "mytardis.py will be removed in MyTardis 4.2. "
+        "Please use manage.py instead.",
+       RemovedInMyTardis42Warning
+    )
     custom_settings = 'tardis.settings'
     custom_settings_file = custom_settings.replace('.', '/') + '.py'
     demo_settings = 'tardis.settings_changeme'
@@ -29,7 +37,7 @@ if __name__ == "__main__":
             print(r'''
 # execute this wonderful command to have your settings.py created/updated
 # with a generated Django SECRET_KEY (required for MyTardis to run)
-python -c "import os; from random import choice; key_line = '%sSECRET_KEY=\"%s\"  # generated from build.sh\n' % ('from tardis.settings_changeme import * \n\n' if not os.path.isfile('tardis/settings.py') else '', ''.join([choice('abcdefghijklmnopqrstuvwxyz0123456789\\!@#$%^&*(-_=+)') for i in range(50)])); f=open('tardis/settings.py', 'a+'); f.write(key_line); f.close()"
+python -c "import os; from random import choice; key_line = '%sSECRET_KEY=\"%s\"  # generated from build.sh\n' % ('from tardis.settings_changeme import * \n\n' if not os.path.isfile('tardis/settings.py') else '', ''.join([choice('abcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*(-_=+)') for i in range(50)])); f=open('tardis/settings.py', 'a+'); f.write(key_line); f.close()"
 ''')
         else:
             raise

@@ -6,12 +6,11 @@ import logging
 
 from django.conf import settings
 from django.core.exceptions import PermissionDenied
-from django.http import HttpResponse
 
-from tardis.tardis_portal.auth import decorators as authz, auth_service
-from tardis.tardis_portal.auth.localdb_auth import auth_key as localdb_auth_key
-from tardis.tardis_portal.models import Experiment
-from tardis.tardis_portal.shortcuts import return_response_error, \
+from ..auth import decorators as authz, auth_service
+from ..auth.localdb_auth import auth_key as localdb_auth_key
+from ..models import Experiment
+from ..shortcuts import return_response_error, \
     return_response_not_found, render_response_index
 
 logger = logging.getLogger(__name__)
@@ -41,7 +40,7 @@ def view_rifcs(request, experiment_id):
     except AttributeError:
         rifcs_provs = ()
 
-    from tardis.tardis_portal.publish.publishservice import PublishService
+    from ..publish.publishservice import PublishService
     pservice = PublishService(rifcs_provs, experiment)
     context = pservice.get_context()
     if context is None:
@@ -49,8 +48,8 @@ def view_rifcs(request, experiment_id):
         return return_response_error(request)
 
     template = pservice.get_template()
-    return HttpResponse(render_response_index(request,
-                        template, context), content_type="text/xml")
+    return render_response_index(
+        request, template, context, content_type="text/xml")
 
 
 def site_settings(request):
@@ -69,9 +68,9 @@ def site_settings(request):
                         'baseurl': request.build_absolute_uri('/'),
                         'proxy': x509.read(), 'filestorepath':
                         settings.FILE_STORE_PATH}
-                    return HttpResponse(render_response_index(
+                    return render_response_index(
                         request,
                         'tardis_portal/site_settings.xml',
-                        c), content_type='application/xml')
+                        c, content_type='application/xml')
 
     return return_response_error(request)

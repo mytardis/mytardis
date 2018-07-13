@@ -1,14 +1,15 @@
 # -*- coding: utf-8 -*-
 
+import re
 from os import makedirs
-from os.path import abspath, basename, dirname, join, exists, getsize
+from os.path import abspath, basename, join, exists, getsize
 from shutil import rmtree
 from zipfile import is_zipfile, ZipFile
 from tarfile import is_tarfile, TarFile
 from tempfile import NamedTemporaryFile
-from urllib import quote
 
-from compare import expect
+from six.moves import urllib
+from six.moves import reduce
 
 from django.test import TestCase
 from django.test.client import Client
@@ -16,8 +17,9 @@ from django.test.client import Client
 from django.conf import settings
 from django.contrib.auth.models import User
 
-from tardis.tardis_portal.models import \
-    Experiment, Dataset, DataFile, DataFileObject
+from ..models.experiment import Experiment
+from ..models.dataset import Dataset
+from ..models.datafile import DataFile, DataFileObject
 
 
 try:
@@ -186,7 +188,7 @@ class DownloadTestCase(TestCase):
                 tempfile.write(c)
             tempfile.flush()
             if getsize(tempfile.name) > 0:
-                expect(is_tarfile(tempfile.name)).to_be_truthy()
+                self.assertTrue(is_tarfile(tempfile.name))
                 try:
                     tf = TarFile(tempfile.name, 'r')
                     self._check_names(datafiles, tf.getnames(),
@@ -204,7 +206,7 @@ class DownloadTestCase(TestCase):
                 tempfile.write(c)
             tempfile.flush()
             # It should be a zip file
-            expect(is_zipfile(tempfile.name)).to_be_truthy()
+            self.assertTrue(is_zipfile(tempfile.name))
             try:
                 zf = ZipFile(tempfile.name, 'r')
                 self._check_names(datafiles, zf.namelist(),
@@ -216,8 +218,9 @@ class DownloadTestCase(TestCase):
         # SimpleNames says if we expect basenames or pathnames
         # NoTxt says if we expect '.txt' files to be filtered out
         for name in names:
-            self.assertNotRegexpMatches(name, '\n|;')
-        expect(len(names)).to_equal(len(datafiles))
+            pattern = re.compile('\n|;')
+            self.assertFalse(pattern.search(name))
+        self.assertEqual(len(names), len(datafiles))
 
     def testDownload(self):
         client = Client()
@@ -229,7 +232,7 @@ class DownloadTestCase(TestCase):
             exp1_title = self.experiment1.title.replace(' ', '_')
         else:
             exp1_title = self.experiment1.title
-        exp1_title = quote(exp1_title,
+        exp1_title = urllib.parse.quote(exp1_title,
                            safe=settings.SAFE_FILESYSTEM_CHARACTERS)
         self.assertEqual(response['Content-Disposition'],
                          'attachment; filename="%s-complete.tar"'
@@ -335,7 +338,7 @@ class DownloadTestCase(TestCase):
             exp2_title = self.experiment2.title.replace(' ', '_')
         else:
             exp2_title = self.experiment2.title
-        exp2_title = quote(exp2_title,
+        exp2_title = urllib.parse.quote(exp2_title,
                            safe=settings.SAFE_FILESYSTEM_CHARACTERS)
         response = client.get('/download/experiment/%i/tar/' %
                               self.experiment2.id)

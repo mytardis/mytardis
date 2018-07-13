@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>MyTardis JavaScript Tests</title>
+    <link rel="stylesheet" href="../node_modules/qunit/qunit/qunit.css">
+</head>
+<body>
+
+    <div id="qunit"></div>
+    <div id="qunit-fixture">
+    </div>
+
+    <script type="text/html" id="result-table">
+        <table id="result_list">
+            <tr>
+                <th>
+                   <input type="checkbox" id="action-toggle">
+                </th>
+            </tr>
+            <tr>
+                <td class="action-checkbox">
+                    <input class="action-select" type="checkbox" value="618">
+                </td>
+            </tr>
+        </table>
+    </script>
+    <script type="text/html" id="tabular-formset">
+        <input id="id_first-TOTAL_FORMS" value="1">
+        <input id="id_first-MAX_NUM_FORMS" value="">
+        <table class="inline">
+            <tr id="first-0" class="form-row">
+                <td class="field-test_field">
+                    <input id="id_first-test_field">
+                </td>
+            </tr>
+            <tr id="first-empty" class="empty-row">
+                <td class="field-test_field">
+                    <input id="id_first-test_field">
+                </td>
+            </tr>
+        </table>
+    </script>
+
+    <script src="../node_modules/qunit/qunit/qunit.js"></script>
+
+    <!-- Most of the dependencies below are normally loaded in -->
+    <!-- tardis/tardis_portal/templates/tardis_portal/javascript_libraries.html -->
+     
+    <script type="text/javascript" src="../node_modules/jquery/dist/jquery.min.js"></script>
+    <script type="text/javascript" src="../tardis/tardis_portal/static/js/lib/jquery.cookie.js"></script>
+
+    <script type="text/javascript" src="../node_modules/jquery-mockjax/dist/jquery.mockjax.js"></script>
+
+    <script type="text/javascript" src="../tardis/tardis_portal/static/js/lib/jstree/jquery.jstree.js"></script> 
+    <script type="text/javascript" src="../tardis/tardis_portal/static/js/lib/flash_detect_min.js"></script> 
+    <script type="text/javascript" src="../tardis/tardis_portal/static/js/lib/async.min.js"></script> 
+    <script type="text/javascript" src="../node_modules/underscore/underscore-min.js"></script>
+    <script type="text/javascript" src="../node_modules/underscore.string/lib/underscore.string.js"></script>
+    <script type="text/javascript">
+      // Mixin Underscore.String to Underscore.js
+      _.mixin(_.string.exports());
+    </script>
+
+    <!-- Backbone.js -->
+    <script type="text/javascript" src="../node_modules/backbone/backbone-min.js"></script>
+
+    <!-- Backbone Forms -->
+    <link rel="stylesheet" type="text/css"
+	    href="../node_modules/backbone-forms/distribution/templates/default.css"/>
+    <script src="../node_modules/backbone-forms/distribution/backbone-forms.js"></script>
+    <script src="../node_modules/backbone-forms/distribution/editors/jquery-ui.js"></script>
+    <script src="../node_modules/backbone-forms/distribution/templates/bootstrap.js"></script>
+
+    <!-- MyTardis's Backbone.js models -->
+    <script type="text/javascript" src="../tardis/tardis_portal/static/js/backbone-models.js"></script>
+
+    <!-- Mustache.js -->
+    <script type="text/javascript" src="../node_modules/mustache/mustache.min.js"></script>
+
+    <!-- django.mustache.js is provided by django-jstemplate, but we don't want to make -->
+    <!-- the Javascript tests dependent on the virtualenv, so we have copied django.mustache.js into -->
+    <!-- tardis/tardis_portal/static/js/lib/ along with other third party Javascript dependencies. -->
+    <script type="text/javascript" src="../tardis/tardis_portal/static/js/lib/django.mustache.js"></script>
+
+    <!-- bootstrap.js is normally loaded in -->
+    <!-- tardis/tardis_portal/templates/tardis_portal/portal_template.html -->
+    <script type="text/javascript" src="../tardis/tardis_portal/static/js/lib/bootstrap-2.0.4/js/bootstrap.js"></script>
+
+    <!-- MyTardis jQuery Tests -->
+
+    <script src="./jquery/main.test.js"></script>
+    <script src="./jquery/tardis_portal/ajax/share.test.js"></script>
+    <script src="./jquery/tardis_portal/view_experiment/experiment-tabs.test.js"></script>
+
+</body>
+</html>

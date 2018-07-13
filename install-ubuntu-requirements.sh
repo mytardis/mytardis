@@ -1,8 +1,11 @@
+# for Ubuntu 16.04 or 18.04
+# sudo bash install-ubuntu-requirements.sh
+
 apt-get update
-apt-get install git ipython libldap2-dev libsasl2-dev \
-  libssl-dev libxml2-dev libxslt1-dev nodejs npm python-anyjson \
-  python-billiard python-bs4 python-crypto python-dateutil \
-  python-dev python-flexmock \
-  python-pip python-pystache \
-  python-virtualenv python-wand python-yaml virtualenvwrapper \
+apt-get install git libldap2-dev libmagickwand-dev libsasl2-dev \
+  libssl-dev libxml2-dev libxslt1-dev libmagic-dev curl gnupg \
+  python-dev python-pip python-virtualenv virtualenvwrapper \
   zlib1g-dev libfreetype6-dev libjpeg-dev
+
+curl -sL https://deb.nodesource.com/setup_10.x | sudo -E bash -
+sudo apt-get install -y nodejs

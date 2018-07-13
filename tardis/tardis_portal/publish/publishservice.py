@@ -9,7 +9,7 @@ class PublishService():
         self.provider = self._get_provider()
 
     def _get_provider(self):
-        from tardis.tardis_portal.publish.provider.rifcsprovider import RifCsProvider
+        from .provider.rifcsprovider import RifCsProvider
         if self.rc_providers:
             from importlib import import_module
             for pmodule in self.rc_providers:
@@ -17,7 +17,7 @@ class PublishService():
                 try:
                     module_name, klass_name = pmodule.rsplit('.', 1)
                     module = import_module(module_name)
-                except ImportError, e:
+                except ImportError as e:
                     # TODO Show appropriate error msg
                     raise e
 
@@ -25,7 +25,7 @@ class PublishService():
                 try:
                     provider_class = getattr(module, klass_name)
                     provider = provider_class()
-                except AttributeError, e:
+                except AttributeError as e:
                     # TODO Show appropriate error msg
                     raise e
 
@@ -51,7 +51,7 @@ class PublishService():
             os.remove(filename)
 
     def _write_rifcs_to_oai_dir(self, oaipath):
-        from tardis.tardis_portal.xmlwriter import XMLWriter
+        from ..xmlwriter import XMLWriter
         xmlwriter = XMLWriter()
         os.path.isdir(oaipath) or os.makedirs(oaipath)
         xmlwriter.write_template_to_dir(oaipath, "MyTARDIS-%s.xml" % self.experiment.id,

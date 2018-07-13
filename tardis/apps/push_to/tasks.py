@@ -1,15 +1,18 @@
-from celery.task import task
 from django.conf import settings
 from django.contrib.auth.models import User
 
+from six import string_types
+
 from tardis.tardis_portal.models import Experiment, Dataset, DataFile
+from tardis.celery_app import tardis_portal_app
 from tardis.tardis_portal.util import split_path
 from tardis.tardis_portal.util import get_filesystem_safe_experiment_name
 from tardis.tardis_portal.util import get_filesystem_safe_dataset_name
+
 from .models import Credential, RemoteHost
 
 
-@task
+@tardis_portal_app.task
 def push_experiment_to_host(
         user_id, credential_id, remote_host_id, experiment_id, base_dir=None
 ):
@@ -32,7 +35,7 @@ def push_experiment_to_host(
         raise
 
 
-@task
+@tardis_portal_app.task
 def push_dataset_to_host(user_id, credential_id, remote_host_id, dataset_id,
                          base_dir=None):
     try:
@@ -52,7 +55,7 @@ def push_dataset_to_host(user_id, credential_id, remote_host_id, dataset_id,
         raise
 
 
-@task
+@tardis_portal_app.task
 def push_datafile_to_host(user_id, credential_id, remote_host_id, datafile_id,
                           base_dir=None):
     try:
@@ -100,7 +103,7 @@ def make_dirs(sftp_client, dir_list):
 def do_file_copy(credential_id, remote_host_id, datafile_map, base_dir=None):
     if base_dir is None:
         base_dir = ['mytardis-data']
-    elif isinstance(base_dir, basestring):
+    elif isinstance(base_dir, string_types):
         base_dir = split_path(base_dir) + ['mytardis-data']
 
     credential = Credential.objects.get(pk=credential_id)

@@ -3,6 +3,11 @@ Releases
 
 4.0
 ---
+* Django 1.11
+* jQuery 3.3.1
+* Improved test coverage
+* Continuous Integration tests run against Ubuntu 18.04 (MyTardis v3.x used 14.04)
+* ChromeDriver is used for BDD (Behaviour Driven Development) tests
 
 3.9
 ---

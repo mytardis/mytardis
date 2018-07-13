@@ -1,24 +1,24 @@
+# pylint: disable=model-no-explicit-unicode
 import logging
 import operator
 import json
-import warnings
-
-import dateutil.parser
-import pytz
 
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ObjectDoesNotExist, SuspiciousOperation
-from django.core.urlresolvers import reverse, resolve, Resolver404
+from django.urls import reverse, resolve, Resolver404
 from django.conf import settings
 from django.db import models
 from django.utils.safestring import mark_safe
 from django.utils.timezone import is_aware, is_naive, make_aware, make_naive
+from django.utils.encoding import python_2_unicode_compatible
 
-from tardis.tardis_portal.deprecations import RemovedInMyTardis40Warning
-from tardis.tardis_portal.ParameterSetManager import ParameterSetManager
-from tardis.tardis_portal.managers import OracleSafeManager,\
-    ParameterNameManager, SchemaManager
+import dateutil.parser
+import pytz
+from six import text_type
+
+from ..ParameterSetManager import ParameterSetManager
+from ..managers import OracleSafeManager, ParameterNameManager, SchemaManager
 
 from .experiment import Experiment
 from .dataset import Dataset
@@ -39,6 +39,7 @@ class ParameterSetManagerMixin(ParameterSetManager):
     pass
 
 
+@python_2_unicode_compatible
 class Schema(models.Model):
 
     EXPERIMENT = 1
@@ -113,26 +114,7 @@ class Schema(models.Model):
             type_list = cls._SCHEMA_TYPES
         return dict(type_list).get(schema_type, None)
 
-    @classmethod
-    def get_internal_schema(cls, schema_type):
-        warnings.warn(
-            "This method is no longer used and will be removed in MyTardis 4.0.",
-            RemovedInMyTardis40Warning
-        )
-        name_prefix, ns_prefix = getattr(
-            settings, 'INTERNAL_SCHEMA_PREFIXES',
-            ('internal schema', 'http://mytardis.org/schemas/internal'))
-        type_name = cls.get_schema_type_name(schema_type)
-        name = name_prefix + ': ' + type_name
-        type_name_short = cls.get_schema_type_name(schema_type, short=True)
-        ns = '/'.join([ns_prefix, type_name_short])
-        return Schema.objects.get_or_create(
-            name=name,
-            namespace=ns,
-            type=schema_type,
-            hidden=True)[0]
-
-    def __unicode__(self):
+    def __str__(self):
         return self._getSchemaTypeName(self.type) + (
             self.subtype and ' for ' + self.subtype.upper() or ''
         ) + ': ' + self.namespace
@@ -143,6 +125,7 @@ class Schema(models.Model):
             Exception.__init__(self, msg)
 
 
+@python_2_unicode_compatible
 class ParameterName(models.Model):
 
     EXACT_VALUE_COMPARISON = 1
@@ -185,7 +168,7 @@ class ParameterName(models.Model):
         (JSON, 'JSON'),
         )
 
-    schema = models.ForeignKey(Schema)
+    schema = models.ForeignKey(Schema, on_delete=models.CASCADE)
     name = models.CharField(max_length=60)
     full_name = models.CharField(max_length=60)
     units = models.CharField(max_length=60, blank=True)
@@ -205,7 +188,7 @@ class ParameterName(models.Model):
         unique_together = (('schema', 'name'),)
         ordering = ('order', 'name')
 
-    def __unicode__(self):
+    def __str__(self):
         return (self.schema.name or self.schema.namespace) + ": " + self.name
 
     def natural_key(self):
@@ -233,64 +216,10 @@ class ParameterName(models.Model):
         return self.data_type == self.DATETIME
 
     def getUniqueShortName(self):
-        return self.name + '_' + str(self.id)
+        return self.name + '_' + text_type(self.id)
 
     def is_json(self):
         return self.data_type == self.JSON
-
-
-def _get_string_parameter_as_image_element(parameter):
-    """
-    Detect if a parameter name contains the suffix 'Image' in a parameter set
-    associated with an Experiment, Dataset or DataFile.
-    If so, return an associated HTML <img> element.
-
-    Associated ParameterName must be of type STRING, however the
-    string_value is not used.
-
-    :param parameter: The Parameter instance
-    :type parameter: tardis.tardis_portal.models.parameters.Parameter
-    :return: An HTML formated img element, or None
-    :rtype: basestring | types.NoneType
-    """
-    warnings.warn(
-	"This method is no longer used and will be removed in MyTardis 4.0. "
-        "It was previously used for storing thumbnails in Base64 format.",
-	RemovedInMyTardis40Warning
-    )
-    assert parameter.name.isString(), \
-        "'*Image' parameters are expected to be of type STRING"
-
-    if parameter.name.isString() and parameter.name.name.endswith('Image'):
-        parset = type(parameter.parameterset).__name__
-        viewname = None
-        args = []
-        if parset == 'DatafileParameterSet':
-            dfid = parameter.parameterset.datafile.id
-            psid = parameter.parameterset.id
-            viewname = 'tardis.tardis_portal.views.display_datafile_image'
-            args = [dfid, psid, parameter.name]
-        elif parset == 'DatasetParameterSet':
-            dsid = parameter.parameterset.dataset.id
-            psid = parameter.parameterset.id
-            viewname = 'tardis.tardis_portal.views.display_dataset_image'
-            args = [dsid, psid, parameter.name]
-        elif parset == 'ExperimentParameterSet':
-            eid = parameter.parameterset.dataset.id
-            psid = parameter.parameterset.id
-            viewname = 'tardis.tardis_portal.views.display_experiment_image'
-            args = [eid, psid, parameter.name]
-        # elif parset == 'InstrumentParameterSet':
-        #     iid = parameter.parameterset.instrument.id
-        #     psid = parameter.parameterset.id
-        #     viewname = 'tardis.tardis_portal.views.display_instrument_image'
-        #     args = [iid, psid, parameter.name]
-        if viewname is not None:
-            value = "<img src='%s' />" % reverse(viewname=viewname,
-                                                 args=args)
-            return mark_safe(value)
-
-    return None
 
 
 def _get_filename_parameter_as_image_element(parameter):
@@ -336,20 +265,14 @@ def _get_filename_parameter_as_image_element(parameter):
 def _get_parameter(parameter):
 
     if parameter.name.isNumeric():
-        value = unicode(parameter.numerical_value)
+        value = str(parameter.numerical_value)
         units = parameter.name.units
         if units:
             value += ' %s' % units
         return value
 
-    elif parameter.name.isLongString():
+    elif parameter.name.isLongString() or parameter.name.isString():
         return parameter.string_value
-
-    elif parameter.name.isString():
-        as_img_element = _get_string_parameter_as_image_element(parameter)
-
-        return as_img_element if as_img_element is not None else \
-            parameter.string_value
 
     elif parameter.name.isFilename():
         as_img_element = _get_filename_parameter_as_image_element(parameter)
@@ -374,7 +297,7 @@ def _get_parameter(parameter):
         return mark_safe(value)
 
     elif parameter.name.isDateTime():
-        value = unicode(parameter.datetime_value)
+        value = str(parameter.datetime_value)
         return value
 
     elif parameter.name.is_json():
@@ -384,8 +307,9 @@ def _get_parameter(parameter):
         return None
 
 
+@python_2_unicode_compatible
 class ParameterSet(models.Model, ParameterSetManagerMixin):
-    schema = models.ForeignKey(Schema)
+    schema = models.ForeignKey(Schema, on_delete=models.CASCADE)
     storage_box = models.ManyToManyField(
         StorageBox, related_name='%(class)ss')
     parameter_class = None
@@ -414,7 +338,7 @@ class ParameterSet(models.Model, ParameterSetManagerMixin):
     def _get_label(self):
         raise NotImplementedError
 
-    def __unicode__(self):
+    def __str__(self):
         labelattribute, default = self._get_label()
         try:
             namespace = operator.attrgetter('schema.namespace')(self)
@@ -438,14 +362,16 @@ class ParameterSet(models.Model, ParameterSetManagerMixin):
         return self._has_any_perm(user_obj)
 
 
+@python_2_unicode_compatible
 class Parameter(models.Model):
-    name = models.ForeignKey(ParameterName)
+    name = models.ForeignKey(ParameterName, on_delete=models.CASCADE)
     # string_value has a custom index created via migrations (for Postgresql)
     string_value = models.TextField(null=True, blank=True)
     numerical_value = models.FloatField(null=True, blank=True, db_index=True)
     datetime_value = models.DateTimeField(null=True, blank=True, db_index=True)
     link_id = models.PositiveIntegerField(null=True, blank=True)
-    link_ct = models.ForeignKey(ContentType, null=True, blank=True)
+    link_ct = models.ForeignKey(
+        ContentType, null=True, blank=True, on_delete=models.CASCADE)
     link_gfk = GenericForeignKey('link_ct', 'link_id')
     objects = OracleSafeManager()
     parameter_type = 'Abstract'
@@ -458,7 +384,7 @@ class Parameter(models.Model):
     def get(self):
         return _get_parameter(self)
 
-    def __unicode__(self):
+    def __str__(self):
         try:
             return '%s Param: %s=%s' % (self.parameter_type,
                                         self.name.name, self.get())
@@ -511,7 +437,7 @@ class Parameter(models.Model):
             # the GenericForeignKey via link_id/link_ct
             if str(value) == '' or value is None:
                 return
-            self.string_value = unicode(value)
+            self.string_value = str(value)
 
             try:
                 # We detect experiment or dataset view URLs
@@ -548,7 +474,7 @@ class Parameter(models.Model):
                 raise SuspiciousOperation('Link parameter could not be set '
                                           'from string: %s' % str(value))
         else:
-            self.string_value = unicode(value)
+            self.string_value = str(value)
 
     def _has_any_perm(self, user_obj):
         if not hasattr(self, 'id'):
@@ -566,17 +492,20 @@ class Parameter(models.Model):
 
 
 class DatafileParameter(Parameter):
-    parameterset = models.ForeignKey('DatafileParameterSet')
+    parameterset = models.ForeignKey(
+        'DatafileParameterSet', on_delete=models.CASCADE)
     parameter_type = 'Datafile'
 
 
 class DatasetParameter(Parameter):
-    parameterset = models.ForeignKey('DatasetParameterSet')
+    parameterset = models.ForeignKey(
+        'DatasetParameterSet', on_delete=models.CASCADE)
     parameter_type = 'Dataset'
 
 
 class ExperimentParameter(Parameter):
-    parameterset = models.ForeignKey('ExperimentParameterSet')
+    parameterset = models.ForeignKey(
+        'ExperimentParameterSet', on_delete=models.CASCADE)
     parameter_type = 'Experiment'
 
     def save(self, *args, **kwargs):
@@ -584,17 +513,18 @@ class ExperimentParameter(Parameter):
         try:
             from .hooks import publish_public_expt_rifcs
             publish_public_expt_rifcs(self.parameterset.experiment)
-        except StandardError:
+        except Exception:
             logger.exception('')
 
 
 class InstrumentParameter(Parameter):
-    parameterset = models.ForeignKey('InstrumentParameterSet')
+    parameterset = models.ForeignKey(
+        'InstrumentParameterSet', on_delete=models.CASCADE)
     parameter_type = 'Instrument'
 
 
 class DatafileParameterSet(ParameterSet):
-    datafile = models.ForeignKey(DataFile)
+    datafile = models.ForeignKey(DataFile, on_delete=models.CASCADE)
     parameter_class = DatafileParameter
 
     def _get_label(self):
@@ -602,7 +532,7 @@ class DatafileParameterSet(ParameterSet):
 
 
 class DatasetParameterSet(ParameterSet):
-    dataset = models.ForeignKey(Dataset)
+    dataset = models.ForeignKey(Dataset, on_delete=models.CASCADE)
     parameter_class = DatasetParameter
 
     def _get_label(self):
@@ -610,7 +540,7 @@ class DatasetParameterSet(ParameterSet):
 
 
 class InstrumentParameterSet(ParameterSet):
-    instrument = models.ForeignKey(Instrument)
+    instrument = models.ForeignKey(Instrument, on_delete=models.CASCADE)
     parameter_class = InstrumentParameter
 
     def _get_label(self):
@@ -618,19 +548,20 @@ class InstrumentParameterSet(ParameterSet):
 
 
 class ExperimentParameterSet(ParameterSet):
-    experiment = models.ForeignKey(Experiment)
+    experiment = models.ForeignKey(Experiment, on_delete=models.CASCADE)
     parameter_class = ExperimentParameter
 
     def _get_label(self):
         return ('experiment.title', 'Experiment')
 
 
+@python_2_unicode_compatible
 class FreeTextSearchField(models.Model):
 
-    parameter_name = models.ForeignKey(ParameterName)
+    parameter_name = models.ForeignKey(ParameterName, on_delete=models.CASCADE)
 
     class Meta:
         app_label = 'tardis_portal'
 
-    def __unicode__(self):
+    def __str__(self):
         return "Index on %s" % (self.parameter_name)

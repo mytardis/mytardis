@@ -5,15 +5,14 @@ views to do with metadata, parameters etc. Mostly ajax page inclusions
 import logging
 
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponse
 
-from tardis.tardis_portal.auth import decorators as authz
-from tardis.tardis_portal.forms import create_parameterset_edit_form, \
+from ..auth import decorators as authz
+from ..forms import create_parameterset_edit_form, \
     save_datafile_edit_form, create_datafile_add_form, save_datafile_add_form
-from tardis.tardis_portal.models import ExperimentParameterSet, DatasetParameterSet, \
+from ..models import ExperimentParameterSet, DatasetParameterSet, \
     DatafileParameterSet, ParameterName, DataFile, Schema, Dataset, Experiment
-from tardis.tardis_portal.shortcuts import return_response_error, render_response_index
-from tardis.tardis_portal.views.utils import remove_csrf_token
+from ..shortcuts import return_response_error, render_response_index
+from ..views.utils import remove_csrf_token
 
 logger = logging.getLogger(__name__)
 
@@ -83,8 +82,8 @@ def edit_parameters(request, parameterset, otype):
         'valid': valid,
     }
 
-    return HttpResponse(render_response_index(request,
-                        'tardis_portal/ajax/parameteredit.html', c))
+    return render_response_index(
+        request, 'tardis_portal/ajax/parameteredit.html', c)
 
 
 @login_required
@@ -123,8 +122,8 @@ def add_par(request, parentObject, otype, stype):
     elif all_schema.count() > 0:
         schema_id = all_schema[0].id
     else:
-        return HttpResponse(render_response_index(
-            request, 'tardis_portal/ajax/parameter_set_unavailable.html', {}))
+        return render_response_index(
+            request, 'tardis_portal/ajax/parameter_set_unavailable.html', {})
 
     schema = Schema.objects.get(id=schema_id)
 
@@ -170,5 +169,5 @@ def add_par(request, parentObject, otype, stype):
         'schema_id': schema.id,
     }
 
-    return HttpResponse(render_response_index(request,
-                        'tardis_portal/ajax/parameteradd.html', c))
+    return render_response_index(
+        request, 'tardis_portal/ajax/parameteradd.html', c)

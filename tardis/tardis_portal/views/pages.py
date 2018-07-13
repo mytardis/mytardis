@@ -4,10 +4,11 @@ views that render full pages
 
 import logging
 import re
-import sys
 from os import path
 import inspect
 import types
+
+from six import string_types
 
 from django.conf import settings
 from django.contrib.auth.decorators import login_required, permission_required
@@ -15,33 +16,27 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.exceptions import PermissionDenied, ImproperlyConfigured
 from django.core.paginator import Paginator, EmptyPage, InvalidPage
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.db import connection
-from django.db.models import Q
 from django.http import (HttpResponse,
                          HttpResponseForbidden,
                          JsonResponse)
-from django.shortcuts import render, redirect
+from django.shortcuts import render
 from django.views.decorators.cache import cache_page
 from django.views.generic.base import TemplateView, View
 
-from tardis.apps.push_to.apps import PushToConfig
-from tardis.apps.push_to.views import (
-    initiate_push_experiment, initiate_push_dataset)
 from tardis.search.utils import SearchQueryString
-from tardis.tardis_portal.auth import decorators as authz
-from tardis.tardis_portal.auth.decorators import (
+from ..auth import decorators as authz
+from ..auth.decorators import (
     has_experiment_download_access, has_experiment_write, has_dataset_write)
-from tardis.tardis_portal.auth.localdb_auth import django_user
-from tardis.tardis_portal.forms import ExperimentForm, DatasetForm
-from tardis.tardis_portal.models import Experiment, Dataset, DataFile, \
-    ObjectACL
-from tardis.tardis_portal.shortcuts import render_response_index, \
-    return_response_error, return_response_not_found, get_experiment_referer, \
-    render_response_search
-from tardis.tardis_portal.views.utils import (
+from ..auth.localdb_auth import django_user
+from ..forms import ExperimentForm, DatasetForm
+from ..models import Experiment, Dataset, DataFile, ObjectACL
+from ..shortcuts import render_response_index, \
+    return_response_error, return_response_not_found, get_experiment_referer
+from ..views.utils import (
     _redirect_303, _add_protocols_and_organizations, HttpResponseSeeAlso)
-from tardis.tardis_portal.util import get_filesystem_safe_dataset_name
+from ..util import get_filesystem_safe_dataset_name
 
 logger = logging.getLogger(__name__)
 
@@ -147,7 +142,7 @@ class IndexView(TemplateView):
         status = ''
         limit = 8
         c['status'] = status
-        if request.user.is_authenticated():
+        if request.user.is_authenticated:
             private_experiments = Experiment.safe.owned_and_shared(
                     request.user).order_by('-update_time')[:limit]
             c['private_experiments'] = private_experiments
@@ -180,8 +175,7 @@ class IndexView(TemplateView):
 
         c = self.get_context_data(request, **kwargs)
 
-        return HttpResponse(render_response_index(request,
-                            self.template_name, c))
+        return render_response_index(request, self.template_name, c)
 
 
 class DatasetView(TemplateView):
@@ -292,7 +286,7 @@ class DatasetView(TemplateView):
                  request,
                  dataset_id),
              'upload_method': upload_method,
-             'push_to_enabled': PushToConfig.name in settings.INSTALLED_APPS,
+             'push_to_enabled': 'tardis.apps.push_to' in settings.INSTALLED_APPS,
              'carousel_slice': carousel_slice,
              }
         )
@@ -302,22 +296,19 @@ class DatasetView(TemplateView):
             push_to_args = {
                 'dataset_id': dataset.pk
             }
-            c['push_to_url'] = reverse(initiate_push_dataset,
+            c['push_to_url'] = reverse('tardis.apps.push_to.views.initiate_push_dataset',
                                        kwargs=push_to_args)
 
         _add_protocols_and_organizations(request, dataset, c)
 
         return c
 
-    @authz.dataset_access_required  # too complex # noqa
     def get(self, request, *args, **kwargs):
         """
-        The index view, intended to render the front page of the MyTardis site
-        listing recent experiments.
+        View an existing dataset.
 
-        This default view can be overriden by defining a dictionary INDEX_VIEWS
-        in settings which maps SITE_ID's or domain names to an alternative view
-        function (similar to the DATASET_VIEWS or EXPERIMENT_VIEWS overrides).
+        This default view can be overriden by defining a dictionary
+        DATASET_VIEWS in settings.
 
         :param request: a HTTP request object
         :type request: :class:`django.http.HttpRequest`
@@ -326,13 +317,18 @@ class DatasetView(TemplateView):
         :return: The Django response object
         :rtype: :class:`django.http.HttpResponse`
         """
+        if not request.user.is_authenticated:
+            return return_response_error(request)
 
         dataset_id = kwargs.get('dataset_id', None)
         if dataset_id is None:
             return return_response_error(request)
 
-        dataset = Dataset.objects.get(id=dataset_id)
-        if not dataset:
+        try:
+            if not authz.has_dataset_access(request, dataset_id):
+                return return_response_error(request)
+            dataset = Dataset.objects.get(id=dataset_id)
+        except Dataset.DoesNotExist:
             return return_response_not_found(request)
 
         view_override = self.find_custom_view_override(request, dataset)
@@ -345,7 +341,7 @@ class DatasetView(TemplateView):
         if template_name is None:
             template_name = self.template_name
 
-        return HttpResponse(render_response_index(request, template_name, c))
+        return render_response_index(request, template_name, c)
 
 
 def about(request):
@@ -357,8 +353,7 @@ def about(request):
              settings, 'CUSTOM_ABOUT_SECTION_TEMPLATE',
              'tardis_portal/about_include.html'),
          }
-    return HttpResponse(render_response_index(request,
-                        'tardis_portal/about.html', c))
+    return render_response_index(request, 'tardis_portal/about.html', c)
 
 
 @login_required
@@ -377,8 +372,7 @@ def my_data(request):
         'owned_experiments': owned_experiments,
         'shared_experiments': shared_experiments
     }
-    return HttpResponse(render_response_index(
-        request, 'tardis_portal/my_data.html', c))
+    return render_response_index(request, 'tardis_portal/my_data.html', c)
 
 
 def _resolve_view(view_function_or_string):
@@ -400,7 +394,7 @@ def _resolve_view(view_function_or_string):
     :rtype: types.FunctionType
     :raises TypeError:
     """
-    if isinstance(view_function_or_string, basestring):
+    if isinstance(view_function_or_string, string_types):
         x = view_function_or_string.split('.')
         obj_path, obj_name = ('.'.join(x[:-1]), x[-1])
         module = __import__(obj_path, fromlist=[obj_name])
@@ -465,19 +459,19 @@ class ExperimentView(TemplateView):
             authz.has_write_permissions(request, experiment.id)
         c['has_download_permissions'] = \
             authz.has_experiment_download_access(request, experiment.id)
-        if request.user.is_authenticated():
+        if request.user.is_authenticated:
             c['is_owner'] = \
                 authz.has_experiment_ownership(request, experiment.id)
             c['has_read_or_owner_ACL'] = \
                 authz.has_read_or_owner_ACL(request, experiment.id)
 
         # Enables UI elements for the push_to app
-        c['push_to_enabled'] = PushToConfig.name in settings.INSTALLED_APPS
+        c['push_to_enabled'] = 'tardis.apps.push_to' in settings.INSTALLED_APPS
         if c['push_to_enabled']:
             push_to_args = {
                 'experiment_id': experiment.pk
             }
-            c['push_to_url'] = reverse(initiate_push_experiment,
+            c['push_to_url'] = reverse('tardis.apps.push_to.views.initiate_push_experiment',
                                        kwargs=push_to_args)
 
         c['subtitle'] = experiment.title
@@ -527,10 +521,12 @@ class ExperimentView(TemplateView):
 
         return c
 
-    @authz.experiment_access_required  # too complex # noqa
     def get(self, request, *args, **kwargs):
         """
         View an existing experiment.
+
+        This default view can be overriden by defining a dictionary
+        EXPERIMENT_VIEWS in settings.
 
         :param request: a HTTP Request instance
         :type request: :class:`django.http.HttpRequest`
@@ -540,6 +536,8 @@ class ExperimentView(TemplateView):
         :returns: an HttpResponse
         :rtype: :class:`django.http.HttpResponse`
         """
+        if not request.user.is_authenticated:
+            return return_response_error(request)
 
         experiment_id = kwargs.get('experiment_id', None)
         if experiment_id is None:
@@ -565,8 +563,7 @@ class ExperimentView(TemplateView):
         if template_name is None:
             template_name = self.template_name
 
-        return HttpResponse(render_response_index(request,
-                                                  template_name, c))
+        return render_response_index(request, template_name, c)
 
 
 @cache_page(60 * 30)
@@ -587,8 +584,7 @@ def stats(request):
         'datafile_count': DataFile.objects.all().count(),
         'datafile_size': datafile_size,
     }
-    return HttpResponse(render_response_index(request,
-                        'tardis_portal/stats.html', c))
+    return render_response_index(request, 'tardis_portal/stats.html', c)
 
 
 def user_guide(request):
@@ -596,8 +592,7 @@ def user_guide(request):
         'user_guide_location': getattr(
             settings, 'CUSTOM_USER_GUIDE', 'user_guide/index.html'),
     }
-    return HttpResponse(render_response_index(request,
-                        'tardis_portal/user_guide.html', c))
+    return render_response_index(request, 'tardis_portal/user_guide.html', c)
 
 
 @login_required
@@ -608,7 +603,7 @@ def sftp_access(request):
     :return: HttpResponse
     :rtype: HttpResponse
     """
-    from tardis.tardis_portal.download import make_mapper
+    from ..download import make_mapper
     object_type = request.GET.get('object_type')
     object_id = request.GET.get('object_id')
     sftp_start_dir = ''
@@ -669,8 +664,8 @@ def facility_overview(request):
     '''
     summary of experiments in a facility
     '''
-    return HttpResponse(render_response_index(
-        request, 'tardis_portal/facility_overview.html'))
+    return render_response_index(
+        request, 'tardis_portal/facility_overview.html')
 
 
 def public_data(request):
@@ -679,59 +674,7 @@ def public_data(request):
     '''
     c = {'public_experiments':
          Experiment.safe.public().order_by('-update_time'), }
-    return HttpResponse(render_response_index(
-        request, 'tardis_portal/public_data.html', c))
-
-
-def experiment_index(request):
-    if request.user.is_authenticated():
-        return redirect('tardis_portal.experiment_list_mine')
-    return redirect('tardis_portal.experiment_list_public')
-
-
-@login_required
-def experiment_list_mine(request):
-
-    c = {
-        'subtitle': 'My Experiments',
-        'can_see_private': True,
-        'experiments': authz.get_owned_experiments(request)
-                            .order_by('-update_time'),
-    }
-
-    # TODO actually change loaders to load this based on stuff
-    return HttpResponse(render_response_search(request,
-                        'tardis_portal/experiment/list_mine.html', c))
-
-
-@login_required
-def experiment_list_shared(request):
-
-    c = {
-        'subtitle': 'Shared Experiments',
-        'can_see_private': True,
-        'experiments': authz.get_shared_experiments(request)
-                            .order_by('-update_time'),
-    }
-
-    # TODO actually change loaders to load this based on stuff
-    return HttpResponse(render_response_search(request,
-                        'tardis_portal/experiment/list_shared.html', c))
-
-
-def experiment_list_public(request):
-
-    private_filter = Q(public_access=Experiment.PUBLIC_ACCESS_NONE)
-
-    c = {
-        'subtitle': 'Public Experiments',
-        'can_see_private': False,
-        'experiments': Experiment.objects.exclude(private_filter)
-                                         .order_by('-update_time'),
-    }
-
-    return HttpResponse(render_response_search(request,
-                        'tardis_portal/experiment/list_public.html', c))
+    return render_response_index(request, 'tardis_portal/public_data.html', c)
 
 
 @permission_required('tardis_portal.add_experiment')
@@ -787,7 +730,7 @@ def create_experiment(request,
 
     c['form'] = form
     c['default_institution'] = settings.DEFAULT_INSTITUTION
-    return HttpResponse(render_response_index(request, template_name, c))
+    return render_response_index(request, template_name, c)
 
 
 @login_required
@@ -831,7 +774,7 @@ def edit_experiment(request, experiment_id,
 
     c['form'] = form
 
-    return HttpResponse(render_response_index(request, template, c))
+    return render_response_index(request, template, c)
 
 
 @login_required
@@ -845,6 +788,8 @@ def add_dataset(request, experiment_id):
         if form.is_valid():
             dataset = Dataset()
             dataset.description = form.cleaned_data['description']
+            dataset.instrument = form.cleaned_data['instrument']
+            dataset.directory = form.cleaned_data['directory']
             dataset.save()
             experiment = Experiment.objects.get(id=experiment_id)
             dataset.experiments.add(experiment)
@@ -855,8 +800,8 @@ def add_dataset(request, experiment_id):
         form = DatasetForm()
 
     c = {'form': form}
-    return HttpResponse(render_response_index(request,
-                        'tardis_portal/add_or_edit_dataset.html', c))
+    return render_response_index(
+        request, 'tardis_portal/add_or_edit_dataset.html', c)
 
 
 @login_required
@@ -870,6 +815,8 @@ def edit_dataset(request, dataset_id):
         form = DatasetForm(request.POST)
         if form.is_valid():
             dataset.description = form.cleaned_data['description']
+            dataset.instrument = form.cleaned_data['instrument']
+            dataset.directory = form.cleaned_data['directory']
             dataset.save()
             return _redirect_303('tardis_portal.view_dataset',
                                  dataset.id)
@@ -877,8 +824,8 @@ def edit_dataset(request, dataset_id):
         form = DatasetForm(instance=dataset)
 
     c = {'form': form, 'dataset': dataset}
-    return HttpResponse(render_response_index(request,
-                        'tardis_portal/add_or_edit_dataset.html', c))
+    return render_response_index(
+        request, 'tardis_portal/add_or_edit_dataset.html', c)
 
 
 @login_required()
@@ -891,8 +838,8 @@ def control_panel(request):
     c = {'experiments': experiments,
          'subtitle': 'Experiment Control Panel'}
 
-    return HttpResponse(render_response_index(request,
-                        'tardis_portal/control_panel.html', c))
+    return render_response_index(
+        request, 'tardis_portal/control_panel.html', c)
 
 
 def _get_dataset_checksums(dataset, type='md5'):

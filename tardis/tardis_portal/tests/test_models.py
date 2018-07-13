@@ -35,7 +35,8 @@ http://docs.djangoproject.com/en/dev/topics/testing/
 .. moduleauthor::  Russell Sim <russell.sim@monash.edu>
 
 """
-from StringIO import StringIO
+import re
+from io import StringIO
 
 from django.conf import settings
 from django.contrib.auth.models import Group
@@ -108,7 +109,7 @@ class ModelTestCase(TestCase):
         dataset = Dataset(description='test dataset1')
         dataset.instrument = instrument
         dataset.save()
-        dataset.experiments = [exp, exp2]
+        dataset.experiments.set([exp, exp2])
         dataset.save()
         dataset_id = dataset.id
 
@@ -171,7 +172,7 @@ class ModelTestCase(TestCase):
             datafile = DataFile(dataset=dataset, filename=filename)
             datafile.save()
             if url is None:
-                datafile.file_object = StringIO('bla')
+                datafile.file_object = StringIO(u'bla')
                 return datafile
             dfo = DataFileObject(
                 datafile=datafile,
@@ -242,8 +243,8 @@ class ModelTestCase(TestCase):
             self.assertEqual(df_file.get_download_url(),
                              '/api/v1/dataset_file/%d/download%s' %
                              (first_id + 4, trailing_slash()))
-            self.assertNotRegexpMatches(df_file.file_objects.first().uri,
-                                        '\n|;')
+            pattern = re.compile( '\n|;')
+            self.assertFalse(pattern.search(df_file.file_objects.first().uri))
 
             # check that can't save negative byte sizes
             with self.assertRaises(Exception):

@@ -1,3 +1,4 @@
+# pylint: disable=http-response-with-json-dumps,http-response-with-content-type-json
 """
 views that return JSON data
 """
@@ -11,11 +12,11 @@ from django.http import HttpResponseNotFound, HttpResponseForbidden, \
     HttpResponse
 from django.views.decorators.cache import never_cache
 
-from tardis.tardis_portal.auth import decorators as authz
-from tardis.tardis_portal.models import Dataset, Experiment, License
-from tardis.tardis_portal.shortcuts import return_response_not_found
-from tardis.tardis_portal.views.utils import HttpResponseMethodNotAllowed
-from tardis.tardis_portal.views.utils import get_dataset_info
+from ..auth import decorators as authz
+from ..models import Dataset, Experiment, License
+from ..shortcuts import return_response_not_found
+from ..views.utils import HttpResponseMethodNotAllowed
+from ..views.utils import get_dataset_info
 
 logger = logging.getLogger(__name__)
 

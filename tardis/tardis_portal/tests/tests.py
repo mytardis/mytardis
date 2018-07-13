@@ -40,15 +40,14 @@ http://docs.djangoproject.com/en/dev/topics/testing/
 
 import unittest
 from unittest import skip
-from compare import expect, ensure
 
 from django.test import TestCase
 from django.test.client import Client
 from django.contrib.auth.models import User
 
-from tardis.tardis_portal.models import UserProfile, Experiment, ObjectACL, \
+from ..models import Experiment, ObjectACL, \
     Schema, ParameterName, Dataset
-from tardis.tardis_portal.auth.localdb_auth import django_user
+from ..auth.localdb_auth import django_user
 
 
 class SearchTestCase(TestCase):
@@ -111,84 +110,6 @@ class SearchTestCase(TestCase):
             experiment.delete()
 
     @skip('search is undergoing some changes, skip in the meantime')
-    def testSearchDatafileForm(self):
-        self.client.login(username='test', password='test')
-        response = self.client.get('/datafile/search/', {'type': 'saxs', })
-        self.assertEqual(response.status_code, 200)
-        self.assertTrue(response.context['searchForm'] is not None)
-        self.assertTrue(response.context['searchDatafileSelectionForm'] is not
-                        None)
-        self.assertTrue(response.context['modifiedSearchForm'] is not None)
-        self.assertTemplateUsed(response,
-                                'tardis_portal/search_datafile_form.html')
-
-        self.client.logout()
-
-    @skip('search is undergoing some changes, skip in the meantime')
-    def testSearchDatafileAuthentication(self):
-        response = self.client.get('/datafile/search/',
-                                   {'type': 'saxs', 'filename': '', })
-
-        # check if the response is zero since the user is not logged in
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.context['datafiles']), 0)
-
-    # def testSearchDatafileResults(self):
-    #     login = self.client.login(username='test', password='test')
-    #     self.assertEqual(login, True)
-    #     response = self.client.get('/datafile/search/',
-    #                                {'type': 'saxs',
-    #                                 'filename': 'ment0005.osc', })
-    #
-    #     # check for the existence of the contexts..
-    #     self.assertTrue(response.context['datafiles'] is not None)
-    #     self.assertTrue(response.context['experiments'] is not None)
-    #     self.assertTrue(response.context['query_string'] is not None)
-    #     self.assertTrue(response.context['subtitle'] is not None)
-    #     self.assertTrue(response.context['nav'] is not None)
-    #     self.assertTrue(response.context['bodyclass'] is not None)
-    #     self.assertTrue(response.context['search_pressed'] is not None)
-    #     self.assertTrue(response.context['searchDatafileSelectionForm']
-    #         is not None)
-    #
-    #     #self.assertEqual(len(response.context['paginator'].object_list), 1)
-    #     self.assertEqual(len(response.context['datafiles']), 1)
-    #     self.assertEqual(len(response.context['experiments']), 1)
-    #     self.assertTemplateUsed(response,
-    #         'tardis_portal/search_experiment_results.html')
-    #
-    #     from tardis.tardis_portal.models import DataFile
-    #     from tardis.tardis_portal.models import Experiment
-    #
-    #     values = response.context['experiments']
-    #     experiment = values[0]
-    #     datafile = response.context['datafiles'][0]
-    #     self.assertTrue(
-    #         type(experiment['sr']) is Experiment)
-    #     self.assertTrue(
-    #         type(datafile) is DataFile)
-    #
-    #     self.assertTrue(experiment['datafile_hit'] is True)
-    #     self.assertTrue(experiment['dataset_hit'] is False)
-    #     self.assertTrue(experiment['experiment_hit'] is False)
-    #
-    #     # TODO: check if the schema is correct
-    #
-    #     # check if searching for nothing would result to returning everything
-    #     response = self.client.get('/datafile/search/',
-    #                                {'type': 'saxs', 'filename': '', })
-    #     self.assertEqual(len(response.context['datafiles']), 5)
-    #
-    #     response = self.client.get('/datafile/search/',
-    #         {'type': 'saxs',  self.io_param_name: '123', })
-    #     self.assertEqual(len(response.context['datafiles']), 0)
-    #
-    #     response = self.client.get('/datafile/search/',
-    #         {'type': 'saxs', self.frqimn_param_name: '0.0450647', })
-    #     self.assertEqual(len(response.context['datafiles']), 5)
-    #     self.client.logout()
-
-    @skip('search is undergoing some changes, skip in the meantime')
     def testSearchExperimentForm(self):
         login = self.client.login(username='test', password='test')
         self.assertEqual(login, True)
@@ -225,7 +146,7 @@ class SearchTestCase(TestCase):
 
         self.assertEqual(len(response.context['experiments']), 1)
 
-        from tardis.tardis_portal.models import Experiment
+        from ..models import Experiment
 
         values = response.context['experiments']
         experiment = values[0]
@@ -248,26 +169,20 @@ class SearchTestCase(TestCase):
 class UserInterfaceTestCase(TestCase):
 
     def test_root(self):
-        ensure(Client().get('/').status_code, 200)
+        self.assertEqual(Client().get('/').status_code, 200)
 
     def test_urls(self):
         c = Client()
         urls = ['/login/',
                 '/about/',
                 '/stats/',
-                '/experiment/list/public',
+                '/public_data/',
                 # '/experiment/search/',
         ]
 
         for u in urls:
             response = c.get(u)
-            expect(response.status_code).to_equal(200)
-
-        redirect_urls = ['/experiment/list', '/experiment/view/']
-
-        for u in redirect_urls:
-            response = c.get(u)
-            expect(response.status_code).to_equal(302)
+            self.assertEqual(response.status_code, 200)
 
     def test_urls_with_some_content(self):
         # Things that might tend to be in a real live system
@@ -300,10 +215,7 @@ class UserInterfaceTestCase(TestCase):
         c = Client()
         c.login(username=user, password=pwd)
         urls = ['/about/', '/stats/']
-        urls += ['/experiment/list/%s' % part
-                 for part in ('mine', 'shared', 'public')]
-        # urls += ['/experiment/%s/' % part
-        #          for part in ('search',)]
+        urls += ['/mydata/']
         urls += ['/experiment/view/%d/' % experiment.id]
         urls += ['/ajax/experiment/%d/%s' % (experiment.id, tabpane)
                  for tabpane in ('description', 'datasets', 'rights')]
@@ -312,15 +224,10 @@ class UserInterfaceTestCase(TestCase):
 
         for u in urls:
             response = c.get(u)
-            ensure(response.status_code, 200,
-                   "%s should have returned 200 but returned %d"
-                   % (u, response.status_code))
-
-        redirect_urls = ['/experiment/list', '/experiment/view/']
-
-        for u in redirect_urls:
-            response = c.get(u)
-            expect(response.status_code).to_equal(302)
+            self.assertEqual(
+                response.status_code, 200,
+                "%s should have returned 200 but returned %d"
+                % (u, response.status_code))
 
     @skip('search is undergoing some changes, skip in the meantime')
     def test_search_urls(self):
@@ -333,8 +240,7 @@ class UserInterfaceTestCase(TestCase):
 
         for u in urls:
             response = c.get(u)
-            print str(response)
-            ensure(response.status_code, 200)
+            self.assertEqual(response.status_code, 200)
 
     def test_login(self):
         from django.contrib.auth.models import User
@@ -343,7 +249,7 @@ class UserInterfaceTestCase(TestCase):
         email = ''
         User.objects.create_user(user, email, pwd)
 
-        ensure(self.client.login(username=user, password=pwd), True)
+        self.assertEqual(self.client.login(username=user, password=pwd), True)
 
 
 def suite():

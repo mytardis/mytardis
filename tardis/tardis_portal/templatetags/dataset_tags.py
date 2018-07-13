@@ -1,13 +1,9 @@
 from django import template
-from django.conf import settings
-from django.core.urlresolvers import reverse
-from django.forms.models import model_to_dict
 from django.template.defaultfilters import pluralize, filesizeformat
-from django.contrib.humanize.templatetags.humanize import naturalday
 
-from tardis.tardis_portal.util import render_mustache
-from tardis.tardis_portal.views import get_dataset_info
-from tardis.tardis_portal.models.dataset import Dataset
+from ..util import render_mustache
+from ..views import get_dataset_info
+from ..models.dataset import Dataset
 
 register = template.Library()
 
@@ -47,7 +43,6 @@ def dataset_tiles(experiment, include_thumbnails):
             ds = Dataset.objects.get(id=self.id)
             return dataset_datafiles_badge(ds)
 
-
     class DatasetsInfo(object):
         # Generator which renders a dataset at a time
         def datasets(self):
@@ -57,6 +52,7 @@ def dataset_tiles(experiment, include_thumbnails):
 
     # Render template
     return render_mustache('tardis_portal/dataset_tiles', DatasetsInfo())
+
 
 @register.filter
 def dataset_experiments_badge(dataset):
@@ -69,6 +65,7 @@ def dataset_experiments_badge(dataset):
         'count': count,
     })
 
+
 @register.filter
 def dataset_datafiles_badge(dataset=None, count=None):
     """
@@ -80,6 +77,7 @@ def dataset_datafiles_badge(dataset=None, count=None):
         'title': "%d file%s" % (count, pluralize(count)),
         'count': count,
     })
+
 
 @register.filter
 def dataset_size_badge(dataset=None, size=None):

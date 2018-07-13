@@ -2,14 +2,14 @@ import json
 import logging
 
 from socket import error as SocketError
-from urllib2 import URLError
+
+from six.moves import urllib
 
 from rdflib import plugin, URIRef
 from rdflib.graph import Graph
 from rdflib.parser import Parser
 
 from django.core.exceptions import PermissionDenied
-from django.http import HttpResponse
 
 from tardis.tardis_portal.auth import decorators as authz
 from tardis.tardis_portal.models import \
@@ -31,7 +31,7 @@ logger = logging.getLogger(__name__)
 for_graph = Graph()
 try:
     for_graph.parse(SCHEMA_URI)
-except (URLError, SocketError):
+except (urllib.error.URLError, SocketError):
     logger.debug('no data connection to get external schema definition')
 
 
@@ -90,4 +90,4 @@ def index(request, experiment_id):
         template = 'anzsrc_codes/index.html'
     else:
         template = 'anzsrc_codes/index_ro.html'
-    return HttpResponse(render_response_index(request, template, c))
+    return render_response_index(request, template, c)

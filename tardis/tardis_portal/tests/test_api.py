@@ -15,26 +15,27 @@ from django.contrib.auth.models import Group
 from django.test.client import Client
 from django.test import TestCase
 
-from tastypie.test import ResourceTestCase
+from six.moves import reload_module
 
-from tardis.tardis_portal.auth.authservice import AuthService
-from tardis.tardis_portal.auth.localdb_auth import django_user
-from tardis.tardis_portal.models import ObjectACL
-from tardis.tardis_portal.models import UserProfile
-from tardis.tardis_portal.models.datafile import DataFile, DataFileObject
-from tardis.tardis_portal.models.dataset import Dataset
-from tardis.tardis_portal.models.experiment import Experiment
-from tardis.tardis_portal.models.parameters import ExperimentParameter
-from tardis.tardis_portal.models.parameters import ExperimentParameterSet
-from tardis.tardis_portal.models.parameters import ParameterName
-from tardis.tardis_portal.models.parameters import Schema
-from tardis.tardis_portal.models.facility import Facility
-from tardis.tardis_portal.models.instrument import Instrument
+from tastypie.test import ResourceTestCaseMixin
+
+from ..auth.authservice import AuthService
+from ..auth.localdb_auth import django_user
+from ..models import ObjectACL
+from ..models.datafile import DataFile, DataFileObject
+from ..models.dataset import Dataset
+from ..models.experiment import Experiment
+from ..models.parameters import ExperimentParameter
+from ..models.parameters import ExperimentParameterSet
+from ..models.parameters import ParameterName
+from ..models.parameters import Schema
+from ..models.facility import Facility
+from ..models.instrument import Instrument
 
 
 class SerializerTest(TestCase):
     def test_pretty_serializer(self):
-        from tardis.tardis_portal.api import PrettyJSONSerializer
+        from ..api import PrettyJSONSerializer
         test_serializer = PrettyJSONSerializer()
         test_data = {"ugly": "json data",
                      "reformatted": 2,
@@ -48,12 +49,12 @@ class SerializerTest(TestCase):
     def test_debug_serializer(self):
         with self.settings(DEBUG=False):
             import tardis.tardis_portal.api
-            reload(tardis.tardis_portal.api)
+            reload_module(tardis.tardis_portal.api)
             self.assertEqual(
                 type(tardis.tardis_portal.api.default_serializer).__name__,
                 'Serializer')
         with self.settings(DEBUG=True):
-            reload(tardis.tardis_portal.api)
+            reload_module(tardis.tardis_portal.api)
             self.assertEqual(
                 type(tardis.tardis_portal.api.default_serializer).__name__,
                 'PrettyJSONSerializer')
@@ -63,7 +64,7 @@ class ACLAuthorizationTest(TestCase):
     pass
 
 
-class MyTardisResourceTestCase(ResourceTestCase):
+class MyTardisResourceTestCase(ResourceTestCaseMixin, TestCase):
     '''
     abstract class without tests to combine common settings in one place
     '''
@@ -238,7 +239,7 @@ class ExperimentResourceTest(MyTardisResourceTestCase):
             "created_time": "2013-05-29T13:00:26.626580",
             "description": "",
             "end_time": None,
-            "handle": "",
+            "handle": None,
             "id": exp_id,
             "institution_name": "Monash University",
             "locked": False,
@@ -370,6 +371,11 @@ class DataFileResourceTest(MyTardisResourceTestCase):
                                            data_type=ParameterName.NUMERIC)
         self.test_parname2.save()
 
+        self.datafile = DataFile(dataset=self.testds,
+                                 filename="testfile.txt",
+                                 size="42", md5sum='bogus')
+        self.datafile.save()
+
     def test_post_single_file(self):
         ds_id = Dataset.objects.first().id
         post_data = """{
@@ -474,6 +480,16 @@ class DataFileResourceTest(MyTardisResourceTestCase):
         for sent_file, new_file in zip(
                 reversed(files), DataFile.objects.order_by('-pk')[0:2]):
             self.assertEqual(sent_file['content'], new_file.get_file().read())
+
+    def test_download_file(self):
+        '''
+        Doesn't actually check the content downloaded yet
+        Just checks if the download API endpoint responds with 200
+        '''
+        output = self.api_client.get(
+	    '/api/v1/dataset_file/%d/download/' % self.datafile.id,
+            authentication=self.get_credentials())
+        self.assertEqual(output.status_code, 200)
 
 
 class DatafileParameterSetResourceTest(MyTardisResourceTestCase):

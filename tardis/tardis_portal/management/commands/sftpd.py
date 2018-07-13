@@ -1,5 +1,4 @@
 import logging
-from optparse import make_option
 
 from django.conf import settings
 from django.core.management.base import BaseCommand
@@ -10,20 +9,26 @@ logger = logging.getLogger(__name__)
 
 
 class Command(BaseCommand):
-    option_list = BaseCommand.option_list + (
-        make_option('-H', '--host',
-                    action='store',
-                    type='string',
-                    dest='host',
-                    default=None,
-                    help='Host name to bind to'),
-        make_option('-P', '--port',
-                    action='store',
-                    type='int',
-                    dest='port',
-                    default=getattr(settings, 'SFTP_PORT', 2200),
-                    help='Port to listen on, default: 2200'),
-    )
 
-    def handle(self, *args, **kwargs):
-        sftp.start_server(host=kwargs['host'], port=kwargs['port'])
+    def add_arguments(self, parser):
+        # Positional arguments:
+
+        # Named (optional) arguments:
+        parser.add_argument(
+            '-H', '--host',
+            dest='host',
+            default=None,
+            help='Host name to bind to'
+        )
+        parser.add_argument(
+            '-P', '--port',
+            dest='port',
+            default=getattr(settings, 'SFTP_PORT', 2200),
+            type=int,
+            help='Port to listen on, default: 2200'
+        )
+
+    def handle(self, *args, **options):
+        host = options.get('host', None)
+        port = options.get('port', 2200)
+        sftp.start_server(host=host, port=port)

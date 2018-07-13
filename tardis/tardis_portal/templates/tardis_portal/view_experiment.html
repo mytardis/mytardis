@@ -5,7 +5,7 @@
 {% load experiment_tags %}
 {% load uploadify_tags %}
 {% load dynurl %}
-{% load mustachejs %}
+{% load jstemplate %}
 {% load bleach_tag %}
 
 {% block script %}
@@ -17,188 +17,10 @@
 {% mustachejs "tardis_portal/badges/datafile_count" %}
 {% mustachejs "tardis_portal/badges/size" %}
 
-{% if pub_form_enabled %}
-<script type="text/javascript" src="/static/publication-form/publication_form.js"></script>
-{% endif %}
-<script type="text/javascript">
-    var toggle_files = function(loadCallback) {
-        var $this = $(this);
-        var $datafile_info_container = $this.parents('.dataset_datafiles').find('.datafile_list');
-
-        $this.toggleClass('files_shown files_hidden');
-
-        if ($this.hasClass('files_shown')) {
-            $datafile_info_container.show();
-            $datafile_info_container.html(loadingHTML);
-
-            var href = $this.attr("href");
-            $datafile_info_container.load(href, loadCallback);
-        } else {
-            $datafile_info_container.html('');
-        }
-    };
-
-    var loadingHTML = '<img src="{% static 'images/ajax-loader.gif' %}"/><br />';
-
-    // file selectors
-    jQuery('.dataset_selector_all').live('click', function() {
-        $(this).parents('.datafiles').find('.datafile_checkbox').attr("checked", "checked");
-    });
-    jQuery('.dataset_selector_none').live('click', function() {
-        $(this).parents('.datafiles').find('.datafile_checkbox').removeAttr("checked");
-    });
-
-    function get_new_parameter_name(name)
-    {
-        var new_name = name;
-
-        var i = 1;
-        while($("[name=" + new_name + "__" + i + "]").length == 1)
-        {
-            i++;
-        }
-        return new_name + "__" + i;
-    }
-
-    function get_form_input_html(label, name, use_textarea)
-    {
-        var widget;
-        if (use_textarea) {
-            widget = '<textarea ' + 'name="' + name + '" id="' + name + '"/>';
-        } else {
-            widget = '<input type="text" name="' + name + '" value="" id="' + name + '" />';
-        }
-        var label = '<label for="' + name + '">' + label + '</label>';
-        return '<div class="fieldWrapper">' + label + '<br/>' + widget + '</div>';
-    }
-
-    $('.dataset_checkbox').live('click', function( event ) {
-    if ($(this).is(':checked')) {
-        $(this).parents('.dataset').find('.datafile_checkbox').attr('disabled', true);
-        $(this).parents('.dataset').find('.filename_search').attr('disabled', true);
-    } else {
-        $(this).parents('.dataset').find('.datafile_checkbox').removeAttr('disabled');
-        $(this).parents('.dataset').find('.filename_search').removeAttr('disabled');
-    }
-    })
-
-    $('#schemaselect').live('change', function(e) {
-        e.preventDefault();
-
-        var $this = $(this);
-        var $jqm_content_div = $this.closest('.modal-body');
-
-        var type = $this.attr('data-type');
-        var parent_object_id = $this.attr('data-parent_object_id');
-        var href = "/ajax/add_" + type + "_parameters/" + parent_object_id + "/?schema_id=" + $this.val();
-        $.get(href, function(data) {
-            $jqm_content_div.html(data);
-        });
-        return false;
-    });
-
-    $('#add_new_parameter').live('click', function(){
-        // assuming whenever add_new_parameter is clicked an option is selected
-        var $selected_option = $("#parameternameselect > option:selected");
-        var is_long = $selected_option.attr('data-longstring');
-        var new_element_name = get_new_parameter_name($selected_option.val());
-
-        if($selected_option.text())
-        {
-            $("#parameternameselect").before(get_form_input_html($selected_option.text(), new_element_name, is_long));
-            $("#" + new_element_name).focus();
-        }
-        else
-        {
-            alert('There are no parameters allowed to be added by users in this schema');
-        }
-    });
-    $('#add_metadata_form').live('submit', function(e) {
-        e.preventDefault();
-
-        var form = $(this);
-        var contentContainer = form.closest('.modal-body')
-
-        var schema_id = $('#schemaselect').val();
-        var type = form.attr('data-type');
-        var parent_object_id = form.attr('data-parent_object_id');
-        var href = "/ajax/add_" + type + "_parameters/" + parent_object_id + "/?schema_id=" + schema_id;
-
-        $.ajax({
-          type: 'POST',
-          url: href,
-          data: form.serialize(),
-          success: function(data) {
-                  contentContainer.html(data);
-                  if (contentContainer.find('form').length == 0) {
-                    contentContainer.parents('.modal').find('.modal-footer').hide();
-                }
-            },
-          async:false
-        });
-
-        refreshMetadataDisplay();
-
-        form.parents('.modal').find('.modal-footer').hide();
-        return false;
-    });
-    $('#edit_metadata_form').live('submit', function(e) {
-        e.preventDefault();
-        var form = $(this);
-        var contentContainer = form.closest('.modal-body')
-
-        $.ajax({
-          type: 'POST',
-          url: form.attr('action'),
-          data: form.serialize(),
-          success: function(data) {
-                  	contentContainer.html(data);
-                    if (contentContainer.find('form').length == 0) {
-                  	  contentContainer.parents('.modal').find('.modal-footer').hide();
-                }
-            },
-          async:false
-        });
-
-        refreshMetadataDisplay();
-
-        // Hide the form buttons
-        form.parents('.modal').find('.modal-footer').hide();
-        return false;
-    });
-
-    var refreshMetadataDisplay = function(hash) {
-    	$('#experiment-tab-metadata').trigger('experiment-change');
-    };
-
-    var loadModalRemoteBody = function(trigger, modal) {
-    	// Hide save buttons
-    	$(modal).find('.modal-footer').hide();
-      // Fill with "loading" placeholder content
-    	$(modal).find('.modal-body').html(
-    	  $(modal).find('.loading-placeholder').html()
-    	);
-    	$(modal).modal('show');
-      $.ajax({
-        url: $(trigger).attr('href'),
-        success: function (data, textStatus, jqXHR) {
-        	$(modal).find('.modal-body').html(data);
-          $(modal).find('.modal-footer').show();
-        }
-      });
-    };
-
-    $('.add-metadata').live('click', function(evt){
-        evt.preventDefault();
-        $('#modal-metadata .modal-header .title').text("Add Metadata");
-        loadModalRemoteBody(this, '#modal-metadata');
-    });
-    $('.edit-metadata').live('click', function(evt) {
-        evt.preventDefault();
-        $('#modal-metadata .modal-header .title').text("Edit Metadata");
-        loadModalRemoteBody(this, '#modal-metadata');
-    });
-
+<input type="hidden" id="experiment-id" value="{{ experiment.id }}">
+<input type="hidden" id="csrf-token" value="{{ csrf_token }}">
+<script type="text/javascript"
+        src="{% static 'js/jquery/tardis_portal/view_experiment/init.js' %}">
 </script>
 
 {% endblock %}
@@ -225,37 +47,10 @@
   </div>
 </div>
 
-<script type="text/javascript">
-$('#modal-metadata .submit-button').click(function() {
-    $('#modal-metadata .modal-body form').submit();
-});
-</script>
-
 <div class="page-header">
-  <h4>
-    {% if experiment.is_publication %}
-    Publication{% if experiment.is_publication_draft %}<small style="font-style:italic;"> draft</small>{% endif %}
-    {% else %}Experiment
-    {% endif %}
-  </h4>
+  <h4>Experiment</h4>
   {% if not experiment.public %}
-  {% if pub_form_enabled %}
-  <div class="pull-right"
-       ng-controller="PublicationFormController as pubFormCtrl"
-       experiment_id="{{ experiment.id }}"
-       is_publication="{{ experiment.is_publication }}"
-       is_publication_draft="{{ experiment.is_publication_draft }}">
-  {% else %}
   <div class="pull-right">
-  {% endif %}
-    {% if has_read_or_owner_ACL and pub_form_enabled %}
-    <a class="prepare_to_publish btn btn-mini btn-info"
-       title="Prepare To Publish" ng-click="pubFormCtrl.openPublicationForm()" ng-show="pubFormCtrl.isPublicationDraft || !pubFormCtrl.isPublication">
-      <i class="fa fa-share"></i>
-      <span ng-hide="pubFormCtrl.isPublication">Create publication</span>
-      <span ng-show="pubFormCtrl.isPublicationDraft">Resume draft publication</span>
-    </a>
-    {% endif %}
     {% if push_to_enabled and is_authenticated %}
     <a class="btn btn-mini btn-primary" title="Push to..."
        onclick="window.open('{{ push_to_url }}', 'push-to', 'width=800, height=600'); return false;"
@@ -266,7 +61,7 @@ $('#modal-metadata .submit-button').click(function() {
     {% endif %}
     {% if has_write_permissions %}
     <a class="btn btn-mini btn-warning" title="Edit Experiment"
-       href="{{ experiment.get_edit_url }}" ng-hide="pubFormCtrl.isPublication">
+       href="{{ experiment.get_edit_url }}">
       <i class="fa fa-pencil"></i>
       Edit Experiment
     </a>
@@ -324,162 +119,17 @@ $('#modal-metadata .submit-button').click(function() {
     {% include "tardis_portal/ajax/experiment_datasets.html" %}
   </div>
 </div>
-
-
-<script type="text/javascript">
-(function() {
-  var tabIdPrefix = 'experiment-tab-';
-  function getTabIdFromName(tabName) {
-    return tabIdPrefix+tabName;
-  }
-  function getTabNameFromId(tabId) {
-    return _.strRight(_.lstrip(tabId,'#'), tabIdPrefix);
-  }
-
-  // Create new tab content panes programatically
-  // Note: We're doing this before the bottom of the document has loaded!
-  $('#experiment-tabs li a').each(function(i, v) {
-    // Generate an ID for each tab
-    var tabName = _.trim(_.dasherize($(v).attr('title') || i), '_-');
-    // Grab the link HREF, then replace with the ID
-    var url = $(v).attr('href');
-    $(v).attr('href', '#'+getTabIdFromName(tabName));
-
-    // Create and insert content pane (if not preloaded)
-    var tabContents;
-    if ($('#'+getTabIdFromName(tabName)).size() == 0) {
-      tabContents = $('<div></div>').attr('id', getTabIdFromName(tabName))
-                                    .addClass('tab-pane');
-      tabContents.html(loadingHTML)
-      $('.tab-content').append(tabContents);
-    } else {
-      tabContents = $('#'+getTabIdFromName(tabName)).addClass('tab-pane')
-                                                    .addClass('preloaded');
-    }
-
-    // Set up reload for the tab pane
-    $('#'+getTabIdFromName(tabName)).on('experiment-change', function() {
-      var tabPane = $(this);
-
-      // Skip loading if already loaded
-      if (tabPane.hasClass('preloaded')) {
-        tabPane.removeClass('preloaded');
-        return;
-      }
-
-      // Load content for the pane, based on the link HREF
-      $.ajax({
-        url: url,
-        dataType: 'html'
-      }).complete(function(jqXHR) {
-        tabPane.html(jqXHR.responseText);
-      });
-    });
-
-    // Selected tab name
-    $(v).click(function() {
-      window.location.hash = getTabNameFromId($(v).attr('href'));
-    });
-  });
-
-  // Trigger initial pane content loading
-  $('.tab-pane').trigger('experiment-change');
-
-  var showTabForWindowLocation = function() {
-    // Get selected tab using window location
-    var tabHref = '#' + tabIdPrefix + _.ltrim(window.location.hash, '#');
-    var selected = $('#experiment-tabs li a[href="'+tabHref+'"]');
-    // Show selected tab if we have one, otherwise show the first tab
-    if (selected.size() == 1) {
-      selected.tab('show');
-    } else {
-      $('#experiment-tabs li a:first').tab('show');
-    }
-  };
-
-  // Once the document has finished loading, we can use Bootstrap Tab plugin
-  $(function() {
-    // Create tabs and show first
-    $('#experiment-tabs li a:last').tab();
-    showTabForWindowLocation();
-  });
-
-  // Handle back and forward buttons for tab locations
-  $(window).bind('hashchange', showTabForWindowLocation);
-
-})();
-
-$(document).ready(function() {
-  // Activate tooltips
-  $('body').tooltip({
-    'placement': 'top',
-    'selector': 'span.badge'
-  });
-
-  // Abbreviate abstract
-  var hideAbstract = false;
-  var spanhtml = $('#abstractHolder').html();
-
-    if(spanhtml.length > 100)
-    {
-	hideAbstract = true;
-        $('#abstract-toggle').attr('style', 'display: inline;');
-
-        $('#abstractText').empty().html(spanhtml);
-        $('#abstractText').parent().attr('style', 'height: 33px;');
-        $('#abstractText').parent().addClass('abstract-clickable');
-
-        $('#abstract-toggle').click(function(evt) {
-           if(!hideAbstract)
-           {
-             $('#abstractText').parent().attr('style', 'height: 33px;');
-             hideAbstract = true;
-	     $('#abstract-toggle').text('Show Description');
-           }
-           else
-           {
-             $('#abstractText').parent().attr('style', 'padding-top:20px;');
-             hideAbstract = false;
-             $('#abstract-toggle').text('Hide Description');
-           }
-      });
-    }
-    else
-    {
-	$('#abstractText').html(spanhtml);
-    }
-
-});
-
+<script type="text/javascript"
+        src="{% static 'js/jquery/tardis_portal/view_experiment/experiment-tabs.js' %}">
 </script>
-
-<script type="text/javascript">
-$(function(){
-var oldSync = Backbone.sync;
-Backbone.sync = function(method, model, options){
-  options.beforeSend = function(xhr){
-    xhr.setRequestHeader('X-CSRFToken', '{{csrf_token}}');
-  };
-  return oldSync(method, model, options);
-};
-});
-var datasetTiles = (function() {
-
-    var datasets = new MyTardis.Datasets();
-
-    datasets.experimentId = {{ experiment.id }};
-    datasets.url = "{% url 'tardis.tardis_portal.views.experiment_datasets_json' experiment.id %}";
-
-    var datasetTiles = new MyTardis.DatasetTiles({
-	'id': "datasets",
-	'collection': datasets,
-	'el': $('#datasets').get(0)
-    });
-
-    datasets.fetch({});
-
-    return datasetTiles;
-})();
+<script type="text/javascript"
+        src="{% static 'js/jquery/tardis_portal/view_experiment/dataset-tiles.js' %}">
+</script>
+<script type="text/javascript"
+        src="{% static 'js/jquery/tardis_portal/view_experiment/activate-tooltips.js' %}">
+</script>
+<script type="text/javascript"
+        src="{% static 'js/jquery/tardis_portal/view_experiment/abbreviate-abstract.js' %}">
 </script>
 
 {% endblock %}

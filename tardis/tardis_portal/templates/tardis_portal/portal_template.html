@@ -5,17 +5,13 @@
       xmlns="http://www.w3.org/1999/xhtml"
       prefix="xsd: http://www.w3.org/2001/XMLSchema#
               dc: http://purl.org/dc/elements/1.1/"
-      class="no-js" ng-app="MyTardis">
+      ng-app="MyTardis">
   <!--
     RDFa Core 1.1 uses the "prefix" element for namespace declarations.
 
     For more information, see:
     http://www.w3.org/TR/rdfa-core/#scoping-of-prefix-mappings
    -->
-  <!--
-  The "no-js" class is removed by Modernizer when it runs, which allows CSS
-  theming for JS-less environments.
-  -->
   <head>
     <meta charset="utf-8">
     <meta http-equiv="content-type" content="text/html; charset=UTF-8">
@@ -88,11 +84,11 @@
             <span class="fa fa-bar"></span>
           </a>
           {% block site_brand %}
-          <span class="brand"><a href="{% url 'index' %}">{{ site_title|default:'MyTardis' }}</a></span>
+          <span class="brand"><a href="{% url 'tardis.tardis_portal.views.index' %}">{{ site_title|default:'MyTardis' }}</a></span>
           {% endblock %}
           <div class="nav-collapse">
             <ul class="nav">
-              <li><a href="{% url 'index' %}">Home</a></li>
+              <li><a href="{% url 'tardis.tardis_portal.views.index' %}">Home</a></li>
               <li><a href="{% url 'tardis.tardis_portal.views.about' %}">About</a></li>
               <li><a href="{% url 'tardis.tardis_portal.views.my_data' %}">My Data</a></li>
               <li><a href="{% url 'tardis.tardis_portal.views.public_data' %}">Public Data</a></li>
@@ -177,7 +173,7 @@
             {% else %}
               {% if registration_enabled %}
               <li>
-                <a href="{% url 'register' %}">
+                <a href="{% url 'tardis.tardis_portal.views.register' %}">
                   Register
                 </a>
               </li>
@@ -320,7 +316,7 @@
     </div>
     <!-- /container -->
     <script type="text/javascript"
-	    src="{% static 'bootstrap/js/bootstrap.min.js' %}"></script>
+	    src="{% static 'js/lib/bootstrap-2.0.4/js/bootstrap.min.js' %}"></script>
     {% if ga_enabled %}
     <script type="text/javascript">
       (function(i,s,o,g,r,a,m) {

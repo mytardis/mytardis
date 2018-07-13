@@ -8,8 +8,8 @@ from django.contrib.contenttypes.models import ContentType
 from django.db.models import Q
 from django.db.models.query import QuerySet
 
-from tardis.tardis_portal.auth.token_auth import TokenGroupProvider
-from tardis.tardis_portal.models import ObjectACL
+from ..models.access_control import ObjectACL
+from .token_auth import TokenGroupProvider
 
 
 class ACLAwareBackend(object):
@@ -17,7 +17,7 @@ class ACLAwareBackend(object):
     supports_anonymous_user = True
     app_label = 'tardis_acls'
 
-    def authenticate(self, username, password):
+    def authenticate(self, request):
         '''
         do not use this backend for authentication
         '''
@@ -41,7 +41,7 @@ class ACLAwareBackend(object):
         '''
         main method, calls other methods based on permission type queried
         '''
-        if not user_obj.is_authenticated():
+        if not user_obj.is_authenticated:
             allowed_tokens = getattr(user_obj, 'allowed_tokens', [])
             user_obj = AnonymousUser()
             user_obj.allowed_tokens = allowed_tokens
@@ -97,7 +97,7 @@ class ACLAwareBackend(object):
         query = Q(pluginId='django_user',
                   entityId=str(user_obj.id))
 
-        if user_obj.is_authenticated():
+        if user_obj.is_authenticated:
             for name, group in user_obj.userprofile.ext_groups:
                 query |= Q(pluginId=name, entityId=str(group))
         else:

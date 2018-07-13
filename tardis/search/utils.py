@@ -1,3 +1,7 @@
+from django.utils.encoding import python_2_unicode_compatible
+
+
+@python_2_unicode_compatible
 class SearchQueryString(object):
     """
     Class to manage switching between space separated search queries and
@@ -15,11 +19,11 @@ class SearchQueryString(object):
         # spaces or pluses
         self.query_terms = stripped_query.split()
 
-    def __unicode__(self):
+    def __str__(self):
         return ' '.join(self.query_terms)
 
     def url_safe_query(self):
         return '+'.join(self.query_terms)
 
     def query_string(self):
-        return self.__unicode__()
+        return self.__str__()

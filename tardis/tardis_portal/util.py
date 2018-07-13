@@ -3,7 +3,8 @@ import hashlib
 import os
 import platform
 import warnings
-from urllib import quote
+
+from six.moves import urllib
 
 import pystache
 import pytz
@@ -109,8 +110,12 @@ def generate_file_checksums(sourceFile, tempFile=None, leave_open=False):
 
 
 def _load_template(template_name):
-    from mustachejs.loading import find
-    with open(find(template_name), 'r') as f:
+    from jstemplate.loading import find
+    template_locations = find(template_name)
+    # Each returned location is a tuple of (template_name, template_path).
+    # We'll just use the template_path of the first location
+    template_path = template_locations[0][1]
+    with open(template_path, 'r') as f:
         return f.read()
 
 
@@ -185,7 +190,7 @@ def get_filesystem_safe_dataset_name(dataset):
     if settings.DATASET_SPACES_TO_UNDERSCORES:
         dataset_filename = dataset_filename.replace(' ', '_')
 
-    dataset_filename = quote(
+    dataset_filename = urllib.parse.quote(
         dataset_filename,
         safe=settings.SAFE_FILESYSTEM_CHARACTERS)
 
@@ -206,7 +211,7 @@ def get_filesystem_safe_experiment_name(experiment):
     if settings.EXP_SPACES_TO_UNDERSCORES:
         exp_title = exp_title.replace(' ', '_')
 
-    expt_filename = quote(exp_title,
-                          safe=settings.SAFE_FILESYSTEM_CHARACTERS)
+    expt_filename = urllib.parse.quote(
+        exp_title, safe=settings.SAFE_FILESYSTEM_CHARACTERS)
 
     return expt_filename
