@@ -15,7 +15,7 @@
 
 {% else %}
 
-    <form action="" method="post" class="form-horizontal">{% csrf_token %}
+    <form action="" method="post" class="form-horizontal" style="float: left ; padding-right: 30px">{% csrf_token %}
       <input name="next_page" type="hidden" value="{{ next_page }}" />
       <fieldset>
         <legend>Please Log In</legend>
@@ -36,7 +36,7 @@
         </div>
       </fieldset>
     </form>
-    <p>
+    <p style="margin-top: 100px">
         <a href="{% url 'social:begin' 'google-oauth2' %}?next=/"/>
         <img id="signInButton" src="{% static 'images/btn_google_signin_light_pressed_web.png' %}" />
         <a href="{% url 'social:begin' 'aaf' %}?next=/" />
