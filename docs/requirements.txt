@@ -1,4 +1,5 @@
 -r ../requirements-base.txt
 -r ../requirements-test.txt
 
--r ../tardis/apps/publication_forms/requirements.txt
+# apps go here:
+# -r tardis/apps/exampleapp/requirements.txt
