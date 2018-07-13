@@ -18,6 +18,7 @@ from tastypie.models import ApiKey
 
 from .email_text import email_migration_success
 from . import default_settings
+from .forms import openid_user_migration_form
 
 
 logger = logging.getLogger(__name__)
@@ -39,20 +40,14 @@ def do_migration(request):
 
     from tardis.tardis_portal.auth import auth_service
 
+    userAuthMethodList = []
+
+    # the list of supported non-local DB authentication methods
     supportedAuthMethods = _getSupportedAuthMethods()
-    LinkedUserAuthenticationForm = \
-        createLinkedUserAuthenticationForm(supportedAuthMethods)
-    authForm = LinkedUserAuthenticationForm(request.POST)
 
-    if not authForm.is_valid():
-        errorMessage = \
-            'Please provide all the necessary information to authenticate.'
-        return _getJsonFailedResponse(errorMessage)
-
-    authenticationMethod = authForm.cleaned_data['authenticationMethod']
-
+    authenticationMethod = 'localdb'
     # let's try and authenticate here
-    user = auth_service.authenticate(authMethod=authenticationMethod,
+    user = auth_service.authenticate(authMethod="None",
         request=request)
 
     if user is None:
@@ -132,8 +127,8 @@ def do_migration(request):
         logger.info("sending email to %s", user.email)
         notify_user(user, old_username, 'AAF')
 
-    data = _setupJsonData(authForm, authenticationMethod, supportedAuthMethods)
-    return _getJsonSuccessResponse(data)
+    # data = _setupJsonData(authForm, authenticationMethod, supportedAuthMethods)
+    return _getJsonSuccessResponse(data={})
 
 
 def acl_migration(userIdToBeReplaced, replacementUserId, user_migration_record):
@@ -284,6 +279,44 @@ def list_auth_methods(request):
     return HttpResponse(render_response_index(request,
                                               'migrate_accounts.html', c))
 
+
+def openid_migration_method(request):
+    migration_form = \
+        openid_user_migration_form()
+    authForm = migration_form()
+
+    c = {'authForm': authForm, }
+    return HttpResponse(render_response_index(request,
+                                              'migrate_accounts.html', c))
+
+
+def confirm_migration(request):
+    from tardis.tardis_portal.auth import auth_service
+    supportedAuthMethods = _getSupportedAuthMethods()
+    migration_form = \
+        openid_user_migration_form()
+    authForm = migration_form(request.POST)
+
+    if not authForm.is_valid():
+        errorMessage = \
+            'Please provide all the necessary information to authenticate.'
+        return _getJsonFailedResponse(errorMessage)
+
+    # authenticationMethod = authForm.cleaned_data['authenticationMethod']
+
+    # let's try and authenticate here
+    authentication_method = 'localdb'
+    user = auth_service.authenticate(authMethod=authentication_method,
+                                     request=request)
+
+    if user is None:
+        errorMessage = 'Wrong username or password. Please try again'
+        return _getJsonFailedResponse(errorMessage)
+
+    else:
+        data = _setupJsonData(authForm, authentication_method, supportedAuthMethods)
+        # return _getJsonSuccessResponse(data)
+        return _getJsonConfirmResponse()
 
 def add_auth_method(request):
     """Add a new authentication method to request.user's existing list of
