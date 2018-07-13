@@ -1,19 +1,23 @@
-from .migration import do_migration, add_auth_method
+import json
+
+from django.http import HttpResponse, HttpResponseRedirect
+from .migration import do_migration, \
+    add_auth_method, openid_migration_method, \
+    confirm_migration
 
 
 def migrate_accounts(request):
     """
-
     :param request:
     :return:
     """
-    from .migration import list_auth_methods
 
     if request.method == 'POST':
         operation = request.POST['operation']
         if operation == 'addAuth':
-            return add_auth_method(request)
-        elif operation == 'mergeAuth':
+            return confirm_migration(request)
+        if operation == 'migrateAccount':
             return do_migration(request)
-    # if GET, we'll just give the initial list of auth methods for the user
-    return list_auth_methods(request)
+    return openid_migration_method(request)
+
+
