@@ -84,9 +84,6 @@ def do_migration(request):
                                                     old_user_auth_method=authenticationMethod,
                                                     new_user_auth_method='')
         user_migration_record.save()
-        # TODO: note that django_user here has been hardcoded. Uli's going
-        # to change the implementation on his end so that I can just use a key
-        # in here instead of a hardcoded string.
         logger.info("Staring object ACL migration")
         acl_migration(userIdToBeReplaced, replacementUserId,
                       user_migration_record)
@@ -213,73 +210,6 @@ def migrate_api_key(old_user, new_user):
             old_user_api_key.save()
 
 
-def list_auth_methods(request):
-    """Generate a list of authentication methods that request.user uses to
-    authenticate to the system and send it back in a HttpResponse.
-
-    :param Request request: the HTTP request object
-
-    :returns: The HttpResponse which contains request.user's list of
-        authentication methods
-    :rtype: HttpResponse
-    """
-    userAuthMethodList = []
-
-    # the list of supported non-local DB authentication methods
-    supportedAuthMethods = _getSupportedAuthMethods()
-
-    try:
-        """
-        userProfile = UserProfile.objects.get(user=request.user)
-
-        if userProfile.isDjangoAccount:
-            # if the main account for this user is a django account, add his
-            # details in the userAuthMethodList (a list of user authentication
-            # methods that the user can modify or delete)
-            userAuthMethodList.append((request.user.username,
-                localdb_auth.auth_display_name, localdb_auth.auth_key))
-        """
-        # get the user authentication methods for the current user
-        userAuths = UserAuthentication.objects.filter(
-            userProfile__user=request.user)
-
-        # ... and append it to our list
-        for userAuth in userAuths:
-            userAuthMethodList.append((userAuth.username,
-                                       userAuth.getAuthMethodDescription(),
-                                       userAuth.authenticationMethod))
-
-            # also remove the current userAuth from the list of authentication
-            # method options that can be added by this user
-            del supportedAuthMethods[userAuth.authenticationMethod]
-
-    except UserProfile.DoesNotExist:
-        # if there is no userProfile object linked to the current user,
-        # he might only have a django account so we'll only add localDB
-        # information to the list of user authentication methods he can use
-        # to log into the system.
-        userAuthMethodList.append((request.user.username,
-                                   localdb_auth.auth_display_name, localdb_auth.auth_key))
-
-    LinkedUserAuthenticationForm = \
-        createLinkedUserAuthenticationForm(supportedAuthMethods)
-    authForm = LinkedUserAuthenticationForm()
-    isDjangoAccount = True
-    try:
-        isDjangoAccount = UserProfile.objects.get(
-            user=request.user).isDjangoAccount
-    except UserProfile.DoesNotExist:
-        isDjangoAccount = True
-
-    c = {'userAuthMethodList': userAuthMethodList,
-         'authForm': authForm, 'supportedAuthMethods': supportedAuthMethods,
-         'allAuthMethods': _getSupportedAuthMethods(),
-         'isDjangoAccount': isDjangoAccount}
-
-    return HttpResponse(render_response_index(request,
-                                              'migrate_accounts.html', c))
-
-
 def openid_migration_method(request):
     migration_form = \
         openid_user_migration_form()
@@ -317,63 +247,6 @@ def confirm_migration(request):
         data = _setupJsonData(authForm, authentication_method, supportedAuthMethods)
         # return _getJsonSuccessResponse(data)
         return _getJsonConfirmResponse()
-
-def add_auth_method(request):
-    """Add a new authentication method to request.user's existing list of
-    authentication methods. This method will ask for a confirmation if the user
-    wants to merge two accounts if the authentication method he provided
-    already exists as a method for another user.
-
-    :param Request request: the HTTP request object
-
-    :returns: The HttpResponse which contains request.user's new list of
-        authentication methods
-    :rtype: HttpResponse
-    """
-    from tardis.tardis_portal.auth import auth_service
-
-    supportedAuthMethods = _getSupportedAuthMethods()
-    LinkedUserAuthenticationForm = \
-        createLinkedUserAuthenticationForm(supportedAuthMethods)
-    authForm = LinkedUserAuthenticationForm(request.POST)
-
-    if not authForm.is_valid():
-        errorMessage = \
-            'Please provide all the necessary information to authenticate.'
-        return _getJsonFailedResponse(errorMessage)
-
-    authenticationMethod = authForm.cleaned_data['authenticationMethod']
-
-    # let's try and authenticate here
-    user = auth_service.authenticate(authMethod=authenticationMethod,
-        request=request)
-
-    if user is None:
-        errorMessage = 'Wrong username or password. Please try again'
-        return _getJsonFailedResponse(errorMessage)
-
-    # if has already registered to use the provided auth method, then we'll
-    # merge the two accounts
-    if user != request.user:
-        # but before we do that, we'll try and confirm with the user if that's
-        # what he really wants
-        return _getJsonConfirmResponse()
-
-    # TODO: we'll need to send back a json message with a success status and
-    #       other info that can be used to modify the html document
-
-    # get the user authentication methods for the current user
-    userAuths = UserAuthentication.objects.filter(
-        userProfile__user=request.user)
-
-    # ... and append it to our list
-    for userAuth in userAuths:
-        # also remove the current userAuth from the list of authentication
-        # method options that can be added by this user
-        del supportedAuthMethods[userAuth.authenticationMethod]
-
-    data = _setupJsonData(authForm, authenticationMethod, supportedAuthMethods)
-    return _getJsonSuccessResponse(data)
 
 
 def get_api_key(user):
