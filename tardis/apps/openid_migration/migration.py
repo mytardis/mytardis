@@ -8,9 +8,8 @@ from django.conf import settings
 from tardis.tardis_portal.models import UserProfile, UserAuthentication, \
     ObjectACL, Group
 from tardis.tardis_portal.auth.authentication import _getSupportedAuthMethods, \
-    _getJsonFailedResponse, _setupJsonData, _getJsonSuccessResponse, _getJsonConfirmResponse
-from tardis.tardis_portal.forms import createLinkedUserAuthenticationForm
-from tardis.tardis_portal.auth import localdb_auth
+    _getJsonFailedResponse, _getJsonSuccessResponse, _getJsonConfirmResponse
+
 from tardis.tardis_portal.shortcuts import render_response_index
 from tardis.apps.openid_migration.models import OpenidUserMigration, OpenidACLMigration
 
@@ -235,7 +234,6 @@ def confirm_migration(request):
     # authenticationMethod = authForm.cleaned_data['authenticationMethod']
 
     # let's try and authenticate here
-    authentication_method = 'localdb'
     user = auth_service.authenticate(authMethod="None",
                                      request=request)
 
@@ -244,9 +242,29 @@ def confirm_migration(request):
         return _getJsonFailedResponse(errorMessage)
 
     else:
-        data = _setupJsonData(authForm, authentication_method, supportedAuthMethods)
-        # return _getJsonSuccessResponse(data)
-        return _getJsonConfirmResponse()
+        data = _setupJsonData(user, request.user)
+        return _getJsonConfirmResponse(data)
+
+
+def _setupJsonData(old_user, new_user):
+    """Sets up the JSON data dictionary that will be sent back to the web
+    client.
+
+    :param Form authForm: the Authentication Form
+    :param User old_user: the user migrating from
+    :param User new_user: the user migrating to
+
+    :returns: The data dictionary
+    :rtype: dict
+    """
+    data = {}
+    data['old_username'] = old_user.username
+    data['new_username'] = new_user.username
+    data['old_user_email'] = old_user.email
+    data['new_user_email'] = new_user.email
+
+    logger.debug('Sending partial data to auth methods management page')
+    return data
 
 
 def get_api_key(user):
