@@ -1,8 +1,5 @@
-import json
-
-from django.http import HttpResponse, HttpResponseRedirect
 from .migration import do_migration, \
-    add_auth_method, openid_migration_method, \
+    openid_migration_method, \
     confirm_migration
 
 
