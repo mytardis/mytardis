@@ -42,7 +42,7 @@
     </p>
     <div class="container" style="margin-left: 10px ; width: min-content">
           <h2>Old User</h2>
-          <table class="table">
+          <table class="table" id="old_user">
             <thead>
               <tr>
                 <th>Username</th>
@@ -51,15 +51,13 @@
             </thead>
             <tbody>
               <tr>
-                <td>mani0001</td>
-                <td>manish.kumar@monash.edu</td>
               </tr>
             </tbody>
           </table>
     </div>
     <div class="container" style="margin-left: 10px; width: min-content">
           <h2>New User</h2>
-          <table class="table">
+          <table class="table" id="new_user">
             <thead>
               <tr>
                 <th>Username</th>
@@ -68,8 +66,6 @@
             </thead>
             <tbody>
               <tr>
-                <td>manish.kumar@monash.edu</td>
-                <td>manish.kumar@monash.edu</td>
               </tr>
             </tbody>
           </table>
@@ -125,8 +121,8 @@ authMethodDict["{{ authKey }}"] = "{{ authDesc }}";
 
 var link_account = function() {
   var username = $("#id_username").val();
-    var password = $("#id_password").val();
-    var authenticationMethod = $("#id_authenticationMethod").val();
+  var password = $("#id_password").val();
+  var authenticationMethod = $("#id_authenticationMethod").val();
 
     if (username != "" && password != "") {
       var data = {operation: 'addAuth', username: username, password: password, authenticationMethod: authenticationMethod,
@@ -138,6 +134,7 @@ var link_account = function() {
               $("#authForm").css('display','none')
               $('.alert-info').css('display','none')
               $("#confirm-migrate").css('display','block')
+              update_user_data(data)
           } else {
             display_error(data.errorMessage, $("#authForm"));
           }
@@ -148,6 +145,13 @@ var link_account = function() {
     }
   return false;
 };
+
+var update_user_data = function (data) {
+    $("#new_user").append('<td>'+data.data.new_username+'</td')
+    $("#new_user").append('<td>'+data.data.new_user_email+'</td')
+    $("#old_user").append('<td>'+data.data.old_username+'</td')
+    $("#old_user").append('<td>'+data.data.old_user_email+'</td')
+}
 
 var migrate_account= function () {
     $("#spinner").css('display', 'block')
@@ -183,9 +187,6 @@ var display_error = function(msg, elem) {
 
 $("#link").click(link_account);
 $("#confirm_true").click(migrate_account)
-$("#edit").live('click', edit_account);
-$(".edit_auth").live('click', edit_auth);
-$(".remove_auth").live('click', remove_auth);
 
 </script>
 {% endblock content %}
