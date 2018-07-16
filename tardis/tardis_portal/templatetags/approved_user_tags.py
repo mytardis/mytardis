@@ -7,10 +7,10 @@ register = template.Library()
 @register.filter
 def check_if_user_not_approved(request):
     """
-    Custom template filter to identify whether a user is a
-    facility manager.
+    Custom template filter to identify whether a user account
+    is approved.
     """
-    if (request.user.is_authenticated()):
+    if request.user.is_authenticated():
         user = request.user
         try:
             user_auth = UserAuthentication.objects.get(username=user.username, authenticationMethod='Google')
