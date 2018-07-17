@@ -202,7 +202,7 @@ def submit_form(request, form_state, publication):
     publication.institution_name = institutions
 
     # Attach the publication details schema
-    pub_details_parameter_set = publication.add_details_schema_pset()
+    pub_details_parameter_set = publication.get_details_schema_pset()
 
     # Add the acknowledgements
     publication.add_acknowledgements(form_state['acknowledgements'])
