@@ -13,6 +13,7 @@
     "backbone-forms": "^0.10.0",
     "blueimp-file-upload": "^9.22.0",
     "clipboard": "^1.5.10",
+    "default-passive-events": "^1.0.10",
     "jquery": "^3.3.1",
     "jquery-migrate": "^3.0.1",
     "jquery-ui-dist": "^1.12.1",
