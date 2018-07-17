@@ -16,6 +16,7 @@ from tardis.apps.openid_migration.models import OpenidUserMigration, OpenidACLMi
 from tastypie.models import ApiKey
 
 from .email_text import email_migration_success
+from .tasks import notify_migration_status
 from . import default_settings
 from .forms import openid_user_migration_form
 
@@ -121,7 +122,7 @@ def do_migration(request):
         # send email for successful migration
         # TODO : get request user auth method
         logger.info("sending email to %s", user.email)
-        notify_user(user, old_username, 'AAF')
+        notify_migration_status.delay(user, old_username, 'AAF')
 
     # data = _setupJsonData(authForm, authenticationMethod, supportedAuthMethods)
     return _getJsonSuccessResponse(data={})
@@ -160,22 +161,6 @@ def acl_migration(userIdToBeReplaced, replacementUserId, user_migration_record):
             acl_migration_record = OpenidACLMigration(user_migration=user_migration_record,
                                                       acl_id=experimentACL)
             acl_migration_record.save()
-
-
-def notify_user(user, old_username, new_authmethod):
-    subject, message_content = email_migration_success(old_username, new_authmethod)
-    try:
-        user.email_user(subject,
-                        message_content,
-                        from_email=getattr(settings, 'OPENID_NOTIFICATION_SENDER_EMAIL',
-                                           default_settings.OPENID_NOTIFICATION_SENDER_EMAIL),
-                        fail_silently=True)
-        logger.info("email sent")
-    except Exception as e:
-        logger.error(
-            "failed to send migration notification email(s): %s" %
-            repr(e)
-        )
 
 
 def migrate_user_permissions(old_user, new_user):
