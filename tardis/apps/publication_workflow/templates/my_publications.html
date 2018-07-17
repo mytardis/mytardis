@@ -8,18 +8,17 @@
 
 {% block content %}
 
+<script type="text/javascript" src="{% static 'my-publications/my_publications.js'%}"></script>
+<script type="text/javascript" src="{% static 'publication-actions/publication_actions.js'%}"></script>
+<script type="text/javascript" src="{% static 'publication-tokens/publication_tokens.js'%}"></script>
+<script type="text/javascript" src="{% static 'publication-form/publication_form.js'%}"></script>
+<script type="text/javascript" src="{% static 'default-passive-events/dist/index.js'%}"></script>
+
+{% comment %}
+Verbatim tells Django to stop interpreting {{ }} as Django template variables,
+and leave them to be interpreted by AngularJS instead.
+{% endcomment %}
 {% verbatim %}
-
-<script type="text/javascript">
-var use_figshare = '{{ use_figshare }}' === 'True';
-var figshare_url = '{{ figshare_url }}';
-var figshare_categories_json = '{{ figshare_categories_json }}';
-</script>
-
-<script type="text/javascript" src="/static/my-publications/my_publications.js"></script>
-<script type="text/javascript" src="/static/publication-actions/publication_actions.js"></script>
-<script type="text/javascript" src="/static/publication-tokens/publication_tokens.js"></script>
-<script type="text/javascript" src="/static/publication-form/publication_form.js"></script>
 
 <div id="content" ng-controller="MyPublicationsController as myPubsCtrl">
   <div class="row-fluid">
