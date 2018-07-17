@@ -1,5 +1,7 @@
 import logging
 
+from celery.task import task
+
 from django.conf import settings
 from django.contrib.sites.models import Site
 from django.core import mail
@@ -110,3 +112,19 @@ def send_admin_email(**kwargs):
 
     return kwargs
 
+
+@task(name="social_auth_account_approved", ignore_result=True)
+def send_account_approved_email(user):
+    """Sends user email once account is approved by admin"""
+    subject = '[MyTardis] User account Approved'
+    message = \
+        "Hi %s , \n\nYour account has been approved now.\n\n" \
+        "Thanks,\n" \
+        "MyTardis\n" \
+        % user.username
+    try:
+        user.email_user(subject, message,
+                        from_email=getattr(settings, 'OPENID_FROM_EMAIL', None), fail_silently=True)
+
+    except Exception as e:
+        logger.error("There was an error sending mail:", e)
