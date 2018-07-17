@@ -56,4 +56,3 @@ class OpenIDMigrationTestCase(TestCase):
         response = do_migration(request)
         d = json.loads(response.content)
         self.assertEqual(d['status'], 'success')
-
