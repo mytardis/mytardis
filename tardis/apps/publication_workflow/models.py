@@ -72,19 +72,12 @@ class Publication(Experiment):
         '''
         Get the publication details schema parameter set
         '''
-        return ExperimentParameterSet.objects.get(
-            schema=self.get_details_schema(), experiment=self)
-
-    def add_details_schema_pset(self):
-        '''
-        Attach the publication details schema
-        '''
-        pub_details_schema = Publication.get_details_schema()
         try:
-            pub_details_parameter_set = self.get_details_schema_pset()
+            return ExperimentParameterSet.objects.get(
+                schema=self.get_details_schema(), experiment=self)
         except ExperimentParameterSet.DoesNotExist:
             pub_details_parameter_set = ExperimentParameterSet(
-                schema=pub_details_schema,
+                schema=Publication.get_details_schema(),
                 experiment=self)
             pub_details_parameter_set.save()
         return pub_details_parameter_set
