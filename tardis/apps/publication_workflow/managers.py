@@ -177,10 +177,10 @@ class PublicationManager(ExperimentManager):
         ObjectACL(content_object=publication,
                   pluginId=django_group,
                   entityId=str(
-                      Group.objects.get_or_create(
+                      Group.objects.get(
                           name=getattr(
                               settings, 'PUBLICATION_ADMIN_GROUP',
-                              default_settings.PUBLICATION_ADMIN_GROUP))[0].id),
+                              default_settings.PUBLICATION_ADMIN_GROUP)).id),
                   canRead=True,
                   canWrite=True,
                   canDelete=True,
