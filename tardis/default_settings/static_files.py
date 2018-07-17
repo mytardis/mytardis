@@ -38,6 +38,7 @@ NPM_FILE_PATTERNS = {
     'backbone-forms': ['*'],
     'blueimp-file-upload': ['*'],
     'clipboard': ['*'],
+    'default-passive-events': ['dist/index.js'],
     'jquery': ['*'],
     'jquery-migrate': ['*'],
     'jquery-ui-dist': ['jquery-ui.min.js'],
