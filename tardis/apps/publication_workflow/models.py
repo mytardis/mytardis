@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.utils import timezone
+from django.utils.encoding import python_2_unicode_compatible
 
 from tardis.tardis_portal.models import (
     Experiment,
@@ -12,6 +13,7 @@ from tardis.tardis_portal.models import (
 from . import default_settings
 
 
+@python_2_unicode_compatible
 class Publication(Experiment):
     """
     Publication records are just experiment records with some metadata, so they
@@ -22,10 +24,14 @@ class Publication(Experiment):
     from .managers import PublicationManager
 
     safe = PublicationManager()  # The acl-aware specific manager.
+
     class Meta:
         # Don't create a database table for this model:
         proxy = True
         auto_created = True
+
+    def __str__(self):
+        return self.title
 
     def add_root_schema_pset(self):
         pub_schema_root = Schema.objects.get(
@@ -217,8 +223,9 @@ class Publication(Experiment):
         self.save()
 
         # Add the retracted schema
-        retracted_schema_ns = getattr(settings, 'PUBLICATION_RETRACTED_SCHEMA',
-                                  default_settings.PUBLICATION_RETRACTED_SCHEMA)
+        retracted_schema_ns = getattr(
+            settings, 'PUBLICATION_RETRACTED_SCHEMA',
+            default_settings.PUBLICATION_RETRACTED_SCHEMA)
         retracted_publication_schema = Schema.objects.get(
             namespace=retracted_schema_ns)
         retracted_pset = ExperimentParameterSet.objects.create(
