@@ -2,8 +2,6 @@
 Tests related to OpenID migration views
 '''
 
-from compare import expect
-
 from django.test import TestCase
 from django.test.client import Client
 from django.contrib.auth.models import User, Permission
@@ -29,9 +27,9 @@ class OpenIDMigrationViewTestCase(TestCase):
     def test_migrate_accounts(self):
         client = Client()
         response = client.get('/apps/openid-migration/migrate-accounts/')
-        expect(response.status_code).to_equal(302)
+        self.assertEqual(response.status_code, 302)
         login = client.login(username=self.user_new.username, password='secret')
         self.assertTrue(login)
         response = client.get('/apps/openid-migration/migrate-accounts/')
-        expect(response.status_code).to_equal(200)
+        self.assertEqual(response.status_code, 200)
 
