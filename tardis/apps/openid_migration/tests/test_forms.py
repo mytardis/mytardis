@@ -17,7 +17,6 @@ class OpenIDMigrationFormTestCase(TestCase):
 
     def test_init(self):
         form = openid_user_migration_form()
-        form.__setattr__('username':'xyz')
 
     def test_valid_data(self):
         form = openid_user_migration_form({
