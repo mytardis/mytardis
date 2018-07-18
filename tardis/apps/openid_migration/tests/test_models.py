@@ -1,7 +1,7 @@
 from django.test import TestCase
-
-from ..models import  OpenidUserMigration
 from django.contrib.auth.models import User
+
+from ..models import OpenidUserMigration
 
 
 class ModelTestCase(TestCase):
