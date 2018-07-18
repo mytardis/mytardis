@@ -226,19 +226,15 @@ def confirm_migration(request):
         errorMessage = 'Wrong username or password. Please try again'
         return _getJsonFailedResponse(errorMessage)
 
-    else:
-        data = _setupJsonData(user, request.user)
-        return _getJsonConfirmResponse(data)
+    data = _setupJsonData(user, request.user)
+    return _getJsonConfirmResponse(data)
 
 
 def _setupJsonData(old_user, new_user):
     """Sets up the JSON data dictionary that will be sent back to the web
     client.
-
-    :param Form authForm: the Authentication Form
     :param User old_user: the user migrating from
     :param User new_user: the user migrating to
-
     :returns: The data dictionary
     :rtype: dict
     """
