@@ -1,5 +1,5 @@
 from django import template
-from tardis.tardis_portal.models import User,UserAuthentication
+from tardis.tardis_portal.models import UserAuthentication
 
 register = template.Library()
 

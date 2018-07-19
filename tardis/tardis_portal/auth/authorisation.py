@@ -9,10 +9,10 @@ from django.db.models import Q
 from django.db.models.query import QuerySet
 from django.conf import settings
 
+from social_core.backends.oauth import BaseOAuth2
+
 from ..models.access_control import ObjectACL
 from .token_auth import TokenGroupProvider
-
-from social_core.backends.oauth import BaseOAuth2
 
 
 class ACLAwareBackend(object):
@@ -153,4 +153,3 @@ class AAFOpenId(BaseOAuth2):
 
     def auth_headers(self):
         return {'Content-Type': 'application/x-www-form-urlencoded'}
-
