@@ -16,7 +16,6 @@ from . import localdb_auth
 from ..forms import createLinkedUserAuthenticationForm
 from ..shortcuts import render_response_index
 
-from tardis.apps.openid_migration.models import OpenidUserMigration, OpenidACLMigration
 
 logger = logging.getLogger(__name__)
 
@@ -37,22 +36,23 @@ def list_auth_methods(request):
     supportedAuthMethods = _getSupportedAuthMethods()
 
     try:
-        """
         userProfile = UserProfile.objects.get(user=request.user)
-        
+
         if userProfile.isDjangoAccount:
             # if the main account for this user is a django account, add his
             # details in the userAuthMethodList (a list of user authentication
             # methods that the user can modify or delete)
             userAuthMethodList.append((request.user.username,
                 localdb_auth.auth_display_name, localdb_auth.auth_key))
-        """
+
         # get the user authentication methods for the current user
         userAuths = UserAuthentication.objects.filter(
             userProfile__user=request.user)
 
         # ... and append it to our list
         for userAuth in userAuths:
+            # localdb is already represented above
+            if userAuth.authenticationMethod != "localdb":
                 userAuthMethodList.append((userAuth.username,
                     userAuth.getAuthMethodDescription(),
                     userAuth.authenticationMethod))
@@ -223,6 +223,10 @@ def merge_auth_method(request):
             userProfile__user=user)
 
         for userAuth in userAuths:
+
+            userAuth.userProfile = userProfile
+            userAuth.save()
+
             # also remove the current userAuth from the list of authentication
             # method options that can be added by this user
             del supportedAuthMethods[userAuth.authenticationMethod]
@@ -231,11 +235,7 @@ def merge_auth_method(request):
         # to request.user
         userIdToBeReplaced = user.id
         replacementUserId = request.user.id
-        # for logging migration event
-        user_migration_record = OpenidUserMigration(old_user=user, new_user=request.user,
-                                                    old_user_auth_method=authenticationMethod,
-                                                    new_user_auth_method='')
-        user_migration_record.save()
+
         # TODO: note that django_user here has been hardcoded. Uli's going
         # to change the implementation on his end so that I can just use a key
         # in here instead of a hardcoded string.
@@ -258,18 +258,10 @@ def merge_auth_method(request):
                 acl.canWrite = acl.canWrite or experimentACL.canWrite
                 acl.canDelete = acl.canDelete or acl.canDelete
                 acl.save()
-                #record acl migration event
-                acl_migration_record = OpenidACLMigration(user_migration=user_migration_record,
-                                                          acl_id=acl)
-                acl_migration_record.save()
                 experimentACL.delete()
             except ObjectACL.DoesNotExist:
                 experimentACL.entityId = replacementUserId
                 experimentACL.save()
-                #record acl migration event
-                acl_migration_record = OpenidACLMigration(user_migration=user_migration_record,
-                                                          acl_id=experimentACL)
-                acl_migration_record.save()
 
         # let's also change the group memberships of all the groups that 'user'
         # is a member of
@@ -277,11 +269,8 @@ def merge_auth_method(request):
         for group in groups:
             request.user.groups.add(group)
 
-        # we can now make user inactive
-        user.is_active = False
-        user.save()
-        user_migration_record.migration_status = True
-        user_migration_record.save()
+        # we can now delete 'user'
+        user.delete()
 
     data = _setupJsonData(authForm, authenticationMethod, supportedAuthMethods)
     return _getJsonSuccessResponse(data)
@@ -328,9 +317,8 @@ def _getSupportedAuthMethods():
     for authKey, authDisplayName, authBackend in settings.AUTH_PROVIDERS:
         # we will only add non-localDB authentication methods to the
         # supportedAuthMethods list.
-        #commenting this to support merging local accounts
-        #if authKey != localdb_auth.auth_key:
-        supportedAuthMethods[authKey] = authDisplayName
+        if authKey != localdb_auth.auth_key:
+            supportedAuthMethods[authKey] = authDisplayName
 
     return supportedAuthMethods
 
