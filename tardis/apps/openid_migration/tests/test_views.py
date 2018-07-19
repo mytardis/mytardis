@@ -5,9 +5,6 @@ Tests related to OpenID migration views
 from django.test import TestCase
 from django.test.client import Client
 from django.contrib.auth.models import User, Permission
-from django.http import HttpRequest, QueryDict
-
-from ..views import migrate_accounts
 
 
 class OpenIDMigrationViewTestCase(TestCase):
@@ -32,4 +29,3 @@ class OpenIDMigrationViewTestCase(TestCase):
         self.assertTrue(login)
         response = client.get('/apps/openid-migration/migrate-accounts/')
         self.assertEqual(response.status_code, 200)
-

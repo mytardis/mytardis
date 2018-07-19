@@ -18,10 +18,5 @@ class OpenIDMigrationFormTestCase(TestCase):
     def test_init(self):
         form = openid_user_migration_form()
 
-    def test_valid_data(self):
-        form = openid_user_migration_form({
-            'username': self.user_new.username,
-            'password': 'secret'
-        }
-
-        )
+    # TODO: Test valid data
+    # def test_valid_data(self):
