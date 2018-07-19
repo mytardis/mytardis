@@ -1,12 +1,12 @@
 import logging
 
-from celery.task import task
-
 from django.conf import settings
 from django.contrib.sites.models import Site
 from django.core import mail
 from django.core.mail import get_connection
 from django.contrib.auth.models import Permission
+
+from celery.task import task
 
 from tardis.tardis_portal.models import UserAuthentication
 
@@ -45,7 +45,7 @@ def get_auth_method(authenticatedBackendName):
         authBackendClassName = authBackend.split('.')[-1]
         if authBackendClassName == authenticatedBackendName:
             return authKey
-
+    return None
 
 def add_user_permissions(**kwargs):
     """Adds default permission to OPenID authenticated user"""
@@ -108,7 +108,7 @@ def send_admin_email(**kwargs):
                          connection=get_connection(fail_silently=True))
 
     except Exception as e:
-        logger.error("There was an error sending mail:", e)
+        logger.error("There was an error sending mail: %s ", e)
 
     return kwargs
 

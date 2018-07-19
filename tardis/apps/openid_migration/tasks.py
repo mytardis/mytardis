@@ -1,8 +1,8 @@
 import logging
 
-from celery.task import task
-
 from django.conf import settings
+
+from celery.task import task
 
 from .email_text import email_migration_success
 from . import default_settings
