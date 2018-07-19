@@ -2,8 +2,6 @@ import logging
 
 from django.http import HttpResponse
 from django.contrib.auth.models import Permission
-from django.core.mail import send_mail
-from django.conf import settings
 
 from tardis.tardis_portal.models import UserProfile, UserAuthentication, \
     ObjectACL, Group
@@ -15,9 +13,7 @@ from tardis.apps.openid_migration.models import OpenidUserMigration, OpenidACLMi
 
 from tastypie.models import ApiKey
 
-from .email_text import email_migration_success
 from .tasks import notify_migration_status
-from . import default_settings
 from .forms import openid_user_migration_form
 
 

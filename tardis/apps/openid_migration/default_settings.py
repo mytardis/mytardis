@@ -15,6 +15,5 @@ Please contact store.star.help@monash.edu if you think this is an error.
 
 Regards,
 Store.Monash Team.
-                          
 '''),
 }
