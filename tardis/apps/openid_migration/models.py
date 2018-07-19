@@ -2,6 +2,7 @@ from django.apps import apps
 from django.db import models
 from django.contrib import admin
 from django.contrib.auth.models import User
+from django.utils.encoding import python_2_unicode_compatible
 
 from tardis.tardis_portal.models.access_control import ObjectACL
 
@@ -21,9 +22,13 @@ class OpenidUserMigration(models.Model):
         return '%s | %s' % (self.old_user.username, self.new_user.username)
 
 
+@python_2_unicode_compatible
 class OpenidACLMigration(models.Model):
     user_migration = models.ForeignKey(OpenidUserMigration, on_delete=models.CASCADE)
     acl_id = models.ForeignKey(ObjectACL)
+
+    def __str__(self):
+        return self.name
 
 
 class OpenidACLMigrationAdmin(admin.ModelAdmin):
