@@ -127,4 +127,4 @@ def send_account_approved_email(user):
                         from_email=getattr(settings, 'OPENID_FROM_EMAIL', None), fail_silently=True)
 
     except Exception as e:
-        logger.error("There was an error sending mail:", e)
+        logger.error("There was an error sending mail: %s ", e)
