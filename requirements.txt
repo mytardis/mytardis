@@ -2,7 +2,7 @@
 -r requirements-docs.txt
 -r requirements-test.txt
 python-ldap==2.4.27
-social-auth-app-django
+social-auth-app-django==2.1.0
 
 # apps go here:
 # -r tardis/apps/exampleapp/requirements.txt
