@@ -304,11 +304,12 @@ angular
     };
 
     // A list of available pages of the form, along with a function used to validate the form content
-    vm.formPages = [{
-        title: '',
-        url: 'form_page1.html',
-        validationFunction: noValidation
-    },
+    vm.formPages = [
+        {
+            title: '',
+            url: 'form_page1.html',
+            validationFunction: noValidation
+        },
         {
             title: 'Select datasets',
             url: 'form_page2.html',
@@ -460,12 +461,22 @@ angular
     });
 
     vm.saveAndClose = function () {
+        if (!vm.formData.action) {
+            // vm.formData.action will be blank if user clicked "Save and finish later"
+            if (vm.currentPage.title == 'Select datasets') {
+                vm.formData.action = "update-dataset-selection";
+            } else if (vm.currentPage.title == 'Extra information') {
+                vm.formData.action = "update-extra-info";
+            } else if (vm.currentPage.title == 'Attribution and licensing') {
+                vm.formData.action = 'update-attribution-and-licensing';
+            }
+        }
         angular.element($document[0].querySelector('.ngdialog')).scrollTop(0);
         saveFormState(
             function () { // On success
                 // Preventing using $scope directly silences ESLint's angular/controller-as error:
                 var dialogScope = $scope;
-                dialogScope.closeThisDialog(vm.formData.publicationId);
+                dialogScope.closeThisDialog();
             },
             function () {
             } // On error
