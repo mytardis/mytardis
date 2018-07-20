@@ -1,5 +1,3 @@
-from .urls import MEDIA_URL, STATIC_URL
-
 UPLOAD_METHOD = False
 '''
 Old version: UPLOAD_METHOD = "uploadify".
