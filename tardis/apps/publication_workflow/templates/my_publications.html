@@ -27,7 +27,8 @@ and leave them to be interpreted by AngularJS instead.
         <h2 class="hidden-phone" style="text-align: center">My Publications</h2>
       </div>  <!-- class="pull-left" -->
       <div class="pull-right"
-           ng-controller="PublicationActionsController as pubActionsCtrl">
+           ng-controller="PublicationActionsController as pubActionsCtrl"
+           ng-init="pubActionsCtrl.init(myPubsCtrl, null)">
         <a class="btn btn-info pull-right"
            title="Prepare To Publish" ng-click="pubActionsCtrl.createPublication()">
           <i class="fa fa-share"></i>
@@ -72,7 +73,7 @@ and leave them to be interpreted by AngularJS instead.
             <td md-cell>{{draftPub.release_date}}</td>
             <td md-cell
                ng-controller="PublicationActionsController as pubActionsCtrl"
-               ng-init="pubActionsCtrl.init(draftPub.id)">
+               ng-init="pubActionsCtrl.init(myPubsCtrl, draftPub.id)">
                <button title="Edit Draft" class="btn btn-info"
                      ng-click="pubActionsCtrl.resumePublication()">
                <i class="fa fa-edit"></i>
@@ -149,7 +150,7 @@ and leave them to be interpreted by AngularJS instead.
             <td md-cell>{{scheduledPub.release_date}}</td>
             <td md-cell
                ng-controller="PublicationActionsController as pubActionsCtrl"
-               ng-init="pubActionsCtrl.init(scheduledPub.id)">
+               ng-init="pubActionsCtrl.init(myPubsCtrl, scheduledPub.id)">
              <button title="Retract" class="btn btn-danger"
                      ng-click="pubActionsCtrl.retractPublication()">
                <i class="fa fa-exclamation-triangle"></i>
@@ -217,7 +218,7 @@ and leave them to be interpreted by AngularJS instead.
             <td md-cell>{{releasedPub.release_date}}</td>
             <td md-cell
                ng-controller="PublicationActionsController as pubActionsCtrl"
-               ng-init="pubActionsCtrl.init(releasedPub.id)">
+               ng-init="pubActionsCtrl.init(myPubsCtrl, releasedPub.id)">
              <button title="Retract" class="btn btn-danger"
                      ng-click="pubActionsCtrl.retractPublication()">
                <i class="fa fa-exclamation-triangle"></i>

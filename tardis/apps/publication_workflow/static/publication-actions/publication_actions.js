@@ -62,14 +62,16 @@ angular
         }
     };
 
-
     /**
      * Used with ng-init:
      */
-    vm.init = function(experimentId) {
-        vm.experimentId = experimentId;
-        vm.setIsPublication(vm.experimentId);
-        vm.setIsPublicationDraft(vm.experimentId);
+    vm.init = function(myPubsCtrl, experimentId) {
+        vm.myPubsCtrl = myPubsCtrl;
+        if (experimentId) {
+            vm.experimentId = experimentId;
+            vm.setIsPublication(vm.experimentId);
+            vm.setIsPublicationDraft(vm.experimentId);
+        }
     };
 
     /**
@@ -92,20 +94,12 @@ angular
                 'currentPageIdx': vm.currentPageIdx
             },
             closeByDocument: false,
-            // The "redirectTo" code below needs review.
-            // After creating a publication from the My Publications view,
-            // I want it to be displayed in that view, I don't want to be
-            // redirected to that publication's experiment view.
-            // Consider all 4 cases: Create vs Resume from My Pubs vs Exp page.
-            preCloseCallback: function (publicationId) {
-                if (angular.isDefined(publicationId) &&
-                    angular.isNumber(publicationId) &&
-                    publicationId !== vm.experimentId) {
-                    // var redirectTo = '/experiment/view/' + publicationId + '/';
-                    var redirectTo = '/apps/publication-workflow/my_publications/';
-                    $window.location = redirectTo;
-                } else if (angular.isDefined(publicationId)) {
-                    $window.location.reload();
+            preCloseCallback: function () {
+                if (angular.isDefined(vm.myPubsCtrl)) {
+                    vm.myPubsCtrl.loadDraftPubsData();
+                    vm.myPubsCtrl.loadScheduledPubsData();
+                    vm.myPubsCtrl.loadReleasedPubsData();
+                    vm.myPubsCtrl.loadRetractedPubsData();
                 }
             }
         });
