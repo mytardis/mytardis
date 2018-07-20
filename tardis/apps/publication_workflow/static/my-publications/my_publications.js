@@ -22,11 +22,11 @@ angular
                         });
 
     /**
-     * initializeDraftPubsData
+     * loadDraftPubsData
      *
      * Fetch the list of draft pubs available to the user
      */
-    function initializeDraftPubsData() {
+    vm.loadDraftPubsData = function() {
         draftPubsListRes.get().$promise.then(function (data) {
                 $log.debug("MyPublicationsController: Draft pubs list fetched successfully!");
                 vm.draftPubs = data;
@@ -37,11 +37,11 @@ angular
     }
 
     /**
-     * initializeScheduledPubsData
+     * loadScheduledPubsData
      *
      * Fetch the list of scheduled pubs available to the user
      */
-    function initializeScheduledPubsData() {
+    vm.loadScheduledPubsData = function() {
         scheduledPubsListRes.get().$promise.then(function (data) {
                 $log.debug("MyPublicationsController: Scheduled pubs list fetched successfully!");
                 vm.scheduledPubs = data;
@@ -49,14 +49,14 @@ angular
             function () {
                 $log.error("Could not load scheduled pubs list");
             });
-    }
+    };
 
     /**
-     * initializeReleasedPubsData
+     * loadReleasedPubsData
      *
      * Fetch the list of released pubs available to the user
      */
-    function initializeReleasedPubsData() {
+    vm.loadReleasedPubsData = function() {
         releasedPubsListRes.get().$promise.then(function (data) {
                 $log.debug("MyPublicationsController: Released pubs list fetched successfully!");
                 vm.releasedPubs = data;
@@ -64,14 +64,14 @@ angular
             function () {
                 $log.error("Could not load released pubs list");
             });
-    }
+    };
 
     /**
-     * initializeRetractedPubsData
+     * loadRetractedPubsData
      *
      * Fetch the list of retracted pubs available to the user
      */
-    function initializeRetractedPubsData() {
+    vm.loadRetractedPubsData = function() {
         retractedPubsListRes.get().$promise.then(function (data) {
                 $log.debug("MyPublicationsController: Retracted pubs list fetched successfully!");
                 vm.retractedPubs = data;
@@ -79,13 +79,13 @@ angular
             function () {
                 $log.error("Could not load retracted pubs list");
             });
-    }
+    };
 
     // Do initial data fetch
-    initializeDraftPubsData();
-    initializeScheduledPubsData();
-    initializeReleasedPubsData();
-    initializeRetractedPubsData();
+    vm.loadDraftPubsData();
+    vm.loadScheduledPubsData();
+    vm.loadReleasedPubsData();
+    vm.loadRetractedPubsData();
 
     vm.selected = [];
     vm.limitOptions = [5, 10, 15];

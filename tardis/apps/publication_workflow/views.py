@@ -91,6 +91,8 @@ def process_form(request):
             return response
     elif form_state['action'] == 'update-extra-info':
         update_extra_info(request, form_state, publication)
+    elif form_state['action'] == 'update-attribution-and-licensing':
+        update_attribution_and_licensing(request, form_state, publication)
     elif form_state['action'] == 'submit':
         response = submit_form(request, form_state, publication)
         if response:
@@ -185,15 +187,7 @@ def update_extra_info(request, form_state, publication):
     return None
 
 
-def submit_form(request, form_state, publication):
-    # any final form validation should occur here
-    # and specific error messages can be returned
-    # to the browser before the publication's draft
-    # status is removed.
-
-    if 'acknowledge' not in form_state or not form_state['acknowledge']:
-        return validation_error('You must confirm that you are '
-                                'authorised to submit this publication')
+def update_attribution_and_licensing(request, form_state, publication):
 
     set_publication_authors(form_state['authors'], publication)
 
@@ -205,27 +199,48 @@ def submit_form(request, form_state, publication):
     pub_details_parameter_set = publication.get_details_schema_pset()
 
     # Add the acknowledgements
-    publication.add_acknowledgements(form_state['acknowledgements'])
+    # Client-side validation requires them for final submission,
+    # but not for "Save and finish later"
+    if 'acknowledgements' in form_state:
+        publication.add_acknowledgements(form_state['acknowledgements'])
 
     # Add a parameter set with the publication root schema:
     # add_publication_root_schema_pset(publication)
     publication.add_root_schema_pset()
 
     # Set the release date
-    publication.set_embargo_release_date(
-        dateutil.parser.parse(
-            form_state['embargo']))
+    # Client-side validation requires it for final submission,
+    # but not for "Save and finish later"
+    if 'embargo' in form_state:
+        publication.set_embargo_release_date(
+            dateutil.parser.parse(
+                form_state['embargo']))
 
     # Set the license
-    try:
-        publication.license = License.objects.get(
-            pk=form_state['selectedLicenseId'],
-            is_active=True,
-            allows_distribution=True)
-    except License.DoesNotExist:
-        publication.license = License.get_none_option_license()
+    # Client-side validation requires it for final submission,
+    # but not for "Save and finish later"
+    if 'selectedLicenseId' in form_state:
+        try:
+            publication.license = License.objects.get(
+                pk=form_state['selectedLicenseId'],
+                is_active=True,
+                allows_distribution=True)
+        except License.DoesNotExist:
+            publication.license = License.get_none_option_license()
 
     publication.save()
+
+
+def submit_form(request, form_state, publication):
+    # any final form validation should occur here
+    # and specific error messages can be returned
+    # to the browser before the publication's draft
+    # status is removed.
+    update_attribution_and_licensing(request, form_state, publication)
+
+    if 'acknowledge' not in form_state or not form_state['acknowledge']:
+        return validation_error('You must confirm that you are '
+                                'authorised to submit this publication')
 
     # Remove the draft status
     publication.remove_draft_status()
