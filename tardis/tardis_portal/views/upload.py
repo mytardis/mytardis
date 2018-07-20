@@ -68,33 +68,3 @@ def upload(request, dataset_id):
             logger.debug('saved datafile')
 
     return HttpResponse('True')
-
-
-@authz.dataset_write_permissions_required
-def upload_files(request, dataset_id,
-                 template_name='tardis_portal/ajax/upload_files.html'):
-    """
-    Creates an Uploadify 'create files' button with a dataset
-    destination. `A workaround for a JQuery Dialog conflict\
-    <http://www.uploadify.com/forums/discussion/3348/
-        uploadify-in-jquery-ui-dialog-modal-causes-double-queue-item/p1>`_
-
-    :param request: a HTTP Request instance
-    :type request: :class:`django.http.HttpRequest`
-    :param basestring template_name: the path of the template to render
-    :param dataset_id: the dataset_id
-    :type dataset_id: integer
-    :returns: A view containing an Uploadify *create files* button
-    :rtype: HttpResponse
-    """
-    if 'message' in request.GET:
-        message = request.GET['message']
-    else:
-        message = "Upload Files to Dataset"
-    url = reverse('tardis.tardis_portal.views.upload_complete')
-    c = {'upload_complete_url': url,
-         'dataset_id': dataset_id,
-         'message': message,
-         'session_id': request.session.session_key
-    }
-    return render_to_response(template_name, c)

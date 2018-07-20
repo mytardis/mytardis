@@ -7,10 +7,6 @@ from ..util import render_mustache, render_public_access_badge
 
 register = template.Library()
 
-# -----------------------------------------------------------------------------
-#   multi_file_upload
-# -----------------------------------------------------------------------------
-
 
 @register.inclusion_tag('tardis_portal/experiment_tags/experiment_browse_item.html')
 def experiment_browse_item(experiment, **kwargs):
