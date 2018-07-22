@@ -1,5 +1,5 @@
 from __future__ import absolute_import
-from celery import Celery
+from celery import Celery  # pylint: disable=import-error
 from django.apps import apps  # pylint: disable=wrong-import-order
 
 tardis_app = Celery('tardis')

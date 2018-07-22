@@ -1,9 +1,9 @@
 # pylint: disable=wildcard-import,unused-wildcard-import
-
+from __future__ import absolute_import
 from glob import glob
 from os import path
 
-from celery import Celery
+from celery import Celery  # pylint: disable=import-error
 from django.apps import apps  # pylint: disable=wrong-import-order
 
 from .default_settings import *  # noqa # pylint: disable=W0401,W0614
