@@ -95,7 +95,7 @@ urlpatterns = [
     url(r'^facility/', include(facility_urls)),
 
     # SFTP views
-    (r'^sftp/', include('tardis.sftp.urls', namespace='sftp', app_name='tardis.sftp')),
+    url(r'^sftp/', include('tardis.sftp.urls', namespace='sftp')),
 
     # Display Views
     url(r'^display/', include(display_urls)),

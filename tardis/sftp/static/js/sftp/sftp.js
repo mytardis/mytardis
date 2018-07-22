@@ -7,12 +7,12 @@ function createKeyAlert(msg, level) {
 function addKeyRow(rowData) {
   return "<tr id='keyRow" + rowData.id + "'>\
   <td><div class='pull-left'><h3 style='margin-left:12px 0;'>" + rowData.name + "</h3>\
-  <p style='margin: 9px 0'>Type: " + rowData.key_type + "<p>\
+  <p style='margin: 9px 0'>Type: " + rowData.key_type.toUpperCase() + "<p>\
   <p>Fingerprint: " + rowData.fingerprint + "</p>\
   <p>Date added: " + rowData.added + "</p></div>\
-  <button class='btn btn-large btn-danger pull-right' \
+  <button id='delete-btn' class='btn pull-right' \
   onclick='handleKeyDelete(" + rowData.id + ")'>\
-  <i class='fa fa-trash'></i></button></td></tr>"
+  <b>Delete<b></button></td></tr>"
 }
 
 function createKeyTable(keyData) {
@@ -32,24 +32,28 @@ function loadKeyTable(clear) {
       "<div id='keyTable'><p><img src=/static/images/ajax-loader-big.gif alt='loading...'/> Load keys...</p></div>"
     )
   }
-  fetch('/api/v1/sftp/key')
-    .then(function(resp) {
-      return resp.json();
-    })
-    .then(function(json) {
-      var objs = json.objects
-      if (objs.length > 0) {
-        $("#keyTable").replaceWith(createKeyTable(objs))
-      } else {
-        $("#keyTable").replaceWith(createKeyAlert(
-          "You don't have any public keys registered. Please add keys using the Add key button above.",
-          "warning"
-        ))
-      }
-    })
-    .catch(function(err) {
-      console.error("Error loading SSH keys:\n", err)
-    })
+  fetch(
+    '/api/v1/sftp/key',
+    {
+      credentials: "include"
+    }
+  ).then(function(resp) {
+    return resp.json();
+  })
+  .then(function(json) {
+    var objs = json.objects
+    if (objs.length > 0) {
+      $("#keyTable").replaceWith(createKeyTable(objs))
+    } else {
+      $("#keyTable").replaceWith(createKeyAlert(
+        "You don't have any public keys registered. Please add keys using the Add key button above.",
+        "warning"
+      ))
+    }
+  })
+  .catch(function(err) {
+    console.error("Error loading SSH keys:\n", err)
+  })
 }
 
 function handleKeyDelete(keyId) {
