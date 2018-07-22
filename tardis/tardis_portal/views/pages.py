@@ -3,6 +3,9 @@ views that render full pages
 """
 
 import logging
+
+from six.moves import urllib
+
 import re
 from os import path
 import inspect
@@ -11,6 +14,7 @@ import types
 from six import string_types
 
 from django.conf import settings
+from django.contrib import auth as djauth
 from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.sites.shortcuts import get_current_site
@@ -18,7 +22,7 @@ from django.core.exceptions import PermissionDenied, ImproperlyConfigured
 from django.core.paginator import Paginator, EmptyPage, InvalidPage
 from django.urls import reverse
 from django.db import connection
-from django.http import (HttpResponse,
+from django.http import (HttpResponse,HttpResponseRedirect,
                          HttpResponseForbidden,
                          JsonResponse)
 from django.shortcuts import render
@@ -30,7 +34,7 @@ from ..auth import decorators as authz
 from ..auth.decorators import (
     has_experiment_download_access, has_experiment_write, has_dataset_write)
 from ..auth.localdb_auth import django_user
-from ..forms import ExperimentForm, DatasetForm
+from ..forms import ExperimentForm, DatasetForm, LoginForm
 from ..models import Experiment, Dataset, DataFile, ObjectACL
 from ..shortcuts import render_response_index, \
     return_response_error, return_response_not_found, get_experiment_referer
@@ -174,6 +178,80 @@ class IndexView(TemplateView):
         """
 
         c = self.get_context_data(request, **kwargs)
+
+        return render_response_index(request, self.template_name, c)
+
+
+class LoginView(TemplateView):
+    template_name = 'tardis_portal/login.html'
+
+    def get_context_data(self, request, **kwargs):
+        url = request.META.get('HTTP_REFERER', '/')
+        u = urllib.parse.urlparse(url)
+        if u.netloc == request.META.get('HTTP_HOST', ""):
+            next_page = u.path
+        else:
+            next_page = '/'
+        c = super(LoginView, self).get_context_data(**kwargs)
+        c['loginForm'] = LoginForm()
+        c['next_page'] = next_page
+
+        c['RAPID_CONNECT_ENABLED'] = settings.RAPID_CONNECT_ENABLED
+        c['RAPID_CONNECT_LOGIN_URL'] = settings.RAPID_CONNECT_CONFIG[
+            'authnrequest_url']
+        return c
+
+    def get(self, request, *args, **kwargs):
+        if request.user.is_authenticated:
+            # redirect the user to the home page if he is trying to go to the
+            # login page
+            return HttpResponseRedirect(request.POST.get('next_page', '/'))
+
+        c = self.get_context_data(request, **kwargs)
+        return render_response_index(request, self.template_name, c)
+
+    def post(self, request, *args, **kwargs):
+        from ..auth import auth_service
+
+        if request.user.is_authenticated:
+            # redirect the user to the home page if he is trying to go to the
+            # login page
+            return HttpResponseRedirect(request.POST.get('next_page', '/'))
+
+        # TODO: put me in SETTINGS
+        if 'username' in request.POST and \
+                'password' in request.POST:
+            authMethod = request.POST.get('authMethod', None)
+
+            user = auth_service.authenticate(
+                authMethod=authMethod, request=request)
+
+            if user:
+                next_page = request.POST.get(
+                    'next_page', request.GET.get('next_page', '/'))
+                user.backend = 'django.contrib.auth.backends.ModelBackend'
+                djauth.login(request, user)
+                return HttpResponseRedirect(next_page)
+
+            c = {'status': "Sorry, username and password don't match.",
+                 'error': True,
+                 'loginForm': LoginForm()}
+
+            return HttpResponseForbidden(
+                render_response_index(request, self.template_name, c))
+
+        url = request.META.get('HTTP_REFERER', '/')
+        u = urllib.parse.urlparse(url)
+        if u.netloc == request.META.get('HTTP_HOST', ""):
+            next_page = u.path
+        else:
+            next_page = '/'
+        c = {'loginForm': LoginForm(),
+             'next_page': next_page}
+
+        c['RAPID_CONNECT_ENABLED'] = settings.RAPID_CONNECT_ENABLED
+        c['RAPID_CONNECT_LOGIN_URL'] = settings.RAPID_CONNECT_CONFIG[
+            'authnrequest_url']
 
         return render_response_index(request, self.template_name, c)
 
