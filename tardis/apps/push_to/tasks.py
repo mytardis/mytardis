@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 from six import string_types
 
 from tardis.tardis_portal.models import Experiment, Dataset, DataFile
-from tardis.celery_app import tardis_portal_app
+from tardis.celery import tardis_app
 from tardis.tardis_portal.util import split_path
 from tardis.tardis_portal.util import get_filesystem_safe_experiment_name
 from tardis.tardis_portal.util import get_filesystem_safe_dataset_name
@@ -12,7 +12,7 @@ from tardis.tardis_portal.util import get_filesystem_safe_dataset_name
 from .models import Credential, RemoteHost
 
 
-@tardis_portal_app.task
+@tardis_app.task
 def push_experiment_to_host(
         user_id, credential_id, remote_host_id, experiment_id, base_dir=None
 ):
@@ -35,7 +35,7 @@ def push_experiment_to_host(
         raise
 
 
-@tardis_portal_app.task
+@tardis_app.task
 def push_dataset_to_host(user_id, credential_id, remote_host_id, dataset_id,
                          base_dir=None):
     try:
@@ -55,7 +55,7 @@ def push_dataset_to_host(user_id, credential_id, remote_host_id, dataset_id,
         raise
 
 
-@tardis_portal_app.task
+@tardis_app.task
 def push_datafile_to_host(user_id, credential_id, remote_host_id, datafile_id,
                           base_dir=None):
     try:
