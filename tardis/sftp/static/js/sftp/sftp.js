@@ -131,12 +131,13 @@ function addKey() {
   }
 }
 
-$(document).ready(function() {
-  loadKeyTable(false)
-})
-
 function clearKeyAddForm() {
   $("#keyAddAlertMessage").empty()
   $("#keyAddAlert").hide()
   document.getElementById('keyAddForm').reset()
 }
+
+$(document).ready(function() {
+  loadKeyTable(false)
+})
+
