@@ -533,3 +533,119 @@ Serving with Apache HTTPD + mod_wsgi
 
 We do not support the use of Apache. If you need this and want to support this
 use case, we welcome your contribution of any relevant documentation.
+
+Creating Systemd Services for Gunicorn and Celery
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Gunicorn is a Python WSGI HTTP Server which is suitable for production (when
+combined with NGINX).  Gunicorn is typically run from a Systemd service
+(on Ubuntu 16.04 or Ubuntu 18.04), saved in
+`/etc/systemd/system/gunicorn.service`::
+
+    [Unit]
+    Description=gunicorn daemon
+    After=network.target
+    
+    [Service]
+    User=mytardis
+    Group=mytardis
+    WorkingDirectory=/home/mytardis/mytardis
+    ExecStart=/home/mytardis/.virtualenvs/mytardis/bin/gunicorn \
+      -c gunicorn_settings.py -b unix:/tmp/gunicorn.socket \
+      -b 127.0.0.1:8000 \
+      --log-syslog \
+      wsgi:application
+    
+    [Install]
+    WantedBy=multi-user.target
+
+On older systems (Ubuntu 14.04), Supervisor can be used instead of Systemd.
+In this case, the Gunicorn service would be configured in
+`/etc/supervisor/conf.d/gunicorn.conf`::
+
+    [program:gunicorn]
+    command=/home/mytardis/.virtualenvs/mytardis/bin/gunicorn
+     -c /home/mytardis/mytardis/gunicorn_settings.py
+     -b unix:/tmp/gunicorn.socket
+     -b 127.0.0.1:8000
+     --log-syslog
+     wsgi:application
+    user=mytardis
+    stdout_logfile=/var/log/gunicorn.log
+    redirect_stderr=true
+
+A single server MyTardis deployment requires only one Gunicorn service,
+but MyTardis can be installed on multiple web nodes, each running NGINX
+and Gunicorn to accomodate load balancing and high availability using
+HAProxy.
+
+The Celery workers which run MyTardis asynchronous tasks also require a
+service configuration, which is typically implemented with Systemd (on
+Ubuntu 16.04 or Ubuntu 18.04), saved in
+`/etc/systemd/service/celeryworker.service`::
+
+    [Unit]
+    Description=celeryworker daemon
+    After=network.target
+
+    [Service]
+    User=mytardis
+    Group=mytardis
+    WorkingDirectory=/home/mytardis/mytardis
+    Environment=DJANGO_SETTINGS_MODULE=tardis.settings
+    ExecStart=/home/mytardis/.virtualenvs/mytardis/bin/celery worker \
+      -A tardis.celery.tardis_app \
+      -c 2 -Q celery,default -n "allqueues.%%h"
+
+    [Install]
+    WantedBy=multi-user.target
+
+On older systems (Ubuntu 14.04), Supervisor can be used instead of Systemd.
+In this case, the Celery worker service would be configured in
+`/etc/supervisor/conf.d/celeryworker.conf`::
+
+    [program:celeryd]
+    environment=
+      DJANGO_SETTINGS_MODULE=tardis.settings
+    command=/home/mytardis/.virtualenvs/mytardis/bin/celery worker
+      -A tardis.celery.tardis_app
+      -c 2 -Q celery,default -n "allqueues.%%h"
+    user=mytardis
+    directory=/home/mytardis/mytardis
+    stdout_logfile=/var/log/celeryd.log
+    redirect_stderr=true
+    killasgroup=true
+    stopwaitsecs=600
+
+For tasks scheduled by Celerybeat, the Systemd service configuration
+(for Ubuntu 16.04 or Ubuntu 18.04), is saved in
+`/etc/systemd/service/celerybeat.service`::
+
+    [Unit]
+    Description=celerybeat daemon
+    After=network.target
+    
+    [Service]
+    User=mytardis
+    Group=mytardis
+    WorkingDirectory=/home/mytardis/mytardis
+    Environment=DJANGO_SETTINGS_MODULE=tardis.settings
+    ExecStart=/home/mytardis/.virtualenvs/mytardis/bin/celery beat \
+      -A tardis.celery.tardis_app --loglevel INFO
+    
+    [Install]
+    WantedBy=multi-user.target
+
+On older systems (Ubuntu 14.04), Supervisor can be used instead of Systemd.
+In this case, the Celerybeat service would be configured in
+`/etc/supervisor/conf.d/celerybeat.conf`::
+
+    [program:celerybeat]
+    environment=
+      DJANGO_SETTINGS_MODULE=tardis.settings
+    command=/home/mytardis/.virtualenvs/mytardis/bin/celery beat
+      -A tardis.celery.tardis_app --loglevel INFO
+    user=mytardis
+    directory=/home/mytardis/mytardis
+    stdout_logfile=/var/log/celerybeat.log
+    redirect_stderr=true
