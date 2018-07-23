@@ -1,20 +1,15 @@
 # -*- coding: utf-8 -*-
 
-import base64
 from os import path
 
-from binascii import hexlify
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.contrib.contenttypes.models import ContentType
 from django.http import HttpResponse
 from django.shortcuts import render
-from paramiko.rsakey import RSAKey
-from paramiko.py3compat import u
 from PIL import Image, ImageFont, ImageDraw
 
 from tardis.tardis_portal.auth.decorators import has_experiment_download_access
-from .models import SFTPPublicKey
 
 
 @login_required

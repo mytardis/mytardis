@@ -5,10 +5,7 @@ import base64
 from binascii import hexlify
 from paramiko import RSAKey, DSSKey, ECDSAKey
 from paramiko.py3compat import u
-from tardis.tardis_portal.api import (
-    default_authentication
-)
-from tastypie import fields
+from tardis.tardis_portal.api import default_authentication
 from tastypie.authorization import Authorization
 from tastypie.exceptions import Unauthorized, HydrationError
 from tastypie.resources import ModelResource
@@ -27,8 +24,8 @@ class SFTPACLAuthorization(Authorization):
     def create_detail(self, object_list, bundle):
         if bundle.request.user.is_authenticated():
             return bundle.obj.user == bundle.request.user
-
-        raise Unauthorized("You must be authenticated to create SSH keys.")
+        else:
+            raise Unauthorized("You must be authenticated to create SSH keys.")
 
     def delete_detail(self, object_list, bundle):
         return bundle.obj.user == bundle.request.user

@@ -3,8 +3,6 @@
 from django.db import models
 from django.contrib.auth.models import User
 
-from paramiko.rsakey import RSAKey
-
 
 class SFTPPublicKey(models.Model):
     """Model for associated SFTP public keys with users
@@ -22,3 +20,6 @@ class SFTPPublicKey(models.Model):
 
     def __str__(self):
         return str(self.user) + ": " + self.name
+
+    def __unicode__(self):
+        return "{}: {}".format(str(self.user), self.name)
