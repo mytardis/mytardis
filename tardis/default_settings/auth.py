@@ -79,3 +79,7 @@ RAPID_CONNECT_CONFIG['aud'] = 'https://example.com/rc/'
 '''Public facing URL that accepts the HTTP/HTTPS POST request from
 Rapid Connect.
 '''
+# settings for login URL
+LOGIN_URL = '/login'
+# disable /accounts/login
+INCLUDE_AUTH_URLS = False
