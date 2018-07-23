@@ -22,10 +22,10 @@ from tardis.tardis_portal.models import DataFileObject
 from tardis.tardis_portal.models import Experiment
 from tardis.tardis_portal.models import ObjectACL
 
-from ..sftp import MyTSFTPServerInterface
-from ..sftp import MyTServerInterface
-from ..views import sftp_access
-from ..views import cybderduck_connection_window
+from tardis.apps.sftp.sftp import MyTSFTPServerInterface
+from tardis.apps.sftp.sftp import MyTServerInterface
+from tardis.apps.sftp.views import sftp_access
+from tardis.apps.sftp.views import cybderduck_connection_window
 
 
 class SFTPTest(TestCase):
