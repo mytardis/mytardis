@@ -4,7 +4,7 @@ from django.conf.urls import url
 
 from . import views
 
-app_name = "tardis.sftp"
+app_name = "tardis.apps.sftp"
 urlpatterns = [
     url(r'^cyberduck/connection.png$',
          views.cybderduck_connection_window,

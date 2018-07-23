@@ -3,7 +3,7 @@ import logging
 from django.conf import settings
 from django.core.management.base import BaseCommand
 
-from tardis.sftp import sftp
+from tardis.apps.sftp import sftp
 
 logger = logging.getLogger(__name__)
 

@@ -34,7 +34,7 @@ class SFTPACLAuthorization(Authorization):
         return bundle.obj.user == bundle.request.user
 
 
-class SFTPPublicKeyModelResource(ModelResource):
+class SFTPPublicKeyAppResource(ModelResource):
     """Tastypie model resource"""
 
     class Meta:

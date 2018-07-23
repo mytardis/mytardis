@@ -14,7 +14,7 @@ from paramiko.py3compat import u
 from PIL import Image, ImageFont, ImageDraw
 
 from tardis.tardis_portal.auth.decorators import has_experiment_download_access
-from tardis.sftp.models import SFTPPublicKey
+from .models import SFTPPublicKey
 
 
 @login_required
@@ -84,6 +84,7 @@ def sftp_access(request):
 @login_required
 def manage_keys(request):
     return render(request, template_name='sftp/keys.html')
+
 
 @login_required
 def cybderduck_connection_window(request):

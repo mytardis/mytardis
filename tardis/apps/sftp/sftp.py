@@ -26,7 +26,11 @@ from paramiko.rsakey import RSAKey
 
 from tardis.analytics import tracker
 from tardis.tardis_portal.download import make_mapper
-from tardis.tardis_portal.models import User
+from tardis.tardis_portal.models import (
+    DataFile,
+    Experiment,
+    User
+)
 from tardis.tardis_portal.util import split_path
 
 from .models import SFTPPublicKey
@@ -48,8 +52,6 @@ if getattr(settings, 'SFTP_GEVENT', False):
 # django db related modules must be imported after monkey-patching
 from django.contrib.sites.models import Site  # noqa
 from django.contrib.auth.models import AnonymousUser  # noqa
-
-from .models import DataFile, Experiment  # noqa
 
 
 class DynamicTree(object):
@@ -392,7 +394,7 @@ class MyTServerInterface(ServerInterface):
         return ','.join(auth_methods)
 
     def myt_auth(self, username, password):
-        from .auth import auth_service
+        from tardis.tardis_portal.auth import auth_service
 
         class FakeRequest(object):
             POST = {}

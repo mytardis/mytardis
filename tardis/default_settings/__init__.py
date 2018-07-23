@@ -21,7 +21,6 @@ from .logging import *
 from .middlewares import *
 from .publication import *
 from .search import *
-from .sftp import *
 from .sharing import *
 from .site_customisations import *
 from .static_files import *
