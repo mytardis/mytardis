@@ -39,14 +39,8 @@ TEMPLATES[0]['OPTIONS']['debug'] = DEBUG
 
 del STATICFILES_STORAGE  # noqa
 
-STAGING_PATH = path.abspath(path.join(path.dirname(__file__),
-                                      "../var/test/staging/"))
 DEFAULT_STORAGE_BASE_DIR = path.abspath(path.join(path.dirname(__file__),
                                         '../var/store/')).replace('\\', '/')
-
-STAGING_PROTOCOL = 'localdb'
-
-GET_FULL_STAGING_PATH_TEST = path.join(STAGING_PATH, "test_user")
 
 AUTH_PROVIDERS = (('localdb', 'Local DB',
                   'tardis.tardis_portal.auth.localdb_auth.DjangoAuthBackend'),

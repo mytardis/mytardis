@@ -1,8 +1,4 @@
 import logging
-import os
-from os import path
-
-from celery import group, chain
 
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
@@ -12,7 +8,6 @@ from django.db.models import Q
 from django.http import HttpResponse  # pylint: disable=wrong-import-order
 
 from tardis.celery import tardis_app
-from .staging import get_staging_url_and_size
 from .email import email_user
 
 
@@ -72,83 +67,6 @@ def autocache():
 
     for box in autocache_boxes:
         sbox_cache_files.delay(box.id)
-
-
-@tardis_app.task(name="tardis_portal.create_staging_datafiles", ignore_result=True)  # too complex # noqa
-def create_staging_datafiles(files, user_id, dataset_id, is_secure):
-    init_filters()
-    from .staging import get_full_staging_path
-
-    def f7(seq):
-        # removes any duplicate files that resulted from traversal
-        seen = set()
-        seen_add = seen.add
-        return [x for x in seq if x not in seen and not seen_add(x)]
-
-    def list_dir(dir):
-        # returns a list from a recursive directory search
-        file_list = []
-
-        for dirname, dirnames, filenames in os.walk(dir):
-            for filename in filenames:
-                file_list.append(os.path.join(dirname, filename))
-
-        return file_list
-
-    user = User.objects.get(id=user_id)
-    staging = get_full_staging_path(user.username)
-    stage_files = []
-
-    for f in files:
-        abs_path = ''
-        if f == 'phtml_1':
-            abs_path = staging
-        else:
-            abs_path = path.join(staging, f)
-
-        if path.isdir(abs_path):
-            stage_files = stage_files + list_dir(abs_path)
-        else:
-            stage_files.append(abs_path)
-
-    full_file_list = f7(stage_files)
-
-    protocol = ""
-    if is_secure:
-        protocol = "s"
-    current_site_complete = "http%s://%s" % (protocol,
-                                             Site.objects.get_current().domain)
-
-    context = dict(
-        username=user.username,
-        current_site=current_site_complete,
-        dataset_id=dataset_id
-    )
-    subject = '[MyTardis] Import Successful'
-
-    # traverse directory paths (if any to build file list)
-    job = group(
-        create_staging_datafile.s(f, user.username, dataset_id)
-        for f in full_file_list)
-    if user.email:
-        job = chain(job,
-                    email_user_task.si(
-                        subject, 'import_staging_success', context, user))
-    job.delay()
-
-
-@tardis_app.task(name="tardis_portal.create_staging_datafile", ignore_result=True)
-def create_staging_datafile(filepath, username, dataset_id):
-    init_filters()
-    from .models import DataFile, Dataset
-    dataset = Dataset.objects.get(id=dataset_id)
-
-    url, size = get_staging_url_and_size(username, filepath)
-    datafile = DataFile(dataset=dataset,
-                        filename=path.basename(filepath),
-                        size=size)
-    datafile.save(require_checksums=False)
-    datafile.file_object = open(filepath, 'r')
 
 
 @tardis_app.task(name="tardis_portal.email_user_task", ignore_result=True)

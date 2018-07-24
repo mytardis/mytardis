@@ -7,16 +7,14 @@ import json
 import logging
 
 from celery import group, chord
-from django.contrib.auth.decorators import login_required
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.sites.models import Site
-from django.http import HttpResponse, HttpResponseForbidden
+from django.http import HttpResponse
 from django.views.decorators.cache import never_cache
 
 from ..auth import decorators as authz
-from ..auth.decorators import has_dataset_write
 from ..models import Dataset
-from ..tasks import cache_done_notify, create_staging_datafiles
+from ..tasks import cache_done_notify
 
 logger = logging.getLogger(__name__)
 
@@ -40,36 +38,3 @@ def cache_dataset(request, dataset_id=None, notify=True):
         result = run_this
     return HttpResponse(json.dumps({"result": str(result.id)}),
                         content_type='application/json')
-
-
-@login_required
-def stage_files_to_dataset(request, dataset_id):
-    """
-    Takes a JSON list of filenames to import from the staging area to this
-    dataset.
-    """
-    if not has_dataset_write(request, dataset_id):
-        return HttpResponseForbidden()
-
-    if request.method != 'POST':
-        # This method only accepts POSTS, so send 405 Method Not Allowed
-        response = HttpResponse(status=405)
-        response['Allow'] = 'POST'
-        return response
-
-    user = request.user
-
-    # Incoming data MUST be JSON
-    if not request.META['CONTENT_TYPE'].startswith('application/json'):
-        return HttpResponse(status=400)
-
-    try:
-        files = json.loads(request.body)
-    except:
-        return HttpResponse(status=400)
-
-    create_staging_datafiles.delay(files, user.id, dataset_id,
-                                   request.is_secure())
-
-    email = {'email': user.email}
-    return HttpResponse(json.dumps(email), status=201)

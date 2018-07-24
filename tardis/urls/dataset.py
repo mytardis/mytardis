@@ -5,15 +5,12 @@ from django.conf.urls import url
 
 from tardis.tardis_portal.views import DatasetView
 from tardis.tardis_portal.views import (
-    stage_files_to_dataset,
     edit_dataset,
     dataset_thumbnail,
     checksums_download
 )
 
 dataset_urls = [
-    url(r'^(?P<dataset_id>\d+)/stage-files$', stage_files_to_dataset,
-        name='tardis.tardis_portal.views.stage_files_to_dataset'),
     url(r'^(?P<dataset_id>\d+)$', DatasetView.as_view(),
         name='tardis_portal.view_dataset'),
     url(r'^(?P<dataset_id>\d+)/edit$', edit_dataset,
