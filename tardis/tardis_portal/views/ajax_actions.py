@@ -6,11 +6,12 @@ views that perform some action and don't return anything very useful
 import json
 import logging
 
-from celery import group, chord
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.sites.models import Site
 from django.http import HttpResponse
 from django.views.decorators.cache import never_cache
+
+from celery import group, chord
 
 from ..auth import decorators as authz
 from ..models import Dataset
