@@ -3,7 +3,6 @@
 {% load capture %}
 {% load static from staticfiles %}
 {% load experiment_tags %}
-{% load uploadify_tags %}
 {% load dynurl %}
 {% load jstemplate %}
 {% load bleach_tag %}
@@ -22,6 +21,10 @@
 <script type="text/javascript"
         src="{% static 'js/jquery/tardis_portal/view_experiment/init.js' %}">
 </script>
+{% if pub_workflow_enabled %}
+<script type="text/javascript" src="{% static 'publication-actions/publication_actions.js' %}"></script>
+<script type="text/javascript" src="{% static 'publication-form/publication_form.js' %}"></script>
+{% endif %}
 
 {% endblock %}
 
@@ -48,9 +51,40 @@
 </div>
 
 <div class="page-header">
-  <h4>Experiment</h4>
+  {% if experiment.is_publication %}
+    <h4>
+        Publication
+        {% if experiment.is_publication_draft %}
+        <small style="font-style:italic;"> draft</small>
+        {% endif %}
+    </h4>
+  {% else %}
+    <h4>Experiment</h4>
+  {% endif %}
   {% if not experiment.public %}
+  {% if pub_workflow_enabled %}
+  <div class="pull-right"
+       ng-controller="PublicationActionsController as pubActionsCtrl"
+       ng-init="pubActionsCtrl.init({{ experiment.id }})">
+  {% else %}
   <div class="pull-right">
+  {% endif %}
+    {% if is_owner and pub_workflow_enabled %}
+    <a class="prepare_to_publish btn btn-mini btn-info"
+       title="Create Publication"
+       ng-click="pubActionsCtrl.createPublication()"
+       ng-show="!pubActionsCtrl.isPublication">
+      <i class="fa fa-share"></i>
+      <span>Create publication</span>
+    </a>
+    <a class="prepare_to_publish btn btn-mini btn-info"
+       title="Resume Publication"
+       ng-click="pubActionsCtrl.resumePublication()"
+       ng-show="pubActionsCtrl.isPublicationDraft">
+      <i class="fa fa-share"></i>
+      <span>Resume draft publication</span>
+    </a>
+    {% endif %}
     {% if push_to_enabled and is_authenticated %}
     <a class="btn btn-mini btn-primary" title="Push to..."
        onclick="window.open('{{ push_to_url }}', 'push-to', 'width=800, height=600'); return false;"
@@ -61,7 +95,7 @@
     {% endif %}
     {% if has_write_permissions %}
     <a class="btn btn-mini btn-warning" title="Edit Experiment"
-       href="{{ experiment.get_edit_url }}">
+       href="{{ experiment.get_edit_url }}" ng-hide="pubActionsCtrl.isPublication">
       <i class="fa fa-pencil"></i>
       Edit Experiment
     </a>
@@ -131,5 +165,4 @@
 <script type="text/javascript"
         src="{% static 'js/jquery/tardis_portal/view_experiment/abbreviate-abstract.js' %}">
 </script>
-
 {% endblock %}

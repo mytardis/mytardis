@@ -28,11 +28,17 @@ NPM_ROOT_PATH = path.abspath(path.join(path.dirname(__file__), '../..'))
 # specifies the folders within node_modules/ which do need to be copied:
 NPM_FILE_PATTERNS = {
     'angular': ['*'],
+    'angular-animate': ['*'],
+    'angular-aria': ['*'],
+    'angular-material': ['*'],
+    'angular-material-data-table': ['*'],
+    'angular-messages': ['*'],
     'angular-resource': ['*'],
     'backbone': ['*'],
     'backbone-forms': ['*'],
     'blueimp-file-upload': ['*'],
     'clipboard': ['*'],
+    'default-passive-events': ['dist/index.js'],
     'jquery': ['*'],
     'jquery-migrate': ['*'],
     'jquery-ui-dist': ['jquery-ui.min.js'],

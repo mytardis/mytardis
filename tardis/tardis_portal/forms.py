@@ -413,9 +413,11 @@ class ExperimentForm(forms.ModelForm):
             field.widget.attrs['class'] = "span8"
 
     def _format_author(self, author):
-        author_contacts = [author.email, author.url]
-        return "%s (%s)" % (author.author,
-                            ', '.join([c for c in author_contacts if c]))
+        if author.email or author.url:
+            author_contacts = [author.email, author.url]
+            return "%s (%s)" % (author.author,
+                                ', '.join([c for c in author_contacts if c]))
+        return author.author
 
     def _parse_authors(self, data):
         """
@@ -861,7 +863,7 @@ class RightsForm(ModelForm):
             suitable = license_ in License.get_suitable_licenses(public_access)
 
         if not suitable:
-            raise forms.ValidationError("Selected license it not suitable " +
+            raise forms.ValidationError("Selected license is not suitable " +
                                         "for public access level.")
 
         return cleaned_data

@@ -1,9 +1,9 @@
 # pylint: disable=wildcard-import,unused-wildcard-import
-
+from __future__ import absolute_import
 from glob import glob
 from os import path
 
-from celery import Celery
+from celery import Celery  # pylint: disable=import-error
 from django.apps import apps  # pylint: disable=wrong-import-order
 
 from .default_settings import *  # noqa # pylint: disable=W0401,W0614
@@ -30,9 +30,9 @@ DATABASES = {
 CELERY_ALWAYS_EAGER = True
 BROKER_URL = 'memory://'
 CELERY_EAGER_PROPAGATES_EXCEPTIONS = True
-tardis_portal_app = Celery('tardis_portal')
-tardis_portal_app.config_from_object('django.conf:settings')
-tardis_portal_app.autodiscover_tasks(lambda: [n.name for n in apps.get_app_configs()])
+tardis_app = Celery('tardis')
+tardis_app.config_from_object('django.conf:settings')
+tardis_app.autodiscover_tasks(lambda: [n.name for n in apps.get_app_configs()])
 
 TEMPLATES[0]['DIRS'].append('.')
 TEMPLATES[0]['OPTIONS']['debug'] = DEBUG
