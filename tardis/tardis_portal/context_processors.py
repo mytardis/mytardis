@@ -1,5 +1,4 @@
 from django.conf import settings
-from .staging import get_full_staging_path
 
 
 def single_search_processor(request):
@@ -43,11 +42,9 @@ def user_details_processor(request):
     else:
         is_superuser = False
         username = None
-    staging = True if get_full_staging_path(username) else False
     return {'username': username,
             'is_authenticated': is_authenticated,
-            'is_superuser': is_superuser,
-            'has_staging_access': staging}
+            'is_superuser': is_superuser}
 
 
 def global_contexts(request):

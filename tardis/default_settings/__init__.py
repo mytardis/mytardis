@@ -24,7 +24,6 @@ from .search import *
 from .sftp import *
 from .sharing import *
 from .site_customisations import *
-from .staging import *
 from .static_files import *
 from .storage import *
 from .templates import *

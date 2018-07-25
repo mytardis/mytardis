@@ -3,15 +3,13 @@ views that return HTML that is injected into pages
 """
 
 import logging
-from os import path
 from six.moves import urllib
 
 from django.conf import settings
 from django.core.exceptions import PermissionDenied
 from django.core.paginator import Paginator, EmptyPage, InvalidPage
 from django.urls import reverse
-from django.http import HttpResponse, HttpResponseNotFound
-from django.shortcuts import render
+from django.http import HttpResponse
 from django.views.decorators.cache import never_cache
 from django.contrib.auth.decorators import login_required
 from haystack.query import SearchQuerySet
@@ -23,7 +21,6 @@ from ..models import Experiment, DataFile, Dataset, Schema, \
 from ..search_query import FacetFixedSearchQuery
 from ..shortcuts import return_response_error, \
     return_response_not_found, render_response_index
-from ..staging import get_full_staging_path, staging_list
 from ..util import render_public_access_badge
 from ..views.pages import ExperimentView
 from ..views.utils import _add_protocols_and_organizations
@@ -295,55 +292,6 @@ def retrieve_datafile_list(
     }
     _add_protocols_and_organizations(request, None, c)
     return render_response_index(request, template_name, c)
-
-
-@authz.dataset_write_permissions_required
-def import_staging_files(request, dataset_id):
-    """
-    Creates an jstree view of the staging area of the user, and provides
-    a selection mechanism importing files.
-    """
-
-    staging = get_full_staging_path(request.user.username)
-    if not staging:
-        return HttpResponseNotFound()
-
-    c = {
-        'dataset_id': dataset_id,
-        'staging_mount_prefix': settings.STAGING_MOUNT_PREFIX,
-        'staging_mount_user_suffix_enable':
-        settings.STAGING_MOUNT_USER_SUFFIX_ENABLE,
-    }
-    return HttpResponse(
-        render(request, 'tardis_portal/ajax/import_staging_files.html', c))
-
-
-def list_staging_files(request, dataset_id):
-    """
-    Creates an jstree view of the staging area of the user, and provides
-    a selection mechanism importing files.
-    """
-
-    staging = get_full_staging_path(request.user.username)
-    if not staging:
-        return HttpResponseNotFound()
-
-    from_path = staging
-    root = False
-    try:
-        path_var = request.GET.get('path', '')
-        if not path_var:
-            root = True
-        from_path = path.join(staging, urllib.parse.unquote(path_var))
-    except ValueError:
-        from_path = staging
-
-    c = {
-        'dataset_id': dataset_id,
-        'directory_listing': staging_list(from_path, staging, root=root),
-    }
-    return render(
-        request, 'tardis_portal/ajax/list_staging_files.html', c)
 
 
 def experiment_public_access_badge(request, experiment_id):

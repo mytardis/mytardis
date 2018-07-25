@@ -277,22 +277,6 @@
               $(".dataset").show();
             }
           });
-
-
-  $(document).on('click', '.import_staging_files_link', function(evt) {
-      var dataset_id = $(this).attr('data-dataset_id');
-      var modal = $('#modal-upload-files');
-
-      // clear the upload files container
-      modal.find('.modal-body').html('');
-      modal.find('.loading-placeholder').show();
-      modal.modal('show');
-
-      modal.find('.modal-body')
-           .load("/ajax/import_staging_files/" + dataset_id + "/", function() {
-              modal.find('.loading-placeholder').hide();
-            });
-  });
 </script>
 <style type="text/css">
 .dropzone.in {
@@ -600,16 +584,6 @@ $(document).on('click', '#modal-metadata .submit-button', function() {
                 </p>
             {% endif %}
         {% endblock downloads %}
-    </div>
-    <div span="4">
-        {% if has_write_permissions and not experiment.public and not immutable and has_staging_access %}
-            <div class="pull-right" style="margin-top:3px;">
-                <a data-dataset_id="{{dataset.id}}" class="import_staging_files_link btn btn-mini" title="Import Staging Files">
-                    <i class="fa fa-arrow-right"></i>
-                    Import Staging Files
-                </a>
-            </div>
-        {% endif %}
     </div>
 </div>
       <div class="row-fluid">

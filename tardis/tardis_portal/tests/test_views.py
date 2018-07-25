@@ -51,9 +51,8 @@ from django.test import TestCase
 from django.test.client import Client
 from django.contrib.auth.models import User, Group, Permission
 
-from ..staging import get_full_staging_path
 from ..auth.localdb_auth import django_user
-from ..models import UserAuthentication, \
+from ..models import \
     ObjectACL, Experiment, Dataset, DataFile, Schema, \
     DatafileParameterSet
 
@@ -387,135 +386,6 @@ class ManageAccountTestCase(TestCase):
 
         user = User.objects.get(id=user.id)
         self.assertTrue(user.userprofile.isValidPublicContact())
-
-
-class StageFilesTestCase(TestCase):
-
-    def setUp(self):
-        # Create test owner without enough details
-        username, email, password = ('testuser',
-                                     'testuser@example.test',
-                                     'password')
-        user = User.objects.create_user(username, email, password)
-        # Need UserAuthentication
-        UserAuthentication(userProfile=user.userprofile,
-                           username=username,
-                           authenticationMethod='localdb').save()
-        # Create staging dir
-        from os import path, makedirs
-        staging_dir = path.join(settings.STAGING_PATH, username)
-        if not path.exists(staging_dir):
-            makedirs(staging_dir)
-        # Ensure that staging dir is set up properly
-        # assertTrue(x) checks if bool(x) is True which it is
-        # when x is a non-empty string
-        self.assertTrue(get_full_staging_path(username))
-
-        # Create test experiment and make user the owner of it
-        experiment = Experiment(title='Text Experiment',
-                                institution_name='Test Uni',
-                                created_by=user)
-        experiment.save()
-        acl = ObjectACL(
-            pluginId=django_user,
-            entityId=str(user.id),
-            content_object=experiment,
-            canRead=True,
-            isOwner=True,
-            aclOwnershipType=ObjectACL.OWNER_OWNED,
-        )
-        acl.save()
-
-        self.dataset = \
-            Dataset(description='dataset description...')
-        self.dataset.save()
-        self.dataset.experiments.add(experiment)
-        self.dataset.save()
-
-        self.username, self.password = (username, password)
-
-    def _get_authenticated_client(self):
-        client = Client()
-        # Login as user
-        login = client.login(username=self.username, password=self.password)
-        self.assertTrue(login)
-        # Return authenticated client
-        return client
-
-    def _get_staging_url(self):
-        return reverse('tardis.tardis_portal.views.stage_files_to_dataset',
-                       args=[str(self.dataset.id)])
-
-    def testForbiddenWithoutLogin(self):
-        client = Client()
-        response = client.get(self._get_staging_url())
-        # Expect a redirect to login
-        self.assertEqual(response.status_code, 302)
-        login_url = reverse('tardis.tardis_portal.views.login')
-        self.assertTrue(
-            login_url in response['Location'],
-           "Redirect URL was not to login.")
-
-    def testPostOnlyMethodAllowed(self):
-        client = self._get_authenticated_client()
-
-        for method in (x.lower() for x in ['GET', 'HEAD', 'PUT', 'OPTIONS']):
-            response = getattr(client, method)(self._get_staging_url())
-            # Expect a 405 Method Not Allowed
-            self.assertEqual(response.status_code, 405)
-            # Expect valid "Allow" header
-            response['Allow'] = 'POST'
-
-        response = client.post(self._get_staging_url())
-        # Expect something other than a 405
-        self.assertFalse(response.status_code == 405)
-
-    def testRequiresJSON(self):
-        client = Client()
-
-        # Login as user
-        login = client.login(username=self.username, password=self.password)
-        self.assertTrue(login)
-
-        response = client.post(self._get_staging_url())
-        # Expect 400 Bad Request because we didn't have a payload
-        self.assertEqual(response.status_code, 400)
-
-        response = client.post(self._get_staging_url(),
-                               data={'files': ['foo', 'bar']})
-        # Expect 400 Bad Request because we didn't have a JSON payload
-        self.assertEqual(response.status_code, 400)
-
-        response = client.post(self._get_staging_url(),
-                               data=json.dumps({'files': ['foo', 'bar']}),
-                               content_type='application/octet-stream')
-        # Expect 400 Bad Request because we didn't have a JSON Content-Type
-        self.assertEqual(response.status_code, 400)
-
-    def testStageFile(self):
-        client = self._get_authenticated_client()
-
-        staging_dir = get_full_staging_path(self.username)
-
-        from tempfile import NamedTemporaryFile
-        with NamedTemporaryFile('w', dir=staging_dir) as f:
-            # Write some content
-            f.write('This is just some content')
-            f.flush()
-
-            data = [f.name]
-            content_type = 'application/json; charset=utf-8'
-            response = client.post(self._get_staging_url(),
-                                   data=json.dumps(data),
-                                   content_type=content_type)
-
-            # Expect 201 Created
-            self.assertEqual(response.status_code, 201)
-            # Expect to get the email address of
-            # staging user back
-            # Can't test for async file staging
-            emails = json.loads(response.content)
-            self.assertEqual(len(emails), 1)
 
 
 class ExperimentTestCase(TestCase):

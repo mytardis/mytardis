@@ -218,12 +218,6 @@ Repository
    be stored to if you do not provide any other location explicitly through
    ``StorageBox``es.
 
-.. attribute:: tardis.default_settings.STAGING_PATH
-
-   The path to the staging path. This is where new files to be
-   included in datasets will be sourced. This functionality, however, is
-   not available in current MyTardis versions.
-
 .. attribute:: tardis.default_settings.REQUIRE_DATAFILE_CHECKSUMS
 
    If True, a Datafile requires an MD5 or SHA-512 checksum from the time

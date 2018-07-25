@@ -214,23 +214,6 @@ class AuthService():
         if user is None:
             return None
 
-#       # TODO: This does not belong here... This function will be called in more
-#       # cases than just experiment ingestion.
-#       if settings.STAGING_PROTOCOL == authMethod:
-#           # to be put in its own function
-#           from os import path
-#           staging_path = path.join(settings.STAGING_PATH, user_id)
-#           logger.debug('new staging path calced to be ' + str(staging_path))
-#           if staging_path != None:
-#               import os
-#               if not os.path.exists(staging_path):
-#                   try:
-#                       os.makedirs(staging_path)
-#                       #os.system('chmod g+w ' + staging_path)
-#                       os.system('chown ' + user_id + ' ' + staging_path)
-#                   except OSError:
-#                       logger.error("Couldn't create staging directory " +\
-#                           str(staging_path))
         return user
 
 
