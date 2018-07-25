@@ -95,11 +95,14 @@ angular
             },
             closeByDocument: false,
             preCloseCallback: function () {
-                if (angular.isDefined(vm.myPubsCtrl)) {
+                if (angular.isDefined(vm.myPubsCtrl) && vm.myPubsCtrl !== null) {
                     vm.myPubsCtrl.loadDraftPubsData();
                     vm.myPubsCtrl.loadScheduledPubsData();
                     vm.myPubsCtrl.loadReleasedPubsData();
                     vm.myPubsCtrl.loadRetractedPubsData();
+                }
+                else {
+                    $window.location.reload();
                 }
             }
         });
