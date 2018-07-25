@@ -1,8 +1,11 @@
-from django.conf.urls import url
+from django.conf.urls import include, url
 from django.contrib.auth.urls import urlpatterns
+from django.contrib.auth.views import logout
 from django.http import HttpResponse
 from django.template import Template, RequestContext
 
+from ...urls.accounts import accounts_urls
+from ...urls.download import download_urls
 from .. import download
 from ..views.pages import ExperimentView
 from ..views import load_datafile_image
@@ -45,4 +48,10 @@ urlpatterns += [
         name='tardis.tardis_portal.views.load_datafile_image'),
     url(r'^test/experiment/view/(?P<experiment_id>\d+)/$',
         ExperimentView.as_view()),
+
+    # Needed for user_menu context processor:
+    url(r'^accounts/', include(accounts_urls)),
+    url(r'^download/', include(download_urls)),
+    url(r'^logout/$', logout, {'next_page': '/'},
+        name='django.contrib.auth.views.logout'),
 ]
