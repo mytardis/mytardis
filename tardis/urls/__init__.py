@@ -12,7 +12,7 @@ from django.views.static import serve
 from tardis.app_config import get_tardis_apps
 from tardis.app_config import format_app_name_for_url
 from tardis.tardis_portal.views import IndexView
-from tardis.tardis_portal.views import LoginView
+
 from tardis.tardis_portal.views.pages import site_routed_view
 from tardis.tardis_portal.views import upload
 from tardis.tardis_portal.views import rcauth
@@ -48,7 +48,7 @@ overridable_urls = [
                                       getattr(settings, 'INDEX_VIEWS', {})},
         name='tardis.tardis_portal.views.index'),
 
-    url(r'^login/$', site_routed_view, {'_default_view': LoginView.as_view(),
+    url(r'^login/$', site_routed_view, {'_default_view': login,
                                         '_site_mappings':
                                             getattr(settings, 'LOGIN_VIEWS', {})},
         name='tardis.tardis_portal.views.login')
