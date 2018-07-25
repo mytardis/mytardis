@@ -122,7 +122,7 @@ and leave them to be interpreted by AngularJS instead.
     </div>
 
   <md-content layout="column" flex ng-show="myPubsCtrl.scheduledPubs.length" class="ng-cloak">
-     md-table-container>
+    <md-table-container>
       <table md-table md-row-select="false" ng-model="myPubsCtrl.scheduledPubsTableModel" md-progress="promise">
         <thead md-head md-order="myPubsCtrl.query.order" md-on-reorder="myPubsCtrl.logOrder">
           <tr md-row>
