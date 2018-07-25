@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.urls import reverse
 
 
 def single_search_processor(request):
@@ -27,11 +28,6 @@ def registration_processor(request):
             pass
         return False
     return {'registration_enabled': is_registration_enabled()}
-
-
-def manage_account_processor(request):
-    return {'manage_account_enabled': getattr(
-        settings, 'MANAGE_ACCOUNT_ENABLED', True)}
 
 
 def user_details_processor(request):
@@ -68,3 +64,44 @@ def google_analytics(request):
     return {'ga_enabled': ga_enabled,
             'ga_id': ga_id,
             'ga_host': ga_host}
+
+
+def user_menu_processor(request):
+    manage_account_enabled = getattr(settings, 'MANAGE_ACCOUNT_ENABLED', True)
+    user_menu = []
+    if not request.user.is_authenticated:
+        return dict(user_menu=user_menu)
+    if manage_account_enabled:
+        user_menu.append(dict(
+            url=reverse('tardis.tardis_portal.views.manage_user_account'),
+            icon='fa fa-user',
+            label='Manage Account'))
+    if hasattr(request.user, 'api_key') and request.user.api_key.key:
+        user_menu.append(dict(
+            url=reverse('tardis.tardis_portal.download.download_api_key'),
+            icon='fa fa-key',
+            label='Download Api Key'))
+    if request.user.has_perm('tardis_portal.change_userauthentication'):
+        user_menu.append(dict(
+            url=reverse('tardis.tardis_portal.views.manage_auth_methods'),
+            icon='fa fa-tags',
+            label='Link Accounts'))
+    if request.user.is_superuser:
+        user_menu.append(dict(
+            url=reverse('admin:index'),
+            icon='fa fa-key',
+            label='Admin Interface'))
+    if request.user.has_perm('auth.change_user') or \
+            request.user.has_perm('auth.change_group'):
+        user_menu.append(dict(divider='True'))
+        user_menu.append(dict(
+            url=reverse('tardis.tardis_portal.views.manage_groups'),
+            icon='fa fa-user',
+            style='text-shadow: 2px -2px #666666',
+            label='Group Management'))
+        user_menu.append(dict(divider='True'))
+    user_menu.append(dict(
+        url=reverse('django.contrib.auth.views.logout'),
+        icon='fa fa-signout',
+        label='Log Out'))
+    return dict(user_menu=user_menu)

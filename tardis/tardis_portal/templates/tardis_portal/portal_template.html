@@ -107,67 +107,23 @@
                   <b class="caret"></b>
                 </a>
                 <ul class="dropdown-menu">
-                  {% if manage_account_enabled %}
+                  {% for menu_item in user_menu %}
+                    {% if not menu_item.divider %}
                       <li>
-                        <a href="{% url 'tardis.tardis_portal.views.manage_user_account' %}">
-                          <!-- Font Awesome needs a "link" icon! -->
-                          <i class="fa fa-user"></i>
-                          Manage Account
+                        <a href="{{ menu_item.url }}">
+                          <i class="{{menu_item.icon}}"
+                             {% if menu_item.style %}
+                               style="{{menu_item.style}}"
+                             {% endif %}
+                          >
+                          </i>
+                          {{menu_item.label}}
                         </a>
                       </li>
-                  {% endif %}
-		  {% if request.user.api_key.key %}
-                  <li>
-                    <a href="{% url 'tardis.tardis_portal.download.download_api_key' %}">
-                      <!-- Font Awesome needs a "link" icon! -->
-                      <i class="fa fa-key"></i>
-                      Download Api Key
-                    </a>
-                  </li>
-		  {% endif %}
-                  {% if perms.tardis_portal.change_userauthentication %}
-                  <li>
-                    <a href="{% url 'tardis.tardis_portal.views.manage_auth_methods' %}">
-                      <!-- Font Awesome needs a "link" icon! -->
-                      <i class="fa fa-tags"></i>
-                      Link Accounts
-                    </a>
-                  </li>
-                  {% endif %}
-                  {% if is_superuser %}
-                  <li>
-                    <a href="{% url 'admin:index' %}">
-                      <i class="fa fa-key"></i>
-                        Admin Interface
-                    </a>
-                  </li>
-                  {% endif %}
-                  {% if perms.tardis_portal.change_objectacl or perms.auth.change_group %}
-                  <li class="divider"></li>
-                  <!-- {% if perms.tardis_portal.change_objectacl %}
-                  <li>
-                    <a href="{% url 'tardis.tardis_portal.views.control_panel' %}">
-                      <i class="fa fa-user"></i>
-                      Experiment Access
-                    </a>
-                  </li>
-                  {% endif %} -->
-                  {% if perms.auth.change_group or perms.auth.change_user %}
-                  <li>
-                    <a href="{% url 'tardis.tardis_portal.views.manage_groups' %}">
-                      <i class="fa fa-user" style="text-shadow: 2px -2px #666666"></i>
-                      Group Management
-                    </a>
-                  </li>
-                  {% endif %}
-                  <li class="divider"></li>
-                  {% endif %}
-                  <li>
-                    <a href="{% url 'django.contrib.auth.views.logout' %}">
-                      <i class="fa fa-signout"></i>
-                      Log Out
-                    </a>
-                  </li>
+                    {% else %}
+                      <li class="divider"></li>
+                    {% endif %}
+                  {% endfor %}
                 </ul>
               </li>
             {% else %}
