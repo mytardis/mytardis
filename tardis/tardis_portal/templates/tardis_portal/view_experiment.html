@@ -50,7 +50,7 @@
   </div>
 </div>
 
-<div class="page-header">
+<div class="page-header ng-cloak">
   {% if experiment.is_publication %}
     <h4>
         Publication
@@ -65,11 +65,12 @@
   {% if pub_workflow_enabled %}
   <div class="pull-right"
        ng-controller="PublicationActionsController as pubActionsCtrl"
-       ng-init="pubActionsCtrl.init({{ experiment.id }})">
+       ng-init="pubActionsCtrl.init(null, {{ experiment.id }})">
   {% else %}
   <div class="pull-right">
   {% endif %}
-    {% if is_owner and pub_workflow_enabled %}
+  {% if is_owner and pub_workflow_enabled %}
+  {% if not experiment.is_publication %}
     <a class="prepare_to_publish btn btn-mini btn-info"
        title="Create Publication"
        ng-click="pubActionsCtrl.createPublication()"
@@ -77,6 +78,7 @@
       <i class="fa fa-share"></i>
       <span>Create publication</span>
     </a>
+    {% endif %}
     <a class="prepare_to_publish btn btn-mini btn-info"
        title="Resume Publication"
        ng-click="pubActionsCtrl.resumePublication()"
@@ -93,7 +95,7 @@
       Push to...
     </a>
     {% endif %}
-    {% if has_write_permissions %}
+    {% if has_write_permissions and not experiment.is_publication %}
     <a class="btn btn-mini btn-warning" title="Edit Experiment"
        href="{{ experiment.get_edit_url }}" ng-hide="pubActionsCtrl.isPublication">
       <i class="fa fa-pencil"></i>
