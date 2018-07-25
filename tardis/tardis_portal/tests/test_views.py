@@ -244,7 +244,7 @@ class listTestCase(TestCase):
         response = self.client.get('/ajax/group_list/')
         self.assertEqual(response.status_code, 200)
         ret_names = response.content.split(' ~ ')
-        self.assertTrue(len(ret_names) == len(self.groups))
+        self.assertTrue(len(ret_names) == Group.objects.count())
 
         for (a, b) in zip(self.groups, ret_names):
             self.assertTrue(a == b)

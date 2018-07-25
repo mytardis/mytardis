@@ -25,7 +25,10 @@ class DumpSchemasTestCase(TestCase):
         ./manage.py dumpschemas
         without any runtime exceptions
         '''
-        schemas = json.loads(call_command('dumpschemas'))
+        schemas = json.loads(
+            call_command('dumpschemas',
+                         namespaces=['http://www.example.com/schema1.xml',
+                                     'http://www.example.com/schema2.xml']))
         self.assertEqual(len(schemas), 2)
         schemas = json.loads(
             call_command('dumpschemas',
