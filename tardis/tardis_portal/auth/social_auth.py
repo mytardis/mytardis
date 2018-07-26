@@ -1,4 +1,3 @@
-# coding=utf-8
 import logging
 
 from django.conf import settings
@@ -119,12 +118,13 @@ def send_account_approved_email(user):
     """Sends user email once account is approved by admin"""
     subject = '[MyTardis] User account Approved'
     message = \
-        'Hi %s , \n\nWelcome to Store.Monash. Your account has been approved. ' \
-        'Please use  the “Sign in with Google” button on the login page to login to store.Monash. ' \
-        'If you have an existing Monash account and would like to migrate your ' \
-        'data and settings to your new account, follow the instructions on\n\n' \
-        'Thanks,\n' \
-        'MyTardis\n' \
+        "Hi %s , \n\nWelcome to Store.Monash. " \
+        "Your account has been approved. " \
+        "Please use  the \"Sign in with Google\" button on the login page to login to store.Monash. " \
+        "If you have an existing Monash account and would like to " \
+        "migrate your data and settings to your new account, follow the instructions on\n\n" \
+        "Thanks,\n" \
+        "MyTardis\n" \
         % user.username
     try:
         user.email_user(subject, message,
