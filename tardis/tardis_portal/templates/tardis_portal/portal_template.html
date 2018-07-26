@@ -294,7 +294,10 @@
     {% with request|check_if_user_not_approved as not_approved_user %}
     {% if not_approved_user %}
         <script>
-            showMsg.info("Your account is waiting admin approval.");
+            showMsg.showAlert("Welcome to Store.Monash! Your account has been created and " +
+                "is pending admin approval. It might take up to one-business day to " +
+                "approve your account. We will send you an email when this happens. " +
+                "Until then, you will not be able to use any functionalities from Store.Monash");
         </script>
     {% endif %}
     {% endwith %}
