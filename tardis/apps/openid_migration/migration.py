@@ -2,11 +2,12 @@ import logging
 
 from django.http import HttpResponse
 from django.contrib.auth.models import Permission
+from django.conf import settings
 
 from tardis.tardis_portal.models import UserProfile, UserAuthentication, \
     ObjectACL, Group
-from tardis.tardis_portal.auth.authentication import _getSupportedAuthMethods, \
-    _getJsonFailedResponse, _getJsonSuccessResponse, _getJsonConfirmResponse
+from tardis.tardis_portal.auth.authentication import _getJsonFailedResponse,\
+    _getJsonSuccessResponse, _getJsonConfirmResponse
 
 from tardis.tardis_portal.shortcuts import render_response_index
 from tardis.apps.openid_migration.models import OpenidUserMigration, OpenidACLMigration
@@ -39,9 +40,8 @@ def do_migration(request):
     userAuthMethodList = []
 
     # the list of supported non-local DB authentication methods
-    supportedAuthMethods = _getSupportedAuthMethods()
+    supportedAuthMethods = getSupportedAuthMethods()
 
-    authenticationMethod = 'localdb'
     # let's try and authenticate here
     user = auth_service.authenticate(authMethod="None",
         request=request)
@@ -53,8 +53,6 @@ def do_migration(request):
     # if has already registered to use the provided auth method, then we can't
     # link the auth method to the user
     if user != request.user:
-        # TODO: find all the experiments "user" has access to and link
-        # "request.user" to them
         logger.info("starting migration from %s to %s", user.username,
                     request.user.username)
         # check if the "request.user" has a userProfile
@@ -62,14 +60,20 @@ def do_migration(request):
             user=request.user)
 
         logger.info("linking user authentication")
-        # if he has, link 'user's UserAuthentication to it
-        userAuths = UserAuthentication.objects.filter(
-            userProfile__user=user)
+        # in most of the case it should return one authentication method
+        # but in case it returns more than one we need to throw an exception
+        # and notify admin about this.
+        try:
+            userAuths = UserAuthentication.objects.filter(
+                        userProfile__user=user)
+            if userAuths.count() > 1:
+                logger.error("Multiple authentication methods found for user %s" % user)
+                return _getJsonFailedResponse("Something went wrong")
+        except ValueError:
+            logger.error("Multiple authentication methos foud for user %s" % user)
 
-        for userAuth in userAuths:
-            # also remove the current userAuth from the list of authentication
-            # method options that can be added by this user
-            del supportedAuthMethods[userAuth.authenticationMethod]
+        authenticationMethod = userAuths[0].authenticationMethod
+
 
         # let's search for the ACLs that refer to 'user' and transfer them
         # to request.user
@@ -119,6 +123,7 @@ def do_migration(request):
         # TODO : get request user auth method
         logger.info("sending email to %s", user.email)
         notify_migration_status.delay(user, old_username, 'AAF')
+        logger.info("migration complete")
 
     # data = _setupJsonData(authForm, authenticationMethod, supportedAuthMethods)
     return _getJsonSuccessResponse(data={})
@@ -202,7 +207,6 @@ def openid_migration_method(request):
 
 def confirm_migration(request):
     from tardis.tardis_portal.auth import auth_service
-    supportedAuthMethods = _getSupportedAuthMethods()
     migration_form = \
         openid_user_migration_form()
     authForm = migration_form(request.POST)
@@ -211,8 +215,6 @@ def confirm_migration(request):
         errorMessage = \
             'Please provide all the necessary information to authenticate.'
         return _getJsonFailedResponse(errorMessage)
-
-    # authenticationMethod = authForm.cleaned_data['authenticationMethod']
 
     # let's try and authenticate here
     user = auth_service.authenticate(authMethod="None",
@@ -242,6 +244,17 @@ def _setupJsonData(old_user, new_user):
 
     logger.debug('Sending partial data to auth methods management page')
     return data
+
+
+def getSupportedAuthMethods():
+    '''Return the list of authentication methods.'''
+    # the list of supported non-local DB authentication methods
+    supportedAuthMethods = {}
+
+    for authKey, authDisplayName, authBackend in settings.AUTH_PROVIDERS:
+        supportedAuthMethods[authKey] = authDisplayName
+
+    return supportedAuthMethods
 
 
 def get_api_key(user):
