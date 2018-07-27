@@ -73,13 +73,11 @@
             <div id="user-table">
                 <table class="table" >
                     <tbody>
-                        <tr>
+                        <tr id="old_username">
                             <td>Username</td>
-                            <td>manish.kumar</td>
                         </tr>
-                        <tr>
+                        <tr id="old_email">
                             <td>Email</td>
-                            <td>manish.kumar@monash.edu</td>
                         </tr>
                     </tbody>
                 </table>
@@ -92,7 +90,7 @@
         <div class="span4" style="text-align: center">
             <div id="current" style="font-weight: bold; text-align: center">Current User</div>
             <i class="fa fa-user-circle" style="font-size: 250px; padding-top: 10px"></i>
-            <div id="current_user_email" style="text-align: center; font-weight: bold">manish.kumar@monash.edu</div>
+            <div id="current_user_email" style="text-align: center; font-weight: bold"></div>
         </div>
     </div>
     <div id="confirm_button" class="confirm-buttons">
@@ -100,14 +98,21 @@
         <button type="button" class="btn btn-danger btn-large"  id="confirm_false">Cancel</button>
     </div>
 </div>
-<div id="migration-message" style="display: none">
+<div id="migration-success-message" style="display: none">
     <p class="alert-info-msg alert alert-success">
-         <span class="msg"><strong>Congratulations !!</strong> your account has been successfully migrated</span>
-    </p>
-    <p class="alert-info-msg alert alert-warning">
-         <span class="msg">Please use <strong>'Login via AAF'</strong> for all your future login to Store.Monash</span>
+         <span class="msg">Your account has been migrated successfully.
+             Please note that your source account has been deactivated and no longer accessible.
+             Please use ‘{current authentication method}' for all your future login to Store.Monash.
+         </span>
     </p>
 </div>
+<div id="migration-failed-message" style="display: none">
+    <p class="alert-info-msg alert alert-success">
+         <span class="msg">Something went wrong. An email has been sent to MyTardis administrator.
+         </span>
+    </p>
+</div>
+
 <div id="spinner" style="display: none">
     <div class="center-parent" style="
     position: absolute;
@@ -172,10 +177,9 @@ var link_account = function() {
 };
 
 var update_user_data = function (data) {
-    $("#new_user").append('<td>'+data.data.new_username+'</td')
-    $("#new_user").append('<td>'+data.data.new_user_email+'</td')
-    $("#old_user").append('<td>'+data.data.old_username+'</td')
-    $("#old_user").append('<td>'+data.data.old_user_email+'</td')
+    $("#current_user_email").append(data.data.new_user_email)
+    $("#old_username").append('<td>'+data.data.old_username+'</td')
+    $("#old_email").append('<td>'+data.data.old_user_email+'</td')
 }
 
 var migrate_account= function () {
@@ -193,10 +197,14 @@ var migrate_account= function () {
                 if (status == "success") {
                     $("#spinner").css('display', 'none')
                     $("#confirm-migrate").css('display','none')
-                    $("#migration-message").css('display','block')
+                    $("#message").css('display','none')
+                    $("#migration-success-message").css('display','block')
                 }
                 else {
-                  display_error("Account merging failed!", $("#authForm"));
+                    $("#spinner").css('display', 'none')
+                    $("#confirm-migrate").css('display','none')
+                    $("#message").css('display','none')
+                    $("#migration-failed-message").css('display','block')
                 }
               }, "json");
 }
