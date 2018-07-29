@@ -32,7 +32,10 @@
       </a>
     </li>
     <li class="next">
-      <a href="#" ng-click="pubFormCtrl.saveAndClose()">Save and finish later</a>
+      <a href="#" ng-show="pubFormCtrl.currentPageIdx != 0"
+                  ng-click="pubFormCtrl.saveAndClose()">
+          Save and finish later
+      </a>
     </li>
   </ul>
 </div>
