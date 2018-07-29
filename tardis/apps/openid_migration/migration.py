@@ -73,7 +73,7 @@ def do_migration(request):
             logger.error("Multiple authentication methos foud for user %s" % user)
 
         authenticationMethod = userAuths[0].authenticationMethod
-
+        logger.info("authentication method is %s", authenticationMethod)
 
         # let's search for the ACLs that refer to 'user' and transfer them
         # to request.user
@@ -222,6 +222,11 @@ def confirm_migration(request):
 
     if user is None:
         errorMessage = 'Wrong username or password. Please try again'
+        return _getJsonFailedResponse(errorMessage)
+
+    # do not allow migration from an inactive account
+    if not user.is_active:
+        errorMessage = 'Account is inactive'
         return _getJsonFailedResponse(errorMessage)
 
     data = _setupJsonData(user, request.user)
