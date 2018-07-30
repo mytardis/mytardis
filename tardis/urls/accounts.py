@@ -5,7 +5,6 @@ from django.conf.urls import include, url
 from registration.backends.default.views import RegistrationView
 
 from tardis.tardis_portal.views import (
-    login,
     manage_user_account,
     manage_auth_methods
 )
