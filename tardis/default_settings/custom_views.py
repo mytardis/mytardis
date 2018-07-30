@@ -4,7 +4,7 @@ INDEX_VIEWS = {}
 A custom index page override is defined in as dictionary mapping a class-based
 view (or view function) to a Django ``Site``, specified by SITE_ID (an integer)
 or the domain name of the incoming request.
-See: https://mytardis.readthedocs.org/en/develop/contextual_views.html#custom-index-view
+See: https://mytardis.readthedocs.io/en/develop/apps/contextual_views.html#custom-index-view
 
 eg:
 ::
@@ -14,11 +14,26 @@ eg:
         }
 '''
 
+LOGIN_VIEWS = {}
+'''
+A custom login page override is defined in as dictionary mapping a class-based
+view (or view function) to a Django ``Site``, specified by SITE_ID (an integer)
+or the domain name of the incoming request.
+See: https://mytardis.readthedocs.io/en/develop/apps/contextual_views.html#custom-login-view
+
+eg:
+::
+        LOGIN_VIEWS = {
+            1: 'tardis.apps.my_custom_app.views.MyCustomLoginSubclass',
+            'store.example.com': 'tardis.apps.myapp.AnotherCustomLoginSubclass'
+        }
+'''
+
 DATASET_VIEWS = []
 '''
 Dataset view overrides ('contextual views') are specified as tuples mapping
 a Schema namespace to a class-based view (or view function).
-See: https://mytardis.readthedocs.org/en/develop/contextual_views.html#dataset-and-experiment-views
+See: https://mytardis.readthedocs.io/en/develop/apps/contextual_views.html#dataset-and-experiment-views
 
 eg:
 ::
@@ -32,7 +47,7 @@ EXPERIMENT_VIEWS = []
 '''
 Experiment view overrides ('contextual views') are specified as tuples mapping
 a Schema namespace to a class-based view (or view function).
-See: https://mytardis.readthedocs.org/en/develop/contextual_views.html#dataset-and-experiment-views
+See: https://mytardis.readthedocs.io/en/develop/apps/contextual_views.html#dataset-and-experiment-views
 
 eg:
 ::
