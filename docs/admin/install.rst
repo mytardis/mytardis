@@ -75,14 +75,14 @@ To install Javascript dependencies for production and for testing::
   npm install && npm test
 
 Configuring MyTardis is done through a standard Django *settings.py*
-file. MyTardis comes with a sample configuration file at
-``tardis/default_settings.py``. You can import this as the basis of your own
-config file - options defined here will override the relevant options in
-``default_settings.py``.
+file. MyTardis comes with a set of default settings in its
+``tardis/default_settings/`` package. You can import this as the basis
+of your own config file - options defined here will override the
+relevant options in ``default_settings/*.py``.
 
 Create a new file ``tardis/settings.py`` containing the following::
 
-  from default_settings import *
+  from .default_settings import *
 
   # Add site specific changes here.
 
@@ -101,7 +101,7 @@ This is important for security reasons.
 A convenient method is to run the following command in your mytardis
 installation location::
 
-  python -c "import os; from random import choice; key_line = '%sSECRET_KEY=\"%s\"  # generated from build.sh\n' % ('from tardis.default_settings import * \n\n' if not os.path.isfile('tardis/settings.py') else '', ''.join([choice('abcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*(-_=+)') for i in range(50)])); f=open('tardis/settings.py', 'a+'); f.write(key_line); f.close()"
+  python -c "import os; from random import choice; key_line = '%sSECRET_KEY=\"%s\"  # generated from build.sh\n' % ('from .default_settings import * \n\n' if not os.path.isfile('tardis/settings.py') else '', ''.join([choice('abcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*(-_=+)') for i in range(50)])); f=open('tardis/settings.py', 'a+'); f.write(key_line); f.close()"
 
 
 This is the minimum set of changes required to successfully run the
