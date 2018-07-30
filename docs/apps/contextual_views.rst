@@ -6,8 +6,8 @@ Introduction
 ============
 In order to better represent specific data types and facilities, MyTardis
 allows apps to override the default views for Experiments, Datasets,
-DataFile metadata, and the main index page. The following sections detail
-settings and requirements of apps to make this happen.
+DataFile metadata, and the main index and login pages. The following
+sections detail settings and requirements of apps to make this happen.
 
 Datafile Views
 ==============
@@ -31,7 +31,7 @@ steps are needed:
   configuration must subclass ``AbstractTardisAppConfig`` thereby enabling
   autodetection. ``AbstractTardisAppConfig`` replaces ``AppConfig`` as
   described in these
-  `django docs <https://docs.djangoproject.com/en/1.8/ref/applications/>`_.
+  `django docs <https://docs.djangoproject.com/en/1.11/ref/applications/>`_.
 
 * ``DataFile`` s need to be manually or automatically tagged with a
   schema that identifies them as viewable with a particular
@@ -125,11 +125,38 @@ Example:
 
 A custom view override is defined in settings as dictionary mapping a
 class-based view (or view function) to a Django
-`Site <https://docs.djangoproject.com/en/1.8/ref/contrib/sites/>`_. A ``Site`` is
+`Site <https://docs.djangoproject.com/en/1.11/ref/contrib/sites/>`_. A ``Site`` is
 specified by SITE_ID (an integer) or the domain name of the incoming request.
 
 Developers creating custom contextual index views are encouraged to subclass
 ``tardis.tardis_portal.views.pages.IndexView``.
+
+Custom Login View
+=================
+
+Rationale
+---------
+Specific sites or facilities may want to display a custom login page that
+which is more meaningful to their particular domain or application.
+MyTardis supports overriding the login page (/login) on a per-domain or
+per-``Site`` basis.
+
+User Guide
+----------
+
+Example:
+
+.. code-block:: python
+
+    LOGIN_VIEWS = {
+        1: 'tardis.apps.my_custom_app.views.MyCustomLoginViewClass',
+        'facility.example.org': 'tardis.apps.myapp.AnotherCustomLoginViewClass'
+    }
+
+A custom view override is defined in settings as dictionary mapping a
+class-based view (or view function) to a Django
+`Site <https://docs.djangoproject.com/en/1.11/ref/contrib/sites/>`_. A ``Site`` is
+specified by SITE_ID (an integer) or the domain name of the incoming request.
 
 Good practice for app developers
 ================================
@@ -139,8 +166,8 @@ developers are strongly encouraged to override ``IndexView``, ``DatasetView``
 and ``ExperimentView`` (from ``tardis.tardis_portal.pages``) when creating
 custom contextual views.
 
-The default and well-tested ``index.html``, ``view_dataset.html`` and
-``view_experiment.html`` templates can used as a basis for these custom
+The default and well-tested ``index.html``, ``login.html``, ``view_dataset.html``
+and ``view_experiment.html`` templates can used as a basis for these custom
 contextual views.
 
 New versions may change the default templates and view functions. If you copy
