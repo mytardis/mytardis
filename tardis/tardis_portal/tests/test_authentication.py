@@ -99,7 +99,7 @@ class AuthenticationTestCase(TestCase):
 
         # check if the response is a redirect to the login page
         self.assertRedirects(response,
-                             '/accounts/login/?next=' +
+                             '/login/?next=' +
                              self.manageAuthMethodsUrl)
 
         response = self.client.post(self.loginUrl, {'username': 'test',

@@ -80,6 +80,7 @@ RAPID_CONNECT_CONFIG['aud'] = 'https://example.com/rc/'
 Rapid Connect.
 '''
 # settings for login URL
-LOGIN_URL = '/login'
+LOGIN_URL = '/login/'
+
 # disable /accounts/login
 INCLUDE_AUTH_URLS = False
