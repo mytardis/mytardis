@@ -8,11 +8,32 @@
 
 {% block content %}
 
-<script type="text/javascript" src="{% static 'my-publications/my_publications.js'%}"></script>
+<script id="my-publications" type="text/javascript" src="{% static 'my-publications/my_publications.js'%}"></script>
 <script type="text/javascript" src="{% static 'publication-actions/publication_actions.js'%}"></script>
 <script type="text/javascript" src="{% static 'publication-tokens/publication_tokens.js'%}"></script>
 <script type="text/javascript" src="{% static 'publication-form/publication_form.js'%}"></script>
+<link type="text/css" href="{% static 'my-publications/my_publications.css'%}" rel="stylesheet"/>
+<link type="text/css" href="{% static 'publication-form/publication_form.css' %}" rel="stylesheet" />
+
+<script type="text/javascript" src="{% static 'angular-material/angular-material.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'angular-animate/angular-animate.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'angular-aria/angular-aria.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'angular-material-data-table/dist/md-data-table.js' %}"></script>
 <script type="text/javascript" src="{% static 'default-passive-events/dist/index.js'%}"></script>
+<link type="text/css" href="{% static 'angular-material/angular-material.min.css' %}" rel="stylesheet" />
+<link type="text/css" href="{% static 'angular-material-data-table/dist/md-data-table.css' %}" rel="stylesheet" />
+
+<script>
+var app = angular.module('MyTardis');
+app.requires.push('ngMaterial');
+app.requires.push('md.data.table');
+var myPublications= document.getElementById("my-publications");
+myPublications.onload = function() {
+    angular.element(document).ready(function() {
+                  angular.bootstrap(document, ['MyTardis']);
+                 });
+};
+</script>
 
 {% comment %}
 Verbatim tells Django to stop interpreting {{ }} as Django template variables,
