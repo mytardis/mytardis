@@ -87,9 +87,9 @@ Once the application is enabled and installed define the following settings to e
     'social_core.pipeline.social_auth.social_user',
     'social_core.pipeline.user.get_username',
     'social_core.pipeline.user.create_user',
-    'tardis.tardis_portal.auth.social_auth.add_authentication_method',
-    'tardis.tardis_portal.auth.social_auth.approve_user_auth',
-    'tardis.tardis_portal.auth.social_auth.add_user_permissions',
+    'tardis.apps.social_auth.auth.social_auth.add_authentication_method',
+    'tardis.apps.social_auth.auth.social_auth.approve_user_auth',
+    'tardis.apps.social_auth.auth.social_auth.add_user_permissions',
     'social_core.pipeline.social_auth.associate_user',
     'social_core.pipeline.social_auth.load_extra_data',
     'social_core.pipeline.user.user_details',
@@ -103,11 +103,11 @@ Once the application is enabled and installed define the following settings to e
     'social_core.pipeline.social_auth.social_user',
     'social_core.pipeline.user.get_username',
     'social_core.pipeline.user.create_user',
-    'tardis.tardis_portal.auth.social_auth.add_authentication_method',
+    'tardis.apps.social_auth.auth.social_auth.add_authentication_method',
     'social_core.pipeline.social_auth.associate_user',
     'social_core.pipeline.social_auth.load_extra_data',
     'social_core.pipeline.user.user_details',
-    'tardis.tardis_portal.auth.social_auth.send_admin_email',
+    'tardis.apps.social_auth.auth.social_auth.send_admin_email',
     )
 
 Get key and secrets from the OIDC provider that you want to enable and add following settings.
