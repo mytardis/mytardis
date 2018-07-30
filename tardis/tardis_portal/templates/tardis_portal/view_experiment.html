@@ -21,10 +21,6 @@
 <script type="text/javascript"
         src="{% static 'js/jquery/tardis_portal/view_experiment/init.js' %}">
 </script>
-{% if pub_workflow_enabled %}
-<script type="text/javascript" src="{% static 'publication-actions/publication_actions.js' %}"></script>
-<script type="text/javascript" src="{% static 'publication-form/publication_form.js' %}"></script>
-{% endif %}
 
 {% endblock %}
 
@@ -50,7 +46,7 @@
   </div>
 </div>
 
-<div class="page-header ng-cloak">
+<div class="page-header>
   {% if experiment.is_publication %}
     <h4>
         Publication
@@ -62,31 +58,7 @@
     <h4>Experiment</h4>
   {% endif %}
   {% if not experiment.public %}
-  {% if pub_workflow_enabled %}
-  <div class="pull-right"
-       ng-controller="PublicationActionsController as pubActionsCtrl"
-       ng-init="pubActionsCtrl.init(null, {{ experiment.id }})">
-  {% else %}
   <div class="pull-right">
-  {% endif %}
-  {% if is_owner and pub_workflow_enabled %}
-  {% if not experiment.is_publication %}
-    <a class="prepare_to_publish btn btn-mini btn-info"
-       title="Create Publication"
-       ng-click="pubActionsCtrl.createPublication()"
-       ng-show="!pubActionsCtrl.isPublication">
-      <i class="fa fa-share"></i>
-      <span>Create publication</span>
-    </a>
-    {% endif %}
-    <a class="prepare_to_publish btn btn-mini btn-info"
-       title="Resume Publication"
-       ng-click="pubActionsCtrl.resumePublication()"
-       ng-show="pubActionsCtrl.isPublicationDraft">
-      <i class="fa fa-share"></i>
-      <span>Resume draft publication</span>
-    </a>
-    {% endif %}
     {% if push_to_enabled and is_authenticated %}
     <a class="btn btn-mini btn-primary" title="Push to..."
        onclick="window.open('{{ push_to_url }}', 'push-to', 'width=800, height=600'); return false;"
@@ -97,7 +69,7 @@
     {% endif %}
     {% if has_write_permissions and not experiment.is_publication %}
     <a class="btn btn-mini btn-warning" title="Edit Experiment"
-       href="{{ experiment.get_edit_url }}" ng-hide="pubActionsCtrl.isPublication">
+       href="{{ experiment.get_edit_url }}">
       <i class="fa fa-pencil"></i>
       Edit Experiment
     </a>
