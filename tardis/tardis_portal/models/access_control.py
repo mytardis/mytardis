@@ -136,7 +136,7 @@ class UserAuthentication(models.Model):
             user.user_permissions.add(Permission.objects.get(codename='change_dataset'))
             # send email to user
             # send_account_approved_email(user)
-            from tardis.tardis_portal.auth.social_auth import send_account_approved_email
+            from tardis.apps.social_auth.auth.social_auth import send_account_approved_email
             send_account_approved_email(user)
 
         super(UserAuthentication, self).save(*args, **kwargs)
