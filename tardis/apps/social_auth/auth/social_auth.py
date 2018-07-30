@@ -47,6 +47,7 @@ def get_auth_method(authenticatedBackendName):
             return authKey
     return None
 
+
 def add_user_permissions(**kwargs):
     """Adds default permission to OPenID authenticated user"""
     user = kwargs.get('user')
