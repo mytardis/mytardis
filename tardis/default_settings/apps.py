@@ -25,4 +25,5 @@ INSTALLED_APPS = (
     'tardis.apps.oaipmh',
     'tardis.apps.sftp',
     # 'tardis.apps.push_to',
+    # 'tardis.apps.social_auth',
 )
