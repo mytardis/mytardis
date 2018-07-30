@@ -61,6 +61,17 @@ You may want to add exception middleware provided by *python-social-auth*. To do
         'social_django.middleware.SocialAuthExceptionMiddleware',
     )
 
+************************
+Adding Context Processor
+************************
+You will need to add following context processor to *seetings.py*
+
+.. code-block:: python
+
+    TEMPLATES[0]['OPTIONS']['context_processors'].extend([
+    'social_django.context_processors.backends',
+    'social_django.context_processors.login_redirect'])
+
 
 ******************
 Application setup
