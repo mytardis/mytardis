@@ -1,6 +1,4 @@
-var app = angular.module(
-    'MyTardis',
-    ['ngDialog', 'ngResource', 'ngMaterial', 'md.data.table']);
+var app = angular.module('MyTardis', ['ngDialog', 'ngResource']);
 
 app.config(function($httpProvider) {
     $httpProvider.defaults.xsrfCookieName = 'csrftoken';

@@ -23,22 +23,9 @@ Use the unminified jquery-migrate.js to see deprecation warnings in your browser
 <script type="text/javascript" src="{% static 'js/lib/jquery.cookie.js' %}"></script>
 
 <!-- angular and related scripts -->
-{% if debug %}
-<script type="text/javascript" src="{% static 'angular/angular.js' %}"></script>
-<script type="text/javascript" src="{% static 'angular-resource/angular-resource.js' %}"></script>
-<script type="text/javascript" src="{% static 'angular-material/angular-material.js' %}"></script>
-<script type="text/javascript" src="{% static 'angular-animate/angular-animate.js' %}"></script>
-<script type="text/javascript" src="{% static 'angular-aria/angular-aria.js' %}"></script>
-<script type="text/javascript" src="{% static 'ng-dialog/js/ngDialog.js' %}"></script>
-{% else %}
 <script type="text/javascript" src="{% static 'angular/angular.min.js' %}"></script>
 <script type="text/javascript" src="{% static 'angular-resource/angular-resource.min.js' %}"></script>
-<script type="text/javascript" src="{% static 'angular-material/angular-material.min.js' %}"></script>
-<script type="text/javascript" src="{% static 'angular-animate/angular-animate.min.js' %}"></script>
-<script type="text/javascript" src="{% static 'angular-aria/angular-aria.min.js' %}"></script>
 <script type="text/javascript" src="{% static 'ng-dialog/js/ngDialog.min.js' %}"></script>
-{% endif %}
-<script type="text/javascript" src="{% static 'angular-material-data-table/dist/md-data-table.js' %}"></script>
 <script type="text/javascript" src="{% static 'js/angular-mytardis.js' %}"></script>
 
 <script type="text/javascript" src="{% static 'js/lib/async.min.js' %}"></script>
@@ -66,16 +53,9 @@ Use the unminified jquery-migrate.js to see deprecation warnings in your browser
 
 {% block css_libraries %}
 <link type="text/css" href="{% static 'css/lib/smoothness/jquery-ui-1.8.18.custom.css' %}" rel="stylesheet" />
-<link type="text/css" href="{% static 'angular-material/angular-material.min.css' %}" rel="stylesheet" />
 <link type="text/css" href="{% static 'ng-dialog/css/ngDialog.min.css' %}" rel="stylesheet" />
 <link type="text/css" href="{% static 'ng-dialog/css/ngDialog-theme-plain.min.css' %}" rel="stylesheet" />
 <link type="text/css" href="{% static 'ng-dialog/css/ngDialog-theme-default.min.css' %}" rel="stylesheet" />
-
-<link type="text/css" href="{% static 'angular-material-data-table/dist/md-data-table.css' %}" rel="stylesheet" />
-
-{% if pub_workflow_enabled %}
-<link type="text/css" href="{% static 'publication-form/publication_form.css' %}" rel="stylesheet" />
-{% endif %}
 
 <!-- Twitter Bootstrap: http://twitter.github.com/bootstrap/ -->
 <link href="{% static 'js/lib/bootstrap-2.3.2/css/bootstrap.css' %}" rel="stylesheet">
