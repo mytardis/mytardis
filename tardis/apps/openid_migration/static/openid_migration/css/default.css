@@ -3,6 +3,7 @@
     margin-right: auto;
     margin-left: auto;
     margin-top: 10px;
+    max-width: 50%;
 }
 .login-box {
     background-color: #e2e2e2;
