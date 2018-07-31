@@ -58,6 +58,12 @@ def do_migration(request):
         # check if the "request.user" has a userProfile
         userProfile, created = UserProfile.objects.get_or_create(
             user=request.user)
+        # get request user authentication method
+        data = _setupJsonData(old_user=user, new_user=request.user)
+        # get authenticated user backend
+        backend = request.session._session['_auth_user_backend']
+        # get key from backend class name
+        auth_method = get_matching_authmethod(backend)
 
         logger.info("linking user authentication")
         # in most of the case it should return one authentication method
@@ -85,7 +91,7 @@ def do_migration(request):
         # for logging migration event
         user_migration_record = OpenidUserMigration(old_user=user, new_user=request.user,
                                                     old_user_auth_method=authenticationMethod,
-                                                    new_user_auth_method='')
+                                                    new_user_auth_method=auth_method)
         user_migration_record.save()
         logger.info("Staring object ACL migration")
         acl_migration(userIdToBeReplaced, replacementUserId,
@@ -128,11 +134,6 @@ def do_migration(request):
         notify_migration_status.delay(user, old_username, 'AAF')
         logger.info("migration complete")
 
-    data = _setupJsonData(old_user=user, new_user=request.user)
-    # get authenticated user backend
-    backend = request.session._session['_auth_user_backend']
-    # get key from backend class name
-    auth_method = get_matching_authmethod(backend)
     data['auth_method'] = auth_method
     return _getJsonSuccessResponse(data=data)
 

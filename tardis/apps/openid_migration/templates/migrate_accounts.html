@@ -102,7 +102,7 @@
     <p class="alert-info-msg alert alert-success">
          <span class="msg">Your account has been migrated successfully.
              Please note that your source account has been deactivated and no longer accessible.
-             Please use ‘{current authentication method}' for all your future login to Store.Monash.
+             Please use Login via <span></span> for all your future login to Store.Monash.
          </span>
     </p>
 </div>
@@ -199,7 +199,7 @@ var migrate_account= function () {
                     $("#confirm-migrate").css('display','none')
                     $("#message").css('display','none')
                     $("#migration-success-message").css('display','block')
-                    $("#migration-success-message span span").text(data['auth_method'])
+                    $("#migration-success-message span span").text(data.data['auth_method'])
                 }
                 else {
                     $("#spinner").css('display', 'none')
