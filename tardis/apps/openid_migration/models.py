@@ -22,13 +22,9 @@ class OpenidUserMigration(models.Model):
         return '%s | %s' % (self.old_user.username, self.new_user.username)
 
 
-@python_2_unicode_compatible
 class OpenidACLMigration(models.Model):
     user_migration = models.ForeignKey(OpenidUserMigration, on_delete=models.CASCADE)
     acl_id = models.ForeignKey(ObjectACL)
-
-    def __str__(self):
-        return self.name
 
 
 class OpenidACLMigrationAdmin(admin.ModelAdmin):
