@@ -1,4 +1,6 @@
 from django import template
+from django.conf import settings
+
 from tardis.tardis_portal.models import UserAuthentication
 
 register = template.Library()
@@ -12,11 +14,22 @@ def check_if_user_not_approved(request):
     """
     if request.user.is_authenticated():
         user = request.user
+        # get authenticated user backend
+        backend = request.session._session['_auth_user_backend']
+        # get key from backend class name
+        auth_method = get_matching_authmethod(backend)
         try:
-            user_auth = UserAuthentication.objects.get(username=user.username, authenticationMethod='Google')
+            user_auth = UserAuthentication.objects.get(username=user.username, authenticationMethod=auth_method)
             if not user_auth.approved:
                 return True
         except UserAuthentication.DoesNotExist:
             return False
 
     return False
+
+
+def get_matching_authmethod(backend):
+    for authKey, authDisplayName, authBackend in settings.AUTH_PROVIDERS:
+        if backend == authBackend:
+            return authKey
+    return None
