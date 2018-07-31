@@ -69,8 +69,11 @@ def do_migration(request):
             if userAuths.count() > 1:
                 logger.error("Multiple authentication methods found for user %s" % user)
                 return _getJsonFailedResponse("Something went wrong")
+            elif userAuths.count() < 1:
+                logger.error("No authentication methods found for user %s" % user)
+                return _getJsonFailedResponse("Something went wrong")
         except ValueError:
-            logger.error("Multiple authentication methos foud for user %s" % user)
+            logger.error("issue with authentication methods for user %s" % user)
 
         authenticationMethod = userAuths[0].authenticationMethod
         logger.info("authentication method is %s", authenticationMethod)
@@ -125,8 +128,13 @@ def do_migration(request):
         notify_migration_status.delay(user, old_username, 'AAF')
         logger.info("migration complete")
 
-    # data = _setupJsonData(authForm, authenticationMethod, supportedAuthMethods)
-    return _getJsonSuccessResponse(data={})
+    data = _setupJsonData(old_user=user, new_user=request.user)
+    # get authenticated user backend
+    backend = request.session._session['_auth_user_backend']
+    # get key from backend class name
+    auth_method = get_matching_authmethod(backend)
+    data['auth_method'] = auth_method
+    return _getJsonSuccessResponse(data=data)
 
 
 def acl_migration(userIdToBeReplaced, replacementUserId, user_migration_record):
@@ -246,7 +254,6 @@ def _setupJsonData(old_user, new_user):
     data['new_username'] = new_user.username
     data['old_user_email'] = old_user.email
     data['new_user_email'] = new_user.email
-
     logger.debug('Sending partial data to auth methods management page')
     return data
 
@@ -269,3 +276,10 @@ def get_api_key(user):
         return None
 
     return apikey
+
+
+def get_matching_authmethod(backend):
+    for authKey, authDisplayName, authBackend in settings.AUTH_PROVIDERS:
+        if backend == authBackend:
+            return authKey
+    return None
