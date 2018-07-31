@@ -1,6 +1,6 @@
 {% extends "tardis_portal/portal_template.html" %}
 {% load bootstrap %}
-{% load static from staticfiles %}
+
 {% block content %}
 
 {% if RAPID_CONNECT_ENABLED %}
@@ -15,19 +15,10 @@
 
 {% else %}
 
-    <form action="" method="post" class="form-horizontal" style="float: left ; padding-right: 30px">{% csrf_token %}
+    <form action="" method="post" class="form-horizontal">{% csrf_token %}
       <input name="next_page" type="hidden" value="{{ next_page }}" />
       <fieldset>
         <legend>Please Log In</legend>
-          <div  style='padding-left: 160px; padding-bottom: 20px; width: 250px; text-align:justify; word-break: keep-all; word-wrap: break-spaces;'>
-          <span style="font-weight: bold; color:red">Store.Monash Authentication is improving</span><br>
-          <span>To provide a better experience for you, Store.Monash
-              is now supporting Authentication using
-              <span style="color: green">Australian Access Federation (AAF) </span>or
-              <span style="color: green">Google Authentication</span>.
-              More information about how to migrate your
-              account, please check </span>
-            </div>
         {{ loginForm|bootstrap }}
         <div class="form-actions">
           <button type="submit" class="btn btn-info btn-large">
@@ -36,13 +27,6 @@
         </div>
       </fieldset>
     </form>
-    <p style="margin-top: 100px">
-        <a href="{% url 'social:begin' 'google-oauth2' %}?next=/"/>
-        <img id="signInButton" src="{% static 'images/btn_google_signin_light_pressed_web.png' %}" />
-        <a href="{% url 'social:begin' 'aaf' %}?next=/" />
-        <img id="signInButton" src="{% static 'images/aaf_service.png' %}" />
-    </p>
-
 
 {% endif %}
 
