@@ -11,6 +11,7 @@ from django.http import HttpRequest, QueryDict
 from django.contrib.auth.models import User, Group
 
 from tardis.tardis_portal.models import Experiment, ObjectACL
+from tardis.tardis_portal.models import UserAuthentication, UserProfile
 
 from ..migration import do_migration
 
@@ -30,6 +31,11 @@ class OpenIDMigrationTestCase(TestCase):
         self.group = Group.objects.create(name='test group')
         # add old user to group
         self.group.user_set.add(self.user_old)
+        # add user auth
+        user_auth = UserAuthentication(userProfile=UserProfile.objects.get(user=self.user_old),
+                           username= self.user_old.username,
+                           authenticationMethod='localdb')
+        user_auth.save()
         # add experiments
         experiment = Experiment(title='Text Experiment',
                                 institution_name='Test Uni',
