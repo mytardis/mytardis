@@ -14,8 +14,11 @@ def check_if_user_not_approved(request):
     """
     if request.user.is_authenticated():
         user = request.user
+        if not hasattr(request, "session"):
+            # This should only happen in unit tests
+            return False
         # get authenticated user backend
-        backend = request.session._session['_auth_user_backend']
+        backend = request.session['_auth_user_backend']
         # get key from backend class name
         auth_method = get_matching_authmethod(backend)
         try:
