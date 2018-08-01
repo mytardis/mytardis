@@ -1,4 +1,4 @@
-Django==1.11.14 # pyup: >=1.11,<2.0
+Django==1.11.15 # pyup: >=1.11,<2.0
 Wand==0.4.4
 amqp==1.4.9 # pyup: <2
 beautifulsoup4==4.6.1
