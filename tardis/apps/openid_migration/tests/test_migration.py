@@ -51,6 +51,7 @@ class OpenIDMigrationTestCase(TestCase):
         post = QueryDict('&'.join(['%s=%s' % (k, v) for (k, v) in
                                    data]))
         request = HttpRequest()
+        request.session = dict(_auth_user_backend='tardis.tardis_portal.auth.localdb_auth.DjangoAuthBackend')
         request.POST = post
         request.user = self.user_new
         response = do_migration(request)
