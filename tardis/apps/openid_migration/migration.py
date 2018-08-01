@@ -61,7 +61,7 @@ def do_migration(request):
         # get request user authentication method
         data = _setupJsonData(old_user=user, new_user=request.user)
         # get authenticated user backend
-        backend = request.session._session['_auth_user_backend']
+        backend = request.session['_auth_user_backend']
         # get key from backend class name
         auth_method = get_matching_authmethod(backend)
 
