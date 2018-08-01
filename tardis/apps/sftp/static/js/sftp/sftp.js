@@ -29,7 +29,7 @@ function createKeyTable(keyData) {
 function loadKeyTable(clear) {
   if (clear) {
     $("#keyTable").replaceWith(
-      "<div id='keyTable'><p><img src=/static/images/ajax-loader-big.gif alt='loading...'/> Load keys...</p></div>"
+      "<div id='keyTable'><span><i class='fa fa-2x fa-spinner fa-pulse'</i> Loading keys...</span></div>"
     )
   }
   fetch(
@@ -67,7 +67,8 @@ function handleKeyDelete(keyId) {
       }
     }
   ).then(function(resp) {
-    $("#keyRow" + keyId).remove();
+    // $("#keyRow" + keyId).remove();
+    loadKeyTable(true)
   }).catch(function(err) {
     console.error("SSH key delete error:\n", err);
   })
@@ -132,12 +133,53 @@ function addKey() {
 }
 
 function clearKeyAddForm() {
-  $("#keyAddAlertMessage").empty()
-  $("#keyAddAlert").hide()
-  document.getElementById('keyAddForm').reset()
+  $("#keyAddAlertMessage").empty();
+  $("#keyAddAlert").hide();
+  document.getElementById('keyAddForm').reset();
 }
 
+
 $(document).ready(function() {
-  loadKeyTable(false)
+  loadKeyTable(false);
+  $("#keyGenerateForm").on("submit", function(e) {
+    e.preventDefault();
+    fetch(
+      $(this).prop('action'),
+      {
+        method: $(this).prop('method'),
+        credentials: "include",
+        headers: {
+          'X-CSRFToken': $.cookie('csrftoken'),
+        },
+        body: new FormData(this)
+      }
+    ).then(function(resp) {
+      if (resp.ok) {
+        resp.blob().then(function(blob) {
+          var disposition = resp.headers.get('content-disposition');
+          var matches = /filename='(.+)'/.exec(disposition);
+          var filename = (matches !== null && matches[1]? matches[1] : 'file');
+          var objectURL = URL.createObjectURL(blob);
+          var link = document.createElement('a');
+          link.href = objectURL;
+          link.download = filename;
+
+          document.body.appendChild(link);
+
+          link.click();
+          document.body.removeChild(link);
+
+          URL.revokeObjectURL(objectURL);
+          $("#keyGenerateModal").modal("hide");
+          loadKeyTable(true);
+        });
+      } else {
+        resp.json().then(function(json) {
+          $("#keyGenerateAlertMessage").text(json['error'])
+          $("#keyGenerateAlert").show()
+        })
+      }
+    })
+  })
 })
 

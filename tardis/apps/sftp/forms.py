@@ -52,3 +52,7 @@ class KeyAddForm(forms.Form):
 
 
 key_add_form = FormValidation(form_class=KeyAddForm)
+
+
+class KeyGenerateForm(forms.Form):
+    name = forms.CharField(required=True, max_length=256)

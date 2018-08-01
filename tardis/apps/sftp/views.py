@@ -1,14 +1,27 @@
 # -*- coding: utf-8 -*-
 
+import io
+import json
 from os import path
 
+from django import forms
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.contrib.contenttypes.models import ContentType
-from django.http import HttpResponse
+from django.http import (
+    HttpResponse,
+    HttpResponseServerError,
+    StreamingHttpResponse
+)
+from django.utils.translation import ugettext as _
 from django.shortcuts import render
+from paramiko import RSAKey
+from paramiko.ssh_exception import SSHException
 from PIL import Image, ImageFont, ImageDraw
+from wsgiref.util import FileWrapper
 
+from .forms import KeyGenerateForm
+from .models import SFTPPublicKey
 from tardis.tardis_portal.auth.decorators import has_experiment_download_access
 
 
@@ -76,9 +89,6 @@ def sftp_access(request):
     return render(request, template_name='sftp/index.html', context=c)
 
 
-@login_required
-def manage_keys(request):
-    return render(request, template_name='sftp/keys.html')
 
 
 @login_required
@@ -129,3 +139,55 @@ def cybderduck_connection_window(request):
     base.save(response, "PNG")
     base.save("foo.png")
     return response
+
+
+@login_required
+def sftp_keys(request):
+    """Generate an RSA key pair for a user.
+
+    Generates a key pair, stores the public part of the key and provides a one
+    time opportunity for the user to download the private part of the key.
+
+    :param request http request
+    """
+    if request.method == "POST":
+        form = KeyGenerateForm(request.POST)
+        if form.is_valid():
+            user = request.user
+            key_name = form.cleaned_data["name"]
+            key = RSAKey.generate(4096)
+            key_file = io.StringIO()
+            try:
+                key.write_private_key(key_file)
+            except (IOError, SSHException):
+                return HttpResponseServerError(
+                    json.dumps({
+                        "error": "Oops! Failed to generate key. "
+                        "Please try again later."
+                    }),
+                    content_type="application/json"
+                )
+            else:
+                # Create SFTPPublicKey record
+                key_rec = SFTPPublicKey.objects.create(
+                    user=user,
+                    name=key_name,
+                    key_type=key.get_name(),
+                    public_key=key.get_base64()
+                )
+
+                # Move to beginning of file and stream HTTPReponse
+                key_file.seek(0)
+                response = StreamingHttpResponse(
+                    FileWrapper(key_file),
+                    content_type="text/plain"
+                )
+                response["Content-Disposition"] =\
+                    "attachment; filename='{}'".format(key_name)
+
+                return response
+    else:
+        form = KeyGenerateForm()
+
+    return render(request, 'sftp/keys.html', {'form': form})
+
