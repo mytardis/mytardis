@@ -3,7 +3,6 @@ views relevant to search
 """
 import logging
 
-from django.contrib.auth.models import User
 from django.http import HttpResponse
 from haystack.generic_views import SearchView
 
@@ -150,24 +149,16 @@ def retrieve_field_list(request):
 
     # Get all of the fields in the indexes
     #
-    # TODO: these should be onl read from registered indexes
+    # TODO: these should be only read from registered indexes
     #
     allFields = DataFileIndex.fields.items()
-
-    users = User.objects.all()
-
-    usernames = [
-        u.first_name.encode('utf-8') +
-        ' ' +
-        u.last_name.encode('utf-8') +
-        ':username' for u in users]
 
     # Collect all of the indexed (searchable) fields, except
     # for the main search document ('text')
     searchableFields = ([key + ':search_field' for key, f in allFields
                          if f.indexed is True and key != 'text'])
 
-    auto_list = usernames + searchableFields
+    auto_list = searchableFields
 
     fieldList = '+'.join([str(fn) for fn in auto_list])
     return HttpResponse(fieldList)
