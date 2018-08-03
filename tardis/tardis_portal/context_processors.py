@@ -105,4 +105,3 @@ def user_menu_processor(request):
         icon='fa fa-signout',
         label='Log Out'))
     return dict(user_menu=user_menu)
-
