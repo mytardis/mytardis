@@ -2,28 +2,35 @@ from django.apps import apps
 from django.db import models
 from django.contrib import admin
 from django.contrib.auth.models import User
+from django.utils.encoding import python_2_unicode_compatible
 
 from tardis.tardis_portal.models.access_control import ObjectACL
-
 
 from .apps import OpenidMigrationConfig
 
 
+@python_2_unicode_compatible
 class OpenidUserMigration(models.Model):
-    old_user = models.ForeignKey(User, null=True, related_name='old_user', on_delete=models.CASCADE)
+    old_user = models.ForeignKey(User, null=True, related_name='old_user',
+                                 on_delete=models.CASCADE)
     old_user_auth_method = models.CharField(null=False, blank=False, max_length=30)
-    new_user = models.ForeignKey(User, null=True, related_name='new_user', on_delete=models.CASCADE)
+    new_user = models.ForeignKey(User, null=True, related_name='new_user',
+                                 on_delete=models.CASCADE)
     new_user_auth_method = models.CharField(null=False, blank=False, max_length=30)
     migration_timestamp = models.DateTimeField(auto_now_add=True)
     migration_status = models.BooleanField(default=False)
 
-    def __unicode__(self):
+    def __str__(self):
         return '%s | %s' % (self.old_user.username, self.new_user.username)
 
 
+@python_2_unicode_compatible
 class OpenidACLMigration(models.Model):
     user_migration = models.ForeignKey(OpenidUserMigration, on_delete=models.CASCADE)
     acl_id = models.ForeignKey(ObjectACL)
+
+    def __str__(self):
+        return '%s | %s' % (self.user_migration, self.acl_id)
 
 
 class OpenidACLMigrationAdmin(admin.ModelAdmin):
@@ -42,7 +49,7 @@ class OpenidUserMigrationAdmin(admin.ModelAdmin):
     ]
 
 
-#register
+# register
 if apps.is_installed(OpenidMigrationConfig.name):
     admin.site.register(OpenidUserMigration, OpenidUserMigrationAdmin)
     admin.site.register(OpenidACLMigration, OpenidACLMigrationAdmin)
