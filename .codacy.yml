@@ -3,3 +3,5 @@ engines:
  pylint:
    enabled: true
    python_version: 2
+exclude_paths:
+  - 'tardis/tardis_portal/static/js/lib/**'
