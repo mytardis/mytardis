@@ -122,6 +122,7 @@ urlpatterns = [
 
     # Class-based views that may be overriden by apps
     url(r'', include(overridable_urls)),
+
 ]
 
 # Handle static files from /static

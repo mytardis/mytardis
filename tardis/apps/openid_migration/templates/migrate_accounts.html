@@ -1,0 +1,226 @@
+{% extends "tardis_portal/portal_template.html" %}
+{% load bootstrap %}
+{% load static from staticfiles %}
+
+{% block script %}
+
+  {% include "tardis_portal/javascript_libraries.html" %}
+
+{% endblock %}
+
+
+{% block content %}
+    <head>
+        <link href="{% static 'openid_migration/css/default.css' %}" rel="stylesheet">
+    </head>
+<p class="alert alert-info" style="display: none">
+</p>
+<legend style="text-align: center"> Migrate My Account </legend>
+    <div id="message">
+    <p>
+        This process allows you to migrate your data and settings from one account
+        to another within Store.Monash.<br>
+        Please note that this process will automatically <b>deactivate your old account.</b>
+        All your data, groups and instrument associations, and settings will be migrated to your
+        current account. For more details please check <a>Store.Monash Account Migration</a>
+    </p>
+    </div>
+<div id="authForm" class="container-fluid">
+    <div id="step">
+        <b>Step 1:</b>
+            The account you are going to copy from
+
+    </div>
+    <div class="row-fluid col-wrap">
+        <div class="span4 login-box col">
+            <img src="{% static 'openid_migration/images/monash-uni-logo.png' %}" class="center-image">
+            <form id="authForm" action="." method="post" class="form-horizontal" style="padding-top: 20px ; ">
+                {% csrf_token %}
+                <fieldset>
+                    {% for field in authForm %}
+                         {{ field|bootstrap }}
+                    {% endfor %}
+                </fieldset>
+
+                <div class="center-image">
+                    <button type="submit" id="link" class="btn btn-info btn-small center-image">
+                        <i class="fa fa-sign-in"></i> Verify my Account
+                     </button>
+                </div>
+            </form>
+        </div>
+
+        </div>
+</div> <!-- authForm -->
+
+<div id="template-block" style="display: none">
+    <p class="alert-error-msg alert alert-error">
+        <a class="close" data-dismiss="alert">&times;</a>
+        <span class="msg"></span>
+    </p>
+</div>
+<div id="confirm-migrate" class="container-fluid" style="display: none">
+    <div id="step">
+        <b>Step 2: </b>
+            Are you sure you want to migrate all the data,
+        groups and instrument associations, and setting between the following accounts?
+
+    </div>
+    <div class="row-fluid col-wrap">
+        <div class="span4 login-box col">
+            <div id="source" style="font-weight: bold; text-align: center">Source</div>
+            <img src="{% static 'openid_migration/images/monash-uni-logo.png' %}" class="center-image">
+            <div id="user-table" style="margin-top: 20px">
+                <table class="table" >
+                    <tbody>
+                        <tr id="old_username">
+                            <td>Username</td>
+                        </tr>
+                        <tr id="old_email">
+                            <td>Email</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="span4" style="text-align: center">
+            <i class="fa fa-angle-double-right" style="font-size: 250px"></i>
+        </div>
+        <div class="span4" style="text-align: center">
+            <div id="current" style="font-weight: bold; text-align: center">Current User</div>
+            <i class="fa fa-user-circle" style="font-size: 250px; padding-top: 10px"></i>
+            <div id="current_user_email" style="text-align: center; font-weight: bold"></div>
+        </div>
+    </div>
+    <div id="confirm_button" class="confirm-buttons">
+        <button type="button" class="btn btn-success btn-large" id="confirm_true">Migrate</button>
+        <button type="button" class="btn btn-danger btn-large"  id="confirm_false">Cancel</button>
+    </div>
+</div>
+<div id="migration-success-message" style="display: none">
+    <p class="alert-info-msg alert alert-success">
+         <span class="msg">Your account has been migrated successfully.
+             Please note that your source account has been deactivated and no longer accessible.
+             Please use Login via <span></span> for all your future login to Store.Monash.
+         </span>
+    </p>
+</div>
+<div id="migration-failed-message" style="display: none">
+    <p class="alert-info-msg alert alert-success">
+         <span class="msg">Something went wrong. An email has been sent to MyTardis administrator.
+         </span>
+    </p>
+</div>
+
+<div id="spinner" style="display: none">
+    <div class="center-parent" style="
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;">
+        <div class="center-container" style="
+    width: 60px;
+    height: 60px;
+    font-size: 60px;
+    position: absolute;
+    top: 34%;
+    left: 62%;
+    margin-top: -30px;
+    margin-right: 0;
+    margin-bottom: 0;
+    margin-left: -30px;
+    z-index: -1;">
+            <i id="mo-spin-icon" class="fa fa-spinner fa-pulse"></i>
+        </div>
+    </div>
+</div>
+
+
+<script>
+
+var authMethodDict = [];
+{% for authKey, authDesc in allAuthMethods.items %}
+authMethodDict["{{ authKey }}"] = "{{ authDesc }}";
+{% endfor %}
+
+
+var link_account = function() {
+  var username = $("#id_username").val();
+  var password = $("#id_password").val();
+  var authenticationMethod = $("#id_authenticationMethod").val();
+
+    if (username != "" && password != "") {
+      var data = {operation: 'addAuth', username: username, password: password, authenticationMethod: authenticationMethod,
+                  csrfmiddlewaretoken: '{{csrf_token}}'
+      };
+      $.post("/apps/openid-migration/migrate-accounts/", data, function(data) {
+          var status = data.status;
+          if (status == "confirm") {
+              $("#authForm").css('display','none')
+              $('.alert-info').css('display','none')
+              $("#confirm-migrate").css('display','block')
+              update_user_data(data)
+          } else {
+            display_error(data.errorMessage, $("#authForm"));
+          }
+      }, "json");
+    }
+    else {
+        display_error("You need to provide all the necessary information to authenticate.", $("#authForm"));
+    }
+  return false;
+};
+
+var update_user_data = function (data) {
+    $("#current_user_email").append(data.data.new_user_email)
+    $("#old_username").append('<td>'+data.data.old_username+'</td')
+    $("#old_email").append('<td>'+data.data.old_user_email+'</td')
+}
+
+var migrate_account= function () {
+    $("#spinner").css('display', 'block')
+    $("#confirm-migrate").css('opacity','.5')
+    var username = $("#id_username").val();
+    var password = $("#id_password").val();
+    var authenticationMethod = $("#id_authenticationMethod").val();
+    var data = {
+        operation: 'migrateAccount', username: username, password: password, authenticationMethod: authenticationMethod,
+        csrfmiddlewaretoken: '{{csrf_token}}'
+    }
+        $.post("{% url 'tardis.apps.openid_migration.views.migrate_accounts' %}", data, function(data) {
+                var status = data.status
+                if (status == "success") {
+                    $("#spinner").css('display', 'none')
+                    $("#confirm-migrate").css('display','none')
+                    $("#message").css('display','none')
+                    $("#migration-success-message").css('display','block')
+                    $("#migration-success-message span span").text(data.data['auth_method'])
+                }
+                else {
+                    $("#spinner").css('display', 'none')
+                    $("#confirm-migrate").css('display','none')
+                    $("#message").css('display','none')
+                    $("#migration-failed-message").css('display','block')
+                }
+              }, "json");
+}
+
+var display_error = function(msg, elem) {
+  // Create box from template
+  var msgBox = $('#template-block .alert-error-msg').clone();
+  // Fill in error message
+  msgBox.find('.msg').text(msg);
+  // Insert into DOM
+  msgBox.insertBefore(elem).fadeIn("slow").animate({opacity: 1.0}, 5000).fadeOut("slow",function() { msgBox.remove(); });
+};
+
+$("#link").click(link_account);
+$("#confirm_true").click(migrate_account)
+
+</script>
+{% endblock content %}
