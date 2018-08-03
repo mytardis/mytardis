@@ -32,15 +32,10 @@ function loadKeyTable(clear) {
       "<div id='keyTable'><span><i class='fa fa-2x fa-spinner fa-pulse'</i> Loading keys...</span></div>"
     );
   }
-  fetch(
-    '/api/v1/sftp/key',
-    {
-      credentials: "include"
-    }
-  ).then(function(resp) {
-    return resp.json();
-  })
-  .then(function(json) {
+
+  $.ajax(
+    '/api/v1/sftp/key'
+  ).done(function(json, textStatus, jqXHR) {
     var objs = json.objects
     if (objs.length > 0) {
       $("#keyTable").replaceWith(createKeyTable(objs));
@@ -51,25 +46,24 @@ function loadKeyTable(clear) {
       ));
     }
   })
-  .catch(function(err) {
+  .fail(function(jqXHR, textStatus, err) {
     console.error("Error loading SSH keys:\n", err)
   });
 }
 
 function handleKeyDelete(keyId) {
-  fetch(
+  $.ajax(
     '/api/v1/sftp/key/' + keyId,
     {
       method: 'DELETE',
-      credentials: 'include',
       headers: {
         'X-CSRFToken': $.cookie('csrftoken')
       }
     }
-  ).then(function(resp) {
+  ).done(function(data, textStatus, jgXHR) {
     // $("#keyRow" + keyId).remove();
     loadKeyTable(true);
-  }).catch(function(err) {
+  }).fail(function(jqXHR, textStatus, err) {
     console.error("SSH key delete error:\n", err);
   });
 }
@@ -98,32 +92,29 @@ function addKey() {
         return acc
       }, {});
 
-    fetch(
+    $.ajax(
       '/api/v1/sftp/key/',
       {
         method: 'POST',
-        credentials: 'include',
         headers: {
           'X-CSRFToken': $.cookie('csrftoken'),
           'Content-type': 'application/json'
         },
-        body: JSON.stringify(form_data)
+        data: JSON.stringify(form_data)
       }
-    ).then(function(resp) {
-      return resp.json();
-    }).catch(function(err) {
-      console.error(err);
-    }).then(function(json) {
-      if (json !== undefined) {
-        err = json['sftp/key']['__all__'][0]
+    ).done(function(json, textStatus, jqXHR) {
+      $("#keyAddAlertMessage").empty();
+      $("#keyAddAlert").hide();
+      $("#keyAddModal").modal('hide');
+      loadKeyTable(true)
+    }).fail(function(jqXHR, textStatus, err) {
+      if (jqXHR.responseJSON !== "undefined") {
+        err = jqXHR.responseJSON['sftp/key']['__all__'][0]
         console.error("Key error: ", err)
         $("#keyAddAlertMessage").text(err);
         $("#keyAddAlert").show();
       } else {
-        $("#keyAddAlertMessage").empty();
-        $("#keyAddAlert").hide();
-        $("#keyAddModal").modal('hide');
-        loadKeyTable(true)
+        console.error(err);
       }
     })
   } catch (e) {
@@ -138,48 +129,48 @@ function clearKeyAddForm() {
   document.getElementById('keyAddForm').reset();
 }
 
+$(document).on("submit", "#keyGenerateForm", function(e) {
+  e.preventDefault();
+  var url = $(this).prop('action');
+  var method = $(this).prop('method');
+  var form = $(this).serialize();
+
+  $.ajax(
+    url,
+    {
+      method: method,
+      headers: {
+        'X-CSRFToken': $.cookie('csrftoken'),
+      },
+      data: form
+    }
+  ).done(function(data, textStatus, jqXHR) {
+    if (textStatus === "success") {
+      var blob = new Blob([data], {type: 'application/octet-stream'})
+      var disposition = jqXHR.getResponseHeader('content-disposition');
+      var matches = /filename='(.+)'/.exec(disposition);
+      var filename = (matches !== null && matches[1]? matches[1] : 'file');
+      var objectURL = URL.createObjectURL(blob);
+      var link = document.createElement('a');
+      link.href = objectURL;
+      link.download = filename;
+
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(objectURL);
+
+      $("#keyGenerateModal").modal("hide");
+      loadKeyTable(true);
+    }
+  }).fail(function(jqXHR, textStatus, err) {
+    console.error(err);
+    $("#keyGenerateAlertMessage").text(jqXHR.responseJSON['error']);
+    $("#keyGenerateAlert").show();
+  });
+})
 
 $(document).ready(function() {
   loadKeyTable(false);
-  $("#keyGenerateForm").on("submit", function(e) {
-    e.preventDefault();
-    fetch(
-      $(this).prop('action'),
-      {
-        method: $(this).prop('method'),
-        credentials: "include",
-        headers: {
-          'X-CSRFToken': $.cookie('csrftoken'),
-        },
-        body: new FormData(this)
-      }
-    ).then(function(resp) {
-      if (resp.ok) {
-        resp.blob().then(function(blob) {
-          var disposition = resp.headers.get('content-disposition');
-          var matches = /filename='(.+)'/.exec(disposition);
-          var filename = (matches !== null && matches[1]? matches[1] : 'file');
-          var objectURL = URL.createObjectURL(blob);
-          var link = document.createElement('a');
-          link.href = objectURL;
-          link.download = filename;
-
-          document.body.appendChild(link);
-
-          link.click();
-          document.body.removeChild(link);
-
-          URL.revokeObjectURL(objectURL);
-          $("#keyGenerateModal").modal("hide");
-          loadKeyTable(true);
-        });
-      } else {
-        resp.json().then(function(json) {
-          $("#keyGenerateAlertMessage").text(json['error'])
-          $("#keyGenerateAlert").show()
-        })
-      }
-    })
-  })
 })
 
