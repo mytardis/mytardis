@@ -33,31 +33,6 @@
     </div>
   </div>
 </div>
-<div class="modal hide" id="keyGenerateModal">
-  <div class="modal-header">
-    <button type="button" class="close" data-dismiss="modal">×</button>
-    <h3>Generate an SSH key pair</h3>
-  </div>
-  <div class="modal-body">
-    <p>{{site_title|default:'MyTardis'}} can generate an SSH key pair for you using the button below. Only the public part of the key pair will be stored by {{site_title|default:'MyTardis'}} and you will be provided with a one time opportunity to download the private part of the key pair.</p>
-    <br>
-    <div class="row-fluid">
-      <form id="keyGenerateForm" action="{% url 'tardis.apps.sftp:sftp_keys' %}" method="post">
-        {% csrf_token %}
-        {{ form }}
-        <input type="submit" class="btn" value="Generate Key">
-      </form>
-    </div>
-    <br>
-    <p><b>Important:</b> Keep your private key safe. Anyone with access to the private key will be able to access your data on {{site_title|default:'MyTardis'}}.</p>
-    <div id="keyGenerateAlert" class="alert alert-error hide">
-      <div id="keyGenerateAlertMessage"></div>
-    </div>
-  </div>
-  <div class="modal-footer">
-    <button class="btn" data-dismiss="modal">Close</a>
-  </div>
-</div>
 <div class="modal hide" id="keyAddModal">
   <div class="modal-header">
     <button type="button" class="close" data-dismiss="modal" onclick="clearKeyAddForm()">×</button>
@@ -81,6 +56,29 @@
   <div class="modal-footer">
     <button class="btn" data-dismiss="modal" onclick="clearKeyAddForm()">Close</a>
     <button class="btn btn-primary" onclick="addKey()">Add Key</button>
+  </div>
+</div>
+<div class="modal hide" id="keyGenerateModal">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal">×</button>
+    <h3>Generate an SSH key pair</h3>
+  </div>
+  <div class="modal-body">
+    <p>{{site_title|default:'MyTardis'}} can generate an SSH key pair for you. Only the public part of the key pair will be stored by {{site_title|default:'MyTardis'}} and you will be provided with a one time opportunity to download the private part of the key pair.</p>
+    <br>
+    <form id="keyGenerateForm" action="{% url 'tardis.apps.sftp:sftp_keys' %}" method="post">
+      {{ form }}
+      <br>
+      <input type="submit" class="btn" value="Generate Key">
+    </form>
+    <br>
+    <p><b>Important:</b> Keep your private key in a safe place. Anyone with access to the private key will be able to access your data on {{site_title|default:'MyTardis'}}.</p>
+    <div id="keyGenerateAlert" class="alert alert-error hide">
+      <div id="keyGenerateAlertMessage"></div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn" data-dismiss="modal">Close</a>
   </div>
 </div>
 {% endblock content %}

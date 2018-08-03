@@ -180,7 +180,7 @@ def sftp_keys(request):
                 key_file.seek(0)
                 response = StreamingHttpResponse(
                     FileWrapper(key_file),
-                    content_type="text/plain"
+                    content_type="application/octet-stream"
                 )
                 response["Content-Disposition"] =\
                     "attachment; filename='{}'".format(key_name)

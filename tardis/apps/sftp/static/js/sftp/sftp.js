@@ -12,7 +12,7 @@ function addKeyRow(rowData) {
   <p>Date added: " + rowData.added + "</p></div>\
   <button id='delete-btn' class='btn pull-right' \
   onclick='handleKeyDelete(" + rowData.id + ")'>\
-  <b>Delete<b></button></td></tr>"
+  <b>Delete<b></button></td></tr>";
 }
 
 function createKeyTable(keyData) {
@@ -22,15 +22,15 @@ function createKeyTable(keyData) {
     .append($("<thead><tr><th><h3>Key</h3></th></tr></thead>"));
 
   return keyData.reduce(function (acc, key) {
-    return acc.append(addKeyRow(key))
-  }, table)
+    return acc.append(addKeyRow(key));
+  }, table);
 }
 
 function loadKeyTable(clear) {
   if (clear) {
     $("#keyTable").replaceWith(
       "<div id='keyTable'><span><i class='fa fa-2x fa-spinner fa-pulse'</i> Loading keys...</span></div>"
-    )
+    );
   }
   fetch(
     '/api/v1/sftp/key',
@@ -43,17 +43,17 @@ function loadKeyTable(clear) {
   .then(function(json) {
     var objs = json.objects
     if (objs.length > 0) {
-      $("#keyTable").replaceWith(createKeyTable(objs))
+      $("#keyTable").replaceWith(createKeyTable(objs));
     } else {
       $("#keyTable").replaceWith(createKeyAlert(
         "You don't have any public keys registered. Please add keys using the Add key button above.",
         "warning"
-      ))
+      ));
     }
   })
   .catch(function(err) {
     console.error("Error loading SSH keys:\n", err)
-  })
+  });
 }
 
 function handleKeyDelete(keyId) {
@@ -68,10 +68,10 @@ function handleKeyDelete(keyId) {
     }
   ).then(function(resp) {
     // $("#keyRow" + keyId).remove();
-    loadKeyTable(true)
+    loadKeyTable(true);
   }).catch(function(err) {
     console.error("SSH key delete error:\n", err);
-  })
+  });
 }
 
 function addKey() {
@@ -110,19 +110,19 @@ function addKey() {
         body: JSON.stringify(form_data)
       }
     ).then(function(resp) {
-      return resp.json()
+      return resp.json();
     }).catch(function(err) {
-      console.error("Error adding key:\n", err)
+      console.error(err);
     }).then(function(json) {
       if (json !== undefined) {
         err = json['sftp/key']['__all__'][0]
         console.error("Key error: ", err)
-        $("#keyAddAlertMessage").text(err)
-        $("#keyAddAlert").show()
+        $("#keyAddAlertMessage").text(err);
+        $("#keyAddAlert").show();
       } else {
-        $("#keyAddAlertMessage").empty()
-        $("#keyAddAlert").hide()
-        $("#keyCreateModal").modal('hide');
+        $("#keyAddAlertMessage").empty();
+        $("#keyAddAlert").hide();
+        $("#keyAddModal").modal('hide');
         loadKeyTable(true)
       }
     })
