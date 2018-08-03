@@ -10,9 +10,15 @@ Third-party JS dependencies which are not yet npm-installed are in:
 
 For JS dependencies installed by npm, collectstatic will copy them from node_modules/
 into static/, e.g. node_modules/angular/angular.min.js becomes static/angular/angular.min.js
+but first the files to be copied from node_modules/ must be whitelisted in
+settings.NPM_FILE_PATTERNS, see: tardis/default_settings/static_files.py
 
 {% endcomment %}
 <script type="text/javascript" src="{% static 'jquery/dist/jquery.min.js' %}"></script>
+{% comment %}
+Use the unminified jquery-migrate.js to see deprecation warnings in your browser's Javascript console
+{% endcomment %}
+<script type="text/javascript" src="{% static 'jquery-migrate/dist/jquery-migrate.min.js' %}"></script>
 <script type="text/javascript" src="{% static 'jquery-ui-dist/jquery-ui.min.js' %}"></script>
 <script type="text/javascript" src="{% static 'js/lib/jquery.cookie.js' %}"></script>
 
