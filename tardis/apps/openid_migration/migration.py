@@ -1,8 +1,9 @@
 import logging
 
-from django.http import HttpResponse
 from django.contrib.auth.models import Permission
 from django.conf import settings
+
+from tastypie.models import ApiKey
 
 from tardis.tardis_portal.models import UserProfile, UserAuthentication, \
     ObjectACL, Group
@@ -11,8 +12,6 @@ from tardis.tardis_portal.auth.authentication import _getJsonFailedResponse,\
 
 from tardis.tardis_portal.shortcuts import render_response_index
 from tardis.apps.openid_migration.models import OpenidUserMigration, OpenidACLMigration
-
-from tastypie.models import ApiKey
 
 from .tasks import notify_migration_status
 from .forms import openid_user_migration_form
@@ -43,8 +42,7 @@ def do_migration(request):
     supportedAuthMethods = getSupportedAuthMethods()
 
     # let's try and authenticate here
-    user = auth_service.authenticate(authMethod="None",
-        request=request)
+    user = auth_service.authenticate(authMethod="None", request=request)
 
     if user is None:
         errorMessage = 'Wrong username or password. Please try again'
@@ -210,8 +208,7 @@ def openid_migration_method(request):
     authForm = migration_form()
 
     c = {'authForm': authForm, }
-    return HttpResponse(render_response_index(request,
-                                              'migrate_accounts.html', c))
+    return render_response_index(request, 'migrate_accounts.html', c)
 
 
 def confirm_migration(request):
