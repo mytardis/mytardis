@@ -77,7 +77,7 @@
 
 <script type="text/javascript">
     $(function() {
-        jQuery('h3.accordion_head').click(function() {
+        jQuery('h3.accordion_head').on("click", function() {
             jQuery(this).next().slideToggle('fast');
         });
         jQuery('div.hideme').hide();

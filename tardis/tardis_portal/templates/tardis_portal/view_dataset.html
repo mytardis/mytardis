@@ -209,12 +209,12 @@
             $(".dataset_selector_all").unbind('click');
             $(".dataset_selector_none").unbind('click');
             // file selectors
-            $(document).find('.dataset_selector_all').click(function() {
+            $(document).find('.dataset_selector_all').on("click", function() {
                 $(this).parent().find('.datafile_checkbox').attr("checked", "checked");
 
             });
 
-            $(document).find('.dataset_selector_none').click(function() {
+            $(document).find('.dataset_selector_none').on("click", function() {
                 $(this).parent().find('.datafile_checkbox').removeAttr("checked");
 
             });

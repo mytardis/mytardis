@@ -24,7 +24,7 @@ $(document).ready(function() {
                 var users = null;
 
                 $("#group.form_submit").unbind('click');
-                $("#group.form_submit").click(function(event) {
+                $("#group.form_submit").on("click", function(event) {
                   event.preventDefault();
 
                   var group = $(this).parents('.group_create').find("#id_addgroup").val();
@@ -160,7 +160,7 @@ $(document).ready(function() {
                 var users = null;
 
                 $("#user.form_submit").unbind('click');
-                $("#user.form_submit").click(function(event) {
+                $("#user.form_submit").on("click", function(event) {
                   event.preventDefault();
 
                   var username = $(this).parents('.user_create').find("#id_username").val();
