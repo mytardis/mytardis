@@ -42,7 +42,7 @@
     });
 
       $(document).ready(function() {
-          $('.create_token_link').click(function(evt){
+          $('.create_token_link').on("click", function(evt){
               evt.preventDefault();
               var $toggle = $(this).siblings('.access_list_token_toggle');
               $.post(this.href, {}, refreshFunctionFor($toggle));  // TODO error-handling
@@ -58,11 +58,11 @@
     (t.toLowerCase() == this.substring(this.length -
     t.length).toLowerCase()); } }
 
-    $('.access_list1').hide().end().find('.access_list_user_toggle').click(function() { $(this).siblings('.access_list1').toggle(); });
-    $('.access_list2').hide().end().find('.access_list_group_toggle').click(function() { $(this).siblings('.access_list2, .access_list3').toggle(); });
-    //$('.access_list3').hide().end().find('.access_list_external_toggle').click(function() { $(this).next().toggle(); });
+    $('.access_list1').hide().end().find('.access_list_user_toggle').on("click", function() { $(this).siblings('.access_list1').toggle(); });
+    $('.access_list2').hide().end().find('.access_list_group_toggle').on("click", function() { $(this).siblings('.access_list2, .access_list3').toggle(); });
+    //$('.access_list3').hide().end().find('.access_list_external_toggle').on("click", function() { $(this).next().toggle(); });
     $('.access_list3').hide();
-    $('.access_list_token_toggle').click(function(evt){
+    $('.access_list_token_toggle').on("click", function(evt){
         evt.preventDefault();
         var $this = $(this);
         var $access_list = $this.siblings('.access_list');
@@ -156,7 +156,7 @@
 
 
         $("#user.form_submit").unbind('click');
-        $("#user.form_submit").click(function(event) {
+        $("#user.form_submit").on("click", function(event) {
           event.preventDefault();
           var entered_user = $(this).siblings("#id_entered_user").val();
           var autocomp_user = $(this).siblings("#id_autocomp_user").val();
@@ -188,7 +188,7 @@
                 users_div.hide().append(data).fadeIn();
                 // todo this is a duplicate function..
                 $(".remove_user").unbind('click');
-                $(".remove_user").click(function() {
+                $(".remove_user").on("click", function() {
                   var href = $(this).attr("href");
                   remove_user = $(this);
                   $.ajax({
@@ -217,7 +217,7 @@
         });
 
         $(".remove_user").unbind('click');
-        $(".remove_user").click(function() {
+        $(".remove_user").on("click", function() {
 
           var href = $(this).attr("href");
           remove_user = $(this);
@@ -291,7 +291,7 @@
         });
 
         $("#group.form_submit").unbind('click');
-        $("#group.form_submit").click(function(event) {
+        $("#group.form_submit").on("click", function(event) {
           event.preventDefault();
 
           var experiment_id = $(this).parents('.access_list2').find(".experiment_id").val();
@@ -317,7 +317,7 @@
 
             // todo this is a duplicate function..
             $(".remove_group").unbind('click');
-            $(".remove_group").click(function() {
+            $(".remove_group").on("click", function() {
               var href = $(this).attr("href");
               remove_group = $(this);
 
@@ -349,7 +349,7 @@
         });
 
         $(".remove_group").unbind('click');
-        $(".remove_group").click(function() {
+        $(".remove_group").on("click", function() {
 
           var href = $(this).attr("href");
 

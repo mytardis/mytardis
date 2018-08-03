@@ -10,7 +10,7 @@
     <div id="datafile-app">
   </div></div>
   <script type="text/javascript">
-    $(".df-view-button").click(function(e){
+    $(".df-view-button").on("click", function(e) {
 	e.preventDefault();
 	$("#df-view-h1").text(this.innerText);
 	$("#datafile-app").load(this.href);

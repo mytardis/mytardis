@@ -6,10 +6,10 @@
 <script type="text/javascript">
 // Set up tables cells as click links for touch devices
 $(function() {
-  $('.experiment-table a.experiment-link').click(function(evt) {
+  $('.experiment-table a.experiment-link').on("click", function(evt) {
     window.location.href = $(evt.delegateTarget).attr('href');
   });
-  $('.experiment-table td').click(function(evt) {
+  $('.experiment-table td').on("click", function(evt) {
     if (evt.target.tagName != 'A') {
       $(evt.delegateTarget).find('a.experiment-link').click();
     }

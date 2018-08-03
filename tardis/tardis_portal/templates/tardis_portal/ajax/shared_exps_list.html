@@ -122,12 +122,12 @@
 {{ paginator_block }}
 
 <script type="text/javascript">
-$(function(){
+$(function() {
     $("#experiments .accordion-body").collapse({parent:"#experiments", toggle: true});
-    $(".explink").click(function(e){
+    $(".explink").on("click", function(e) {
         e.stopPropagation();
     });
-    $(".dllink").click(function(e){
+    $(".dllink").on("click", function(e) {
         e.stopPropagation();
     });
 });
