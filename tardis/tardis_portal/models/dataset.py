@@ -99,7 +99,7 @@ class Dataset(models.Model):
     def get_images(self):
         from .datafile import IMAGE_FILTER
         return self.datafile_set.order_by('filename').filter(IMAGE_FILTER)\
-            .filter(file_objects__verified=True)
+            .filter(file_objects__verified=True).distinct()
 
     def _get_image(self):
         try:
