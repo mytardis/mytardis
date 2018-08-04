@@ -146,7 +146,7 @@
                                         <th>Created</th>
                                         <th></th>
                                     </tr>
-                                    <tr ng-repeat-start="dataset in facilityCtrl.datasets | filter:search_owner:strict | filter:search_experiment:strict | filter:search_instrument:strict">
+                                    <tr ng-repeat-start="dataset in facilityCtrl.datasets | filter:facilityCtrl.search_owner:strict | filter:facilityCtrl.search_experiment:strict | filter:facilityCtrl.search_instrument:strict">
                                         <td>{{dataset.owner}}</td>
                                         <td>{{dataset.group}}</td>
                                         <td>
@@ -200,14 +200,14 @@
                                         <th>Created</th>
                                         <th></th>
                                     </tr>
-                                    <tbody ng-repeat="datasetByInstrument in facilityCtrl.dataByInstrument | filter:search_instrument:strict">
+                                    <tbody ng-repeat="datasetByInstrument in facilityCtrl.dataByInstrument | filter:facilityCtrl.search_instrument:strict">
                                     <tr>
                                         <th style="text-align:center"
                                             colspan="6">
                                             {{datasetByInstrument.instrument.name}}
                                         </th>
                                     </tr>
-                                    <tr ng-repeat-start="dataset in datasetByInstrument.datasets | filter:search_owner:strict | filter:search_experiment:strict">
+                                    <tr ng-repeat-start="dataset in datasetByInstrument.datasets | filter:facilityCtrl.search_owner:strict | filter:facilityCtrl.search_experiment:strict">
                                         <td>{{dataset.owner}}</td>
                                         <td>{{dataset.group}}</td>
                                         <td>
@@ -259,14 +259,14 @@
                                         <th>Created</th>
                                         <th></th>
                                     </tr>
-                                    <tbody ng-repeat="datasetByUser in facilityCtrl.dataByUser | filter:search_owner:strict">
+                                    <tbody ng-repeat="datasetByUser in facilityCtrl.dataByUser | filter:facilityCtrl.search_owner:strict">
                                     <tr>
                                         <th style="text-align:center"
                                             colspan="6">
                                             {{datasetByUser.ownerGroup}}
                                         </th>
                                     </tr>
-                                    <tr ng-repeat-start="dataset in datasetByUser.datasets | filter:search_experiment:strict | filter:search_instrument:strict">
+                                    <tr ng-repeat-start="dataset in datasetByUser.datasets | filter:facilityCtrl.search_experiment:strict | filter:facilityCtrl.search_instrument:strict">
                                         <td>
                                             <a href="/experiment/view/{{dataset.parent_experiment.id}}/"
                                                target="_blank">{{dataset.parent_experiment.title}}</a>
