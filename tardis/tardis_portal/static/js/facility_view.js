@@ -1,14 +1,19 @@
+/* eslint no-unused-vars: [2, {"vars": "local", "args": "none"}] */
 // Capitalises the first letter (adapted from http://codepen.io/WinterJoey/pen/sfFaK)
-app.filter('capitalise', function () {
+angular
+.module('MyTardis')
+.filter('capitalise', function () {
     return function (input, all) {
-        return (!!input) ? input.replace(/([^\W_]+[^\s-]*) */g, function (txt) {
+        return (input) ? input.replace(/([^\W_]+[^\s-]*) */g, function (txt) {
             return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
         }) : '';
     }
 });
 
 // Filter to produce nice file size formatting (adapted from https://gist.github.com/yrezgui/5653591)
-app.filter('filesize', function () {
+angular
+.module('MyTardis')
+.filter('filesize', function () {
     var units = [
         'bytes',
         'KB',
@@ -35,9 +40,13 @@ app.filter('filesize', function () {
 });
 
 
-app.controller('FacilityCtrl', function ($scope, $resource, $interval, $log) {
+angular
+.module('MyTardis')
+.controller('FacilityController', function ($resource, $interval, $log) {
 
-    var countRes = $resource('/facility/fetch_data/:facility_id/count/');
+    var vm = this;  // view model
+
+    var countRes = $resource('/facility/fetch_data/:facilityId/count/');
     var datasetDetailRes = $resource('/facility/fetch_datafiles/:dataset_id/',
         {}, {
             'get': {method: 'GET', isArray: true}
@@ -45,107 +54,107 @@ app.controller('FacilityCtrl', function ($scope, $resource, $interval, $log) {
     var facilityListRes = $resource('/facility/fetch_facilities_list/', {}, {
         'get': {method: 'GET', isArray: true}
     });
-    var facilityDataRes = $resource('/facility/fetch_data/:facility_id/:start_index/:end_index/', {
-        start_index: 0,
-        end_index: 50
+    var facilityDataRes = $resource('/facility/fetch_data/:facilityId/:startIndex/:endIndex/', {
+        startIndex: 0,
+        endIndex: 50
     }, {
         'get': {method: 'GET', isArray: true}
     });
 
     // Whether to show the "no data" alert
-    $scope.showDataUnvailableAlert = function () {
-        if ($scope.loading) {
+    vm.showDataUnvailableAlert = function () {
+        if (vm.loading) {
             return false;
-        } else if (typeof $scope.datasets !== 'undefined') {
-            return $scope.datasets.length === 0;
+        } else if (angular.isDefined(vm.datasets)) {
+            return vm.datasets.length === 0;
         } else {
             return true;
         }
     };
 
     // Whether to show the facility selector
-    $scope.showFacilitySelector = function () {
-        return ($scope.facilities.length > 1);
+    vm.showFacilitySelector = function () {
+        return (vm.facilities.length > 1);
     };
     // Toggle the facility selector
-    $scope.selectFacility = function (id, name) {
-        $scope.selectedFacility = id;
-        $scope.selectedFacilityName = name;
-        $scope.currentFetchLimit = $scope.defaultFetchLimit;
-        $scope.fetchFacilityData(0, $scope.currentFetchLimit);
+    vm.selectFacility = function (id, name) {
+        vm.selectedFacility = id;
+        vm.selectedFacilityName = name;
+        vm.currentFetchLimit = vm.defaultFetchLimit;
+        vm.fetchFacilityData(0, vm.currentFetchLimit);
     };
     // Check which facility is selected
-    $scope.isFacilitySelected = function (id) {
-        return $scope.selectedFacility === id;
+    vm.isFacilitySelected = function (id) {
+        return vm.selectedFacility === id;
     };
 
     // Toggle data view selector
-    $scope.selectDataView = function (index) {
-        $scope.selectedDataView = index;
+    vm.selectDataView = function (index) {
+        vm.selectedDataView = index;
     };
     // Check which data view is selected
-    $scope.isDataViewSelected = function (index) {
-        return $scope.selectedDataView === index;
+    vm.isDataViewSelected = function (index) {
+        return vm.selectedDataView === index;
     };
 
     // Toggle file list visibility
-    $scope.toggleFileList = function (dataset) {
-        if ($scope.visibleFileList === dataset.id) {
-            delete $scope.visibleFileList;
+    vm.toggleFileList = function (dataset) {
+        if (vm.visibleFileList === dataset.id) {
+            delete vm.visibleFileList;
         } else {
-            $scope.visibleFileList = dataset.id;
+            vm.visibleFileList = dataset.id;
             datasetDetailRes.get({'dataset_id': dataset.id}).$promise.then(function (data) {
                 dataset.datafiles = data;
             });
         }
     };
     // Check if file list is visible
-    $scope.isFileListVisible = function (id) {
-        return $scope.visibleFileList === id;
+    vm.isFileListVisible = function (id) {
+        return vm.visibleFileList === id;
     };
-    $scope.unsetFileListVisibility = function () {
-        delete $scope.visibleFileList;
+    vm.unsetFileListVisibility = function () {
+        delete vm.visibleFileList;
     };
 
     // Reset filter form
-    $scope.filterFormReset = function () {
-        delete $scope.search_owner;
-        delete $scope.search_experiment;
-        delete $scope.search_instrument;
+    vm.filterFormReset = function () {
+        delete vm.search_owner;
+        delete vm.search_experiment;
+        delete vm.search_instrument;
     };
     // Check if filters are active
-    $scope.filtersActive = function () {
-        if (typeof $scope.search_owner !== 'undefined' && $scope.search_owner.owner) {
+    vm.filtersActive = function () {
+        if (angular.isDefined(vm.search_owner) && vm.search_owner.owner) {
             return true;
-        } else if (typeof $scope.search_experiment !== 'undefined' && $scope.search_experiment.parent_experiment.title) {
+        } else if (angular.isDefined(vm.search_experiment) && vm.search_experiment.parent_experiment.title) {
             return true;
-        } else if (typeof $scope.search_instrument !== 'undefined' && $scope.search_instrument.instrument.name) {
+        } else if (angular.isDefined(vm.search_instrument) && vm.search_instrument.instrument.name) {
             return true;
         }
     };
 
     // Load more entries
-    $scope.loadMoreEntries = function (increment) {
-        if ($scope.currentFetchLimit >= $scope.totalDatasets) {
+    vm.loadMoreEntries = function (increment) {
+        if (vm.currentFetchLimit >= vm.totalDatasets) {
             return;
         }
-        if ($scope.currentFetchLimit + increment > $scope.totalDatasets) {
-            $scope.currentFetchLimit = $scope.totalDatasets;
+        if (vm.currentFetchLimit + increment > vm.totalDatasets) {
+            vm.currentFetchLimit = vm.totalDatasets;
         } else {
-            $scope.currentFetchLimit += increment;
+            vm.currentFetchLimit += increment;
         }
-        $scope.fetchFacilityData($scope.datasets.length, $scope.currentFetchLimit, true);
+        vm.fetchFacilityData(vm.datasets.length, vm.currentFetchLimit, true);
     };
 
     // Fetch the list of facilities available to the user and facilities data
     function initialiseFacilitiesData() {
         facilityListRes.get().$promise.then(function (data) {
                 $log.debug("Facility list fetched successfully");
-                $scope.facilities = data;
-                if ($scope.facilities.length > 0) { // If the user is allowed to manage any facilities...
-                    $scope.selectedFacility = $scope.facilities[0].id;
-                    $scope.selectedFacilityName = $scope.facilities[0].name;
-                    $scope.fetchFacilityData(0, $scope.defaultFetchLimit);
+                vm.facilities = data;
+                if (vm.facilities.length > 0) { // If the user is allowed to manage any facilities...
+                    vm.selectedFacility = vm.facilities[0].id;
+                    vm.selectedFacilityName = vm.facilities[0].name;
+                    vm.fetchFacilityData(0, vm.defaultFetchLimit);
                 }
             },
             function () {
@@ -154,16 +163,16 @@ app.controller('FacilityCtrl', function ($scope, $resource, $interval, $log) {
     }
 
     // Fetch data for facility
-    $scope.fetchFacilityData = function (startIndex, endIndex, append) {
+    vm.fetchFacilityData = function (startIndex, endIndex, append) {
 
-        delete $scope.visibleFileList;
-        $scope.loading = true;
+        delete vm.visibleFileList;
+        vm.loading = true;
 
-        countRes.get({'facility_id': $scope.selectedFacility}).$promise.then(function (data) {
+        countRes.get({'facilityId': vm.selectedFacility}).$promise.then(function (data) {
                 $log.debug("Fetched total dataset count");
-                $scope.totalDatasets = data.facility_data_count;
-                if ($scope.currentFetchLimit > $scope.totalDatasets) {
-                    $scope.currentFetchLimit = $scope.totalDatasets;
+                vm.totalDatasets = data.facility_data_count;
+                if (vm.currentFetchLimit > vm.totalDatasets) {
+                    vm.currentFetchLimit = vm.totalDatasets;
                 }
             },
             function () {
@@ -171,29 +180,29 @@ app.controller('FacilityCtrl', function ($scope, $resource, $interval, $log) {
             });
 
         facilityDataRes.get({
-            'facility_id': $scope.selectedFacility,
-            'start_index': startIndex,
-            'end_index': endIndex
+            'facilityId': vm.selectedFacility,
+            'startIndex': startIndex,
+            'endIndex': endIndex
         }).$promise.then(function (data) {
             $log.debug("Fetched datasets between indices " + startIndex + " and " + endIndex);
-            if (append && $scope.datasets) {
-                $scope.datasets = $scope.datasets.concat(data.slice(0, data.length));
+            if (append && vm.datasets) {
+                vm.datasets = vm.datasets.concat(data.slice(0, data.length));
             } else {
-                $scope.datasets = data.slice(0, data.length);
+                vm.datasets = data.slice(0, data.length);
             }
-            if ($scope.datasets.length > 0) {
-                $scope.dataByUser = groupByUser($scope.datasets);
-                $scope.dataByInstrument = groupByInstrument($scope.datasets);
+            if (vm.datasets.length > 0) {
+                vm.dataByUser = groupByUser(vm.datasets);
+                vm.dataByInstrument = groupByInstrument(vm.datasets);
             } else {
-                $scope.dataByUser = [];
-                $scope.dataByInstrument = [];
+                vm.dataByUser = [];
+                vm.dataByInstrument = [];
             }
         },
         function () {
             $log.error("Could not fetch datasets");
         })
         .finally(function () {
-            $scope.loading = false;
+            vm.loading = false;
         });
     };
 
@@ -282,25 +291,25 @@ app.controller('FacilityCtrl', function ($scope, $resource, $interval, $log) {
 
     // Refresh polling timer
     $interval(function () {
-        if ($scope.refreshCountdown > 0 && $scope.refreshInterval > 0) {
-            $scope.refreshCountdown--;
-        } else if ($scope.refreshInterval > 0) {
-            delete $scope.visibleFileList;
-            $scope.fetchFacilityData(0, $scope.currentFetchLimit);
-            $scope.refreshCountdown = $scope.refreshInterval;
+        if (vm.refreshCountdown > 0 && vm.refreshInterval > 0) {
+            vm.refreshCountdown--;
+        } else if (vm.refreshInterval > 0) {
+            delete vm.visibleFileList;
+            vm.fetchFacilityData(0, vm.currentFetchLimit);
+            vm.refreshCountdown = vm.refreshInterval;
         }
     }, 1000);
 
     // Set the update interval
-    $scope.setRefreshInterval = function (interval) {
-        $scope.refreshInterval = interval;
-        $scope.refreshCountdown = interval;
+    vm.setRefreshInterval = function (interval) {
+        vm.refreshInterval = interval;
+        vm.refreshCountdown = interval;
     };
 
     // Format the countdown for the view (mm:ss)
-    $scope.refreshCountdownFmt = function () {
-        var minutes = Math.floor($scope.refreshCountdown / 60);
-        var seconds = $scope.refreshCountdown - minutes * 60;
+    vm.refreshCountdownFmt = function () {
+        var minutes = Math.floor(vm.refreshCountdown / 60);
+        var seconds = vm.refreshCountdown - minutes * 60;
         var strMins, strSecs;
         if (minutes < 10) {
             strMins = "0" + minutes;
@@ -316,12 +325,12 @@ app.controller('FacilityCtrl', function ($scope, $resource, $interval, $log) {
     };
 
     // Set default settings
-    $scope.defaultFetchLimit = 50;
-    $scope.currentFetchLimit = $scope.defaultFetchLimit;
-    $scope.facilities = [];
-    $scope.selectedDataView = 1;
-    $scope.refreshInterval = 0;
-    $scope.refreshCountdown = 0;
+    vm.defaultFetchLimit = 50;
+    vm.currentFetchLimit = vm.defaultFetchLimit;
+    vm.facilities = [];
+    vm.selectedDataView = 1;
+    vm.refreshInterval = 0;
+    vm.refreshCountdown = 0;
 
     // Do initial data fetch
     initialiseFacilitiesData();
