@@ -537,7 +537,7 @@ $(document).on('click', '#modal-metadata .submit-button', function() {
       </h3>
     </div>
     <div class="span4">
-{% if has_write_permissions and not experiment.public and not immutable %}
+{% if has_write_permissions and perms.tardis_portal.add_datafile and not experiment.public and not immutable %}
     <span class="btn btn-success fileinput-button pull-right">
         <i class="glyphicon glyphicon-plus"></i>
         <span>Add files...</span>
