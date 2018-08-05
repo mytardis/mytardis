@@ -140,8 +140,8 @@ def render_public_access_badge(experiment):
             experiment.is_publication() and \
             not experiment.is_publication_draft():
         return render_mustache('tardis_portal/badges/public_access', {
-            'title': 'No public access, awaiting approval',
-            'label': '[PUBLICATION] Awaiting approval',
+            'title': 'No public access, retracted',
+            'label': '[PUBLICATION] Retracted',
             'private': True,
         })
     elif experiment.public_access == experiment.PUBLIC_ACCESS_NONE and \

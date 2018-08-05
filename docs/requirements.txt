@@ -2,4 +2,4 @@
 -r ../requirements-test.txt
 
 # apps go here:
-# -r tardis/apps/exampleapp/requirements.txt
+-r ../tardis/apps/publication_workflow/requirements.txt
