@@ -576,7 +576,7 @@ HAProxy.
 The Celery workers which run MyTardis asynchronous tasks also require a
 service configuration, which is typically implemented with Systemd (on
 Ubuntu 16.04 or Ubuntu 18.04), saved in
-`/etc/systemd/service/celeryworker.service`::
+`/etc/systemd/system/celeryworker.service`::
 
     [Unit]
     Description=celeryworker daemon
@@ -613,7 +613,7 @@ In this case, the Celery worker service would be configured in
 
 For tasks scheduled by Celerybeat, the Systemd service configuration
 (for Ubuntu 16.04 or Ubuntu 18.04), is saved in
-`/etc/systemd/service/celerybeat.service`::
+`/etc/systemd/system/celerybeat.service`::
 
     [Unit]
     Description=celerybeat daemon
