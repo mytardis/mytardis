@@ -26,8 +26,6 @@ mkvirtualenv mytardis
 
 pip install -U pip
 pip install -r requirements.txt
-# for OS X, but might also need some brew requirements.
-pip install -r requirements-osx.txt
 
 # To install minimal Javascript dependencies for production:
 npm install --production
