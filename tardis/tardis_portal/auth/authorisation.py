@@ -63,8 +63,8 @@ class ACLAwareBackend(object):
         if perm_label != self.app_label:
             return False
 
-        if perm_type == "change_experiment" and \
-                not user_obj.has_perm("tardis_portal.change_experiment"):
+        if perm_type == 'change_experiment' and \
+                not user_obj.has_perm('tardis_portal.change_experiment'):
             return False
 
         ct = ContentType.objects.get_for_model(obj)
