@@ -487,7 +487,7 @@ for your own needs and understand the settings before deploying it.::
 
       location / {
           proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-          proxy_set_header X-Forwarded-Protocol $scheme;
+          proxy_set_header X-Forwarded-Proto $scheme;
           proxy_set_header Host $http_host;
           proxy_redirect off;
           proxy_pass http://mytardis;
@@ -504,6 +504,20 @@ for your own needs and understand the settings before deploying it.::
       }
   }
 
+The ``X-Forwarded-Proto`` header is explained in http://docs.gunicorn.org/en/stable/deploy.html#id5:
+
+  It is recommended to pass protocol information to Gunicorn. Many web
+  frameworks use this information to generate URLs. Without this information,
+  the application may mistakenly generate ‘http’ URLs in ‘https’ responses,
+  leading to mixed content warnings or broken applications.
+
+To tell MyTardis to set this header in its HTTP requests and redirects, you'll
+need the following in your ``settings.py``::
+
+  SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+For more information, including warnings on the risks of misconfiguring this setting,
+see: https://docs.djangoproject.com/en/1.11/ref/settings/#secure-proxy-ssl-header
 
 Don't forget to create the static files directory and give it appropriate
 permissions. The location is set in the ``settings.py`` file.
