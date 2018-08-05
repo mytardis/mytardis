@@ -39,6 +39,7 @@ http://docs.djangoproject.com/en/dev/topics/testing/
 
 from datetime import datetime
 
+from django.contrib.auth.models import Permission
 from django.contrib.auth.models import User
 from django.core.exceptions import SuspiciousOperation
 from django.test import RequestFactory
@@ -351,6 +352,8 @@ class EditParameterSetTestCase(TestCase):
         pwd = 'secret'  # nosec
         email = ''
         self.user = User.objects.create_user(username, email, pwd)
+        self.user.user_permissions.add(
+            Permission.objects.get(codename='change_experiment'))
 
         self.schema = Schema(
             namespace="http://localhost/psmtest/df/",

@@ -67,6 +67,8 @@ class UploadTestCase(TestCase):
         pwd = 'secret'
         email = ''
         self.user = User.objects.create_user(user, email, pwd)
+        self.user.user_permissions.add(
+            Permission.objects.get(codename='change_experiment'))
 
         self.userProfile = self.user.userprofile
 

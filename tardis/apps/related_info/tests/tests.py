@@ -1,6 +1,7 @@
 import json
 import six
 
+from django.contrib.auth.models import Permission
 from django.test import TestCase, TransactionTestCase
 from django.test.client import Client
 from django.urls import reverse
@@ -12,6 +13,8 @@ from tardis.tardis_portal.ParameterSetManager import ParameterSetManager
 def _create_user_and_login(username='testuser', password='testpass'):
     user = User.objects.create_user(username, '', password)
     user.save()
+    user.user_permissions.add(
+        Permission.objects.get(codename='change_experiment'))
 
     client = Client()
     client.login(username=username, password=password)
