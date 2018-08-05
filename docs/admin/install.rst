@@ -487,7 +487,7 @@ for your own needs and understand the settings before deploying it.::
 
       location / {
           proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-          proxy_set_header X-Forwarded-Protocol $scheme;
+          proxy_set_header X-Forwarded-Proto $scheme;
           proxy_set_header Host $http_host;
           proxy_redirect off;
           proxy_pass http://mytardis;
@@ -504,6 +504,20 @@ for your own needs and understand the settings before deploying it.::
       }
   }
 
+The ``X-Forwarded-Proto`` header is explained in http://docs.gunicorn.org/en/stable/deploy.html#id5:
+
+  It is recommended to pass protocol information to Gunicorn. Many web
+  frameworks use this information to generate URLs. Without this information,
+  the application may mistakenly generate ‘http’ URLs in ‘https’ responses,
+  leading to mixed content warnings or broken applications.
+
+To tell MyTardis to set this header in its HTTP requests and redirects, you'll
+need the following in your ``settings.py``::
+
+  SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+For more information, including warnings on the risks of misconfiguring this setting,
+see: https://docs.djangoproject.com/en/1.11/ref/settings/#secure-proxy-ssl-header
 
 Don't forget to create the static files directory and give it appropriate
 permissions. The location is set in the ``settings.py`` file.
@@ -576,7 +590,7 @@ HAProxy.
 The Celery workers which run MyTardis asynchronous tasks also require a
 service configuration, which is typically implemented with Systemd (on
 Ubuntu 16.04 or Ubuntu 18.04), saved in
-`/etc/systemd/service/celeryworker.service`::
+`/etc/systemd/system/celeryworker.service`::
 
     [Unit]
     Description=celeryworker daemon
@@ -613,7 +627,7 @@ In this case, the Celery worker service would be configured in
 
 For tasks scheduled by Celerybeat, the Systemd service configuration
 (for Ubuntu 16.04 or Ubuntu 18.04), is saved in
-`/etc/systemd/service/celerybeat.service`::
+`/etc/systemd/system/celerybeat.service`::
 
     [Unit]
     Description=celerybeat daemon
