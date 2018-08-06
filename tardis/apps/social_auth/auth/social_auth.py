@@ -86,7 +86,9 @@ def approve_user_auth(**kwargs):
 
 
 def send_admin_email(**kwargs):
-    """sends MyTardis admin an email for approving account"""
+    """
+    Sends MyTardis admins an email for approving account
+    """
 
     isNewUser = kwargs.get('is_new')
     if not isNewUser:
@@ -94,25 +96,26 @@ def send_admin_email(**kwargs):
 
     # get user
     user = kwargs.get('user')
-    authentication = kwargs.get('authentication')
-    # send email to admin
-    site = Site.objects.get_current().domain
-    subject = '[MyTardis] User account needs admin approval'
-    message = (
-        "Hi, This message is for MyTardis Admins.\n\n"
-        "A MyTardis user account with username as \"%s\" and userId as \"%s\" "
-        "was recently created and needs admin approval.\n\n"
-        "%s/admin/tardis_portal/userauthentication/%s\n\n"
-        "Thanks,\n"
-        "MyTardis\n"
-        % (user.username, user.id, site, authentication.id))
+    if user:
+        authentication = kwargs.get('authentication')
+        # send email to admins
+        site = Site.objects.get_current().domain
+        subject = '[MyTardis] User account needs admin approval'
+        message = (
+            "Hi, This message is for MyTardis Admins.\n\n"
+            "A MyTardis user account with username as \"%s\" and user_id as "
+            "\"%s\" was recently created and needs admin approval.\n\n"
+            "%s/admin/tardis_portal/userauthentication/%s\n\n"
+            "Thanks,\n"
+            "MyTardis\n"
+            % (user.username, user.id, site, authentication.id))
 
-    try:
-        mail.mail_admins(subject, message,
-                         connection=get_connection(fail_silently=True))
+        try:
+            mail.mail_admins(subject, message,
+                             connection=get_connection(fail_silently=True))
 
-    except Exception as e:
-        logger.error("There was an error sending mail: %s ", e)
+        except Exception as e:
+            logger.error("There was an error sending mail: %s ", e)
 
     return kwargs
 
