@@ -1,5 +1,21 @@
+from django.conf import settings
 from django.urls import reverse
+
 from tardis.tardis_portal.context_processors import user_menu_processor
+
+
+def openid_migration_processor(request):
+    """
+    adds context for openid_migration
+    """
+    def is_openid_migration_enabled():
+        try:
+            if 'tardis.apps.openid_migration' in settings.INSTALLED_APPS:
+                return getattr(settings, 'OPENID_MIGRATION_ENABLED', True)
+        except AttributeError:
+            pass
+        return False
+    return {'openid_migration_enabled': is_openid_migration_enabled()}
 
 
 def openid_migration_menu_processor(request):
