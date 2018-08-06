@@ -40,7 +40,9 @@ from fractions import Fraction
 import logging
 import subprocess
 import tempfile
+import warnings
 
+from tardis.tardis_portal.deprecations import RemovedInMyTardis40Warning
 from tardis.tardis_portal.models import Schema, DatafileParameterSet
 from tardis.tardis_portal.models import ParameterName, DatafileParameter
 
@@ -105,6 +107,13 @@ class DiffractionImageFilter(object):
         param created: A boolean; True if a new record was created.
         type created: bool
         """
+        warnings.warn(
+            "The diffractionimage filter will be removed in MyTardis 4.0. "
+            "It is no longer used in the MyTardis deployment it was developed "
+            "for, and it is too deployment-specific to be included in the "
+            "core MyTardis repository.",
+            RemovedInMyTardis40Warning
+        )
         instance = kwargs.get('instance')
 
         schema = self.getSchema()

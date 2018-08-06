@@ -4,6 +4,7 @@ import re
 import urllib2
 from urllib2 import HTTPError
 import logging
+import warnings
 
 from django.conf import settings
 from django.template.loader import render_to_string
@@ -11,6 +12,8 @@ from django.utils.importlib import import_module
 
 from tardis.tardis_portal.models import ExperimentParameter, \
     ExperimentParameterSet, ParameterName, Schema
+from tardis.tardis_portal.deprecations import RemovedInMyTardis40Warning
+
 
 logger = logging.getLogger(__name__)
 
@@ -31,6 +34,12 @@ class DOIService(object):
         :type experiment: :class: `tardis.tardis_portal.models.Experiment`
         :raises Exception:
         """
+        warnings.warn(
+            "This old DOI minting mechanism used an ANDS service which is no "
+            "longer available.  DOI minting should now be implemented using "
+            "the tardis.apps.publication_forms.doi.DOI class.",
+            RemovedInMyTardis40Warning
+        )
         if hasattr(settings, 'DOI_ENABLE') and settings.DOI_ENABLE:
             self.experiment = experiment
 
@@ -144,6 +153,12 @@ class DOIXMLProvider(object):
     """
 
     def __init__(self, experiment):
+        warnings.warn(
+            "This old DOI minting mechanism used an ANDS service which is no "
+            "longer available.  DOI minting should now be implemented using "
+            "the tardis.apps.publication_forms.doi.DOI class.",
+            RemovedInMyTardis40Warning
+        )
         self.experiment = experiment
 
     def datacite_xml(self):

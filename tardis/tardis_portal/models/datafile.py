@@ -740,16 +740,21 @@ class DataFileObject(models.Model):
 
 @receiver(pre_delete, sender=DataFileObject, dispatch_uid='dfo_delete')
 def delete_dfo(sender, instance, **kwargs):
+    '''
+    Deletes the actual file / object, before deleting the database record
+    '''
     can_delete = getattr(
         instance.storage_box.attributes.filter(key='can_delete').first(),
         'value', 'True')
-    if can_delete.lower() == 'true':
+    if can_delete.lower() == 'true' and instance.uri:
         try:
             instance.delete_data()
         except NotImplementedError:
             logger.info('deletion not supported on storage box %s, '
                         'for dfo id %s' % (str(instance.storage_box),
                                            str(instance.id)))
+    elif not instance.uri:
+        logger.warning('DFO %s has no URI, so no data to delete' % instance.id)
     else:
         logger.debug('Did not delete file dfo.id '
                      '%s, because deletes are disabled' % instance.id)

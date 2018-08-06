@@ -17,7 +17,9 @@
 {% mustachejs "tardis_portal/badges/datafile_count" %}
 {% mustachejs "tardis_portal/badges/size" %}
 
+{% if pub_form_enabled %}
 <script type="text/javascript" src="/static/publication-form/publication_form.js"></script>
+{% endif %}
 <script type="text/javascript">
     var toggle_files = function(loadCallback) {
         var $this = $(this);
@@ -237,11 +239,15 @@ $('#modal-metadata .submit-button').click(function() {
     {% endif %}
   </h4>
   {% if not experiment.public %}
+  {% if pub_form_enabled %}
   <div class="pull-right"
        ng-controller="PublicationFormController as pubFormCtrl"
        experiment_id="{{ experiment.id }}"
        is_publication="{{ experiment.is_publication }}"
        is_publication_draft="{{ experiment.is_publication_draft }}">
+  {% else %}
+  <div class="pull-right">
+  {% endif %}
     {% if has_read_or_owner_ACL and pub_form_enabled %}
     <a class="prepare_to_publish btn btn-mini btn-info"
        title="Prepare To Publish" ng-click="pubFormCtrl.openPublicationForm()" ng-show="pubFormCtrl.isPublicationDraft || !pubFormCtrl.isPublication">

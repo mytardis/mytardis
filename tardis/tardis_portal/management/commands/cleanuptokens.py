@@ -1,12 +1,15 @@
 """
 Management utility to clean up tokens
 """
+import warnings
 
 from datetime import datetime as dt
 
 from optparse import make_option
 from django.core.management.base import BaseCommand
 from django.db.models import Count
+
+from tardis.tardis_portal.deprecations import RemovedInMyTardis40Warning
 from tardis.tardis_portal.models import Token, ObjectACL
 from tardis.tardis_portal.auth.token_auth import TokenGroupProvider
 
@@ -22,6 +25,11 @@ class Command(BaseCommand):
     help = 'Deletes unused tokens and optionally their ACLs'
 
     def handle(self, *args, **options):
+        warnings.warn(
+            "The cleanuptokens command has been broken since ExperimentACLs were "
+            "replaced by ObjectACLs.  It will be removed in MyTardis 4.0.",
+            RemovedInMyTardis40Warning
+        )
         verbosity = int(options.get('verbosity', 1))
         keep_acls = options.get('keep_acls')
 

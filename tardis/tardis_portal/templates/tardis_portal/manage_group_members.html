@@ -20,6 +20,7 @@ $(document).ready(function() {
         modal.find('.modal-body')
              .load("/experiment/control_panel/create/group/", function() {
                 modal.find('.loading-placeholder').hide();
+                modal.find("#error-message").parents(".alert-error").hide();
 
                 var users = null;
 
@@ -39,10 +40,14 @@ $(document).ready(function() {
                     'global': true,
                     type: "GET",
                     url: action,
+                    dataType: "text",
                     success: function(data) {
                         modal.modal('hide');
                     },
-                    error: function(data) { alert('Error adding group!'); }
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        modal.find("#error-message").html(jqXHR.responseText);
+                        modal.find("#error-message").parents(".alert-error").show();
+                    }
                   });
                   return false;
                 });
@@ -227,6 +232,11 @@ $(document).ready(function() {
   <div class="modal-header">
     <a class="close" data-dismiss="modal">&times;</a>
     <h1 class="title">Create Group</h1>
+  </div>
+
+  <div class="alert alert-error" style="display:none">
+    <a class="close" onclick="$('.alert').hide()">×</a>
+    <div id="error-message"></div>
   </div>
 
   <div class="loading-placeholder" style="display: none">

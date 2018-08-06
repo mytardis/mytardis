@@ -10,10 +10,10 @@ MyTardis
    :target: https://semaphoreapp.com/mytardis/mytardis
    :alt: Semaphore build status
 
-.. image:: https://api.codacy.com/project/badge/Grade/f945cdf9191d44d2806d14fb55e32ef5
-  :target: https://www.codacy.com/app/keithschulze/mytardis?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=mytardis/mytardis&amp;utm_campaign=Badge_Grade
-  :alt: Codacy Badge
-
+.. image:: https://api.codacy.com/project/badge/Grade/c27bad18abaf443c93e58192757c2025
+   :alt: Codacy Badge
+   :target: https://app.codacy.com/app/mytardis/mytardis?utm_source=github.com&utm_medium=referral&utm_content=mytardis/mytardis&utm_campaign=badger
+   
 .. image:: https://coveralls.io/repos/mytardis/mytardis/badge.svg?branch=develop
   :target: https://coveralls.io/r/mytardis/mytardis?branch=develop
   :alt: Coveralls Badge
@@ -107,11 +107,12 @@ included. It will move to newer versions automatically. Follow this branch
 if you want to stay up to date in a production environment.
 
 Each version has its own branch named by version number. At the time of
-writing this is ``3.7``. Follow this branch for your production installation and
+writing, the latest release is ``3.9``, tagged from the ``series-3.9``
+branch. Follow this branch for your production installation and
 perform version upgradres manually.
 
 Each bugfix or set of fixes bumps the minor version and each new release is
-tagged, eg. ``3.7.2``. Use tagged releases if you are paranoid about changes to
+tagged, eg. ``3.9.1``. Use tagged releases if you are paranoid about changes to
 the code you have not tested yourself.
 
 To follow development, please see the contributing section below.

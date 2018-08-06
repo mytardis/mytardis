@@ -39,3 +39,4 @@ SHARED_EXPS_PER_PAGE = 20
 
 # Used in "Experiment" view:
 DATASET_ORDERING = 'description'
+SHOW_DATASET_THUMBNAILS = True
