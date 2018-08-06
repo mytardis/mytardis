@@ -142,29 +142,3 @@ def send_account_approved_email(user):
 
     except Exception as e:
         logger.error("There was an error sending mail: %s ", e)
-
-
-def tardis_social_user(backend, uid, user=None, *args, **kwargs):
-    """
-    Django social auth will check whether we already have a user
-    matching the social user's uid (username), and if so, it will
-    assume that creating a new account is unnecessary.  Using
-    tardis.apps.social_auth.auth.social_auth.tardis_social_user
-    instead of social_core.pipeline.social_auth.social_user in the
-    SOCIAL_AUTH_PIPELINE ignores existing user records which match
-    the social auth username unless they have a matching
-    UserAuthentication record.
-    """
-    # pylint: disable=W1113
-    from social_core.pipeline.social_auth import social_user
-    user = social_user(backend, uid, user, *args, **kwargs)
-    if not user:
-        return None
-
-    authenticatedBackendName = type(backend).__name__
-    authMethod = get_auth_method(authenticatedBackendName)
-    if UserAuthentication.objects.filter(
-            userProfile__user__username=uid,
-            authenticationMethod=authMethod).first():
-        return user
-    return None
