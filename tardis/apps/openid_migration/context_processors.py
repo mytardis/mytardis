@@ -27,7 +27,7 @@ def openid_migration_menu_processor(request):
     migrate_menu_item = dict(
         url=reverse('tardis.apps.openid_migration.views.migrate_accounts'),
         icon='fa fa-tags',
-        label='Migrate Accounts'
+        label='Migrate My Account'
     )
     item_index = -1
     for menu_item in user_menu:
