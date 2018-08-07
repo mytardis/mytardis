@@ -64,7 +64,7 @@ You may want to add exception middleware provided by *python-social-auth*. To do
 ************************
 Adding Context Processor
 ************************
-You will need to add following context processor to *seetings.py*
+You will need to add following context processor to *settings.py*
 
 .. code-block:: python
 
