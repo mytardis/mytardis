@@ -93,7 +93,7 @@ def cybderduck_connection_window(request):
                   "cyberduck_connection_blank.png")
     font_file = "tardis/tardis_portal/templates/fonts/roboto.ttf"
     base = Image.open(base_image)
-    font = ImageFont.truetype(font_file, 13)
+    font = ImageFont.truetype(font_file, 22)
     draw = ImageDraw.Draw(base)
 
     if request.user.userprofile.isDjangoAccount:
@@ -105,14 +105,14 @@ def cybderduck_connection_window(request):
     sftp_host = request.get_host().split(':')[0]
     sftp_port = str(getattr(settings, 'SFTP_PORT', 2200))
     info = [
-        {'location': (247, 170),
+        {'location': (532, 322),
          'text': sftp_host},
-        {'location': (530, 169),
+        {'location': (1096, 322),
          'text': sftp_port},
-        {'location': (247, 217),
+        {'location': (532, 420),
          'text': sftp_username},
     ]
-    url = {'location': (241, 195),
+    url = {'location': (532, 370),
            'text': 'sftp://{}@{}:{}/'.format(
                sftp_username,
                sftp_host,
@@ -127,7 +127,7 @@ def cybderduck_connection_window(request):
         draw.text(pos, text, font=font, **options)
         draw.line((lx, ly, lx + twidth - 2, ly), **options)
 
-    url_font = ImageFont.truetype(font_file, 11)
+    url_font = ImageFont.truetype(font_file, 18)
     url_colour = (0, 49, 249)
     draw_underlined_text(draw, url['location'],
                          url['text'], url_font, fill=url_colour)
