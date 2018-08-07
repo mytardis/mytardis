@@ -190,4 +190,3 @@ def sftp_keys(request):
         form = KeyGenerateForm()
 
     return render(request, 'sftp/keys.html', {'form': form})
-

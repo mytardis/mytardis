@@ -163,7 +163,7 @@ $(document).on("submit", "#keyGenerateForm", function(e) {
         if (textStatus === "success") {
             var blob = new Blob([data], {type: "application/octet-stream"});
             var disposition = jqXHR.getResponseHeader("content-disposition");
-            var matches = /filename="(.+)"/.exec(disposition);
+            var matches = /filename='(.+)'/.exec(disposition);
             var filename = (matches !== null && matches[1] ? matches[1] : "file");
             var objectURL = URL.createObjectURL(blob);
             var link = document.createElement("a");
