@@ -22,7 +22,7 @@ class SFTPACLAuthorization(Authorization):
         return bundle.obj.user == bundle.request.user
 
     def create_detail(self, object_list, bundle):
-        if bundle.request.user.is_authenticated():
+        if bundle.request.user.is_authenticated:
             return bundle.obj.user == bundle.request.user
         else:
             raise Unauthorized("You must be authenticated to create SSH keys.")
