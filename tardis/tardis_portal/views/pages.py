@@ -12,7 +12,6 @@ from six import string_types
 
 from django.conf import settings
 from django.contrib.auth.decorators import login_required, permission_required
-from django.contrib.contenttypes.models import ContentType
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.exceptions import PermissionDenied, ImproperlyConfigured
 from django.core.paginator import Paginator, EmptyPage, InvalidPage
@@ -21,14 +20,15 @@ from django.db import connection
 from django.http import (HttpResponse,
                          HttpResponseForbidden,
                          JsonResponse)
-from django.shortcuts import render
 from django.views.decorators.cache import cache_page
 from django.views.generic.base import TemplateView, View
 
 from tardis.search.utils import SearchQueryString
 from ..auth import decorators as authz
 from ..auth.decorators import (
-    has_experiment_download_access, has_experiment_write, has_dataset_write)
+    has_experiment_write,
+    has_dataset_write
+)
 from ..auth.localdb_auth import django_user
 from ..forms import ExperimentForm, DatasetForm
 from ..models import Experiment, Dataset, DataFile, ObjectACL

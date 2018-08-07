@@ -3,8 +3,8 @@
 import io
 import json
 from os import path
+from wsgiref.util import FileWrapper
 
-from django import forms
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.contrib.contenttypes.models import ContentType
@@ -13,16 +13,14 @@ from django.http import (
     HttpResponseServerError,
     StreamingHttpResponse
 )
-from django.utils.translation import ugettext as _
 from django.shortcuts import render
 from paramiko import RSAKey
 from paramiko.ssh_exception import SSHException
 from PIL import Image, ImageFont, ImageDraw
-from wsgiref.util import FileWrapper
 
+from tardis.tardis_portal.auth.decorators import has_experiment_download_access
 from .forms import KeyGenerateForm
 from .models import SFTPPublicKey
-from tardis.tardis_portal.auth.decorators import has_experiment_download_access
 
 
 @login_required
@@ -87,8 +85,6 @@ def sftp_access(request):
         c['sftp_port'],
         c['sftp_start_dir'])
     return render(request, template_name='sftp/index.html', context=c)
-
-
 
 
 @login_required

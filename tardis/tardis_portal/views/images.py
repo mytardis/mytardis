@@ -7,7 +7,6 @@ import logging
 from os import path
 
 from django.conf import settings
-from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, HttpResponseNotFound, HttpResponseRedirect
 from django.views.decorators.cache import never_cache
 
