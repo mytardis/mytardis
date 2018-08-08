@@ -186,6 +186,10 @@ def migrate_user_permissions(old_user, new_user):
             new_user.user_permissions.add(perms)
             new_user.save()
 
+    new_user.is_superuser = old_user.is_superuser
+    new_user.is_staff = old_user.is_staff
+    new_user.save()
+
 
 def migrate_api_key(old_user, new_user):
     old_user_api_key = get_api_key(old_user)
