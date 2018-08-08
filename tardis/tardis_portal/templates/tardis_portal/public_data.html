@@ -19,103 +19,106 @@
     <div class="span9">
       {% if not public_experiments %}
       <p class="alert alert-info">
-	No experiments have been published yet.
+        No experiments have been published yet.
       </p>
       {% else %}
       <div class="pull-left">
-	<h3><strong>{{ public_experiments.count }}</strong>
-	Public Experiment{{ public_experiments.count|pluralize}}
-	</h3>
+        <h3><strong>{{ public_experiments.count }}</strong>
+        Public Experiment{{ public_experiments.count|pluralize}}
+        </h3>
       </div>
       <div class="pull-right">
-	<button class="btn btn-success btn-mini"
-		onclick="$('#myowned .accordion-body').collapse('hide');" >
-	Collapse all</button>
-	<button class="btn btn-success btn-mini"
-		onclick="$('#myowned .accordion-body').collapse('show');" >
-	Expand all</button>
+        <button class="btn btn-success btn-mini"
+                onclick="$('#myowned .accordion-body').collapse('hide');" >
+        Collapse all</button>
+        <button class="btn btn-success btn-mini"
+                onclick="$('#myowned .accordion-body').collapse('show');" >
+        Expand all</button>
       </div>
       <div class="clearfix"></div>
       <div id="myowned" class="mydata accordion">
-	{% for exp in public_experiments %}
-	  <div class="accordion-group">
-	    <div class="accordion-heading">
-	      <div class="accordion-toggle" data-toggle="collapse"
-		   onclick="$('#collapse{{exp.id}}').collapse('toggle');" >
-		<strong><a class="pull-left explink"
-			   href="{% url 'tardis_portal.view_experiment' exp.id %}">{{ exp.title }}</a></strong>
-		<ul class="nav nav-pills badgelist">
-		  <li class="pull-right">
-		    {{ exp|experiment_public_access_badge }}
-		  </li>
-		  <li class="pull-right">
-		    {{ exp|experiment_datafiles_badge }}
-		  </li>
-		  <li class="pull-right">
-		    {{ exp|experiment_datasets_badge }}
-		  </li>
-		  <li class="pull-right">
-		    {{ exp|experiment_last_updated_badge }}
-		  </li>
-		</ul>
-		<small>
-		  {% for author in exp.experimentauthor_set.all %}{% if not forloop.first %},
-		{% endif %}
-		<span property="dc:author">{{ author.author }}</span>{% empty %}&nbsp;{% endfor %}
-		</small>
-		<span class="pull-right">
-		  {% if exp.public_download_allowed %}
-		  {% for dltype, dlurl in exp.get_download_urls.items %}
-		    {% if forloop.first %}
-		      <a class="dllink" href="{{dlurl}}"
-			 title="Download Entire Experiment as {{dltype}}">
-			<i class="fa fa-download"></i>
-			<em>Download data as .{{dltype}}</em>
-		      </a>
-		    {% endif %}
-		  {% endfor %}
-		  {% endif %}
-		</span>
-	      </div>
-	    </div>
-	    <div id="collapse{{exp.id}}"
-		 class="accordion-body collapse in">
-	      <div class="accordion-inner">
-		<p><em>{{exp.description|default:""|bleach}}</em></p>
-		{% for ds in exp.datasets.all|dictsortreversed:"id"|slice:":1" %}
-		  {% if forloop.first %}
-		    <ul class="nav nav-list">
-		      <li class="nav-header dataset-list-header">Latest dataset in this experiment</li>
-		  {% endif %}
-		  <li>
-		      <a href="{% url 'tardis_portal.view_dataset' ds.id %}"><strong>{{ ds.description }}</strong></a>
-		  {% if exp.public_download_allowed %}
-		    {% for datafile in ds.get_images|slice:":5" %}
-		      {% if forloop.first %}
-			<ul class="thumbnails">
-		      {% endif %}
-		      <li>
-			<a class="thumbnail" href="{% url 'tardis.tardis_portal.download.view_datafile' datafile.id %}">{% url 'tardis.tardis_portal.iiif.download_image' datafile_id=datafile.id region='full' size=',50' rotation=0 quality='native' format='jpg' as thumbnail %}
-			<img alt="Thumbnail for Datafile #{{datafile.id}}"
-			     src="{{ thumbnail }}"
-			     onerror="$(this).hide()"/></a>
-		      </li>
-		      {% if forloop.last %}
-			</ul>
-		      {% endif %}
-		    {% endfor %}
-		    {% endif %}
-		  </li>
-		  {% if forloop.last %}
-		    </ul>
-		  {% endif %}
-		  {% empty %}
-		  There are no datasets in this experiment
-		{% endfor %}
-	      </div>
-	    </div>
-	  </div>
-	{% endfor %}
+        {% for exp in public_experiments %}
+          <div class="accordion-group">
+            <div class="accordion-heading">
+              <div class="accordion-toggle" data-toggle="collapse"
+                   onclick="$('#collapse{{exp.id}}').collapse('toggle');" >
+                <strong><a class="pull-left explink"
+                           href="{% url 'tardis_portal.view_experiment' exp.id %}">{{ exp.title }}</a></strong>
+                <ul class="nav nav-pills badgelist">
+                  <li class="pull-right">
+                    {{ exp|experiment_public_access_badge }}
+                  </li>
+                  <li class="pull-right">
+                    {{ exp|experiment_datafiles_badge }}
+                  </li>
+                  <li class="pull-right">
+                    {{ exp|experiment_datasets_badge }}
+                  </li>
+                  <li class="pull-right">
+                    {{ exp|experiment_last_updated_badge }}
+                  </li>
+                </ul>
+                <small>
+                  {% for author in exp.experimentauthor_set.all %}
+                  {% if not forloop.first %}, {% endif %}
+                  <span property="dc:author">{{ author.author }}</span>
+                  {% empty %}
+                  <span property="dc:author">&nbsp;</span>
+                  {% endfor %}
+                </small>
+                <span class="pull-right">
+                  {% if exp.public_download_allowed %}
+                  {% for dltype, dlurl in exp.get_download_urls.items %}
+                    {% if forloop.first %}
+                      <a class="dllink" href="{{dlurl}}"
+                         title="Download Entire Experiment as {{dltype}}">
+                        <i class="fa fa-download"></i>
+                        <em>Download data as .{{dltype}}</em>
+                      </a>
+                    {% endif %}
+                  {% endfor %}
+                  {% endif %}
+                </span>
+              </div>
+            </div>
+            <div id="collapse{{exp.id}}"
+                 class="accordion-body collapse in">
+              <div class="accordion-inner">
+                <p><em>{{exp.description|default:""|bleach}}</em></p>
+                {% for ds in exp.datasets.all|dictsortreversed:"id"|slice:":1" %}
+                  {% if forloop.first %}
+                    <ul class="nav nav-list">
+                      <li class="nav-header dataset-list-header">Latest dataset in this experiment</li>
+                  {% endif %}
+                  <li>
+                      <a href="{% url 'tardis_portal.view_dataset' ds.id %}"><strong>{{ ds.description }}</strong></a>
+                  {% if exp.public_download_allowed %}
+                    {% for datafile in ds.get_images|slice:":5" %}
+                      {% if forloop.first %}
+                        <ul class="thumbnails">
+                      {% endif %}
+                      <li>
+                        <a class="thumbnail" href="{% url 'tardis.tardis_portal.download.view_datafile' datafile.id %}">{% url 'tardis.tardis_portal.iiif.download_image' datafile_id=datafile.id region='full' size=',50' rotation=0 quality='native' format='jpg' as thumbnail %}
+                        <img alt="Thumbnail for Datafile #{{datafile.id}}"
+                             src="{{ thumbnail }}"
+                             onerror="$(this).hide()"/></a>
+                      </li>
+                      {% if forloop.last %}
+                        </ul>
+                      {% endif %}
+                    {% endfor %}
+                    {% endif %}
+                  </li>
+                  {% if forloop.last %}
+                    </ul>
+                  {% endif %}
+                  {% empty %}
+                  There are no datasets in this experiment
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+        {% endfor %}
       </div>
       <br/>
     {% endif %}
@@ -127,10 +130,10 @@
 $(function() {
     $("#experiments .accordion-body").collapse({parent:"#experiments", toggle: true});
     $(".explink").on("click", function(e) {
-	e.stopPropagation();
+        e.stopPropagation();
     });
     $(".dllink").on("click", function(e) {
-	e.stopPropagation();
+        e.stopPropagation();
     });
 });
 </script>
