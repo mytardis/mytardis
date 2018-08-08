@@ -27,7 +27,7 @@
 {#        </a>#}
       </div>  <!-- class="pull-right" -->
       <div class="pull-left">
-	<h2 class="hidden-phone" style="text-align: center">Experiments</h2>
+        <h2 class="hidden-phone" style="text-align: center">Experiments</h2>
       </div>
     </div>  <!-- class="span9" -->
   </div>  <!-- class="row-fluid" -->
@@ -36,23 +36,23 @@
     <div class="span9">
       {% if not shared_experiments and not owned_experiments %}
       <p class="alert alert-info">
-	You do not have access to any private experiments.
+        You do not have access to any private experiments.
       Add your own experiments or browse the public experiments.</p>
       {% endif %}
 
       {% if owned_experiments %}
       <div class="pull-left">
-	<h3><strong>{{ owned_experiments.count }}</strong>
-	Experiment{{ owned_experiments.count|pluralize}} You Own
-	</h3>
+        <h3><strong>{{ owned_experiments.count }}</strong>
+        Experiment{{ owned_experiments.count|pluralize}} You Own
+        </h3>
       </div>
       <div class="pull-right">
-	<button class="btn btn-success btn-mini"
-		onclick="$('#myowned .accordion-body').collapse('hide');" >
-	Collapse all</button>
-	<button class="btn btn-success btn-mini"
-		onclick="$('#myowned .accordion-body').collapse('show');" >
-	Expand all</button>
+        <button class="btn btn-success btn-mini"
+                onclick="$('#myowned .accordion-body').collapse('hide');" >
+        Collapse all</button>
+        <button class="btn btn-success btn-mini"
+                onclick="$('#myowned .accordion-body').collapse('show');" >
+        Expand all</button>
       </div>
       <div class="clearfix"></div>
       <div id="myowned" class="mydata accordion"></div>
@@ -61,16 +61,16 @@
 
       {% if shared_experiments %}
       <div class="pull-left">
-	<h3><strong>{{ shared_experiments.count }}</strong>
-	Shared Experiment{{ shared_experiments.count|pluralize }}</h3>
+        <h3><strong>{{ shared_experiments.count }}</strong>
+        Shared Experiment{{ shared_experiments.count|pluralize }}</h3>
       </div>
       <div class="pull-right">
-	<button class="btn btn-success btn-mini"
-		onclick="$('#myshared .accordion-body').collapse('hide');" >
-	Collapse all</button>
-	<button class="btn btn-success btn-mini"
-	        onclick="$('#myshared .accordion-body').collapse('show');" >
-	Expand all</button>
+        <button class="btn btn-success btn-mini"
+                onclick="$('#myshared .accordion-body').collapse('hide');" >
+        Collapse all</button>
+        <button class="btn btn-success btn-mini"
+                onclick="$('#myshared .accordion-body').collapse('show');" >
+        Expand all</button>
       </div>
       <div class="clearfix"></div>
       <div id="myshared" class="mydata accordion"></div>
