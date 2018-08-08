@@ -52,11 +52,10 @@
                     </ul>
                     <small>
                       {% for author in exp.experimentauthor_set.all %}
-                      {% if not forloop.first %}, {% endif %}
-                      <span property="dc:author">{{ author.author }}</span>
-                      {% empty %}
-                      <span property="dc:author">&nbsp;</span>
+                        {% if not forloop.first %}, {% endif %}
+                        <span property="dc:author">{{ author.author }}</span>
                       {% endfor %}
+                      &nbsp;
                     </small>
                     <span class="pull-right">
                       {% for dltype, dlurl in exp.get_download_urls.items %}
@@ -141,11 +140,10 @@
               </ul>
               <small>
                 {% for author in exp.experimentauthor_set.all %}
-                {% if not forloop.first %}, {% endif %}
-                <span property="dc:author">{{ author.author }}</span>
-                {% empty %}
-                <span property="dc:author">&nbsp;</span>
+                  {% if not forloop.first %}, {% endif %}
+                  <span property="dc:author">{{ author.author }}</span>
                 {% endfor %}
+                &nbsp;
               </small>
               <span class="pull-right">
                 {% if exp.public_download_allowed %}
