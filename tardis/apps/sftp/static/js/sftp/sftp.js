@@ -133,10 +133,17 @@ var sftp = (function() {
         document.getElementById("keyAddForm").reset();
     }
 
+    function clearKeyGenerateForm() {
+        $("#keyGenerateAlertMessage").empty();
+        $("#keyGenerateAlert").hide();
+        document.getElementById("keyGenerateForm").reset();
+    }
+
     /* eslint-disable object-shorthand */
     return {
         loadKeyTable: loadKeyTable,
         clearKeyAddForm: clearKeyAddForm,
+        clearKeyGenerateForm: clearKeyGenerateForm,
         handleKeyDelete: handleKeyDelete,
         addKey: addKey
     };
@@ -176,6 +183,7 @@ $(document).on("submit", "#keyGenerateForm", function(e) {
             URL.revokeObjectURL(objectURL);
 
             $("#keyGenerateModal").modal("hide");
+            sftp.clearKeyGenerateForm();
             sftp.loadKeyTable(true);
         }
     }).fail(function(jqXHR, textStatus, err) {

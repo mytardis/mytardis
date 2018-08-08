@@ -35,7 +35,7 @@
 </div>
 <div class="modal hide" id="keyAddModal">
   <div class="modal-header">
-    <button type="button" class="close" data-dismiss="modal" onclick="clearKeyAddForm()">×</button>
+    <button type="button" class="close" data-dismiss="modal" onclick="sftp.clearKeyAddForm()">×</button>
     <h3>Add SSH Keys</h3>
     <span>Add your own public SSH Key using the form below.</span>
     <span><b>Important:</b> Don't add your private key.</span>
@@ -60,7 +60,7 @@
 </div>
 <div class="modal hide" id="keyGenerateModal">
   <div class="modal-header">
-    <button type="button" class="close" data-dismiss="modal">×</button>
+    <button type="button" class="close" data-dismiss="modal" onclick="sftp.clearKeyGenerateForm()">×</button>
     <h3>Generate an SSH key pair</h3>
   </div>
   <div class="modal-body">
@@ -69,7 +69,7 @@
     <form id="keyGenerateForm" action="{% url 'tardis.apps.sftp:sftp_keys' %}" method="post">
       {{ form }}
       <br>
-      <input type="submit" class="btn" value="Generate Key">
+      <input type="submit" class="btn" value="Generate & Download">
     </form>
     <br>
     <p><b>Important:</b> Keep your private key in a safe place. Anyone with access to the private key will be able to access your data on {{site_title|default:'MyTardis'}}.</p>
@@ -78,7 +78,7 @@
     </div>
   </div>
   <div class="modal-footer">
-    <button class="btn" data-dismiss="modal">Close</a>
+    <button class="btn" data-dismiss="modal" onclick="sftp.clearKeyGenerateForm()">Close</a>
   </div>
 </div>
 {% endblock content %}
