@@ -33,7 +33,8 @@ def openid_migration_menu_processor(request):
     for menu_item in user_menu:
         if 'label' in menu_item and menu_item['label'] == "Link Accounts":
             item_index = user_menu.index(menu_item)
+            menu_item.update(migrate_menu_item)
     if item_index == -1:
-        raise Exception("Couldn't find Link Accounts menu item to insert after.")
-    user_menu.insert(item_index + 1, migrate_menu_item)
+        raise Exception(
+            "Couldn't find Link Accounts menu item to replace with Migrate My Account.")
     return dict(user_menu=user_menu)
