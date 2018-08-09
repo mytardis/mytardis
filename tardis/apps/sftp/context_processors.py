@@ -19,11 +19,11 @@ def sftp_menu_processor(request):
         icon='fa fa-key',
         label='Manage SSH Keys'
     )
-    # Find the index of "Link Accounts" item so we can add item before this.
+    # Find the index of "Manage Account" item so we can add item after it.
     # If we can't just add it above logout.
-    item_index = next((i for i, menu_item in enumerate(user_menu)
+    item_index = next((i + 1 for i, menu_item in enumerate(user_menu)
                        if 'label' in menu_item
-                       and menu_item['label'] == "Link Accounts"),
+                       and menu_item['label'] == "Manage Account"),
                       len(user_menu))
 
     user_menu.insert(item_index, migrate_menu_item)
