@@ -9,20 +9,27 @@ var sftp = (function() {
 
     function addKeyRow(rowData) {
         return "<tr id='keyRow" + rowData.id + "'>\
-        <td><div class='pull-left'><h3 style='margin-left:12px 0;'>" + rowData.name + "</h3>\
-        <p style='margin: 9px 0'>Type: " + rowData.key_type.toUpperCase() + "<p>\
-        <p>Fingerprint: " + rowData.fingerprint + "</p>\
-        <p>Date added: " + rowData.added + "</p></div>\
-        <button id='delete-btn' class='btn pull-right' \
+        <td style='padding: 16px 20px'>\
+        <div class='row-fluid' id='center-content'>\
+        <div class='span10 pull-left'>\
+        <strong>" + rowData.name + "</strong><br>\
+        <span>Type: " + rowData.key_type.toUpperCase() + "</span><br>\
+        <span style='word-break: break-all;'>Fingerprint: " + rowData.fingerprint + "</span><br>\
+        <span>Date added: " + rowData.added + "</span>\
+        </div>\
+        <div class='span2 text-right pull-right'>\
+        <button id='delete-btn' class='btn' \
         onclick='sftp.handleKeyDelete(" + rowData.id + ")'>\
-        <b>Delete<b></button></td></tr>";
+        <b>Delete<b></button>\
+        </div>\
+        </td></tr>";
     }
 
     function createKeyTable(keyData) {
         var table = $(document.createElement("table"))
             .addClass("table table-striped table-bordered")
             .attr("id", "keyTable")
-            .append($("<thead><tr><th><h3>Key</h3></th></tr></thead>"));
+            .append($("<thead><tr><th><b>Keys</b></th></tr></thead>"));
 
         return keyData.reduce(function(acc, key) {
             return acc.append(addKeyRow(key));
