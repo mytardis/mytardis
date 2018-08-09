@@ -38,7 +38,7 @@ var sftp = (function() {
 
         $.ajax(
             "/api/v1/sftp/key"
-        ).done(function(json, textStatus, jqXHR) {
+        ).done(function(json, textStatus, _jqXHR) {
             var objs = json.objects;
             if (objs.length > 0) {
                 $("#keyTable").replaceWith(createKeyTable(objs));
@@ -62,7 +62,7 @@ var sftp = (function() {
                     "X-CSRFToken": $.cookie("csrftoken")
                 }
             }
-        ).done(function(data, textStatus, jgXHR) {
+        ).done(function(data, textStatus, _jqXHR) {
             loadKeyTable(true);
         }).fail(function(jqXHR, textStatus, err) {
             throw "SSH key delete error:\n" + err;
@@ -186,7 +186,7 @@ $(document).on("submit", "#keyGenerateForm", function(e) {
             sftp.clearKeyGenerateForm();
             sftp.loadKeyTable(true);
         }
-    }).fail(function(jqXHR, textStatus, err) {
+    }).fail(function(jqXHR, textStatus, _err) {
         $("#keyGenerateAlertMessage").text(jqXHR.responseJSON.error);
         $("#keyGenerateAlert").show();
     });
