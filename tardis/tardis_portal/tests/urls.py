@@ -4,6 +4,8 @@ from django.contrib.auth.views import logout
 from django.http import HttpResponse
 from django.template import Template, RequestContext
 
+from tardis.apps import sftp
+
 from ...urls.accounts import accounts_urls
 from ...urls.download import download_urls
 from .. import download
@@ -52,6 +54,7 @@ urlpatterns += [
     # Needed for user_menu context processor:
     url(r'^accounts/', include(accounts_urls)),
     url(r'^download/', include(download_urls)),
+    url(r'^apps/sftp/', include(sftp.urls)),
     url(r'^logout/$', logout, {'next_page': '/'},
         name='django.contrib.auth.views.logout'),
 ]
