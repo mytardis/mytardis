@@ -27,9 +27,9 @@ var sftp = (function() {
 
     function createKeyTable(keyData) {
         var table = $(document.createElement("table"))
-            .addClass("table table-striped table-bordered")
+            .addClass("table table-bordered")
             .attr("id", "keyTable")
-            .append($("<thead><tr><th><b>Keys</b></th></tr></thead>"));
+            .append($("<thead><tr><th><strong>Keys</strong></th></tr></thead>"));
 
         return keyData.reduce(function(acc, key) {
             return acc.append(addKeyRow(key));
