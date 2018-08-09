@@ -144,7 +144,11 @@ def sftp_keys(request):
     Generates a key pair, stores the public part of the key and provides a one
     time opportunity for the user to download the private part of the key.
 
-    :param request http request
+    :param request: http request
+    :type request: HttpRequest
+    :return: either returns form on GET request or private key download on POST
+        request
+    :rtype: HttpResponse
     """
     if request.method == "POST":
         form = KeyGenerateForm(request.POST)

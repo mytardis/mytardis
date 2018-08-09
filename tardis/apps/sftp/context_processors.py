@@ -4,9 +4,14 @@ from tardis.tardis_portal.context_processors import user_menu_processor
 
 
 def sftp_menu_processor(request):
-    if not request.user.has_perm('tardis_portal.change_userauthentication'):
-        return dict()
+    """Add an 'Manage SSH Keys' item to the user menu
 
+    Used as a context_processor to customise the MyTardis user menu
+    :param request: request to modify context of
+    :type request: HttpRequest
+    :return: user_menu dictionary
+    :rtype: dict
+    """
     context = user_menu_processor(request)
     user_menu = context['user_menu']
     migrate_menu_item = dict(

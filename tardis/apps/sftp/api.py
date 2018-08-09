@@ -5,11 +5,11 @@ import base64
 from binascii import hexlify
 from paramiko import RSAKey, DSSKey, ECDSAKey
 from paramiko.py3compat import u
-from tardis.tardis_portal.api import default_authentication
 from tastypie.authorization import Authorization
 from tastypie.exceptions import Unauthorized, HydrationError
 from tastypie.resources import ModelResource
 
+from tardis.tardis_portal.api import default_authentication
 from .forms import key_add_form
 from .models import SFTPPublicKey
 
@@ -32,7 +32,7 @@ class SFTPACLAuthorization(Authorization):
 
 
 class SFTPPublicKeyAppResource(ModelResource):
-    """Tastypie model resource"""
+    """Tastypie model resource for SFTPPublicKey model"""
 
     class Meta:
         queryset = SFTPPublicKey.objects.all()
@@ -48,6 +48,7 @@ class SFTPPublicKeyAppResource(ModelResource):
         detail_allowed_methods = ['get', 'delete']
 
     def hydrate(self, bundle):
+        # Add user to bundle as this doesn't come from client
         bundle.obj.user = bundle.request.user
         return bundle
 

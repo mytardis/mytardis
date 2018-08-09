@@ -9,8 +9,12 @@ class SFTPPublicKey(models.Model):
 
     :param user: user who owns this public key
     :type user: ForeignKey for User
-    :param public_key: Public key
+    :param name: name for this public key
+    :type name: string
+    :param public_key: OpenSSH formatted public key
     :type public_key: string
+    :param added: date the public key was added (Optional)
+    :type added: date
     """
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     name = models.CharField('Device name', max_length=256)

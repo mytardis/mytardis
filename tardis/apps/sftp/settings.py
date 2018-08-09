@@ -17,3 +17,7 @@ the SFTP login example on the sftp_access help page.
 TEMPLATES[0]['OPTIONS']['context_processors'].extend([
     'tardis.apps.sftp.context_processors.sftp_menu_processor'
 ])
+'''
+Default context_processor that adds a user menu item to access the SFTP key
+management page.
+'''
