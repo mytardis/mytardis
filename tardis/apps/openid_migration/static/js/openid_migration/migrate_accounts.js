@@ -72,7 +72,12 @@ var migrateAccount = function() {
     }, "json");
 };
 
+var cancelAccountMigration = function() {
+    history.back();
+};
+
 $(document).ready(function() {
     $("#verify-my-account").on("click", verifyMyAccount);
     $("#confirm_true").on("click", migrateAccount);
+    $("#confirm_false").on("click", cancelAccountMigration);
 });
