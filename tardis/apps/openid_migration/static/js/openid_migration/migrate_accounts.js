@@ -1,4 +1,4 @@
-var link_account = function() {
+var verify_my_account = function() {
   var username = $("#id_username").val();
   var password = $("#id_password").val();
   var authenticationMethod = $("#id_authenticationMethod").val();
@@ -69,6 +69,6 @@ var display_error = function(msg, elem) {
 };
 
 $(document).ready(function() {
-    $("#link").click(link_account);
+    $("#verify-my-account").click(verify_my_account);
     $("#confirm_true").click(migrate_account)
 });
