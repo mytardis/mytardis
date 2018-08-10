@@ -5,3 +5,4 @@ engines:
    python_version: 2
 exclude_paths:
   - 'tardis/tardis_portal/static/js/lib/**'
+  - 'tardis/apps/push_to/static/push-to/bootstrap/**'
