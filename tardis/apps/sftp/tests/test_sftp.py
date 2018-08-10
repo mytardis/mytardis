@@ -11,8 +11,9 @@ from django.test import RequestFactory
 from django.test import TestCase
 
 from flexmock import flexmock
-from paramiko.common import AUTH_SUCCESSFUL
+from paramiko.common import AUTH_SUCCESSFUL, AUTH_FAILED
 from paramiko.ssh_exception import SSHException
+from paramiko.rsakey import RSAKey
 
 from tardis.tardis_portal.download import make_mapper
 
@@ -22,6 +23,7 @@ from tardis.tardis_portal.models import DataFileObject
 from tardis.tardis_portal.models import Experiment
 from tardis.tardis_portal.models import ObjectACL
 
+from tardis.apps.sftp.models import SFTPPublicKey
 from tardis.apps.sftp.sftp import MyTSFTPServerInterface
 from tardis.apps.sftp.sftp import MyTServerInterface
 from tardis.apps.sftp.views import sftp_access
@@ -114,6 +116,73 @@ class SFTPTest(TestCase):
         self.assertEqual(
             server_interface.check_auth_password(self.username, self.password),
             AUTH_SUCCESSFUL)
+
+        # should fail if user is inactive
+        self.user.is_active = False
+        self.user.save()
+
+        self.assertEqual(
+            server_interface.check_auth_password(self.username, self.password),
+            AUTH_FAILED)
+
+        self.user.is_active = True
+        self.user.save()
+
+    def test_sftp_key_connect(self):
+        server_interface = MyTServerInterface()
+        pub_key_str = (
+            "AAAAB3NzaC1yc2EAAAADAQABAAAAgQCzvWE391K1pyBvePGpwDWMboSLIp"
+            "5L5sMq+bXPPeJPSLOm9dnm8XexZOpeg14UpsYcmrkzVPeooaqz5PqtaHO46CdK11dS"
+            "cs2a8PLnavGkJRf25/PDXxlHkiZXXbAfW+6t5aVJxSJ4Jt4FV0aDqMaaYxy4ikw6da"
+            "BCkvug2OZQqQ=="
+        )
+
+        priv_key_str = u"""-----BEGIN RSA PRIVATE KEY-----
+MIICXgIBAAKBgQCzvWE391K1pyBvePGpwDWMboSLIp5L5sMq+bXPPeJPSLOm9dnm
+8XexZOpeg14UpsYcmrkzVPeooaqz5PqtaHO46CdK11dScs2a8PLnavGkJRf25/PD
+XxlHkiZXXbAfW+6t5aVJxSJ4Jt4FV0aDqMaaYxy4ikw6daBCkvug2OZQqQIDAQAB
+AoGASpK9XlIQD+wqafWdFpf3368O8QdI9CbnPNJkG3sKhWidmR0R7l6rEX/UOah5
+hUn4km+jfWe4ZU/GGmNbmkznDdOWspDKs7eeYl7saeRzuX2CdTVvrdU7qmD5+JLk
+mXlWWd6rgRIfrFYXYeDVd8p6/kPR4SJe7dTTHuEKKIt9njECQQDhMqjyoNxftpl4
++mwQu0ZDLCZ4afDCGcsf73W3oSmqLyf401vQ6KAp/PmfxqGXY0ewGMzUJn9LFOyP
+WOGcDFglAkEAzFL/DI3SYmsvLMt6/vK4qwEwSiJU8byUBj3CL3eL0xjn895GXPzb
+9CUMu0fz60Tn7UhbohynPLmQ2w6npbZ9NQJBAN+uujGFpl9LuFV6KCzWV4wRJoUk
+dYfWpvQpnfuvkPsBq+pzxhdTeQM7y5bwbUE509MOTyXKt1WUiwQ3fKDLgiECQQCb
+Z4zhSYT4ojlRQrqb6pSWS+Mkn5QoAJw9Wv+1BqHsvwa8rxSpaREKUpuqXgGhsdkM
+2noHhO+V+jW4xx6vpWr5AkEAgHoSbQUR5uY8ib3N3mNowVi9NhvBN1FkwGStM9W8
+QKHf8Ha+rOx3B7Dbljc+Xdpcn9VyRmDlSqzX9aCkr18mNg==
+-----END RSA PRIVATE KEY-----"""
+        private_key = RSAKey.from_private_key(file_obj=StringIO(priv_key_str))
+
+        # Fail if public key not registered
+        self.assertEqual(
+            server_interface.check_auth_publickey(self.username, private_key),
+            AUTH_FAILED
+        )
+
+        pub_key_rec = SFTPPublicKey.objects.create(
+            user = self.user,
+            name = "TestKey",
+            key_type = "ssh-rsa",
+            public_key = pub_key_str
+        )
+
+        # Succeed if public key is registered
+        self.assertEqual(
+            server_interface.check_auth_publickey(self.username, private_key),
+            AUTH_SUCCESSFUL
+        )
+
+        # Should fail if user is inactive
+        self.user.is_active = False
+        self.user.save()
+
+        self.assertEqual(
+            server_interface.check_auth_publickey(self.username, private_key),
+            AUTH_FAILED
+        )
+        self.user.is_active = True
+        self.user.save()
 
     def test_sftp_dynamic_docs_experiment(self):
         factory = RequestFactory()

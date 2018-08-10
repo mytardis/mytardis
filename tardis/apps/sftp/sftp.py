@@ -428,13 +428,16 @@ class MyTServerInterface(ServerInterface):
         for uk in user_keys:
             user_key = RSAKey(data=base64.b64decode(uk.public_key))
             if key == user_key:
-                self.username = username
                 try:
-                    self.user = User.objects.get(username=username)
+                    user = User.objects.get(username=username)
                 except User.DoesNotExist:
                     logger.error("User with username %s does not exist.",
                                  username)
-                return AUTH_SUCCESSFUL
+                if user.is_active:
+                    self.username = username
+                    self.user = user
+                    return AUTH_SUCCESSFUL
+
         return AUTH_FAILED
 
     def check_auth_interactive(self, username, submethods):
