@@ -14,4 +14,4 @@ def interpolate_template(template_name, **kwargs):
 def email_migration_success(user_name, auth_method):
     return interpolate_template('migration_complete', user_name=user_name,
                                 auth_method=auth_method,
-                                site_name=getattr(settings, 'SITE_TITLE', 'MyTardis'),)
+                                site_title=getattr(settings, 'SITE_TITLE', 'MyTardis'),)
