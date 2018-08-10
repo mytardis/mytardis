@@ -207,12 +207,14 @@ def migrate_api_key(old_user, new_user):
 
 
 def openid_migration_method(request):
-    migration_form = \
-        openid_user_migration_form()
+    migration_form = openid_user_migration_form()
     authForm = migration_form()
 
-    c = {'authForm': authForm, }
-    return render_response_index(request, 'migrate_accounts.html', c)
+    context = dict(
+        authForm=authForm,
+        site_title=getattr(settings, 'SITE_TITLE', 'MyTardis'),
+        openid_migrate_from_logo=getattr(settings, 'OPENID_MIGRATE_FROM_LOGO', ''))
+    return render_response_index(request, 'migrate_accounts.html', context)
 
 
 def confirm_migration(request):
