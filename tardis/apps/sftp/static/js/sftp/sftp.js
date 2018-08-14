@@ -44,8 +44,8 @@ var sftp = (function() {
         }
 
         $.ajax(
-            "/api/v1/sftp/key"
-        ).done(function(json, textStatus, _jqXHR) {
+            "/api/v1/sftp/key/"
+        ).done(function(json, _textStatus, _jqXHR) {
             var objs = json.objects;
             if (objs.length > 0) {
                 $("#keyTable").replaceWith(createKeyTable(objs));
@@ -55,7 +55,7 @@ var sftp = (function() {
                     "warning"
                 ));
             }
-        }).fail(function(jqXHR, textStatus, err) {
+        }).fail(function(_jqXHR, _textStatus, err) {
             throw "Error loading SSH keys:\n" + err;
         });
     }
@@ -112,12 +112,12 @@ var sftp = (function() {
                     },
                     data: JSON.stringify(formData)
                 }
-            ).done(function(json, textStatus, jqXHR) {
+            ).done(function(_json, _textStatus, _jqXHR) {
                 $("#keyAddAlertMessage").empty();
                 $("#keyAddAlert").hide();
                 $("#keyAddModal").modal("hide");
                 loadKeyTable(true);
-            }).fail(function(jqXHR, textStatus, err) {
+            }).fail(function(jqXHR, _textStatus, err) {
                 if (jqXHR.responseJSON !== "undefined") {
                     // eslint-disable-next-line dot-notation
                     err = jqXHR.responseJSON["sftp/key"]["__all__"][0];
@@ -193,7 +193,7 @@ $(document).on("submit", "#keyGenerateForm", function(e) {
             sftp.clearKeyGenerateForm();
             sftp.loadKeyTable(true);
         }
-    }).fail(function(jqXHR, textStatus, _err) {
+    }).fail(function(jqXHR, _textStatus, _err) {
         $("#keyGenerateAlertMessage").text(jqXHR.responseJSON.error);
         $("#keyGenerateAlert").show();
     });
