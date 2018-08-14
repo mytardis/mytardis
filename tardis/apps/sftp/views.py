@@ -8,6 +8,7 @@ from wsgiref.util import FileWrapper
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.contrib.contenttypes.models import ContentType
+from django.forms.forms import NON_FIELD_ERRORS
 from django.http import (
     HttpResponse,
     HttpResponseServerError,
@@ -189,4 +190,25 @@ def sftp_keys(request):
     else:
         form = KeyGenerateForm()
 
-    return render(request, 'sftp/keys.html', {'form': form})
+        enable_generate = False
+        if getattr(settings, "REQUIRE_SSL_TO_GENERATE_KEY", True):
+            enable_generate = request.is_secure()
+        else:
+            enable_generate = True
+
+        if not enable_generate:
+            form.fields['name'].disabled = True
+            form.errors[NON_FIELD_ERRORS] = form.error_class([
+              "The SSH key generation feature has been disabled because your "\
+              "connection is insecure. Please contact your %s service administrator "\
+              "about securing your connection." % getattr(settings, "SITE_TITLE", "MyTardis")
+            ])
+
+    return render(
+        request,
+        'sftp/keys.html',
+        {
+            'form': form,
+            'enable_generate': enable_generate
+        }
+    )

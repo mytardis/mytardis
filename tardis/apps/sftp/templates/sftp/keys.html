@@ -68,15 +68,30 @@
     <p>{{site_title|default:'MyTardis'}} can generate an SSH key pair for you. Only the public part of the key pair will be stored by {{site_title|default:'MyTardis'}} and you will be provided with a one time opportunity to download the private part of the key pair.</p>
     <br>
     <form id="keyGenerateForm" action="{% url 'tardis.apps.sftp:sftp_keys' %}" method="post">
-      {{ form }}
-      <br>
+      <div class="nameWrapper">
+        {{ form.name.errors }}
+        <label for={{ form.name.id_for_label }}>Name:</label>
+        {{form.name}}
+      </div>
+      {% if enable_generate %}
       <input type="submit" class="btn" value="Generate & Download">
+      {% else %}
+      <input type="submit" class="btn disabled" value="Generate & Download">
+      {% endif %}
     </form>
-    <br>
     <p><b>Important:</b> Keep your private key in a safe place. Anyone with access to the private key will be able to access your data on {{site_title|default:'MyTardis'}}.</p>
     <div id="keyGenerateAlert" class="alert alert-error hide">
       <div id="keyGenerateAlertMessage"></div>
     </div>
+    {% if form.non_field_errors %}
+    <div class="alert alert-error">
+      <ol>
+      {% for error in form.non_field_errors %}
+          <li><strong>{{ error|escape }}</strong></li>
+      {% endfor %}
+      </ol>
+    </div>
+    {% endif %}
   </div>
   <div class="modal-footer">
     <button class="btn" data-dismiss="modal" onclick="sftp.clearKeyGenerateForm()">Close</a>

@@ -21,3 +21,8 @@ TEMPLATES[0]['OPTIONS']['context_processors'].extend([
 Default context_processor that adds a user menu item to access the SFTP key
 management page.
 '''
+
+REQUIRE_SSL_TO_GENERATE_KEY = True
+'''
+Require a secure connection (i.e., HTTPS) to allow key generation.
+'''
