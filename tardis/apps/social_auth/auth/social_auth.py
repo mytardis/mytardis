@@ -5,11 +5,14 @@ from django.contrib.sites.models import Site
 from django.core import mail
 from django.core.mail import get_connection
 from django.contrib.auth.models import User, Permission
+from django.contrib import messages
 
 
 from celery.task import task
 
 from tardis.tardis_portal.models import UserAuthentication
+
+from tardis.apps.openid_migration.models import OpenidUserMigration
 
 logger = logging.getLogger(__name__)
 
@@ -154,13 +157,23 @@ def migrate_user_message(**kwargs):
     # We don't need to provide any message if openid_migration app is not enabled
     if not is_openid_migration_enabled:
         return kwargs
-    # Check if a user account exist with same email address
+    # Check if user accounts exist with the same email address
     user = kwargs.get('user')
     current_user_email = user.email
-    users = User.object.filter(email=current_user_email)
-
+    users = User.objects.filter(email=current_user_email)
+    if not users.count() > 1:
+        return kwargs
     # Check if migration has been performed
-    # send message
+    is_account_migrated = OpenidUserMigration.objects.filter(new_user=user)
+    if not is_account_migrated:
+        # update message
+        request = kwargs.get('request')
+        messages.add_message(request, messages.INFO,
+                             'We have found an existing account with your current email address. '
+                             'Please migrate data from your old account by selecting "Migrate My Account" '
+                             'from user menu items.')
+
+    return kwargs
 
 
 def is_openid_migration_enabled():
