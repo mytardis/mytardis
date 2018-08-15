@@ -24,4 +24,5 @@ INSTALLED_APPS = (
     # these optional apps, may require extra settings
     'tardis.apps.oaipmh',
     # 'tardis.apps.push_to',
+    # 'tardis.apps.social_auth',
 )
