@@ -13,6 +13,7 @@ from celery.task import task
 from tardis.tardis_portal.models import UserAuthentication
 
 from tardis.apps.openid_migration.models import OpenidUserMigration
+from tardis.apps.social_auth import default_settings
 
 logger = logging.getLogger(__name__)
 
@@ -183,3 +184,10 @@ def is_openid_migration_enabled():
     except AttributeError:
         pass
     return False
+
+
+def requires_admin_approval(authenticationBackend):
+    for authKey, authDisplayName, authBackend in default_settings.ADMIN_APPROVAL_REQUIRED:
+        if authenticationBackend == authKey:
+            return authKey
+    return None
