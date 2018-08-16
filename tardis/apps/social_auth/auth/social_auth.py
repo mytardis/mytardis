@@ -13,6 +13,7 @@ from celery.task import task
 from tardis.tardis_portal.models import UserAuthentication
 
 from tardis.apps.openid_migration.models import OpenidUserMigration
+from tardis.apps.social_auth import default_settings
 
 logger = logging.getLogger(__name__)
 
@@ -125,21 +126,21 @@ def send_admin_email(**kwargs):
 
 
 @task(name="social_auth_account_approved", ignore_result=True)
-def send_account_approved_email(user):
+def send_account_approved_email(user, authMethod):
     """Sends user email once account is approved by admin"""
     site_title = getattr(settings, 'SITE_TITLE', 'MyTardis')
     subject = '[MyTardis] User account Approved'
     message = (
         "Hi %s , \n\nWelcome to %s. "
         "Your account has been approved. "
-        "Please use  the \"Sign in with Google\" button on the login page to "
+        "Please use  the \"Sign in with %s\" button on the login page to "
         "log in to %s. "
         "If you have an existing %s would like to "
         "migrate your data and settings to your new account, "
         "follow the instructions on\n\n"
         "Thanks,\n"
         "MyTardis\n"
-        % (user.username, site_title, site_title, site_title))
+        % (user.username, site_title, authMethod, site_title, site_title))
     try:
         from_email = getattr(settings, 'OPENID_FROM_EMAIL', None)
         user.email_user(
@@ -183,3 +184,10 @@ def is_openid_migration_enabled():
     except AttributeError:
         pass
     return False
+
+
+def requires_admin_approval(authenticationBackend):
+    for authKey in default_settings.ADMIN_APPROVAL_REQUIRED:
+        if authenticationBackend == authKey:
+            return authKey
+    return None

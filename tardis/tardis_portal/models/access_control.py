@@ -101,6 +101,7 @@ class UserAuthentication(models.Model):
     username = models.CharField(max_length=50)
     authenticationMethod = models.CharField(max_length=30, choices=CHOICES)
     approved = models.BooleanField(default=True)
+    __original_approved = None
 
     class Meta:
         app_label = 'tardis_portal'
@@ -113,6 +114,7 @@ class UserAuthentication(models.Model):
         self._comparisonChoicesDict = dict(self.CHOICES)
 
         super(UserAuthentication, self).__init__(*args, **kwargs)
+        self.__original_approved = self.approved
 
     def getAuthMethodDescription(self):
         return self._comparisonChoicesDict[self.authenticationMethod]
@@ -121,7 +123,17 @@ class UserAuthentication(models.Model):
         return self.username + ' - ' + self.getAuthMethodDescription()
 
     def save(self, *args, **kwargs):
-        if self.approved:
+        # check if social auth is enabled
+        if 'tardis.apps.social_auth' not in settings.INSTALLED_APPS:
+            super(UserAuthentication, self).save(*args, **kwargs)
+            return
+        # check if authentication method requires admin approval
+        from tardis.apps.social_auth.auth.social_auth import requires_admin_approval
+        if not requires_admin_approval(self.authenticationMethod):
+            super(UserAuthentication, self).save(*args, **kwargs)
+            return
+        # check if approved status has changed from false to true
+        if self.approved and not self.__original_approved:
             # get linked user profile
             user_profile = self.userProfile
             user = user_profile.user
@@ -137,7 +149,7 @@ class UserAuthentication(models.Model):
             # send email to user
             # send_account_approved_email(user)
             from tardis.apps.social_auth.auth.social_auth import send_account_approved_email
-            send_account_approved_email(user)
+            send_account_approved_email(user, self.authenticationMethod)
 
         super(UserAuthentication, self).save(*args, **kwargs)
 
