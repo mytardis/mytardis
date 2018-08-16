@@ -18,5 +18,3 @@ Regards,
 '''),
 }
 
-# OPENID_MIGRATE_FROM_LOGO = '/static/openid_migration/images/monash-uni-logo.png'
-OPENID_MIGRATE_FROM_LOGO = ''

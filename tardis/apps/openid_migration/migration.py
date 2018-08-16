@@ -212,8 +212,7 @@ def openid_migration_method(request):
 
     context = dict(
         authForm=authForm,
-        site_title=getattr(settings, 'SITE_TITLE', 'MyTardis'),
-        openid_migrate_from_logo=getattr(settings, 'OPENID_MIGRATE_FROM_LOGO', ''))
+        site_title=getattr(settings, 'SITE_TITLE', 'MyTardis'),)
     return render_response_index(request, 'migrate_accounts.html', context)
 
 
