@@ -187,7 +187,7 @@ def is_openid_migration_enabled():
 
 
 def requires_admin_approval(authenticationBackend):
-    for authKey, authDisplayName, authBackend in default_settings.ADMIN_APPROVAL_REQUIRED:
+    for authKey in default_settings.ADMIN_APPROVAL_REQUIRED:
         if authenticationBackend == authKey:
             return authKey
     return None
