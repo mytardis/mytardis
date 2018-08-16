@@ -126,10 +126,12 @@ class UserAuthentication(models.Model):
         # check if social auth is enabled
         if 'tardis.apps.social_auth' not in settings.INSTALLED_APPS:
             super(UserAuthentication, self).save(*args, **kwargs)
+            return
         # check if authentication method requires admin approval
         from tardis.apps.social_auth.auth.social_auth import requires_admin_approval
         if not requires_admin_approval(self.authenticationMethod):
             super(UserAuthentication, self).save(*args, **kwargs)
+            return
         # check if approved status has changed from false to true
         if self.approved and not self.__original_approved:
             # get linked user profile
