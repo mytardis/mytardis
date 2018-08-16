@@ -21,7 +21,6 @@ from .logging import *
 from .middlewares import *
 from .publication import *
 from .search import *
-from .sftp import *
 from .sharing import *
 from .site_customisations import *
 from .static_files import *
@@ -29,6 +28,9 @@ from .storage import *
 from .templates import *
 from .uploads import *
 from .urls import *
+
+# Default enabled app settings
+from ..apps.sftp.default_settings import *
 
 
 # Get version from git to be displayed on About page.

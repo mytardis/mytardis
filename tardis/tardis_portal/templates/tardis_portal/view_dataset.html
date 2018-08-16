@@ -576,7 +576,7 @@ $(document).on('click', '#modal-metadata .submit-button', function() {
                         {% endfor %}
                     {% endif %}
                     <a target="_blank"
-                       href="{% url "tardis.tardis_portal.views.sftp_access" %}?object_id={{ dataset.id }}&object_type=dataset"
+                       href="{% url "tardis.apps.sftp:index" %}?object_id={{ dataset.id }}&object_type=dataset"
                        class="btn btn-primary btn-mini" title="Download with SFTP">SFTP</a>
                     <a class="btn btn-primary btn-mini"
                        href="{% url 'tardis_portal.dataset_checksums' dataset.id %}"

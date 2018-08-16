@@ -12,7 +12,6 @@ from six import string_types
 
 from django.conf import settings
 from django.contrib.auth.decorators import login_required, permission_required
-from django.contrib.contenttypes.models import ContentType
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.exceptions import PermissionDenied, ImproperlyConfigured
 from django.core.paginator import Paginator, EmptyPage, InvalidPage
@@ -21,14 +20,15 @@ from django.db import connection
 from django.http import (HttpResponse,
                          HttpResponseForbidden,
                          JsonResponse)
-from django.shortcuts import render
 from django.views.decorators.cache import cache_page
 from django.views.generic.base import TemplateView, View
 
 from tardis.search.utils import SearchQueryString
 from ..auth import decorators as authz
 from ..auth.decorators import (
-    has_experiment_download_access, has_experiment_write, has_dataset_write)
+    has_experiment_write,
+    has_dataset_write
+)
 from ..auth.localdb_auth import django_user
 from ..forms import ExperimentForm, DatasetForm
 from ..models import Experiment, Dataset, DataFile, ObjectACL
@@ -593,70 +593,6 @@ def user_guide(request):
             settings, 'CUSTOM_USER_GUIDE', 'user_guide/index.html'),
     }
     return render_response_index(request, 'tardis_portal/user_guide.html', c)
-
-
-@login_required
-def sftp_access(request):
-    """
-    Show dynamically generated instructions on how to connect to SFTP
-    :param Request request: HttpRequest
-    :return: HttpResponse
-    :rtype: HttpResponse
-    """
-    from ..download import make_mapper
-    object_type = request.GET.get('object_type')
-    object_id = request.GET.get('object_id')
-    sftp_start_dir = ''
-    if object_type and object_id:
-        ct = ContentType.objects.get_by_natural_key(
-            'tardis_portal', object_type)
-        item = ct.model_class().objects.get(id=object_id)
-        if object_type == 'experiment':
-            exps = [item]
-            dataset = None
-            datafile = None
-        else:
-            if object_type == 'dataset':
-                dataset = item
-                datafile = None
-            elif object_type == 'datafile':
-                datafile = item
-                dataset = datafile.dataset
-            exps = dataset.experiments.all()
-        allowed_exps = []
-        for exp in exps:
-            if has_experiment_download_access(request, exp.id):
-                allowed_exps.append(exp)
-        if allowed_exps:
-            path_mapper = make_mapper(settings.DEFAULT_PATH_MAPPER,
-                                      rootdir=None)
-            exp = allowed_exps[0]
-            path_parts = ['/home', request.user.username, 'experiments',
-                          path_mapper(exp)]
-            if dataset is not None:
-                path_parts.append(path_mapper(dataset))
-            if datafile is not None:
-                path_parts.append(datafile.directory)
-            sftp_start_dir = path.join(*path_parts)
-
-    if request.user.userprofile.isDjangoAccount:
-        sftp_username = request.user.username
-    else:
-        login_attr = getattr(settings, 'SFTP_USERNAME_ATTRIBUTE', 'email')
-        sftp_username = getattr(request.user, login_attr)
-    c = {
-        'sftp_host': request.get_host().split(':')[0],
-        'sftp_port': getattr(settings, 'SFTP_PORT', 2200),
-        'sftp_username': sftp_username,
-        'sftp_start_dir': sftp_start_dir,
-        'site_name': getattr(settings, 'SITE_TITLE', 'MyTardis'),
-    }
-    c['sftp_url'] = 'sftp://{}@{}:{}{}'.format(
-        c['sftp_username'],
-        c['sftp_host'],
-        c['sftp_port'],
-        c['sftp_start_dir'])
-    return render(request, template_name='tardis_portal/sftp.html', context=c)
 
 
 @login_required

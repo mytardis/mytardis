@@ -5,6 +5,7 @@ SFTP Server
 # disabling import order check for monkey patching
 
 import SocketServer
+import base64
 import collections
 import logging
 import os
@@ -21,10 +22,18 @@ from paramiko import InteractiveQuery,  RSAKey, ServerInterface,\
 from paramiko import OPEN_SUCCEEDED, OPEN_FAILED_ADMINISTRATIVELY_PROHIBITED,\
     SFTP_OP_UNSUPPORTED, SFTP_NO_SUCH_FILE
 from paramiko.common import AUTH_FAILED, AUTH_SUCCESSFUL
+from paramiko.rsakey import RSAKey
 
 from tardis.analytics import tracker
-from .download import make_mapper
-from .util import split_path
+from tardis.tardis_portal.download import make_mapper
+from tardis.tardis_portal.models import (
+    DataFile,
+    Experiment,
+    User
+)
+from tardis.tardis_portal.util import split_path
+
+from .models import SFTPPublicKey
 
 logger = logging.getLogger(__name__)
 path_mapper = make_mapper(settings.DEFAULT_PATH_MAPPER, rootdir=None)
@@ -43,8 +52,6 @@ if getattr(settings, 'SFTP_GEVENT', False):
 # django db related modules must be imported after monkey-patching
 from django.contrib.sites.models import Site  # noqa
 from django.contrib.auth.models import AnonymousUser  # noqa
-
-from .models import DataFile, Experiment  # noqa
 
 
 class DynamicTree(object):
@@ -381,13 +388,13 @@ class MyTServerInterface(ServerInterface):
         self.user = None
 
     def get_allowed_auths(self, username):
-        auth_methods = ['password', 'keyboard-interactive']
+        auth_methods = ['password', 'keyboard-interactive', 'publickey']
         # if user_has_key_set_up:
         #     auth_methods.append('publickey')
         return ','.join(auth_methods)
 
     def myt_auth(self, username, password):
-        from .auth import auth_service
+        from tardis.tardis_portal.auth import auth_service
 
         class FakeRequest(object):
             POST = {}
@@ -416,6 +423,21 @@ class MyTServerInterface(ServerInterface):
         # get_django_pubkey
         # do_key_magic
         # return result
+        user_keys = SFTPPublicKey.objects.filter(user__username=username)
+
+        for uk in user_keys:
+            user_key = RSAKey(data=base64.b64decode(uk.public_key))
+            if key == user_key:
+                try:
+                    user = User.objects.get(username=username)
+                except User.DoesNotExist:
+                    logger.error("User with username %s does not exist.",
+                                 username)
+                if user.is_active:
+                    self.username = username
+                    self.user = user
+                    return AUTH_SUCCESSFUL
+
         return AUTH_FAILED
 
     def check_auth_interactive(self, username, submethods):

@@ -9,9 +9,7 @@ from tardis.tardis_portal.views import (
     my_data,
     public_data,
     about,
-    stats,
-    cybderduck_connection_window,
-    sftp_access
+    stats
 )
 
 core_urls = [
@@ -21,10 +19,6 @@ core_urls = [
         name='tardis.tardis_portal.views.public_data'),
     url(r'^about/$', about, name='tardis.tardis_portal.views.about'),
     url(r'^stats/$', stats, name='tardis.tardis_portal.views.stats'),
-    url(r'^sftp_access/cyberduck/connection.png$',
-        cybderduck_connection_window, name='cyberduck_connection_window'),
-    url(r'^sftp_access/$', sftp_access,
-        name='tardis.tardis_portal.views.sftp_access'),
     url(r'^robots\.txt$', lambda r: HttpResponse(
         "User-agent: *\nDisallow: /download/\nDisallow: /stats/",
         content_type="text/plain"))
