@@ -147,7 +147,7 @@ class UserAuthentication(models.Model):
             # send email to user
             # send_account_approved_email(user)
             from tardis.apps.social_auth.auth.social_auth import send_account_approved_email
-            send_account_approved_email(user)
+            send_account_approved_email(user, self.authenticationMethod)
 
         super(UserAuthentication, self).save(*args, **kwargs)
 
