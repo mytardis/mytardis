@@ -3,7 +3,6 @@
     margin-right: auto;
     margin-left: auto;
     margin-top: 10px;
-    max-width: 50%;
 }
 .login-box {
     background-color: #e2e2e2;
@@ -28,5 +27,5 @@
     text-align: center;
 }
 [id^=confirm] .btn{
-    margin-right: 100px;
+    margin-right: 40px;
 }
