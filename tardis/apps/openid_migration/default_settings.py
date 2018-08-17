@@ -17,4 +17,3 @@ Regards,
 {site_title} Team.
 '''),
 }
-
