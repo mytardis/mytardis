@@ -239,8 +239,12 @@ def confirm_migration(request):
     if not user.is_active:
         errorMessage = 'Account is inactive'
         return _getJsonFailedResponse(errorMessage)
-
+    # get request user auth method
+    backend = request.session['_auth_user_backend']
+    # get key from backend class name
+    auth_method = get_matching_authmethod(backend)
     data = _setupJsonData(user, request.user)
+    data['auth_method'] = auth_method
     return _getJsonConfirmResponse(data)
 
 
