@@ -3,9 +3,18 @@
 /* eslint global-strict: 0, strict: 0, object-shorthand: 0 */
 
 var updateUserData = function(data) {
-    $("#current_user_email").append(data.data.new_user_email);
+    $("#new_email").append("<td>" + data.data.new_user_email + "</td>");
     $("#old_username").append("<td>" + data.data.old_username + "</td>");
     $("#old_email").append("<td>" + data.data.old_user_email + "</td>");
+    $("#new_username").append("<td>" + data.data.old_username + "</td>");
+    // display Google or AAF image based on user current auth method
+    var auth_method = data.data.auth_method
+    if(auth_method.toLowerCase() == 'google'){
+        $("#google_img").css("display","block")
+    }else if(auth_method.toLowerCase() == 'aaf') {
+        $("#aaf_img").css("display","block")
+    }
+
 };
 
 var displayError = function(msg, elem) {
