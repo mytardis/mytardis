@@ -1,9 +1,11 @@
 from django.urls import reverse
 
 
-def add_ssh_keys_menu_item(user_menu):
+def add_ssh_keys_menu_item(request, user_menu):
     """Add a 'Manage SSH Keys' item to the user menu
 
+    :param request: an HTTP Request instance
+    :type request: :class:`django.http.HttpRequest`
     :param user_menu: user menu context to modify
     :type user_menu: list
     :return: user_menu list
