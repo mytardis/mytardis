@@ -1,0 +1,25 @@
+from django.urls import reverse
+
+
+def add_ssh_keys_menu_item(user_menu):
+    """Add a 'Manage SSH Keys' item to the user menu
+
+    :param user_menu: user menu context to modify
+    :type user_menu: list
+    :return: user_menu list
+    :rtype: list
+    """
+    ssh_keys_menu_item = dict(
+        url=reverse('tardis.apps.sftp:sftp_keys'),
+        icon='fa fa-key',
+        label='Manage SSH Keys'
+    )
+    # Find the index of "Manage Account" item so we can add item after it.
+    # If we can't just add it above logout.
+    item_index = next((i + 1 for i, menu_item in enumerate(user_menu)
+                       if 'label' in menu_item
+                       and menu_item['label'] == "Manage Account"),
+                      len(user_menu))
+
+    user_menu.insert(item_index, ssh_keys_menu_item)
+    return user_menu

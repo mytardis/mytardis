@@ -1,4 +1,4 @@
-from tardis.default_settings import TEMPLATES
+from tardis.default_settings import USER_MENU_MODIFIERS
 
 SFTP_PORT = 2200
 SFTP_GEVENT = False
@@ -14,12 +14,11 @@ The attribute from the User model ('email' or 'username') used to generate
 the SFTP login example on the sftp_access help page.
 '''
 
-TEMPLATES[0]['OPTIONS']['context_processors'].extend([
-    'tardis.apps.sftp.context_processors.sftp_menu_processor'
+USER_MENU_MODIFIERS.extend([
+    'tardis.apps.sftp.user_menu_modifiers.add_ssh_keys_menu_item'
 ])
 '''
-Default context_processor that adds a user menu item to access the SFTP key
-management page.
+Adds a user menu item to access the SFTP key management page.
 '''
 
 REQUIRE_SSL_TO_GENERATE_KEY = True
