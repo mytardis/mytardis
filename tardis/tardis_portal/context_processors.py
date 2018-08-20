@@ -112,5 +112,5 @@ def user_menu_processor(request):
         module_path, method_name = user_menu_modifier.rsplit('.', 1)
         module = import_module(module_path)
         method = getattr(module, method_name)
-        user_menu = method(user_menu)
+        user_menu = method(request, user_menu)
     return dict(user_menu=user_menu)
