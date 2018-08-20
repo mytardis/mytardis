@@ -50,89 +50,94 @@ def do_migration(request):
 
     # if has already registered to use the provided auth method, then we can't
     # link the auth method to the user
-    if user != request.user:
-        logger.info("starting migration from %s to %s", user.username,
-                    request.user.username)
-        # check if the "request.user" has a userProfile
-        userProfile, created = UserProfile.objects.get_or_create(
-            user=request.user)
-        # get request user authentication method
-        data = _setupJsonData(old_user=user, new_user=request.user)
-        # get authenticated user backend
-        backend = request.session['_auth_user_backend']
-        # get key from backend class name
-        auth_method = get_matching_authmethod(backend)
+    if user == request.user:
+        errorMessage = "You can't migrate to the same account"
+        return _getJsonFailedResponse(errorMessage)
 
-        logger.info("linking user authentication")
-        # in most of the case it should return one authentication method
-        # but in case it returns more than one we need to throw an exception
-        # and notify admin about this.
-        try:
-            userAuths = UserAuthentication.objects.filter(
-                        userProfile__user=user)
-            if userAuths.count() > 1:
-                logger.error("Multiple authentication methods found for user %s" % user)
-                return _getJsonFailedResponse("Something went wrong")
-            elif userAuths.count() < 1:
-                logger.error("No authentication methods found for user %s" % user)
-                return _getJsonFailedResponse("Something went wrong")
-        except ValueError:
-            logger.error("issue with authentication methods for user %s" % user)
+    logger.info("starting migration from %s to %s", user.username,
+                request.user.username)
+    # check if the "request.user" has a userProfile
+    userProfile, created = UserProfile.objects.get_or_create(
+        user=request.user)
+    # get request user authentication method
+    data = _setupJsonData(old_user=user, new_user=request.user)
+    # get authenticated user backend
+    backend = request.session['_auth_user_backend']
+    # get key from backend class name
+    auth_provider = get_matching_auth_provider(backend)
 
-        authenticationMethod = userAuths[0].authenticationMethod
-        logger.info("authentication method is %s", authenticationMethod)
+    logger.info("linking user authentication")
+    # in most of the case it should return one authentication method
+    # but in case it returns more than one we need to throw an exception
+    # and notify admin about this.
+    try:
+        userAuths = UserAuthentication.objects.filter(
+                    userProfile__user=user)
+        if userAuths.count() > 1:
+            logger.error("Multiple authentication methods found for user %s" % user)
+            return _getJsonFailedResponse("Something went wrong")
+        elif userAuths.count() < 1:
+            logger.error("No authentication methods found for user %s" % user)
+            return _getJsonFailedResponse("Something went wrong")
+    except ValueError:
+        logger.error("issue with authentication methods for user %s" % user)
 
-        # let's search for the ACLs that refer to 'user' and transfer them
-        # to request.user
-        userIdToBeReplaced = user.id
-        replacementUserId = request.user.id
-        # for logging migration event
-        user_migration_record = OpenidUserMigration(old_user=user, new_user=request.user,
-                                                    old_user_auth_method=authenticationMethod,
-                                                    new_user_auth_method=auth_method)
-        user_migration_record.save()
-        logger.info("Staring object ACL migration")
-        acl_migration(userIdToBeReplaced, replacementUserId,
-                      user_migration_record)
-        # let's also change the group memberships of all the groups that 'user'
-        # is a member of
-        logger.info("Migrating user groups")
-        groups = Group.objects.filter(user=user)
-        logger.info("Number of groups found : %s", groups.count())
-        for group in groups:
-            request.user.groups.add(group)
-        # change old user username to username_authmethod amd make it inactive
-        old_username = user.username
-        user.username = old_username + '_' + authenticationMethod
-        logger.info("setting old use to inactive")
-        user.is_active = False
-        user.save()
+    old_authentication_method = userAuths[0].authenticationMethod
+    logger.info("Old authentication method is %s", old_authentication_method)
 
-        # change new user username to old user
-        new_user = request.user
-        new_user.username = old_username
-        logger.info("changing new username %s to old username %s",
-                    request.user.username, old_username)
-        new_user.save()
+    # let's search for the ACLs that refer to 'user' and transfer them
+    # to request.user
+    userIdToBeReplaced = user.id
+    replacementUserId = request.user.id
+    # for logging migration event
+    user_migration_record = OpenidUserMigration(
+        old_user=user, new_user=request.user,
+        old_user_auth_method=old_authentication_method,
+        new_user_auth_method=auth_provider[0])
+    user_migration_record.save()
+    logger.info("Staring object ACL migration")
+    acl_migration(userIdToBeReplaced, replacementUserId,
+                  user_migration_record)
+    # let's also change the group memberships of all the groups that 'user'
+    # is a member of
+    logger.info("Migrating user groups")
+    groups = Group.objects.filter(user=user)
+    logger.info("Number of groups found : %s", groups.count())
+    for group in groups:
+        request.user.groups.add(group)
+    # change old user username to username_authmethod amd make it inactive
+    old_username = user.username
+    user.username = old_username + '_' + old_authentication_method
+    logger.info("setting old use to inactive")
+    user.is_active = False
+    user.save()
 
-        # copy api key from old user to new user so that MyData works seamlessly post migration
-        logger.info("migrating api key")
-        migrate_api_key(user, request.user)
+    # change new user username to old user
+    new_user = request.user
+    new_user.username = old_username
+    logger.info("changing new username %s to old username %s",
+                request.user.username, old_username)
+    new_user.save()
 
-        # migrate user permissions
-        logger.info("migrating user permissions")
-        migrate_user_permissions(user, request.user)
+    # copy api key from old user to new user so that MyData works seamlessly post migration
+    logger.info("migrating api key")
+    migrate_api_key(user, request.user)
 
-        # Add migration event record
-        user_migration_record.migration_status = True
-        user_migration_record.save()
-        # send email for successful migration
-        # TODO : get request user auth method
-        logger.info("sending email to %s", user.email)
-        notify_migration_status.delay(user, old_username, 'AAF')
-        logger.info("migration complete")
+    # migrate user permissions
+    logger.info("migrating user permissions")
+    migrate_user_permissions(user, request.user)
 
-    data['auth_method'] = auth_method
+    # Add migration event record
+    user_migration_record.migration_status = True
+    user_migration_record.save()
+    # send email for successful migration
+    # TODO : get request user auth method
+    logger.info("sending email to %s", user.email)
+    notify_migration_status.delay(user, old_username, 'AAF')
+    logger.info("migration complete")
+
+    data['auth_method'] = auth_provider[0]
+    data['auth_method_display_name'] = auth_provider[1]
     return _getJsonSuccessResponse(data=data)
 
 
@@ -242,9 +247,10 @@ def confirm_migration(request):
     # get request user auth method
     backend = request.session['_auth_user_backend']
     # get key from backend class name
-    auth_method = get_matching_authmethod(backend)
+    auth_provider = get_matching_auth_provider(backend)
     data = _setupJsonData(user, request.user)
-    data['auth_method'] = auth_method
+    data['auth_method'] = auth_provider[0]
+    data['auth_method_display_name'] = auth_provider[1]
     return _getJsonConfirmResponse(data)
 
 
@@ -285,8 +291,9 @@ def get_api_key(user):
     return apikey
 
 
-def get_matching_authmethod(backend):
-    for authKey, authDisplayName, authBackend in settings.AUTH_PROVIDERS:
-        if backend == authBackend:
-            return authKey
+def get_matching_auth_provider(backend):
+    for auth_provider in settings.AUTH_PROVIDERS:
+        # Each auth provider is a tuple with (key, display name, backend)
+        if backend == auth_provider[2]:
+            return auth_provider
     return None
