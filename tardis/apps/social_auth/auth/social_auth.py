@@ -172,7 +172,7 @@ def migrate_user_message(**kwargs):
         messages.add_message(request, messages.INFO,
                              'We have found an existing account with your current email address. '
                              'Please migrate data from your old account by selecting "Migrate My Account" '
-                             'from user menu items.')
+                             'from the user menu.')
 
     return kwargs
 
