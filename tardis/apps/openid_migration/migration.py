@@ -1,6 +1,7 @@
 import logging
 
 from django.contrib.auth.models import Permission
+from django.contrib import messages
 from django.conf import settings
 
 from tastypie.models import ApiKey
@@ -136,8 +137,13 @@ def do_migration(request):
     notify_migration_status.delay(user, old_username, 'AAF')
     logger.info("migration complete")
 
+    message = (
+        "Your account has been migrated successfully. "
+        "Please note that your source account has been deactivated and no longer accessible. "
+        "Please use Login via %s for all of your future logins to %s."
+        % (auth_provider[1], getattr(settings, 'SITE_TITLE', 'MyTardis')))
+    messages.add_message(request, messages.INFO, message)
     data['auth_method'] = auth_provider[0]
-    data['auth_method_display_name'] = auth_provider[1]
     return _getJsonSuccessResponse(data=data)
 
 
@@ -250,7 +256,6 @@ def confirm_migration(request):
     auth_provider = get_matching_auth_provider(backend)
     data = _setupJsonData(user, request.user)
     data['auth_method'] = auth_provider[0]
-    data['auth_method_display_name'] = auth_provider[1]
     return _getJsonConfirmResponse(data)
 
 
