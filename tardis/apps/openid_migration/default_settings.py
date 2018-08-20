@@ -1,3 +1,5 @@
+from tardis.default_settings import USER_MENU_MODIFIERS
+
 OPENID_NOTIFICATION_SENDER_EMAIL = 'sender@sender.com'
 
 OPENID_MIGRATION_EMAIL_MESSAGES = {
@@ -17,3 +19,10 @@ Regards,
 {site_title} Team.
 '''),
 }
+
+USER_MENU_MODIFIERS.extend([
+    'tardis.apps.openid_migration.user_menu_modifiers.add_migrate_account_menu_item'
+])
+'''
+Adds a Migrate My Account menu item to the user menu.
+'''
