@@ -51,7 +51,7 @@ def do_migration(request):
     # if has already registered to use the provided auth method, then we can't
     # link the auth method to the user
     if user == request.user:
-        errorMessage = 'User has already registered to use the provided auth method'
+        errorMessage = "You can't migrate to the same account"
         return _getJsonFailedResponse(errorMessage)
 
     logger.info("starting migration from %s to %s", user.username,
