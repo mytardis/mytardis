@@ -8,11 +8,11 @@ var updateUserData = function(data) {
     $("#old_email").append("<td>" + data.data.old_user_email + "</td>");
     $("#new_username").append("<td>" + data.data.old_username + "</td>");
     // display Google or AAF image based on user current auth method
-    var auth_method = data.data.auth_method
-    if(auth_method.toLowerCase() == 'google'){
-        $("#google_img").css("display","block")
-    }else if(auth_method.toLowerCase() == 'aaf') {
-        $("#aaf_img").css("display","block")
+    var authMethod = data.data.auth_method;
+    if (authMethod.toLowerCase() === "google") {
+        $("#google_img").css("display", "block");
+    } else if(authMethod.toLowerCase() === "aaf") {
+        $("#aaf_img").css("display", "block");
     }
 
 };
@@ -70,7 +70,7 @@ var migrateAccount = function() {
             $("#confirm-migrate").css("display", "none");
             $("#message").css("display", "none");
             $("#migration-success-message").css("display", "block");
-            $("#migration-success-message span span").text(data.data.auth_method);
+            $("#migration-success-message span span").text(data.data.auth_method_display_name);
         }
         else {
             $("#spinner").css("display", "none");
