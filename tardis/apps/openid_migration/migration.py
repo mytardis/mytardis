@@ -139,7 +139,7 @@ def do_migration(request):
 
     message = (
         "Your account has been migrated successfully. "
-        "Please note that your source account has been deactivated and no longer accessible. "
+        "Please note that your old account has been deactivated and is no longer accessible. "
         "Please use Login via %s for all of your future logins to %s."
         % (auth_provider[1], getattr(settings, 'SITE_TITLE', 'MyTardis')))
     messages.add_message(request, messages.INFO, message)
