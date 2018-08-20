@@ -1,3 +1,5 @@
+from importlib import import_module
+
 from django.conf import settings
 from django.urls import reverse
 
@@ -104,4 +106,11 @@ def user_menu_processor(request):
         url=reverse('django.contrib.auth.views.logout'),
         icon='fa fa-signout',
         label='Log Out'))
+
+    user_menu_modifiers = getattr(settings, 'USER_MENU_MODIFIERS', [])
+    for user_menu_modifier in user_menu_modifiers:
+        module_path, method_name = user_menu_modifier.rsplit('.', 1)
+        module = import_module(module_path)
+        method = getattr(module, method_name)
+        user_menu = method(user_menu)
     return dict(user_menu=user_menu)

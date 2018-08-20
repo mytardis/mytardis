@@ -26,3 +26,18 @@ INSTALLED_APPS = (
     'tardis.apps.sftp',
     # 'tardis.apps.push_to',
 )
+
+USER_MENU_MODIFIERS = []
+'''
+A list of methods which can modify the user menu defined in
+tardis.tardis_portal.context_processors.user_menu_processor
+The modifications will be applied in order, so it is possible for one
+app to overwrite changes made by another app whose modifier method is
+earlier in the list.
+
+An example from the SFTP app is below:
+
+USER_MENU_MODIFIERS.extend([
+    'tardis.apps.sftp.user_menu_modifiers.add_ssh_keys_menu_item'
+])
+'''
