@@ -263,3 +263,27 @@ text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
     margin-left: 1em;
 }
 /* end search */
+
+/* MyTardis has switched from Bootstrap 2.0.4 to 2.3.2 for compatibilty with
+ * later versions of jQuery, but this changes the default heading sizes, so
+ * for now, we'll revert to the heading sizes from 2.0.4, until we have time
+ * to upgrade to a more recent Bootstrap */
+h1, h2, h3, h4, h5, h6 {
+  margin: 0;
+  font-family: inherit;
+  font-weight: bold;
+  color: inherit;
+  text-rendering: optimizelegibility;
+}
+h1 {font-size: 30px; line-height: 36px;}
+h1 small {font-size: 18px;}
+h2 {font-size: 24px; line-height: 36px;}
+h2 small {font-size: 18px;}
+h3 {font-size: 18px; line-height: 27px;}
+h3 small {font-size: 14px;}
+h4,h5,h6 {line-height: 18px;}
+h4 {font-size: 14px;}
+h4 small {font-size: 12px;}
+h5 {font-size: 12px;}
+h6 {font-size: 11px;color: #999999;text-transform: uppercase;}
+.page-header { margin-top: 10px; margin-bottom: 10px; }
