@@ -67,10 +67,7 @@ var migrateAccount = function() {
         var status = data.status;
         if (status === "success") {
             $("#spinner").css("display", "none");
-            $("#confirm-migrate").css("display", "none");
-            $("#message").css("display", "none");
-            $("#migration-success-message").css("display", "block");
-            $("#migration-success-message span span").text(data.data.auth_method_display_name);
+            window.location.replace("/");
         }
         else {
             $("#spinner").css("display", "none");
