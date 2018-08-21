@@ -1,11 +1,12 @@
 from django.contrib.auth.decorators import login_required, \
     permission_required
+from django.views.decorators.debug import sensitive_post_parameters
 
 from .migration import do_migration, \
     openid_migration_method, \
     confirm_migration
 
-
+@sensitive_post_parameters('password')
 @permission_required('tardis_portal.change_userauthentication')
 @login_required()
 def migrate_accounts(request):
