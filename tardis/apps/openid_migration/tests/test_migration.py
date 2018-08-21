@@ -52,6 +52,7 @@ class OpenIDMigrationTestCase(TestCase):
         acl.save()
 
     def test_do_migration(self):
+        from django.contrib.messages.storage.fallback import FallbackStorage
         data = [('username', self.user_old.username), ('password', 'secret'),
                 ('operation', u'migrateAccount')]
         post = QueryDict('&'.join(['%s=%s' % (k, v) for (k, v) in
@@ -60,6 +61,8 @@ class OpenIDMigrationTestCase(TestCase):
         request.session = dict(_auth_user_backend='tardis.tardis_portal.auth.localdb_auth.DjangoAuthBackend')
         request.POST = post
         request.user = self.user_new
+        messages = FallbackStorage(request)
+        setattr(request, '_messages', messages)
         response = do_migration(request)
         d = json.loads(response.content)
         self.assertEqual(d['status'], 'success')
