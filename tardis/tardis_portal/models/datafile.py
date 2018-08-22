@@ -359,24 +359,15 @@ class DataFile(models.Model):
             and mimetype not in ('image/x-icon', 'image/img')
 
     def get_image_data(self):
-        from .parameters import DatafileParameter
-
-        render_image_size_limit = getattr(settings, 'RENDER_IMAGE_SIZE_LIMIT',
-                                          0)
-        if self.is_image() and (self.size <= render_image_size_limit or
-                                render_image_size_limit == 0):
-            return self.get_file()
+        from .parameters import DatafileParameter, ParameterName
 
         # look for image data in parameters
         preview_image_par = None
         pss = self.getParameterSets()
 
-        if not pss:
-            return None
-
         for ps in pss:
             dps = DatafileParameter.objects.filter(
-                parameterset=ps, name__data_type=5,
+                parameterset=ps, name__data_type=ParameterName.FILENAME,
                 name__units__startswith="image")
 
             if dps:
@@ -389,6 +380,13 @@ class DataFile(models.Model):
             preview_image_file = open(file_path)
 
             return preview_image_file
+
+        render_image_size_limit = getattr(settings, 'RENDER_IMAGE_SIZE_LIMIT',
+                                          0)
+        if self.is_image() and (self.size <= render_image_size_limit or
+                                render_image_size_limit == 0):
+            return self.get_file()
+
         return None
 
     def is_public(self):
