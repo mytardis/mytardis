@@ -8,7 +8,7 @@ def interpolate_template(template_name, **kwargs):
         settings, 'OPENID_MIGRATION_EMAIL_MESSAGES',
         default_settings.OPENID_MIGRATION_EMAIL_MESSAGES)
     subject, template = openid_migration_email_messages[template_name]
-    return subject, template.format(**kwargs)
+    return subject.format(**kwargs), template.format(**kwargs)
 
 
 def email_migration_success(user_name, auth_method):
