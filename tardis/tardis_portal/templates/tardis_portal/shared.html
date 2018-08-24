@@ -95,7 +95,7 @@ $(document).on('click', '.pagelink', function( event ){
   var href = $(this).attr("href");
   var html = $(this).html();
   $(this).html(loadingHTML);
-  $('#myowned').load(href, function(){
+  $('#myshared').load(href, function(){
   });
   return false;
 });
