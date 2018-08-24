@@ -2,48 +2,17 @@
 {% load experimentstats %}
 {% load humanize %}
 {% load bleach_tag %}
-{% load capture %}
 {% load static %}
+{% load pagination %}
 
 <script type="text/javascript"
         src="{% static 'js/jquery/tardis_portal/experiment-accordion.js' %}">
 </script>
 
-{% capture as paginator_block %}
 {% if shared_experiments.paginator.num_pages > 1 %}
-  <div class="pagination">
-    <ul style="margin-left: auto; margin-right: auto; display: table;">
-      {% if shared_experiments.has_previous %}
-      <li>
-        <a class="pagelink" href="/ajax/owned_exps_list/?page={{ shared_experiments.previous_page_number }}&{{params}}">&laquo;</a>
-      </li>
-      {% else %}
-      <li class="disabled"><a href="#">&laquo;</a></li>
-      {% endif %}
-
-      {% for pagenum in shared_experiments.paginator.page_range %}
-      <li{% if shared_experiments.number == pagenum %} class="active"{% endif %}>
-        <a class="pagelink"
-           href="/ajax/owned_exps_list/?page={{pagenum}}&{{params}}">
-           {{pagenum}}
-        </a>
-      </li>
-      {% endfor %}
-
-      {% if shared_experiments.has_next %}
-      <li>
-        <a class="pagelink" href="/ajax/owned_exps_list/?page={{ shared_experiments.next_page_number }}&{{params}}">&raquo;</a>
-      </li>
-      {% else %}
-      <li class="disabled"><a href="#">&raquo;</a></li>
-      {% endif %}
-    </ul>
-    <!-- Page {{ shared_experiments.number }} of {{ shared_experiments.paginator.num_pages }} -->
-  </div>
+  {% block top-pagination %}{% pagination shared_experiments paginator page_num query_string %}{% endblock %}
+  <!-- Page {{ page_num|add:1 }} of {{ shared_experiments.paginator.num_pages }} -->
 {% endif %}
-{% endcapture %}
-
-{{ paginator_block }}
 
 {% for exp in shared_experiments %}
   <div class="accordion-group">
@@ -102,7 +71,9 @@
    </p>
 {% endfor %} {% comment %} for exp in shared_experiments {% endcomment %}
 
-{{ paginator_block }}
+{% if shared_experiments.paginator.num_pages > 1 %}
+  {% block bottom-pagination %}{% pagination shared_experiments paginator page_num query_string %}{% endblock %}
+{% endif %}
 
 <script type="text/javascript">
 $(function() {

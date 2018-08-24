@@ -888,14 +888,6 @@ class ExperimentListsTest(TestCase):
         self.assertIn('<div class="pagination">', response.content)
         self.assertIn('Page 1 of 5', response.content)
 
-        # Test page number greater than num_pages,
-        # should just give the last page (5).
-        request.GET = QueryDict('page=6')
-        response = retrieve_owned_exps_list(request)
-        self.assertEqual(response.status_code, 200)
-        self.assertIn('<div class="pagination">', response.content)
-        self.assertIn('Page 5 of 5', response.content)
-
         # Now let's reduce the number of owned experiments from
         # 100 to 10, so pagination isn't needed:
         deleted_count = 0
@@ -921,14 +913,6 @@ class ExperimentListsTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn('<div class="pagination">', response.content)
         self.assertIn('Page 1 of 10', response.content)
-
-        # Test page number greater than num_pages,
-        # should just give the last page (10).
-        request.GET = QueryDict('page=12')
-        response = retrieve_shared_exps_list(request)
-        self.assertEqual(response.status_code, 200)
-        self.assertIn('<div class="pagination">', response.content)
-        self.assertIn('Page 10 of 10', response.content)
 
         # Now let's reduce the number of shared experiments from
         # 200 to 10, so pagination isn't needed:
