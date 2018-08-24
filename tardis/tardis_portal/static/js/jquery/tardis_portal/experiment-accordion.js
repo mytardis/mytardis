@@ -1,3 +1,7 @@
+/* tardis/tardis_portal/static/js/jquery/tardis_portal/experiment-accordion.js */
+
+/* eslint no-unused-vars: [2, {"vars": "local", "args": "none"}] */
+
 var loadLatestDatasetSummary = function(experimentId) {
     $.ajax({
         url: "/ajax/experiment/" + experimentId + "/latest_dataset",
