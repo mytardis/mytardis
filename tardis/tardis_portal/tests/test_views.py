@@ -858,24 +858,21 @@ class ExperimentListsTest(TestCase):
         for acl in self.acls:
             acl.delete()
 
-    def testMyDataView(self):
+    def test_mydata_view(self):
         """
         Test My Data view
         """
         from django.http import QueryDict, HttpRequest
-        from ..views import my_data
-        from ..views import retrieve_owned_exps_list
-        from ..views import retrieve_shared_exps_list
+        from ..views.pages import my_data
+        from ..views.ajax_pages import retrieve_owned_exps_list
 
         request = HttpRequest()
         request.method = 'GET'
         request.user = self.user
         response = my_data(request)
         self.assertEqual(response.status_code, 200)
-        # jQuery hasn't populated the divs yet:
+        # jQuery hasn't populated the div yet:
         self.assertIn('<div id="myowned" class="mydata accordion"></div>',
-                      response.content)
-        self.assertIn('<div id="myshared" class="mydata accordion"></div>',
                       response.content)
 
         # Owned experiments:
@@ -903,6 +900,23 @@ class ExperimentListsTest(TestCase):
         response = retrieve_owned_exps_list(request)
         self.assertEqual(response.status_code, 200)
         self.assertNotIn('<div class="pagination">', response.content)
+
+    def test_shared_view(self):
+        """
+        Test Shared view
+        """
+        from django.http import QueryDict, HttpRequest
+        from ..views.pages import shared
+        from ..views.ajax_pages import retrieve_shared_exps_list
+
+        request = HttpRequest()
+        request.method = 'GET'
+        request.user = self.user
+        response = shared(request)
+        self.assertEqual(response.status_code, 200)
+        # jQuery hasn't populated the div yet:
+        self.assertIn('<div id="myshared" class="mydata accordion"></div>',
+                      response.content)
 
         # Shared experiments:
         self.assertEqual(settings.SHARED_EXPS_PER_PAGE, 20)
