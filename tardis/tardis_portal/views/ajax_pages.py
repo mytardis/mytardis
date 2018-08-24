@@ -371,6 +371,7 @@ def retrieve_owned_exps_list(
     exps_page = paginator.page(page_num + 1)
 
     query_string = '/ajax/owned_exps_list/?page={page}'
+
     c = {
         'owned_experiments': exps_page,
         'paginator': paginator,

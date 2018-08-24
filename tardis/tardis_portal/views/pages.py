@@ -364,9 +364,11 @@ def my_data(request):
 
     owned_experiments = \
         Experiment.safe.owned(request.user).order_by('-update_time')
+    exps_expand_accordion = getattr(settings, 'EXPS_EXPAND_ACCORDION', 5)
 
     c = {
         'owned_experiments': owned_experiments,
+        'exps_expand_accordion': exps_expand_accordion
     }
     return render_response_index(request, 'tardis_portal/my_data.html', c)
 
@@ -379,9 +381,11 @@ def shared(request):
 
     shared_experiments = \
         Experiment.safe.shared(request.user).order_by('-update_time')
+    exps_expand_accordion = getattr(settings, 'EXPS_EXPAND_ACCORDION', 5)
 
     c = {
-        'shared_experiments': shared_experiments
+        'shared_experiments': shared_experiments,
+        'exps_expand_accordion': exps_expand_accordion
     }
     return render_response_index(request, 'tardis_portal/shared.html', c)
 

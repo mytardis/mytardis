@@ -62,17 +62,33 @@
     </div>  <!-- class="span9" -->
   </div>  <!-- class="row-fluid" -->
 </div>  <!-- id="content" -->
+
+<input type="hidden" id="exps-expand-accordion" value="{{ exps_expand_accordion }}">
+<script type="text/javascript"
+        src="{% static 'js/jquery/tardis_portal/experiment-accordion.js' %}">
+</script>
+
 <script type="text/javascript">
 $(document).ready(function(){
   // Load owned exps on page load
   var ownedLoadingHTML = $('<img src="{% static 'images/ajax-loader.gif' %}"/><br />');
   $('#myowned').html(ownedLoadingHTML);
-  $('#myowned').load('{% url 'tardis.tardis_portal.views.retrieve_owned_exps_list' %}');
+  $('#myowned').load(
+      '{% url 'tardis.tardis_portal.views.retrieve_owned_exps_list' %}',
+      function() {
+          attachExpAccordionClickHandlers();
+          expandFirstExperiments();
+      });
 
   // Create a reload event handler
   $('#myowned').on('reload', function() {
     $(this).html(ownedLoadingHTML);
-    $(this).load('{% url 'tardis.tardis_portal.views.retrieve_owned_exps_list' %}');
+    $(this).load(
+	'{% url 'tardis.tardis_portal.views.retrieve_owned_exps_list' %}',
+      function() {
+          attachExpAccordionClickHandlers();
+          expandFirstExperiments();
+      });
   });
 });
 
