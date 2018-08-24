@@ -368,10 +368,7 @@ def retrieve_owned_exps_list(
         page_num = 0
 
     paginator = Paginator(experiments, settings.OWNED_EXPS_PER_PAGE)
-    try:
-        exps_page = paginator.page(page_num)
-    except (EmptyPage, InvalidPage):
-        exps_page = paginator.page(paginator.num_pages)
+    exps_page = paginator.page(page_num + 1)
 
     query_string = '/ajax/owned_exps_list/?page={page}'
     c = {
@@ -396,10 +393,7 @@ def retrieve_shared_exps_list(
         page_num = 0
 
     paginator = Paginator(experiments, settings.SHARED_EXPS_PER_PAGE)
-    try:
-        exps_page = paginator.page(page_num)
-    except (EmptyPage, InvalidPage):
-        exps_page = paginator.page(paginator.num_pages)
+    exps_page = paginator.page(page_num + 1)
 
     query_string = '/ajax/shared_exps_list/?page={page}'
     c = {
