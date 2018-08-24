@@ -33,7 +33,12 @@ These are the default bleach values and shown here as an example.
 
 # Used in "My Data" view:
 OWNED_EXPS_PER_PAGE = 20
+
+# Used in "Shared" view:
 SHARED_EXPS_PER_PAGE = 20
+
+# Used in both "My Data" and "Shared" view:
+EXPS_EXPAND_ACCORDION = 5
 
 # Used in "Experiment" view:
 DATASET_ORDERING = 'description'

@@ -94,6 +94,16 @@ def experiment_datasets(request, experiment_id):
 
 @never_cache
 @authz.experiment_access_required
+def experiment_latest_dataset(request, experiment_id):
+    context = dict(exp=Experiment.objects.get(id=experiment_id))
+    return render_response_index(
+        request,
+        'tardis_portal/ajax/experiment_latest_dataset.html',
+        context)
+
+
+@never_cache
+@authz.experiment_access_required
 def experiment_dataset_transfer(request, experiment_id):
     experiments = Experiment.safe.owned(request.user)
 
@@ -353,19 +363,20 @@ def retrieve_owned_exps_list(
     experiments = Experiment.safe.owned(request.user).order_by('-update_time')
 
     try:
-        page_number = int(request.GET.get('page', '1'))
+        page_num = int(request.GET.get('page', '0'))
     except ValueError:
-        page_number = 1
+        page_num = 0
 
     paginator = Paginator(experiments, settings.OWNED_EXPS_PER_PAGE)
-    try:
-        exps_page = paginator.page(page_number)
-    except (EmptyPage, InvalidPage):
-        exps_page = paginator.page(paginator.num_pages)
+    exps_page = paginator.page(page_num + 1)
+
+    query_string = '/ajax/owned_exps_list/?page={page}'
 
     c = {
         'owned_experiments': exps_page,
-        'paginator': paginator
+        'paginator': paginator,
+        'page_num': page_num,
+        'query_string': query_string
     }
     return render_response_index(request, template_name, c)
 
@@ -378,18 +389,18 @@ def retrieve_shared_exps_list(
     experiments = Experiment.safe.shared(request.user).order_by('-update_time')
 
     try:
-        page_number = int(request.GET.get('page', '1'))
+        page_num = int(request.GET.get('page', '0'))
     except ValueError:
-        page_number = 1
+        page_num = 0
 
     paginator = Paginator(experiments, settings.SHARED_EXPS_PER_PAGE)
-    try:
-        exps_page = paginator.page(page_number)
-    except (EmptyPage, InvalidPage):
-        exps_page = paginator.page(paginator.num_pages)
+    exps_page = paginator.page(page_num + 1)
 
+    query_string = '/ajax/shared_exps_list/?page={page}'
     c = {
         'shared_experiments': exps_page,
-        'paginator': paginator
+        'paginator': paginator,
+        'page_num': page_num,
+        'query_string': query_string
     }
     return render_response_index(request, template_name, c)

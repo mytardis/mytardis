@@ -34,31 +34,28 @@
 
   <div class="row-fluid">
     <div class="span9">
-      {% if not owned_experiments %}
+      {% if not shared_experiments %}
       <p class="alert alert-info">
-        You do not have access to any private experiments.
+        You do not have access to any shared experiments.
       Add your own experiments or browse the public experiments.</p>
       {% endif %}
 
-      {% if owned_experiments %}
+      {% if shared_experiments %}
       <div class="pull-left">
-        <h3><strong>{{ owned_experiments.count }}</strong>
-        Experiment{{ owned_experiments.count|pluralize}} You Own
-        </h3>
+        <h3><strong>{{ shared_experiments.count }}</strong>
+        Shared Experiment{{ shared_experiments.count|pluralize }}</h3>
       </div>
       <div class="pull-right">
         <button class="btn btn-success btn-mini"
-                onclick="$('#myowned .accordion-body').collapse('hide');" >
+                onclick="$('#myshared .accordion-body').collapse('hide');" >
         Collapse all</button>
         <button class="btn btn-success btn-mini"
-                onclick="$('#myowned .accordion-body').collapse('show');" >
+                onclick="$('#myshared .accordion-body').collapse('show');" >
         Expand all</button>
       </div>
       <div class="clearfix"></div>
-      <div id="myowned" class="mydata accordion"></div>
-      <br/>
+      <div id="myshared" class="mydata accordion"></div>
       {% endif %}
-
     </div>  <!-- class="span9" -->
   </div>  <!-- class="row-fluid" -->
 </div>  <!-- id="content" -->
@@ -69,6 +66,6 @@
 </script>
 
 <script type="text/javascript"
-        src="{% static 'js/jquery/tardis_portal/my_data.js' %}">
+        src="{% static 'js/jquery/tardis_portal/shared.js' %}">
 </script>
 {% endblock %}

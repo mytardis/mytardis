@@ -858,24 +858,21 @@ class ExperimentListsTest(TestCase):
         for acl in self.acls:
             acl.delete()
 
-    def testMyDataView(self):
+    def test_mydata_view(self):
         """
         Test My Data view
         """
         from django.http import QueryDict, HttpRequest
-        from ..views import my_data
-        from ..views import retrieve_owned_exps_list
-        from ..views import retrieve_shared_exps_list
+        from ..views.pages import my_data
+        from ..views.ajax_pages import retrieve_owned_exps_list
 
         request = HttpRequest()
         request.method = 'GET'
         request.user = self.user
         response = my_data(request)
         self.assertEqual(response.status_code, 200)
-        # jQuery hasn't populated the divs yet:
+        # jQuery hasn't populated the div yet:
         self.assertIn('<div id="myowned" class="mydata accordion"></div>',
-                      response.content)
-        self.assertIn('<div id="myshared" class="mydata accordion"></div>',
                       response.content)
 
         # Owned experiments:
@@ -887,14 +884,6 @@ class ExperimentListsTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn('<div class="pagination">', response.content)
         self.assertIn('Page 1 of 5', response.content)
-
-        # Test page number greater than num_pages,
-        # should just give the last page (5).
-        request.GET = QueryDict('page=6')
-        response = retrieve_owned_exps_list(request)
-        self.assertEqual(response.status_code, 200)
-        self.assertIn('<div class="pagination">', response.content)
-        self.assertIn('Page 5 of 5', response.content)
 
         # Now let's reduce the number of owned experiments from
         # 100 to 10, so pagination isn't needed:
@@ -912,6 +901,23 @@ class ExperimentListsTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertNotIn('<div class="pagination">', response.content)
 
+    def test_shared_view(self):
+        """
+        Test Shared view
+        """
+        from django.http import QueryDict, HttpRequest
+        from ..views.pages import shared
+        from ..views.ajax_pages import retrieve_shared_exps_list
+
+        request = HttpRequest()
+        request.method = 'GET'
+        request.user = self.user
+        response = shared(request)
+        self.assertEqual(response.status_code, 200)
+        # jQuery hasn't populated the div yet:
+        self.assertIn('<div id="myshared" class="mydata accordion"></div>',
+                      response.content)
+
         # Shared experiments:
         self.assertEqual(settings.SHARED_EXPS_PER_PAGE, 20)
         self.assertEqual(len([acl for acl in self.acls if not acl.isOwner]),
@@ -921,14 +927,6 @@ class ExperimentListsTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn('<div class="pagination">', response.content)
         self.assertIn('Page 1 of 10', response.content)
-
-        # Test page number greater than num_pages,
-        # should just give the last page (10).
-        request.GET = QueryDict('page=12')
-        response = retrieve_shared_exps_list(request)
-        self.assertEqual(response.status_code, 200)
-        self.assertIn('<div class="pagination">', response.content)
-        self.assertIn('Page 10 of 10', response.content)
 
         # Now let's reduce the number of shared experiments from
         # 200 to 10, so pagination isn't needed:
