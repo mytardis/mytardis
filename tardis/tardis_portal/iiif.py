@@ -121,24 +121,24 @@ def compute_etag(request, datafile_id, *args, **kwargs):
 @compliance_header
 def download_image(request, datafile_id, region, size, rotation,
                    quality, format=None):  # @ReservedAssignment
-    # Get datafile (and return 404 if absent)
+    # Get datafile (and return an empty response if absent)
     try:
         datafile = DataFile.objects.get(pk=datafile_id)
     except DataFile.DoesNotExist:
-        return HttpResponseNotFound()
+        return HttpResponse('')
 
     is_public = datafile.is_public()
     if not is_public:
         # Check users has access to datafile
         if not has_datafile_download_access(request=request,
                                             datafile_id=datafile.id):
-            return HttpResponseNotFound()
+            return HttpResponse('')
 
     buf = BytesIO()
     try:
         file_obj = datafile.get_image_data()
         if file_obj is None:
-            return HttpResponseNotFound()
+            return HttpResponse('')
         from contextlib import closing
         with closing(file_obj) as f:
             with Image(file=f) as img:
@@ -175,7 +175,7 @@ def download_image(request, datafile_id, region, size, rotation,
                     mimetype = datafile.get_mimetype()
                     # If the native format is not allowed, pretend it doesn't exist.
                     if mimetype not in ALLOWED_MIMETYPES:
-                        return HttpResponseNotFound()
+                        return HttpResponse('')
                 img.save(file=buf)
                 response = HttpResponse(buf.getvalue(), content_type=mimetype)
                 response['Content-Disposition'] = \
@@ -187,11 +187,11 @@ def download_image(request, datafile_id, region, size, rotation,
                     patch_cache_control(response, private=True, max_age=MAX_AGE)
                 return response
     except WandException:
-        return HttpResponseNotFound()
+        return HttpResponse('')
     except ValueError:
-        return HttpResponseNotFound()
+        return HttpResponse('')
     except IOError:
-        return HttpResponseNotFound()
+        return HttpResponse('')
 
 
 @etag(compute_etag)
