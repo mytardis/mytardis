@@ -65,39 +65,7 @@
         src="{% static 'js/jquery/tardis_portal/experiment-accordion.js' %}">
 </script>
 
-<script type="text/javascript">
-$(document).ready(function() {
-  // Load shared exps on page load
-  var sharedLoadingHTML = $('<img src="{% static 'images/ajax-loader.gif' %}"/><br />');
-  $('#myshared').html(sharedLoadingHTML);
-  $('#myshared').load(
-      '{% url 'tardis.tardis_portal.views.retrieve_shared_exps_list' %}',
-      function() {
-          attachExpAccordionClickHandlers();
-          expandFirstExperiments();
-      });
-
-  // Create a reload event handler
-  $('#myshared').on('reload', function() {
-    $(this).html(sharedLoadingHTML);
-    $(this).load(
-      '{% url 'tardis.tardis_portal.views.retrieve_shared_exps_list' %}',
-      function() {
-          attachExpAccordionClickHandlers();
-          expandFirstExperiments();
-      });
-  });
-});
-
-var loadingHTML = $('<img src="{% static 'images/ajax-loader.gif' %}"/><br />');
-
-$(document).on('click', '.pagelink', function( event ){
-  var href = $(this).attr("href");
-  var html = $(this).html();
-  $(this).html(loadingHTML);
-  $('#myshared').load(href, function(){
-  });
-  return false;
-});
+<script type="text/javascript"
+        src="{% static 'js/jquery/tardis_portal/shared.js' %}">
 </script>
 {% endblock %}
