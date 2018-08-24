@@ -21,6 +21,7 @@ from django.http import HttpResponse, HttpResponseRedirect, \
 from django.shortcuts import redirect
 from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.debug import sensitive_post_parameters
 
 from ..auth import auth_service
 from ..auth.localdb_auth import auth_key as localdb_auth_key
@@ -211,6 +212,7 @@ def create_user(request):
     return response
 
 
+@sensitive_post_parameters("password")
 def login(request):
     '''
     handler for login page
@@ -260,6 +262,7 @@ def login(request):
     return render_response_index(request, 'tardis_portal/login.html', c)
 
 
+@sensitive_post_parameters('password')
 @permission_required('tardis_portal.change_userauthentication')
 @login_required()
 def manage_auth_methods(request):
