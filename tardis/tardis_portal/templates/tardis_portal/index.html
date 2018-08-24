@@ -12,18 +12,18 @@
   <div class="page-header">
     <h1>{{site_title|default:'MyTardis'}} Data Store</h1>
   </div>
-    {% if not is_authenticated %}
+  {% if not is_authenticated %}
     <p>
-        {% if RAPID_CONNECT_ENABLED %}
-            Please <a href={{ RAPID_CONNECT_LOGIN_URL }}>login</a>
-            to see your experiment data.
-        {% else %}
-            Please
-            <a href="{% url 'tardis.tardis_portal.views.login' %}">login</a>
-            to see your experiment data.
-        {% endif %}
+      {% if RAPID_CONNECT_ENABLED %}
+        Please <a href={{ RAPID_CONNECT_LOGIN_URL }}>login</a>
+        to see your experiment data.
+      {% else %}
+        Please
+        <a href="{% url 'tardis.tardis_portal.views.login' %}">login</a>
+        to see your experiment data.
+      {% endif %}
     </p>
-    {% endif %}
+  {% endif %}
   <div class="row-fluid">
     <div class="span9">
       {% if is_authenticated %}
@@ -32,44 +32,36 @@
           {% for exp in private_experiments %}
             <div class="accordion-group">
               <div class="accordion-heading" data-parent="#experiments">
-                  <div class="accordion-toggle" data-toggle="collapse"  data-parent="#experiments"
-                       onclick="$('#collapse{{exp.id}}').collapse('toggle');" >
-                    <strong><a class="pull-left explink"
-                               href="{% url 'tardis_portal.view_experiment' exp.id %}">{{ exp.title }}</a></strong>
-                    <ul class="nav nav-pills badgelist">
-                      <li class="pull-right">
-                        {{ exp|experiment_public_access_badge }}
-                      </li>
-                      <li class="pull-right">
-                        {{ exp|experiment_datafiles_badge }}
-                      </li>
-                      <li class="pull-right">
-                        {{ exp|experiment_datasets_badge }}
-                      </li>
-                      <li class="pull-right">
-                        {{ exp|experiment_last_updated_badge }}
-                      </li>
-                    </ul>
-                    <small>
-                      {% for author in exp.experimentauthor_set.all %}
-                        {% if not forloop.first %}, {% endif %}
-                        <span property="dc:author">{{ author.author }}</span>
-                      {% endfor %}
-                      &nbsp;
-                    </small>
-                    <span class="pull-right">
-                      {% for dltype, dlurl in exp.get_download_urls.items %}
-                        {% if forloop.first %}
-                          <a class="dllink" href="{{dlurl}}"
-                             title="Download Entire Experiment as {{dltype}}">
-                            <i class="fa fa-download"></i>
-                            <em>Download data as .{{dltype}}</em>
-                          </a>
-                        {% endif %}
-                      {% endfor %}
-                    </span>
-                  </div>
-              </div>
+                <div class="accordion-toggle" data-toggle="collapse"  data-parent="#experiments"
+                     onclick="$('#collapse{{exp.id}}').collapse('toggle');" >
+                  <strong><a class="pull-left explink"
+                             href="{% url 'tardis_portal.view_experiment' exp.id %}">{{ exp.title }}</a></strong>
+                  <ul class="nav nav-pills badgelist">
+                    <li class="pull-right">{{ exp|experiment_public_access_badge }}</li>
+                    <li class="pull-right">{{ exp|experiment_datafiles_badge }}</li>
+                    <li class="pull-right">{{ exp|experiment_datasets_badge }}</li>
+                    <li class="pull-right">{{ exp|experiment_last_updated_badge }}</li>
+                  </ul>
+                  <small>
+                    {% for author in exp.experimentauthor_set.all %}
+                      {% if not forloop.first %}, {% endif %}
+                      <span property="dc:author">{{ author.author }}</span>
+                    {% endfor %}
+                    &nbsp;
+                  </small>
+                  <span class="pull-right">
+                    {% for dltype, dlurl in exp.get_download_urls.items %}
+                      {% if forloop.first %}
+                        <a class="dllink" href="{{dlurl}}"
+                           title="Download Entire Experiment as {{dltype}}">
+                          <i class="fa fa-download"></i>
+                          <em>Download data as .{{dltype}}</em>
+                        </a>
+                      {% endif %}
+                    {% endfor %}
+                  </span>
+                </div> {% comment %}class="accordion-toggle"{% endcomment %}
+              </div> {% comment %}class="accordiong-heading"{% endcomment %}
               <div id="collapse{{exp.id}}"
                    class="accordion-body collapse{% if forloop.first %} in{% endif %}">
                 <div class="accordion-inner">
@@ -102,9 +94,9 @@
                         </ul>
                       {% endif %}
                     {% endfor %}
-                </div>
-              </div>
-            </div>
+                </div> {% comment %}class="accordion-inner"{% endcomment %}
+              </div> {% comment %}class="accordion-body"{% endcomment %}
+            </div> {% comment %}class="accordion-group"{% endcomment %}
             {% empty %}
             <p>You have no data stored on this server.<br/>
             <a href="{% url 'tardis.tardis_portal.views.create_experiment' %}">Create
@@ -128,15 +120,9 @@
               <strong><a class="pull-left explink"
                          href="{% url 'tardis_portal.view_experiment' exp.id %}">{{ exp.title }}</a></strong>
               <ul class="nav nav-pills badgelist">
-                <li class="pull-right">
-                  {{ exp|experiment_datafiles_badge }}
-                </li>
-                <li class="pull-right">
-                  {{ exp|experiment_datasets_badge }}
-                </li>
-                <li class="pull-right">
-                  {{ exp|experiment_last_updated_badge }}
-                </li>
+                <li class="pull-right">{{ exp|experiment_datafiles_badge }}</li>
+                <li class="pull-right">{{ exp|experiment_datasets_badge }}</li>
+                <li class="pull-right">{{ exp|experiment_last_updated_badge }}</li>
               </ul>
               <small>
                 {% for author in exp.experimentauthor_set.all %}
@@ -147,7 +133,6 @@
               </small>
               <span class="pull-right">
                 {% if exp.public_download_allowed %}
-
                   {% for dltype, dlurl in exp.get_download_urls.items %}
                     {% if forloop.first %}
                       <a class="dllink" href="{{dlurl}}"
@@ -159,8 +144,8 @@
                   {% endfor %}
                  {% endif %}
               </span>
-            </div>
-          </div>
+            </div> {% comment %}class="accordion-toggle"{% endcomment %}
+          </div> {% comment %}class="accordion-heading"{% endcomment %}
           <div id="collapsepub{{exp.id}}"
                class="accordion-body collapse{% if forloop.first and not is_authenticated %} in{% endif %}">
             <div class="accordion-inner">
@@ -196,16 +181,16 @@
                     </ul>
                   {% endif %}
                 {% endfor %}
-            </div>
-          </div>
-        </div>
+            </div> {% comment %}class="accordion-inner"{% endcomment %}
+          </div> {% comment %}class="accordion-body"{% endcomment %}
+        </div> {% comment %}class="accordion-group"{% endcomment %}
         {% empty %}
         <p>There is no public data available on this server.</p>
       {% endfor %}
-      </div>
-    </div>
-  </div>
-</div>
+      </div> {% comment %}id="experiments" class="accordion"{% endcomment %}
+    </div> {% comment %}class="span9"{% endcomment %}
+  </div> {% comment %}class="row-fluid"{% endcomment %}
+</div> {% comment %}id="content"{% endcomment %}
 <script type="text/javascript">
 $(function() {
     $("#experiments .accordion-body").collapse({parent:"#experiments", toggle: false});
