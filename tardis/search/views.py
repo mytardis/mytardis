@@ -3,6 +3,7 @@ views relevant to search
 """
 import logging
 
+from django.conf import settings
 from django.http import HttpResponse
 from haystack.generic_views import SearchView
 
@@ -144,14 +145,24 @@ class ExperimentSearchView(SearchView):
 
 
 def retrieve_field_list(request):
+    """
+    Used by activateSearchAutocomplete() in tardis/tardis_portal/static/js/main.js
+    via the /search/parameter_field_list/ URL
+    """
+    if not getattr(settings, 'SEARCH_AUTOCOMPLETE_ENABLED', False):
+        return HttpResponse('')
 
-    from tardis.search.search_indexes import DataFileIndex
+    from .search_indexes import DatasetIndex
+    if getattr(settings, 'DATAFILE_SEARCH_ENABLED', True):
+        from .datafile_index import DataFileIndex
 
     # Get all of the fields in the indexes
     #
     # TODO: these should be only read from registered indexes
     #
-    allFields = DataFileIndex.fields.items()
+    allFields = DatasetIndex.fields.items()
+    if getattr(settings, 'DATAFILE_SEARCH_ENABLED', True):
+        allFields += DataFileIndex.fields.items()
 
     # Collect all of the indexed (searchable) fields, except
     # for the main search document ('text')

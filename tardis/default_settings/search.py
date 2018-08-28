@@ -21,3 +21,10 @@ else:
 if SINGLE_SEARCH_ENABLED:
     INSTALLED_APPS = INSTALLED_APPS + ('haystack',)
 HAYSTACK_SIGNAL_PROCESSOR = 'haystack.signals.RealtimeSignalProcessor'
+
+# Setting this to False can speed up indexing and searching:
+DATAFILE_SEARCH_ENABLED = True
+
+# Search autocomplete is not yet fully implemented,
+# so it is disabled by default:
+SEARCH_AUTOCOMPLETE_ENABLED = False
