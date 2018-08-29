@@ -153,7 +153,7 @@ def retrieve_field_list(request):
     if not getattr(settings, 'SEARCH_AUTOCOMPLETE_ENABLED', True):
         return HttpResponse('')
 
-    auto_list = ''
+    auto_list = []
 
     if request.user.is_authenticated:
         users = User.objects.all()
