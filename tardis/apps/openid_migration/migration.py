@@ -77,13 +77,14 @@ def do_migration(request):
         if userAuths.count() > 1:
             logger.error("Multiple authentication methods found for user %s" % user)
             return _getJsonFailedResponse("Something went wrong")
-        elif userAuths.count() < 1:
-            logger.error("No authentication methods found for user %s" % user)
-            return _getJsonFailedResponse("Something went wrong")
+        if userAuths.count() == 1:
+            old_authentication_method = userAuths[0].authenticationMethod
+        else:
+            old_authentication_method = getattr(settings, 'DEFAULT_AUTH', 'localdb')
     except ValueError:
         logger.error("issue with authentication methods for user %s" % user)
+        old_authentication_method = getattr(settings, 'DEFAULT_AUTH', 'localdb')
 
-    old_authentication_method = userAuths[0].authenticationMethod
     logger.info("Old authentication method is %s", old_authentication_method)
 
     # let's search for the ACLs that refer to 'user' and transfer them
