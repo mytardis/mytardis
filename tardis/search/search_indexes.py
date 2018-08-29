@@ -38,9 +38,10 @@ search indexes for single search
 '''
 import logging
 import datetime
-from haystack import indexes
 
 from django.conf import settings
+
+from haystack import indexes
 
 from tardis.tardis_portal.models import Dataset, Experiment
 
