@@ -250,7 +250,8 @@ class DataFile(models.Model):
         if not any(re.match(p, self.get_mimetype())
                    for p in viewable_mimetype_patterns):
             return None
-        return reverse('view_datafile', kwargs={'datafile_id': self.id})
+        return reverse('tardis.tardis_portal.download.view_datafile',
+                       kwargs={'datafile_id': self.id})
 
     def get_download_url(self):
         return reverse('api_download_file',
