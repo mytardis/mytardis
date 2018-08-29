@@ -23,6 +23,6 @@ if SINGLE_SEARCH_ENABLED:
 HAYSTACK_SIGNAL_PROCESSOR = 'haystack.signals.RealtimeSignalProcessor'
 
 # Setting this to False can speed up indexing and searching:
-DATAFILE_SEARCH_ENABLED = True
+DATAFILE_SEARCH_ENABLED = False
 
 SEARCH_AUTOCOMPLETE_ENABLED = True
