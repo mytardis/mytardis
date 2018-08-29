@@ -37,11 +37,13 @@ search indexes for single search
 
 '''
 import logging
-import os
 import datetime
+
+from django.conf import settings
+
 from haystack import indexes
 
-from tardis.tardis_portal.models import DataFile, Dataset, Experiment
+from tardis.tardis_portal.models import Dataset, Experiment
 
 logger = logging.getLogger(__name__)
 
@@ -88,18 +90,5 @@ class DatasetIndex(indexes.SearchIndex, indexes.Indexable):
     def get_model(self):
         return Dataset
 
-
-class DataFileIndex(indexes.SearchIndex, indexes.Indexable):
-    text = indexes.CharField(document=True)
-    datafile_filename = indexes.CharField(model_attr='filename')
-    experiment_id_stored = indexes.MultiValueField(indexed=True, stored=True)
-    dataset_id_stored = indexes.IntegerField(model_attr='dataset__id')
-
-    def prepare_text(self, obj):
-        return os.path.join(obj.directory or '', obj.filename)
-
-    def prepare_experiment_id_stored(self, obj):
-        return [exp.id for exp in obj.dataset.experiments.all()]
-
-    def get_model(self):
-        return DataFile
+if getattr(settings, 'DATAFILE_SEARCH_ENABLED', True):
+    from .datafile_index import DataFileIndex  # pylint: disable=unused-import

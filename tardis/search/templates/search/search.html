@@ -10,8 +10,8 @@
     </form>
     </div>
     {% if query %}
-        <h3>Found {{ object_list|length }} Matches</h3>
-        {% for result in object_list %}
+        <h3>Found {{ page.object_list|length }} Matches</h3>
+        {% for result in page.object_list %}
             {% if result.content_type == 'tardis_portal.experiment' %}
                 <div class="search_result">
                     <div>Experiment <a href="{{ result.object.get_absolute_url }}">{{ result.highlighted.0|bleach|default:result.experiment_title }}</a>
