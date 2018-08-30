@@ -6,7 +6,7 @@ from django.core import mail
 from django.core.mail import get_connection
 from django.contrib.auth.models import User, Permission
 from django.contrib import messages
-
+from django.urls import reverse
 
 from celery.task import task
 
@@ -169,10 +169,12 @@ def migrate_user_message(**kwargs):
     if not is_account_migrated:
         # update message
         request = kwargs.get('request')
-        messages.add_message(request, messages.INFO,
+        messages.add_message(request, messages.WARNING,
                              'We have found an existing account with your current email address. '
-                             'Please migrate data from your old account by selecting "Migrate My Account" '
-                             'from the user menu.')
+                             'Please migrate data from your old account by clicking '
+                             '<a href="%s">Migrate My Account</a>'
+                             % reverse('tardis.apps.openid_migration.views.migrate_accounts'),
+                             extra_tags='safe')
 
     return kwargs
 
