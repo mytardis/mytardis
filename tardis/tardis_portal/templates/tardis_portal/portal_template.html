@@ -31,15 +31,15 @@
     // Set active nav button
     $(function() {
         var data = false;
-	if(window.location.pathname.match("^\/experiment")
+        if(window.location.pathname.match("^\/experiment")
           || window.location.pathname.match("^\/dataset"))
-	{
-	    data = true;
-	}
+        {
+            data = true;
+        }
 
         $('.nav a').each(function(i,v) {
             if ($(v).attr('href') == window.location.pathname
-	    || ($(v).attr('href').match("^\/experiment/view/") &&
+            || ($(v).attr('href').match("^\/experiment/view/") &&
                 data)) {
                   $(v).parent().addClass('active');
             }
@@ -170,39 +170,39 @@
       {% endif %}
 
       <script type="text/javascript">
-	var showMsg = {
-	    type: "",
-	    showAlert: function(text) {
-		$('#message-container').html(
-		    '<div class="alert ' +
-			this.type +
-			'"><a class="close" data-dismiss="alert">×</a><span>' +
-			text +
-			'</span></div>');
-	    },
-	    success: function(text) {
-		this.type = "alert-success";
-		this.showAlert(text);
-	    },
-	    info: function(text) {
-		this.type = "alert-info";
-		this.showAlert(text);
-	    },
-	    error: function(text) {
-		this.type = "alert-error";
-		this.showAlert(text);
-	    }
-	};
+        var showMsg = {
+            type: "",
+            showAlert: function(text) {
+                $('#message-container').html(
+                    '<div class="alert ' +
+                        this.type +
+                        '"><a class="close" data-dismiss="alert">×</a><span>' +
+                        text +
+                        '</span></div>');
+            },
+            success: function(text) {
+                this.type = "alert-success";
+                this.showAlert(text);
+            },
+            info: function(text) {
+                this.type = "alert-info";
+                this.showAlert(text);
+            },
+            error: function(text) {
+                this.type = "alert-error";
+                this.showAlert(text);
+            }
+        };
       </script>
 
       <div id="message-container"></div>
 
       {% if messages %}
-	  <div id="django-message-container" >
+          <div id="django-message-container" >
         {% for message in messages %}
         <p{% if message.tags %} class="alert alert-block alert-{{ message.tags }}"{% endif %}>
-        	<a class="close" data-dismiss="alert">&times;</a>
-        	{{ message }}
+                <a class="close" data-dismiss="alert">&times;</a>
+                {{ message }}
         </p>
         {% endfor %}
       </div>
@@ -220,12 +220,12 @@
           } else if(window.location.hash == '#saved') {
               $('#status-alert .message').text('Experiment Saved');
           } else if(window.location.hash.indexOf('#error:') == 0) {
-	      showMsg.error(decodeURIComponent(window.location.hash.substr(7)));
-	      window.location.hash = "";
-	      var scrollV, scrollH, loc = window.location;
-	      if ("pushState" in history)
-		  history.pushState("", document.title, loc.pathname + loc.search);
-	  }
+              showMsg.error(decodeURIComponent(window.location.hash.substr(7)));
+              window.location.hash = "";
+              var scrollV, scrollH, loc = window.location;
+              if ("pushState" in history)
+                  history.pushState("", document.title, loc.pathname + loc.search);
+          }
           if ($('#status-alert .message').text().trim() != "") {
             $('#status-alert').css('display', '');
           }
@@ -259,34 +259,34 @@
 
       {% block footer %}
       <div class="row-fluid" id="footer">
-	<div class="span6">
-	  {{sponsored_by|default:""|safe}}
-	</div>
-	<div class="span6">
-	  <div class="pull-right">
-	  Powered by <a href="https://github.com/mytardis/mytardis">MyTardis</a>
-	  </div>
-	</div>
+        <div class="span6">
+          {{sponsored_by|default:""|safe}}
+        </div>
+        <div class="span6">
+          <div class="pull-right">
+          Powered by <a href="https://github.com/mytardis/mytardis">MyTardis</a>
+          </div>
+        </div>
       </div>
       {% endblock footer %}
 
     </div>
     <!-- /container -->
     <script type="text/javascript"
-	    src="{% static 'js/lib/bootstrap-2.3.2/js/bootstrap.min.js' %}"></script>
+            src="{% static 'js/lib/bootstrap-2.3.2/js/bootstrap.min.js' %}"></script>
     {% if ga_enabled %}
     <script type="text/javascript">
       (function(i,s,o,g,r,a,m) {
-	  i['GoogleAnalyticsObject']=r;
-	  i[r]=i[r]||function(){
-	      (i[r].q=i[r].q||[]).push(arguments)},
-	  i[r].l=1*new Date();
-	  a=s.createElement(o), m=s.getElementsByTagName(o)[0];
-	  a.async=1;
-	  a.src=g;
-	  m.parentNode.insertBefore(a,m)
+          i['GoogleAnalyticsObject']=r;
+          i[r]=i[r]||function(){
+              (i[r].q=i[r].q||[]).push(arguments)},
+          i[r].l=1*new Date();
+          a=s.createElement(o), m=s.getElementsByTagName(o)[0];
+          a.async=1;
+          a.src=g;
+          m.parentNode.insertBefore(a,m)
       })(window,document,'script',
-	 '//www.google-analytics.com/analytics.js','ga');
+         '//www.google-analytics.com/analytics.js','ga');
       ga('create', '{{ ga_id }}', '{{ ga_host }}'); {# from context proc #}
       ga('send', 'pageview');
     </script>
