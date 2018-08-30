@@ -198,14 +198,31 @@
       <div id="message-container"></div>
 
       {% if messages %}
-          <div id="django-message-container" >
-        {% for message in messages %}
-        <p{% if message.tags %} class="alert alert-block alert-{{ message.tags }}"{% endif %}>
-                <a class="close" data-dismiss="alert">&times;</a>
+        {% comment %}
+
+        Messages can be added within a view method using:
+
+          from django.contrib import messages
+          messages.add_message(request, messages.INFO, message)
+
+        If you want to include HTML and you are certain that
+        users can't inject content into your message, you can use:
+
+          messages.add_message(request, messages.INFO, message, extra_tags='safe')
+
+        {% endcomment %}
+        <div id="django-message-container" >
+          {% for message in messages %}
+            <p{% if message.level_tag %} class="alert alert-block alert-{{ message.level_tag }}"{% endif %}>
+              <a class="close" data-dismiss="alert">&times;</a>
+              {% if 'safe' in message.tags %}
+                {{ message|safe }}
+              {% else %}
                 {{ message }}
-        </p>
-        {% endfor %}
-      </div>
+              {% endif %}
+            </p>
+          {% endfor %}
+        </div>
       {% endif %}
 
       <div id="status-alert"
