@@ -70,6 +70,17 @@ def add_user_permissions(**kwargs):
     return kwargs
 
 
+def add_migration_permission(**kwargs):
+    """
+    Adds permission to migrate account for OpenID authenticated user
+    """
+    user = kwargs.get('user')
+    if user:
+        user.user_permissions.add(Permission.objects.get(codename='add_openidusermigration'))
+
+    return kwargs
+
+
 def approve_user_auth(**kwargs):
     """
     Sets approved status to True in user authentication
