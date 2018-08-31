@@ -11,7 +11,7 @@ def add_migrate_account_menu_item(request, user_menu):
     :return: user_menu list
     :rtype: list
     """
-    if not request.user.has_perm('tardis_portal.change_userauthentication'):
+    if not request.user.has_perm('openid_migration.add_openidusermigration'):
         return user_menu
 
     migrate_menu_item = dict(
