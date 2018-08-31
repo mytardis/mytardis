@@ -142,7 +142,7 @@ class UserAuthentication(models.Model):
             user.user_permissions.add(Permission.objects.get(codename='add_experiment'))
             user.user_permissions.add(Permission.objects.get(codename='change_experiment'))
             user.user_permissions.add(Permission.objects.get(codename='change_group'))
-            user.user_permissions.add(Permission.objects.get(codename='change_userauthentication'))
+            user.user_permissions.add(Permission.objects.get(codename='add_openidusermigration'))
             user.user_permissions.add(Permission.objects.get(codename='change_objectacl'))
             user.user_permissions.add(Permission.objects.get(codename='add_datafile'))
             user.user_permissions.add(Permission.objects.get(codename='change_dataset'))
