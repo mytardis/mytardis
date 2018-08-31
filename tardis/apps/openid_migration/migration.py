@@ -1,6 +1,7 @@
 import logging
 
 from django.contrib.auth.models import Permission
+from django.contrib.auth.decorators import permission_required
 from django.contrib import messages
 from django.conf import settings
 
@@ -21,6 +22,7 @@ from .forms import openid_user_migration_form
 logger = logging.getLogger(__name__)
 
 
+@permission_required('openid_migration.add_openidusermigration')
 def do_migration(request):
     """Migrating account from the account that the
     logged in  user has provided in the Authentication Form. Migration involve relinking
