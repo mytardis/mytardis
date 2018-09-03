@@ -17,11 +17,11 @@ def add_ssh_keys_menu_item(request, user_menu):
         label='Manage SSH Keys'
     )
     # Find the index of "Manage Account" item so we can add item after it.
-    # If we can't just add it above logout.
+    # If we can't find it, just insert it at the beginning
     item_index = next((i + 1 for i, menu_item in enumerate(user_menu)
                        if 'label' in menu_item
                        and menu_item['label'] == "Manage Account"),
-                      len(user_menu))
+                      0)
 
     user_menu.insert(item_index, ssh_keys_menu_item)
     return user_menu
