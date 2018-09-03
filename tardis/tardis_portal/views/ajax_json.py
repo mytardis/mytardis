@@ -114,7 +114,7 @@ def experiment_datasets_json(request, experiment_id):
 
 def retrieve_licenses(request):
     try:
-        type_ = int(request.REQUEST['public_access'])
+        type_ = int(request.GET['public_access'])
         licenses = License.get_suitable_licenses(type_)
     except KeyError:
         licenses = License.get_suitable_licenses()
