@@ -19,7 +19,7 @@ class OpenIDMigrationViewTestCase(TestCase):
         self.user_new = User.objects.create_user(user_new_username, email, pwd)
         self.user_old = User.objects.create_user(user_old_username, email, pwd)
         # add permission
-        self.user_new.user_permissions.add(Permission.objects.get(codename='change_userauthentication'))
+        self.user_new.user_permissions.add(Permission.objects.get(codename='add_openidusermigration'))
 
     def test_migrate_accounts(self):
         client = Client()
