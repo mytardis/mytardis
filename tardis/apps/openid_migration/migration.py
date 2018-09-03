@@ -22,7 +22,6 @@ from .forms import openid_user_migration_form
 logger = logging.getLogger(__name__)
 
 
-@permission_required('openid_migration.add_openidusermigration')
 def do_migration(request):
     """Migrating account from the account that the
     logged in  user has provided in the Authentication Form. Migration involve relinking

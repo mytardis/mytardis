@@ -6,8 +6,9 @@ from .migration import do_migration, \
     openid_migration_method, \
     confirm_migration
 
+
 @sensitive_post_parameters('password')
-@permission_required('tardis_portal.change_userauthentication')
+@permission_required('openid_migration.add_openidusermigration')
 @login_required()
 def migrate_accounts(request):
     '''
