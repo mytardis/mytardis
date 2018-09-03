@@ -58,7 +58,7 @@ class ExperimentIndex(indexes.SearchIndex, indexes.Indexable):
     experiment_end_time = indexes.DateTimeField(model_attr='end_time', default=None)
     experiment_update_time = indexes.DateTimeField(model_attr='update_time', default=None)
     experiment_institution_name = indexes.CharField(model_attr='institution_name', default=None)
-    experiment_creator=indexes.CharField(model_attr='created_by__username')
+    experiment_creator = indexes.CharField()
     experiment_author = indexes.MultiValueField()
 
     def prepare_text(self, obj):
@@ -66,6 +66,9 @@ class ExperimentIndex(indexes.SearchIndex, indexes.Indexable):
 
     def prepare_experimentauthor(self, obj):
         return [author.author for author in obj.experimentauthor_set.all()]
+
+    def prepare_experiment_creator(self, obj):
+        return obj.created_by.username
 
     def get_model(self):
         return Experiment
