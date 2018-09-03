@@ -28,11 +28,11 @@
     <div class="span9">
       {% if is_authenticated %}
         <h3>Your most recent experiments <small><strong>(<a href="{% url 'tardis.tardis_portal.views.my_data' %}">view all</a>)</strong></small></h3>
-        <div id="experiments" class="accordion">
+        <div id="private-experiments" class="accordion experiments">
           {% for exp in private_experiments %}
             <div class="accordion-group">
-              <div class="accordion-heading" data-parent="#experiments">
-                <div class="accordion-toggle" data-toggle="collapse"  data-parent="#experiments"
+              <div class="accordion-heading" data-parent="#private-experiments">
+                <div class="accordion-toggle" data-toggle="collapse"  data-parent="#private-experiments"
                      onclick="$('#collapse{{exp.id}}').collapse('toggle');" >
                   <strong><a class="pull-left explink"
                              href="{% url 'tardis_portal.view_experiment' exp.id %}">{{ exp.title }}</a></strong>
@@ -103,19 +103,18 @@
             a new experiment</a> and upload your data</p>
           {% endfor %}
           <br/>
+        </div> {% comment%}id="private-experiments" class="accordion experiments"{% endcomment %}
       {% endif %}
 
       {% with total=public_experiments|length %}
         <h3>The {{ total }} most recent public experiment{{total|pluralize}}</h3>
       {% endwith %}
-      {% if not is_authenticated %}
-        <div id="experiments" class="accordion">
-      {% endif %}
+      <div id="public-experiments" class="accordion experiments">
       {% for exp in public_experiments %}
         <div class="accordion-group">
-          <div class="accordion-heading" data-parent="#experiments">
+          <div class="accordion-heading" data-parent="#public-experiments">
             <div class="accordion-toggle"
-                 data-toggle="collapse"  data-parent="#experiments"
+                 data-toggle="collapse"  data-parent="#public-experiments"
                  onclick="$('#collapsepub{{exp.id}}').collapse('toggle');" >
               <strong><a class="pull-left explink"
                          href="{% url 'tardis_portal.view_experiment' exp.id %}">{{ exp.title }}</a></strong>
@@ -187,13 +186,14 @@
         {% empty %}
         <p>There is no public data available on this server.</p>
       {% endfor %}
-      </div> {% comment %}id="experiments" class="accordion"{% endcomment %}
+      </div> {% comment %}id="public-experiments" class="accordion experiments"{% endcomment %}
     </div> {% comment %}class="span9"{% endcomment %}
   </div> {% comment %}class="row-fluid"{% endcomment %}
 </div> {% comment %}id="content"{% endcomment %}
 <script type="text/javascript">
 $(function() {
-    $("#experiments .accordion-body").collapse({parent:"#experiments", toggle: false});
+    $("#private-experiments .accordion-body").collapse({parent:"#private-experiments", toggle: false});
+    $("#public-experiments .accordion-body").collapse({parent:"#public-experiments", toggle: false});
     $(".explink").on("click", function(e) {
         e.stopPropagation();
     });
