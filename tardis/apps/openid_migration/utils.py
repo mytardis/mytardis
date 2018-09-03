@@ -43,6 +43,3 @@ def rollback_migration(user_migration_obj):
         # remove _{authmethod} from old user's account name
         old_user.username = old_user.username.split("_")[0]
         old_user.save()
-
-
-
