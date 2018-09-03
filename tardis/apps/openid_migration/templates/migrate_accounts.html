@@ -22,8 +22,14 @@
         to another within {{site_title}}.<br>
         Please note that this process will automatically <b>deactivate your old account.</b>
         All your data, groups and instrument associations, and settings will be migrated to your
-        current account. For more details please check <a>{{site_title}} Account Migration</a>
+        current account.
     </p>
+    {% if account_migration_instructions_link %}
+      <p>
+        For more details please check
+        <a href="{{account_migration_instructions_link}}" target=_blank>{{site_title}} Account Migration</a>
+      </p>
+    {% endif %}
     </div>
 <div id="authForm" class="container-fluid">
     <div id="step">

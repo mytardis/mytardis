@@ -224,7 +224,9 @@ def openid_migration_method(request):
 
     context = dict(
         authForm=authForm,
-        site_title=getattr(settings, 'SITE_TITLE', 'MyTardis'),)
+        site_title=getattr(settings, 'SITE_TITLE', 'MyTardis'),
+        account_migration_instructions_link=getattr(
+            settings, 'ACCOUNT_MIGRATION_INSTRUCTIONS_LINK', ''))
     return render_response_index(request, 'migrate_accounts.html', context)
 
 
