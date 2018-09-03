@@ -1,7 +1,6 @@
 import logging
 
 from django.contrib.auth.models import Permission
-from django.contrib.auth.decorators import permission_required
 from django.contrib import messages
 from django.conf import settings
 
