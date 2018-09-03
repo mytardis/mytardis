@@ -308,10 +308,10 @@ def experiment_public_access_badge(request, experiment_id):
     try:
         experiment = Experiment.objects.get(id=experiment_id)
     except Experiment.DoesNotExist:
-        HttpResponse('')
+        return HttpResponse('')
 
     if authz.has_experiment_access(request, experiment_id):
-        return render_public_access_badge(experiment)
+        return HttpResponse(render_public_access_badge(experiment))
     return HttpResponse('')
 
 
