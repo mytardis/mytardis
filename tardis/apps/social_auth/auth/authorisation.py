@@ -18,8 +18,8 @@ class AAFOpenId(BaseOAuth2):
         """returns user details from AAF"""
         return {'username': response.get('email'),
                 'email': response.get('email') or '',
-                'first_name': response.get('given_name'),
-                'last_name': response.get('family_name')}
+                'first_name': response.get('given_name') or '',
+                'last_name': response.get('family_name') or ''}
 
     def user_data(self, access_token, *args, **kwargs):
         """Loads user data from service"""
