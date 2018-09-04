@@ -1,6 +1,7 @@
 from django.conf import settings
 
 from . import default_settings
+from tardis.default_settings import site_customisations
 
 
 def interpolate_template(template_name, **kwargs):
@@ -11,7 +12,12 @@ def interpolate_template(template_name, **kwargs):
     return subject.format(**kwargs), template.format(**kwargs)
 
 
-def email_migration_success(user_name, auth_method):
-    return interpolate_template('migration_complete', user_name=user_name,
+def email_migration_success(user, new_username, auth_method):
+    return interpolate_template('migration_complete',
+                                firstname=user.first_name,
+                                lastname=user.last_name,
+                                user_name=new_username,
                                 auth_method=auth_method,
+                                support_email=getattr(settings, 'SUPPORT_EMAIL',
+                                                      site_customisations.SUPPORT_EMAIL),
                                 site_title=getattr(settings, 'SITE_TITLE', 'MyTardis'),)
