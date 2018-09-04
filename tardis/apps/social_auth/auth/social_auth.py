@@ -75,7 +75,9 @@ def add_migration_permission(**kwargs):
     Adds permission to migrate account for OpenID authenticated user
     """
     user = kwargs.get('user')
-    if user:
+    # Check if migration has been performed and add permission only if it is false
+    is_account_migrated = OpenidUserMigration.objects.filter(new_user=user)
+    if user and not is_account_migrated:
         user.user_permissions.add(Permission.objects.get(codename='add_openidusermigration'))
 
     return kwargs
