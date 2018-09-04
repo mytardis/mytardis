@@ -138,6 +138,10 @@ def do_migration(request):
     notify_migration_status.delay(user, old_username, 'AAF')
     logger.info("migration complete")
 
+    if new_user.has_perm('openid_migration.add_openidusermigration'):
+        perm = Permission.objects.get(codename='add_openidusermigration')
+        new_user.user_permissions.remove(perm)
+
     message = (
         "Your account has been migrated successfully. "
         "Please note that your old account has been deactivated and is no longer accessible. "
