@@ -135,7 +135,7 @@ def do_migration(request):
     # send email for successful migration
     # TODO : get request user auth method
     logger.info("sending email to %s", user.email)
-    notify_migration_status.delay(user, old_username, 'AAF')
+    notify_migration_status.delay(user, new_user.username, auth_provider[1])
     logger.info("migration complete")
 
     if new_user.has_perm('openid_migration.add_openidusermigration'):
