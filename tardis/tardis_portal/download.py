@@ -28,7 +28,7 @@ import gzip
 import io
 from wsgiref.util import FileWrapper
 
-from django.http import HttpResponseRedirect, StreamingHttpResponse
+from django.http import StreamingHttpResponse
 from django.conf import settings
 from django.utils.dateformat import format as dateformatter
 from django.core.exceptions import ImproperlyConfigured
@@ -43,6 +43,7 @@ from .auth.decorators import experiment_download_required
 from .auth.decorators import dataset_download_required
 from .shortcuts import render_error_message
 from .shortcuts import return_response_not_found, return_response_error
+from .shortcuts import redirect_back_with_error
 from .util import (get_filesystem_safe_dataset_name,
                    get_filesystem_safe_experiment_name)
 
@@ -100,16 +101,12 @@ def _create_download_response(request, datafile_id, disposition='attachment'):  
         # If we can't read the file, return not found
         return return_response_not_found(request)
     except ValueError:  # raised when replica not verified TODO: custom excptn
-        redirect = request.META.get('HTTP_REFERER',
-                                    'http://%s/' %
-                                    request.META.get('HTTP_HOST'))
         message = """The file you are trying to access has not yet been
                      verified. Verification is an automated background process.
                      Please try again later or contact the system
                      administrator if the issue persists."""
         message = ' '.join(message.split())  # removes spaces
-        redirect = redirect + '#error:' + message
-        return HttpResponseRedirect(redirect)
+        return redirect_back_with_error(request, message)
 
 
 def view_datafile(request, datafile_id):
@@ -413,17 +410,13 @@ def _streaming_downloader(request, datafiles, rootdir, filename,
             ua=request.META.get('HTTP_USER_AGENT', None))
         return tfs.get_response(tracker_data)
     except ValueError:  # raised when replica not verified TODO: custom excptn
-        redirect = request.META.get('HTTP_REFERER',
-                                    'http://%s/' %
-                                    request.META.get('HTTP_HOST'))
         message = """The experiment you are trying to access has not yet been
                      verified completely.
                      Verification is an automated background process.
                      Please try again later or contact the system
                      administrator if the issue persists."""
         message = ' '.join(message.split())  # removes spaces
-        redirect = redirect + '#error:' + message
-        return HttpResponseRedirect(redirect)
+        return redirect_back_with_error(request, message)
 
 
 @experiment_download_required
@@ -499,7 +492,7 @@ def streaming_download_datafiles(request):  # too complex # noqa
         else:
             return render_error_message(
                 request,
-                'No Datasets or Datafiles were selected for downloaded',
+                'No datasets or files were selected for download',
                 status=404)
 
     elif 'url' in request.POST:
@@ -520,18 +513,15 @@ def streaming_download_datafiles(request):  # too complex # noqa
                                             datafile_id=datafile.id):
                 df_set = set([datafile])
     else:
-        return render_error_message(
-            request, 'No Datasets or Datafiles were selected for downloaded',
-            status=404)
+        message = "No datasets or datafiles were selected for download"
+        return redirect_back_with_error(request, message)
 
     logger.info('Files for archive command: %s' % df_set)
 
     if not df_set:
-        return render_error_message(
-            request,
-            'You do not have download access for any of the '
-            'selected Datasets or Datafiles ',
-            status=403)
+        message = ("No verified files were accessible to download in the "
+                   "selected dataset(s)")
+        return redirect_back_with_error(request, message)
 
     try:
         expid = request.POST['expid']
