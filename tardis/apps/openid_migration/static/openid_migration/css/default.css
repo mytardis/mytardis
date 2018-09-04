@@ -1,0 +1,31 @@
+.center-image {
+    display: block;
+    margin-right: auto;
+    margin-left: auto;
+    margin-top: 10px;
+}
+.login-box {
+    background-color: #e2e2e2;
+    padding: 20px 5px 10px 10px;
+    margin-top: 20px;
+
+}
+.footer-text {
+    padding: 20px 10px;
+}
+
+.col-wrap{
+    overflow: hidden;
+}
+.col{
+    margin-bottom: -99999px;
+    padding-bottom: 99999px;
+}
+.confirm-buttons{
+    display: block;
+    margin-top: 40px;
+    text-align: center;
+}
+[id^=confirm] .btn{
+    margin-right: 40px;
+}

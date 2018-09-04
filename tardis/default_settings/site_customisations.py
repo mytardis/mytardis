@@ -11,3 +11,5 @@ add text to the footer to acknowledge someone
 '''
 
 DEFAULT_INSTITUTION = "Monash University"
+
+SUPPORT_EMAIL = "mytardis-support@example.com"
