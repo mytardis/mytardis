@@ -3,8 +3,6 @@
 /* global attachExpAccordionClickHandlers, expandFirstExperiments, loadRecentDatasetsSummary */
 
 $(document).ready(function() {
-    $("#private-experiments .accordion-body").collapse({parent:"#private-experiments", toggle: false});
-    $("#public-experiments .accordion-body").collapse({parent:"#public-experiments", toggle: false});
     $(".explink").on("click", function(e) {
         e.stopPropagation();
     });
