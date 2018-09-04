@@ -70,6 +70,7 @@ def google_analytics(request):
 
 def user_menu_processor(request):
     manage_account_enabled = getattr(settings, 'MANAGE_ACCOUNT_ENABLED', True)
+    link_accounts_enabled = getattr(settings, 'LINK_ACCOUNTS_ENABLED', True)
     user_menu = []
     if not request.user.is_authenticated:
         return dict(user_menu=user_menu)
@@ -83,7 +84,8 @@ def user_menu_processor(request):
             url=reverse('tardis.tardis_portal.download.download_api_key'),
             icon='fa fa-key',
             label='Download Api Key'))
-    if request.user.has_perm('tardis_portal.change_userauthentication'):
+    if link_accounts_enabled and \
+            request.user.has_perm('tardis_portal.change_userauthentication'):
         user_menu.append(dict(
             url=reverse('tardis.tardis_portal.views.manage_auth_methods'),
             icon='fa fa-tags',
