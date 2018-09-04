@@ -104,6 +104,16 @@ def experiment_latest_dataset(request, experiment_id):
 
 @never_cache
 @authz.experiment_access_required
+def experiment_recent_datasets(request, experiment_id):
+    context = dict(exp=Experiment.objects.get(id=experiment_id))
+    return render_response_index(
+        request,
+        'tardis_portal/ajax/experiment_recent_datasets.html',
+        context)
+
+
+@never_cache
+@authz.experiment_access_required
 def experiment_dataset_transfer(request, experiment_id):
     experiments = Experiment.safe.owned(request.user)
 

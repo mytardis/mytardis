@@ -1,6 +1,6 @@
 /* tardis/tardis_portal/static/js/jquery/tardis_portal/shared.js */
 
-/* global attachExpAccordionClickHandlers, expandFirstExperiments */
+/* global attachExpAccordionClickHandlers, expandFirstExperiments, loadLatestDatasetSummary */
 
 $(document).ready(function() {
     // Load shared exps on page load
@@ -9,7 +9,7 @@ $(document).ready(function() {
     $("#myshared").load(
         "/ajax/shared_exps_list/",
         function() {
-            attachExpAccordionClickHandlers();
+            attachExpAccordionClickHandlers("accordion-toggle", "toggle-", "collapse-", "latest-dataset-", loadLatestDatasetSummary);
             expandFirstExperiments();
         });
 
@@ -19,10 +19,14 @@ $(document).ready(function() {
         $(this).load(
             "/ajax/shared_exps_list/",
             function() {
-                attachExpAccordionClickHandlers();
+                attachExpAccordionClickHandlers("accordion-toggle", "toggle-", "collapse-", "latest-dataset-", loadLatestDatasetSummary);
                 expandFirstExperiments();
             });
     });
+
+    // var attachExpAccordionClickHandlers = function(accordionToggleClass, accordionToggleIdPrefix, accordionBodyIdPrefix, divIdPrefix, loadDatasetsSummary)
+    attachExpAccordionClickHandlers("accordion-toggle", "toggle-", "collapse-", "latest-dataset-", loadLatestDatasetSummary);
+    expandFirstExperiments();
 });
 
 $(document).on("click", ".pagelink", function() {
