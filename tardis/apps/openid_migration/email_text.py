@@ -1,7 +1,9 @@
 from django.conf import settings
 
-from . import default_settings
 from tardis.default_settings import site_customisations
+
+from . import default_settings
+
 
 
 def interpolate_template(template_name, **kwargs):
