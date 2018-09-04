@@ -153,7 +153,10 @@
                                             <a href="/experiment/view/{{dataset.parent_experiment.id}}/"
                                                target="_blank">{{dataset.parent_experiment.title}}</a>
                                         </td>
-                                        <td>{{dataset.description}}</td>
+                                        <td>
+                                            <a href="/dataset/{{dataset.id}}"
+                                               target="_blank">{{dataset.description}}</a>
+                                        </td>
                                         <td>{{dataset.instrument.name}}</td>
                                         <td>
                                             {{dataset.parent_experiment.created_time
@@ -214,7 +217,10 @@
                                             <a href="/experiment/view/{{dataset.parent_experiment.id}}/"
                                                target="_blank">{{dataset.parent_experiment.title}}</a>
                                         </td>
-                                        <td>{{dataset.description}}</td>
+                                        <td>
+                                            <a href="/dataset/{{dataset.id}}"
+                                               target="_blank">{{dataset.description}}</a>
+                                        </td>
                                         <td>
                                             {{dataset.parent_experiment.created_time
                                             | date:'yyyy-MM-dd h:mma'}}
@@ -271,7 +277,10 @@
                                             <a href="/experiment/view/{{dataset.parent_experiment.id}}/"
                                                target="_blank">{{dataset.parent_experiment.title}}</a>
                                         </td>
-                                        <td>{{dataset.description}}</td>
+                                        <td>
+                                            <a href="/dataset/{{dataset.id}}"
+                                               target="_blank">{{dataset.description}}</a>
+                                        </td>
                                         <td>{{dataset.instrument.name}}</td>
                                         <td>
                                             {{dataset.parent_experiment.created_time
