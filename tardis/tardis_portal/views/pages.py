@@ -153,6 +153,7 @@ class IndexView(TemplateView):
                 public_access=Experiment.PUBLIC_ACCESS_EMBARGO).order_by(
                 '-update_time')[:limit]
         c['public_experiments'] = public_experiments
+        c['exps_expand_accordion'] = 1
 
         return c
 

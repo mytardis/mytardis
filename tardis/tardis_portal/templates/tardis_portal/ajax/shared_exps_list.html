@@ -17,7 +17,7 @@
 {% for exp in shared_experiments %}
   <div class="accordion-group">
     <div class="accordion-heading">
-      <div id="toggle{{exp.id}}" class="accordion-toggle" data-toggle="collapse">
+      <div id="toggle-{{exp.id}}" class="accordion-toggle" data-toggle="collapse">
         <input type="hidden" class="exp-index" value="{{ forloop.counter }}">
         <strong><a class="pull-left explink"
                    href="{% url 'tardis_portal.view_experiment' exp.id %}">{{ exp.title }}</a></strong>
@@ -56,7 +56,7 @@
         </span>
       </div> {% comment %} class="accordion-toggle" {% endcomment %}
     </div> {% comment %} class="accordion-heading" {% endcomment %}
-    <div id="collapse{{exp.id}}"
+    <div id="collapse-{{exp.id}}"
          class="accordion-body collapse">
       <div class="accordion-inner">
         <p>{{exp.description|default:""|bleach}}</p>
