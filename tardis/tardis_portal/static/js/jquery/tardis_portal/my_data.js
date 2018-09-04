@@ -33,7 +33,10 @@ $(document).on("click", ".pagelink", function() {
     var loadingHTML = "<img src=\"/static/images/ajax-loader.gif\"/><br />";
     var href = $(this).attr("href");
     $(this).html(loadingHTML);
-    $("#myowned").load(href, function() {});
+    $("#myowned").load(href, function() {
+        attachExpAccordionClickHandlers("accordion-toggle", "toggle-", "collapse-", "latest-dataset-", loadLatestDatasetSummary);
+        expandFirstExperiments();
+    });
     return false;
 });
 
