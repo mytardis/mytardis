@@ -6,6 +6,7 @@ from django.conf import settings
 from django.urls import reverse
 from django.shortcuts import render
 from django.http import HttpResponse
+from django.http import HttpResponseRedirect
 from django.template.loader import render_to_string
 from django.contrib.sites.models import Site
 
@@ -60,6 +61,14 @@ def return_response_error_message(request, redirect_path, context):
 
 def return_response_error(request):
     return render_response_index(request, '403.html', {}, status=403)
+
+
+def redirect_back_with_error(request, message):
+    redirect = request.META.get(
+        'HTTP_REFERER',
+        '{0}://{1}/'.format(request.scheme, request.get_host()))
+    redirect = redirect + '#error:' + message
+    return HttpResponseRedirect(redirect)
 
 
 def get_experiment_referer(request, dataset_id):

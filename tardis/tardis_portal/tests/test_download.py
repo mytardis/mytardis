@@ -276,7 +276,7 @@ class DownloadTestCase(TestCase):
                                {'expid': self.experiment2.id,
                                 'dataset': [self.dataset2.id],
                                 'datafile': []})
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 302)
 
         # check datafile1 download via POST
         response = client.post('/download/datafiles/',
@@ -293,7 +293,7 @@ class DownloadTestCase(TestCase):
                                {'expid': self.experiment2.id,
                                 'dataset': [],
                                 'datafile': [self.datafile2.id]})
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 302)
 
         # Check datafile2 download with second experiment to "metadata only"
         self.experiment2.public_access = Experiment.PUBLIC_ACCESS_METADATA
