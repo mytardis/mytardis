@@ -6,7 +6,7 @@ from django.conf import settings
 
 from tastypie.models import ApiKey
 
-from tardis.tardis_portal.models import UserProfile, UserAuthentication, \
+from tardis.tardis_portal.models import User, UserProfile, UserAuthentication, \
     ObjectACL, Group
 from tardis.tardis_portal.auth.authentication import _getJsonFailedResponse,\
     _getJsonSuccessResponse, _getJsonConfirmResponse
@@ -141,6 +141,8 @@ def do_migration(request):
     if new_user.has_perm('openid_migration.add_openidusermigration'):
         perm = Permission.objects.get(codename='add_openidusermigration')
         new_user.user_permissions.remove(perm)
+        # refresh permissions from db
+        User.objects.get(pk=new_user.pk)
 
     message = (
         "Your account has been migrated successfully. "
