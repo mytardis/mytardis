@@ -1,5 +1,5 @@
-/* global QUnit activateSearchAutocomplete */
-/* eslint global-strict: 0, strict: 0, no-console: 0, object-shorthand: 0, no-unused-vars: [2, {"vars": "local", "args": "none"}] */
+/* global QUnit */
+/* eslint global-strict: 0, strict: 0, no-console: 0, no-unused-vars: [2, {"vars": "local", "args": "none"}] */
 "use strict";
 
 // Tests for tardis/tardis_portal/static/js/main.js
@@ -13,23 +13,10 @@ QUnit.module("tardis_portal.main", {
     }
 });
 
-QUnit.test("Test activating search autocomplete", function(assert) {
+QUnit.test("Test loading main.js", function(assert) {
 
     $.getScript("../tardis/tardis_portal/static/js/main.js", function(data, textStatus, jqxhr) {
         assert.equal(jqxhr.status, 200);
         console.log("Loaded main.js");
     });
-
-    //url: "/search/parameter_field_list/?authMethod=localdb",
-    $.mockjax({
-        url: "/search/parameter_field_list/",
-        contentType: "text/plain",
-        responseText:
-            "Test User1:username+Test User2:username+" +
-            "dataset_id_stored:search_field+" +
-            "experiment_id_stored:search_field+" +
-            "datafile_filename:search_field"
-    });
-
-    activateSearchAutocomplete();
 });
