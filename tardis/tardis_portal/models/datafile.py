@@ -378,9 +378,9 @@ class DataFile(models.Model):
             file_path = path.abspath(path.join(settings.METADATA_STORE_PATH,
                                                preview_image_par.string_value))
 
-            preview_image_file = open(file_path)
-
-            return preview_image_file
+            if path.exists(file_path):
+                preview_image_file = open(file_path)
+                return preview_image_file
 
         render_image_size_limit = getattr(settings, 'RENDER_IMAGE_SIZE_LIMIT',
                                           0)
