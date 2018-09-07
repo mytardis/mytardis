@@ -1,32 +1,6 @@
 /* global $ */
 /* global _ */
-/* eslint global-strict: 0, strict: 0, object-shorthand: 0 */
-var activateSearchAutocomplete = function() {
-    var authMethod = "localdb";
-    var authMethodDict = { authMethod: authMethod };
-    $.ajax({
-        "global": false,
-        "data": authMethodDict,
-        "url": "/search/parameter_field_list/",
-        "success": function(data) {
-            data = data.split("+");
-            var list = _.map(data, function(line) {
-                var name = line.split(":")[0];
-                var type = line.split(":")[1];
-                if (type === "search_field") {
-                    return name + ":";
-                }
-                else {
-                    return name;
-                }
-            });
-            $("#id_q").typeahead({
-                "source": list,
-                "items": 10
-            });
-        }
-    });
-};
+/* eslint global-strict: 0, strict: 0 */
 
 var activateHoverDetection = function() {
     // Hover events
@@ -79,8 +53,5 @@ var isLoggedIn = function() {
 };
 
 $(document).ready(function() {
-    if ($("#id_q").length > 0) {
-        activateSearchAutocomplete();
-    }
     activateHoverDetection();
 });
