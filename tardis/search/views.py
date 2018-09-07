@@ -3,9 +3,6 @@ views relevant to search
 """
 import logging
 
-from django.contrib.auth.models import User
-from django.conf import settings
-from django.http import HttpResponse
 from haystack.generic_views import SearchView
 
 from tardis.search.forms import GroupedSearchForm
@@ -143,40 +140,6 @@ class ExperimentSearchView(SearchView):
         context.update(self.extra_context())
 
         return render_response_index(self.request, self.template, context)
-
-
-def retrieve_field_list(request):
-    """
-    Used by activateSearchAutocomplete() in tardis/tardis_portal/static/js/main.js
-    via the /search/parameter_field_list/ URL
-    """
-    if not getattr(settings, 'SEARCH_AUTOCOMPLETE_ENABLED', True):
-        return HttpResponse('')
-
-    auto_list = []
-
-    if request.user.is_authenticated:
-        users = User.objects.all()
-        usernames = [u.first_name + ' ' + u.last_name + ':username' for u in users]
-        auto_list += usernames
-
-    if getattr(settings, 'DATAFILE_SEARCH_ENABLED', True):
-        from .datafile_index import DataFileIndex
-        # Get all of the fields in the indexes
-        #
-        # TODO: these should be only read from registered indexes
-        #
-        allFields = DataFileIndex.fields.items()
-
-        # Collect all of the indexed (searchable) fields, except
-        # for the main search document ('text')
-        searchableFields = ([key + ':search_field' for key, f in allFields
-                             if f.indexed is True and key != 'text'])
-
-        auto_list += searchableFields
-
-    fieldList = '+'.join([str(fn) for fn in auto_list])
-    return HttpResponse(fieldList)
 
 
 class SingleSearchView(SearchView):
