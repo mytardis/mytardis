@@ -179,6 +179,18 @@ def migrate_user_message(**kwargs):
         return kwargs
     # Check if migration has been performed
     is_account_migrated = OpenidUserMigration.objects.filter(new_user=user)
+    # check if account is not approved
+    backend = kwargs.get('backend')
+    authenticatedBackendName = type(backend).__name__
+    # get auth method from backend
+    authMethod = get_auth_method(authenticatedBackendName)
+    user_auth = UserAuthentication.objects.get(userProfile=user.userprofile,
+                       username=user.username,
+                       authenticationMethod=authMethod,)
+
+    if not user_auth or not user_auth.approved:
+        return kwargs
+
     if not is_account_migrated:
         # update message
         request = kwargs.get('request')
