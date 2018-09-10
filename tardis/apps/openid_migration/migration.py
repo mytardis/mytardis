@@ -228,15 +228,18 @@ def migrate_api_key(old_user, new_user):
 def openid_migration_method(request):
     migration_form = openid_user_migration_form()
     authForm = migration_form()
+    # get instructions link based on auth method
+    account_migration_instructions_links = getattr(
+        settings, 'ACCOUNT_MIGRATION_INSTRUCTIONS_LINKS', default_settings.ACCOUNT_MIGRATION_INSTRUCTIONS_LINKS)
     # get authenticated user backend
     backend = request.session['_auth_user_backend']
     auth_provider = get_matching_auth_provider(backend)
-    auth_method = auth_provider[0]
-    # get instructions link based on auth method
-    account_migration_instructions_links = getattr(
-            settings, 'ACCOUNT_MIGRATION_INSTRUCTIONS_LINKS', default_settings.ACCOUNT_MIGRATION_INSTRUCTIONS_LINKS)
-    if account_migration_instructions_links is not None:
+    if auth_provider is not None:
+        auth_method = auth_provider[0]
         account_migration_instructions_link = account_migration_instructions_links[auth_method]
+    else:
+        account_migration_instructions_link = None
+
     context = dict(
         authForm=authForm,
         site_title=getattr(settings, 'SITE_TITLE', 'MyTardis'),
