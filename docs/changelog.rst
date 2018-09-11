@@ -8,6 +8,58 @@ Releases
 * Improved test coverage
 * Continuous Integration tests run against Ubuntu 18.04 (MyTardis v3.x used 14.04)
 * ChromeDriver is used for BDD (Behaviour Driven Development) tests
+* Social Auth, including AAF and Google Auth via OpenID Connect
+* Migrating user accounts from LDAP or localdb to OpenID Connect
+* Customizable user menu
+* Using message.level_tag instead of message.tags in portal_template, so that
+  extra tags can be added to Django messages without interfering with the Bootstrap
+  alert class.
+* My Data page (which previously contained Owned and Shared experiments) has been split
+  into two pages - "My Data" and "Shared"
+  - Each page loads thumbnails asynchronously for faster initial page load time
+  - An improved pagination widget allows for a very large number of pages.
+* Index page's thumbnails are loaded asynchronously for faster initial page load time.
+* Login page can be replaced with a site-specific page
+* SFTP can now be used with keys instead of passwords
+* Upgraded Bootstrap from 2.0.4 to 2.3.2 (further upgrades coming soon)
+* Fixed some bugs in single search
+* jQuery code is being moved out of HTML templates and into JS files which can be linted (with ESLint) and tested (with QUnit).
+* Removed old broken code and unnecessary code which is duplicated in other repositories.
+   - Import via staging with jsTree
+   - Uploadify
+* Updated or removed (as appropriate) some out-of-date JS dependencies bundled within the MyTardis repository
+   - Most JS dependences are installed by npm now, so we can run security checks with npm audit
+* manage.py can now be used instead of mytardis.py and mytardis.py will soon be deprecated
+* New support email setting can be used in email templates or HTML templates.
+* Updating loadschemas management command for Django 1.11 and adding test for it
+* Updated the dumpschemas management command for Django 1.11 and added a test for it
+* Bug fixes (GitHub Issue numbers below)
+    Fixed #243. Bug in tardis_acls.change_experiment permissions check
+    Fixed #516 - only show "Add files" button if user has permission to upload files
+    Fixed #636
+    Fixed #637 - "()" is added to "Author" line every time an experiment is edited
+    Fixed #779
+    Fixed #868
+    Fixed #893
+    Fixed #988
+    Fixed #1083
+    Fixed #1185
+* Added docs on X-Forwarded-Proto HTTP header for HTTPS deployments
+* Added docs on configuring services in systemd or supervisor
+* Removed password length restriction in linked user authentication form
+* Removed settings_changeme - use default_settings instead
+* Removed backslash from set of characters used to generate secret key.
+* Removed django-celery - it is no longer necessary to run Celery via Django
+* Improved forwards compatibility with Python 3, but we're not fully Python 3 compatible yet.
+* Switched to PEP 328 relative imports
+* Tests no longer require the unmaintained "compare" module
+* Added a default value for DATA_UPLOAD_MAX_MEMORY_SIZE (required by Django 1.10+) to default settings
+* Removed some unused dependencies, e.g. PyYAML
+* Removed the createmysuperuser which is no longer needed
+* Removed the checkhashes management command
+* Removed the diffraction image filter
+* Removed the backupdb management command
+* Removed the old publication form - a new publication workflow is coming soon.
 
 3.9
 ---

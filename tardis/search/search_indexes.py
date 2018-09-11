@@ -62,7 +62,16 @@ class ExperimentIndex(indexes.SearchIndex, indexes.Indexable):
     experiment_author = indexes.MultiValueField()
 
     def prepare_text(self, obj):
-        return '{} {}'.format(obj.title.encode('utf-8'), obj.description.encode('utf-8'))
+        """Elasticsearch's standard tokenizer won't split on underscores,
+        as it uses the Unicode Text Segmentation algorithm, as specified
+        in the Unicode Standard Annex #29.  Some MyTardis users replace
+        spaces with underscores in folder names, because their instrument
+        data collection software won't allow spaces in paths, so we replace
+        underscores with spaces in the search index, but they will still
+        appear as underscores in the search results.
+        """
+        return '{} {}'.format(obj.title.encode('utf-8').replace('_', ' '),
+                              obj.description.encode('utf-8'))
 
     def prepare_experimentauthor(self, obj):
         return [author.author for author in obj.experimentauthor_set.all()]
@@ -85,7 +94,15 @@ class DatasetIndex(indexes.SearchIndex, indexes.Indexable):
     dataset_description = indexes.CharField(model_attr='description')
 
     def prepare_text(self, obj):
-        return obj.description
+        """Elasticsearch's standard tokenizer won't split on underscores,
+        as it uses the Unicode Text Segmentation algorithm, as specified
+        in the Unicode Standard Annex #29.  Some MyTardis users replace
+        spaces with underscores in folder names, because their instrument
+        data collection software won't allow spaces in paths, so we replace
+        underscores with spaces in the search index, but they will still
+        appear as underscores in the search results.
+        """
+        return obj.description.replace('_', ' ')
 
     def prepare_experiment_id_stored(self, obj):
         return [exp.id for exp in obj.experiments.all()]

@@ -27,5 +27,7 @@ USER_MENU_MODIFIERS.extend([
 Adds a Migrate My Account menu item to the user menu.
 '''
 
-# ACCOUNT_MIGRATION_INSTRUCTIONS_LINK = 'https://storemonash.readthedocs.io/en/latest/account_migration.html'
-ACCOUNT_MIGRATION_INSTRUCTIONS_LINK = ''
+ACCOUNT_MIGRATION_INSTRUCTIONS_LINKS = {
+    "google": "",
+    "aaf": "",
+}

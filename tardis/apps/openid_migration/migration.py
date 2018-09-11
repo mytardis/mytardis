@@ -14,6 +14,7 @@ from tardis.tardis_portal.auth.authentication import _getJsonFailedResponse,\
 from tardis.tardis_portal.shortcuts import render_response_index
 from tardis.apps.openid_migration.models import OpenidUserMigration, OpenidACLMigration
 
+from . import default_settings
 from .tasks import notify_migration_status
 from .forms import openid_user_migration_form
 
@@ -227,12 +228,22 @@ def migrate_api_key(old_user, new_user):
 def openid_migration_method(request):
     migration_form = openid_user_migration_form()
     authForm = migration_form()
+    # get instructions link based on auth method
+    account_migration_instructions_links = getattr(
+        settings, 'ACCOUNT_MIGRATION_INSTRUCTIONS_LINKS', default_settings.ACCOUNT_MIGRATION_INSTRUCTIONS_LINKS)
+    # get authenticated user backend
+    backend = request.session['_auth_user_backend']
+    auth_provider = get_matching_auth_provider(backend)
+    if auth_provider is not None:
+        auth_method = auth_provider[0]
+        account_migration_instructions_link = account_migration_instructions_links[auth_method]
+    else:
+        account_migration_instructions_link = None
 
     context = dict(
         authForm=authForm,
         site_title=getattr(settings, 'SITE_TITLE', 'MyTardis'),
-        account_migration_instructions_link=getattr(
-            settings, 'ACCOUNT_MIGRATION_INSTRUCTIONS_LINK', ''))
+        account_migration_instructions_link=account_migration_instructions_link)
     return render_response_index(request, 'migrate_accounts.html', context)
 
 

@@ -13,7 +13,8 @@ from celery.task import task
 from tardis.tardis_portal.models import UserAuthentication
 
 from tardis.apps.openid_migration.models import OpenidUserMigration
-from tardis.apps.social_auth import default_settings
+from tardis.apps.social_auth import default_settings as social_auth_default_settings
+from tardis.apps.openid_migration import default_settings as openid_migration_default_settings
 
 logger = logging.getLogger(__name__)
 
@@ -142,18 +143,26 @@ def send_admin_email(**kwargs):
 def send_account_approved_email(user, authMethod):
     """Sends user email once account is approved by admin"""
     site_title = getattr(settings, 'SITE_TITLE', 'MyTardis')
+    # get instruction link from settings
+    account_migration_instructions_links = getattr(
+        settings, 'ACCOUNT_MIGRATION_INSTRUCTIONS_LINKS',
+        openid_migration_default_settings.ACCOUNT_MIGRATION_INSTRUCTIONS_LINKS)
+    # get authenticated user backend
+    account_migration_instructions_link = account_migration_instructions_links[authMethod]
+
+
     subject = '[MyTardis] User account Approved'
     message = (
-        "Hi %s , \n\nWelcome to %s. "
+        "Hi %s , \n\nWelcome to %s. \n\n"
         "Your account has been approved. "
         "Please use  the \"Sign in with %s\" button on the login page to "
         "log in to %s. "
         "If you have an existing %s would like to "
         "migrate your data and settings to your new account, "
-        "follow the instructions on\n\n"
+        "follow the instructions on %s \n\n"
         "Thanks,\n"
         "MyTardis\n"
-        % (user.username, site_title, authMethod, site_title, site_title))
+        % (user.username, site_title, authMethod, site_title, site_title, account_migration_instructions_link))
     try:
         from_email = getattr(settings, 'OPENID_FROM_EMAIL', None)
         user.email_user(
@@ -179,6 +188,18 @@ def migrate_user_message(**kwargs):
         return kwargs
     # Check if migration has been performed
     is_account_migrated = OpenidUserMigration.objects.filter(new_user=user)
+    # check if account is not approved
+    backend = kwargs.get('backend')
+    authenticatedBackendName = type(backend).__name__
+    # get auth method from backend
+    authMethod = get_auth_method(authenticatedBackendName)
+    user_auth = UserAuthentication.objects.get(userProfile=user.userprofile,
+                       username=user.username,
+                       authenticationMethod=authMethod,)
+
+    if not user_auth or not user_auth.approved:
+        return kwargs
+
     if not is_account_migrated:
         # update message
         request = kwargs.get('request')
@@ -202,7 +223,7 @@ def is_openid_migration_enabled():
 
 
 def requires_admin_approval(authenticationBackend):
-    for authKey in default_settings.ADMIN_APPROVAL_REQUIRED:
+    for authKey in social_auth_default_settings.ADMIN_APPROVAL_REQUIRED:
         if authenticationBackend == authKey:
             return authKey
     return None

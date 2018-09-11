@@ -146,7 +146,7 @@ latex_paper_size = 'a4'
 # (source start file, target name, title, author, document class [howto/manual]).
 latex_documents = [
   ('index', 'tardis.tex', ur'MyTardis Documentation',
-   ur'Steve Androulakis', 'manual'),
+   ur'', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
