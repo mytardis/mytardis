@@ -132,22 +132,24 @@ class UserAuthentication(models.Model):
         if not requires_admin_approval(self.authenticationMethod):
             super(UserAuthentication, self).save(*args, **kwargs)
             return
+        # check if social_auth is enabled
+        is_social_auth_enabled = 'tardis.apps.social_auth' in settings.INSTALLED_APPS
         # check if approved status has changed from false to true
-        if self.approved and not self.__original_approved:
+        if is_social_auth_enabled and self.approved and not self.__original_approved:
             # get linked user profile
             user_profile = self.userProfile
             user = user_profile.user
             # add user permissions
-            # TODO : get user permission from settings
             user.user_permissions.add(Permission.objects.get(codename='add_experiment'))
             user.user_permissions.add(Permission.objects.get(codename='change_experiment'))
             user.user_permissions.add(Permission.objects.get(codename='change_group'))
-            user.user_permissions.add(Permission.objects.get(codename='add_openidusermigration'))
+            is_openidusermigration_enabled = 'tardis.apps.openid_migration' in settings.INSTALLED_APPS
+            if is_openidusermigration_enabled:
+                user.user_permissions.add(Permission.objects.get(codename='add_openidusermigration'))
             user.user_permissions.add(Permission.objects.get(codename='change_objectacl'))
             user.user_permissions.add(Permission.objects.get(codename='add_datafile'))
             user.user_permissions.add(Permission.objects.get(codename='change_dataset'))
             # send email to user
-            # send_account_approved_email(user)
             from tardis.apps.social_auth.auth.social_auth import send_account_approved_email
             send_account_approved_email(user, self.authenticationMethod)
 
