@@ -106,7 +106,11 @@ class LoggingMiddleware(object):
             user = request.user
         except:
             user = ''
-        ip = request.META['REMOTE_ADDR']
+        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+        if x_forwarded_for:
+            ip = x_forwarded_for.split(',')[0]
+        else:
+            ip = request.META.get('REMOTE_ADDR')
         method = request.method
         if hasattr(response, 'status_code'):
             status = response.status_code
@@ -134,7 +138,11 @@ class LoggingMiddleware(object):
             user = request.user
         except:
             user = ''
-        ip = request.META['REMOTE_ADDR']
+        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+        if x_forwarded_for:
+            ip = x_forwarded_for.split(',')[0]
+        else:
+            ip = request.META.get('REMOTE_ADDR')
         method = request.method
         status = 500
 
