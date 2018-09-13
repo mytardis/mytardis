@@ -123,6 +123,7 @@ class StorageBoxForm(forms.ModelForm):
 
 
 class StorageBoxAdmin(admin.ModelAdmin):
+    search_fields = ['name']
     inlines = [StorageBoxOptionInline,
                StorageBoxAttributeInline]
     form = StorageBoxForm
@@ -185,8 +186,25 @@ class ObjectACLAdmin(admin.ModelAdmin):
 class FreeTextSearchFieldAdmin(admin.ModelAdmin):
     pass
 
-admin.site.register(models.Facility)
-admin.site.register(models.Instrument)
+
+class UserAuthenticationAdmin(admin.ModelAdmin):
+    search_fields = [
+        'username',
+        'authenticationMethod',
+        'userProfile__user__username'
+        ]
+
+
+class FacilityAdmin(admin.ModelAdmin):
+    search_fields = ['name']
+
+
+class InstrumentAdmin(admin.ModelAdmin):
+    search_fields = ['name']
+
+
+admin.site.register(models.Facility, FacilityAdmin)
+admin.site.register(models.Instrument, InstrumentAdmin)
 admin.site.register(models.Experiment, ExperimentAdmin)
 admin.site.register(models.License)
 admin.site.register(models.Dataset, DatasetAdmin)
@@ -205,7 +223,7 @@ admin.site.register(models.InstrumentParameterSet, InstrumentParameterSetAdmin)
 admin.site.register(models.Token)
 admin.site.register(models.ExperimentParameterSet, ExperimentParameterSetAdmin)
 admin.site.register(models.GroupAdmin)
-admin.site.register(models.UserAuthentication)
+admin.site.register(models.UserAuthentication, UserAuthenticationAdmin)
 admin.site.register(models.ObjectACL, ObjectACLAdmin)
 admin.site.register(models.FreeTextSearchField, FreeTextSearchFieldAdmin)
 # admin.site.register(MigrationHistory)

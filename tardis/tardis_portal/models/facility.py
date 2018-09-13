@@ -14,6 +14,7 @@ class Facility(models.Model):
     class Meta:
         app_label = 'tardis_portal'
         verbose_name_plural = 'Facilities'
+        ordering = ('name',)
 
     def __str__(self):
         return self.name
