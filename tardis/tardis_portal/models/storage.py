@@ -111,6 +111,7 @@ class StorageBox(models.Model):
     class Meta:
         app_label = 'tardis_portal'
         verbose_name_plural = 'storage boxes'
+        ordering = ('name',)
 
     @property
     def cache_box(self):
