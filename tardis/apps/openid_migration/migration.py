@@ -111,16 +111,21 @@ def do_migration(request):
     # change old user username to username_authmethod amd make it inactive
     old_username = user.username
     user.username = old_username + '_' + old_authentication_method
-    logger.info("setting old use to inactive")
+    logger.info("setting old user to inactive")
     user.is_active = False
     user.save()
 
     # change new user username to old user
     new_user = request.user
+    new_user_username = new_user.username
     new_user.username = old_username
     logger.info("changing new username %s to old username %s",
                 request.user.username, old_username)
     new_user.save()
+    # change authentication record for new user
+    update_authentication_record(new_user, auth_provider[0], new_user_username)
+    # change authentication record for old user
+    update_authentication_record(user, old_authentication_method, old_username)
 
     # copy api key from old user to new user so that MyData works seamlessly post migration
     logger.info("migrating api key")
@@ -322,3 +327,17 @@ def get_matching_auth_provider(backend):
         if backend == auth_provider[2]:
             return auth_provider
     return None
+
+
+def update_authentication_record(user, authMethod, old_username):
+    user_auths = UserAuthentication.objects.filter(userProfile=user.userprofile,
+                                              username=old_username,
+                                              authenticationMethod=authMethod,)
+    if not user_auths:
+        logger.info("No authentication record found to update for user %s", user.username)
+        return None
+    if user_auths.count() == 1:
+        user_auth = user_auths[0]
+        user_auth.username = user.username
+        user_auth.save()
+        logger.info(" Authentication record updated for user %s", user.username)
