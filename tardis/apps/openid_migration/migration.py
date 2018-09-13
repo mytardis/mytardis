@@ -341,3 +341,4 @@ def update_authentication_record(user, authMethod, old_username):
         user_auth.username = user.username
         user_auth.save()
         logger.info(" Authentication record updated for user %s", user.username)
+    return None
