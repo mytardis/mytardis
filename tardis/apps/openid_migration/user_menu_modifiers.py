@@ -1,5 +1,7 @@
 from django.urls import reverse
 
+from tardis.apps.openid_migration.models import OpenidUserMigration
+
 
 def add_migrate_account_menu_item(request, user_menu):
     """Add a 'Migrate My Account' item to the user menu
@@ -11,7 +13,9 @@ def add_migrate_account_menu_item(request, user_menu):
     :return: user_menu list
     :rtype: list
     """
-    if not request.user.has_perm('openid_migration.add_openidusermigration'):
+    # check if account is migrated
+    is_account_migrated = OpenidUserMigration.objects.filter(new_user=request.user)
+    if not request.user.has_perm('openid_migration.add_openidusermigration') or is_account_migrated:
         return user_menu
 
     migrate_menu_item = dict(

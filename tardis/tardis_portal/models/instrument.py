@@ -16,6 +16,7 @@ class Instrument(models.Model):
         app_label = 'tardis_portal'
         verbose_name_plural = 'Instruments'
         unique_together = ['name', 'facility']
+        ordering = ('name', )
 
     def __str__(self):
         return self.name

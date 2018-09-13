@@ -15,6 +15,7 @@ from tardis.tardis_portal.models import UserAuthentication
 from tardis.apps.openid_migration.models import OpenidUserMigration
 from tardis.apps.social_auth import default_settings as social_auth_default_settings
 from tardis.apps.openid_migration import default_settings as openid_migration_default_settings
+from tardis import default_settings
 
 logger = logging.getLogger(__name__)
 
@@ -153,18 +154,19 @@ def send_account_approved_email(user, authMethod):
 
     subject = '[MyTardis] User account Approved'
     message = (
-        "Hi %s , \n\nWelcome to %s. \n\n"
+        "Dear %s %s, \n\nWelcome to %s. \n\n"
         "Your account has been approved. "
         "Please use  the \"Sign in with %s\" button on the login page to "
         "log in to %s. "
-        "If you have an existing %s would like to "
+        "If you have an existing %s account and would like to "
         "migrate your data and settings to your new account, "
         "follow the instructions on %s \n\n"
         "Thanks,\n"
         "MyTardis\n"
-        % (user.username, site_title, authMethod, site_title, site_title, account_migration_instructions_link))
+        % (user.first_name, user.last_name, site_title, authMethod,
+           site_title, site_title, account_migration_instructions_link))
     try:
-        from_email = getattr(settings, 'OPENID_FROM_EMAIL', None)
+        from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', default_settings.DEFAULT_FROM_EMAIL)
         user.email_user(
             subject, message, from_email=from_email, fail_silently=True)
 
@@ -188,6 +190,8 @@ def migrate_user_message(**kwargs):
         return kwargs
     # Check if migration has been performed
     is_account_migrated = OpenidUserMigration.objects.filter(new_user=user)
+    if is_account_migrated:
+        return kwargs
     # check if account is not approved
     backend = kwargs.get('backend')
     authenticatedBackendName = type(backend).__name__
