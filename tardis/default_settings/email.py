@@ -19,7 +19,7 @@ When using a local SMTP server, you probably don't need
 to authenticate, so you can leave this blank.
 
 If using a remote SMTP server, this can be set to the
-email address using to authenticate, e.g. 'bob@bobmail.com'
+email address used to authenticate, e.g. 'bob@bobmail.com'
 '''
 
 EMAIL_HOST_PASSWORD = ''
@@ -28,7 +28,7 @@ When using a local SMTP server, you probably don't need
 to authenticate, so you can leave this blank.
 
 If using a remote SMTP server, this can be set to the
-password using to authenticate.
+password used to authenticate.
 '''
 
 EMAIL_USE_TLS = False
