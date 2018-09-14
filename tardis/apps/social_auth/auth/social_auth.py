@@ -151,8 +151,7 @@ def send_account_approved_email(user, authMethod):
     # get authenticated user backend
     account_migration_instructions_link = account_migration_instructions_links[authMethod]
 
-
-    subject = '[MyTardis] User account Approved'
+    subject = '[%s] User account Approved' % site_title
     message = (
         "Dear %s %s, \n\nWelcome to %s. \n\n"
         "Your account has been approved. "
@@ -162,9 +161,10 @@ def send_account_approved_email(user, authMethod):
         "migrate your data and settings to your new account, "
         "follow the instructions on %s \n\n"
         "Thanks,\n"
-        "MyTardis\n"
+        "%s Team\n"
         % (user.first_name, user.last_name, site_title, authMethod,
-           site_title, site_title, account_migration_instructions_link))
+           site_title, site_title, account_migration_instructions_link,
+           site_title))
     try:
         from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', default_settings.DEFAULT_FROM_EMAIL)
         user.email_user(
