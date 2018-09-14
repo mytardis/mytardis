@@ -318,9 +318,6 @@ class DatasetView(TemplateView):
         :return: The Django response object
         :rtype: :class:`django.http.HttpResponse`
         """
-        if not request.user.is_authenticated:
-            return return_response_error(request)
-
         dataset_id = kwargs.get('dataset_id', None)
         if dataset_id is None:
             return return_response_error(request)
@@ -552,11 +549,11 @@ class ExperimentView(TemplateView):
         :returns: an HttpResponse
         :rtype: :class:`django.http.HttpResponse`
         """
-        if not request.user.is_authenticated:
-            return return_response_error(request)
-
         experiment_id = kwargs.get('experiment_id', None)
         if experiment_id is None:
+            return return_response_error(request)
+        if not request.user.is_authenticated and \
+                not Experiment.safe.public().filter(id=experiment_id):
             return return_response_error(request)
 
         try:
