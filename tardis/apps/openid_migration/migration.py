@@ -124,8 +124,6 @@ def do_migration(request):
     new_user.save()
     # change authentication record for new user
     update_authentication_record(new_user, auth_provider[0], new_user_username)
-    # change authentication record for old user
-    update_authentication_record(user, old_authentication_method, old_username)
 
     # copy api key from old user to new user so that MyData works seamlessly post migration
     logger.info("migrating api key")
