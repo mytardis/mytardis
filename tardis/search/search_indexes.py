@@ -110,5 +110,5 @@ class DatasetIndex(indexes.SearchIndex, indexes.Indexable):
     def get_model(self):
         return Dataset
 
-if getattr(settings, 'DATAFILE_SEARCH_ENABLED', True):
+if getattr(settings, 'DATAFILE_SEARCH_ENABLED', False):
     from .datafile_index import DataFileIndex  # pylint: disable=unused-import
