@@ -9,11 +9,27 @@ exit
 # # sudo apt-get install memcached python-memcache
 
 
-# for OS X we need these dependencies installed via brew
-# brew install imagemagick --with-libtiff
+# For macOS we need these dependencies installed via brew:
+# brew install imagemagick@6
+#   The Python Wand library is not yet compatible with ImageMagick 7.
+#   If you have trouble running the tests requiring Wand, ensure that
+#   your homebrew imagemagick is installed with compatible versions
+#   of jpeg and libtiff by doing the following:
+#
+#   brew uninstall jpeg libtiff
+#   brew install imagemagick@6
+#   brew link --force imagemagick@6
+#
 # brew install libmagic freetype
-# brew install postgresql
-# or for a local development server, install http://postgresapp.com/
+# brew install postgresql # or SQLite may be sufficient for local development
+#   or for a local development server, install http://postgresapp.com/
+# If you want to test asynchronous processing locally on macOS, you'll need
+# to install a broker such as RabbitMQ, which can be installed with:
+#   brew install rabbitmq
+# However, doing so can pull in a newer version of libtiff which is
+# incompatible with ImageMagick 6 (see above), so it is usually easier to
+# set CELERY_ALWAYS_EAGER = True on macOS.
+# Or you can try a different broker, e.g. Redis
 
 # for Ubuntu 18.04:
 # source /etc/bash_completion.d/virtualenvwrapper
