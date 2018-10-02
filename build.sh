@@ -9,17 +9,31 @@ exit
 # # sudo apt-get install memcached python-memcache
 
 
-# for OS X we need these dependencies installed via brew
-# brew install imagemagick --with-libtiff
+# For macOS we need these dependencies installed via brew:
+#
+# brew install imagemagick@6
+#   The Python Wand package is not yet compatible with ImageMagick 7.
+#   If running MyTardis in your macOS environment is triggering
+#   exceptions related to the Wand python package, please ensure that
+#   your homebrew imagemagick is installed with compatible versions
+#   of jpeg and libtiff by doing the following:
+#
+#   brew uninstall jpeg libtiff
+#   brew install imagemagick@6
+#   brew link --force imagemagick@6
+#
 # brew install libmagic freetype
-# brew install postgresql
-# or for a local development server, install http://postgresapp.com/
+#
+# brew install postgresql # or SQLite may be sufficient for local development
+#   or for a local development server, install http://postgresapp.com/
 
-# for Ubuntu 18.04:
+# For Ubuntu 18.04:
 # source /etc/bash_completion.d/virtualenvwrapper
-# for Ubuntu 16.04:
+
+# For Ubuntu 16.04:
 # source /usr/share/virtualenvwrapper/virtualenvwrapper.sh
-# for OS X
+
+# For macOS:
 # source /usr/local/bin/virtualenvwrapper.sh
 
 mkvirtualenv mytardis
