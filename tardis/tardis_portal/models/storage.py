@@ -27,8 +27,8 @@ class StorageBox(models.Model):
     django_storage_class = models.TextField(
         default=getattr(settings, 'DEFAULT_FILE_STORAGE',
                         'django.core.files.storage.FileSystemStorage'))
-    max_size = models.BigIntegerField()  # Bytes
-    status = models.CharField(max_length=100)
+    max_size = models.BigIntegerField(null=True, blank=True)  # Bytes
+    status = models.CharField(max_length=100, default='online')
     name = models.CharField(max_length=255, default='default', unique=True)
     description = models.TextField(default='Default Storage')
     master_box = models.ForeignKey('self', null=True, blank=True,
