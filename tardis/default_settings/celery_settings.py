@@ -10,9 +10,14 @@ CELERYBEAT_SCHEDULE = {
 
 CELERY_IMPORTS = ('tardis.tardis_portal.tasks',)
 
-# Use a real broker (e.g. RabbitMQ) for production, but memory is OK for
-# local development:
-BROKER_URL = 'memory://'
+# Using Celery for asynchronous task processing requires a broker e.g. RabbitMQ
+# Use a strong password for production
+# BROKER_URL = 'amqp://guest:guest@localhost:5672//'
+
+# The 'django://' BROKER_URL uses the kombu.transport.django app to allow
+# messages to be passed via the database, which is not suitable for production,
+# but can be used for local development:
+BROKER_URL = 'django://'
 
 # For local development, you can force Celery tasks to run synchronously:
 # CELERY_ALWAYS_EAGER = True
