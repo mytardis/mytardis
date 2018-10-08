@@ -454,7 +454,7 @@ class DataFile(models.Model):
 
 @python_2_unicode_compatible
 class DataFileObject(models.Model):
-    """The physical copy (or copies) of a 
+    """The physical copy (or copies) of a
     :class:`tardis.tardis_portal.models.datafile.DataFile`
     are described by distinct
     :class:`tardis.tardis_portal.models.datafile.DataFileObject` records.
