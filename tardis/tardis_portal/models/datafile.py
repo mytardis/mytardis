@@ -38,18 +38,26 @@ IMAGE_FILTER = (Q(mimetype__startswith='image/') &
 
 @python_2_unicode_compatible
 class DataFile(models.Model):
-    """Class to store meta-data about a file.  The physical copies of a
-    file are described by distinct DataFileObject instances.
+    """A ``DataFile`` is a record of a file which includes its filename,
+    its size in bytes, its relative directory, and various other meta-data.
+    Each ``DataFile`` belongs to a
+    :class:`tardis.tardis_portal.models.dataset.Dataset` which usually
+    represents the files from one folder on an instrument PC.
 
-    :attribute dataset: the foreign key to the
+    The physical copy (or copies) of a file are described by distinct
+    :class:`tardis.tardis_portal.models.datafile.DataFileObject` records.
+
+    :attribute dataset: The foreign key to the
        :class:`tardis.tardis_portal.models.Dataset` the file belongs to.
-    :attribute filename: the name of the file, excluding the path.
-    :attribute size: the size of the file.
-    :attribute created_time: time the file was added to tardis
-    :attribute modification_time: last modification time of the file
-    :attribute mimetype: for example 'application/pdf'
-    :attribute md5sum: digest of length 32, containing only hexadecimal digits
-    :attribute sha512sum: digest of length 128, containing only hexadecimal
+    :attribute filename: The name of the file, excluding the path.
+    :attribute size: The size of the file.
+    :attribute created_time: Should be populated with the file's creation time
+      from the instrument PC.
+    :attribute modification_time: Should be populated with the file's last
+      modification time from the instrument PC.
+    :attribute mimetype: For example 'application/pdf'
+    :attribute md5sum: Digest of length 32, containing only hexadecimal digits
+    :attribute sha512sum: Digest of length 128, containing only hexadecimal
         digits
     """
 
