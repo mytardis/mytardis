@@ -22,21 +22,20 @@ class Dataset(models.Model):
     represented by a :class:`tardis.tardis_portal.models.DataFile`
     record.  A dataset can appear in one or more
     :class:`tardis.tardis_portal.models.Experiment` records.
-    Access controls are configured at the
-    :class:`tardis.tardis_portal.models.Experiment` level by creating
+    Access controls are configured at the ``Experiment`` level by creating
     :class:`tardis.tardis_portal.models.access_control.ObjectACL` records.
     Each dataset can be associated with an
     :class:`tardis.tardis_portal.models.Instrument` record, but it is
     possible to create a dataset without specifying an instrument.
 
-    :attribute experiment: a foreign key to the one ore more
+    :attribute experiment: A foreign key to the one ore more
        :class:`tardis.tardis_portal.models.Experiment` records which
        contain this dataset
-    :attribute instrument: the foreign key to the instrument that generated
+    :attribute instrument: The foreign key to the instrument that generated
         this data
-    :attribute description: description of this dataset, which usually
+    :attribute description: Description of this dataset, which usually
         corresponds to the folder name on the instrument PC
-    :attribute immutable: whether this dataset is read-only
+    :attribute immutable: Whether this dataset is read-only
     """
 
     experiments = models.ManyToManyField(Experiment, related_name='datasets')
