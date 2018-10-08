@@ -454,9 +454,22 @@ class DataFile(models.Model):
 
 @python_2_unicode_compatible
 class DataFileObject(models.Model):
-    '''
-    holds one copy of the data for a datafile
-    '''
+    """The physical copy (or copies) of a 
+    :class:`tardis.tardis_portal.models.datafile.DataFile`
+    are described by distinct
+    :class:`tardis.tardis_portal.models.datafile.DataFileObject` records.
+
+    :attribute datafile: The ``DataFile`` record which this ``DataFileObject``
+        is storing a copy of
+    :attribute storage_box: The
+        :class:`tardis.tardis_portal.models.storage.StorageBox`
+        containing this copy of the file.  The ``StorageBox`` could represent
+        a directory on a mounted filesystem, or a bucket in an Object Store.
+    :attribute uri: The relative path of the file location within the
+        the ``StorageBox``, e.g. ``dataset1-12345/file1.txt`` for a
+        copy of a ``DataFile`` with filename ``file1.txt`` which belongs to
+        a ``Dataset`` with a description of ``dataset1`` and an ID of ``12345``.
+    """
 
     datafile = models.ForeignKey(DataFile, related_name='file_objects',
                                  on_delete=models.CASCADE)
