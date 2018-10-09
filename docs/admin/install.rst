@@ -44,7 +44,7 @@ Quick configuration
 
 It is recommended that you use a virtualenv. The list of packages above
 includes the ``virtualenvwrapper`` toolkit. Set up your environment with these
-commands::
+commands:
 
 Ubuntu 18.04::
 
@@ -120,7 +120,7 @@ Create and configure the database::
 
 This avoids creating a superuser before the MyTardis specific ``UserProfile``
 table has been created. More information about the ``migrate``
-commands can be found at :doc:`admin`.
+commands can be found at :doc:`../admin`.
 
 Next, create a superuser::
 
@@ -139,7 +139,7 @@ Extended configuration
 See below for some extra configuration options that are specific to MyTardis.
 
 An automatically generated documentation of the settings can be found in
-:doc:`pydoc/tardis`.
+:doc:`../pydoc/tardis`.
 
 
 Essential Production Settings
@@ -248,7 +248,7 @@ assigning a licence, but they cannot allow public access to their data.
 
 Creative Commons licences (for Australia) are available in
 ``tardis/tardis_portal/fixtures/cc_licenses.json``. You can load them with
- ``python manage.py loaddata``.
+``python manage.py loaddata``.
 
 You can use the admin interface to add other licences. Please ensure
 ``allows_distribution`` is set to the correct value to ensure the licence
@@ -354,7 +354,7 @@ basis.  The tabs are implemented as separate Django applications with a single
 view (index), listed in the TARDIS_APPS configuration item and either linked
 to, or installed in the TARDIS_APP_ROOT directory, by default ``tardis/apps``.
 
-Documentation on the additional tabs is available from :doc:`tabs`.
+Documentation on the additional tabs is available from :doc:`../apps/contextual_views`.
 
 Additional Views
 ~~~~~~~~~~~~~~~~
@@ -364,7 +364,7 @@ tabs are implemented as separate Django applications with a single view
 function listed in the ``*_VIEWS`` configuration item and added to the
 ``INSTALLED_APPS`` list.
 
-Refer to the :doc:`views documentation<contextual_views>` for further information.
+Refer to the :doc:`views documentation<../apps/contextual_views>` for further information.
 
 Site Customisations
 ~~~~~~~~~~~~~~~~~~~
