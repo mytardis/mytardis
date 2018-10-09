@@ -8,12 +8,13 @@ class Facility(models.Model):
     """
     Represents a facility that produces data.
 
-    Each :class:`tardis.tardis_portal.models.Instrument` record
-    must belong to exactly one facility.  Many ``Instrument``
+    Each :class:`~tardis.tardis_portal.models.instrument.Instrument` record
+    must belong to exactly one facility.  Many
+    :class:`~tardis.tardis_portal.models.instrument.Instrument`
     records can be associated with the same facility.
 
     :attribute name: The name of the facility, e.g. "Test Facility"
-    :attribute manager_group: The group of users who can access the
+    :attribute manager_group: The group of users who can access the \
         Facility Overview for this facility.
     """
 

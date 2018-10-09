@@ -150,7 +150,7 @@ Authorisation
 ^^^^^^^^^^^^^
 
 MyTardis includes an extensible authorisation engine, documented in
-:ref:`ref-authframework` and :ref:`authorisation`.
+:ref:`ref-authframework` and :doc:`authorisation`.
 
 
 Class Diagram

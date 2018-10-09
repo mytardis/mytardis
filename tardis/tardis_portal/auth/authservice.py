@@ -277,10 +277,11 @@ class AuthService():
         basestring name: the value of the displayname to search for
         int max_results: the maximum number of elements to return
         basestring sort_by: the attribute the users should be sorted on
-        basestring plugin: restrict the search to the specific group
+        basestring plugin: restrict the search to the specific group \
             provider
-        returns a list of users and/or groups
-        rtype list
+
+        returns: a list of users and/or groups
+        rtype: list
         """
         if not self._initialised:
             self._manual_init()

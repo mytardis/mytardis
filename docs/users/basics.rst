@@ -139,8 +139,9 @@ To share an Experiment with another MyTardis user:
     :width: 500px
     :align: center
 
-Note: Entering the users name or email address with activate autocomplete,
+Note: Entering the users name or email address with activate autocomplete, \
    which helps to find the username of the user.
+
 5. Select the permissions you'd like to give the user from the **Permissions** dropdown.
 #. Click the **+Add User** button.
 #. You should now see a new entry under the **Current User Permissions**

@@ -21,11 +21,11 @@ logger = logging.getLogger(__name__)
 @python_2_unicode_compatible
 class Experiment(models.Model):
     """An ``Experiment`` is a collection of
-    :class:`tardis.tardis_portal.models.Dataset` records.
-    A ``Dataset`` record can appear in multiple ``Experiment``
-    records.  Access controls are configured at the
+    :class:`~tardis.tardis_portal.models.dataset.Dataset` records.
+    A :class:`~tardis.tardis_portal.models.dataset.Dataset` record can appear
+    in multiple ``Experiment`` records.  Access controls are configured at the
     ``Experiment`` level by creating
-    :class:`tardis.tardis_portal.models.access_control.ObjectACL` records.
+    :class:`~tardis.tardis_portal.models.access_control.ObjectACL` records.
 
     :attribute url: An optional URL associated with the data collection
     :attribute approved: An optional field indicating whether the collection is approved
