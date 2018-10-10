@@ -1,2 +1,5 @@
+from django.conf import settings
 import haystack
-haystack.autodiscover()
+
+if 'haystack' in settings.INSTALLED_APPS:
+    haystack.autodiscover()

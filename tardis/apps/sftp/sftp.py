@@ -238,6 +238,7 @@ class MyTSFTPServerInterface(SFTPServerInterface):
 
         C{flags} contains the requested mode for opening (read-only,
         write-append, etc) as a bitset of flags from the C{os} module:
+
             - C{os.O_RDONLY}
             - C{os.O_WRONLY}
             - C{os.O_RDWR}
@@ -245,6 +246,7 @@ class MyTSFTPServerInterface(SFTPServerInterface):
             - C{os.O_CREAT}
             - C{os.O_TRUNC}
             - C{os.O_EXCL}
+
         (One of C{os.O_RDONLY}, C{os.O_WRONLY}, or C{os.O_RDWR} will always
         be set.)
 
@@ -252,13 +254,13 @@ class MyTSFTPServerInterface(SFTPServerInterface):
         has to be created.  Some or all attribute fields may be missing if
         the client didn't specify them.
 
-        @note: The SFTP protocol defines all files to be in "binary" mode.
+        @note: The SFTP protocol defines all files to be in "binary" mode. \
             There is no equivalent to python's "text" mode.
 
         :param basestring path: the requested datafile path
-        :param int flags: flags or'd together from the C{os} module indicating
+        :param int flags: flags or'd together from the C{os} module indicating \
             the requested mode for opening the file.
-        :param SFTPAttributes attr: requested attributes of the file if it is
+        :param SFTPAttributes attr: requested attributes of the file if it is \
             newly created.
         :returns: a new L{SFTPHandle} I{or error code}.
         :rtype: SFTPHandle
@@ -286,7 +288,7 @@ class MyTSFTPServerInterface(SFTPServerInterface):
 
         @param path: the requested path (relative or absolute) to be listed.
         @type path: str
-        @return: a list of the files in the given folder, using
+        @return: a list of the files in the given folder, using \
             L{SFTPAttributes} objects.
         @rtype: list of L{SFTPAttributes} I{or error code}
         """
@@ -303,10 +305,11 @@ class MyTSFTPServerInterface(SFTPServerInterface):
         "aliases"), you should follow them.  (L{lstat} is the corresponding
         call that doesn't follow symlinks/aliases.)
 
-        @param path: the requested path (relative or absolute) to fetch
+        @param path: the requested path (relative or absolute) to fetch \
             file statistics for.
         @type path: str
-        @return: an attributes object for the given file, or an SFTP error
+
+        @return: an attributes object for the given file, or an SFTP error \
             code (like L{SFTP_PERMISSION_DENIED}).
         @rtype: L{SFTPAttributes} I{or error code}
         """
@@ -353,7 +356,7 @@ class MyTSFTPHandle(SFTPHandle):
         Create a new file handle
 
         :param DataFile df: DataFile
-        :param int flags: optional flags as passed
+        :param int flags: optional flags as passed \
             to L{SFTPServerInterface.open}
         :param None optional_args: unused
         """
@@ -373,7 +376,7 @@ class MyTSFTPHandle(SFTPHandle):
         error code.  This is equivalent to L{SFTPServerInterface.stat}, except
         it's called on an open file instead of a path.
 
-        @return: an attributes object for the given file, or an SFTP error
+        @return: an attributes object for the given file, or an SFTP error \
             code (like L{SFTP_PERMISSION_DENIED}).
         @rtype: L{SFTPAttributes} I{or error code}
         """

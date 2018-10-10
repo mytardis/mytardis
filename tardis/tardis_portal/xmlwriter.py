@@ -54,12 +54,13 @@ class XMLWriter:
         :type dest_dir: string
         :param dest_filename: The name of the file to be output
         :type dest_filename: string
-        :param template_path: The relative path to the Django template to be
-        rendered
+        :param template_path: The relative path to the Django template to be \
+            rendered
         :type template_path: string
-        :param context: The Context object (dictionary of variables for
-        template output)
+        :param context: The Context object (dictionary of variables for \
+            template output)
         :type context: :class:`django.template.context.Context`
+
         :returns: The full path to the created file
         :rtype: string
         """
@@ -75,20 +76,21 @@ class XMLWriter:
         templatepath,
         context):
         """
-        :param prefix_dir: The subdirectory off of the OAI_DOCS_PATH to store
-        the resulting document in
+        :param prefix_dir: The subdirectory off of the OAI_DOCS_PATH to store \
+            the resulting document in
         :type prefix_dir: string
-        :param objectprefix: The name prefix of the resulting file. Files are
-        output in the format prefix-uniqueid.xml
+        :param objectprefix: The name prefix of the resulting file. Files are \
+            output in the format prefix-uniqueid.xml
         :type objectprefix: string
         :param uniqueid: The unique ID of the file to be output
         :type uniqueid: string
-        :param templatepath: The relative path to the Django template to be
-        rendered
+        :param templatepath: The relative path to the Django template to be \
+            rendered
         :type templatepath: string
-        :param context: The Context object (dictionary of variables for
-        template output)
+        :param context: The Context object (dictionary of variables for \
+            template output)
         :type context: :class:`django.template.context.Context`
+
         :returns: The full path to the created file
         :rtype: string
         """
@@ -108,15 +110,15 @@ class XMLWriter:
             xmlstring):
         """
         :param prefix_dir: The subdirectory off of the OAI_DOCS_PATH to store
-        the resulting document in
+            the resulting document in
         :type prefix_dir: string
         :param objectprefix: The name prefix of the resulting file. Files are
-        output in the format prefix-uniqueid.xml
+            output in the format prefix-uniqueid.xml
         :type objectprefix: string
         :param uniqueid: The unique ID of the file to be output
         :type uniqueid: string
         :param xmlstring: The relative path to the Django template to be
-        rendered
+            rendered
         :type xmlstring: string
         :returns: The full path to the created file
         :rtype: string

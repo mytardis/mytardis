@@ -20,19 +20,25 @@ logger = logging.getLogger(__name__)
 
 @python_2_unicode_compatible
 class Experiment(models.Model):
-    """The ``Experiment`` model inherits from :class:`django.db.models.Model`
+    """An ``Experiment`` is a collection of
+    :class:`~tardis.tardis_portal.models.dataset.Dataset` records.
+    A :class:`~tardis.tardis_portal.models.dataset.Dataset` record can appear
+    in multiple ``Experiment`` records.  Access controls are configured at the
+    ``Experiment`` level by creating
+    :class:`~tardis.tardis_portal.models.access_control.ObjectACL` records.
 
-    :attribute url: **Undocumented**
-    :attribute approved: **Undocumented**
-    :attribute title: the title of the experiment.
-    :attribute institution_name: the name of the institution who created
-       the dataset.
+    :attribute url: An optional URL associated with the data collection
+    :attribute approved: An optional field indicating whether the collection is approved
+    :attribute title: The title of the experiment.
+    :attribute description: The description of the experiment.
+    :attribute institution_name: The name of the institution who created
+       the experiment.
     :attribute start_time: **Undocumented**
     :attribute end_time: **Undocumented**
     :attribute created_time: **Undocumented**
     :attribute handle: **Undocumented**
-    :attribute public: **Undocumented**
-    :attribute objects: default model manager
+    :attribute public: Whether the experiment is publicly accessible
+    :attribute objects: Default model manager
     :attribute safe: ACL aware model manager
 
     """

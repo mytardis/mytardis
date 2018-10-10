@@ -265,13 +265,30 @@ class StorageBoxOption(models.Model):
 @python_2_unicode_compatible
 class StorageBoxAttribute(models.Model):
     '''
-    can hold attributes/metadata about different storage locations.
+    Can hold attributes/metadata about different storage locations.
 
-    built-ins:
-    key   values      description
-    type  receiving   holds files temporarily for ingestion only
-          permanent   permanent location (assumed by default)
-          cache       holds files for fast access
+    :attribute key: The key used to look up the attribute (e.g. "type").
+    :attribute value: The value of the attribute e.g. "cache".
+
+    The "type" key has three values support by the core MyTardis
+    code: "permanent", "receiving" and "cache".
+
+    Adding an attribute with key "type" and value "permanent" preserves
+    the default behaviour of a storage box, i.e. it is equivalent to
+    not adding the attribute.
+
+    Adding an attribute with key "type" and value "receiving" means
+    that the storage box will be treated as a staging area which
+    receives files intended to be transfered to a permanent storage
+    box.  If a storage box has the "type: receiving" attribute,
+    it must link to a permanent storage box (via its master_box foreign
+    key).
+
+    Adding an attribute with key "type" and value "cache" means that
+    the storage box will be used to copy data from slow-access storage
+    to fast-access storage.  If a storage box has the "type: cache"
+    attribute, it must link to a permanent storage box (via its
+    master_box foreign key).
     '''
 
     storage_box = models.ForeignKey(StorageBox, related_name='attributes',

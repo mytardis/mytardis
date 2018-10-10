@@ -459,23 +459,24 @@ class UserResource(ModelResource):
 
     def dehydrate(self, bundle):
         '''
-        use cases:
-        public user:
-          anonymous:
-            name, uri, email, id
-          authenticated:
-            other user:
-              name, uri, email, id [, username if facility manager]
-            same user:
-              name, uri, email, id, username
-        private user:
-          anonymous:
-            none
-          authenticated:
-            other user:
-              name, uri, id [, username, email if facility manager]
-            same user:
-              name, uri, email, id, username
+        use cases::
+
+          public user:
+            anonymous:
+              name, uri, email, id
+            authenticated:
+              other user:
+                name, uri, email, id [, username if facility manager]
+              same user:
+                name, uri, email, id, username
+          private user:
+            anonymous:
+              none
+            authenticated:
+              other user:
+                name, uri, id [, username, email if facility manager]
+              same user:
+                name, uri, email, id, username
         '''
         authuser = bundle.request.user
         authenticated = authuser.is_authenticated

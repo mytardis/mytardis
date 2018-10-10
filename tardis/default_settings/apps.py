@@ -40,9 +40,9 @@ earlier in the list.
 Each modifier method should take a django.http.HttpRequest object and a
 list of user menu items, and return a modified list of user menu items.
 
-An example from the SFTP app is below:
+An example from the SFTP app is below::
 
-USER_MENU_MODIFIERS.extend([
-    'tardis.apps.sftp.user_menu_modifiers.add_ssh_keys_menu_item'
-])
+  USER_MENU_MODIFIERS.extend([
+      'tardis.apps.sftp.user_menu_modifiers.add_ssh_keys_menu_item'
+  ])
 '''

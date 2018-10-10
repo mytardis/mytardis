@@ -58,14 +58,15 @@ def site_routed_view(request, _default_view, _site_mappings, *args, **kwargs):
     :param _default_view: The default view if no Site in _site_mappings matches
                           the current Site.
     :type _default_view: types.FunctionType | str
-    :param _site_mappings: A dictionary mapping Django sites to views
-                          (sites are specified as either a domain name str or
+    :param _site_mappings: A dictionary mapping Django sites to views \
+                          (sites are specified as either a domain name str or \
                            int SITE_ID).
     :type _site_mappings: dict
     :param args:
     :type args:
     :param kwargs:
     :type kwargs:
+
     :return: A view function
     :rtype: types.FunctionType
     """
@@ -461,6 +462,7 @@ class ExperimentView(TemplateView):
         :param experiment: the experiment model instance
         :type experiment: tardis.tardis_portal.models.experiment.Experiment
         :param dict kwargs: kwargs
+
         :return: A dictionary of values for the view/template.
         :rtype: dict
         """
@@ -544,8 +546,8 @@ class ExperimentView(TemplateView):
         :param request: a HTTP Request instance
         :type request: :class:`django.http.HttpRequest`
         :param list args:
-        :param dict kwargs:
-        in kwargs: param int experiment_id: the ID of the experiment
+        :param dict kwargs: In kwargs: param int experiment_id: the ID of the experiment
+
         :returns: an HttpResponse
         :rtype: :class:`django.http.HttpResponse`
         """

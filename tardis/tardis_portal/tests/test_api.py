@@ -584,13 +584,13 @@ class FacilityResourceTest(MyTardisResourceTestCase):
             self.assertEqual(returned_object[key], value)
 
     def test_get_facility_by_manager_group_id(self):
-        """
-        This type of query can be used to iterate through a user's groups,
+        """This type of query can be used to iterate through a user's groups,
         and use each group's id to determine which facilities a user
         manages, i.e. a way to obtain the functionality implemented by
-          tardis.tardis_portal.models.facility.facilities_managed_by
+        :func:`~tardis.tardis_portal.models.facility.facilities_managed_by`
         via the API
         """
+
         facility_id = Facility.objects.first().id
         group_id = Group.objects.get(name='Test Group').id
         expected_output = {

@@ -44,7 +44,7 @@ Quick configuration
 
 It is recommended that you use a virtualenv. The list of packages above
 includes the ``virtualenvwrapper`` toolkit. Set up your environment with these
-commands::
+commands:
 
 Ubuntu 18.04::
 
@@ -120,7 +120,7 @@ Create and configure the database::
 
 This avoids creating a superuser before the MyTardis specific ``UserProfile``
 table has been created. More information about the ``migrate``
-commands can be found at :doc:`admin`.
+commands can be found at :doc:`../admin`.
 
 Next, create a superuser::
 
@@ -139,7 +139,7 @@ Extended configuration
 See below for some extra configuration options that are specific to MyTardis.
 
 An automatically generated documentation of the settings can be found in
-:doc:`pydoc/tardis`.
+:doc:`../pydoc/tardis`.
 
 
 Essential Production Settings
@@ -248,7 +248,7 @@ assigning a licence, but they cannot allow public access to their data.
 
 Creative Commons licences (for Australia) are available in
 ``tardis/tardis_portal/fixtures/cc_licenses.json``. You can load them with
- ``python manage.py loaddata``.
+``python manage.py loaddata``.
 
 You can use the admin interface to add other licences. Please ensure
 ``allows_distribution`` is set to the correct value to ensure the licence
@@ -354,7 +354,7 @@ basis.  The tabs are implemented as separate Django applications with a single
 view (index), listed in the TARDIS_APPS configuration item and either linked
 to, or installed in the TARDIS_APP_ROOT directory, by default ``tardis/apps``.
 
-Documentation on the additional tabs is available from :doc:`tabs`.
+Documentation on the additional tabs is available from :doc:`../apps/contextual_views`.
 
 Additional Views
 ~~~~~~~~~~~~~~~~
@@ -364,7 +364,7 @@ tabs are implemented as separate Django applications with a single view
 function listed in the ``*_VIEWS`` configuration item and added to the
 ``INSTALLED_APPS`` list.
 
-Refer to the :doc:`views documentation<contextual_views>` for further information.
+Refer to the :doc:`views documentation<../apps/contextual_views>` for further information.
 
 Site Customisations
 ~~~~~~~~~~~~~~~~~~~
@@ -458,8 +458,8 @@ for your own needs and understand the settings before deploying it.::
       ssl_dhparam /path/to/dhparam.pem;
 
       # intermediate configuration. tweak to your needs.
-      ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
-      ssl_ciphers 'ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-DSS-AES128-GCM-SHA256:kEDH+AESGCM:ECDHE-RSA-AES128-SHA256:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA:ECDHE-ECDSA-AES256-SHA:DHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA:DHE-DSS-AES128-SHA256:DHE-RSA-AES256-SHA256:DHE-DSS-AES256-SHA:DHE-RSA-AES256-SHA:AES128-GCM-SHA256:AES256-GCM-SHA384:AES128-SHA256:AES256-SHA256:AES128-SHA:AES256-SHA:AES:CAMELLIA:DES-CBC3-SHA:!aNULL:!eNULL:!EXPORT:!DES:!RC4:!MD5:!PSK:!aECDH:!EDH-DSS-DES-CBC3-SHA:!EDH-RSA-DES-CBC3-SHA:!KRB5-DES-CBC3-SHA';
+      ssl_protocols TLSv1.1 TLSv1.2;
+      ssl_ciphers 'ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-DSS-AES128-GCM-SHA256:kEDH+AESGCM:ECDHE-RSA-AES128-SHA256:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA:ECDHE-ECDSA-AES256-SHA:DHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA:DHE-DSS-AES128-SHA256:DHE-RSA-AES256-SHA256:DHE-DSS-AES256-SHA:DHE-RSA-AES256-SHA:DES-CBC3-SHA:!aNULL:!eNULL:!EXPORT:!DES:!RC4:!MD5:!PSK:!aECDH:!EDH-DSS-DES-CBC3-SHA:!EDH-RSA-DES-CBC3-SHA:!KRB5-DES-CBC3-SHA';
       ssl_prefer_server_ciphers on;
 
       # HSTS (ngx_http_headers_module is required) (15768000 seconds = 6 months)

@@ -6,8 +6,18 @@ from django.utils.encoding import python_2_unicode_compatible
 @python_2_unicode_compatible
 class Facility(models.Model):
     """
-    Represents a facility that produces data
+    Represents a facility that produces data.
+
+    Each :class:`~tardis.tardis_portal.models.instrument.Instrument` record
+    must belong to exactly one facility.  Many
+    :class:`~tardis.tardis_portal.models.instrument.Instrument`
+    records can be associated with the same facility.
+
+    :attribute name: The name of the facility, e.g. "Test Facility"
+    :attribute manager_group: The group of users who can access the \
+        Facility Overview for this facility.
     """
+
     name = models.CharField(max_length=100)
     manager_group = models.ForeignKey(Group, on_delete=models.CASCADE)
 
