@@ -90,9 +90,8 @@ def sftp_access(request):
 
 @login_required
 def cybderduck_connection_window(request):
-    base_image = ("tardis/apps/sftp/templates/images/"
-                  "cyberduck_connection_blank.png")
-    font_file = "tardis/tardis_portal/templates/fonts/roboto.ttf"
+    base_image = ("tardis/apps/sftp/images/cyberduck_connection_blank.png")
+    font_file = "tardis/apps/sftp/fonts/roboto.ttf"
     base = Image.open(base_image)
     font = ImageFont.truetype(font_file, 22)
     draw = ImageDraw.Draw(base)
