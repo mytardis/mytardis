@@ -43,6 +43,7 @@ class Dataset(models.Model):
     description = models.TextField(blank=True)
     directory = models.CharField(blank=True, null=True, max_length=255)
     created_time = models.DateTimeField(null=True, blank=True, default=timezone.now)
+    last_updated_time = models.DateTimeField(null=True, blank=True)
     immutable = models.BooleanField(default=False)
     instrument = models.ForeignKey(Instrument, null=True, blank=True,
                                    on_delete=models.CASCADE)
@@ -51,6 +52,11 @@ class Dataset(models.Model):
     class Meta:
         app_label = 'tardis_portal'
         ordering = ['-id']
+
+    def save(self, force_insert=False, force_update=False, using=None,
+             update_fields=None):
+        self.last_updated_time = timezone.now()
+        super(Dataset, self).save()
 
     @property
     def is_online(self):
