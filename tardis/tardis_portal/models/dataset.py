@@ -4,6 +4,7 @@ from os import path
 from django.conf import settings
 from django.urls import reverse
 from django.db import models
+from django.utils import timezone
 from django.utils.encoding import python_2_unicode_compatible
 
 from ..managers import OracleSafeManager
@@ -41,6 +42,7 @@ class Dataset(models.Model):
     experiments = models.ManyToManyField(Experiment, related_name='datasets')
     description = models.TextField(blank=True)
     directory = models.CharField(blank=True, null=True, max_length=255)
+    created_time = models.DateTimeField(null=True, blank=True, default=timezone.now)
     immutable = models.BooleanField(default=False)
     instrument = models.ForeignKey(Instrument, null=True, blank=True,
                                    on_delete=models.CASCADE)
