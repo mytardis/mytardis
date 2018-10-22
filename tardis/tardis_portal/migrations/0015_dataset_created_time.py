@@ -18,4 +18,9 @@ class Migration(migrations.Migration):
             name='created_time',
             field=models.DateTimeField(blank=True, null=True),
         ),
+        migrations.AddField(
+            model_name='dataset',
+            name='last_updated_time',
+            field=models.DateTimeField(blank=True, null=True),
+        ),
     ]
