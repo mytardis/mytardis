@@ -7,6 +7,7 @@ import json
 import logging
 
 from django.conf import settings
+from django.core.serializers.json import DjangoJSONEncoder
 from django.forms import model_to_dict
 from django.http import HttpResponseNotFound, HttpResponseForbidden, \
     HttpResponse
@@ -88,7 +89,7 @@ def dataset_json(request, experiment_id=None, dataset_id=None):
         authz.has_dataset_download_access(request, dataset_id)
 
     return HttpResponse(json.dumps(get_dataset_info(dataset,
-                                                    has_download_permissions)),
+                                                    has_download_permissions), cls=DjangoJSONEncoder),
                         content_type='application/json')
 
 
@@ -109,7 +110,7 @@ def experiment_datasets_json(request, experiment_id):
                          exclude=['datafiles'])
         for ds in experiment.datasets.all().order_by(dataset_ordering)]
 
-    return HttpResponse(json.dumps(objects), content_type='application/json')
+    return HttpResponse(json.dumps(objects, cls=DjangoJSONEncoder), content_type='application/json')
 
 
 def retrieve_licenses(request):
