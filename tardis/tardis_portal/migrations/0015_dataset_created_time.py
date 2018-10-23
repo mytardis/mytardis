@@ -19,7 +19,7 @@ class Migration(migrations.Migration):
         ),
         migrations.AddField(
             model_name='dataset',
-            name='last_updated_time',
+            name='modified_time',
             field=models.DateTimeField(blank=True, null=True),
         ),
     ]
