@@ -6,7 +6,7 @@ var updateUserData = function(data) {
     $("#new_email").append("<td>" + data.data.new_user_email + "</td>");
     $("#old_username").append("<td>" + data.data.old_username + "</td>");
     $("#old_email").append("<td>" + data.data.old_user_email + "</td>");
-    $("#new_username").append("<td>" + data.data.old_username + "</td>");
+    $("#new_username").append("<td>" + data.data.new_user_email + "</td>");
     // display Google or AAF image based on user current auth method
     var authMethod = data.data.auth_method;
     if (authMethod.toLowerCase() === "google") {
