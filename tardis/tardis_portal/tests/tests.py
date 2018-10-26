@@ -175,7 +175,6 @@ class UserInterfaceTestCase(TestCase):
         c = Client()
         urls = ['/login/',
                 '/about/',
-                '/stats/',
                 '/public_data/',
                 # '/experiment/search/',
         ]
@@ -214,7 +213,7 @@ class UserInterfaceTestCase(TestCase):
         # Test everything works
         c = Client()
         c.login(username=user, password=pwd)
-        urls = ['/about/', '/stats/']
+        urls = ['/about/']
         urls += ['/mydata/']
         urls += ['/experiment/view/%d/' % experiment.id]
         urls += ['/ajax/experiment/%d/%s' % (experiment.id, tabpane)
