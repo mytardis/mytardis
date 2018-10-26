@@ -582,6 +582,8 @@ class ExperimentView(TemplateView):
 
 
 @cache_page(60 * 30)
+@login_required
+@permission_required('is_superuser')
 def stats(request):
     # using count() is more efficient than using len() on a query set
     cursor = connection.cursor()

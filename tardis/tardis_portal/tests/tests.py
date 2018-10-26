@@ -175,7 +175,6 @@ class UserInterfaceTestCase(TestCase):
         c = Client()
         urls = ['/login/',
                 '/about/',
-                '/stats/',
                 '/public_data/',
                 # '/experiment/search/',
         ]
@@ -214,7 +213,7 @@ class UserInterfaceTestCase(TestCase):
         # Test everything works
         c = Client()
         c.login(username=user, password=pwd)
-        urls = ['/about/', '/stats/']
+        urls = ['/about/']
         urls += ['/mydata/']
         urls += ['/experiment/view/%d/' % experiment.id]
         urls += ['/ajax/experiment/%d/%s' % (experiment.id, tabpane)
@@ -228,6 +227,20 @@ class UserInterfaceTestCase(TestCase):
                 response.status_code, 200,
                 "%s should have returned 200 but returned %d"
                 % (u, response.status_code))
+        # Test stat page is not available for non super_user
+        response = c.get('/stats/')
+        self.assertEqual(response.status_code, 302,
+                         "%s should have returned 302 but returned %d"
+                         % ('/stats/', response.status_code))
+        # Test super_user can access stats page
+        c.logout()
+        user.is_superuser = True
+        user.save()
+        c.login(username=user, password=pwd)
+        response = c.get('/stats/')
+        self.assertEqual(response.status_code, 200,
+                         "%s should have returned 200 but returned %d"
+                         % ('/stats/', response.status_code))
 
     @skip('search is undergoing some changes, skip in the meantime')
     def test_search_urls(self):
