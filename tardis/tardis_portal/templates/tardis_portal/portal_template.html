@@ -94,7 +94,9 @@
               <li><a href="{% url 'tardis.tardis_portal.views.my_data' %}">My Data</a></li>
               <li><a href="{% url 'tardis.tardis_portal.views.shared' %}">Shared</a></li>
               <li><a href="{% url 'tardis.tardis_portal.views.public_data' %}">Public Data</a></li>
+              {% if request.user.is_superuser %}
               <li><a href="{% url 'tardis.tardis_portal.views.stats' %}">Stats</a></li>
+              {% endif %}
               {% with request|check_if_facility_manager as facility_manager %}
               {% if facility_manager %}
               <li><a href="{% url 'tardis.tardis_portal.views.facility_overview' %}">Facility Overview</a></li>
