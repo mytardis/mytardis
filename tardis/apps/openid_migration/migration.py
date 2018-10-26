@@ -117,13 +117,6 @@ def do_migration(request):
 
     # change new user username to old user
     new_user = request.user
-    new_user_username = new_user.username
-    new_user.username = old_username
-    logger.info("changing new username %s to old username %s",
-                request.user.username, old_username)
-    new_user.save()
-    # change authentication record for new user
-    update_authentication_record(new_user, auth_provider[0], new_user_username)
 
     # copy api key from old user to new user so that MyData works seamlessly post migration
     logger.info("migrating api key")
@@ -324,19 +317,4 @@ def get_matching_auth_provider(backend):
         # Each auth provider is a tuple with (key, display name, backend)
         if backend == auth_provider[2]:
             return auth_provider
-    return None
-
-
-def update_authentication_record(user, authMethod, old_username):
-    user_auths = UserAuthentication.objects.filter(userProfile=user.userprofile,
-                                              username=old_username,
-                                              authenticationMethod=authMethod,)
-    if not user_auths:
-        logger.info("No authentication record found to update for user %s", user.username)
-        return None
-    if user_auths.count() == 1:
-        user_auth = user_auths[0]
-        user_auth.username = user.username
-        user_auth.save()
-        logger.info(" Authentication record updated for user %s", user.username)
     return None
