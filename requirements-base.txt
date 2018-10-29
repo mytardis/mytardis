@@ -36,7 +36,7 @@ pystache==0.5.4
 python-dateutil==2.7.5
 # python-magic
 -e git+https://github.com/mytardis/python-magic.git#egg=python-magic
-pytz==2018.5
+pytz==2018.7
 rdflib==4.2.2
 requests==2.19.1
 six==1.11.0
