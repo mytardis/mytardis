@@ -40,5 +40,5 @@ pytz==2018.5
 rdflib==4.2.2
 requests==2.20.0
 six==1.11.0
-urllib3==1.23
+urllib3==1.24.1
 wsgiref==0.1.2
