@@ -15,7 +15,6 @@ INSTALLED_APPS = (
     'registration',
     'bootstrapform',
     'jstemplate',
-    'kombu.transport.django',
     'tastypie',
     'tastypie_swagger',
     'tardis.tardis_portal',
