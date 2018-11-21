@@ -21,6 +21,8 @@ exit
 #   brew uninstall jpeg libtiff
 #   brew install imagemagick@6
 #   brew link --force imagemagick@6
+#   echo "export MAGICK_HOME=/usr/local/opt/imagemagick@6/" >> ~/.bashrc
+#   source ~/.bashrc
 #
 # brew install libmagic freetype
 #
