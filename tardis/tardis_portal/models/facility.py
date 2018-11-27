@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils import timezone
 from django.contrib.auth.models import Group
 from django.utils.encoding import python_2_unicode_compatible
 
@@ -19,12 +20,18 @@ class Facility(models.Model):
     """
 
     name = models.CharField(max_length=100)
+    created_time = models.DateTimeField(null=True, blank=True, default=timezone.now)
+    modified_time = models.DateTimeField(null=True, blank=True)
     manager_group = models.ForeignKey(Group, on_delete=models.CASCADE)
 
     class Meta:
         app_label = 'tardis_portal'
         verbose_name_plural = 'Facilities'
         ordering = ('name',)
+
+    def save(self):
+        self.modified_time = timezone.now()
+        super(Facility, self).save()
 
     def __str__(self):
         return self.name
