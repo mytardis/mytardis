@@ -629,11 +629,15 @@ class InstrumentResourceTest(MyTardisResourceTestCase):
                 },
                 "id": facility_id,
                 "name": "Test Facility",
-                "resource_uri": "/api/v1/facility/%d/" % facility_id
+                "resource_uri": "/api/v1/facility/%d/" % facility_id,
+                "created_time": "2018-11-29T12:00:00.000000",
+                "modified_time": "2018-11-29T12:00:00.000001"
             },
             "id": instrument_id,
             "name": "Test Instrument",
-            "resource_uri": "/api/v1/instrument/%d/" % instrument_id
+            "resource_uri": "/api/v1/instrument/%d/" % instrument_id,
+            "created_time": "2018-11-29T12:00:00.000000",
+            "modified_time": "2018-11-29T12:00:00.000001"
         }
         output = self.api_client.get('/api/v1/instrument/%d/' %
                                      instrument_id,
@@ -641,7 +645,13 @@ class InstrumentResourceTest(MyTardisResourceTestCase):
         returned_data = json.loads(output.content)
         for key, value in expected_output.iteritems():
             self.assertTrue(key in returned_data)
-            self.assertEqual(returned_data[key], value)
+            if not key.endswith("_time"):
+                if isinstance(returned_data[key], dict):
+                    for subkey, subvalue in returned_data[key].iteritems():
+                        if not subkey.endswith("_time"):
+                            self.assertEqual(returned_data[key][subkey], subvalue)
+                else:
+                    self.assertEqual(returned_data[key], value)
 
     def test_get_instrument_by_name(self):
         facility_id = Facility.objects.first().id
@@ -656,11 +666,15 @@ class InstrumentResourceTest(MyTardisResourceTestCase):
                 },
                 "id": facility_id,
                 "name": "Test Facility",
-                "resource_uri": "/api/v1/facility/%d/" % facility_id
+                "resource_uri": "/api/v1/facility/%d/" % facility_id,
+                "created_time": "2018-11-29T12:00:00.000000",
+                "modified_time": "2018-11-29T12:00:00.000001"
             },
             "id": instrument_id,
             "name": "Test Instrument",
-            "resource_uri": "/api/v1/instrument/%d/" % instrument_id
+            "resource_uri": "/api/v1/instrument/%d/" % instrument_id,
+            "created_time": "2018-11-29T12:00:00.000000",
+            "modified_time": "2018-11-29T12:00:00.000001"
         }
         output = self.api_client.get('/api/v1/instrument/?name=%s'
                                      % urllib.quote(self.testinstrument.name),
@@ -670,7 +684,13 @@ class InstrumentResourceTest(MyTardisResourceTestCase):
         returned_object = returned_data['objects'][0]
         for key, value in expected_output.iteritems():
             self.assertTrue(key in returned_object)
-            self.assertEqual(returned_object[key], value)
+            if not key.endswith("_time"):
+                if isinstance(returned_object[key], dict):
+                    for subkey, subvalue in returned_object[key].iteritems():
+                        if not subkey.endswith("_time"):
+                            self.assertEqual(returned_object[key][subkey], subvalue)
+                else:
+                    self.assertEqual(returned_object[key], value)
 
     def test_post_instrument(self):
         facility_id = Facility.objects.first().id
