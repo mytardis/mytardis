@@ -1,10 +1,6 @@
 import logging
-import datetime
-
-from django.conf import settings
 
 from django_elasticsearch_dsl import DocType, Index, fields
-from elasticsearch_dsl import date, datetime, Text
 
 from tardis.tardis_portal.models import Dataset, Experiment
 
