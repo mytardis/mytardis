@@ -17,9 +17,11 @@ services:
       - run
       - pg
       - mysql
+      - es
     links:
       - pg
       - mysql
+      - es
   pg:
     image: postgres
     environment:
@@ -29,3 +31,12 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: mysql
     command: --default-authentication-plugin=mysql_native_password
+  es:
+    image: docker.elastic.co/elasticsearch/elasticsearch:6.4.3
+    environment:
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - discovery.type=single-node
+    ports:
+      - "9300:9300"
+      - "9200:9200"
