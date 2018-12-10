@@ -170,7 +170,7 @@ SFTP_HOST_KEY = (
 
 ELASTICSEARCH_DSL = {
     'default': {
-        'hosts': 'http://localhost:9200'
+        'hosts': 'http://es:9200'
     },
 }
 
