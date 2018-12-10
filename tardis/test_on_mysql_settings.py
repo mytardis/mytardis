@@ -17,3 +17,13 @@ DATABASES = {
         },
     },
 }
+
+ELASTICSEARCH_DSL = {
+    'default': {
+        'hosts': 'http://es:9200'
+    },
+}
+
+ELASTICSEARCH_DSL_INDEX_SETTINGS = {
+    'number_of_shards': 1
+}
