@@ -19,7 +19,7 @@ experiment.settings(
 class ExperimentDocument(DocType):
 
     id = fields.IntegerField()
-    title = fields.TextField(
+    title = fields.KeywordField(
         fields={'raw': fields.KeywordField()}
     )
     description = fields.TextField(
