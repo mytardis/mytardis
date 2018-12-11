@@ -1,5 +1,7 @@
 from .apps import INSTALLED_APPS
 
+INSTALLED_APPS += 'django_elasticsearch_dsl',
+
 # Settings for the single search box
 SINGLE_SEARCH_ENABLED = False
 # flip this to turn on search:
