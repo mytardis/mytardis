@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 from django.utils.six import StringIO
 from django.test import TestCase
 
-from tardis.tardis_portal.models import Dataset, Experiment
+from tardis.tardis_portal.models import Experiment
 
 from ..documents import ExperimentDocument
 
