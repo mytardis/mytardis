@@ -26,7 +26,7 @@ class IndexExperimentTestCase(TestCase):
                                 created_by=self.user)
         exp2 = Experiment(title='test exp2',
                                 institution_name='monash',
-                                description='Test DescriptionTest DescriptionTest Description',
+                                description='Test Description',
                                 created_by=self.user)
         exp1.save()
         exp2.save()
