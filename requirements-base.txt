@@ -1,7 +1,7 @@
 Django==1.11.17 # pyup: >=1.11,<2.0
 Wand==0.4.5
 amqp==1.4.9 # pyup: <2
-beautifulsoup4==4.6.3
+beautifulsoup4==4.7.0
 billiard==3.3.0.23 # pyup: < 3.4
 bleach==3.0.2
 celery==3.1.26.post2 # pyup: <4
