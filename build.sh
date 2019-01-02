@@ -23,6 +23,8 @@ exit
 #   brew link --force imagemagick@6
 #
 # brew install libmagic freetype
+# brew install rabbitmq
+# brew services start rabbitmq
 #
 # brew install postgresql # or SQLite may be sufficient for local development
 #   or for a local development server, install http://postgresapp.com/
