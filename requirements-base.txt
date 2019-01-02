@@ -2,7 +2,7 @@ Django==1.11.17 # pyup: >=1.11,<2.0
 Wand==0.4.5
 amqp==2.3.2
 beautifulsoup4==4.6.3
-billiard==3.5.0.4
+billiard==3.5.0.5
 bleach==3.0.2
 celery==4.2.1
 -e git+https://github.com/mytardis/django-bootstrap-form.git@mytardis-dj1.9-bootstrap-v2#egg=django-bootstrap-form
