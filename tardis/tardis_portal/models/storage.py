@@ -134,18 +134,6 @@ class StorageBox(models.Model):
         for dfo in self.file_objects.all():
             dfo.move_file(dest_box)
 
-    def cache_files(self):
-        """
-        Copy all files to faster storage.
-
-        This can be used to copy data from a Vault cache (containing data
-        which will soon be pushed to tape) to Object Storage, so that the
-        data can always be accessed quickly from Object Storage, and the
-        Vault can be used for disaster recovery if necessary.
-        """
-        for dfo in self.file_objects.all():
-            dfo.cache_file()
-
     def copy_to_master(self):
         if getattr(self, 'master_box'):
             self.copy_files(self.master_box)

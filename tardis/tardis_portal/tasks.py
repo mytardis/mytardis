@@ -117,10 +117,21 @@ def sbox_move_files(sbox_id, dest_box_id=None):
 
 @tardis_app.task(name="tardis_portal.storage_box.cache_files", ignore_result=True)
 def sbox_cache_files(sbox_id):
+    """
+    Copy all files to faster storage.
+
+    This can be used to copy data from a Vault cache (containing data
+    which will soon be pushed to tape) to Object Storage, so that the
+    data can always be accessed quickly from Object Storage, and the
+    Vault can be used for disaster recovery if necessary.
+    """
     init_filters()
+    from .models import DataFileObject
     from .models import StorageBox
     sbox = StorageBox.objects.get(id=sbox_id)
-    return sbox.cache_files()
+    for dfo in DataFileObject.objects.filter(storage_box=sbox, verified=True):
+        if DataFileObject.objects.filter(datafile=dfo.datafile).count() == 1:
+            dfo_cache_file.delay(dfo.id)
 
 
 @tardis_app.task(name='tardis_portal.storage_box.copy_to_master', ignore_result=True)
