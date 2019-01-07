@@ -1,8 +1,6 @@
 import logging
 
 from django_elasticsearch_dsl import DocType, Index, fields
-from elasticsearch_dsl import MetaField
-
 
 from tardis.tardis_portal.models import Dataset, Experiment, DataFile
 
