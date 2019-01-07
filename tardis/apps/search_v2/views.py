@@ -7,7 +7,6 @@ from django.views.generic.base import TemplateView
 
 from haystack.generic_views import SearchView
 from elasticsearch import Elasticsearch
-from elasticsearch_dsl import DocType, Text, Date, Q
 from django_elasticsearch_dsl.search import Search
 
 from tardis.search.forms import GroupedSearchForm
@@ -20,7 +19,6 @@ from tardis.tardis_portal.shortcuts import render_response_search, \
 from tardis.tardis_portal.views.utils import __forwardToSearchExperimentFormPage, \
     __getSearchExperimentForm, __processExperimentParameters
 
-from tardis.apps.search_v2.documents import ExperimentDocument
 
 logger = logging.getLogger(__name__)
 
