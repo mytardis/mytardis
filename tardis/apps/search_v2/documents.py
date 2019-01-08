@@ -31,23 +31,9 @@ class ExperimentDocument(DocType):
     created_time = fields.DateField()
     update_time = fields.DateField()
     institution_name = fields.StringField()
-    datasets = fields.NestedField(properties={
-        'id': fields.IntegerField(),
-        'description': fields.TextField(
-            fields={'raw': fields.KeywordField()}
-    )
-    }
-
-    )
 
     class Meta:
         model = Experiment
-        related_models = [Dataset]
-
-    def get_instances_from_related(self, related_instance):
-
-        if isinstance(related_instance, Dataset):
-            return related_instance.experiments
 
 
 dataset = Index('dataset')
@@ -77,6 +63,15 @@ class DatasetDocument(DocType):
 
     class Meta:
         model = Dataset
+        related_models = [Experiment]
+    """
+    def get_queryset(self):
+        return super(DatasetDocument, self).get_queryset().select_related(
+            'experiments'
+        )
+    """
+    def get_instances_from_related(self, related_instance):
+            return related_instance.datasets.all()
 
 
 datafile = Index('datafile')
