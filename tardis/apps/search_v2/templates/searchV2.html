@@ -26,14 +26,11 @@
                         <div>Dataset <a  href="{% url 'tardis_portal.view_dataset' result.id %}">{{ result.highlighted.0|bleach|default:result.description }}</a></div>
                     </div>
                 </div>
-            {% elif result.content_type == 'tardis_portal.datafile' %}
+            {% elif result.meta.index == 'datafile' %}
                 <div class="search_result">
-                    <div>Experiments/Datasets with matching file:<br/>
-                        {% for experiment in result.experiments %}
-                            <a href="{{ experiment.get_absolute_url }}">{{ experiment }}</a><br/>
-                        {% endfor %}
-                        <div>Dataset <a href="{{ result.object.dataset.get_absolute_url }}">{{ result.object.dataset.description }}</a>
-                        <div>File <a href="{{ result.object.get_absolute_url }}">{{ result.highlighted.0|bleach|default:result.text }}</a></div></div>
+                    <div>Datasets with matching file:<br/>
+                        <div>Dataset <a href="{% url 'tardis_portal.view_dataset' result.dataset.id %}">{{  result.highlighted.0|bleach|default:result.dataset.description }}</a>
+                        <div>File <a href="{%  url 'tardis.tardis_portal.download.view_datafile' result.meta.id %}">{{ result.highlighted.0|bleach|default:result.filename }}</a></div></div>
                     </div>
                 </div>
             {% endif %}
