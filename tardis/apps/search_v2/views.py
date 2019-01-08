@@ -173,7 +173,7 @@ class SearchV2View(TemplateView):
         search = s.query(
             "multi_match",
             query=query_text,
-            fields=["title", "description"]
+            fields=["title", "description", "filename"]
         )
         results = search.execute()
         c['results'] = results
