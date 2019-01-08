@@ -98,4 +98,4 @@ class DataFileDocument(DocType):
         related_models = [Dataset]
 
     def get_instances_from_related(self, related_instance):
-        return related_instance.datfile
+        return related_instance.datafile
