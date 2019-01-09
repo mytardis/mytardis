@@ -168,8 +168,7 @@ class SearchV2View(TemplateView):
     def get_context_data(self, **kwargs):
         c = super(SearchV2View, self).get_context_data(**kwargs)
         query_text = self.request.GET.dict().get('q', '')
-        client = Elasticsearch()
-        s = Search(using=client)
+        s = Search()
         search = s.query(
             "multi_match",
             query=query_text,
