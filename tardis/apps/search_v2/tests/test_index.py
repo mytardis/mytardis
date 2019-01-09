@@ -1,5 +1,4 @@
 from django.conf import settings
-
 from django.core.management import call_command
 from django.contrib.auth.models import User
 from django.utils.six import StringIO
@@ -7,7 +6,7 @@ from django.test import TestCase
 
 from tardis.tardis_portal.models import Experiment, Dataset, DataFile
 
-from tardis.apps.search_v2.documents import ExperimentDocument
+from tardis.apps.search_v2.documents import ExperimentDocument, DatasetDocument, DataFileDocument
 
 
 class IndexExperimentTestCase(TestCase):
@@ -19,17 +18,19 @@ class IndexExperimentTestCase(TestCase):
         self.user = User.objects.create_user(user, email, pwd)
         self.out = StringIO()
         call_command('search_index', stdout=self.out,
-                     action='delete', models=['tardis_portal.experiment'], force=True)
+                     action='delete',
+                     models=['tardis_portal.experiment','tardis_portal.dataset', 'tardis_portal.datafile'],
+                     force=True)
 
     def test_create_index(self):
         self.exp1 = Experiment(title='test exp1',
-                                institution_name='monash',
-                                description='Test Description',
-                                created_by=self.user)
+                               institution_name='monash',
+                               description='Test Description',
+                               created_by=self.user)
         self.exp2 = Experiment(title='test exp2',
-                                institution_name='monash',
-                                description='Test Description',
-                                created_by=self.user)
+                               institution_name='monash',
+                               description='Test Description',
+                               created_by=self.user)
         self.exp1.save()
         self.exp2.save()
         # get search instance
@@ -58,9 +59,17 @@ class IndexExperimentTestCase(TestCase):
         self.dataset2.save()
         self.dataset2.experiments.add(self.exp2)
         self.dataset2.save()
-
-        #datafile
+        # search on dataset
+        search = DatasetDocument.search()
+        query = search.query("match", description='test_dataset')
+        result = query.execute(ignore_cache=True)
+        self.assertEqual(result.hits.total, 1)
+        # search on datafile
         settings.REQUIRE_DATAFILE_SIZES = False
         settings.REQUIRE_DATAFILE_CHECKSUMS = False
-        datafile = DataFile(dataset=self.dataset1, filename='test.txt')
-        datafile.save()
+        self.datafile = DataFile(dataset=self.dataset1, filename='test.txt')
+        self.datafile.save()
+        search = DataFileDocument.search()
+        query = search.query("match", filename='test.txt')
+        result = query.execute(ignore_cache=True)
+        self.assertEqual(result.hits[0].filename, self.datafile.filename)
