@@ -2,13 +2,6 @@
 from datetime import timedelta
 from kombu import Exchange, Queue
 
-CELERYBEAT_SCHEDULE = {
-    "verify-files": {
-        "task": "tardis_portal.verify_dfos",
-        "schedule": timedelta(seconds=300)
-    },
-}
-
 CELERY_IMPORTS = ('tardis.tardis_portal.tasks',)
 
 # Using Celery for asynchronous task processing requires a broker e.g. RabbitMQ
@@ -35,3 +28,11 @@ CELERY_QUEUES = (
           routing_key='celery',
           queue_arguments={'x-max-priority': MAX_TASK_PRIORITY}),
 )
+
+CELERYBEAT_SCHEDULE = {
+    "verify-files": {
+        "task": "tardis_portal.verify_dfos",
+        "schedule": timedelta(seconds=300),
+        "kwargs": {'priority': DEFAULT_TASK_PRIORITY}
+    }
+}
