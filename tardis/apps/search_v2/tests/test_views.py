@@ -44,4 +44,3 @@ class SearchViewTestCase(TestCase):
         response = client.get('/apps/search-v2/%3F?q=test')
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.context_data['hits'].total, 2)
-
