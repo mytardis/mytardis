@@ -2,6 +2,7 @@
 import json
 import requests
 
+from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse
 from django.http import HttpResponse, HttpResponseForbidden, \
@@ -320,17 +321,23 @@ def _initiate_push(
         return redirect(redirect_url)
 
     if obj_type == 'experiment':
-        tasks.push_experiment_to_host.delay(
-            request.user.pk, credential.pk, remote_host_id, push_obj_id,
-            destination)
+        tasks.push_experiment_to_host.apply_async(
+            args=[
+                request.user.pk, credential.pk, remote_host_id, push_obj_id,
+                destination],
+            priority=settings.DEFAULT_TASK_PRIORITY)
     elif obj_type == 'dataset':
-        tasks.push_dataset_to_host.delay(
-            request.user.pk, credential.pk, remote_host_id, push_obj_id,
-            destination)
+        tasks.push_dataset_to_host.apply_async(
+            args=[
+                request.user.pk, credential.pk, remote_host_id, push_obj_id,
+                destination],
+            priority=settings.DEFAULT_TASK_PRIORITY)
     elif obj_type == 'datafile':
-        tasks.push_datafile_to_host.delay(
-            request.user.pk, credential.pk, remote_host_id, push_obj_id,
-            destination)
+        tasks.push_datafile_to_host.apply_async(
+            args=[
+                request.user.pk, credential.pk, remote_host_id, push_obj_id,
+                destination],
+            priority=settings.DEFAULT_TASK_PRIORITY)
 
     success_message = ('The requested item will be pushed to %s. <strong>You '
                        'will be notified by email once this has been '

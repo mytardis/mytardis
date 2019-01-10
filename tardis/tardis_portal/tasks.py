@@ -1,5 +1,6 @@
 import logging
 
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.sites.models import Site
@@ -38,6 +39,7 @@ def verify_dfos(**kwargs):
     from .models import DataFileObject
     dfos_to_verify = DataFileObject.objects.filter(verified=False)
     kwargs['transaction_lock'] = kwargs.get('transaction_lock', True)
+    kwargs['priority'] = kwargs.get('priority', settings.DEFAULT_TASK_PRIORITY)
     for dfo in dfos_to_verify:
         dfo_verify.apply_async(args=[dfo.id], **kwargs)
 
@@ -53,7 +55,8 @@ def ingest_received_files():
                                              Q(attributes__value='receiving'),
                                              ~Q(master_box=None))
     for box in ingest_boxes:
-        sbox_move_to_master.delay(box.id)
+        sbox_move_to_master.apply_async(
+            args=[box.id], priority=settings.DEFAULT_TASK_PRIORITY)
 
 
 @tardis_app.task(name="tardis_portal.autocache", ignore_result=True)
@@ -65,7 +68,8 @@ def autocache():
         Q(attributes__value__iexact='True'))
 
     for box in autocache_boxes:
-        sbox_cache_files.delay(box.id)
+        sbox_cache_files.apply_async(
+            args=[box.id], priority=settings.DEFAULT_TASK_PRIORITY)
 
 
 @tardis_app.task(name="tardis_portal.email_user_task", ignore_result=True)

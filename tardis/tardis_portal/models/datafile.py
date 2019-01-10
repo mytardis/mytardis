@@ -285,7 +285,8 @@ class DataFile(models.Model):
         if dfo is None:
             return None
         if dfo.storage_type in (StorageBox.TAPE,):
-            tasks.dfo_cache_file.apply_async(args=[dfo.id])
+            tasks.dfo_cache_file.apply_async(
+                args=[dfo.id], priority=settings.DEFAULT_TASK_PRIORITY)
         return dfo.file_object
 
     def get_preferred_dfo(self, verified_only=True):
@@ -531,7 +532,10 @@ class DataFileObject(models.Model):
             self._initial_values = self._current_values
         elif not reverify:
             return
-        tasks.dfo_verify.apply_async(countdown=5, args=[self.id])
+        tasks.dfo_verify.apply_async(
+            args=[self.id],
+            countdown=5,
+            priority=settings.DEFAULT_TASK_PRIORITY)
 
     @property
     def storage_type(self):
@@ -650,7 +654,9 @@ class DataFileObject(models.Model):
         existing = self.datafile.file_objects.filter(storage_box=dest_box)
         if existing.count() > 0:
             if not existing[0].verified and verify:
-                tasks.dfo_verify.delay(existing[0].id)
+                tasks.dfo_verify.apply_async(
+                    args=[existing[0].id],
+                    priority=settings.DEFAULT_TASK_PRIORITY)
             return existing[0]
         try:
             with transaction.atomic():
@@ -665,7 +671,9 @@ class DataFileObject(models.Model):
                 (self.id, str(e)))
             return False
         if verify:
-            tasks.dfo_verify.delay(copy.id)
+            tasks.dfo_verify.apply_async(
+                args=[copy.id],
+                priority=settings.DEFAULT_TASK_PRIORITY)
         return copy
 
     def move_file(self, dest_box=None):
