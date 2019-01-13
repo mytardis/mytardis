@@ -1,6 +1,6 @@
 Django==1.11.18 # pyup: >=1.11,<2.0
 Wand==0.4.5
-amqp==2.3.2
+amqp==2.4.0
 beautifulsoup4==4.6.3
 billiard==3.5.0.4
 bleach==3.0.2
