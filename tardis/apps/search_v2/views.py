@@ -6,7 +6,6 @@ import logging
 from django.views.generic.base import TemplateView
 
 from haystack.generic_views import SearchView
-from elasticsearch import Elasticsearch
 from django_elasticsearch_dsl.search import Search
 
 from tardis.search.forms import GroupedSearchForm
