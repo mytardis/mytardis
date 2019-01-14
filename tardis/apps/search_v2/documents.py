@@ -1,10 +1,19 @@
 import logging
 
+from elasticsearch_dsl import analysis, analyzer
 from django_elasticsearch_dsl import DocType, Index, fields
 
 from tardis.tardis_portal.models import Dataset, Experiment, DataFile
 
 logger = logging.getLogger(__name__)
+
+
+trigram = analysis.tokenizer('trigram', 'nGram', min_gram=3, max_gram=3)
+
+analyzer = analyzer(
+    "analyzer",
+    tokenizer=trigram,
+)
 
 
 experiment = Index('experiments')
@@ -20,10 +29,12 @@ class ExperimentDocument(DocType):
 
     id = fields.IntegerField()
     title = fields.TextField(
-        fields={'raw': fields.KeywordField()}
+        fields={'raw': fields.KeywordField()},
+        analyzer=analyzer
     )
     description = fields.TextField(
-        fields={'raw': fields.KeywordField()}
+        fields={'raw': fields.KeywordField()},
+        analyzer=analyzer
     )
     created_time = fields.DateField()
     start_time = fields.DateField()
@@ -48,7 +59,8 @@ dataset.settings(
 class DatasetDocument(DocType):
     id = fields.IntegerField()
     description = fields.TextField(
-        fields={'raw': fields.KeywordField()}
+        fields={'raw': fields.KeywordField()},
+        analyzer=analyzer
     )
     experiments = fields.NestedField(properties={
         'id': fields.IntegerField(),
@@ -80,7 +92,8 @@ datafile.settings(
 @datafile.doc_type
 class DataFileDocument(DocType):
     filename = fields.TextField(
-        fields={'raw': fields.KeywordField()}
+        fields={'raw': fields.KeywordField()},
+        analyzer=analyzer
     )
     created_time = fields.DateField()
     modification_time = fields.DateField()
