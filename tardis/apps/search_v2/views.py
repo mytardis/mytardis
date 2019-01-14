@@ -175,7 +175,7 @@ class SearchV2View(TemplateView):
             "multi_match",
             query=query_text,
             fields=["title", "description", "filename"]
-        ).filter('range', created_time={'gte': query_date_gt, 'lt': query_date_lt, 'format': 'ddMMyyyy||yyyy'})
+        ).filter('range', created_time={'gte': query_date_gt, 'lte': query_date_lt, 'format': 'ddMMyyyy||yyyy'})
         results = search.execute()
         c['results'] = results
         c['hits'] = results.hits
