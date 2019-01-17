@@ -96,6 +96,15 @@ class StorageBox(models.Model):
         except StorageBoxAttribute.DoesNotExist:
             return False
 
+    @property
+    def priority(self):
+        '''
+        Default priority for tasks which take this box as an argument
+        '''
+        return int(getattr(
+            self.attributes.filter(key='priority').first(),
+            'value', settings.DEFAULT_TASK_PRIORITY))
+
     def get_options_as_dict(self):
         opts_dict = {}
         # using ugly for loop for python 2.6 compatibility

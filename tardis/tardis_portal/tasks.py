@@ -1,6 +1,5 @@
 import logging
 
-from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.sites.models import Site
@@ -39,8 +38,8 @@ def verify_dfos(**kwargs):
     from .models import DataFileObject
     dfos_to_verify = DataFileObject.objects.filter(verified=False)
     kwargs['transaction_lock'] = kwargs.get('transaction_lock', True)
-    kwargs['priority'] = kwargs.get('priority', settings.DEFAULT_TASK_PRIORITY)
     for dfo in dfos_to_verify:
+        kwargs['priority'] = dfo.priority
         dfo_verify.apply_async(args=[dfo.id], **kwargs)
 
 
@@ -56,7 +55,7 @@ def ingest_received_files():
                                              ~Q(master_box=None))
     for box in ingest_boxes:
         sbox_move_to_master.apply_async(
-            args=[box.id], priority=settings.DEFAULT_TASK_PRIORITY)
+            args=[box.id], priority=box.priority)
 
 
 @tardis_app.task(name="tardis_portal.autocache", ignore_result=True)
@@ -69,7 +68,7 @@ def autocache():
 
     for box in autocache_boxes:
         sbox_cache_files.apply_async(
-            args=[box.id], priority=settings.DEFAULT_TASK_PRIORITY)
+            args=[box.id], priority=box.priority)
 
 
 @tardis_app.task(name="tardis_portal.email_user_task", ignore_result=True)
@@ -136,7 +135,7 @@ def sbox_cache_files(sbox_id):
     for dfo in DataFileObject.objects.filter(storage_box=sbox, verified=True):
         if DataFileObject.objects.filter(datafile=dfo.datafile).count() == 1:
             dfo_cache_file.apply_async(
-                args=[dfo.id], priority=settings.DEFAULT_TASK_PRIORITY)
+                args=[dfo.id], priority=sbox.priority)
 
 
 @tardis_app.task(name='tardis_portal.storage_box.copy_to_master', ignore_result=True)
