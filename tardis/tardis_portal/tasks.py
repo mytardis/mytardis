@@ -135,7 +135,8 @@ def sbox_cache_files(sbox_id):
     sbox = StorageBox.objects.get(id=sbox_id)
     for dfo in DataFileObject.objects.filter(storage_box=sbox, verified=True):
         if DataFileObject.objects.filter(datafile=dfo.datafile).count() == 1:
-            dfo_cache_file.delay(dfo.id)
+            dfo_cache_file.apply_async(
+                args=[dfo.id], priority=settings.DEFAULT_TASK_PRIORITY)
 
 
 @tardis_app.task(name='tardis_portal.storage_box.copy_to_master', ignore_result=True)
