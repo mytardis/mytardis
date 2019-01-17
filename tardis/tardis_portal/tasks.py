@@ -69,7 +69,8 @@ def autocache():
 
 
 @tardis_app.task(name="tardis_portal.email_user_task", ignore_result=True)
-def email_user_task(subject, template_name, context, user):
+def email_user_task(subject, template_name, context, user_id):
+    user = User.objects.get(id=user_id)
     email_user(subject, template_name, context, user)
 
 
