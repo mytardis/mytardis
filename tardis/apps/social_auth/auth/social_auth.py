@@ -141,8 +141,9 @@ def send_admin_email(**kwargs):
 
 
 @task(name="social_auth_account_approved", ignore_result=True)
-def send_account_approved_email(user, authMethod):
+def send_account_approved_email(user_id, authMethod):
     """Sends user email once account is approved by admin"""
+    user = User.objects.get(id=user_id)
     site_title = getattr(settings, 'SITE_TITLE', 'MyTardis')
     # get instruction link from settings
     account_migration_instructions_links = getattr(
