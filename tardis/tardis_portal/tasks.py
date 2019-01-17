@@ -34,10 +34,9 @@ def init_filters():
 
 
 @tardis_app.task(name="tardis_portal.verify_dfos", ignore_result=True)
-def verify_dfos(dfos=None, **kwargs):
+def verify_dfos(**kwargs):
     from .models import DataFileObject
-    dfos_to_verify = dfos or DataFileObject.objects\
-                                           .filter(verified=False)
+    dfos_to_verify = DataFileObject.objects.filter(verified=False)
     kwargs['transaction_lock'] = kwargs.get('transaction_lock', True)
     for dfo in dfos_to_verify:
         dfo_verify.apply_async(args=[dfo.id], **kwargs)
