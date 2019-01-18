@@ -684,7 +684,13 @@ class DataFileObject(models.Model):
         return copy
 
     def verify(self, add_checksums=True, add_size=True):  # too complex # noqa
-        comparisons = ['size', 'md5sum', 'sha512sum']
+        compute_md5 = getattr(settings, 'COMPUTE_MD5', True)
+        compute_sha512 = getattr(settings, 'COMPUTE_SHA512', True)
+        comparisons = ['size']
+        if compute_md5:
+            comparisons.append('md5sum')
+        if compute_sha512:
+            comparisons.append('sha512sum')
 
         df = self.datafile
         database = {comp_type: getattr(df, comp_type)
@@ -708,8 +714,6 @@ class DataFileObject(models.Model):
                 if add_size:
                     database_update['size'] = actual['size']
             if same_values.get('size', True):
-                compute_md5 = getattr(settings, 'COMPUTE_MD5', True)
-                compute_sha512 = getattr(settings, 'COMPUTE_SHA512', True)
                 actual.update(compute_checksums(
                     self.file_object,
                     compute_md5=compute_md5,
