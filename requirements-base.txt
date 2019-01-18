@@ -38,7 +38,7 @@ python-dateutil==2.7.5
 -e git+https://github.com/mytardis/python-magic.git#egg=python-magic
 pytz==2018.7
 rdflib==4.2.2
-requests==2.20.1
+requests==2.21.0
 six==1.12.0
 urllib3==1.24.1
 wsgiref==0.1.2
