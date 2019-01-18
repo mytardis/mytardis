@@ -40,6 +40,7 @@ def verify_dfos(**kwargs):
     kwargs['transaction_lock'] = kwargs.get('transaction_lock', True)
     for dfo in dfos_to_verify:
         kwargs['priority'] = dfo.priority
+        kwargs['shadow'] = 'dfo_verify location:%s' % dfo.storage_box.name
         dfo_verify.apply_async(args=[dfo.id], **kwargs)
 
 
@@ -54,8 +55,9 @@ def ingest_received_files():
                                              Q(attributes__value='receiving'),
                                              ~Q(master_box=None))
     for box in ingest_boxes:
+        shadow = 'sbox_move_to_master location:%s' % box.name
         sbox_move_to_master.apply_async(
-            args=[box.id], priority=box.priority)
+            args=[box.id], priority=box.priority, shadow=shadow)
 
 
 @tardis_app.task(name="tardis_portal.autocache", ignore_result=True)
@@ -67,8 +69,9 @@ def autocache():
         Q(attributes__value__iexact='True'))
 
     for box in autocache_boxes:
+        shadow = 'sbox_cache_files location:%s' % box.name
         sbox_cache_files.apply_async(
-            args=[box.id], priority=box.priority)
+            args=[box.id], priority=box.priority, shadow=shadow)
 
 
 @tardis_app.task(name="tardis_portal.email_user_task", ignore_result=True)
@@ -132,10 +135,11 @@ def sbox_cache_files(sbox_id):
     from .models import DataFileObject
     from .models import StorageBox
     sbox = StorageBox.objects.get(id=sbox_id)
+    shadow = 'dfo_cache_file location:%s' % sbox.name
     for dfo in DataFileObject.objects.filter(storage_box=sbox, verified=True):
         if DataFileObject.objects.filter(datafile=dfo.datafile).count() == 1:
             dfo_cache_file.apply_async(
-                args=[dfo.id], priority=sbox.priority)
+                args=[dfo.id], priority=sbox.priority, shadow=shadow)
 
 
 @tardis_app.task(name='tardis_portal.storage_box.copy_to_master', ignore_result=True)
