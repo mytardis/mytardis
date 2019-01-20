@@ -13,6 +13,7 @@ trigram = analysis.tokenizer('trigram', 'nGram', min_gram=3, max_gram=3)
 analyzer = analyzer(
     "analyzer",
     tokenizer=trigram,
+    filter='lowercase',
 )
 
 
