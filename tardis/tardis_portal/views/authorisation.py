@@ -22,7 +22,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.views.decorators.cache import never_cache
 from django.views.decorators.http import require_POST
 
-from ..auth import decorators as authz, auth_service
+from ..auth import decorators as authz
 from ..auth.localdb_auth import auth_key as localdb_auth_key, \
     django_user
 from ..forms import ChangeUserPermissionsForm, \
