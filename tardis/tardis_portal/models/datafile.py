@@ -285,7 +285,9 @@ class DataFile(models.Model):
         if dfo is None:
             return None
         if dfo.storage_type in (StorageBox.TAPE,):
-            tasks.dfo_cache_file.apply_async(args=[dfo.id])
+            shadow = 'dfo_cache_file location:%s' % dfo.storage_box.name
+            tasks.dfo_cache_file.apply_async(
+                args=[dfo.id], priority=dfo.priority, shadow=shadow)
         return dfo.file_object
 
     def get_preferred_dfo(self, verified_only=True):
@@ -531,7 +533,12 @@ class DataFileObject(models.Model):
             self._initial_values = self._current_values
         elif not reverify:
             return
-        tasks.dfo_verify.apply_async(countdown=5, args=[self.id])
+        shadow = 'dfo_verify location:%s' % self.storage_box.name
+        tasks.dfo_verify.apply_async(
+            args=[self.id],
+            countdown=5,
+            priority=self.priority,
+            shadow=shadow)
 
     @property
     def storage_type(self):
@@ -650,7 +657,11 @@ class DataFileObject(models.Model):
         existing = self.datafile.file_objects.filter(storage_box=dest_box)
         if existing.count() > 0:
             if not existing[0].verified and verify:
-                tasks.dfo_verify.delay(existing[0].id)
+                shadow = 'dfo_verify location:%s' % existing[0].storage_box.name
+                tasks.dfo_verify.apply_async(
+                    args=[existing[0].id],
+                    priority=existing[0].priority,
+                    shadow=shadow)
             return existing[0]
         try:
             with transaction.atomic():
@@ -665,7 +676,11 @@ class DataFileObject(models.Model):
                 (self.id, str(e)))
             return False
         if verify:
-            tasks.dfo_verify.delay(copy.id)
+            shadow = 'dfo_verify location:%s' % copy.storage_box.name
+            tasks.dfo_verify.apply_async(
+                args=[copy.id],
+                priority=copy.priority,
+                shadow=shadow)
         return copy
 
     def move_file(self, dest_box=None):
@@ -772,6 +787,13 @@ class DataFileObject(models.Model):
     @property
     def modified_time(self):
         return self._storage.get_modified_time(self.uri)
+
+    @property
+    def priority(self):
+        '''
+        Default priority for tasks which take this DFO as an argument
+        '''
+        return self.storage_box.priority
 
 
 @receiver(pre_delete, sender=DataFileObject, dispatch_uid='dfo_delete')

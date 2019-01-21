@@ -908,7 +908,11 @@ class DataFileResource(MyTardisModelResource):
             [file_record],
             self.build_bundle(obj=file_record, request=request))
         for dfo in file_record.file_objects.all():
-            tasks.dfo_verify.delay(dfo.id)
+            shadow = 'dfo_verify location:%s' % dfo.storage_box.name
+            tasks.dfo_verify.apply_async(
+                args=[dfo.id],
+                priority=dfo.priority,
+                shadow=shadow)
         return HttpResponse()
 
     def hydrate(self, bundle):
