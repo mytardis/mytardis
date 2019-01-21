@@ -368,8 +368,11 @@ def add_experiment_access_user(request, experiment_id, username):
             isOwner = True
 
     authMethod = request.GET['authMethod']
-    user = auth_service.getUser(authMethod, username)
-    if user is None:
+    try:
+        user = User.objects.get(username=username)
+        if not user.is_active:
+            return HttpResponse('User %s is inactive.' % (username))
+    except User.DoesNotExist:
         return HttpResponse('User %s does not exist.' % (username))
 
     try:
