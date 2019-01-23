@@ -211,3 +211,10 @@ def dfo_verify(dfo_id, *args, **kwargs):
             return dfo.verify(*args, **kwargs)
     dfo = DataFileObject.objects.get(id=dfo_id)
     return dfo.verify(*args, **kwargs)
+
+
+@tardis_app.task(name='tardis_portal.clear_sessions', ignore_result=True)
+def clear_sessions():
+    """Clean up expired sessions using Django management command."""
+    from django.core import management
+    management.call_command("clearsessions", verbosity=0)
