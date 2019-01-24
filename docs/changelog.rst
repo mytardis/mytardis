@@ -3,7 +3,12 @@ Releases
 
 4.1
 ---
-
+* Celery v4
+* RabbitMQ task priorities support
+* New task for clearing Django sessions
+* Fixed truncated TAR download issue with unverified files
+* Fixed sharing with AAF/Google issue
+* Some dependency updates
 
 4.0
 ---
