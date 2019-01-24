@@ -45,7 +45,7 @@ def verify_dfos(**kwargs):
 
 
 @tardis_app.task(name='tardis_portal.ingest_received_files', ignore_result=True)
-def ingest_received_files():
+def ingest_received_files(**kwargs):
     '''
     finds all files stored in temporary storage boxes and attempts to move
     them to their permanent home
@@ -55,13 +55,13 @@ def ingest_received_files():
                                              Q(attributes__value='receiving'),
                                              ~Q(master_box=None))
     for box in ingest_boxes:
-        shadow = 'sbox_move_to_master location:%s' % box.name
-        sbox_move_to_master.apply_async(
-            args=[box.id], priority=box.priority, shadow=shadow)
+        kwargs['shadow'] = 'sbox_move_to_master location:%s' % box.name
+        kwargs['priority'] = box.priority
+        sbox_move_to_master.apply_async(args=[box.id], **kwargs)
 
 
 @tardis_app.task(name="tardis_portal.autocache", ignore_result=True)
-def autocache():
+def autocache(**kwargs):
     init_filters()
     from .models import StorageBox
     autocache_boxes = StorageBox.objects.filter(
@@ -69,9 +69,9 @@ def autocache():
         Q(attributes__value__iexact='True'))
 
     for box in autocache_boxes:
-        shadow = 'sbox_cache_files location:%s' % box.name
-        sbox_cache_files.apply_async(
-            args=[box.id], priority=box.priority, shadow=shadow)
+        kwargs['shadow'] = 'sbox_cache_files location:%s' % box.name
+        kwargs['priority'] = box.priority
+        sbox_cache_files.apply_async(args=[box.id], **kwargs)
 
 
 @tardis_app.task(name="tardis_portal.email_user_task", ignore_result=True)
