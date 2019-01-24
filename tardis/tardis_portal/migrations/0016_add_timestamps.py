@@ -9,21 +9,11 @@ import django.utils.timezone
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('tardis_portal', '0014_auto_20181002_1154'),
+        ('tardis_portal', '0015_dataset_created_time'),
     ]
 
     operations = [
         # add timestamp fields with null values
-        migrations.AddField(
-            model_name='dataset',
-            name='created_time',
-            field=models.DateTimeField(blank=True, null=True),
-        ),
-        migrations.AddField(
-            model_name='dataset',
-            name='modified_time',
-            field=models.DateTimeField(blank=True, null=True),
-        ),
         migrations.AddField(
             model_name='facility',
             name='created_time',
