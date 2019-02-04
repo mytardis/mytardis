@@ -3,7 +3,7 @@ import logging
 from elasticsearch_dsl import analysis, analyzer
 from django_elasticsearch_dsl import DocType, Index, fields
 
-from tardis.tardis_portal.models import Dataset, Experiment, DataFile
+from tardis.tardis_portal.models import Dataset, Experiment, DataFile, Instrument
 
 logger = logging.getLogger(__name__)
 
@@ -71,15 +71,25 @@ class DatasetDocument(DocType):
         )
     }
     )
+    instrument = fields.ObjectField(properties={
+        'name': fields.TextField(
+        fields={'raw': fields.KeywordField()},
+        analyzer=analyzer
+        )
+    }
+    )
     created_time = fields.DateField()
     modified_time = fields.DateField()
 
     class Meta:
         model = Dataset
-        related_models = [Experiment]
+        related_models = [Experiment, Instrument]
 
     def get_instances_from_related(self, related_instance):
-        return related_instance.datasets.all()
+        if isinstance(related_instance, Experiment):
+            return related_instance.datasets.all()
+        elif isinstance(related_instance, Instrument):
+            return related_instance.dataset_set.all()
 
 
 datafile = Index('datafile')
@@ -110,6 +120,8 @@ class DataFileDocument(DocType):
     class Meta:
         model = DataFile
         related_models = [Dataset]
+        queryset_pagination = 100000
 
     def get_instances_from_related(self, related_instance):
         return related_instance.datafile_set.all()
+
