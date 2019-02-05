@@ -53,6 +53,7 @@ from django.db import transaction
 from django.contrib.auth.models import User
 from django.utils.translation import ugettext_lazy as _
 from django.forms.widgets import SelectDateWidget
+from django.contrib.auth.forms import AuthenticationForm
 
 from haystack.forms import SearchForm
 
@@ -79,6 +80,16 @@ def getAuthMethodChoices():
 
 
 attrs_dict = {'class': 'required'}
+
+
+class LoginForm(AuthenticationForm):
+    # authMethod = forms.CharField()
+
+    def __init__(self, *args, **kwargs):
+        super(LoginForm, self).__init__(*args, **kwargs)
+        self.fields['username'] = forms.CharField(required=True,
+                                                  label="Username",
+                                                  max_length=75)
 
 
 class RegistrationForm(forms.Form):
