@@ -48,7 +48,6 @@ from django.forms.utils import ErrorList
 from django.forms.models import ModelChoiceField
 from django.forms.widgets import HiddenInput
 from django.forms import ModelForm
-from django.contrib.auth.forms import AuthenticationForm
 from django.conf import settings
 from django.db import transaction
 from django.contrib.auth.models import User
@@ -77,22 +76,6 @@ def getAuthMethodChoices():
     for authMethods in settings.AUTH_PROVIDERS:
         authMethodChoices += ((authMethods[0], authMethods[1]),)
     return authMethodChoices
-
-
-class LoginForm(AuthenticationForm):
-    # authMethod = forms.CharField()
-
-    def __init__(self, *args, **kwargs):
-        super(LoginForm, self).__init__(*args, **kwargs)
-        self.fields['username'] = forms.CharField(required=True,
-                                                  label="Username",
-                                                  max_length=75)
-
-        # authMethods = ((None, "Any"),) + getAuthMethodChoices()
-        # self.fields['authMethod'] = \
-        #     forms.CharField(required=True,
-        #                     widget=forms.Select(choices=authMethods),
-        #                     label='Authentication Method')
 
 
 attrs_dict = {'class': 'required'}
@@ -229,27 +212,6 @@ class AddUserPermissionsForm(forms.Form):
     delete = forms.BooleanField(label='', required=False,
                                 widget=forms.HiddenInput)
     delete.widget.attrs['class'] = 'canDelete'
-
-
-class AddGroupPermissionsForm(forms.Form):
-
-    addgroup = forms.CharField(label='Group', required=False, max_length=100)
-    addgroup.widget.attrs['class'] = 'groupsuggest'
-    authMethod = forms.CharField(
-        required=True,
-        widget=forms.Select(choices=getAuthMethodChoices()),
-        label='Authentication Method')
-
-
-class CreateGroupPermissionsForm(forms.Form):
-    addgroup = forms.CharField(label='Group', required=False, max_length=100)
-    addgroup.widget.attrs['class'] = 'groupsuggest'
-    authMethod = forms.CharField(
-        required=True,
-        widget=forms.Select(choices=getAuthMethodChoices()),
-        label='Authentication Method')
-    adduser = forms.CharField(label='User', required=False, max_length=100)
-    adduser.widget.attrs['class'] = 'usersuggest'
 
 
 class ManageGroupPermissionsForm(forms.Form):
@@ -410,7 +372,7 @@ class ExperimentForm(forms.ModelForm):
             help_text="Comma-separated authors and optional emails/URLs")
 
         for _, field in self.fields.items():
-            field.widget.attrs['class'] = "span8"
+            field.widget.attrs['class'] = "col-md-8"
 
     def _format_author(self, author):
         if author.email or author.url:

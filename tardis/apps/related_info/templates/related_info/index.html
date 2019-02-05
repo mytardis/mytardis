@@ -3,20 +3,24 @@
 {% mustachejs "related_info/publication" %}
 {% mustachejs "related_info/website" %}
 
-<div class="modal" id="modal-add-related-info" style="display: none">
-  <div class="modal-header">
-    <a class="close" data-dismiss="modal">×</a>
-    <h3>Add/Edit Related Info</h3>
-  </div>
-  <div class="modal-body"></div>
-  <div class="modal-footer">
-    <button class="save-related-info btn btn-success">
-      Save changes
-    </button>
-  </div>
+<div class="modal" id="modal-add-related-info" role="dialog" tabindex="-1">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <a class="close" data-dismiss="modal">×</a>
+        <h3>Add/Edit Related Info</h3>
+      </div>
+      <div class="modal-body"></div>
+      <div class="modal-footer">
+        <button class="save-related-info btn btn-success">
+          Save changes
+        </button>
+      </div>
+    </div>  <!-- class="modal-content" -->
+  </div>  <!-- class="modal-dialog" -->
 </div>
 
-<button class="add-related-info btn pull-right">
+<button class="add-related-info btn btn-default pull-right">
   <i class="icon-plus"></i>
   Add new
 </button>
@@ -48,7 +52,7 @@
     _initButtons: function(optionList) {
       var buttonGroup = $('<span/>').addClass("btn-group");
       buttonGroup.append(_.map(optionList, function(option) {
-        var button = $('<button/>').addClass("btn");
+        var button = $('<button/>').addClass("btn btn-default");
         button.prop('value', option.val);
         button.html(option.label);
         return button.get(0);
@@ -96,7 +100,7 @@
       type: {
         title: '&nbsp;',
         type: ToggleButtonEditor,
-        editorClass: 'span12',
+        editorClass: 'col-md-12',
         options: [
           {val: 'publication', label: '<i class="icon-file"></i> Publication'},
           {val: 'website', label: '<i class="icon-pushpin"></i> Website'}
@@ -104,11 +108,11 @@
       },
       identifier: {
         title: 'URL',
-        editorClass: 'span12',
+        editorClass: 'col-md-12',
         validators: ['required', 'url']
       },
-      title: {type: 'Text', editorClass: 'span12'},
-      notes: {type: 'TextArea', editorClass: 'span12', editorAttrs: {'rows': 8}}
+      title: {type: 'Text', editorClass: 'col-md-12'},
+      notes: {type: 'TextArea', editorClass: 'col-md-12', editorAttrs: {'rows': 8}}
     }
   });
 

@@ -135,7 +135,7 @@ var MyTardis = (function(){
 		'connectWith': '.datasets',
 		'dropOnEmpty': true,
 		'helper': 'clone',
-		'placeholder': 'thumbnail span6',
+		'placeholder': 'thumbnail col-md-6',
 		'receive': _.bind(function(event, ui) {
 		    var datasetTile = ui.item.find('.dataset-tile').prop('view');
 		    this.addTile(datasetTile);

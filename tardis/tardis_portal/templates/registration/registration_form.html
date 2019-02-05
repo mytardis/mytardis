@@ -36,15 +36,21 @@
 
 <p>Users must register before creating new experiments in MyTardis.</p>
 
-<form action="." method="post" class="form-horizontal">
-  {% load bootstrap %}
-  {{ form|bootstrap }}
-  {% csrf_token %}
-  <div class="form-actions">
-    <button type="submit" class="btn btn-warning">
-      <i class="icon-user"></i>
-      Create New Account
-    </button>
+<div class="row">
+  <div class="col-md-8">
+    <form action="." method="post" class="form-horizontal">
+      {% load bootstrap %}
+      {{ form|bootstrap_horizontal:'col-md-2' }}
+      {% csrf_token %}
+      <div class="form-group">
+        <div class="col-md-offset-2 col-md-3">
+          <button type="submit" class="btn btn-warning">
+            <i class="fa fa-user"></i>
+            Create New Account
+          </button>
+        </div>
+      </div>
+    </form>
   </div>
-</form>
+</div>
 {% endblock %}

@@ -274,7 +274,7 @@ class ObjectACLTestCase(TestCase):
                                     % (group.id,
                                        self.user2.username,
                                        localdb_auth_key))
-        self.assertEqual(response.content, 'User %s is already member of that'
+        self.assertEqual(response.content, 'User %s is already a member of that'
                          ' group.' % self.user2.username)
 
         # user1 is not allowed to modify acls for experiment2

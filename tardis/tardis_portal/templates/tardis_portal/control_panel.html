@@ -401,8 +401,8 @@
 <div class="container-fluid">
   {% for experiment in experiments %}
 
-  <div class="row-fluid experiment-row">
-    <div class="span12">
+  <div class="row experiment-row">
+    <div class="col-md-12">
       <h4><a href="{% url 'tardis_portal.view_experiment' experiment.id %}">{{ experiment.title }}</a></h4>
 
       <div>

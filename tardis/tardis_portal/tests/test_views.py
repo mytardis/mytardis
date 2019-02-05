@@ -872,7 +872,7 @@ class ExperimentListsTest(TestCase):
         response = my_data(request)
         self.assertEqual(response.status_code, 200)
         # jQuery hasn't populated the div yet:
-        self.assertIn('<div id="myowned" class="mydata accordion"></div>',
+        self.assertIn('<div id="myowned" class="mydata accordion experiments"></div>',
                       response.content)
 
         # Owned experiments:
@@ -915,7 +915,7 @@ class ExperimentListsTest(TestCase):
         response = shared(request)
         self.assertEqual(response.status_code, 200)
         # jQuery hasn't populated the div yet:
-        self.assertIn('<div id="myshared" class="mydata accordion"></div>',
+        self.assertIn('<div id="myshared" class="mydata accordion experiments"></div>',
                       response.content)
 
         # Shared experiments:

@@ -24,11 +24,11 @@
       {% endif %}
     </p>
   {% endif %}
-  <div class="row-fluid">
-    <div class="span9">
+  <div class="row">
+    <div class="col-md-9">
       {% if is_authenticated %}
         <h3>Your most recent experiments <small><strong>(<a href="{% url 'tardis.tardis_portal.views.my_data' %}">view all</a>)</strong></small></h3>
-        <div id="private-experiments" class="accordion experiments">
+        <div id="private-experiments" class="panel-group experiments">
           {% for exp in private_experiments %}
             <div class="accordion-group">
               <div class="accordion-heading" data-parent="#private-experiments">
@@ -63,7 +63,7 @@
                 </div> {% comment %}class="accordion-toggle private-experiment"{% endcomment %}
               </div> {% comment %}class="accordiong-heading"{% endcomment %}
               <div id="collapse-{{exp.id}}"
-                   class="accordion-body collapse">
+                   class="panel-collapse collapse">
                 <div class="accordion-inner">
                   <p>{{exp.description|default:"<em>No description</em>"|bleach}}</p>
                   <div id="private-recent-datasets-{{exp.id}}"></div>
@@ -76,13 +76,13 @@
             a new experiment</a> and upload your data</p>
           {% endfor %}
           <br/>
-        </div> {% comment%}id="private-experiments" class="accordion experiments"{% endcomment %}
+        </div> {% comment%}id="private-experiments" class="panel-group experiments"{% endcomment %}
       {% endif %}
 
       {% with total=public_experiments|length %}
         <h3>The {{ total }} most recent public experiment{{total|pluralize}}</h3>
       {% endwith %}
-      <div id="public-experiments" class="accordion experiments">
+      <div id="public-experiments" class="panel-group experiments">
       {% for exp in public_experiments %}
         <div class="accordion-group">
           <div class="accordion-heading" data-parent="#public-experiments">
@@ -118,7 +118,7 @@
             </div> {% comment %}class="accordion-toggle public-experiment"{% endcomment %}
           </div> {% comment %}class="accordion-heading"{% endcomment %}
           <div id="collapsepub-{{exp.id}}"
-               class="accordion-body collapse">
+               class="panel-collapse collapse">
             <div class="accordion-inner">
               <p>{{exp.description|default:"<em>No description</em>"|bleach}}</p>
               <div id="public-recent-datasets-{{exp.id}}"></div>
@@ -128,9 +128,9 @@
         {% empty %}
         <p>There is no public data available on this server.</p>
       {% endfor %}
-      </div> {% comment %}id="public-experiments" class="accordion experiments"{% endcomment %}
-    </div> {% comment %}class="span9"{% endcomment %}
-  </div> {% comment %}class="row-fluid"{% endcomment %}
+      </div> {% comment %}id="public-experiments" class="panel-group experiments"{% endcomment %}
+    </div> {% comment %}class="col-md-9"{% endcomment %}
+  </div> {% comment %}class="row"{% endcomment %}
 </div> {% comment %}id="content"{% endcomment %}
 <input type="hidden" id="exps-expand-accordion" value="{{ exps_expand_accordion }}">
 <script type="text/javascript"

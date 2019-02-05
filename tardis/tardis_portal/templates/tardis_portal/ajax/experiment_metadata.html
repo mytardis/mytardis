@@ -3,7 +3,7 @@
 
 <div class="pull-right">
     {% if has_write_permissions and not experiment.locked and not experiment.is_publication %}
-        <a title="Add" class="add-metadata btn btn-mini"
+        <a title="Add" class="add-metadata btn btn-default btn-xs"
            href="{% url 'tardis.tardis_portal.views.add_experiment_par' experiment.id %}">
           <i class="fa fa-plus"></i>
           Add Experiment Metadata
@@ -16,7 +16,7 @@
   {% capture as edit_control %}
    {% if has_write_permissions and not parameterset.schema.immutable %}
    <div class="pull-right">
-       <a class="edit-metadata btn btn-mini btn-warning"
+       <a class="edit-metadata btn btn-default btn-xs btn-warning"
           href="{% url 'tardis.tardis_portal.views.edit_experiment_par' parameterset.id %}">
           <i class="fa fa-pencil"></i>
           Edit

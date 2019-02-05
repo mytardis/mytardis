@@ -25,7 +25,7 @@ from django.views.decorators.debug import sensitive_post_parameters
 
 from ..auth import auth_service
 from ..auth.localdb_auth import auth_key as localdb_auth_key
-from ..forms import ManageAccountForm, CreateUserPermissionsForm, LoginForm
+from ..forms import ManageAccountForm, CreateUserPermissionsForm
 from ..models import JTI, UserProfile, UserAuthentication
 from ..shortcuts import render_response_index
 from ..views.utils import _redirect_303
@@ -240,8 +240,7 @@ def login(request):
             return HttpResponseRedirect(next_page)
 
         c = {'status': "Sorry, username and password don't match.",
-             'error': True,
-             'loginForm': LoginForm()}
+             'error': True}
 
         return HttpResponseForbidden(
             render_response_index(request, 'tardis_portal/login.html', c))
@@ -252,8 +251,7 @@ def login(request):
         next_page = u.path
     else:
         next_page = '/'
-    c = {'loginForm': LoginForm(),
-         'next_page': next_page}
+    c = {'next_page': next_page}
 
     c['RAPID_CONNECT_ENABLED'] = settings.RAPID_CONNECT_ENABLED
     c['RAPID_CONNECT_LOGIN_URL'] = settings.RAPID_CONNECT_CONFIG[
