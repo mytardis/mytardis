@@ -5,3 +5,5 @@ engines:
 exclude_paths:
   - 'tardis/tardis_portal/static/js/lib/**'
   - 'tardis/apps/push_to/static/push-to/bootstrap/**'
+  - 'tardis/apps/push_to/static/push-to/typeahead.bundle.js'
+  - 'tardis/apps/push_to/static/push-to/angular-typeahead.js'
