@@ -358,12 +358,13 @@
             </div>  <!-- row -->
           </div>  <!-- well -->
         </div>  <!-- col-md-12 -->
-    </div>  <!-- row  ->
+    </div>  <!-- row  -->
 </div>  <!-- id="content" -->
 <script type="text/ng-template" id="fileList">
     <div style="max-height: 200px; overflow-y: scroll;">
         <div ng-hide="dataset.datafiles">Loading datafiles...</div>
-        <table class="table" ng-show="dataset.datafiles">
+        <table class="table table-bordered table-condensed table-striped"
+               ng-show="dataset.datafiles">
             <tr>
                 <th>File name</th>
                 <th>Size</th>
