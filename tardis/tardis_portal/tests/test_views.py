@@ -882,7 +882,7 @@ class ExperimentListsTest(TestCase):
         request.GET = QueryDict('')
         response = retrieve_owned_exps_list(request)
         self.assertEqual(response.status_code, 200)
-        self.assertIn('<div class="pagination">', response.content)
+        self.assertIn('<ul class="pagination"', response.content)
         self.assertIn('Page 1 of 5', response.content)
 
         # Now let's reduce the number of owned experiments from
@@ -899,7 +899,7 @@ class ExperimentListsTest(TestCase):
         request.GET = QueryDict('')
         response = retrieve_owned_exps_list(request)
         self.assertEqual(response.status_code, 200)
-        self.assertNotIn('<div class="pagination">', response.content)
+        self.assertNotIn('<ul class="pagination"', response.content)
 
     def test_shared_view(self):
         """
@@ -925,7 +925,7 @@ class ExperimentListsTest(TestCase):
         request.GET = QueryDict('')
         response = retrieve_shared_exps_list(request)
         self.assertEqual(response.status_code, 200)
-        self.assertIn('<div class="pagination">', response.content)
+        self.assertIn('<ul class="pagination"', response.content)
         self.assertIn('Page 1 of 10', response.content)
 
         # Now let's reduce the number of shared experiments from
@@ -942,7 +942,7 @@ class ExperimentListsTest(TestCase):
         request.GET = QueryDict('')
         response = retrieve_shared_exps_list(request)
         self.assertEqual(response.status_code, 200)
-        self.assertNotIn('<div class="pagination">', response.content)
+        self.assertNotIn('<ul class="pagination"', response.content)
 
 
 class _ContextMatcher(object):

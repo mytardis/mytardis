@@ -2,35 +2,33 @@
 <input type="hidden" id="datafile-count" value="{{datafile_count}}"/>
 {% capture as paginator_block %}
 {% if datafiles.paginator.num_pages > 1 %}
-  <div class="pagination">
-    <ul style="margin-left: auto; margin-right: auto; display: table;">
-      {% if datafiles.has_previous %}
-      <li>
-        <a class="pagelink" href="/ajax/datafile_list/{{dataset.id}}/?page={{ datafiles.previous_page_number }}&{{params}}">&laquo;</a>
-      </li>
-      {% else %}
-      <li class="disabled"><a href="#">&laquo;</a></li>
-      {% endif %}
+  <ul class="pagination" style="margin-left: auto; margin-right: auto; display: table;">
+    {% if datafiles.has_previous %}
+    <li>
+      <a class="pagelink" href="/ajax/datafile_list/{{dataset.id}}/?page={{ datafiles.previous_page_number }}&{{params}}">&laquo;</a>
+    </li>
+    {% else %}
+    <li class="disabled"><a href="#">&laquo;</a></li>
+    {% endif %}
 
-      {% for pagenum in datafiles.paginator.page_range %}
-      <li{% if datafiles.number == pagenum %} class="active"{% endif %}>
-        <a class="pagelink"
-           href="/ajax/datafile_list/{{dataset.id}}/?page={{pagenum}}&{{params}}">
-           {{pagenum}}
-        </a>
-      </li>
-      {% endfor %}
+    {% for pagenum in datafiles.paginator.page_range %}
+    <li{% if datafiles.number == pagenum %} class="active"{% endif %}>
+      <a class="pagelink"
+         href="/ajax/datafile_list/{{dataset.id}}/?page={{pagenum}}&{{params}}">
+         {{pagenum}}
+      </a>
+    </li>
+    {% endfor %}
 
-      {% if datafiles.has_next %}
-      <li>
-        <a class="pagelink" href="/ajax/datafile_list/{{dataset.id}}/?page={{ datafiles.next_page_number }}&{{params}}">&raquo;</a>
-      </li>
-      {% else %}
-      <li class="disabled"><a href="#">&raquo;</a></li>
-      {% endif %}
-    </ul>
-    <!-- Page {{ dataset.number }} of {{ dataset.paginator.num_pages }} -->
-  </div>
+    {% if datafiles.has_next %}
+    <li>
+      <a class="pagelink" href="/ajax/datafile_list/{{dataset.id}}/?page={{ datafiles.next_page_number }}&{{params}}">&raquo;</a>
+    </li>
+    {% else %}
+    <li class="disabled"><a href="#">&raquo;</a></li>
+    {% endif %}
+  </ul>
+  <!-- Page {{ dataset.number }} of {{ dataset.paginator.num_pages }} -->
 {% endif %}
 {% endcapture %}
 
