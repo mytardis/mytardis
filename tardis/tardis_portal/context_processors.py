@@ -106,7 +106,7 @@ def user_menu_processor(request):
         user_menu.append(dict(divider='True'))
     user_menu.append(dict(
         url=reverse('django.contrib.auth.views.logout'),
-        icon='fa fa-signout',
+        icon='fa fa-sign-out',
         label='Log Out'))
 
     user_menu_modifiers = getattr(settings, 'USER_MENU_MODIFIERS', [])
