@@ -17,10 +17,23 @@
     <form class="form-horizontal" action="" method="post">{% csrf_token %}
       {{ form|bootstrap_horizontal:'col-md-2' }}
       <div class="form-group">
-        <div class="col-md-offset-2 col-md-2">
+        <div class="col-md-offset-2 col-md-6">
           <button type="submit" class="btn btn-primary">
             Save
           </button>
+          {% if dataset %}
+            <button type="button" class="btn btn-default">
+              <a href="{% url 'tardis_portal.view_dataset' dataset.id %}">
+                 Cancel
+            </a>
+            </button>
+          {% else %}
+            <button type="button" class="btn btn-default">
+               <a href="{% url 'tardis.tardis_portal.views.my_data' %}">
+               Cancel
+               </a>
+            </button>
+          {% endif %}
         </div>
       </div>
     </form>
