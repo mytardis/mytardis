@@ -6,7 +6,6 @@ import logging
 from six.moves import urllib
 
 import jwt
-import pwgen
 
 from django.conf import settings
 from django.contrib import auth as djauth
@@ -84,7 +83,6 @@ def rcauth(request):
             user_args = {
                 'id': institution_email.lower(),
                 'email': institution_email.lower(),
-                'password': pwgen.pwgen(),
                 'first_name': first_name,
                 'last_name': request.session['attributes']['surname'],
             }
