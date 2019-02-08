@@ -460,7 +460,8 @@ $(document).on('click', '#modal-metadata .submit-button', function() {
     <div style="margin-bottom: 20px">
     <h3>Preview Images</h3>
     <div class="info-box">
-      <div id="preview" class="carousel" style="margin: 20px auto 20px auto">
+      <div id="preview" class="carousel" data-ride="carousel"
+           style="margin: auto;">
         <!-- Carousel items -->
         <div class="carousel-inner" style="background-color: white;">
           {% for datafile in dataset.get_images|slice:carousel_slice %}
@@ -481,8 +482,14 @@ $(document).on('click', '#modal-metadata .submit-button', function() {
         </div>
         {% if dataset.get_images|slice:":2"|length > 1 %}
             <!-- Carousel nav -->
-            <a class="carousel-control left" href="#preview" data-slide="prev">&lsaquo;</a>
-            <a class="carousel-control right" href="#preview" data-slide="next">&rsaquo;</a>
+            <a class="left carousel-control" href="#preview" role="button" data-slide="prev">
+              <span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span>
+              <span class="sr-only">Previous</span>
+            </a>
+            <a class="right carousel-control" href="#preview" role="button" data-slide="next">
+              <span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>
+              <span class="sr-only">Next</span>
+            </a>
         {% endif %}
       </div>
       </div>
