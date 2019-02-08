@@ -32,7 +32,7 @@ pylint-django==0.11.1 # pyup: <2.0
 pyoai==2.5.0
 pysolr==2.1.0 # pyup: >=2.1.0,<3
 pystache==0.5.4
-python-dateutil==2.7.5
+python-dateutil==2.8.0
 # python-magic
 -e git+https://github.com/mytardis/python-magic.git#egg=python-magic
 pytz==2018.9
