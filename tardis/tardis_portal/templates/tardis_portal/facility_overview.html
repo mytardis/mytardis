@@ -17,8 +17,8 @@
 </script>
 <div id="content" ng-controller="FacilityController as facilityCtrl">
   {% verbatim %}
-  <h2 class="pull-left" style="color:#999999">{{facilityCtrl.selectedFacilityName}}</h2>
-  <div class="btn-group pull-right" ng-show="facilityCtrl.showFacilitySelector()">
+  <h2 class="pull-left" style="color:#999999" ng-cloak>{{facilityCtrl.selectedFacilityName}}</h2>
+  <div class="btn-group pull-right" ng-show="facilityCtrl.showFacilitySelector()" ng-cloak>
     <a class="btn btn-primary dropdown-toggle"
        data-toggle="dropdown">Facility: {{facilityCtrl.selectedFacilityName}}
       <span class="caret"></span>
@@ -45,7 +45,7 @@
         <div class="col-md-12">
           <div class="well">
             <div class="row">
-                <div class="col-md-8" style="text-align: center">
+                <div class="col-md-8" style="text-align: center" ng-cloak>
                   <!-- Data sorting options -->
                   <ul class="nav nav-pills">
                     <li ng-click="facilityCtrl.selectDataView(1); unsetFileListVisibility();"
@@ -64,7 +64,7 @@
                 </div>
                 <div class="col-md-4">
                   <!-- Auto-refresh button -->
-                  <div class="btn-group pull-right">
+                  <div class="btn-group pull-right" ng-cloak>
                     <button type="button" class="btn btn-default"
                             ng-click="facilityCtrl.fetchFacilityData(0,facilityCtrl.defaultFetchLimit); facilityCtrl.refreshCountdown = facilityCtrl.refreshInterval">
                       <i class="fa fa-refresh"></i>
@@ -107,7 +107,7 @@
                     </div>
                 </div>
                 <!-- Alert shown when there is no data available -->
-                <div class="alert" ng-show="facilityCtrl.showDataUnvailableAlert()">
+                <div class="alert" ng-show="facilityCtrl.showDataUnvailableAlert()" ng-cloak>
                     <strong>No data available.</strong>
                     {{facilityCtrl.selectedFacilityName}} is not associated with any
                     datasets.
@@ -116,7 +116,7 @@
                     <em>instrument</em>
                     and <em>facility</em> attributes.
                 </div>
-                <div class="row" ng-show="facilityCtrl.datasets.length">
+                <div class="row" ng-show="facilityCtrl.datasets.length" ng-cloak>
                   <!-- Data filters -->
                   <div class="col-md-12">
                     <form class="well form-inline">
@@ -148,8 +148,9 @@
                 </div>  <!-- row -->
                 <div class="row">
                   <!-- Latest data view -->
-                  <div class="col-md-12" ng-show="facilityCtrl.isDataViewSelected(1)"
-                       ng-hide="facilityCtrl.loading">
+                  <div class="col-md-12"
+                       ng-show="facilityCtrl.isDataViewSelected(1) && !facilityCtrl.loading"
+                       ng-cloak>
                     <h2>Latest {{facilityCtrl.selectedFacilityName}} datasets</h2>
                     <table class="table table-striped table-bordered table-condensed">
                       <tr>
@@ -210,8 +211,9 @@
                 </div>  <!-- row -->
                 <div class="row">
                   <!-- Data sorted by instrument view -->
-                  <div class="col-md-12" ng-show="facilityCtrl.isDataViewSelected(2)"
-                       ng-hide="facilityCtrl.loading">
+                  <div class="col-md-12"
+                       ng-show="facilityCtrl.isDataViewSelected(2) && !facilityCtrl.loading"
+                       ng-cloak>
                     <h2>Latest {{facilityCtrl.selectedFacilityName}} datasets by
                         instrument</h2>
                     <table class="table table-striped table-bordered table-condensed">
@@ -278,8 +280,9 @@
                 </div>  <!-- row -->
                 <div class="row">
                   <!-- Data sorted by user view -->
-                  <div class="col-md-12" ng-show="facilityCtrl.isDataViewSelected(3)"
-                       ng-hide="facilityCtrl.loading">
+                  <div class="col-md-12"
+                       ng-show="facilityCtrl.isDataViewSelected(3) && !facilityCtrl.loading"
+                       ng-cloak>
                     <h2>Latest {{facilityCtrl.selectedFacilityName}} datasets by user</h2>
                     <table class="table table-striped table-bordered table-condensed">
                       <tr>
@@ -342,14 +345,16 @@
                     <div class="col-md-12" style="text-align:center">
                       <button type="button" class="btn btn-default btn-lg"
                               ng-click="facilityCtrl.loadMoreEntries(50)"
-                              ng-class="(facilityCtrl.currentFetchLimit >= facilityCtrl.totalDatasets)?'disabled':''">
+                              ng-class="(facilityCtrl.currentFetchLimit >= facilityCtrl.totalDatasets)?'disabled':''"
+                              ng-hide="facilityCtrl.loading"
+                              ng-cloak>
                         Load more (showing {{facilityCtrl.datasets.length}} of {{facilityCtrl.totalDatasets}})
                       </button>
                     </div>
                 </div>
                 <!-- Reminder shown when filters are active -->
                 <div class="alert alert-info"
-                     ng-show="facilityCtrl.filtersActive()">
+                     ng-show="facilityCtrl.filtersActive()" ng-cloak>
                     <strong>Filter active!</strong> Some results not shown becuase you have a filter active. See more
                     results by <a href="#" ng-click="facilityCtrl.filterFormReset()">clearing your filters.</a>
                 </div>
