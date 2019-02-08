@@ -3,8 +3,10 @@ Releases
 
 4.1
 ---
+* Bootstrap v3
 * Celery v4
 * RabbitMQ task priorities support
+  - Dropped support for Redis
 * New task for clearing Django sessions
 * Fixed truncated TAR download issue with unverified files
 * Fixed sharing with AAF/Google issue
