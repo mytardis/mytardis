@@ -336,6 +336,6 @@ h6 {font-size: 11px;color: #999999;text-transform: uppercase;}
     overflow-y: initial !important
 }
 .modal-body {
-    max-height: calc(100vh - 200px);
+    max-height: calc(100vh - 100px);
     overflow-y: auto;
 }
