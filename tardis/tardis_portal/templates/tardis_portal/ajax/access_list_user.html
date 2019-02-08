@@ -12,13 +12,15 @@
   <br/>
   {% for field in addUserPermissionsForm %}
 	  {% if field.label == "Authentication Method" %}
+          <br/>
           <br/>Permissions: 
           <br/>
-              <select id="id_permission">
+          <select id="id_permission">
               <option value="read">View Only</option>
               <option value="edit">View and Edit</option>
               <option value="owner">Full Owner</option>
-          </select>
+          </select><br/>
+          <br/>
           <p><em>Owners have the ability to change access controls and share experiments with others.</em></p>
 	  {% endif %}
 	  

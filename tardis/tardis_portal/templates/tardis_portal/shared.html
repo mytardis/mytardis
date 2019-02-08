@@ -9,9 +9,9 @@
 {% block content %}
 
 <div id="content">
-  <div class="row-fluid">
-    <div class="span9">
-      <h2 class="visible-phone">Experiments</h2>
+  <div class="row">
+    <div class="col-md-9">
+      <h2 class="visible-xs">Experiments</h2>
       <div class="pull-right">
         {% if perms.tardis_portal.add_experiment %}
         <a class="btn btn-warning"
@@ -27,13 +27,13 @@
 {#        </a>#}
       </div>  <!-- class="pull-right" -->
       <div class="pull-left">
-        <h2 class="hidden-phone" style="text-align: center">Experiments</h2>
+        <h2 class="hidden-xm" style="text-align: center">Experiments</h2>
       </div>
-    </div>  <!-- class="span9" -->
-  </div>  <!-- class="row-fluid" -->
+    </div>  <!-- class="col-md-9" -->
+  </div>  <!-- class="row" -->
 
-  <div class="row-fluid">
-    <div class="span9">
+  <div class="row">
+    <div class="col-md-9">
       {% if not shared_experiments %}
       <p class="alert alert-info">
         You do not have access to any shared experiments.
@@ -46,18 +46,18 @@
         Shared Experiment{{ shared_experiments.count|pluralize }}</h3>
       </div>
       <div class="pull-right">
-        <button class="btn btn-success btn-mini"
-                onclick="$('#myshared .accordion-body').collapse('hide');" >
+        <button type="button" class="btn btn-success btn-xs"
+                onclick="$('#myshared .panel-collapse').collapse('hide');" >
         Collapse all</button>
-        <button class="btn btn-success btn-mini"
-                onclick="$('#myshared .accordion-body').collapse('show');" >
+        <button type="button" class="btn btn-success btn-xs"
+                onclick="$('#myshared .panel-collapse').collapse('show');" >
         Expand all</button>
       </div>
       <div class="clearfix"></div>
-      <div id="myshared" class="mydata accordion"></div>
+      <div id="myshared" class="mydata accordion experiments"></div>
       {% endif %}
-    </div>  <!-- class="span9" -->
-  </div>  <!-- class="row-fluid" -->
+    </div>  <!-- class="col-md-9" -->
+  </div>  <!-- class="row" -->
 </div>  <!-- id="content" -->
 
 <input type="hidden" id="exps-expand-accordion" value="{{ exps_expand_accordion }}">

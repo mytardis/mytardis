@@ -31,7 +31,7 @@ $(".public_access_link").bind("click", function(evt) {
 });
 
 
-$("#modal-public-access").bind("hidden", function() {
+$("#modal-public-access").bind("hidden.bs.modal", function() {
     $(".tab-pane").trigger("experiment-change");
 });
 
@@ -199,11 +199,11 @@ $(".share_link").bind("click", function(evt) {
 
 });
 
-$("#modal-share").bind("hidden", function() {
+$("#modal-share").bind("hidden.bs.modal", function() {
     $(".tab-pane").trigger("experiment-change");
 });
 
-$("#modal-share-group").bind("hidden", function() {
+$("#modal-share-group").bind("hidden.bs.modal", function() {
     $(".tab-pane").trigger("experiment-change");
 });
 
@@ -255,10 +255,10 @@ $(".share_link_group").bind("click", function(evt) {
                 evt2.preventDefault();
 
                 var icon = $(this).find("i");
-                icon.toggleClass("fa fa-folder-open icon-folder-close");
+                icon.toggleClass("fa-folder fa-folder-open");
                 $(this).toggleClass("members-shown members-hidden");
 
-                var userList = $(this).parents(".group").find(".access_list");
+                var userList = $(this).parents(".access_list_group").find(".access_list");
                 // If not showing members, just hide user list
                 if (!$(this).hasClass("members-shown")) {
                     userList.hide();
@@ -303,7 +303,7 @@ $(".share_link_group").bind("click", function(evt) {
 
                 var action = "/experiment/control_panel/" + $("#experiment-id").val() + "/access_list/add/group/" + groupsuggest;
 
-                var permissions = $(this).siblings("#id_permission_group").val();
+                var permissions = $("#id_permission_group").val();
 
                 var canRead = false;
                 var canWrite = false;
@@ -343,7 +343,7 @@ $(".share_link_group").bind("click", function(evt) {
                             evt2.preventDefault();
 
                             var icon = $(this).find("i");
-                            icon.toggleClass("fa fa-folder-open icon-folder-close");
+                            icon.toggleClass("fa-folder fa-folder-open");
                             $(this).toggleClass("members-shown members-hidden");
 
                             var userList = $(this).parents(".access_list_group").find(".access_list");

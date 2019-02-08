@@ -1,14 +1,22 @@
 {% extends "tardis_portal/portal_template.html" %}
 {% load bleach_tag %}
+{% load bootstrap %}
 
 {% block content %}
     <h2>Search {{ site_title }}</h2>
-    <div>
-    <form method="GET" action="{% url "haystack_search" %}">
-    {{ form }}
-        <input class="btn btn-success" type="submit" value="Search">
-    </form>
+    <br/>
+    <div class="row">
+      <div class="col-md-3">
+        <form method="GET" action="{% url "haystack_search" %}">
+        {{ form | bootstrap}}
+            <input class="btn btn-success" type="submit" value="Search">
+        </form>
+      </div>
     </div>
+    <script>
+      $('#id_models').addClass('list-unstyled');
+    </script>
+    <br/>
     {% if query %}
         <h3>Found {{ object_list|length }} Matches</h3>
         {% for result in object_list %}

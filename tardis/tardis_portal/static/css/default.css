@@ -124,19 +124,6 @@ div.copylink {
     text-decoration: none;
 }
 
-#login-button {
-display: inline-block;
-padding: 4px 10px 4px;
-margin: 5px 5px 6px;
-line-height: 18px;
-color: #ffffff;
-text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
-}
-
-#login-button:hover {
-    background-color: #2f96b4;
-}
-
 /* index page */
 .experiments .accordion-toggle .explink {
     font-size: 1.3em;
@@ -163,7 +150,24 @@ text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
     width: 75%;
 }
 .experiments .accordion-inner .dataset-list-header {
-    margin-left: -30px;
+    margin-left: -15px;
+    font-style: italic;
+    font-size: 11px;
+    border: none;
+    background-color: transparent !important;
+    padding-top: 5px;
+    padding-left: 5px;
+}
+.accordion-inner .list-group {
+    padding-left: 10px;
+}
+.accordion-inner .dataset-list-item {
+  border: none;
+  background-color: transparent !important;
+  padding-left: 10px;
+  padding-right: 5px;
+  padding-top: 5px;
+  padding-bottom: 2px;
 }
 .experiments .accordion-inner .thumbnails li {
     margin-bottom: 5px;
@@ -223,9 +227,6 @@ text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
 .mydata .accordion-inner p {
     width: 75%;
 }
-.mydata .accordion-inner .dataset-list-header {
-    margin-left: -30px;
-}
 .mydata .accordion-inner .thumbnails li {
     margin-bottom: 5px;
     margin-top: 2px;
@@ -262,6 +263,14 @@ text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
 .search_result div div {
     margin-left: 1em;
 }
+.tab-pane {
+    padding: 10px;
+}
+
+.nav-tabs {
+    margin-bottom: 0;
+}
+
 /* end search */
 
 /* MyTardis has switched from Bootstrap 2.0.4 to 2.3.2 for compatibilty with
@@ -287,3 +296,46 @@ h4 small {font-size: 12px;}
 h5 {font-size: 12px;}
 h6 {font-size: 11px;color: #999999;text-transform: uppercase;}
 .page-header { margin-top: 10px; margin-bottom: 10px; }
+
+.datasets.thumbnails {
+    list-style-type: none;
+    padding-inline-start: 0;
+}
+.list-inline-item {
+    margin-left: 10px;
+    margin-top: 5px;
+}
+.list-inline-item>a {
+    margin-bottom: 0;
+}
+
+/* Badge styles that were provided in Bootstrap v2 */
+.badge-default {
+  background-color: #999999;
+}
+.badge-info {
+  background-color: #3a87ad;
+}
+.badge-important {
+    background-color: #b94a48;
+}
+.badge-inverse {
+  background-color: #333333;
+}
+.badge-success {
+  background-color: #468847;
+}
+
+/* Padding from Bootstrap v2: */
+.accordion-heading .accordion-toggle {
+  padding: 8px 15px;
+}
+
+/* Ensure modals have vertical scrollbars if necessary */
+.modal-dialog {
+    overflow-y: initial !important
+}
+.modal-body {
+    max-height: calc(100vh - 100px);
+    overflow-y: auto;
+}

@@ -33,7 +33,7 @@ function getFormInputHtml(label, name, useTextArea)
         widget = "<input type=\"text\" name=\"" + name + "\" value=\"\" id=\"" + name + "\" />";
     }
     label = "<label for=\"" + name + "\">" + label + "</label>";
-    return "<div class=\"fieldWrapper\">" + label + "<br/>" + widget + "</div>";
+    return "<div class=\"form-group\">" + label + "<br/>" + widget + "</div>";
 }
 
 $(document).on("click", ".dataset_checkbox", function( event ) {
@@ -69,7 +69,7 @@ $(document).on("click", "#add_new_parameter", function() {
 
     if($selectedOption.text())
     {
-        $("#parameternameselect").before(getFormInputHtml($selectedOption.text(), newElementName, isLong));
+        $("#parameternameselect").parent().before(getFormInputHtml($selectedOption.text(), newElementName, isLong));
         $("#" + newElementName).focus();
     }
     else

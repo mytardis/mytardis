@@ -25,8 +25,7 @@ from django.views.decorators.http import require_POST
 from ..auth import decorators as authz
 from ..auth.localdb_auth import auth_key as localdb_auth_key, \
     django_user
-from ..forms import ChangeUserPermissionsForm, \
-    ChangeGroupPermissionsForm, CreateGroupPermissionsForm
+from ..forms import ChangeUserPermissionsForm, ChangeGroupPermissionsForm
 from ..models import UserAuthentication, UserProfile, Experiment, \
     Token, GroupAdmin, ObjectACL
 from ..shortcuts import render_response_index, \
@@ -60,7 +59,7 @@ def retrieve_user_list(request):
         q |= Q(first_name__icontains=' '.join(tokens[:-1])) &\
             Q(last_name__icontains=tokens[-1])
 
-    users_query = User.objects\
+    users_query = User.objects.filter(is_active=True)\
                       .filter(q).distinct() .select_related('userprofile')
 
     # HACK FOR ORACLE - QUERY GENERATED DOES NOT WORK WITH LIMIT SO USING
@@ -137,8 +136,6 @@ def retrieve_access_list_user_readonly(request, experiment_id):
 @authz.experiment_ownership_required
 def retrieve_access_list_group(request, experiment_id):
 
-    from ..forms import AddGroupPermissionsForm
-
     group_acls_system_owned = Experiment.safe.group_acls_system_owned(
         experiment_id)
 
@@ -147,8 +144,7 @@ def retrieve_access_list_group(request, experiment_id):
 
     c = {'group_acls_user_owned': group_acls_user_owned,
          'group_acls_system_owned': group_acls_system_owned,
-         'experiment_id': experiment_id,
-         'addGroupPermissionsForm': AddGroupPermissionsForm()}
+         'experiment_id': experiment_id}
     return render_response_index(
         request, 'tardis_portal/ajax/access_list_group.html', c)
 
@@ -269,22 +265,16 @@ def add_user_to_group(request, group_id, username):
 
     authMethod = localdb_auth_key
     isAdmin = False
+    logger.info("isAdmin: %s", str(isAdmin))
 
     if 'isAdmin' in request.GET:
         if request.GET['isAdmin'] == 'true':
             isAdmin = True
+    logger.info("isAdmin: %s", str(isAdmin))
 
     try:
-        authMethod = request.GET['authMethod']
-        if authMethod == localdb_auth_key:
-            user = User.objects.get(username=username)
-        else:
-            user = UserAuthentication.objects.get(
-                username=username,
-                authenticationMethod=authMethod).userProfile.user
+        user = User.objects.get(username=username)
     except User.DoesNotExist:
-        return return_response_error(request)
-    except UserAuthentication.DoesNotExist:
         return return_response_error(request)
 
     try:
@@ -293,12 +283,13 @@ def add_user_to_group(request, group_id, username):
         return HttpResponse('Group does not exist.')
 
     if user.groups.filter(name=group.name).count() > 0:
-        return HttpResponse('User %s is already member of that group.'
+        return HttpResponse('User %s is already a member of that group.'
                             % username)
 
     user.groups.add(group)
     user.save()
 
+    logger.info("isAdmin: %s", str(isAdmin))
     if isAdmin:
         groupadmin = GroupAdmin(user=user, group=group)
         groupadmin.save()
@@ -562,12 +553,9 @@ def change_group_permissions(request, experiment_id, group_id):
 def create_group(request):
 
     if 'group' not in request.GET:
-        c = {'createGroupPermissionsForm':
-             CreateGroupPermissionsForm()}
-
         response = render_response_index(
             request,
-            'tardis_portal/ajax/create_group.html', c)
+            'tardis_portal/ajax/create_group.html', {})
         return response
 
     authMethod = localdb_auth_key
@@ -584,9 +572,6 @@ def create_group(request):
     if 'admin' in request.GET:
         admin = request.GET['admin']
 
-    if 'authMethod' in request.GET:
-        authMethod = request.GET['authMethod']
-
     try:
         with transaction.atomic():
             group = Group(name=groupname)
@@ -599,17 +584,8 @@ def create_group(request):
     adminuser = None
     if admin:
         try:
-            authMethod = request.GET['authMethod']
-            if authMethod == localdb_auth_key:
-                adminuser = User.objects.get(username=admin)
-            else:
-                adminuser = UserAuthentication.objects.get(
-                    username=admin,
-                    authenticationMethod=authMethod).userProfile.user
-
+            adminuser = User.objects.get(username=admin)
         except User.DoesNotExist:
-            return HttpResponse('User %s does not exist' % (admin))
-        except UserAuthentication.DoesNotExist:
             return HttpResponse('User %s does not exist' % (admin))
 
         # create admin for this group and add it to the group

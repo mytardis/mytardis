@@ -7,16 +7,16 @@
 {% block content %}
 
 <div id="content">
-  <div class="row-fluid">
-    <div class="span9">
-      <h2 class="visible-phone">Experiments</h2>
+  <div class="row">
+    <div class="col-md-9">
+      <h2 class="visible-xs">Experiments</h2>
       <div class="pull-left">
-          <h2 class="hidden-phone" style="text-align: center">Experiments</h2>
+          <h2 class="hidden-xm" style="text-align: center">Experiments</h2>
       </div>
     </div>
   </div>
-  <div class="row-fluid">
-    <div class="span9">
+  <div class="row">
+    <div class="col-md-9">
       {% if not public_experiments %}
       <p class="alert alert-info">
         No experiments have been published yet.
@@ -28,15 +28,15 @@
         </h3>
       </div>
       <div class="pull-right">
-        <button class="btn btn-success btn-mini"
-                onclick="$('#myowned .accordion-body').collapse('hide');" >
+        <button type="button" class="btn btn-success btn-xs"
+                onclick="$('#public-experiments .panel-collapse').collapse('hide');" >
         Collapse all</button>
-        <button class="btn btn-success btn-mini"
-                onclick="$('#myowned .accordion-body').collapse('show');" >
+        <button type="button" class="btn btn-success btn-xs"
+                onclick="$('#public-experiments .panel-collapse').collapse('show');" >
         Expand all</button>
       </div>
       <div class="clearfix"></div>
-      <div id="myowned" class="mydata accordion">
+      <div id="public-experiments" class="accordion experiments">
         {% for exp in public_experiments %}
           <div class="accordion-group">
             <div class="accordion-heading">
@@ -81,22 +81,22 @@
               </div>
             </div>
             <div id="collapse{{exp.id}}"
-                 class="accordion-body collapse in">
+                 class="panel-collapse collapse in">
               <div class="accordion-inner">
                 <p><em>{{exp.description|default:""|bleach}}</em></p>
                 {% for ds in exp.datasets.all|dictsortreversed:"id"|slice:":1" %}
                   {% if forloop.first %}
-                    <ul class="nav nav-list">
-                      <li class="nav-header dataset-list-header">Latest dataset in this experiment</li>
+                    <ul class="list-group">
+                      <li class="list-group-item dataset-list-header">Latest dataset in this experiment</li>
                   {% endif %}
-                  <li>
+                  <li class="list-group-item dataset-list-item">
                       <a href="{% url 'tardis_portal.view_dataset' ds.id %}"><strong>{{ ds.description }}</strong></a>
                   {% if exp.public_download_allowed %}
                     {% for datafile in ds.get_images|slice:":5" %}
                       {% if forloop.first %}
-                        <ul class="thumbnails">
+                        <ul class="thumbnails list-inline">
                       {% endif %}
-                      <li>
+                      <li class="list-inline-item">
                         <a class="thumbnail" href="{% url 'tardis.tardis_portal.download.view_datafile' datafile.id %}">{% url 'tardis.tardis_portal.iiif.download_image' datafile_id=datafile.id region='full' size=',50' rotation=0 quality='native' format='jpg' as thumbnail %}
                         <img alt="Thumbnail for Datafile #{{datafile.id}}"
                              src="{{ thumbnail }}"

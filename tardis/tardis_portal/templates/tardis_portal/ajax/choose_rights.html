@@ -66,7 +66,7 @@ $(document).on("click", '#legal-section .submit-button', function() {
 $(document).on("click", '#legal-section .cancel-button', function() {
   // Just refresh this tab pane to reset previous values
   $('#legal-section').parents('.tab-pane').trigger('experiment-change');
-  $('#legal-section').hide();
+  $('#legal-section').modal('hide');
 });
 </script>
 
@@ -79,7 +79,7 @@ $(document).on("click", '#legal-section .cancel-button', function() {
 <form action="{% url 'tardis.tardis_portal.views.choose_rights' experiment.id %}"
       method="post" class="experiment-rights form-horizontal">{% csrf_token %}
   {% load bootstrap %}
-  {{ form|bootstrap }}
+  {{ form|bootstrap_horizontal:'col-md-3' }}
 
   <!-- Public Access selector logic -->
   <script type="text/javascript">
@@ -119,7 +119,7 @@ $(document).on("click", '#legal-section .cancel-button', function() {
     $(this).parents('.tab-pane').find('.alert .close').click();
     // Show confirmation window
     $('#selected-license-text').html($(this).parents('.license-option')
-           .find('.controls').html());
+           .find('.col-md-10').html());
     $('#legal-section').show();
     $('#license-options').hide();
   });
@@ -185,28 +185,33 @@ $('form.experiment-rights').submit(function(evt) {
 <!-- Confirmation Dialog -->
 <div id="selected-license-text"></div>
 <div id="legal-section">
-    <a id="reselect-license">Reselect License</a>
-    <br/><br/>
-    <h3 class="title">Step 3: Accept The Legal Agreement:</h3>
-
-  <div class="form-horizontal">
-    <pre id="publishing-legal-text"></pre>
-    <label class="checkbox">
-      <input id="publishing-consent" type="checkbox" value="Agree" />
-      I agree to the above terms
-    </label>
+  <a id="reselect-license">Reselect License</a>
+  <br/><br/>
+  <h3 class="title">Step 3: Accept The Legal Agreement:</h3>
+  <div class="form">
+    <div class="form-group">
+      <pre id="publishing-legal-text" style="white-space: pre-wrap; word-break: keep-all;"></pre>
+    </div>
+    <div class="form-group">
+      <div class="checkbox">
+        <label>
+          <input id="publishing-consent" type="checkbox" value="Agree" />
+          I agree to the above terms
+        </label>
+      </div>
+    </div>
+    <div class="form-group">
+      <button type="button" class="submit-button btn btn-success">
+        <i class="fa fa-ok"></i>
+        Confirm
+      </button>
+      <button type="button" class="cancel-button btn btn-default"
+              data-dismiss="modal">
+        <i class="fa fa-cancel"></i>
+        Cancel
+      </button>
+    </div>
   </div>
-  <div class="footer">
-    <button class="submit-button btn btn-success">
-      <i class="fa fa-ok"></i>
-      Confirm
-    </button>
-    <button class="cancel-button btn">
-      <i class="fa fa-cancel"></i>
-      Cancel
-    </button>
-  </div>
-  <br/>
 </div>
 
 {% endblock %}
