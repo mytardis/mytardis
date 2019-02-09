@@ -23,7 +23,7 @@ html5lib==1.0.1
 isodate==0.6.0
 pyjwt==1.7.1
 kombu==4.3.0
-lxml==4.3.0
+lxml==4.3.1
 paramiko==2.4.2
 pillow==5.4.1
 pylint==1.9.4 # pyup: <2.0
