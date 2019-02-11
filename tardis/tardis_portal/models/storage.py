@@ -131,7 +131,7 @@ class StorageBox(models.Model):
                   if box.storage_type == StorageBox.CACHE]
         if len(caches) == 1:
             return caches[0]
-        elif len(caches) > 1:
+        if len(caches) > 1:
             return caches[random.choice(range(len(caches)))]
         return None
 

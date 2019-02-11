@@ -59,8 +59,7 @@ def rcauth(request):
             request.session.pop('jws', None)
             django_logout(request)
             return redirect('/')
-        else:
-            JTI(jti=jti).save()
+        JTI(jti=jti).save()
 
         if verified_jwt['aud'] == settings.RAPID_CONNECT_CONFIG['aud'] and \
            verified_jwt['iss'] == settings.RAPID_CONNECT_CONFIG['iss']:
@@ -271,9 +270,9 @@ def manage_auth_methods(request):
         operation = request.POST['operation']
         if operation == 'addAuth':
             return add_auth_method(request)
-        elif operation == 'mergeAuth':
+        if operation == 'mergeAuth':
             return merge_auth_method(request)
-        elif operation == 'removeAuth':
+        if operation == 'removeAuth':
             return remove_auth_method(request)
         return edit_auth_method(request)
     # if GET, we'll just give the initial list of auth methods for the user

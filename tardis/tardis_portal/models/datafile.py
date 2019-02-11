@@ -8,6 +8,7 @@ from tempfile import NamedTemporaryFile
 from os import path
 import mimetypes
 
+import six
 from six.moves import urllib
 from six import string_types
 
@@ -221,8 +222,7 @@ class DataFile(models.Model):
         if schemaType == Schema.DATAFILE or schemaType is None:
             return self.datafileparameterset_set.filter(
                 schema__type=Schema.DATAFILE)
-        else:
-            raise Schema.UnsupportedType
+        raise Schema.UnsupportedType
 
     def __str__(self):
         if self.sha512sum is not None and len(self.sha512sum) > 31:
@@ -235,13 +235,12 @@ class DataFile(models.Model):
     def get_mimetype(self):
         if self.mimetype:
             return self.mimetype
-        else:
-            suffix = path.splitext(self.filename)[-1]
-            try:
-                import mimetypes
-                return mimetypes.types_map[suffix.lower()]
-            except KeyError:
-                return 'application/octet-stream'
+        suffix = path.splitext(self.filename)[-1]
+        try:
+            import mimetypes
+            return mimetypes.types_map[suffix.lower()]
+        except KeyError:
+            return 'application/octet-stream'
 
     def get_view_url(self):
         render_image_size_limit = getattr(settings, 'RENDER_IMAGE_SIZE_LIMIT',
@@ -519,7 +518,7 @@ class DataFileObject(models.Model):
     def _changed(self):
         """return True if anything has changed since last save"""
         new_values = self._current_values
-        for k, v in new_values.iteritems():
+        for k, v in six.iteritems(new_values):
             if k not in self._initial_values:
                 return True
             if self._initial_values[k] != v:

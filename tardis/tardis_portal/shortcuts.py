@@ -1,6 +1,7 @@
 # pylint: disable=http-response-with-json-dumps,http-response-with-content-type-json
 import json
 import re
+from html import escape
 
 from django.conf import settings
 from django.urls import reverse
@@ -9,13 +10,6 @@ from django.http import HttpResponse
 from django.http import HttpResponseRedirect
 from django.template.loader import render_to_string
 from django.contrib.sites.models import Site
-
-try:
-    # Python 3
-    from html import escape
-except ImportError:
-    # Python 2
-    from cgi import escape
 
 from .models import ExperimentParameterSet
 from .ParameterSetManager import ParameterSetManager
@@ -161,7 +155,7 @@ class RestfulExperimentParameterSet(object):
         def get_or_update_or_delete(request, *args, **kwargs):
             if request.method == 'PUT':
                 return context._update(request, *args, **kwargs)
-            elif request.method == 'DELETE':
+            if request.method == 'DELETE':
                 return context._delete(request, *args, **kwargs)
             return context._get(request, *args, **kwargs)
 

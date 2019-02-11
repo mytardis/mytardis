@@ -84,7 +84,7 @@ def retrieve_user_list(request):
         fields = ('first_name', 'last_name', 'username', 'email')
         # Convert attributes to dictionary keys and make sure all values
         # are strings.
-        user = dict([(k, str(getattr(u, k))) for k in fields])
+        user = {k: str(getattr(u, k)) for k in fields}
         try:
             user['auth_methods'] = [
                 '%s:%s:%s' %
@@ -435,10 +435,10 @@ def remove_experiment_access_user(request, experiment_id, username):
             'All experiments must have at least one user as '
             'owner. Add an additional owner first before '
             'removing this one.')
-    else:
-        # the user shouldn't really ever see this in normal operation
-        return HttpResponse(
-            'Experiment has no permissions (of type OWNER_OWNED) !')
+
+    # the user shouldn't really ever see this in normal operation
+    return HttpResponse(
+        'Experiment has no permissions (of type OWNER_OWNED) !')
 
 
 @never_cache
@@ -692,7 +692,7 @@ def remove_experiment_access_group(request, experiment_id, group_id):
     if acl.count() == 1:
         acl[0].delete()
         return HttpResponse('OK')
-    elif acl.count() == 0:
+    if acl.count() == 0:
         return HttpResponse('No ACL available.'
                             'It is likely the group doesnt have access to'
                             'this experiment.')

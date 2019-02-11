@@ -36,7 +36,6 @@ class ParameterSetManagerMixin(ParameterSetManager):
     ParameterSetManager local to this file.
     At the moment its only function is increasing the line count
     '''
-    pass
 
 
 @python_2_unicode_compatible
@@ -91,8 +90,8 @@ class Schema(models.Model):
 
     @classmethod
     def getSubTypes(cls):
-        return set([schema.subtype for schema in Schema.objects.all()
-                    if schema.subtype])
+        return set(schema.subtype for schema in Schema.objects.all()
+                   if schema.subtype)
 
     @classmethod
     def getNamespaces(cls, type_, subtype=None):
@@ -271,21 +270,21 @@ def _get_parameter(parameter):
             value += ' %s' % units
         return value
 
-    elif parameter.name.isLongString() or parameter.name.isString():
+    if parameter.name.isLongString() or parameter.name.isString():
         return parameter.string_value
 
-    elif parameter.name.isFilename():
+    if parameter.name.isFilename():
         as_img_element = _get_filename_parameter_as_image_element(parameter)
 
         return as_img_element if as_img_element is not None else \
             parameter.string_value
 
-    elif parameter.name.isURL():
+    if parameter.name.isURL():
         url = parameter.string_value
         value = "<a href='%s'>%s</a>" % (url, url)
         return mark_safe(value)
 
-    elif parameter.name.isLink():
+    if parameter.name.isLink():
         if parameter.string_value is None:
             return ''
         units = parameter.name.units
@@ -296,15 +295,14 @@ def _get_parameter(parameter):
         value = "<a href='%s'>%s</a>" % (url, parameter.string_value)
         return mark_safe(value)
 
-    elif parameter.name.isDateTime():
+    if parameter.name.isDateTime():
         value = str(parameter.datetime_value)
         return value
 
-    elif parameter.name.is_json():
+    if parameter.name.is_json():
         return json.loads(parameter.string_value)
 
-    else:
-        return None
+    return None
 
 
 @python_2_unicode_compatible

@@ -34,20 +34,19 @@ def deep_storage_mapper(obj, rootdir=None):
     if not rootdir:
         if isinstance(obj, DataFile):
             return urllib.parse.quote(obj.filename.encode('utf-8'), safe=safe)
-        elif isinstance(obj, Dataset):
+        if isinstance(obj, Dataset):
             if settings.DATASET_SPACES_TO_UNDERSCORES:
                 desc = obj.description.replace(' ', '_')
             else:
                 desc = obj.description
             return urllib.parse.quote("%s_%d" % (desc.encode('utf-8'), obj.id), safe=safe)
-        elif isinstance(obj, Experiment):
+        if isinstance(obj, Experiment):
             if settings.EXP_SPACES_TO_UNDERSCORES:
                 title = obj.title.replace(' ', '_')
             else:
                 title = obj.title
             return urllib.parse.quote("%s_%d" % (title.encode('utf-8'), obj.id), safe=safe)
-        else:
-            raise NotImplementedError(type(obj))
+        raise NotImplementedError(type(obj))
 
     if not isinstance(obj, DataFile):
         raise NotImplementedError(type(obj))
@@ -61,7 +60,6 @@ def deep_storage_mapper(obj, rootdir=None):
                             datafile.directory or '', datafile.filename)
     if rootdir != 'datasets':
         return os.path.join(rootdir, filepath)
-    elif exp is not None:
+    if exp is not None:
         return os.path.join(exp.directory or '', exp.title, filepath)
-    else:
-        raise Exception
+    raise Exception

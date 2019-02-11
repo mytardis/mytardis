@@ -101,7 +101,7 @@ class KeyPair(models.Model):
             raise ValueError('invalid PKey object supplied')
         if pkey.public_blob is not None:
             self.key_type = pkey.public_blob.key_type
-            self.public_key = encodebytes(pkey.public_blob.key_blob)
+            self.public_key = encodebytes(pkey.public_blob.key_blob)  # pylint: disable=W1505
         else:
             self.key_type = pkey.get_name()
             self.public_key = pkey.get_base64()

@@ -37,8 +37,7 @@ class Instrument(models.Model):
         if schemaType == Schema.INSTRUMENT or schemaType is None:
             return self.instrumentparameterset_set.filter(
                 schema__type=Schema.INSTRUMENT)
-        else:
-            raise Schema.UnsupportedType
+        raise Schema.UnsupportedType
 
     def _has_change_perm(self, user_obj):
         """
