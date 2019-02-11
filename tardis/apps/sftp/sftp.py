@@ -4,7 +4,7 @@ SFTP Server
 # pylint: disable=C0411,C0412,C0413
 # disabling import order check for monkey patching
 
-import SocketServer
+import socketserver
 import base64
 import collections
 import logging
@@ -468,7 +468,7 @@ class MyTSFTPServer(SFTPServer):
         super(MyTSFTPServer, self).__init__(*args, **kwargs)
 
 
-class MyTSFTPRequestHandler(SocketServer.BaseRequestHandler):
+class MyTSFTPRequestHandler(socketserver.BaseRequestHandler):
     timeout = 60
     auth_timeout = 60
 
@@ -489,7 +489,7 @@ class MyTSFTPRequestHandler(SocketServer.BaseRequestHandler):
         self.transport.close()
 
 
-class MyTSFTPTCPServer(SocketServer.TCPServer):
+class MyTSFTPTCPServer(socketserver.TCPServer):
     # If the server stops/starts quickly, don't fail because of
     # "port in use" error.
     allow_reuse_address = True
@@ -498,7 +498,7 @@ class MyTSFTPTCPServer(SocketServer.TCPServer):
         self.host_key = host_key
         if RequestHandlerClass is None:
             RequestHandlerClass = MyTSFTPRequestHandler
-        SocketServer.TCPServer.__init__(self, address, RequestHandlerClass)
+        socketserver.TCPServer.__init__(self, address, RequestHandlerClass)
 
     def shutdown_request(self, request):
         # Prevent TCPServer from closing the connection prematurely
