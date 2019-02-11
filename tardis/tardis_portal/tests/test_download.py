@@ -145,9 +145,7 @@ class DownloadTestCase(TestCase):
                          'inline; filename="%s"'
                          % self.datafile1.filename)
         self.assertEqual(response.status_code, 200)
-        response_content = ""
-        for c in response.streaming_content:
-            response_content += c
+        response_content = "".join(response.streaming_content)
         self.assertEqual(response_content, 'Hello World!\n')
 
         # check view of file2
@@ -251,9 +249,7 @@ class DownloadTestCase(TestCase):
                          'attachment; filename="%s"'
                          % self.datafile1.filename)
         self.assertEqual(response.status_code, 200)
-        response_content = ""
-        for c in response.streaming_content:
-            response_content += c
+        response_content = "".join(response.streaming_content)
         self.assertEqual(response_content, 'Hello World!\n')
 
         # requesting file2 should be forbidden...
@@ -309,9 +305,7 @@ class DownloadTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         # This should be a TIFF (which often starts with "II\x2a\x00")
         self.assertEqual(response['Content-Type'], 'image/tiff')
-        response_content = ""
-        for c in response.streaming_content:
-            response_content += c
+        response_content = "".join(response.streaming_content)
         self.assertEqual(response_content[0:4], "II\x2a\x00")
 
         # check experiment tar download with alternative organization
@@ -358,7 +352,7 @@ class DownloadTestCase(TestCase):
         df = DataFile.objects.get(pk=self.datafile1.id)  # skipping test # noqa # pylint: disable=W0101
 
         try:
-            from magic import Magic
+            from magic import Magic  # pylint: disable=W0611
             self.assertEqual(df.mimetype, 'text/plain; charset=us-ascii')
         except:
             # XXX Test disabled because lib magic can't be loaded
@@ -377,7 +371,7 @@ class DownloadTestCase(TestCase):
         pdf1 = DataFile.objects.get(pk=pdf1.pk)
 
         try:
-            from magic import Magic  # noqa
+            from magic import Magic  # pylint: disable=W0611
             self.assertEqual(pdf1.mimetype, 'image/jpeg')
         except:
             # XXX Test disabled because lib magic can't be loaded
@@ -403,7 +397,7 @@ class DownloadTestCase(TestCase):
         self.assertEqual(pdf2.file_objects.get().verified, False)
         pdf2 = DataFile.objects.get(pk=pdf2.pk)
         try:
-            from magic import Magic  # noqa
+            from magic import Magic  # pylint: disable=W0611
             self.assertEqual(pdf2.mimetype, ('application/vnd.openxmlformats-'
                                              'officedocument.presentationml.'
                                              'presentation'))
@@ -419,7 +413,7 @@ class DownloadTestCase(TestCase):
         pdf2 = DataFile.objects.get(pk=pdf2.pk)
 
         try:
-            from magic import Magic  # noqa
+            from magic import Magic  # pylint: disable=W0611
             self.assertEqual(pdf2.mimetype, 'application/pdf')
         except:
             # XXX Test disabled because lib magic can't be loaded

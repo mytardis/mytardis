@@ -65,8 +65,8 @@ def check_app_dependencies(app_configs, **kwargs):
     :rtype: list of strings
     """
 
-    installed_apps = dict([(app_config.name, app_config) for app_config in
-                     apps.app_configs.itervalues()])
+    installed_apps = {app_config.name: app_config for app_config in
+                      apps.app_configs.itervalues()}
 
     # According to https://docs.djangoproject.com/en/1.8/topics/checks/#writing-your-own-checks
     # app_configs may contain a list of apps to check, but if it's None, all

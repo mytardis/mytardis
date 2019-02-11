@@ -29,11 +29,11 @@ class ACLAwareBackend(object):
         '''
         if verb in ('change'):
             return Q(canWrite=True) | Q(isOwner=True)
-        elif verb in ('view'):
+        if verb in ('view'):
             return Q(canRead=True) | Q(isOwner=True)
-        elif verb in ('delete',):
+        if verb in ('delete',):
             return Q(canDelete=True) | Q(isOwner=True)
-        elif verb in ('owns', 'share'):
+        if verb in ('owns', 'share'):
             return Q(isOwner=True)
         return Q()
 
@@ -80,7 +80,7 @@ class ACLAwareBackend(object):
                                   lambda *args, **kwargs: None)(user_obj)
         if isinstance(model_spec_perm, bool):
             return model_spec_perm
-        elif model_spec_perm is not None:
+        if model_spec_perm is not None:
             # pass auth to a different object, if False try this ACL
             # works when returned object is parent.
             # makes it impossible to 'hide' child objects

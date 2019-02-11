@@ -147,44 +147,44 @@ class ACLAuthorization(Authorization):
         if isinstance(bundle.obj, Experiment):
             experiments = Experiment.safe.all(bundle.request.user)
             return experiments.filter(id__in=obj_ids)
-        elif isinstance(bundle.obj, ExperimentParameterSet):
+        if isinstance(bundle.obj, ExperimentParameterSet):
             experiments = Experiment.safe.all(bundle.request.user)
             return ExperimentParameterSet.objects.filter(
                 experiment__in=experiments, id__in=obj_ids)
-        elif isinstance(bundle.obj, ExperimentParameter):
+        if isinstance(bundle.obj, ExperimentParameter):
             experiments = Experiment.safe.all(bundle.request.user)
             return ExperimentParameter.objects.filter(
                 parameterset__experiment__in=experiments,
                 id__in=obj_ids
             )
-        elif isinstance(bundle.obj, Dataset):
+        if isinstance(bundle.obj, Dataset):
             dataset_ids = [ds.id for ds in object_list
                            if has_dataset_access(bundle.request, ds.id)]
             return Dataset.objects.filter(id__in=dataset_ids)
-        elif isinstance(bundle.obj, DatasetParameterSet):
+        if isinstance(bundle.obj, DatasetParameterSet):
             return [dps for dps in object_list
                     if has_dataset_access(bundle.request, dps.dataset.id)]
-        elif isinstance(bundle.obj, DatasetParameter):
+        if isinstance(bundle.obj, DatasetParameter):
             return [dp for dp in object_list
                     if has_dataset_access(bundle.request,
                                           dp.parameterset.dataset.id)]
-        elif isinstance(bundle.obj, DataFile):
+        if isinstance(bundle.obj, DataFile):
             all_files = get_accessible_datafiles_for_user(bundle.request)
             return all_files.filter(id__in=obj_ids)
-        elif isinstance(bundle.obj, DatafileParameterSet):
+        if isinstance(bundle.obj, DatafileParameterSet):
             datafiles = get_accessible_datafiles_for_user(bundle.request)
             return DatafileParameterSet.objects.filter(
                 datafile__in=datafiles, id__in=obj_ids
             )
-        elif isinstance(bundle.obj, DatafileParameter):
+        if isinstance(bundle.obj, DatafileParameter):
             datafiles = get_accessible_datafiles_for_user(bundle.request)
             return DatafileParameter.objects.filter(
                 parameterset__datafile__in=datafiles, id__in=obj_ids)
-        elif isinstance(bundle.obj, Schema):
+        if isinstance(bundle.obj, Schema):
             return object_list
-        elif isinstance(bundle.obj, ParameterName):
+        if isinstance(bundle.obj, ParameterName):
             return object_list
-        elif isinstance(bundle.obj, ObjectACL):
+        if isinstance(bundle.obj, ObjectACL):
             experiment_ids = Experiment.safe.all(
                 bundle.request.user).values_list('id', flat=True)
             return ObjectACL.objects.filter(
@@ -192,7 +192,7 @@ class ACLAuthorization(Authorization):
                 object_id__in=experiment_ids,
                 id__in=obj_ids
             )
-        elif bundle.request.user.is_authenticated and \
+        if bundle.request.user.is_authenticated and \
                 isinstance(bundle.obj, User):
             if facilities_managed_by(bundle.request.user):
                 return object_list
@@ -200,28 +200,27 @@ class ACLAuthorization(Authorization):
                     (user == bundle.request.user or
                      user.experiment_set.filter(public_access__gt=1)
                      .count() > 0)]
-        elif isinstance(bundle.obj, Group):
+        if isinstance(bundle.obj, Group):
             if facilities_managed_by(bundle.request.user).count() > 0:
                 return object_list
             return bundle.request.user.groups.filter(id__in=obj_ids)
-        elif isinstance(bundle.obj, Facility):
+        if isinstance(bundle.obj, Facility):
             facilities = facilities_managed_by(bundle.request.user)
             return [facility for facility in object_list
                     if facility in facilities]
-        elif isinstance(bundle.obj, Instrument):
+        if isinstance(bundle.obj, Instrument):
             facilities = facilities_managed_by(bundle.request.user)
             instruments = Instrument.objects.filter(facility__in=facilities)
             return [instrument for instrument in object_list
                     if instrument in instruments]
-        elif isinstance(bundle.obj, StorageBox):
+        if isinstance(bundle.obj, StorageBox):
             return object_list
-        elif isinstance(bundle.obj, StorageBoxOption):
+        if isinstance(bundle.obj, StorageBoxOption):
             return [option for option in object_list
                     if option.key in StorageBoxOptionResource.accessible_keys]
-        elif isinstance(bundle.obj, StorageBoxAttribute):
+        if isinstance(bundle.obj, StorageBoxAttribute):
             return object_list
-        else:
-            return []
+        return []
 
     def read_detail(self, object_list, bundle):  # noqa # too complex
         if bundle.request.user.is_authenticated and \
@@ -229,50 +228,50 @@ class ACLAuthorization(Authorization):
             return True
         if isinstance(bundle.obj, Experiment):
             return has_experiment_access(bundle.request, bundle.obj.id)
-        elif isinstance(bundle.obj, ExperimentParameterSet):
+        if isinstance(bundle.obj, ExperimentParameterSet):
             return has_experiment_access(
                 bundle.request, bundle.obj.experiment.id)
-        elif isinstance(bundle.obj, ExperimentParameter):
+        if isinstance(bundle.obj, ExperimentParameter):
             return has_experiment_access(
                 bundle.request, bundle.obj.parameterset.experiment.id)
-        elif isinstance(bundle.obj, Dataset):
+        if isinstance(bundle.obj, Dataset):
             return has_dataset_access(bundle.request, bundle.obj.id)
-        elif isinstance(bundle.obj, DatasetParameterSet):
+        if isinstance(bundle.obj, DatasetParameterSet):
             return has_dataset_access(bundle.request, bundle.obj.dataset.id)
-        elif isinstance(bundle.obj, DatasetParameter):
+        if isinstance(bundle.obj, DatasetParameter):
             return has_dataset_access(
                 bundle.request, bundle.obj.parameterset.dataset.id)
-        elif isinstance(bundle.obj, DataFile):
+        if isinstance(bundle.obj, DataFile):
             return has_datafile_access(bundle.request, bundle.obj.id)
-        elif isinstance(bundle.obj, DatafileParameterSet):
+        if isinstance(bundle.obj, DatafileParameterSet):
             return has_datafile_access(
                 bundle.request, bundle.obj.datafile.id)
-        elif isinstance(bundle.obj, DatafileParameter):
+        if isinstance(bundle.obj, DatafileParameter):
             return has_datafile_access(
                 bundle.request, bundle.obj.parameterset.datafile.id)
-        elif isinstance(bundle.obj, User):
+        if isinstance(bundle.obj, User):
             # allow all authenticated users to read public user info
             # the dehydrate function also adds/removes some information
             authenticated = bundle.request.user.is_authenticated
             public_user = bundle.obj.experiment_set.filter(
                 public_access__gt=1).count() > 0
             return public_user or authenticated
-        elif isinstance(bundle.obj, Schema):
+        if isinstance(bundle.obj, Schema):
             return True
-        elif isinstance(bundle.obj, ParameterName):
+        if isinstance(bundle.obj, ParameterName):
             return True
-        elif isinstance(bundle.obj, StorageBox):
+        if isinstance(bundle.obj, StorageBox):
             return bundle.request.user.is_authenticated
-        elif isinstance(bundle.obj, StorageBoxOption):
+        if isinstance(bundle.obj, StorageBoxOption):
             return bundle.request.user.is_authenticated and \
                 bundle.obj.key in StorageBoxOptionResource.accessible_keys
-        elif isinstance(bundle.obj, StorageBoxAttribute):
+        if isinstance(bundle.obj, StorageBoxAttribute):
             return bundle.request.user.is_authenticated
-        elif isinstance(bundle.obj, Group):
+        if isinstance(bundle.obj, Group):
             return bundle.obj in bundle.request.user.groups.all()
-        elif isinstance(bundle.obj, Facility):
+        if isinstance(bundle.obj, Facility):
             return bundle.obj in facilities_managed_by(bundle.request.user)
-        elif isinstance(bundle.obj, Instrument):
+        if isinstance(bundle.obj, Instrument):
             facilities = facilities_managed_by(bundle.request.user)
             return bundle.obj.facility in facilities
         raise NotImplementedError(type(bundle.obj))
@@ -288,7 +287,7 @@ class ACLAuthorization(Authorization):
             return True
         if isinstance(bundle.obj, Experiment):
             return bundle.request.user.has_perm('tardis_portal.add_experiment')
-        elif isinstance(bundle.obj, ExperimentParameterSet):
+        if isinstance(bundle.obj, ExperimentParameterSet):
             if not bundle.request.user.has_perm(
                     'tardis_portal.change_experiment'):
                 return False
@@ -297,16 +296,16 @@ class ACLAuthorization(Authorization):
                 experiment = ExperimentResource.get_via_uri(
                     ExperimentResource(), experiment_uri, bundle.request)
                 return has_write_permissions(bundle.request, experiment.id)
-            elif getattr(bundle.obj.experiment, 'id', False):
+            if getattr(bundle.obj.experiment, 'id', False):
                 return has_write_permissions(bundle.request,
                                              bundle.obj.experiment.id)
             return False
-        elif isinstance(bundle.obj, ExperimentParameter):
+        if isinstance(bundle.obj, ExperimentParameter):
             return bundle.request.user.has_perm(
                 'tardis_portal.change_experiment') and \
                 has_write_permissions(bundle.request,
                                       bundle.obj.parameterset.experiment.id)
-        elif isinstance(bundle.obj, Dataset):
+        if isinstance(bundle.obj, Dataset):
             if not bundle.request.user.has_perm(
                     'tardis_portal.change_dataset'):
                 return False
@@ -322,7 +321,7 @@ class ACLAuthorization(Authorization):
                 else:
                     return False
             return perm
-        elif isinstance(bundle.obj, DatasetParameterSet):
+        if isinstance(bundle.obj, DatasetParameterSet):
             if not bundle.request.user.has_perm(
                     'tardis_portal.change_dataset'):
                 return False
@@ -331,16 +330,16 @@ class ACLAuthorization(Authorization):
                 dataset = DatasetResource.get_via_uri(
                     DatasetResource(), dataset_uri, bundle.request)
                 return has_dataset_write(bundle.request, dataset.id)
-            elif getattr(bundle.obj.dataset, 'id', False):
+            if getattr(bundle.obj.dataset, 'id', False):
                 return has_dataset_write(bundle.request,
                                          bundle.obj.dataset.id)
             return False
-        elif isinstance(bundle.obj, DatasetParameter):
+        if isinstance(bundle.obj, DatasetParameter):
             return bundle.request.user.has_perm(
                 'tardis_portal.change_dataset') and \
                 has_dataset_write(bundle.request,
                                   bundle.obj.parameterset.dataset.id)
-        elif isinstance(bundle.obj, DataFile):
+        if isinstance(bundle.obj, DataFile):
             dataset = DatasetResource.get_via_uri(DatasetResource(),
                                                   bundle.data['dataset'],
                                                   bundle.request)
@@ -349,7 +348,7 @@ class ACLAuthorization(Authorization):
                 bundle.request.user.has_perm('tardis_portal.add_datafile'),
                 has_dataset_write(bundle.request, dataset.id),
             ])
-        elif isinstance(bundle.obj, DatafileParameterSet):
+        if isinstance(bundle.obj, DatafileParameterSet):
             dataset = Dataset.objects.get(
                 pk=bundle.obj.datafile.dataset.id)
             return all([
@@ -357,7 +356,7 @@ class ACLAuthorization(Authorization):
                 bundle.request.user.has_perm('tardis_portal.add_datafile'),
                 has_dataset_write(bundle.request, dataset.id),
             ])
-        elif isinstance(bundle.obj, DatafileParameter):
+        if isinstance(bundle.obj, DatafileParameter):
             dataset = Dataset.objects.get(
                 pk=bundle.obj.parameterset.datafile.dataset.id)
             return all([
@@ -365,20 +364,20 @@ class ACLAuthorization(Authorization):
                 bundle.request.user.has_perm('tardis_portal.add_datafile'),
                 has_dataset_write(bundle.request, dataset.id),
             ])
-        elif isinstance(bundle.obj, DataFileObject):
+        if isinstance(bundle.obj, DataFileObject):
             return all([
                 bundle.request.user.has_perm('tardis_portal.change_dataset'),
                 bundle.request.user.has_perm('tardis_portal.add_datafile'),
                 has_dataset_write(bundle.request,
                                   bundle.obj.datafile.dataset.id),
             ])
-        elif isinstance(bundle.obj, ObjectACL):
+        if isinstance(bundle.obj, ObjectACL):
             return bundle.request.user.has_perm('tardis_portal.add_objectacl')
-        elif isinstance(bundle.obj, Group):
+        if isinstance(bundle.obj, Group):
             return bundle.request.user.has_perm('tardis_portal.add_group')
-        elif isinstance(bundle.obj, Facility):
+        if isinstance(bundle.obj, Facility):
             return bundle.request.user.has_perm('tardis_portal.add_facility')
-        elif isinstance(bundle.obj, Instrument):
+        if isinstance(bundle.obj, Instrument):
             facilities = facilities_managed_by(bundle.request.user)
             return all([
                 bundle.request.user.has_perm('tardis_portal.add_instrument'),
@@ -575,10 +574,7 @@ class ParameterSetResource(MyTardisModelResource):
                                                 bundle.data['schema'],
                                                 bundle.request)
         except NotFound:
-            try:
-                schema = Schema.objects.get(namespace=bundle.data['schema'])
-            except Schema.DoesNotExist:
-                raise
+            schema = Schema.objects.get(namespace=bundle.data['schema'])
         bundle.obj.schema = schema
         del(bundle.data['schema'])
         return bundle

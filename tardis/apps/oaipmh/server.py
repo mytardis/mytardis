@@ -148,7 +148,7 @@ class ProxyingServer(IOAI):
 
         def appendIdents(list_, p):
             try:
-                return list_ + p.listIdentifiers(metadataPrefix, **kwargs)
+                return list_ + list(p.listIdentifiers(metadataPrefix, **kwargs))
             except oaipmh.error.CannotDisseminateFormatError:
                 return list_
         return frozenset(reduce(appendIdents, self.providers, []))
@@ -207,7 +207,7 @@ class ProxyingServer(IOAI):
 
         def appendRecords(list_, p):
             try:
-                return list_ + p.listRecords(metadataPrefix, **kwargs)
+                return list_ + list(p.listRecords(metadataPrefix, **kwargs))
             except oaipmh.error.CannotDisseminateFormatError:
                 return list_
         return frozenset(reduce(appendRecords, self.providers, []))
@@ -232,10 +232,10 @@ class ProxyingServer(IOAI):
         if admin_users:
             # Use admin user email addresses if we have them
             return map(lambda u: u.email, admin_users)
-        elif settings.ADMINS:
+        if settings.ADMINS:
             # Otherwise we should have a host email
             return map(lambda t: t[1], list(settings.ADMINS))
-        elif settings.EMAIL_HOST_USER:
+        if settings.EMAIL_HOST_USER:
             # Otherwise we should have a host email
             return [settings.EMAIL_HOST_USER]
         # We might as well advertise our ignorance

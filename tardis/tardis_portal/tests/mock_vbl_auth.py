@@ -32,7 +32,7 @@ class MockBackend():
 
         if username != 'test@test.com':
             return None
-        elif password != 'testpass':
+        if password != 'testpass':
             return None
 
         try:

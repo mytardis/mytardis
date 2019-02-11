@@ -16,7 +16,7 @@ def paginator_number(data_list, paginator, page_num, query_string, page_index):
     """
     if page_index == DOT:
         return mark_safe('<li class="disabled"><a href="#">...</a></li> ')
-    elif page_index == page_num:
+    if page_index == page_num:
         return format_html('<li class="active"><span>{}</span></li> ', page_index + 1)
     return format_html('<li><a class="pagelink" href="{}"{}>{}</a></li> ',
                        query_string.format(page=page_index),

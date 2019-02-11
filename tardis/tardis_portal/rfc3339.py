@@ -47,7 +47,7 @@ def _utc_offset(date, use_system_timezone):
 
     if date.utcoffset() is not None:
         return date.utcoffset()
-    elif use_system_timezone:
+    if use_system_timezone:
         if time.daylight:
             # multiplying by "-1" had to be done as pep8 wouldn't allow
             # "-time.altzone"
@@ -96,8 +96,7 @@ def rfc3339(date, utc=False, use_system_timezone=True):
     try:
         if utc:
             return _utc_string(datetime.datetime.utcfromtimestamp(date))
-        else:
-            date = datetime.datetime.fromtimestamp(date)
+        date = datetime.datetime.fromtimestamp(date)
     except TypeError:
         pass
     if isinstance(date, datetime.date):

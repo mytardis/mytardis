@@ -234,7 +234,7 @@ class ObjectACL(models.Model):
         """
         if self.pluginId == 'django_user':
             return User.objects.get(pk=self.entityId)
-        elif self.pluginId == 'django_group':
+        if self.pluginId == 'django_group':
             return Group.objects.get(pk=self.entityId)
         return None
 
