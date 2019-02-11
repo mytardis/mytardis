@@ -10,6 +10,10 @@ MyTardis
    :target: https://semaphoreapp.com/mytardis/mytardis
    :alt: Semaphore build status
 
+.. image:: https://travis-ci.org/mytardis/mytardis.svg?branch=develop
+    :target: https://travis-ci.org/mytardis/mytardis
+    :alt: Travis CI build status
+   
 .. image:: https://api.codacy.com/project/badge/Grade/c27bad18abaf443c93e58192757c2025
    :alt: Codacy Badge
    :target: https://app.codacy.com/app/mytardis/mytardis?utm_source=github.com&utm_medium=referral&utm_content=mytardis/mytardis&utm_campaign=badger
