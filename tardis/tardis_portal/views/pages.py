@@ -826,11 +826,11 @@ def checksums_download(request, dataset_id, **kwargs):
             get_filesystem_safe_dataset_name(dataset))
         return response
 
-    elif format == 'json':
+    if format == 'json':
         jdict = {'checksums': []}
         for c in checksums:
             jdict['checksums'].append({'checksum': c[0], 'file': c[1], 'type': type})
 
         return JsonResponse(jdict)
-    else:
-        raise ValueError("Invalid format. Valid formats are 'text' or 'json'")
+
+    raise ValueError("Invalid format. Valid formats are 'text' or 'json'")

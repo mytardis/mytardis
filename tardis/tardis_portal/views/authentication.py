@@ -6,7 +6,6 @@ import logging
 from six.moves import urllib
 
 import jwt
-import pwgen
 
 from django.conf import settings
 from django.contrib import auth as djauth
@@ -60,8 +59,7 @@ def rcauth(request):
             request.session.pop('jws', None)
             django_logout(request)
             return redirect('/')
-        else:
-            JTI(jti=jti).save()
+        JTI(jti=jti).save()
 
         if verified_jwt['aud'] == settings.RAPID_CONNECT_CONFIG['aud'] and \
            verified_jwt['iss'] == settings.RAPID_CONNECT_CONFIG['iss']:
@@ -84,7 +82,6 @@ def rcauth(request):
             user_args = {
                 'id': institution_email.lower(),
                 'email': institution_email.lower(),
-                'password': pwgen.pwgen(),
                 'first_name': first_name,
                 'last_name': request.session['attributes']['surname'],
             }
@@ -273,9 +270,9 @@ def manage_auth_methods(request):
         operation = request.POST['operation']
         if operation == 'addAuth':
             return add_auth_method(request)
-        elif operation == 'mergeAuth':
+        if operation == 'mergeAuth':
             return merge_auth_method(request)
-        elif operation == 'removeAuth':
+        if operation == 'removeAuth':
             return remove_auth_method(request)
         return edit_auth_method(request)
     # if GET, we'll just give the initial list of auth methods for the user

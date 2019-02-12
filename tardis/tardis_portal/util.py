@@ -65,15 +65,14 @@ def get_free_space(fs_dir):
                                                    None, None,
                                                    ctypes.pointer(free_bytes))
         return free_bytes.value
-    elif sys_type == 'Darwin' or sys_type == 'DragonFly' or 'BSD' in sys_type:
+    if sys_type == 'Darwin' or sys_type == 'DragonFly' or 'BSD' in sys_type:
         st = os.statvfs(fs_dir)
         return st.f_bfree * st.f_frsize
-    elif sys_type == 'Linux':
+    if sys_type == 'Linux':
         st = os.statvfs(fs_dir)
         return st.f_bfree * st.f_bsize
-    else:
-        raise RuntimeError('Unsupported / unexpected platform type: %s' %
-                           sys_type)
+    raise RuntimeError('Unsupported / unexpected platform type: %s' %
+                       sys_type)
 
 
 def generate_file_checksums(sourceFile, tempFile=None, leave_open=False):
@@ -111,7 +110,7 @@ def generate_file_checksums(sourceFile, tempFile=None, leave_open=False):
 
 def _load_template(template_name):
     from jstemplate.loading import find
-    template_locations = find(template_name)
+    template_locations = list(find(template_name))
     # Each returned location is a tuple of (template_name, template_path).
     # We'll just use the template_path of the first location
     template_path = template_locations[0][1]
@@ -136,7 +135,7 @@ def render_public_access_badge(experiment):
             'label': 'Private',
             'private': True,
         })
-    elif experiment.public_access == experiment.PUBLIC_ACCESS_NONE and \
+    if experiment.public_access == experiment.PUBLIC_ACCESS_NONE and \
             experiment.is_publication() and \
             not experiment.is_publication_draft():
         return render_mustache('tardis_portal/badges/public_access', {
@@ -144,7 +143,7 @@ def render_public_access_badge(experiment):
             'label': '[PUBLICATION] Awaiting approval',
             'private': True,
         })
-    elif experiment.public_access == experiment.PUBLIC_ACCESS_NONE and \
+    if experiment.public_access == experiment.PUBLIC_ACCESS_NONE and \
             experiment.is_publication_draft():
         return render_mustache('tardis_portal/badges/public_access', {
             'title': 'No public access',

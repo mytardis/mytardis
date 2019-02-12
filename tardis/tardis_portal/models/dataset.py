@@ -71,8 +71,7 @@ class Dataset(models.Model):
         if schemaType == Schema.DATASET or schemaType is None:
             return self.datasetparameterset_set.filter(
                 schema__type=Schema.DATASET)
-        else:
-            raise Schema.UnsupportedType
+        raise Schema.UnsupportedType
 
     def __str__(self):
         return self.description

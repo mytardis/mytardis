@@ -114,8 +114,7 @@ class Experiment(models.Model):
         if schemaType == Schema.EXPERIMENT or schemaType is None:
             return self.experimentparameterset_set.filter(
                 schema__type=Schema.EXPERIMENT)
-        else:
-            raise Schema.UnsupportedType
+        raise Schema.UnsupportedType
 
     def __str__(self):
         return self.title

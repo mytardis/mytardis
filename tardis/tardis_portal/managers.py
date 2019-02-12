@@ -143,8 +143,7 @@ class ExperimentManager(OracleSafeManager):
 
         if user.has_perm('tardis_acls.view_experiment', experiment):
             return experiment
-        else:
-            raise PermissionDenied
+        raise PermissionDenied
 
     def owned(self, user):
         """

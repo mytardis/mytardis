@@ -21,7 +21,6 @@ class RemovedInMyTardis42Warning(PendingDeprecationWarning):
           RemovedInMyTardis42Warning
       )
     '''
-    pass
 
 
 class RemovedInMyTardis41Warning(DeprecationWarning):
@@ -38,4 +37,3 @@ class RemovedInMyTardis41Warning(DeprecationWarning):
           RemovedInMyTardis41Warning
       )
     '''
-    pass
