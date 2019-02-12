@@ -13,3 +13,4 @@ Configuration and Administration
   admin/searchsetup
   admin/storage
   admin/facility_overview
+  admin/task_priorities
