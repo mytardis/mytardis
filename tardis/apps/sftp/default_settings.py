@@ -6,7 +6,7 @@ SFTP_GEVENT = False
 #     "-----BEGIN RSA PRIVATE KEY-----\n"
 #     "...\n"
 #     "-----END RSA PRIVATE KEY-----\n")
-SFTP_HOST_KEY = ""
+SFTP_HOST_KEY = b""
 
 SFTP_USERNAME_ATTRIBUTE = 'email'
 '''

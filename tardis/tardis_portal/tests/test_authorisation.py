@@ -274,8 +274,10 @@ class ObjectACLTestCase(TestCase):
                                     % (group.id,
                                        self.user2.username,
                                        localdb_auth_key))
-        self.assertEqual(response.content, 'User %s is already a member of that'
-                         ' group.' % self.user2.username)
+        self.assertEqual(
+            response.content,
+            b'User %s is already a member of that group.'
+            % self.user2.username.encode())
 
         # user1 is not allowed to modify acls for experiment2
         response = self.client1.get('/experiment/control_panel/%i/access_list'
@@ -299,7 +301,7 @@ class ObjectACLTestCase(TestCase):
                                        self.user3.username,
                                        localdb_auth_key))
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.content, 'OK')
+        self.assertEqual(response.content, b'OK')
 
         # test add non-existent user
         non_existant = 'test_boozer'
@@ -508,15 +510,15 @@ class ObjectACLTestCase(TestCase):
                                     '/remove/user/%s/'
                                     % (self.experiment1.id, self.user3.username))
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.content, 'OK')
+        self.assertEqual(response.content, b'OK')
 
         # try again, see if it falls over
         response = self.client1.get('/experiment/control_panel/%i/access_list'
                                     '/remove/user/%s/'
                                     % (self.experiment1.id, self.user3.username))
         self.assertEqual(response.content,
-                         'The user %s does not have access to this experiment.'
-                         % self.user3.username)
+                         b'The user %s does not have access to this experiment.'
+                         % self.user3.username.encode())
 
         # try to remove from a non-existant experiment
         response = self.client1.get('/experiment/control_panel/%i/access_list'
@@ -528,10 +530,10 @@ class ObjectACLTestCase(TestCase):
         response = self.client1.get('/experiment/control_panel/%i/access_list'
                                     '/remove/user/%s/'
                                     % (self.experiment1.id, self.user1.username))
-        self.assertEqual(response.content, 'All experiments must have at least '
-                                           'one user as owner. Add an '
-                                           'additional owner first before '
-                                           'removing this one.')
+        self.assertEqual(response.content, b'All experiments must have at least '
+                                           b'one user as owner. Add an '
+                                           b'additional owner first before '
+                                           b'removing this one.')
 
         # create a group2 and add it to experiment1
         response = self.client1.get('/experiment/control_panel'
@@ -600,7 +602,7 @@ class ObjectACLTestCase(TestCase):
         # experiment1, and user3 is allowed to remove other owners (unless they
         # are the only owner user)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.content, 'OK')
+        self.assertEqual(response.content, b'OK')
 
         # as user3 (now the only owner), attempts to remove myself as the owner
         # of experiment1
@@ -612,9 +614,9 @@ class ObjectACLTestCase(TestCase):
         # this should fail with an error since every experiment must have at
         # least one user owner
         self.assertEqual(response.content,
-                         'All experiments must have at least one user as '
-                         'owner. Add an additional owner first before '
-                         'removing this one.')
+                         b'All experiments must have at least one user as '
+                         b'owner. Add an additional owner first before '
+                         b'removing this one.')
 
         self.client1.logout()
         self.client3.logout()
@@ -760,13 +762,13 @@ class ObjectACLTestCase(TestCase):
         response = self.client1.get('/experiment/control_panel/%i'
                                     '/access_list/remove/group/%s/'
                                     % (self.experiment1.id, group.id))
-        self.assertIn('No ACL available', response.content)
+        self.assertIn(b'No ACL available', response.content)
 
         # Try to remove a group ID which doesn't exist
         response = self.client1.get('/experiment/control_panel/%i'
                                     '/access_list/remove/group/0/'
                                     % self.experiment1.id)
-        self.assertIn('Group does not exist', response.content)
+        self.assertIn(b'Group does not exist', response.content)
 
         self.client1.logout()
         self.client2.logout()

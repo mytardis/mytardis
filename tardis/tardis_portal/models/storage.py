@@ -249,7 +249,7 @@ class StorageBoxOption(models.Model):
             return None
         if self.value_type == StorageBoxOption.STRING:
             return self.value
-        return pickle.loads(self.value)
+        return pickle.loads(str(self.value))
 
     @unpickled_value.setter
     def unpickled_value(self, input_value):

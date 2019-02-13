@@ -1,6 +1,6 @@
 import base64
 
-from six import BytesIO
+from six import StringIO
 
 from django import forms
 from django.apps import apps
@@ -73,7 +73,7 @@ class KeyPair(models.Model):
         if self.public_key:
             public_key = base64.b64decode(self.public_key)
         if self.private_key:
-            private_key = BytesIO(self.private_key)
+            private_key = StringIO(self.private_key)
 
         if self.key_type == 'ssh-dss':
             pkey = DSSKey(data=public_key, file_obj=private_key)
@@ -107,7 +107,7 @@ class KeyPair(models.Model):
             self.public_key = pkey.get_base64()
         self.private_key = None
         if pkey.can_sign():
-            key_data = BytesIO()
+            key_data = StringIO()
             pkey.write_private_key(key_data)
             self.private_key = key_data.getvalue()
 

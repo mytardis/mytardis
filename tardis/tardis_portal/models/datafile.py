@@ -600,7 +600,8 @@ class DataFileObject(models.Model):
         cached_file_object = getattr(self, '_cached_file_object', None)
         if cached_file_object is None or cached_file_object.closed:
             cached_file_object = self._storage.open(self.uri or
-                                                    self._create_uri())
+                                                    self._create_uri(),
+                                                    mode='rb')
             self._cached_file_object = cached_file_object
         return self._cached_file_object
 
@@ -613,7 +614,7 @@ class DataFileObject(models.Model):
         """
         if file_object.closed:
             file_object = File(file_object)
-            file_object.open()
+            file_object.open(mode='rb')
         file_object.seek(0)
         self.uri = self._storage.save(self.uri or self.create_set_uri(),
                                       file_object)  # TODO: define behaviour
@@ -846,7 +847,7 @@ def compute_checksums(file_object,
     update_fns = {'md5sum': lambda x, y: x.update(y),
                   'sha512sum': lambda x, y: x.update(y)}
     file_object.seek(0)
-    for chunk in iter(lambda: file_object.read(32 * blocksize), ''):
+    for chunk in iter(lambda: file_object.read(32 * blocksize), b''):
         for key, val in results.items():
             update_fns[key](val, chunk)
     if close_file:

@@ -33,7 +33,7 @@ if __name__ == "__main__":
     try:
         run()
     except ImproperlyConfigured as e:
-        if 'SECRET_KEY' in e.message:
+        if 'SECRET_KEY' in str(e):
             print(r'''
 # execute this wonderful command to have your settings.py created/updated
 # with a generated Django SECRET_KEY (required for MyTardis to run)

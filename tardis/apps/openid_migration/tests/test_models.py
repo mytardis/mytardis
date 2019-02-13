@@ -23,4 +23,4 @@ class ModelTestCase(TestCase):
     def test_OpenidUserMigration_creation(self):
         openidUserMigration_obj = self.create_OpenidUserMigration()
         self.assertTrue(isinstance(openidUserMigration_obj, OpenidUserMigration))
-        self.assertEqual(openidUserMigration_obj.__unicode__(), 'abc | def')
+        self.assertEqual(str(openidUserMigration_obj), 'abc | def')

@@ -1,5 +1,6 @@
 from django.test import TestCase
 from django.conf import settings
+
 from ..models import User, Experiment
 from ..publish.provider.rifcsprovider import RifCsProvider
 from ..publish.publishservice import PublishService
@@ -89,11 +90,11 @@ class PublishServiceTestCase(TestCase):
         self.assertTrue(os.path.exists(rifcs_file))
         output = open(rifcs_file)
         lines = output.readlines()
-        self.assertTrue("experiment title: Experiment 1\n" in lines)
-        self.assertTrue("experiment id: 1\n" in lines)
-        self.assertTrue("experiment description: This is my description.\n" in lines)
-        self.assertTrue("beamline: %s\n" % BEAMLINE_VALUE in lines)
-        self.assertTrue("license uri: %s\n" % LICENSE_URL_VALUE in lines)
+        self.assertIn("experiment title: Experiment 1\n", lines)
+        self.assertIn("experiment id: 1\n", lines)
+        self.assertIn("experiment description: This is my description.\n", lines)
+        self.assertIn("beamline: %s\n" % BEAMLINE_VALUE, lines)
+        self.assertIn("license uri: %s\n" % LICENSE_URL_VALUE, lines)
 
         # Set to false again and see if it deletes it
         self.e1.public_access = Experiment.PUBLIC_ACCESS_NONE

@@ -235,8 +235,8 @@ class TokenTestCase(TestCase):
         response = retrieve_access_list_tokens(
             request, experiment_id=experiment.id)
         matches = re.findall(
-            'href="/token/delete/[0-9]+/"', response.content)
+            b'href="/token/delete/[0-9]+/"', response.content)
         self.assertEqual(len(matches), 1)
         self.assertIn(
-            'href="/token/delete/%s/"' % token.id,
+            b'href="/token/delete/%d/"' % token.id,
             response.content)

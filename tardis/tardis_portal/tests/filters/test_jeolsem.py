@@ -1,4 +1,7 @@
 from os import path
+from unittest import skipIf
+
+import six
 
 from django.test import TransactionTestCase
 
@@ -10,6 +13,7 @@ from ...ParameterSetManager import ParameterSetManager
 from ..test_download import get_size_and_sha512sum
 
 
+@skipIf(six.PY3, "The JOEL SEM filter doesn't yet work with Python 3")
 class JEOLSEMFilterTestCase(TransactionTestCase):
 
     def setUp(self):

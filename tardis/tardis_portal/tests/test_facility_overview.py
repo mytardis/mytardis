@@ -56,8 +56,8 @@ class FacilityOverviewTestCase(TestCase):
         self.dataset.save()
 
         def _build(dataset, filename, url):
-            datafile_content = "\n".join(['some data %d' % i
-                                          for i in range(1000)])
+            datafile_content = b"\n".join([b'some data %d' % i
+                                           for i in range(1000)])
             filesize = len(datafile_content)
             datafile = DataFile(
                 dataset=dataset, filename=filename, size=filesize)

@@ -85,7 +85,7 @@ class ListTestCase(TransactionTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(
             response['Content-Type'], 'application/json; charset=utf-8')
-        self.assertEqual(response.content, '[]')
+        self.assertEqual(response.content, b'[]')
 
     def testHandlesSingleEntry(self):
         from ..views import SCHEMA_URI
@@ -403,4 +403,4 @@ class DeleteTestCase(TransactionTestCase):
                           self._create_initial_entry()['id']]))
         self.assertEqual(response.status_code, 200)
         obj = json.loads(response.content)
-        self.assertGreater(obj.keys(), 1)
+        self.assertGreater(len(obj.keys()), 1)
