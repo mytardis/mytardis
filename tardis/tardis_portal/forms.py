@@ -39,6 +39,7 @@ forms module
 from collections import OrderedDict
 import logging
 
+import six
 from six.moves import UserDict
 
 from django import forms
@@ -613,7 +614,7 @@ def create_parameterset_edit_form(parameterset, request=None):
     if request:
         fields = OrderedDict()
 
-        for key, value in sorted(request.POST.iteritems()):
+        for key, value in sorted(six.iteritems(request.POST)):
 
             x = 1
             stripped_key = key.replace('_s47_', '/')
@@ -695,7 +696,7 @@ def save_datafile_edit_form(parameterset, request):
     psm = ParameterSetManager(parameterset=parameterset)
     psm.delete_all_params()
 
-    for key, value in sorted(request.POST.iteritems()):
+    for key, value in sorted(six.iteritems(request.POST)):
         if value:
             stripped_key = key.replace('_s47_', '/')
             stripped_key = stripped_key.rpartition('__')[0]
@@ -711,7 +712,7 @@ def create_datafile_add_form(schema, parentObject, request=None):
     if request:
         fields = OrderedDict()
 
-        for key, value in sorted(request.POST.iteritems()):
+        for key, value in sorted(six.iteritems(request.POST)):
 
             x = 1
 
@@ -791,7 +792,7 @@ def save_datafile_add_form(schema, parentObject, request):
     psm = ParameterSetManager(schema=schema,
                               parentObject=parentObject)
 
-    for key, value in sorted(request.POST.iteritems()):
+    for key, value in sorted(six.iteritems(request.POST)):
         if value:
             stripped_key = key.replace('_s47_', '/')
             stripped_key = stripped_key.rpartition('__')[0]

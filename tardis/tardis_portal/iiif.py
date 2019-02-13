@@ -114,7 +114,7 @@ def compute_etag(request, datafile_id, *args, **kwargs):
     checksum = datafile.sha512sum or datafile.md5sum
     signature = checksum + json.dumps((args, kwargs))
     import hashlib
-    return hashlib.sha1(signature).hexdigest()
+    return hashlib.sha1(signature.encode()).hexdigest()
 
 
 @etag(compute_etag)

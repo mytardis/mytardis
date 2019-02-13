@@ -156,10 +156,10 @@ class UploadTestCase(TestCase):
         request = HttpRequest()
         request.POST = post
         response = upload_complete(request)
-        self.assertTrue('<p>Number: 1</p>' in response.content)
-        self.assertTrue('<p>Errors: 0</p>' in response.content)
-        self.assertTrue('<p>Bytes: 2</p>' in response.content)
-        self.assertTrue('<p>Speed: really fast!</p>'
+        self.assertTrue(b'<p>Number: 1</p>' in response.content)
+        self.assertTrue(b'<p>Errors: 0</p>' in response.content)
+        self.assertTrue(b'<p>Bytes: 2</p>' in response.content)
+        self.assertTrue(b'<p>Speed: really fast!</p>'
                         in response.content)
 
 
@@ -184,7 +184,7 @@ class listTestCase(TestCase):
                                   password=self.accounts[0][1])
         self.assertTrue(login)
 
-        self.groups = ['group1', 'group2', 'group3', 'group4']
+        self.groups = [b'group1', b'group2', b'group3', b'group4']
         for groupname in self.groups:
             group = Group(name=groupname)
             group.save()
@@ -245,11 +245,11 @@ class listTestCase(TestCase):
 
         response = self.client.get('/ajax/group_list/')
         self.assertEqual(response.status_code, 200)
-        ret_names = response.content.split(' ~ ')
+        ret_names = response.content.split(b' ~ ')
         self.assertTrue(len(ret_names) == Group.objects.count())
 
         for (a, b) in zip(self.groups, ret_names):
-            self.assertTrue(a == b)
+            self.assertEqual(a, b)
 
     def tearDown(self):
         self.client.logout()
@@ -374,10 +374,10 @@ class ManageAccountTestCase(TestCase):
         response = client.get(manage_url)
         # Expect 200 OK and a form
         self.assertEqual(response.status_code, 200)
-        response.content.index('name="first_name"')
-        response.content.index('name="last_name"')
-        response.content.index('name="email"')
-        response.content.index('value="testuser@example.test"')
+        response.content.index(b'name="first_name"')
+        response.content.index(b'name="last_name"')
+        response.content.index(b'name="email"')
+        response.content.index(b'value="testuser@example.test"')
 
         # Update account details
         response = client.post(manage_url,
@@ -679,9 +679,9 @@ class ContextualViewTest(TestCase):
             response = display_datafile_details(
                 request, datafile_id=self.datafile.id)
             self.assertEqual(response.status_code, 200)
-            self.assertTrue("/ajax/parameters/" in response.content)
-            self.assertTrue("/test/url" in response.content)
-            self.assertFalse("/false/url" in response.content)
+            self.assertTrue(b"/ajax/parameters/" in response.content)
+            self.assertTrue(b"/test/url" in response.content)
+            self.assertFalse(b"/false/url" in response.content)
 
 
 class ViewTemplateContextsTest(TestCase):
@@ -872,8 +872,9 @@ class ExperimentListsTest(TestCase):
         response = my_data(request)
         self.assertEqual(response.status_code, 200)
         # jQuery hasn't populated the div yet:
-        self.assertIn('<div id="myowned" class="mydata accordion experiments"></div>',
-                      response.content)
+        self.assertIn(
+            b'<div id="myowned" class="mydata accordion experiments"></div>',
+            response.content)
 
         # Owned experiments:
         self.assertEqual(settings.OWNED_EXPS_PER_PAGE, 20)
@@ -882,8 +883,8 @@ class ExperimentListsTest(TestCase):
         request.GET = QueryDict('')
         response = retrieve_owned_exps_list(request)
         self.assertEqual(response.status_code, 200)
-        self.assertIn('<ul class="pagination"', response.content)
-        self.assertIn('Page 1 of 5', response.content)
+        self.assertIn(b'<ul class="pagination"', response.content)
+        self.assertIn(b'Page 1 of 5', response.content)
 
         # Now let's reduce the number of owned experiments from
         # 100 to 10, so pagination isn't needed:
@@ -899,7 +900,7 @@ class ExperimentListsTest(TestCase):
         request.GET = QueryDict('')
         response = retrieve_owned_exps_list(request)
         self.assertEqual(response.status_code, 200)
-        self.assertNotIn('<ul class="pagination"', response.content)
+        self.assertNotIn(b'<ul class="pagination"', response.content)
 
     def test_shared_view(self):
         """
@@ -915,8 +916,9 @@ class ExperimentListsTest(TestCase):
         response = shared(request)
         self.assertEqual(response.status_code, 200)
         # jQuery hasn't populated the div yet:
-        self.assertIn('<div id="myshared" class="mydata accordion experiments"></div>',
-                      response.content)
+        self.assertIn(
+            b'<div id="myshared" class="mydata accordion experiments"></div>',
+            response.content)
 
         # Shared experiments:
         self.assertEqual(settings.SHARED_EXPS_PER_PAGE, 20)
@@ -925,8 +927,8 @@ class ExperimentListsTest(TestCase):
         request.GET = QueryDict('')
         response = retrieve_shared_exps_list(request)
         self.assertEqual(response.status_code, 200)
-        self.assertIn('<ul class="pagination"', response.content)
-        self.assertIn('Page 1 of 10', response.content)
+        self.assertIn(b'<ul class="pagination"', response.content)
+        self.assertIn(b'Page 1 of 10', response.content)
 
         # Now let's reduce the number of shared experiments from
         # 200 to 10, so pagination isn't needed:
@@ -942,7 +944,7 @@ class ExperimentListsTest(TestCase):
         request.GET = QueryDict('')
         response = retrieve_shared_exps_list(request)
         self.assertEqual(response.status_code, 200)
-        self.assertNotIn('<ul class="pagination"', response.content)
+        self.assertNotIn(b'<ul class="pagination"', response.content)
 
 
 class _ContextMatcher(object):

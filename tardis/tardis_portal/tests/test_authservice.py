@@ -120,19 +120,19 @@ class AuthServiceTestCase(TestCase):
         self.assertTrue(login)
         self.assertIn(SESSION_KEY, c.session)
 
-        r = str(c.get('/test/groups/'))
-        self.assertEqual(r.count('mockdb'), 2)
-        self.assertTrue(',1)' in r)
-        self.assertTrue(',2)' in r)
+        r = c.get('/test/groups/')
+        self.assertEqual(r.content.count(b'mockdb'), 2)
+        self.assertTrue(b',1)' in r.content)
+        self.assertTrue(b',2)' in r.content)
 
         login = c.login(username='mockdb_user2', password='secret')
         self.assertTrue(login)
         self.assertIn(SESSION_KEY, c.session)
 
-        r = str(c.get('/test/groups/'))
-        self.assertEqual(r.count('mockdb'), 2, r)
-        self.assertTrue(',1)' in r)
-        self.assertTrue(',3)' in r)
+        r = c.get('/test/groups/')
+        self.assertEqual(r.content.count(b'mockdb'), 2, r)
+        self.assertTrue(b',1)' in r.content)
+        self.assertTrue(b',3)' in r.content)
 
     def testGroupSearch(self):
         from ..auth import AuthService

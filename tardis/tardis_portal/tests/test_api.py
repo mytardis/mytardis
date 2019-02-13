@@ -6,7 +6,6 @@ Testing the tastypie-based mytardis api
 import json
 import os
 import tempfile
-import urllib
 
 from django.contrib.auth.models import Permission
 from django.contrib.auth.models import User
@@ -15,7 +14,9 @@ from django.contrib.auth.models import Group
 from django.test.client import Client
 from django.test import TestCase
 
+import six
 from six.moves import reload_module
+from six.moves import urllib
 
 from tastypie.test import ResourceTestCaseMixin
 
@@ -41,9 +42,14 @@ class SerializerTest(TestCase):
                      "reformatted": 2,
                      "be": ["pretty", "and", "indented"]}
         test_output = test_serializer.to_json(test_data)
-        ref_output = u'{\n  "be": [\n    "pretty", \n    "and", \n' +\
-                     u'    "indented"\n  ], \n  "reformatted": 2, \n' +\
-                     u'  "ugly": "json data"\n}\n'
+        if six.PY2:
+            ref_output = '{\n  "be": [\n    "pretty", \n    "and", \n' +\
+                         '    "indented"\n  ], \n  "reformatted": 2, \n' +\
+                         '  "ugly": "json data"\n}\n'
+        else:
+            ref_output = '{\n  "be": [\n    "pretty",\n    "and",\n' +\
+                         '    "indented"\n  ],\n  "reformatted": 2,\n' +\
+                         '  "ugly": "json data"\n}\n'
         self.assertEqual(test_output, ref_output)
 
     def test_debug_serializer(self):
@@ -254,7 +260,7 @@ class ExperimentResourceTest(MyTardisResourceTestCase):
         output = self.api_client.get('/api/v1/experiment/%d/' % exp_id,
                                      authentication=self.get_credentials())
         returned_data = json.loads(output.content)
-        for key, value in expected_output.iteritems():
+        for key, value in six.iteritems(expected_output):
             self.assertTrue(key in returned_data)
             if not key.endswith("_time"):
                 self.assertEqual(returned_data[key], value)
@@ -292,7 +298,7 @@ class DatasetResourceTest(MyTardisResourceTestCase):
 
     def test_get_dataset_no_instrument(self):
         uri = '/api/v1/dataset/?description=%s' \
-            % urllib.quote(self.ds_no_instrument.description)
+            % urllib.parse.quote(self.ds_no_instrument.description)
         output = self.api_client.get(uri,
                                      authentication=self.get_credentials())
         returned_data = json.loads(output.content)
@@ -306,7 +312,7 @@ class DatasetResourceTest(MyTardisResourceTestCase):
 
     def test_get_dataset_with_instrument(self):
         uri = '/api/v1/dataset/?description=%s' \
-            % urllib.quote(self.ds_with_instrument.description)
+            % urllib.parse.quote(self.ds_with_instrument.description)
         output = self.api_client.get(uri,
                                      authentication=self.get_credentials())
         returned_data = json.loads(output.content)
@@ -398,7 +404,7 @@ class DataFileResourceTest(MyTardisResourceTestCase):
 }""" % ds_id
 
         post_file = tempfile.NamedTemporaryFile()
-        file_content = "123test\n"
+        file_content = b"123test\n"
         post_file.write(file_content)
         post_file.flush()
         post_file.seek(0)
@@ -420,8 +426,8 @@ class DataFileResourceTest(MyTardisResourceTestCase):
         tests sending many files with known permanent location
         (useful for Australian Synchrotron ingestions)
         '''
-        files = [{'content': 'test123\n'},
-                 {'content': 'test246\n'}]
+        files = [{'content': b'test123\n'},
+                 {'content': b'test246\n'}]
         from django.conf import settings
         for file_dict in files:
             post_file = tempfile.NamedTemporaryFile(
@@ -519,7 +525,7 @@ class GroupResourceTest(MyTardisResourceTestCase):
         output = self.api_client.get('/api/v1/group/%d/' % group_id,
                                      authentication=self.get_credentials())
         returned_data = json.loads(output.content)
-        for key, value in expected_output.iteritems():
+        for key, value in six.iteritems(expected_output):
             self.assertTrue(key in returned_data)
             self.assertEqual(returned_data[key], value)
 
@@ -530,10 +536,10 @@ class GroupResourceTest(MyTardisResourceTestCase):
             "name": "Test Group",
         }
         output = self.api_client.get('/api/v1/group/%d/?name=%s' %
-                          (group_id, urllib.quote(self.testgroup.name)),
+                          (group_id, urllib.parse.quote(self.testgroup.name)),
                                      authentication=self.get_credentials())
         returned_data = json.loads(output.content)
-        for key, value in expected_output.iteritems():
+        for key, value in six.iteritems(expected_output):
             self.assertTrue(key in returned_data)
             self.assertEqual(returned_data[key], value)
 
@@ -556,7 +562,7 @@ class FacilityResourceTest(MyTardisResourceTestCase):
         output = self.api_client.get('/api/v1/facility/%d/' % first_facility,
                                      authentication=self.get_credentials())
         returned_data = json.loads(output.content)
-        for key, value in expected_output.iteritems():
+        for key, value in six.iteritems(expected_output):
             self.assertTrue(key in returned_data)
             self.assertEqual(returned_data[key], value)
 
@@ -574,12 +580,12 @@ class FacilityResourceTest(MyTardisResourceTestCase):
             "resource_uri": "/api/v1/facility/%d/" % first_facility
         }
         output = self.api_client.get('/api/v1/facility/?name=%s'
-                                     % urllib.quote(self.testfacility.name),
+                                     % urllib.parse.quote(self.testfacility.name),
                                      authentication=self.get_credentials())
         returned_data = json.loads(output.content)
         self.assertEqual(returned_data['meta']['total_count'], 1)
         returned_object = returned_data['objects'][0]
-        for key, value in expected_output.iteritems():
+        for key, value in six.iteritems(expected_output):
             self.assertTrue(key in returned_object)
             self.assertEqual(returned_object[key], value)
 
@@ -609,7 +615,7 @@ class FacilityResourceTest(MyTardisResourceTestCase):
         returned_data = json.loads(output.content)
         self.assertEqual(returned_data['meta']['total_count'], 1)
         returned_object = returned_data['objects'][0]
-        for key, value in expected_output.iteritems():
+        for key, value in six.iteritems(expected_output):
             self.assertTrue(key in returned_object)
             self.assertEqual(returned_object[key], value)
 
@@ -643,11 +649,11 @@ class InstrumentResourceTest(MyTardisResourceTestCase):
                                      instrument_id,
                                      authentication=self.get_credentials())
         returned_data = json.loads(output.content)
-        for key, value in expected_output.iteritems():
+        for key, value in six.iteritems(expected_output):
             self.assertTrue(key in returned_data)
             if not key.endswith("_time"):
                 if isinstance(returned_data[key], dict):
-                    for subkey, subvalue in returned_data[key].iteritems():
+                    for subkey, subvalue in six.iteritems(returned_data[key]):
                         if not subkey.endswith("_time"):
                             self.assertEqual(returned_data[key][subkey], subvalue)
                 else:
@@ -677,16 +683,16 @@ class InstrumentResourceTest(MyTardisResourceTestCase):
             "modified_time": "2018-11-29T12:00:00.000001"
         }
         output = self.api_client.get('/api/v1/instrument/?name=%s'
-                                     % urllib.quote(self.testinstrument.name),
+                                     % urllib.parse.quote(self.testinstrument.name),
                                      authentication=self.get_credentials())
         returned_data = json.loads(output.content)
         self.assertEqual(returned_data['meta']['total_count'], 1)
         returned_object = returned_data['objects'][0]
-        for key, value in expected_output.iteritems():
+        for key, value in six.iteritems(expected_output):
             self.assertTrue(key in returned_object)
             if not key.endswith("_time"):
                 if isinstance(returned_object[key], dict):
-                    for subkey, subvalue in returned_object[key].iteritems():
+                    for subkey, subvalue in six.iteritems(returned_object[key]):
                         if not subkey.endswith("_time"):
                             self.assertEqual(returned_object[key][subkey], subvalue)
                 else:

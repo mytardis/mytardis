@@ -3,6 +3,8 @@ import json
 import re
 from html import escape
 
+import six
+
 from django.conf import settings
 from django.urls import reverse
 from django.shortcuts import render
@@ -98,8 +100,10 @@ def render_to_file(template, filename, context):
     # an error when written to file if the string contain diacritics. We
     # need to do a utf-8 encoding before writing to file
     # see http://packages.python.org/kitchen/unicode-frustrations.html
-    open(filename, "w").write(string_for_output.encode('utf8', 'replace'))
-
+    if six.PY2:
+        open(filename, "w").write(str(string_for_output.encode('utf8', 'replace')))
+    else:
+        open(filename, "w").write(string_for_output)
 
 
 class RestfulExperimentParameterSet(object):
@@ -139,8 +143,8 @@ class RestfulExperimentParameterSet(object):
         '''
         psm = ParameterSetManager(ps)
         return dict([('id', ps.id)]+ # Use set ID
-                    zip(self.parameter_names,
-                        (psm.get_param(k, True) for k in self.parameter_names)))
+                    list(zip(self.parameter_names,
+                         (psm.get_param(k, True) for k in self.parameter_names))))
 
     def _get_view_functions(self):
         context = self
