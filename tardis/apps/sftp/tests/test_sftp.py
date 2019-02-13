@@ -2,7 +2,7 @@
 
 .. moduleauthor:: James Wettenhall <james.wettenhall@monash.edu>
 """
-from io import StringIO
+from io import BytesIO, StringIO
 
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -59,8 +59,7 @@ class SFTPTest(TestCase):
         self.dataset.save()
 
         def _build(dataset, filename, url):
-            datafile_content = u"\n".join([u'some data %d' % i
-                                          for i in range(1000)])
+            datafile_content = b"\n".join([b'some data %d' % i for i in range(1000)])
             filesize = len(datafile_content)
             datafile = DataFile(
                 dataset=dataset, filename=filename, size=filesize)
@@ -69,7 +68,7 @@ class SFTPTest(TestCase):
                 datafile=datafile,
                 storage_box=datafile.get_default_storage_box(),
                 uri=url)
-            dfo.file_object = StringIO(datafile_content)
+            dfo.file_object = BytesIO(datafile_content)
             dfo.save()
             return datafile
 
@@ -131,10 +130,10 @@ class SFTPTest(TestCase):
     def test_sftp_key_connect(self):
         server_interface = MyTServerInterface()
         pub_key_str = (
-            "AAAAB3NzaC1yc2EAAAADAQABAAAAgQCzvWE391K1pyBvePGpwDWMboSLIp"
-            "5L5sMq+bXPPeJPSLOm9dnm8XexZOpeg14UpsYcmrkzVPeooaqz5PqtaHO46CdK11dS"
-            "cs2a8PLnavGkJRf25/PDXxlHkiZXXbAfW+6t5aVJxSJ4Jt4FV0aDqMaaYxy4ikw6da"
-            "BCkvug2OZQqQ=="
+            b"AAAAB3NzaC1yc2EAAAADAQABAAAAgQCzvWE391K1pyBvePGpwDWMboSLIp"
+            b"5L5sMq+bXPPeJPSLOm9dnm8XexZOpeg14UpsYcmrkzVPeooaqz5PqtaHO46CdK11dS"
+            b"cs2a8PLnavGkJRf25/PDXxlHkiZXXbAfW+6t5aVJxSJ4Jt4FV0aDqMaaYxy4ikw6da"
+            b"BCkvug2OZQqQ=="
         )
 
         priv_key_str = u"""-----BEGIN RSA PRIVATE KEY-----
@@ -193,9 +192,9 @@ QKHf8Ha+rOx3B7Dbljc+Xdpcn9VyRmDlSqzX9aCkr18mNg==
         response = sftp_access(request)
         path_mapper = make_mapper(settings.DEFAULT_PATH_MAPPER, rootdir=None)
         self.assertIn(
-            "sftp://tardis_user1@testserver:2200"
-            "/home/tardis_user1/experiments/%s"
-            % path_mapper(self.exp),
+            b"sftp://tardis_user1@testserver:2200"
+            b"/home/tardis_user1/experiments/%s"
+            % path_mapper(self.exp).encode(),
             response.content)
 
     def test_sftp_dynamic_docs_dataset(self):
@@ -207,9 +206,10 @@ QKHf8Ha+rOx3B7Dbljc+Xdpcn9VyRmDlSqzX9aCkr18mNg==
         response = sftp_access(request)
         path_mapper = make_mapper(settings.DEFAULT_PATH_MAPPER, rootdir=None)
         self.assertIn(
-            "sftp://tardis_user1@testserver:2200"
-            "/home/tardis_user1/experiments/%s/%s"
-            % (path_mapper(self.exp), path_mapper(self.dataset)),
+            b"sftp://tardis_user1@testserver:2200"
+            b"/home/tardis_user1/experiments/%s/%s"
+            % (path_mapper(self.exp).encode(),
+               path_mapper(self.dataset).encode()),
             response.content)
 
     def test_cybderduck_connection_window(self):
@@ -228,7 +228,7 @@ class SFTPDManagementTestCase(TestCase):
         should raise an SSHException
         '''
         saved_setting = settings.SFTP_HOST_KEY
-        settings.SFTP_HOST_KEY = ''
+        settings.SFTP_HOST_KEY = b''
         with self.assertRaises(SSHException):
             call_command('sftpd')
         settings.SFTP_HOST_KEY = saved_setting

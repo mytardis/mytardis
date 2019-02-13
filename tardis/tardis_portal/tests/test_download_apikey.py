@@ -39,7 +39,7 @@ class ApiKeyDownloadTestCase(ResourceTestCaseMixin, TestCase):
             response['Content-Disposition'],
             'attachment; filename="{0}.key"'.format(self.username))
         self.assertEqual(response.status_code, 200)
-        response_content = "".join(response.streaming_content)
+        response_content = b"".join(response.streaming_content).decode()
         self.assertEqual(response_content,
                          self.create_apikey(username=self.username,
                                             api_key=self.user.api_key.key))

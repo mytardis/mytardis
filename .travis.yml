@@ -14,5 +14,7 @@ before_install:
 install:
 - pip install -r requirements.txt
 
-# Command to run Pylint
-script: pylint tardis
+script:
+- pylint tardis
+- mkdir -p var/store
+- python test.py

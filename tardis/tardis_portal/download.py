@@ -284,7 +284,7 @@ class UncachedTarStream(TarFile):
         else:
             result_buf = uc_buf
         if remainder is not None:
-            result_buf = ''.join([remainder, result_buf])
+            result_buf = b''.join([remainder, result_buf])
         stream_buffers = []
         while len(result_buf) >= self.http_buffersize:
             stream_buffers.append(result_buf[:self.http_buffersize])

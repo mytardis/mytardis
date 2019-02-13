@@ -18,7 +18,7 @@ _log = logging.getLogger("slapd")
 def quote(s):
     '''Quotes the " and \ characters in a string and surrounds with "..."
     '''
-    return '"' + s.replace('\\', '\\\\').replace('"', '\\"') + '"'
+    return b'"' + s.replace(b'\\', b'\\\\').replace(b'"', b'\\"') + b'"'
 
 
 def mkdirs(path):
@@ -32,7 +32,7 @@ def mkdirs(path):
 def which(executable):
     try:
         return subprocess.check_output(
-            ['which', executable]).strip().replace('//', '/')
+            ['which', executable]).strip().replace(b'//', b'/')
     except subprocess.CalledProcessError:
         return None
 
