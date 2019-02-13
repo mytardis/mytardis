@@ -6,9 +6,8 @@ Releases
 * Bootstrap upgraded to v3.4.0
 * Celery upgraded to v4.2.1
 * RabbitMQ task priorities support, dropping support for Redis
-* Storage box related tasks are annotated with the storage box name,
-    visible in "celery inspect active".
-* New Travis CI webhook to run Pylint with Python 3
+* Storage box related tasks are annotated with the storage box name, visible in "celery inspect active".
+* New Travis CI webhook to run Pylint and unit tests with Python 3
 * New task for clearing Django sessions
 * New timestamps (created and modified) in facility and instrument models
 * Fixed truncated TAR download issue with unverified files
@@ -16,33 +15,33 @@ Releases
 * Fixed some broken Font Awesome icons
 * Made autocache task more efficient.
 * Some dependency updates:
-    Update amqp from 2.3.2 to 2.4.1
-    Update billiard from 3.5.0.4 to 3.5.0.5
-    Update bleach from 2.1.4 to 3.1.0
-    Update coverage from 4.5.1 to 4.5.2
-    Update django from 1.11.16 to 1.11.20
-    Update django-extensions from 1.8.1 to 2.5
-    Update flexmock from 0.10.2 to 0.10.3
-    Update gevent from 1.3.6 to 1.4.0
-    Update gunicorn from 19.7.1 to 19.9.0
-    Update kombu from 4.2.1 to 4.3.0
-    Update lxml from 4.2.5 to 4.3.1
-    Update mysqlclient from 1.3.13 to 1.4.2
-    Update pillow from 5.2.0 to 5.4.1
-    Update psycopg2-binary from 2.7.5 to 2.7.7
-    Update pyjwt from 1.6.4 to 1.7.1
-    Update pylint from 1.9.3 to 1.9.4
-    Update python-dateutil from 2.7.5 to 2.8.0
-    Update python-ldap from 2.4.27 to 3.1.0
-    Update pytz from 2018.5 to 2018.9
-    Update requests from 2.19.1 to 2.21.0
-    Update selenium from 3.14.1 to 3.141.0
-    Update six from 1.11.0 to 1.12.0
-    Update social-auth-app-django from 3.0.0 to 3.1.0
-    Update sphinx from 1.8.1 to 1.8.4
-    Update sphinx-rtd-theme from 0.4.1 to 0.4.3
-    Update urllib3 from 1.23 to 1.24.1
-    Update wand from 0.4.4 to 0.5.0
+    - Update amqp from 2.3.2 to 2.4.1
+    - Update billiard from 3.5.0.4 to 3.5.0.5
+    - Update bleach from 2.1.4 to 3.1.0
+    - Update coverage from 4.5.1 to 4.5.2
+    - Update django from 1.11.16 to 1.11.20
+    - Update django-extensions from 1.8.1 to 2.5
+    - Update flexmock from 0.10.2 to 0.10.3
+    - Update gevent from 1.3.6 to 1.4.0
+    - Update gunicorn from 19.7.1 to 19.9.0
+    - Update kombu from 4.2.1 to 4.3.0
+    - Update lxml from 4.2.5 to 4.3.1
+    - Update mysqlclient from 1.3.13 to 1.4.2
+    - Update pillow from 5.2.0 to 5.4.1
+    - Update psycopg2-binary from 2.7.5 to 2.7.7
+    - Update pyjwt from 1.6.4 to 1.7.1
+    - Update pylint from 1.9.3 to 1.9.4
+    - Update python-dateutil from 2.7.5 to 2.8.0
+    - Update python-ldap from 2.4.27 to 3.1.0
+    - Update pytz from 2018.5 to 2018.9
+    - Update requests from 2.19.1 to 2.21.0
+    - Update selenium from 3.14.1 to 3.141.0
+    - Update six from 1.11.0 to 1.12.0
+    - Update social-auth-app-django from 3.0.0 to 3.1.0
+    - Update sphinx from 1.8.1 to 1.8.4
+    - Update sphinx-rtd-theme from 0.4.1 to 0.4.3
+    - Update urllib3 from 1.23 to 1.24.1
+    - Update wand from 0.4.4 to 0.5.0
 
 4.0
 ---
