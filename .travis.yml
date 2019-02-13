@@ -16,5 +16,5 @@ install:
 
 script:
 - pylint tardis
-- mkdir var/store
+- mkdir -p var/store
 - python test.py
