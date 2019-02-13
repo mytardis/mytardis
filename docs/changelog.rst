@@ -17,7 +17,9 @@ Releases
 * Some dependency updates:
     - Update amqp from 2.3.2 to 2.4.1
     - Update billiard from 3.5.0.4 to 3.5.0.5
+    - Update Boostrap from 2.3.2 to 3.4.0
     - Update bleach from 2.1.4 to 3.1.0
+    - Update celery from 3.1.26.post2 to 4.2.1
     - Update coverage from 4.5.1 to 4.5.2
     - Update django from 1.11.16 to 1.11.20
     - Update django-extensions from 1.8.1 to 2.5
