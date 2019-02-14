@@ -16,7 +16,7 @@ var activateHoverDetection = function() {
 // eslint-disable-next-line no-unused-vars
 var userAutocompleteHandler = function(term, users, authMethod) {
     var matches = _(users).chain()
-        // Filter out users which don"t match auth method
+    // Filter out users which don"t match auth method
     /** .filter(function(user) {
             // authMethods: ["testuser:localdb:Local DB"]
             return _(user.auth_methods).any(function(v) {
