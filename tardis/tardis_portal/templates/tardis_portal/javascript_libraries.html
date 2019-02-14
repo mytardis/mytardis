@@ -29,12 +29,10 @@ Use the unminified jquery-migrate.js to see deprecation warnings in your browser
 <script type="text/javascript" src="{% static 'js/angular-mytardis.js' %}"></script>
 
 <script type="text/javascript" src="{% static 'js/lib/async.min.js' %}"></script>
+
 <script type="text/javascript" src="{% static 'underscore/underscore-min.js' %}"></script>
-<script type="text/javascript" src="{% static 'underscore.string/lib/underscore.string.js' %}"></script>
-<script type="text/javascript">
-  // Mixin Underscore.String to Underscore.js
-  _.mixin(_.string.exports());
-</script>
+<script type="text/javascript" src="{% static 'underscore.string/dist/underscore.string.js' %}"></script>
+
 <!-- Backbone.js -->
 <script type="text/javascript" src="{% static 'backbone/backbone-min.js' %}"></script>
 
