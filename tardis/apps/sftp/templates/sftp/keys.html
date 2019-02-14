@@ -11,17 +11,17 @@
 {% endblock %}
 
 {% block content %}
-<div class="col-md-8">
+<div class="col-lg-8">
   <h2>SSH Keys</h2>
   <p>Add and manage your public SSH keys for accessing {{site_title|default:'MyTardis'}} via SFTP.</p>
   <div class="row">
-    <div class="pull-right" style="margin: 0px 0px 10px 10px;">
+    <div class="float-right" style="margin: 0px 0px 10px 10px;">
       <a class="btn btn-success" data-toggle="modal" href="#keyGenerateModal">
         <i class="fa fa-plus"></i>
         <span>Generate key</span>
       </a>
     </div>
-    <div class="pull-right" style="margin: 0px 0px 10px 10px;">
+    <div class="float-right" style="margin: 0px 0px 10px 10px;">
       <a class="btn btn-success" data-toggle="modal" href="#keyAddModal">
         <i class="fa fa-plus"></i>
         <span>Add key</span>
@@ -61,8 +61,8 @@
         </div>
       </div>
       <div class="modal-footer">
-        <button class="btn btn-primary pull-right" style="margin: 0px 0px 10px 10px;" onclick="sftp.addKey()">Add Key</button>
-        <button class="btn btn-default pull-right" style="margin: 0px 0px 10px 10px;" data-dismiss="modal" onclick="sftp.clearKeyAddForm()">Close</button>
+        <button class="btn btn-primary float-right" style="margin: 0px 0px 10px 10px;" onclick="sftp.addKey()">Add Key</button>
+        <button class="btn btn-outline-secondary float-right" style="margin: 0px 0px 10px 10px;" data-dismiss="modal" onclick="sftp.clearKeyAddForm()">Close</button>
       </div>
     </form>  <!-- class="modal-content" -->
   </div>  <!-- class="modal-dialog" -->
@@ -81,9 +81,9 @@
         <form id="keyGenerateForm" action="{% url 'tardis.apps.sftp:sftp_keys' %}" method="post">
             {{ form | bootstrap }}
           {% if enable_generate %}
-          <input type="submit" class="btn btn-default" value="Generate & Download">
+          <input type="submit" class="btn btn-outline-secondary" value="Generate & Download">
           {% else %}
-          <input type="submit" class="btn btn-default disabled" value="Generate & Download">
+          <input type="submit" class="btn btn-outline-secondary disabled" value="Generate & Download">
           {% endif %}
         </form>
         <br/>
@@ -93,7 +93,7 @@
         </div>
       </div>
       <div class="modal-footer">
-        <button class="btn btn-default" data-dismiss="modal" onclick="sftp.clearKeyGenerateForm()">Close</a>
+        <button class="btn btn-outline-secondary" data-dismiss="modal" onclick="sftp.clearKeyGenerateForm()">Close</a>
       </div>
     </div>  <!-- class="modal-content" -->
   </div>  <!-- class="modal-dialog" -->

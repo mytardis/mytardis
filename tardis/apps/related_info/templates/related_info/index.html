@@ -20,7 +20,7 @@
   </div>  <!-- class="modal-dialog" -->
 </div>
 
-<button class="add-related-info btn btn-default pull-right">
+<button class="add-related-info btn btn-outline-secondary float-right">
   <i class="icon-plus"></i>
   Add new
 </button>
@@ -52,7 +52,7 @@
     _initButtons: function(optionList) {
       var buttonGroup = $('<span/>').addClass("btn-group");
       buttonGroup.append(_.map(optionList, function(option) {
-        var button = $('<button/>').addClass("btn btn-default");
+        var button = $('<button/>').addClass("btn btn-outline-secondary");
         button.prop('value', option.val);
         button.html(option.label);
         return button.get(0);
@@ -100,7 +100,7 @@
       type: {
         title: '&nbsp;',
         type: ToggleButtonEditor,
-        editorClass: 'col-md-12',
+        editorClass: 'col-lg-12',
         options: [
           {val: 'publication', label: '<i class="icon-file"></i> Publication'},
           {val: 'website', label: '<i class="icon-pushpin"></i> Website'}
@@ -108,11 +108,11 @@
       },
       identifier: {
         title: 'URL',
-        editorClass: 'col-md-12',
+        editorClass: 'col-lg-12',
         validators: ['required', 'url']
       },
-      title: {type: 'Text', editorClass: 'col-md-12'},
-      notes: {type: 'TextArea', editorClass: 'col-md-12', editorAttrs: {'rows': 8}}
+      title: {type: 'Text', editorClass: 'col-lg-12'},
+      notes: {type: 'TextArea', editorClass: 'col-lg-12', editorAttrs: {'rows': 8}}
     }
   });
 

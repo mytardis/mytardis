@@ -18,7 +18,8 @@
     {% if not tokens %}
       <p>No tokens defined </p>
     {% else %}
-    <table class="table table-striped col-md-12">
+    <table class="table table-striped col-lg-12">
+        <thead>
             <tr>
                 <th style="width: 40%;">
                     Temporary Link
@@ -35,42 +36,45 @@
                     Granted By
                 </th>
             </tr>
+        </thead>
+        <tbody class="small">
             {% for token in tokens %}
             <tr>
-                <td>
+                <td class="pl-lg-1 pr-lg-1">
                     <a href="{{ token.url }}"
                     style="font-weight: bold;">Page link</a><br/>
-                    <button type="button" class="btn btn-default clipboard" data-clipboard-text="{{ token.url }}">
+                    <button type="button" class="btn btn-success btn-xxs clipboard" data-clipboard-text="{{ token.url }}">
                         <span class="fa fa-share"></span> Copy to clipboard</button>
                 </td>
                {% if token.download_url %}
-                <td>
+                <td class="pl-lg-1 pr-lg-1">
                     <a href="{{ token.download_url }}"
                     style="font-weight: bold;">Archive link</a><br/>
-                    <button type="button" class="btn btn-default clipboard" data-clipboard-text="{{ token.download_url }}">
+                    <button type="button" class="btn btn-success btn-xxs clipboard" data-clipboard-text="{{ token.download_url }}">
                         <span class="fa fa-share"></span> Copy to clipboard</button>
                 </td>
                 {% endif %}
-                <td align="center">
+                <td class="pl-lg-1 pr-lg-1" style="white-space: nowrap;">
                     {{ token.expiry_date }}
                 </td>
-                <td align="center">
+                <td class="pl-lg-1 pr-lg-1">
                     {{ token.user }}
                 </td>
-                <td>
+                <td class="pl-lg-1 pr-lg-1">
                 {% if token.is_owner %}
                   <a title="Delete Token"
                     href="{% url 'tardis.tardis_portal.views.token_delete' token.id %}"
-                    class="token_delete btn btn-danger btn-xs"
-                    data-toggle_selector="#token_toggle_{{token.experiment_id}}">
-                    <i class="fa fa-remove"></i>
-                    Delete
-                  </a>
+                    class="token_delete btn btn-danger btn-xxs"
+                    data-toggle_selector="#token_toggle_{{token.experiment_id}}"
+                    style="white-space: nowrap;"
+                    role="button" tabindex="-1">
+                    <i class="fa fa-remove"></i>Delete</a>
                 {% endif %}
                 </td>
             </tr>
             {% endfor %}
-        </table>
+        </tbody>
+    </table>
     {% endif %}
   </div> <!-- access_list_tokens -->
 </div> <!-- tokens -->

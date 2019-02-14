@@ -18,8 +18,8 @@
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
+        <h2 class="title">Public Access</h2>
         <a class="close" data-dismiss="modal">&times;</a>
-        <h1 class="title">Public Access</h1>
       </div>
 
       <div class="loading-placeholder" style="display: none">
@@ -36,8 +36,8 @@
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
+        <h2 class="title">User Sharing</h2>
         <a class="close" data-dismiss="modal">&times;</a>
-        <h1 class="title">User Sharing</h1>
       </div>
 
       <div class="loading-placeholder" style="display: none">
@@ -55,8 +55,8 @@
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
+        <h2 class="title">Group Sharing</h2>
         <a class="close" data-dismiss="modal">&times;</a>
-        <h1 class="title">Group Sharing</h1>
       </div>
 
       <div class="loading-placeholder" style="display: none">
@@ -81,10 +81,10 @@
             </dl>
             <dl>
               <dt>Current License</dt>
-              <dd>
+              <dd class="small">
                 {% if experiment.license_id %}
                   <div class="row">
-                    <div class="col-md-6">
+                    <div class="col-lg-9">
                       This experiment data is licensed under
                       <a rel="license"
                          property="dc:license"
@@ -92,7 +92,7 @@
                         {{ experiment.license.name }}</a>.
                     </div>
                     {% if experiment.license.image_url != None %}
-                    <div class="col-md-6">
+                    <div class="col-lg-3">
                       <img src="{{ experiment.license.image_url }}"/>
                     </div>
                     {% endif %}
@@ -106,7 +106,8 @@
             </dl>
         </p>
         {% if is_owner or is_superuser %}
-        <a class="public_access_link btn btn-default btn-xs" title="Change">
+        <a class="public_access_link btn btn-outline-secondary btn-sm" title="Change"
+           role="button" tabindex="-1">
           <i class="fa fa-cog"></i>
           Change Public Access
         </a>
@@ -117,53 +118,57 @@
     <h3>Sharing</h3>
     <h4>Users</h4>
     <p>Users who have a share in this experiment:</p>
-    <div id="experiment_user_list"/>
+    <div id="experiment_user_list" class="small"/>
     {% if is_owner or is_superuser %}
-    <a class="share_link btn btn-default btn-xs" title="Change">
+    <a class="share_link btn btn-outline-secondary btn-sm" title="Change"
+       role="button"
+       tabindex="-1">
         <i class="fa fa-share"></i>
         Change User Sharing
     </a>
     {% endif %}
     <br/><br/>
+    </div>
     <h4>Groups</h4>
     <p>Groups who have a share in this experiment:</p>
-    <div id="experiment_group_list"/>
-    {% if is_owner or is_superuser %}
-    <a class="share_link_group btn btn-default btn-xs" title="Change">
+    <div id="experiment_group_list" class="small"/>
+      {% if is_owner or is_superuser %}
+      <a class="share_link_group btn btn-outline-secondary btn-sm" title="Change"
+         role="button"
+         tabindex="-1">
         <i class="fa fa-share"></i>
         Change Group Sharing
-    </a>
-    {% endif %}
+      </a>
+      {% endif %}
     </div>
     <hr/>
-    <div class="sharing-section sharing">
-    <h3>Links</h3>
-        {% if public_link %}
-        <p>This experiment can be viewed by everybody with the link below:</p>
-            <br/>
-        <p><div class="copylink">{{domain}}{{experiment.get_absolute_url}}</div><br/></p>
-            {% if experiment.public_access == experiment.PUBLIC_ACCESS_METADATA %}
-                <p>This experiment has been set to <em>'metadata only'</em>. Registered users must be explicitly allowed to access files. Alternately, a temporary link can be created and privately shared for direct access.</p>
-            {% endif %}
-        {% else %}
-        <p>This experiment is private. A temporary link can be created by its owner(s) and privately shared for direct access.</p>
-        {% endif %}
+    <div class="sharing-section sharing" class="small">
+      <h3>Links</h3>
+          {% if public_link %}
+          <p>This experiment can be viewed by everybody with the link below:</p>
+          <p><div class="copylink">{{domain}}{{experiment.get_absolute_url}}</div><br/></p>
+              {% if experiment.public_access == experiment.PUBLIC_ACCESS_METADATA %}
+                  <p>This experiment has been set to <em>'metadata only'</em>. Registered users must be explicitly allowed to access files. Alternately, a temporary link can be created and privately shared for direct access.</p>
+              {% endif %}
+          {% else %}
+          <p>This experiment is private. A temporary link can be created by its owner(s) and privately shared for direct access.</p>
+          {% endif %}
+  
+      {% if has_download_permissions %}
+      <p>Temporary access links provide full access to recipients regardless of an experiment's public status.</p>
+      <div id="experiment_token_list"/>
 
-    {% if has_download_permissions %}
-    <br/>
-    <p>Temporary access links provide full access to recipients regardless of an experiment's public status.</p>
-    <div id="experiment_token_list"/>
-
-        {% if is_owner or is_superuser %}
-        <a title="Create New Temporary Link"
-            href="{{ experiment.get_create_token_url }}"
-            class="create_token_link btn btn-default btn-xs">
-            <i class="fa fa-plus"></i>
-            Create New Temporary Link
-        </a>
-        {% endif %}
-    {% endif %}
-    </div>
+          {% if is_owner or is_superuser %}
+          <a title="Create New Temporary Link"
+              href="{{ experiment.get_create_token_url }}"
+              class="create_token_link btn btn-outline-secondary btn-sm"
+              role="button" tabindex="-1">
+              <i class="fa fa-plus"></i>
+              Create New Temporary Link
+          </a>
+          {% endif %}
+      {% endif %}
+      </div>
     </div>
 
 {% endblock %}

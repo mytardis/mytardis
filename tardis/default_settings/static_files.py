@@ -41,6 +41,7 @@ NPM_FILE_PATTERNS = {
     'jquery-ui-dist': ['jquery-ui.min.js'],
     'mustache': ['mustache.min.js'],
     'ng-dialog': ['*'],
+    'popper.js': ['*'],
     'underscore': ['*'],
     'underscore.string': ['*']
 }

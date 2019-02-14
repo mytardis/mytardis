@@ -231,8 +231,8 @@ $(document).ready(function() {
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <a class="close" data-dismiss="modal">&times;</a>
-        <h1 class="title">Create Group</h1>
+        <h2 class="title">Create Group</h2>
+        <a class="close" data-dismiss="modal">×</a>
       </div>
 
       <div class="alert alert-danger alert-dismissible" style="display:none">
@@ -254,8 +254,8 @@ $(document).ready(function() {
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
+        <h2 class="title">Create User</h2>
         <a class="close" data-dismiss="modal">&times;</a>
-        <h1 class="title">Create User</h1>
       </div>
 
       <div class="loading-placeholder" style="display: none">
@@ -274,25 +274,31 @@ $(document).ready(function() {
 </div>
 
 <div class="page-header">
-  <h1>Manage Group Members</h1>
+  <h2>Manage Group Members</h2>
 </div>
 
-{% if perms.auth.add_group %}
-<div class="pull-right">
-<a style="margin-left: 10px;" class="create_group_link btn btn-warning" title="Create Group">
-  <i class="fa fa-plus"></i>
-  Create Group
-</a>
+<div class="row">
+  <div class="col-lg-12">
+    {% if perms.auth.add_group %}
+    <div class="float-right">
+    <a style="margin-left: 10px;" class="create_group_link btn btn-primary"
+       title="Create Group" role="button" tabindex="-1">
+      <i class="fa fa-plus"></i>
+      Create Group
+    </a>
+    </div>
+    {% endif %}
+    {% if perms.auth.add_user %}
+    <div class="float-right">
+    <a class="create_user_link btn btn-primary"
+       title="Create User" role="button" tabindex="-1">
+      <i class="fa fa-plus"></i>
+      Create User
+    </a>
+    </div>
+    {% endif %}
+  </div>
 </div>
-{% endif %}
-{% if perms.auth.add_user %}
-<div class="pull-right">
-<a class="create_user_link btn btn-warning" title="Create User">
-  <i class="fa fa-plus"></i>
-  Create User
-</a>
-</div>
-{% endif %}
 
 {% if perms.auth.change_group %}
 <div id="grouplist"></div>

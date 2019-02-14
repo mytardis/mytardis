@@ -6,13 +6,13 @@
        {% endfor %}
     {% endif %}
   <div class="info-box">
-    <h1 id="df-view-h1">{{views.0.name}}</h1>
+    <h2 id="df-view-h2">{{views.0.name}}</h2>
     <div id="datafile-app">
   </div></div>
   <script type="text/javascript">
     $(".df-view-button").on("click", function(e) {
 	e.preventDefault();
-	$("#df-view-h1").text(this.innerText);
+	$("#df-view-h2").text(this.innerText);
 	$("#datafile-app").load(this.href);
 	$(this).siblings().each(function(){$(this).removeClass("active");});
 	$(this).addClass("active");

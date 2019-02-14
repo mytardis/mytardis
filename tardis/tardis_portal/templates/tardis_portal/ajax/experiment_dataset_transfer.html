@@ -2,9 +2,9 @@
 <form id="other-experiment-selection" class="form-horizontal">{% csrf_token %}
   <fieldset>
     <div class="form-group">
-      <label class="col-md-2 control-label" for="input01">Experiment</label>
-      <div class="col-md-10">
-        <select class="form-control" name="experiment_id">
+      <label class="col-lg-2 control-label" for="input01">Experiment</label>
+      <div class="col-lg-10">
+        <select name="experiment_id">
           {% for experiment in experiments %}
           <option value="{{experiment.id}}">{{experiment.title}}</option>
           {% endfor %}

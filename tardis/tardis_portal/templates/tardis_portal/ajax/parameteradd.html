@@ -8,19 +8,13 @@
         action='/ajax/add_{{type}}_parameters/{{parentObject.id}}/{{schema.id}}/'
         method='post' data-type="{{type}}" data-parent_object_id="{{parentObject.id}}">
     {% csrf_token %}
-    <div class="form-horizontal">
-      <div class="form-group">
-        <label class="control-label col-md-2" style="text-align:left;"
-               for="schemaselect">Schema</label>
-        <div class="col-md-6">
-          <select id="schemaselect" class="form-control" data-type="{{type}}" data-parent_object_id="{{parentObject.id}}">
-          {% for schema in all_schema %}
-            <option value="{{schema.id}}" {% if schema.id == schema_id %}selected{% endif %}>{{schema.name}}</option>
-          {% endfor %}
-          </select>
-        </div>
-        <div class="col-md-4"></div>
-      </div>
+    <div class="form-group">
+      <label class="control-label" for="schemaselect">Schema</label>
+      <select id="schemaselect" class="form-control" data-type="{{type}}" data-parent_object_id="{{parentObject.id}}">
+      {% for schema in all_schema %}
+        <option value="{{schema.id}}" {% if schema.id == schema_id %}selected{% endif %}>{{schema.name}}</option>
+      {% endfor %}
+      </select>
     </div>
     {{ form.non_field_errors }}
       {% for field in form %}
@@ -32,18 +26,14 @@
       <p style="color: red"><em>There were errors in the parameter submission. Please fix and resubmit.</em></p>
     {% endif %}
 
-    <div class="form-group">
-      <footer class="col-md-12 text-right">
-        <button type="submit" class="cancel-button btn btn-default"
-                data-dismiss="modal">
-          <i class="fa fa-close"></i>
-          Cancel
-        </button>
-        <button type="submit" class="submit-button btn btn-success">
-          <i class="fa fa-check"></i>
-          Save
-        </button>
-      </footer>
-    </div>
+    <button type="submit" class="submit-button btn btn-success float-right m-1">
+      <i class="fa fa-check"></i>
+      Save
+    </button>
+    <button type="button" class="cancel-button btn btn-outline-secondary float-right m-1"
+            data-dismiss="modal">
+      <i class="fa fa-close"></i>
+      Cancel
+    </button>
   </form>
 {% endif %}

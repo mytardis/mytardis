@@ -2,32 +2,32 @@
 
 {% block content %}
   <div class="page-header">
-    <h1 class="title">{{ subtitle }}</h1>
+    <h2 class="title">{{ subtitle }}</h2>
   </div>
   {{ form.non_field_errors }}
   <div class="row">
-    <div class="col-md-9">
+    <div class="col-lg-12">
       <form id="create_experiment_form" action="" method="POST"
             class="form-horizontal">{% csrf_token %}
         {% load bootstrap %}
-        {{ form.title|bootstrap_horizontal:'col-md-3' }}
-        {{ form.authors|bootstrap_horizontal:'col-md-3' }}
-        {{ form.institution_name|bootstrap_horizontal:'col-md-3' }}
-        {{ form.description|bootstrap_horizontal:'col-md-3' }}
+        {{ form.title|bootstrap_horizontal:'col-lg-3' }}
+        {{ form.authors|bootstrap_horizontal:'col-lg-3' }}
+        {{ form.institution_name|bootstrap_horizontal:'col-lg-3' }}
+        {{ form.description|bootstrap_horizontal:'col-lg-3' }}
         <div class="form-group">
-          <div class="col-md-offset-3 col-md-4">
+          <div class="col-lg-offset-3 col-lg-4">
             <button type="submit" class="btn btn-primary">
               <i class="fa fa-ok"></i> Save
             </button>
             {% if experiment_id %}
-            <button type="button" class="btn btn-default">
-              <a href="{% url 'tardis_portal.view_experiment' experiment_id %}">
+            <a class="btn btn-outline-secondary" role="button" tabindex="-1"
+                href="{% url 'tardis_portal.view_experiment' experiment_id %}">
                  Cancel
             </a>
             </button>
             {% else %}
-            <button type="button" class="btn btn-default">
-               <a href="{% url 'tardis.tardis_portal.views.my_data' %}">
+            <a class="btn btn-outline-secondary" role="button" tabindex="-1"
+               href="{% url 'tardis.tardis_portal.views.my_data' %}">
                Cancel
                </a>
             </button>

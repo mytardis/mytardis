@@ -82,26 +82,26 @@
     <legend>Change Password</legend>
     <form action="." method="post" class="form-horizontal">{% csrf_token %}
       <div class="form-group">
-        <label class="col-md-2 control-label" for="id_currentPassword">Current Password</label>
-        <div class="col-md-10">
+        <label class="col-lg-2 control-label" for="id_currentPassword">Current Password</label>
+        <div class="col-lg-10">
           <input id="id_currentPassword" class="form-control" type="password" name="currentPassword" style="max-width: 200px;"/>
         </div>
       </div>
       <div class="form-group">
-        <label class="col-md-2 control-label" for="id_newPassword">New Password</label>
-        <div class="col-md-10">
+        <label class="col-lg-2 control-label" for="id_newPassword">New Password</label>
+        <div class="col-lg-10">
           <input id="id_newPassword" class="form-control" type="password" name="password" style="max-width: 200px;" />
         </div>
       </div>
       <div class="form-group">
-        <label class="col-md-2 control-label" for="id_newPassword1">Confirm Password</label>
-        <div class="col-md-10">
+        <label class="col-lg-2 control-label" for="id_newPassword1">Confirm Password</label>
+        <div class="col-lg-10">
           <input id="id_newPassword1" class="form-control" type="password" name="password1" style="max-width: 200px;" />
         </div>
       </div>
       <div class="form-group">
-        <div class="col-md-offset-2 col-md-10">
-          <button type="submit" id="edit" class="btn btn-warning" style="max-width: 200px;">
+        <div class="col-lg-offset-2 col-lg-10">
+          <button type="submit" id="edit" class="btn btn-primary" style="max-width: 200px;">
             <i class="fa fa-key"></i>
             Change Password
           </button>

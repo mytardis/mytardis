@@ -1,6 +1,6 @@
 {% for ds in exp.datasets.all|dictsortreversed:"id"|slice:":5" %}
   {% if forloop.first %}
-    <ul class="list-group">
+    <ul class="list-group pb-1">
     {% with total=exp.datasets.all|length %}
       <li class="list-group-item dataset-list-header small">The most recent dataset{{total|pluralize}} in this experiment</li>
     {% endwith %}

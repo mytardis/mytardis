@@ -395,14 +395,14 @@
 
 {% block content %}
 <div class="page-header">
-  <h1>Experiment Access Controls</h1>
+  <h2>Experiment Access Controls</h2>
 </div>
 {% if experiments %}
 <div class="container-fluid">
   {% for experiment in experiments %}
 
   <div class="row experiment-row">
-    <div class="col-md-12">
+    <div class="col-lg-12">
       <h4><a href="{% url 'tardis_portal.view_experiment' experiment.id %}">{{ experiment.title }}</a></h4>
 
       <div>

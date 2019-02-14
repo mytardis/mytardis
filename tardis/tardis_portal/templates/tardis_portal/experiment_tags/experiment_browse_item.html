@@ -2,7 +2,7 @@
 {% load experimentstats %}
 
 <div about="{{ experiment.get_absolute_url }}">
-  <div class="pull-right">
+  <div class="float-right">
     {{ experiment|experiment_public_access_badge }}
   </div>
   <h4>
@@ -29,7 +29,7 @@
     {% endfor %}
     </div>
   {% endif %}
-  <div class="pull-right">
+  <div class="float-right">
     {{ experiment|experiment_datasets_badge }}
     &nbsp;
     {{ experiment|experiment_datafiles_badge }}

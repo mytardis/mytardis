@@ -38,12 +38,12 @@
 
     </div>
     <div class="row col-wrap">
-        <div class="col-md-4 login-box col">
+        <div class="col-lg-4 login-box col">
             <form class="form-horizontal" style="padding-top: 20px ; ">
                 {% csrf_token %}
-                {{ authForm|bootstrap_horizontal:'col-md-2' }}
+                {{ authForm|bootstrap_horizontal:'col-lg-2' }}
                 <div class="form-group">
-                  <div class="col-md-10 col-md-offset-2">
+                  <div class="col-lg-offset-2 col-lg-10">
                     <button type="submit" id="verify-my-account" class="btn btn-info btn-sm">
                         <i class="fa fa-sign-in"></i> Verify my Account
                     </button>
@@ -69,10 +69,10 @@
 
     </div>
     <div class="row" style="margin-top: 30px">
-        <div class="col-md-3" style="text-align: center">
+        <div class="col-lg-3" style="text-align: center">
             <h3>Legacy<br>Authentication</h3>
         </div>
-        <div class="col-md-3 col-md-offset-2" style="text-align: center">
+        <div class="col-lg-3 col-lg-offset-2" style="text-align: center">
             <img id="aaf_img" alt="AAF"
                  src="{% static 'openid_migration/images/aaf-logo.png' %}"
                  class="center-image" style="display: none">
@@ -82,7 +82,7 @@
         </div>
     </div>
     <div class="row" style="margin-top: 10px">
-        <div class="col-md-3" style="text-align: center">
+        <div class="col-lg-3" style="text-align: center">
             <div id="source" style="font-weight: bold; text-align: center">Old User</div>
             <div id="old-user-table" style="margin-top: 20px">
                 <table class="table table-bordered" >
@@ -98,13 +98,13 @@
             </div>
         </div>
 
-        <div class="col-md-2" style="text-align: center">
+        <div class="col-lg-2" style="text-align: center">
             <div id="spinner" style="display: none">
                 <i id="mo-spin-icon" class="fa fa-spinner fa-pulse fa-5x"></i>
             </div>
             <i class="fa fa-angle-double-right fa-3x"></i>
         </div>
-        <div class="col-md-3" style="text-align: center">
+        <div class="col-lg-3" style="text-align: center">
             <div id="current" style="font-weight: bold; text-align: center">New User</div>
             <div id="new-user-table" style="margin-top: 20px">
                 <table class="table table-bordered" >
@@ -121,7 +121,7 @@
         </div>
     </div>
     <div class="row">
-        <div id="confirm_button" class="confirm-buttons col-md-8">
+        <div id="confirm_button" class="confirm-buttons col-lg-8">
         <button type="button" class="btn btn-success" id="confirm_true">Migrate</button>
         <button type="button" class="btn btn-danger"  id="confirm_false">Cancel</button>
     </div>

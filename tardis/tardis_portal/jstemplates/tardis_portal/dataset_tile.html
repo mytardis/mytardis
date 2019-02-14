@@ -1,4 +1,4 @@
-<div class="pull-left" style="margin-right: 10px">
+<div class="float-left" style="margin-right: 10px">
   <div style="text-align: center; font-size: 32px">
     <i class="fa fa-folder-open"></i>
   </div>
@@ -15,9 +15,9 @@
            value="{{id}}" />
   </label>
 </div>
-<div class="pull-left" style="margin-right: 10px">
+<div class="float-left" style="margin-right: 10px">
 </div>
-<div class="pull-right" style="text-align: right">
+<div class="float-right" style="text-align: right">
   <p class="js-required">
     <a class="close" rel="tooltip" href="#"
        style="float: none;" onclick="return false;"
@@ -34,7 +34,7 @@
 
 </div>
 {{#show_dataset_thumbnails}}
-  <div class="pull-left ds-thumb" style="margin-right: 10px">
+  <div class="float-left ds-thumb" style="margin-right: 10px">
     {{#thumbnail}}
         <img alt="Thumbnail for Dataset #{{ id }}"
              src="{{ thumbnail }}"
@@ -56,7 +56,7 @@
   </a>
 </p>
 {{#show_instr_facil}}
-<p style="color:grey;font-size:100%;">
+<p class="float-left small" style="color:grey;">
   {{#instrument}}
   Instrument: {{instrument}}
   {{/instrument}}

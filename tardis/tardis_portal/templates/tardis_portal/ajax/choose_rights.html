@@ -79,7 +79,7 @@ $(document).on("click", '#legal-section .cancel-button', function() {
 <form action="{% url 'tardis.tardis_portal.views.choose_rights' experiment.id %}"
       method="post" class="experiment-rights form-horizontal">{% csrf_token %}
   {% load bootstrap %}
-  {{ form|bootstrap_horizontal:'col-md-3' }}
+  {{ form|bootstrap_horizontal:'col-lg-3' }}
 
   <!-- Public Access selector logic -->
   <script type="text/javascript">
@@ -119,7 +119,7 @@ $(document).on("click", '#legal-section .cancel-button', function() {
     $(this).parents('.tab-pane').find('.alert .close').click();
     // Show confirmation window
     $('#selected-license-text').html($(this).parents('.license-option')
-           .find('.col-md-10').html());
+           .find('.col-lg-10').html());
     $('#legal-section').show();
     $('#license-options').hide();
   });
@@ -205,7 +205,7 @@ $('form.experiment-rights').submit(function(evt) {
         <i class="fa fa-ok"></i>
         Confirm
       </button>
-      <button type="button" class="cancel-button btn btn-default"
+      <button type="button" class="cancel-button btn btn-outline-secondary"
               data-dismiss="modal">
         <i class="fa fa-cancel"></i>
         Cancel

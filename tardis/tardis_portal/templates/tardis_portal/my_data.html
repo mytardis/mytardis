@@ -10,30 +10,26 @@
 
 <div id="content">
   <div class="row">
-    <div class="col-md-9">
-      <h2 class="visible-xs">Experiments</h2>
-      <div class="pull-right">
+    <div class="col-12 col-lg-10">
+      <div class="float-right">
         {% if perms.tardis_portal.add_experiment %}
-        <a class="btn btn-warning"
+        <a class="btn btn-outline-secondary btn-sm m-1"
            href="{% url 'tardis.tardis_portal.views.create_experiment' %}">
           <i class="fa fa-plus"></i>
           Create
         </a>
         {% endif %}
-{#        <a class="btn btn-primary"#}
+{#        <a class="btn btn-outline-secondary"#}
 {#           href="{% url 'tardis.search.views.search_experiment' %}">#}
 {#          <i class="fa fa-search"></i>#}
 {#          Search#}
 {#        </a>#}
-      </div>  <!-- class="pull-right" -->
-      <div class="pull-left">
-        <h2 class="hidden-xm" style="text-align: center">Experiments</h2>
-      </div>
-    </div>  <!-- class="col-md-9" -->
+      </div>  <!-- class="float-right" -->
+    </div>  <!-- class="col-lg-10" -->
   </div>  <!-- class="row" -->
 
   <div class="row">
-    <div class="col-md-9">
+    <div class="col-12 col-lg-10">
       {% if not owned_experiments %}
       <p class="alert alert-info">
         You do not have access to any private experiments.
@@ -41,25 +37,27 @@
       {% endif %}
 
       {% if owned_experiments %}
-      <div class="pull-left">
+      <div class="float-left">
         <h3><strong>{{ owned_experiments.count }}</strong>
         Experiment{{ owned_experiments.count|pluralize}} You Own
         </h3>
       </div>
-      <div class="pull-right">
-        <button type="button" class="btn btn-success btn-xs"
+      <div class="float-right">
+        <button type="button" class="btn btn-outline-secondary btn-xs"
                 onclick="$('#myowned .panel-collapse').collapse('hide');" >
-        Collapse all</button>
-        <button type="button" class="btn btn-success btn-xs"
+          Collapse all
+        </button>
+        <button type="button" class="btn btn-outline-secondary btn-xs"
                 onclick="$('#myowned .panel-collapse').collapse('show');" >
-        Expand all</button>
+          Expand all
+        </button>
       </div>
       <div class="clearfix"></div>
       <div id="myowned" class="mydata accordion experiments"></div>
       <br/>
       {% endif %}
 
-    </div>  <!-- class="col-md-9" -->
+    </div>  <!-- class="col-lg-10" -->
   </div>  <!-- class="row" -->
 </div>  <!-- id="content" -->
 

@@ -7,7 +7,7 @@
   {% if experiment.handle %}
   <dl>
     <dt>Persistent Handle:</dt>
-    <dd>
+    <dd class="small">
       <a href="http://hdl.handle.net/{{ experiment.handle }}">
         {{ experiment.handle }}
       </a>
@@ -20,7 +20,7 @@
   {% if experiment.institution_name %}
   <dl>
     <dt>Institution</dt>
-    <dd property="dc:publisher">
+    <dd class="small" property="dc:publisher">
       {{experiment.institution_name}}
     </dd>
   </dl>
@@ -31,7 +31,7 @@
   {% if experiment.start_time and experiment.end_time %}
   <dl>
     <dt>Date</dt>
-    <dd>{{ experiment.start_time }} - {{ experiment.end_time }}</dd>
+    <dd class="small">{{ experiment.start_time }} - {{ experiment.end_time }}</dd>
   </dl>
   {% endif %}
   {% endblock start_end_time %}
@@ -39,10 +39,10 @@
   {% block license %}
   <dl>
     <dt>Licensing</dt>
-    <dd>
+    <dd class="small">
       {% if experiment.license_id %}
         <div class="row">
-          <div class="col-md-6">
+          <div class="col-lg-6 ">
             This experiment data is licensed under
             <a rel="license"
                property="dc:license"
@@ -50,7 +50,7 @@
               {{ experiment.license.name }}</a>.
           </div>
           {% if experiment.license.image_url != None %}
-          <div class="col-md-6">
+          <div class="col-lg-6">
             <img src="{{ experiment.license.image_url }}"/>
           </div>
           {% endif %}
@@ -76,7 +76,7 @@
       <dl>
         <dt>Administrators</dt>
         {% for owner in experiment.get_owners %}
-          <dd>
+          <dd class="small">
           {% capture as owner_text %}
             {% if owner.first_name and owner.last_name %}
               <span class="experiment-owner" title="{{ owner.username }}">
@@ -106,7 +106,7 @@
       {% if organization|length > 1 %}
       {% for p in protocol %}
         {% for o in organization %}
-          <a class="btn btn-primary btn-xs" href="{{p.1}}{{o}}"
+          <a class="btn btn-outline-secondary btn-sm" href="{{p.1}}{{o}}"
              title="Download Entire Experiment as {{p.0|upper}} with {{o}} organization">
             <i class="fa fa-download"></i>
             {% if o == default_organization %}
@@ -119,7 +119,7 @@
       {% endfor %}
     {% else %}
       {% for p in protocol %}
-        <a class="btn btn-primary btn-xs" href="{{p.1}}"
+        <a class="btn btn-outline-secondary btn-sm" href="{{p.1}}"
            title="Download Entire Experiment as {{p.0|upper}}">
           <i class="fa fa-download"></i>
           {{p.0|upper}}
@@ -127,7 +127,7 @@
       {% endfor %}
     {% endif %}
     <a href="{% url "tardis.apps.sftp:index" %}?object_id={{ experiment.id }}&object_type=experiment"
-       target="_blank" class="btn btn-primary btn-xs" title="Download with SFTP">SFTP</a>
+       target="_blank" class="btn btn-outline-secondary btn-sm" title="Download with SFTP">SFTP</a>
     </dd>
   </dl>
   {% endif %}

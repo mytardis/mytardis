@@ -29,10 +29,12 @@ Use the unminified jquery-migrate.js to see deprecation warnings in your browser
 <script type="text/javascript" src="{% static 'js/angular-mytardis.js' %}"></script>
 
 <script type="text/javascript" src="{% static 'js/lib/async.min.js' %}"></script>
-
 <script type="text/javascript" src="{% static 'underscore/underscore-min.js' %}"></script>
-<script type="text/javascript" src="{% static 'underscore.string/dist/underscore.string.js' %}"></script>
-
+<script type="text/javascript" src="{% static 'underscore.string/lib/underscore.string.js' %}"></script>
+<script type="text/javascript">
+  // Mixin Underscore.String to Underscore.js
+  _.mixin(_.string.exports());
+</script>
 <!-- Backbone.js -->
 <script type="text/javascript" src="{% static 'backbone/backbone-min.js' %}"></script>
 
@@ -89,7 +91,8 @@ Academicons are licensed under the SIL OFL 1.1 license:
 
 {% block site_css %}
 <link type="text/css" href="{% static 'css/default.css' %}" rel="stylesheet" />
-<link type="text/css" href="{% static 'css/dropdown-menu-bootstrap-v2.css' %}" rel="stylesheet" />
+<!-- <link type="text/css" href="{% static 'css/dropdown-menu-bootstrap-v2.css' %}" rel="stylesheet" /> -->
+<link type="text/css" href="{% static 'css/thumbnails-bootstrap-v2.css' %}" rel="stylesheet" />
 <style type="text/css">
     {{ site_styles|safe }}
 </style>

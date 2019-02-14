@@ -31,20 +31,20 @@
 
 {% block content %}
 <div class="page-header">
-  <h1>User Registration</h1>
+  <h2>User Registration</h2>
 </div>
 
 <p>Users must register before creating new experiments in MyTardis.</p>
 
 <div class="row">
-  <div class="col-md-8">
+  <div class="col-lg-8">
     <form action="." method="post" class="form-horizontal">
       {% load bootstrap %}
-      {{ form|bootstrap_horizontal:'col-md-2' }}
+      {{ form|bootstrap_horizontal:'col-lg-2' }}
       {% csrf_token %}
       <div class="form-group">
-        <div class="col-md-offset-2 col-md-3">
-          <button type="submit" class="btn btn-warning">
+        <div class="col-lg-offset-2 col-lg-3">
+          <button type="submit" class="btn btn-primary">
             <i class="fa fa-user"></i>
             Create New Account
           </button>

@@ -12,9 +12,9 @@
         {% if datafile.size %}<span style="margin-right: 5px">({{ datafile.size|filesizeformat }})</span>{% endif %}
     </strong>
 
-    <div class="btn-group pull-right">
+    <div class="btn-group float-right">
       {% if has_download_permissions and datafile.is_online %}
-      <a  class="btn"
+      <a  class="btn btn-outline-secondary"
           href="{{ datafile.get_download_url }}"
           title="Download">
           <i class="fa fa-download fa-lg"></i>
@@ -23,7 +23,7 @@
       {% if has_write_permissions and not immutable %}
       <a title="Add Metadata" href="{% url 'tardis.tardis_portal.views.add_datafile_par' datafile.id %}"
        data-toggle_selector="#datafile_metadata_toggle_{{datafile.id}}"
-       class="btn btn-default add-metadata">
+       class="btn btn-outline-secondary add-metadata">
           <i class="fa fa-plus"></i>
        </a>
        {% endif %}
@@ -32,10 +32,10 @@
   {% capture as edit_control %}
     {% if not parameterset.schema.immutable %}
     {% if has_write_permissions %}
-      <div class="pull-right">
+      <div class="float-right">
         <a href="{% url 'tardis.tardis_portal.views.edit_datafile_par' parameterset.id %}"
            data-toggle_selector="#datafile_metadata_toggle_{{parameterset.datafile_id}}"
-           class="edit-metadata btn btn-default btn-xs btn-warning">
+           class="edit-metadata btn btn-sm btn-primary">
           <i class="fa fa-pencil"></i>
           Edit
         </a>

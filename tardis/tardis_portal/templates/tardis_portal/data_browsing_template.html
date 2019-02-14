@@ -2,14 +2,14 @@
 
 {% block sidebar %}
 <div class="sidebar-toggle-open sidebar-toggle-open-hidden">
-  <button type="button" class="sidebar-toggle-button btn btn-default btn-inverse"
+  <button type="button" class="sidebar-toggle-button btn btn-outline-secondary btn-inverse"
           title="Open Navigation Menu">
     <i class="fa fa-list"></i>
   </button>
 </div>
 
 <div class="well sidebar-nav">
-  <div class="sidebar-toggle-close pull-right">
+  <div class="sidebar-toggle-close float-right">
     <a class="sidebar-toggle-button close"
        title="Close Navigation Menu">&times;</a>
   </div>
@@ -22,7 +22,7 @@
   //Sidebar open
   var openSidebarHandler = function() {
     // Reapply main content width restriction
-    $('#content-pane').addClass('col-md-9');
+    $('#content-pane').addClass('col-lg-9');
     // Fade in sidebar
     $('.sidebar-nav').show('drop');
     // Hide open toggle
@@ -36,7 +36,7 @@
     // Fade out sidebar
     $('.sidebar-nav').hide('drop', function() {
       // Remove main content width restriction
-      $('#content-pane').removeClass('col-md-9', 'slow');
+      $('#content-pane').removeClass('col-lg-9', 'slow');
     });
     // Show open toggle
     $('.sidebar-toggle-open').removeClass('sidebar-toggle-open-hidden', 'slow');

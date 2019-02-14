@@ -1,5 +1,6 @@
 {% load lookupfilters %}
 <table class="parameter_table table table-striped table-bordered {{ parameterset.schema.name|slugify }}">
+  <thead class="small">
     <tr>
         <th class="schema_name"
             title="{{ parameterset.schema.namespace }}{% if parameterset.schema.immutable %} (immutable){% endif %}"
@@ -12,6 +13,8 @@
             {% endif %}
         </th>
     </tr>
+  </thead>
+  <tbody class="small">
     {% for parameter in parameters %}
         {% if parameter.name.is_json %}
             <tr>
@@ -27,7 +30,7 @@
                             {% endfor %}
                         </tr>
                         </thead>
-                        <tbody>
+                        <tbody class="small">
                         {% for row in table.tbody %}
                             <tr>
                                 {% for col in table.thead %}
@@ -62,4 +65,5 @@
             </tr>
         {% endif %}
     {% endfor %}
+  </tbody>
 </table>
