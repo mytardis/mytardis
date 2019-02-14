@@ -1,6 +1,7 @@
 /* tardis/tardis_portal/static/js/jquery/tardis_portal/view_experiment/experiment_tabs.js */
 
-/* global _ */
+/* global s */
+
 
 (function() {
     var loadingHTML = "<img src=\"/static/images/ajax-loader.gif\"/><br />";
@@ -9,14 +10,14 @@
         return tabIdPrefix + tabName;
     }
     function getTabNameFromId(tabId) {
-        return _.strRight(_.lstrip(tabId, "#"), tabIdPrefix);
+        return s.strRight(s.lstrip(tabId, "#"), tabIdPrefix);
     }
 
     // Create new tab content panes programatically
     // Note: We're doing this before the bottom of the document has loaded!
     $("#experiment-tabs li a").each(function(i, v) {
         // Generate an ID for each tab
-        var tabName = _.trim(_.dasherize($(v).attr("title") || i), "_-");
+        var tabName = s.trim(s.dasherize($(v).attr("title") || i), "_-");
         // Grab the link HREF, then replace with the ID
         var url = $(v).attr("href");
         $(v).attr("href", "#" + getTabIdFromName(tabName));
@@ -66,7 +67,7 @@
 
     var showTabForWindowLocation = function() {
         // Get selected tab using window location
-        var tabHref = "#" + tabIdPrefix + _.ltrim(window.location.hash, "#");
+        var tabHref = "#" + tabIdPrefix + s.ltrim(window.location.hash, "#");
         var selected = $("#experiment-tabs li a[href=\"" + tabHref + "\"]");
         // Show selected tab if we have one, otherwise show the first tab
         if (selected.length === 1) {
