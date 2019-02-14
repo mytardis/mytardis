@@ -1,7 +1,7 @@
 /* tardis/tardis_portal/static/js/jquery/tardis_portal/view_experiment/experiment_tabs.js */
 
 /* eslint global-strict: 0, strict: 0, object-shorthand: 0 */
-/* global _ */
+/* global _, s */
 
 
 (function() {
@@ -18,7 +18,7 @@
     // Note: We're doing this before the bottom of the document has loaded!
     $("#experiment-tabs li a").each(function(i, v) {
         // Generate an ID for each tab
-        var tabName = _.trim(_.dasherize($(v).attr("title") || i), "_-");
+        var tabName = s.trim(s.dasherize($(v).attr("title") || i), "_-");
         // Grab the link HREF, then replace with the ID
         var url = $(v).attr("href");
         $(v).attr("href", "#" + getTabIdFromName(tabName));
