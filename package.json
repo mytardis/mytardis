@@ -21,6 +21,7 @@
     "jquery-ui-dist": "^1.12.1",
     "mustache": "^2.3.0",
     "ng-dialog": "0.3.4",
+    "sprintf-js": "^1.1.2",
     "underscore": "^1.3.1",
     "underscore.string": "^3.3.5"
   },
@@ -36,7 +37,7 @@
     "qunit": "^2.6.1"
   },
   "scripts": {
-    "eslint.jquery": "eslint -c .eslintrc tardis/tardis_portal/static/js/jquery/tardis_portal/ tardis/tardis_portal/static/js/main.js js_tests/jquery/tardis_portal/ tardis/apps/sftp/static/js/sftp/sftp.js tardis/apps/openid_migration/static/js/openid_migration/migrate_accounts.js",
+    "eslint.jquery": "eslint -c .eslintrc tardis/tardis_portal/static/js/jquery/tardis_portal/ tardis/tardis_portal/static/js/main.js tardis/tardis_portal/static/js/backbone-models.js js_tests/jquery/tardis_portal/ tardis/apps/sftp/static/js/sftp/sftp.js tardis/apps/openid_migration/static/js/openid_migration/migrate_accounts.js",
     "eslint.angular": "eslint -c .eslintrc.angular tardis/tardis_portal/static/js/facility_view.js",
     "pretest": "npm run eslint.jquery && npm run eslint.angular",
     "test": "grunt test --verbose"
