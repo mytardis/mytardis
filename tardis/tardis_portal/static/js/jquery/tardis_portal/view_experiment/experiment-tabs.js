@@ -1,7 +1,7 @@
 /* tardis/tardis_portal/static/js/jquery/tardis_portal/view_experiment/experiment_tabs.js */
 
 /* eslint global-strict: 0, strict: 0, object-shorthand: 0 */
-/* global _, s */
+/* global s */
 
 
 (function() {
@@ -11,7 +11,7 @@
         return tabIdPrefix + tabName;
     }
     function getTabNameFromId(tabId) {
-        return _.strRight(_.lstrip(tabId, "#"), tabIdPrefix);
+        return s.strRight(s.lstrip(tabId, "#"), tabIdPrefix);
     }
 
     // Create new tab content panes programatically
@@ -68,7 +68,7 @@
 
     var showTabForWindowLocation = function() {
         // Get selected tab using window location
-        var tabHref = "#" + tabIdPrefix + _.ltrim(window.location.hash, "#");
+        var tabHref = "#" + tabIdPrefix + s.ltrim(window.location.hash, "#");
         var selected = $("#experiment-tabs li a[href=\"" + tabHref + "\"]");
         // Show selected tab if we have one, otherwise show the first tab
         if (selected.length === 1) {

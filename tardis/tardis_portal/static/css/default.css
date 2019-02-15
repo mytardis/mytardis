@@ -309,23 +309,6 @@ h6 {font-size: 11px;color: #999999;text-transform: uppercase;}
     margin-bottom: 0;
 }
 
-/* Badge styles that were provided in Bootstrap v2 */
-.badge-default {
-  background-color: #999999;
-}
-.badge-info {
-  background-color: #3a87ad;
-}
-.badge-important {
-    background-color: #b94a48;
-}
-.badge-inverse {
-  background-color: #333333;
-}
-.badge-success {
-  background-color: #468847;
-}
-
 /* Padding from Bootstrap v2: */
 .accordion-heading .accordion-toggle {
   padding: 8px 15px;
