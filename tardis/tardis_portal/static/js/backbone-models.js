@@ -210,7 +210,7 @@ var MyTardis = (function() {
             // Fill in the placeholders (because Mustache can't inject DOM)
             _.each(newContents.find(".dataset-tile-placeholder"), function(v) {
 
-                var view = this.tiles[parseInt($(v).attr("data-dsid"))];
+                var view = this.tiles[parseInt($(v).attr("data-dsid"), 10)];
 
                 $(v).parent().replaceWith(view.el);
             }, this);
