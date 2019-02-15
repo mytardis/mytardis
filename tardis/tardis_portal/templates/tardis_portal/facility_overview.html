@@ -186,8 +186,8 @@
                                   ng-show="facilityCtrl.isFileListVisible(dataset.id)">Hide</span>
                               file list
                           </button>
-                          <span class="badge badge-default"
-                                ng-class="(dataset.verified_datafiles_count<dataset.datafile_count||!dataset.datafile_count)?'badge-important':''">
+                          <span class="label label-default"
+                                ng-class="(dataset.verified_datafiles_count<dataset.datafile_count||!dataset.datafile_count)?'label-danger':''">
                             <ng-pluralize count="dataset.verified_datafiles_count"
                                           when="{'0': 'no verified files', 'one': '1 verified file', 'other': '{} verified files'}">
                             </ng-pluralize>
@@ -255,8 +255,8 @@
                             <span ng-show="facilityCtrl.isFileListVisible(dataset.id)">Hide</span>
                             file list
                           </button>
-                          <span class="badge badge-default"
-                                ng-class="(dataset.verified_datafiles_count<dataset.datafile_count||!dataset.datafile_count)?'badge-important':''">
+                          <span class="label label-default"
+                                ng-class="(dataset.verified_datafiles_count<dataset.datafile_count||!dataset.datafile_count)?'label-danger':''">
                             <ng-pluralize count="dataset.verified_datafiles_count"
                                           when="{'0': 'no verified files', 'one': '1 verified file', 'other': '{} verified files'}">
                             </ng-pluralize>
@@ -320,8 +320,8 @@
                                   ng-show="facilityCtrl.isFileListVisible(dataset.id)">Hide</span>
                             file list
                           </button>
-                          <span class="badge badge-default"
-                                ng-class="(dataset.verified_datafiles_count<dataset.datafile_count||!dataset.datafile_count)?'badge-important':''">
+                          <span class="label label-default"
+                                ng-class="(dataset.verified_datafiles_count<dataset.datafile_count||!dataset.datafile_count)?'label-danger':''">
                             <ng-pluralize count="dataset.verified_datafiles_count"
                                           when="{'0': 'no verified files', 'one': '1 verified file', 'other': '{} verified files'}"></ng-pluralize>
                             ({{dataset.verified_datafiles_size | filesize}})
