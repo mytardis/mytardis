@@ -2,17 +2,14 @@ version: "2"
 services:
   run:
     build:
-      context: .
-      dockerfile: Dockerfile-run
+      context: ..
+      dockerfile: SemaphoreCI/Dockerfile-run
     image: mytardis/mytardis-run
   test:
     build:
-      context: .
-      dockerfile: Dockerfile-test
+      context: ..
+      dockerfile: SemaphoreCI/Dockerfile-test
     image: mytardis/mytardis-test
-    volumes:
-      - ./tardis:/home/webapp/tardis
-      - ./docs:/home/webapp/docs
     depends_on:
       - run
       - pg
