@@ -3,12 +3,12 @@ services:
   run:
     build:
       context: ..
-      dockerfile: SemaphoreCI/Dockerfile-run
+      dockerfile: docker-ci/Dockerfile-run
     image: mytardis/mytardis-run
   test:
     build:
       context: ..
-      dockerfile: SemaphoreCI/Dockerfile-test
+      dockerfile: docker-ci/Dockerfile-test
     image: mytardis/mytardis-test
     depends_on:
       - run
