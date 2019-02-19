@@ -1,5 +1,5 @@
-Dockerfiles for Semaphore Continuous Integration
-================================================
+Dockerfiles for Continuous Integration
+======================================
 
 Setup
 -----
@@ -7,7 +7,7 @@ Setup
 The folowing command is run to create the ``mytardis-base`` image and
 build the wheelhouse::
 
-  docker-compose -f SemaphoreCI/docker-build.yml run builder
+  docker-compose -f docker-ci/docker-build.yml run builder
 
 
 Test
@@ -15,20 +15,20 @@ Test
 
 The following commands are run to perform the tests and report coverage::
 
-  docker-compose -f SemaphoreCI/docker-test.yml run -e TEST_TYPE=memory \
+  docker-compose -f docker-ci/docker-test.yml run -e TEST_TYPE=memory \
     -e CODACY_PROJECT_TOKEN=$CODACY_PROJECT_TOKEN \
     -e COVERALLS_REPO_TOKEN=$COVERALLS_REPO_TOKEN \
     -e CI_NAME=SemaphoreCI -e CI_BUILD_NUMBER=$SEMAPHORE_BUILD_NUMBER \
     -e CI_BRANCH=$BRANCH_NAME -e PULL_REQUEST_NUMBER=$PULL_REQUEST_NUMBER \
     test
 
-  docker-compose -f SemaphoreCI/docker-test.yml run -e TEST_TYPE=pg test
+  docker-compose -f docker-ci/docker-test.yml run -e TEST_TYPE=pg test
 
-  docker-compose -f SemaphoreCI/docker-test.yml run -e TEST_TYPE=behave test
+  docker-compose -f docker-ci/docker-test.yml run -e TEST_TYPE=behave test
 
-  docker-compose -f SemaphoreCI/docker-test.yml run -e TEST_TYPE=mysql test
+  docker-compose -f docker-ci/docker-test.yml run -e TEST_TYPE=mysql test
 
-  docker-compose -f SemaphoreCI/docker-test.yml run -e TEST_TYPE=pylint test
+  docker-compose -f docker-ci/docker-test.yml run -e TEST_TYPE=pylint test
 
 
 Docker Hub

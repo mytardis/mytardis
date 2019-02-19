@@ -3,12 +3,12 @@ services:
   base:
     build:
       context: ..
-      dockerfile: SemaphoreCI/Dockerfile-base
+      dockerfile: docker-ci/Dockerfile-base
     image: mytardis/mytardis-base
   builder:
     build:
       context: ..
-      dockerfile: SemaphoreCI/Dockerfile-build
+      dockerfile: docker-ci/Dockerfile-build
     volumes:
       - ../wheelhouse:/wheelhouse
     depends_on:
