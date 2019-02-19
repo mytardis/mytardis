@@ -27,10 +27,6 @@ kombu==4.3.0
 lxml==4.3.1
 paramiko==2.4.2
 pillow==5.4.1
-pylint==1.9.4; python_version < "3.0" # pyup: <2.0
-pylint==2.2.2; python_version >= "3.5"
-pylint-django==0.11.1; python_version < "3.0" # pyup: <1.0
-pylint-django==2.0.5; python_version >= "3.5"
 pyoai==2.5.0
 pysolr==2.1.0 # pyup: >=2.1.0,<3
 pystache==0.5.4
