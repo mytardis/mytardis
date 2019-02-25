@@ -20,9 +20,6 @@ from .oauth_tokens import get_token, get_token_data, set_token
 from .ssh_authz import sign_certificate
 
 
-# TODO: Remove 'verify=False' for requests
-
-
 def render_error_message(request, message, status=500):
     return render(
         request, 'error.html', {
@@ -507,12 +504,10 @@ def oauth_callback(request):
         'redirect_uri': oauth_callback_url(request)
     }
 
-    # Verify=False is a bad thing, but I need it for now
     r = requests.post(
         oauth_service.oauth_token_url, data,
         auth=(
-            oauth_service.oauth_client_id, oauth_service.oauth_client_secret),
-        verify=False)
+            oauth_service.oauth_client_id, oauth_service.oauth_client_secret))
     token = json.loads(r.text)
     set_token(request, oauth_service, token)
 
