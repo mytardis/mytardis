@@ -1,4 +1,5 @@
 {% load capture %}
+{% load static from staticfiles %}
 <input type="hidden" id="datafile-count" value="{{datafile_count}}"/>
 {% capture as paginator_block %}
 {% if datafiles.paginator.num_pages > 1 %}
@@ -69,7 +70,8 @@
             <tr class="datafile search_match_file">
                 <td>
                     {% if has_download_permissions and datafile.verified %}
-                        <input type="checkbox" style="" class="datafile_checkbox" name="datafile" value="{{datafile.id}}" />
+                        <input type="checkbox" style="" class="datafile_checkbox" name="datafile" value="{{datafile.id}}"
+                               {% if not datafile.is_online %}disabled{% endif %}/>
                     {% endif %}
                 </td>
                 <td>
@@ -85,12 +87,16 @@
                             <span class="datafile_name" style="color:red;">{{ datafile.filename }}</span>
                         {% endif %}
                     {% endif %}
-                    {% if datafile.verified %}
+                    {% if datafile.verified and datafile.is_online %}
                         {% if datafile.size %}<span style="margin-right: 5px">({{ datafile.size|filesizeformat }})</span>{% endif %}
+                    {% elif not datafile.is_online %}
+                        <span class="archived-file" style="margin-right: 5px;">
+                          ({{ datafile.size|filesizeformat }}) (archived)
+                        </span>
                     {% else %}
                         <span style="margin-right: 5px; color:red;">(unverified)</span>
                     {% endif %}
-                    {% if has_download_permissions and datafile.get_view_url %}
+                    {% if has_download_permissions and datafile.get_view_url and datafile.is_online %}
                         {% url 'tardis.tardis_portal.iiif.download_image' datafile_id=datafile.id region='full' size=',28' rotation=0 quality='native' format='jpg' as thumbnail %}
                         {% url 'tardis.tardis_portal.iiif.download_image' datafile_id=datafile.id region='full' size='full' rotation=0 quality='native' format='png' as image %}
                         {% if thumbnail and datafile.has_image %}
@@ -121,27 +127,43 @@
 
                 </td>
                 <td style="width: 130px;">
-                    <div class="btn-group pull-right">
-                        {% if has_download_permissions and datafile.verified %}
-                            <a class="btn btn-default btn-sm {% if datafile.is_online %}" title="Download"
-                               {% else %} archived-file disabled"{% endif %}
-                               href="{{ datafile.get_download_url }}">
-                                <i class="fa fa-download fa-lg"></i>
-                            </a>
-                        {% endif %}
-                        {% if has_write_permissions and not immutable %}
-                            <a title="Add Metadata" href="{% url 'tardis.tardis_portal.views.add_datafile_par' datafile.id %}"
-                               data-toggle_selector="#datafile_metadata_toggle_{{datafile.id}}"
-                               class="btn btn-default btn-sm add-metadata">
-                                <i class="fa fa-plus fa-lg"></i>
-                            </a>
-                        {% endif %}
-
-                        <a id="datafile_metadata_toggle_{{datafile.id}}" title="Show/Hide Metadata"
-                           class="btn btn-default btn-sm datafile-info-toggle metadata_hidden" href="/ajax/datafile_details/{{datafile.id}}/">
-                            <i class="fa fa-list fa-lg"></i>
+                  <div class="btn-group pull-right">
+                    {% if has_download_permissions and datafile.verified %}
+                      {% if datafile.is_online %}
+                        <a class="btn btn-default btn-sm"
+                           title="Download"
+                           href="{{ datafile.get_download_url }}">
+                          <i class="fa fa-download fa-lg"></i>
                         </a>
-                    </div>
+                      {% else %}
+                        <button class="btn btn-default btn-sm recall-datafile"
+                                type="button"
+                                title="Recall"
+                          {% if datafile.get_recall_url %}
+                                data-toggle="tooltip"
+                                data-recall-url={{ datafile.get_recall_url }}
+                                style="pointer-events: auto;"
+                          {% else %}
+                                disabled
+                          {% endif %}
+                        >
+                          <i class="fa fa-undo fa-lg"></i>
+                        </button>
+                      {% endif %}
+                    {% endif %}
+                    {% if has_write_permissions and not immutable %}
+                        <a title="Add Metadata" href="{% url 'tardis.tardis_portal.views.add_datafile_par' datafile.id %}"
+                           data-toggle_selector="#datafile_metadata_toggle_{{datafile.id}}"
+                           class="btn btn-default btn-sm add-metadata">
+                            <i class="fa fa-plus fa-lg"></i>
+                        </a>
+                    {% endif %}
+
+                    <a id="datafile_metadata_toggle_{{datafile.id}}" title="Show/Hide Metadata"
+                       class="btn btn-default btn-sm datafile-info-toggle metadata_hidden" href="/ajax/datafile_details/{{datafile.id}}/">
+                        <i class="fa fa-list fa-lg"></i>
+                    </a>
+                  </div>
                 </td>
             </tr>
         {% endfor %}
@@ -150,25 +172,10 @@
 </table>
 </form>
 
-<script type="text/javascript">
-    $(function () {
-        $('.archived-file').tooltip({'title': "This file is archived.<br/>Press <b>Retrieve</b> button above file list"});
-        $('a.archived-file').on("click", function(e) {
-            e.preventDefault();
-        });
-    });
+{% block script %}
+<script type="text/javascript"
+        src="{% static 'js/jquery/tardis_portal/ajax/datafile_list.js' %}">
 </script>
-{# this appears to break things? Why is it here? -steve #}
-{# <script type="text/javascript"> #}
-{# (function() { #}
-{#   var btnGroups = $('tr.datafile .btn-group'); #}
-{#   var addWidths = function(memo, v, k) { #}
-{#     return memo + $(v).outerWidth(); #}
-{#   }; #}
-{#   var calculatedWidth = _.reduce(btnGroups.first().find('a.btn'), addWidths, 0); #}
-{#   btnGroups.css('width', calculatedWidth+"px"); #}
-{# })(); #}
-{# </script> #}
-
+{% endblock %}
 
 {{ paginator_block }}

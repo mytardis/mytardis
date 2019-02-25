@@ -11,9 +11,11 @@ import mimetypes
 import six
 from six.moves import urllib
 from six import string_types
+from uritemplate import URITemplate
 
 from django.conf import settings
 from django.core.files import File
+from django.core.files.storage import get_storage_class
 from django.urls import reverse
 from django.db import models
 from django.db import transaction
@@ -23,6 +25,7 @@ from django.dispatch import receiver
 from django.forms.models import model_to_dict
 from django.utils import timezone
 from django.utils.encoding import python_2_unicode_compatible
+from django.utils.functional import cached_property
 
 import magic
 
@@ -112,7 +115,7 @@ class DataFile(models.Model):
         return {dfo.storage_type
                 for dfo in self.file_objects.filter(verified=True)}
 
-    @property
+    @cached_property
     def is_online(self):
         """
         return False if a file is on tape.
@@ -122,8 +125,17 @@ class DataFile(models.Model):
         dfos = self.file_objects.filter(verified=True)
         if dfos.count() == 0:
             return True
-        return any(dfo.storage_type not in StorageBox.offline_types
-                   for dfo in dfos)
+        for dfo in dfos:
+            if dfo.storage_box.django_storage_class == \
+                    'tardis.apps.hsm.storage.HsmFileSystemStorage' and \
+                    'tardis.apps.hsm' in settings.INSTALLED_APPS:
+                from tardis.apps.hsm.check import dfo_online
+                if dfo_online(dfo):
+                    return True
+            else:
+                if dfo.storage_type not in StorageBox.offline_types:
+                    return True
+        return False
 
     def cache_file(self):
         if self.is_online:
@@ -242,6 +254,7 @@ class DataFile(models.Model):
         except KeyError:
             return 'application/octet-stream'
 
+    @cached_property
     def get_view_url(self):
         render_image_size_limit = getattr(settings, 'RENDER_IMAGE_SIZE_LIMIT',
                                           0)
@@ -262,6 +275,29 @@ class DataFile(models.Model):
                        kwargs={'pk': self.id,
                                'api_name': 'v1',
                                'resource_name': 'dataset_file'})
+
+    def get_recall_url(self):
+        '''
+        Get a URL to request a recall from tape
+        '''
+        if 'tardis.apps.hsm' not in settings.INSTALLED_APPS:
+            return None
+
+        from tardis.apps.hsm.storage import HsmFileSystemStorage
+
+        dfos = self.file_objects.filter(verified=True)
+
+        for dfo in dfos:
+            storage_class_name = dfo.storage_box.django_storage_class
+            if not self.is_online and issubclass(
+                    get_storage_class(storage_class_name),
+                    HsmFileSystemStorage):
+                recall_uri_templates = getattr(
+                    settings, 'RECALL_URI_TEMPLATES', {})
+                if storage_class_name in recall_uri_templates:
+                    template = URITemplate(recall_uri_templates[storage_class_name])
+                    return template.expand(dfo_id=dfo.id)
+        return None
 
     def get_file(self, verified_only=True):
         """

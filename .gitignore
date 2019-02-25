@@ -3,6 +3,7 @@
 *.egg-info/
 *.log
 *.prof
+__pycache__/
 *.pyc
 *.sqlite
 *.wsgi
@@ -36,12 +37,14 @@ tardis/apps/*
 !tardis/apps/dl_mapper_df_dir_only
 !tardis/apps/equipment
 !tardis/apps/filepicker
+!tardis/apps/hsm
 !tardis/apps/mx_views
 !tardis/apps/oaipmh
 !tardis/apps/openid_migration
 !tardis/apps/publication_forms
 !tardis/apps/push_to
 !tardis/apps/related_info
+!tardis/apps/s3utils
 !tardis/apps/slideshow_view
 !tardis/apps/sftp
 !tardis/apps/social_auth
