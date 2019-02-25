@@ -17,12 +17,10 @@ def sign_certificate(credential, token, url):
     headers = {'Authorization': 'Bearer ' + token}
     payload = {'public_key': key_type + ' ' + key_data}
 
-    # TODO: remote verify=False
     r = requests.post(
         url,
         headers=headers,
-        data=json.dumps(payload),
-        verify=False)
+        data=json.dumps(payload))
     cert_response = json.loads(r.text)
     if 'certificate' not in cert_response:
         return False
