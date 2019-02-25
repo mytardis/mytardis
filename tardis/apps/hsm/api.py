@@ -1,8 +1,6 @@
 """
 Additions to MyTardis's REST API
 """
-import logging
-
 from django.conf.urls import url
 from django.http import HttpResponse, HttpResponseForbidden
 
@@ -13,8 +11,6 @@ from tardis.tardis_portal.auth.decorators import has_datafile_download_access
 from tardis.tardis_portal.models.datafile import DataFileObject
 
 from .tasks import dfo_recall
-
-logger = logging.getLogger(__name__)
 
 
 class ReplicaAppResource(tardis.tardis_portal.api.ReplicaResource):
@@ -38,28 +34,22 @@ class ReplicaAppResource(tardis.tardis_portal.api.ReplicaResource):
         '''
         Recall archived DataFileObject from HSM system
         '''
-        logger.info("recall_dfo 1")
         self.method_check(request, allowed=['get'])
         self.is_authenticated(request)
         self.throttle_check(request)
 
-        logger.info("recall_dfo 2, dfo_id: %s", kwargs['pk'])
         dfo = DataFileObject.objects.get(id=kwargs['pk'])
         if not has_datafile_download_access(
                 request=request, datafile_id=dfo.datafile.id):
             return HttpResponseForbidden()
 
-        logger.info("recall_dfo 3")
         self.authorized_read_detail(
             [dfo.datafile],
             self.build_bundle(obj=dfo.datafile, request=request))
 
-        logger.info("recall_dfo 4")
         dfo_recall.apply_async(
             args=[dfo.id, request.user.id],
             priority=dfo.priority)
-        logger.info("recall_dfo 5")
 
         response = HttpResponse()
-        logger.info("recall_dfo 6")
         return response
