@@ -45,8 +45,8 @@ def generate_presigned_url(dfo, expiry=None):
         endpoint_url=endpoint_url,
         config=Config(signature_version='s3'))
     return s3client.generate_presigned_url(
-	'get_object',
-        Params = {
+        'get_object',
+        Params={
             'Bucket': bucket_name,
             'Key': dfo.uri
         },

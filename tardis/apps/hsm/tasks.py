@@ -28,7 +28,6 @@ def dfo_recall(dfo_id, user_id):
     try:
         dfo.file_object.read(1024)
         recalled = True
-        reason = None
     except IOError as err:
         recalled = False
         logger.error(
@@ -80,12 +79,12 @@ def ds_check(ds_id):
         schema=schema, name='online_files')
     online_files_param, _ = DatasetParameter.objects.get_or_create(  # pylint: disable=W0633
         parameterset=pset, name=online_files_pname)
-    online_files_param.string_value = "%s / %s" % (online_files,  total_files)
+    online_files_param.string_value = "%s / %s" % (online_files, total_files)
     online_files_param.save()
 
     updated_pname = ParameterName.objects.get(
         schema=schema, name='updated')
     updated_param, _ = DatasetParameter.objects.get_or_create(  # pylint: disable=W0633
         parameterset=pset, name=updated_pname)
-    updated_param.datetime_value = timezone.localtime()
+    updated_param.datetime_value = timezone.localtime(timezone.now())
     updated_param.save()
