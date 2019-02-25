@@ -125,20 +125,18 @@ def dataset_online_count(dataset):
     # Absolute paths to executables are used for increased security.
     # See Bandit's B607: start_process_with_partial_path
     for subdir in dirs_to_scan:
-        p1 = subprocess.Popen(  # nosec - Bandit B603: subprocess_without_shell_equals_true
-            ['/usr/bin/find', subdir, '-type', 'f', '-print'],
+        p1 = subprocess.Popen(  # nosec - Bandit B602: subprocess_without_shell_equals_true
+            ['/usr/bin/find', subdir, '-type', 'f', '-exec',
+             '/usr/bin/stat', '--format=%b,%s', '{}', ';'],
             stdout=subprocess.PIPE, universal_newlines=True)
         p2 = subprocess.Popen(  # nosec - Bandit B603: subprocess_without_shell_equals_true
-            ['/usr/bin/xargs', '/usr/bin/stat', '--format=%b,%s'],
-            stdin=p1.stdout, stdout=subprocess.PIPE)
-        p3 = subprocess.Popen(  # nosec - Bandit B603: subprocess_without_shell_equals_true
-            ['/bin/grep', '0,'], stdin=p2.stdout, stdout=subprocess.PIPE,
+            ['/bin/grep', '^0,'], stdin=p1.stdout, stdout=subprocess.PIPE,
             universal_newlines=True)
-        p4 = subprocess.Popen(  # nosec - Bandit B603: subprocess_without_shell_equals_true
-            ['/bin/grep', '-v', '0,0'], stdin=p3.stdout,
+        p3 = subprocess.Popen(  # nosec - Bandit B603: subprocess_without_shell_equals_true
+            ['/bin/grep', '-v', '^0,0'], stdin=p2.stdout,
             stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
             universal_newlines=True)
-        stdout, _ = p4.communicate()
+        stdout, _ = p3.communicate()
         for line in stdout.splitlines():
             _, size = line.split(',')
             if int(size) > max_inode_file_size:
