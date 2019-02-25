@@ -5,3 +5,4 @@
 
 # apps go here:
 -r tardis/apps/social_auth/requirements.txt
+-r tardis/apps/s3utils/requirements.txt

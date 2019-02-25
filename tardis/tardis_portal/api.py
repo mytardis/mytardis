@@ -978,6 +978,18 @@ class DataFileResource(MyTardisModelResource):
             template = URITemplate(download_uri_templates[storage_class_name])
             return redirect(template.expand(dfo_id=preferred_dfo.id))
 
+        if settings.PROXY_DOWNLOADS:
+            full_path = preferred_dfo.get_full_path()
+            for dir_prefix, url_prefix in six.iteritems(
+                    settings.PROXY_DOWNLOAD_PREFIXES):
+                if full_path.startswith(dir_prefix):
+                    response = HttpResponse()
+                    response["Content-Disposition"] = \
+                        "attachment; filename={0}".format(file_record.filename)
+                    path = full_path.split(dir_prefix)[1]
+                    response['X-Accel-Redirect'] = "%s/%s" % (url_prefix, path)
+                    return response
+
         # Log file download event
         if getattr(settings, "ENABLE_EVENTLOG", False):
             from tardis.apps.eventlog.utils import log
