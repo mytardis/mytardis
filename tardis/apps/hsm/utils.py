@@ -47,10 +47,11 @@ def _stat_subprocess(path):
         If unable to detect size or blocks successfully using subprocess
     """
     import re
-    import subprocess
+    import subprocess  # nosec - Bandit B404: import_subprocess
 
-    proc = subprocess.Popen(
-        ['stat', path], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    proc = subprocess.Popen(  # nosec - Bandit B603: subprocess_without_shell_equals_true
+        ['/usr/bin/stat', path],
+        stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     stdout, _ = proc.communicate()
 
     for line in stdout.splitlines():
