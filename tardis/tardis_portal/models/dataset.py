@@ -62,7 +62,14 @@ class Dataset(models.Model):
     def is_online(self):
         return all(df.is_online for df in self.datafile_set.all())
 
-    def getParameterSets(self):
+    @property
+    def online_files_count(self):
+        if 'tardis.apps.hsm' in settings.INSTALLED_APPS:
+            from tardis.apps.hsm.check import dataset_online_count
+            return dataset_online_count(self)
+        return self.datafile_set.count()
+
+    def getParameterSets(self, schemaType=None):
         """Return the dataset parametersets associated with this
         experiment.
 
