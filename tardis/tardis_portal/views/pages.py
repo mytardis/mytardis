@@ -290,6 +290,7 @@ class DatasetView(TemplateView):
              'upload_method': upload_method,
              'push_to_enabled': 'tardis.apps.push_to' in settings.INSTALLED_APPS,
              'carousel_slice': carousel_slice,
+             'hsm_enabled': 'tardis.apps.hsm' in settings.INSTALLED_APPS,
              }
         )
 
