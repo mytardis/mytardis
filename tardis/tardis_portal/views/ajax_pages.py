@@ -12,7 +12,7 @@ from django.core.paginator import Paginator, EmptyPage, InvalidPage
 from django.forms import model_to_dict
 from django.http import JsonResponse
 from django.urls import reverse
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse
 from django.views.decorators.cache import never_cache
 from django.contrib.auth.decorators import login_required
 from ..auth import decorators as authz
@@ -386,13 +386,3 @@ def retrieve_shared_exps_list(
         'query_string': query_string
     }
     return render_response_index(request, template_name, c)
-
-
-@authz.dataset_access_required
-def retrieve_dataset_online_files_count(request, dataset_id):
-    dataset = Dataset.objects.get(pk=dataset_id)
-
-    return JsonResponse(dict(
-        online_files=dataset.online_files_count,
-        total_files=dataset.datafile_set.count()
-    ))
