@@ -33,6 +33,8 @@ def dfo_recall(dfo_id, user_id):
         logger.error(
             "Recall failed for DFO ID: %s, User ID: %s with error:\n%s",
             dfo_id, user_id, str(err))
+    finally:
+        dfo.file_object.close()
 
     if user_id:
         user = User.objects.get(id=user_id)
@@ -44,8 +46,6 @@ def dfo_recall(dfo_id, user_id):
         user.email_user(subject, content,
                         from_email=settings.DEFAULT_FROM_EMAIL,
                         fail_silently=True)
-        logger.info("DFO recall email sent for DFO ID %s, User ID %s",
-                    dfo_id, user_id)
 
 
 @tardis_app.task(name='hsm.ds.check', ignore_result=True)
