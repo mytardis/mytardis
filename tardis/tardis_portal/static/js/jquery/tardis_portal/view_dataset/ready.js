@@ -53,23 +53,20 @@ $(document).ready(function() {
 
     // If the HSM (Hierarchical Storage Management) app is enabled,
     // we can check how many files are online
-    $.getJSON("/api/v1/?format=json", function(apiEndpointsData) {
-        var hsmEnabled = ("hsm_replica" in apiEndpointsData);
-        if (hsmEnabled) {
+    if ($("#hsm-enabled").val() === "True") {
+        $(".datafile-count-badge").html(
+            "<i class=\"fa fa-spinner fa-spin\"></i>&nbsp; " +
+            $("#datafile-count").val());
+        var onlineFilesCountUrl = "/ajax/dataset_online_files_count/" +
+            $("#dataset-id").val() + "/";
+        $.getJSON(onlineFilesCountUrl, function(data) {
+            var datafileCountBadgeText = "" + data.total_files;
+            if (data.online_files < data.total_files) {
+                datafileCountBadgeText = "" + data.online_files +
+                    " online / " + data.total_files + " files";
+            }
             $(".datafile-count-badge").html(
-                "<i class=\"fa fa-spinner fa-spin\"></i>&nbsp; " +
-                $("#datafile-count").val());
-            var onlineFilesCountUrl = "/ajax/dataset_online_files_count/" +
-                $("#dataset-id").val() + "/";
-            $.getJSON(onlineFilesCountUrl, function(data) {
-                var datafileCountBadgeText = "" + data.total_files;
-                if (data.online_files < data.total_files) {
-                    datafileCountBadgeText = "" + data.online_files +
-                        " online / " + data.total_files + " files";
-                }
-                $(".datafile-count-badge").html(
-                    "<i class=\"fa fa-file\"></i>&nbsp; " + datafileCountBadgeText);
-            });
-        }
-    });
+                "<i class=\"fa fa-file\"></i>&nbsp; " + datafileCountBadgeText);
+        });
+    }
 });
