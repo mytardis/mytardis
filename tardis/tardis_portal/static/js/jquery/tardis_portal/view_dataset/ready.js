@@ -57,8 +57,8 @@ $(document).ready(function() {
         $(".datafile-count-badge").html(
             "<i class=\"fa fa-spinner fa-spin\"></i>&nbsp; " +
             $("#datafile-count").val());
-        var onlineFilesCountUrl = "/ajax/dataset_online_files_count/" +
-            $("#dataset-id").val() + "/";
+        var onlineFilesCountUrl = "/api/v1/hsm_dataset/" +
+            $("#dataset-id").val() + "/count/";
         $.getJSON(onlineFilesCountUrl, function(data) {
             var datafileCountBadgeText = "" + data.total_files;
             if (data.online_files < data.total_files) {
