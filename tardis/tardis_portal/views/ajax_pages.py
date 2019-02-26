@@ -277,7 +277,6 @@ def retrieve_datafile_list(
 
     c = {
         'datafiles': dataset,
-        'datafile_count': dataset_results.count(),
         'paginator': paginator,
         'page_num': page_num,
         'immutable': immutable,
