@@ -1,6 +1,5 @@
 {% load capture %}
 {% load static from staticfiles %}
-<input type="hidden" id="datafile-count" value="{{datafile_count}}"/>
 {% capture as paginator_block %}
 {% if datafiles.paginator.num_pages > 1 %}
   <ul class="pagination" style="margin-left: auto; margin-right: auto; display: table;">

@@ -271,9 +271,11 @@ class DatasetView(TemplateView):
             carousel_slice = ":%s" % max_images_in_carousel
         else:
             carousel_slice = ":"
+        datafile_count = dataset.datafile_set.count()
 
         c.update(
             {'dataset': dataset,
+             'datafile_count': datafile_count,
              'datafiles': get_datafiles_page(),
              'parametersets': dataset.getParameterSets().exclude(
                      schema__hidden=True),

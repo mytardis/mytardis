@@ -351,6 +351,7 @@ margin-top: 20px;
 </div>
 
 {% block finalscript %}
+<input type="hidden" id="datafile-count" value="{{datafile_count}}"/>
 <input type="hidden" id="upload-method" value="{{ upload_method }}">
 {% if upload_method %}
   <input type="hidden" id="upload-method-url" value="{% url upload_method dataset.id %}">

@@ -298,7 +298,6 @@ def retrieve_datafile_list(
 
     c = {
         'datafiles': dataset,
-        'datafile_count': dataset_results.count(),
         'paginator': paginator,
         'immutable': immutable,
         'dataset': Dataset.objects.get(id=dataset_id),
