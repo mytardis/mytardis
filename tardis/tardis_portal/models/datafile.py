@@ -255,7 +255,7 @@ class DataFile(models.Model):
             return 'application/octet-stream'
 
     @cached_property
-    def get_view_url(self):
+    def view_url(self):
         render_image_size_limit = getattr(settings, 'RENDER_IMAGE_SIZE_LIMIT',
                                           0)
         if render_image_size_limit:
@@ -270,13 +270,15 @@ class DataFile(models.Model):
         return reverse('tardis.tardis_portal.download.view_datafile',
                        kwargs={'datafile_id': self.id})
 
-    def get_download_url(self):
+    @cached_property
+    def download_url(self):
         return reverse('api_download_file',
                        kwargs={'pk': self.id,
                                'api_name': 'v1',
                                'resource_name': 'dataset_file'})
 
-    def get_recall_url(self):
+    @cached_property
+    def recall_url(self):
         '''
         Get a URL to request a recall from tape
         '''
@@ -368,6 +370,7 @@ class DataFile(models.Model):
     def is_local(self):
         return self.file_objects.all()[0].is_local()
 
+    @cached_property
     def has_image(self):
         from .parameters import DatafileParameter
 

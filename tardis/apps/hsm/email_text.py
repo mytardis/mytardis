@@ -17,7 +17,7 @@ def email_dfo_recall_complete(dfo, user):
         file_path = '/'.join([dfo.datafile.directory, dfo.datafile.filename])
     else:
         file_path = dfo.datafile.filename
-    download_url = dfo.datafile.get_download_url()
+    download_url = dfo.datafile.download_url
     protocol = 'https' if settings.SECURE_PROXY_SSL_HEADER else 'http'
     site = Site.objects.get_current().domain
     download_url = '%s://%s%s' % (protocol, site, download_url)
@@ -34,7 +34,7 @@ def email_dfo_recall_failed(dfo, user):
         file_path = '/'.join([dfo.datafile.directory, dfo.datafile.filename])
     else:
         file_path = dfo.datafile.filename
-    download_url = dfo.datafile.get_download_url()
+    download_url = dfo.datafile.download_url
     protocol = 'https' if settings.SECURE_PROXY_SSL_HEADER else 'http'
     site = Site.objects.get_current().domain
     return interpolate_template(

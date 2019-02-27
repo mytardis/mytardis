@@ -219,7 +219,7 @@ class ModelTestCase(TestCase):
                              'path/file.txt')
             self.assertEqual(df_file.dataset, dataset)
             self.assertEqual(df_file.size, None)
-            self.assertEqual(df_file.get_download_url(),
+            self.assertEqual(df_file.download_url,
                              '/api/v1/dataset_file/%d/download%s' %
                              (first_id, trailing_slash()))
 
@@ -288,7 +288,7 @@ class ModelTestCase(TestCase):
                              'path/file1.txt')
             self.assertEqual(df_file.dataset, dataset)
             self.assertEqual(df_file.size, None)
-            self.assertEqual(df_file.get_download_url(),
+            self.assertEqual(df_file.download_url,
                              '/api/v1/dataset_file/%d/download%s' %
                              (first_id + 1, trailing_slash()))
 
@@ -296,7 +296,7 @@ class ModelTestCase(TestCase):
             self.assertEqual(df_file.filename, 'file2.txt')
             self.assertEqual(df_file.dataset, dataset)
             self.assertEqual(df_file.size, None)
-            self.assertEqual(df_file.get_download_url(),
+            self.assertEqual(df_file.download_url,
                              '/api/v1/dataset_file/%d/download%s' %
                              (first_id + 2, trailing_slash()))
 
@@ -305,7 +305,7 @@ class ModelTestCase(TestCase):
             self.assertEqual(df_file.filename, 'f.txt')
             self.assertEqual(df_file.dataset, dataset)
             self.assertEqual(df_file.size, None)
-            self.assertEqual(df_file.get_download_url(),
+            self.assertEqual(df_file.download_url,
                              '/api/v1/dataset_file/%d/download%s' %
                              (first_id + 3, trailing_slash()))
 
@@ -313,7 +313,7 @@ class ModelTestCase(TestCase):
             self.assertEqual(df_file.filename, 'f-bad-ds.txt')
             self.assertEqual(df_file.dataset, dataset)
             self.assertEqual(df_file.size, None)
-            self.assertEqual(df_file.get_download_url(),
+            self.assertEqual(df_file.download_url,
                              '/api/v1/dataset_file/%d/download%s' %
                              (first_id + 4, trailing_slash()))
             pattern = re.compile( '\n|;')
