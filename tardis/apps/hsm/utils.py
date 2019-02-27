@@ -40,28 +40,18 @@ def _stat_subprocess(path):
     -------
     tuple
         tuple of size and block number i.e., (size, blocks)
-
-    Raises
-    ------
-    Exception
-        If unable to detect size or blocks successfully using subprocess
     """
-    import re
     import subprocess  # nosec - Bandit B404: import_subprocess
+    import sys
 
+    format_option = '-f' if sys.platform == 'darwin' else '-c'
+    format_string = '%z,%b' if sys.platform == 'darwin' else '%s,%b'
     proc = subprocess.Popen(  # nosec - Bandit B603: subprocess_without_shell_equals_true
-        ['/usr/bin/stat', path],
+        ['/usr/bin/stat', format_option, format_string, path],
         stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     stdout, _ = proc.communicate()
 
-    for line in stdout.splitlines():
-        match = re.search(r"^.*Size: (\d+).*Blocks: (\d+).*$", line)
-        if match:
-            size = int(match.groups()[0])
-            blocks = int(match.groups()[1])
-            return size, blocks
-
-    raise Exception("Unable to detect size or blocks for %s\n" % path)
+    return tuple(int(stat) for stat in stdout.split(b','))
 
 
 def file_is_online(path):

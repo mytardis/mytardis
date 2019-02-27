@@ -20,9 +20,40 @@ def dfo_recall(dfo_id, user_id):
     '''
     Recall file from archive (tape) and notify the user who
     requested the recall by email
+
+    The "recall" just attempts to read the first bit of the file which on
+    most HSM systems will automatically trigger a recall.
+
+    Raises
+    ------
+    DataFileObjectNotVerified
+        If dfo is unverified
+    StorageClassNotSupportedError
+        If the `django_storage_class` for the StorageBox of the input
+        DataFileObject is not supported
     '''
+    from django.core.files.storage import get_storage_class
     from tardis.tardis_portal.models import DataFileObject
+    from .check import DataFileObjectNotVerified
+    from .check import StorageClassNotSupportedError
+    from .storage import HsmFileSystemStorage
+
     dfo = DataFileObject.objects.get(id=dfo_id)
+
+    if not dfo.verified:
+        raise DataFileObjectNotVerified(
+            "Cannot recall unverified DataFileObject: %s" % dfo.id)
+
+    storage_class = get_storage_class(dfo.storage_box.django_storage_class)
+    if not issubclass(storage_class, HsmFileSystemStorage):
+        msg = (
+            "You have tried to recall a DataFileObject with data in a "
+            "StorageBox with an unsupported django_storage_class. The "
+            "required django_storage_class is "
+            "'tardis.apps.hsm.storage.HsmFileSystemStorage'."
+        )
+        raise StorageClassNotSupportedError(msg)
+
     # Attempt to read the first bit of the file to force it
     # to be recalled to disk:
     try:
