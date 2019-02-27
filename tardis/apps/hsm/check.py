@@ -7,6 +7,7 @@ offline (on tape).
 import logging
 import os
 import subprocess  # nosec - Bandit B404: import_subprocess
+import sys
 
 from django.conf import settings
 from django.core.files.storage import get_storage_class
@@ -60,8 +61,7 @@ def dfo_online(dfo):
         DataFileObject is not supported
     """
     if dfo.verified:
-        storage_class = get_storage_class(
-            dfo.storage_box.django_storage_class)
+        storage_class = get_storage_class(dfo.storage_box.django_storage_class)
         if issubclass(storage_class, HsmFileSystemStorage):
             try:
                 location = dfo.storage_box.options.get(key="location").value
@@ -72,10 +72,10 @@ def dfo_online(dfo):
                              "system path/location", dfo.id)
         else:
             msg = (
-                "You have tried to check the online/offline status of a\n"
-                "DataFileObject with data in a StorageBox with an\n"
-                "unsupported `django_storage_class`. The required \n"
-                "`django_storage_class` is \n"
+                "You have tried to check the online/offline status of a "
+                "DataFileObject with data in a StorageBox with an "
+                "unsupported django_storage_class. The required "
+                "django_storage_class is "
                 "'tardis.apps.hsm.storage.HsmFileSystemStorage'."
             )
             raise StorageClassNotSupportedError(msg)
@@ -125,15 +125,18 @@ def dataset_online_count(dataset):
     # Absolute paths to executables are used for increased security.
     # See Bandit's B607: start_process_with_partial_path
     for subdir in dirs_to_scan:
+        format_option = '-f' if sys.platform == 'darwin' else '-c'
+        format_string = '%b,%z' if sys.platform == 'darwin' else '%b,%s'
         p1 = subprocess.Popen(  # nosec - Bandit B602: subprocess_without_shell_equals_true
             ['/usr/bin/find', subdir, '-type', 'f', '-exec',
-             '/usr/bin/stat', '--format=%b,%s', '{}', ';'],
+             '/usr/bin/stat', format_option, format_string, '{}', ';'],
             stdout=subprocess.PIPE, universal_newlines=True)
+        grep = '/usr/bin/grep' if sys.platform == 'darwin' else '/bin/grep'
         p2 = subprocess.Popen(  # nosec - Bandit B603: subprocess_without_shell_equals_true
-            ['/bin/grep', '^0,'], stdin=p1.stdout, stdout=subprocess.PIPE,
+            [grep, '^0,'], stdin=p1.stdout, stdout=subprocess.PIPE,
             universal_newlines=True)
         p3 = subprocess.Popen(  # nosec - Bandit B603: subprocess_without_shell_equals_true
-            ['/bin/grep', '-v', '^0,0'], stdin=p2.stdout,
+            [grep, '-v', '^0,0'], stdin=p2.stdout,
             stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
             universal_newlines=True)
         stdout, _ = p3.communicate()
