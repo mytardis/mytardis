@@ -2,7 +2,9 @@
 Additions to MyTardis's REST API
 """
 from django.conf.urls import url
-from django.http import HttpResponse, HttpResponseForbidden, JsonResponse
+from django.http import (HttpResponseForbidden,
+                         HttpResponseServerError,
+                         JsonResponse)
 
 from tastypie.utils import trailing_slash
 
@@ -32,13 +34,45 @@ class ReplicaAppResource(tardis.tardis_portal.api.ReplicaResource):
                 self.wrap_view('recall_dfo'), name="hsm_api_recall_dfo"),
             url(r"^(?P<resource_name>%s)/(?P<pk>\w[\w/-]*)/online%s$" %
                 (self._meta.resource_name, trailing_slash()),
-                self.wrap_view('dfo_online'), name="hsm_api_dfo_online"),
+                self.wrap_view('dfo_is_online'), name="hsm_api_dfo_online"),
         ]
+
+    def dfo_is_online(self, request, **kwargs):
+        '''
+        Return the online status of a DataFileObject stored in a
+        Hierarchical Storage Management (HSM) system
+        '''
+        from .exceptions import HsmException
+
+        self.method_check(request, allowed=['get'])
+        self.is_authenticated(request)
+        self.throttle_check(request)
+
+        dfo = DataFileObject.objects.get(id=kwargs['pk'])
+        if not has_datafile_download_access(
+                request=request, datafile_id=dfo.datafile.id):
+            return HttpResponseForbidden()
+
+        self.authorized_read_detail(
+            [dfo.datafile],
+            self.build_bundle(obj=dfo.datafile, request=request))
+
+        try:
+            online_status = dfo_online(dfo)
+            return JsonResponse({'online': online_status})
+        except HsmException as err:
+            return JsonResponse(
+                {'error_message': "%s: %s" % (type(err), str(err))},
+                status=HttpResponseServerError.status_code)
+
+        return HttpResponseServerError()
 
     def recall_dfo(self, request, **kwargs):
         '''
         Recall archived DataFileObject from HSM system
         '''
+        from .exceptions import HsmException
+
         self.method_check(request, allowed=['get'])
         self.is_authenticated(request)
         self.throttle_check(request)
@@ -52,33 +86,20 @@ class ReplicaAppResource(tardis.tardis_portal.api.ReplicaResource):
             [dfo.datafile],
             self.build_bundle(obj=dfo.datafile, request=request))
 
-        dfo_recall.apply_async(
-            args=[dfo.id, request.user.id],
-            priority=dfo.priority)
+        try:
+            dfo_recall.apply_async(
+                args=[dfo.id, request.user.id],
+                priority=dfo.priority)
+        except HsmException as err:
+            # We would only see an exception here if CELERY_ALWAYS_EAGER is
+            # True, making the task run synchronously
+            return JsonResponse(
+                {'error_message': "%s: %s" % (type(err), str(err))},
+                status=HttpResponseServerError.status_code)
 
-        response = HttpResponse()
-        return response
-
-    def dfo_online(self, request, **kwargs):
-        '''
-        Return the online status of a DataFileObject stored in a
-        Hierarchical Storage Management (HSM) system
-        '''
-        self.method_check(request, allowed=['get'])
-        self.is_authenticated(request)
-        self.throttle_check(request)
-
-        dfo = DataFileObject.objects.get(id=kwargs['pk'])
-        if not has_datafile_download_access(
-                request=request, datafile_id=dfo.datafile.id):
-            return HttpResponseForbidden()
-
-        self.authorized_read_detail(
-            [dfo.datafile],
-            self.build_bundle(obj=dfo.datafile, request=request))
-
-        return JsonResponse({'online': dfo_online(dfo)})
-
+        return JsonResponse({
+            "message": "Recall requested for DFO %s" % dfo.id
+        })
 
 class DatasetAppResource(tardis.tardis_portal.api.DatasetResource):
     '''Extends MyTardis's API for Datasets, adding in a method to count
@@ -103,13 +124,24 @@ class DatasetAppResource(tardis.tardis_portal.api.DatasetResource):
         Return the number of online files and the total number of files in a
         dataset stored in a Hierarchical Storage Management (HSM) system
         '''
+        from .exceptions import HsmException
+
         self.method_check(request, allowed=['get'])
         self.is_authenticated(request)
         self.throttle_check(request)
 
         dataset = Dataset.objects.get(id=kwargs['pk'])
 
-        return JsonResponse({
-            'online_files': dataset.online_files_count,
-            'total_files': dataset.datafile_set.count()
-        })
+        try:
+            online_files = dataset.online_files_count
+            total_files = dataset.datafile_set.count()
+            return JsonResponse({
+                'online_files': online_files,
+                'total_files': total_files
+            })
+        except HsmException as err:
+            return JsonResponse(
+                {'error_message': "%s: %s" % (type(err), str(err))},
+                status=HttpResponseServerError.status_code)
+
+        return HttpResponseServerError()
