@@ -92,11 +92,10 @@ def _do_resize(img, size):
                 # Height determines resize
                 pct_resize(height/img.height)
             return True
-        else:
-            # Exact dimensions *without* aspect ratio preserved
-            w, h = [int(round(float(n))) for n in size.split(',')[:2]]
-            img.resize(w, h)
-            return True
+        # Exact dimensions *without* aspect ratio preserved
+        w, h = [int(round(float(n))) for n in size.split(',')[:2]]
+        img.resize(w, h)
+        return True
     return False
 
 

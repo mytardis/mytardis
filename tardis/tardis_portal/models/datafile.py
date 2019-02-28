@@ -203,7 +203,7 @@ class DataFile(models.Model):
                 not self.sha512sum and \
                 require_checksums:
             raise Exception('Every Datafile requires a checksum')
-        elif settings.REQUIRE_DATAFILE_SIZES:
+        if settings.REQUIRE_DATAFILE_SIZES:
             if self.size < 0:
                 raise Exception('Invalid Datafile size (must be >= 0): %d' %
                                 self.size)
