@@ -108,23 +108,22 @@ class MyTardisAuthentication(object):
                 session_auth_result = True
             request.user.allowed_tokens = tokens
             return session_auth_result
-        else:
-            if auth_info.startswith('Basic'):
-                basic_auth = BasicAuthentication()
-                check = basic_auth.is_authenticated(request, **kwargs)
-                if check:
-                    if isinstance(check, HttpUnauthorized):
-                        return False
-                    request._authentication_backend = basic_auth
-                    return check
-            if auth_info.startswith('ApiKey'):
-                apikey_auth = ApiKeyAuthentication()
-                check = apikey_auth.is_authenticated(request, **kwargs)
-                if check:
-                    if isinstance(check, HttpUnauthorized):
-                        return False
-                    request._authentication_backend = apikey_auth
-                    return check
+        if auth_info.startswith('Basic'):
+            basic_auth = BasicAuthentication()
+            check = basic_auth.is_authenticated(request, **kwargs)
+            if check:
+                if isinstance(check, HttpUnauthorized):
+                    return False
+                request._authentication_backend = basic_auth
+                return check
+        if auth_info.startswith('ApiKey'):
+            apikey_auth = ApiKeyAuthentication()
+            check = apikey_auth.is_authenticated(request, **kwargs)
+            if check:
+                if isinstance(check, HttpUnauthorized):
+                    return False
+                request._authentication_backend = apikey_auth
+                return check
         return False
 
     def get_identifier(self, request):
