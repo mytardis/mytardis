@@ -9,7 +9,7 @@ import six
 
 from tardis.tardis_portal.models.datafile import DataFile, DataFileObject
 from tardis.tardis_portal.models.dataset import Dataset
-from tardis.tardis_portal.models.storage import StorageBox
+from tardis.tardis_portal.models.storage import StorageBox, StorageBoxOption
 
 from tardis.tardis_portal.tests.test_api import MyTardisResourceTestCase
 
@@ -24,14 +24,25 @@ class HsmAppApiTestCase(MyTardisResourceTestCase):
         self.datafile = DataFile.objects.create(
             dataset=self.dataset, filename='test.txt',
             size=8, md5sum="930e419034038dfad994f0d2e602146c")
-        self.storage_box = StorageBox.get_default_storage()
+        self.default_storage_box = StorageBox.get_default_storage()
+        self.hsm_storage_box = StorageBox.objects.create(
+            name='HSM',
+            django_storage_class='tardis.apps.hsm.storage.HsmFileSystemStorage')
+        self.hsm_location = StorageBoxOption.objects.create(
+            storage_box=self.hsm_storage_box, key='location',
+            value=self.default_storage_box.options.get(key='location').value)
         self.dfo = DataFileObject.objects.create(
-            datafile=self.datafile, storage_box=self.storage_box)
-        location = self.storage_box.options.get(key='location').value
+            datafile=self.datafile, storage_box=self.default_storage_box)
+        location = self.dfo.storage_box.options.get(key='location').value
         self.dfo.uri = "test.txt"
         self.dfo.save()
         with open(os.path.join(location, self.dfo.uri), 'w') as file_obj:
             file_obj.write("123test\n")
+
+    def tearDown(self):
+        self.dataset.delete()
+        self.default_storage_box.delete()
+        self.hsm_storage_box.delete()
 
     def test_online_count(self):
         '''
@@ -41,9 +52,8 @@ class HsmAppApiTestCase(MyTardisResourceTestCase):
         the files on disk without checking if each file is
         verified in the database
         '''
-        self.storage_box.django_storage_class = \
-            'tardis.apps.hsm.storage.HsmFileSystemStorage'
-        self.storage_box.save()
+        self.dfo.storage_box = self.hsm_storage_box
+        self.dfo.save()
         response = self.api_client.get(
             '/api/v1/hsm_dataset/%s/count/' % self.dataset.id,
              authentication=self.get_credentials())
@@ -58,37 +68,37 @@ class HsmAppApiTestCase(MyTardisResourceTestCase):
             self.assertEqual(returned_data[key], value)
 
 
-    def test_online_check(self):
+    def test_online_check_unverified_file(self):
         '''
-        Test the API endpoint for checking the online status of a file on
-        a Hierarchical Storage Management (HSM) system
+        Test API endpoint for HSM online check with unverified file
         '''
-        from tardis.apps.hsm.check import DataFileObjectNotVerified
-        from tardis.apps.hsm.check import StorageClassNotSupportedError
-
-        # First test with unverified file which should raise an exception:
         self.dfo.verified = False
         self.dfo.save()
-        with self.assertRaises(DataFileObjectNotVerified):
-            self.api_client.get(
-                '/api/v1/hsm_replica/%s/online/' % self.dfo.id,
-                 authentication=self.get_credentials())
+        response =  self.api_client.get(
+            '/api/v1/hsm_replica/%s/online/' % self.dfo.id,
+             authentication=self.get_credentials())
+        self.assertHttpApplicationError(response)
+        self.assertIn(b"DataFileObjectNotVerified", response.content)
 
-        # Test with unsupported storage class which should raise an exception:
+    def test_online_check_unsupported_storage_class(self):
+        '''
+        Test API endpoint for HSM online check with unsupported storage class
+        '''
+        self.dfo.storage_box = self.default_storage_box
         self.dfo.verified = True
         self.dfo.save()
-        self.assertEqual(
-            self.storage_box.django_storage_class,
-            'tardis.tardis_portal.storage.MyTardisLocalFileSystemStorage')
-        with self.assertRaises(StorageClassNotSupportedError):
-            self.api_client.get(
-                '/api/v1/hsm_replica/%s/online/' % self.dfo.id,
-                 authentication=self.get_credentials())
+        response = self.api_client.get(
+            '/api/v1/hsm_replica/%s/online/' % self.dfo.id,
+             authentication=self.get_credentials())
+        self.assertHttpApplicationError(response)
+        self.assertIn(b"StorageClassNotSupportedError", response.content)
 
-        # Test with valid HSM storage class:
-        self.storage_box.django_storage_class = \
-            'tardis.apps.hsm.storage.HsmFileSystemStorage'
-        self.storage_box.save()
+    def test_online_check_valid_storage_class(self):
+        '''
+        Test API endpoint for HSM online check with valid storage class
+        '''
+        self.dfo.storage_box = self.hsm_storage_box
+        self.dfo.save()
         response = self.api_client.get(
             '/api/v1/hsm_replica/%s/online/' % self.dfo.id,
              authentication=self.get_credentials())
@@ -101,12 +111,20 @@ class HsmAppApiTestCase(MyTardisResourceTestCase):
             self.assertIn(key, returned_data)
             self.assertEqual(returned_data[key], value)
 
+    def test_online_check_without_acl_access_to_dfo(self):
+        '''
+        Test API endpoint for HSM online check without ACL access to DFO
+        '''
         # Test 403 forbidden (no ObjectACL access to dataset):
         self.dataset.experiments.remove(self.testexp)
         self.assertHttpForbidden(self.api_client.get(
             '/api/v1/hsm_replica/%s/online/' % self.dfo.id,
              authentication=self.get_credentials()))
 
+    def test_online_check_with_bad_password(self):
+        '''
+        Test API endpoint for HSM online check without ACL access to DFO
+        '''
         # Test 401 unauthorized (wrong password):
         bad_credentials = self.create_basic(
             username=self.username, password="wrong pw, dude!")
@@ -120,7 +138,8 @@ class HsmAppApiTestCase(MyTardisResourceTestCase):
         used by the file, then the hsm app falls back to using a subprocess
         '''
         from ..utils import _stat_subprocess
-        location = self.storage_box.options.get(key='location').value
+
+        location = self.dfo.storage_box.options.get(key='location').value
         file_path = os.path.join(location, self.dfo.uri)
         size, blocks = _stat_subprocess(file_path)
         self.assertEqual(size, self.dfo.datafile.size)
@@ -131,32 +150,29 @@ class HsmAppApiTestCase(MyTardisResourceTestCase):
         The "recall" just attempts to read the first bit of the file which on
         most HSM systems will automatically trigger a recall.
         '''
-        from tardis.apps.hsm.check import DataFileObjectNotVerified
-        from tardis.apps.hsm.check import StorageClassNotSupportedError
-
         # First test with unverified file which should raise an exception:
         self.dfo.verified = False
         self.dfo.save()
-        with self.assertRaises(DataFileObjectNotVerified):
-            self.api_client.get(
-                '/api/v1/hsm_replica/%s/recall/' % self.dfo.id,
-                 authentication=self.get_credentials())
+        response = self.api_client.get(
+            '/api/v1/hsm_replica/%s/recall/' % self.dfo.id,
+             authentication=self.get_credentials())
+        self.assertHttpApplicationError(response)
+        self.assertIn(b"DataFileObjectNotVerified", response.content)
 
         # Test with unsupported storage class which should raise an exception:
+        self.dfo.storage_box = self.default_storage_box
         self.dfo.verified = True
         self.dfo.save()
-        self.assertEqual(
-            self.storage_box.django_storage_class,
-            'tardis.tardis_portal.storage.MyTardisLocalFileSystemStorage')
-        with self.assertRaises(StorageClassNotSupportedError):
-            self.api_client.get(
-                '/api/v1/hsm_replica/%s/recall/' % self.dfo.id,
-                 authentication=self.get_credentials())
+        self.assertTrue(DataFileObject.objects.get(id=self.dfo.id).verified)
+        response = self.api_client.get(
+            '/api/v1/hsm_replica/%s/recall/' % self.dfo.id,
+             authentication=self.get_credentials())
+        self.assertHttpApplicationError(response)
+        self.assertIn(b"StorageClassNotSupportedError", response.content)
 
         # Test with valid HSM storage class:
-        self.storage_box.django_storage_class = \
-            'tardis.apps.hsm.storage.HsmFileSystemStorage'
-        self.storage_box.save()
+        self.dfo.storage_box = self.hsm_storage_box
+        self.dfo.save()
         response = self.api_client.get(
             '/api/v1/hsm_replica/%s/recall/' % self.dfo.id,
              authentication=self.get_credentials())
@@ -183,9 +199,9 @@ class HsmAppApiTestCase(MyTardisResourceTestCase):
         from tardis.tardis_portal.models.parameters import Schema
         from ..tasks import ds_check
 
-        self.storage_box.django_storage_class = \
-            'tardis.apps.hsm.storage.HsmFileSystemStorage'
-        self.storage_box.save()
+        # Ensure this dataset's one and only file is in an HSM storage box:
+        self.dfo.storage_box = self.hsm_storage_box
+        self.dfo.save()
 
         schema = Schema.objects.get(
             namespace='http://mytardis.org/schemas/hsm/dataset/1')
