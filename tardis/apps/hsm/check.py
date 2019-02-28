@@ -18,25 +18,13 @@ from tardis.tardis_portal.models import StorageBox
 from tardis.tardis_portal.models import StorageBoxOption
 
 from . import default_settings
+from .exceptions import (DataFileObjectNotVerified,
+                         StorageClassNotSupportedError)
 from .storage import HsmFileSystemStorage
 from .utils import file_is_online
 
 
 logger = logging.getLogger(__name__)
-
-
-class DataFileNotVerified(Exception):
-    """Exception raied when an operation is attempted on an
-    unverified DataFile"""
-
-
-class DataFileObjectNotVerified(Exception):
-    """Exception raied when an operation is attempted on an
-    unverified DataFile"""
-
-
-class StorageClassNotSupportedError(Exception):
-    """Exception raised when a storage class is not supported"""
 
 
 def dfo_online(dfo):
