@@ -34,8 +34,8 @@ def dfo_recall(dfo_id, user_id):
     '''
     from django.core.files.storage import get_storage_class
     from tardis.tardis_portal.models import DataFileObject
-    from .check import DataFileObjectNotVerified
-    from .check import StorageClassNotSupportedError
+    from .exceptions import (DataFileObjectNotVerified,
+                             StorageClassNotSupportedError)
     from .storage import HsmFileSystemStorage
 
     dfo = DataFileObject.objects.get(id=dfo_id)
