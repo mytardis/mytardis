@@ -32,16 +32,16 @@ NPM_FILE_PATTERNS = {
     'backbone': ['*'],
     'backbone-forms': ['*'],
     'blueimp-file-upload': ['*'],
-    'bootstrap': ['dist/*'],
+    'bootstrap': ['*'],
     'bootstrap-3-typeahead': ['*'],
     'clipboard': ['*'],
-    'font-awesome': ['css/*', 'fonts/*'],
+    'font-awesome': ['*'],
     'jquery': ['*'],
     'jquery-migrate': ['*'],
     'jquery-ui-dist': ['jquery-ui.min.js'],
     'mustache': ['mustache.min.js'],
     'ng-dialog': ['*'],
-    'sprintf-js': ['dist/*'],
+    'sprintf-js': ['*'],
     'underscore': ['*'],
-    'underscore.string': ['dist/*']
+    'underscore.string': ['*']
 }
