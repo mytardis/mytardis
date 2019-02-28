@@ -126,7 +126,7 @@ class HsmAppApiTestCase(MyTardisResourceTestCase):
         Test API endpoint for HSM online check without ACL access to DFO
         '''
         # Test 401 unauthorized (wrong password):
-        bad_credentials = self.create_basic(
+        bad_credentials = self.create_basic(  # nosec
             username=self.username, password="wrong pw, dude!")
         self.assertHttpUnauthorized(self.api_client.get(
             '/api/v1/hsm_replica/%s/online/' % self.dfo.id,
@@ -185,7 +185,7 @@ class HsmAppApiTestCase(MyTardisResourceTestCase):
              authentication=self.get_credentials()))
 
         # Test 401 unauthorized (wrong password):
-        bad_credentials = self.create_basic(
+        bad_credentials = self.create_basic(  # nosec
             username=self.username, password="wrong pw, dude!")
         self.assertHttpUnauthorized(self.api_client.get(
             '/api/v1/hsm_replica/%s/recall/' % self.dfo.id,
