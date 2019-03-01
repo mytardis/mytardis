@@ -29,7 +29,6 @@ class ContextualViewTest(TestCase):
         pwd = 'secret'
         email = ''
         self.user = User.objects.create_user(user, email, pwd)
-        self.userProfile = self.user.userprofile
         self.exp = Experiment(title='test exp1',
                               institution_name='monash', created_by=self.user)
         self.exp.save()
@@ -70,7 +69,7 @@ class ContextualViewTest(TestCase):
         self.dfps.delete()
         self.acl.delete()
 
-    def testDetailsDisplay(self):
+    def test_details_display(self):
         """
         test display of view for an existing schema and no display for an
         undefined one.

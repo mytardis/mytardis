@@ -29,7 +29,6 @@ class ViewTemplateContextsTest(TestCase):
         pwd = 'secret'
         email = ''
         self.user = User.objects.create_user(user, email, pwd)
-        self.userProfile = self.user.userprofile
         self.exp = Experiment(title='test exp1',
                               institution_name='monash', created_by=self.user)
         self.exp.save()
@@ -59,7 +58,7 @@ class ViewTemplateContextsTest(TestCase):
         self.datafile.delete()
         self.acl.delete()
 
-    def testExperimentView(self):
+    def test_experiment_view(self):
         """
         test some template context parameters for an experiment view
         """
@@ -111,7 +110,7 @@ class ViewTemplateContextsTest(TestCase):
             else:
                 delattr(settings, "USER_AGENT_SENSING")
 
-    def testDatasetView(self):
+    def test_dataset_view(self):
         """
         test some context parameters for a dataset view
         """
@@ -175,13 +174,13 @@ class ExperimentListsTest(TestCase):
             exp = Experiment.objects.create(title="Experiment %s" % exp_num,
                                             created_by=self.user)
             self.exps.append(exp)
-            isOwner = exp_num <= 100
+            is_owner = exp_num <= 100
             acl = ObjectACL.objects.create(
                 pluginId=django_user,
                 entityId=str(self.user.id),
                 content_object=exp,
                 canRead=True,
-                isOwner=isOwner,
+                isOwner=is_owner,
                 aclOwnershipType=ObjectACL.OWNER_OWNED)
             self.acls.append(acl)
 

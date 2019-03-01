@@ -20,7 +20,7 @@ from ...auth.localdb_auth import django_user
 from ...models import ObjectACL, Experiment
 
 
-class listTestCase(TestCase):
+class UserGroupListsTestCase(TestCase):
 
     def setUp(self):
 
@@ -46,7 +46,7 @@ class listTestCase(TestCase):
             group = Group(name=groupname)
             group.save()
 
-    def testGetUserList(self):
+    def test_get_user_list(self):
 
         # Match all
         response = self.client.get('/ajax/user_list/?q=')
@@ -98,15 +98,15 @@ class listTestCase(TestCase):
         self.assertTrue(len(users_dict) == 1)
         self.assertTrue(users_dict[0]['username'] == 'user1')
 
-    def testGetGroupList(self):
+    def test_get_group_list(self):
 
         response = self.client.get('/ajax/group_list/')
         self.assertEqual(response.status_code, 200)
         ret_names = response.content.split(b' ~ ')
         self.assertTrue(len(ret_names) == Group.objects.count())
 
-        for (a, b) in zip(self.groups, ret_names):
-            self.assertEqual(a, b)
+        for (group_name, ret_name) in zip(self.groups, ret_names):
+            self.assertEqual(group_name, ret_name)
 
     def tearDown(self):
         self.client.logout()
@@ -137,7 +137,7 @@ class UserListTestCase(TestCase):
                                   password=self.accounts[0][1])
         self.assertTrue(login)
 
-    def testGetUserList(self):
+    def test_get_user_list(self):
 
         # Match all
         response = self.client.get('/ajax/user_list/?q=')
@@ -164,7 +164,7 @@ class UserListTestCase(TestCase):
 
 class RightsTestCase(TestCase):
 
-    def testRightsRequireValidOwner(self):
+    def test_rights_require_valid_owner(self):
         # Create test owner without enough details
         username, email, password = ('testuser',
                                      'testuser@example.test',
@@ -208,7 +208,7 @@ class RightsTestCase(TestCase):
 
 class ManageAccountTestCase(TestCase):
 
-    def testManageAccount(self):
+    def test_manage_account(self):
         # Create test owner without enough details
         username, email, password = ('testuser',
                                      'testuser@example.test',

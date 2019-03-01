@@ -32,8 +32,6 @@ class UploadTestCase(TestCase):
         self.user.user_permissions.add(
             Permission.objects.get(codename='change_experiment'))
 
-        self.userProfile = self.user.userprofile
-
         self.test_dir = mkdtemp()
 
         self.exp = Experiment(title='test exp1',
@@ -56,10 +54,12 @@ class UploadTestCase(TestCase):
         self.dataset.experiments.add(self.exp)
         self.dataset.save()
 
-        path_parts = [settings.FILE_STORE_PATH,
-                      "%s-%s" % (urllib.parse.quote(self.dataset.description, safe='')
-                                 or 'untitled',
-                                 self.dataset.id)]
+        path_parts = [
+            settings.FILE_STORE_PATH,
+            "%s-%s" % (
+                urllib.parse.quote(self.dataset.description, safe='') or 'untitled',
+                self.dataset.id)
+            ]
         self.dataset_path = path.join(*path_parts)
 
         if not path.exists(self.dataset_path):
@@ -69,37 +69,35 @@ class UploadTestCase(TestCase):
 
         self.filename = 'testfile.txt'
 
-        self.f1 = open(path.join(self.test_dir, self.filename), 'w')
-        self.f1.write('Test file 1')
-        self.f1.close()
+        self.file1 = open(path.join(self.test_dir, self.filename), 'w')
+        self.file1.write('Test file 1')
+        self.file1.close()
 
-        self.f1_size = path.getsize(path.join(self.test_dir,
-                                    self.filename))
-
-        self.f1 = open(path.join(self.test_dir, self.filename), 'r')
+        self.file1 = open(path.join(self.test_dir, self.filename), 'r')
 
     def tearDown(self):
         from shutil import rmtree
 
-        self.f1.close()
+        self.file1.close()
         rmtree(self.test_dir)
         rmtree(self.dataset_path)
         self.exp.delete()
 
-    def testFileUpload(self):
+    def test_file_upload(self):
         from os import path
 
-        c = Client()
-        c.login(username='tardis_user1', password='secret')
-        session_id = c.session.session_key
+        client = Client()
+        client.login(username='tardis_user1', password='secret')
+        session_id = client.session.session_key
 
-        c.post('/upload/' + str(self.dataset.id) + '/',
-               {'Filedata': self.f1, 'session_id': session_id})
+        client.post(
+            '/upload/' + str(self.dataset.id) + '/',
+            {'Filedata': self.file1, 'session_id': session_id})
 
         test_files_db = \
             DataFile.objects.filter(dataset__id=self.dataset.id)
-        self.assertTrue(path.exists(path.join(self.dataset_path,
-                        self.filename)))
+        self.assertTrue(
+            path.exists(path.join(self.dataset_path, self.filename)))
         target_id = Dataset.objects.first().id
         self.assertEqual(self.dataset.id, target_id)
         url = test_files_db[0].file_objects.all()[0].uri
@@ -108,13 +106,13 @@ class UploadTestCase(TestCase):
             settings.FILE_STORE_PATH))
         self.assertTrue(test_files_db[0].file_objects.all()[0].verified)
 
-    def testUploadComplete(self):
+    def test_upload_complete(self):
         from django.http import QueryDict, HttpRequest
         from ...views.upload import upload_complete
         data = [('filesUploaded', '1'), ('speed', 'really fast!'),
                 ('allBytesLoaded', '2'), ('errorCount', '0')]
-        post = QueryDict('&'.join(['%s=%s' % (k, v) for (k, v) in
-                         data]))
+        post = QueryDict(
+            '&'.join(['%s=%s' % (k, v) for (k, v) in data]))
         request = HttpRequest()
         request.POST = post
         response = upload_complete(request)

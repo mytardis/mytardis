@@ -37,7 +37,7 @@ class ExperimentTestCase(TestCase):
         self.user, self.username, self.password = (user, username, password)
         self.userprofile = self.user.userprofile
 
-    def testCreateAndEdit(self):
+    def test_create_and_edit(self):
 
         # Login as user
         client = Client()
@@ -102,14 +102,16 @@ class ExperimentTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
 
         # Create client and go to account management URL
-        data = {'title': 'I Am the Very Model of a Modern Major-General',
-                'authors': 'W. S. Gilbert(http://en.wikipedia.org/wiki/'
-                'W._S._Gilbert), Arthur Sullivan (arthur@sullivansite.net)',
-                'institution_name': 'Savoy Theatre',
-                'description':
+        data = {
+            'title': 'I Am the Very Model of a Modern Major-General',
+            'authors': (
+                'W. S. Gilbert(http://en.wikipedia.org/wiki/'
+                'W._S._Gilbert), Arthur Sullivan (arthur@sullivansite.net)'),
+            'institution_name': 'Savoy Theatre',
+            'description':
                 "I am the very model of a modern Major-General," +
                 "I've information vegetable, animal, and mineral,"
-                }
+        }
         response = client.post(edit_url, data=data)
         # Expect redirect to created experiment
         self.assertEqual(response.status_code, 303)
@@ -136,7 +138,7 @@ class ExperimentTestCase(TestCase):
             [a.email for a in experiment.experimentauthor_set.all()],
             [None, 'arthur@sullivansite.net'])
 
-    def testDatasetJson(self):
+    def test_dataset_json(self):
         user = self.user
 
         # Create test experiment and make user the owner of it
@@ -161,10 +163,10 @@ class ExperimentTestCase(TestCase):
 
         # Create some datasets
         def create_dataset(i):
-            ds = Dataset.objects.create(description="Dataset #%d" % i)
-            ds.experiments.add(experiment)
-            ds.save()
-            return (ds.id, ds)
+            dataset = Dataset.objects.create(description="Dataset #%d" % i)
+            dataset.experiments.add(experiment)
+            dataset.save()
+            return (dataset.id, dataset)
         datasets = dict(map(create_dataset, range(1, 11)))
 
         # Login as user
@@ -184,7 +186,6 @@ class ExperimentTestCase(TestCase):
             # Check attributes
             self.assertEqual(item['description'], dataset.description)
             self.assertEqual(item['immutable'], dataset.immutable)
-            # todo - put ye test back
             # Check experiment list is the same
             self.assertEqual(
                 frozenset(item['experiments']),
