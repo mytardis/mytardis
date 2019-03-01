@@ -26,7 +26,7 @@ class ContextualViewTest(TestCase):
         setting up essential objects, copied from tests above
         """
         user = 'tardis_user1'
-        pwd = 'secret'
+        pwd = 'secret'  # nosec
         email = ''
         self.user = User.objects.create_user(user, email, pwd)
         self.exp = Experiment(title='test exp1',

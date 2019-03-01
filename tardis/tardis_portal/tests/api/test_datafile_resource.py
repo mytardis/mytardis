@@ -107,7 +107,7 @@ class DataFileResourceTest(MyTardisResourceTestCase):
 
         def md5sum(filename):
             import hashlib
-            md5 = hashlib.md5()
+            md5 = hashlib.md5()  # nosec
             with open(filename, 'rb') as file_obj:
                 for chunk in iter(
                         lambda: file_obj.read(128*md5.block_size), b''):

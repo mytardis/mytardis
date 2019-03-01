@@ -26,7 +26,7 @@ class ViewTemplateContextsTest(TestCase):
         """
 
         user = 'tardis_user1'
-        pwd = 'secret'
+        pwd = 'secret'  # nosec
         email = ''
         self.user = User.objects.create_user(user, email, pwd)
         self.exp = Experiment(title='test exp1',

@@ -26,7 +26,7 @@ class UploadTestCase(TestCase):
         from tempfile import mkdtemp
 
         user = 'tardis_user1'
-        pwd = 'secret'
+        pwd = 'secret'  # nosec
         email = ''
         self.user = User.objects.create_user(user, email, pwd)
         self.user.user_permissions.add(
@@ -87,7 +87,7 @@ class UploadTestCase(TestCase):
         from os import path
 
         client = Client()
-        client.login(username='tardis_user1', password='secret')
+        client.login(username='tardis_user1', password='secret')  # nosec
         session_id = client.session.session_key
 
         client.post(
