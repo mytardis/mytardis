@@ -247,7 +247,7 @@ class LDAPBackend(AuthProvider, UserProvider, GroupProvider):
         """return an iteration of the available groups.
         """
         try:
-            # check if a user exists that can authenticate using the VBL
+            # check if a user exists that can authenticate using the ldap
             # auth method
             userAuth = UserAuthentication.objects.get(
                 userProfile__user=user,

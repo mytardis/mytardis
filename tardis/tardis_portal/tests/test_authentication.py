@@ -8,8 +8,6 @@ from django.test import TestCase
 from django.test.client import Client
 from django.contrib.auth.models import User, Permission
 
-from ..models import UserAuthentication
-
 
 class AuthenticationTestCase(TestCase):
 
@@ -44,56 +42,6 @@ class AuthenticationTestCase(TestCase):
                              "Sorry, username and password don't match.")
             self.client.logout()
 
-    def testCreateNewAccount(self):
-        username = 'test@test.com'
-        authMethod = 'vbl'
-        password = 'testpass'
-
-        userAuth = UserAuthentication.objects.filter(
-            username=username, authenticationMethod=authMethod)
-        self.assertEqual(userAuth.count(), 0)
-
-        response = self.client.post(self.loginUrl, {'username': username,
-            'password': password, 'authMethod': authMethod})
-
-        self.assertEqual(response.status_code, 302)
-        userAuth = UserAuthentication.objects.get(
-            username=username, authenticationMethod=authMethod)
-
-        self.assertTrue(userAuth is not None)
-        self.assertEqual(userAuth.userProfile.user.username, 'vbl_test')
-
-        self.client.logout()
-
-        # Exception handling in tardis/tardis_portal/tests/mock_vbl_auth.py
-        # doesn't play nicely with Django's TransactionTestCase, leading to
-        # TransactionManagementError: An error occurred in the current transaction.
-        # You can't execute queries until the end of the 'atomic' block.
-        # (when running tests with the "mysql" database engine).
-        test_failed_vbl_create_user = False
-        if test_failed_vbl_create_user:
-            username = 'test@test1.com'
-            authMethod = 'vbl'
-            password = 'testpass'
-
-            response = self.client.post(self.loginUrl, {'username': username,
-                'password': password, 'authMethod': authMethod})
-            self.assertEqual(response.status_code, 403)
-
-            userAuth = UserAuthentication.objects.filter(
-                username=username, authenticationMethod=authMethod)
-            self.assertEqual(userAuth.count(), 0)
-            self.client.logout()
-
-            username = 'test@test.com'
-            authMethod = 'vbl'
-            password = 'testpasss'
-
-            response = self.client.post(self.loginUrl, {'username': username,
-                'password': password, 'authMethod': authMethod})
-            self.assertEqual(response.status_code, 403)
-            self.client.logout()
-
     def testManageAuthMethods(self):
         response = self.client.get(self.manageAuthMethodsUrl)
 
@@ -115,7 +63,7 @@ class AuthenticationTestCase(TestCase):
         response = self.client.post(
             self.manageAuthMethodsUrl, {'operation': 'addAuth',
             'username': 'test@test.com', 'password': 'testpass',
-            'authenticationMethod': 'vbl'})
+            'authenticationMethod': 'localdb'})
 
         self.assertTrue(json.loads(response.content)['status'])
         self.client.logout()

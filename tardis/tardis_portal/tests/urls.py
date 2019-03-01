@@ -13,7 +13,6 @@ from ..views.pages import ExperimentView
 from ..views import load_datafile_image
 from ..views import load_dataset_image
 from ..views import load_experiment_image
-from . import mock_vbl_download
 
 def groups_view(request):
     """
@@ -35,10 +34,6 @@ urlpatterns += [
     url(r'^test/download/datafile/(?P<datafile_id>\d+)/$',
         download.download_datafile,
         name='tardis.tardis_portal.download.download_datafile'),
-    url(r'^test/vbl/download/datafile/(?P<datafile_id>\d+)/$',
-        mock_vbl_download.download_datafile,
-        name='tardis.tardis_portal.tests.'
-        'mock_vbl_download.download_datafile'),
     url(r'^test/ExperimentImage/load/(?P<parameter_id>\d+)/$',
         load_experiment_image,
         name='tardis.tardis_portal.views.load_experiment_image'),

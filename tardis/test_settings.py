@@ -44,8 +44,6 @@ DEFAULT_STORAGE_BASE_DIR = path.abspath(path.join(path.dirname(__file__),
 
 AUTH_PROVIDERS = (('localdb', 'Local DB',
                   'tardis.tardis_portal.auth.localdb_auth.DjangoAuthBackend'),
-                  ('vbl', 'VBL',
-                   'tardis.tardis_portal.tests.mock_vbl_auth.MockBackend'),
                   ('ldap', 'LDAP',
                    'tardis.tardis_portal.auth.ldap_auth.ldap_auth'))
 
@@ -58,10 +56,6 @@ except ImportError:
     pass
 
 NEW_USER_INITIAL_GROUPS = ['test-group']
-
-DOWNLOAD_PROVIDERS = (
-    ('vbl', 'tardis.tardis_portal.tests.mock_vbl_download'),
-)
 
 
 def get_all_tardis_apps():

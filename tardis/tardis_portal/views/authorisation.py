@@ -70,15 +70,6 @@ def retrieve_user_list(request):
     user_auths = list(UserAuthentication.objects.filter(
         userProfile__user__in=first_n_users))
     auth_methods = dict((ap[0], ap[1]) for ap in settings.AUTH_PROVIDERS)
-    """
-    users = [ {
-        "username": "ksr",
-        "first_name": "Kieran",
-        "last_name": "Spear",
-        "email": "email@address.com",
-        "auth_methods": [ "ksr:vbl:VBL", "ksr:localdb:Local DB" ]
-    } , ... ]
-    """
     users = []
     for u in users_query:
         fields = ('first_name', 'last_name', 'username', 'email')
