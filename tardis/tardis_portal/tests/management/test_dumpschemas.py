@@ -4,7 +4,7 @@ from django.test import TestCase
 from django.core.management import call_command
 from django.core.management.base import CommandError
 
-from ..models.parameters import Schema
+from ...models.parameters import Schema
 
 
 class DumpSchemasTestCase(TestCase):

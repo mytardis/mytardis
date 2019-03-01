@@ -1,7 +1,7 @@
 from django.test import TestCase
 from django.core.management import call_command
 
-from ..models.parameters import Schema
+from ...models.parameters import Schema
 
 
 class LoadSchemasTestCase(TestCase):
