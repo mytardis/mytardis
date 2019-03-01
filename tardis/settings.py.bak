@@ -1,0 +1,170 @@
+from tardis.default_settings import *
+
+SECRET_KEY="i8@w\p^4r4m6rkdf@foj5z3euhfji6t9j0rjc@g56vo2wp&7+u"  # generated from build.sh
+
+
+
+# change database to postgres
+DATABASES = {
+    'default': {
+        'ENGINE':   "django.db.backends.postgresql_psycopg2",
+        'NAME':     "mytardis",
+        'USER':     "postgres",
+        'PASSWORD': "admin",
+        'HOST':     "localhost",
+        'PORT':     "5432",
+    }
+}
+DATABASES['default']['ENGINE'] = 'django.db.backends.sqlite3'
+DATABASES['default']['NAME'] = 'tardis_db'
+
+INSTALLED_APPS += 'social_django',
+INSTALLED_APPS += 'tardis.apps.openid_migration',
+INSTALLED_APPS += 'tardis.apps.mydata',
+INSTALLED_APPS += 'monash_openid_login',
+INSTALLED_APPS += 'tardis.apps.social_auth',
+INSTALLED_APPS += 'haystack',
+INSTALLED_APPS += 'tardis.apps.search_v2',
+INSTALLED_APPS += 'behave_django',
+#INSTALLED_APPS += 'django_elasticsearch_dsl',
+
+SINGLE_SEARCH_ENABLED = True
+
+SOCIAL_AUTH_AAF_PIPELINE = (
+    'social_core.pipeline.social_auth.social_details',
+    'social_core.pipeline.social_auth.social_uid',
+    'social_core.pipeline.social_auth.social_user',
+    # Associates the current social details with another user account with
+    # a similar email address.
+    'social_core.pipeline.social_auth.associate_by_email',
+    'social_core.pipeline.user.get_username',
+    'social_core.pipeline.user.create_user',
+    'tardis.tardis_portal.auth.social_auth.add_authentication_method',
+    'tardis.tardis_portal.auth.social_auth.approve_user_auth',
+    'tardis.tardis_portal.auth.social_auth.add_user_permissions',
+    'social_core.pipeline.social_auth.associate_user',
+    'social_core.pipeline.social_auth.load_extra_data',
+    'social_core.pipeline.user.user_details',
+    'social_core.pipeline.social_auth.associate_by_email',
+    'tardis.apps.social_auth.auth.social_auth.add_migration_permission'
+)
+
+SOCIAL_AUTH_GOOGLE_OAUTH2_PIPELINE = (
+    'social_core.pipeline.social_auth.social_details',
+    'social_core.pipeline.social_auth.social_uid',
+    'social_core.pipeline.social_auth.social_user',
+    'social_core.pipeline.user.get_username',
+    'monash_openid_login.auth.social_auth.create_google_user',
+    'tardis.apps.social_auth.auth.social_auth.add_authentication_method',
+    'tardis.apps.social_auth.auth.social_auth.add_user_permissions',
+    'social_core.pipeline.social_auth.associate_user',
+    'social_core.pipeline.social_auth.load_extra_data',
+    'social_core.pipeline.user.user_details',
+    'tardis.apps.social_auth.auth.social_auth.send_admin_email',
+    'tardis.apps.social_auth.auth.social_auth.migrate_user_message',
+)
+
+SOCIAL_AUTH_URL_NAMESPACE_BEGIN = 'social:begin'
+#SOCIAL_AUTH_USERNAME_IS_FULL_EMAIL = True
+SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = '593293877111-phba4mi37jac0gtais55u7tgqe84ukd9.apps.googleusercontent.com' #Paste CLient Key
+SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = 'afV9418808OLlZtd3S8Jd-Wu' #Paste Secret Key
+
+#AAF
+SOCIAL_AUTH_AAF_KEY = ''
+SOCIAL_AUTH_AAF_SECRET = ''
+SOCIAL_AUTH_AAF_AUTH_URL = 'https://central.test.aaf.edu.au/providers/op/authorize'
+SOCIAL_AUTH_AAF_TOKEN_URL = 'https://central.test.aaf.edu.au/providers/op/token'
+SOCIAL_AUTH_AAF_USER_INFO_URL = 'https://central.test.aaf.edu.au/providers/op/userinfo'
+
+#Github
+SOCIAL_AUTH_GITHUB_KEY = 'a84b5ba3c4a98e3b0774'
+SOCIAL_AUTH_GITHUB_SECRET = '9237db3ecdf48d8ada4e77419fe2e73e90a1a6d0'
+SOCIAL_AUTH_GITHUB_AUTH_URL = 'https://github.com/login/oauth/authorize'
+SOCIAL_AUTH_GITHUB_TOKEN_URL = 'https://github.com/login/oauth/access_token'
+#
+#Adding auth providers
+AUTH_PROVIDERS = (
+    ('localdb', 'Local DB',
+     'tardis.tardis_portal.auth.localdb_auth.DjangoAuthBackend'),
+    ('google', 'Google',
+     'social_core.backends.google.GoogleOAuth2'),
+                  )
+#for Mydata
+AUTOGENERATE_API_KEY = True
+#for email
+# EMAIL_HOST_PASSWORD = 'eAm3uwPYHqs7mc'
+# EMAIL_USE_TLS = True
+# EMAIL_PORT = 587
+EMAIL_PORT = 25
+# EMAIL_HOST_USER = 'mytardis.nectar@gmail.com'
+# EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_HOST = 'smtp.monash.edu'
+EMAIL_HOST_PASSWORD = ''
+EMAIL_HOST_USER = ''
+
+#SITE_TITLE
+SITE_TITLE = 'MyTardis.Local'
+#Admins
+ADMINS = [('Manish', 'manish.kumar@monash.edu')]
+
+#CELERY
+CELERY_ALWAYS_EAGER = True
+#CUSTOM_LOGIN_VIEW
+LOGIN_VIEWS = {
+    1: 'monash_openid_login.views.LoginView'
+}
+
+MIDDLEWARE += (
+        'social_django.middleware.SocialAuthExceptionMiddleware',
+    )
+
+TEMPLATES[0]['OPTIONS']['context_processors'].extend([
+    'social_django.context_processors.backends',
+    'social_django.context_processors.login_redirect'])
+
+AUTHENTICATION_BACKENDS += (
+    'social_core.backends.open_id.OpenIdAuth',
+    'social_core.backends.google.GoogleOpenId',
+    'social_core.backends.google.GoogleOAuth2',
+    'tardis.apps.social_auth.auth.authorisation.AAFOpenId',)
+
+# add context processor for openid migration
+TEMPLATES[0]['OPTIONS']['context_processors'].extend([
+    'tardis.apps.openid_migration.context_processor.openid_migration_processor',
+   ])
+
+SUPPORT_EMAIL = "store.star.help@monash.edu"
+
+ACCOUNT_MIGRATION_INSTRUCTIONS_LINKS = {
+    "google": "https://storemonash.readthedocs.io/en/latest/account_migration.html",
+    "aaf": "",
+}
+DEFAULT_FROM_EMAIL = "Store.Monash Admins <store.star.help@monash.edu>"
+
+HAYSTACK_CONNECTIONS = {
+     'default': {
+         'ENGINE': 'haystack.backends.elasticsearch_backend.'
+                   'ElasticsearchSearchEngine',
+         'URL': 'http://localhost:9200/',
+         'INDEX_NAME': 'haystack',
+     },
+ }
+
+
+ELASTICSEARCH_DSL = {
+    'default': {
+        'hosts': 'http://localhost:9200'
+    },
+}
+
+ELASTICSEARCH_DSL_INDEX_SETTINGS = {
+    'number_of_shards': 1
+}
+
+# ES_INDEXES = {
+#     'default': [
+#         ('users', 'tardis.search.search_indexes.ExperimentDocument'),
+#     ]
+# }
+#
+# ES_DEFAULT_BATCH_SIZE = 1000

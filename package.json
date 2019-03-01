@@ -18,6 +18,7 @@
     "font-awesome": "^4.7.0",
     "jquery": "^3.3.1",
     "jquery-migrate": "^3.0.1",
+    "jquery-ui": "^1.12.1",
     "jquery-ui-dist": "^1.12.1",
     "mustache": "^2.3.0",
     "ng-dialog": "0.3.4",
@@ -26,20 +27,37 @@
     "underscore.string": "^3.3.5"
   },
   "devDependencies": {
+    "babel": "^6.23.0",
+    "babel-core": "^6.26.3",
+    "babel-loader": "^7.1.5",
+    "clean-webpack-plugin": "^1.0.1",
+    "css-loader": "^2.1.0",
     "eslint": "^5.14.1",
     "eslint-config-angular": "^0.5.0",
     "eslint-plugin-angular": "^3.3.0",
+    "expose-loader": "^0.7.5",
+    "file-loader": "^3.0.1",
     "grunt": "^1.0.4",
     "grunt-cli": "^1.2.0",
     "grunt-contrib-qunit": "^3.1.0",
+    "html-webpack-plugin": "^3.2.0",
     "jquery-mockjax": "^2.4.0",
+    "mini-css-extract-plugin": "^0.5.0",
     "minimatch": "^3.0.2",
-    "qunit": "^2.9.2"
+    "qunit": "^2.9.2",
+    "react": "^16.8.3",
+    "style-loader": "^0.23.1",
+    "url-loader": "^1.1.2",
+    "webpack": "^4.29.6",
+    "webpack-bundle-tracker": "^0.4.2-beta",
+    "webpack-cli": "^3.2.3"
   },
   "scripts": {
     "eslint.jquery": "eslint -c .eslintrc tardis/tardis_portal/static/js/jquery/tardis_portal/ tardis/tardis_portal/static/js/main.js tardis/tardis_portal/static/js/backbone-models.js js_tests/jquery/tardis_portal/ tardis/apps/sftp/static/js/sftp/sftp.js tardis/apps/openid_migration/static/js/openid_migration/migrate_accounts.js",
     "eslint.angular": "eslint -c .eslintrc.angular tardis/tardis_portal/static/js/facility_view.js",
     "pretest": "npm run eslint.jquery && npm run eslint.angular",
-    "test": "grunt test --verbose"
+    "test": "grunt test --verbose",
+    "dev": "webpack --config webpack.config.js --progress --colors --watch --mode development",
+    "build": "webpack --config webpack.config.js --progress --colors --watch --mode production"
   }
 }
