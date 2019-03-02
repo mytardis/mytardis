@@ -6,7 +6,7 @@ MyTardis
    :alt: Documentation Status
 
 .. image:: https://semaphoreci.com/api/v1/mytardis/mytardis/branches/develop/badge.svg
-   :target: https://semaphoreapp.com/mytardis/mytardis
+   :target: https://semaphoreci.com/mytardis/mytardis
    :alt: Semaphore build status
 
 .. image:: https://travis-ci.org/mytardis/mytardis.svg?branch=develop
