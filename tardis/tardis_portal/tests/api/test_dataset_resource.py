@@ -95,3 +95,11 @@ class DatasetResourceTest(MyTardisResourceTestCase):
             data=post_data,
             authentication=self.get_credentials()))
         self.assertEqual(dataset_count + 1, Dataset.objects.count())
+
+    def test_get_dataset_files(self):
+        ds_id = self.ds_no_instrument.id
+        uri = '/api/v1/dataset/%d/files/' % ds_id
+        response = self.api_client.get(
+            uri, authentication=self.get_credentials())
+        returned_data = json.loads(response.content)
+        self.assertEqual(returned_data['meta']['total_count'], 0)
