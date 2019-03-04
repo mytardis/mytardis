@@ -29,21 +29,7 @@ NPM_ROOT_PATH = path.abspath(path.join(path.dirname(__file__), '../..'))
 NPM_FILE_PATTERNS = {
     'angular': ['*'],
     'angular-resource': ['*'],
-    #'backbone': ['*'],
-    #'backbone-forms': ['*'],
-    #'blueimp-file-upload': ['*'],
-    #'bootstrap': ['*'],
-    #'bootstrap-3-typeahead': ['*'],
-    #'clipboard': ['*'],
-    'font-awesome': ['*'],
-    #'jquery': ['*'],
-    #'jquery-migrate': ['*'],
-    #'jquery-ui-dist': ['jquery-ui.min.js'],
-    #'mustache': ['mustache.min.js'],
     'ng-dialog': ['*'],
-    #'sprintf-js': ['*'],
-    #'underscore': ['*'],
-    #'underscore.string': ['*']
 }
 
 #used by webpack
