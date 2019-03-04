@@ -1,11 +1,27 @@
 'use strict';
 
 require('jquery');
-require("expose-loader?$!jquery");
+require('jquery-ui-dist/jquery-ui.min')
+require('./jquery.cookie')
+require('./async.min')
+require('expose-loader?$!jquery');
+require('expose-loader?jQuery!jquery');
 require('bootstrap');
-require('bootstrap/dist/css/bootstrap.css');
 require('bootstrap-3-typeahead')
-
+require('underscore/underscore-min')
+require('expose-loader?_!underscore/underscore-min');
+require('underscore.string/dist/underscore.string')
+require('backbone/backbone-min')
+require("expose-loader?Backbone!backbone/backbone-min");
+require('backbone-forms/distribution/backbone-forms');
+require('backbone-forms/distribution/templates/bootstrap3');
+require('mustache');
+require('expose-loader?Mustache!mustache');
+//css
+require('bootstrap/dist/css/bootstrap.css');
+require('./jquery-ui-1.8.18.custom.css');
+require('font-awesome/css/font-awesome.css');
+require('./default.css')
 $(function () {
     console.log('jquery works');
 });
