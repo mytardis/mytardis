@@ -3,11 +3,13 @@
 {% load experiment_tags %}
 {% load experimentstats %}
 {% load bleach_tag %}
+{% load render_bundle from webpack_loader %}
 
 {% block script %}
 {% endblock script %}
 
 {% block content %}
+    {% render_bundle 'main' %}
 <div id="content">
   <div class="page-header">
     <h1>{{site_title|default:'MyTardis'}} Data Store</h1>

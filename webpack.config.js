@@ -46,7 +46,6 @@ module.exports = {
         ),
         new MiniCssExtractPlugin({
             filename: 'bundle-[hash].styles.css',
-            chunkFilename: "[id].css"
         }),
         new webpack.ProvidePlugin({
             $: "jquery",
@@ -63,7 +62,6 @@ module.exports = {
                     {
                         loader: MiniCssExtractPlugin.loader,
                         options: {
-                            name: '[name].[ext]',
                             outputPath: 'static/bundles/',
                             publicPath: '../static/bundles/'
                         }
