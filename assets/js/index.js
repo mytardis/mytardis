@@ -19,9 +19,6 @@ require('mustache');
 require('expose-loader?Mustache!mustache');
 //css
 require('bootstrap/dist/css/bootstrap.css');
-require('./jquery-ui-1.8.18.custom.css');
+require('../css/jquery-ui-1.8.18.custom.css');
 require('font-awesome/css/font-awesome.css');
-require('./default.css')
-$(function () {
-    console.log('jquery works');
-});
+require('../css/default.css')
