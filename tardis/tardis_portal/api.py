@@ -414,20 +414,6 @@ class ACLAuthorization(Authorization):
         raise Unauthorized("Sorry, no deletes.")
 
 
-def lookup_by_unique_id_only(resource):
-    '''
-    returns custom lookup function. initialise with resource type
-    '''
-    def lookup_kwargs_with_identifiers(self, bundle, kwargs):
-        if 'id' not in kwargs and 'pk' not in kwargs:
-            # new instance is required
-            return {'id': -1}  # this will not match any exisitng resource
-        return super(resource,
-                     self).lookup_kwargs_with_identifiers(bundle, kwargs)
-
-    return lookup_kwargs_with_identifiers
-
-
 class GroupResource(ModelResource):
     class Meta:
         queryset = Group.objects.all()
@@ -505,10 +491,6 @@ class UserResource(ModelResource):
 
 class MyTardisModelResource(ModelResource):
 
-    def lookup_kwargs_with_identifiers(self, bundle, kwargs):
-        return lookup_by_unique_id_only(MyTardisModelResource)(
-            self, bundle, kwargs)
-
     class Meta:
         authentication = default_authentication
         authorization = ACLAuthorization()
@@ -517,9 +499,6 @@ class MyTardisModelResource(ModelResource):
 
 
 class SchemaResource(MyTardisModelResource):
-
-    def lookup_kwargs_with_identifiers(self, bundle, kwargs):
-        return lookup_by_unique_id_only(SchemaResource)(self, bundle, kwargs)
 
     class Meta(MyTardisModelResource.Meta):
         queryset = Schema.objects.all()
