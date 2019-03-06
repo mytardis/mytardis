@@ -26,7 +26,7 @@ module.exports = {
             cacheGroups: {
                 vendors: {
                     test: /[\\/]node_modules[\\/]/,
-                    priority: -10
+                    priority: -10,
                 },
                 default: {
                     minChunks: 2,
@@ -45,7 +45,7 @@ module.exports = {
             ['assets/bundles/*']
         ),
         new MiniCssExtractPlugin({
-            filename: 'bundle-[hash].styles.css',
+            filename: '[name]-[hash].styles.css',
         }),
         new webpack.ProvidePlugin({
             $: "jquery",
@@ -77,19 +77,21 @@ module.exports = {
                     publicPath: '../static/bundles/'
                 }
             },
-            {test: /\.(ttf|eot|svg)(\?v=[0-9]\.[0-9]\.[0-9])?$/, loader: 'file-loader'},
+            {   test: /\.(ttf|eot|svg)(\?v=[0-9]\.[0-9]\.[0-9])?$/,
+                loader: 'file-loader',
+                options: {
+                    name: '[name].[ext]',
+                    publicPath: '/bundles/'
+                }
+            },
             {test: /backbone.js/, loader: 'imports-loader?define=>false'},
             {
                 test: /\.(gif|png|jpe?g)$/i,
-                use: [
-                    'file-loader',
-                    {
-                        loader: 'image-webpack-loader',
-                        options: {
-                            disable: true,
-                        },
-                    },
-                ],
+                loader: 'file-loader',
+                options: {
+                    name: '[name].[ext]',
+                    publicPath: '/bundles/'
+                }
             },
             {
                 test: /\.less$/,
