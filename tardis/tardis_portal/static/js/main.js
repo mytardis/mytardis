@@ -1,6 +1,5 @@
-/* global $ */
-/* global _ */
-/* eslint global-strict: 0, strict: 0 */
+/* global $, _, s */
+/* eslint strict: 0 */
 
 var activateHoverDetection = function() {
     // Hover events
@@ -31,7 +30,7 @@ var userAutocompleteHandler = function(term, users, authMethod) {
             // Select user if any of the fields above match
             return _(fields).any(function(fieldName) {
                 var field = user[fieldName].toLowerCase();
-                return _.str.include(field, term.toLowerCase());
+                return s.include(field, term.toLowerCase());
             });
         })
         // Map to label/value objects

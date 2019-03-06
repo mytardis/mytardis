@@ -1,5 +1,4 @@
-/* global QUnit */
-/* eslint global-strict: 0, strict: 0, no-console: 0, no-unused-vars: [2, {"vars": "local", "args": "none"}] */
+/* global QUnit, userAutocompleteHandler, JSON */
 "use strict";
 
 // Tests for tardis/tardis_portal/static/js/main.js
@@ -17,6 +16,48 @@ QUnit.test("Test loading main.js", function(assert) {
 
     $.getScript("../tardis/tardis_portal/static/js/main.js", function(data, textStatus, jqxhr) {
         assert.equal(jqxhr.status, 200);
-        console.log("Loaded main.js");
+
+    });
+});
+
+QUnit.test("Test userAutocompleteHandler", function(assert) {
+
+    $.getScript("../tardis/tardis_portal/static/js/main.js", function(data, textStatus, jqxhr) {
+        assert.equal(jqxhr.status, 200);
+        var mockUsersList = [
+            {
+                "username": "testuser1",
+                "first_name": "Test",
+                "last_name": "User1",
+                "email": "testuser1@example.com",
+                "auth_methods": ["testuser1:localdb:Local DB"]
+            },
+            {
+                "username": "testuser2",
+                "first_name": "Test",
+                "last_name": "User2",
+                "email": "testuser2@example.com",
+                "auth_methods": ["testuser2:localdb:Local DB"]
+            },
+            {
+                "username": "anotheruser",
+                "first_name": "Another",
+                "last_name": "User",
+                "email": "anotheruser@example.com",
+                "auth_methods": ["anotheruser:localdb:Local DB"]
+            }
+        ];
+        var expected = [
+            {
+                "label": "Test User1 [testuser1] <testuser1@example.com>",
+                "value": "testuser1"
+            },
+            {
+                "label": "Test User2 [testuser2] <testuser2@example.com>",
+                "value": "testuser2"
+            }
+        ];
+        var actual = userAutocompleteHandler("Test", mockUsersList, "localdb");
+        assert.equal(JSON.stringify(actual), JSON.stringify(expected));
     });
 });
