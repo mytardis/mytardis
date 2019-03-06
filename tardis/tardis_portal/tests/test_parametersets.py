@@ -44,12 +44,17 @@ from django.contrib.auth.models import User
 from django.core.exceptions import SuspiciousOperation
 from django.test import RequestFactory
 from django.test import TestCase
+from django.utils import timezone
 from django.contrib.contenttypes.models import ContentType
 import pytz
 
-from ..models import Experiment, Dataset, DataFile, \
-    DataFileObject, Schema, ParameterName, DatafileParameterSet, \
-    DatafileParameter, DatasetParameterSet, ExperimentParameterSet, ObjectACL
+from ..models.experiment import Experiment
+from ..models.dataset import Dataset
+from ..models.datafile import DataFile, DataFileObject
+from ..models.parameters import (Schema, ParameterName, DatafileParameterSet,
+                                 DatafileParameter, DatasetParameterSet,
+                                 ExperimentParameterSet, ExperimentParameter)
+from ..models.access_control import ObjectACL
 from ..ParameterSetManager import ParameterSetManager
 from ..views.parameters import edit_datafile_par
 from ..views.parameters import edit_dataset_par
@@ -94,7 +99,7 @@ class ParameterSetManagerTestCase(TestCase):
 
         self.schema = Schema(
             namespace="http://localhost/psmtest/df/",
-            name="Parameter Set Manager", type=3)
+            name="Parameter Set Manager", type=Schema.DATAFILE)
         self.schema.save()
 
         self.parametername1 = ParameterName(
@@ -174,6 +179,11 @@ class ParameterSetManagerTestCase(TestCase):
         self.parametername_dataset_link.delete()
         self.parametername_unresolvable_link.delete()
         self.schema.delete()
+
+    def test_parameterset_as_string(self):
+        self.assertEqual(
+            str(self.datafileparameterset),
+            "%s / %s" % (self.schema.namespace, self.datafile.filename))
 
     def test_existing_parameterset(self):
 
@@ -357,18 +367,20 @@ class EditParameterSetTestCase(TestCase):
 
         self.schema = Schema(
             namespace="http://localhost/psmtest/df/",
-            name="Parameter Set Manager", type=3)
+            name="Parameter Set Manager", type=Schema.DATAFILE)
         self.schema.save()
 
         self.parametername1 = ParameterName(
             schema=self.schema, name="parameter1",
-            full_name="Parameter 1")
+            full_name="Parameter 1",
+            units="units1")
         self.parametername1.save()
 
         self.parametername2 = ParameterName(
             schema=self.schema, name="parameter2",
             full_name="Parameter 2",
-            data_type=ParameterName.NUMERIC)
+            data_type=ParameterName.NUMERIC,
+            units="items")
         self.parametername2.save()
 
         self.parametername3 = ParameterName(
@@ -399,6 +411,18 @@ class EditParameterSetTestCase(TestCase):
             schema=self.schema, experiment=self.experiment)
         self.experimentparameterset.save()
 
+        self.exp_param1 = ExperimentParameter.objects.create(
+            parameterset=self.experimentparameterset,
+            name=self.parametername1, string_value="value1")
+
+        self.exp_param2 = ExperimentParameter.objects.create(
+            parameterset=self.experimentparameterset,
+            name=self.parametername2, numerical_value=987)
+
+        self.exp_param3 = ExperimentParameter.objects.create(
+            parameterset=self.experimentparameterset,
+            name=self.parametername3, datetime_value=timezone.now())
+
         self.datasetparameterset = DatasetParameterSet(
             schema=self.schema, dataset=self.dataset)
         self.datasetparameterset.save()
@@ -425,7 +449,11 @@ class EditParameterSetTestCase(TestCase):
         request = factory.post(
             '/ajax/edit_experiment_parameters/%s/'
             % self.experimentparameterset.id,
-            data={'csrfmiddlewaretoken': 'bogus'})
+            data={
+                'csrfmiddlewaretoken': 'bogus',
+                'parameter1__1': 'parameter1 value',
+                'parameter2__2': 123
+            })
         request.user = self.user
         response = edit_experiment_par(request, self.experimentparameterset.id)
         self.assertEqual(response.status_code, 200)

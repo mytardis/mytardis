@@ -88,31 +88,6 @@ class Schema(models.Model):
     def _getSchemaTypeName(self, typeNum):
         return dict(self._SCHEMA_TYPES)[typeNum]
 
-    @classmethod
-    def getSubTypes(cls):
-        return set(schema.subtype for schema in Schema.objects.all()
-                   if schema.subtype)
-
-    @classmethod
-    def getNamespaces(cls, type_, subtype=None):
-        """Return the list of namespaces for equipment, sample, and experiment
-        schemas.
-
-        """
-        if subtype:
-            return [schema.namespace for schema in
-                    Schema.objects.filter(type=type_, subtype=subtype)]
-        return [schema.namespace for schema in
-                Schema.objects.filter(type=type_)]
-
-    @classmethod
-    def get_schema_type_name(cls, schema_type, short=False):
-        if short:
-            type_list = cls._SCHEMA_TYPES_SHORT
-        else:
-            type_list = cls._SCHEMA_TYPES
-        return dict(type_list).get(schema_type, None)
-
     def __str__(self):
         return self._getSchemaTypeName(self.type) + (
             self.subtype and ' for ' + self.subtype.upper() or ''

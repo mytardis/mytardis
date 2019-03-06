@@ -102,19 +102,6 @@ def __getFilteredExperiments(request, searchFilterData):
         experiments = \
             experiments.filter(start_time__lt=date, end_time__gt=date)
 
-    # get all the experiment parameters
-    # exp_schema_namespaces = Schema.getNamespaces(Schema.EXPERIMENT)
-    # parameters = ParameterName.objects.filter(
-        # schema__namespace__in=exp_schema_namespaces, is_searchable=True)
-
-    # The __filterParameters method (now removed) was described as a
-    # datafile filtering method, returning a list of datafiles, not
-    # a list (or QuerySet) of experiments, so the code attempting to
-    # filter experiments by metadata is disabled for now:
-    # experiments = __filterParameters(
-        # parameters, experiments,
-        # searchFilterData, 'experimentparameterset__experimentparameter')
-
     # let's sort it in the end
     experiments = experiments.order_by('title')
 
