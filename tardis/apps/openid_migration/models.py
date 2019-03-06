@@ -44,7 +44,7 @@ class OpenidACLMigrationAdmin(admin.ModelAdmin):
 
 class OpenidUserMigrationAdmin(admin.ModelAdmin):
     list_display = [
-        '__unicode__', 'old_user', 'old_user_auth_method', 'new_user_id',
+        '__str__', 'old_user', 'old_user_auth_method', 'new_user_id',
         'new_user_auth_method', 'migration_timestamp', 'migration_status'
     ]
 
