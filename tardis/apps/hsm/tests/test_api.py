@@ -11,7 +11,7 @@ from tardis.tardis_portal.models.datafile import DataFile, DataFileObject
 from tardis.tardis_portal.models.dataset import Dataset
 from tardis.tardis_portal.models.storage import StorageBox, StorageBoxOption
 
-from tardis.tardis_portal.tests.test_api import MyTardisResourceTestCase
+from tardis.tardis_portal.tests.api import MyTardisResourceTestCase
 
 
 class HsmAppApiTestCase(MyTardisResourceTestCase):
