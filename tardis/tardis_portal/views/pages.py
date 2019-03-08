@@ -555,7 +555,8 @@ class ExperimentView(TemplateView):
         if experiment_id is None:
             return return_response_error(request)
         if not request.user.is_authenticated and \
-                not Experiment.safe.public().filter(id=experiment_id):
+                not Experiment.safe.public().filter(id=experiment_id) and \
+                'token' not in request.GET:
             return return_response_error(request)
 
         try:
