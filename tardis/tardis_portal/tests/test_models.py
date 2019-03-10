@@ -242,7 +242,7 @@ class ModelTestCase(TestCase):
             with df_file.get_as_temporary_file() as temp_file_obj:
                 self.assertEqual(temp_file_obj.read().decode(), u'bla')
 
-            self.assertFalse(df_file.has_image())
+            self.assertFalse(df_file.has_image)
             # Test checking online status, i.e. whether the DataFile
             # has at least one verified DataFileObject in a non-tape
             # storage box:
