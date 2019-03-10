@@ -5,6 +5,8 @@ Testing the hsm app's extensions to the tastypie-based mytardis api
 import json
 import os
 
+from django.conf import settings
+
 import six
 
 from tardis.tardis_portal.models.datafile import DataFile, DataFileObject
@@ -56,7 +58,7 @@ class HsmAppApiTestCase(MyTardisResourceTestCase):
         self.dfo.save()
         response = self.api_client.get(
             '/api/v1/hsm_dataset/%s/count/' % self.dataset.id,
-             authentication=self.get_credentials())
+            authentication=self.get_credentials())
         self.assertHttpOK(response)
         expected_output = {
             "online_files": 1,
@@ -67,16 +69,15 @@ class HsmAppApiTestCase(MyTardisResourceTestCase):
             self.assertIn(key, returned_data)
             self.assertEqual(returned_data[key], value)
 
-
     def test_online_check_unverified_file(self):
         '''
         Test API endpoint for HSM online check with unverified file
         '''
         self.dfo.verified = False
         self.dfo.save()
-        response =  self.api_client.get(
+        response = self.api_client.get(
             '/api/v1/hsm_replica/%s/online/' % self.dfo.id,
-             authentication=self.get_credentials())
+            authentication=self.get_credentials())
         self.assertHttpApplicationError(response)
         self.assertIn(b"DataFileObjectNotVerified", response.content)
 
@@ -89,7 +90,7 @@ class HsmAppApiTestCase(MyTardisResourceTestCase):
         self.dfo.save()
         response = self.api_client.get(
             '/api/v1/hsm_replica/%s/online/' % self.dfo.id,
-             authentication=self.get_credentials())
+            authentication=self.get_credentials())
         self.assertHttpApplicationError(response)
         self.assertIn(b"StorageClassNotSupportedError", response.content)
 
@@ -101,7 +102,7 @@ class HsmAppApiTestCase(MyTardisResourceTestCase):
         self.dfo.save()
         response = self.api_client.get(
             '/api/v1/hsm_replica/%s/online/' % self.dfo.id,
-             authentication=self.get_credentials())
+            authentication=self.get_credentials())
         self.assertHttpOK(response)
         expected_output = {
             "online": True,
@@ -119,7 +120,7 @@ class HsmAppApiTestCase(MyTardisResourceTestCase):
         self.dataset.experiments.remove(self.testexp)
         self.assertHttpForbidden(self.api_client.get(
             '/api/v1/hsm_replica/%s/online/' % self.dfo.id,
-             authentication=self.get_credentials()))
+            authentication=self.get_credentials()))
 
     def test_online_check_with_bad_password(self):
         '''
@@ -130,7 +131,7 @@ class HsmAppApiTestCase(MyTardisResourceTestCase):
             username=self.username, password="wrong pw, dude!")
         self.assertHttpUnauthorized(self.api_client.get(
             '/api/v1/hsm_replica/%s/online/' % self.dfo.id,
-             authentication=bad_credentials))
+            authentication=bad_credentials))
 
     def test_stat_subprocess(self):
         '''
@@ -155,7 +156,7 @@ class HsmAppApiTestCase(MyTardisResourceTestCase):
         self.dfo.save()
         response = self.api_client.get(
             '/api/v1/hsm_replica/%s/recall/' % self.dfo.id,
-             authentication=self.get_credentials())
+            authentication=self.get_credentials())
         self.assertHttpApplicationError(response)
         self.assertIn(b"DataFileObjectNotVerified", response.content)
 
@@ -166,30 +167,51 @@ class HsmAppApiTestCase(MyTardisResourceTestCase):
         self.assertTrue(DataFileObject.objects.get(id=self.dfo.id).verified)
         response = self.api_client.get(
             '/api/v1/hsm_replica/%s/recall/' % self.dfo.id,
-             authentication=self.get_credentials())
+            authentication=self.get_credentials())
         self.assertHttpApplicationError(response)
         self.assertIn(b"StorageClassNotSupportedError", response.content)
 
         # Test with valid HSM storage class:
         self.dfo.storage_box = self.hsm_storage_box
         self.dfo.save()
+        # Get fresh DataFile instance to avoid getting cached recall_url:
+        datafile = DataFile.objects.get(id=self.dfo.datafile.id)
+        expected_recall_url = '/api/v1/hsm_replica/%s/recall/' % self.dfo.id
+        self.assertEqual(datafile.recall_url, expected_recall_url)
         response = self.api_client.get(
             '/api/v1/hsm_replica/%s/recall/' % self.dfo.id,
-             authentication=self.get_credentials())
+            authentication=self.get_credentials())
         self.assertHttpOK(response)
+
+        # Now try removing hsm app from installed apps:
+        saved_installed_apps = settings.INSTALLED_APPS
+        settings.INSTALLED_APPS = [
+            app for app in saved_installed_apps if app != 'tardis.apps.hsm']
+        # Get fresh DataFile instance to avoid getting cached recall_url:
+        datafile = DataFile.objects.get(id=self.dfo.datafile.id)
+        self.assertIsNone(datafile.recall_url)
+        settings.INSTALLED_APPS = saved_installed_apps
+
+        # Now try simulating not having RECALL_URI_TEMPLATES
+        # setting by setting it to its default value:
+        saved_recall_uri_templates = settings.RECALL_URI_TEMPLATES
+        settings.RECALL_URI_TEMPLATES = {}
+        # Get fresh DataFile instance to avoid getting cached recall_url:
+        datafile = DataFile.objects.get(id=self.dfo.datafile.id)
+        self.assertIsNone(datafile.recall_url)
 
         # Test 403 forbidden (no ObjectACL access to dataset):
         self.dataset.experiments.remove(self.testexp)
         self.assertHttpForbidden(self.api_client.get(
             '/api/v1/hsm_replica/%s/recall/' % self.dfo.id,
-             authentication=self.get_credentials()))
+            authentication=self.get_credentials()))
 
         # Test 401 unauthorized (wrong password):
         bad_credentials = self.create_basic(  # nosec
             username=self.username, password="wrong pw, dude!")
         self.assertHttpUnauthorized(self.api_client.get(
             '/api/v1/hsm_replica/%s/recall/' % self.dfo.id,
-             authentication=bad_credentials))
+            authentication=bad_credentials))
 
     def test_ds_check(self):
         '''

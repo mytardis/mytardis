@@ -276,7 +276,7 @@ class DataFile(models.Model):
 
         for dfo in dfos:
             storage_class_name = dfo.storage_box.django_storage_class
-            if not self.is_online and issubclass(
+            if issubclass(
                     get_storage_class(storage_class_name),
                     HsmFileSystemStorage):
                 recall_uri_templates = getattr(
