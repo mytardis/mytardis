@@ -246,10 +246,7 @@ class DataFile(models.Model):
         render_image_size_limit = getattr(settings, 'RENDER_IMAGE_SIZE_LIMIT',
                                           0)
         if render_image_size_limit:
-            try:
-                if self.size > render_image_size_limit:
-                    return None
-            except ValueError:
+            if self.size > render_image_size_limit:
                 return None
 
         import re
