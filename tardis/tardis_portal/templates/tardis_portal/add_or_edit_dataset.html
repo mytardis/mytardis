@@ -14,7 +14,8 @@
 
 <div class="row">
   <div class="col-md-8">
-    <form class="form-horizontal" action="" method="post">{% csrf_token %}
+    <form id="add-or-edit-dataset-form"
+          class="form-horizontal" action="" method="post">{% csrf_token %}
       {{ form|bootstrap_horizontal:'col-md-2' }}
       <div class="form-group">
         <div class="col-md-offset-2 col-md-6">

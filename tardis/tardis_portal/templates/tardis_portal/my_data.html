@@ -14,7 +14,8 @@
       <h2 class="visible-xs">Experiments</h2>
       <div class="pull-right">
         {% if perms.tardis_portal.add_experiment %}
-        <a class="btn btn-warning"
+        <a id="create-experiment"
+           class="btn btn-warning"
            href="{% url 'tardis.tardis_portal.views.create_experiment' %}">
           <i class="fa fa-plus"></i>
           Create
