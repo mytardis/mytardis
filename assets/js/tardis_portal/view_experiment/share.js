@@ -5,7 +5,6 @@
           no-unused-vars: [2, {"vars": "local", "args": "none"}] */
 
 /* global userAutocompleteHandler, _ */
-
 var loadingHTML = "<img src=\"/static/images/ajax-loader.gif\"/><br />";
 
 

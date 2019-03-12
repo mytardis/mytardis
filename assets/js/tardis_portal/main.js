@@ -49,9 +49,6 @@ var userAutocompleteHandler = function(term, users, authMethod) {
 };
 
 // eslint-disable-next-line no-unused-vars
-var isLoggedIn = function() {
-    return $("#user-menu").length > 0;
-};
 
 $(document).ready(function() {
     activateHoverDetection();

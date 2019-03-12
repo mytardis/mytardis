@@ -3,8 +3,7 @@
 /* eslint global-strict: 0, strict: 0, object-shorthand: 0 */
 /* global s */
 
-
-(function() {
+$( document ).ready(function() {
     var loadingHTML = "<img src=\"/static/images/ajax-loader.gif\"/><br />";
     var tabIdPrefix = "experiment-tab-";
     function getTabIdFromName(tabName) {
@@ -13,7 +12,6 @@
     function getTabNameFromId(tabId) {
         return s.strRight(s.lstrip(tabId, "#"), tabIdPrefix);
     }
-
     // Create new tab content panes programatically
     // Note: We're doing this before the bottom of the document has loaded!
     $("#experiment-tabs li a").each(function(i, v) {
@@ -87,4 +85,5 @@
 
     // Handle back and forward buttons for tab locations
     $(window).bind("hashchange", showTabForWindowLocation);
-}());
+});
+

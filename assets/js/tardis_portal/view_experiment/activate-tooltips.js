@@ -2,6 +2,7 @@
   
 /* eslint global-strict: 0, strict: 0 */
 
+import 'bootstrap';
 
 $(document).ready(function() {
     // Activate tooltips
