@@ -4,18 +4,25 @@ const BundleTracker = require('webpack-bundle-tracker');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
+const glob = require("glob");
 
 module.exports = {
     context: __dirname,
-    entry: './assets/js/index.js',
+    entry: {
+        main: './assets/js/index.js',
+        tardis_portal: glob.sync('./assets/js/tardis_portal/*.js'),
+        tardis_portal_view_experiment: glob.sync('./assets/js/tardis_portal/view_experiment/**/*.js'),
+        lib: glob.sync('./assets/js/lib/**/*.js'),
+    },
     output: {
         path: path.resolve('./assets/bundles/'),
         filename: '[name]-[hash].js'
     },
+    /**
     optimization: {
         minimizer: [new UglifyJsPlugin()],
         splitChunks: {
-            chunks: 'all',
+            chunks: 'async',
             minSize: 30000,
             maxSize: 0,
             minChunks: 1,
@@ -36,6 +43,7 @@ module.exports = {
             }
         }
     },
+     * */
     plugins: [
         new BundleTracker({
             path: __dirname,
@@ -50,7 +58,8 @@ module.exports = {
         new webpack.ProvidePlugin({
             $: "jquery",
             jQuery: "jquery",
-            'window.jQuery': 'jquery'
+            'window.jQuery': 'jquery',
+            'async': 'async',
         }),
     ],
     module: {
@@ -106,6 +115,11 @@ module.exports = {
     },
     resolve: {
         modules: ['node_modules', 'bower_components'],
-        extensions: ['*', '.js', '.jsx']
+        extensions: ['*', '.js', '.jsx'],
+        alias:{
+            'jquery': __dirname + '/node_modules/jquery',
+            'main': __dirname + '/assets/js/tardis_portal/main',
+            'async': __dirname + '/assets/js/lib/async.min'
+        },
     }
 }
