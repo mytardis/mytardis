@@ -207,7 +207,7 @@ def get_dataset_info(dataset, include_thumbnail=False, exclude=None):  # too com
 
     # Whether this dataset tile's thumbnail is enabled.
     # If not, still include a blank thumbnail <div>:
-    if include_thumbnail:
+    if include_thumbnail and dataset.image:
         try:
             obj['thumbnail'] = reverse(
                 'tardis.tardis_portal.views.dataset_thumbnail',
