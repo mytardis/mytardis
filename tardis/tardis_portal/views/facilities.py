@@ -148,7 +148,8 @@ def facility_overview_experiments(request, facility_id, start_index,
     '''
     json facility datasets
     '''
-
+    start_index = int(start_index)
+    end_index = int(end_index)
     dataset_objects = Dataset.objects.filter(
         instrument__facility__manager_group__user=request.user,
         instrument__facility__id=facility_id
