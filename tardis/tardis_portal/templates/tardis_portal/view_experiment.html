@@ -1,4 +1,5 @@
 {% extends "tardis_portal/portal_template.html" %}
+{% load render_bundle from webpack_loader %}
 {% load basiccomparisonfilters %}
 {% load capture %}
 {% load static from staticfiles %}
@@ -18,14 +19,11 @@
 
 <input type="hidden" id="experiment-id" value="{{ experiment.id }}">
 <input type="hidden" id="csrf-token" value="{{ csrf_token }}">
-<script type="text/javascript"
-        src="{% static 'js/jquery/tardis_portal/view_experiment/init.js' %}">
-</script>
 
 {% endblock %}
 
 {% block content %}
-
+    {% render_bundle 'tardis_portal' %}
 <div class="modal" id="modal-metadata" role="dialog" tabindex="-1">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
@@ -115,17 +113,5 @@
     {% include "tardis_portal/ajax/experiment_datasets.html" %}
   </div>
 </div>
-<script type="text/javascript"
-        src="{% static 'js/jquery/tardis_portal/view_experiment/experiment-tabs.js' %}">
-</script>
-<script type="text/javascript"
-        src="{% static 'js/jquery/tardis_portal/view_experiment/dataset-tiles.js' %}">
-</script>
-<script type="text/javascript"
-        src="{% static 'js/jquery/tardis_portal/view_experiment/activate-tooltips.js' %}">
-</script>
-<script type="text/javascript"
-        src="{% static 'js/jquery/tardis_portal/view_experiment/abbreviate-abstract.js' %}">
-</script>
-
+    {% render_bundle 'tardis_portal_view_experiment' %}
 {% endblock %}

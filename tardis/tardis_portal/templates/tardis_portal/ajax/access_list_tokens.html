@@ -1,5 +1,6 @@
 {% load static from staticfiles %}
-<script type="text/javascript" src="{% static 'clipboard/dist/clipboard.min.js' %}"></script>
+{% load render_bundle from webpack_loader %}
+{% render_bundle 'main' %}
 <script type="text/javascript">
     var clipboard = new Clipboard('.btn.clipboard');
     {% comment %}
