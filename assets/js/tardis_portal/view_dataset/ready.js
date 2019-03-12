@@ -4,7 +4,8 @@
           no-unused-vars: [2, {"vars": "local", "args": "none"}] */
 
 /* global prevFileSelect */
-
+require('bootstrap');
+require('jquery');
 $(document).ready(function() {
 
     // Create a reload event handler
@@ -47,7 +48,7 @@ $(document).ready(function() {
     // Set carousel size
     $("#preview, #preview .carousel-inner").css("width", "320").css("height", "240");
 
-    if ($("#upload-method").val()) {
+    if ($("#upload-method").val() == true) {
         $("#upload_button_code").load($("#upload-method-url").val());
     }
 });
