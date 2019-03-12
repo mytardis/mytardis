@@ -43,7 +43,7 @@ case "$TEST_TYPE" in
     ;;
     behave)
         npm install && npm install phantomjs-prebuilt && npm test \
-        && python manage.py behave --settings=tardis.test_settings
+        && python test.py behave --settings=tardis.test_settings
 	(( exit_status = exit_status || $? ))
     ;;
     *)
