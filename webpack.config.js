@@ -12,13 +12,13 @@ module.exports = {
         main: './assets/js/index.js',
         tardis_portal: glob.sync('./assets/js/tardis_portal/*.js'),
         tardis_portal_view_experiment: glob.sync('./assets/js/tardis_portal/view_experiment/**/*.js'),
+        tardis_portal_view_dataset: glob.sync('./assets/js/tardis_portal/view_dataset/**/*.js'),
         lib: glob.sync('./assets/js/lib/**/*.js'),
     },
     output: {
         path: path.resolve('./assets/bundles/'),
         filename: '[name]-[hash].js'
     },
-    /**
     optimization: {
         minimizer: [new UglifyJsPlugin()],
         splitChunks: {
@@ -43,7 +43,6 @@ module.exports = {
             }
         }
     },
-     * */
     plugins: [
         new BundleTracker({
             path: __dirname,
