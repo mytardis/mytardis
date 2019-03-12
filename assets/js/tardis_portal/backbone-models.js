@@ -1,6 +1,16 @@
 /* eslint no-underscore-dangle: 0 */
 /* global _, s, Backbone, Mustache, isLoggedIn, sprintf */
+Backbone.$ = window.$;
+require('jquery-ui');
+require('mustache')
+require('jquery-ui/ui/widgets/sortable');
+require('jquery-ui/ui/disable-selection');
 
+var sprintf = require('sprintf-js').sprintf;
+
+var isLoggedIn = function() {
+    return $("#user-menu").length > 0;
+};
 var MyTardis = (function() {
     var module = {};
 
@@ -309,3 +319,4 @@ var MyTardis = (function() {
 
     return module;
 }());
+export default MyTardis;
