@@ -11,7 +11,7 @@ def given_an_anonymous_user(context):
     :type context: behave.runner.Context
     """
     context.browser.get(context.base_url)
-    assert 'MyTardis' in context.browser.page_source
+    context.test.assertIn('MyTardis', context.browser.page_source)
 
 
 @given("a logged-in user")
@@ -19,9 +19,9 @@ def given_a_logged_in_user(context):
     """
     :type context: behave.runner.Context
     """
-    user = User.objects.create_user(
+    user = User.objects.create_user(  # nosec
             username="testuser1",
-            password="testpass",  # nosec
+            password="testpass",
             email="testuser1@example.com",
             first_name="Test",
             last_name="User1")
@@ -63,6 +63,7 @@ def they_see_the_front_page(context):
         console_errors.append(error)
     context.test.assertEqual(
         len(console_errors), 0, str(console_errors))
+
 
 @then("they see the user menu")
 def they_see_the_user_menu(context):

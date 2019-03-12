@@ -1,10 +1,12 @@
+import time
+
 from behave import when, then
 
 from selenium.common.exceptions import NoSuchElementException
 
 
-@when("they click the Add New button")
-def they_click_add_new_btn(context):
+@when("they click the Add New dataset button")
+def they_click_add_new_dataset_btn(context):
     """
     :type context: behave.runner.Context
     """
@@ -49,9 +51,32 @@ def a_new_dataset_is_created(context):
         title_span.get_attribute('innerHTML'),
         "new dataset1")
 
-
     console_errors = []
     for error in context.browser.get_log('browser'):
         console_errors.append(error)
     context.test.assertEqual(
         len(console_errors), 0, str(console_errors))
+
+
+@when("they open the experiment url")
+def they_open_the_exp_url(context):
+    """
+    :type context: behave.runner.Context
+    """
+    context.browser.get(context.base_url + "/experiment/view/1/")
+
+
+@then("they see the newly created dataset")
+def they_see_newly_created_dataset(context):
+    """
+    :type context: behave.runner.Context
+    """
+    ajax_complete = bool(
+        context.browser.execute_script("return jQuery.active == 0"))
+    while not ajax_complete:
+        time.sleep(0.1)
+        ajax_complete = bool(
+            context.browser.execute_script("return jQuery.active == 0"))
+
+    dataset_link = context.browser.find_element_by_css_selector("a.dataset-link")
+    context.test.assertIn("new dataset", dataset_link.get_attribute("innerHTML"))

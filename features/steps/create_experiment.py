@@ -47,12 +47,59 @@ def a_new_exp_is_created(context):
     created_alert = context.browser.find_element_by_css_selector(
         "span[class='message']")
     context.test.assertEqual(
-        created_alert.get_attribute('innerHTML'),
+        created_alert.get_attribute("innerHTML"),
         "Experiment Created")
 
-
     console_errors = []
-    for error in context.browser.get_log('browser'):
+    for error in context.browser.get_log("browser"):
         console_errors.append(error)
     context.test.assertEqual(
         len(console_errors), 0, str(console_errors))
+
+
+@then("they see the newly created experiment")
+def new_exp_in_mydata_view(context):
+    """
+    :type context: behave.runner.Context
+    """
+    explink = context.browser.find_element_by_css_selector("a.explink")
+    context.test.assertIn("test exp1", explink.get_attribute("innerHTML"))
+
+
+@when("they click the Metadata link")
+def they_click_the_metadata_link(context):
+    """
+    :type context: behave.runner.Context
+    """
+    metadata = context.browser.find_element_by_css_selector("a[title='Metadata']")
+    metadata.click()
+
+
+@then("the experiment metadata tab content is shown")
+def exp_metadata_tab_content_is_shown(context):
+    """
+    :type context: behave.runner.Context
+    """
+    # The "Add Experiment Metadata" button should be shown:
+    context.browser.find_element_by_css_selector("a.add-metadata[title='Add']")
+
+
+@when("they click the Sharing link")
+def they_click_the_sharing_link(context):
+    """
+    :type context: behave.runner.Context
+    """
+    sharing = context.browser.find_element_by_css_selector("a[title='Sharing']")
+    sharing.click()
+
+
+@then("the experiment sharing tab content is shown")
+def exp_sharing_tab_content_is_shown(context):
+    """
+    :type context: behave.runner.Context
+
+    Use find_element (with implicitly_wait set in features/environment.py)
+    to ensure we can find the expected elements
+    """
+    context.browser.find_element_by_css_selector("div.sharing-sections")
+    context.browser.find_element_by_css_selector("div.access_list_user")
