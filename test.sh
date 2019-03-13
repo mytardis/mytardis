@@ -7,6 +7,7 @@ fi
 # select test to run with TEST_TYPE, memory pg mysql pylint
 
 function run_test {
+    npm run-script build
     python test.py test --settings=$1
     result=$?
     if [ "$TEST_TYPE" == "memory" ]; then
@@ -42,8 +43,9 @@ case "$TEST_TYPE" in
 	(( exit_status = exit_status || $? ))
     ;;
     behave)
-        npm install && npm test \
-        && python test.py behave
+        npm install && npm run-script build && \
+        npm install phantomjs-prebuilt && npm test \
+        && python test.py behave --settings=tardis.test_settings
 	(( exit_status = exit_status || $? ))
     ;;
     *)
