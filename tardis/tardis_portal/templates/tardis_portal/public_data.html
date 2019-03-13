@@ -1,12 +1,10 @@
 {% extends "tardis_portal/portal_template.html" %}
-{% load render_bundle from webpack_loader %}
 {% load experiment_tags %}
 {% load experimentstats %}
 {% load humanize %}
 {% load bleach_tag %}
 
 {% block content %}
-    {% render_bundle 'main' %}
 <div id="content">
   <div class="row">
     <div class="col-md-9">
