@@ -53,9 +53,12 @@ def they_see_the_facility_overview_page(context):
     """
     :type context: behave.runner.Context
     """
+    max_retries = 30
+    retries = 0
     progress_bar = context.browser.find_element_by_css_selector("div.progress")
-    while progress_bar.is_displayed():
+    while progress_bar.is_displayed() and retries < max_retries:
         time.sleep(0.1)
+        retries +=1
 
     h2 = context.browser.find_element_by_tag_name("h2")
     context.test.assertEqual(h2.get_attribute("innerHTML"), "Test Facility")
