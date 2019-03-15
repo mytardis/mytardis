@@ -1,19 +1,8 @@
 /* global $, _, s */
 /* eslint strict: 0 */
 
-var activateHoverDetection = function() {
-    // Hover events
-    $(document).on("mouseover mouseout", ".ui-state-default", function(evt) {
-        if (evt.type === "mouseover") {
-            $(this).addClass("ui-state-hover");
-        } else {
-            $(this).removeClass("ui-state-hover");
-        }
-    });
-};
-
 // eslint-disable-next-line no-unused-vars
-var userAutocompleteHandler = function(term, users, authMethod) {
+export function userAutocompleteHandler(term, users, authMethod) {
     var matches = _(users).chain()
     // Filter out users which don"t match auth method
     /** .filter(function(user) {
@@ -46,10 +35,7 @@ var userAutocompleteHandler = function(term, users, authMethod) {
         }).value();
     // Callback to autocomplete control
     return matches;
-};
+}
 
 // eslint-disable-next-line no-unused-vars
 
-$(document).ready(function() {
-    activateHoverDetection();
-});

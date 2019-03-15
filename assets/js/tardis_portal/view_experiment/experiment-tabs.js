@@ -1,17 +1,20 @@
 /* tardis/tardis_portal/static/js/jquery/tardis_portal/view_experiment/experiment_tabs.js */
 
-/* eslint global-strict: 0, strict: 0, object-shorthand: 0 */
+/* eslint no-console:0, global-strict: 0, strict: 0, object-shorthand: 0 */
 /* global s */
 
-$( document ).ready(function() {
+export function populateExperimentTabs() {
     var loadingHTML = "<img src=\"/static/images/ajax-loader.gif\"/><br />";
     var tabIdPrefix = "experiment-tab-";
+
     function getTabIdFromName(tabName) {
         return tabIdPrefix + tabName;
     }
+
     function getTabNameFromId(tabId) {
         return s.strRight(s.lstrip(tabId, "#"), tabIdPrefix);
     }
+
     // Create new tab content panes programatically
     // Note: We're doing this before the bottom of the document has loaded!
     $("#experiment-tabs li a").each(function(i, v) {
@@ -85,5 +88,8 @@ $( document ).ready(function() {
 
     // Handle back and forward buttons for tab locations
     $(window).bind("hashchange", showTabForWindowLocation);
-});
+}
 
+$(document).ready(function() {
+    populateExperimentTabs();
+});

@@ -4,9 +4,9 @@
           no-unused-vars: [2, {"vars": "local", "args": "none"}] */
 
 /* global showMsg */
-require('blueimp-file-upload/js/vendor/jquery.ui.widget');
-require('blueimp-file-upload/js/jquery.fileupload');
-require('blueimp-file-upload/js/jquery.iframe-transport');
+require("blueimp-file-upload/js/vendor/jquery.ui.widget");
+require("blueimp-file-upload/js/jquery.fileupload");
+require("blueimp-file-upload/js/jquery.iframe-transport");
 
 $(function() {
     $("#dropzone").hide();

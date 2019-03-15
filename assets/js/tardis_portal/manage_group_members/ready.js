@@ -1,7 +1,10 @@
 /* tardis/tardis_portal/static/js/jquery/tardis_portal/view_dataset/ready.js */
 
 /* global _, userAutocompleteHandler */
+require("bootstrap");
+require("jquery-ui-dist/jquery-ui.min.js");
 
+const main = require("main");
 var loadingHTML = "<img src=\"/static/images/ajax-loader.gif\"/>";
 
 $(document).ready(function() {
@@ -126,7 +129,7 @@ $(document).ready(function() {
                         "source": _.bind( function(query, callback) {
                             var authMethod = $("#id_authMethod").val();
                             callback(
-                                userAutocompleteHandler(
+                                main.userAutocompleteHandler(
                                     query.term, this.users, authMethod));
                         }, { "users": users })
                     });

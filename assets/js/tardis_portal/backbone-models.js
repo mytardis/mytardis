@@ -1,17 +1,18 @@
 /* eslint no-underscore-dangle: 0 */
 /* global _, s, Backbone, Mustache, isLoggedIn, sprintf */
 Backbone.$ = window.$;
-require('jquery-ui');
-require('mustache')
-require('jquery-ui/ui/widgets/sortable');
-require('jquery-ui/ui/disable-selection');
+require("jquery-ui");
+require("mustache");
+require("jquery-ui/ui/widgets/sortable");
+require("jquery-ui/ui/disable-selection");
 
-var sprintf = require('sprintf-js').sprintf;
+var sprintf = require("sprintf-js").sprintf;
 
 var isLoggedIn = function() {
     return $("#user-menu").length > 0;
 };
-var MyTardis = (function() {
+export var MyTardis = (function() {
+
     var module = {};
 
     module.DatasetSyncManager = _.extend({
@@ -23,7 +24,7 @@ var MyTardis = (function() {
             collection.on("sync", _.bind(this._syncHandler, this));
             // Handle destoyed models being removed from the collection before sync
             collection.on("destroy", _.bind(function(model) {
-                // Handler is slightly different, because model isn't updated
+                // Handler is slightly different, because model isn"t updated
                 model.on("sync", _.bind(this._destroyHandler, this));
             }, this));
         },
@@ -35,7 +36,7 @@ var MyTardis = (function() {
                 .each(function(otherCollection) {
                     // Get model in other collection
                     var otherModel = otherCollection.get(model.id);
-                    // If there isn't one, that's fine
+                    // If there isn"t one, that"s fine
                     if (!otherModel) {
                         return;
                     }
@@ -48,7 +49,7 @@ var MyTardis = (function() {
                 .each(function(collection) {
                     // Get model in other collection
                     var otherModel = collection.get(model.id);
-                    // If there isn't one, that's fine
+                    // If there isn"t one, that"s fine
                     if (!otherModel) {
                         return;
                     }
@@ -160,7 +161,7 @@ var MyTardis = (function() {
                 }, this)
             }).disableSelection();
             // We need the dataset columns to be roughly the same height, or else
-            // there's no way to drag datasets across
+            // there"s no way to drag datasets across
             var ensureSimilarHeight = function() {
                 // Remove min-height to get real height
                 $(".datasets").css("min-height", "");
@@ -217,7 +218,7 @@ var MyTardis = (function() {
                 },
                 Mustache.TEMPLATES
             ));
-            // Fill in the placeholders (because Mustache can't inject DOM)
+            // Fill in the placeholders (because Mustache can"t inject DOM)
             _.each(newContents.find(".dataset-tile-placeholder"), function(v) {
 
                 var view = this.tiles[parseInt($(v).attr("data-dsid"), 10)];
@@ -319,4 +320,3 @@ var MyTardis = (function() {
 
     return module;
 }());
-export default MyTardis;
