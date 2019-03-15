@@ -42,7 +42,7 @@ case "$TEST_TYPE" in
 	(( exit_status = exit_status || $? ))
     ;;
     behave)
-        npm install && npm install phantomjs-prebuilt && npm test \
+        npm install && npm test \
         && python test.py behave
 	(( exit_status = exit_status || $? ))
     ;;
