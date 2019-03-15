@@ -6,8 +6,8 @@
 // Tests for assets/js/tardis_porta/view_experiment/share.js
 // which used to be embedded within
 // tardis/tardis_portal/templates/tardis_portal/ajax/share.html
-require('jquery-mockjax/dist/jquery.mockjax')(jQuery, window);
-require('experimentshare');
+require("jquery-mockjax/dist/jquery.mockjax")(jQuery, window);
+//require("experimentshare");
 require("mustache");
 
 QUnit.module("tardis_portal.ajax.share", {
@@ -111,7 +111,7 @@ QUnit.skip("Test clicking on Public Access button", function(assert) {
 
     // addShareEventHandlers needs to be run after the QUnit fixtures have
     // been created so that jQuery can find the elements to bind events to:
-    experimentshare.addShareEventHandlers();
+    //experimentshare.addShareEventHandlers();
 
     var modalPublicAccessBody = $("#qunit-fixture").find("#modal-public-access").find(".modal-body");
     assert.equal(modalPublicAccessBody.html(), "");

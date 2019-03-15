@@ -2,7 +2,7 @@
 "use strict";
 
 // Tests for assets/js/tardis_portal/main.js
-require('main');
+require("main");
 QUnit.module("tardis_portal.main", {
     beforeEach: function(assert) {
         $.ajaxSetup({async: false});
