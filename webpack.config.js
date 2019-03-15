@@ -3,7 +3,7 @@ const webpack = require('webpack');
 const BundleTracker = require('webpack-bundle-tracker');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
-const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
+const TerserPlugin = require('terser-webpack-plugin');
 const glob = require("glob");
 
 module.exports = {
@@ -13,6 +13,7 @@ module.exports = {
         tardis_portal: glob.sync('./assets/js/tardis_portal/*.js'),
         tardis_portal_view_experiment: glob.sync('./assets/js/tardis_portal/view_experiment/**/*.js'),
         tardis_portal_view_dataset: glob.sync('./assets/js/tardis_portal/view_dataset/**/*.js'),
+        tardis_portal_manage_group_members: glob.sync('./assets/js/tardis_portal/manage_group_members/**/*.js'),
         lib: glob.sync('./assets/js/lib/**/*.js'),
     },
     output: {
@@ -20,7 +21,7 @@ module.exports = {
         filename: '[name]-[hash].js'
     },
     optimization: {
-        minimizer: [new UglifyJsPlugin()],
+        minimizer: [new TerserPlugin()],
         splitChunks: {
             chunks: 'async',
             minSize: 30000,
@@ -59,6 +60,8 @@ module.exports = {
             jQuery: "jquery",
             'window.jQuery': 'jquery',
             'async': 'async',
+            'main': 'main',
+            'backbonemodels' : 'backbonemodels',
         }),
     ],
     module: {
@@ -95,10 +98,9 @@ module.exports = {
             {test: /backbone.js/, loader: 'imports-loader?define=>false'},
             {
                 test: /\.(gif|png|jpe?g)$/i,
-                loader: 'file-loader',
+                loader: 'url-loader',
                 options: {
                     name: '[name].[ext]',
-                    publicPath: '/bundles/'
                 }
             },
             {
@@ -118,7 +120,8 @@ module.exports = {
         alias:{
             'jquery': __dirname + '/node_modules/jquery',
             'main': __dirname + '/assets/js/tardis_portal/main',
-            'async': __dirname + '/assets/js/lib/async.min'
+            'async': __dirname + '/assets/js/lib/async.min',
+            'backbonemodels': __dirname + '/assets/js/tardis_portal/backbone-models',
         },
     }
 }
