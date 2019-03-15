@@ -12,7 +12,7 @@ def check_if_user_not_approved(request):
     Custom template filter to identify whether a user account
     is approved.
     """
-    if request.user.is_authenticated():
+    if request.user.is_authenticated:
         user = request.user
         if not hasattr(request, "session"):
             # This should only happen in unit tests
