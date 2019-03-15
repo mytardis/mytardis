@@ -32,3 +32,4 @@ versions.cfg
 tardis_db
 Dockerfile*
 docker*yml
+node_modules

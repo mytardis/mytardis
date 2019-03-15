@@ -31,7 +31,7 @@
     "eslint-plugin-angular": "^3.3.0",
     "grunt": "^1.0.1",
     "grunt-cli": "^1.2.0",
-    "grunt-contrib-qunit": "^2.0.0",
+    "grunt-contrib-qunit": "^3.1.0",
     "jquery-mockjax": "^2.4.0",
     "minimatch": "^3.0.2",
     "qunit": "^2.9.2"
