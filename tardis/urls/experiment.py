@@ -15,7 +15,6 @@ from tardis.tardis_portal.views import (
     retrieve_access_list_user_readonly,
     add_experiment_access_group,
     remove_experiment_access_group,
-    change_group_permissions,
     retrieve_access_list_group,
     retrieve_access_list_group_readonly,
     create_user,
@@ -61,9 +60,6 @@ experiment_urls = [
         name='tardis.tardis_portal.views.remove_experiment_access_group'),
     url(r'^control_panel/create/group/$', create_group,
         name='tardis.tardis_portal.views.create_group'),
-    url(r'^control_panel/(?P<experiment_id>\d+)/access_list/change/group/'
-        '(?P<group_id>\d+)/$', change_group_permissions,
-        name='tardis.tardis_portal.views.change_group_permissions'),
     url(r'^control_panel/(?P<experiment_id>\d+)/access_list/group/$',
         retrieve_access_list_group,
         name='tardis.tardis_portal.views.retrieve_access_list_group'),

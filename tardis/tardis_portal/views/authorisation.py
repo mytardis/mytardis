@@ -25,7 +25,7 @@ from django.views.decorators.http import require_POST
 from ..auth import decorators as authz
 from ..auth.localdb_auth import auth_key as localdb_auth_key, \
     django_user
-from ..forms import ChangeUserPermissionsForm, ChangeGroupPermissionsForm
+from ..forms import ChangeUserPermissionsForm
 from ..models import UserAuthentication, UserProfile, Experiment, \
     Token, GroupAdmin, ObjectACL
 from ..shortcuts import render_response_index, \
@@ -484,57 +484,6 @@ def change_user_permissions(request, experiment_id, username):
         c = {'form': form,
              'header':
              "Change User Permissions for '%s'" % user.username}
-
-    return render_response_index(
-        request, 'tardis_portal/form_template.html', c)
-
-
-@never_cache
-@authz.experiment_ownership_required
-def change_group_permissions(request, experiment_id, group_id):
-
-    try:
-        group = Group.objects.get(pk=group_id)
-    except Group.DoesNotExist:
-        return return_response_error(request)
-
-    try:
-        experiment = Experiment.objects.get(pk=experiment_id)
-    except Experiment.DoesNotExist:
-        return return_response_error(request)
-
-    try:
-        acl = ObjectACL.objects.get(
-            content_type=experiment.get_ct(),
-            object_id=experiment.id,
-            pluginId='django_group',
-            entityId=str(group.id),
-            aclOwnershipType=ObjectACL.OWNER_OWNED)
-    except ObjectACL.DoesNotExist:
-        return return_response_error(request)
-
-    if request.method == 'POST':
-        form = ChangeGroupPermissionsForm(request.POST)
-
-        if form.is_valid():
-            acl.canRead = form.cleaned_data['canRead']
-            acl.canWrite = form.cleaned_data['canWrite']
-            acl.canDelete = form.cleaned_data['canDelete']
-            acl.effectiveDate = form.cleaned_data['effectiveDate']
-            acl.expiryDate = form.cleaned_data['expiryDate']
-            acl.save()
-            return HttpResponseRedirect('/experiment/control_panel/')
-
-    else:
-        form = ChangeGroupPermissionsForm(
-            initial={'canRead': acl.canRead,
-                     'canWrite': acl.canWrite,
-                     'canDelete': acl.canDelete,
-                     'effectiveDate': acl.effectiveDate,
-                     'expiryDate': acl.expiryDate})
-
-    c = {'form': form,
-         'header': "Change Group Permissions for '%s'" % group.name}
 
     return render_response_index(
         request, 'tardis_portal/form_template.html', c)
