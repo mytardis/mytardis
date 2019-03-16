@@ -194,19 +194,6 @@ class ChangeUserPermissionsForm(ModelForm):
             'effectiveDate': SelectDateWidget()}
 
 
-class ChangeGroupPermissionsForm(forms.Form):
-
-    canRead = forms.BooleanField(label='canRead', required=False)
-    canWrite = forms.BooleanField(label='canWrite', required=False)
-    canDelete = forms.BooleanField(label='', required=False,
-                                   widget=forms.HiddenInput)
-
-    effectiveDate = forms.DateTimeField(
-        label='Effective Date', widget=SelectDateWidget(), required=False)
-    expiryDate = forms.DateTimeField(
-        label='Expiry Date', widget=SelectDateWidget(), required=False)
-
-
 class AddUserPermissionsForm(forms.Form):
 
     entered_user = forms.CharField(

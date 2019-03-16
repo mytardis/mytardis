@@ -689,38 +689,7 @@ class ObjectACLTestCase(TestCase):
 
         # now the fancy stuff with timestamps
         today = datetime.datetime.today()
-        yesterday = today - datetime.timedelta(days=1)
         tomorrow = today + datetime.timedelta(days=1)
-
-        url = '/experiment/control_panel/%i/access_list/change/group/%i/'
-
-        # give group 'group1w' write permissions for experiment1 effictive TOMORROW
-        response = self.client1.post(url % (self.experiment1.id, group.id),
-                                     {'canRead': True,
-                                      'canWrite': True,
-                                      'effectiveDate_year': tomorrow.year,
-                                      'effectiveDate_month': tomorrow.month,
-                                      'effectiveDate_day': tomorrow.day,
-                                      })
-
-        self.assertEqual(response.status_code, 302)
-
-        response = self.client2.get('/experiment/edit/%i/' % (self.experiment1.id))
-        self.assertEqual(response.status_code, 403)
-
-        # change effictive date to TODAY
-        response = self.client1.post(url % (self.experiment1.id, group.id),
-                          {'canRead': True,
-                           'canWrite': True,
-                           'effectiveDate_year': today.year,
-                           'effectiveDate_month': today.month,
-                           'effectiveDate_day': today.day,
-                           })
-        self.assertEqual(response.status_code, 302)
-
-        # now user2 should have write access again
-        response = self.client2.get('/experiment/edit/%i/' % (self.experiment1.id))
-        self.assertEqual(response.status_code, 200)
 
         # repeat all the tests with timestamps for user3
         url = '/experiment/control_panel/%i/access_list/change/user/%s/'
