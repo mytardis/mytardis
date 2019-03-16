@@ -475,7 +475,8 @@ def change_user_permissions(request, experiment_id, username):
                         'Cannot remove ownership, every experiment must have at '
                         'least one user owner.', status=409)
             form.save()
-            url = reverse('tardis.tardis_portal.views.control_panel')
+            url = reverse('tardis_portal.view_experiment',
+                          args=[str(experiment.id)])
             return HttpResponseRedirect(url)
 
     else:
