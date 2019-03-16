@@ -782,20 +782,6 @@ def edit_dataset(request, dataset_id):
         request, 'tardis_portal/add_or_edit_dataset.html', c)
 
 
-@login_required()
-def control_panel(request):
-
-    experiments = Experiment.safe.owned(request.user)
-    if experiments:
-        experiments = experiments.order_by('title')
-
-    c = {'experiments': experiments,
-         'subtitle': 'Experiment Control Panel'}
-
-    return render_response_index(
-        request, 'tardis_portal/control_panel.html', c)
-
-
 def _get_dataset_checksums(dataset, type='md5'):
     valid_types = ['md5', 'sha512']
     if type not in valid_types:
