@@ -10,7 +10,6 @@ from tardis.tardis_portal.views import (
     create_experiment,
     add_experiment_access_user,
     remove_experiment_access_user,
-    change_user_permissions,
     retrieve_access_list_user,
     retrieve_access_list_user_readonly,
     add_experiment_access_group,
@@ -43,9 +42,6 @@ experiment_urls = [
     url(r'^control_panel/(?P<experiment_id>\d+)/access_list/remove/user/'
         '(?P<username>%s)/$' % user_pattern, remove_experiment_access_user,
         name='tardis.tardis_portal.views.remove_experiment_access_user'),
-    url(r'^control_panel/(?P<experiment_id>\d+)/access_list/change/user/'
-        '(?P<username>%s)/$' % user_pattern, change_user_permissions,
-        name='tardis.tardis_portal.views.change_user_permissions'),
     url(r'^control_panel/(?P<experiment_id>\d+)/access_list/user/$',
         retrieve_access_list_user,
         name='tardis.tardis_portal.views.retrieve_access_list_user'),

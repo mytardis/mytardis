@@ -179,50 +179,6 @@ class ObjectACLTestCase(TestCase):
         self.assertEqual(response.status_code, 403)
 
 
-        # give user3 read permissions for experiment1 effective TOMORROW
-        url = ("/experiment/control_panel/%i/access_list"
-               "/change/user/%s/?authMethod=%s")
-
-        response = self.client1.post(url % (self.experiment1.id,
-                                            self.user3.username,
-                                            localdb_auth_key),
-                          {'canRead': True,
-                           'effectiveDate_year':  tomorrow.year,
-                           'effectiveDate_month': tomorrow.month,
-                           'effectiveDate_day':   tomorrow.day,
-                           })
-        self.assertEqual(response.status_code, 302)
-
-        # check permissions for user3
-        response = self.client3.get('/experiment/view/%i/'
-                                   % (self.experiment1.id))
-        self.assertEqual(response.status_code, 403)
-
-        # user1 should be see experiment1
-        response = self.client1.get('/experiment/view/%i/'
-                                   % (self.experiment1.id))
-        self.assertEqual(response.status_code, 200)
-
-        # give user3 read permissions for experiment1 effective YESTERDAY
-        url = ("/experiment/control_panel/%i/access_list"
-               "/change/user/%s/?authMethod=%s")
-
-        response = self.client1.post(url % (self.experiment1.id,
-                                            self.user3.username,
-                                            localdb_auth_key),
-                          {'canRead': True,
-                           'effectiveDate_year':  yesterday.year,
-                           'effectiveDate_month': yesterday.month,
-                           'effectiveDate_day':   yesterday.day,
-                           })
-        self.assertEqual(response.status_code, 302)
-
-        # check permissions for user3
-        response = self.client3.get('/experiment/view/%i/'
-                                   % (self.experiment1.id))
-        self.assertEqual(response.status_code, 200)
-
-
     def testReadAccess(self):
         login = self.client1.login(username=self.user1.username,
                                    password='secret')
@@ -304,16 +260,16 @@ class ObjectACLTestCase(TestCase):
         self.assertEqual(response.content, b'OK')
 
         # test add non-existent user
-        non_existant = 'test_boozer'
+        non_existent = 'test_boozer'
         response = self.client1.get('/experiment/control_panel/%i/access_list'
                                     '/add/user/%s/?authMethod=%s'
                                     % (self.experiment1.id,
-                                       non_existant,
+                                       non_existent,
                                        localdb_auth_key))
 
-        self.assertContains(response, 'User %s does not exist' % non_existant)
+        self.assertContains(response, 'User %s does not exist' % non_existent)
 
-        # test add to non existant experiment
+        # test add to non existent experiment
 
         # Note: Ideally we'd like to check for error message, but we
         # can't hit it with the decorator in place.  However,
@@ -387,14 +343,7 @@ class ObjectACLTestCase(TestCase):
 
         self.client3.logout()
 
-        # ok, now do some tricky stuff
-        today = datetime.datetime.today()
-        yesterday = today - datetime.timedelta(days=1)
-        tomorrow = today + datetime.timedelta(days=1)
-
-        url = ("/experiment/control_panel/%i/access_list"
-               "/change/user/%s/?authMethod=%s")
-
+        # Log in as self.client1 again
         login = self.client1.login(username=self.user1.username,
                                    password='secret')
         self.assertTrue(login)
@@ -413,98 +362,6 @@ class ObjectACLTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, '<div class="access_list_user')
 
-        # give user3 read permissions for experiment1 effective TOMORROW
-        response = self.client1.post(url % (self.experiment1.id,
-                                            self.user3.username,
-                                            localdb_auth_key),
-                          {'canRead': True,
-                           'effectiveDate_year': tomorrow.year,
-                           'effectiveDate_month': tomorrow.month,
-                           'effectiveDate_day': tomorrow.day,
-                           })
-        # logger.debug('[1] response =' + str(response))
-        self.assertEqual(response.status_code, 302)
-
-        # check permissions for user3
-        login = self.client3.login(username=self.user3.username,
-                                   password='secret')
-        self.assertTrue(login)
-
-        response = self.client3.get('/experiment/view/%i/'
-                                   % (self.experiment1.id))
-        self.assertEqual(response.status_code, 403)
-
-        # change effective date to TODAY
-        response = self.client1.post(url % (self.experiment1.id,
-                                            self.user3.username,
-                                            localdb_auth_key),
-                          {'canRead': True,
-                           'effectiveDate_year': today.year,
-                           'effectiveDate_month': today.month,
-                           'effectiveDate_day': today.day,
-                           })
-        self.assertEqual(response.status_code, 302)
-
-        response = self.client3.get('/experiment/view/%i/'
-                                   % (self.experiment1.id))
-        self.assertEqual(response.status_code, 200)
-
-        # change effictive date to YESTERDAY
-        self.client1.post(url % (self.experiment1.id,
-                                 self.user3.username,
-                                 localdb_auth_key),
-                          {'canRead': True,
-                           'effectiveDate_year': yesterday.year,
-                           'effectiveDate_month': yesterday.month,
-                           'effectiveDate_day': yesterday.day,
-                           })
-
-        response = self.client3.get('/experiment/view/%i/'
-                                   % (self.experiment1.id))
-        self.assertEqual(response.status_code, 200)
-
-        # set expiry date to TOMORROW
-        self.client1.post(url % (self.experiment1.id,
-                                 self.user3.username,
-                                 localdb_auth_key),
-                          {'canRead': True,
-                           'expiryDate_year': tomorrow.year,
-                           'expiryDate_month': tomorrow.month,
-                           'expiryDate_day': tomorrow.day,
-                           })
-
-        response = self.client3.get('/experiment/view/%i/'
-                                   % (self.experiment1.id))
-        self.assertEqual(response.status_code, 200)
-
-        # set expiry date to TODAY
-        self.client1.post(url % (self.experiment1.id,
-                                 self.user3.username,
-                                 localdb_auth_key),
-                          {'canRead': True,
-                           'expiryDate_year': today.year,
-                           'expiryDate_month': today.month,
-                           'expiryDate_day': today.day,
-                           })
-
-        response = self.client3.get('/experiment/view/%i/'
-                                   % (self.experiment1.id))
-        self.assertEqual(response.status_code, 200)
-
-        # set expiry date to YESTERDAY
-        self.client1.post(url % (self.experiment1.id,
-                                 self.user3.username,
-                                 localdb_auth_key),
-                          {'canRead': True,
-                           'expiryDate_year': yesterday.year,
-                           'expiryDate_month': yesterday.month,
-                           'expiryDate_day': yesterday.day,
-                           })
-
-        response = self.client3.get('/experiment/view/%i/'
-                                   % (self.experiment1.id))
-        self.assertEqual(response.status_code, 403)
-
         # remove user3 from experiment1 again
         response = self.client1.get('/experiment/control_panel/%i/access_list'
                                     '/remove/user/%s/'
@@ -520,7 +377,7 @@ class ObjectACLTestCase(TestCase):
                          b'The user %s does not have access to this experiment.'
                          % self.user3.username.encode())
 
-        # try to remove from a non-existant experiment
+        # try to remove from a non-existent experiment
         response = self.client1.get('/experiment/control_panel/%i/access_list'
                                     '/remove/user/%s/'
                                     % (9999, self.user3.username))
@@ -556,6 +413,11 @@ class ObjectACLTestCase(TestCase):
                self.user3.username,
                localdb_auth_key))
         self.assertEqual(response.status_code, 200)
+
+        # Login as self.client3 again:
+        login = self.client3.login(username=self.user3.username,
+                                   password='secret')
+        self.assertTrue(login)
 
         # as user3, try to add myself as an owner of the experiment1
         response = self.client3.get('/experiment/control_panel/%i/access_list'
@@ -684,40 +546,6 @@ class ObjectACLTestCase(TestCase):
         # response = self.client2.get('/experiment/edit/%i/' % (self.experiment1.id))
         # self.assertEqual(response.status_code, 200)
 
-        response = self.client3.get('/experiment/edit/%i/' % (self.experiment1.id))
-        self.assertEqual(response.status_code, 200)
-
-        # now the fancy stuff with timestamps
-        today = datetime.datetime.today()
-        tomorrow = today + datetime.timedelta(days=1)
-
-        # repeat all the tests with timestamps for user3
-        url = '/experiment/control_panel/%i/access_list/change/user/%s/'
-
-        # give user3 write permissions for experiment1 effictive TOMORROW
-        response = self.client1.post(url % (self.experiment1.id, self.user3.username),
-                                     {'canRead': True,
-                                      'canWrite': True,
-                                      'effectiveDate_year': tomorrow.year,
-                                      'effectiveDate_month': tomorrow.month,
-                                      'effectiveDate_day': tomorrow.day,
-                                      })
-        self.assertEqual(response.status_code, 302)
-
-        response = self.client3.get('/experiment/edit/%i/' % (self.experiment1.id))
-        self.assertEqual(response.status_code, 403)
-
-        # change effictive date to TODAY
-        response = self.client1.post(url % (self.experiment1.id, self.user3.username),
-                                     {'canRead': True,
-                                      'canWrite': True,
-                                      'effectiveDate_year': today.year,
-                                      'effectiveDate_month': today.month,
-                                      'effectiveDate_day': today.day,
-                                      })
-        self.assertEqual(response.status_code, 302)
-
-        # now user3 should have write access again
         response = self.client3.get('/experiment/edit/%i/' % (self.experiment1.id))
         self.assertEqual(response.status_code, 200)
 
