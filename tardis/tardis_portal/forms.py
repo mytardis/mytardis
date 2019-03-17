@@ -176,24 +176,6 @@ class RegistrationForm(forms.Form):
         return user
 
 
-class ChangeUserPermissionsForm(ModelForm):
-
-    class Meta:
-        from .models import ObjectACL
-        model = ObjectACL
-        fields = [
-            'canDelete',
-            'canRead',
-            'canWrite',
-            'effectiveDate',
-            'expiryDate',
-            'isOwner',
-        ]
-        widgets = {
-            'expiryDate': SelectDateWidget(),
-            'effectiveDate': SelectDateWidget()}
-
-
 class AddUserPermissionsForm(forms.Form):
 
     entered_user = forms.CharField(
