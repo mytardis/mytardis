@@ -1,5 +1,6 @@
 {% extends "tardis_portal/portal_template.html" %}
 {% load static from staticfiles %}
+{% load render_bundle from webpack_loader %}
 {% load facility_tags %}
 {% load experiment_tags %}
 {% load experimentstats %}
@@ -7,14 +8,12 @@
 {% load bleach_tag %}
 
 {% block content %}
+    {% render_bundle 'tardis_portal_facility_view' %}
 <div class="page-header">
     <h1 class="title">Facility Overview</h1>
 </div>
 
 {% with request|check_if_facility_manager as facility_manager %}
-<script type="text/javascript"
-        src="{% static 'js/facility_view.js' %}">
-</script>
 <div id="content" ng-controller="FacilityController as facilityCtrl">
   {% verbatim %}
   <h2 class="pull-left" style="color:#999999" ng-cloak>{{facilityCtrl.selectedFacilityName}}</h2>

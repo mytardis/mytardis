@@ -39,10 +39,7 @@ angular
     };
 });
 
-
-angular
-.module('MyTardis')
-.controller('FacilityController', function ($resource, $interval, $log) {
+var controller = angular.module('MyTardis').controller('FacilityController', function ($resource, $interval, $log) {
 
     var vm = this;  // view model
 
@@ -334,5 +331,4 @@ angular
 
     // Do initial data fetch
     initialiseFacilitiesData();
-
 });

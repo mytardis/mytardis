@@ -23,7 +23,6 @@ require("expose-loader?sprintf!sprintf-js/dist/sprintf.min");
 require("clipboard")
 require("expose-loader?Clipboard!clipboard/dist/clipboard");
 require("expose-loader?async!../js/lib/async.min");
-//require("angular")
 //css
 require("bootstrap/dist/css/bootstrap.css");
 require("../css/jquery-ui/jquery-ui-1.8.18.custom.css");

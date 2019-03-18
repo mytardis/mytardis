@@ -14,16 +14,32 @@ $(function() {
         return oldSync(method, model, options);
     };
 });
-
 (function() {
-    $("form#other-experiment-selection select").change(function(evt) {
-        $(this).parents("form").submit();
+    function getDatasetsForExperiment(experimentId) {
+        var datasets = new MyTardis.Datasets();
+        datasets.experimentId = parseInt(experimentId),
+            // Substitute experiment ID to get collection
+            datasets.url = Mustache.to_html("{{ url_pattern }}",
+                { 'experiment_id': experimentId });
+        var datasetTiles = new MyTardis.DatasetTiles({
+            'id': "other-experiment-datasets",
+            'collection': datasets,
+            'el': $('#other-experiment-datasets').get(0)
+        });
+        datasets.fetch({});
+        return datasetTiles;
+    }
+    $('form#other-experiment-selection').submit(function(evt) {
+        evt.preventDefault();
+        var experimentId = $(this).find('[name="experiment_id"]').val();
+        otherDatasetTiles = getDatasetsForExperiment(experimentId);
     });
-
+    $('form#other-experiment-selection select').change(function(evt) {
+        $(this).parents('form').submit();
+    });
     // Load initial data
-    $("form#other-experiment-selection").submit();
-}());
-
+    $('form#other-experiment-selection').submit();
+})();
 (function() {
     var datasets = new backbonemodels.MyTardis.Datasets();
     datasets.experimentId = $("#experiment-id").val();
