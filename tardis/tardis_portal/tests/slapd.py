@@ -290,9 +290,12 @@ class Slapd:
                 self.PATH_SLAPTEST,
                 verboseflag,
                 "-f", config_path
-            ])
-            if p.wait() != 0:
-                raise RuntimeError("configuration test failed")
+            ],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT)
+            output = p.communicate()[0]
+            if p.returncode != 0:
+                raise RuntimeError("configuration test failed: %s" % output)
             self._log.debug("configuration seems ok")
         finally:
             os.remove(config_path)
