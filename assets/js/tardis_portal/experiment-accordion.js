@@ -74,4 +74,4 @@ var expandFirstExperiments = function() {
     });
 };
 
-export {attachExpAccordionClickHandlers, loadLatestDatasetSummary, expandFirstExperiments, loadRecentDatasetsSummary}
+export {attachExpAccordionClickHandlers, loadLatestDatasetSummary, expandFirstExperiments, loadRecentDatasetsSummary};

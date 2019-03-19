@@ -1,7 +1,7 @@
 /* tardis/tardis_portal/static/js/jquery/tardis_portal/index.js */
 
 /* global attachExpAccordionClickHandlers, expandFirstExperiments, loadRecentDatasetsSummary */
-import {attachExpAccordionClickHandlers,expandFirstExperiments, loadRecentDatasetsSummary} from "./experiment-accordion";
+import {attachExpAccordionClickHandlers, expandFirstExperiments, loadRecentDatasetsSummary} from "./experiment-accordion";
 
 $(document).ready(function() {
     $("#private-experiments .accordion-body").collapse({parent: "#private-experiments", toggle: false});
