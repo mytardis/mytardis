@@ -1,5 +1,6 @@
 {% extends "tardis_portal/portal_template.html" %}
 {% load static from staticfiles %}
+{% load render_bundle from webpack_loader %}
 {% load experiment_tags %}
 {% load experimentstats %}
 {% load humanize %}
@@ -60,11 +61,7 @@
 </div>  <!-- id="content" -->
 
 <input type="hidden" id="exps-expand-accordion" value="{{ exps_expand_accordion }}">
-<script type="text/javascript"
-        src="{% static 'js/jquery/tardis_portal/experiment-accordion.js' %}">
-</script>
+{% render_bundle 'tardis_portal_my_data' %}
+{% render_bundle 'tardis_portal_shared' %}
 
-<script type="text/javascript"
-        src="{% static 'js/jquery/tardis_portal/shared.js' %}">
-</script>
 {% endblock %}
