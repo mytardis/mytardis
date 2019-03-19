@@ -10,6 +10,9 @@ services:
       context: ..
       dockerfile: docker-ci/Dockerfile-test
     image: mytardis/mytardis-test
+    volumes:
+      - ../tardis:/home/webapp/tardis
+      - ../docs:/home/webapp/docs
     depends_on:
       - run
       - pg
