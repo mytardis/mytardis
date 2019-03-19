@@ -7,6 +7,7 @@
  * @param {string} divIdPrefix - Prefix of the div element's ID, e.g. "latest-dataset-"
  * @param {string} experimentId - The database ID of the experiment to load the latest dataset
  */
+require("bootstrap");
 // eslint-disable-next-line no-unused-vars
 var loadLatestDatasetSummary = function(divIdPrefix, experimentId) {
     $.ajax({
@@ -72,3 +73,5 @@ var expandFirstExperiments = function() {
         }
     });
 };
+
+export {attachExpAccordionClickHandlers, loadLatestDatasetSummary, expandFirstExperiments}
