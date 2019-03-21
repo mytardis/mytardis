@@ -1,7 +1,7 @@
 /* tardis/tardis_portal/static/js/jquery/tardis_portal/index.js */
 
 /* global attachExpAccordionClickHandlers, expandFirstExperiments, loadRecentDatasetsSummary */
-require('bootstrap');
+require("bootstrap");
 import {attachExpAccordionClickHandlers, expandFirstExperiments, loadRecentDatasetsSummary} from "./experiment-accordion";
 
 $(document).ready(function() {

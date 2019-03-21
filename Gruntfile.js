@@ -16,9 +16,6 @@ const webpackConfig = require("./test-webpack.config");
 module.exports = function(grunt) {
     grunt.initConfig({
         webpack: {
-            options: {
-                stats: !process.env.NODE_ENV || process.env.NODE_ENV === "development"
-            },
             prod: webpackConfig,
             dev: Object.assign({watch: true}, webpackConfig)
         },
@@ -38,7 +35,7 @@ module.exports = function(grunt) {
             }
         }
     });
-    grunt.loadNpmTasks('grunt-webpack');
+    grunt.loadNpmTasks("grunt-webpack");
     grunt.loadNpmTasks("grunt-contrib-qunit");
     grunt.registerTask("test", ["qunit"]);
     grunt.registerTask("default", ["test"]);
