@@ -77,6 +77,6 @@ def they_see_newly_created_dataset(context):
         time.sleep(0.1)
         ajax_complete = bool(
             context.browser.execute_script("return jQuery.active == 0"))
-
+    time.sleep(2.0)
     dataset_link = context.browser.find_element_by_css_selector("a.dataset-link")
     context.test.assertIn("new dataset", dataset_link.get_attribute("innerHTML"))
