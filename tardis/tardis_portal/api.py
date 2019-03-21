@@ -16,7 +16,8 @@ from django.contrib.auth.models import User
 from django.contrib.auth.models import Group
 from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseForbidden, \
-    StreamingHttpResponse
+    StreamingHttpResponse, HttpResponseNotFound
+from django.shortcuts import redirect
 
 from tastypie import fields
 from tastypie.authentication import BasicAuthentication
@@ -32,6 +33,9 @@ from tastypie.resources import ModelResource
 from tastypie.serializers import Serializer
 from tastypie.utils import trailing_slash
 from tastypie.contrib.contenttypes.fields import GenericForeignKeyField
+
+import six
+from uritemplate import URITemplate
 
 from tardis.analytics.tracker import IteratorTracker
 from . import tasks
@@ -847,6 +851,31 @@ class DataFileResource(MyTardisModelResource):
         self.authorized_read_detail(
             [file_record],
             self.build_bundle(obj=file_record, request=request))
+
+        preferred_dfo = file_record.get_preferred_dfo()
+        if not preferred_dfo:
+            # No verified DataFileObject exists for this DataFile
+            return HttpResponseNotFound()
+
+        storage_class_name = preferred_dfo.storage_box.django_storage_class
+        download_uri_templates = getattr(
+            settings, 'DOWNLOAD_URI_TEMPLATES', {})
+        if storage_class_name in download_uri_templates:
+            template = URITemplate(download_uri_templates[storage_class_name])
+            return redirect(template.expand(dfo_id=preferred_dfo.id))
+
+        if settings.PROXY_DOWNLOADS:
+            full_path = preferred_dfo.get_full_path()
+            for dir_prefix, url_prefix in six.iteritems(
+                    settings.PROXY_DOWNLOAD_PREFIXES):
+                if full_path.startswith(dir_prefix):
+                    response = HttpResponse()
+                    response["Content-Disposition"] = \
+                        "attachment; filename={0}".format(file_record.filename)
+                    path = full_path.split(dir_prefix)[1]
+                    response['X-Accel-Redirect'] = "%s/%s" % (url_prefix, path)
+                    return response
+
         file_object = file_record.get_file()
         wrapper = FileWrapper(file_object)
         tracker_data = dict(

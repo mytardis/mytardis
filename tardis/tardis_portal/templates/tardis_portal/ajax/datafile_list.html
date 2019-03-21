@@ -1,5 +1,5 @@
 {% load capture %}
-<input type="hidden" id="datafile-count" value="{{datafile_count}}"/>
+{% load static from staticfiles %}
 {% capture as paginator_block %}
 {% if datafiles.paginator.num_pages > 1 %}
   <ul class="pagination" style="margin-left: auto; margin-right: auto; display: table;">
@@ -28,7 +28,7 @@
     <li class="disabled"><a href="#">&raquo;</a></li>
     {% endif %}
   </ul>
-  <!-- Page {{ dataset.number }} of {{ dataset.paginator.num_pages }} -->
+  <!-- Page {{ datafiles.number }} of {{ datafiles.paginator.num_pages }} -->
 {% endif %}
 {% endcapture %}
 
@@ -66,109 +66,47 @@
         {% endif %}
         <tbody>
         {% for datafile in datafiles.object_list %}
-            <tr class="datafile search_match_file">
-                <td>
-                    {% if has_download_permissions and datafile.verified %}
-                        <input type="checkbox" style="" class="datafile_checkbox" name="datafile" value="{{datafile.id}}" />
-                    {% endif %}
+            <tr data-datafile-id="{{datafile.id}}" class="datafile search_match_file">
+                <td id="datafile-checkbox-{{datafile.id}}">
+                    <i class="fa fa-spinner fa-spin fa-lg"></i>
                 </td>
-                <td>
-                    {% if has_download_permissions and datafile.get_view_url and datafile.verified and datafile.is_online %}
-                        <a class="filelink datafile_name"
-                           href="{{ datafile.get_view_url }}"
-                           title="View"
-                           target="_blank">{{ datafile.filename }}</a>
-                    {% else %}
-                        {% if datafile.verified %}
-                            <span class="datafile_name{% if not datafile.is_online %} archived-file{% endif %}">{{ datafile.filename }}</span>
-                        {% else %}
-                            <span class="datafile_name" style="color:red;">{{ datafile.filename }}</span>
-                        {% endif %}
+                <td id="datafile-name-{{datafile.id}}">
+                    <span class="datafile_name">{{ datafile.filename }}</span>
+                    {% if datafile.size %}
+                      <span style="margin-right: 5px">
+                        ({{ datafile.size|filesizeformat }})
+                      </span>
                     {% endif %}
-                    {% if datafile.verified %}
-                        {% if datafile.size %}<span style="margin-right: 5px">({{ datafile.size|filesizeformat }})</span>{% endif %}
-                    {% else %}
-                        <span style="margin-right: 5px; color:red;">(unverified)</span>
-                    {% endif %}
-                    {% if has_download_permissions and datafile.get_view_url %}
-                        {% url 'tardis.tardis_portal.iiif.download_image' datafile_id=datafile.id region='full' size=',28' rotation=0 quality='native' format='jpg' as thumbnail %}
-                        {% url 'tardis.tardis_portal.iiif.download_image' datafile_id=datafile.id region='full' size='full' rotation=0 quality='native' format='png' as image %}
-                        {% if thumbnail and datafile.has_image %}
-
-                            {# TODO: Should include a function call to 'encodeLiveAction('imgIcon');' as images need to be bound for functionality. #}
-                            {# Calling in this file does not work with code in 'view_full_dataset.html'. Stopped working when code in file #}
-                            {# was placed in Django Inheritance blocks ("finalscript"); worked fine when defined out of that block. #}
-                            <a href="#">
-                                <img class="imgIcon"
-                                     alt="Preview image for Datafile #{{ datafile.id }}"
-                                     src="{{ thumbnail }}"
-                                     title = "view"
-                                     target = "_blank"
-                                     data-fileSize = "{{datafile.size|filesizeformat}}"
-                                     data-fullRes = "{{ image }}"
-                                     data-createdTime = '{{ datafile.created_time|time:"H:i" }}'
-                                     data-createdDate = '{{ datafile.created_time|date:"d-m-Y" }}'
-                                     data-imgId = "{{ datafile.id }}"
-                                     data-fileName = "{{ datafile.filename }}"
-                                     data-imgAmount = "{{ datafiles.object_list|length }}"
-                                     style="display: block; margin-left: 0; margin-right: 0;"
-                                     onerror="$(this).hide()"
-                                     id= "imgIcon-{{ forloop.counter }}"
-                                        />
-                            </a>
-                        {% endif %}
-                    {% endif %}
-
                 </td>
                 <td style="width: 130px;">
-                    <div class="btn-group pull-right">
-                        {% if has_download_permissions and datafile.verified %}
-                            <a class="btn btn-default btn-sm {% if datafile.is_online %}" title="Download"
-                               {% else %} archived-file disabled"{% endif %}
-                               href="{{ datafile.get_download_url }}">
-                                <i class="fa fa-download fa-lg"></i>
-                            </a>
-                        {% endif %}
-                        {% if has_write_permissions and not immutable %}
-                            <a title="Add Metadata" href="{% url 'tardis.tardis_portal.views.add_datafile_par' datafile.id %}"
-                               data-toggle_selector="#datafile_metadata_toggle_{{datafile.id}}"
-                               class="btn btn-default btn-sm add-metadata">
-                                <i class="fa fa-plus fa-lg"></i>
-                            </a>
-                        {% endif %}
-
-                        <a id="datafile_metadata_toggle_{{datafile.id}}" title="Show/Hide Metadata"
-                           class="btn btn-default btn-sm datafile-info-toggle metadata_hidden" href="/ajax/datafile_details/{{datafile.id}}/">
-                            <i class="fa fa-list fa-lg"></i>
+                  <div id="datafile-buttons-{{datafile.id}}" class="btn-group pull-right">
+                    {% if has_write_permissions and not immutable %}
+                        <a title="Add Metadata"
+                           href="{% url 'tardis.tardis_portal.views.add_datafile_par' datafile.id %}"
+                           data-toggle_selector="#datafile_metadata_toggle_{{datafile.id}}"
+                           class="btn btn-default btn-sm add-metadata">
+                            <i class="fa fa-plus fa-lg"></i>
                         </a>
-                    </div>
+                    {% endif %}
+
+                    <a id="datafile_metadata_toggle_{{datafile.id}}" title="Show/Hide Metadata"
+                       class="btn btn-default btn-sm datafile-info-toggle metadata_hidden"
+                       href="/ajax/datafile_details/{{datafile.id}}/">
+                        <i class="fa fa-list fa-lg"></i>
+                    </a>
+                  </div>
                 </td>
             </tr>
         {% endfor %}
-
 </tbody>
 </table>
 </form>
 
-<script type="text/javascript">
-    $(function () {
-        $('.archived-file').tooltip({'title': "This file is archived.<br/>Press <b>Retrieve</b> button above file list"});
-        $('a.archived-file').on("click", function(e) {
-            e.preventDefault();
-        });
-    });
+<input type="hidden" id="page-number" value="{{ datafiles.number }}">
+{% block script %}
+<script type="text/javascript"
+        src="{% static 'js/jquery/tardis_portal/ajax/datafile_list.js' %}">
 </script>
-{# this appears to break things? Why is it here? -steve #}
-{# <script type="text/javascript"> #}
-{# (function() { #}
-{#   var btnGroups = $('tr.datafile .btn-group'); #}
-{#   var addWidths = function(memo, v, k) { #}
-{#     return memo + $(v).outerWidth(); #}
-{#   }; #}
-{#   var calculatedWidth = _.reduce(btnGroups.first().find('a.btn'), addWidths, 0); #}
-{#   btnGroups.css('width', calculatedWidth+"px"); #}
-{# })(); #}
-{# </script> #}
-
+{% endblock %}
 
 {{ paginator_block }}

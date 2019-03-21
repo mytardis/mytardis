@@ -50,4 +50,23 @@ $(document).ready(function() {
     if ($("#upload-method").val()) {
         $("#upload_button_code").load($("#upload-method-url").val());
     }
+
+    // If the HSM (Hierarchical Storage Management) app is enabled,
+    // we can check how many files are online
+    if ($("#hsm-enabled").val() === "True") {
+        $(".datafile-count-badge").html(
+            "<i class=\"fa fa-spinner fa-spin\"></i>&nbsp; " +
+            $("#datafile-count").val());
+        var onlineFilesCountUrl = "/api/v1/hsm_dataset/" +
+            $("#dataset-id").val() + "/count/";
+        $.getJSON(onlineFilesCountUrl, function(data) {
+            var datafileCountBadgeText = "" + data.total_files;
+            if (data.online_files < data.total_files) {
+                datafileCountBadgeText = "" + data.online_files +
+                    " online / " + data.total_files + " files";
+            }
+            $(".datafile-count-badge").html(
+                "<i class=\"fa fa-file\"></i>&nbsp; " + datafileCountBadgeText);
+        });
+    }
 });

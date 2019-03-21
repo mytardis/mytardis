@@ -92,6 +92,10 @@ div.copylink {
     word-break: break-all;
 }
 
+.archived-file {
+    color: #777777;
+}
+
 .info-box {
     border: 1px solid #DDDDDD;
     padding: 5px 10px 5px 10px;

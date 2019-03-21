@@ -184,10 +184,17 @@ class DataFileResourceTest(MyTardisResourceTestCase):
 
     def test_download_file(self):
         '''
-        Doesn't actually check the content downloaded yet
-        Just checks if the download API endpoint responds with 200
+        Re-run the upload test in order to create a verified file to
+        download - it will be verified immediately becase
+        CELERY_ALWAYS_EAGER is True in test_settings.py
+
+        Then download the file, check the HTTP status code and check
+        the file content.
         '''
-        output = self.api_client.get(
-            '/api/v1/dataset_file/%d/download/' % self.datafile.id,
+        self.test_post_single_file()
+        uploaded_file = DataFile.objects.order_by('-pk')[0]
+        response = self.api_client.get(
+            '/api/v1/dataset_file/%d/download/' % uploaded_file.id,
             authentication=self.get_credentials())
-        self.assertEqual(output.status_code, 200)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.getvalue(), b"123test\n")

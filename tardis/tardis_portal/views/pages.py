@@ -271,9 +271,11 @@ class DatasetView(TemplateView):
             carousel_slice = ":%s" % max_images_in_carousel
         else:
             carousel_slice = ":"
+        datafile_count = dataset.datafile_set.count()
 
         c.update(
             {'dataset': dataset,
+             'datafile_count': datafile_count,
              'datafiles': get_datafiles_page(),
              'parametersets': dataset.getParameterSets().exclude(
                      schema__hidden=True),
@@ -290,6 +292,7 @@ class DatasetView(TemplateView):
              'upload_method': upload_method,
              'push_to_enabled': 'tardis.apps.push_to' in settings.INSTALLED_APPS,
              'carousel_slice': carousel_slice,
+             'hsm_enabled': 'tardis.apps.hsm' in settings.INSTALLED_APPS,
              }
         )
 

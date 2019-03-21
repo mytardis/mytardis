@@ -172,3 +172,9 @@ SFTP_HOST_KEY = (
     b"2+Q+Tlr2aNlAmrHtkT13+wJAJVgZATPI5X3UO0Wdf24f/w9+OY+QxKGl86tTQXzE\n"
     b"4bwvYtUGufMIHiNeWP66i6fYCucXCMYtx6Xgu2hpdZZpFw==\n"
     b"-----END RSA PRIVATE KEY-----\n")
+
+# For testing hsm app:
+RECALL_URI_TEMPLATES = {
+  'tardis.apps.hsm.storage.HsmFileSystemStorage':
+  '/api/v1/hsm_replica/{dfo_id}/recall/'
+}
