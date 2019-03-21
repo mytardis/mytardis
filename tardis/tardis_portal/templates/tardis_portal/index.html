@@ -10,6 +10,7 @@
 {% endblock script %}
 
 {% block content %}
+    {% render_bundle 'tardis_portal' %}
 <div id="content">
   <div class="page-header">
     <h1>{{site_title|default:'MyTardis'}} Data Store</h1>
@@ -135,5 +136,5 @@
   </div> {% comment %}class="row"{% endcomment %}
 </div> {% comment %}id="content"{% endcomment %}
 <input type="hidden" id="exps-expand-accordion" value="{{ exps_expand_accordion }}">
-{% render_bundle 'tardis_portal' %}
+    {% render_bundle 'main' %}
 {% endblock content %}

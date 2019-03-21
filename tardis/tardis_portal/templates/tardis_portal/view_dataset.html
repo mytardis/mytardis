@@ -6,7 +6,7 @@
 {% load basiccomparisonfilters %}
 
 {% block script %}
-{% render_bundle 'tardis_portal_view_dataset' %}
+
 <style type="text/css">
 .dropzone.in {
     background: blue;
@@ -26,7 +26,7 @@
 {% endblock %}
 
 {% block content %}
-
+{% render_bundle 'tardis_portal_view_dataset' %}
 <div id="upload_button_code" style="display: none"></div>
 
 <input type="hidden" id="dataset-id" value="{{ dataset.id }}">
@@ -348,7 +348,7 @@ margin-top: 20px;
       </div>
   </div>
 </div>
-
+    {% render_bundle 'main' %}
 {% block finalscript %}
 <input type="hidden" id="upload-method" value="{{ upload_method }}">
 {% if upload_method %}
@@ -356,4 +356,5 @@ margin-top: 20px;
 {% endif %}
 <input type="hidden" id="csrf-token" value="{{ csrf_token }}">
 {% endblock finalscript %}
+
 {% endblock %}
