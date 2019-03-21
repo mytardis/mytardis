@@ -27,7 +27,15 @@ module.exports = {
         filename: '[name].js'
     },
     optimization: {
-        //minimizer: [new TerserPlugin()],
+        minimizer: [
+            new TerserPlugin({
+                chunkFilter: (chunk) => {
+                    if (chunk.name === "tardis_portal_facility_view") {
+                        return false;
+                    }
+                    return true;
+                }
+                })],
         splitChunks: {
             chunks: 'async',
             minSize: 30000,
