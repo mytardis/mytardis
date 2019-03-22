@@ -28,16 +28,13 @@ class Instrument(models.Model):
     def __str__(self):
         return self.name
 
-    def getParameterSets(self, schemaType=None):
+    def getParameterSets(self):
         '''Return the instrument parametersets associated with this
         instrument.
-
         '''
         from .parameters import Schema
-        if schemaType == Schema.INSTRUMENT or schemaType is None:
-            return self.instrumentparameterset_set.filter(
-                schema__type=Schema.INSTRUMENT)
-        raise Schema.UnsupportedType
+        return self.instrumentparameterset_set.filter(
+            schema__type=Schema.INSTRUMENT)
 
     def _has_change_perm(self, user_obj):
         """
