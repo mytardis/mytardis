@@ -1,3 +1,6 @@
+/* eslint-env node */
+/* eslint camelcase: [2, {properties: "never"}] */
+
 const path = require("path");
 const webpack = require("webpack");
 const BundleTracker = require("webpack-bundle-tracker");
@@ -35,7 +38,7 @@ module.exports = {
                     }
                     return true;
                 }
-                })],
+            })],
         splitChunks: {
             chunks: "async",
             minSize: 30000,
@@ -139,8 +142,9 @@ module.exports = {
             "main": __dirname + "/assets/js/tardis_portal/main",
             "async": __dirname + "/assets/js/lib/async.min",
             "backbonemodels": __dirname + "/assets/js/tardis_portal/backbone-models",
-            "experimentabs" : __dirname + "/assets/js/tardis_portal/view_experiment/experiment-tabs",
-            "experimentshare" : __dirname + "/assets/js/tardis_portal/view_experiment/share",
+            "experimentabs": __dirname + "/assets/js/tardis_portal/view_experiment/experiment-tabs",
+            "experimentshare": __dirname + "/assets/js/tardis_portal/view_experiment/share",
         },
     }
-}
+};
+

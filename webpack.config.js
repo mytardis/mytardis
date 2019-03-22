@@ -1,3 +1,6 @@
+/* eslint-env node */
+/* eslint camelcase: [2, {properties: "never"}] */
+
 const path = require("path");
 const webpack = require("webpack");
 const BundleTracker = require("webpack-bundle-tracker");
@@ -34,7 +37,7 @@ module.exports = {
                     }
                     return true;
                 }
-                })],
+            })],
         splitChunks: {
             chunks: "async",
             minSize: 30000,
