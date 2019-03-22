@@ -48,4 +48,6 @@ def facilities_managed_by(user):
     '''
     Returns a list of facilities managed by a user
     '''
+    if not user.is_authenticated:
+        return Facility.objects.none()
     return Facility.objects.filter(manager_group__user=user)
