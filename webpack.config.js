@@ -1,5 +1,5 @@
 /* eslint-env node */
-/* eslint camelcase: [2, {properties: "never"}] */
+/* eslint camelcase: 0 */
 
 const path = require("path");
 const webpack = require("webpack");
