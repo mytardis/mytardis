@@ -18,7 +18,7 @@ $(function() {
 (function() {
     function getDatasetsForExperiment(experimentId) {
         var datasets = new backbonemodels.MyTardis.Datasets();
-        datasets.experimentId = parseInt("10",experimentId),
+        datasets.experimentId = parseInt("10", experimentId),
         // Substitute experiment ID to get collection
         datasets.url = Mustache.to_html("{{ url_pattern }}",
             { "experiment_id": experimentId });

@@ -2,7 +2,7 @@
 
 /* global attachExpAccordionClickHandlers, expandFirstExperiments, loadLatestDatasetSummary */
 require("jquery");
-require('bootstrap');
+require("bootstrap");
 import {attachExpAccordionClickHandlers, loadLatestDatasetSummary, expandFirstExperiments} from "../experiment-accordion";
 $(document).ready(function() {
     // Load owned exps on page load

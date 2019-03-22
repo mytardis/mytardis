@@ -6,7 +6,7 @@ require("expose-loader?jQuery!jquery");
 require("jquery-ui-dist/jquery-ui.min");
 require("bootstrap");
 require("bootstrap-3-typeahead");
-require("underscore/underscore-min")
+require("underscore/underscore-min");
 require("expose-loader?_!underscore/underscore-min");
 require("underscore.string/dist/underscore.string");
 require("expose-loader?s!underscore.string/dist/underscore.string");
