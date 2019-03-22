@@ -122,3 +122,8 @@ class InstrumentResourceTest(MyTardisResourceTestCase):
         self.testinstrument = Instrument.objects.get(id=self.testinstrument.id)
         self.assertEqual(self.testinstrument.name,
                          "Renamed Test Instrument")
+
+    def test_unauthorized_instrument_access_attempt(self):
+        response = self.api_client.get(
+            '/api/v1/instrument/%d/' % self.testinstrument.id)
+        self.assertHttpUnauthorized(response)

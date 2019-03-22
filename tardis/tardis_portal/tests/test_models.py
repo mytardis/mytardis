@@ -56,7 +56,7 @@ from ..models import Dataset, DataFile, DataFileObject
 from ..models import (
     Schema, ParameterName, DatafileParameterSet, DatafileParameter,
     DatasetParameterSet, DatasetParameter, ExperimentParameterSet,
-    ExperimentParameter)
+    ExperimentParameter, InstrumentParameterSet)
 
 
 class ModelTestCase(TestCase):
@@ -236,6 +236,8 @@ class ModelTestCase(TestCase):
                 os.path.join(settings.DEFAULT_STORAGE_BASE_DIR, dfo.uri))
 
             # get_as_temporary_file() doesn't work for a StringIO file object:
+            if not os.path.exists(os.path.dirname(dfo.get_full_path())):
+                os.makedirs(os.path.dirname(dfo.get_full_path()))
             with open (dfo.get_full_path(), 'w') as file_obj:
                 file_obj.write(u'bla')
             # Test ability to check out a temporary copy of file:
@@ -478,3 +480,31 @@ class ModelTestCase(TestCase):
             api_key = None
 
         self.assertIsNotNone(api_key)
+
+    def test_instrument(self):
+        group = Group(name="Test Manager Group")
+        group.save()
+        facility = Facility(name="Test Facility",
+                            manager_group=group)
+        facility.save()
+        self.assertEqual(str(facility), "Test Facility")
+        instrument = Instrument(name="Test Instrument",
+                                facility=facility)
+        instrument.save()
+        self.assertEqual(str(instrument), "Test Instrument")
+
+        self.assertEqual(len(instrument.getParameterSets()), 0)
+
+        schema = Schema(
+            namespace='test instrument schema namespace',
+            type=Schema.INSTRUMENT)
+        schema.save()
+
+        parname = ParameterName(
+            schema=schema, name='name', full_name='full_name')
+        parname.save()
+
+        pset = InstrumentParameterSet.objects.create(
+            instrument=instrument, schema=schema)
+        pset.save()
+        self.assertEqual(len(instrument.getParameterSets()), 1)
