@@ -214,15 +214,12 @@ class DataFile(models.Model):
     def get_size(self):
         return self.size
 
-    def getParameterSets(self, schemaType=None):
+    def getParameterSets(self):
         """Return datafile parametersets associated with this datafile.
-
         """
         from .parameters import Schema
-        if schemaType == Schema.DATAFILE or schemaType is None:
-            return self.datafileparameterset_set.filter(
-                schema__type=Schema.DATAFILE)
-        raise Schema.UnsupportedType
+        return self.datafileparameterset_set.filter(
+            schema__type=Schema.DATAFILE)
 
     def __str__(self):
         if self.sha512sum is not None and len(self.sha512sum) > 31:
