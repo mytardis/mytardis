@@ -7,6 +7,7 @@ Implemented with Tastypie.
 .. moduleauthor:: James Wettenhall <james.wettenhall@monash.edu>
 '''
 import json
+import re
 from wsgiref.util import FileWrapper
 
 from django.conf import settings
@@ -224,6 +225,8 @@ class ACLAuthorization(Authorization):
     def read_detail(self, object_list, bundle):  # noqa # too complex
         if bundle.request.user.is_authenticated and \
            bundle.request.user.is_superuser:
+            return True
+        if re.match("^/api/v1/[a-z]+/schema/$", bundle.request.path):
             return True
         if isinstance(bundle.obj, Experiment):
             return has_experiment_access(bundle.request, bundle.obj.id)
@@ -506,6 +509,9 @@ class SchemaResource(MyTardisModelResource):
             'id': ('exact', ),
             'namespace': ('exact', ),
         }
+        ordering = [
+            'id'
+        ]
 
 
 class ParameterNameResource(MyTardisModelResource):
@@ -601,6 +607,7 @@ class ExperimentResource(MyTardisModelResource):
             'title': ('exact',),
         }
         ordering = [
+            'id',
             'title',
             'created_time',
             'update_time'
@@ -695,6 +702,9 @@ class StorageBoxResource(MyTardisModelResource):
 
     class Meta(MyTardisModelResource.Meta):
         queryset = StorageBox.objects.all()
+        ordering = [
+            'id'
+        ]
 
 
 class StorageBoxOptionResource(MyTardisModelResource):
@@ -707,6 +717,9 @@ class StorageBoxOptionResource(MyTardisModelResource):
 
     class Meta(MyTardisModelResource.Meta):
         queryset = StorageBoxOption.objects.all()
+        ordering = [
+            'id'
+        ]
 
 
 class StorageBoxAttributeResource(MyTardisModelResource):
@@ -718,6 +731,9 @@ class StorageBoxAttributeResource(MyTardisModelResource):
 
     class Meta(MyTardisModelResource.Meta):
         queryset = StorageBoxAttribute.objects.all()
+        ordering = [
+            'id'
+        ]
 
 
 class FacilityResource(MyTardisModelResource):
@@ -731,6 +747,10 @@ class FacilityResource(MyTardisModelResource):
             'manager_group': ALL_WITH_RELATIONS,
             'name': ('exact', ),
         }
+        ordering = [
+            'id',
+            'name'
+        ]
         always_return_data = True
 
 
@@ -745,6 +765,10 @@ class InstrumentResource(MyTardisModelResource):
             'facility': ALL_WITH_RELATIONS,
             'name': ('exact', ),
         }
+        ordering = [
+            'id',
+            'name'
+        ]
         always_return_data = True
 
 
@@ -772,6 +796,7 @@ class DatasetResource(MyTardisModelResource):
             'instrument': ALL_WITH_RELATIONS,
         }
         ordering = [
+            'id',
             'description'
         ]
         always_return_data = True
@@ -825,6 +850,7 @@ class DataFileResource(MyTardisModelResource):
             'filename': ('exact', ),
         }
         ordering = [
+            'id',
             'filename',
             'modification_time'
         ]
@@ -1025,6 +1051,9 @@ class ReplicaResource(MyTardisModelResource):
             'verified': ('exact',),
             'url': ('exact', 'startswith'),
         }
+        ordering = [
+            'id'
+        ]
 
     def hydrate(self, bundle):
         if 'url' in bundle.data:
@@ -1072,6 +1101,9 @@ class ObjectACLResource(MyTardisModelResource):
             'pluginId': ('exact', ),
             'entityId': ('exact', ),
         }
+        ordering = [
+            'id'
+        ]
 
     def hydrate(self, bundle):
         # Fill in the content type.
