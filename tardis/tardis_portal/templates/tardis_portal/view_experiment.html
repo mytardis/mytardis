@@ -10,120 +10,108 @@
 
 {% block script %}
 
-    {% mustachejs "tardis_portal/dataset_filter" %}
-    {% mustachejs "tardis_portal/dataset_tiles" %}
-    {% mustachejs "tardis_portal/dataset_tile" %}
-    {% mustachejs "tardis_portal/badges/experiment_count" %}
-    {% mustachejs "tardis_portal/badges/datafile_count" %}
-    {% mustachejs "tardis_portal/badges/size" %}
+{% mustachejs "tardis_portal/dataset_filter" %}
+{% mustachejs "tardis_portal/dataset_tiles" %}
+{% mustachejs "tardis_portal/dataset_tile" %}
+{% mustachejs "tardis_portal/badges/experiment_count" %}
+{% mustachejs "tardis_portal/badges/datafile_count" %}
+{% mustachejs "tardis_portal/badges/size" %}
 
-    <input type="hidden" id="experiment-id" value="{{ experiment.id }}">
-    <input type="hidden" id="csrf-token" value="{{ csrf_token }}">
-    {% render_bundle 'tardis_portal_view_experiment_init' %}
+<input type="hidden" id="experiment-id" value="{{ experiment.id }}">
+<input type="hidden" id="csrf-token" value="{{ csrf_token }}">
+{% render_bundle 'tardis_portal_view_experiment_init' %}
 {% endblock %}
 
 {% block content %}
     {% render_bundle 'tardis_portal' %}
-    <div class="modal" id="modal-metadata" role="dialog" tabindex="-1">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <a class="close" data-dismiss="modal">&times;</a>
-                    <h1 class="title">Add Parameters</h1>
-                </div>
+<div class="modal" id="modal-metadata" role="dialog" tabindex="-1">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <a class="close" data-dismiss="modal">&times;</a>
+        <h1 class="title">Add Parameters</h1>
+      </div>
 
-                <div class="loading-placeholder" style="display: none">
-                    <p>Please wait... <img src="{% static 'images/ajax-loader.gif'%}" alt="loading" /></p>
-                </div>
+      <div class="loading-placeholder" style="display: none">
+        <p>Please wait... <img src="{% static 'images/ajax-loader.gif'%}" alt="loading" /></p>
+      </div>
 
-                <div class="modal-body"></div>
+      <div class="modal-body"></div>
 
-            </div>  <!-- class="modal-content" -->
-        </div>  <!-- class="modal-dialog" -->
-    </div>
+    </div>  <!-- class="modal-content" -->
+  </div>  <!-- class="modal-dialog" -->
+</div>
 
-    <div class="page-header">
-        <h4>Experiment</h4>
-        {% if not experiment.public %}
-            <div class="pull-right">
-                {% if push_to_enabled and is_authenticated %}
-                    <a class="btn btn-xs btn-primary" title="Push to..."
-                       onclick="window.open('{{ push_to_url }}', 'push-to', 'width=800, height=600'); return false;"
-                       href="{{ push_to_url }}" target="_blank">
-                        <i class="fa fa-upload"></i>
-                        Push to...
-                    </a>
-                {% endif %}
-                {% if has_write_permissions %}
-                    <a class="btn btn-xs btn-warning" title="Edit Experiment"
-                       href="{{ experiment.get_edit_url }}">
-                        <i class="fa fa-pencil"></i>
-                        Edit Experiment
-                    </a>
-                {% endif %}
-            </div>
-        {% endif %}
-        <h1>
-            <span property="dc:title">{{ experiment.title }}</span>
-            <br/>
-            <small>
-                {% for author in experiment.experimentauthor_set.all %}{% capture as creator_span %}<span
-                        property="dc:creator"
-                        style="white-space: nowrap;">{{ author.author }}</span>{% endcapture %}{% if not forloop.first %}, {% endif %}{% if author.email %}<a
-                        href="mailto:{{ author.email }}">{{ creator_span }}</a>{% endif %}{% if author.url %}<a
-                        href="{{ author.url }}">{{ creator_span }}</a>{% endif %}{% if not author.email and not author.url %}{{ creator_span }}{% endif %}{% endfor %}
-            </small>
-        </h1>
-        <p style="text-align: right">
-            {{ experiment|experiment_datasets_badge}}&nbsp;
-            {{ experiment|experiment_datafiles_badge }}&nbsp;
-            {{ experiment|experiment_size_badge }}&nbsp;
-            {{ experiment|experiment_last_updated_badge }}&nbsp;
-            <span id="experiment-public-access-badge">{{ experiment|experiment_public_access_badge }}</span>&nbsp;
-        </p>
-    </div>
-    <script type="text/javascript">
-        var otherDatasetTiles;
-        $("form#other-experiment-selection").submit(function(evt) {
-            evt.preventDefault();
-            var experimentId = $(this).find('[name="experiment_id"]').val();
-            var otherDatasetTiles = getDatasetsForExperiment(experimentId);
-        });
-        $('form#other-experiment-selection select').change(function(evt) {
-            $(this).parents('form').submit();
-        });
-        // Load initial data
-        $('form#other-experiment-selection').submit();
-    </script>
-    <div class="row" >
-        <div class="col-md-5">
-            <div align="center" style="margin-bottom: -20px">
-                <div id="abstractHolder" style="display: none">{{ experiment.description|bleach|linebreaksbr }}</div>
-                <a id="abstract-toggle" class="btn btn-default btn-xs" title="Show Description">
-                    Toggle Full Description
-                </a>
-            </div>
-            <div style="padding-top:10px;">
-                <p class="abstract well info-box" property="dc:abstract">
+<div class="page-header">
+  <h4>Experiment</h4>
+  {% if not experiment.public %}
+  <div class="pull-right">
+    {% if push_to_enabled and is_authenticated %}
+    <a class="btn btn-xs btn-primary" title="Push to..."
+       onclick="window.open('{{ push_to_url }}', 'push-to', 'width=800, height=600'); return false;"
+       href="{{ push_to_url }}" target="_blank">
+      <i class="fa fa-upload"></i>
+      Push to...
+    </a>
+    {% endif %}
+    {% if has_write_permissions %}
+    <a class="btn btn-xs btn-warning" title="Edit Experiment"
+       href="{{ experiment.get_edit_url }}">
+      <i class="fa fa-pencil"></i>
+      Edit Experiment
+    </a>
+    {% endif %}
+  </div>
+  {% endif %}
+  <h1>
+    <span property="dc:title">{{ experiment.title }}</span>
+    <br/>
+    <small>
+        {% for author in experiment.experimentauthor_set.all %}{% capture as creator_span %}<span
+                property="dc:creator"
+                style="white-space: nowrap;">{{ author.author }}</span>{% endcapture %}{% if not forloop.first %}, {% endif %}{% if author.email %}<a
+                href="mailto:{{ author.email }}">{{ creator_span }}</a>{% endif %}{% if author.url %}<a
+                href="{{ author.url }}">{{ creator_span }}</a>{% endif %}{% if not author.email and not author.url %}{{ creator_span }}{% endif %}{% endfor %}
+    </small>
+  </h1>
+  <p style="text-align: right">
+    {{ experiment|experiment_datasets_badge}}&nbsp;
+    {{ experiment|experiment_datafiles_badge }}&nbsp;
+    {{ experiment|experiment_size_badge }}&nbsp;
+    {{ experiment|experiment_last_updated_badge }}&nbsp;
+    <span id="experiment-public-access-badge">{{ experiment|experiment_public_access_badge }}</span>&nbsp;
+  </p>
+</div>
+
+<div class="row" >
+  <div class="col-md-5">
+  <div align="center" style="margin-bottom: -20px">
+  <div id="abstractHolder" style="display: none">{{ experiment.description|bleach|linebreaksbr }}</div>
+  <a id="abstract-toggle" class="btn btn-default btn-xs" title="Show Description">
+     Toggle Full Description
+  </a>
+  </div>
+  <div style="padding-top:10px;">
+  <p class="abstract well info-box" property="dc:abstract">
       <span id="abstractText">
       </span>
-                </p>
-            </div>
-            <!-- Tab buttons -->
-            <ul id="experiment-tabs" class="nav nav-pills">
-                {% for appurl, appname in apps %}
-                    <li><a data-toggle="tab" title="{{appname}}" href="{{ appurl }}">{{ appname }}</a></li>
-                {% endfor %}
-            </ul>
-            <div class="tab-content">
-                <div id="experiment-tab-description">
-                    {% include "tardis_portal/ajax/experiment_description.html" %}
-                </div>
-            </div>
-        </div>
-        <div id="datasets-pane" class="col-md-7">
-            {% include "tardis_portal/ajax/experiment_datasets.html" %}
-        </div>
+  </p>
+  </div>
+    <!-- Tab buttons -->
+    <ul id="experiment-tabs" class="nav nav-pills">
+      {% for appurl, appname in apps %}
+      <li><a data-toggle="tab" title="{{appname}}" href="{{ appurl }}">{{ appname }}</a></li>
+      {% endfor %}
+    </ul>
+    <div class="tab-content">
+      <div id="experiment-tab-description">
+        {% include "tardis_portal/ajax/experiment_description.html" %}
+      </div>
     </div>
+  </div>
+  <div id="datasets-pane" class="col-md-7">
+    {% include "tardis_portal/ajax/experiment_datasets.html" %}
+  </div>
+</div>
     {% render_bundle 'tardis_portal_view_experiment' %}
 {% endblock %}
