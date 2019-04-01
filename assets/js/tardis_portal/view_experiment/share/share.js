@@ -10,26 +10,26 @@ var loadingHTML = "<img src=\"/static/images/ajax-loader.gif\"/><br />";
 
 
 export function addShareEventHandlers() {
-    $(".public_access_link").unbind("click");
-    $(".public_access_link").bind("click", function(evt) {
-        var modal = $("#modal-public-access");
+$(".public_access_link").unbind("click");
+$(".public_access_link").bind("click", function(evt) {
+    var modal = $("#modal-public-access");
 
-        modal.find(".modal-body").html("");
-        modal.find(".loading-placeholder").show();
-        modal.modal("show");
+    modal.find(".modal-body").html("");
+    modal.find(".loading-placeholder").show();
+    modal.modal("show");
 
-        modal.find(".modal-body")
-            .load("/ajax/experiment/" + $("#experiment-id").val() + "/rights", function(response, status, xhr) {
-                modal.find(".loading-placeholder").hide();
+    modal.find(".modal-body")
+        .load("/ajax/experiment/" + $("#experiment-id").val() + "/rights", function(response, status, xhr) {
+            modal.find(".loading-placeholder").hide();
 
-                if (status === "error") {
-                    $(this).html(response);
-                }
+            if (status === "error") {
+                $(this).html(response);
+            }
 
-                $("#legal-section").hide();
-            });
+            $("#legal-section").hide();
+        });
 
-    });
+});
 }
 
 $("#modal-public-access").bind("hidden.bs.modal", function() {
@@ -73,7 +73,8 @@ $(".share_link").bind("click", function(evt) {
                 $(this).siblings("#id_autocomp_user").val("");
                 $(this).siblings("#id_authMethod").attr("disabled", "");
 
-                if (e.keyCode === 13) {
+                if (e.keyCode === 13)
+                {
                     $("#user.form_submit").click();
                 }
             });
@@ -82,17 +83,17 @@ $(".share_link").bind("click", function(evt) {
                 "dataType": "json",
                 "url": "/ajax/user_list/",
                 "success": function(users) {
-                    if ($("select#id_authMethod option").length === 1) {
+                    if($("select#id_authMethod option").length === 1) {
                         $("#id_authMethod_label").hide();
                         $("#id_authMethod").hide();
                     }
                     $("#id_entered_user").autocomplete({
-                        "source": _.bind(function(query, callback) {
+                        "source": _.bind( function(query, callback) {
                             var authMethod = $("#id_authMethod").val();
                             callback(
                                 userAutocompleteHandler(
                                     query.term, this.users, authMethod));
-                        }, {"users": users})
+                        }, { "users": users })
                     });
                 }
             });
@@ -124,12 +125,17 @@ $(".share_link").bind("click", function(evt) {
                 var canWrite = false;
                 var isOwner = false;
                 var canDelete = false;
-                if (permissions === "read") {
+                if (permissions === "read")
+                {
                     canRead = true;
-                } else if (permissions === "edit") {
+                }
+                else if (permissions === "edit")
+                {
                     canRead = true;
                     canWrite = true;
-                } else if (permissions === "owner") {
+                }
+                else if (permissions === "owner")
+                {
                     canRead = true;
                     canWrite = true;
                     isOwner = true;
@@ -158,21 +164,16 @@ $(".share_link").bind("click", function(evt) {
                                 "url": href,
                                 "success": function(data2) {
                                     var val = data2;
-                                    if (val === "OK") {
-                                        removeUser.fadeOut(300, function() {
-                                            removeUser.parents(".access_list_user").remove();
-                                        });
-                                    } else {
-                                        alert(val);
+                                    if(val === "OK") {
+                                        removeUser.fadeOut(300, function() { removeUser.parents(".access_list_user").remove(); });
                                     }
+                                    else { alert(val); }
                                 }
                             }); // end ajax
                             return false;
                         }); // end remove user
                     },
-                    error: function(data) {
-                        alert("Error adding user");
-                    }
+                    error: function(data) { alert("Error adding user"); }
                 });
                 return false;
             });
@@ -187,13 +188,10 @@ $(".share_link").bind("click", function(evt) {
                     "url": href,
                     "success": function(data) {
                         var val = data;
-                        if (val === "OK") {
-                            removeUser.fadeOut(300, function() {
-                                removeUser.parents(".access_list_user").remove();
-                            });
-                        } else {
-                            alert(val);
+                        if(val === "OK") {
+                            removeUser.fadeOut(300, function() { removeUser.parents(".access_list_user").remove(); });
                         }
+                        else { alert(val); }
                     }
                 }); // end ajax
                 return false;
@@ -234,15 +232,14 @@ $(".share_link_group").bind("click", function(evt) {
                     "async": false,
                     "global": false,
                     "url": "/ajax/group_list/",
-                    "success": function(data) {
-                        val = data;
-                    }
+                    "success": function(data) { val = data; }
                 });
                 return val;
             }());
 
             $("#id_addgroup").keypress(function(e) {
-                if (e.keyCode === 13) {
+                if (e.keyCode === 13)
+                {
                     $("#group.form_submit").click();
                 }
             });
@@ -278,12 +275,12 @@ $(".share_link_group").bind("click", function(evt) {
                         "url": "/ajax/user_list/",
                         "success": function(users2) {
                             $("#id_adduser").autocomplete({
-                                "source": _.bind(function(query, callback) {
+                                "source": _.bind( function(query, callback) {
                                     var authMethod = $("#id_authMethod").val();
                                     callback(
                                         userAutocompleteHandler(
                                             query.term, this.users, authMethod));
-                                }, {"users": users2})
+                                }, { "users": users2 })
                             });
                         }
                     });
@@ -313,12 +310,17 @@ $(".share_link_group").bind("click", function(evt) {
                 var canWrite = false;
                 var isOwner = false;
                 var canDelete = false;
-                if (permissions === "read") {
+                if(permissions === "read")
+                {
                     canRead = true;
-                } else if (permissions === "edit") {
+                }
+                else if(permissions === "edit")
+                {
                     canRead = true;
                     canWrite = true;
-                } else if (permissions === "owner") {
+                }
+                else if(permissions === "owner")
+                {
                     canRead = true;
                     canWrite = true;
                     isOwner = true;
@@ -361,12 +363,12 @@ $(".share_link_group").bind("click", function(evt) {
                                     "url": "/ajax/user_list/",
                                     "success": function(users2) {
                                         $("#id_adduser").autocomplete({
-                                            "source": _.bind(function(query, callback) {
+                                            "source": _.bind( function(query, callback) {
                                                 var authMethod = $("#id_authMethod").val();
                                                 callback(
                                                     userAutocompleteHandler(
                                                         query.term, this.users, authMethod));
-                                            }, {"users": users2})
+                                            }, { "users": users2 })
                                         });
                                     }
                                 });
@@ -385,21 +387,18 @@ $(".share_link_group").bind("click", function(evt) {
                                 "url": href,
                                 "success": function(data2) {
                                     var val = data2;
-                                    if (val === "OK") {
+                                    if(val === "OK") {
                                         removeGroup.fadeOut(300, function() {
                                             removeGroup.parents(".access_list_group").remove();
                                         });
-                                    } else {
-                                        alert(val);
                                     }
+                                    else { alert(val); }
                                 }
                             }); // end ajax
                             return false;
                         }); // end remove group
                     },
-                    error: function(data) {
-                        alert("Error adding group!");
-                    }
+                    error: function(data) { alert("Error adding group!"); }
                 });
                 return false;
             });
@@ -417,13 +416,12 @@ $(".share_link_group").bind("click", function(evt) {
                     "url": href,
                     "success": function(data) {
                         var val = data;
-                        if (val === "OK") {
+                        if(val === "OK") {
                             removeGroup.fadeOut(300, function() {
                                 removeGroup.parents(".access_list_group").remove();
                             });
-                        } else {
-                            alert("val");
                         }
+                        else { alert("val"); }
                     }
                 }); // end ajax
 
@@ -456,7 +454,8 @@ $(document).ready(function() {
     $(document).on("click", ".token_delete", function(evt) {
         var delRow = $(this).parents("tr");
         evt.preventDefault();
-        $.post(this.href, {csrfmiddlewaretoken: $("#csrf-token").val()}, function() {
+        $.post(this.href, { csrfmiddlewaretoken: $("#csrf-token").val()}, function()
+        {
             delRow.remove();
         });
     });
@@ -466,7 +465,8 @@ $(document).ready(function() {
         evt.preventDefault();
         var $targetToken = $("#experiment_token_list"); // eslint-disable-line no-shadow
         $targetToken.html(loadingHTML + "</br>");
-        $.post(this.href, {csrfmiddlewaretoken: $("#csrf-token").val()}, function(data) {
+        $.post(this.href, {csrfmiddlewaretoken: $("#csrf-token").val()}, function(data)
+        {
             // eslint-disable-next-line no-shadow
             var href = "/experiment/control_panel/" + $("#experiment-id").val() + "/access_list/tokens/";
             $targetToken.load(href);
