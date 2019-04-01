@@ -10,26 +10,26 @@ var loadingHTML = "<img src=\"/static/images/ajax-loader.gif\"/><br />";
 
 
 export function addShareEventHandlers() {
-$(".public_access_link").unbind("click");
-$(".public_access_link").bind("click", function(evt) {
-    var modal = $("#modal-public-access");
+    $(".public_access_link").unbind("click");
+    $(".public_access_link").bind("click", function(evt) {
+        var modal = $("#modal-public-access");
 
-    modal.find(".modal-body").html("");
-    modal.find(".loading-placeholder").show();
-    modal.modal("show");
+        modal.find(".modal-body").html("");
+        modal.find(".loading-placeholder").show();
+        modal.modal("show");
 
-    modal.find(".modal-body")
-        .load("/ajax/experiment/" + $("#experiment-id").val() + "/rights", function(response, status, xhr) {
-            modal.find(".loading-placeholder").hide();
+        modal.find(".modal-body")
+            .load("/ajax/experiment/" + $("#experiment-id").val() + "/rights", function(response, status, xhr) {
+                modal.find(".loading-placeholder").hide();
 
-            if (status === "error") {
-                $(this).html(response);
-            }
+                if (status === "error") {
+                    $(this).html(response);
+                }
 
-            $("#legal-section").hide();
-        });
+                $("#legal-section").hide();
+            });
 
-});
+    });
 }
 
 $("#modal-public-access").bind("hidden.bs.modal", function() {
