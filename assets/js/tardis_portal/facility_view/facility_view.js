@@ -1,31 +1,31 @@
 /* eslint no-unused-vars: [2, {"vars": "local", "args": "none"}] */
 // Capitalises the first letter (adapted from http://codepen.io/WinterJoey/pen/sfFaK)
 angular
-    .module("MyTardis")
-    .filter("capitalise", function() {
+    .module('MyTardis')
+    .filter('capitalise', function() {
         return function(input, all) {
             return (input) ? input.replace(/([^\W_]+[^\s-]*) */g, function(txt) {
                 return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
-            }) : "";
+            }) : '';
         };
     });
 
 // Filter to produce nice file size formatting (adapted from https://gist.github.com/yrezgui/5653591)
 angular
-    .module("MyTardis")
-    .filter("filesize", function() {
+    .module('MyTardis')
+    .filter('filesize', function() {
         var units = [
-            "bytes",
-            "KB",
-            "MB",
-            "GB",
-            "TB",
-            "PB"
+            'bytes',
+            'KB',
+            'MB',
+            'GB',
+            'TB',
+            'PB'
         ];
 
         return function(bytes, precision) {
             if (isNaN(parseFloat(bytes)) || !isFinite(bytes)) {
-                return "?";
+                return '?';
             }
 
             var unit = 0;
@@ -35,29 +35,30 @@ angular
                 unit++;
             }
 
-            return bytes.toFixed(+precision) + " " + units[unit];
+            return bytes.toFixed(+precision) + ' ' + units[unit];
         };
     });
 
+
 angular
-    .module("MyTardis")
-    .controller("FacilityController", function($resource, $interval, $log) {
+    .module('MyTardis')
+    .controller('FacilityController', function($resource, $interval, $log) {
 
         var vm = this; // view model
 
-        var countRes = $resource("/facility/fetch_data/:facilityId/count/");
-        var datasetDetailRes = $resource("/facility/fetch_datafiles/:dataset_id/",
+        var countRes = $resource('/facility/fetch_data/:facilityId/count/');
+        var datasetDetailRes = $resource('/facility/fetch_datafiles/:dataset_id/',
             {}, {
-                "get": {method: "GET", isArray: true}
+                'get': {method: 'GET', isArray: true}
             });
-        var facilityListRes = $resource("/facility/fetch_facilities_list/", {}, {
-            "get": {method: "GET", isArray: true}
+        var facilityListRes = $resource('/facility/fetch_facilities_list/', {}, {
+            'get': {method: 'GET', isArray: true}
         });
-        var facilityDataRes = $resource("/facility/fetch_data/:facilityId/:startIndex/:endIndex/", {
+        var facilityDataRes = $resource('/facility/fetch_data/:facilityId/:startIndex/:endIndex/', {
             startIndex: 0,
             endIndex: 50
         }, {
-            "get": {method: "GET", isArray: true}
+            'get': {method: 'GET', isArray: true}
         });
 
         // Whether to show the "no data" alert
@@ -102,7 +103,7 @@ angular
                 delete vm.visibleFileList;
             } else {
                 vm.visibleFileList = dataset.id;
-                datasetDetailRes.get({"dataset_id": dataset.id}).$promise.then(function(data) {
+                datasetDetailRes.get({'dataset_id': dataset.id}).$promise.then(function(data) {
                     dataset.datafiles = data;
                 });
             }
@@ -167,7 +168,7 @@ angular
             delete vm.visibleFileList;
             vm.loading = true;
 
-            countRes.get({"facilityId": vm.selectedFacility}).$promise.then(function(data) {
+            countRes.get({'facilityId': vm.selectedFacility}).$promise.then(function(data) {
                 $log.debug("Fetched total dataset count");
                 vm.totalDatasets = data.facility_data_count;
                 if (vm.currentFetchLimit > vm.totalDatasets) {
@@ -179,9 +180,9 @@ angular
             });
 
             facilityDataRes.get({
-                "facilityId": vm.selectedFacility,
-                "startIndex": startIndex,
-                "endIndex": endIndex
+                'facilityId': vm.selectedFacility,
+                'startIndex': startIndex,
+                'endIndex': endIndex
             }).$promise.then(function(data) {
                 $log.debug("Fetched datasets between indices " + startIndex + " and " + endIndex);
                 if (append && vm.datasets) {
@@ -212,8 +213,8 @@ angular
             data = data.slice(0);
             // Sort by username, group name
             data.sort(function(a, b) {
-                var aOwnerGroup = a.owner + ", " + a.group;
-                var bOwnerGroup = b.owner + ", " + b.group;
+                var aOwnerGroup = a.owner + ', ' + a.group;
+                var bOwnerGroup = b.owner + ', ' + b.group;
                 if (aOwnerGroup < bOwnerGroup) {
                     return -1;
                 } else if (aOwnerGroup > bOwnerGroup) {
@@ -225,17 +226,19 @@ angular
 
             var result = [];
             if (data[0].group) {
-                data[0].ownerGroup = data[0].owner + ", " + data[0].group;
-            } else {
+                data[0].ownerGroup = data[0].owner + ', ' + data[0].group;
+            }
+            else {
                 data[0].ownerGroup = data[0].owner;
             }
             var tmp = {"ownerGroup": data[0].ownerGroup};
             tmp.datasets = [];
             for (var i = 0; i < data.length; i++) {
-                data[i].ownerGroup = data[i].owner + ", " + data[i].group;
+                data[i].ownerGroup = data[i].owner + ', ' + data[i].group;
                 if (data[i].group) {
-                    data[i].ownerGroup = data[i].owner + ", " + data[i].group;
-                } else {
+                    data[i].ownerGroup = data[i].owner + ', ' + data[i].group;
+                }
+                else {
                     data[i].ownerGroup = data[i].owner;
                 }
                 if (tmp.ownerGroup !== data[i].ownerGroup) {
