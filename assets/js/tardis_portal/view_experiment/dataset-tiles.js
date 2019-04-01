@@ -15,7 +15,27 @@ $(function() {
         return oldSync(method, model, options);
     };
 });
+
 (function() {
+
+    var datasets = new backbonemodels.MyTardis.Datasets();
+
+    datasets.experimentId = $("#experiment-id").val();
+    datasets.url = "/ajax/json/experiment/" + $("#experiment-id").val() + "/dataset/";
+
+    var datasetTiles = new backbonemodels.MyTardis.DatasetTiles({
+        "id": "datasets",
+        "collection": datasets,
+        "el": $("#datasets").get(0)
+    });
+
+    datasets.fetch({});
+
+    return datasetTiles;
+}());
+
+(function() {
+
     function getDatasetsForExperiment(experimentId) {
         var datasets = new backbonemodels.MyTardis.Datasets();
         datasets.experimentId = parseInt("10", experimentId),
@@ -30,16 +50,4 @@ $(function() {
         datasets.fetch({});
         return datasetTiles;
     }
-}());
-(function() {
-    var datasets = new backbonemodels.MyTardis.Datasets();
-    datasets.experimentId = $("#experiment-id").val();
-    datasets.url = "/ajax/json/experiment/" + $("#experiment-id").val() + "/dataset/";
-    var datasetTiles = new backbonemodels.MyTardis.DatasetTiles({
-        "id": "datasets",
-        "collection": datasets,
-        "el": $("#datasets").get(0)
-    });
-    datasets.fetch({});
-    return datasetTiles;
 }());

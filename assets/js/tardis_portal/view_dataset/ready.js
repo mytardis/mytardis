@@ -4,6 +4,7 @@
           no-unused-vars: [2, {"vars": "local", "args": "none"}] */
 
 /* global prevFileSelect */
+
 require("bootstrap");
 require("jquery");
 $(document).ready(function() {

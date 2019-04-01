@@ -1,6 +1,7 @@
 /* tardis/tardis_portal/static/js/jquery/tardis_portal/my_data.js */
 
 /* global attachExpAccordionClickHandlers, expandFirstExperiments, loadLatestDatasetSummary */
+
 require("jquery");
 require("bootstrap");
 import {attachExpAccordionClickHandlers, loadLatestDatasetSummary, expandFirstExperiments} from "../experiment-accordion";
