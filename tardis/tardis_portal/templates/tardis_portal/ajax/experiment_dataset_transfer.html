@@ -1,34 +1,30 @@
 {% load render_bundle from webpack_loader %}
 {% render_bundle 'tardis_portal' %}
 {% if experiments %}
-    <form id="other-experiment-selection" class="form-horizontal">{% csrf_token %}
-        <fieldset>
-            <div class="form-group">
-                <label class="col-md-2 control-label" for="input01">Experiment</label>
-                <div class="col-md-10">
-                    <select class="form-control" name="experiment_id">
-                        {% for experiment in experiments %}
-                            <option value="{{experiment.id}}">{{experiment.title}}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-            </div>
-        </fieldset>
-    </form>
+<form id="other-experiment-selection" class="form-horizontal">{% csrf_token %}
+  <fieldset>
+    <div class="form-group">
+      <label class="col-md-2 control-label" for="input01">Experiment</label>
+      <div class="col-md-10">
+        <select class="form-control" name="experiment_id">
+          {% for experiment in experiments %}
+          <option value="{{experiment.id}}">{{experiment.title}}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+  </fieldset>
+</form>
 
-    <p class="help-text">
-        <strong>Instructons:</strong> Using the above list, select an experiment to copy from,
-        then drag datasets to the right to associate them with the current experiment.
-    </p>
+<p class="help-text">
+  <strong>Instructons:</strong> Using the above list, select an experiment to copy from,
+  then drag datasets to the right to associate them with the current experiment.
+</p>
 
-    <div id="other-experiment-datasets"></div>
-    <script type="text/javascript">
-        var otherDatasetTiles;
-
-    </script>
+<div id="other-experiment-datasets"></div>
 
 {% else %}
-    <div class="alert">
-        <p>You do not currently own any other experiments.</p>
-    </div>
+<div class="alert">
+  <p>You do not currently own any other experiments.</p>
+</div>
 {% endif %}
