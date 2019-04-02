@@ -319,7 +319,8 @@
     {% with request|check_if_user_not_approved as not_approved_user %}
     {% if not_approved_user %}
         <script>
-            showMsg.showAlert("Welcome to {{ site_title|default:'MyTardis' }}! Your account has been created and " +
+            showMsg.info(
+                "Welcome to {{ site_title|default:'MyTardis' }}! Your account has been created and " +
                 "is pending admin approval. It might take up to one business day to " +
                 "approve your account. We will send you an email when this happens. " +
                 "Until then, you will not be able to use any of {{ site_title|default:'MyTardis' }}'s functionality.");
