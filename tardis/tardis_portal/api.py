@@ -7,6 +7,7 @@ Implemented with Tastypie.
 .. moduleauthor:: James Wettenhall <james.wettenhall@monash.edu>
 '''
 import json
+import re
 from wsgiref.util import FileWrapper
 
 from django.conf import settings
@@ -108,23 +109,22 @@ class MyTardisAuthentication(object):
                 session_auth_result = True
             request.user.allowed_tokens = tokens
             return session_auth_result
-        else:
-            if auth_info.startswith('Basic'):
-                basic_auth = BasicAuthentication()
-                check = basic_auth.is_authenticated(request, **kwargs)
-                if check:
-                    if isinstance(check, HttpUnauthorized):
-                        return False
-                    request._authentication_backend = basic_auth
-                    return check
-            if auth_info.startswith('ApiKey'):
-                apikey_auth = ApiKeyAuthentication()
-                check = apikey_auth.is_authenticated(request, **kwargs)
-                if check:
-                    if isinstance(check, HttpUnauthorized):
-                        return False
-                    request._authentication_backend = apikey_auth
-                    return check
+        if auth_info.startswith('Basic'):
+            basic_auth = BasicAuthentication()
+            check = basic_auth.is_authenticated(request, **kwargs)
+            if check:
+                if isinstance(check, HttpUnauthorized):
+                    return False
+                request._authentication_backend = basic_auth
+                return check
+        if auth_info.startswith('ApiKey'):
+            apikey_auth = ApiKeyAuthentication()
+            check = apikey_auth.is_authenticated(request, **kwargs)
+            if check:
+                if isinstance(check, HttpUnauthorized):
+                    return False
+                request._authentication_backend = apikey_auth
+                return check
         return False
 
     def get_identifier(self, request):
@@ -225,6 +225,8 @@ class ACLAuthorization(Authorization):
     def read_detail(self, object_list, bundle):  # noqa # too complex
         if bundle.request.user.is_authenticated and \
            bundle.request.user.is_superuser:
+            return True
+        if re.match("^/api/v1/[a-z]+/schema/$", bundle.request.path):
             return True
         if isinstance(bundle.obj, Experiment):
             return has_experiment_access(bundle.request, bundle.obj.id)
@@ -415,20 +417,6 @@ class ACLAuthorization(Authorization):
         raise Unauthorized("Sorry, no deletes.")
 
 
-def lookup_by_unique_id_only(resource):
-    '''
-    returns custom lookup function. initialise with resource type
-    '''
-    def lookup_kwargs_with_identifiers(self, bundle, kwargs):
-        if 'id' not in kwargs and 'pk' not in kwargs:
-            # new instance is required
-            return {'id': -1}  # this will not match any exisitng resource
-        return super(resource,
-                     self).lookup_kwargs_with_identifiers(bundle, kwargs)
-
-    return lookup_kwargs_with_identifiers
-
-
 class GroupResource(ModelResource):
     class Meta:
         queryset = Group.objects.all()
@@ -506,10 +494,6 @@ class UserResource(ModelResource):
 
 class MyTardisModelResource(ModelResource):
 
-    def lookup_kwargs_with_identifiers(self, bundle, kwargs):
-        return lookup_by_unique_id_only(MyTardisModelResource)(
-            self, bundle, kwargs)
-
     class Meta:
         authentication = default_authentication
         authorization = ACLAuthorization()
@@ -519,15 +503,15 @@ class MyTardisModelResource(ModelResource):
 
 class SchemaResource(MyTardisModelResource):
 
-    def lookup_kwargs_with_identifiers(self, bundle, kwargs):
-        return lookup_by_unique_id_only(SchemaResource)(self, bundle, kwargs)
-
     class Meta(MyTardisModelResource.Meta):
         queryset = Schema.objects.all()
         filtering = {
             'id': ('exact', ),
             'namespace': ('exact', ),
         }
+        ordering = [
+            'id'
+        ]
 
 
 class ParameterNameResource(MyTardisModelResource):
@@ -623,6 +607,7 @@ class ExperimentResource(MyTardisModelResource):
             'title': ('exact',),
         }
         ordering = [
+            'id',
             'title',
             'created_time',
             'update_time'
@@ -717,6 +702,9 @@ class StorageBoxResource(MyTardisModelResource):
 
     class Meta(MyTardisModelResource.Meta):
         queryset = StorageBox.objects.all()
+        ordering = [
+            'id'
+        ]
 
 
 class StorageBoxOptionResource(MyTardisModelResource):
@@ -729,6 +717,9 @@ class StorageBoxOptionResource(MyTardisModelResource):
 
     class Meta(MyTardisModelResource.Meta):
         queryset = StorageBoxOption.objects.all()
+        ordering = [
+            'id'
+        ]
 
 
 class StorageBoxAttributeResource(MyTardisModelResource):
@@ -740,6 +731,9 @@ class StorageBoxAttributeResource(MyTardisModelResource):
 
     class Meta(MyTardisModelResource.Meta):
         queryset = StorageBoxAttribute.objects.all()
+        ordering = [
+            'id'
+        ]
 
 
 class FacilityResource(MyTardisModelResource):
@@ -753,6 +747,10 @@ class FacilityResource(MyTardisModelResource):
             'manager_group': ALL_WITH_RELATIONS,
             'name': ('exact', ),
         }
+        ordering = [
+            'id',
+            'name'
+        ]
         always_return_data = True
 
 
@@ -767,6 +765,10 @@ class InstrumentResource(MyTardisModelResource):
             'facility': ALL_WITH_RELATIONS,
             'name': ('exact', ),
         }
+        ordering = [
+            'id',
+            'name'
+        ]
         always_return_data = True
 
 
@@ -794,6 +796,7 @@ class DatasetResource(MyTardisModelResource):
             'instrument': ALL_WITH_RELATIONS,
         }
         ordering = [
+            'id',
             'description'
         ]
         always_return_data = True
@@ -847,6 +850,7 @@ class DataFileResource(MyTardisModelResource):
             'filename': ('exact', ),
         }
         ordering = [
+            'id',
             'filename',
             'modification_time'
         ]
@@ -1047,6 +1051,9 @@ class ReplicaResource(MyTardisModelResource):
             'verified': ('exact',),
             'url': ('exact', 'startswith'),
         }
+        ordering = [
+            'id'
+        ]
 
     def hydrate(self, bundle):
         if 'url' in bundle.data:
@@ -1094,6 +1101,9 @@ class ObjectACLResource(MyTardisModelResource):
             'pluginId': ('exact', ),
             'entityId': ('exact', ),
         }
+        ordering = [
+            'id'
+        ]
 
     def hydrate(self, bundle):
         # Fill in the content type.

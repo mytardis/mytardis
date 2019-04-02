@@ -5,9 +5,8 @@ MyTardis
    :target: http://mytardis.readthedocs.org/en/develop/?badge=develop
    :alt: Documentation Status
 
-
-.. image:: https://semaphoreapp.com/api/v1/projects/5d21cc89-645b-4793-bd78-cf525a0dcce2/345561/shields_badge.svg
-   :target: https://semaphoreapp.com/mytardis/mytardis
+.. image:: https://semaphoreci.com/api/v1/mytardis/mytardis/branches/develop/badge.svg
+   :target: https://semaphoreci.com/mytardis/mytardis
    :alt: Semaphore build status
 
 .. image:: https://travis-ci.org/mytardis/mytardis.svg?branch=develop

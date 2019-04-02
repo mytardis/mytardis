@@ -555,7 +555,8 @@ class ExperimentView(TemplateView):
         if experiment_id is None:
             return return_response_error(request)
         if not request.user.is_authenticated and \
-                not Experiment.safe.public().filter(id=experiment_id):
+                not Experiment.safe.public().filter(id=experiment_id) and \
+                'token' not in request.GET:
             return return_response_error(request)
 
         try:
@@ -779,20 +780,6 @@ def edit_dataset(request, dataset_id):
     c = {'form': form, 'dataset': dataset}
     return render_response_index(
         request, 'tardis_portal/add_or_edit_dataset.html', c)
-
-
-@login_required()
-def control_panel(request):
-
-    experiments = Experiment.safe.owned(request.user)
-    if experiments:
-        experiments = experiments.order_by('title')
-
-    c = {'experiments': experiments,
-         'subtitle': 'Experiment Control Panel'}
-
-    return render_response_index(
-        request, 'tardis_portal/control_panel.html', c)
 
 
 def _get_dataset_checksums(dataset, type='md5'):

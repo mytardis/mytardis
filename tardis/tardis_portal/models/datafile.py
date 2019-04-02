@@ -203,7 +203,7 @@ class DataFile(models.Model):
                 not self.sha512sum and \
                 require_checksums:
             raise Exception('Every Datafile requires a checksum')
-        elif settings.REQUIRE_DATAFILE_SIZES:
+        if settings.REQUIRE_DATAFILE_SIZES:
             if self.size < 0:
                 raise Exception('Invalid Datafile size (must be >= 0): %d' %
                                 self.size)
@@ -214,15 +214,12 @@ class DataFile(models.Model):
     def get_size(self):
         return self.size
 
-    def getParameterSets(self, schemaType=None):
+    def getParameterSets(self):
         """Return datafile parametersets associated with this datafile.
-
         """
         from .parameters import Schema
-        if schemaType == Schema.DATAFILE or schemaType is None:
-            return self.datafileparameterset_set.filter(
-                schema__type=Schema.DATAFILE)
-        raise Schema.UnsupportedType
+        return self.datafileparameterset_set.filter(
+            schema__type=Schema.DATAFILE)
 
     def __str__(self):
         if self.sha512sum is not None and len(self.sha512sum) > 31:
@@ -246,10 +243,7 @@ class DataFile(models.Model):
         render_image_size_limit = getattr(settings, 'RENDER_IMAGE_SIZE_LIMIT',
                                           0)
         if render_image_size_limit:
-            try:
-                if self.size > render_image_size_limit:
-                    return None
-            except ValueError:
+            if self.size > render_image_size_limit:
                 return None
 
         import re

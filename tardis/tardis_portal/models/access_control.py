@@ -26,8 +26,8 @@ class UserProfile(models.Model):
 
     # This flag will tell us if the main User account was created using any
     # non localdb auth methods. For example, if a first time user authenticates
-    # to the system using the VBL auth method, an account will be created for
-    # him, say "vbl_user001" and the field isDjangoAccount will be set to
+    # to the system using the ldap auth method, an account will be created for
+    # him, say "ldap_user001" and the field isDjangoAccount will be set to
     # False.
     isDjangoAccount = models.BooleanField(
         null=False, blank=False, default=True)

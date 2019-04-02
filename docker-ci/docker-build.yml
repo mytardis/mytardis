@@ -1,0 +1,15 @@
+version: "2"
+services:
+  base:
+    build:
+      context: ..
+      dockerfile: docker-ci/Dockerfile-base
+    image: mytardis/mytardis-base
+  builder:
+    build:
+      context: ..
+      dockerfile: docker-ci/Dockerfile-build
+    volumes:
+      - ../wheelhouse:/wheelhouse
+    depends_on:
+      - base

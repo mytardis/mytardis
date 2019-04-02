@@ -33,27 +33,30 @@ test_models.py
 http://docs.djangoproject.com/en/dev/topics/testing/
 
 .. moduleauthor::  Russell Sim <russell.sim@monash.edu>
+.. moduleauthor::  James Wettenhall <james.wettenhall@monash.edu>
 
 """
+import os
 import re
 from io import StringIO
 
 from django.conf import settings
 from django.contrib.auth.models import Group
 from django.contrib.auth.models import User
+from django.db import models
 from django.test import TestCase
 from tastypie.utils import trailing_slash
 
 from ..models import Facility, Instrument
 
-from ..models import Experiment, ExperimentAuthor
+from ..models import Experiment, ExperimentAuthor, ObjectACL
 
 from ..models import Dataset, DataFile, DataFileObject
 
 from ..models import (
     Schema, ParameterName, DatafileParameterSet, DatafileParameter,
     DatasetParameterSet, DatasetParameter, ExperimentParameterSet,
-    ExperimentParameter)
+    ExperimentParameter, InstrumentParameterSet)
 
 
 class ModelTestCase(TestCase):
@@ -65,7 +68,6 @@ class ModelTestCase(TestCase):
         self.user = User.objects.create_user(user, email, pwd)
 
     def test_experiment(self):
-        from os import path
         exp = Experiment(title='test exp1',
                          institution_name='monash',
                          created_by=self.user)
@@ -83,7 +85,7 @@ class ModelTestCase(TestCase):
             exp.get_absolute_url(), '/experiment/view/%d/' % target_id,
             exp.get_absolute_url() + ' != /experiment/view/%d/' % target_id)
         self.assertEqual(exp.get_or_create_directory(),
-                         path.join(settings.FILE_STORE_PATH, str(exp.id)))
+                         os.path.join(settings.FILE_STORE_PATH, str(exp.id)))
 
     def test_dataset(self):
         exp = Experiment(title='test exp1',
@@ -188,6 +190,16 @@ class ModelTestCase(TestCase):
                          public_access=Experiment.PUBLIC_ACCESS_NONE)
         exp.save()
 
+        acl = ObjectACL(
+            pluginId='django_user',
+            entityId=str(self.user.id),
+            content_object=exp,
+            canRead=True,
+            canWrite=True,
+            aclOwnershipType=ObjectACL.OWNER_OWNED,
+        )
+        acl.save()
+
         dataset = Dataset(description="dataset description...\nwith; issues")
         dataset.save()
         dataset.experiments.add(exp)
@@ -195,6 +207,8 @@ class ModelTestCase(TestCase):
 
         save1 = settings.REQUIRE_DATAFILE_SIZES
         save2 = settings.REQUIRE_DATAFILE_CHECKSUMS
+        saved_render_image_size_limit = getattr(
+            settings, 'RENDER_IMAGE_SIZE_LIMIT', 0)
         try:
             settings.REQUIRE_DATAFILE_SIZES = False
             settings.REQUIRE_DATAFILE_CHECKSUMS = False
@@ -208,6 +222,67 @@ class ModelTestCase(TestCase):
             self.assertEqual(df_file.get_download_url(),
                              '/api/v1/dataset_file/%d/download%s' %
                              (first_id, trailing_slash()))
+
+            # Test string representation of DataFileObject:
+            dfo = df_file.get_preferred_dfo()
+            self.assertEqual(
+                str(dfo),
+                "Box: %s, URI: %s, verified: %s"
+                % (str(dfo.storage_box), dfo.uri, str(dfo.verified)))
+
+            # Test constructing absolute file path:
+            self.assertEqual(
+                df_file.get_absolute_filepath(),
+                os.path.join(settings.DEFAULT_STORAGE_BASE_DIR, dfo.uri))
+
+            # get_as_temporary_file() doesn't work for a StringIO file object:
+            if not os.path.exists(os.path.dirname(dfo.get_full_path())):
+                os.makedirs(os.path.dirname(dfo.get_full_path()))
+            with open (dfo.get_full_path(), 'w') as file_obj:
+                file_obj.write(u'bla')
+            # Test ability to check out a temporary copy of file:
+            with df_file.get_as_temporary_file() as temp_file_obj:
+                self.assertEqual(temp_file_obj.read().decode(), u'bla')
+
+            self.assertFalse(df_file.has_image())
+            # Test checking online status, i.e. whether the DataFile
+            # has at least one verified DataFileObject in a non-tape
+            # storage box:
+            self.assertTrue(df_file.is_online)
+            DataFileObject.objects.get(datafile=df_file).delete()
+            # This behaviour is documented in the is_online property
+            # method's docstring, i.e. is_online is expected to be
+            # True for a DataFile without any DataFileObjects:
+            self.assertTrue(df_file.is_online)
+
+            # Test method for getting MIME type:
+            self.assertEqual(df_file.get_mimetype(), "text/plain")
+            df_file.mimetype = ""
+            # DataFile's save automatically updates the mimetype,
+            # and we want to test get_mimetype without a mimetype:
+            models.Model.save(df_file)
+            self.assertEqual(df_file.get_mimetype(), "text/plain")
+            df_file.filename = "file.unknown-extension"
+            models.Model.save(df_file)
+            self.assertEqual(
+                df_file.get_mimetype(), "application/octet-stream")
+
+            # Test method for getting view URL for file types which can
+            # be displayed in the browser.
+            # First test a file of unknown MIME type:
+            self.assertIsNone(df_file.get_view_url())
+            # Now test for a text/plain file:
+            df_file.filename = "file.txt"
+            df_file.save()
+            self.assertEqual(df_file.mimetype, "text/plain")
+            self.assertEqual(
+                df_file.get_view_url(), "/datafile/view/%s/" % df_file.id)
+            # This setting will prevent files larger than 2 bytes
+            # from being rendered in the browser:
+            settings.RENDER_IMAGE_SIZE_LIMIT = 2
+            df_file.size = 3
+            df_file.save()
+            self.assertIsNone(df_file.get_view_url())
 
             df_file = _build(dataset, 'file1.txt', 'path/file1.txt')
             self.assertEqual(df_file.filename, 'file1.txt')
@@ -267,6 +342,7 @@ class ModelTestCase(TestCase):
         finally:
             settings.REQUIRE_DATAFILE_SIZES = save1
             settings.REQUIRE_DATAFILE_CHECKSUMS = save2
+            settings.RENDER_IMAGE_SIZE_LIMIT = saved_render_image_size_limit
 
     def test_deleting_dfo_without_uri(self):
         dataset = Dataset(description="dataset description")
@@ -364,8 +440,7 @@ class ModelTestCase(TestCase):
                                             experiment=exp)
         exp_parset.save()
 
-        from os import path
-        with self.settings(METADATA_STORE_PATH=path.dirname(__file__)):
+        with self.settings(METADATA_STORE_PATH=os.path.dirname(__file__)):
             filename = 'test.jpg'
             df_parameter = DatafileParameter(name=df_parname,
                                              parameterset=df_parset,
@@ -405,3 +480,31 @@ class ModelTestCase(TestCase):
             api_key = None
 
         self.assertIsNotNone(api_key)
+
+    def test_instrument(self):
+        group = Group(name="Test Manager Group")
+        group.save()
+        facility = Facility(name="Test Facility",
+                            manager_group=group)
+        facility.save()
+        self.assertEqual(str(facility), "Test Facility")
+        instrument = Instrument(name="Test Instrument",
+                                facility=facility)
+        instrument.save()
+        self.assertEqual(str(instrument), "Test Instrument")
+
+        self.assertEqual(len(instrument.getParameterSets()), 0)
+
+        schema = Schema(
+            namespace='test instrument schema namespace',
+            type=Schema.INSTRUMENT)
+        schema.save()
+
+        parname = ParameterName(
+            schema=schema, name='name', full_name='full_name')
+        parname.save()
+
+        pset = InstrumentParameterSet.objects.create(
+            instrument=instrument, schema=schema)
+        pset.save()
+        self.assertEqual(len(instrument.getParameterSets()), 1)

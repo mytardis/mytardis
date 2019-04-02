@@ -182,8 +182,7 @@ class ProxyingServer(IOAI):
             if not formats:
                 if id_known:
                     raise oaipmh.error.NoMetadataFormatsError
-                else:
-                    raise oaipmh.error.IdDoesNotExistError
+                raise oaipmh.error.IdDoesNotExistError
         return formats
 
     def listRecords(self, metadataPrefix, **kwargs):

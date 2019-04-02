@@ -2,7 +2,7 @@ from django.contrib.auth.models import User
 from django.test import TestCase
 from django.core.management import call_command
 
-from ..models import \
+from ...models import \
     Experiment, Dataset, DataFile, ObjectACL, License, \
     ExperimentParameterSet, ExperimentParameter, DatasetParameterSet, \
     DatafileParameterSet

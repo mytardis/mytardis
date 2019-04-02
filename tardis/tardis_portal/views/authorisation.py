@@ -14,22 +14,19 @@ from django.conf import settings
 from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.auth.models import User, Group
 from django.contrib.sites.models import Site
-from django.urls import reverse
 from django.db import transaction
 from django.db import IntegrityError
 from django.db.models import Q
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse
 from django.views.decorators.cache import never_cache
 from django.views.decorators.http import require_POST
 
 from ..auth import decorators as authz
 from ..auth.localdb_auth import auth_key as localdb_auth_key, \
     django_user
-from ..forms import ChangeUserPermissionsForm, ChangeGroupPermissionsForm
 from ..models import UserAuthentication, UserProfile, Experiment, \
     Token, GroupAdmin, ObjectACL
-from ..shortcuts import render_response_index, \
-    return_response_error, render_error_message
+from ..shortcuts import render_response_index, return_response_error
 
 logger = logging.getLogger(__name__)
 
@@ -70,15 +67,6 @@ def retrieve_user_list(request):
     user_auths = list(UserAuthentication.objects.filter(
         userProfile__user__in=first_n_users))
     auth_methods = dict((ap[0], ap[1]) for ap in settings.AUTH_PROVIDERS)
-    """
-    users = [ {
-        "username": "ksr",
-        "first_name": "Kieran",
-        "last_name": "Spear",
-        "email": "email@address.com",
-        "auth_methods": [ "ksr:vbl:VBL", "ksr:localdb:Local DB" ]
-    } , ... ]
-    """
     users = []
     for u in users_query:
         fields = ('first_name', 'last_name', 'username', 'email')
@@ -439,113 +427,6 @@ def remove_experiment_access_user(request, experiment_id, username):
     # the user shouldn't really ever see this in normal operation
     return HttpResponse(
         'Experiment has no permissions (of type OWNER_OWNED) !')
-
-
-@never_cache
-@authz.experiment_ownership_required
-def change_user_permissions(request, experiment_id, username):
-
-    try:
-        user = User.objects.get(username=username)
-    except User.DoesNotExist:
-        return return_response_error(request)
-
-    try:
-        experiment = Experiment.objects.get(pk=experiment_id)
-    except Experiment.DoesNotExist:
-        return return_response_error(request)
-
-    try:
-        expt_acls = Experiment.safe.user_acls(experiment_id)
-        acl = None
-        for eacl in expt_acls:
-            if eacl.pluginId == 'django_user' and \
-               eacl.get_related_object().id == user.id:
-                acl = eacl
-        # acl = expt_acls.filter(entityId=str(user.id))
-        if acl is None:
-            raise ObjectACL.DoesNotExist
-        owner_acls = [oacl for oacl in expt_acls if oacl.isOwner]
-    except ObjectACL.DoesNotExist:
-        return return_response_error(request)
-
-    if request.method == 'POST':
-        form = ChangeUserPermissionsForm(request.POST, instance=acl)
-
-        if form.is_valid():
-            if 'isOwner' in form.changed_data and \
-                            form.cleaned_data['isOwner'] is False and \
-                            len(owner_acls) == 1:
-                owner = owner_acls[0].get_related_object()
-                plugin = owner_acls[0].pluginId
-                if plugin == 'django_user' and owner.id == user.id:
-                    return render_error_message(
-                        request,
-                        'Cannot remove ownership, every experiment must have at '
-                        'least one user owner.', status=409)
-            form.save()
-            url = reverse('tardis.tardis_portal.views.control_panel')
-            return HttpResponseRedirect(url)
-
-    else:
-        form = ChangeUserPermissionsForm(instance=acl)
-        c = {'form': form,
-             'header':
-             "Change User Permissions for '%s'" % user.username}
-
-    return render_response_index(
-        request, 'tardis_portal/form_template.html', c)
-
-
-@never_cache
-@authz.experiment_ownership_required
-def change_group_permissions(request, experiment_id, group_id):
-
-    try:
-        group = Group.objects.get(pk=group_id)
-    except Group.DoesNotExist:
-        return return_response_error(request)
-
-    try:
-        experiment = Experiment.objects.get(pk=experiment_id)
-    except Experiment.DoesNotExist:
-        return return_response_error(request)
-
-    try:
-        acl = ObjectACL.objects.get(
-            content_type=experiment.get_ct(),
-            object_id=experiment.id,
-            pluginId='django_group',
-            entityId=str(group.id),
-            aclOwnershipType=ObjectACL.OWNER_OWNED)
-    except ObjectACL.DoesNotExist:
-        return return_response_error(request)
-
-    if request.method == 'POST':
-        form = ChangeGroupPermissionsForm(request.POST)
-
-        if form.is_valid():
-            acl.canRead = form.cleaned_data['canRead']
-            acl.canWrite = form.cleaned_data['canWrite']
-            acl.canDelete = form.cleaned_data['canDelete']
-            acl.effectiveDate = form.cleaned_data['effectiveDate']
-            acl.expiryDate = form.cleaned_data['expiryDate']
-            acl.save()
-            return HttpResponseRedirect('/experiment/control_panel/')
-
-    else:
-        form = ChangeGroupPermissionsForm(
-            initial={'canRead': acl.canRead,
-                     'canWrite': acl.canWrite,
-                     'canDelete': acl.canDelete,
-                     'effectiveDate': acl.effectiveDate,
-                     'expiryDate': acl.expiryDate})
-
-    c = {'form': form,
-         'header': "Change Group Permissions for '%s'" % group.name}
-
-    return render_response_index(
-        request, 'tardis_portal/form_template.html', c)
 
 
 @transaction.atomic  # too complex # noqa

@@ -62,16 +62,14 @@ class Dataset(models.Model):
     def is_online(self):
         return all(df.is_online for df in self.datafile_set.all())
 
-    def getParameterSets(self, schemaType=None):
+    def getParameterSets(self):
         """Return the dataset parametersets associated with this
         experiment.
 
         """
         from .parameters import Schema
-        if schemaType == Schema.DATASET or schemaType is None:
-            return self.datasetparameterset_set.filter(
-                schema__type=Schema.DATASET)
-        raise Schema.UnsupportedType
+        return self.datasetparameterset_set.filter(
+            schema__type=Schema.DATASET)
 
     def __str__(self):
         return self.description
