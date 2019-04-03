@@ -1,6 +1,4 @@
-/* tardis/tardis_portal/static/js/jquery/tardis_portal/view_experiment/experiment_tabs.js */
-
-/* eslint no-console:0, global-strict: 0, strict: 0, object-shorthand: 0 */
+/* eslint global-strict: 0, strict: 0, object-shorthand: 0 */
 /* global s */
 
 export function populateExperimentTabs() {
