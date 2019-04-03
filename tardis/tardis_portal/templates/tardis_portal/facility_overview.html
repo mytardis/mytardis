@@ -12,7 +12,7 @@
 <div class="page-header">
     <h1 class="title">Facility Overview</h1>
 </div>
-
+<div ng-app="facilityOverview">
 {% with request|check_if_facility_manager as facility_manager %}
 <div id="content" ng-controller="FacilityController as facilityCtrl">
   {% verbatim %}
@@ -191,7 +191,7 @@
                                           when="{'0': 'no verified files', 'one': '1 verified file', 'other': '{} verified files'}">
                             </ng-pluralize>
                             ({{dataset.verified_datafiles_size | filesize}})
-                            / 
+                            /
                             <ng-pluralize count="dataset.datafile_count"
                                           when="{'0': 'no files', 'one': '1 file', 'other': '{} files'}">
                             </ng-pluralize>
@@ -260,7 +260,7 @@
                                           when="{'0': 'no verified files', 'one': '1 verified file', 'other': '{} verified files'}">
                             </ng-pluralize>
                             ({{dataset.verified_datafiles_size | filesize}})
-                            / 
+                            /
                             <ng-pluralize count="dataset.datafile_count"
                                           when="{'0': 'no files', 'one': '1 file', 'other': '{} files'}">
                             </ng-pluralize>
@@ -324,7 +324,7 @@
                             <ng-pluralize count="dataset.verified_datafiles_count"
                                           when="{'0': 'no verified files', 'one': '1 verified file', 'other': '{} verified files'}"></ng-pluralize>
                             ({{dataset.verified_datafiles_size | filesize}})
-                            / 
+                            /
                             <ng-pluralize count="dataset.datafile_count"
                                           when="{'0': 'no files', 'one': '1 file', 'other': '{} files'}"></ng-pluralize>
                             ({{dataset.size | filesize}})
@@ -386,6 +386,7 @@
         </table>
     </div>
 </script>
+</div> <!-- ng-app -->
 {% endverbatim %}
 {% endif %}
 {% endwith %}

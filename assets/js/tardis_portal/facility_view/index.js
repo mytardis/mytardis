@@ -5,7 +5,7 @@ require("expose-loader?angular!angular");
 require("ng-dialog");
 require("angular-resource");
 
-var app = angular.module("MyTardis", ["ngDialog", "ngResource"]);
+var app = angular.module("facilityOverview", ["ngDialog", "ngResource"]);
 
 app.config(function($httpProvider) {
     $httpProvider.defaults.xsrfCookieName = "csrftoken";
