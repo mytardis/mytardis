@@ -5,9 +5,6 @@
 require("experimentabs");
 require("bootstrap");
 require("mustache");
-// Tests for tardis/tardis_portal/static/js/jquery/tardis_portal/view_experiment/experiment-tabs.js
-// which used to be embedded within
-// tardis/tardis_portal/templates/tardis_portal/view_experiment.html
 
 QUnit.module("tardis_portal.view_experiment.experiment-tabs", {
     beforeEach: function(assert) {
@@ -17,8 +14,7 @@ QUnit.module("tardis_portal.view_experiment.experiment-tabs", {
         $.ajaxSetup({async: true});
     }
 });
-//skipping this now as we are not able to load Mushtache Js templates
-QUnit.skip("Load experiment tabs", function(assert) {
+QUnit.test("Load experiment tabs", function(assert) {
 
     $("#qunit-fixture").append(
         "<ul id=\"experiment-tabs\" class=\"nav nav-pills\">\n" +
