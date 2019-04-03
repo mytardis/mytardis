@@ -57,6 +57,8 @@ mkdir -p var/store
 # with a generated Django SECRET_KEY (required for MyTardis to run)
 python -c "import os; from random import choice; key_line = '%sSECRET_KEY=\"%s\"  # generated from build.sh\n' % ('from .default_settings import *  # pylint: disable=W0401,W0614\n\n' if not os.path.isfile('tardis/settings.py') else '', ''.join([choice('abcdefghijklmnopqrstuvwxyz0123456789@#%^&*(-_=+)') for i in range(50)])); f=open('tardis/settings.py', 'a+'); f.write(key_line); f.close()"
 
+# run this command to build webpack bundles required by templates
+npm run-script build
 python test.py
 # for empty databases, sync all and fake migrate, otherwise run a real migration
 python manage.py migrate
