@@ -770,6 +770,17 @@ class DataFileObject(models.Model):
         self.last_verified_time = timezone.now()
         self.save(update_fields=['verified', 'last_verified_time'])
         df.update_mimetype()
+        from tardis.celery import tardis_app
+        tardis_app.send_task(
+            'mytardis.apply_filters',
+            args = [
+                self.id,
+                self.verified,
+                self.get_full_path(),
+                self.uri
+            ],
+            queue = 'filters',
+            priority = getattr(settings, 'DEFAULT_TASK_PRIORITY', 0))
         return result
 
     def get_full_path(self):
