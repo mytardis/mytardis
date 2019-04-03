@@ -39,7 +39,6 @@
                 <key>{{located_in}}</key>
                 <relation type="isLocatedIn"/>
             </relatedObject>
-{% for forcode in anzsrcfor %}            <subject type="anzsrc-for">{{forcode}}</subject>{% endfor %}
 {% for lcode in localcodes %}            <subject type="local">{{lcode}}</subject>{% endfor %}
 {% if license_title %}            <description type="rights">This work is licensed under a {{license_title}} (link below)</description>{% endif %}
 {% for note in notes %}            <description type="note">{{note}}</description>{% endfor %}

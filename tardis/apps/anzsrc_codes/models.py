@@ -1,1 +1,0 @@
-# Needed to detect fixtures
