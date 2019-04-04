@@ -2,10 +2,9 @@
 
 const angular = require("angular");
 require("expose-loader?angular!angular");
-require("ng-dialog");
 require("angular-resource");
 
-var app = angular.module("facilityOverview", ["ngDialog", "ngResource"]);
+var app = angular.module("facilityOverview", ["ngResource"]);
 
 app.config(function($httpProvider) {
     $httpProvider.defaults.xsrfCookieName = "csrftoken";
