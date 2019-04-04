@@ -13,11 +13,9 @@ before_install:
 
 # Commands to install dependencies:
 install:
-- npm install
-- npm run-script build
 - pip install -r requirements.txt
 
 script:
-- pylint tardis
 - mkdir -p var/store
 - python test.py
+- pylint tardis

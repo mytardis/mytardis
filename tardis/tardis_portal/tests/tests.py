@@ -45,6 +45,8 @@ from django.test import TestCase
 from django.test.client import Client
 from django.contrib.auth.models import User
 
+from mock import patch
+
 from ..models import Experiment, ObjectACL, \
     Schema, ParameterName, Dataset
 from ..auth.localdb_auth import django_user
@@ -168,10 +170,13 @@ class SearchTestCase(TestCase):
 # http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html
 class UserInterfaceTestCase(TestCase):
 
-    def test_root(self):
+    @patch('webpack_loader.loader.WebpackLoader.get_bundle')
+    def test_root(self, mock_webpack_get_bundle):
         self.assertEqual(Client().get('/').status_code, 200)
+        mock_webpack_get_bundle.assert_called()
 
-    def test_urls(self):
+    @patch('webpack_loader.loader.WebpackLoader.get_bundle')
+    def test_urls(self, mock_webpack_get_bundle):
         c = Client()
         urls = ['/login/',
                 '/about/',
@@ -182,8 +187,10 @@ class UserInterfaceTestCase(TestCase):
         for u in urls:
             response = c.get(u)
             self.assertEqual(response.status_code, 200)
+            mock_webpack_get_bundle.assert_called()
 
-    def test_urls_with_some_content(self):
+    @patch('webpack_loader.loader.WebpackLoader.get_bundle')
+    def test_urls_with_some_content(self, mock_webpack_get_bundle):
         # Things that might tend to be in a real live system
         user = 'testuser'
         pwd = User.objects.make_random_password()
@@ -241,6 +248,7 @@ class UserInterfaceTestCase(TestCase):
         self.assertEqual(response.status_code, 200,
                          "%s should have returned 200 but returned %d"
                          % ('/stats/', response.status_code))
+        mock_webpack_get_bundle.assert_called()
 
     @skip('search is undergoing some changes, skip in the meantime')
     def test_search_urls(self):

@@ -4,12 +4,6 @@ Tests
 
 Running the Test Suite
 ----------------------
-Before running any of these tests, please run following command to build javascript bundles.
-
-.. code-block:: shell
-
-            npm run-script build
-
 Run this command to run the unit tests::
 
     ./test.py

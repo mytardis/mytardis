@@ -7,7 +7,6 @@ fi
 # select test to run with TEST_TYPE, memory pg mysql pylint
 
 function run_test {
-    npm install && npm run-script build
     python test.py test --settings=$1
     result=$?
     if [ "$TEST_TYPE" == "memory" ]; then
