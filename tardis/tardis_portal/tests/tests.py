@@ -282,6 +282,5 @@ def suite():
         # parserSuite2,
         userInterfaceSuite,
         # searchSuite,
-        # equipmentSuite,
     ])
     return allTests
