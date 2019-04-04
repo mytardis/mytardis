@@ -243,12 +243,7 @@ Access Rights & Licensing
 Licences
 ^^^^^^^^
 
-By default, no licences are loaded. A user can make metadata public without
-assigning a licence, but they cannot allow public access to their data.
-
-Creative Commons licences (for Australia) are available in
-``tardis/tardis_portal/fixtures/cc_licenses.json``. You can load them with
-``python manage.py loaddata``.
+By default, the Creative Commons 4.0 International licences are loaded.
 
 You can use the admin interface to add other licences. Please ensure
 ``allows_distribution`` is set to the correct value to ensure the licence
