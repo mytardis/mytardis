@@ -15,33 +15,17 @@ STATICFILES_STORAGE = \
 STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.FileSystemFinder',
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
-    'npm.finders.NpmFinder',
+
 )
 
-# django-npm settings:
-NPM_ROOT_PATH = path.abspath(path.join(path.dirname(__file__), '../..'))
+#used by webpack
+STATICFILES_DIRS = (
+    path.abspath(path.join(path.dirname(__file__), '../..', 'assets')),
+)
 
-# If you have run "npm install", rather than "npm install --production",
-# you will get a lot of devDependencies installed in node_modules/ which
-# are only needed for development/testing (e.g. "npm test") and don't
-# need to be copied when running collectstatic.  NPM_FILE_PATTERNS
-# specifies the folders within node_modules/ which do need to be copied:
-NPM_FILE_PATTERNS = {
-    'angular': ['*'],
-    'angular-resource': ['*'],
-    'backbone': ['*'],
-    'backbone-forms': ['*'],
-    'blueimp-file-upload': ['*'],
-    'bootstrap': ['*'],
-    'bootstrap-3-typeahead': ['*'],
-    'clipboard': ['*'],
-    'font-awesome': ['*'],
-    'jquery': ['*'],
-    'jquery-migrate': ['*'],
-    'jquery-ui-dist': ['jquery-ui.min.js'],
-    'mustache': ['mustache.min.js'],
-    'ng-dialog': ['*'],
-    'sprintf-js': ['*'],
-    'underscore': ['*'],
-    'underscore.string': ['*']
+WEBPACK_LOADER = {
+    'DEFAULT': {
+        'BUNDLE_DIR_NAME': 'bundles/',
+        'STATS_FILE': path.join(path.abspath(path.join(path.dirname(__file__), '../..')), 'webpack-stats.json'),
+    }
 }

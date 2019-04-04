@@ -1,6 +1,6 @@
 {% load static from staticfiles %}
 {% block content %}
-
+{% load render_bundle from webpack_loader %}
 <!-- Scripts -->
 {% load jstemplate %}
 {% mustachejs "tardis_portal/license_selector" %}

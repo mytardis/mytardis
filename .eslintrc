@@ -1,6 +1,13 @@
 {
-    "extends": "eslint:recommended",
-    "rules": {
+  "extends": "eslint:recommended",
+  "parserOptions": {
+    "ecmaVersion": 7,
+    "sourceType": "module",
+    "ecmaFeatures": {
+      "jsx": true
+    }
+  },
+  "rules": {
         "camelcase": [1, {"properties": "always"}],
         "comma-spacing": [2, {"before": false, "after": true}],
         "complexity": ["error", { "max": 4 }],
@@ -30,11 +37,35 @@
         "strict": [0, "function"],
         "wrap-iife": [1]
     },
-    "env": {
-        "browser": true,
-        "commonjs": true,
-        "jquery": true
-    },
-    "globals": {
+  "env": {
+    "browser": true,
+    "commonjs": true,
+    "jquery": true
+  },
+  "overrides": [
+    {
+      "files": [
+        "assets/js/tardis_portal/facility_view/*.js"
+      ],
+      "globals": {
+        "angular": true
+      },
+      "rules": {
+        "no-use-before-define": "off",
+        "camelcase": 2,
+        "quotes": [0, "double"],
+        "indent": 0,
+        "dot-notation": 0,
+        "space-before-function-paren": 0,
+        "complexity": [
+          "error",
+          {
+            "max": 7
+          }
+        ]
+      }
     }
+  ],
+  "globals": {
+  }
 }
