@@ -243,7 +243,7 @@ Access Rights & Licensing
 Licences
 ^^^^^^^^
 
-By default, the Creative Commons 4.0 International licences are loaded.
+By default, the Creative Commons Attribution 4.0 International licences are loaded.
 
 You can use the admin interface to add other licences. Please ensure
 ``allows_distribution`` is set to the correct value to ensure the licence
