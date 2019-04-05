@@ -90,6 +90,7 @@ class DatasetDocument(DocType):
             return related_instance.datasets.all()
         elif isinstance(related_instance, Instrument):
             return related_instance.dataset_set.all()
+        return
 
 
 datafile = Index('datafile')
