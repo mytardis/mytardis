@@ -98,7 +98,8 @@ $(document).on("submit", "#add_metadata_form", function(e) {
     // Hide the form buttons
     form.parents(".modal").find(".modal-footer").hide();
 
-    $("#metadata-pane").trigger("reload");
+    var reloadEvent = new Event("reload");
+    $("#metadata-pane")[0].dispatchEvent(reloadEvent);
 
     return false;
 });
@@ -123,7 +124,8 @@ $(document).on("submit", "#edit_metadata_form", function(e) {
 
     // Hide the form buttons
     form.parents(".modal").find(".modal-footer").hide();
-    $("#metadata-pane").trigger("reload");
+    var reloadEvent = new Event("reload");
+    $("#metadata-pane")[0].dispatchEvent(reloadEvent);
 
     return false;
 });
