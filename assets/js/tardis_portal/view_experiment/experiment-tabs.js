@@ -63,7 +63,10 @@ export function populateExperimentTabs() {
     });
 
     // Trigger initial pane content loading
-    $(".tab-pane").trigger("experiment-change");
+    $(".tab-pane").each(function() {
+        var expChangeEvent = new Event("experiment-change");
+        $(this)[0].dispatchEvent(expChangeEvent);
+    });
 
     var showTabForWindowLocation = function() {
         // Get selected tab using window location

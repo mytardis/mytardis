@@ -33,7 +33,8 @@ export function addShareEventHandlers() {
 }
 
 $("#modal-public-access").bind("hidden.bs.modal", function() {
-    $(".tab-pane").trigger("experiment-change");
+    var expChangeEvent = new Event("experiment-change");
+    $(this).parents(".tab-pane")[0].dispatchEvent(expChangeEvent);
 });
 
 
@@ -201,11 +202,13 @@ $(".share_link").bind("click", function(evt) {
 });
 
 $("#modal-share").bind("hidden.bs.modal", function() {
-    $(".tab-pane").trigger("experiment-change");
+    var expChangeEvent = new Event("experiment-change");
+    $(this).parents(".tab-pane")[0].dispatchEvent(expChangeEvent);
 });
 
 $("#modal-share-group").bind("hidden.bs.modal", function() {
-    $(".tab-pane").trigger("experiment-change");
+    var expChangeEvent = new Event("experiment-change");
+    $(this).parents(".tab-pane")[0].dispatchEvent(expChangeEvent);
 });
 
 

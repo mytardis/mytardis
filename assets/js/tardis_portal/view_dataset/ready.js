@@ -37,9 +37,11 @@ $(document).ready(function() {
 
     // Reload data file list when we close the upload modal
     $("#modal-upload-files").on("hide", function() {
-        $("#datafiles-pane").trigger("reload");
+        var reloadEvent = new Event("reload");
+        $("#datafiles-pane")[0].dispatchEvent(reloadEvent);
         // Also reload metadata (as it may have been created by the upload)
-        $("#metadata-pane").trigger("reload");
+        reloadEvent = new Event("reload");
+        $("#metadata-pane")[0].dispatchEvent(reloadEvent);
     });
 
     // Set up carousel

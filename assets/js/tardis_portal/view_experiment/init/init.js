@@ -79,7 +79,8 @@ $(document).on("click", "#add_new_parameter", function() {
 });
 
 var refreshMetadataDisplay = function(hash) {
-    $("#experiment-tab-metadata").trigger("experiment-change");
+    var expChangeEvent = new Event("experiment-change");
+    $("#experiment-tab-metadata")[0].dispatchEvent(expChangeEvent);
 };
 
 $(document).on("submit", "#add_metadata_form", function(e) {

@@ -14,7 +14,8 @@ $(function() {
         dataType: "json",
         headers: {"X-CSRFToken": $("#csrf-token").val()},
         done: function(e, data) {
-            $("#datafiles-pane").trigger("reload");
+            var reloadEvent = new Event("reload");
+            $("#datafiles-pane")[0].dispatchEvent(reloadEvent);
             var length = data.files.length;
             for (var i = 0; i < length; i++) {
                 showMsg.success(data.files[i].name + " was successfully uploaded");
@@ -42,7 +43,8 @@ $(function() {
         );
         if (progress === 100) {
             setTimeout(function() {
-                $("#datafiles-pane").trigger("reload");
+                var reloadEvent = new Event("reload");
+                $("#datafiles-pane")[0].dispatchEvent(reloadEvent);
             }, 500);
         }
     });
