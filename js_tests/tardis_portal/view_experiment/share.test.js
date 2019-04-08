@@ -2,7 +2,8 @@
 
 import {
     addChangePublicAccessEventHandlers,
-    addUserSharingEventHandlers
+    addUserSharingEventHandlers,
+    addGroupSharingEventHandlers
 } from "../../../assets/js/tardis_portal/view_experiment/share/share.js";
 
 // Tests for assets/js/tardis_portal/view_experiment/share/share.js
@@ -187,7 +188,7 @@ QUnit.test("Test clicking on Change User Sharing button", function(assert) {
     assert.notEqual(modalShareBody.html().indexOf("<h3>Current User Permissions</h3>"), -1);
 });
 
-QUnit.skip("Test clicking on Change Group Sharing button", function(assert) {
+QUnit.test("Test clicking on Change Group Sharing button", function(assert) {
 
     $("#qunit-fixture").append(
         "<input type=\"hidden\" id=\"experiment-id\" value=\"1\">\n");
@@ -230,7 +231,7 @@ QUnit.skip("Test clicking on Change Group Sharing button", function(assert) {
 
     // addGroupSharingEventHandlers needs to be run after the QUnit fixtures
     // have been created so that jQuery can find the elements to bind events to:
-    // addGroupSharingEventHandlers();
+    addGroupSharingEventHandlers();
 
     var modalShareGroupBody = $("#qunit-fixture").find("#modal-share-group").find(".modal-body");
     assert.equal(modalShareGroupBody.html(), "");

@@ -211,232 +211,236 @@ export function addUserSharingEventHandlers() {
     });
 }
 
-$("#modal-share-group").bind("hidden.bs.modal", function() {
-    var expChangeEvent = new Event("experiment-change");
-    $(this).parents(".tab-pane")[0].dispatchEvent(expChangeEvent);
-});
-
-
 // group sharing modal
 
-$(".share_link_group").unbind("click");
-$(".share_link_group").bind("click", function(evt) {
+const groupSharingModalLoaded = function() {
     var modal = $("#modal-share-group");
+    modal.find(".loading-placeholder").hide();
+
+    var users = null; // eslint-disable-line no-unused-vars
+
+    var groups = (function() {
+        var val = null;
+        $.ajax({
+            "async": false,
+            "global": false,
+            "url": "/ajax/group_list/",
+            "success": function(data) { val = data; }
+        });
+        return val;
+    }());
+
+    $("#id_addgroup").keypress(function(e) {
+        if (e.keyCode === 13)
+        {
+            $("#group.form_submit").click();
+        }
+    });
+
+    $(".groupsuggest").typeahead({
+        "source": groups.split(" ~ ")
+    });
 
 
-    modal.find(".modal-body").html("");
-    modal.find(".loading-placeholder").show();
-    modal.modal("show");
+    // view group members
+    $(".member_list_user_toggle").unbind("click");
+    $(".member_list_user_toggle").bind("click", function(evt2) {
+        evt2.preventDefault();
 
-    modal.find(".modal-body")
-        .load("/experiment/control_panel/" + $("#experiment-id").val() + "/access_list/group/", function() {
-            modal.find(".loading-placeholder").hide();
+        var icon = $(this).find("i");
+        icon.toggleClass("fa-folder fa-folder-open");
+        $(this).toggleClass("members-shown members-hidden");
 
-            var users = null; // eslint-disable-line no-unused-vars
+        var userList = $(this).parents(".access_list_group").find(".access_list");
+        // If not showing members, just hide user list
+        if (!$(this).hasClass("members-shown")) {
+            userList.hide();
+            return;
+        }
 
-            var groups = (function() {
-                var val = null;
-                $.ajax({
-                    "async": false,
-                    "global": false,
-                    "url": "/ajax/group_list/",
-                    "success": function(data) { val = data; }
-                });
-                return val;
-            }());
-
-            $("#id_addgroup").keypress(function(e) {
-                if (e.keyCode === 13)
-                {
-                    $("#group.form_submit").click();
-                }
-            });
-
-            $(".groupsuggest").typeahead({
-                "source": groups.split(" ~ ")
-            });
-
-
-            // view group members
-            $(".member_list_user_toggle").unbind("click");
-            $(".member_list_user_toggle").bind("click", function(evt2) {
-                evt2.preventDefault();
-
-                var icon = $(this).find("i");
-                icon.toggleClass("fa-folder fa-folder-open");
-                $(this).toggleClass("members-shown members-hidden");
-
-                var userList = $(this).parents(".access_list_group").find(".access_list");
-                // If not showing members, just hide user list
-                if (!$(this).hasClass("members-shown")) {
-                    userList.hide();
-                    return;
-                }
-
-                userList.html(loadingHTML);
-                // Load (jQuery AJAX "load()") and show access list
-                userList.load(this.href, function() {
-                    // Load user list and activate field autocompletion
-                    $.ajax({
-                        "dataType": "json",
-                        "url": "/ajax/user_list/",
-                        "success": function(users2) {
-                            var autocompleteHandler = function(usersForHandler, query, callback) {
-                                return callback(userAutocompleteHandler(query, usersForHandler));
-                            };
-                            $("#id_adduser").typeahead({
-                                "source": autocompleteHandler.bind(this, users2),
-                                "displayText": function(item) {
-                                    return item.label;
-                                },
-                                "updater": function(item) {
-                                    return item.value;
-                                }
-                            });
+        userList.html(loadingHTML);
+        // Load (jQuery AJAX "load()") and show access list
+        userList.load(this.href, function() {
+            // Load user list and activate field autocompletion
+            $.ajax({
+                "dataType": "json",
+                "url": "/ajax/user_list/",
+                "success": function(users2) {
+                    var autocompleteHandler = function(usersForHandler, query, callback) {
+                        return callback(userAutocompleteHandler(query, usersForHandler));
+                    };
+                    $("#id_adduser").typeahead({
+                        "source": autocompleteHandler.bind(this, users2),
+                        "displayText": function(item) {
+                            return item.label;
+                        },
+                        "updater": function(item) {
+                            return item.value;
                         }
                     });
-                }).show();
+                }
             });
+        }).show();
+    });
 
-            $("#group.form_submit").unbind("click");
-            $("#group.form_submit").click(function(event) {
-                event.preventDefault();
+    $("#group.form_submit").unbind("click");
+    $("#group.form_submit").click(function(event) {
+        event.preventDefault();
 
-                var groupsuggest = $(this).parents(".access_list2").find(".groupsuggest").val();
-                var groupsDiv = $(this).parents(".access_list2").children(".groups");
+        var groupsuggest = $(this).parents(".access_list2").find(".groupsuggest").val();
+        var groupsDiv = $(this).parents(".access_list2").children(".groups");
 
-                var action = "/experiment/control_panel/" + $("#experiment-id").val() + "/access_list/add/group/" + groupsuggest;
+        var action = "/experiment/control_panel/" + $("#experiment-id").val() + "/access_list/add/group/" + groupsuggest;
 
-                var permissions = $("#id_permission_group").val();
+        var permissions = $("#id_permission_group").val();
 
-                var canRead = false;
-                var canWrite = false;
-                var isOwner = false;
-                var canDelete = false;
-                if(permissions === "read")
-                {
-                    canRead = true;
-                }
-                else if(permissions === "edit")
-                {
-                    canRead = true;
-                    canWrite = true;
-                }
-                else if(permissions === "owner")
-                {
-                    canRead = true;
-                    canWrite = true;
-                    isOwner = true;
-                    canDelete = true;
-                }
+        var canRead = false;
+        var canWrite = false;
+        var isOwner = false;
+        var canDelete = false;
+        if(permissions === "read") {
+            canRead = true;
+        }
+        else if(permissions === "edit") {
+            canRead = true;
+            canWrite = true;
+        }
+        else if(permissions === "owner") {
+            canRead = true;
+            canWrite = true;
+            isOwner = true;
+            canDelete = true;
+        }
 
-                permissions = "/?canRead=" + canRead + "&canWrite=" + canWrite + "&canDelete=" + canDelete + "&isOwner=" + isOwner;
-                action = action + permissions;
+        permissions = "/?canRead=" + canRead + "&canWrite=" + canWrite +
+                      "&canDelete=" + canDelete + "&isOwner=" + isOwner;
+        action = action + permissions;
 
-                $.ajax({
-                    "async": false,
-                    "global": true,
-                    type: "GET",
-                    url: action,
-                    success: function(data) {
-                        groupsDiv.hide().append(data).fadeIn();
+        $.ajax({
+            "async": false,
+            "global": true,
+            type: "GET",
+            url: action,
+            success: function(data) {
+                groupsDiv.hide().append(data).fadeIn();
 
-                        // view group members
-                        $(".member_list_user_toggle").unbind("click");
-                        $(".member_list_user_toggle").bind("click", function(evt2) {
-                            evt2.preventDefault();
+                // view group members
+                $(".member_list_user_toggle").unbind("click");
+                $(".member_list_user_toggle").bind("click", function(evt2) {
+                    evt2.preventDefault();
 
-                            var icon = $(this).find("i");
-                            icon.toggleClass("fa-folder fa-folder-open");
-                            $(this).toggleClass("members-shown members-hidden");
+                    var icon = $(this).find("i");
+                    icon.toggleClass("fa-folder fa-folder-open");
+                    $(this).toggleClass("members-shown members-hidden");
 
-                            var userList = $(this).parents(".access_list_group").find(".access_list");
-                            // If not showing members, just hide user list
-                            if (!$(this).hasClass("members-shown")) {
-                                userList.hide();
-                                return;
-                            }
+                    var userList = $(this).parents(".access_list_group").find(".access_list");
+                    // If not showing members, just hide user list
+                    if (!$(this).hasClass("members-shown")) {
+                        userList.hide();
+                        return;
+                    }
 
-                            userList.html(loadingHTML);
-                            // Load (jQuery AJAX "load()") and show access list
-                            userList.load(this.href, function() {
-                                // Load user list and activate field autocompletion
-                                $.ajax({
-                                    "dataType": "json",
-                                    "url": "/ajax/user_list/",
-                                    "success": function(users2) {
-                                        var autocompleteHandler = function(usersForHandler, query, callback) {
-                                            return callback(userAutocompleteHandler(query, usersForHandler));
-                                        };
-                                        $("#id_adduser").typeahead({
-                                            "source": autocompleteHandler.bind(this, users2),
-                                            "displayText": function(item) {
-                                                return item.label;
-                                            },
-                                            "updater": function(item) {
-                                                return item.value;
-                                            }
-                                        });
+                    userList.html(loadingHTML);
+                    // Load (jQuery AJAX "load()") and show access list
+                    userList.load(this.href, function() {
+                        // Load user list and activate field autocompletion
+                        $.ajax({
+                            "dataType": "json",
+                            "url": "/ajax/user_list/",
+                            "success": function(users2) {
+                                var autocompleteHandler = function(usersForHandler, query, callback) {
+                                    return callback(userAutocompleteHandler(query, usersForHandler));
+                                };
+                                $("#id_adduser").typeahead({
+                                    "source": autocompleteHandler.bind(this, users2),
+                                    "displayText": function(item) {
+                                        return item.label;
+                                    },
+                                    "updater": function(item) {
+                                        return item.value;
                                     }
                                 });
-                            }).show();
-                        }); // end member_list_user_toggle
+                            }
+                        });
+                    }).show();
+                }); // end member_list_user_toggle
 
-                        // todo this is a duplicate function..
-                        $(".remove_group").unbind("click");
-                        $(".remove_group").click(function() {
-                            var href = $(this).attr("href");
-                            var removeGroup = $(this);
+                // todo this is a duplicate function..
+                $(".remove_group").unbind("click");
+                $(".remove_group").click(function() {
+                    var href = $(this).attr("href");
+                    var removeGroup = $(this);
 
-                            $.ajax({
-                                "async": false,
-                                "global": false,
-                                "url": href,
-                                "success": function(data2) {
-                                    var val = data2;
-                                    if(val === "OK") {
-                                        removeGroup.fadeOut(300, function() {
-                                            removeGroup.parents(".access_list_group").remove();
-                                        });
-                                    }
-                                    else { alert(val); }
-                                }
-                            }); // end ajax
-                            return false;
-                        }); // end remove group
-                    },
-                    error: function(data) { alert("Error adding group!"); }
-                });
-                return false;
-            });
-
-            $(".remove_group").unbind("click");
-            $(".remove_group").click(function() {
-
-                var href = $(this).attr("href");
-
-                var removeGroup = $(this);
-
-                $.ajax({
-                    "async": false,
-                    "global": false,
-                    "url": href,
-                    "success": function(data) {
-                        var val = data;
-                        if(val === "OK") {
-                            removeGroup.fadeOut(300, function() {
-                                removeGroup.parents(".access_list_group").remove();
-                            });
+                    $.ajax({
+                        "async": false,
+                        "global": false,
+                        "url": href,
+                        "success": function(data2) {
+                            var val = data2;
+                            if(val === "OK") {
+                                removeGroup.fadeOut(300, function() {
+                                    removeGroup.parents(".access_list_group").remove();
+                                });
+                            }
+                            else { alert(val); }
                         }
-                        else { alert("val"); }
-                    }
-                }); // end ajax
-
-                return false;
-            }); // end remove group
-
+                    }); // end ajax
+                    return false;
+                }); // end remove group
+            },
+            error: function(data) { alert("Error adding group!"); }
         });
-});
+        return false;
+    });
+
+    $(".remove_group").unbind("click");
+    $(".remove_group").click(function() {
+
+        var href = $(this).attr("href");
+
+        var removeGroup = $(this);
+
+        $.ajax({
+            "async": false,
+            "global": false,
+            "url": href,
+            "success": function(data) {
+                var val = data;
+                if(val === "OK") {
+                    removeGroup.fadeOut(300, function() {
+                        removeGroup.parents(".access_list_group").remove();
+                    });
+                }
+                else { alert("val"); }
+            }
+        }); // end ajax
+
+        return false;
+    }); // end remove group
+
+};
+
+export function addGroupSharingEventHandlers() {
+    $(".share_link_group").unbind("click");
+    $(".share_link_group").bind("click", function(evt) {
+        var modal = $("#modal-share-group");
+
+        modal.find(".modal-body").html("");
+        modal.find(".loading-placeholder").show();
+        modal.modal("show");
+
+        var groupSharingModalContentUrl = "/experiment/control_panel/" +
+                                          $("#experiment-id").val() +
+                                          "/access_list/group/";
+        modal.find(".modal-body")
+            .load(groupSharingModalContentUrl, groupSharingModalLoaded);
+    });
+
+    $("#modal-share-group").bind("hidden.bs.modal", function() {
+        var expChangeEvent = new Event("experiment-change");
+        $(this).parents(".tab-pane")[0].dispatchEvent(expChangeEvent);
+    });
+}
 
 $(document).ready(function() {
 
@@ -481,4 +485,5 @@ $(document).ready(function() {
     });
     addChangePublicAccessEventHandlers();
     addUserSharingEventHandlers();
+    addGroupSharingEventHandlers();
 });
