@@ -1,7 +1,7 @@
 /* global showMsg */
-require('imports-loader?define=>false&exports=>false!blueimp-file-upload/js/vendor/jquery.ui.widget.js');
-require('imports-loader?define=>false&exports=>false!blueimp-file-upload/js/jquery.fileupload.js');
-require('imports-loader?define=>false&exports=>false!blueimp-file-upload/js/jquery.iframe-transport.js');
+require("imports-loader?define=>false&exports=>false!blueimp-file-upload/js/vendor/jquery.ui.widget.js");
+require("imports-loader?define=>false&exports=>false!blueimp-file-upload/js/jquery.fileupload.js");
+require("imports-loader?define=>false&exports=>false!blueimp-file-upload/js/jquery.iframe-transport.js");
 
 $(function() {
     $("#dropzone").hide();
