@@ -1,6 +1,4 @@
 var sftp = (function() {
-    "use strict";
-
     function createKeyAlert(msg, level) {
         return "<div id='keyTable' class='alert alert-block alert-" + level + "'>\
         <span class='message'>" + msg + "</span> \
@@ -158,7 +156,6 @@ var sftp = (function() {
 }());
 
 $(document).on("submit", "#keyGenerateForm", function(e) {
-    "use strict";
     e.preventDefault();
     var url = $(this).prop("action");
     var method = $(this).prop("method");
@@ -200,7 +197,6 @@ $(document).on("submit", "#keyGenerateForm", function(e) {
 });
 
 $(document).ready(function() {
-    "use strict";
     sftp.loadKeyTable(false);
 });
 

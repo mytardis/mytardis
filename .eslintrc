@@ -34,7 +34,7 @@
         "space-before-blocks": [2, "always"],
         "space-before-function-paren": [2, {"anonymous": "never", "named": "never"}],
         "space-infix-ops": [2, {"int32Hint": false}],
-        "strict": [0, "function"],
+        "strict": 2,
         "wrap-iife": [1]
     },
   "env": {

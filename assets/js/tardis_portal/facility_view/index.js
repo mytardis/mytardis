@@ -1,5 +1,3 @@
-"use strict";
-
 const angular = require("angular");
 require("expose-loader?angular!angular");
 require("angular-resource");
