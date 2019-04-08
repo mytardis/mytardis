@@ -1,8 +1,9 @@
-/* global QUnit, main, JSON */
-"use strict";
+/* global QUnit, $ */
 
 // Tests for assets/js/tardis_portal/main.js
-require("main");
+
+import {userAutocompleteHandler} from "../../assets/js/tardis_portal/main";
+
 QUnit.module("tardis_portal.main", {
     beforeEach: function(assert) {
         $.ajaxSetup({async: false});
@@ -11,14 +12,6 @@ QUnit.module("tardis_portal.main", {
         $.ajaxSetup({async: true});
     }
 });
-
-/*QUnit.test("Test loading main.js", function(assert) {
-
-    $.getScript("../assets/js/tardis_portal/main.js", function(data, textStatus, jqxhr) {
-        assert.equal(jqxhr.status, 200);
-
-    });
-});*/
 
 QUnit.test("Test userAutocompleteHandler", function(assert) {
 
@@ -55,6 +48,6 @@ QUnit.test("Test userAutocompleteHandler", function(assert) {
             "value": "testuser2"
         }
     ];
-    var actual = main.userAutocompleteHandler("Test", mockUsersList, "localdb");
+    var actual = userAutocompleteHandler("Test", mockUsersList, "localdb");
     assert.equal(JSON.stringify(actual), JSON.stringify(expected));
 });

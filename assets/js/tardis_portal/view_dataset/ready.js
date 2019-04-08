@@ -1,12 +1,4 @@
-/* tardis/tardis_portal/static/js/jquery/tardis_portal/view_dataset/ready.js */
-  
-/* eslint global-strict: 0, strict: 0, object-shorthand: 0,
-          no-unused-vars: [2, {"vars": "local", "args": "none"}] */
-
 /* global prevFileSelect */
-
-require("bootstrap");
-require("jquery");
 $(document).ready(function() {
 
     // Create a reload event handler

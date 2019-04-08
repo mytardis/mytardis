@@ -1,11 +1,6 @@
-/* tardis/tardis_portal/static/js/jquery/tardis_portal/ajax/share.js */
+/* global _ */
+import {userAutocompleteHandler} from "../../main";
 
-/* eslint global-strict: 0, strict: 0, object-shorthand: 0,
-          no-extend-native: [2, {"exceptions": ["Date", "String"]}],
-          no-unused-vars: [2, {"vars": "local", "args": "none"}] */
-
-/* global userAutocompleteHandler, _ */
-require("bootstrap");
 var loadingHTML = "<img src=\"/static/images/ajax-loader.gif\"/><br />";
 
 
