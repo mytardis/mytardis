@@ -1,10 +1,9 @@
-/* eslint no-unused-vars: [2, {"vars": "local", "args": "none"}] */
 // Capitalises the first letter (adapted from http://codepen.io/WinterJoey/pen/sfFaK)
 angular
 .module('facilityOverview')
-.filter('capitalise', function () {
-    return function (input, all) {
-        return (input) ? input.replace(/([^\W_]+[^\s-]*) */g, function (txt) {
+.filter('capitalise', function() {
+    return function(input, all) {
+        return (input) ? input.replace(/([^\W_]+[^\s-]*) */g, function(txt) {
             return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
         }) : '';
     };
@@ -13,7 +12,7 @@ angular
 // Filter to produce nice file size formatting (adapted from https://gist.github.com/yrezgui/5653591)
 angular
 .module('facilityOverview')
-.filter('filesize', function () {
+.filter('filesize', function() {
     var units = [
         'bytes',
         'KB',
@@ -23,7 +22,7 @@ angular
         'PB'
     ];
 
-    return function (bytes, precision) {
+    return function(bytes, precision) {
         if (isNaN(parseFloat(bytes)) || !isFinite(bytes)) {
             return '?';
         }
@@ -42,7 +41,7 @@ angular
 
 angular
 .module('facilityOverview')
-.controller('FacilityController', function ($resource, $interval, $log) {
+.controller('FacilityController', function($resource, $interval, $log) {
 
     var vm = this; // view model
 
@@ -62,7 +61,7 @@ angular
     });
 
     // Whether to show the "no data" alert
-    vm.showDataUnvailableAlert = function () {
+    vm.showDataUnvailableAlert = function() {
         if (vm.loading) {
             return false;
         } else if (angular.isDefined(vm.datasets)) {
@@ -73,57 +72,57 @@ angular
     };
 
     // Whether to show the facility selector
-    vm.showFacilitySelector = function () {
+    vm.showFacilitySelector = function() {
         return (vm.facilities.length > 1);
     };
     // Toggle the facility selector
-    vm.selectFacility = function (id, name) {
+    vm.selectFacility = function(id, name) {
         vm.selectedFacility = id;
         vm.selectedFacilityName = name;
         vm.currentFetchLimit = vm.defaultFetchLimit;
         vm.fetchFacilityData(0, vm.currentFetchLimit);
     };
     // Check which facility is selected
-    vm.isFacilitySelected = function (id) {
+    vm.isFacilitySelected = function(id) {
         return vm.selectedFacility === id;
     };
 
     // Toggle data view selector
-    vm.selectDataView = function (index) {
+    vm.selectDataView = function(index) {
         vm.selectedDataView = index;
     };
     // Check which data view is selected
-    vm.isDataViewSelected = function (index) {
+    vm.isDataViewSelected = function(index) {
         return vm.selectedDataView === index;
     };
 
     // Toggle file list visibility
-    vm.toggleFileList = function (dataset) {
+    vm.toggleFileList = function(dataset) {
         if (vm.visibleFileList === dataset.id) {
             delete vm.visibleFileList;
         } else {
             vm.visibleFileList = dataset.id;
-            datasetDetailRes.get({'dataset_id': dataset.id}).$promise.then(function (data) {
+            datasetDetailRes.get({'dataset_id': dataset.id}).$promise.then(function(data) {
                 dataset.datafiles = data;
             });
         }
     };
     // Check if file list is visible
-    vm.isFileListVisible = function (id) {
+    vm.isFileListVisible = function(id) {
         return vm.visibleFileList === id;
     };
-    vm.unsetFileListVisibility = function () {
+    vm.unsetFileListVisibility = function() {
         delete vm.visibleFileList;
     };
 
     // Reset filter form
-    vm.filterFormReset = function () {
+    vm.filterFormReset = function() {
         delete vm.search_owner;
         delete vm.search_experiment;
         delete vm.search_instrument;
     };
     // Check if filters are active
-    vm.filtersActive = function () {
+    vm.filtersActive = function() {
         if (angular.isDefined(vm.search_owner) && vm.search_owner.owner) {
             return true;
         } else if (angular.isDefined(vm.search_experiment) && vm.search_experiment.parent_experiment.title) {
@@ -134,7 +133,7 @@ angular
     };
 
     // Load more entries
-    vm.loadMoreEntries = function (increment) {
+    vm.loadMoreEntries = function(increment) {
         if (vm.currentFetchLimit >= vm.totalDatasets) {
             return;
         }
@@ -148,7 +147,7 @@ angular
 
     // Fetch the list of facilities available to the user and facilities data
     function initialiseFacilitiesData() {
-        facilityListRes.get().$promise.then(function (data) {
+        facilityListRes.get().$promise.then(function(data) {
                 $log.debug("Facility list fetched successfully");
                 vm.facilities = data;
                 if (vm.facilities.length > 0) { // If the user is allowed to manage any facilities...
@@ -157,25 +156,25 @@ angular
                     vm.fetchFacilityData(0, vm.defaultFetchLimit);
                 }
             },
-            function () {
+            function() {
                 $log.error("Could not load facility list");
             });
     }
 
     // Fetch data for facility
-    vm.fetchFacilityData = function (startIndex, endIndex, append) {
+    vm.fetchFacilityData = function(startIndex, endIndex, append) {
 
         delete vm.visibleFileList;
         vm.loading = true;
 
-        countRes.get({'facilityId': vm.selectedFacility}).$promise.then(function (data) {
+        countRes.get({'facilityId': vm.selectedFacility}).$promise.then(function(data) {
                 $log.debug("Fetched total dataset count");
                 vm.totalDatasets = data.facility_data_count;
                 if (vm.currentFetchLimit > vm.totalDatasets) {
                     vm.currentFetchLimit = vm.totalDatasets;
                 }
             },
-            function () {
+            function() {
                 $log.error("Could not fetch total dataset count");
             });
 
@@ -183,7 +182,7 @@ angular
             'facilityId': vm.selectedFacility,
             'startIndex': startIndex,
             'endIndex': endIndex
-        }).$promise.then(function (data) {
+        }).$promise.then(function(data) {
             $log.debug("Fetched datasets between indices " + startIndex + " and " + endIndex);
             if (append && vm.datasets) {
                 vm.datasets = vm.datasets.concat(data.slice(0, data.length));
@@ -198,10 +197,10 @@ angular
                 vm.dataByInstrument = [];
             }
         },
-        function () {
+        function() {
             $log.error("Could not fetch datasets");
         })
-        .finally(function () {
+        .finally(function() {
             vm.loading = false;
         });
     };
@@ -212,7 +211,7 @@ angular
         // for the "Latest data" view.
         data = data.slice(0);
         // Sort by username, group name
-        data.sort(function (a, b) {
+        data.sort(function(a, b) {
             var aOwnerGroup = a.owner + ', ' + a.group;
             var bOwnerGroup = b.owner + ', ' + b.group;
             if (aOwnerGroup < bOwnerGroup) {
@@ -264,7 +263,7 @@ angular
         // for the "Latest data" view.
         data = data.slice(0);
         // Sort by instrument ID
-        data.sort(function (a, b) {
+        data.sort(function(a, b) {
             return a.instrument.id - b.instrument.id;
         });
 
@@ -290,7 +289,7 @@ angular
     }
 
     // Refresh polling timer
-    $interval(function () {
+    $interval(function() {
         if (vm.refreshCountdown > 0 && vm.refreshInterval > 0) {
             vm.refreshCountdown--;
         } else if (vm.refreshInterval > 0) {
@@ -301,13 +300,13 @@ angular
     }, 1000);
 
     // Set the update interval
-    vm.setRefreshInterval = function (interval) {
+    vm.setRefreshInterval = function(interval) {
         vm.refreshInterval = interval;
         vm.refreshCountdown = interval;
     };
 
     // Format the countdown for the view (mm:ss)
-    vm.refreshCountdownFmt = function () {
+    vm.refreshCountdownFmt = function() {
         var minutes = Math.floor(vm.refreshCountdown / 60);
         var seconds = vm.refreshCountdown - minutes * 60;
         var strMins, strSecs;

@@ -56,7 +56,6 @@
         "quotes": [0, "double"],
         "indent": 0,
         "dot-notation": 0,
-        "space-before-function-paren": 0,
         "complexity": [
           "error",
           {
