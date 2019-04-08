@@ -6,9 +6,8 @@
 // Tests for assets/js/tardis_porta/view_experiment/share.js
 // which used to be embedded within
 // tardis/tardis_portal/templates/tardis_portal/ajax/share.html
+
 require("jquery-mockjax/dist/jquery.mockjax")(jQuery, window);
-//require("experimentshare");
-require("mustache");
 
 QUnit.module("tardis_portal.ajax.share", {
     beforeEach: function(assert) {

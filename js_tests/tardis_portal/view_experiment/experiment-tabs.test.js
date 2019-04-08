@@ -1,10 +1,6 @@
-/* eslint global-strict: 0, strict: 0, no-console: 0, object-shorthand: 0,
-          no-unused-vars: [2, {"vars": "local", "args": "none"}] */
-/* global QUnit, _, experimentabs */
-"use strict";
-require("experimentabs");
-require("bootstrap");
-require("mustache");
+/* global QUnit, _ */
+
+import {populateExperimentTabs} from "../../../assets/js/tardis_portal/view_experiment/experiment-tabs";
 
 QUnit.module("tardis_portal.view_experiment.experiment-tabs", {
     beforeEach: function(assert) {
@@ -64,7 +60,7 @@ QUnit.test("Load experiment tabs", function(assert) {
     var expDatasetTransferDiv = $("#qunit-fixture").find("#experiment-tab-transfer-datasets");
     assert.equal(expDatasetTransferDiv.length, 0);
 
-    experimentabs.populateExperimentTabs();
+    populateExperimentTabs();
     // Ensure that experiment metadata tab pane's content has been loaded:
     expMetadataDiv = $("#qunit-fixture").find("#experiment-tab-metadata");
     assert.equal(expMetadataDiv.html(), "Experiment metadata pane mock content");

@@ -1,12 +1,7 @@
-/* tardis/tardis_portal/static/js/jquery/tardis_portal/view_dataset/file-upload.js */
-
-/* eslint global-strict: 0, strict: 0, object-shorthand: 0,
-          no-unused-vars: [2, {"vars": "local", "args": "none"}] */
-
 /* global showMsg */
-require("blueimp-file-upload/js/vendor/jquery.ui.widget");
-require("blueimp-file-upload/js/jquery.fileupload");
-require("blueimp-file-upload/js/jquery.iframe-transport");
+require("imports-loader?define=>false&exports=>false!blueimp-file-upload/js/vendor/jquery.ui.widget");
+require("imports-loader?define=>false&exports=>false!blueimp-file-upload/js/jquery.fileupload");
+require("imports-loader?define=>false&exports=>false!blueimp-file-upload/js/jquery.iframe-transport");
 
 $(function() {
     $("#dropzone").hide();

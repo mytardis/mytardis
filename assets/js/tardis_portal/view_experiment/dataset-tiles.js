@@ -1,10 +1,7 @@
-/* tardis/tardis_portal/static/js/jquery/tardis_portal/view_experiment/dataset_tiles.js */
+/* global Backbone, Mustache */
 
-/* eslint global-strict: 0, strict: 0 */
-/* eslint-disable no-unused-vars */
-/* global Backbone, backbonemodels, Mustache */
-
-require("sprintf-js");
+import "sprintf-js";
+import {MyTardis} from "../backbone-models";
 
 $(function() {
     var oldSync = Backbone.sync;
@@ -18,12 +15,12 @@ $(function() {
 
 (function() {
 
-    var datasets = new backbonemodels.MyTardis.Datasets();
+    var datasets = new MyTardis.Datasets();
 
     datasets.experimentId = $("#experiment-id").val();
     datasets.url = "/ajax/json/experiment/" + $("#experiment-id").val() + "/dataset/";
 
-    var datasetTiles = new backbonemodels.MyTardis.DatasetTiles({
+    var datasetTiles = new MyTardis.DatasetTiles({
         "id": "datasets",
         "collection": datasets,
         "el": $("#datasets").get(0)
@@ -36,13 +33,14 @@ $(function() {
 
 (function() {
 
+    // eslint-disable-next-line no-unused-vars
     function getDatasetsForExperiment(experimentId) {
-        var datasets = new backbonemodels.MyTardis.Datasets();
+        var datasets = new MyTardis.Datasets();
         datasets.experimentId = parseInt("10", experimentId),
         // Substitute experiment ID to get collection
         datasets.url = Mustache.to_html("{{ url_pattern }}",
             { "experiment_id": experimentId });
-        var datasetTiles = new backbonemodels.MyTardis.DatasetTiles({
+        var datasetTiles = new MyTardis.DatasetTiles({
             "id": "other-experiment-datasets",
             "collection": datasets,
             "el": $("#other-experiment-datasets").get(0)
