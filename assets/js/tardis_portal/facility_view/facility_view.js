@@ -190,7 +190,9 @@ angular
                 vm.datasets = data.slice(0, data.length);
             }
             if (vm.datasets.length > 0) {
+                // eslint-disable-next-line no-use-before-define
                 vm.dataByUser = groupByUser(vm.datasets);
+                // eslint-disable-next-line no-use-before-define
                 vm.dataByInstrument = groupByInstrument(vm.datasets);
             } else {
                 vm.dataByUser = [];
