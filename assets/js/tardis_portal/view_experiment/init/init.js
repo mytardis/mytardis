@@ -97,8 +97,7 @@ $(document).on("submit", "#add_metadata_form", function(e) {
             if (contentContainer.find("form").length === 0) {
                 contentContainer.parents(".modal").find(".modal-footer").hide();
             }
-        },
-        async: false
+        }
     });
 
     refreshMetadataDisplay();
@@ -121,8 +120,7 @@ $(document).on("submit", "#edit_metadata_form", function(e) {
             if (contentContainer.find("form").length === 0) {
                 contentContainer.parents(".modal").find(".modal-footer").hide();
             }
-        },
-        async: false
+        }
     });
 
     refreshMetadataDisplay();

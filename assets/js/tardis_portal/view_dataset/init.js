@@ -86,8 +86,7 @@ $(document).on("submit", "#add_metadata_form", function(e) {
             if (contentContainer.find("form").length === 0) {
                 contentContainer.parents(".modal").find(".modal-footer").hide();
             }
-        },
-        async: false
+        }
     });
 
     // Hide the form buttons
@@ -113,8 +112,7 @@ $(document).on("submit", "#edit_metadata_form", function(e) {
             if (contentContainer.find("form").length === 0) {
                 contentContainer.parents(".modal").find(".modal-footer").hide();
             }
-        },
-        async: false
+        }
     });
 
     // Hide the form buttons

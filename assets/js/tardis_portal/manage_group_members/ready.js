@@ -29,7 +29,6 @@ $(document).ready(function() {
                     var action = "/experiment/control_panel/create/group/" + getVars;
 
                     $.ajax({
-                        "async": false,
                         "global": true,
                         type: "GET",
                         url: action,
@@ -177,7 +176,6 @@ $(document).ready(function() {
                     {
 
                         $.ajax({
-                            "async": false,
                             "global": true,
                             type: "POST",
                             url: action,
