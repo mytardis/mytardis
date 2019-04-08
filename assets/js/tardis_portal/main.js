@@ -1,18 +1,7 @@
-/* global $, _, s */
-/* eslint strict: 0 */
+/* global _, s */
 
-// eslint-disable-next-line no-unused-vars
-export function userAutocompleteHandler(term, users, authMethod) {
+export function userAutocompleteHandler(term, users) {
     var matches = _(users).chain()
-    // Filter out users which don"t match auth method
-    /** .filter(function(user) {
-            // authMethods: ["testuser:localdb:Local DB"]
-            return _(user.auth_methods).any(function(v) {
-                return v.split(":")[1] === authMethod;
-            });
-        })
-     **/
-
         // Filter out those that don"t have a matching field
         .filter(function(user) {
             var fields = ["username", "email", "first_name", "last_name"];
@@ -36,6 +25,3 @@ export function userAutocompleteHandler(term, users, authMethod) {
     // Callback to autocomplete control
     return matches;
 }
-
-// eslint-disable-next-line no-unused-vars
-

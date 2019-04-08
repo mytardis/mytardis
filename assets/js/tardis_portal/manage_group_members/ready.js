@@ -1,5 +1,5 @@
-/* global _, userAutocompleteHandler */
-require("jquery-ui-dist/jquery-ui.min.js");
+/* global $ */
+
 import {userAutocompleteHandler} from "../main";
 
 var loadingHTML = "<img src=\"/static/images/ajax-loader.gif\"/>";
@@ -122,13 +122,17 @@ $(document).ready(function() {
                 "dataType": "json",
                 "url": "/ajax/user_list/",
                 "success": function(users) {
-                    $("#id_adduser").autocomplete({
-                        "source": _.bind( function(query, callback) {
-                            var authMethod = $("#id_authMethod").val();
-                            callback(
-                                userAutocompleteHandler(
-                                    query.term, this.users, authMethod));
-                        }, { "users": users })
+                    var autocompleteHandler = function(usersForHandler, query, callback) {
+                        return callback(userAutocompleteHandler(query, usersForHandler));
+                    };
+                    $("#id_adduser").typeahead({
+                        "source": autocompleteHandler.bind(this, users),
+                        "displayText": function(item) {
+                            return item.label;
+                        },
+                        "updater": function(item) {
+                            return item.value;
+                        }
                     });
                 }
             });
