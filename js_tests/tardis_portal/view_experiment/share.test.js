@@ -1,6 +1,9 @@
 /* global QUnit, _ */
 
-import {addChangePublicAccessEventHandlers} from "../../../assets/js/tardis_portal/view_experiment/share/share.js";
+import {
+    addChangePublicAccessEventHandlers,
+    addUserSharingEventHandlers
+} from "../../../assets/js/tardis_portal/view_experiment/share/share.js";
 
 // Tests for assets/js/tardis_portal/view_experiment/share/share.js
 // which used to be embedded within
@@ -121,7 +124,7 @@ QUnit.test("Test clicking on Public Access button", function(assert) {
     assert.notEqual(modalPublicAccessBody.html().indexOf("<h3>Step 1: Change Public Access:</h3>"), -1);
 });
 
-QUnit.skip("Test clicking on Change User Sharing button", function(assert) {
+QUnit.test("Test clicking on Change User Sharing button", function(assert) {
 
     $("#qunit-fixture").append(
         "<input type=\"hidden\" id=\"experiment-id\" value=\"1\">\n" +
@@ -172,7 +175,7 @@ QUnit.skip("Test clicking on Change User Sharing button", function(assert) {
 
     // addUserSharingEventHandlers needs to be run after the QUnit fixtures
     // have been created so that jQuery can find the elements to bind events to:
-    // addUserSharingEventHandlers();
+    addUserSharingEventHandlers();
 
     var modalShareBody = $("#qunit-fixture").find("#modal-share").find(".modal-body");
     assert.equal(modalShareBody.html(), "");

@@ -52,158 +52,164 @@ String.prototype.endsWith = function(t, i) {
 
 // user sharing modal
 
-$(".share_link").unbind("click");
-$(".share_link").bind("click", function(evt) {
+const userSharingModalLoaded = function() {
     var modal = $("#modal-share");
+    modal.find(".loading-placeholder").hide();
 
-    modal.find(".modal-body").html("");
-    modal.find(".loading-placeholder").show();
-    modal.modal("show");
+    $("#id_entered_user").keypress(function(e) {
+        // Reset autocomplete user when typing in the user edit field.
+        $(this).siblings("#id_autocomp_user").val("");
+        $(this).siblings("#id_authMethod").attr("disabled", "");
 
-    modal.find(".modal-body")
-        .load("/experiment/control_panel/" + $("#experiment-id").val() + "/access_list/user/", function() {
-            modal.find(".loading-placeholder").hide();
-
-            $("#id_entered_user").keypress(function(e) {
-                // Reset autocomplete user when typing in the user edit field.
-                $(this).siblings("#id_autocomp_user").val("");
-                $(this).siblings("#id_authMethod").attr("disabled", "");
-
-                if (e.keyCode === 13)
-                {
-                    $("#user.form_submit").click();
+        if (e.keyCode === 13)
+        {
+            $("#user.form_submit").click();
+        }
+    });
+    // Load user list and activate field autocompletion
+    $.ajax({
+        "dataType": "json",
+        "url": "/ajax/user_list/",
+        "success": function(users) {
+            if($("select#id_authMethod option").length === 1) {
+                $("#id_authMethod_label").hide();
+                $("#id_authMethod").hide();
+            }
+            var autocompleteHandler = function(usersForHandler, query, callback) {
+                return callback(userAutocompleteHandler(query, usersForHandler));
+            };
+            $("#id_entered_user").typeahead({
+                "source": autocompleteHandler.bind(this, users),
+                "displayText": function(item) {
+                    return item.label;
+                },
+                "updater": function(item) {
+                    return item.value;
                 }
             });
-            // Load user list and activate field autocompletion
-            $.ajax({
-                "dataType": "json",
-                "url": "/ajax/user_list/",
-                "success": function(users) {
-                    if($("select#id_authMethod option").length === 1) {
-                        $("#id_authMethod_label").hide();
-                        $("#id_authMethod").hide();
-                    }
-                    var autocompleteHandler = function(usersForHandler, query, callback) {
-                        return callback(userAutocompleteHandler(query, usersForHandler));
-                    };
-                    $("#id_entered_user").typeahead({
-                        "source": autocompleteHandler.bind(this, users),
-                        "displayText": function(item) {
-                            return item.label;
-                        },
-                        "updater": function(item) {
-                            return item.value;
+        }
+    });
+
+
+    $("#user.form_submit").unbind("click");
+    // eslint-disable-next-line complexity
+    $("#user.form_submit").click(function(event) {
+        event.preventDefault();
+        var enteredUser = $(this).siblings("#id_entered_user").val();
+        var autocompUser = $(this).siblings("#id_autocomp_user").val();
+        var username = null;
+        var authMethod = null;
+        if (autocompUser !== "") {
+            // Use the details from the autocomplete.
+            autocompUser = autocompUser.split(":");
+            username = autocompUser[0];
+            authMethod = autocompUser[1];
+        } else {
+            // Autocomplete failed. Use the entered username as-is.
+            username = enteredUser;
+            authMethod = $(this).siblings("#id_authMethod").val();
+        }
+        var usersDiv = $(this).parents(".access_list1").children(".users");
+
+        var permissions = $(this).siblings("#id_permission").val();
+
+        var canRead = false;
+        var canWrite = false;
+        var isOwner = false;
+        var canDelete = false;
+        if (permissions === "read") {
+            canRead = true;
+        }
+        else if (permissions === "edit") {
+            canRead = true;
+            canWrite = true;
+        }
+        else if (permissions === "owner") {
+            canRead = true;
+            canWrite = true;
+            isOwner = true;
+            canDelete = true;
+        }
+
+        permissions = "/?authMethod=" + authMethod + "&canRead=" + canRead +
+                      "&canWrite=" + canWrite + "&canDelete=" + canDelete +
+                      "&isOwner=" + isOwner;
+        var action = "/experiment/control_panel/" + $("#experiment-id").val() +
+            "/access_list/add/user/" + username + permissions;
+
+        $.ajax({
+            "async": false,
+            "global": true,
+            type: "GET",
+            url: action,
+            success: function(data) {
+                usersDiv.hide().append(data).fadeIn();
+                // todo this is a duplicate function..
+                $(".remove_user").unbind("click");
+                $(".remove_user").click(function() {
+                    var href = $(this).attr("href");
+                    var removeUser = $(this);
+                    $.ajax({
+                        "async": false,
+                        "global": false,
+                        "url": href,
+                        "success": function(data2) {
+                            var val = data2;
+                            if(val === "OK") {
+                                removeUser.fadeOut(300, function() { removeUser.parents(".access_list_user").remove(); });
+                            }
+                            else { alert(val); }
                         }
-                    });
-                }
-            });
-
-
-            $("#user.form_submit").unbind("click");
-            // eslint-disable-next-line complexity
-            $("#user.form_submit").click(function(event) {
-                event.preventDefault();
-                var enteredUser = $(this).siblings("#id_entered_user").val();
-                var autocompUser = $(this).siblings("#id_autocomp_user").val();
-                var username = null;
-                var authMethod = null;
-                if (autocompUser !== "") {
-                    // Use the details from the autocomplete.
-                    autocompUser = autocompUser.split(":");
-                    username = autocompUser[0];
-                    authMethod = autocompUser[1];
-                } else {
-                    // Autocomplete failed. Use the entered username as-is.
-                    username = enteredUser;
-                    authMethod = $(this).siblings("#id_authMethod").val();
-                }
-                var usersDiv = $(this).parents(".access_list1").children(".users");
-
-                var permissions = $(this).siblings("#id_permission").val();
-
-                var canRead = false;
-                var canWrite = false;
-                var isOwner = false;
-                var canDelete = false;
-                if (permissions === "read")
-                {
-                    canRead = true;
-                }
-                else if (permissions === "edit")
-                {
-                    canRead = true;
-                    canWrite = true;
-                }
-                else if (permissions === "owner")
-                {
-                    canRead = true;
-                    canWrite = true;
-                    isOwner = true;
-                    canDelete = true;
-                }
-
-                permissions = "/?authMethod=" + authMethod + "&canRead=" + canRead + "&canWrite=" + canWrite + "&canDelete=" + canDelete + "&isOwner=" + isOwner;
-                var action = "/experiment/control_panel/" + $("#experiment-id").val() +
-                    "/access_list/add/user/" + username + permissions;
-
-                $.ajax({
-                    "async": false,
-                    "global": true,
-                    type: "GET",
-                    url: action,
-                    success: function(data) {
-                        usersDiv.hide().append(data).fadeIn();
-                        // todo this is a duplicate function..
-                        $(".remove_user").unbind("click");
-                        $(".remove_user").click(function() {
-                            var href = $(this).attr("href");
-                            var removeUser = $(this);
-                            $.ajax({
-                                "async": false,
-                                "global": false,
-                                "url": href,
-                                "success": function(data2) {
-                                    var val = data2;
-                                    if(val === "OK") {
-                                        removeUser.fadeOut(300, function() { removeUser.parents(".access_list_user").remove(); });
-                                    }
-                                    else { alert(val); }
-                                }
-                            }); // end ajax
-                            return false;
-                        }); // end remove user
-                    },
-                    error: function(data) { alert("Error adding user"); }
-                });
-                return false;
-            });
-
-            $(".remove_user").unbind("click");
-            $(".remove_user").click(function() {
-                var href = $(this).attr("href");
-                var removeUser = $(this);
-                $.ajax({
-                    "async": false,
-                    "global": false,
-                    "url": href,
-                    "success": function(data) {
-                        var val = data;
-                        if(val === "OK") {
-                            removeUser.fadeOut(300, function() { removeUser.parents(".access_list_user").remove(); });
-                        }
-                        else { alert(val); }
-                    }
-                }); // end ajax
-                return false;
-            }); // end remove user
+                    }); // end ajax
+                    return false;
+                }); // end remove user
+            },
+            error: function(data) { alert("Error adding user"); }
         });
+        return false;
+    });
 
-});
+    $(".remove_user").unbind("click");
+    $(".remove_user").click(function() {
+        var href = $(this).attr("href");
+        var removeUser = $(this);
+        $.ajax({
+            "async": false,
+            "global": false,
+            "url": href,
+            "success": function(data) {
+                var val = data;
+                if(val === "OK") {
+                    removeUser.fadeOut(300, function() { removeUser.parents(".access_list_user").remove(); });
+                }
+                else { alert(val); }
+            }
+        }); // end ajax
+        return false;
+    }); // end remove user
+};
 
-$("#modal-share").bind("hidden.bs.modal", function() {
-    var expChangeEvent = new Event("experiment-change");
-    $(this).parents(".tab-pane")[0].dispatchEvent(expChangeEvent);
-});
+export function addUserSharingEventHandlers() {
+    $(".share_link").unbind("click");
+    $(".share_link").bind("click", function(evt) {
+        var modal = $("#modal-share");
+
+        modal.find(".modal-body").html("");
+        modal.find(".loading-placeholder").show();
+        modal.modal("show");
+
+        var userSharingModalContentUrl = "/experiment/control_panel/" +
+                                         $("#experiment-id").val() +
+                                         "/access_list/user/";
+        modal.find(".modal-body")
+            .load(userSharingModalContentUrl, userSharingModalLoaded);
+    });
+
+    $("#modal-share").bind("hidden.bs.modal", function() {
+        var expChangeEvent = new Event("experiment-change");
+        $(this).parents(".tab-pane")[0].dispatchEvent(expChangeEvent);
+    });
+}
 
 $("#modal-share-group").bind("hidden.bs.modal", function() {
     var expChangeEvent = new Event("experiment-change");
@@ -474,4 +480,5 @@ $(document).ready(function() {
         }); // TODO error-handling
     });
     addChangePublicAccessEventHandlers();
+    addUserSharingEventHandlers();
 });
