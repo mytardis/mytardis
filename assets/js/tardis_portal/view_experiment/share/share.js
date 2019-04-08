@@ -5,7 +5,7 @@ import {userAutocompleteHandler} from "../../main";
 
 var loadingHTML = "<img src=\"/static/images/ajax-loader.gif\"/><br />";
 
-export function addShareEventHandlers() {
+export function addChangePublicAccessEventHandlers() {
     $(".public_access_link").unbind("click");
     $(".public_access_link").bind("click", function(evt) {
         var modal = $("#modal-public-access");
@@ -26,13 +26,12 @@ export function addShareEventHandlers() {
             });
 
     });
+
+    $("#modal-public-access").bind("hidden.bs.modal", function() {
+        var expChangeEvent = new Event("experiment-change");
+        $(this).parents(".tab-pane")[0].dispatchEvent(expChangeEvent);
+    });
 }
-
-$("#modal-public-access").bind("hidden.bs.modal", function() {
-    var expChangeEvent = new Event("experiment-change");
-    $(this).parents(".tab-pane")[0].dispatchEvent(expChangeEvent);
-});
-
 
 // beginswith, endswith
 String.prototype.beginsWith = function(t, i) {
@@ -474,5 +473,5 @@ $(document).ready(function() {
             $targetToken.load(href);
         }); // TODO error-handling
     });
-    addShareEventHandlers();
+    addChangePublicAccessEventHandlers();
 });

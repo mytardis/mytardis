@@ -1,9 +1,8 @@
-/* eslint global-strict: 0, strict: 0, no-console: 0, object-shorthand: 0,
-          no-unused-vars: [2, {"vars": "local", "args": "none"}] */
-/* global QUnit, _, experimentshare, Backbone */
-"use strict";
+/* global QUnit, _ */
 
-// Tests for assets/js/tardis_porta/view_experiment/share.js
+import {addChangePublicAccessEventHandlers} from "../../../assets/js/tardis_portal/view_experiment/share/share.js";
+
+// Tests for assets/js/tardis_portal/view_experiment/share/share.js
 // which used to be embedded within
 // tardis/tardis_portal/templates/tardis_portal/ajax/share.html
 
@@ -18,7 +17,7 @@ QUnit.module("tardis_portal.ajax.share", {
     }
 });
 
-QUnit.skip("Test clicking on Public Access button", function(assert) {
+QUnit.test("Test clicking on Public Access button", function(assert) {
 
     $("#qunit-fixture").append(
         "<input type=\"hidden\" id=\"experiment-id\" value=\"1\">\n" +
@@ -108,9 +107,9 @@ QUnit.skip("Test clicking on Public Access button", function(assert) {
     // as it is required to load view_experiment/experiment-tabs.js:
     assert.ok(_.isEmpty({}));
 
-    // addShareEventHandlers needs to be run after the QUnit fixtures have
-    // been created so that jQuery can find the elements to bind events to:
-    //experimentshare.addShareEventHandlers();
+    // addChangePublicAccessEventHandlers needs to be run after the QUnit fixtures
+    // have been created so that jQuery can find the elements to bind events to:
+    addChangePublicAccessEventHandlers();
 
     var modalPublicAccessBody = $("#qunit-fixture").find("#modal-public-access").find(".modal-body");
     assert.equal(modalPublicAccessBody.html(), "");
@@ -171,27 +170,9 @@ QUnit.skip("Test clicking on Change User Sharing button", function(assert) {
             "}]"
     });
 
-    $.getScript("../assets/js/tardis_portal/view_experiment/init.js")
-        .done(function( data, textStatus, jqxhr ) {
-            assert.equal(jqxhr.status, 200);
-            console.log("Loaded view_experiment/init.js");
-        })
-        .fail(function( jqxhr, settings, exception ) {
-            console.log("Failed to load view_experiment/init.js");
-            throw exception;
-        });
-
-    // share.js needs to be loaded after the QUnit fixtures have
-    // been created so that jQuery can find the elements to bind events to:
-    $.getScript("../assets/js/tardis_portal/view_experiment/share.js")
-        .done(function( data, textStatus, jqxhr ) {
-            assert.equal(jqxhr.status, 200);
-            console.log("Loaded share.js");
-        })
-        .fail(function( jqxhr, settings, exception ) {
-            console.log("Failed to load share.js");
-            throw exception;
-        });
+    // addUserSharingEventHandlers needs to be run after the QUnit fixtures
+    // have been created so that jQuery can find the elements to bind events to:
+    // addUserSharingEventHandlers();
 
     var modalShareBody = $("#qunit-fixture").find("#modal-share").find(".modal-body");
     assert.equal(modalShareBody.html(), "");
@@ -244,27 +225,9 @@ QUnit.skip("Test clicking on Change Group Sharing button", function(assert) {
         responseText: "testgroup1 ~ testgroup2"
     });
 
-    $.getScript("../assets/js/tardis_portal/view_experiment/init.js")
-        .done(function( data, textStatus, jqxhr ) {
-            assert.equal(jqxhr.status, 200);
-            console.log("Loaded view_experiment/init.js");
-        })
-        .fail(function( jqxhr, settings, exception ) {
-            console.log("Failed to load view_experiment/init.js");
-            throw exception;
-        });
-
-    // share.js needs to be loaded after the QUnit fixtures have
-    // been created so that jQuery can find the elements to bind events to:
-    $.getScript("../assets/js/tardis_portal/view_experiment/share.js")
-        .done(function( data, textStatus, jqxhr ) {
-            assert.equal(jqxhr.status, 200);
-            console.log("Loaded share.js");
-        })
-        .fail(function( jqxhr, settings, exception ) {
-            console.log("Failed to load share.js");
-            throw exception;
-        });
+    // addGroupSharingEventHandlers needs to be run after the QUnit fixtures
+    // have been created so that jQuery can find the elements to bind events to:
+    // addGroupSharingEventHandlers();
 
     var modalShareGroupBody = $("#qunit-fixture").find("#modal-share-group").find(".modal-body");
     assert.equal(modalShareGroupBody.html(), "");
