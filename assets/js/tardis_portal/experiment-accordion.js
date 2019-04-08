@@ -1,7 +1,3 @@
-/* tardis/tardis_portal/static/js/jquery/tardis_portal/experiment-accordion.js */
-
-/* eslint no-unused-vars: [2, {"vars": "local", "args": "none"}] */
-
 /**
  * Loads recent datasets from a given experiment into a div
  * @param {string} divIdPrefix - Prefix of the div element's ID, e.g. "latest-dataset-"
