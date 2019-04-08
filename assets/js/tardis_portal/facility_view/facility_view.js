@@ -1,14 +1,3 @@
-// Capitalises the first letter (adapted from http://codepen.io/WinterJoey/pen/sfFaK)
-angular
-.module('facilityOverview')
-.filter('capitalise', function() {
-    return function(input, all) {
-        return (input) ? input.replace(/([^\W_]+[^\s-]*) */g, function(txt) {
-            return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
-        }) : '';
-    };
-});
-
 // Filter to produce nice file size formatting (adapted from https://gist.github.com/yrezgui/5653591)
 angular
 .module('facilityOverview')
