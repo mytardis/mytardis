@@ -48,6 +48,6 @@ QUnit.test("Test userAutocompleteHandler", function(assert) {
             "value": "testuser2"
         }
     ];
-    var actual = userAutocompleteHandler("Test", mockUsersList, "localdb");
+    var actual = userAutocompleteHandler("Test", mockUsersList);
     assert.equal(JSON.stringify(actual), JSON.stringify(expected));
 });

@@ -1,8 +1,9 @@
-/* global _ */
+/* jQuery code for experiment view's Sharing tab */
+/* global $ */
+
 import {userAutocompleteHandler} from "../../main";
 
 var loadingHTML = "<img src=\"/static/images/ajax-loader.gif\"/><br />";
-
 
 export function addShareEventHandlers() {
     $(".public_access_link").unbind("click");
@@ -83,13 +84,17 @@ $(".share_link").bind("click", function(evt) {
                         $("#id_authMethod_label").hide();
                         $("#id_authMethod").hide();
                     }
-                    $("#id_entered_user").autocomplete({
-                        "source": _.bind( function(query, callback) {
-                            var authMethod = $("#id_authMethod").val();
-                            callback(
-                                userAutocompleteHandler(
-                                    query.term, this.users, authMethod));
-                        }, { "users": users })
+                    var autocompleteHandler = function(usersForHandler, query, callback) {
+                        return callback(userAutocompleteHandler(query, usersForHandler));
+                    };
+                    $("#id_entered_user").typeahead({
+                        "source": autocompleteHandler.bind(this, users),
+                        "displayText": function(item) {
+                            return item.label;
+                        },
+                        "updater": function(item) {
+                            return item.value;
+                        }
                     });
                 }
             });
@@ -242,7 +247,6 @@ $(".share_link_group").bind("click", function(evt) {
                 }
             });
 
-            // TODO: Replace with Bootstrap typeahead
             $(".groupsuggest").typeahead({
                 "source": groups.split(" ~ ")
             });
@@ -272,13 +276,17 @@ $(".share_link_group").bind("click", function(evt) {
                         "dataType": "json",
                         "url": "/ajax/user_list/",
                         "success": function(users2) {
-                            $("#id_adduser").autocomplete({
-                                "source": _.bind( function(query, callback) {
-                                    var authMethod = $("#id_authMethod").val();
-                                    callback(
-                                        userAutocompleteHandler(
-                                            query.term, this.users, authMethod));
-                                }, { "users": users2 })
+                            var autocompleteHandler = function(usersForHandler, query, callback) {
+                                return callback(userAutocompleteHandler(query, usersForHandler));
+                            };
+                            $("#id_adduser").typeahead({
+                                "source": autocompleteHandler.bind(this, users2),
+                                "displayText": function(item) {
+                                    return item.label;
+                                },
+                                "updater": function(item) {
+                                    return item.value;
+                                }
                             });
                         }
                     });
@@ -289,16 +297,8 @@ $(".share_link_group").bind("click", function(evt) {
             $("#group.form_submit").click(function(event) {
                 event.preventDefault();
 
-                // TODO: shift group creation to group management page
-                // var usersuggest = $(this).parents('.access_list2').find(".usersuggest").val();
                 var groupsuggest = $(this).parents(".access_list2").find(".groupsuggest").val();
-                // var authMethod = $(this).parents('.access_list2').find("#id_authMethod").val();
                 var groupsDiv = $(this).parents(".access_list2").children(".groups");
-                // var create = $(this).parents('.access_list2').find(".creategroup").is(':checked');
-                // var canRead = $(this).parents('.access_list2').find(".canRead").is(':checked');
-                // var canWrite = $(this).parents('.access_list2').find(".canWrite").is(':checked');
-                // var canDelete = $(this).parents('.access_list2').find(".canDelete").is(':checked');
-                // var permissions = '/?authMethod=' + authMethod + '&create=' + create + '&canRead=' + canRead + '&canWrite=' + canWrite + '&canDelete=' + canDelete + '&admin=' + usersuggest;
 
                 var action = "/experiment/control_panel/" + $("#experiment-id").val() + "/access_list/add/group/" + groupsuggest;
 
@@ -360,13 +360,17 @@ $(".share_link_group").bind("click", function(evt) {
                                     "dataType": "json",
                                     "url": "/ajax/user_list/",
                                     "success": function(users2) {
-                                        $("#id_adduser").autocomplete({
-                                            "source": _.bind( function(query, callback) {
-                                                var authMethod = $("#id_authMethod").val();
-                                                callback(
-                                                    userAutocompleteHandler(
-                                                        query.term, this.users, authMethod));
-                                            }, { "users": users2 })
+                                        var autocompleteHandler = function(usersForHandler, query, callback) {
+                                            return callback(userAutocompleteHandler(query, usersForHandler));
+                                        };
+                                        $("#id_adduser").typeahead({
+                                            "source": autocompleteHandler.bind(this, users2),
+                                            "displayText": function(item) {
+                                                return item.label;
+                                            },
+                                            "updater": function(item) {
+                                                return item.value;
+                                            }
                                         });
                                     }
                                 });
