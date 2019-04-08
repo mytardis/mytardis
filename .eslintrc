@@ -34,7 +34,7 @@
         "space-before-blocks": [2, "always"],
         "space-before-function-paren": [2, {"anonymous": "never", "named": "never"}],
         "space-infix-ops": [2, {"int32Hint": false}],
-        "strict": [0, "function"],
+        "strict": 2,
         "wrap-iife": [1]
     },
   "env": {
@@ -51,12 +51,8 @@
         "angular": true
       },
       "rules": {
-        "no-use-before-define": "off",
-        "camelcase": 2,
         "quotes": [0, "double"],
         "indent": 0,
-        "dot-notation": 0,
-        "space-before-function-paren": 0,
         "complexity": [
           "error",
           {
