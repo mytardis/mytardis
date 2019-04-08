@@ -138,7 +138,6 @@ const userSharingModalLoaded = function() {
             "/access_list/add/user/" + username + permissions;
 
         $.ajax({
-            "async": false,
             "global": true,
             type: "GET",
             url: action,
@@ -150,7 +149,6 @@ const userSharingModalLoaded = function() {
                     var href = $(this).attr("href");
                     var removeUser = $(this);
                     $.ajax({
-                        "async": false,
                         "global": false,
                         "url": href,
                         "success": function(data2) {
@@ -174,7 +172,6 @@ const userSharingModalLoaded = function() {
         var href = $(this).attr("href");
         var removeUser = $(this);
         $.ajax({
-            "async": false,
             "global": false,
             "url": href,
             "success": function(data) {
@@ -222,7 +219,6 @@ const groupSharingModalLoaded = function() {
     var groups = (function() {
         var val = null;
         $.ajax({
-            "async": false,
             "global": false,
             "url": "/ajax/group_list/",
             "success": function(data) { val = data; }
@@ -317,7 +313,6 @@ const groupSharingModalLoaded = function() {
         action = action + permissions;
 
         $.ajax({
-            "async": false,
             "global": true,
             type: "GET",
             url: action,
@@ -372,7 +367,6 @@ const groupSharingModalLoaded = function() {
                     var removeGroup = $(this);
 
                     $.ajax({
-                        "async": false,
                         "global": false,
                         "url": href,
                         "success": function(data2) {
@@ -401,7 +395,6 @@ const groupSharingModalLoaded = function() {
         var removeGroup = $(this);
 
         $.ajax({
-            "async": false,
             "global": false,
             "url": href,
             "success": function(data) {
