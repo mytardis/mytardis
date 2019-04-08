@@ -233,7 +233,7 @@ angular
             data[0].ownerGroup = data[0].owner;
         }
         var tmp = {"ownerGroup": data[0].ownerGroup};
-        tmp['datasets'] = [];
+        tmp.datasets = [];
         for (var i = 0; i < data.length; i++) {
             data[i].ownerGroup = data[i].owner + ', ' + data[i].group;
             if (data[i].group) {
@@ -245,7 +245,7 @@ angular
             if (tmp.ownerGroup !== data[i].ownerGroup) {
                 result.push(tmp);
                 tmp = {"ownerGroup": data[i].ownerGroup};
-                tmp['datasets'] = [];
+                tmp.datasets = [];
             }
             var dataset = {};
             for (var key in data[i]) {
@@ -253,7 +253,7 @@ angular
                     dataset[key] = data[i][key];
                 }
             }
-            tmp['datasets'].push(dataset);
+            tmp.datasets.push(dataset);
         }
         result.push(tmp);
         return result;
@@ -271,12 +271,12 @@ angular
 
         var result = [];
         var tmp = {"instrument": data[0].instrument};
-        tmp['datasets'] = [];
+        tmp.datasets = [];
         for (var i = 0; i < data.length; i++) {
             if (tmp.instrument.id !== data[i].instrument.id) {
                 result.push(tmp);
                 tmp = {"instrument": data[i].instrument};
-                tmp['datasets'] = [];
+                tmp.datasets = [];
             }
             var dataset = {};
             for (var key in data[i]) {
@@ -284,7 +284,7 @@ angular
                     dataset[key] = data[i][key];
                 }
             }
-            tmp['datasets'].push(dataset);
+            tmp.datasets.push(dataset);
         }
         result.push(tmp);
         return result;
