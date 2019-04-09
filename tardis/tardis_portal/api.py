@@ -226,7 +226,7 @@ class ACLAuthorization(Authorization):
         if bundle.request.user.is_authenticated and \
            bundle.request.user.is_superuser:
             return True
-        if re.match("^/api/v1/[a-z]+/schema/$", bundle.request.path):
+        if re.match("^/api/v1/[a-z_]+/schema/$", bundle.request.path):
             return True
         if isinstance(bundle.obj, Experiment):
             return has_experiment_access(bundle.request, bundle.obj.id)
