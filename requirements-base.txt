@@ -2,6 +2,7 @@ Django==1.11.20 # pyup: >=1.11,<2.0
 Wand==0.5.2
 amqp==2.4.2
 bleach==3.1.0
+boto3==1.9.130
 celery==4.3.0
 django-bootstrap-form==3.4
 django-extensions==2.1.6
@@ -13,6 +14,7 @@ django-registration-redux==2.6
 git+https://github.com/mytardis/django-tastypie.git@mytardis-dj1.9#egg=django-tastypie
 git+https://github.com/mytardis/django-tastypie-swagger.git@mytardis-dj1.9#egg=django-tastypie-swagger
 django-user-agents==0.3.2
+django-storages==1.7.1
 elasticsearch==1.9.0 # pyup: <2
 future==0.17.1
 gunicorn==19.9.0
