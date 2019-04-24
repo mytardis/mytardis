@@ -60,6 +60,13 @@ def they_see_the_facility_overview_page(context):
         time.sleep(0.1)
         retries +=1
 
+    # We can't use the jQuery.active method to determine if the AJAX has
+    # finished loading, because this is an AngularJS page.  The progress bar
+    # method above works most of the time, but occasionally we see an error
+    # suggesting that this method didn't wait long enough for the Facility
+    # Overview page to load, so we'll give it some more time to finish loading:
+    time.sleep(0.5)
+
     h2 = context.browser.find_element_by_tag_name("h2")
     context.test.assertEqual(h2.get_attribute("innerHTML"), "Test Facility")
 
