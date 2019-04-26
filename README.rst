@@ -1,10 +1,6 @@
 MyTardis
 ========
 
-.. image:: https://badges.greenkeeper.io/mytardis/mytardis.svg
-   :alt: Greenkeeper badge
-   :target: https://greenkeeper.io/
-
 .. image:: https://readthedocs.org/projects/mytardis/badge/?version=develop
    :target: http://mytardis.readthedocs.org/en/develop/?badge=develop
    :alt: Documentation Status
