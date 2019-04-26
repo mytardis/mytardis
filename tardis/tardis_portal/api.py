@@ -567,8 +567,7 @@ class ParameterSetResource(MyTardisModelResource):
 class ExperimentParameterSetResource(ParameterSetResource):
     '''API for ExperimentParameterSets
     '''
-    experiment = fields.ForeignKey(
-        'tardis.tardis_portal.api.ExperimentResource', 'experiment')
+    experiment = fields.ForeignKey(ExperimentResource, 'experiment')
     parameters = fields.ToManyField(
         'tardis.tardis_portal.api.ExperimentParameterResource',
         'experimentparameter_set',
@@ -667,8 +666,7 @@ class ExperimentResource(MyTardisModelResource):
 
 
 class DatasetParameterSetResource(ParameterSetResource):
-    dataset = fields.ForeignKey(
-        'tardis.tardis_portal.api.DatasetResource', 'dataset')
+    dataset = fields.ForeignKey(DatasetResource, 'dataset')
     parameters = fields.ToManyField(
         'tardis.tardis_portal.api.DatasetParameterResource',
         'datasetparameter_set',
@@ -710,7 +708,7 @@ class StorageBoxResource(MyTardisModelResource):
 class StorageBoxOptionResource(MyTardisModelResource):
     accessible_keys = ['location']
     storage_box = fields.ForeignKey(
-        'tardis.tardis_portal.api.StorageBoxResource',
+        StorageBoxResource,
         'storage_box',
         related_name='options',
         full=False)
@@ -724,7 +722,7 @@ class StorageBoxOptionResource(MyTardisModelResource):
 
 class StorageBoxAttributeResource(MyTardisModelResource):
     storage_box = fields.ForeignKey(
-        'tardis.tardis_portal.api.StorageBoxResource',
+        StorageBoxResource,
         'storage_box',
         related_name='attributes',
         full=False)
