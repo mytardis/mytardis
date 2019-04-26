@@ -192,7 +192,6 @@ def clear_sessions():
 @tardis_app.task(name='tardis_portal.save_metadata', ignore_result=True)
 def save_metadata(id, name, schema, metadata):
     """Save all the metadata to a Dataset_Files paramamter set."""
-    from fractions import Fraction
     from .models import ParameterName, Schema, DataFile,\
                         DatafileParameterSet, DatafileParameter
 
@@ -215,7 +214,7 @@ def save_metadata(id, name, schema, metadata):
         param_objects = ParameterName.objects.filter(schema=schema)
         parameters = []
         for p in metadata:
-            parameter = filter(lambda x, y=p: x.name == y, param_objects)
+            parameter = param_objects.filter(name=p).first()
             if parameter:
                 parameters.append(parameter[0])
         return parameters
