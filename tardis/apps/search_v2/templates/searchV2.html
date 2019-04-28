@@ -1,13 +1,10 @@
 {% extends "tardis_portal/portal_template.html" %}
+{% load render_bundle from webpack_loader %}
 {% load bleach_tag %}
 
 {% block content %}
-    <h2>Search {{ site_title }}</h2>
+    <div id="app"></div>
     <div>
-    <form method="GET" action="{% url "search_v2" %}">
-        <input id="id_q" autocomplete="off" name="q" type="text" class="search-query" placeholder="Search">
-        <input class="btn btn-success" type="submit" value="Search">
-    </form>
     </div>
     {% if hits.total > 0 %}
         <h3>Found {{ hits.total }} Matches</h3>
@@ -47,7 +44,6 @@
             </div>
         {% endif %}
     {% else %}
-        Enter your search term to search Experiment, Dataset and Datafile names.
-        {# Show some example queries to run, maybe query syntax, something else? #}
     {% endif %}
+    {% render_bundle 'app' %}
 {% endblock content%}
