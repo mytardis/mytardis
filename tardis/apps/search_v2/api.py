@@ -13,6 +13,8 @@ from tastypie.exceptions import BadRequest
 from tastypie.serializers import Serializer
 from django_elasticsearch_dsl.search import Search
 
+from tardis.tardis_portal.api import default_authentication
+
 
 class PrettyJSONSerializer(Serializer):
     json_indent = 2
@@ -45,11 +47,11 @@ class SearchAppResource(Resource):
         resource_name = 'simple-search'
         list_allowed_methods = ['get', 'post']
         serializer = default_serializer
+        authentication = default_authentication
         object_class = SearchObject
 
     def detail_uri_kwargs(self, bundle_or_obj):
         kwargs = {}
-        # bundle_or_obj.data['json'] = bundle_or_obj.obj.json
         if isinstance(bundle_or_obj, Bundle):
             kwargs['pk'] = bundle_or_obj.obj.id
         else:
@@ -68,12 +70,16 @@ class SearchAppResource(Resource):
             fields=["title", "description", "filename"]
         )
         results = search.execute()
-        """
-        for hits in results.hits:
-            print(hits)
-        response_json = json.dumps(results.to_dict())
-        """
-        return [SearchObject(id=1, hits=results.to_dict())]
+        result_dict = {k: [] for k in ["experiments", "datasets", "datafiles"]}
+        for hit in results.hits.hits:
+            if hit["_index"] == "dataset":
+                result_dict["datasets"].append(hit)
+            elif hit["_index"] == "experiments":
+                result_dict["experiments"].append(hit)
+            elif hit["_index"] == "datafile":
+                result_dict["datafiles"].append(hit)
+
+        return [SearchObject(id=1, hits=result_dict)]
 
     def obj_get_list(self, bundle, **kwargs):
         return self.get_object_list(bundle)
