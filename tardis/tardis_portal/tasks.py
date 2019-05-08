@@ -183,7 +183,7 @@ def dfo_verify(dfo_id, *args, **kwargs):
 
 
 @tardis_app.task(name='tardis_portal.clear_sessions', ignore_result=True)
-def clear_sessions():
+def clear_sessions(**kwargs):
     """Clean up expired sessions using Django management command."""
     from django.core import management
     management.call_command("clearsessions", verbosity=0)

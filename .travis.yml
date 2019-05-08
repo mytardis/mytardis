@@ -16,6 +16,6 @@ install:
 - pip install -r requirements.txt
 
 script:
-- pylint tardis
 - mkdir -p var/store
 - python test.py
+- pylint tardis

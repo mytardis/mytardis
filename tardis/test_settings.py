@@ -71,7 +71,6 @@ def get_all_tardis_apps():
     return tuple(sorted(apps))
 
 INSTALLED_APPS += get_all_tardis_apps() + (
-    'tardis.apps.equipment',
     'django_nose',
     'behave_django',
 )

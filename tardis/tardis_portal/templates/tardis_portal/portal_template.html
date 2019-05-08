@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 {% load static from staticfiles %}
+{% load render_bundle from webpack_loader %}
 {% load facility_tags %}
 {% load approved_user_tags %}
 <html lang="en"
       xmlns="http://www.w3.org/1999/xhtml"
       prefix="xsd: http://www.w3.org/2001/XMLSchema#
-              dc: http://purl.org/dc/elements/1.1/"
-      ng-app="MyTardis">
+              dc: http://purl.org/dc/elements/1.1/">
   <!--
     RDFa Core 1.1 uses the "prefix" element for namespace declarations.
 
@@ -24,11 +24,16 @@
     <meta name="description" content="">
     <meta name="author" content="">
     <meta name="keywords" content="">
-    {% include "tardis_portal/javascript_libraries.html" %}
-
+    {% render_bundle 'main' %}
+    {% render_bundle 'lib' %}
     {% block script %}
     {% endblock script %}
-
+    <style>
+      body {
+        /* 60px to make the container go all the way to the bottom of the topbar */
+        padding-top: 60px;
+      }
+    </style>
     <script type="text/javascript">
     // Set active nav button
     $(function() {
@@ -297,8 +302,6 @@
 
     </div>
     <!-- /container -->
-    <script src="{% static 'bootstrap/dist/js/bootstrap.min.js' %}"></script>
-    <script src="{% static 'bootstrap-3-typeahead/bootstrap3-typeahead.min.js' %}"></script>
     {% if ga_enabled %}
     <script type="text/javascript">
       (function(i,s,o,g,r,a,m) {

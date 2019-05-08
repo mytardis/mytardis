@@ -12,8 +12,13 @@
 /* ./node_modules/.bin/grunt test --verbose     */
 /************************************************/
 
+const webpackConfig = require("./test-webpack.config");
 module.exports = function(grunt) {
     grunt.initConfig({
+        webpack: {
+            prod: webpackConfig,
+            dev: Object.assign({watch: true}, webpackConfig)
+        },
         qunit: {
             all: ["js_tests/tests.html"],
             options: {
@@ -31,6 +36,7 @@ module.exports = function(grunt) {
         }
     });
 
+    grunt.loadNpmTasks("grunt-webpack");
     grunt.loadNpmTasks("grunt-contrib-qunit");
     grunt.registerTask("test", ["qunit"]);
     grunt.registerTask("default", ["test"]);

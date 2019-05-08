@@ -9,6 +9,7 @@ Tests for view methods supplying context data to templates
 
 """
 from flexmock import flexmock
+from mock import patch
 
 from django.conf import settings
 from django.test import TestCase
@@ -58,7 +59,8 @@ class ViewTemplateContextsTest(TestCase):
         self.datafile.delete()
         self.acl.delete()
 
-    def test_experiment_view(self):
+    @patch('webpack_loader.loader.WebpackLoader.get_bundle')
+    def test_experiment_view(self, mock_webpack_get_bundle):
         """
         test some template context parameters for an experiment view
         """
@@ -83,6 +85,7 @@ class ViewTemplateContextsTest(TestCase):
         view_fn = ExperimentView.as_view()
         response = view_fn(request, experiment_id=self.exp.id)
         self.assertEqual(response.status_code, 200)
+        mock_webpack_get_bundle.assert_called()
 
         # Behavior with USER_AGENT_SENSING enabled and a request.user_agent
         saved_setting = getattr(settings, "USER_AGENT_SENSING", None)
@@ -110,7 +113,8 @@ class ViewTemplateContextsTest(TestCase):
             else:
                 delattr(settings, "USER_AGENT_SENSING")
 
-    def test_dataset_view(self):
+    @patch('webpack_loader.loader.WebpackLoader.get_bundle')
+    def test_dataset_view(self, mock_webpack_get_bundle):
         """
         test some context parameters for a dataset view
         """
@@ -131,6 +135,7 @@ class ViewTemplateContextsTest(TestCase):
         view_fn = DatasetView.as_view()
         response = view_fn(request, dataset_id=self.dataset.id)
         self.assertEqual(response.status_code, 200)
+        mock_webpack_get_bundle.assert_called()
 
         # Behavior with USER_AGENT_SENSING enabled and a request.user_agent
         saved_setting = getattr(settings, "USER_AGENT_SENSING", None)
@@ -191,7 +196,8 @@ class ExperimentListsTest(TestCase):
         for acl in self.acls:
             acl.delete()
 
-    def test_mydata_view(self):
+    @patch('webpack_loader.loader.WebpackLoader.get_bundle')
+    def test_mydata_view(self, mock_webpack_get_bundle):
         """
         Test My Data view
         """
@@ -204,6 +210,7 @@ class ExperimentListsTest(TestCase):
         request.user = self.user
         response = my_data(request)
         self.assertEqual(response.status_code, 200)
+        mock_webpack_get_bundle.assert_called()
         # jQuery hasn't populated the div yet:
         self.assertIn(
             b'<div id="myowned" class="mydata accordion experiments"></div>',
@@ -235,7 +242,8 @@ class ExperimentListsTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertNotIn(b'<ul class="pagination"', response.content)
 
-    def test_shared_view(self):
+    @patch('webpack_loader.loader.WebpackLoader.get_bundle')
+    def test_shared_view(self, mock_webpack_get_bundle):
         """
         Test Shared view
         """
@@ -248,6 +256,8 @@ class ExperimentListsTest(TestCase):
         request.user = self.user
         response = shared(request)
         self.assertEqual(response.status_code, 200)
+        mock_webpack_get_bundle.assert_called()
+
         # jQuery hasn't populated the div yet:
         self.assertIn(
             b'<div id="myshared" class="mydata accordion experiments"></div>',

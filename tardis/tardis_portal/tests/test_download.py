@@ -8,6 +8,7 @@ from zipfile import is_zipfile, ZipFile
 from tarfile import is_tarfile, TarFile
 from tempfile import NamedTemporaryFile
 
+from mock import patch
 from six.moves import urllib
 from six.moves import reduce
 
@@ -135,7 +136,8 @@ class DownloadTestCase(TestCase):
         rmtree(self.dest1)
         rmtree(self.dest2)
 
-    def testView(self):
+    @patch('webpack_loader.loader.WebpackLoader.get_bundle')
+    def testView(self, mock_webpack_get_bundle):
         client = Client()
 
         # check view of file1
@@ -158,6 +160,8 @@ class DownloadTestCase(TestCase):
         # check view of file2 again
         response = client.get('/datafile/view/%i/' % self.datafile2.id)
         self.assertEqual(response.status_code, 200)
+
+        mock_webpack_get_bundle.assert_called()
 
         # The following behaviour relies on ImageMagick
         if IMAGEMAGICK_AVAILABLE:
@@ -220,7 +224,8 @@ class DownloadTestCase(TestCase):
             self.assertFalse(pattern.search(name))
         self.assertEqual(len(names), len(datafiles))
 
-    def testDownload(self):
+    @patch('webpack_loader.loader.WebpackLoader.get_bundle')
+    def testDownload(self, mock_webpack_get_bundle):
         client = Client()
 
         # check download for experiment1 as tar
@@ -337,6 +342,7 @@ class DownloadTestCase(TestCase):
         response = client.get('/download/experiment/%i/tar/' %
                               self.experiment2.id)
         self.assertEqual(response.status_code, 200)
+        mock_webpack_get_bundle.assert_called()
         self.assertEqual(response['Content-Disposition'],
                          'attachment; filename="%s-complete.tar"'
                          % exp2_title)

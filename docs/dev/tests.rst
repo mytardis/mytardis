@@ -4,7 +4,6 @@ Tests
 
 Running the Test Suite
 ----------------------
-
 Run this command to run the unit tests::
 
     ./test.py

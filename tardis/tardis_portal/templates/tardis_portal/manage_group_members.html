@@ -1,14 +1,12 @@
 {% extends "tardis_portal/portal_template.html" %}
 {% load static from staticfiles %}
-
+{% load render_bundle from webpack_loader %}
 {% block script %}
+{% render_bundle 'tardis_portal_manage_group_members' %}
 
-{% include "tardis_portal/javascript_libraries.html" %}
 
 <input type="hidden" id="csrf-token" value="{{ csrf_token }}">
-<script type="text/javascript"
-        src="{% static 'js/jquery/tardis_portal/manage_group_members/ready.js' %}">
-</script>
+
 {% endblock %}
 
 {% block content %}

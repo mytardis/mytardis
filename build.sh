@@ -51,13 +51,19 @@ npm install --production
 # To install Javascript dependencies for production and for testing:
 npm install && npm test
 
+# Building the webpack bundle is not required to run the Python unit
+# tests, but it is required to run the web application with
+# manage.py runserver or with gunicorn:
+npm run-script build
+
+# Run the Python unit tests:
 mkdir -p var/store
+python test.py
 
 # execute this wonderful command to have your settings.py created/updated
 # with a generated Django SECRET_KEY (required for MyTardis to run)
 python -c "import os; from random import choice; key_line = '%sSECRET_KEY=\"%s\"  # generated from build.sh\n' % ('from .default_settings import *  # pylint: disable=W0401,W0614\n\n' if not os.path.isfile('tardis/settings.py') else '', ''.join([choice('abcdefghijklmnopqrstuvwxyz0123456789@#%^&*(-_=+)') for i in range(50)])); f=open('tardis/settings.py', 'a+'); f.write(key_line); f.close()"
 
-python test.py
 # for empty databases, sync all and fake migrate, otherwise run a real migration
 python manage.py migrate
 python manage.py createcachetable default_cache

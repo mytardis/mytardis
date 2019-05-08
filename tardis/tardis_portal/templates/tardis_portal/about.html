@@ -1,7 +1,6 @@
 {% extends "tardis_portal/portal_template.html" %}
-{% load static from staticfiles %}
+{% load render_bundle from webpack_loader %}
 {% block content %}
-
     <div class="page-header">
         <h1 class="title">About {{ site_title|default:'MyTardis' }}</h1>
     </div>

@@ -43,6 +43,8 @@ from django.test import TestCase
 from django.conf import settings
 from django.contrib.auth.models import User
 
+from mock import patch
+
 from ..models import Experiment
 from ..models import ObjectACL
 from ..models import Token
@@ -242,7 +244,8 @@ class TokenTestCase(TestCase):
             b'href="/token/delete/%d/"' % token.id,
             response.content)
 
-    def test_create_token(self):
+    @patch('webpack_loader.loader.WebpackLoader.get_bundle')
+    def test_create_token(self, mock_webpack_get_bundle):
         from ..views.authorisation import create_token
 
         sys.modules['datetime'].datetime = old_datetime
@@ -272,8 +275,10 @@ class TokenTestCase(TestCase):
         url = "/experiment/view/%s/?token=%s" % (experiment.id, token.token)
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
+        mock_webpack_get_bundle.assert_called()
 
-    def test_token_delete(self):
+    @patch('webpack_loader.loader.WebpackLoader.get_bundle')
+    def test_token_delete(self, mock_webpack_get_bundle):
         from ..views.authorisation import token_delete
 
         sys.modules['datetime'].datetime = old_datetime
@@ -314,3 +319,4 @@ class TokenTestCase(TestCase):
         url = "/experiment/view/%s/?token=%s" % (experiment.id, token.token)
         response = self.client.get(url)
         self.assertEqual(response.status_code, 403)
+        mock_webpack_get_bundle.assert_called()
