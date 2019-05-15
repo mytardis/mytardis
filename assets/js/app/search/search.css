@@ -234,3 +234,19 @@ form#adv-search-form button[type="submit"] {
 #exTab1 {
     box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
 }
+.fa {
+    margin-right: 10px;
+}
+.custom-bullet :before
+{
+    content: "\e080";
+    font-family: 'Glyphicons Halflings';
+    font-size: 9px;
+    float: left;
+    margin-top: 4px;
+    margin-left: -17px;
+    color: #CCCCCC;
+}
+.accordion-body {
+    background-color: #E8F6FF;
+}
