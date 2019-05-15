@@ -1,4 +1,5 @@
 import React, {useState,} from "react";
+import Collapsible from 'react-collapsible';
 import {IntrumentTags, TypeTags} from "./tags.js";
 import SearchDatePicker from "./datepicker";
 
@@ -9,7 +10,9 @@ function createExperimentResultData(hits, newResults) {
             title: hit._source.title,
             type: "experiment",
             id: hit._source.id,
-            url: "/experiment/view/" + hit._source.id
+            url: "/experiment/view/" + hit._source.id,
+            description : hit._source.description,
+            institution_name: hit._source.institution_name
         }
         ];
     });
@@ -21,7 +24,8 @@ function createDatasetResultData(hits, newResults) {
             title: hit._source.description,
             type: "dataset",
             id: hit._source.id,
-            url: "/dataset/" + hit._source.id
+            url: "/dataset/" + hit._source.id,
+            experiments: hit._source.experiments
         }
         ];
     });
@@ -64,7 +68,6 @@ function Search() {
         counts.datafilesCount = datafileHits.length;
         setResults(newResults);
         setCounts(counts);
-        console.log(counts)
     };
     return (
         <main>
@@ -74,11 +77,62 @@ function Search() {
     );
 }
 function Result({result}) {
+    const [dataToggleClass, setDataToggleClass] = useState(true)
+    const dataToggler = () => {
+        setDataToggleClass(!dataToggleClass)
+        //add data as well
+    }
+    const getChildComponent = (result) => {
+        return (
+            <div style={{marginLeft: 20 }}>
+                <span>This dataset belongs to following {result.length} experiment: </span>
+                <ul>
+                {result.map(function(res, index) {
+                    return <li key={index}><a href={"/experiment/view/"+res.id}>{res.title}</a></li>
+                })}
+                </ul>
+            </div>
+        )
+    }
+    const getExperimentData = (result) => {
+        return(
+            <div className={"accordion-group"} style={{marginLeft: 20 }}>
+                <div className={"accordion-heading"}>
+                    <div className={"accordion-body"}>
+                        <div>{result.description}</div>
+                        <div><span style={{fontWeight: "bold"}}>Institution Name: </span> {result.institution_name}</div>
+                    </div>
+                </div>
+            </div>
+        )
+    }
     return (
         <div className="result" id={result.type}>
             <div className="panel panel-default">
-                <div className="panel-body" >
-                    <a href={result.url}>{result.title}</a>
+                <div className="panel-body">
+                    {result.type == "dataset" &&
+                    <div>
+                            <button type="button"
+                                    onClick={dataToggler}
+                                    className="btn btn-link"
+                                    data-target="#data"
+                                    name={"showChild"}>
+                                <i className={dataToggleClass ? "fa fa-plus" : "fa fa-minus"}></i>
+                            </button>
+                                <a style={{fontWeight: "bold"}} href={result.url}>{result.title}</a>
+                                <div id={"data"}>{!dataToggleClass && getChildComponent(result.experiments)}
+                                </div>
+                    </div>
+                    }
+                    {result.type == "experiment" &&
+                        <Collapsible trigger={<button type="button" className="btn btn-link"
+                                    name={"showChild"}>
+                                <i className={"fa fa-plus"}></i>
+                                <a  style={{fontWeight: "bold"}} href={result.url}>{result.title}</a>
+                            </button>}>
+                                <div id={"data"}>{getExperimentData(result)}
+                                </div>
+                        </Collapsible>}
                 </div>
             </div>
         </div>
