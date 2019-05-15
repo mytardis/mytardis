@@ -64,6 +64,7 @@ class SearchAppResource(Resource):
         if not query_text:
             raise BadRequest("Missing query parameter")
         s = Search()
+        s = s[0:20]
         search = s.query(
             "multi_match",
             query=query_text,
