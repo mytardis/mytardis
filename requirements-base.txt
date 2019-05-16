@@ -34,6 +34,6 @@ python-dateutil==2.8.0
 # python-magic
 git+https://github.com/mytardis/python-magic.git#egg=python-magic
 pytz==2019.1
-requests==2.21.0
+requests==2.22.0
 six==1.12.0
 django-webpack-loader==0.6.0
