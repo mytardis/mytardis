@@ -40,10 +40,12 @@ class ExperimentDocument(DocType):
     created_time = fields.DateField()
     start_time = fields.DateField()
     end_time = fields.DateField()
-    created_time = fields.DateField()
     update_time = fields.DateField()
     institution_name = fields.StringField()
-
+    created_by = fields.ObjectField(properties={
+        'first_name': fields.StringField(),
+        'last_name': fields.StringField()
+    })
     class Meta:
         model = Experiment
 
