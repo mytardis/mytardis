@@ -228,10 +228,16 @@ form#adv-search-form button[type="submit"] {
 }
 
 .panel-body {
-    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+    transition: box-shadow .3s;
+    /*box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);*/
+}
+.panel-body:hover {
+    /*box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);*/
+    box-shadow: 0 0 11px rgba(33,33,33,.2);
 }
 
 #exTab1 {
+    padding: 10px;
     box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
 }
 .fa {
@@ -248,5 +254,6 @@ form#adv-search-form button[type="submit"] {
     color: #CCCCCC;
 }
 .accordion-body {
+    padding: 5px;
     background-color: #E8F6FF;
 }

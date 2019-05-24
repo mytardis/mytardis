@@ -1,18 +1,22 @@
 import React, {useState,} from "react";
-import Collapsible from 'react-collapsible';
 import {IntrumentTags, TypeTags} from "./tags.js";
 import SearchDatePicker from "./datepicker";
 
 
 function createExperimentResultData(hits, newResults) {
     hits.forEach(function(hit) {
+        let created_time = new Date(hit._source.created_time).toString();
+        let update_time = new Date(hit._source.update_time).toString();
         newResults = [...newResults, {
             title: hit._source.title,
             type: "experiment",
             id: hit._source.id,
             url: "/experiment/view/" + hit._source.id,
             description : hit._source.description,
-            institution_name: hit._source.institution_name
+            institution_name: hit._source.institution_name,
+            created_time: created_time,
+            update_time: update_time,
+            created_by: hit._source.created_by.first_name + " " + hit._source.created_by.last_name
         }
         ];
     });
@@ -20,12 +24,17 @@ function createExperimentResultData(hits, newResults) {
 }
 function createDatasetResultData(hits, newResults) {
     hits.forEach(function(hit) {
+        let created_time = new Date(hit._source.created_time).toString();
+        let update_time = new Date(hit._source.modified_time).toString();
         newResults = [...newResults, {
             title: hit._source.description,
             type: "dataset",
             id: hit._source.id,
             url: "/dataset/" + hit._source.id,
-            experiments: hit._source.experiments
+            experiments: hit._source.experiments,
+            instrument: hit._source.instrument.name,
+            created_time: created_time,
+            update_time: update_time
         }
         ];
     });
@@ -33,11 +42,17 @@ function createDatasetResultData(hits, newResults) {
 }
 function createDataFileResultData(hits, newResults) {
     hits.forEach(function(hit) {
+        let created_time = new Date(hit._source.created_time).toString();
+        let update_time = new Date(hit._source.modification_time).toString();
         newResults = [...newResults, {
             title: hit._source.filename,
             type: "datafile",
             id: hit._source.id,
-            url: "/datafile/view/" + hit._source.id
+            url: "/datafile/view/" + hit._id,
+            created_time: created_time,
+            update_time: update_time,
+            dataset_description: hit._source.dataset.description,
+            dataset_url: "/dataset/" + hit._source.dataset.id
         }
         ];
     });
@@ -71,41 +86,71 @@ function Search() {
     };
     return (
         <main>
-            <SimpleSearchForm showResults={showResults}></SimpleSearchForm>
-            {results.length > 0 ? <Results results={results} counts={counts}></Results> : <span/>}
+            <SimpleSearchForm showResults={showResults}/>
+            {results.length > 0 ? <Results results={results} counts={counts}/> : <span/>}
         </main>
     );
 }
 function Result({result}) {
-    const [dataToggleClass, setDataToggleClass] = useState(true)
+    const [dataToggleClass, setDataToggleClass] = useState(false);
     const dataToggler = () => {
         setDataToggleClass(!dataToggleClass)
-        //add data as well
-    }
-    const getChildComponent = (result) => {
+    };
+    const getDatasetData = (result) => {
         return (
-            <div style={{marginLeft: 20 }}>
-                <span>This dataset belongs to following {result.length} experiment: </span>
-                <ul>
-                {result.map(function(res, index) {
-                    return <li key={index}><a href={"/experiment/view/"+res.id}>{res.title}</a></li>
-                })}
-                </ul>
+            <div className={"accordion-group"} style={{marginLeft: 20}}>
+                <div className={"accordion-heading"}>
+                    <div className={"accordion-body"}>
+                        <div><span style={{fontWeight: "bold"}}>Instrument: </span> {result.instrument}</div>
+                        <div><span style={{fontWeight: "bold"}}>Date Created: </span> {result.created_time}</div>
+                        <div><span style={{fontWeight: "bold"}}>Last updated: </span> {result.update_time}</div>
+                        <span style={{
+                            fontSize: 11,
+                            fontStyle: "italic"
+                        }}>This dataset belongs to following {result.experiments.length} experiment: </span>
+                        <ul>
+                            {result.experiments.map(function(res, index) {
+                                return <li key={index}><a href={"/experiment/view/" + res.id}>{res.title}</a></li>;
+                            })}
+                        </ul>
+                    </div>
+                </div>
             </div>
         )
-    }
+    };
     const getExperimentData = (result) => {
         return(
             <div className={"accordion-group"} style={{marginLeft: 20 }}>
                 <div className={"accordion-heading"}>
                     <div className={"accordion-body"}>
-                        <div>{result.description}</div>
+                        <div><span style={{fontWeight: "bold"}}>Created by: </span> {result.created_by}</div>
+                        <div><span style={{fontWeight: "bold"}}>Description: </span> {result.description}</div>
                         <div><span style={{fontWeight: "bold"}}>Institution Name: </span> {result.institution_name}</div>
+                        <div><span style={{fontWeight: "bold"}}> Date created: </span> {result.created_time}</div>
+                        <div><span style={{fontWeight: "bold"}}> Last updated: </span> {result.update_time}</div>
                     </div>
                 </div>
             </div>
         )
-    }
+    };
+    const getDataFileData = (result) => {
+        return(
+            <div className={"accordion-group"} style={{marginLeft: 20 }}>
+                <div className={"accordion-heading"}>
+                    <div className={"accordion-body"}>
+                        <div><span style={{fontWeight: "bold"}}>File Name: </span> {result.title}</div>
+                        <div><span style={{fontWeight: "bold"}}> Date created: </span> {result.created_time}</div>
+                        <div><span style={{fontWeight: "bold"}}> Last updated: </span> {result.update_time}</div>
+                        <span style={{
+                            fontSize: 11,
+                            fontStyle: "italic"
+                        }}>This datafile is from following dataset: </span>
+                        <div><span style={{fontWeight: "bold", marginLeft: 5}}><a href={result.dataset_url}>{result.dataset_description}</a></span> </div>
+                    </div>
+                </div>
+            </div>
+        )
+    };
     return (
         <div className="result" id={result.type}>
             <div className="panel panel-default">
@@ -117,22 +162,39 @@ function Result({result}) {
                                     className="btn btn-link"
                                     data-target="#data"
                                     name={"showChild"}>
-                                <i className={dataToggleClass ? "fa fa-plus" : "fa fa-minus"}></i>
+                                <i className={dataToggleClass ? "fa fa-plus" : "fa fa-minus"}/>
                             </button>
                                 <a style={{fontWeight: "bold"}} href={result.url}>{result.title}</a>
-                                <div id={"data"}>{!dataToggleClass && getChildComponent(result.experiments)}
+                                <div id={"data"}>{!dataToggleClass && getDatasetData(result)}
                                 </div>
                     </div>
                     }
                     {result.type == "experiment" &&
-                        <Collapsible trigger={<button type="button" className="btn btn-link"
-                                    name={"showChild"}>
-                                <i className={"fa fa-plus"}></i>
-                                <a  style={{fontWeight: "bold"}} href={result.url}>{result.title}</a>
-                            </button>}>
-                                <div id={"data"}>{getExperimentData(result)}
-                                </div>
-                        </Collapsible>}
+                    <div>
+                        <button type="button"
+                            onClick={dataToggler}
+                            className="btn btn-link"
+                            data-target="#data"
+                            name={"showChild"}>
+                            <i className={dataToggleClass ? "fa fa-plus" : "fa fa-minus"}/>
+                        </button>
+                        <a style={{fontWeight: "bold"}} href={result.url}>{result.title}</a>
+                        <div id={"data"}>{! dataToggleClass && getExperimentData(result)}</div>
+                    </div>
+                    }
+                    {result.type == "datafile" &&
+                    <div>
+                        <button type="button"
+                            onClick={dataToggler}
+                            className="btn btn-link"
+                            data-target="#data"
+                            name={"showChild"}>
+                            <i className={dataToggleClass ? "fa fa-plus" : "fa fa-minus"}/>
+                        </button>
+                        <a style={{fontWeight: "bold"}} href={result.url}>{result.title}</a>
+                        <div id={"data"}>{! dataToggleClass && getDataFileData(result)}</div>
+                    </div>
+                    }
                 </div>
             </div>
         </div>
@@ -164,7 +226,7 @@ function Results({results, counts}) {
                     <div className="tab-pane active" id="1a">
                         <div className="result-list">
                             {results.map(function(result, index) {
-                                let res = ""
+                                let res = "";
                                 {result.type == "experiment" ? (
                                     res = <Result
                                     key={index}
@@ -173,7 +235,6 @@ function Results({results, counts}) {
                                 : <span/>}
                                 return res
                                 }
-
                             )}
                         </div>
                     </div>
@@ -195,7 +256,7 @@ function Results({results, counts}) {
                     <div className="tab-pane" id="3a">
                         <div className="result-list">
                             {results.map(function(result, index) {
-                                let res = ""
+                                let res = "";
                                 {result.type == "datafile" ? (
                                     res = <Result
                                     key={index}
@@ -214,14 +275,14 @@ function Results({results, counts}) {
 }
 function SimpleSearchForm({showResults}) {
     const [simpleSearchText, setSimpleSearchText] = useState("");
-    const [advanceSearchVisible, setAdvanceSearchVisible ] = useState(false)
-    const toggleAdvanceSearch = () => setAdvanceSearchVisible(!advanceSearchVisible)
+    const [advanceSearchVisible, setAdvanceSearchVisible ] = useState(false);
+    const toggleAdvanceSearch = () => setAdvanceSearchVisible(!advanceSearchVisible);
     const handleSimpleSearchSubmit = e => {
         e.preventDefault();
         //fetch results
         fetch('/api/v1/search-v2_simple-search/?query='+simpleSearchText)
             .then(response => response.json())
-            .then(data => showResults(data))
+            .then(data => showResults(data));
         //display results
         console.log(simpleSearchText)
     }
@@ -240,11 +301,11 @@ function SimpleSearchForm({showResults}) {
                     onClick={toggleAdvanceSearch}
                     className="btn btn-default dropdown-toggle"
                     data-toggle="dropdown" aria-expanded="false">
-                <span className="caret"></span>
+                <span className="caret"/>
             </button>
-            {advanceSearchVisible ? (<AdvanceSearchForm></AdvanceSearchForm>) :
+            {advanceSearchVisible ? (<AdvanceSearchForm/>) :
                 (<button type="submit" className="simple-search btn btn-primary" onClick={handleSimpleSearchSubmit}>
-                    <span className="glyphicon glyphicon-search" aria-hidden="true"></span>
+                    <span className="glyphicon glyphicon-search" aria-hidden="true"/>
                 </button>)}
 
         </main>
@@ -257,12 +318,12 @@ function AdvanceSearchForm() {
         e.preventDefault();
         //form validation
         console.log(advanceSearchText)
-    }
+    };
     const handleAdvanceSearchTextChange = e => {
         e.preventDefault();
         //form validation
         console.log(advanceSearchText)
-    }
+    };
     return (
         <form id="adv-search-form" onSubmit={handleAdvanceSearchSubmit} className="form-horizontal" role="form">
             <div className="form-group" id={"adv-search"}>
@@ -272,13 +333,13 @@ function AdvanceSearchForm() {
                        className="form-control">
                 </input>
                 <label htmlFor="filter">Select Date Range</label>
-                <SearchDatePicker className="form-control"></SearchDatePicker>
+                <SearchDatePicker className="form-control"/>
                 <label htmlFor="contain">Search In</label>
-                <TypeTags className="form-control"></TypeTags>
+                <TypeTags className="form-control"/>
                 <label htmlFor="contain">Instrument</label>
-                <IntrumentTags className="form-group"></IntrumentTags>
+                <IntrumentTags className="form-group"/>
                 <button type="submit" className="btn btn-primary">
-                    <span className="glyphicon glyphicon-search" aria-hidden="true"></span>
+                    <span className="glyphicon glyphicon-search" aria-hidden="true"/>
                 </button>
             </div>
         </form>
