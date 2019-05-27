@@ -39,6 +39,8 @@ LDAP Authentication module.
 import logging
 import ldap
 
+import six
+
 from django.conf import settings
 
 from ..models import UserAuthentication
@@ -164,10 +166,8 @@ class LDAPBackend(AuthProvider, UserProvider, GroupProvider):
                 # check if the given username in combination with the LDAP
                 # auth method is already in the UserAuthentication table
                 user = ldap_result[0][1]
-                return {'first_name': user['givenName'][0],
-                        'last_name': user['sn'][0],
-                        "id": user['uid'][0],
-                        "email": user['mail'][0]}
+                return {tardis_key: user[ldap_key][0] for ldap_key, tardis_key
+                        in six.iteritems(self._user_attr_map)}
             return None
 
         except ldap.LDAPError:
@@ -217,7 +217,7 @@ class LDAPBackend(AuthProvider, UserProvider, GroupProvider):
 
         l = None
         try:
-            retrieveAttributes = ["uid"]
+            retrieveAttributes = [self._login_attr]
             l = ldap.initialize(self._url)
             l.protocol_version = ldap.VERSION3
             searchFilter = '(|(mail=%s)(mailalternateaddress=%s))' % (email,
@@ -226,8 +226,8 @@ class LDAPBackend(AuthProvider, UserProvider, GroupProvider):
                                       searchFilter, retrieveAttributes)
 
             logger.debug(ldap_result)
-            if ldap_result[0][1]['uid'][0]:
-                return ldap_result[0][1]['uid'][0]
+            if ldap_result[0][1][self._login_attr][0]:
+                return ldap_result[0][1][self._login_attr][0]
             return None
 
         except ldap.LDAPError:
