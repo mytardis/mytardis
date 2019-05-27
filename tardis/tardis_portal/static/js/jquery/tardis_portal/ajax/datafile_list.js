@@ -60,10 +60,10 @@ $(function() {
      */
     function getUnverifiedOrOfflineHtml(datafile) {
         if (!datafile.verified) {
-            return "<span style=\"margin-right: 5px; color:red;\">(unverified)</span>";
+            return " <span style=\"margin-right: 5px; color:red;\">(unverified)</span>";
         }
         if (!datafile.is_online) {
-            return "<span class=\"archived-file\" style=\"margin-right: 5px;\">(archived)</span>";
+            return " <span class=\"archived-file\" style=\"margin-right: 5px;\">(archived)</span>";
         }
         return "";
     }
