@@ -76,7 +76,6 @@ class DatasetDocument(DocType):
     instrument = fields.ObjectField(properties={
         'name': fields.TextField(
         fields={'raw': fields.KeywordField()},
-        analyzer=analyzer
         )
     }
     )

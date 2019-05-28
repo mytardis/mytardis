@@ -165,6 +165,7 @@
             {% if search_form %}
             <form id="searchbox" method="get"
                 class="navbar-search pull-right"
+                  style="display: none"
                 action="{% url 'search_v2' %}">
               <input id="id_q" autocomplete="off" name="q"
                    type="text" class="search-query" placeholder="Search"
