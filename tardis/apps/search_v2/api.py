@@ -67,12 +67,13 @@ class SearchAppResource(Resource):
         if not query_text:
             raise BadRequest("Missing query parameter")
         s = Search()
-        s = s[0:20]
         search = s.query(
             "multi_match",
             query=query_text,
             fields=["title", "description", "filename"]
         )
+        total = search.count()
+        search = search[0:total]
         results = search.execute()
         result_dict = {k: [] for k in ["experiments", "datasets", "datafiles"]}
         for hit in results.hits.hits:
