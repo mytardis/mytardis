@@ -1,7 +1,9 @@
-import React, {useState,} from "react";
-import {IntrumentTags, TypeTags} from "./tags.js";
-import SearchDatePicker from "./datepicker";
-
+import React, {Fragment, useState,} from "react";
+import DateTime from 'react-datetime';
+import { Typeahead} from 'react-bootstrap-typeahead';
+import 'react-bootstrap-typeahead/css/Typeahead.css';
+import 'react-datetime/css/react-datetime.css'
+var moment = require('moment');
 
 function createExperimentResultData(hits, newResults) {
     hits.forEach(function(hit) {
@@ -64,21 +66,21 @@ function Search() {
     const [counts, setCounts] = useState([]);
 
     const showResults = result => {
-        let newResults = []
+        let newResults = [];
         let counts = {"experimentsCount": "",
             "datasetsCount":"",
             "datafilesCount":""
         }
-        const experimentsHits = result.objects[0].hits["experiments"];
+        const experimentsHits = result.hits["experiments"];
         //create experiment result
         newResults = createExperimentResultData(experimentsHits, newResults);
         counts.experimentsCount = experimentsHits.length;
         // create dataset result
-        const datasetHits = result.objects[0].hits["datasets"];
+        const datasetHits = result.hits["datasets"];
         newResults = createDatasetResultData(datasetHits, newResults);
         counts.datasetsCount = datasetHits.length;
         //create datafile results
-        const datafileHits = result.objects[0].hits["datafiles"];
+        const datafileHits = result.hits["datafiles"];
         newResults = createDataFileResultData(datafileHits, newResults);
         counts.datafilesCount = datafileHits.length;
         setResults(newResults);
@@ -282,10 +284,8 @@ function SimpleSearchForm({showResults}) {
         //fetch results
         fetch('/api/v1/search-v2_simple-search/?query='+simpleSearchText)
             .then(response => response.json())
-            .then(data => showResults(data));
-        //display results
-        console.log(simpleSearchText)
-    }
+            .then(data => showResults(data.objects[0]));
+    };
     return (
         <main>
             <form onSubmit={handleSimpleSearchSubmit} id={"simple-search"}>
@@ -303,7 +303,7 @@ function SimpleSearchForm({showResults}) {
                     data-toggle="dropdown" aria-expanded="false">
                 <span className="caret"/>
             </button>
-            {advanceSearchVisible ? (<AdvanceSearchForm/>) :
+            {advanceSearchVisible ? (<AdvanceSearchForm searchText={simpleSearchText} showResults={showResults}/>) :
                 (<button type="submit" className="simple-search btn btn-primary" onClick={handleSimpleSearchSubmit}>
                     <span className="glyphicon glyphicon-search" aria-hidden="true"/>
                 </button>)}
@@ -311,39 +311,113 @@ function SimpleSearchForm({showResults}) {
         </main>
     )
 }
+//define custom hook
 
-function AdvanceSearchForm() {
-    const [advanceSearchText, setAdvanceSeacrhText] = useState("");
-    const handleAdvanceSearchSubmit = e => {
-        e.preventDefault();
-        //form validation
-        console.log(advanceSearchText)
+function AdvanceSearchForm({searchText, showResults}) {
+    const [instrumentList, setInstrumentList] = useState([]);
+    const typeOptions=["Dataset","Experiment", "Datafile"];
+    const [startDate, setStartDate] = useState('');
+    const [endDate, setEndDate] = useState('');
+    const [formData, setFormData] = useState({["text"]: searchText,
+        ["TypeTag"]: typeOptions});
+    const getInstrumentList = () => {
+        let tempList = [];
+        fetch(`/api/v1/instrument/`)
+            .then(resp =>  resp.json())
+            .then(json => {
+                json.objects.forEach(function (value) {
+                    tempList.push(value.name)});
+                });
+            setInstrumentList(tempList)
     };
-    const handleAdvanceSearchTextChange = e => {
-        e.preventDefault();
-        //form validation
-        console.log(advanceSearchText)
+    let handleAdvanceSearchFormSubmit = (event) => {
+        event.preventDefault();
+        //set form data
+        setFormData(formData => ({...formData, ["text"]: searchText}));
+        console.log(formData);
+        fetch('/api/v1/search-v2_advance-search/', {
+            method: 'post',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(formData)
+            }).then(function(response) {
+                return response.json();
+                }).then(function(data) {
+                    showResults(data)
+                });
     };
+    let validStartDate = function( current ){
+        return current.isBefore( DateTime.moment() );
+        };
+    let handleStartDateChange = (value) => {
+        setFormData(formData => ({...formData, ["StartDate"]: value.toDate()}));
+        setStartDate(value.toDate());
+    };
+    let handleEndDateChange = (value) => {
+        setFormData(formData => ({...formData, ["EndDate"]: value.toDate()}));
+    };
+    let validEndDate = function(current){
+        return current.isBefore( DateTime.moment() ) && current.isAfter(startDate)
+    };
+    let handleInstrumentListChange = (selected) => {
+        setFormData(formData => ({...formData, ["InstrumentList"]: selected}));
+    };
+    let handleTypeTagChange = (selected) => {
+        setFormData(formData => ({...formData, ["TypeTag"]: selected}));
+    };
+
     return (
-        <form id="adv-search-form" onSubmit={handleAdvanceSearchSubmit} className="form-horizontal" role="form">
+        <form id="adv-search-form" className="form-horizontal" role="form">
             <div className="form-group" id={"adv-search"}>
-                <label htmlFor="filter">Search </label>
-                <input type="text" name="adv_search_text" value={advanceSearchText}
-                       onChange={e => setAdvanceSeacrhText(e.target.value)}
-                       className="form-control">
-                </input>
-                <label htmlFor="filter">Select Date Range</label>
-                <SearchDatePicker className="form-control"/>
+                <label htmlFor="filter">Filter by Date created</label>
+                <div className="form-group row">
+                    <div className="col-xs-6" style={{paddingLeft:0, paddingRight:15}}>
+                        <DateTime inputProps={{placeholder: "Select start date"}}
+                                  timeFormat={false}
+                                  dateFormat="DD-MM-YYYY"
+                                  isValidDate={ validStartDate }
+                                  closeOnSelect={true}
+                                  onChange = {handleStartDateChange}
+                        />
+                    </div>
+                    <div className="col-xs-6" style={{paddingRight:0}}>
+                        <DateTime inputProps={{placeholder: "Select end date"}}
+                                  timeFormat={false}
+                                  dateFormat="DD-MM-YYYY"
+                                  isValidDate = { validEndDate }
+                                  closeOnSelect={true}
+                                  value={endDate}
+                                  onChange = {handleEndDateChange}
+                        />
+                    </div>
+                </div>
+
                 <label htmlFor="contain">Search In</label>
-                <TypeTags className="form-control"/>
-                <label htmlFor="contain">Instrument</label>
-                <IntrumentTags className="form-group"/>
-                <button type="submit" className="btn btn-primary">
+                <Typeahead
+                    multiple
+                    onChange={(selected) => {handleTypeTagChange(selected)}}
+                    options={typeOptions}
+                    placeholder="Search in Experiments, Datasets or Datafiles"
+                    defaultSelected={typeOptions.slice(0, 3)}
+                />
+                <label htmlFor="contain">Filter by Instrument</label>
+                <Typeahead
+                    multiple
+                    onFocus={() => getInstrumentList()}
+                    onChange={(selected) => {handleInstrumentListChange(selected)}}
+                    placeholder="Start typing to select instruments"
+                    options={instrumentList}
+                />
+                <button type="submit"
+                        className="btn btn-primary"
+                        onClick={handleAdvanceSearchFormSubmit}
+                >
                     <span className="glyphicon glyphicon-search" aria-hidden="true"/>
                 </button>
             </div>
         </form>
     )
 }
-
 export default Search;

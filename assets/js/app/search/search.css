@@ -28,6 +28,7 @@ app {
     border-radius: 0px;
 
 }
+
 form#adv-search-form button[type="submit"] {
     margin-top: 4px;
 }
