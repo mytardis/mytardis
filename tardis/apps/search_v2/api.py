@@ -137,14 +137,14 @@ class AdvanceSearchAppResource(Resource):
         # query for experiment model
         ms = MultiSearch(index=index_list)
         if 'experiments' in index_list:
-            q = Q("match", title=query_text) & Q("range", created_time={'gte': start_date, 'lt': end_date})
+            q = Q("match", title=query_text) & Q("range", created_time={'gte': start_date, 'lte': end_date})
             ms = ms.add(Search().query(q))
         if 'dataset' in index_list:
-            q = Q("match", description=query_text) & Q("range", created_time={'gte': start_date, 'lt': end_date})
+            q = Q("match", description=query_text) & Q("range", created_time={'gte': start_date, 'lte': end_date})
             # add instrument query
             ms = ms.add(Search().query(q))
         if 'datafile' in index_list:
-            q = Q("match", filename=query_text) & Q("range", created_time={'gte': start_date, 'lt': end_date})
+            q = Q("match", filename=query_text) & Q("range", created_time={'gte': start_date, 'lte': end_date})
             ms = ms.add(Search().query(q))
         result = ms.execute()
         result_dict = {k: [] for k in ["experiments", "datasets", "datafiles"]}
