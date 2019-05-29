@@ -710,7 +710,8 @@ def edit_experiment(request, experiment_id,
         if form.is_valid():
             full_experiment = form.save(commit=False)
             experiment = full_experiment['experiment']
-            experiment.created_by = request.user
+            # a workaround for django-elastic-search issue #155
+            experiment.created_by = User.objects.get(id=request.user.id)
             full_experiment.save_m2m()
 
             request.POST = {'status': "Experiment Saved."}
