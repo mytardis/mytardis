@@ -1,9 +1,12 @@
 import logging
 
+from django.contrib.auth.models import User
 from elasticsearch_dsl import analysis, analyzer
 from django_elasticsearch_dsl import DocType, Index, fields
 
-from tardis.tardis_portal.models import Dataset, Experiment, DataFile, Instrument
+from tardis.tardis_portal.models import Dataset, Experiment, \
+    DataFile, Instrument
+
 
 logger = logging.getLogger(__name__)
 
@@ -43,11 +46,18 @@ class ExperimentDocument(DocType):
     update_time = fields.DateField()
     institution_name = fields.StringField()
     created_by = fields.ObjectField(properties={
-        'first_name': fields.StringField(),
-        'last_name': fields.StringField()
+        'username': fields.StringField(
+            fields={'raw': fields.KeywordField()},
+        )
     })
+
     class Meta:
         model = Experiment
+        related_models = [User]
+
+    def get_instances_from_related(self, related_instance):
+        if isinstance(related_instance, User):
+            return related_instance.experiment_set.all()
 
 
 dataset = Index('dataset')
