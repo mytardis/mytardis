@@ -18,7 +18,7 @@ function createExperimentResultData(hits, newResults) {
             institution_name: hit._source.institution_name,
             created_time: created_time,
             update_time: update_time,
-            created_by: hit._source.created_by.first_name + " " + hit._source.created_by.last_name
+            created_by: hit._source.created_by.username
         }
         ];
     });
