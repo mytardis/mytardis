@@ -134,17 +134,21 @@ class AdvanceSearchAppResource(Resource):
         end_date = datetime.datetime.strptime(bundle.data["EndDate"], "%Y-%m-%dT%H:%M:%S.%fZ")
         start_date = datetime.datetime.strptime(bundle.data["StartDate"], "%Y-%m-%dT%H:%M:%S.%fZ")
         instrument_list = bundle.data["InstrumentList"]
+        instrument_list_string = ' '.join(instrument_list)
         # query for experiment model
         ms = MultiSearch(index=index_list)
         if 'experiments' in index_list:
             q = Q("match", title=query_text) & Q("range", created_time={'gte': start_date, 'lte': end_date})
             ms = ms.add(Search().query(q))
         if 'dataset' in index_list:
-            q = Q("match", description=query_text) & Q("range", created_time={'gte': start_date, 'lte': end_date})
+            q = Q("match", description=query_text) & \
+                Q("range", created_time={'gte': start_date, 'lte': end_date}) & \
+                Q("match", instrument__name=instrument_list_string)
             # add instrument query
             ms = ms.add(Search().query(q))
         if 'datafile' in index_list:
-            q = Q("match", filename=query_text) & Q("range", created_time={'gte': start_date, 'lte': end_date})
+            q = Q("match", filename=query_text) & \
+                Q("range", created_time={'gte': start_date, 'lte': end_date})
             ms = ms.add(Search().query(q))
         result = ms.execute()
         result_dict = {k: [] for k in ["experiments", "datasets", "datafiles"]}
