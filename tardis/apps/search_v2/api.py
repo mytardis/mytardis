@@ -5,7 +5,9 @@ Implemented with Tastypie.
 .. moduleauthor:: Manish Kumar <rishimanish123@gmail.com>
 '''
 import json
+import pytz
 import datetime
+
 from django.conf import settings
 
 from tastypie import fields
@@ -15,9 +17,10 @@ from tastypie.serializers import Serializer
 from django_elasticsearch_dsl.search import Search
 from elasticsearch_dsl import MultiSearch, Q
 
+from tardis.tardis_portal.models import Experiment, DataFile, Dataset
 from tardis.tardis_portal.api import default_authentication
 
-
+LOCAL_TZ = pytz.timezone(settings.TIME_ZONE)
 class PrettyJSONSerializer(Serializer):
     json_indent = 2
 
@@ -63,6 +66,7 @@ class SearchAppResource(Resource):
         return kwargs
 
     def get_object_list(self, bundle):
+        user = bundle.request.user
         query_text = bundle.request.GET.get('query', None)
         if not query_text:
             raise BadRequest("Missing query parameter")
@@ -78,11 +82,19 @@ class SearchAppResource(Resource):
         result_dict = {k: [] for k in ["experiments", "datasets", "datafiles"]}
         for hit in results.hits.hits:
             if hit["_index"] == "dataset":
-                result_dict["datasets"].append(hit)
+                check_dataset_access = filter_dataset_result(hit, user.id)
+                if check_dataset_access:
+                    result_dict["datasets"].append(hit)
+
             elif hit["_index"] == "experiments":
-                result_dict["experiments"].append(hit)
+                check_experiment_access = filter_experiment_result(hit, user.id)
+                if check_experiment_access:
+                    result_dict["experiments"].append(hit)
+
             elif hit["_index"] == "datafile":
-                result_dict["datafiles"].append(hit)
+                check_datafile_access = filter_datafile_result(hit, user.id)
+                if check_datafile_access:
+                    result_dict["datafiles"].append(hit)
 
         return [SearchObject(id=1, hits=result_dict)]
 
@@ -121,8 +133,10 @@ class AdvanceSearchAppResource(Resource):
         return bundle
 
     def dehydrate(self, bundle):
-        query_text = bundle.data["text"]
-        type_tag = bundle.data["TypeTag"]
+        user = bundle.request.user
+        # if anonymous user search public data only
+        query_text = bundle.data.get("text", None)
+        type_tag = bundle.data.get("TypeTag", None)
         index_list = []
         for type in type_tag:
             if type == 'Experiment':
@@ -131,8 +145,16 @@ class AdvanceSearchAppResource(Resource):
                 index_list.append('dataset')
             elif type == 'Datafile':
                 index_list.append('datafile')
-        end_date = datetime.datetime.strptime(bundle.data["EndDate"], "%Y-%m-%dT%H:%M:%S.%fZ")
-        start_date = datetime.datetime.strptime(bundle.data["StartDate"], "%Y-%m-%dT%H:%M:%S.%fZ")
+        end_date = bundle.data.get("EndDate", None)
+        start_date = bundle.data.get("StartDate", None)
+        if end_date:
+            end_date_utc = datetime.datetime.strptime(end_date, "%Y-%m-%dT%H:%M:%S.%fZ")\
+                .replace(tzinfo=pytz.timezone('UTC'))
+            end_date = end_date_utc.astimezone(LOCAL_TZ).date()
+        if start_date:
+            start_date_utc = datetime.datetime.strptime(start_date, "%Y-%m-%dT%H:%M:%S.%fZ")\
+                .replace(tzinfo=pytz.timezone('UTC'))
+            start_date = start_date_utc.astimezone(LOCAL_TZ).date()
         instrument_list = bundle.data["InstrumentList"]
         instrument_list_string = ' '.join(instrument_list)
         # query for experiment model
@@ -155,12 +177,47 @@ class AdvanceSearchAppResource(Resource):
         for item in result:
             for hit in item.hits.hits:
                 if hit["_index"] == "dataset":
-                    result_dict["datasets"].append(hit)
+                    check_dataset_access = filter_dataset_result(hit, user.id)
+                    if check_dataset_access:
+                        result_dict["datasets"].append(hit)
+
                 elif hit["_index"] == "experiments":
-                    result_dict["experiments"].append(hit)
+                    check_experiment_access = filter_experiment_result(hit, user.id)
+                    if check_experiment_access:
+                        result_dict["experiments"].append(hit)
+
                 elif hit["_index"] == "datafile":
-                    result_dict["datafiles"].append(hit)
+                    check_datafile_access = filter_datafile_result(hit, user.id)
+                    if check_datafile_access:
+                        result_dict["datafiles"].append(hit)
 
         if bundle.request.method == 'POST':
             bundle.obj = SearchObject(id=1, hits=result_dict)
         return bundle
+
+
+def filter_experiment_result(hit, userid):
+    exp = Experiment.objects.get(id=hit["_id"])
+    if exp.objectacls.filter(entityId=userid).count() > 0:
+        return True
+    else:
+        return False
+
+
+def filter_dataset_result(hit, userid):
+    dataset = Dataset.objects.get(id=hit["_id"])
+    exps = dataset.experiments.all()
+    for exp in exps:
+        if exp.objectacls.filter(entityId=userid).count() > 0:
+            return True
+    return False
+
+
+def filter_datafile_result(hit, userid):
+    datafile = DataFile.objects.get(id=hit["_id"])
+    ds = datafile.dataset
+    exps = ds.experiments.all()
+    for exp in exps:
+        if exp.objectacls.filter(entityId=userid).count() > 0:
+            return True
+    return False
