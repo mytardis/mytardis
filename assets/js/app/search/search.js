@@ -1,9 +1,12 @@
-import React, {Fragment, useState,} from "react";
+import React, {useState, useEffect} from "react";
+import { BrowserRouter as Router, Route, Link } from "react-router-dom";
 import DateTime from 'react-datetime';
 import { Typeahead} from 'react-bootstrap-typeahead';
 import 'react-bootstrap-typeahead/css/Typeahead.css';
 import 'react-datetime/css/react-datetime.css';
 
+const queryString = require('query-string');
+const parsed = queryString.parse(location.search);
 const moment = require('moment');
 const csrftoken = getCookie('csrftoken');
 
@@ -90,7 +93,7 @@ function Search() {
     };
     return (
         <main>
-            <SimpleSearchForm showResults={showResults}/>
+            <SimpleSearchForm showResults={showResults} searchText={parsed.q}/>
             {results.length > 0 ? <Results results={results} counts={counts}/> : <span/>}
         </main>
     );
@@ -277,12 +280,11 @@ function Results({results, counts}) {
         </div>
     )
 }
-function SimpleSearchForm({showResults}) {
-    const [simpleSearchText, setSimpleSearchText] = useState("");
+function SimpleSearchForm({showResults, searchText}) {
+    const [simpleSearchText, setSimpleSearchText] = useState(searchText);
     const [advanceSearchVisible, setAdvanceSearchVisible ] = useState(false);
     const toggleAdvanceSearch = () => setAdvanceSearchVisible(!advanceSearchVisible);
-    const handleSimpleSearchSubmit = e => {
-        e.preventDefault();
+    const fetchResults = () => {
         //fetch results
         fetch('/api/v1/search-v2_simple-search/?query='+simpleSearchText, {
             method: 'get',
@@ -294,12 +296,25 @@ function SimpleSearchForm({showResults}) {
             .then(response => response.json())
             .then(data => showResults(data.objects[0]));
     };
+    const handleSimpleSearchSubmit = e => {
+        e.preventDefault();
+        fetchResults()
+    };
+    const handleSimpleSearchTextChange = (e,searchText) => {
+         e.preventDefault();
+         setSimpleSearchText(searchText);
+         handleSimpleSearchSubmit(e)
+     };
+    useEffect(() => {
+       console.log(searchText);
+       fetchResults()
+    }, searchText);
     return (
         <main>
             <form onSubmit={handleSimpleSearchSubmit} id={"simple-search"}>
                 <input type="text"
                        name="simple_search_text"
-                       onChange={event => setSimpleSearchText(event.target.value)}
+                       onChange={event => handleSimpleSearchTextChange(event, event.target.value)}
                        value={simpleSearchText}
                        className="form-control"
                        placeholder="Search for Experiments, Datasets, Datafiles">
@@ -319,7 +334,6 @@ function SimpleSearchForm({showResults}) {
         </main>
     )
 }
-//define custom hook
 
 function AdvanceSearchForm({searchText, showResults}) {
     const [instrumentList, setInstrumentList] = useState([]);
