@@ -27,7 +27,8 @@ def they_see_the_about_page(context):
         title.get_attribute("innerHTML"), "About MyTardis")
 
     console_errors = []
-    for error in context.browser.get_log("browser"):
-        console_errors.append(error)
+    for entry in context.browser.get_log("browser"):
+        if entry['level'] != 'WARNING':
+            console_errors.append(entry)
     context.test.assertEqual(
         len(console_errors), 0, str(console_errors))

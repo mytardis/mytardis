@@ -71,7 +71,8 @@ def they_see_the_facility_overview_page(context):
     context.test.assertEqual(h2.get_attribute("innerHTML"), "Test Facility")
 
     console_errors = []
-    for error in context.browser.get_log("browser"):
-        console_errors.append(error)
+    for entry in context.browser.get_log("browser"):
+        if entry['level'] != 'WARNING':
+            console_errors.append(entry)
     context.test.assertEqual(
         len(console_errors), 0, str(console_errors))

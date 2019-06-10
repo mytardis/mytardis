@@ -59,8 +59,9 @@ def they_see_the_front_page(context):
     context.test.assertTrue(found_login_button)
 
     console_errors = []
-    for error in context.browser.get_log('browser'):
-        console_errors.append(error)
+    for entry in context.browser.get_log('browser'):
+        if entry['level'] != 'WARNING':
+            console_errors.append(entry)
     context.test.assertEqual(
         len(console_errors), 0, str(console_errors))
 
