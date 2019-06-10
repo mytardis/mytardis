@@ -2,8 +2,10 @@ import React, {Fragment, useState,} from "react";
 import DateTime from 'react-datetime';
 import { Typeahead} from 'react-bootstrap-typeahead';
 import 'react-bootstrap-typeahead/css/Typeahead.css';
-import 'react-datetime/css/react-datetime.css'
-var moment = require('moment');
+import 'react-datetime/css/react-datetime.css';
+
+const moment = require('moment');
+const csrftoken = getCookie('csrftoken');
 
 function createExperimentResultData(hits, newResults) {
     hits.forEach(function(hit) {
@@ -70,7 +72,7 @@ function Search() {
         let counts = {"experimentsCount": "",
             "datasetsCount":"",
             "datafilesCount":""
-        }
+        };
         const experimentsHits = result.hits["experiments"];
         //create experiment result
         newResults = createExperimentResultData(experimentsHits, newResults);
@@ -282,7 +284,13 @@ function SimpleSearchForm({showResults}) {
     const handleSimpleSearchSubmit = e => {
         e.preventDefault();
         //fetch results
-        fetch('/api/v1/search-v2_simple-search/?query='+simpleSearchText)
+        fetch('/api/v1/search-v2_simple-search/?query='+simpleSearchText, {
+            method: 'get',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrftoken
+            },})
             .then(response => response.json())
             .then(data => showResults(data.objects[0]));
     };
@@ -334,12 +342,12 @@ function AdvanceSearchForm({searchText, showResults}) {
         event.preventDefault();
         //set form data
         setFormData(formData => ({...formData, ["text"]: searchText}));
-        console.log(formData);
         fetch('/api/v1/search-v2_advance-search/', {
             method: 'post',
             headers: {
                 'Accept': 'application/json',
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrftoken
             },
             body: JSON.stringify(formData)
             }).then(function(response) {

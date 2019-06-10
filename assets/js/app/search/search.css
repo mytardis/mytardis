@@ -1,7 +1,6 @@
 app {
     padding-top: 50px;
 }
-
 .dropdown.dropdown-lg .dropdown-menu {
     margin-top: -1px;
     padding: 6px 20px;
@@ -20,13 +19,15 @@ app {
     margin-left: -1px;
 }
 
+button.btn.btn-default.dropdown-toggle {
+    margin-left: -35px;
+}
 .btn-group .btn:last-child {
     border-top-right-radius: 4px;
     border-bottom-right-radius: 4px;
 }
 .btn-primary {
     border-radius: 0px;
-
 }
 
 form#adv-search-form button[type="submit"] {
