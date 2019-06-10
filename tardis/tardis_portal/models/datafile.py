@@ -520,18 +520,25 @@ class DataFileObject(models.Model):
         return False
 
     def save(self, *args, **kwargs):
+        from amqp.exceptions import AMQPError
+
         reverify = kwargs.pop('reverify', False)
         super(DataFileObject, self).save(*args, **kwargs)
         if self._changed:
             self._initial_values = self._current_values
         elif not reverify:
             return
-        shadow = 'dfo_verify location:%s' % self.storage_box.name
-        tasks.dfo_verify.apply_async(
-            args=[self.id],
-            countdown=5,
-            priority=self.priority,
-            shadow=shadow)
+
+        try:
+            shadow = 'dfo_verify location:%s' % self.storage_box.name
+            tasks.dfo_verify.apply_async(
+                args=[self.id],
+                countdown=5,
+                priority=self.priority,
+                shadow=shadow)
+        except AMQPError:
+            logger.exception(
+                "Failed to submit verification task for DFO ID %s", self.id)
 
     @property
     def storage_type(self):
