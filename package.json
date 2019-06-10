@@ -45,7 +45,7 @@
     "url-loader": "^1.1.2",
     "webpack": "^4.32.2",
     "webpack-bundle-tracker": "^0.4.2-beta",
-    "webpack-cli": "^3.3.2"
+    "webpack-cli": "^3.3.3"
   },
   "devDependencies": {
     "eslint": "^5.16.0",
