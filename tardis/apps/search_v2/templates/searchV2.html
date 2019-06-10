@@ -22,44 +22,5 @@
     <div id="app"></div>
     <div>
     </div>
-    {% if hits.total > 0 %}
-        <h3>Found {{ hits.total }} Matches</h3>
-        {% for result in results %}
-            {% if result.meta.index == 'experiments' %}
-                <div class="search_result">
-                    <div>Experiment <a  href="{% url 'tardis_portal.view_experiment' result.id %}">{{ result.highlighted.0|bleach|default:result.title }}</a>
-                    </div>
-                </div>
-            {% elif result.meta.index == 'dataset' %}
-                <div class="search_result">
-                    <div>Experiments with matching dataset:<br/>
-                        {% for experiment in result.experiments %}
-                            <a href="{% url 'tardis_portal.view_experiment' experiment.id %}">{{ result.highlighted.0|bleach|default:experiment.title }}</a><br/>
-                        {% endfor %}
-                        <div>Dataset <a  href="{% url 'tardis_portal.view_dataset' result.id %}">{{ result.highlighted.0|bleach|default:result.description }}</a></div>
-                    </div>
-                </div>
-            {% elif result.meta.index == 'datafile' %}
-                <div class="search_result">
-                    <div>Datasets with matching file:<br/>
-                        <div>Dataset <a href="{% url 'tardis_portal.view_dataset' result.dataset.id %}">{{  result.highlighted.0|bleach|default:result.dataset.description }}</a>
-                        <div>File <a href="{%  url 'tardis.tardis_portal.download.view_datafile' result.meta.id %}">{{ result.highlighted.0|bleach|default:result.filename }}</a></div></div>
-                    </div>
-                </div>
-            {% endif %}
-            <hr/>
-        {% empty %}
-            <p>No results found.</p>
-        {% endfor %}
-
-        {% if page.has_previous or page.has_next %}
-            <div>
-                {% if page.has_previous %}<a href="?q={{ query }}&amp;page={{ page.previous_page_number }}">{% endif %}&laquo; Previous{% if page.has_previous %}</a>{% endif %}
-                |
-                    {% if page.has_next %}<a href="?q={{ query }}&amp;page={{ page.next_page_number }}">{% endif %}Next &raquo;{% if page.has_next %}</a>{% endif %}
-            </div>
-        {% endif %}
-    {% else %}
-    {% endif %}
     {% render_bundle 'app' %}
 {% endblock content%}
