@@ -1,5 +1,4 @@
 import React, {useState, useEffect} from "react";
-import { BrowserRouter as Router, Route, Link } from "react-router-dom";
 import DateTime from 'react-datetime';
 import { Typeahead} from 'react-bootstrap-typeahead';
 import 'react-bootstrap-typeahead/css/Typeahead.css';
