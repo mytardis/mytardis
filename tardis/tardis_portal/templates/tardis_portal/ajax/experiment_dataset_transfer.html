@@ -1,5 +1,3 @@
-{% load render_bundle from webpack_loader %}
-{% render_bundle 'tardis_portal' %}
 {% if experiments %}
 <form id="other-experiment-selection" class="form-horizontal">{% csrf_token %}
   <fieldset>

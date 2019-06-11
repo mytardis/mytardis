@@ -1,13 +1,11 @@
 {% load static from staticfiles %}
 {% load experiment_tags %}
-{% load render_bundle from webpack_loader %}
 {% block script %}
 {% endblock %}
 {% block content %}
 
 <!-- Scripts -->
 {% load jstemplate %}
-{% render_bundle 'tardis_portal_view_experiment_share' %}
 {% mustachejs "tardis_portal/license_selector" %}
 {% mustachejs "tardis_portal/rights_update_message" %}
 {% mustachejs "tardis_portal/ajax_error" %}

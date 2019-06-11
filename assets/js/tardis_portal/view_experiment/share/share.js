@@ -435,7 +435,7 @@ export function addGroupSharingEventHandlers() {
     });
 }
 
-$(document).ready(function() {
+export function expSharingAjaxReady() {
 
     // user access list
     var $targetUser = $("#experiment_user_list");
@@ -479,4 +479,4 @@ $(document).ready(function() {
     addChangePublicAccessEventHandlers();
     addUserSharingEventHandlers();
     addGroupSharingEventHandlers();
-});
+}
