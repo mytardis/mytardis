@@ -1,6 +1,8 @@
 /* eslint global-strict: 0, strict: 0, object-shorthand: 0 */
 /* global s */
 
+import { expSharingAjaxReady } from "./share/share.js";
+
 export function populateExperimentTabs() {
     var loadingHTML = "<img src=\"/static/images/ajax-loader.gif\"/><br />";
     var tabIdPrefix = "experiment-tab-";
@@ -52,6 +54,10 @@ export function populateExperimentTabs() {
                 dataType: "html",
                 success: function(data) {
                     tabPane.html(data);
+                    const tab = url.substring(url.lastIndexOf("/") + 1);
+                    if (tab === "share") {
+                        expSharingAjaxReady();
+                    }
                 }
             });
         });
