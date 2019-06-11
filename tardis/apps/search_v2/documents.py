@@ -58,6 +58,7 @@ class ExperimentDocument(DocType):
     def get_instances_from_related(self, related_instance):
         if isinstance(related_instance, User):
             return related_instance.experiment_set.all()
+        return None
 
 
 dataset = Index('dataset')
@@ -101,7 +102,7 @@ class DatasetDocument(DocType):
             return related_instance.datasets.all()
         elif isinstance(related_instance, Instrument):
             return related_instance.dataset_set.all()
-        return
+        return None
 
 
 datafile = Index('datafile')
@@ -136,4 +137,3 @@ class DataFileDocument(DocType):
 
     def get_instances_from_related(self, related_instance):
         return related_instance.datafile_set.all()
-
