@@ -157,22 +157,28 @@ class AdvanceSearchAppResource(Resource):
             start_date_utc = datetime.datetime.strptime(start_date, "%Y-%m-%dT%H:%M:%S.%fZ")\
                 .replace(tzinfo=pytz.timezone('UTC'))
             start_date = start_date_utc.astimezone(LOCAL_TZ).date()
-        instrument_list = bundle.data["InstrumentList"]
-        instrument_list_string = ' '.join(instrument_list)
+        instrument_list = bundle.data.get("InstrumentList", None)
+        if instrument_list:
+            instrument_list_string = ' '.join(instrument_list)
         # query for experiment model
         ms = MultiSearch(index=index_list)
         if 'experiments' in index_list:
-            q = Q("match", title=query_text) & Q("range", created_time={'gte': start_date, 'lte': end_date})
+            q = Q("match", title=query_text)
+            if (start_date is not None) & (end_date is not None):
+                q = q & Q("range", created_time={'gte': start_date, 'lte': end_date})
             ms = ms.add(Search().query(q))
         if 'dataset' in index_list:
-            q = Q("match", description=query_text) & \
-                Q("range", created_time={'gte': start_date, 'lte': end_date}) & \
-                Q("match", instrument__name=instrument_list_string)
+            q = Q("match", description=query_text)
+            if (start_date is not None) & (end_date is not None):
+                q = q & Q("range", created_time={'gte': start_date, 'lte': end_date})
+            if instrument_list:
+                q = q & Q("match", instrument__name=instrument_list_string)
             # add instrument query
             ms = ms.add(Search().query(q))
         if 'datafile' in index_list:
-            q = Q("match", filename=query_text) & \
-                Q("range", created_time={'gte': start_date, 'lte': end_date})
+            q = Q("match", filename=query_text)
+            if (start_date is not None) & (end_date is not None):
+                q = q & Q("range", created_time={'gte': start_date, 'lte': end_date})
             ms = ms.add(Search().query(q))
         result = ms.execute()
         result_dict = {k: [] for k in ["experiments", "datasets", "datafiles"]}
