@@ -5,8 +5,8 @@ Implemented with Tastypie.
 .. moduleauthor:: Manish Kumar <rishimanish123@gmail.com>
 '''
 import json
-import pytz
 import datetime
+import pytz
 
 from django.conf import settings
 
@@ -206,10 +206,7 @@ class AdvanceSearchAppResource(Resource):
 
 def filter_experiment_result(hit, userid):
     exp = Experiment.objects.get(id=hit["_id"])
-    if exp.objectacls.filter(entityId=userid).count() > 0:
-        return True
-    else:
-        return False
+    return bool(exp.objectacls.filter(entityId=userid).count() > 0)
 
 
 def filter_dataset_result(hit, userid):
