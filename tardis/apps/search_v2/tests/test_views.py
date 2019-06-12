@@ -2,6 +2,7 @@
 Tests related to Search  views
 '''
 
+import unittest
 from django.conf import settings
 from django.core.management import call_command
 from django.test import TestCase
@@ -13,6 +14,10 @@ from tardis.tardis_portal.models import Experiment, Dataset, DataFile
 
 
 class SearchViewTestCase(TestCase):
+    @unittest.skipUnless(
+        getattr(settings, 'ELASTICSEARCH_DSL', False),
+        "--elasticsearch not set"
+    )
     def setUp(self):
         self.client = Client()
         self.out = StringIO()
