@@ -23,7 +23,6 @@ from django.http import (HttpResponse,
 from django.views.decorators.cache import cache_page
 from django.views.generic.base import TemplateView, View
 
-from tardis.search.utils import SearchQueryString
 from ..auth import decorators as authz
 from ..auth.decorators import (
     has_experiment_write,
@@ -498,10 +497,6 @@ class ExperimentView(TemplateView):
             c['status'] = request.POST['status']
         if 'error' in request.POST:
             c['error'] = request.POST['error']
-        if 'query' in request.GET:
-            c['search_query'] = SearchQueryString(request.GET['query'])
-        if 'search' in request.GET:
-            c['search'] = request.GET['search']
         if 'load' in request.GET:
             c['load'] = request.GET['load']
 

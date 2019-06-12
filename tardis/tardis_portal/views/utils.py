@@ -16,10 +16,6 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import redirect
 from django.template.defaultfilters import filesizeformat
 
-from ..auth import decorators as authz
-from ..forms import createSearchExperimentForm
-from ..shortcuts import render_response_search
-
 logger = logging.getLogger(__name__)
 
 
@@ -59,103 +55,6 @@ def _add_protocols_and_organizations(request, collection_object, c):
     c['organization'] = get_download_organizations()
     c['default_organization'] = getattr(
         settings, 'DEFAULT_PATH_MAPPER', 'classic')
-
-
-def __getFilteredExperiments(request, searchFilterData):
-    """Filter the list of experiments using the cleaned up searchFilterData.
-
-    Arguments:
-    request -- the HTTP request
-    searchFilterData -- the cleaned up search experiment form data
-
-    Returns:
-        list: A list of experiments as a result of the query or None if the
-            provided search request is invalid
-
-    """
-
-    experiments = authz.get_accessible_experiments(request)
-
-    if experiments is None:
-        return []
-
-    # search for the default experiment fields
-    if searchFilterData['title'] != '':
-        experiments = \
-            experiments.filter(title__icontains=searchFilterData['title'])
-
-    if searchFilterData['description'] != '':
-        experiments = \
-            experiments.filter(
-                description__icontains=searchFilterData['description'])
-
-    if searchFilterData['institutionName'] != '':
-        experiments = experiments.filter(
-            institution_name__icontains=searchFilterData['institutionName'])
-
-    if searchFilterData['creator'] != '':
-        experiments = experiments.filter(
-            experimentauthor__author__icontains=searchFilterData['creator'])
-
-    date = searchFilterData['date']
-    if date is not None:
-        experiments = \
-            experiments.filter(start_time__lt=date, end_time__gt=date)
-
-    # let's sort it in the end
-    experiments = experiments.order_by('title')
-
-    return experiments
-
-
-def __forwardToSearchExperimentFormPage(request):
-    """Forward to the search experiment form page."""
-
-    searchForm = __getSearchExperimentForm(request)
-
-    c = {'searchForm': searchForm}
-    url = 'tardis_portal/search_experiment_form.html'
-    return render_response_search(request, url, c)
-
-
-def __getSearchExperimentForm(request):
-    """Create the search experiment form.
-
-    :param request: a HTTP Request instance
-    :type request: :class:`django.http.HttpRequest`
-    :returns: The search experiment form.
-    :rtype: SearchExperimentForm
-    """
-
-    SearchExperimentForm = createSearchExperimentForm()
-    form = SearchExperimentForm(request.GET)
-    return form
-
-
-def __processExperimentParameters(request, form):
-    """Validate the provided experiment search request and return search
-    results.
-
-    :param request: a HTTP Request instance
-    :type request: :class:`django.http.HttpRequest`
-    :param Form form: The search form to use
-    :returns: A list of experiments as a result of the query or None if the
-      provided search request is invalid.
-    :rtype: list
-    """
-
-    if form.is_valid():
-        experiments = __getFilteredExperiments(request, form.cleaned_data)
-
-        # Previously, we cached the query with all the filters in the session
-        # so we wouldn't have to keep running the query each time it is needed
-        # by the paginator, but since Django 1.6, Django uses JSON instead of
-        # pickle to serialize session data, so it can't serialize arbitrary
-        # Python objects unless we write custom JSON serializers for them:
-        # request.session['experiments'] = experiments
-
-        return experiments
-    return None
 
 
 def get_dataset_info(dataset, include_thumbnail=False, exclude=None):  # too complex # noqa

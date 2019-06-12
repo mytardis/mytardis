@@ -5,8 +5,6 @@ from html import escape
 
 import six
 
-from django.conf import settings
-from django.urls import reverse
 from django.shortcuts import render
 from django.http import HttpResponse
 from django.http import HttpResponseRedirect
@@ -19,22 +17,6 @@ from .ParameterSetManager import ParameterSetManager
 
 def render_response_index(request, *args, **kwargs):
     return render(request, *args, **kwargs)
-
-
-def render_response_search(request, url, c):
-
-    links = {}
-    for app in settings.INSTALLED_APPS:
-        if app.startswith('tardis.apps.'):
-            view = '%s.views.search' % app
-            try:
-                links[app.split('.')[2]] = reverse(view)
-            except:
-                pass
-
-    c['links'] = links
-
-    return render(request, url, c)
 
 
 def render_error_message(request, message, status=400):
