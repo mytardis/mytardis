@@ -213,22 +213,25 @@ function Results({results, counts}) {
             <div className="container" style={{marginBottom: 10}}>
                 <h2>Search Results </h2>
             </div>
-            < div id = "exTab1" className = "container" >
-                < ul className = "nav nav-pills" style={{padding: 10}} >
+            < div id = "tabbed-pane" className = "container" >
+                < ul className = "nav nav-tabs">
                     < li className = "active" >
-                        <a href = "#1a" data-toggle = "tab" style={{display: "inline"}}> Experiments </a>
-                        <span className="badge badge-light">{counts.experimentsCount}</span>
+                        <a href = "#1a" data-toggle = "tab" >Experiments
+                            <span className="badge badge-light">{counts.experimentsCount}</span>
+                             </a>
                     </li>
                     <li>
-                        <a href="#2a" data-toggle="tab" style={{display: "inline"}}>Datasets</a>
+                        <a href="#2a" data-toggle="tab">Datasets
                         <span className="badge badge-light">{counts.datasetsCount}</span>
+                            </a>
                     </li>
                     <li>
-                        <a href="#3a" data-toggle="tab" style={{display: "inline"}}>Datafiles</a>
+                        <a href="#3a" data-toggle="tab" >Datafiles
                         <span className="badge badge-light">{counts.datafilesCount}</span>
+                            </a>
                     </li>
                 </ul>
-                <div className="tab-content clearfix">
+                <div className="tab-content">
                     <div className="tab-pane active" id="1a">
                         <div className="result-list">
                             {results.map(function(result, index) {
