@@ -1,3 +1,5 @@
+import unittest
+
 from django.conf import settings
 from django.core.management import call_command
 from django.contrib.auth.models import User
@@ -11,6 +13,13 @@ from tardis.apps.search_v2.documents import ExperimentDocument, DatasetDocument,
 
 class IndexExperimentTestCase(TestCase):
 
+    # ovverrides
+    # add installed apps
+
+    @unittest.skipUnless(
+        getattr(settings, 'ELASTICSEARCH_DSL', False),
+        "--elasticsearch not set"
+    )
     def setUp(self):
         user = 'tardis_user1'
         pwd = 'secret'

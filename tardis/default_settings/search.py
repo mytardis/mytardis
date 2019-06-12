@@ -1,1 +1,12 @@
 # Placeholder for Search v2 default settings
+SINGLE_SEARCH_V2_ENABLED = False
+if SINGLE_SEARCH_V2_ENABLED:
+    INSTALLED_APPS += 'django_elasticsearch_dsl',
+    ELASTICSEARCH_DSL = {
+        'default': {
+            'hosts': os.environ.get('ELASTICSEARCH_URL', 'http://localhost:9200')
+        },
+    }
+    ELASTICSEARCH_DSL_INDEX_SETTINGS = {
+        'number_of_shards': 1
+    }
