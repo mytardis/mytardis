@@ -36,7 +36,9 @@ button.btn.btn-default.dropdown-toggle {
     border: none;
     box-shadow: none;
     margin-bottom: 0px;
-
+}
+.panel-body {
+    padding: 0px 0px 15px 0px;
 
 }
 form#adv-search-form button[type="submit"] {

@@ -34,8 +34,8 @@ function createExperimentResultData(hits, newResults) {
 }
 function createDatasetResultData(hits, newResults) {
     hits.forEach(function(hit) {
-        let created_time = new Date(hit._source.created_time).toString();
-        let update_time = new Date(hit._source.modified_time).toString();
+        let created_time = new Date(hit._source.created_time).toDateString();
+        let update_time = new Date(hit._source.modified_time).toDateString();
         newResults = [...newResults, {
             title: hit._source.description,
             type: "dataset",
@@ -52,8 +52,8 @@ function createDatasetResultData(hits, newResults) {
 }
 function createDataFileResultData(hits, newResults) {
     hits.forEach(function(hit) {
-        let created_time = new Date(hit._source.created_time).toString();
-        let update_time = new Date(hit._source.modification_time).toString();
+        let created_time = new Date(hit._source.created_time).toDateString();
+        let update_time = new Date(hit._source.modification_time).toDateString();
         newResults = [...newResults, {
             title: hit._source.filename,
             type: "datafile",
@@ -111,9 +111,6 @@ function Result({result}) {
             <div className={"accordion-group"} style={{marginLeft: 20}}>
                 <div className={"accordion-heading"}>
                     <div className={"accordion-body"}>
-                        <div><span style={{fontWeight: "bold"}}>Instrument: </span> {result.instrument}</div>
-                        <div><span style={{fontWeight: "bold"}}>Date Created: </span> {result.created_time}</div>
-                        <div><span style={{fontWeight: "bold"}}>Last updated: </span> {result.update_time}</div>
                         <span style={{
                             fontSize: 11,
                             fontStyle: "italic"
@@ -144,9 +141,6 @@ function Result({result}) {
             <div className={"accordion-group"} style={{marginLeft: 20 }}>
                 <div className={"accordion-heading"}>
                     <div className={"accordion-body"}>
-                        <div><span style={{fontWeight: "bold"}}>File Name: </span> {result.title}</div>
-                        <div><span style={{fontWeight: "bold"}}> Date created: </span> {result.created_time}</div>
-                        <div><span style={{fontWeight: "bold"}}> Last updated: </span> {result.update_time}</div>
                         <span style={{
                             fontSize: 11,
                             fontStyle: "italic"
@@ -163,21 +157,40 @@ function Result({result}) {
         <div className="result" id={result.type}>
             <div className="panel panel-default">
                 <div className="panel-body">
-                    {result.type == "dataset" &&
+                    {result.type === "dataset" &&
                     <div>
-                            <button type="button"
-                                    onClick={dataToggler}
-                                    className="btn btn-link"
-                                    data-target="#data"
-                                    name={"showChild"}>
+                        <button type="button"
+                                onClick={dataToggler}
+                                className="btn btn-link"
+                                data-target="#data"
+                                name={"showChild"}>
                                 <i className={dataToggleClass ? "fa fa-plus" : "fa fa-minus"}/>
-                            </button>
-                                <a style={{fontWeight: "bold"}} href={result.url}>{result.title}</a>
-                                <div id={"data"}>{!dataToggleClass && getDatasetData(result)}
-                                </div>
+                        </button>
+                        <a style={{fontWeight: "bold"}} href={result.url}>{result.title}</a>
+                        <ul className="nav nav-pills badgelist pull-right" style={{display:"inline-block"}}>
+                            <li className="pull-right">
+                                <span className="label label-info" title={"Date Created: "+result.created_time} >
+                                    <i className="fa fa-clock-o"/>
+                                    <span>
+                                        {result.created_time}
+                                    </span>
+                                </span>
+                            </li>
+                            <li className="pull-right">
+                                <span className="label label-info" title={"Institution Name: "+result.institution_name} >
+                                    {/*upgrade to font-awesome 5 will bring this icon */}
+                                    <i className="fa fa-microscope"/>
+                                    <span>
+                                        {result.instrument}
+                                    </span>
+                                </span>
+                            </li>
+                        </ul>
+                        <div id={"data"}>{!dataToggleClass && getDatasetData(result)}
+                        </div>
                     </div>
                     }
-                    {result.type == "experiment" &&
+                    {result.type === "experiment" &&
                     <div>
                         <button type="button"
                             onClick={dataToggler}
@@ -226,6 +239,16 @@ function Result({result}) {
                             <i className={dataToggleClass ? "fa fa-plus" : "fa fa-minus"}/>
                         </button>
                         <a style={{fontWeight: "bold"}} href={result.url}>{result.title}</a>
+                        <ul className="nav nav-pills badgelist pull-right" style={{display:"inline-block"}}>
+                            <li className="pull-right">
+                                <span className="label label-info" title={"Date Created: "+result.created_time} >
+                                    <i className="fa fa-clock-o"/>
+                                    <span>
+                                        {result.created_time}
+                                    </span>
+                                </span>
+                            </li>
+                        </ul>
                         <div id={"data"}>{! dataToggleClass && getDataFileData(result)}</div>
                     </div>
                     }
@@ -242,19 +265,25 @@ function Results({results, counts}) {
                 <h2>Search Results </h2>
             </div>
             < div id = "tabbed-pane" className = "container" >
-                < ul className = "nav nav-tabs">
+                < ul className = "nav nav-tabs" style={{"fontWeight": 600}}>
                     < li className = "active" >
-                        <a href = "#1a" data-toggle = "tab" >Experiments
+
+                        <a href = "#1a" data-toggle = "tab" >
+                            <i className="fa fa-flask fa-2x"/>Experiments
                             <span className="badge badge-light">{counts.experimentsCount}</span>
                              </a>
                     </li>
                     <li>
-                        <a href="#2a" data-toggle="tab">Datasets
+
+                        <a href="#2a" data-toggle="tab">
+                            <i className="fa fa-folder fa-2x"/>Datasets
                         <span className="badge badge-light">{counts.datasetsCount}</span>
                             </a>
                     </li>
                     <li>
-                        <a href="#3a" data-toggle="tab" >Datafiles
+
+                        <a href="#3a" data-toggle="tab" >
+                            <i className="fa fa-file fa-2x"/>Datafiles
                         <span className="badge badge-light">{counts.datafilesCount}</span>
                             </a>
                     </li>
