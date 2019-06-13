@@ -111,9 +111,6 @@ urlpatterns = [
     url(r'^upload/(?P<dataset_id>\d+)/$', upload,
         name='tardis.tardis_portal.views.upload'),
 
-    # Search
-    url(r'^search/', include('tardis.search.urls')),
-
     # Apps
     url(r'^apps/', include(app_urls)),
 

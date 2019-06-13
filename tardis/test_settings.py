@@ -150,8 +150,6 @@ SECRET_KEY = 'ij!%7-el^^rptw$b=iol%78okl10ee7zql-()z1r6e)gbxd3gl'
 SESSION_SERIALIZER = 'django.contrib.sessions.serializers.PickleSerializer'
 USE_TZ = True  # apparently sqlite has issues with timezones?
 
-HAYSTACK_SIGNAL_PROCESSOR = 'haystack.signals.BaseSignalProcessor'
-
 # Only for automated testing - don't use this in production:
 SFTP_HOST_KEY = (
     b"-----BEGIN RSA PRIVATE KEY-----\n"
