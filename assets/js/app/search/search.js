@@ -11,14 +11,18 @@ const csrftoken = getCookie('csrftoken');
 
 function createExperimentResultData(hits, newResults) {
     hits.forEach(function(hit) {
-        let created_time = new Date(hit._source.created_time).toString();
-        let update_time = new Date(hit._source.update_time).toString();
+        let created_time = new Date(hit._source.created_time).toDateString();
+        let update_time = new Date(hit._source.update_time).toDateString();
+        let description = hit._source.description;
+        if (description === ""){
+            description = "No description available for this experiment"
+        }
         newResults = [...newResults, {
             title: hit._source.title,
             type: "experiment",
             id: hit._source.id,
             url: "/experiment/view/" + hit._source.id,
-            description : hit._source.description,
+            description : description,
             institution_name: hit._source.institution_name,
             created_time: created_time,
             update_time: update_time,
@@ -129,11 +133,7 @@ function Result({result}) {
             <div className={"accordion-group"} style={{marginLeft: 20 }}>
                 <div className={"accordion-heading"}>
                     <div className={"accordion-body"}>
-                        <div><span style={{fontWeight: "bold"}}>Created by: </span> {result.created_by}</div>
-                        <div><span style={{fontWeight: "bold"}}>Description: </span> {result.description}</div>
-                        <div><span style={{fontWeight: "bold"}}>Institution Name: </span> {result.institution_name}</div>
-                        <div><span style={{fontWeight: "bold"}}> Date created: </span> {result.created_time}</div>
-                        <div><span style={{fontWeight: "bold"}}> Last updated: </span> {result.update_time}</div>
+                        <div>{result.description}</div>
                     </div>
                 </div>
             </div>
@@ -151,7 +151,9 @@ function Result({result}) {
                             fontSize: 11,
                             fontStyle: "italic"
                         }}>This datafile is from following dataset: </span>
-                        <div><span style={{fontWeight: "bold", marginLeft: 5}}><a href={result.dataset_url}>{result.dataset_description}</a></span> </div>
+                        <div><span style={{fontWeight: "bold", marginLeft: 5}}>
+                            <a href={result.dataset_url}>{result.dataset_description}</a></span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -184,7 +186,33 @@ function Result({result}) {
                             name={"showChild"}>
                             <i className={dataToggleClass ? "fa fa-plus" : "fa fa-minus"}/>
                         </button>
-                        <a style={{fontWeight: "bold"}} href={result.url}>{result.title}</a>
+                        <a style={{fontWeight: "bold", display:"inline-block"}} href={result.url}>{result.title}</a>
+                        <ul className="nav nav-pills badgelist pull-right" style={{display:"inline-block"}}>
+                            <li className="pull-right">
+                                <span className="label label-info" title={"Date Created: "+result.created_time} >
+                                    <i className="fa fa-clock-o"/>
+                                    <span>
+                                        {result.created_time}
+                                    </span>
+                                </span>
+                            </li>
+                            <li className="pull-right">
+                                <span className="label label-info" title={"Created by: "+result.created_by} >
+                                    <i className="fa fa-user"/>
+                                    <span>
+                                        {result.created_by}
+                                    </span>
+                                </span>
+                            </li>
+                            <li className="pull-right">
+                                <span className="label label-info" title={"Institution Name: "+result.institution_name} >
+                                    <i className="fa fa-institution"/>
+                                    <span>
+                                        {result.institution_name}
+                                    </span>
+                                </span>
+                            </li>
+                        </ul>
                         <div id={"data"}>{! dataToggleClass && getExperimentData(result)}</div>
                     </div>
                     }
