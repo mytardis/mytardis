@@ -69,6 +69,7 @@ class SearchAppResource(Resource):
 
     def get_object_list(self, bundle):
         user = bundle.request.user
+        groups = user.groups.all()
         query_text = bundle.request.GET.get('query', None)
         if not query_text:
             raise BadRequest("Missing query parameter")
@@ -84,17 +85,24 @@ class SearchAppResource(Resource):
         result_dict = {k: [] for k in ["experiments", "datasets", "datafiles"]}
         for hit in results.hits.hits:
             if hit["_index"] == "dataset":
-                check_dataset_access = filter_dataset_result(hit, user.id)
+                check_dataset_access = filter_dataset_result(hit,
+                                                             userid=user.id,
+                                                             groups=groups)
+
                 if check_dataset_access:
                     result_dict["datasets"].append(hit)
 
             elif hit["_index"] == "experiments":
-                check_experiment_access = filter_experiment_result(hit, user.id)
+                check_experiment_access = filter_experiment_result(hit,
+                                                                   userid=user.id,
+                                                                   groups=groups)
                 if check_experiment_access:
                     result_dict["experiments"].append(hit)
 
             elif hit["_index"] == "datafile":
-                check_datafile_access = filter_datafile_result(hit, user.id)
+                check_datafile_access = filter_datafile_result(hit,
+                                                               userid=user.id,
+                                                               groups=groups)
                 if check_datafile_access:
                     result_dict["datafiles"].append(hit)
 
@@ -136,6 +144,7 @@ class AdvanceSearchAppResource(Resource):
 
     def dehydrate(self, bundle):
         user = bundle.request.user
+        groups = user.groups.all()
         # if anonymous user search public data only
         query_text = bundle.data.get("text", None)
         type_tag = bundle.data.get("TypeTag", None)
@@ -185,17 +194,23 @@ class AdvanceSearchAppResource(Resource):
         for item in result:
             for hit in item.hits.hits:
                 if hit["_index"] == "dataset":
-                    check_dataset_access = filter_dataset_result(hit, user.id)
+                    check_dataset_access = filter_dataset_result(hit,
+                                                                 userid=user.id,
+                                                                 groups=groups)
                     if check_dataset_access:
                         result_dict["datasets"].append(hit)
 
                 elif hit["_index"] == "experiments":
-                    check_experiment_access = filter_experiment_result(hit, user.id)
+                    check_experiment_access = filter_experiment_result(hit,
+                                                                       userid=user.id,
+                                                                       groups=groups)
                     if check_experiment_access:
                         result_dict["experiments"].append(hit)
 
                 elif hit["_index"] == "datafile":
-                    check_datafile_access = filter_datafile_result(hit, user.id)
+                    check_datafile_access = filter_datafile_result(hit,
+                                                                   userid=user.id,
+                                                                   groups=groups)
                     if check_datafile_access:
                         result_dict["datafiles"].append(hit)
 
@@ -204,25 +219,36 @@ class AdvanceSearchAppResource(Resource):
         return bundle
 
 
-def filter_experiment_result(hit, userid):
+def filter_experiment_result(hit, userid, groups):
     exp = Experiment.objects.get(id=hit["_id"])
-    return bool(exp.objectacls.filter(entityId=userid).count() > 0)
+    if exp.objectacls.filter(entityId=userid).count() > 0:
+        return True
+    for group in groups:
+        if exp.objectacls.filter(entityId=group.id).count() > 0:
+            return True
+    return False
 
 
-def filter_dataset_result(hit, userid):
+def filter_dataset_result(hit, userid, groups):
     dataset = Dataset.objects.get(id=hit["_id"])
     exps = dataset.experiments.all()
     for exp in exps:
         if exp.objectacls.filter(entityId=userid).count() > 0:
             return True
+        for group in groups:
+            if exp.objectacls.filter(entityId=group.id).count() > 0:
+                return True
     return False
 
 
-def filter_datafile_result(hit, userid):
+def filter_datafile_result(hit, userid, groups):
     datafile = DataFile.objects.get(id=hit["_id"])
     ds = datafile.dataset
     exps = ds.experiments.all()
     for exp in exps:
         if exp.objectacls.filter(entityId=userid).count() > 0:
             return True
+        for group in groups:
+            if exp.objectacls.filter(entityId=group.id).count() > 0:
+                return True
     return False
