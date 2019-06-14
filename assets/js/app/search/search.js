@@ -75,9 +75,9 @@ function Search() {
 
     const showResults = result => {
         let newResults = [];
-        let counts = {"experimentsCount": "",
-            "datasetsCount":"",
-            "datafilesCount":""
+        let counts = {"experimentsCount": 0,
+            "datasetsCount":0,
+            "datafilesCount":0
         };
         const experimentsHits = result.hits["experiments"];
         //create experiment result
@@ -97,7 +97,7 @@ function Search() {
     return (
         <main>
             <SimpleSearchForm showResults={showResults} searchText={parsed.q}/>
-            {results.length > 0 ? <Results results={results} counts={counts}/> : <span/>}
+            {<Results results={results} counts={counts}/>}
         </main>
     );
 }
