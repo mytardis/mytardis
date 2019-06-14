@@ -221,6 +221,8 @@ class AdvanceSearchAppResource(Resource):
 
 def filter_experiment_result(hit, userid, groups):
     exp = Experiment.objects.get(id=hit["_id"])
+    if exp.public_access == 100:
+        return True
     if exp.objectacls.filter(entityId=userid).count() > 0:
         return True
     for group in groups:
@@ -233,6 +235,8 @@ def filter_dataset_result(hit, userid, groups):
     dataset = Dataset.objects.get(id=hit["_id"])
     exps = dataset.experiments.all()
     for exp in exps:
+        if exp.public_access == 100:
+            return True
         if exp.objectacls.filter(entityId=userid).count() > 0:
             return True
         for group in groups:
@@ -246,6 +250,8 @@ def filter_datafile_result(hit, userid, groups):
     ds = datafile.dataset
     exps = ds.experiments.all()
     for exp in exps:
+        if exp.public_access == 100:
+            return True
         if exp.objectacls.filter(entityId=userid).count() > 0:
             return True
         for group in groups:
