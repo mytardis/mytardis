@@ -167,7 +167,8 @@ function Result({result}) {
                                 <i className={dataToggleClass ? "fa fa-plus" : "fa fa-minus"}/>
                         </button>
                         <a style={{fontWeight: "bold"}} href={result.url}>{result.title}</a>
-                        <ul className="nav nav-pills badgelist pull-right" style={{display:"inline-block"}}>
+                        <ul className="nav nav-pills badgelist pull-right"
+                            style={{display:"inline-block"}}>
                             <li className="pull-right">
                                 <span className="label label-info" title={"Date Created: "+result.created_time} >
                                     <i className="fa fa-clock-o"/>
@@ -342,9 +343,11 @@ function Results({results, counts}) {
 function SimpleSearchForm({showResults, searchText}) {
     const [simpleSearchText, setSimpleSearchText] = useState(searchText);
     const [advanceSearchVisible, setAdvanceSearchVisible ] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
     const toggleAdvanceSearch = () => setAdvanceSearchVisible(!advanceSearchVisible);
     const fetchResults = () => {
         //fetch results
+        setIsLoading(true);
         fetch('/api/v1/search-v2_simple-search/?query='+simpleSearchText, {
             method: 'get',
             headers: {
@@ -353,7 +356,10 @@ function SimpleSearchForm({showResults, searchText}) {
                 'X-CSRFToken': csrftoken
             },})
             .then(response => response.json())
-            .then(data => showResults(data.objects[0]));
+            .then(function (data){
+                showResults(data.objects[0]);
+                setIsLoading(false)
+            } );
     };
     const handleSimpleSearchSubmit = e => {
         e.preventDefault();
@@ -365,7 +371,6 @@ function SimpleSearchForm({showResults, searchText}) {
          handleSimpleSearchSubmit(e)
      };
     useEffect(() => {
-       console.log(searchText);
        fetchResults()
     }, searchText);
     return (
@@ -379,6 +384,13 @@ function SimpleSearchForm({showResults, searchText}) {
                        placeholder="Search for Experiments, Datasets, Datafiles">
                 </input>
             </form>
+            {isLoading &&
+                <div className="col-md-12" style={{textAlign: "center",  position:"absolute"}}>
+                    <div id="spinner" style={{textAlign: "center"}}>
+                        <i id="mo-spin-icon" className="fa fa-spinner fa-pulse fa-2x"/>
+                    </div>
+                </div>
+            }
             <button type="button"
                     onClick={toggleAdvanceSearch}
                     className="btn btn-default dropdown-toggle"
@@ -399,6 +411,7 @@ function AdvanceSearchForm({searchText, showResults}) {
     const typeOptions=["Dataset","Experiment", "Datafile"];
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
     const [formData, setFormData] = useState({["text"]: searchText,
         ["TypeTag"]: typeOptions});
     const getInstrumentList = () => {
@@ -413,6 +426,7 @@ function AdvanceSearchForm({searchText, showResults}) {
     };
     let handleAdvanceSearchFormSubmit = (event) => {
         event.preventDefault();
+        setIsLoading(true);
         //set form data
         setFormData(formData => ({...formData, ["text"]: searchText}));
         fetch('/api/v1/search-v2_advance-search/', {
@@ -426,6 +440,7 @@ function AdvanceSearchForm({searchText, showResults}) {
             }).then(function(response) {
                 return response.json();
                 }).then(function(data) {
+                    setIsLoading(false);
                     showResults(data)
                 });
     };
@@ -450,6 +465,7 @@ function AdvanceSearchForm({searchText, showResults}) {
     };
 
     return (
+
         <form id="adv-search-form" className="form-horizontal" role="form">
             <div className="form-group" id={"adv-search"}>
                 <label htmlFor="filter">Filter by Date created</label>
@@ -497,8 +513,16 @@ function AdvanceSearchForm({searchText, showResults}) {
                 >
                     <span className="glyphicon glyphicon-search" aria-hidden="true"/>
                 </button>
+                {isLoading &&
+                <div className="col-md-6" style={{textAlign: "center",  position:"absolute"}}>
+                    <div id="spinner" style={{textAlign: "center"}}>
+                        <i id="mo-spin-icon" className="fa fa-spinner fa-pulse fa-2x"/>
+                    </div>
+                </div>
+                }
             </div>
         </form>
+
     )
 }
 export default Search;
