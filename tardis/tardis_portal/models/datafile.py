@@ -701,7 +701,7 @@ class DataFileObject(models.Model):
 
     def verify(self, add_checksums=True, add_size=True):  # too complex # noqa
         compute_md5 = getattr(settings, 'COMPUTE_MD5', True)
-        compute_sha512 = getattr(settings, 'COMPUTE_SHA512', True)
+        compute_sha512 = getattr(settings, 'COMPUTE_SHA512', False)
         comparisons = ['size']
         if compute_md5:
             comparisons.append('md5sum')
@@ -849,7 +849,7 @@ def delete_dfo(sender, instance, **kwargs):
 
 def compute_checksums(file_object,
                       compute_md5=True,
-                      compute_sha512=True,
+                      compute_sha512=False,
                       close_file=True):
     """Computes checksums for a python file object
 
