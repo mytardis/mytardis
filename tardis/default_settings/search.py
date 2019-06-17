@@ -1,4 +1,7 @@
-# Placeholder for Search v2 default settings
+import os
+
+from .apps import INSTALLED_APPS
+
 SINGLE_SEARCH_V2_ENABLED = False
 if SINGLE_SEARCH_V2_ENABLED:
     INSTALLED_APPS += 'django_elasticsearch_dsl',
