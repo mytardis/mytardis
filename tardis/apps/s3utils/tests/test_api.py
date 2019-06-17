@@ -27,19 +27,19 @@ class S3UtilsAppApiTestCase(MyTardisResourceTestCase):
         self.s3_storage_box = StorageBox.objects.create(
             name='S3 Storage Box',
             django_storage_class='storages.backends.s3boto3.S3Boto3Storage')
-        self.s3_bucket_name = StorageBoxOption.objects.create(
+        StorageBoxOption.objects.create(
             storage_box=self.s3_storage_box, key='bucket_name',
             value='s3-mock-bucket')
-        self.s3_endpoint_url = StorageBoxOption.objects.create(
+        StorageBoxOption.objects.create(
             storage_box=self.s3_storage_box, key='endpoint_url',
             value='http://169.254.169.254')
-        self.s3_access_key = StorageBoxOption.objects.create(
+        StorageBoxOption.objects.create(
             storage_box=self.s3_storage_box, key='access_key',
             value='mock-access-key')
-        self.s3_secret_key = StorageBoxOption.objects.create(
+        StorageBoxOption.objects.create(
             storage_box=self.s3_storage_box, key='secret_key',
             value='mock-secret-key')
-        self.s3_signature_version = StorageBoxOption.objects.create(
+        StorageBoxOption.objects.create(
             storage_box=self.s3_storage_box, key='signature_version',
             value='s3')
 
@@ -61,6 +61,8 @@ class S3UtilsAppApiTestCase(MyTardisResourceTestCase):
     def tearDown(self):
         botocore.signers.generate_presigned_url = \
             self.original_generate_presigned_url
+        self.dataset.delete()
+        self.s3_storage_box.delete()
 
     def test_download_dfo(self):
         '''
