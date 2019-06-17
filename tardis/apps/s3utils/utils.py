@@ -105,7 +105,8 @@ def calculate_checksums(dfo, compute_md5=True, compute_sha512=False):
             stdin=subprocess.PIPE, stdout=subprocess.PIPE)
         bucket.download_fileobj(dfo.uri, proc.stdin)
         stdout, _ = proc.communicate()
-        checksums['md5sum'] = re.search(b'^\w+', stdout)[0].decode('utf8')
+        checksums['md5sum'] = \
+            re.match(b'\w+', stdout).group(0).decode('utf8')
 
     if compute_sha512:
         shasum_binary = 'shasum'
@@ -114,6 +115,7 @@ def calculate_checksums(dfo, compute_md5=True, compute_sha512=False):
             stdin=subprocess.PIPE, stdout=subprocess.PIPE)
         bucket.download_fileobj(dfo.uri, proc.stdin)
         stdout, _ = proc.communicate()
-        checksums['sha512sum'] = re.search(b'^\w+', stdout)[0].decode('utf8')
+        checksums['sha512sum'] = \
+            re.match(b'\w+', stdout).group(0).decode('utf8')
 
     return checksums
