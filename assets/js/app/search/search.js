@@ -514,11 +514,11 @@ function AdvanceSearchForm({searchText, showResults}) {
                     <span className="glyphicon glyphicon-search" aria-hidden="true"/>
                 </button>
                 {isLoading &&
-                <div className="col-md-6" style={{textAlign: "center",  position:"absolute"}}>
-                    <div id="spinner" style={{textAlign: "center"}}>
-                        <i id="mo-spin-icon" className="fa fa-spinner fa-pulse fa-2x"/>
+                    <div className="col-md-6" style={{textAlign: "center",  position:"absolute"}}>
+                        <div id="spinner" style={{textAlign: "center"}}>
+                            <i id="mo-spin-icon" className="fa fa-spinner fa-pulse fa-2x"/>
+                        </div>
                     </div>
-                </div>
                 }
             </div>
         </form>
