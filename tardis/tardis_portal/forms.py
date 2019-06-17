@@ -53,12 +53,8 @@ from django.conf import settings
 from django.db import transaction
 from django.contrib.auth.models import User
 from django.utils.translation import ugettext_lazy as _
-from django.forms.widgets import SelectDateWidget
 from django.contrib.auth.forms import AuthenticationForm
 
-from haystack.forms import SearchForm
-
-from form_utils import forms as formutils
 from registration.models import RegistrationProfile
 
 from . import models
@@ -464,75 +460,6 @@ class ExperimentForm(forms.ModelForm):
         return True
 
 
-def createSearchExperimentForm():
-
-    from .models import ParameterName
-
-    fields = {}
-    fields['title'] = forms.CharField(label='Title',
-            max_length=20, required=False)
-    fields['description'] = forms.CharField(label='Experiment Description',
-            max_length=20, required=False)
-    fields['institutionName'] = forms.CharField(label='Institution Name',
-            max_length=20, required=False)
-    fields['creator'] = forms.CharField(label='Author\'s Name',
-            max_length=20, required=False)
-    fields['date'] = forms.DateTimeField(label='Experiment Date',
-            widget=SelectDateWidget(), required=False)
-
-    fieldsets = [('main fields', {'fields': ['title', 'description', 'institutionName', 'creator', 'date']})]
-
-    schemaAndFieldLists = []
-    experimentSchemata = models.Schema.objects.filter(type=models.Schema.EXPERIMENT)
-    for schema in experimentSchemata:
-        searchableParameterNames = \
-            schema.parametername_set.filter(is_searchable=True)
-        fieldNames = []
-        schemaAndFieldLists.append((schema, fieldNames))
-        for parameterName in searchableParameterNames:
-            fieldName = parameterName.getUniqueShortName()
-            if parameterName.data_type == ParameterName.NUMERIC:
-                if parameterName.comparison_type \
-                    == ParameterName.RANGE_COMPARISON:
-                    fields[fieldName + 'From'] = \
-                        forms.DecimalField(label=parameterName.full_name
-                            + ' From', required=False)
-                    fields[fieldName + 'To'] = \
-                        forms.DecimalField(label=parameterName.full_name
-                            + ' To', required=False)
-                    fieldNames.append(fieldName + 'From')
-                    fieldNames.append(fieldName + 'To')
-                else:
-                    # note that we'll also ignore the choices text box entry
-                    # even if it's filled if the parameter is of numeric type
-                    # TODO: decide if we are to raise an exception if
-                    #       parameterName.choices is not empty
-                    fields[fieldName] = \
-                        forms.DecimalField(label=parameterName.full_name,
-                            required=False)
-                    fieldNames.append(fieldName)
-            else:  # parameter is a string
-                if parameterName.choices != '':
-                    fields[fieldName] = \
-                        forms.CharField(label=parameterName.full_name,
-                        widget=forms.Select(choices=__getParameterChoices(
-                        parameterName.choices)), required=False)
-                else:
-                    fields[fieldName] = \
-                        forms.CharField(label=parameterName.full_name,
-                        max_length=255, required=False)
-                fieldNames.append(fieldName)
-
-    for schema, fieldlist in schemaAndFieldLists:
-        name = schema.name if schema.name is not None else 'No schema name'
-        if fieldlist:
-            fieldsets.append((name, {'fields': fieldlist}))
-
-    return type('SearchExperimentForm', (formutils.BetterBaseForm, forms.BaseForm, ),
-                {'base_fields': fields, 'base_fieldsets': fieldsets,
-                 'base_row_attrs': {}})
-
-
 def __getParameterChoices(choicesString):
     """Handle the choices string in this format:
     '(hello:hi how are you), (yes:i am here), (no:joe)'
@@ -767,18 +694,6 @@ def save_datafile_add_form(schema, parentObject, request):
             stripped_key = stripped_key.rpartition('__')[0]
 
             psm.new_param(stripped_key, value)
-
-class RawSearchForm(SearchForm):
-
-    def search(self):
-        query = self.cleaned_data['q']
-        # NOTE: end_offset = 1 is just a quick hack way to stop haystack getting lots of search
-        # results even though we dont need them. Fix this to properly set rows=0
-        sqs = self.searchqueryset.facet('experiment_id_stored').raw_search(query, end_offset=1)
-        if self.load_all:
-            sqs = sqs.load_all()
-
-        return sqs
 
 
 class RightsForm(ModelForm):
