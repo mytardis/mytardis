@@ -1,7 +1,14 @@
 """
 Utilities for S3 objects
 """
+import re
+import subprocess
+import sys
+
 from django.conf import settings
+
+import boto3
+from botocore.client import Config
 
 from . import default_settings
 
@@ -26,9 +33,6 @@ def generate_presigned_url(dfo, expiry=None):
     string
         The pre-signed URL
     """
-    import boto3
-    from botocore.client import Config
-
     box = dfo.storage_box
     endpoint_url = box.options.get(key='endpoint_url').value
     access_key = box.options.get(key='access_key').value
@@ -51,3 +55,65 @@ def generate_presigned_url(dfo, expiry=None):
             'Key': dfo.uri
         },
         ExpiresIn=expiry)
+
+
+def calculate_checksums(dfo, compute_md5=True, compute_sha512=False):
+    """Calculates checksums for an S3 DataFileObject instance.
+    For files in S3, using the django-storages abstraction is
+    inefficient - we end up with a clash of chunking algorithms
+    between the download from S3 and MyTardis's Python-based checksum
+    calculation.  So for S3 files, we calculate checksums using external
+    binaries (md5sum and shasum) instead.
+
+    :param dfo : The DataFileObject instance
+    :type dfo: DataFileObject
+    :param compute_md5: whether to compute md5 default=True
+    :type compute_md5: bool
+    :param compute_sha512: whether to compute sha512, default=True
+    :type compute_sha512: bool
+
+    :return: the checksums as {'md5sum': result, 'sha512sum': result}
+    :rtype: dict
+    """
+    from botocore.client import Config
+    options = dfo.storage_box.options.all()
+    signature_version = options.filter(key='signature_version').first()
+    if signature_version:
+        config = Config(signature_version=signature_version.value)
+    boto3_kwargs = dict(config=Config())
+    for option in options:
+        if option.key == 'signature_version':
+            boto3_kwargs['config'] = Config(signature_version=option.value)
+        else:
+            key = option.key
+            if key == 'bucket_name':
+                continue
+            key = key.replace('access_key', 'aws_access_key_id')
+            key = key.replace('secret_key', 'aws_secret_access_key')
+            boto3_kwargs[key] = option.value
+    s3resource = boto3.resource('s3', **boto3_kwargs)
+    bucket = s3resource.Bucket(options.get(key='bucket_name').value)
+
+    checksums = {}
+
+    if compute_md5:
+        md5sum_binary = 'md5sum'
+        if sys.platform == 'darwin':
+            md5sum_binary = 'md5'
+        proc = subprocess.Popen(
+            [md5sum_binary],
+            stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+        bucket.download_fileobj(dfo.uri, proc.stdin)
+        stdout, _ = proc.communicate()
+        checksums['md5sum'] = re.search(b'^\w+', stdout)[0].decode('utf8')
+
+    if compute_sha512:
+        shasum_binary = 'shasum'
+        proc = subprocess.Popen(
+            [shasum_binary, '-a', '512'],
+            stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+        bucket.download_fileobj(dfo.uri, proc.stdin)
+        stdout, _ = proc.communicate()
+        checksums['sha512sum'] = re.search(b'^\w+', stdout)[0].decode('utf8')
+
+    return checksums

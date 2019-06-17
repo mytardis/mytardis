@@ -699,6 +699,32 @@ class DataFileObject(models.Model):
             self.delete()
         return copy
 
+    def calculate_checksums(self, compute_md5=True, compute_sha512=False):
+        """Calculates checksums for a DataFileObject instance
+
+        :param compute_md5: whether to compute md5 default=True
+        :type compute_md5: bool
+        :param compute_sha512: whether to compute sha512, default=True
+        :type compute_sha512: bool
+
+        :return: the checksums as {'md5sum': result, 'sha512sum': result}
+        :rtype: dict
+        """
+        from importlib import import_module
+
+        storage_class_name = self.storage_box.django_storage_class
+        calculate_checksum_methods = getattr(
+            settings, 'CALCULATE_CHECKSUMS_METHODS', {})
+        if storage_class_name in calculate_checksum_methods:
+            calculate_checksum_method = \
+                calculate_checksum_methods[storage_class_name]
+            module_path, method_name = calculate_checksum_method.rsplit('.', 1)
+            module = import_module(module_path)
+            calculate_checksums = getattr(module, method_name)
+            return calculate_checksums(self, compute_md5, compute_sha512)
+
+        return compute_checksums(self.file_object, compute_md5, compute_sha512)
+
     def verify(self, add_checksums=True, add_size=True):  # too complex # noqa
         compute_md5 = getattr(settings, 'COMPUTE_MD5', True)
         compute_sha512 = getattr(settings, 'COMPUTE_SHA512', False)
@@ -730,8 +756,7 @@ class DataFileObject(models.Model):
                 if add_size:
                     database_update['size'] = actual['size']
             if same_values.get('size', True):
-                actual.update(compute_checksums(
-                    self.file_object,
+                actual.update(self.calculate_checksums(
                     compute_md5=compute_md5,
                     compute_sha512=compute_sha512))
 
