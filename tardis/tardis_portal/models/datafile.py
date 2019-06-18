@@ -777,18 +777,35 @@ class DataFileObject(models.Model):
         self.last_verified_time = timezone.now()
         self.save(update_fields=['verified', 'last_verified_time'])
         df.update_mimetype()
-        from tardis.celery import tardis_app
-        tardis_app.send_task(
-            'mytardis.apply_filters',
-            args = [
-                self.id,
-                self.verified,
-                self.get_full_path(),
-                self.uri
-            ],
-            queue = 'filters',
-            priority = getattr(settings, 'DEFAULT_TASK_PRIORITY', 0))
+        if getattr(settings, 'USE_FILTERS', False):
+            self.apply_filters()
         return result
+
+    def apply_filters(self):
+        from django.core.files.storage import FileSystemStorage
+        from django.core.files.storage import get_storage_class
+        from tardis.celery import tardis_app
+
+        storage_class = get_storage_class(self.storage_box.django_storage_class)
+        if not issubclass(storage_class, FileSystemStorage):
+            logger.debug(
+		"Can't apply filters for DFO ID %s with storage class %s",
+                self.id, self.storage_box.django_storage_class)
+            return
+
+        try:
+            tardis_app.send_task(
+                'mytardis.apply_filters',
+                args = [
+                    self.id,
+                    self.verified,
+                    self.get_full_path(),
+                    self.uri
+                ],
+                queue = 'filters',
+                priority = getattr(settings, 'FILTERS_TASK_PRIORITY', 0))
+        except Exception:
+            logger.exception("Failed to apply filters for DFO ID %s", self.id)
 
     def get_full_path(self):
         return self._storage.path(self.uri)
