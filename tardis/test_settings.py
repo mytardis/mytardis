@@ -167,3 +167,9 @@ SFTP_HOST_KEY = (
     b"2+Q+Tlr2aNlAmrHtkT13+wJAJVgZATPI5X3UO0Wdf24f/w9+OY+QxKGl86tTQXzE\n"
     b"4bwvYtUGufMIHiNeWP66i6fYCucXCMYtx6Xgu2hpdZZpFw==\n"
     b"-----END RSA PRIVATE KEY-----\n")
+
+# tardis.apps.s3utils will be in INSTALLED_APPS for unit tests:
+CALCULATE_CHECKSUMS_METHODS = {
+    'storages.backends.s3boto3.S3Boto3Storage':
+        'tardis.apps.s3utils.utils.calculate_checksums'
+}
