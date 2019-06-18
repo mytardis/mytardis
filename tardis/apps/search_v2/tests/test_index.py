@@ -1,35 +1,34 @@
+import os
 import unittest
 
 from django.conf import settings
-from django.core.management import call_command
 from django.contrib.auth.models import User
-from django.utils.six import StringIO
-from django.test import TestCase
+from django.test import TestCase, modify_settings, override_settings
 
 from tardis.tardis_portal.models import Experiment, Dataset, DataFile
-
 from tardis.apps.search_v2.documents import ExperimentDocument, DatasetDocument, DataFileDocument
 
 
-class IndexExperimentTestCase(TestCase):
-
-    # ovverrides
-    # add installed apps
-
-    @unittest.skipUnless(
-        getattr(settings, 'ELASTICSEARCH_DSL', False),
+@override_settings(SINGLE_SEARCH_V2_ENABLED=True)
+@modify_settings(INSTALLED_APPS={
+    'append': 'django_elasticsearch_dsl'
+})
+@override_settings(ELASTICSEARCH_DSL={
+        'default': {
+            'hosts': os.environ.get('ELASTICSEARCH_URL', None)
+        },
+})
+@unittest.skipUnless(
+        os.environ.get('ELASTICSEARCH_URL', None),
         "--elasticsearch not set"
     )
+class IndexExperimentTestCase(TestCase):
+
     def setUp(self):
         user = 'tardis_user1'
         pwd = 'secret'
         email = ''
         self.user = User.objects.create_user(user, email, pwd)
-        self.out = StringIO()
-        call_command('search_index', stdout=self.out,
-                     action='delete',
-                     models=['tardis_portal.experiment','tardis_portal.dataset', 'tardis_portal.datafile'],
-                     force=True)
 
     def test_create_index(self):
         self.exp1 = Experiment(title='test exp1',
@@ -56,7 +55,7 @@ class IndexExperimentTestCase(TestCase):
         query = search.query("match", created_time=self.exp1.created_time)
         result = query.execute(ignore_cache=True)
         self.assertEqual(result.hits[0].created_time, self.exp1.created_time)
-        #dataset
+        # dataset
         # dataset1 belongs to experiment1
         self.dataset1 = Dataset(description='test_dataset')
         self.dataset1.save()
