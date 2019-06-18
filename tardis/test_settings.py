@@ -1,7 +1,6 @@
 # pylint: disable=wildcard-import,unused-wildcard-import
 from __future__ import absolute_import
 
-import os
 
 from glob import glob
 
@@ -170,18 +169,10 @@ SFTP_HOST_KEY = (
     b"4bwvYtUGufMIHiNeWP66i6fYCucXCMYtx6Xgu2hpdZZpFw==\n"
     b"-----END RSA PRIVATE KEY-----\n")
 
-ELASTICSEARCH_DSL = {
-    'default': {
-        'hosts': 'http://es:9200'
-    },
-}
-
-ELASTICSEARCH_DSL_INDEX_SETTINGS = {
-    'number_of_shards': 1
-}
 # tardis.apps.s3utils will be in INSTALLED_APPS for unit tests:
 CALCULATE_CHECKSUMS_METHODS = {
     'storages.backends.s3boto3.S3Boto3Storage':
         'tardis.apps.s3utils.utils.calculate_checksums'
 }
+
 
