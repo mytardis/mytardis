@@ -100,7 +100,7 @@ class DatasetDocument(DocType):
     def get_instances_from_related(self, related_instance):
         if isinstance(related_instance, Experiment):
             return related_instance.datasets.all()
-        elif isinstance(related_instance, Instrument):
+        if isinstance(related_instance, Instrument):
             return related_instance.dataset_set.all()
         return None
 
