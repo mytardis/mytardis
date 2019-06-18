@@ -82,15 +82,18 @@ def calculate_checksums(dfo, compute_md5=True, compute_sha512=False):
         config = Config(signature_version=signature_version.value)
     boto3_kwargs = dict(config=Config())
     for option in options:
-        if option.key == 'signature_version':
+        key = option.key
+        if key == 'signature_version':
             boto3_kwargs['config'] = Config(signature_version=option.value)
-        else:
-            key = option.key
-            if key == 'bucket_name':
-                continue
-            key = key.replace('access_key', 'aws_access_key_id')
-            key = key.replace('secret_key', 'aws_secret_access_key')
-            boto3_kwargs[key] = option.value
+            continue
+        key = key.replace('access_key', 'aws_access_key_id')
+        key = key.replace('secret_key', 'aws_secret_access_key')
+        if key not in [
+                'region_name', 'api_version', 'use_ssl', 'verify',
+                'endpoint_url', 'aws_access_key_id', 'aws_secret_access_key',
+                'aws_session_token']:
+            continue
+        boto3_kwargs[key] = option.value
     s3resource = boto3.resource('s3', **boto3_kwargs)
     bucket = s3resource.Bucket(options.get(key='bucket_name').value)
 
