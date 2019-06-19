@@ -21,7 +21,7 @@ function createExperimentResultData(hits, newResults) {
             title: hit._source.title,
             type: "experiment",
             id: hit._source.id,
-            url: "/experiment/view/" + hit._source.id,
+            url: "/experiment/view/" + hit._source.id + "/",
             description : description,
             institution_name: hit._source.institution_name,
             created_time: created_time,
@@ -178,7 +178,7 @@ function Result({result}) {
                                 </span>
                             </li>
                             <li className="pull-right">
-                                <span className="label label-info" title={"Institution Name: "+result.institution_name} >
+                                <span className="label label-info" title={"Instrument Name: "+result.institution_name} >
                                     {/*upgrade to font-awesome 5 will bring this icon */}
                                     <i className="fa fa-microscope"/>
                                     <span>
