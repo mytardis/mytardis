@@ -29,4 +29,5 @@ CMD . /appenv/bin/activate; \
     pip install -U setuptools; \
     pip wheel -r requirements.txt; \
     pip wheel -r requirements-postgres.txt; \
-    pip wheel -r requirements-mysql.txt;
+    pip wheel -r requirements-mysql.txt; \
+    pip wheel -e "git+https://github.com/pypa/pip.git#egg=pip"
