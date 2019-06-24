@@ -79,7 +79,7 @@ class SearchAppResource(Resource):
             query=query_text,
             fields=["title", "description", "filename"]
         )
-        search = search[0:1000]
+        search = search[0:100]
         results = search.execute()
         result_dict = {k: [] for k in ["experiments", "datasets", "datafiles"]}
         for hit in results.hits.hits:
