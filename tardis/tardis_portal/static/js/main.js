@@ -1,6 +1,4 @@
-/* global $ */
 /* global _ */
-/* eslint global-strict: 0, strict: 0 */
 
 var activateHoverDetection = function() {
     // Hover events

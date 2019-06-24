@@ -1,8 +1,5 @@
 /* tardis/tardis_portal/static/js/jquery/tardis_portal/view_experiment/abbreviate_abstract.js */
   
-/* eslint global-strict: 0, strict: 0, no-unused-vars: [2, {"vars": "local", "args": "none"}] */
-
-
 $(document).ready(function() {
     // Abbreviate abstract
     var hideAbstract = false;

@@ -1,6 +1,5 @@
 /* tardis/tardis_portal/static/js/jquery/tardis_portal/view_experiment/dataset_tiles.js */
   
-/* eslint global-strict: 0, strict: 0 */
 /* global Backbone, MyTardis */
 
 $(function() {

@@ -1,9 +1,5 @@
 /* tardis/tardis_portal/static/js/jquery/tardis_portal/ajax/share.js */
 
-/* eslint global-strict: 0, strict: 0, object-shorthand: 0,
-          no-extend-native: [2, {"exceptions": ["Date", "String"]}],
-          no-unused-vars: [2, {"vars": "local", "args": "none"}] */
-
 /* global userAutocompleteHandler, _ */
 
 var loadingHTML = "<img src=\"/static/images/ajax-loader.gif\"/><br />";
