@@ -365,11 +365,6 @@ function SimpleSearchForm({showResults, searchText}) {
         e.preventDefault();
         fetchResults()
     };
-    const handleSimpleSearchTextChange = (e,searchText) => {
-         e.preventDefault();
-         setSimpleSearchText(searchText);
-         handleSimpleSearchSubmit(e)
-     };
     useEffect(() => {
        fetchResults()
     }, searchText);
