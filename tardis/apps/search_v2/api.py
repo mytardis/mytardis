@@ -80,7 +80,7 @@ class SearchAppResource(Resource):
             fields=["title", "description", "filename"]
         )
         total = search.count()
-        search = search[0:total]
+        search = search[0:1000]
         results = search.execute()
         result_dict = {k: [] for k in ["experiments", "datasets", "datafiles"]}
         for hit in results.hits.hits:
