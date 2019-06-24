@@ -77,7 +77,7 @@ function Result({ result }) {
                 </span>
               </li>
               <li className="pull-right">
-                <span className="label label-info" title={`Instrument Name: ${result.instrument_name}`}>
+                <span className="label label-info" title={`Instrument Name: ${result.instrument}`}>
                   {/* upgrade to font-awesome 5 will bring this icon */}
                   <i className="fa fa-microscope" />
                   <span>
