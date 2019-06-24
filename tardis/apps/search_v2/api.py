@@ -73,37 +73,39 @@ class SearchAppResource(Resource):
         query_text = bundle.request.GET.get('query', None)
         if not query_text:
             raise BadRequest("Missing query parameter")
-        s = Search()
-        search = s.query(
-            "multi_match",
-            query=query_text,
-            fields=["title", "description", "filename"]
-        )
-        search = search[0:100]
-        results = search.execute()
+        index_list = ['experiments', 'dataset', 'datafile']
+        ms = MultiSearch(index=index_list)
+        query_exp = Q("match", title=query_text)
+        ms = ms.add(Search().extra(size=100).query(query_exp))
+        query_dataset = Q("match", description=query_text)
+        ms = ms.add(Search().extra(size=100).query(query_dataset))
+        query_datafile = Q("match", filename=query_text)
+        ms = ms.add(Search().extra(size=100).query(query_datafile))
+        results = ms.execute()
         result_dict = {k: [] for k in ["experiments", "datasets", "datafiles"]}
-        for hit in results.hits.hits:
-            if hit["_index"] == "dataset":
-                check_dataset_access = filter_dataset_result(hit,
-                                                             userid=user.id,
-                                                             groups=groups)
+        for item in results:
+            for hit in item.hits.hits:
+                if hit["_index"] == "dataset":
+                    check_dataset_access = filter_dataset_result(hit,
+                                                                 userid=user.id,
+                                                                 groups=groups)
 
-                if check_dataset_access:
-                    result_dict["datasets"].append(hit)
+                    if check_dataset_access:
+                        result_dict["datasets"].append(hit)
 
-            elif hit["_index"] == "experiments":
-                check_experiment_access = filter_experiment_result(hit,
+                elif hit["_index"] == "experiments":
+                    check_experiment_access = filter_experiment_result(hit,
+                                                                       userid=user.id,
+                                                                       groups=groups)
+                    if check_experiment_access:
+                        result_dict["experiments"].append(hit)
+
+                elif hit["_index"] == "datafile":
+                    check_datafile_access = filter_datafile_result(hit,
                                                                    userid=user.id,
                                                                    groups=groups)
-                if check_experiment_access:
-                    result_dict["experiments"].append(hit)
-
-            elif hit["_index"] == "datafile":
-                check_datafile_access = filter_datafile_result(hit,
-                                                               userid=user.id,
-                                                               groups=groups)
-                if check_datafile_access:
-                    result_dict["datafiles"].append(hit)
+                    if check_datafile_access:
+                        result_dict["datafiles"].append(hit)
 
         return [SearchObject(id=1, hits=result_dict)]
 
@@ -174,7 +176,7 @@ class AdvanceSearchAppResource(Resource):
             q = Q("match", title=query_text)
             if (start_date is not None) & (end_date is not None):
                 q = q & Q("range", created_time={'gte': start_date, 'lte': end_date})
-            ms = ms.add(Search().query(q))
+            ms = ms.add(Search().extra(size=100).query(q))
         if 'dataset' in index_list:
             q = Q("match", description=query_text)
             if (start_date is not None) & (end_date is not None):
@@ -182,12 +184,12 @@ class AdvanceSearchAppResource(Resource):
             if instrument_list:
                 q = q & Q("match", instrument__name=instrument_list_string)
             # add instrument query
-            ms = ms.add(Search().query(q))
+            ms = ms.add(Search().extra(size=100).query(q))
         if 'datafile' in index_list:
             q = Q("match", filename=query_text)
             if (start_date is not None) & (end_date is not None):
                 q = q & Q("range", created_time={'gte': start_date, 'lte': end_date})
-            ms = ms.add(Search().query(q))
+            ms = ms.add(Search().extra(size=100).query(q))
         result = ms.execute()
         result_dict = {k: [] for k in ["experiments", "datasets", "datafiles"]}
         for item in result:
