@@ -37,7 +37,6 @@ function SimpleSearchForm({ showResults, searchText }) {
   const handleSimpleSearchTextChange = (e, newSearchText) => {
     e.preventDefault();
     setSimpleSearchText(newSearchText);
-    handleSimpleSearchSubmit(e);
   };
   useEffect(() => {
     if (!searchText && !simpleSearchText) {
