@@ -13,7 +13,7 @@
     "backbone-forms": "^0.10.0",
     "blueimp-file-upload": "^9.24.1",
     "clipboard": "^1.5.10",
-    "jquery": "^3.3.1",
+    "jquery": "^3.4.1",
     "jquery-migrate": "^3.0.1",
     "jquery-ui-dist": "^1.12.1",
     "mustache": "^2.3.0",
@@ -22,15 +22,15 @@
     "underscore.string": "^2.4.0"
   },
   "devDependencies": {
-    "eslint": "^4.19.1",
+    "eslint": "^6.0.0",
     "eslint-config-angular": "^0.5.0",
     "eslint-plugin-angular": "^3.3.0",
-    "grunt": "^1.0.1",
+    "grunt": "^1.0.4",
     "grunt-cli": "^1.2.0",
     "grunt-contrib-qunit": "^2.0.0",
     "jquery-mockjax": "^2.4.0",
     "minimatch": "^3.0.2",
-    "qunit": "^2.6.1"
+    "qunit": "^2.9.2"
   },
   "scripts": {
     "eslint.jquery": "eslint -c .eslintrc tardis/tardis_portal/static/js/jquery/tardis_portal/ tardis/tardis_portal/static/js/main.js js_tests/jquery/tardis_portal/ tardis/apps/sftp/static/js/sftp/sftp.js tardis/apps/openid_migration/static/js/openid_migration/migrate_accounts.js",
