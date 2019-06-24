@@ -13,7 +13,6 @@ from .database import *
 from .debug import *
 from .downloads import *
 from .email import *
-from .filters import *
 from .frontend import *
 from .i18n import *
 from .localisation import *
@@ -38,21 +37,25 @@ def get_git_version():
     repo_dir = path.dirname(path.dirname(path.abspath(__file__)))
 
     def run_git(args):
-        import subprocess
-        process = subprocess.Popen('git %s' % args,
-                                   stdout=subprocess.PIPE,
-                                   stderr=subprocess.PIPE,
-                                   shell=True,
-                                   cwd=repo_dir,
-                                   universal_newlines=True)
-        return process.communicate()[0]
+        import subprocess  # nosec - Bandit B404: import_subprocess
+        process = subprocess.Popen(  # nosec - Bandit B603: subprocess_without_shell_equals_true
+            args,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            cwd=repo_dir,
+            universal_newlines=True)
+        return process.communicate()[0].strip()
 
     try:
         info = {
-            'commit_id': run_git("log -1 --format='%H'").strip(),
-            'date': run_git("log -1 --format='%cd' --date=rfc").strip(),
-            'branch': run_git("rev-parse --abbrev-ref HEAD").strip(),
-            'tag': run_git("describe --abbrev=0 --tags").strip(),
+            'commit_id': run_git(
+                ["/usr/bin/git", "log", "-1", "--format=%H"]),
+            'date': run_git(
+                ["/usr/bin/git", "log", "-1", "--format=%cd", "--date=rfc"]),
+            'branch': run_git(
+                ["/usr/bin/git", "rev-parse", "--abbrev-ref", "HEAD"]),
+            'tag': run_git(
+                ["/usr/bin/git", "describe", "--abbrev=0", "--tags"])
         }
     except Exception:
         return ["unavailable"]
