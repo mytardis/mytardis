@@ -251,7 +251,7 @@ $(".share_link_group").bind("click", function(evt) {
                 evt2.preventDefault();
 
                 var icon = $(this).find("i");
-                icon.toggleClass("fa fa-folder-open icon-folder-close");
+                icon.toggleClass("fa-folder fa-folder-open");
                 $(this).toggleClass("members-shown members-hidden");
 
                 var userList = $(this).parents(".group").find(".access_list");
@@ -339,7 +339,7 @@ $(".share_link_group").bind("click", function(evt) {
                             evt2.preventDefault();
 
                             var icon = $(this).find("i");
-                            icon.toggleClass("fa fa-folder-open icon-folder-close");
+                            icon.toggleClass("fa-folder fa-folder-open");
                             $(this).toggleClass("members-shown members-hidden");
 
                             var userList = $(this).parents(".access_list_group").find(".access_list");
