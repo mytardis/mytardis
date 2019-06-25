@@ -2,8 +2,8 @@ import os
 
 from .apps import INSTALLED_APPS
 
-SINGLE_SEARCH_V2_ENABLED = False
-if SINGLE_SEARCH_V2_ENABLED:
+SINGLE_SEARCH_ENABLED = False
+if SINGLE_SEARCH_ENABLED:
     INSTALLED_APPS += ('django_elasticsearch_dsl',)
     ELASTICSEARCH_DSL = {
         'default': {

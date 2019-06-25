@@ -9,6 +9,6 @@ from django.views.generic.base import TemplateView
 logger = logging.getLogger(__name__)
 
 
-class SearchV2View(TemplateView):
+class SearchView(TemplateView):
 
-    template_name = 'searchV2.html'
+    template_name = 'search.html'

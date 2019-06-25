@@ -6,10 +6,10 @@ from django.contrib.auth.models import User
 from django.test import TestCase, modify_settings, override_settings
 
 from tardis.tardis_portal.models import Experiment, Dataset, DataFile
-from tardis.apps.search_v2.documents import ExperimentDocument, DatasetDocument, DataFileDocument
+from tardis.apps.search.documents import ExperimentDocument, DatasetDocument, DataFileDocument
 
 
-@override_settings(SINGLE_SEARCH_V2_ENABLED=True)
+@override_settings(SINGLE_SEARCH_ENABLED=True)
 @modify_settings(INSTALLED_APPS={
     'append': 'django_elasticsearch_dsl'
 })

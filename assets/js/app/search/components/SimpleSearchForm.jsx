@@ -14,7 +14,7 @@ function SimpleSearchForm({ showResults, searchText }) {
   const fetchResults = () => {
     // fetch results
     setIsLoading(true);
-    fetch(`/api/v1/search-v2_simple-search/?query=${simpleSearchText}`, {
+    fetch(`/api/v1/search_simple-search/?query=${simpleSearchText}`, {
       method: "get",
       headers: {
         "Accept": "application/json", // eslint-disable-line quote-props

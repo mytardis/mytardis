@@ -40,7 +40,7 @@ function AdvancedSearchForm({ searchText, showResults }) {
     setIsLoading(true);
     // set form data
     setFormData(data => ({ ...data, text: searchText }));
-    fetch("/api/v1/search-v2_advance-search/", {
+    fetch("/api/v1/search_advance-search/", {
       method: "post",
       headers: {
         "Accept": "application/json", // eslint-disable-line quote-props
