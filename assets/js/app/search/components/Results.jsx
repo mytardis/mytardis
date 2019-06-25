@@ -36,9 +36,8 @@ function Results({ results, counts }) {
         <div className="tab-content">
           <div className="tab-pane active" id="1a">
             <div className="result-list">
-              { counts.experimentsCount === 0 ?
-                  <span>No matching experiment found.</span> : <span/>
-              }
+              { counts.experimentsCount === 0
+                ? <span>No matching experiment found.</span> : <span /> }
               {results.map(
                 (result) => {
                   let res = "";
@@ -54,8 +53,8 @@ function Results({ results, counts }) {
           </div>
           <div className="tab-pane" id="2a">
             <div className="result-list">
-              { counts.datasetsCount === 0 ?
-                  <span>No matching dataset found.</span> : <span/>
+              { counts.datasetsCount === 0
+                ? <span>No matching dataset found.</span> : <span />
               }
               {results.map(
                 (result) => {
@@ -72,8 +71,8 @@ function Results({ results, counts }) {
           </div>
           <div className="tab-pane" id="3a">
             <div className="result-list">
-              { counts.datafilesCount === 0 ?
-                  <span>No matching datafile found.</span> : <span/>
+              { counts.datafilesCount === 0
+                ? <span>No matching datafile found.</span> : <span />
               }
               {results.map(
                 (result) => {
