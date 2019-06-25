@@ -1,6 +1,6 @@
 {% load static from staticfiles %}
 <script type="text/javascript">
-    var clipboard = new Clipboard('.btn.clipboard');
+    var clipboard = new ClipboardJS('.btn.clipboard');
     {% comment %}
     clipboard.on('success', function(e) {
         console.log(e);
