@@ -14,7 +14,7 @@
     {% with request|check_if_facility_manager as facility_manager %}
         <script type="text/javascript"
                 src="{% static 'js/facility_view.js' %}"></script>
-        <div id="content" ng-controller="FacilityController as facilityCtrl">
+        <div id="content" ng-controller="FacilityController as facilityCtrl" ng-cloak>
         {% verbatim %}
         <div class="row-fluid">
             <div class="pull-left"><h2 style="color:#999999">
@@ -251,6 +251,7 @@
                                             <div ng-include="'fileList'"></div>
                                         </td>
                                     </tr>
+                                  </tbody>
                                 </table>
                             </div>
                             <!-- Data sorted by user view -->
@@ -312,13 +313,16 @@
                                             <div ng-include="'fileList'"></div>
                                         </td>
                                     </tr>
+                                  </tbody>
                                 </table>
                             </div>
                             <div class="span12" style="text-align:center"><a
                                     class="btn btn-large"
                                     ng-click="facilityCtrl.loadMoreEntries(50)"
-                                    ng-class="(facilityCtrl.currentFetchLimit >= facilityCtrl.totalDatasets)?'disabled':''">Load
-                                more (showing {{facilityCtrl.datasets.length}} of
+                                    ng-class="(facilityCtrl.currentFetchLimit >= facilityCtrl.totalDatasets)?'disabled':''"
+                                    ng-hide="facilityCtrl.loading"
+                            >
+                              Load more (showing {{facilityCtrl.datasets.length}} of
                                 {{facilityCtrl.totalDatasets}})</a></div>
                         </div>
                         <!-- Reminder shown when filters are active -->
