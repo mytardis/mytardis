@@ -21,7 +21,7 @@ require("expose-loader?Mustache!mustache");
 require("sprintf-js/dist/sprintf.min");
 require("expose-loader?sprintf!sprintf-js/dist/sprintf.min");
 require("clipboard");
-require("expose-loader?Clipboard!clipboard/dist/clipboard");
+require("expose-loader?ClipboardJS!clipboard/dist/clipboard");
 require("expose-loader?async!../js/lib/async.min");
 //css
 require("bootstrap/dist/css/bootstrap.css");
