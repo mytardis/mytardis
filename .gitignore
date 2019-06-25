@@ -48,7 +48,4 @@ tardis/apps/*
 !tardis/apps/sftp
 !tardis/apps/social_auth
 !tardis/apps/search
-tardis/tardis_portal/filters/*
-!tardis/tardis_portal/filters/__init__.py
-!tardis/tardis_portal/filters/diffractionimage.py
-!tardis/tardis_portal/filters/jeolsem.py
+
