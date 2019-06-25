@@ -67,10 +67,10 @@ class SearchAppResource(Resource):
 
         return kwargs
 
-    def get_object_list(self, bundle):
-        user = bundle.request.user
+    def get_object_list(self, request):
+        user = request.request.user
         groups = user.groups.all()
-        query_text = bundle.request.GET.get('query', None)
+        query_text = request.request.GET.get('query', None)
         if not query_text:
             raise BadRequest("Missing query parameter")
         index_list = ['experiments', 'dataset', 'datafile']
@@ -133,8 +133,8 @@ class AdvanceSearchAppResource(Resource):
 
         return kwargs
 
-    def get_object_list(self, bundle):
-        return bundle
+    def get_object_list(self, request):
+        return request
 
     def obj_get_list(self, bundle, **kwargs):
         return self.get_object_list(bundle)
