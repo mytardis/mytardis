@@ -76,6 +76,8 @@ function Result({ result }) {
                   </span>
                 </span>
               </li>
+              {result.instrument
+              && (
               <li className="pull-right">
                 <span className="label label-info" title={`Instrument Name: ${result.instrument}`}>
                   {/* upgrade to font-awesome 5 will bring this icon */}
@@ -85,6 +87,7 @@ function Result({ result }) {
                   </span>
                 </span>
               </li>
+              )}
             </ul>
             <div id="data">
               {!dataToggleClass && getDatasetData(result)}
@@ -122,14 +125,17 @@ function Result({ result }) {
                   </span>
                 </span>
               </li>
-              <li className="pull-right">
-                <span className="label label-info" title={`Institution Name: ${result.institution_name}`}>
-                  <i className="fa fa-institution" />
-                  <span>
-                    {result.institution_name}
+              {result.institution_name
+              && (
+                <li className="pull-right">
+                  <span className="label label-info" title={`Institution Name: ${result.institution_name}`}>
+                    <i className="fa fa-institution" />
+                    <span>
+                      {result.institution_name}
+                    </span>
                   </span>
-                </span>
-              </li>
+                </li>
+              )}
             </ul>
             <div id="data">
               {!dataToggleClass && getExperimentData(result)}
