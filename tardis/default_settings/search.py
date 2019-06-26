@@ -1,7 +1,3 @@
-import os
-
-from .apps import INSTALLED_APPS
-
 '''
 Settings for search
 '''
