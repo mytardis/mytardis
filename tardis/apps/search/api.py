@@ -21,6 +21,7 @@ from tardis.tardis_portal.models import Experiment, DataFile, Dataset
 from tardis.tardis_portal.api import default_authentication
 
 LOCAL_TZ = pytz.timezone(settings.TIME_ZONE)
+MAX_SEARCH_RESULTS = settings.MAX_SEARCH_RESULTS
 
 
 class PrettyJSONSerializer(Serializer):
@@ -68,19 +69,19 @@ class SearchAppResource(Resource):
         return kwargs
 
     def get_object_list(self, request):
-        user = request.request.user
+        user = request.user
         groups = user.groups.all()
-        query_text = request.request.GET.get('query', None)
+        query_text = request.GET.get('query', None)
         if not query_text:
             raise BadRequest("Missing query parameter")
         index_list = ['experiments', 'dataset', 'datafile']
         ms = MultiSearch(index=index_list)
         query_exp = Q("match", title=query_text)
-        ms = ms.add(Search().extra(size=100).query(query_exp))
+        ms = ms.add(Search().extra(size=MAX_SEARCH_RESULTS).query(query_exp))
         query_dataset = Q("match", description=query_text)
-        ms = ms.add(Search().extra(size=100).query(query_dataset))
+        ms = ms.add(Search().extra(size=MAX_SEARCH_RESULTS).query(query_dataset))
         query_datafile = Q("match", filename=query_text)
-        ms = ms.add(Search().extra(size=100).query(query_datafile))
+        ms = ms.add(Search().extra(size=MAX_SEARCH_RESULTS).query(query_datafile))
         results = ms.execute()
         result_dict = {k: [] for k in ["experiments", "datasets", "datafiles"]}
         for item in results:
@@ -110,7 +111,7 @@ class SearchAppResource(Resource):
         return [SearchObject(id=1, hits=result_dict)]
 
     def obj_get_list(self, bundle, **kwargs):
-        return self.get_object_list(bundle)
+        return self.get_object_list(bundle.request)
 
 
 class AdvanceSearchAppResource(Resource):
@@ -137,7 +138,7 @@ class AdvanceSearchAppResource(Resource):
         return request
 
     def obj_get_list(self, bundle, **kwargs):
-        return self.get_object_list(bundle)
+        return self.get_object_list(bundle.request)
 
     def obj_create(self, bundle, **kwargs):
         bundle = self.dehydrate(bundle)
@@ -176,7 +177,7 @@ class AdvanceSearchAppResource(Resource):
             q = Q("match", title=query_text)
             if (start_date is not None) & (end_date is not None):
                 q = q & Q("range", created_time={'gte': start_date, 'lte': end_date})
-            ms = ms.add(Search().extra(size=100).query(q))
+            ms = ms.add(Search().extra(size=MAX_SEARCH_RESULTS).query(q))
         if 'dataset' in index_list:
             q = Q("match", description=query_text)
             if (start_date is not None) & (end_date is not None):
@@ -184,12 +185,12 @@ class AdvanceSearchAppResource(Resource):
             if instrument_list:
                 q = q & Q("match", instrument__name=instrument_list_string)
             # add instrument query
-            ms = ms.add(Search().extra(size=100).query(q))
+            ms = ms.add(Search().extra(size=MAX_SEARCH_RESULTS).query(q))
         if 'datafile' in index_list:
             q = Q("match", filename=query_text)
             if (start_date is not None) & (end_date is not None):
                 q = q & Q("range", created_time={'gte': start_date, 'lte': end_date})
-            ms = ms.add(Search().extra(size=100).query(q))
+            ms = ms.add(Search().extra(size=MAX_SEARCH_RESULTS).query(q))
         result = ms.execute()
         result_dict = {k: [] for k in ["experiments", "datasets", "datafiles"]}
         for item in result:
