@@ -29,7 +29,7 @@
         "no-use-before-define": [1],
         "object-shorthand": 0,
         "quotes": [1, "double"],
-        "linebreak-style": [2, "unix"],
+        "linebreak-style": 0,
         "semi": [2, "always"],
         "space-before-blocks": [2, "always"],
         "space-before-function-paren": [2, {"anonymous": "never", "named": "never"}],

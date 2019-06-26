@@ -24,6 +24,7 @@ module.exports = {
         tardis_portal_shared: glob.sync("./assets/js/tardis_portal/shared/**/*.js"),
         tardis_portal_facility_view: "./assets/js/tardis_portal/facility_view/index.js",
         lib: glob.sync("./assets/js/lib/**/*.js"),
+        app : "./assets/js/app/search/index.jsx",
     },
     output: {
         path: path.resolve("./assets/bundles/"),

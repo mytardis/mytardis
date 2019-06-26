@@ -47,3 +47,5 @@ tardis/apps/*
 !tardis/apps/slideshow_view
 !tardis/apps/sftp
 !tardis/apps/social_auth
+!tardis/apps/search
+

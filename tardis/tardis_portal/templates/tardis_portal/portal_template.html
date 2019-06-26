@@ -165,11 +165,12 @@
             {% if search_form %}
             <form id="searchbox" method="get"
                 class="navbar-form pull-right"
-                role="search">
-              <div class="form-group">
-                <input type="text" class="form-control" placeholder="Search" id="id_q" autocomplete="off" name="q"
+                action="{% url 'search' %}">
+                <div class="form-group">
+                  <input id="id_q" autocomplete="off" name="q"
+                       type="text" class="form-control" placeholder="Search"
                        {% if query %} value="{{ query }}" {% endif %}/>
-              </div>
+                </div>
             </form>
             {% endif %}
           </div> <!-- .navbar-collapse -->

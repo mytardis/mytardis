@@ -11,6 +11,7 @@ import types
 from six import string_types
 
 from django.conf import settings
+from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.exceptions import PermissionDenied, ImproperlyConfigured
@@ -654,7 +655,8 @@ def create_experiment(request,
             # group/owner assignment stuff, soon to be replaced
 
             experiment = full_experiment['experiment']
-            experiment.created_by = request.user
+            # a workaround for django-elastic-search issue #155
+            experiment.created_by = User.objects.get(id=request.user.id)
             full_experiment.save_m2m()
 
             # add defaul ACL
@@ -708,7 +710,8 @@ def edit_experiment(request, experiment_id,
         if form.is_valid():
             full_experiment = form.save(commit=False)
             experiment = full_experiment['experiment']
-            experiment.created_by = request.user
+            # a workaround for django-elastic-search issue #155
+            experiment.created_by = User.objects.get(id=request.user.id)
             full_experiment.save_m2m()
 
             request.POST = {'status': "Experiment Saved."}
