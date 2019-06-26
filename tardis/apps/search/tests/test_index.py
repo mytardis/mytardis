@@ -1,8 +1,10 @@
 import os
 import unittest
 
+from django.core.management import call_command
 from django.conf import settings
 from django.contrib.auth.models import User
+from django.utils.six import StringIO
 from django.test import TestCase, modify_settings, override_settings
 
 from tardis.tardis_portal.models import Experiment, Dataset, DataFile
@@ -29,6 +31,9 @@ class IndexExperimentTestCase(TestCase):
         pwd = 'secret'
         email = ''
         self.user = User.objects.create_user(user, email, pwd)
+        self.out = StringIO()
+        call_command('search_index', stdout=self.out,
+                     action='delete', force=True)
 
     def test_create_index(self):
         self.exp1 = Experiment(title='test exp1',
