@@ -35,6 +35,10 @@ A list of default settings for Single Search are already in default_settings.py
 in the MyTardis repository. Single search is enabled by setting the
 SINGLE_SEARCH_ENABLED option to True.
 
+MyTardis comes with a search app that allows indexing Experiments, Dataset and Datafile models
+and also provides view and api to perform elasticsearch query on these models. This can be
+enabled by adding 'tardis.apps.search' to the list of installed apps.
+
 Other settings are shown below:
 
 ELASTICSEARCH_DSL Settings
@@ -44,6 +48,7 @@ The default value is
 
 .. code-block:: python
 
+    INSTALLED_APPS += ('django_elasticsearch_dsl','tardis.apps.search',)
     ELASTICSEARCH_DSL = {
         'default': {
             'hosts': 'http://localhost:9200'
@@ -52,18 +57,6 @@ The default value is
     ELASTICSEARCH_DSL_INDEX_SETTINGS = {
         'number_of_shards': 1
     }
-
-Enabling Search app
-~~~~~~~~~~~~~~~~~~~
-
-MyTardis comes with a search app that allows indexing Experiments, Dataset and Datafile models
-and also provides view and api to perform elasticsearch query on these models.
-
-To enable this add this to the list of installed app
-
-.. code-block:: python
-
-    INSTALLED_APPS += 'tardis.apps.search'
 
 
 Updating Indexes
@@ -81,6 +74,10 @@ to manually trigger a rebuild of the indexes (automatic indexing only happens
 through signals when models are added or changed).
 
 Elasticsearch DSL registers a number of management commands with the Django framework,
+these commands can be listed by running the following command ::
+
+    python manage.py search_index --help
+
 the important one here being the *--rebuild* command. To rebuild, navigate to
 your checkout and call the following command ::
 
