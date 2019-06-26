@@ -17,7 +17,7 @@
     "babel-loader": "^8.0.5",
     "backbone": "^0.9.2",
     "backbone-forms": "^0.14.1",
-    "blueimp-file-upload": "^9.31.0",
+    "blueimp-file-upload": "^9.32.0",
     "bootstrap": "^3.4.1",
     "bootstrap-3-typeahead": "^4.0.2",
     "clean-webpack-plugin": "^1.0.1",
