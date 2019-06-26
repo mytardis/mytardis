@@ -77,11 +77,11 @@ class SearchAppResource(Resource):
         index_list = ['experiments', 'dataset', 'datafile']
         ms = MultiSearch(index=index_list)
         query_exp = Q("match", title=query_text)
-        ms = ms.add(Search().extra(size=MAX_SEARCH_RESULTS).query(query_exp))
+        ms = ms.add(Search(index='experiments').extra(size=MAX_SEARCH_RESULTS).query(query_exp))
         query_dataset = Q("match", description=query_text)
-        ms = ms.add(Search().extra(size=MAX_SEARCH_RESULTS).query(query_dataset))
+        ms = ms.add(Search(index='dataset').extra(size=MAX_SEARCH_RESULTS).query(query_dataset))
         query_datafile = Q("match", filename=query_text)
-        ms = ms.add(Search().extra(size=MAX_SEARCH_RESULTS).query(query_datafile))
+        ms = ms.add(Search(index='datafile').extra(size=MAX_SEARCH_RESULTS).query(query_datafile))
         results = ms.execute()
         result_dict = {k: [] for k in ["experiments", "datasets", "datafiles"]}
         for item in results:
@@ -177,7 +177,7 @@ class AdvanceSearchAppResource(Resource):
             q = Q("match", title=query_text)
             if (start_date is not None) & (end_date is not None):
                 q = q & Q("range", created_time={'gte': start_date, 'lte': end_date})
-            ms = ms.add(Search().extra(size=MAX_SEARCH_RESULTS).query(q))
+            ms = ms.add(Search(index='experiments').extra(size=MAX_SEARCH_RESULTS).query(q))
         if 'dataset' in index_list:
             q = Q("match", description=query_text)
             if (start_date is not None) & (end_date is not None):
@@ -185,12 +185,12 @@ class AdvanceSearchAppResource(Resource):
             if instrument_list:
                 q = q & Q("match", instrument__name=instrument_list_string)
             # add instrument query
-            ms = ms.add(Search().extra(size=MAX_SEARCH_RESULTS).query(q))
+            ms = ms.add(Search(index='dataset').extra(size=MAX_SEARCH_RESULTS).query(q))
         if 'datafile' in index_list:
             q = Q("match", filename=query_text)
             if (start_date is not None) & (end_date is not None):
                 q = q & Q("range", created_time={'gte': start_date, 'lte': end_date})
-            ms = ms.add(Search().extra(size=MAX_SEARCH_RESULTS).query(q))
+            ms = ms.add(Search(index='datafile').extra(size=MAX_SEARCH_RESULTS).query(q))
         result = ms.execute()
         result_dict = {k: [] for k in ["experiments", "datasets", "datafiles"]}
         for item in result:
