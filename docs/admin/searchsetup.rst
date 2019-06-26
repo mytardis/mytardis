@@ -7,7 +7,8 @@ Tardis comes with a single search option which provides users with a
 search field that returns a list of matching Experiments, Datasets and
 Datafiles.
 
-The single search box uses Elasticsearch, with a django-haystack frontend, and
+The single search box uses Elasticsearch, and Django Elasticsearch DSL library that allows
+indexing of django models in elasticsearch, and
 accordingly requires some setup.
 The single search box is disabled by default.
 
@@ -36,58 +37,55 @@ SINGLE_SEARCH_ENABLED option to True.
 
 Other settings are shown below:
 
-HAYSTACK_CONNECTIONS
-~~~~~~~~~~~~~~~~~~~~
+ELASTICSEARCH_DSL Settings
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The default value is
 
 .. code-block:: python
 
-   HAYSTACK_CONNECTIONS = {
+    ELASTICSEARCH_DSL = {
         'default': {
-            'ENGINE': 'haystack.backends.elasticsearch_backend.'
-                      'ElasticsearchSearchEngine',
-            'URL': 'http://127.0.0.1:9200/',
-            'INDEX_NAME': 'haystack',
+            'hosts': 'http://localhost:9200'
         },
     }
+    ELASTICSEARCH_DSL_INDEX_SETTINGS = {
+        'number_of_shards': 1
+    }
 
-HAYSTACK_SIGNAL_PROCESSOR
-~~~~~~~~~~~~~~~~~~~~~~~~~
+Enabling Search app
+~~~~~~~~~~~~~~~~~~~
 
-This setting determines when the information in Elasticsearch is updated.
-The default value updates it in real time with db changes
+MyTardis comes with a search app that allows indexing Experiments, Dataset and Datafile models
+and also provides view and api to perform elasticsearch query on these models.
+
+To enable this add this to the list of installed app
 
 .. code-block:: python
 
-    HAYSTACK_SIGNAL_PROCESSOR = 'haystack.signals.RealtimeSignalProcessor'
-
-A more performant implementation would trigger an update task on each db change.
-
-Please see django-haystack documentation for further information:
-http://haystacksearch.org
+    INSTALLED_APPS += 'tardis.apps.search'
 
 
 Updating Indexes
 ----------------
 
 Once Elasticsearch is set up, and Single Search is enabled (i.e. the
-``SINGLE_SEARCH_ENABLED`` option in settings is set to True) Haystack will
+``SINGLE_SEARCH_ENABLED`` option in settings is set to True) Elasticsearch DSL will
 automatically register the addition of and changes to models and reflect
 these in the search index. That is, as soon as a new instance of a model is
-added to the database, or changes are made to an existing isntance, these
+added to the database, or changes are made to an existing instance, these
 changes will be searchable.
 
 If you're adding search to an existing deployment of Django then you'll need
 to manually trigger a rebuild of the indexes (automatic indexing only happens
 through signals when models are added or changed).
 
-Haystack registers a number of management commands with the Django framework,
-the important one here being the *rebuild_index* command. To rebuild, navigate to
+Elasticsearch DSL registers a number of management commands with the Django framework,
+the important one here being the *--rebuild* command. To rebuild, navigate to
 your checkout and call the following command ::
 
-    python manage.py rebuild_index
+    python manage.py search_index --rebuild
 
-Haystack will then ask you to confirm your decision (Note: Rebuilding will
+Elasticsearch DSL will then ask you to confirm your decision (Note: Rebuilding will
 destroy your existing indexes, and will take a while for large datasets, so
 be sure), and then start rebuilding.
