@@ -43,8 +43,6 @@ function Results({ results, counts }) {
                   let res = "";
                   if (result.type === "experiment") {
                     res = <Result key={result.id} result={result} />;
-                  } else {
-                    res = <span />;
                   }
                   return res;
                 },
@@ -61,8 +59,6 @@ function Results({ results, counts }) {
                   let res = "";
                   if (result.type === "dataset") {
                     res = <Result key={result.id} result={result} />;
-                  } else {
-                    res = <span />;
                   }
                   return res;
                 },
@@ -79,8 +75,6 @@ function Results({ results, counts }) {
                   let res = "";
                   if (result.type === "datafile") {
                     res = <Result key={result.id} result={result} />;
-                  } else {
-                    res = <span />;
                   }
                   return res;
                 },
