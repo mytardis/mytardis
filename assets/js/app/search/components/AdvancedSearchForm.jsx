@@ -10,7 +10,6 @@ import "react-datetime/css/react-datetime.css";
 const csrftoken = getCookie("csrftoken");
 
 function AdvancedSearchForm({ searchText, showResults }) {
-  const [instrumentList, setInstrumentList] = useState([]);
   const typeOptions = ["Dataset", "Experiment", "Datafile"];
   const [startDate, setStartDate] = useState("");
   // eslint-disable-next-line no-unused-vars
@@ -30,8 +29,10 @@ function AdvancedSearchForm({ searchText, showResults }) {
           },
         );
       });
-    setInstrumentList(tempList);
+    return (tempList);
   };
+  // eslint-disable-next-line no-unused-vars
+  const [instrumentList, setInstrumentList] = useState(getInstrumentList());
   const handleAdvancedSearchFormSubmit = (event) => {
     event.preventDefault();
     if (!searchText) {
@@ -113,7 +114,6 @@ function AdvancedSearchForm({ searchText, showResults }) {
         <label htmlFor="contain">Filter by Instrument</label>
         <Typeahead
           multiple
-          onFocus={() => getInstrumentList()}
           onChange={(selected) => { handleInstrumentListChange(selected); }}
           placeholder="Start typing to select instruments"
           options={instrumentList}
