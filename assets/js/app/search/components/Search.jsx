@@ -55,7 +55,7 @@ function createDataFileResultData(hits, newResults) {
     newResults = [...newResults, {
       title: hit._source.filename,
       type: "datafile",
-      id: hit._source.id,
+      id: hit._id,
       url: `/datafile/view/${hit._id}`,
       created_time: createdTime,
       update_time: updateTime,
