@@ -1,8 +1,9 @@
 /* global getCookie */
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import DateTime from "react-datetime";
 import { Typeahead } from "react-bootstrap-typeahead";
+import moment from "moment";
 
 import "react-bootstrap-typeahead/css/Typeahead.css";
 import "react-datetime/css/react-datetime.css";
@@ -10,15 +11,30 @@ import "react-datetime/css/react-datetime.css";
 const csrftoken = getCookie("csrftoken");
 
 function AdvancedSearchForm({ searchText, showResults }) {
-  const [instrumentList, setInstrumentList] = useState([]);
-  const typeOptions = ["Dataset", "Experiment", "Datafile"];
+  const [advanceSearchText, setAdvanceSearchText] = useState(searchText);
   const [startDate, setStartDate] = useState("");
-  // eslint-disable-next-line no-unused-vars
   const [endDate, setEndDate] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [formData, setFormData] = useState(
-    { text: searchText, TypeTag: typeOptions },
-  );
+  const [selectedInstrumentList, setSelectedInstrumentList] = useState([]);
+  const typeOptions = ["Dataset", "Experiment", "Datafile"];
+  const [selectedTypeTag, setSelectedTypeTag] = useState(typeOptions);
+
+  const getFormData = () => {
+    let data = { text: advanceSearchText, TypeTag: selectedTypeTag };
+    if (startDate !== "") {
+      data = { ...data, StartDate: startDate };
+    }
+    if (endDate !== "") {
+      data = { ...data, EndDate: endDate };
+    }
+    if (selectedInstrumentList.length > 0) {
+      data = { ...data, InstrumentList: selectedInstrumentList };
+    }
+    return data;
+  };
+  useEffect(() => {
+    setAdvanceSearchText(searchText);
+  }, [searchText]);
   const getInstrumentList = () => {
     const tempList = [];
     fetch("/api/v1/instrument/")
@@ -30,16 +46,17 @@ function AdvancedSearchForm({ searchText, showResults }) {
           },
         );
       });
-    setInstrumentList(tempList);
+    return (tempList);
   };
+  const instrumentList = getInstrumentList();
+
   const handleAdvancedSearchFormSubmit = (event) => {
     event.preventDefault();
     if (!searchText) {
       return;
     }
     setIsLoading(true);
-    // set form data
-    setFormData(data => ({ ...data, text: searchText }));
+    const formData = getFormData();
     fetch("/api/v1/search_advance-search/", {
       method: "post",
       headers: {
@@ -59,18 +76,17 @@ function AdvancedSearchForm({ searchText, showResults }) {
   };
   const validStartDate = current => current.isBefore(DateTime.moment());
   const handleStartDateChange = (value) => {
-    setFormData(data => ({ ...data, StartDate: value.toDate() }));
-    setStartDate(value.toDate());
+    setStartDate(moment(value, "DD-MM-YYYY", true).isValid() ? value.toDate() : "");
   };
   const handleEndDateChange = (value) => {
-    setFormData(data => ({ ...data, EndDate: value.toDate() }));
+    setEndDate(moment(value, "DD-MM-YYYY", true).isValid() ? value.toDate() : "");
   };
   const validEndDate = current => current.isBefore(DateTime.moment()) && current.isAfter(startDate);
   const handleInstrumentListChange = (selected) => {
-    setFormData(data => ({ ...data, InstrumentList: selected }));
+    setSelectedInstrumentList(selected);
   };
   const handleTypeTagChange = (selected) => {
-    setFormData(data => ({ ...data, TypeTag: selected }));
+    setSelectedTypeTag(selected);
   };
 
   return (
@@ -86,7 +102,9 @@ function AdvancedSearchForm({ searchText, showResults }) {
               dateFormat="DD-MM-YYYY"
               isValidDate={validStartDate}
               closeOnSelect
+              value={startDate}
               onChange={handleStartDateChange}
+
             />
           </div>
           <div className="col-xs-6" style={{ paddingRight: 0 }}>
@@ -113,7 +131,7 @@ function AdvancedSearchForm({ searchText, showResults }) {
         <label htmlFor="contain">Filter by Instrument</label>
         <Typeahead
           multiple
-          onFocus={() => getInstrumentList()}
+          labelKey="name"
           onChange={(selected) => { handleInstrumentListChange(selected); }}
           placeholder="Start typing to select instruments"
           options={instrumentList}

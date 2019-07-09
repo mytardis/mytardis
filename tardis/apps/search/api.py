@@ -160,10 +160,13 @@ class AdvanceSearchAppResource(Resource):
                 index_list.append('datafile')
         end_date = bundle.data.get("EndDate", None)
         start_date = bundle.data.get("StartDate", None)
-        if end_date:
+        if end_date is not None:
             end_date_utc = datetime.datetime.strptime(end_date, "%Y-%m-%dT%H:%M:%S.%fZ")\
                 .replace(tzinfo=pytz.timezone('UTC'))
             end_date = end_date_utc.astimezone(LOCAL_TZ).date()
+        else:
+            # set end date to today's date
+            end_date = datetime.datetime.today().replace(tzinfo=pytz.timezone('UTC'))
         if start_date:
             start_date_utc = datetime.datetime.strptime(start_date, "%Y-%m-%dT%H:%M:%S.%fZ")\
                 .replace(tzinfo=pytz.timezone('UTC'))
@@ -175,12 +178,12 @@ class AdvanceSearchAppResource(Resource):
         ms = MultiSearch(index=index_list)
         if 'experiments' in index_list:
             q = Q("match", title=query_text)
-            if (start_date is not None) & (end_date is not None):
+            if start_date is not None:
                 q = q & Q("range", created_time={'gte': start_date, 'lte': end_date})
             ms = ms.add(Search(index='experiments').extra(size=MAX_SEARCH_RESULTS).query(q))
         if 'dataset' in index_list:
             q = Q("match", description=query_text)
-            if (start_date is not None) & (end_date is not None):
+            if start_date is not None:
                 q = q & Q("range", created_time={'gte': start_date, 'lte': end_date})
             if instrument_list:
                 q = q & Q("match", instrument__name=instrument_list_string)
@@ -188,7 +191,7 @@ class AdvanceSearchAppResource(Resource):
             ms = ms.add(Search(index='dataset').extra(size=MAX_SEARCH_RESULTS).query(q))
         if 'datafile' in index_list:
             q = Q("match", filename=query_text)
-            if (start_date is not None) & (end_date is not None):
+            if start_date is not None:
                 q = q & Q("range", created_time={'gte': start_date, 'lte': end_date})
             ms = ms.add(Search(index='datafile').extra(size=MAX_SEARCH_RESULTS).query(q))
         result = ms.execute()
