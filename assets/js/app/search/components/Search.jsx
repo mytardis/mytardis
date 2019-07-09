@@ -70,7 +70,7 @@ function createDataFileResultData(hits, newResults) {
 function Search() {
   const [results, setResults] = useState([]);
   const [counts, setCounts] = useState([]);
-  const searchText = !parsed.q ? "": parsed.q;
+  const searchText = !parsed.q ? "" : parsed.q;
   const showResults = ((result) => {
     let newResults = [];
     const _counts = {
