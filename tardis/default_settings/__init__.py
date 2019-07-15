@@ -5,6 +5,7 @@ from .apps import *
 
 from .admins import *
 from .analytics import *
+from .api_v2 import *
 from .auth import *
 from .caches import *
 from .celery_settings import *

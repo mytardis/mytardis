@@ -21,6 +21,7 @@ from tardis.tardis_portal.views import login
 from .accounts import accounts_urls
 from .ajax import ajax_urls
 from .api import api_urls
+from .api_v2 import api_v2_urls
 from .api import tastypie_swagger_urls
 from .core import core_urls
 from .datafile import datafile_urls
@@ -64,11 +65,14 @@ for app_name, app in get_tardis_apps():
 urlpatterns = [
     url(r'', include(core_urls)),
 
-    # API views
+    # API v1 (TastyPie) views
     url(r'^api/', include(api_urls)),
 
     # tastypie_swagger endpoints for API auto-documentation
     url(r'^api/', include(tastypie_swagger_urls)),
+
+    # API v2 (Django REST framework) views
+    url(r'^api/v2/', include(api_v2_urls)),
 
     # Experiment Views
     url(r'^experiment/', include(experiment_urls)),

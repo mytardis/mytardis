@@ -15,6 +15,8 @@ INSTALLED_APPS = (
     'registration',
     'bootstrapform',
     'jstemplate',
+    'rest_framework',
+    'rest_framework.authtoken',
     'tastypie',
     'tastypie_swagger',
     'webpack_loader',
