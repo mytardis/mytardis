@@ -254,12 +254,13 @@ Legal Notice
 ^^^^^^^^^^^^
 
 When changing the public access rights or licence for an experiment, a
-legal notice is displayed. You can override it by either:
+legal notice is displayed. You can override it by
+specifying following settings in *settings.py*:
 
-#. creating a new app (probably your site theme) and putting your legal text in
-   ``tardis/apps/<app_name>/static/publishing_legal.txt``, or
-#. directly making changes to
-   ``tardis/tardis_portal/static/publishing_legal.txt``.
+.. code-block:: python
+
+   LEGAL_TEXT = "A sample legal Text"
+
 
 
 Filters
