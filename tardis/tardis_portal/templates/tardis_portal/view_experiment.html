@@ -101,7 +101,7 @@
     <!-- Tab buttons -->
     <ul id="experiment-tabs" class="nav nav-pills">
       {% for appurl, appname in apps %}
-      <li><a data-toggle="tab" title="{{appname}}" href="{{ appurl }}">{{ appname }}</a></li>
+      <li><a data-toggle="tab" title="{{appname}}" data-url="{{ appurl }}">{{ appname }}</a></li>
       {% endfor %}
     </ul>
     <div class="tab-content">

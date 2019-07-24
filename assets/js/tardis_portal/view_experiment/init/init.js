@@ -6,6 +6,8 @@ jQuery(document).on("click", ".dataset_selector_none", function() {
     $(this).parents(".datafiles").find(".datafile_checkbox").removeAttr("checked");
 });
 
+import { loadExpTabPane } from "../experiment-tabs.js";
+
 function getNewParameterName(name)
 {
     var newName = name;
@@ -72,9 +74,8 @@ $(document).on("click", "#add_new_parameter", function() {
     }
 });
 
-var refreshMetadataDisplay = function(hash) {
-    var expChangeEvent = new Event("experiment-change");
-    $("#experiment-tab-metadata")[0].dispatchEvent(expChangeEvent);
+var refreshMetadataDisplay = function() {
+    loadExpTabPane("metadata");
 };
 
 $(document).on("submit", "#add_metadata_form", function(e) {

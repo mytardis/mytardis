@@ -3,25 +3,50 @@
 
 import { expSharingAjaxReady } from "./share/share.js";
 
+var tabIdPrefix = "experiment-tab-";
+
+function getTabIdFromName(tabName) {
+    return tabIdPrefix + tabName;
+}
+
+function getTabNameFromId(tabId) {
+    return s.strRight(s.lstrip(tabId, "#"), tabIdPrefix);
+}
+
+export function loadExpTabPane(tabName) {
+    var tabId = getTabIdFromName(tabName);
+    var tabPane = $("#" + tabId);
+    var url = tabPane.data("url");
+
+    // Skip loading if already loaded
+    if (tabPane.hasClass("preloaded")) {
+        tabPane.removeClass("preloaded");
+        return;
+    }
+
+    // Load content for the pane, based on the link HREF
+    $.ajax({
+        url: url,
+        dataType: "html",
+        success: function(data) {
+            tabPane.html(data);
+            const tab = url.substring(url.lastIndexOf("/") + 1);
+            if (tab === "share") {
+                expSharingAjaxReady();
+            }
+        }
+    });
+}
+
 export function populateExperimentTabs() {
     var loadingHTML = "<img src=\"/static/images/ajax-loader.gif\"/><br />";
-    var tabIdPrefix = "experiment-tab-";
-
-    function getTabIdFromName(tabName) {
-        return tabIdPrefix + tabName;
-    }
-
-    function getTabNameFromId(tabId) {
-        return s.strRight(s.lstrip(tabId, "#"), tabIdPrefix);
-    }
 
     // Create new tab content panes programatically
     // Note: We're doing this before the bottom of the document has loaded!
     $("#experiment-tabs li a").each(function(i, v) {
         // Generate an ID for each tab
         var tabName = s.trim(s.dasherize($(v).attr("title") || i), "_-");
-        // Grab the link HREF, then replace with the ID
-        var url = $(v).attr("href");
+        // Set the href attribute:
         $(v).attr("href", "#" + getTabIdFromName(tabName));
 
         // Create and insert content pane (if not preloaded)
@@ -29,6 +54,7 @@ export function populateExperimentTabs() {
         if ($("#" + getTabIdFromName(tabName)).length === 0) {
             tabContents = $("<div></div>")
                 .attr("id", getTabIdFromName(tabName))
+                .data("url", $(v).data("url"))
                 .addClass("tab-pane");
             tabContents.html(loadingHTML);
             $(".tab-content").append(tabContents);
@@ -38,40 +64,14 @@ export function populateExperimentTabs() {
                 .addClass("preloaded");
         }
 
-        // Set up reload for the tab pane
-        $("#" + getTabIdFromName(tabName)).on("experiment-change", function() {
-            var tabPane = $(this);
-
-            // Skip loading if already loaded
-            if (tabPane.hasClass("preloaded")) {
-                tabPane.removeClass("preloaded");
-                return;
-            }
-
-            // Load content for the pane, based on the link HREF
-            $.ajax({
-                url: url,
-                dataType: "html",
-                success: function(data) {
-                    tabPane.html(data);
-                    const tab = url.substring(url.lastIndexOf("/") + 1);
-                    if (tab === "share") {
-                        expSharingAjaxReady();
-                    }
-                }
-            });
-        });
-
         // Selected tab name
-        $(v).click(function() {
+        $(v).click(function(event) {
+            event.preventDefault();
             window.location.hash = getTabNameFromId($(v).attr("href"));
         });
-    });
 
-    // Trigger initial pane content loading
-    $(".tab-pane").each(function() {
-        var expChangeEvent = new Event("experiment-change");
-        $(this)[0].dispatchEvent(expChangeEvent);
+        // Trigger initial pane content loading
+        loadExpTabPane(tabName);
     });
 
     var showTabForWindowLocation = function() {
