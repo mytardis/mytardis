@@ -47,17 +47,6 @@ $(document).on("change", '#publishing-consent', function() {
 // Disable submit button (as consent checkbox should start unchecked)
 var changeEvent = new Event('change');
 $('#publishing-consent')[0].dispatchEvent(changeEvent);
-// Disable consent until we've loaded the legal text
-$('#publishing-consent').prop('disabled', true)
-// Get legal text
-$.ajax({
-  url: "{% static 'publishing_legal.txt' %}",
-  dataType: 'html',
-  success: function(data) {
-    $('#publishing-legal-text').html(data);
-    $('#publishing-consent').prop('disabled', false);
-  }
-});
 
 $(document).on("click", '#legal-section .submit-button', function() {
   // Submit form
@@ -133,8 +122,30 @@ $(document).on("click", '#legal-section .cancel-button', function() {
       $('#legal-section').hide();
   })
   </script>
-
-
+<div id="selected-license-text"></div>
+<div id="legal-section">
+  <a id="reselect-license">Reselect License</a>
+  <br/><br/>
+<h3 >Step 3: Accept The Legal Agreement:</h3>
+  <pre id="publishing-legal-text"
+       style="white-space: pre-wrap; word-break: keep-all;">{{ form.legal_text.value }}</pre>
+  <div class="checkbox">
+    <label>
+      <input id="publishing-consent" type="checkbox" value="Agree" />
+      I agree to the above terms
+    </label>
+  </div>
+  <br>
+    <button type="button" class="submit-button btn btn-success">
+      <i class="fa fa-ok"></i>
+      Confirm
+    </button>
+    <button type="button" class="cancel-button btn btn-default"
+            data-dismiss="modal">
+      <i class="fa fa-cancel"></i>
+      Cancel
+    </button>
+  </div>
 </form>
 <script type="text/javascript">
 $('form.experiment-rights').submit(function(evt) {
@@ -186,35 +197,6 @@ $('form.experiment-rights').submit(function(evt) {
 </script>
 
 <!-- Confirmation Dialog -->
-<div id="selected-license-text"></div>
-<div id="legal-section">
-  <a id="reselect-license">Reselect License</a>
-  <br/><br/>
-  <h3 class="title">Step 3: Accept The Legal Agreement:</h3>
-  <div class="form">
-    <div class="form-group">
-      <pre id="publishing-legal-text" style="white-space: pre-wrap; word-break: keep-all;"></pre>
-    </div>
-    <div class="form-group">
-      <div class="checkbox">
-        <label>
-          <input id="publishing-consent" type="checkbox" value="Agree" />
-          I agree to the above terms
-        </label>
-      </div>
-    </div>
-    <div class="form-group">
-      <button type="button" class="submit-button btn btn-success">
-        <i class="fa fa-ok"></i>
-        Confirm
-      </button>
-      <button type="button" class="cancel-button btn btn-default"
-              data-dismiss="modal">
-        <i class="fa fa-cancel"></i>
-        Cancel
-      </button>
-    </div>
-  </div>
-</div>
+
 
 {% endblock %}

@@ -329,7 +329,9 @@ def choose_rights(request, experiment_id):
             experiment.save()
     else:
         form = RightsForm({'public_access': experiment.public_access,
-                           'license': experiment.license_id})
+                           'license': experiment.license_id,
+                           'legal_text': getattr(settings, 'LEGAL_TEXT',
+                                                 'No Legal Agreement Specified')})
 
     c = {'form': form, 'experiment': experiment}
     return render_response_index(

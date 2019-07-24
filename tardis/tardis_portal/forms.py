@@ -701,9 +701,11 @@ class RightsForm(ModelForm):
     Form for changing public access and licence.
 
     """
+    legal_text = forms.CharField(label="Legal Text", widget=forms.HiddenInput())
+
     class Meta:
         model = Experiment
-        fields = ('public_access', 'license')
+        fields = ('public_access', 'license', 'legal_text')
         widgets = {
             'license': HiddenInput()
         }
