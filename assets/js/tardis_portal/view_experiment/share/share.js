@@ -3,6 +3,8 @@
 
 import {userAutocompleteHandler} from "../../main";
 
+import { loadExpTabPane } from "../experiment-tabs.js";
+
 var loadingHTML = "<img src=\"/static/images/ajax-loader.gif\"/><br />";
 
 export function addChangePublicAccessEventHandlers() {
@@ -28,8 +30,7 @@ export function addChangePublicAccessEventHandlers() {
     });
 
     $("#modal-public-access").bind("hidden.bs.modal", function() {
-        var expChangeEvent = new Event("experiment-change");
-        $(this).parents(".tab-pane")[0].dispatchEvent(expChangeEvent);
+        loadExpTabPane("sharing");
     });
 }
 
@@ -203,8 +204,7 @@ export function addUserSharingEventHandlers() {
     });
 
     $("#modal-share").bind("hidden.bs.modal", function() {
-        var expChangeEvent = new Event("experiment-change");
-        $(this).parents(".tab-pane")[0].dispatchEvent(expChangeEvent);
+        loadExpTabPane("sharing");
     });
 }
 
@@ -430,8 +430,7 @@ export function addGroupSharingEventHandlers() {
     });
 
     $("#modal-share-group").bind("hidden.bs.modal", function() {
-        var expChangeEvent = new Event("experiment-change");
-        $(this).parents(".tab-pane")[0].dispatchEvent(expChangeEvent);
+        loadExpTabPane("sharing");
     });
 }
 
