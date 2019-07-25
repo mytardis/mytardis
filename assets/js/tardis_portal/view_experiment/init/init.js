@@ -98,10 +98,9 @@ $(document).on("submit", "#add_metadata_form", function(e) {
             if (contentContainer.find("form").length === 0) {
                 contentContainer.parents(".modal").find(".modal-footer").hide();
             }
+            refreshMetadataDisplay();
         }
     });
-
-    refreshMetadataDisplay();
 
     form.parents(".modal").find(".modal-footer").hide();
     return false;
@@ -121,10 +120,9 @@ $(document).on("submit", "#edit_metadata_form", function(e) {
             if (contentContainer.find("form").length === 0) {
                 contentContainer.parents(".modal").find(".modal-footer").hide();
             }
+            refreshMetadataDisplay();
         }
     });
-
-    refreshMetadataDisplay();
 
     // Hide the form buttons
     form.parents(".modal").find(".modal-footer").hide();
