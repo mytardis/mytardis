@@ -86,14 +86,12 @@ $(document).on("submit", "#add_metadata_form", function(e) {
             if (contentContainer.find("form").length === 0) {
                 contentContainer.parents(".modal").find(".modal-footer").hide();
             }
+            $("#metadata-pane")[0].dispatchEvent(new Event("reload"));
         }
     });
 
     // Hide the form buttons
     form.parents(".modal").find(".modal-footer").hide();
-
-    var reloadEvent = new Event("reload");
-    $("#metadata-pane")[0].dispatchEvent(reloadEvent);
 
     return false;
 });
@@ -112,13 +110,12 @@ $(document).on("submit", "#edit_metadata_form", function(e) {
             if (contentContainer.find("form").length === 0) {
                 contentContainer.parents(".modal").find(".modal-footer").hide();
             }
+            $("#metadata-pane")[0].dispatchEvent(new Event("reload"));
         }
     });
 
     // Hide the form buttons
     form.parents(".modal").find(".modal-footer").hide();
-    var reloadEvent = new Event("reload");
-    $("#metadata-pane")[0].dispatchEvent(reloadEvent);
 
     return false;
 });
