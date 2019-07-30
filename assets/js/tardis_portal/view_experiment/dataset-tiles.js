@@ -15,6 +15,11 @@ $(function() {
 
 (function() {
 
+    // Skip creating Backbone models if running a unit test, due to
+    // issues with Mustache.TEMPLATES:
+    if (typeof MyTardisJavascriptUnitTesting !== "undefined") {
+        return;
+    }
     var datasets = new MyTardis.Datasets();
 
     datasets.experimentId = $("#experiment-id").val();
@@ -33,6 +38,11 @@ $(function() {
 
 // eslint-disable-next-line no-unused-vars
 export function getDatasetsForExperiment(experimentId) {
+    // Skip creating Backbone models if running a unit test, due to
+    // issues with Mustache.TEMPLATES:
+    if (typeof MyTardisJavascriptUnitTesting !== "undefined") {
+        return;
+    }
     var datasets = new MyTardis.Datasets();
 
     datasets.experimentId = experimentId;
