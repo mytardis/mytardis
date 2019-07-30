@@ -36,7 +36,10 @@ export function loadExpTabPane(tabName) {
                 expSharingAjaxReady();
             }
             if (tab === "dataset-transfer") {
-                getDatasetsForExperiment($("select[name='experiment_id']").val());
+                var experimentId = $("select[name='experiment_id']").val();
+                if (typeof(experimentId) !== "undefined") {
+                    getDatasetsForExperiment(experimentId);
+                }
             }
         }
     });
