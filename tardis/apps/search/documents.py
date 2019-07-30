@@ -2,7 +2,8 @@ import logging
 
 from django.contrib.auth.models import User
 from elasticsearch_dsl import analysis, analyzer
-from django_elasticsearch_dsl import DocType, Index, fields
+from django_elasticsearch_dsl import Document, fields
+from django_elasticsearch_dsl.registries import registry
 
 from tardis.tardis_portal.models import Dataset, Experiment, \
     DataFile, Instrument
@@ -20,16 +21,12 @@ analyzer = analyzer(
 )
 
 
-experiment = Index('experiments')
-
-experiment.settings(
-    number_of_shards=1,
-    number_of_replicas=0
-)
-
-
-@experiment.doc_type
-class ExperimentDocument(DocType):
+@registry.register_document
+class ExperimentDocument(Document):
+    class Index:
+        name = 'experiments'
+        settings = {'number_of_shards': 1,
+                    'number_of_replicas': 0}
 
     id = fields.IntegerField()
     title = fields.TextField(
@@ -51,7 +48,7 @@ class ExperimentDocument(DocType):
         )
     })
 
-    class Meta:
+    class Django:
         model = Experiment
         related_models = [User]
 
@@ -61,16 +58,13 @@ class ExperimentDocument(DocType):
         return None
 
 
-dataset = Index('dataset')
+@registry.register_document
+class DatasetDocument(Document):
+    class Index:
+        name = 'dataset'
+        settings = {'number_of_shards': 1,
+                    'number_of_replicas': 0}
 
-dataset.settings(
-    number_of_shards=1,
-    number_of_replicas=0
-)
-
-
-@dataset.doc_type
-class DatasetDocument(DocType):
     id = fields.IntegerField()
     description = fields.TextField(
         fields={'raw': fields.KeywordField()},
@@ -93,7 +87,7 @@ class DatasetDocument(DocType):
     created_time = fields.DateField()
     modified_time = fields.DateField()
 
-    class Meta:
+    class Django:
         model = Dataset
         related_models = [Experiment, Instrument]
 
@@ -105,16 +99,12 @@ class DatasetDocument(DocType):
         return None
 
 
-datafile = Index('datafile')
-
-datafile.settings(
-    number_of_shards=1,
-    number_of_replicas=0
-)
-
-
-@datafile.doc_type
-class DataFileDocument(DocType):
+@registry.register_document
+class DataFileDocument(Document):
+    class Index:
+        name = 'datafile'
+        settings = {'number_of_shards': 1,
+                    'number_of_replicas': 0}
     filename = fields.TextField(
         fields={'raw': fields.KeywordField()},
         analyzer=analyzer
@@ -130,7 +120,7 @@ class DataFileDocument(DocType):
 
     )
 
-    class Meta:
+    class Django:
         model = DataFile
         related_models = [Dataset]
         queryset_pagination = 100000
