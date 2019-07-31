@@ -12,7 +12,6 @@ from django.conf import settings
 
 from tastypie import fields
 from tastypie.resources import Resource, Bundle
-from tastypie.exceptions import BadRequest
 from tastypie.serializers import Serializer
 from django_elasticsearch_dsl.search import Search
 from elasticsearch_dsl import MultiSearch, Q
