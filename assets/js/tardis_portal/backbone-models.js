@@ -14,6 +14,11 @@ var isLoggedIn = function() {
 export var MyTardis = (function() {
 
     var module = {};
+    // Skip creating Backbone models if running a unit test, due to
+    // issues with Mustache.TEMPLATES:
+    if (typeof MyTardisJavascriptUnitTesting !== "undefined") {
+        return module;
+    }
 
     module.DatasetSyncManager = _.extend({
         "_collectionSet": [],

@@ -15,6 +15,11 @@ $(function() {
 
 (function() {
 
+    // Skip creating Backbone models if running a unit test, due to
+    // issues with Mustache.TEMPLATES:
+    if (typeof MyTardisJavascriptUnitTesting !== "undefined") {
+        return;
+    }
     var datasets = new MyTardis.Datasets();
 
     datasets.experimentId = $("#experiment-id").val();
@@ -31,21 +36,23 @@ $(function() {
     return datasetTiles;
 }());
 
-(function() {
-
-    // eslint-disable-next-line no-unused-vars
-    function getDatasetsForExperiment(experimentId) {
-        var datasets = new MyTardis.Datasets();
-        datasets.experimentId = parseInt("10", experimentId),
-        // Substitute experiment ID to get collection
-        datasets.url = Mustache.to_html("{{ url_pattern }}",
-            { "experiment_id": experimentId });
-        var datasetTiles = new MyTardis.DatasetTiles({
-            "id": "other-experiment-datasets",
-            "collection": datasets,
-            "el": $("#other-experiment-datasets").get(0)
-        });
-        datasets.fetch({});
-        return datasetTiles;
+// eslint-disable-next-line no-unused-vars
+export function getDatasetsForExperiment(experimentId) {
+    // Skip creating Backbone models if running a unit test, due to
+    // issues with Mustache.TEMPLATES:
+    if (typeof MyTardisJavascriptUnitTesting !== "undefined") {
+        return;
     }
-}());
+    var datasets = new MyTardis.Datasets();
+
+    datasets.experimentId = experimentId;
+    datasets.url = "/ajax/json/experiment/" + experimentId + "/dataset/";
+    var datasetTiles = new MyTardis.DatasetTiles({
+        "id": "other-experiment-datasets",
+        "collection": datasets,
+        "el": $("#other-experiment-datasets").get(0)
+    });
+    datasets.fetch({});
+    return datasetTiles;
+}
+
