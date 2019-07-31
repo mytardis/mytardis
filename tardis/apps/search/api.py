@@ -12,7 +12,6 @@ from django.conf import settings
 
 from tastypie import fields
 from tastypie.resources import Resource, Bundle
-from tastypie.exceptions import BadRequest
 from tastypie.serializers import Serializer
 from django_elasticsearch_dsl.search import Search
 from elasticsearch_dsl import MultiSearch, Q
@@ -72,8 +71,6 @@ class SearchAppResource(Resource):
         user = request.user
         groups = user.groups.all()
         query_text = request.GET.get('query', None)
-        if not query_text:
-            raise BadRequest("Missing query parameter")
         index_list = ['experiments', 'dataset', 'datafile']
         ms = MultiSearch(index=index_list)
         query_exp = Q("match", title=query_text)
