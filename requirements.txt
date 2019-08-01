@@ -5,3 +5,4 @@ python-ldap==3.2.0
 
 # apps go here:
 -r tardis/apps/social_auth/requirements.txt
+-r requirements-local.txt

@@ -1,0 +1,3 @@
+-r requirements-postgres.txt
+-r requirements-s3.txt
+-r requirements-elastic.txt
