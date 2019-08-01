@@ -6,7 +6,7 @@ from django_elasticsearch_dsl import Document, fields
 from django_elasticsearch_dsl.registries import registry
 
 from tardis.tardis_portal.models import Dataset, Experiment, \
-    DataFile, Instrument
+    DataFile, Instrument, ObjectACL
 
 
 logger = logging.getLogger(__name__)
@@ -47,14 +47,21 @@ class ExperimentDocument(Document):
             fields={'raw': fields.KeywordField()},
         )
     })
+    objectacls = fields.ObjectField(properties={
+        'pluginId': fields.StringField(),
+        'entityId': fields.StringField()
+    }
+    )
 
     class Django:
         model = Experiment
-        related_models = [User]
+        related_models = [User, ObjectACL]
 
     def get_instances_from_related(self, related_instance):
         if isinstance(related_instance, User):
             return related_instance.experiment_set.all()
+        if isinstance(related_instance, ObjectACL):
+            return related_instance.content_object
         return None
 
 
