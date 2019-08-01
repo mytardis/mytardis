@@ -73,10 +73,12 @@ class SearchAppResource(Resource):
         query_text = request.GET.get('query', None)
         index_list = ['experiments', 'dataset', 'datafile']
         ms = MultiSearch(index=index_list)
-        query_exp = Q("match", title=query_text)
+        query_exp = Q("match", title=query_text) & Q("term", objectacls__entityId=user.id)
         ms = ms.add(Search(index='experiments').extra(size=MAX_SEARCH_RESULTS).query(query_exp))
         query_dataset = Q("match", description=query_text)
-        ms = ms.add(Search(index='dataset').extra(size=MAX_SEARCH_RESULTS).query(query_dataset))
+        query_dataset_oacl = Q("term", **{'experiments.objectacls.entityId': user.id})
+        ms = ms.add(Search(index='dataset').extra(size=MAX_SEARCH_RESULTS).query(query_dataset)
+                    .query('nested', path='experiments', query=query_dataset_oacl))
         query_datafile = Q("match", filename=query_text)
         ms = ms.add(Search(index='datafile').extra(size=MAX_SEARCH_RESULTS).query(query_datafile))
         results = ms.execute()
@@ -84,26 +86,13 @@ class SearchAppResource(Resource):
         for item in results:
             for hit in item.hits.hits:
                 if hit["_index"] == "dataset":
-                    check_dataset_access = filter_dataset_result(hit,
-                                                                 userid=user.id,
-                                                                 groups=groups)
-
-                    if check_dataset_access:
-                        result_dict["datasets"].append(hit)
+                    result_dict["datasets"].append(hit)
 
                 elif hit["_index"] == "experiments":
-                    check_experiment_access = filter_experiment_result(hit,
-                                                                       userid=user.id,
-                                                                       groups=groups)
-                    if check_experiment_access:
-                        result_dict["experiments"].append(hit)
+                    result_dict["experiments"].append(hit)
 
                 elif hit["_index"] == "datafile":
-                    check_datafile_access = filter_datafile_result(hit,
-                                                                   userid=user.id,
-                                                                   groups=groups)
-                    if check_datafile_access:
-                        result_dict["datafiles"].append(hit)
+                    result_dict["datafiles"].append(hit)
 
         return [SearchObject(id=1, hits=result_dict)]
 

@@ -82,6 +82,11 @@ class DatasetDocument(Document):
         'title': fields.TextField(
             fields={'raw': fields.KeywordField()
                     }
+        ),
+        'objectacls': fields.ObjectField(properties={
+            'pluginId': fields.StringField(),
+            'entityId': fields.StringField()
+        }
         )
     }
     )
