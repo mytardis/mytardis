@@ -1,6 +1,7 @@
 import logging
 from os import path
 
+from datetime import datetime
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.fields import GenericRelation
@@ -66,6 +67,8 @@ class Experiment(models.Model):
     institution_name = models.CharField(max_length=400,
                                         default=settings.DEFAULT_INSTITUTION)
     description = models.TextField(blank=True)
+    internal_id = models.CharField(max_length=400, null=False, blank=False, unique=True, default=datetime.now().strftime('WUI-%Y-%M-%d-%H-%M-%S.%f'))
+    project_id = models.CharField(max_length=400, null=False, blank=False, default='No Project ID')
     start_time = models.DateTimeField(null=True, blank=True)
     end_time = models.DateTimeField(null=True, blank=True)
     created_time = models.DateTimeField(auto_now_add=True)

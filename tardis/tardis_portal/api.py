@@ -625,9 +625,13 @@ class ExperimentResource(MyTardisModelResource):
         filtering = {
             'id': ('exact', ),
             'title': ('exact',),
+            'internal_id': ('exact',),
+            'project_id': ('exact',),
         }
         ordering = [
             'title',
+            'internal_id',
+            'project_id',
             'created_time',
             'update_time'
         ]
