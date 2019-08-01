@@ -123,13 +123,24 @@ class DataFileDocument(Document):
     )
     created_time = fields.DateField()
     modification_time = fields.DateField()
-    dataset = fields.ObjectField(properties={
+    dataset = fields.NestedField(properties={
         'id': fields.IntegerField(),
         'description': fields.TextField(
             fields={'raw': fields.KeywordField()}
+        ),
+        'experiments': fields.NestedField(properties={
+            'id': fields.IntegerField(),
+            'title': fields.TextField(
+                fields={'raw': fields.KeywordField()}
+            ),
+            'objectacls': fields.ObjectField(properties={
+                'pluginId': fields.StringField(),
+                'entityId': fields.StringField()
+            }
+            )
+        }
         )
     }
-
     )
 
     class Django:

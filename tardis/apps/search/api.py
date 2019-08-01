@@ -80,7 +80,9 @@ class SearchAppResource(Resource):
         ms = ms.add(Search(index='dataset').extra(size=MAX_SEARCH_RESULTS).query(query_dataset)
                     .query('nested', path='experiments', query=query_dataset_oacl))
         query_datafile = Q("match", filename=query_text)
-        ms = ms.add(Search(index='datafile').extra(size=MAX_SEARCH_RESULTS).query(query_datafile))
+        query_datafile_oacl = Q("term", **{'dataset.experiments.objectacls.entityId': user.id})
+        ms = ms.add(Search(index='datafile').extra(size=MAX_SEARCH_RESULTS).query(query_datafile)
+                    .query('nested', path='dataset.experiments', query=query_datafile_oacl))
         results = ms.execute()
         result_dict = {k: [] for k in ["experiments", "datasets", "datafiles"]}
         for item in results:
