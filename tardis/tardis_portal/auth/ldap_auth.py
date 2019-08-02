@@ -162,7 +162,7 @@ class LDAPBackend(AuthProvider, UserProvider, GroupProvider):
             ldap_result = l.search_s(self._base, ldap.SCOPE_SUBTREE,
                                      userRDN, retrieveAttributes)
 
-            if ldap_result[0][1]['uid'][0] == username:
+            if ldap_result[0][1][self._login_attr][0] == username:
                 # check if the given username in combination with the LDAP
                 # auth method is already in the UserAuthentication table
                 user = ldap_result[0][1]
