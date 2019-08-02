@@ -10,8 +10,13 @@
       {% load bootstrap %}
       <fieldset>
         {{ form.title|bootstrap }}
+<<<<<<< HEAD
 	{{ form.internal_id|bootstrap }}
 	{{ form.project_id|bootstrap }}
+=======
+        {{ form.internal_id|bootstrap_horizontal }}
+        {{ form.project_id|bootstrap_horizontal }}
+>>>>>>> 58abf544b8bccbfa97615a9380189f58fe50333c
         {{ form.authors|bootstrap }}
         {{ form.institution_name|bootstrap }}
         {{ form.description|bootstrap }}

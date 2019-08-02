@@ -34,6 +34,8 @@ class Experiment(models.Model):
     :attribute description: The description of the experiment.
     :attribute institution_name: The name of the institution who created
        the experiment.
+    :attribute internal_id: Identifier generated at the instrument, for this experiment
+    :attribute project_id: UoA project ID (e.g. RAID)
     :attribute start_time: **Undocumented**
     :attribute end_time: **Undocumented**
     :attribute created_time: **Undocumented**
