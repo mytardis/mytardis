@@ -37,6 +37,7 @@ class ExperimentDocument(Document):
         fields={'raw': fields.KeywordField()},
         analyzer=analyzer
     )
+    public_access = fields.IntegerField()
     created_time = fields.DateField()
     start_time = fields.DateField()
     end_time = fields.DateField()
@@ -87,7 +88,8 @@ class DatasetDocument(Document):
             'pluginId': fields.StringField(),
             'entityId': fields.StringField()
         }
-        )
+        ),
+        'public_access': fields.IntegerField()
     }
     )
     instrument = fields.ObjectField(properties={
@@ -137,9 +139,10 @@ class DataFileDocument(Document):
                 'pluginId': fields.StringField(),
                 'entityId': fields.StringField()
             }
-            )
+            ),
+            'public_access': fields.IntegerField()
         }
-        )
+        ),
     }
     )
 
