@@ -27,6 +27,7 @@ parts/
 tardis/settings.py
 tardis/tardis_portal/tests/rifcs/MyTARDIS-1.xml
 var/
+var
 versions.cfg
 tardis_db
 tardis/apps/*
