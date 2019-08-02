@@ -1,15 +1,19 @@
 S3 compatible storage
 =====================
 
-S3 and S3 compatible storage backends are supported by the django-storages package.
+S3 and S3 compatible storage backends are supported by the ``django-storages`` package.
 
-We added some modifications that allow database driven configuration. Until these
-changes are accepted by the maintainer, use this fork and branch:
-https://github.com/monash-merc/django-storages/tree/mytardis-branch
+To use the S3 storage backend, you will need to install the following::
 
-Install it with::
+  pip install django-storages
+  pip install boto3
 
-   pip install -e git+https://github.com/monash-merc/django-storages.git@mytardis-branch#egg=django-storages
+The ``S3Boto3Storage`` storage backend provided by ``django-storages`` can be
+used to configure an S3 storage box, or it can be used to store static
+assets in S3, as described at https://django-storages.readthedocs.io/en/latest/backends/amazon-S3.html
+
+To configure an S3 storage box, set the storage box's ``django_storage_class`` field to
+``storages.backends.s3boto3.S3Boto3Storage``
 
 Configuration
 -------------

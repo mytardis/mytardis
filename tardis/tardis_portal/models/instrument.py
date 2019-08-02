@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils import timezone
 from django.utils.encoding import python_2_unicode_compatible
 
 from .facility import Facility
@@ -10,6 +11,8 @@ class Instrument(models.Model):
     Represents an instrument belonging to a facility that produces data
     '''
     name = models.CharField(max_length=100)
+    created_time = models.DateTimeField(null=True, blank=True, default=timezone.now)
+    modified_time = models.DateTimeField(null=True, blank=True)
     facility = models.ForeignKey(Facility, on_delete=models.CASCADE)
 
     class Meta:
@@ -17,6 +20,10 @@ class Instrument(models.Model):
         verbose_name_plural = 'Instruments'
         unique_together = ['name', 'facility']
         ordering = ('name', )
+
+    def save(self):
+        self.modified_time = timezone.now()
+        super(Instrument, self).save()
 
     def __str__(self):
         return self.name

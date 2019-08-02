@@ -38,6 +38,7 @@ NPM_FILE_PATTERNS = {
     'jquery-ui-dist': ['jquery-ui.min.js'],
     'mustache': ['mustache.min.js'],
     'ng-dialog': ['*'],
+    'sprintf-js': ['*'],
     'underscore': ['*'],
     'underscore.string': ['*']
 }

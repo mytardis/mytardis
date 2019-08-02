@@ -1,9 +1,5 @@
 /* tardis/tardis_portal/static/js/jquery/tardis_portal/ajax/share.js */
 
-/* eslint global-strict: 0, strict: 0, object-shorthand: 0,
-          no-extend-native: [2, {"exceptions": ["Date", "String"]}],
-          no-unused-vars: [2, {"vars": "local", "args": "none"}] */
-
 /* global userAutocompleteHandler, _ */
 
 var loadingHTML = "<img src=\"/static/images/ajax-loader.gif\"/><br />";
@@ -255,7 +251,7 @@ $(".share_link_group").bind("click", function(evt) {
                 evt2.preventDefault();
 
                 var icon = $(this).find("i");
-                icon.toggleClass("fa fa-folder-open icon-folder-close");
+                icon.toggleClass("fa-folder fa-folder-open");
                 $(this).toggleClass("members-shown members-hidden");
 
                 var userList = $(this).parents(".group").find(".access_list");
@@ -343,7 +339,7 @@ $(".share_link_group").bind("click", function(evt) {
                             evt2.preventDefault();
 
                             var icon = $(this).find("i");
-                            icon.toggleClass("fa fa-folder-open icon-folder-close");
+                            icon.toggleClass("fa-folder fa-folder-open");
                             $(this).toggleClass("members-shown members-hidden");
 
                             var userList = $(this).parents(".access_list_group").find(".access_list");

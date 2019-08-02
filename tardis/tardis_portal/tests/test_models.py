@@ -53,7 +53,7 @@ from ..models import Dataset, DataFile, DataFileObject
 from ..models import (
     Schema, ParameterName, DatafileParameterSet, DatafileParameter,
     DatasetParameterSet, DatasetParameter, ExperimentParameterSet,
-    ExperimentParameter)
+    ExperimentParameter, InstrumentParameterSet)
 
 
 class ModelTestCase(TestCase):
@@ -405,3 +405,31 @@ class ModelTestCase(TestCase):
             api_key = None
 
         self.assertIsNotNone(api_key)
+
+    def test_instrument(self):
+        group = Group(name="Test Manager Group")
+        group.save()
+        facility = Facility(name="Test Facility",
+                            manager_group=group)
+        facility.save()
+        self.assertEqual(str(facility), "Test Facility")
+        instrument = Instrument(name="Test Instrument",
+                                facility=facility)
+        instrument.save()
+        self.assertEqual(str(instrument), "Test Instrument")
+
+        self.assertEqual(len(instrument.getParameterSets()), 0)
+
+        schema = Schema(
+            namespace='test instrument schema namespace',
+            type=Schema.INSTRUMENT)
+        schema.save()
+
+        parname = ParameterName(
+            schema=schema, name='name', full_name='full_name')
+        parname.save()
+
+        pset = InstrumentParameterSet.objects.create(
+            instrument=instrument, schema=schema)
+        pset.save()
+        self.assertEqual(len(instrument.getParameterSets()), 1)

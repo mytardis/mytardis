@@ -1,9 +1,5 @@
 /* tardis/tardis_portal/static/js/jquery/tardis_portal/view_experiment/init.js */
   
-/* eslint global-strict: 0, strict: 0, object-shorthand: 0,
-          no-unused-vars: [2, {"vars": "local", "args": "none"}] */
-
-
 // file selectors
 jQuery(document).on("click", ".dataset_selector_all", function() {
     $(this).parents(".datafiles").find(".datafile_checkbox").attr("checked", "checked");
@@ -158,12 +154,14 @@ $(document).on("click", ".add-metadata", function(evt) {
     evt.preventDefault();
     $("#modal-metadata .modal-header .title").text("Add Metadata");
     loadModalRemoteBody(this, "#modal-metadata");
+    $("#add_edit_metadata_save_button").attr("form", "add_metadata_form");
 });
 
 $(document).on("click", ".edit-metadata", function(evt) {
     evt.preventDefault();
     $("#modal-metadata .modal-header .title").text("Edit Metadata");
     loadModalRemoteBody(this, "#modal-metadata");
+    $("#add_edit_metadata_save_button").attr("form", "edit_metadata_form");
 });
 
 $("#modal-metadata .submit-button").click(function() {

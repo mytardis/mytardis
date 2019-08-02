@@ -31,6 +31,7 @@
 """
 test_tokens.py
 """
+import json
 import re
 import sys
 
@@ -240,3 +241,76 @@ class TokenTestCase(TestCase):
         self.assertIn(
             'href="/token/delete/%s/"' % token.id,
             response.content)
+
+    def test_create_token(self):
+        from ..views.authorisation import create_token
+
+        sys.modules['datetime'].datetime = old_datetime
+
+        experiment = Experiment(title='test exp1', created_by=self.user)
+        experiment.save()
+        acl = ObjectACL(pluginId='django_user',
+                        entityId=str(self.user.id),
+                        content_object=experiment,
+                        isOwner=True)
+        acl.save()
+
+        factory = RequestFactory()
+        request = factory.post(
+            '/view/experiment/%s/create_token/'
+            % experiment.id,
+            data={
+                'csrfmiddlewaretoken': 'bogus',
+            })
+        request.user = self.user
+        response = create_token(
+            request, experiment_id=experiment.id)
+        response_dict = json.loads(response.content)
+        self.assertEqual(response_dict['success'], True)
+
+        token = Token.objects.get(experiment=experiment)
+        url = "/experiment/view/%s/?token=%s" % (experiment.id, token.token)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+
+    def test_token_delete(self):
+        from ..views.authorisation import token_delete
+
+        sys.modules['datetime'].datetime = old_datetime
+
+        experiment = Experiment(title='test exp1', created_by=self.user)
+        experiment.save()
+
+        token = Token(experiment=experiment, user=self.user)
+        token.save()
+
+        factory = RequestFactory()
+        request = factory.post(
+            '/token/delete/%s/'
+            % token.id,
+            data={
+                'csrfmiddlewaretoken': 'bogus',
+            })
+        request.user = self.user
+        response = token_delete(
+            request, token_id=token.id)
+        response_dict = json.loads(response.content)
+        # We haven't yet created an ObjectACL to associate self.user
+        # with the experiment, so request.user shouldn't be allowed
+        # to delete the token:
+        self.assertEqual(response_dict['success'], False)
+        acl = ObjectACL(pluginId='django_user',
+                        entityId=str(self.user.id),
+                        content_object=experiment,
+                        isOwner=True)
+        acl.save()
+        response = token_delete(
+            request, token_id=token.id)
+        response_dict = json.loads(response.content)
+        # Now request.user should be authorised to delete the token:
+        self.assertEqual(response_dict['success'], True)
+        self.assertIsNone(Token.objects.filter(id=token.id).first())
+
+        url = "/experiment/view/%s/?token=%s" % (experiment.id, token.token)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 403)
