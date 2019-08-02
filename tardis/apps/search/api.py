@@ -73,22 +73,28 @@ class SearchAppResource(Resource):
         query_text = request.GET.get('query', None)
         index_list = ['experiments', 'dataset', 'datafile']
         ms = MultiSearch(index=index_list)
+
         query_exp = Q("match", title=query_text)
-        query_exp_oacl = Q("term", objectacls__entityId=user.id)
+        query_exp_oacl = Q("term", objectacls__entityId=user.id) | \
+            Q("term", public_access=100)
         for group in groups:
             query_exp_oacl = query_exp_oacl | \
                                  Q("term", objectacls__entityId=group.id)
         query_exp = query_exp & query_exp_oacl
         ms = ms.add(Search(index='experiments').extra(size=MAX_SEARCH_RESULTS).query(query_exp))
+
         query_dataset = Q("match", description=query_text)
-        query_dataset_oacl = Q("term", **{'experiments.objectacls.entityId': user.id})
+        query_dataset_oacl = Q("term", **{'experiments.objectacls.entityId': user.id}) | \
+            Q("term", **{'experiments.public_access': 100})
         for group in groups:
             query_dataset_oacl = query_dataset_oacl | \
                                  Q("term", **{'experiments.objectacls.entityId': group.id})
         ms = ms.add(Search(index='dataset').extra(size=MAX_SEARCH_RESULTS).query(query_dataset)
                     .query('nested', path='experiments', query=query_dataset_oacl))
+
         query_datafile = Q("match", filename=query_text)
-        query_datafile_oacl = Q("term", **{'dataset.experiments.objectacls.entityId': user.id})
+        query_datafile_oacl = Q("term", **{'dataset.experiments.objectacls.entityId': user.id}) | \
+            Q("term", **{'dataset.experiments.public_access': 100})
         for group in groups:
             query_datafile_oacl = query_datafile_oacl | \
                                  Q("term", **{'dataset.experiments.objectacls.entityId': group.id})
