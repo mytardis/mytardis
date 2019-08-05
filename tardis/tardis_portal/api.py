@@ -796,13 +796,15 @@ class DatasetResource(MyTardisModelResource):
         queryset = Dataset.objects.all()
         filtering = {
             'id': ('exact', ),
+            'dataset_id': ('exact', ),
             'experiments': ALL_WITH_RELATIONS,
             'description': ('exact', ),
             'directory': ('exact', ),
             'instrument': ALL_WITH_RELATIONS,
         }
         ordering = [
-            'description'
+            'description',
+            'dataset_id'
         ]
         always_return_data = True
 

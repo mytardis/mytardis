@@ -324,6 +324,7 @@ class DatasetForm(forms.ModelForm):
         model = models.Dataset
         fields = [
             'description',
+            'dataset_id',
             'directory',
             'instrument',
         ]
