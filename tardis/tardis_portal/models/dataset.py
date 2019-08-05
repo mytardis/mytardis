@@ -36,11 +36,16 @@ class Dataset(models.Model):
         this data
     :attribute description: Description of this dataset, which usually \
         corresponds to the folder name on the instrument PC
+    :attribute dataset_id: A unique identifier to the dataset generated at instrument.
     :attribute immutable: Whether this dataset is read-only
     """
 
+    def dataset_id_default():
+        return datetime.now().strftime('DTST-%Y-%M-%d-%H-%M-%S.%f')
+
     experiments = models.ManyToManyField(Experiment, related_name='datasets')
     description = models.TextField(blank=True)
+    dataset_id = models.CharField(max_length=400, null=False, blank=False, unique=True, default=dataset_id_default)
     directory = models.CharField(blank=True, null=True, max_length=255)
     created_time = models.DateTimeField(null=True, blank=True, default=timezone.now)
     modified_time = models.DateTimeField(null=True, blank=True)
