@@ -16,7 +16,6 @@ from tastypie.serializers import Serializer
 from django_elasticsearch_dsl.search import Search
 from elasticsearch_dsl import MultiSearch, Q
 
-from tardis.tardis_portal.models import Experiment, DataFile, Dataset
 from tardis.tardis_portal.api import default_authentication
 
 LOCAL_TZ = pytz.timezone(settings.TIME_ZONE)
@@ -73,37 +72,45 @@ class SearchAppResource(Resource):
         query_text = request.GET.get('query', None)
         index_list = ['experiments', 'dataset', 'datafile']
         ms = MultiSearch(index=index_list)
+
         query_exp = Q("match", title=query_text)
+        query_exp_oacl = Q("term", objectacls__entityId=user.id) | \
+            Q("term", public_access=100)
+        for group in groups:
+            query_exp_oacl = query_exp_oacl | \
+                                 Q("term", objectacls__entityId=group.id)
+        query_exp = query_exp & query_exp_oacl
         ms = ms.add(Search(index='experiments').extra(size=MAX_SEARCH_RESULTS).query(query_exp))
+
         query_dataset = Q("match", description=query_text)
-        ms = ms.add(Search(index='dataset').extra(size=MAX_SEARCH_RESULTS).query(query_dataset))
+        query_dataset_oacl = Q("term", **{'experiments.objectacls.entityId': user.id}) | \
+            Q("term", **{'experiments.public_access': 100})
+        for group in groups:
+            query_dataset_oacl = query_dataset_oacl | \
+                                 Q("term", **{'experiments.objectacls.entityId': group.id})
+        ms = ms.add(Search(index='dataset').extra(size=MAX_SEARCH_RESULTS).query(query_dataset)
+                    .query('nested', path='experiments', query=query_dataset_oacl))
+
         query_datafile = Q("match", filename=query_text)
-        ms = ms.add(Search(index='datafile').extra(size=MAX_SEARCH_RESULTS).query(query_datafile))
+        query_datafile_oacl = Q("term", **{'dataset.experiments.objectacls.entityId': user.id}) | \
+            Q("term", **{'dataset.experiments.public_access': 100})
+        for group in groups:
+            query_datafile_oacl = query_datafile_oacl | \
+                                 Q("term", **{'dataset.experiments.objectacls.entityId': group.id})
+        ms = ms.add(Search(index='datafile').extra(size=MAX_SEARCH_RESULTS).query(query_datafile)
+                    .query('nested', path='dataset.experiments', query=query_datafile_oacl))
         results = ms.execute()
         result_dict = {k: [] for k in ["experiments", "datasets", "datafiles"]}
         for item in results:
             for hit in item.hits.hits:
                 if hit["_index"] == "dataset":
-                    check_dataset_access = filter_dataset_result(hit,
-                                                                 userid=user.id,
-                                                                 groups=groups)
-
-                    if check_dataset_access:
-                        result_dict["datasets"].append(hit)
+                    result_dict["datasets"].append(hit)
 
                 elif hit["_index"] == "experiments":
-                    check_experiment_access = filter_experiment_result(hit,
-                                                                       userid=user.id,
-                                                                       groups=groups)
-                    if check_experiment_access:
-                        result_dict["experiments"].append(hit)
+                    result_dict["experiments"].append(hit)
 
                 elif hit["_index"] == "datafile":
-                    check_datafile_access = filter_datafile_result(hit,
-                                                                   userid=user.id,
-                                                                   groups=groups)
-                    if check_datafile_access:
-                        result_dict["datafiles"].append(hit)
+                    result_dict["datafiles"].append(hit)
 
         return [SearchObject(id=1, hits=result_dict)]
 
@@ -138,7 +145,6 @@ class AdvanceSearchAppResource(Resource):
         return self.get_object_list(bundle.request)
 
     def obj_create(self, bundle, **kwargs):
-        bundle = self.dehydrate(bundle)
         return bundle
 
     def dehydrate(self, bundle):
@@ -174,89 +180,54 @@ class AdvanceSearchAppResource(Resource):
         # query for experiment model
         ms = MultiSearch(index=index_list)
         if 'experiments' in index_list:
-            q = Q("match", title=query_text)
+            query_exp = Q("match", title=query_text)
+            query_exp_oacl = Q("term", objectacls__entityId=user.id) | \
+                             Q("term", public_access=100)
+            for group in groups:
+                query_exp_oacl = query_exp_oacl | \
+                             Q("term", objectacls__entityId=group.id)
             if start_date is not None:
-                q = q & Q("range", created_time={'gte': start_date, 'lte': end_date})
-            ms = ms.add(Search(index='experiments').extra(size=MAX_SEARCH_RESULTS).query(q))
+                query_exp = query_exp & Q("range", created_time={'gte': start_date, 'lte': end_date})
+            query_exp = query_exp & query_exp_oacl
+            ms = ms.add(Search(index='experiments').extra(size=MAX_SEARCH_RESULTS).query(query_exp))
         if 'dataset' in index_list:
-            q = Q("match", description=query_text)
+            query_dataset = Q("match", description=query_text)
+            query_dataset_oacl = Q("term", **{'experiments.objectacls.entityId': user.id}) | \
+                                 Q("term", **{'experiments.public_access': 100})
+            for group in groups:
+                query_dataset_oacl = query_dataset_oacl | \
+                                     Q("term", **{'experiments.objectacls.entityId': group.id})
             if start_date is not None:
-                q = q & Q("range", created_time={'gte': start_date, 'lte': end_date})
+                query_dataset = query_dataset & Q("range", created_time={'gte': start_date, 'lte': end_date})
             if instrument_list:
-                q = q & Q("match", instrument__name=instrument_list_string)
+                query_dataset = query_dataset & Q("match", instrument__name=instrument_list_string)
             # add instrument query
-            ms = ms.add(Search(index='dataset').extra(size=MAX_SEARCH_RESULTS).query(q))
+            ms = ms.add(Search(index='dataset').extra(size=MAX_SEARCH_RESULTS).query(query_dataset)
+                        .query('nested', path='experiments', query=query_dataset_oacl))
         if 'datafile' in index_list:
-            q = Q("match", filename=query_text)
+            query_datafile = Q("match", filename=query_text)
+            query_datafile_oacl = Q("term", **{'dataset.experiments.objectacls.entityId': user.id}) | \
+                                  Q("term", **{'dataset.experiments.public_access': 100})
+            for group in groups:
+                query_datafile_oacl = query_datafile_oacl | \
+                                      Q("term", **{'dataset.experiments.objectacls.entityId': group.id})
             if start_date is not None:
-                q = q & Q("range", created_time={'gte': start_date, 'lte': end_date})
-            ms = ms.add(Search(index='datafile').extra(size=MAX_SEARCH_RESULTS).query(q))
+                query_datafile = query_datafile & Q("range", created_time={'gte': start_date, 'lte': end_date})
+            ms = ms.add(Search(index='datafile').extra(size=MAX_SEARCH_RESULTS).query(query_datafile)
+                        .query('nested', path='dataset.experiments', query=query_datafile_oacl))
         result = ms.execute()
         result_dict = {k: [] for k in ["experiments", "datasets", "datafiles"]}
         for item in result:
             for hit in item.hits.hits:
                 if hit["_index"] == "dataset":
-                    check_dataset_access = filter_dataset_result(hit,
-                                                                 userid=user.id,
-                                                                 groups=groups)
-                    if check_dataset_access:
-                        result_dict["datasets"].append(hit)
+                    result_dict["datasets"].append(hit)
 
                 elif hit["_index"] == "experiments":
-                    check_experiment_access = filter_experiment_result(hit,
-                                                                       userid=user.id,
-                                                                       groups=groups)
-                    if check_experiment_access:
-                        result_dict["experiments"].append(hit)
+                    result_dict["experiments"].append(hit)
 
                 elif hit["_index"] == "datafile":
-                    check_datafile_access = filter_datafile_result(hit,
-                                                                   userid=user.id,
-                                                                   groups=groups)
-                    if check_datafile_access:
-                        result_dict["datafiles"].append(hit)
+                    result_dict["datafiles"].append(hit)
 
         if bundle.request.method == 'POST':
             bundle.obj = SearchObject(id=1, hits=result_dict)
         return bundle
-
-
-def filter_experiment_result(hit, userid, groups):
-    exp = Experiment.objects.get(id=hit["_id"])
-    if exp.public_access == 100:
-        return True
-    if exp.objectacls.filter(entityId=userid).count() > 0:
-        return True
-    for group in groups:
-        if exp.objectacls.filter(entityId=group.id).count() > 0:
-            return True
-    return False
-
-
-def filter_dataset_result(hit, userid, groups):
-    dataset = Dataset.objects.get(id=hit["_id"])
-    exps = dataset.experiments.all()
-    for exp in exps:
-        if exp.public_access == 100:
-            return True
-        if exp.objectacls.filter(entityId=userid).count() > 0:
-            return True
-        for group in groups:
-            if exp.objectacls.filter(entityId=group.id).count() > 0:
-                return True
-    return False
-
-
-def filter_datafile_result(hit, userid, groups):
-    datafile = DataFile.objects.get(id=hit["_id"])
-    ds = datafile.dataset
-    exps = ds.experiments.all()
-    for exp in exps:
-        if exp.public_access == 100:
-            return True
-        if exp.objectacls.filter(entityId=userid).count() > 0:
-            return True
-        for group in groups:
-            if exp.objectacls.filter(entityId=group.id).count() > 0:
-                return True
-    return False

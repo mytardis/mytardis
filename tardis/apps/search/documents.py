@@ -6,7 +6,7 @@ from django_elasticsearch_dsl import Document, fields
 from django_elasticsearch_dsl.registries import registry
 
 from tardis.tardis_portal.models import Dataset, Experiment, \
-    DataFile, Instrument
+    DataFile, Instrument, ObjectACL
 
 
 logger = logging.getLogger(__name__)
@@ -37,6 +37,7 @@ class ExperimentDocument(Document):
         fields={'raw': fields.KeywordField()},
         analyzer=analyzer
     )
+    public_access = fields.IntegerField()
     created_time = fields.DateField()
     start_time = fields.DateField()
     end_time = fields.DateField()
@@ -47,14 +48,21 @@ class ExperimentDocument(Document):
             fields={'raw': fields.KeywordField()},
         )
     })
+    objectacls = fields.ObjectField(properties={
+        'pluginId': fields.StringField(),
+        'entityId': fields.StringField()
+    }
+    )
 
     class Django:
         model = Experiment
-        related_models = [User]
+        related_models = [User, ObjectACL]
 
     def get_instances_from_related(self, related_instance):
         if isinstance(related_instance, User):
             return related_instance.experiment_set.all()
+        if isinstance(related_instance, ObjectACL):
+            return related_instance.content_object
         return None
 
 
@@ -75,7 +83,13 @@ class DatasetDocument(Document):
         'title': fields.TextField(
             fields={'raw': fields.KeywordField()
                     }
-        )
+        ),
+        'objectacls': fields.ObjectField(properties={
+            'pluginId': fields.StringField(),
+            'entityId': fields.StringField()
+        }
+        ),
+        'public_access': fields.IntegerField()
     }
     )
     instrument = fields.ObjectField(properties={
@@ -111,13 +125,25 @@ class DataFileDocument(Document):
     )
     created_time = fields.DateField()
     modification_time = fields.DateField()
-    dataset = fields.ObjectField(properties={
+    dataset = fields.NestedField(properties={
         'id': fields.IntegerField(),
         'description': fields.TextField(
             fields={'raw': fields.KeywordField()}
-        )
+        ),
+        'experiments': fields.NestedField(properties={
+            'id': fields.IntegerField(),
+            'title': fields.TextField(
+                fields={'raw': fields.KeywordField()}
+            ),
+            'objectacls': fields.ObjectField(properties={
+                'pluginId': fields.StringField(),
+                'entityId': fields.StringField()
+            }
+            ),
+            'public_access': fields.IntegerField()
+        }
+        ),
     }
-
     )
 
     class Django:
