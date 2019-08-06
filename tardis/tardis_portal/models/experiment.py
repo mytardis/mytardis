@@ -18,6 +18,8 @@ from .license import License
 
 logger = logging.getLogger(__name__)
 
+def experiment_internal_id_default():
+    return datetime.now().strftime('WUI-%Y-%M-%d-%H-%M-%S.%f')
 
 @python_2_unicode_compatible
 class Experiment(models.Model):
@@ -46,9 +48,6 @@ class Experiment(models.Model):
 
     """
     
-    def internal_id_default():
-        return datetime.now().strftime('WUI-%Y-%M-%d-%H-%M-%S.%f')
-
     PUBLIC_ACCESS_NONE = 1
     PUBLIC_ACCESS_EMBARGO = 25
     PUBLIC_ACCESS_METADATA = 50
@@ -72,7 +71,7 @@ class Experiment(models.Model):
     institution_name = models.CharField(max_length=400,
                                         default=settings.DEFAULT_INSTITUTION)
     description = models.TextField(blank=True)
-    internal_id = models.CharField(max_length=400, null=False, blank=False, unique=True, default=internal_id_default )
+    internal_id = models.CharField(max_length=400, null=False, blank=False, unique=True, default=experiment_internal_id_default )
     project_id = models.CharField(max_length=400, null=False, blank=False, default='No Project ID')
     start_time = models.DateTimeField(null=True, blank=True)
     end_time = models.DateTimeField(null=True, blank=True)

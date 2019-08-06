@@ -16,6 +16,8 @@ from .instrument import Instrument
 
 logger = logging.getLogger(__name__)
 
+def dataset_id_default():
+    return datetime.now().strftime('DTST-%Y-%M-%d-%H-%M-%S.%f')
 
 @python_2_unicode_compatible
 class Dataset(models.Model):
@@ -41,12 +43,9 @@ class Dataset(models.Model):
     :attribute immutable: Whether this dataset is read-only
     """
 
-    def dataset_id_default():
-        return datetime.now().strftime('DTST-%Y-%M-%d-%H-%M-%S.%f')
-
     experiments = models.ManyToManyField(Experiment, related_name='datasets')
     description = models.TextField(blank=True)
-    dataset_id = models.CharField(max_length=400, null=False, blank=False, unique=True, default=dataset_id_default)
+    dataset_id = models.CharField(max_length=400, null=False, blank=False, unique=True, default=dataset_id_default )
     directory = models.CharField(blank=True, null=True, max_length=255)
     created_time = models.DateTimeField(null=True, blank=True, default=timezone.now)
     modified_time = models.DateTimeField(null=True, blank=True)
