@@ -93,7 +93,7 @@ export var MyTardis = (function() {
                 if (directory !== null) {
                     searchString = directory.toLowerCase() + searchString;
                 }
-                return _.string.include(searchString, lStr);
+                return s.include(searchString, lStr);
             };
         },
         render: function() {
