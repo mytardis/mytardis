@@ -145,7 +145,6 @@ class AdvanceSearchAppResource(Resource):
         return self.get_object_list(bundle.request)
 
     def obj_create(self, bundle, **kwargs):
-        bundle = self.dehydrate(bundle)
         return bundle
 
     def dehydrate(self, bundle):
