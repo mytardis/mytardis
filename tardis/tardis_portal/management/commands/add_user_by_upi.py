@@ -1,6 +1,7 @@
 from django.core.management.base import BaseCommand,CommandError
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Permission
 from django.conf import settings
+from ...models import UserProfile, UserAuthentication
 import ldap
 class Command(BaseCommand):
 
@@ -34,7 +35,14 @@ class Command(BaseCommand):
                 total += 1
                 if created:
                     user.set_password(self.gen_random_password())
+                    user.user_permissions.add(Permission.objects.get(codename='add_experiment'))
+                    user.user_permissions.add(Permission.objects.get(codename='add_dataset'))
+                    user.user_permissions.add(Permission.objects.get(codename='add_datafile'))
                     user.save()
+                    authentication = UserAuthentication(userProfile=user.userprofile,
+                                                        username=username,
+                                                        authenticationMethod=settings.LDAP_METHOD)
+                    authentication.save()
                     total_created += 1
                     print("Added {}".format(user_id))
                 else:
