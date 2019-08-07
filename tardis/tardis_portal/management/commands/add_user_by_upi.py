@@ -23,14 +23,27 @@ class Command(BaseCommand):
         l.simple_bind_s(settings.LDAP_ADMIN_USER, settings.LDAP_ADMIN_PASSWORD)
         total = 0
         total_created = 0
+        ldap_dict = settings.LDAP_USER_ATTR_MAP
+        first_name_key = 'givenName'
+        last_name_key = 'sn'
+        email_key = 'mail'
+        for key in ldap_dict.keys():
+            test_value = ldap_dict[key]
+            if test_value == "first_name":
+                first_name_key = key
+            elif test_value == "last_name":
+                last_name_key = key
+            elif test_value  == "email":
+                email_key = key
         for user_id in options['user_id']:
             print("Looking up {}".format(user_id))
-            results = l.search_s(settings.LDAP_USER_BASE, ldap.SCOPE_SUBTREE, "(cn={})".format(user_id))
+            results = l.search_s(settings.LDAP_USER_BASE, ldap.SCOPE_SUBTREE, "({0}={1})".format(settings.LDAP_USER_LOGIN_ATTR, user_id))
+            
             for e, r in results:
-                username = r['cn'][0].decode('utf-8')
-                first_name = r['givenName'][0].decode('utf-8')
-                last_name = r['sn'][0].decode('utf-8')
-                email = r['mail'][0].decode('utf-8')
+                username = r[settings.LDAP_USER_LOGIN_ATTR][0].decode('utf-8')
+                first_name = r[first_name_key][0].decode('utf-8')
+                last_name = r[last_name_key][0].decode('utf-8')
+                email = r[email_key][0].decode('utf-8')
                 user, created = User.objects.get_or_create(username=username, email=email, first_name=first_name, last_name=last_name)
                 total += 1
                 if created:
