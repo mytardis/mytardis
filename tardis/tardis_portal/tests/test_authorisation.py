@@ -155,6 +155,12 @@ class ObjectACLTestCase(TestCase):
                                    % (self.experiment1.id))
         self.assertEqual(response.status_code, 403)
 
+        # create a group and add it to experiment1
+        response = self.client1.get('/experiment/control_panel'
+                                    '/create/group/?group=%s&authMethod=localdb'
+                                    % ('group1'))
+        self.assertEqual(response.status_code, 200)
+
         # make the group1 a full read/write/owner of the experiment1
         response = self.client1.get('/experiment/control_panel/%i'
                                     '/access_list/add/group/%s/?canRead=true'
@@ -272,7 +278,9 @@ class ObjectACLTestCase(TestCase):
                                        non_existent,
                                        localdb_auth_key))
 
-        self.assertContains(response, 'User %s does not exist' % non_existent)
+        self.assertContains(
+            response, 'User %s does not exist' % non_existent,
+            status_code=400)
 
         # test add to non existent experiment
 
