@@ -524,7 +524,7 @@ def add_experiment_access_group(request, experiment_id, groupname):
 
     if acl.count() > 0:
         # An ACL already exists for this experiment/group.
-        return HttpResponse('Could not create group %s '
+        return HttpResponse('Could not add group %s '
                             '(It is likely that it already exists)' %
                             (groupname))
 
