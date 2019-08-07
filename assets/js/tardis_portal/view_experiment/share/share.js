@@ -110,8 +110,7 @@ const userSharingModalLoaded = function() {
             username = enteredUser;
             authMethod = $(this).siblings("#id_authMethod").val();
         }
-        var usersDiv = $(this).parents(".access_list1").children(".users");
-
+        var userMessagesDiv = $("#user-sharing-messages");
         var permissions = $(this).siblings("#id_permission").val();
 
         var canRead = false;
@@ -143,7 +142,7 @@ const userSharingModalLoaded = function() {
             type: "GET",
             url: action,
             success: function(data) {
-                usersDiv.hide().append(data).fadeIn();
+                userMessagesDiv.hide().html(data).fadeIn();
                 // todo this is a duplicate function..
                 $(".remove_user").unbind("click");
                 $(".remove_user").click(function() {
@@ -214,27 +213,22 @@ const groupSharingModalLoaded = function() {
     var modal = $("#modal-share-group");
     modal.find(".loading-placeholder").hide();
 
-    var users = null; // eslint-disable-line no-unused-vars
-
-    var groups = (function() {
-        var val = null;
-        $.ajax({
-            "global": false,
-            "url": "/ajax/group_list/",
-            "success": function(data) { val = data; }
-        });
-        return val;
-    }());
+    $.ajax({
+        "global": false,
+        "url": "/ajax/group_list/",
+        "success": function(data) {
+            var groups = data;
+            $(".groupsuggest").typeahead({
+                "source": groups.split(" ~ ")
+            });
+        }
+    });
 
     $("#id_addgroup").keypress(function(e) {
         if (e.keyCode === 13)
         {
             $("#group.form_submit").click();
         }
-    });
-
-    $(".groupsuggest").typeahead({
-        "source": groups.split(" ~ ")
     });
 
 
@@ -284,7 +278,7 @@ const groupSharingModalLoaded = function() {
         event.preventDefault();
 
         var groupsuggest = $(this).parents(".access_list2").find(".groupsuggest").val();
-        var groupsDiv = $(this).parents(".access_list2").children(".groups");
+        var groupMessagesDiv = $("#group-sharing-messages");
 
         var action = "/experiment/control_panel/" + $("#experiment-id").val() + "/access_list/add/group/" + groupsuggest;
 
@@ -317,7 +311,7 @@ const groupSharingModalLoaded = function() {
             type: "GET",
             url: action,
             success: function(data) {
-                groupsDiv.hide().append(data).fadeIn();
+                groupMessagesDiv.hide().html(data).fadeIn();
 
                 // view group members
                 $(".member_list_user_toggle").unbind("click");
