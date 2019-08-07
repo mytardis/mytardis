@@ -3,6 +3,8 @@ from importlib import import_module
 from django.conf import settings
 from django.urls import reverse
 
+from tardis.tardis_portal.templatetags.approved_user_tags import check_if_user_not_approved
+
 
 def single_search_processor(request):
 
@@ -79,7 +81,8 @@ def user_menu_processor(request):
             url=reverse('tardis.tardis_portal.views.manage_user_account'),
             icon='fa fa-user',
             label='Manage Account'))
-    if hasattr(request.user, 'api_key') and request.user.api_key.key:
+    if hasattr(request.user, 'api_key') and request.user.api_key.key \
+            and not check_if_user_not_approved(request):
         user_menu.append(dict(
             url=reverse('tardis.tardis_portal.download.download_api_key'),
             icon='fa fa-key',
@@ -95,8 +98,9 @@ def user_menu_processor(request):
             url=reverse('admin:index'),
             icon='fa fa-key',
             label='Admin Interface'))
-    if request.user.has_perm('auth.change_user') or \
-            request.user.has_perm('auth.change_group'):
+    if (request.user.has_perm('auth.change_user') or
+        request.user.has_perm('auth.change_group')) and \
+            not check_if_user_not_approved(request):
         user_menu.append(dict(divider='True'))
         user_menu.append(dict(
             url=reverse('tardis.tardis_portal.views.manage_groups'),
