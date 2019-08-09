@@ -161,14 +161,14 @@ class AdvanceSearchAppResource(Resource):
         end_date = bundle.data.get("EndDate", None)
         start_date = bundle.data.get("StartDate", None)
         if end_date is not None:
-            end_date_utc = datetime.datetime.strptime(end_date, "%Y-%m-%dT%H:%M:%S.%fZ")\
+            end_date_utc = datetime.datetime.strptime(end_date, "%Y-%m-%dT%H:%M:%S.%fZ") \
                 .replace(tzinfo=pytz.timezone('UTC'))
             end_date = end_date_utc.astimezone(LOCAL_TZ).date()
         else:
             # set end date to today's date
             end_date = datetime.datetime.today().replace(tzinfo=pytz.timezone('UTC'))
         if start_date:
-            start_date_utc = datetime.datetime.strptime(start_date, "%Y-%m-%dT%H:%M:%S.%fZ")\
+            start_date_utc = datetime.datetime.strptime(start_date, "%Y-%m-%dT%H:%M:%S.%fZ") \
                 .replace(tzinfo=pytz.timezone('UTC'))
             start_date = start_date_utc.astimezone(LOCAL_TZ).date()
         instrument_list = bundle.data.get("InstrumentList", None)
@@ -182,7 +182,7 @@ class AdvanceSearchAppResource(Resource):
                              Q("term", public_access=100)
             for group in groups:
                 query_exp_oacl = query_exp_oacl | \
-                             Q("term", objectacls__entityId=group.id)
+                                 Q("term", objectacls__entityId=group.id)
             if start_date is not None:
                 query_exp = query_exp & Q("range", created_time={'gte': start_date, 'lte': end_date})
             query_exp = query_exp & query_exp_oacl
