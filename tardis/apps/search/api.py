@@ -145,9 +145,6 @@ class AdvanceSearchAppResource(Resource):
         return self.get_object_list(bundle.request)
 
     def obj_create(self, bundle, **kwargs):
-        return bundle
-
-    def dehydrate(self, bundle):
         user = bundle.request.user
         groups = user.groups.all()
         # if anonymous user search public data only
