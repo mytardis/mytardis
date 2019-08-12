@@ -123,7 +123,7 @@ class AdvanceSearchAppResource(Resource):
 
     class Meta:
         resource_name = 'advance-search'
-        list_allowed_methods = ['get', 'post']
+        list_allowed_methods = ['post']
         serializer = default_serializer
         authentication = default_authentication
         object_class = SearchObject
@@ -149,7 +149,7 @@ class AdvanceSearchAppResource(Resource):
         groups = user.groups.all()
         # if anonymous user search public data only
         query_text = bundle.data.get("text", None)
-        type_tag = bundle.data.get("TypeTag", None)
+        type_tag = bundle.data.get("TypeTag", [])
         index_list = []
         for type in type_tag:
             if type == 'Experiment':
