@@ -51,7 +51,7 @@ class SearchAppResource(Resource):
 
     class Meta:
         resource_name = 'simple-search'
-        list_allowed_methods = ['get', 'post']
+        list_allowed_methods = ['get']
         serializer = default_serializer
         authentication = default_authentication
         object_class = SearchObject
