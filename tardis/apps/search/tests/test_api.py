@@ -7,7 +7,7 @@ from django.core.management import call_command
 from django.conf import settings
 from django.utils.six import StringIO
 
-from tardis.tardis_portal.models import Experiment, Dataset, DataFile
+from tardis.tardis_portal.models import Dataset, DataFile
 from tardis.tardis_portal.tests.api import MyTardisResourceTestCase
 
 
