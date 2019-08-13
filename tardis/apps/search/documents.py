@@ -156,4 +156,4 @@ class DataFileDocument(Document):
             return related_instance.datafile_set.all()
         if isinstance(related_instance, Experiment):
             return DataFile.objects.filter(dataset__experiments=related_instance)
-
+        return None
