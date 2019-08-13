@@ -180,6 +180,7 @@ class AdvanceSearchAppResource(Resource):
     def obj_create(self, bundle, **kwargs):
         user = bundle.request.user
         groups = user.groups.all()
+
         # if anonymous user search public data only
         query_text = bundle.data.get("text", None)
         type_tag = bundle.data.get("TypeTag", [])
@@ -211,22 +212,28 @@ class AdvanceSearchAppResource(Resource):
         ms = MultiSearch(index=index_list)
         if 'experiments' in index_list:
             query_exp = Q("match", title=query_text)
-            query_exp_oacl = Q("term", objectacls__entityId=user.id) | \
-                             Q("term", public_access=100)
-            for group in groups:
-                query_exp_oacl = query_exp_oacl | \
-                                 Q("term", objectacls__entityId=group.id)
+            if user.is_authenticated:
+                query_exp_oacl = Q("term", objectacls__entityId=user.id) | \
+                                 Q("term", public_access=100)
+                for group in groups:
+                    query_exp_oacl = query_exp_oacl | \
+                                     Q("term", objectacls__entityId=group.id)
+            else:
+                query_exp_oacl = Q("term", public_access=100)
             if start_date is not None:
                 query_exp = query_exp & Q("range", created_time={'gte': start_date, 'lte': end_date})
             query_exp = query_exp & query_exp_oacl
             ms = ms.add(Search(index='experiments').extra(size=MAX_SEARCH_RESULTS).query(query_exp))
         if 'dataset' in index_list:
             query_dataset = Q("match", description=query_text)
-            query_dataset_oacl = Q("term", **{'experiments.objectacls.entityId': user.id}) | \
-                                 Q("term", **{'experiments.public_access': 100})
-            for group in groups:
-                query_dataset_oacl = query_dataset_oacl | \
-                                     Q("term", **{'experiments.objectacls.entityId': group.id})
+            if user.is_authenticated:
+                query_dataset_oacl = Q("term", **{'experiments.objectacls.entityId': user.id}) | \
+                                     Q("term", **{'experiments.public_access': 100})
+                for group in groups:
+                    query_dataset_oacl = query_dataset_oacl | \
+                                         Q("term", **{'experiments.objectacls.entityId': group.id})
+            else:
+                query_dataset_oacl = Q("term", **{'experiments.public_access': 100})
             if start_date is not None:
                 query_dataset = query_dataset & Q("range", created_time={'gte': start_date, 'lte': end_date})
             if instrument_list:
@@ -236,11 +243,14 @@ class AdvanceSearchAppResource(Resource):
                         .query('nested', path='experiments', query=query_dataset_oacl))
         if 'datafile' in index_list:
             query_datafile = Q("match", filename=query_text)
-            query_datafile_oacl = Q("term", **{'dataset.experiments.objectacls.entityId': user.id}) | \
-                                  Q("term", **{'dataset.experiments.public_access': 100})
-            for group in groups:
-                query_datafile_oacl = query_datafile_oacl | \
-                                      Q("term", **{'dataset.experiments.objectacls.entityId': group.id})
+            if user.is_authenticated:
+                query_datafile_oacl = Q("term", **{'dataset.experiments.objectacls.entityId': user.id}) | \
+                                      Q("term", **{'dataset.experiments.public_access': 100})
+                for group in groups:
+                    query_datafile_oacl = query_datafile_oacl | \
+                                          Q("term", **{'dataset.experiments.objectacls.entityId': group.id})
+            else:
+                query_datafile_oacl = Q("term", **{'dataset.experiments.public_access': 100})
             if start_date is not None:
                 query_datafile = query_datafile & Q("range", created_time={'gte': start_date, 'lte': end_date})
             ms = ms.add(Search(index='datafile').extra(size=MAX_SEARCH_RESULTS).query(query_datafile)
