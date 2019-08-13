@@ -43,10 +43,8 @@ class SimpleSearchTest(MyTardisResourceTestCase):
         self.datafile.save()
 
     def test_simple_search_authenticated_user(self):
-
         response = self.api_client.get('/api/v1/search_simple-search/?query=test',
                                        authentication=self.get_credentials())
-
         data = json.loads(response.content)
         self.assertEqual(len(data['objects'][0]['hits']['experiments']), 1)
         self.assertEqual(len(data['objects'][0]['hits']['datasets']), 1)
@@ -56,8 +54,26 @@ class SimpleSearchTest(MyTardisResourceTestCase):
         self.testexp.public_access = 100
         self.testexp.save()
         response = self.api_client.get('/api/v1/search_simple-search/?query=test')
-
         data = json.loads(response.content)
         self.assertEqual(len(data['objects'][0]['hits']['experiments']), 1)
         self.assertEqual(len(data['objects'][0]['hits']['datasets']), 1)
         self.assertEqual(len(data['objects'][0]['hits']['datafiles']), 1)
+
+    def test_advance_search_unauthenticated_user(self):
+        self.testexp.public_access = 100
+        self.testexp.save()
+        response = self.api_client.post('/api/v1/search_advance-search/',
+                                        data={"text": "test", "TypeTag": ["Dataset", "Experiment", "Datafile"]})
+        data = json.loads(response.content)
+        self.assertEqual(len(data['hits']['experiments']), 1)
+        self.assertEqual(len(data['hits']['datasets']), 1)
+        self.assertEqual(len(data['hits']['datafiles']), 1)
+
+    def test_advance_search_authenticated_user(self):
+        response = self.api_client.post('/api/v1/search_advance-search/',
+                                        data={"text": "test", "TypeTag": ["Dataset", "Experiment", "Datafile"]},
+                                        authentication=self.get_credentials())
+        data = json.loads(response.content)
+        self.assertEqual(len(data['hits']['experiments']), 1)
+        self.assertEqual(len(data['hits']['datasets']), 1)
+        self.assertEqual(len(data['hits']['datafiles']), 1)
