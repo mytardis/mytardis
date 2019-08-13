@@ -68,8 +68,11 @@ class SearchAppResource(Resource):
 
     def get_object_list(self, request):
         user = request.user
-        groups = user.groups.all()
         query_text = request.GET.get('query', None)
+        if not user.is_authenticated:
+            result_dict = simple_search_public_data(query_text)
+            return [SearchObject(id=1, hits=result_dict)]
+        groups = user.groups.all()
         index_list = ['experiments', 'dataset', 'datafile']
         ms = MultiSearch(index=index_list)
 
@@ -116,6 +119,36 @@ class SearchAppResource(Resource):
 
     def obj_get_list(self, bundle, **kwargs):
         return self.get_object_list(bundle.request)
+
+
+def simple_search_public_data(query_text):
+    result_dict = {k: [] for k in ["experiments", "datasets", "datafiles"]}
+    index_list = ['experiments', 'dataset', 'datafile']
+    ms = MultiSearch(index=index_list)
+    query_exp = Q("match", title=query_text)
+    query_exp_oacl = Q("term", public_access=100)
+    query_exp = query_exp & query_exp_oacl
+    ms = ms.add(Search(index='experiments').extra(size=MAX_SEARCH_RESULTS).query(query_exp))
+    query_dataset = Q("match", description=query_text)
+    query_dataset_oacl = Q("term", **{'experiments.public_access': 100})
+    ms = ms.add(Search(index='dataset').extra(size=MAX_SEARCH_RESULTS).query(query_dataset)
+                .query('nested', path='experiments', query=query_dataset_oacl))
+    query_datafile = Q("match", filename=query_text)
+    query_datafile_oacl = Q("term", **{'dataset.experiments.public_access': 100})
+    ms = ms.add(Search(index='datafile').extra(size=MAX_SEARCH_RESULTS).query(query_datafile)
+                .query('nested', path='dataset.experiments', query=query_datafile_oacl))
+    results = ms.execute()
+    for item in results:
+        for hit in item.hits.hits:
+            if hit["_index"] == "dataset":
+                result_dict["datasets"].append(hit)
+
+            elif hit["_index"] == "experiments":
+                result_dict["experiments"].append(hit)
+
+            elif hit["_index"] == "datafile":
+                result_dict["datafiles"].append(hit)
+    return result_dict
 
 
 class AdvanceSearchAppResource(Resource):

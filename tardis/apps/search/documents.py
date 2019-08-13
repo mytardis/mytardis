@@ -148,8 +148,12 @@ class DataFileDocument(Document):
 
     class Django:
         model = DataFile
-        related_models = [Dataset]
+        related_models = [Dataset, Experiment]
         queryset_pagination = 100000
 
     def get_instances_from_related(self, related_instance):
-        return related_instance.datafile_set.all()
+        if isinstance(related_instance, Dataset):
+            return related_instance.datafile_set.all()
+        if isinstance(related_instance, Experiment):
+            return DataFile.objects.filter(dataset__experiments=related_instance)
+
