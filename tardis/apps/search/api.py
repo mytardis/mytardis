@@ -20,6 +20,7 @@ from tardis.tardis_portal.api import default_authentication
 
 LOCAL_TZ = pytz.timezone(settings.TIME_ZONE)
 MAX_SEARCH_RESULTS = settings.MAX_SEARCH_RESULTS
+MIN_CUTOFF_SCORE = settings.MIN_CUTOFF_SCORE
 
 
 class PrettyJSONSerializer(Serializer):
@@ -83,7 +84,9 @@ class SearchAppResource(Resource):
             query_exp_oacl = query_exp_oacl | \
                                  Q("term", objectacls__entityId=group.id)
         query_exp = query_exp & query_exp_oacl
-        ms = ms.add(Search(index='experiments').extra(size=MAX_SEARCH_RESULTS).query(query_exp))
+        ms = ms.add(Search(index='experiments')
+                    .extra(size=MAX_SEARCH_RESULTS, min_score=MIN_CUTOFF_SCORE)
+                    .query(query_exp))
 
         query_dataset = Q("match", description=query_text)
         query_dataset_oacl = Q("term", **{'experiments.objectacls.entityId': user.id}) | \
@@ -91,7 +94,8 @@ class SearchAppResource(Resource):
         for group in groups:
             query_dataset_oacl = query_dataset_oacl | \
                                  Q("term", **{'experiments.objectacls.entityId': group.id})
-        ms = ms.add(Search(index='dataset').extra(size=MAX_SEARCH_RESULTS).query(query_dataset)
+        ms = ms.add(Search(index='dataset')
+                    .extra(size=MAX_SEARCH_RESULTS, min_score=MIN_CUTOFF_SCORE).query(query_dataset)
                     .query('nested', path='experiments', query=query_dataset_oacl))
 
         query_datafile = Q("match", filename=query_text)
@@ -100,7 +104,8 @@ class SearchAppResource(Resource):
         for group in groups:
             query_datafile_oacl = query_datafile_oacl | \
                                  Q("term", **{'dataset.experiments.objectacls.entityId': group.id})
-        ms = ms.add(Search(index='datafile').extra(size=MAX_SEARCH_RESULTS).query(query_datafile)
+        ms = ms.add(Search(index='datafile')
+                    .extra(size=MAX_SEARCH_RESULTS, min_score=MIN_CUTOFF_SCORE).query(query_datafile)
                     .query('nested', path='dataset.experiments', query=query_datafile_oacl))
         results = ms.execute()
         result_dict = {k: [] for k in ["experiments", "datasets", "datafiles"]}
@@ -128,14 +133,18 @@ def simple_search_public_data(query_text):
     query_exp = Q("match", title=query_text)
     query_exp_oacl = Q("term", public_access=100)
     query_exp = query_exp & query_exp_oacl
-    ms = ms.add(Search(index='experiments').extra(size=MAX_SEARCH_RESULTS).query(query_exp))
+    ms = ms.add(Search(index='experiments')
+                .extra(size=MAX_SEARCH_RESULTS, min_score=MIN_CUTOFF_SCORE)
+                .query(query_exp))
     query_dataset = Q("match", description=query_text)
     query_dataset_oacl = Q("term", **{'experiments.public_access': 100})
-    ms = ms.add(Search(index='dataset').extra(size=MAX_SEARCH_RESULTS).query(query_dataset)
+    ms = ms.add(Search(index='dataset')
+                .extra(size=MAX_SEARCH_RESULTS, min_score=MIN_CUTOFF_SCORE).query(query_dataset)
                 .query('nested', path='experiments', query=query_dataset_oacl))
     query_datafile = Q("match", filename=query_text)
     query_datafile_oacl = Q("term", **{'dataset.experiments.public_access': 100})
-    ms = ms.add(Search(index='datafile').extra(size=MAX_SEARCH_RESULTS).query(query_datafile)
+    ms = ms.add(Search(index='datafile')
+                .extra(size=MAX_SEARCH_RESULTS, min_score=MIN_CUTOFF_SCORE).query(query_datafile)
                 .query('nested', path='dataset.experiments', query=query_datafile_oacl))
     results = ms.execute()
     for item in results:
@@ -223,7 +232,9 @@ class AdvanceSearchAppResource(Resource):
             if start_date is not None:
                 query_exp = query_exp & Q("range", created_time={'gte': start_date, 'lte': end_date})
             query_exp = query_exp & query_exp_oacl
-            ms = ms.add(Search(index='experiments').extra(size=MAX_SEARCH_RESULTS).query(query_exp))
+            ms = ms.add(Search(index='experiments')
+                        .extra(size=MAX_SEARCH_RESULTS, min_score=MIN_CUTOFF_SCORE)
+                        .query(query_exp))
         if 'dataset' in index_list:
             query_dataset = Q("match", description=query_text)
             if user.is_authenticated:
@@ -239,7 +250,8 @@ class AdvanceSearchAppResource(Resource):
             if instrument_list:
                 query_dataset = query_dataset & Q("match", instrument__name=instrument_list_string)
             # add instrument query
-            ms = ms.add(Search(index='dataset').extra(size=MAX_SEARCH_RESULTS).query(query_dataset)
+            ms = ms.add(Search(index='dataset')
+                        .extra(size=MAX_SEARCH_RESULTS, min_score=MIN_CUTOFF_SCORE).query(query_dataset)
                         .query('nested', path='experiments', query=query_dataset_oacl))
         if 'datafile' in index_list:
             query_datafile = Q("match", filename=query_text)
@@ -253,7 +265,8 @@ class AdvanceSearchAppResource(Resource):
                 query_datafile_oacl = Q("term", **{'dataset.experiments.public_access': 100})
             if start_date is not None:
                 query_datafile = query_datafile & Q("range", created_time={'gte': start_date, 'lte': end_date})
-            ms = ms.add(Search(index='datafile').extra(size=MAX_SEARCH_RESULTS).query(query_datafile)
+            ms = ms.add(Search(index='datafile')
+                        .extra(size=MAX_SEARCH_RESULTS, min_score=MIN_CUTOFF_SCORE).query(query_datafile)
                         .query('nested', path='dataset.experiments', query=query_datafile_oacl))
         result = ms.execute()
         result_dict = {k: [] for k in ["experiments", "datasets", "datafiles"]}
