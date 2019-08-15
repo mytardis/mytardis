@@ -19,6 +19,7 @@ ELASTICSEARCH_DSL_INDEX_SETTINGS = {
 '''
 
 MAX_SEARCH_RESULTS = 100
+MIN_CUTOFF_SCORE = 5.0
 '''
 Limits the maximum number of search results for each model (Experiment, Dataset and DataFile).
 The default value of 100 means that a query could potentially return 300 results in total,
