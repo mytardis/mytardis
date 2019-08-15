@@ -26,6 +26,6 @@ i.e. 100 experiments, 100 datasets and 100 datafiles.
 '''
 MIN_CUTOFF_SCORE = 5.0
 '''
-Filters results based on this value. 
+Filters results based on this value.
 The default value of 5.0 means that any hit with score of less than 5.0 will be filtered out.
 '''
