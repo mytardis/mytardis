@@ -12,7 +12,6 @@ from tardis.tardis_portal.tests.api import MyTardisResourceTestCase
 
 
 @override_settings(SINGLE_SEARCH_ENABLED=True,
-                   MIN_CUTOFF_SCORE=0.0,
                    ELASTICSEARCH_DSL={
                        'default': {
                            'hosts': os.environ.get('ELASTICSEARCH_URL', None)

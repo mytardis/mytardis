@@ -24,8 +24,9 @@ Limits the maximum number of search results for each model (Experiment, Dataset 
 The default value of 100 means that a query could potentially return 300 results in total,
 i.e. 100 experiments, 100 datasets and 100 datafiles.
 '''
-MIN_CUTOFF_SCORE = 5.0
+MIN_CUTOFF_SCORE = 0.0
 '''
 Filters results based on this value.
-The default value of 5.0 means that any hit with score of less than 5.0 will be filtered out.
+The default value of 0.0 means that nothing will be excluded from search results.
+Set it to any number greater than 0.0 to filter out results.
 '''
