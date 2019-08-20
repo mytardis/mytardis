@@ -174,8 +174,7 @@
                         </td>
                         <td>{{dataset.instrument.name}}</td>
                         <td>
-                            {{dataset.parent_experiment.created_time
-                            | date:'yyyy-MM-dd h:mma'}}
+                            {{dataset.created_time | date:'yyyy-MM-dd h:mma'}}
                         </td>
                         <td>
                           <button type="button" class="btn btn-xs btn-info"
@@ -243,8 +242,7 @@
                                target="_blank">{{dataset.description}}</a>
                         </td>
                         <td>
-                            {{dataset.parent_experiment.created_time
-                            | date:'yyyy-MM-dd h:mma'}}
+                            {{dataset.created_time | date:'yyyy-MM-dd h:mma'}}
                         </td>
                         <td>
                           <button type="button" class="btn btn-xs btn-info"
@@ -309,7 +307,7 @@
                         </td>
                         <td>{{dataset.instrument.name}}</td>
                         <td>
-                            {{dataset.parent_experiment.created_time | date:'yyyy-MM-dd h:mma'}}
+                            {{dataset.created_time | date:'yyyy-MM-dd h:mma'}}
                         </td>
                         <td>
                           <button type="button" class="btn btn-xs btn-info"
