@@ -112,6 +112,11 @@ class Dataset(models.Model):
         return ('tardis.tardis_portal.views.edit_dataset', (self.id,))
 
     def get_images(self):
+        from .datafile import DataFile
+        show_dataset_thumbnails = getattr(
+            settings, "SHOW_DATASET_THUMBNAILS", True)
+        if not show_dataset_thumbnails:
+            return DataFile.objects.none()
         from .datafile import IMAGE_FILTER
         return self.datafile_set.order_by('filename').filter(IMAGE_FILTER)\
             .filter(file_objects__verified=True).distinct()
