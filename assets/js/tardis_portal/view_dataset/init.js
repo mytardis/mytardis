@@ -211,7 +211,6 @@ $(document).on("click", ".pagelink", function(event) {
     return false;
 });
 
-// eslint-disable-next-line no-unused-vars
 function filenameSearchHandler(e) {
     // Only care about "Enter" key
     if (e.keyCode !== 13) {
@@ -232,6 +231,7 @@ function filenameSearchHandler(e) {
     // Show loading indicator
     $("#datafiles-pane").html(loadingHTML);
 }
+window.filenameSearchHandler = filenameSearchHandler;
 
 $(document).on("click", "input[name$='show_search']", function() {
     var showSearch = $(this).val();
