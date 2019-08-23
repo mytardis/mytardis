@@ -1,10 +1,8 @@
-/* global getCookie */
 import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 
 import AdvancedSearchForm from "./AdvancedSearchForm";
-
-const csrftoken = getCookie("csrftoken");
+import Cookies from "js-cookie";
 
 function SimpleSearchForm({ showResults, searchText }) {
   const [simpleSearchText, setSimpleSearchText] = useState(searchText);
@@ -19,7 +17,7 @@ function SimpleSearchForm({ showResults, searchText }) {
       headers: {
         "Accept": "application/json", // eslint-disable-line quote-props
         "Content-Type": "application/json",
-        "X-CSRFToken": csrftoken,
+        "X-CSRFToken": Cookies.get('csrftoken'),
       },
     }).then(response => response.json())
       .then((data) => {
