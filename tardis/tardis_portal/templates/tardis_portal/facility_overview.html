@@ -1,5 +1,6 @@
 {% extends "tardis_portal/portal_template.html" %}
 {% load static from staticfiles %}
+{% load render_bundle from webpack_loader %}
 {% load facility_tags %}
 {% load experiment_tags %}
 {% load experimentstats %}
@@ -7,14 +8,12 @@
 {% load bleach_tag %}
 
 {% block content %}
+    {% render_bundle 'tardis_portal_facility_view' %}
 <div class="page-header">
     <h1 class="title">Facility Overview</h1>
 </div>
-
+<div ng-app="facilityOverview">
 {% with request|check_if_facility_manager as facility_manager %}
-<script type="text/javascript"
-        src="{% static 'js/facility_view.js' %}">
-</script>
 <div id="content" ng-controller="FacilityController as facilityCtrl">
   {% verbatim %}
   <h2 class="pull-left" style="color:#999999" ng-cloak>{{facilityCtrl.selectedFacilityName}}</h2>
@@ -175,8 +174,7 @@
                         </td>
                         <td>{{dataset.instrument.name}}</td>
                         <td>
-                            {{dataset.parent_experiment.created_time
-                            | date:'yyyy-MM-dd h:mma'}}
+                            {{dataset.created_time | date:'yyyy-MM-dd h:mma'}}
                         </td>
                         <td>
                           <button type="button" class="btn btn-xs btn-info"
@@ -192,7 +190,7 @@
                                           when="{'0': 'no verified files', 'one': '1 verified file', 'other': '{} verified files'}">
                             </ng-pluralize>
                             ({{dataset.verified_datafiles_size | filesize}})
-                            / 
+                            /
                             <ng-pluralize count="dataset.datafile_count"
                                           when="{'0': 'no files', 'one': '1 file', 'other': '{} files'}">
                             </ng-pluralize>
@@ -244,8 +242,7 @@
                                target="_blank">{{dataset.description}}</a>
                         </td>
                         <td>
-                            {{dataset.parent_experiment.created_time
-                            | date:'yyyy-MM-dd h:mma'}}
+                            {{dataset.created_time | date:'yyyy-MM-dd h:mma'}}
                         </td>
                         <td>
                           <button type="button" class="btn btn-xs btn-info"
@@ -261,7 +258,7 @@
                                           when="{'0': 'no verified files', 'one': '1 verified file', 'other': '{} verified files'}">
                             </ng-pluralize>
                             ({{dataset.verified_datafiles_size | filesize}})
-                            / 
+                            /
                             <ng-pluralize count="dataset.datafile_count"
                                           when="{'0': 'no files', 'one': '1 file', 'other': '{} files'}">
                             </ng-pluralize>
@@ -310,7 +307,7 @@
                         </td>
                         <td>{{dataset.instrument.name}}</td>
                         <td>
-                            {{dataset.parent_experiment.created_time | date:'yyyy-MM-dd h:mma'}}
+                            {{dataset.created_time | date:'yyyy-MM-dd h:mma'}}
                         </td>
                         <td>
                           <button type="button" class="btn btn-xs btn-info"
@@ -325,7 +322,7 @@
                             <ng-pluralize count="dataset.verified_datafiles_count"
                                           when="{'0': 'no verified files', 'one': '1 verified file', 'other': '{} verified files'}"></ng-pluralize>
                             ({{dataset.verified_datafiles_size | filesize}})
-                            / 
+                            /
                             <ng-pluralize count="dataset.datafile_count"
                                           when="{'0': 'no files', 'one': '1 file', 'other': '{} files'}"></ng-pluralize>
                             ({{dataset.size | filesize}})
@@ -387,6 +384,7 @@
         </table>
     </div>
 </script>
+</div> <!-- ng-app -->
 {% endverbatim %}
 {% endif %}
 {% endwith %}

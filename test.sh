@@ -42,8 +42,8 @@ case "$TEST_TYPE" in
 	(( exit_status = exit_status || $? ))
     ;;
     behave)
-        npm install && npm test \
-        && python test.py behave
+        npm install && npm audit && npm run-script build && \
+        npm test && python test.py behave
 	(( exit_status = exit_status || $? ))
     ;;
     *)

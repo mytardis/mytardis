@@ -11,6 +11,7 @@ import types
 from six import string_types
 
 from django.conf import settings
+from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.exceptions import PermissionDenied, ImproperlyConfigured
@@ -23,7 +24,6 @@ from django.http import (HttpResponse,
 from django.views.decorators.cache import cache_page
 from django.views.generic.base import TemplateView, View
 
-from tardis.search.utils import SearchQueryString
 from ..auth import decorators as authz
 from ..auth.decorators import (
     has_experiment_write,
@@ -498,10 +498,6 @@ class ExperimentView(TemplateView):
             c['status'] = request.POST['status']
         if 'error' in request.POST:
             c['error'] = request.POST['error']
-        if 'query' in request.GET:
-            c['search_query'] = SearchQueryString(request.GET['query'])
-        if 'search' in request.GET:
-            c['search'] = request.GET['search']
         if 'load' in request.GET:
             c['load'] = request.GET['load']
 
@@ -659,7 +655,8 @@ def create_experiment(request,
             # group/owner assignment stuff, soon to be replaced
 
             experiment = full_experiment['experiment']
-            experiment.created_by = request.user
+            # a workaround for django-elastic-search issue #155
+            experiment.created_by = User.objects.get(id=request.user.id)
             full_experiment.save_m2m()
 
             # add defaul ACL
@@ -713,7 +710,8 @@ def edit_experiment(request, experiment_id,
         if form.is_valid():
             full_experiment = form.save(commit=False)
             experiment = full_experiment['experiment']
-            experiment.created_by = request.user
+            # a workaround for django-elastic-search issue #155
+            experiment.created_by = User.objects.get(id=request.user.id)
             full_experiment.save_m2m()
 
             request.POST = {'status': "Experiment Saved."}

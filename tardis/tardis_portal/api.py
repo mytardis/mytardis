@@ -17,7 +17,8 @@ from django.contrib.auth.models import User
 from django.contrib.auth.models import Group
 from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseForbidden, \
-    StreamingHttpResponse
+    StreamingHttpResponse, HttpResponseNotFound
+from django.shortcuts import redirect
 
 from tastypie import fields
 from tastypie.authentication import BasicAuthentication
@@ -33,6 +34,8 @@ from tastypie.resources import ModelResource
 from tastypie.serializers import Serializer
 from tastypie.utils import trailing_slash
 from tastypie.contrib.contenttypes.fields import GenericForeignKeyField
+
+from uritemplate import URITemplate
 
 from tardis.analytics.tracker import IteratorTracker
 from . import tasks
@@ -226,7 +229,7 @@ class ACLAuthorization(Authorization):
         if bundle.request.user.is_authenticated and \
            bundle.request.user.is_superuser:
             return True
-        if re.match("^/api/v1/[a-z]+/schema/$", bundle.request.path):
+        if re.match("^/api/v1/[a-z_]+/schema/$", bundle.request.path):
             return True
         if isinstance(bundle.obj, Experiment):
             return has_experiment_access(bundle.request, bundle.obj.id)
@@ -501,89 +504,40 @@ class MyTardisModelResource(ModelResource):
         object_class = None
 
 
-class SchemaResource(MyTardisModelResource):
+class FacilityResource(MyTardisModelResource):
+    manager_group = fields.ForeignKey(GroupResource, 'manager_group',
+                                      null=True, full=True)
 
     class Meta(MyTardisModelResource.Meta):
-        queryset = Schema.objects.all()
+        queryset = Facility.objects.all()
         filtering = {
             'id': ('exact', ),
-            'namespace': ('exact', ),
+            'manager_group': ALL_WITH_RELATIONS,
+            'name': ('exact', ),
         }
         ordering = [
-            'id'
+            'id',
+            'name'
         ]
+        always_return_data = True
 
 
-class ParameterNameResource(MyTardisModelResource):
-    schema = fields.ForeignKey(SchemaResource, 'schema')
+class InstrumentResource(MyTardisModelResource):
+    facility = fields.ForeignKey(FacilityResource, 'facility',
+                                 null=True, full=True)
 
     class Meta(MyTardisModelResource.Meta):
-        queryset = ParameterName.objects.all()
+        queryset = Instrument.objects.all()
         filtering = {
-            'schema': ALL_WITH_RELATIONS,
+            'id': ('exact', ),
+            'facility': ALL_WITH_RELATIONS,
+            'name': ('exact', ),
         }
-
-
-class ParameterResource(MyTardisModelResource):
-    name = fields.ForeignKey(ParameterNameResource, 'name')
-    value = fields.CharField(blank=True)
-
-    def hydrate(self, bundle):
-        '''
-        sets the parametername by uri or name
-        if untyped value is given, set value via parameter method,
-        otherwise use modelresource automatisms
-        '''
-        try:
-            parname = ParameterNameResource.get_via_uri(
-                ParameterNameResource(),
-                bundle.data['name'], bundle.request)
-        except NotFound:
-            parname = bundle.related_obj._get_create_parname(
-                bundle.data['name'])
-        del(bundle.data['name'])
-        bundle.obj.name = parname
-        if 'value' in bundle.data:
-            bundle.obj.set_value(bundle.data['value'])
-            del(bundle.data['value'])
-        return bundle
-
-
-class ParameterSetResource(MyTardisModelResource):
-    schema = fields.ForeignKey(SchemaResource, 'schema', full=True)
-
-    def hydrate_schema(self, bundle):
-        try:
-            schema = SchemaResource.get_via_uri(SchemaResource(),
-                                                bundle.data['schema'],
-                                                bundle.request)
-        except NotFound:
-            schema = Schema.objects.get(namespace=bundle.data['schema'])
-        bundle.obj.schema = schema
-        del(bundle.data['schema'])
-        return bundle
-
-
-class ExperimentParameterSetResource(ParameterSetResource):
-    '''API for ExperimentParameterSets
-    '''
-    experiment = fields.ForeignKey(
-        'tardis.tardis_portal.api.ExperimentResource', 'experiment')
-    parameters = fields.ToManyField(
-        'tardis.tardis_portal.api.ExperimentParameterResource',
-        'experimentparameter_set',
-        related_name='parameterset', full=True, null=True)
-
-    class Meta(ParameterSetResource.Meta):
-        queryset = ExperimentParameterSet.objects.all()
-
-
-class ExperimentParameterResource(ParameterResource):
-    parameterset = fields.ForeignKey(ExperimentParameterSetResource,
-                                     'parameterset')
-
-    class Meta(ParameterResource.Meta):
-        queryset = ExperimentParameter.objects.all()
+        ordering = [
+            'id',
+            'name'
+        ]
+        always_return_data = True
 
 
 class ExperimentResource(MyTardisModelResource):
@@ -595,7 +549,7 @@ class ExperimentResource(MyTardisModelResource):
     '''
     created_by = fields.ForeignKey(UserResource, 'created_by')
     parameter_sets = fields.ToManyField(
-        ExperimentParameterSetResource,
+        'tardis.tardis_portal.api.ExperimentParameterSetResource',
         'experimentparameterset_set',
         related_name='experiment',
         full=True, null=True)
@@ -666,117 +620,11 @@ class ExperimentResource(MyTardisModelResource):
         return bundle
 
 
-class DatasetParameterSetResource(ParameterSetResource):
-    dataset = fields.ForeignKey(
-        'tardis.tardis_portal.api.DatasetResource', 'dataset')
-    parameters = fields.ToManyField(
-        'tardis.tardis_portal.api.DatasetParameterResource',
-        'datasetparameter_set',
-        related_name='parameterset', full=True, null=True)
-
-    class Meta(ParameterSetResource.Meta):
-        queryset = DatasetParameterSet.objects.all()
-
-
-class DatasetParameterResource(ParameterResource):
-    parameterset = fields.ForeignKey(DatasetParameterSetResource,
-                                     'parameterset')
-
-    class Meta(ParameterResource.Meta):
-        queryset = DatasetParameter.objects.all()
-
-
-class StorageBoxResource(MyTardisModelResource):
-    options = fields.ToManyField(
-        'tardis.tardis_portal.api.StorageBoxOptionResource',
-        attribute=lambda bundle: StorageBoxOption.objects
-        .filter(storage_box=bundle.obj,
-                key__in=StorageBoxOptionResource.accessible_keys),
-        related_name='storage_box',
-        full=True, null=True)
-    attributes = fields.ToManyField(
-        'tardis.tardis_portal.api.StorageBoxAttributeResource',
-        'attributes',
-        related_name='storage_box',
-        full=True, null=True)
-
-    class Meta(MyTardisModelResource.Meta):
-        queryset = StorageBox.objects.all()
-        ordering = [
-            'id'
-        ]
-
-
-class StorageBoxOptionResource(MyTardisModelResource):
-    accessible_keys = ['location']
-    storage_box = fields.ForeignKey(
-        'tardis.tardis_portal.api.StorageBoxResource',
-        'storage_box',
-        related_name='options',
-        full=False)
-
-    class Meta(MyTardisModelResource.Meta):
-        queryset = StorageBoxOption.objects.all()
-        ordering = [
-            'id'
-        ]
-
-
-class StorageBoxAttributeResource(MyTardisModelResource):
-    storage_box = fields.ForeignKey(
-        'tardis.tardis_portal.api.StorageBoxResource',
-        'storage_box',
-        related_name='attributes',
-        full=False)
-
-    class Meta(MyTardisModelResource.Meta):
-        queryset = StorageBoxAttribute.objects.all()
-        ordering = [
-            'id'
-        ]
-
-
-class FacilityResource(MyTardisModelResource):
-    manager_group = fields.ForeignKey(GroupResource, 'manager_group',
-                                      null=True, full=True)
-
-    class Meta(MyTardisModelResource.Meta):
-        queryset = Facility.objects.all()
-        filtering = {
-            'id': ('exact', ),
-            'manager_group': ALL_WITH_RELATIONS,
-            'name': ('exact', ),
-        }
-        ordering = [
-            'id',
-            'name'
-        ]
-        always_return_data = True
-
-
-class InstrumentResource(MyTardisModelResource):
-    facility = fields.ForeignKey(FacilityResource, 'facility',
-                                 null=True, full=True)
-
-    class Meta(MyTardisModelResource.Meta):
-        queryset = Instrument.objects.all()
-        filtering = {
-            'id': ('exact', ),
-            'facility': ALL_WITH_RELATIONS,
-            'name': ('exact', ),
-        }
-        ordering = [
-            'id',
-            'name'
-        ]
-        always_return_data = True
-
-
 class DatasetResource(MyTardisModelResource):
     experiments = fields.ToManyField(
         ExperimentResource, 'experiments', related_name='datasets')
     parameter_sets = fields.ToManyField(
-        DatasetParameterSetResource,
+        'tardis.tardis_portal.api.DatasetParameterSetResource',
         'datasetparameterset_set',
         related_name='dataset',
         full=True, null=True)
@@ -873,6 +721,19 @@ class DataFileResource(MyTardisModelResource):
         self.authorized_read_detail(
             [file_record],
             self.build_bundle(obj=file_record, request=request))
+
+        preferred_dfo = file_record.get_preferred_dfo()
+        if not preferred_dfo:
+            # No verified DataFileObject exists for this DataFile
+            return HttpResponseNotFound()
+
+        storage_class_name = preferred_dfo.storage_box.django_storage_class
+        download_uri_templates = getattr(
+            settings, 'DOWNLOAD_URI_TEMPLATES', {})
+        if storage_class_name in download_uri_templates:
+            template = URITemplate(download_uri_templates[storage_class_name])
+            return redirect(template.expand(dfo_id=preferred_dfo.id))
+
         file_object = file_record.get_file()
         wrapper = FileWrapper(file_object)
         tracker_data = dict(
@@ -920,7 +781,7 @@ class DataFileResource(MyTardisModelResource):
             # have POSTed file
             newfile = bundle.data['attached_file'][0]
             compute_md5 = getattr(settings, 'COMPUTE_MD5', True)
-            compute_sha512 = getattr(settings, 'COMPUTE_SHA512', True)
+            compute_sha512 = getattr(settings, 'COMPUTE_SHA512', False)
             if (compute_md5 and 'md5sum' not in bundle.data) or \
                     (compute_sha512 and 'sha512sum' not in bundle.data):
                 checksums = compute_checksums(
@@ -1015,6 +876,69 @@ class DataFileResource(MyTardisModelResource):
             request._body = ''
 
         return super(DataFileResource, self).put_detail(request, **kwargs)
+
+
+class SchemaResource(MyTardisModelResource):
+
+    class Meta(MyTardisModelResource.Meta):
+        queryset = Schema.objects.all()
+        filtering = {
+            'id': ('exact', ),
+            'namespace': ('exact', ),
+        }
+        ordering = [
+            'id'
+        ]
+
+
+class ParameterNameResource(MyTardisModelResource):
+    schema = fields.ForeignKey(SchemaResource, 'schema')
+
+    class Meta(MyTardisModelResource.Meta):
+        queryset = ParameterName.objects.all()
+        filtering = {
+            'schema': ALL_WITH_RELATIONS,
+        }
+
+
+class ParameterResource(MyTardisModelResource):
+    name = fields.ForeignKey(ParameterNameResource, 'name')
+    value = fields.CharField(blank=True)
+
+    def hydrate(self, bundle):
+        '''
+        sets the parametername by uri or name
+        if untyped value is given, set value via parameter method,
+        otherwise use modelresource automatisms
+        '''
+        try:
+            parname = ParameterNameResource.get_via_uri(
+                ParameterNameResource(),
+                bundle.data['name'], bundle.request)
+        except NotFound:
+            parname = bundle.related_obj._get_create_parname(
+                bundle.data['name'])
+        del(bundle.data['name'])
+        bundle.obj.name = parname
+        if 'value' in bundle.data:
+            bundle.obj.set_value(bundle.data['value'])
+            del(bundle.data['value'])
+        return bundle
+
+
+class ParameterSetResource(MyTardisModelResource):
+    schema = fields.ForeignKey(SchemaResource, 'schema', full=True)
+
+    def hydrate_schema(self, bundle):
+        try:
+            schema = SchemaResource.get_via_uri(SchemaResource(),
+                                                bundle.data['schema'],
+                                                bundle.request)
+        except NotFound:
+            schema = Schema.objects.get(namespace=bundle.data['schema'])
+        bundle.obj.schema = schema
+        del(bundle.data['schema'])
+        return bundle
 
 
 class DatafileParameterSetResource(ParameterSetResource):
@@ -1113,3 +1037,93 @@ class ObjectACLResource(MyTardisModelResource):
         else:
             raise NotImplementedError(str(bundle.obj))
         return bundle
+
+
+class ExperimentParameterSetResource(ParameterSetResource):
+    '''API for ExperimentParameterSets
+    '''
+    experiment = fields.ForeignKey(ExperimentResource, 'experiment')
+    parameters = fields.ToManyField(
+        'tardis.tardis_portal.api.ExperimentParameterResource',
+        'experimentparameter_set',
+        related_name='parameterset', full=True, null=True)
+
+    class Meta(ParameterSetResource.Meta):
+        queryset = ExperimentParameterSet.objects.all()
+
+
+class ExperimentParameterResource(ParameterResource):
+    parameterset = fields.ForeignKey(ExperimentParameterSetResource,
+                                     'parameterset')
+
+    class Meta(ParameterResource.Meta):
+        queryset = ExperimentParameter.objects.all()
+
+
+class DatasetParameterSetResource(ParameterSetResource):
+    dataset = fields.ForeignKey(DatasetResource, 'dataset')
+    parameters = fields.ToManyField(
+        'tardis.tardis_portal.api.DatasetParameterResource',
+        'datasetparameter_set',
+        related_name='parameterset', full=True, null=True)
+
+    class Meta(ParameterSetResource.Meta):
+        queryset = DatasetParameterSet.objects.all()
+
+
+class DatasetParameterResource(ParameterResource):
+    parameterset = fields.ForeignKey(DatasetParameterSetResource,
+                                     'parameterset')
+
+    class Meta(ParameterResource.Meta):
+        queryset = DatasetParameter.objects.all()
+
+
+class StorageBoxResource(MyTardisModelResource):
+    options = fields.ToManyField(
+        'tardis.tardis_portal.api.StorageBoxOptionResource',
+        attribute=lambda bundle: StorageBoxOption.objects
+        .filter(storage_box=bundle.obj,
+                key__in=StorageBoxOptionResource.accessible_keys),
+        related_name='storage_box',
+        full=True, null=True)
+    attributes = fields.ToManyField(
+        'tardis.tardis_portal.api.StorageBoxAttributeResource',
+        'attributes',
+        related_name='storage_box',
+        full=True, null=True)
+
+    class Meta(MyTardisModelResource.Meta):
+        queryset = StorageBox.objects.all()
+        ordering = [
+            'id'
+        ]
+
+
+class StorageBoxOptionResource(MyTardisModelResource):
+    accessible_keys = ['location']
+    storage_box = fields.ForeignKey(
+        StorageBoxResource,
+        'storage_box',
+        related_name='options',
+        full=False)
+
+    class Meta(MyTardisModelResource.Meta):
+        queryset = StorageBoxOption.objects.all()
+        ordering = [
+            'id'
+        ]
+
+
+class StorageBoxAttributeResource(MyTardisModelResource):
+    storage_box = fields.ForeignKey(
+        StorageBoxResource,
+        'storage_box',
+        related_name='attributes',
+        full=False)
+
+    class Meta(MyTardisModelResource.Meta):
+        queryset = StorageBoxAttribute.objects.all()
+        ordering = [
+            'id'
+        ]

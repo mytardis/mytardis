@@ -112,7 +112,12 @@ class Dataset(models.Model):
         return ('tardis.tardis_portal.views.edit_dataset', (self.id,))
 
     def get_images(self):
-        from .datafile import IMAGE_FILTER
+        from .datafile import DataFile, IMAGE_FILTER
+        render_image_ds_size_limit = getattr(
+            settings, 'RENDER_IMAGE_DATASET_SIZE_LIMIT', 0)
+        if render_image_ds_size_limit and \
+                self.datafile_set.count() > render_image_ds_size_limit:
+            return DataFile.objects.none()
         return self.datafile_set.order_by('filename').filter(IMAGE_FILTER)\
             .filter(file_objects__verified=True).distinct()
 

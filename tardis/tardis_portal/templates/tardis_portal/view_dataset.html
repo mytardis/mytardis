@@ -1,13 +1,12 @@
 {% extends "tardis_portal/portal_template.html" %}
 {% load static from staticfiles %}
+{% load render_bundle from webpack_loader %}
 {% load capture %}
 {% load dataset_tags %}
 {% load basiccomparisonfilters %}
 
 {% block script %}
-<script type="text/javascript"
-        src="{% static 'js/jquery/tardis_portal/view_dataset/init.js' %}">
-</script>
+
 <style type="text/css">
 .dropzone.in {
     background: blue;
@@ -27,15 +26,10 @@
 {% endblock %}
 
 {% block content %}
-
+{% render_bundle 'tardis_portal_view_dataset' %}
 <div id="upload_button_code" style="display: none"></div>
 
 <input type="hidden" id="dataset-id" value="{{ dataset.id }}">
-<script type="text/javascript">
-$(document).on('click', '#modal-metadata .submit-button', function() {
-  $('#modal-metadata .modal-body form').submit();
-});
-</script>
 
 <div class="modal" id="modal-metadata" role="dialog" tabindex="-1">
   <div class="modal-dialog" role="document">
@@ -349,24 +343,12 @@ margin-top: 20px;
       </div>
   </div>
 </div>
-
 {% block finalscript %}
 <input type="hidden" id="upload-method" value="{{ upload_method }}">
 {% if upload_method %}
   <input type="hidden" id="upload-method-url" value="{% url upload_method dataset.id %}">
 {% endif %}
-<script type="text/javascript"
-        src="{% static 'js/jquery/tardis_portal/view_dataset/ready.js' %}">
-</script>
-<!-- jQuery UI widgets -->
-<script src="{% static 'blueimp-file-upload/js/vendor/jquery.ui.widget.js' %}"></script>
-<!-- The Iframe Transport is required for browsers without support for XHR file uploads -->
-<script src="{% static 'blueimp-file-upload/js/jquery.iframe-transport.js' %}"></script>
-<!-- The basic File Upload plugin -->
-<script src="{% static 'blueimp-file-upload/js/jquery.fileupload.js' %}"></script>
 <input type="hidden" id="csrf-token" value="{{ csrf_token }}">
-<script type="text/javascript"
-        src="{% static 'js/jquery/tardis_portal/view_dataset/file-upload.js' %}">
-</script>
 {% endblock finalscript %}
+
 {% endblock %}

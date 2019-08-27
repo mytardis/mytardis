@@ -520,18 +520,25 @@ class DataFileObject(models.Model):
         return False
 
     def save(self, *args, **kwargs):
+        from amqp.exceptions import AMQPError
+
         reverify = kwargs.pop('reverify', False)
         super(DataFileObject, self).save(*args, **kwargs)
         if self._changed:
             self._initial_values = self._current_values
         elif not reverify:
             return
-        shadow = 'dfo_verify location:%s' % self.storage_box.name
-        tasks.dfo_verify.apply_async(
-            args=[self.id],
-            countdown=5,
-            priority=self.priority,
-            shadow=shadow)
+
+        try:
+            shadow = 'dfo_verify location:%s' % self.storage_box.name
+            tasks.dfo_verify.apply_async(
+                args=[self.id],
+                countdown=5,
+                priority=self.priority,
+                shadow=shadow)
+        except AMQPError:
+            logger.exception(
+                "Failed to submit verification task for DFO ID %s", self.id)
 
     @property
     def storage_type(self):
@@ -692,9 +699,35 @@ class DataFileObject(models.Model):
             self.delete()
         return copy
 
+    def calculate_checksums(self, compute_md5=True, compute_sha512=False):
+        """Calculates checksums for a DataFileObject instance
+
+        :param compute_md5: whether to compute md5 default=True
+        :type compute_md5: bool
+        :param compute_sha512: whether to compute sha512, default=True
+        :type compute_sha512: bool
+
+        :return: the checksums as {'md5sum': result, 'sha512sum': result}
+        :rtype: dict
+        """
+        from importlib import import_module
+
+        storage_class_name = self.storage_box.django_storage_class
+        calculate_checksum_methods = getattr(
+            settings, 'CALCULATE_CHECKSUMS_METHODS', {})
+        if storage_class_name in calculate_checksum_methods:
+            calculate_checksum_method = \
+                calculate_checksum_methods[storage_class_name]
+            module_path, method_name = calculate_checksum_method.rsplit('.', 1)
+            module = import_module(module_path)
+            calculate_checksums = getattr(module, method_name)
+            return calculate_checksums(self, compute_md5, compute_sha512)
+
+        return compute_checksums(self.file_object, compute_md5, compute_sha512)
+
     def verify(self, add_checksums=True, add_size=True):  # too complex # noqa
         compute_md5 = getattr(settings, 'COMPUTE_MD5', True)
-        compute_sha512 = getattr(settings, 'COMPUTE_SHA512', True)
+        compute_sha512 = getattr(settings, 'COMPUTE_SHA512', False)
         comparisons = ['size']
         if compute_md5:
             comparisons.append('md5sum')
@@ -723,8 +756,7 @@ class DataFileObject(models.Model):
                 if add_size:
                     database_update['size'] = actual['size']
             if same_values.get('size', True):
-                actual.update(compute_checksums(
-                    self.file_object,
+                actual.update(self.calculate_checksums(
                     compute_md5=compute_md5,
                     compute_sha512=compute_sha512))
 
@@ -770,7 +802,35 @@ class DataFileObject(models.Model):
         self.last_verified_time = timezone.now()
         self.save(update_fields=['verified', 'last_verified_time'])
         df.update_mimetype()
+        if getattr(settings, 'USE_FILTERS', False):
+            self.apply_filters()
         return result
+
+    def apply_filters(self):
+        from django.core.files.storage import FileSystemStorage
+        from django.core.files.storage import get_storage_class
+        from tardis.celery import tardis_app
+
+        storage_class = get_storage_class(self.storage_box.django_storage_class)
+        if not issubclass(storage_class, FileSystemStorage):
+            logger.debug(
+		"Can't apply filters for DFO ID %s with storage class %s",
+                self.id, self.storage_box.django_storage_class)
+            return
+
+        try:
+            tardis_app.send_task(
+                'mytardis.apply_filters',
+                args = [
+                    self.id,
+                    self.verified,
+                    self.get_full_path(),
+                    self.uri
+                ],
+                queue = 'filters',
+                priority = getattr(settings, 'FILTERS_TASK_PRIORITY', 0))
+        except Exception:
+            logger.exception("Failed to apply filters for DFO ID %s", self.id)
 
     def get_full_path(self):
         return self._storage.path(self.uri)
@@ -814,7 +874,7 @@ def delete_dfo(sender, instance, **kwargs):
 
 def compute_checksums(file_object,
                       compute_md5=True,
-                      compute_sha512=True,
+                      compute_sha512=False,
                       close_file=True):
     """Computes checksums for a python file object
 

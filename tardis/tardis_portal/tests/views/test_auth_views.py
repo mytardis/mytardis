@@ -11,6 +11,8 @@ and authorization
 """
 import json
 
+from mock import patch
+
 from django.urls import reverse
 from django.test import TestCase
 from django.test.client import Client
@@ -208,7 +210,8 @@ class RightsTestCase(TestCase):
 
 class ManageAccountTestCase(TestCase):
 
-    def test_manage_account(self):
+    @patch('webpack_loader.loader.WebpackLoader.get_bundle')
+    def test_manage_account(self, mock_webpack_get_bundle):
         # Create test owner without enough details
         username, email, password = ('testuser',
                                      'testuser@example.test',
@@ -231,6 +234,7 @@ class ManageAccountTestCase(TestCase):
         response = client.get(manage_url)
         # Expect 200 OK and a form
         self.assertEqual(response.status_code, 200)
+        mock_webpack_get_bundle.assert_called()
         response.content.index(b'name="first_name"')
         response.content.index(b'name="last_name"')
         response.content.index(b'name="email"')

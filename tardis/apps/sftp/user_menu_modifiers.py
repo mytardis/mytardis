@@ -1,5 +1,7 @@
 from django.urls import reverse
 
+from tardis.tardis_portal.templatetags.approved_user_tags import check_if_user_not_approved
+
 
 def add_ssh_keys_menu_item(request, user_menu):
     """Add a 'Manage SSH Keys' item to the user menu
@@ -11,6 +13,8 @@ def add_ssh_keys_menu_item(request, user_menu):
     :return: user_menu list
     :rtype: list
     """
+    if check_if_user_not_approved(request):
+        return user_menu
     ssh_keys_menu_item = dict(
         url=reverse('tardis.apps.sftp:sftp_keys'),
         icon='fa fa-key',

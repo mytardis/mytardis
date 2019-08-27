@@ -6,6 +6,8 @@ from django.test.client import Client
 
 from django.contrib.auth.models import User, Group, Permission, AnonymousUser
 
+from mock import patch
+
 from ..auth.localdb_auth import django_user
 from ..auth.localdb_auth import auth_key as localdb_auth_key
 from ..models import ObjectACL, Experiment
@@ -133,7 +135,8 @@ class ObjectACLTestCase(TestCase):
         self.client3.logout()
         self.client4.logout()
 
-    def testChangeUserPermissions(self):
+    @patch('webpack_loader.loader.WebpackLoader.get_bundle')
+    def testChangeUserPermissions(self, mock_webpack_get_bundle):
         login1 = self.client1.login(username=self.user1.username,
                                    password='secret')
         self.assertTrue(login1)
@@ -151,6 +154,12 @@ class ObjectACLTestCase(TestCase):
         response = self.client3.get('/experiment/view/%i/'
                                    % (self.experiment1.id))
         self.assertEqual(response.status_code, 403)
+
+        # create a group and add it to experiment1
+        response = self.client1.get('/experiment/control_panel'
+                                    '/create/group/?group=%s&authMethod=localdb'
+                                    % ('group1'))
+        self.assertEqual(response.status_code, 200)
 
         # make the group1 a full read/write/owner of the experiment1
         response = self.client1.get('/experiment/control_panel/%i'
@@ -177,9 +186,10 @@ class ObjectACLTestCase(TestCase):
         response = self.client3.get('/experiment/view/%i/'
                                    % (self.experiment1.id))
         self.assertEqual(response.status_code, 403)
+        mock_webpack_get_bundle.assert_called()
 
-
-    def testReadAccess(self):
+    @patch('webpack_loader.loader.WebpackLoader.get_bundle')
+    def testReadAccess(self, mock_webpack_get_bundle):
         login = self.client1.login(username=self.user1.username,
                                    password='secret')
         self.assertTrue(login)
@@ -188,6 +198,7 @@ class ObjectACLTestCase(TestCase):
         response = self.client1.get('/experiment/view/%i/'
                                    % (self.experiment1.id))
         self.assertEqual(response.status_code, 200)
+        mock_webpack_get_bundle.assert_called()
 
         # user1 should not be allowed to see experiment2
         response = self.client1.get('/experiment/view/%i/'
@@ -267,7 +278,9 @@ class ObjectACLTestCase(TestCase):
                                        non_existent,
                                        localdb_auth_key))
 
-        self.assertContains(response, 'User %s does not exist' % non_existent)
+        self.assertContains(
+            response, 'User %s does not exist' % non_existent,
+            status_code=400)
 
         # test add to non existent experiment
 
@@ -483,7 +496,8 @@ class ObjectACLTestCase(TestCase):
         self.client1.logout()
         self.client3.logout()
 
-    def testWriteAccess(self):
+    @patch('webpack_loader.loader.WebpackLoader.get_bundle')
+    def testWriteAccess(self, mock_webpack_get_bundle):
         # without logging in the request should be redirected
         response = self.client1.get('/experiment/edit/%i/' % (self.experiment1.id))
         self.assertEqual(response.status_code, 302)
@@ -494,6 +508,7 @@ class ObjectACLTestCase(TestCase):
         self.assertTrue(login)
         response = self.client1.get('/experiment/edit/%i/' % (self.experiment1.id))
         self.assertEqual(response.status_code, 200)
+        mock_webpack_get_bundle.assert_called()
 
         # write access has not been granted for experiment2
         response = self.client1.get('/experiment/edit/%i/' % (self.experiment2.id))
@@ -571,7 +586,8 @@ class ObjectACLTestCase(TestCase):
         self.client2.logout()
         self.client3.logout()
 
-    def testCantEditLockedExperiment(self):
+    @patch('webpack_loader.loader.WebpackLoader.get_bundle')
+    def testCantEditLockedExperiment(self, mock_webpack_get_bundle):
         login = self.client3.login(username=self.user3.username, password='secret')
         self.assertTrue(login)
 
@@ -595,6 +611,8 @@ class ObjectACLTestCase(TestCase):
 
         acl.delete()
         self.client3.logout()
+        mock_webpack_get_bundle.assert_called()
+
 
     def testOwnedExperiments(self):
         user = AnonymousUser()

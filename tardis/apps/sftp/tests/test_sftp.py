@@ -11,6 +11,7 @@ from django.test import RequestFactory
 from django.test import TestCase
 
 from flexmock import flexmock
+from mock import patch
 from paramiko.common import AUTH_SUCCESSFUL, AUTH_FAILED
 from paramiko.ssh_exception import SSHException
 from paramiko.rsakey import RSAKey
@@ -183,7 +184,8 @@ QKHf8Ha+rOx3B7Dbljc+Xdpcn9VyRmDlSqzX9aCkr18mNg==
         self.user.is_active = True
         self.user.save()
 
-    def test_sftp_dynamic_docs_experiment(self):
+    @patch('webpack_loader.loader.WebpackLoader.get_bundle')
+    def test_sftp_dynamic_docs_experiment(self, mock_webpack_get_bundle):
         factory = RequestFactory()
         request = factory.get(
             '/sftp_access/?object_type=experiment&object_id=%s'
@@ -196,8 +198,10 @@ QKHf8Ha+rOx3B7Dbljc+Xdpcn9VyRmDlSqzX9aCkr18mNg==
             b"/home/tardis_user1/experiments/%s"
             % path_mapper(self.exp).encode(),
             response.content)
+        mock_webpack_get_bundle.assert_called()
 
-    def test_sftp_dynamic_docs_dataset(self):
+    @patch('webpack_loader.loader.WebpackLoader.get_bundle')
+    def test_sftp_dynamic_docs_dataset(self, mock_webpack_get_bundle):
         factory = RequestFactory()
         request = factory.get(
             '/sftp_access/?object_type=dataset&object_id=%s'
@@ -211,6 +215,7 @@ QKHf8Ha+rOx3B7Dbljc+Xdpcn9VyRmDlSqzX9aCkr18mNg==
             % (path_mapper(self.exp).encode(),
                path_mapper(self.dataset).encode()),
             response.content)
+        mock_webpack_get_bundle.assert_called()
 
     def test_cybderduck_connection_window(self):
         factory = RequestFactory()

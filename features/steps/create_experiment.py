@@ -1,3 +1,5 @@
+from wait import wait_ajax_loaded
+
 from behave import when, then
 
 from selenium.common.exceptions import NoSuchElementException
@@ -44,6 +46,7 @@ def a_new_exp_is_created(context):
     """
     :type context: behave.runner.Context
     """
+    wait_ajax_loaded(context)
     created_alert = context.browser.find_element_by_css_selector(
         "span[class='message']")
     context.test.assertEqual(
@@ -51,8 +54,9 @@ def a_new_exp_is_created(context):
         "Experiment Created")
 
     console_errors = []
-    for error in context.browser.get_log("browser"):
-        console_errors.append(error)
+    for entry in context.browser.get_log("browser"):
+        if entry['level'] != 'WARNING':
+            console_errors.append(entry)
     context.test.assertEqual(
         len(console_errors), 0, str(console_errors))
 

@@ -40,11 +40,13 @@ import os
 import re
 from io import StringIO
 
+from mock import patch
+
 from django.conf import settings
 from django.contrib.auth.models import Group
 from django.contrib.auth.models import User
 from django.db import models
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from tastypie.utils import trailing_slash
 
 from ..models import Facility, Instrument
@@ -168,7 +170,9 @@ class ModelTestCase(TestCase):
         self.assertTrue(ae2 in authors)
         self.assertTrue(ae3 == authors[1])
 
-    def test_datafile(self):
+    @override_settings(USE_FILTERS=True)
+    @patch('celery.app.base.Celery.send_task')
+    def test_datafile(self, mock_send_task):
 
         def _build(dataset, filename, url=None):
             datafile = DataFile(dataset=dataset, filename=filename)
@@ -181,6 +185,12 @@ class ModelTestCase(TestCase):
                 storage_box=datafile.get_default_storage_box(),
                 uri=url)
             dfo.save()
+            # Tests are run with CELERY_ALWAYS_EAGER = True,
+            # so saving a DFO will trigger an immediate attempt
+            # to verify the DFO which will trigger an attempt
+            # to apply filters because we are overriding the
+            # USE_FILTERS setting to True in this test:
+            mock_send_task.assert_called()
             return datafile
 
         exp = Experiment(title='test exp1',

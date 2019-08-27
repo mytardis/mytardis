@@ -1,7 +1,8 @@
 # pylint: disable=wildcard-import,unused-wildcard-import
 from __future__ import absolute_import
-from glob import glob
+
 from os import path
+from glob import glob
 
 from celery import Celery  # pylint: disable=import-error
 from django.apps import apps  # pylint: disable=wrong-import-order
@@ -71,7 +72,6 @@ def get_all_tardis_apps():
     return tuple(sorted(apps))
 
 INSTALLED_APPS += get_all_tardis_apps() + (
-    'tardis.apps.equipment',
     'django_nose',
     'behave_django',
 )
@@ -146,14 +146,10 @@ DEFAULT_ARCHIVE_FORMATS = ['tar']
 
 AUTOGENERATE_API_KEY = True
 
-MIDDLEWARE += ('tardis.tardis_portal.filters.FilterInitMiddleware',)
-
 SECRET_KEY = 'ij!%7-el^^rptw$b=iol%78okl10ee7zql-()z1r6e)gbxd3gl'
 
 SESSION_SERIALIZER = 'django.contrib.sessions.serializers.PickleSerializer'
 USE_TZ = True  # apparently sqlite has issues with timezones?
-
-HAYSTACK_SIGNAL_PROCESSOR = 'haystack.signals.BaseSignalProcessor'
 
 # Only for automated testing - don't use this in production:
 SFTP_HOST_KEY = (
@@ -172,3 +168,9 @@ SFTP_HOST_KEY = (
     b"2+Q+Tlr2aNlAmrHtkT13+wJAJVgZATPI5X3UO0Wdf24f/w9+OY+QxKGl86tTQXzE\n"
     b"4bwvYtUGufMIHiNeWP66i6fYCucXCMYtx6Xgu2hpdZZpFw==\n"
     b"-----END RSA PRIVATE KEY-----\n")
+
+# tardis.apps.s3utils will be in INSTALLED_APPS for unit tests:
+CALCULATE_CHECKSUMS_METHODS = {
+    'storages.backends.s3boto3.S3Boto3Storage':
+        'tardis.apps.s3utils.utils.calculate_checksums'
+}

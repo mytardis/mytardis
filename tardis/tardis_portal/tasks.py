@@ -5,32 +5,12 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.sites.models import Site
 from django.db import transaction
 from django.db.models import Q
-from django.http import HttpResponse  # pylint: disable=wrong-import-order
 
 from tardis.celery import tardis_app
 from .email import email_user
 
 
-try:
-    from .logging_middleware import LoggingMiddleware
-    get_response = lambda _: HttpResponse('')
-    LoggingMiddleware(get_response)
-except Exception:
-    pass
-
 logger = logging.getLogger(__name__)
-
-
-def init_filters():
-    """
-    load filters and avoid circular import
-    """
-    try:
-        from .filters import FilterInitMiddleware
-        get_response = lambda _: HttpResponse('')
-        FilterInitMiddleware(get_response)
-    except Exception as e:
-        logger.info('filters not loaded for tasks because: %s' % e)
 
 
 @tardis_app.task(name="tardis_portal.verify_dfos", ignore_result=True)
@@ -62,7 +42,6 @@ def ingest_received_files(**kwargs):
 
 @tardis_app.task(name="tardis_portal.autocache", ignore_result=True)
 def autocache(**kwargs):
-    init_filters()
     from .models import StorageBox
     autocache_boxes = StorageBox.objects.filter(
         Q(attributes__key='autocache'),
@@ -99,7 +78,6 @@ def cache_done_notify(results, user_id, site_id, ct_id, obj_ids):
 # StorageBox
 @tardis_app.task(name="tardis_portal.storage_box.copy_files", ignore_result=True)
 def sbox_copy_files(sbox_id, dest_box_id=None):
-    init_filters()
     from .models import StorageBox
     sbox = StorageBox.objects.get(id=sbox_id)
     if dest_box_id is not None:
@@ -111,7 +89,6 @@ def sbox_copy_files(sbox_id, dest_box_id=None):
 
 @tardis_app.task(name="tardis_portal.storage_box.move_files", ignore_result=True)
 def sbox_move_files(sbox_id, dest_box_id=None):
-    init_filters()
     from .models import StorageBox
     sbox = StorageBox.objects.get(id=sbox_id)
     if dest_box_id is not None:
@@ -131,7 +108,6 @@ def sbox_cache_files(sbox_id):
     data can always be accessed quickly from Object Storage, and the
     Vault can be used for disaster recovery if necessary.
     """
-    init_filters()
     from .models import DataFileObject
     from .models import StorageBox
     sbox = StorageBox.objects.get(id=sbox_id)
@@ -144,7 +120,6 @@ def sbox_cache_files(sbox_id):
 
 @tardis_app.task(name='tardis_portal.storage_box.copy_to_master', ignore_result=True)
 def sbox_copy_to_master(sbox_id, *args, **kwargs):
-    init_filters()
     from .models import StorageBox
     sbox = StorageBox.objects.get(id=sbox_id)
     return sbox.copy_to_master(*args, **kwargs)
@@ -152,7 +127,6 @@ def sbox_copy_to_master(sbox_id, *args, **kwargs):
 
 @tardis_app.task(name='tardis_portal.storage_box.move_to_master', ignore_result=True)
 def sbox_move_to_master(sbox_id, *args, **kwargs):
-    init_filters()
     from .models import StorageBox
     sbox = StorageBox.objects.get(id=sbox_id)
     return sbox.move_to_master(*args, **kwargs)
@@ -161,7 +135,6 @@ def sbox_move_to_master(sbox_id, *args, **kwargs):
 # DataFile
 @tardis_app.task(name="tardis_portal.cache_datafile", ignore_result=True)
 def df_cache_file(df_id):
-    init_filters()
     from .models import DataFile
     df = DataFile.objects.get(id=df_id)
     return df.cache_file()
@@ -170,7 +143,6 @@ def df_cache_file(df_id):
 # DataFileObject
 @tardis_app.task(name='tardis_portal.dfo.move_file', ignore_result=True)
 def dfo_move_file(dfo_id, dest_box_id=None):
-    init_filters()
     from .models import DataFileObject, StorageBox
     dfo = DataFileObject.objects.get(id=dfo_id)
     if dest_box_id is not None:
@@ -182,7 +154,6 @@ def dfo_move_file(dfo_id, dest_box_id=None):
 
 @tardis_app.task(name='tardis_portal.dfo.copy_file', ignore_result=True)
 def dfo_copy_file(dfo_id, dest_box_id=None):
-    init_filters()
     from .models import DataFileObject, StorageBox
     dfo = DataFileObject.objects.get(id=dfo_id)
     if dest_box_id is not None:
@@ -194,7 +165,6 @@ def dfo_copy_file(dfo_id, dest_box_id=None):
 
 @tardis_app.task(name='tardis_portal.dfo.cache_file', ignore_result=True)
 def dfo_cache_file(dfo_id):
-    init_filters()
     from .models import DataFileObject
     dfo = DataFileObject.objects.get(id=dfo_id)
     return dfo.cache_file()
@@ -202,7 +172,6 @@ def dfo_cache_file(dfo_id):
 
 @tardis_app.task(name="tardis_portal.dfo.verify", ignore_result=True)
 def dfo_verify(dfo_id, *args, **kwargs):
-    init_filters()
     from .models import DataFileObject
     # Get dfo locked for write (to prevent concurrent actions)
     if kwargs.pop('transaction_lock', False):
@@ -214,7 +183,75 @@ def dfo_verify(dfo_id, *args, **kwargs):
 
 
 @tardis_app.task(name='tardis_portal.clear_sessions', ignore_result=True)
-def clear_sessions():
+def clear_sessions(**kwargs):
     """Clean up expired sessions using Django management command."""
     from django.core import management
     management.call_command("clearsessions", verbosity=0)
+
+
+@tardis_app.task(name='tardis_portal.save_metadata', ignore_result=True)
+def save_metadata(id, name, schema, metadata):
+    """Save all the metadata to a Dataset_Files paramamter set."""
+    from .models import ParameterName, Schema, DataFile,\
+                        DatafileParameterSet, DatafileParameter
+
+    def getSchema(schema, name):
+        """
+        Return the schema object that the paramaterset will use.
+        """
+        try:
+            return Schema.objects.get(namespace__exact=schema)
+        except Schema.DoesNotExist:
+            new_schema = Schema(namespace=schema, name=name,
+                                type=Schema.DATAFILE)
+            new_schema.save()
+            return new_schema
+
+    def getParameters(schema, metadata):
+        """
+        Return a list of the paramaters that will be saved.
+        """
+        param_objects = ParameterName.objects.filter(schema=schema)
+        parameters = []
+        for p in metadata:
+            parameter = param_objects.filter(name=p).first()
+            if parameter:
+                parameters.append(parameter[0])
+        return parameters
+
+    data_schema = getSchema(schema, name)
+    parameters = getParameters(data_schema, metadata)
+    if not parameters:
+        print("Bailing out of save_metadata because of 'not parameters'.")
+    else:
+        # Load datafile
+        df = DataFile.objects.get(id=id)
+
+        # Check for existing data
+        try:
+            ps = DatafileParameterSet.objects.get(schema=data_schema,
+                                                  datafile=df)
+            print("Parameter set already exists for {}".format(df.filename))
+        except DatafileParameterSet.DoesNotExist:
+            ps = DatafileParameterSet(schema=data_schema, datafile=df)
+            ps.save()
+            # Save metadata
+            for p in parameters:
+                print(p.name)
+                if p.name in metadata:
+                    dfp = DatafileParameter(parameterset=ps, name=p)
+                    if p.isNumeric():
+                        if metadata[p.name] != '':
+                            dfp.numerical_value = metadata[p.name]
+                            dfp.save()
+                    elif isinstance(metadata[p.name], list):
+                        for val in reversed(metadata[p.name]):
+                            strip_val = val.strip()
+                            if strip_val:
+                                dfp = DatafileParameter(parameterset=ps,
+                                                        name=p)
+                                dfp.string_value = strip_val
+                                dfp.save()
+                    else:
+                        dfp.string_value = metadata[p.name]
+                        dfp.save()

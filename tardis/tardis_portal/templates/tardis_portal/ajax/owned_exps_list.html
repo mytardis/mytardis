@@ -72,9 +72,6 @@
   {% block bottom-pagination %}{% pagination owned_experiments paginator page_num query_string %}{% endblock %}
 {% endif %}
 
-<script type="text/javascript"
-        src="{% static 'js/jquery/tardis_portal/experiment-accordion.js' %}">
-</script>
 <script type="text/javascript">
 $(function() {
     $(".explink").on("click", function(e) {

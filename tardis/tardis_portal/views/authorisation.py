@@ -295,18 +295,19 @@ def remove_user_from_group(request, group_id, username):
     try:
         user = User.objects.get(username=username)
     except User.DoesNotExist:
-        return HttpResponse('User %s does not exist.' % username)
+        return HttpResponse('User %s does not exist.' % username, status=400)
     try:
         group = Group.objects.get(pk=group_id)
     except Group.DoesNotExist:
-        return HttpResponse('Group does not exist.')
+        return HttpResponse('Group does not exist.', status=400)
 
     if user.groups.filter(name=group.name).count() == 0:
         return HttpResponse('User %s is not member of that group.'
-                            % username)
+                            % username, status=400)
 
     if request.user == user:
-        return HttpResponse('You cannot remove yourself from that group.')
+        return HttpResponse(
+            'You cannot remove yourself from that group.', status=400)
 
     user.groups.remove(group)
     user.save()
@@ -350,15 +351,17 @@ def add_experiment_access_user(request, experiment_id, username):
     try:
         user = User.objects.get(username=username)
         if not user.is_active:
-            return HttpResponse('User %s is inactive.' % (username))
+            return HttpResponse(
+                'User %s is inactive.' % (username), status=400)
     except User.DoesNotExist:
-        return HttpResponse('User %s does not exist.' % (username))
+        return HttpResponse('User %s does not exist.' % (username), status=400)
 
     try:
         experiment = Experiment.objects.get(pk=experiment_id)
     except Experiment.DoesNotExist:
-        return HttpResponse('Experiment (id=%d) does not exist.'
-                            % (experiment.id))
+        return HttpResponse(
+            'Experiment (id=%d) does not exist.' % (experiment.id),
+            status=400)
 
     acl = ObjectACL.objects.filter(
         content_type=experiment.get_ct(),
@@ -388,7 +391,7 @@ def add_experiment_access_user(request, experiment_id, username):
             request,
             'tardis_portal/ajax/add_user_result.html', c)
 
-    return HttpResponse('User already has experiment access.')
+    return HttpResponse('User already has experiment access.', status=400)
 
 
 @never_cache
@@ -397,12 +400,12 @@ def remove_experiment_access_user(request, experiment_id, username):
     try:
         user = User.objects.get(username=username)
     except User.DoesNotExist:
-        return HttpResponse('User %s does not exist' % username)
+        return HttpResponse('User %s does not exist' % username, status=400)
 
     try:
         Experiment.objects.get(pk=experiment_id)
     except Experiment.DoesNotExist:
-        return HttpResponse('Experiment does not exist')
+        return HttpResponse('Experiment does not exist', status=400)
 
     expt_acls = Experiment.safe.user_acls(experiment_id)
 
@@ -412,7 +415,7 @@ def remove_experiment_access_user(request, experiment_id, username):
     if target_acl.count() == 0:
         return HttpResponse('The user %s does not have access to this '
                             'experiment.'
-                            % username)
+                            % username, status=400)
 
     if expt_acls.count() >= 1:
         if len(owner_acls) > 1 or \
@@ -422,11 +425,12 @@ def remove_experiment_access_user(request, experiment_id, username):
         return HttpResponse(
             'All experiments must have at least one user as '
             'owner. Add an additional owner first before '
-            'removing this one.')
+            'removing this one.', status=400)
 
     # the user shouldn't really ever see this in normal operation
     return HttpResponse(
-        'Experiment has no permissions (of type OWNER_OWNED) !')
+        'Experiment has no permissions (of type OWNER_OWNED) !',
+        status=400)
 
 
 @transaction.atomic  # too complex # noqa
@@ -508,12 +512,14 @@ def add_experiment_access_group(request, experiment_id, groupname):
         experiment = Experiment.objects.get(pk=experiment_id)
     except Experiment.DoesNotExist:
         return HttpResponse('Experiment (id=%d) does not exist' %
-                            (experiment_id))
+                            (experiment_id),
+                            status=400)
 
     try:
         group = Group.objects.get(name=groupname)
     except Group.DoesNotExist:
-        return HttpResponse('Group %s does not exist' % (groupname))
+        return HttpResponse(
+            'Group %s does not exist' % (groupname), status=400)
 
     acl = ObjectACL.objects.filter(
         content_type=experiment.get_ct(),
@@ -524,9 +530,10 @@ def add_experiment_access_group(request, experiment_id, groupname):
 
     if acl.count() > 0:
         # An ACL already exists for this experiment/group.
-        return HttpResponse('Could not create group %s '
-                            '(It is likely that it already exists)' %
-                            (groupname))
+        return HttpResponse('Could not add group %s '
+                            '(It has already been added)' %
+                            (groupname),
+                            status=400)
 
     acl = ObjectACL(content_object=experiment,
                     pluginId='django_group',

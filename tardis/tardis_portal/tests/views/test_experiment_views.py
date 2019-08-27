@@ -10,6 +10,8 @@ Tests for view methods relating to experiments
 """
 import json
 
+from mock import patch
+
 from six.moves import urllib
 from six.moves import map
 
@@ -37,7 +39,8 @@ class ExperimentTestCase(TestCase):
         self.user, self.username, self.password = (user, username, password)
         self.userprofile = self.user.userprofile
 
-    def test_create_and_edit(self):
+    @patch('webpack_loader.loader.WebpackLoader.get_bundle')
+    def test_create_and_edit(self, mock_webpack_get_bundle):
 
         # Login as user
         client = Client()
@@ -53,6 +56,7 @@ class ExperimentTestCase(TestCase):
         # Check the form is accessible
         response = client.get(create_url)
         self.assertEqual(response.status_code, 200)
+        mock_webpack_get_bundle.assert_called()
 
         # Create client and go to account management URL
         data = {'title': 'The Elements',

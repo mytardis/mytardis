@@ -5,10 +5,6 @@
 {% load static %}
 {% load pagination %}
 
-<script type="text/javascript"
-        src="{% static 'js/jquery/tardis_portal/experiment-accordion.js' %}">
-</script>
-
 {% if shared_experiments.paginator.num_pages > 1 %}
   {% block top-pagination %}{% pagination shared_experiments paginator page_num query_string %}{% endblock %}
   <!-- Page {{ page_num|add:1 }} of {{ shared_experiments.paginator.num_pages }} -->

@@ -1,4 +1,4 @@
-import time
+from wait import wait_ajax_loaded
 
 from behave import when, then
 
@@ -45,6 +45,7 @@ def a_new_dataset_is_created(context):
     """
     :type context: behave.runner.Context
     """
+    wait_ajax_loaded(context)
     title_span = context.browser.find_element_by_css_selector(
         "span[property='dc:title']")
     context.test.assertEqual(
@@ -52,8 +53,9 @@ def a_new_dataset_is_created(context):
         "new dataset1")
 
     console_errors = []
-    for error in context.browser.get_log('browser'):
-        console_errors.append(error)
+    for entry in context.browser.get_log('browser'):
+        if entry['level'] != 'WARNING':
+            console_errors.append(entry)
     context.test.assertEqual(
         len(console_errors), 0, str(console_errors))
 
@@ -71,12 +73,6 @@ def they_see_newly_created_dataset(context):
     """
     :type context: behave.runner.Context
     """
-    ajax_complete = bool(
-        context.browser.execute_script("return jQuery.active == 0"))
-    while not ajax_complete:
-        time.sleep(0.1)
-        ajax_complete = bool(
-            context.browser.execute_script("return jQuery.active == 0"))
-
+    wait_ajax_loaded(context)
     dataset_link = context.browser.find_element_by_css_selector("a.dataset-link")
     context.test.assertIn("new dataset", dataset_link.get_attribute("innerHTML"))

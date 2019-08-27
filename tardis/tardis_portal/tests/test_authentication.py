@@ -4,6 +4,9 @@ Created on 19/01/2011
 .. moduleauthor:: Gerson Galang <gerson.galang@versi.edu.au>
 '''
 import json
+
+from mock import patch
+
 from django.test import TestCase
 from django.test.client import Client
 from django.contrib.auth.models import User, Permission
@@ -42,7 +45,8 @@ class AuthenticationTestCase(TestCase):
                              "Sorry, username and password don't match.")
             self.client.logout()
 
-    def testManageAuthMethods(self):
+    @patch('webpack_loader.loader.WebpackLoader.get_bundle')
+    def testManageAuthMethods(self, mock_webpack_get_bundle):
         response = self.client.get(self.manageAuthMethodsUrl)
 
         # check if the response is a redirect to the login page
@@ -54,6 +58,7 @@ class AuthenticationTestCase(TestCase):
             'password': 'test', 'authMethod': 'localdb'})
 
         response = self.client.get(self.manageAuthMethodsUrl)
+        mock_webpack_get_bundle.assert_called()
         self.assertEqual(len(response.context['userAuthMethodList']), 1, response)
         self.assertTrue(response.context['isDjangoAccount'] is True)
         self.assertTrue(len(response.context['supportedAuthMethods']), 1)

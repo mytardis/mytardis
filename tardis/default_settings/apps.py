@@ -17,9 +17,9 @@ INSTALLED_APPS = (
     'jstemplate',
     'tastypie',
     'tastypie_swagger',
+    'webpack_loader',
     'tardis.tardis_portal',
     'tardis.tardis_portal.templatetags',
-    'tardis.search',
     'tardis.analytics',
     # these optional apps, may require extra settings
     'tardis.apps.oaipmh',
