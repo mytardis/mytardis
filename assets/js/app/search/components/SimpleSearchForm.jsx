@@ -27,6 +27,20 @@ function SimpleSearchForm({ showResults, searchText }) {
         setIsLoading(false);
       });
   };
+  const getInstrumentList = () => {
+    const tempList = [];
+    fetch("/api/v1/instrument/")
+      .then(resp => resp.json())
+      .then((json) => {
+        json.objects.forEach(
+          (value) => {
+            tempList.push(value.name);
+          },
+        );
+      });
+    return (tempList);
+  };
+  const [instrumentList] = useState(getInstrumentList());
   const handleSimpleSearchSubmit = (e) => {
     e.preventDefault();
     if (!simpleSearchText) {
@@ -79,6 +93,7 @@ function SimpleSearchForm({ showResults, searchText }) {
           <AdvancedSearchForm
             searchText={simpleSearchText}
             showResults={showResults}
+            instrumentList={instrumentList}
           />
         ) : (
           <button
