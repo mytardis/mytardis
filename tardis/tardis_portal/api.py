@@ -212,10 +212,8 @@ class ACLAuthorization(Authorization):
             return [facility for facility in object_list
                     if facility in facilities]
         if isinstance(bundle.obj, Instrument):
-            facilities = facilities_managed_by(bundle.request.user)
-            instruments = Instrument.objects.filter(facility__in=facilities)
-            return [instrument for instrument in object_list
-                    if instrument in instruments]
+            if bundle.request.user.is_authenticated:
+                return object_list
         if isinstance(bundle.obj, StorageBox):
             return object_list
         if isinstance(bundle.obj, StorageBoxOption):
