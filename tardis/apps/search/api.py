@@ -17,6 +17,7 @@ from django_elasticsearch_dsl.search import Search
 from elasticsearch_dsl import MultiSearch, Q
 
 from tardis.tardis_portal.api import default_authentication
+from tardis.tardis_portal.models import Instrument
 
 LOCAL_TZ = pytz.timezone(settings.TIME_ZONE)
 MAX_SEARCH_RESULTS = settings.MAX_SEARCH_RESULTS
@@ -215,8 +216,10 @@ class AdvanceSearchAppResource(Resource):
                 .replace(tzinfo=pytz.timezone('UTC'))
             start_date = start_date_utc.astimezone(LOCAL_TZ).date()
         instrument_list = bundle.data.get("InstrumentList", None)
+        instrument_list_id = []
         if instrument_list:
-            instrument_list_string = ' '.join(instrument_list)
+            for ins in instrument_list:
+                instrument_list_id.append(Instrument.objects.get(name__exact=ins).id)
         # query for experiment model
         ms = MultiSearch(index=index_list)
         if 'experiments' in index_list:
@@ -248,7 +251,7 @@ class AdvanceSearchAppResource(Resource):
             if start_date is not None:
                 query_dataset = query_dataset & Q("range", created_time={'gte': start_date, 'lte': end_date})
             if instrument_list:
-                query_dataset = query_dataset & Q("match", instrument__name=instrument_list_string)
+                query_dataset = query_dataset & Q("terms", **{'instrument.id': instrument_list_id})
             # add instrument query
             ms = ms.add(Search(index='dataset')
                         .extra(size=MAX_SEARCH_RESULTS, min_score=MIN_CUTOFF_SCORE).query(query_dataset)
