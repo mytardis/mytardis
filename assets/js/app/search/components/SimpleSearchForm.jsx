@@ -29,7 +29,7 @@ function SimpleSearchForm({ showResults, searchText }) {
   };
   const getInstrumentList = () => {
     const tempList = [];
-    fetch("/api/v1/instrument/")
+    fetch("/api/v1/instrument/?limit=0")
       .then(resp => resp.json())
       .then((json) => {
         json.objects.forEach(
