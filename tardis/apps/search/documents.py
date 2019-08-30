@@ -93,8 +93,9 @@ class DatasetDocument(Document):
     }
     )
     instrument = fields.ObjectField(properties={
+        'id': fields.IntegerField(),
         'name': fields.TextField(
-        fields={'raw': fields.KeywordField()},
+            fields={'raw': fields.KeywordField()},
         )
     }
     )
@@ -127,14 +128,8 @@ class DataFileDocument(Document):
     modification_time = fields.DateField()
     dataset = fields.NestedField(properties={
         'id': fields.IntegerField(),
-        'description': fields.TextField(
-            fields={'raw': fields.KeywordField()}
-        ),
         'experiments': fields.NestedField(properties={
             'id': fields.IntegerField(),
-            'title': fields.TextField(
-                fields={'raw': fields.KeywordField()}
-            ),
             'objectacls': fields.ObjectField(properties={
                 'pluginId': fields.StringField(),
                 'entityId': fields.StringField()

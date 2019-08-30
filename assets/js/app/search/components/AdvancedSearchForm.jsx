@@ -10,7 +10,7 @@ import "react-datetime/css/react-datetime.css";
 
 const csrftoken = getCookie("csrftoken");
 
-function AdvancedSearchForm({ searchText, showResults }) {
+function AdvancedSearchForm({ searchText, showResults, instrumentList }) {
   const [advanceSearchText, setAdvanceSearchText] = useState(searchText);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
@@ -35,20 +35,9 @@ function AdvancedSearchForm({ searchText, showResults }) {
   useEffect(() => {
     setAdvanceSearchText(searchText);
   }, [searchText]);
-  const getInstrumentList = () => {
-    const tempList = [];
-    fetch("/api/v1/instrument/")
-      .then(resp => resp.json())
-      .then((json) => {
-        json.objects.forEach(
-          (value) => {
-            tempList.push(value.name);
-          },
-        );
-      });
-    return (tempList);
-  };
-  const instrumentList = getInstrumentList();
+
+  const showInstrumentField = () => (instrumentList.length > 0);
+
 
   const handleAdvancedSearchFormSubmit = (event) => {
     event.preventDefault();
@@ -128,14 +117,16 @@ function AdvancedSearchForm({ searchText, showResults }) {
           placeholder="Search in Experiments, Datasets or Datafiles"
           defaultSelected={typeOptions.slice(0, 3)}
         />
-        <label htmlFor="contain">Filter by Instrument</label>
-        <Typeahead
-          multiple
-          labelKey="name"
-          onChange={(selected) => { handleInstrumentListChange(selected); }}
-          placeholder="Start typing to select instruments"
-          options={instrumentList}
-        />
+        <div style={showInstrumentField() ? {} : { display: "none" }}>
+          <label htmlFor="contain">Filter by Instrument</label>
+          <Typeahead
+            multiple
+            labelKey="name"
+            onChange={(selected) => { handleInstrumentListChange(selected); }}
+            placeholder="Start typing to select instruments"
+            options={instrumentList}
+          />
+        </div>
         <button
           type="submit"
           className="btn btn-primary"
@@ -158,6 +149,7 @@ function AdvancedSearchForm({ searchText, showResults }) {
 AdvancedSearchForm.propTypes = {
   showResults: PropTypes.func.isRequired,
   searchText: PropTypes.string.isRequired,
+  instrumentList: PropTypes.arrayOf(String).isRequired,
 };
 
 export default AdvancedSearchForm;
