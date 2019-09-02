@@ -7,7 +7,7 @@ const queryString = require("query-string");
 
 const parsed = queryString.parse(window.location.search);
 
-function createExperimentResultData(hits, newResults) {
+export function createExperimentResultData(hits, newResults) {
   hits.forEach((hit) => {
     const createdTime = new Date(hit._source.created_time).toDateString();
     const updateTime = new Date(hit._source.update_time).toDateString();
@@ -30,7 +30,7 @@ function createExperimentResultData(hits, newResults) {
   });
   return newResults;
 }
-function createDatasetResultData(hits, newResults) {
+export function createDatasetResultData(hits, newResults) {
   hits.forEach((hit) => {
     const createdTime = new Date(hit._source.created_time).toDateString();
     const updateTime = new Date(hit._source.modified_time).toDateString();
@@ -48,7 +48,7 @@ function createDatasetResultData(hits, newResults) {
   });
   return newResults;
 }
-function createDataFileResultData(hits, newResults) {
+export function createDataFileResultData(hits, newResults) {
   hits.forEach((hit) => {
     const createdTime = new Date(hit._source.created_time).toDateString();
     const updateTime = new Date(hit._source.modification_time).toDateString();
