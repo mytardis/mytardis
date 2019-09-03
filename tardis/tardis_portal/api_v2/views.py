@@ -10,7 +10,8 @@ from ..models.experiment import Experiment
 from ..models.dataset import Dataset
 from ..models.datafile import DataFile, DataFileObject
 from ..models.parameters import (Schema, ParameterName,
-                                 ExperimentParameterSet, ExperimentParameter)
+                                 ExperimentParameterSet, ExperimentParameter,
+                                 DatasetParameterSet, DatasetParameter)
 
 from .permissions import (IsFacilityManager, IsFacilityManagerOf,
                           IsFacilityManagerOrReadOnly)
@@ -24,7 +25,9 @@ from .serializers import (UserSerializer, GroupSerializer,
                           StorageBoxAttributeSerializer,
                           SchemaSerializer, ParameterNameSerializer,
                           ExperimentParameterSetSerializer,
-                          ExperimentParameterSerializer)
+                          ExperimentParameterSerializer,
+                          DatasetParameterSetSerializer,
+                          DatasetParameterSerializer)
 
 
 class UserFilter(django_filters.FilterSet):
@@ -271,4 +274,44 @@ class ExperimentParameterViewSet(viewsets.ModelViewSet):
         return ExperimentParameter.objects.filter(
             parameterset__schema__hidden=False,
             parameterset__experiment__in=Experiment.safe.all(self.request.user)
+        ).order_by('id')
+
+
+class DatasetParameterSetViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint that allows dataset metadata parameter sets to be viewed or
+    listed.
+    """
+    queryset = DatasetParameterSet.objects.order_by('id')
+    serializer_class = DatasetParameterSetSerializer
+    permission_classes = (AllowAny,)
+    http_method_names = ['get', 'options', 'head']
+    filter_fields = ('dataset__id', 'schema__id',)
+
+    def get_queryset(self):
+        if self.request.user.is_superuser:
+            return DatasetParameterSet.objects.order_by('id')
+        return DatasetParameterSet.objects.filter(
+            schema__hidden=False,
+            dataset__experiments__in=Experiment.safe.all(self.request.user)
+        ).order_by('id')
+
+
+class DatasetParameterViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint that allows dataset metadata parameters to be viewed or
+    listed.
+    """
+    queryset = DatasetParameter.objects.order_by('id')
+    serializer_class = DatasetParameterSerializer
+    permission_classes = (AllowAny,)
+    http_method_names = ['get', 'options', 'head']
+
+    def get_queryset(self):
+        if self.request.user.is_superuser:
+            return DatasetParameter.objects.order_by('id')
+        return DatasetParameter.objects.filter(
+            parameterset__schema__hidden=False,
+            parameterset__dataset__experiment__in=Experiment.safe.all(
+                self.request.user)
         ).order_by('id')
