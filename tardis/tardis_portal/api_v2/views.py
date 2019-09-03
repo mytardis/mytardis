@@ -3,16 +3,18 @@ from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny
 
 from ..models.facility import Facility, facilities_managed_by
+from ..models.storage import StorageBox
 from ..models.instrument import Instrument
 from ..models.experiment import Experiment
 from ..models.dataset import Dataset
-from ..models.datafile import DataFile
+from ..models.datafile import DataFile, DataFileObject
 from .permissions import (IsFacilityManager, IsFacilityManagerOf,
                           IsFacilityManagerOrReadOnly)
 from .serializers import (UserSerializer, GroupSerializer,
                           FacilitySerializer, InstrumentSerializer,
                           ExperimentSerializer, DatasetSerializer,
-                          DataFileSerializer)
+                          DataFileSerializer, DataFileObjectSerializer,
+                          StorageBoxSerializer)
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -36,6 +38,16 @@ class GroupViewSet(viewsets.ModelViewSet):
     """
     queryset = Group.objects.order_by('id')
     serializer_class = GroupSerializer
+    permission_classes = (IsAdminUser | IsFacilityManager,)
+    http_method_names = ['get', 'options', 'head']
+
+
+class StorageBoxViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint that allows storage boxes to be viewed or listed.
+    """
+    queryset = StorageBox.objects.order_by('id')
+    serializer_class = StorageBoxSerializer
     permission_classes = (IsAdminUser | IsFacilityManager,)
     http_method_names = ['get', 'options', 'head']
 
@@ -126,4 +138,23 @@ class DataFileViewSet(viewsets.ModelViewSet):
         filename = self.request.query_params.get('filename', None)
         if filename is not None:
             queryset = queryset.filter(filename=filename)
+        return queryset
+
+
+class DataFileObjectViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint that allows datafile objects to be viewed, created or edited.
+    """
+    queryset = DataFileObject.objects.order_by('id')
+    serializer_class = DataFileObjectSerializer
+    http_method_names = ['get', 'options', 'head', 'post', 'patch', 'put']
+    permission_classes = (AllowAny,)
+
+    def get_queryset(self):
+        if self.request.user.is_superuser:
+            queryset = DataFileObject.objects.order_by('id')
+        queryset = DataFileObject.objects.filter(
+            datafile__dataset__experiments__in=Experiment.safe.all(
+                self.request.user)
+            ).order_by('id')
         return queryset
