@@ -1,3 +1,4 @@
+import django_filters
 from django.contrib.auth.models import User, Group
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny
@@ -8,7 +9,7 @@ from ..models.instrument import Instrument
 from ..models.experiment import Experiment
 from ..models.dataset import Dataset
 from ..models.datafile import DataFile, DataFileObject
-from ..models.parameters import Schema
+from ..models.parameters import Schema, ParameterName
 
 from .permissions import (IsFacilityManager, IsFacilityManagerOf,
                           IsFacilityManagerOrReadOnly)
@@ -20,8 +21,14 @@ from .serializers import (UserSerializer, GroupSerializer,
                           StorageBoxSerializer,
                           StorageBoxOptionSerializer,
                           StorageBoxAttributeSerializer,
-                          SchemaSerializer)
+                          SchemaSerializer, ParameterNameSerializer)
 
+
+class UserFilter(django_filters.FilterSet):
+    email__iexact = django_filters.CharFilter(field_name='email', lookup_expr='iexact')
+    class Meta:
+        model = User
+        fields = ('username', 'email')
 
 class UserViewSet(viewsets.ModelViewSet):
     """
@@ -31,6 +38,8 @@ class UserViewSet(viewsets.ModelViewSet):
     serializer_class = UserSerializer
     permission_classes = (IsAdminUser | IsFacilityManager,)
     http_method_names = ['get', 'options', 'head']
+    filterset_class = UserFilter
+    filter_fields = ('username', 'email',)
 
     def get_queryset(self):
         if facilities_managed_by(self.request.user).count():
@@ -161,6 +170,7 @@ class DataFileViewSet(viewsets.ModelViewSet):
     serializer_class = DataFileSerializer
     http_method_names = ['get', 'options', 'head', 'post', 'patch', 'put']
     permission_classes = (AllowAny,)
+    filter_fields = ('dataset__id', 'directory', 'filename',)
 
     def get_queryset(self):
         if self.request.user.is_superuser:
@@ -169,12 +179,6 @@ class DataFileViewSet(viewsets.ModelViewSet):
             dataset__experiments__in=Experiment.safe.all(
                 self.request.user)
             ).order_by('id')
-        directory = self.request.query_params.get('directory', None)
-        if directory is not None:
-            queryset = queryset.filter(directory=directory)
-        filename = self.request.query_params.get('filename', None)
-        if filename is not None:
-            queryset = queryset.filter(filename=filename)
         return queryset
 
 
@@ -210,3 +214,19 @@ class SchemaViewSet(viewsets.ModelViewSet):
         if self.request.user.is_superuser:
             return Schema.objects.order_by('id')
         return Schema.objects.filter(hidden=False).order_by('id')
+
+
+class ParameterNameViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint that allows metadata parameter names to be viewed or listed.
+    """
+    queryset = ParameterName.objects.order_by('id')
+    serializer_class = ParameterNameSerializer
+    permission_classes = (AllowAny,)
+    http_method_names = ['get', 'options', 'head']
+    filter_fields = ('name', 'schema__id',)
+
+    def get_queryset(self):
+        if self.request.user.is_superuser:
+            return ParameterName.objects.order_by('id')
+        return ParameterName.objects.filter(schema__hidden=False).order_by('id')

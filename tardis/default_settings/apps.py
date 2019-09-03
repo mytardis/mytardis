@@ -2,6 +2,7 @@
 # this Django installation.
 TARDIS_APP_ROOT = 'tardis.apps'
 INSTALLED_APPS = (
+    'crispy_forms',
     'django_extensions',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -12,6 +13,7 @@ INSTALLED_APPS = (
     'django.contrib.admin',
     'django.contrib.admindocs',
     'django.contrib.humanize',
+    'django_filters',
     'registration',
     'bootstrapform',
     'jstemplate',

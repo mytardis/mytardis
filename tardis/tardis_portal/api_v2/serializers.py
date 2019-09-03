@@ -7,7 +7,7 @@ from ..models.storage import StorageBox, StorageBoxOption, StorageBoxAttribute
 from ..models.experiment import Experiment
 from ..models.dataset import Dataset
 from ..models.datafile import DataFile, DataFileObject
-from ..models.parameters import Schema
+from ..models.parameters import Schema, ParameterName
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -87,3 +87,11 @@ class SchemaSerializer(serializers.ModelSerializer):
         model = Schema
         fields = ['id', 'namespace', 'name', 'type', 'subtype', 'immutable',
                   'hidden']
+
+
+class ParameterNameSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ParameterName
+        fields = ['id', 'schema', 'name', 'full_name', 'units', 'data_type',
+                  'immutable', 'comparison_type', 'is_searchable', 'choices',
+                  'order']
