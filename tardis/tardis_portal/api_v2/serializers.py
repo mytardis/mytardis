@@ -7,7 +7,7 @@ from ..models.storage import StorageBox, StorageBoxOption, StorageBoxAttribute
 from ..models.experiment import Experiment
 from ..models.dataset import Dataset
 from ..models.datafile import DataFile, DataFileObject
-from ..models.parameters import (Schema, ParameterName,
+from ..models.parameters import (Schema, ParameterName, Parameter,
                                  ExperimentParameterSet, ExperimentParameter)
 
 
@@ -98,7 +98,19 @@ class ParameterNameSerializer(serializers.ModelSerializer):
                   'order']
 
 
+class ParameterSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Parameter
+        fields = ['id', 'parameterset', 'name', 'string_value',
+                  'numerical_value', 'datetime_value']
+
+
 class ExperimentParameterSetSerializer(serializers.ModelSerializer):
     class Meta:
         model = ExperimentParameterSet
         fields = ['id', 'experiment', 'schema']
+
+
+class ExperimentParameterSerializer(ParameterSerializer):
+    class Meta(ParameterSerializer.Meta):
+        model = ExperimentParameter

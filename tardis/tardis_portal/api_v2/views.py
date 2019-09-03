@@ -23,7 +23,8 @@ from .serializers import (UserSerializer, GroupSerializer,
                           StorageBoxOptionSerializer,
                           StorageBoxAttributeSerializer,
                           SchemaSerializer, ParameterNameSerializer,
-                          ExperimentParameterSetSerializer)
+                          ExperimentParameterSetSerializer,
+                          ExperimentParameterSerializer)
 
 
 class UserFilter(django_filters.FilterSet):
@@ -251,4 +252,23 @@ class ExperimentParameterSetViewSet(viewsets.ModelViewSet):
         return ExperimentParameterSet.objects.filter(
             schema__hidden=False,
             experiment__in=Experiment.safe.all(self.request.user)
+        ).order_by('id')
+
+
+class ExperimentParameterViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint that allows experiment metadata parameters to be viewed or
+    listed.
+    """
+    queryset = ExperimentParameter.objects.order_by('id')
+    serializer_class = ExperimentParameterSerializer
+    permission_classes = (AllowAny,)
+    http_method_names = ['get', 'options', 'head']
+
+    def get_queryset(self):
+        if self.request.user.is_superuser:
+            return ExperimentParameter.objects.order_by('id')
+        return ExperimentParameter.objects.filter(
+            parameterset__schema__hidden=False,
+            parameterset__experiment__in=Experiment.safe.all(self.request.user)
         ).order_by('id')

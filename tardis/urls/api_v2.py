@@ -17,6 +17,7 @@ router.register(r'datafileobjects', views.DataFileObjectViewSet)
 router.register(r'schemas', views.SchemaViewSet)
 router.register(r'parameternames', views.ParameterNameViewSet)
 router.register(r'experimentparametersets', views.ExperimentParameterSetViewSet)
+router.register(r'experimentparameters', views.ExperimentParameterViewSet)
 
 # Wire up our API using automatic URL routing.
 # Additionally, we include login URLs for the browsable API.
