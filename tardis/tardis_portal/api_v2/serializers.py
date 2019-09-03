@@ -3,7 +3,7 @@ from rest_framework import serializers
 
 from ..models.facility import Facility
 from ..models.instrument import Instrument
-from ..models.storage import StorageBox
+from ..models.storage import StorageBox, StorageBoxOption, StorageBoxAttribute
 from ..models.experiment import Experiment
 from ..models.dataset import Dataset
 from ..models.datafile import DataFile, DataFileObject
@@ -37,7 +37,19 @@ class StorageBoxSerializer(serializers.ModelSerializer):
     class Meta:
         model = StorageBox
         fields = ['id', 'django_storage_class', 'name', 'description',
-                  'master_box', 'max_size', 'status']
+                  'master_box', 'max_size', 'status', 'options', 'attributes']
+
+
+class StorageBoxOptionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = StorageBoxOption
+        fields = ['id', 'storage_box', 'key', 'value']
+
+
+class StorageBoxAttributeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = StorageBoxAttribute
+        fields = ['id', 'storage_box', 'key', 'value']
 
 
 class ExperimentSerializer(serializers.ModelSerializer):

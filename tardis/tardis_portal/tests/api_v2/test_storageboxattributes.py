@@ -4,12 +4,12 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 
 
-class StorageBoxResourceTests(APITestCase):
-    def test_list_storage_boxes(self):
+class StorageBoxAttributeResourceTests(APITestCase):
+    def test_list_storage_box_attributes(self):
         """
-        Ensure we can list storage boxes.
+        Ensure we can list storage box attributes.
         """
-        url = reverse('storagebox-list')
+        url = reverse('storageboxattribute-list')
         # Firstly, test unauthenticated:
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)

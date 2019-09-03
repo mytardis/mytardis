@@ -3,7 +3,7 @@ from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny
 
 from ..models.facility import Facility, facilities_managed_by
-from ..models.storage import StorageBox
+from ..models.storage import StorageBox, StorageBoxOption, StorageBoxAttribute
 from ..models.instrument import Instrument
 from ..models.experiment import Experiment
 from ..models.dataset import Dataset
@@ -14,7 +14,9 @@ from .serializers import (UserSerializer, GroupSerializer,
                           FacilitySerializer, InstrumentSerializer,
                           ExperimentSerializer, DatasetSerializer,
                           DataFileSerializer, DataFileObjectSerializer,
-                          StorageBoxSerializer)
+                          StorageBoxSerializer,
+                          StorageBoxOptionSerializer,
+                          StorageBoxAttributeSerializer)
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -48,6 +50,37 @@ class StorageBoxViewSet(viewsets.ModelViewSet):
     """
     queryset = StorageBox.objects.order_by('id')
     serializer_class = StorageBoxSerializer
+    permission_classes = (IsAdminUser | IsFacilityManager,)
+    http_method_names = ['get', 'options', 'head']
+
+
+class StorageBoxOptionViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint that allows storage box options to be viewed or listed.
+    """
+    queryset = StorageBoxOption.objects.order_by('id')
+    serializer_class = StorageBoxOptionSerializer
+    permission_classes = (IsAdminUser | IsFacilityManager,)
+    http_method_names = ['get', 'options', 'head']
+
+    def get_queryset(self):
+        if self.request.user.is_superuser:
+            return StorageBoxOption.objects.order_by('id')
+        # StorageBoxOptions are the keyword parameters passed to Django
+        # storage classes (e.g. access_key, secret_key) to instantiate
+        # storage instances. To make a StorageBoxOption available to
+        # non-admin users via the API, it needs to be whitelisted here:
+        allowed_keys = ['location']
+        return StorageBoxOption.objects.filter(
+            key__in=allowed_keys).order_by('id')
+
+
+class StorageBoxAttributeViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint that allows storage box attributes to be viewed or listed.
+    """
+    queryset = StorageBoxAttribute.objects.order_by('id')
+    serializer_class = StorageBoxAttributeSerializer
     permission_classes = (IsAdminUser | IsFacilityManager,)
     http_method_names = ['get', 'options', 'head']
 
