@@ -18,3 +18,13 @@ class IsFacilityManager(permissions.BasePermission):
 
     def has_permission(self, request, view):
         return request.user and facilities_managed_by(request.user).count()
+
+
+class IsFacilityManagerOf(permissions.BasePermission):
+    """
+    Custom permission only allow facility managers
+    """
+
+    def has_object_permission(self, request, view, obj):
+        return (request.user and
+                facilities_managed_by(request.user).filter(pk=obj.id).exists())
