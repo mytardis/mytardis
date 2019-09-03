@@ -1,12 +1,15 @@
 from django.contrib.auth.models import User, Group
 from rest_framework import viewsets
+from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny
 
 from ..models.facility import Facility, facilities_managed_by
 from ..models.instrument import Instrument
-from .permissions import (IsSuperUser, IsFacilityManager, IsFacilityManagerOf,
-                          IsAuthenticated, IsFacilityManagerOrReadOnly)
+from ..models.experiment import Experiment
+from .permissions import (IsFacilityManager, IsFacilityManagerOf,
+                          IsFacilityManagerOrReadOnly)
 from .serializers import (UserSerializer, GroupSerializer,
-                          FacilitySerializer, InstrumentSerializer)
+                          FacilitySerializer, InstrumentSerializer,
+                          ExperimentSerializer)
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -15,9 +18,13 @@ class UserViewSet(viewsets.ModelViewSet):
     """
     queryset = User.objects.order_by('id')
     serializer_class = UserSerializer
-    permission_classes = (IsSuperUser|IsFacilityManager,)
+    permission_classes = (IsAdminUser|IsFacilityManager,)
     http_method_names = ['get', 'options', 'head']
 
+    def get_queryset(self):
+        if facilities_managed_by(self.request.user).count():
+            return User.objects.order_by('id')
+        return User.objects.filter(id=self.request.user.id).order_by('id')
 
 class GroupViewSet(viewsets.ModelViewSet):
     """
@@ -25,7 +32,7 @@ class GroupViewSet(viewsets.ModelViewSet):
     """
     queryset = Group.objects.order_by('id')
     serializer_class = GroupSerializer
-    permission_classes = (IsSuperUser|IsFacilityManager,)
+    permission_classes = (IsAdminUser|IsFacilityManager,)
     http_method_names = ['get', 'options', 'head']
 
 
@@ -36,7 +43,7 @@ class FacilityViewSet(viewsets.ModelViewSet):
     queryset = Facility.objects.order_by('id')
     serializer_class = FacilitySerializer
     http_method_names = ['get', 'options', 'head']
-    permission_classes = (IsSuperUser|(IsFacilityManager&IsFacilityManagerOf),)
+    permission_classes = (IsAdminUser|(IsFacilityManager&IsFacilityManagerOf),)
 
     def get_queryset(self):
         if self.request.user.is_superuser:
@@ -57,4 +64,19 @@ class InstrumentViewSet(viewsets.ModelViewSet):
         if self.request.user.is_superuser:
             return Instrument.objects.order_by('id')
         return Instrument.objects.filter(
-            facility__in=facilities_managed_by(self.request.user))
+            facility__in=facilities_managed_by(self.request.user)).order_by('id')
+
+
+class ExperimentViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint that allows experiments to be viewed, created or edited.
+    """
+    queryset = Experiment.objects.order_by('id')
+    serializer_class = ExperimentSerializer
+    http_method_names = ['get', 'options', 'head', 'post', 'patch', 'put']
+    permission_classes = (AllowAny,)
+
+    def get_queryset(self):
+        if self.request.user.is_superuser:
+            return Experiment.objects.order_by('id')
+        return Experiment.safe.all(self.request.user).order_by('id')

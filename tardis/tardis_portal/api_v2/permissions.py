@@ -3,22 +3,6 @@ from rest_framework import permissions
 from ..models.facility import facilities_managed_by
 
 
-class IsAuthenticated(permissions.BasePermission):
-    """
-    Permission representing authenticated Django users
-    """
-    def has_permission(self, request, view):
-        return request.user and request.user.is_authenticated
-
-
-class IsSuperUser(permissions.BasePermission):
-    """
-    Permission representing Django superusers
-    """
-    def has_permission(self, request, view):
-        return request.user and request.user.is_superuser
-
-
 class IsFacilityManager(permissions.BasePermission):
     """
     Custom permission only allow facility managers
