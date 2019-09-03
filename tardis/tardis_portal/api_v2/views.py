@@ -9,7 +9,8 @@ from ..models.instrument import Instrument
 from ..models.experiment import Experiment
 from ..models.dataset import Dataset
 from ..models.datafile import DataFile, DataFileObject
-from ..models.parameters import Schema, ParameterName
+from ..models.parameters import (Schema, ParameterName,
+                                 ExperimentParameterSet, ExperimentParameter)
 
 from .permissions import (IsFacilityManager, IsFacilityManagerOf,
                           IsFacilityManagerOrReadOnly)
@@ -21,7 +22,8 @@ from .serializers import (UserSerializer, GroupSerializer,
                           StorageBoxSerializer,
                           StorageBoxOptionSerializer,
                           StorageBoxAttributeSerializer,
-                          SchemaSerializer, ParameterNameSerializer)
+                          SchemaSerializer, ParameterNameSerializer,
+                          ExperimentParameterSetSerializer)
 
 
 class UserFilter(django_filters.FilterSet):
@@ -230,3 +232,23 @@ class ParameterNameViewSet(viewsets.ModelViewSet):
         if self.request.user.is_superuser:
             return ParameterName.objects.order_by('id')
         return ParameterName.objects.filter(schema__hidden=False).order_by('id')
+
+
+class ExperimentParameterSetViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint that allows experiment metadata parameter sets to be viewed or
+    listed.
+    """
+    queryset = ExperimentParameterSet.objects.order_by('id')
+    serializer_class = ExperimentParameterSetSerializer
+    permission_classes = (AllowAny,)
+    http_method_names = ['get', 'options', 'head']
+    filter_fields = ('experiment__id', 'schema__id',)
+
+    def get_queryset(self):
+        if self.request.user.is_superuser:
+            return ExperimentParameterSet.objects.order_by('id')
+        return ExperimentParameterSet.objects.filter(
+            schema__hidden=False,
+            experiment__in=Experiment.safe.all(self.request.user)
+        ).order_by('id')
