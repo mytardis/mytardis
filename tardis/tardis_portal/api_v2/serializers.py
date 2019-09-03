@@ -4,6 +4,7 @@ from rest_framework import serializers
 from ..models.facility import Facility
 from ..models.instrument import Instrument
 from ..models.experiment import Experiment
+from ..models.dataset import Dataset
 
 
 class UserSerializer(serializers.HyperlinkedModelSerializer):
@@ -35,3 +36,9 @@ class ExperimentSerializer(serializers.HyperlinkedModelSerializer):
         model = Experiment
         fields = ['id', 'title', 'description', 'created_time', 'created_by',
                   'institution_name']
+
+class DatasetSerializer(serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = Dataset
+        fields = ['id', 'experiments', 'description', 'directory',
+                  'created_time', 'modified_time', 'immutable', 'instrument']

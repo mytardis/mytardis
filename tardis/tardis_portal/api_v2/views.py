@@ -5,11 +5,12 @@ from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny
 from ..models.facility import Facility, facilities_managed_by
 from ..models.instrument import Instrument
 from ..models.experiment import Experiment
+from ..models.dataset import Dataset
 from .permissions import (IsFacilityManager, IsFacilityManagerOf,
                           IsFacilityManagerOrReadOnly)
 from .serializers import (UserSerializer, GroupSerializer,
                           FacilitySerializer, InstrumentSerializer,
-                          ExperimentSerializer)
+                          ExperimentSerializer, DatasetSerializer)
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -80,3 +81,21 @@ class ExperimentViewSet(viewsets.ModelViewSet):
         if self.request.user.is_superuser:
             return Experiment.objects.order_by('id')
         return Experiment.safe.all(self.request.user).order_by('id')
+
+
+class DatasetViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint that allows datasets to be viewed, created or edited.
+    """
+    queryset = Dataset.objects.order_by('id')
+    serializer_class = DatasetSerializer
+    http_method_names = ['get', 'options', 'head', 'post', 'patch', 'put']
+    permission_classes = (AllowAny,)
+
+    def get_queryset(self):
+        if self.request.user.is_superuser:
+            return Dataset.objects.order_by('id')
+        return Dataset.objects.filter(
+            experiments__in=Experiment.safe.all(
+                self.request.user)
+            ).order_by('id')
