@@ -8,15 +8,19 @@ from ..models.instrument import Instrument
 from ..models.experiment import Experiment
 from ..models.dataset import Dataset
 from ..models.datafile import DataFile, DataFileObject
+from ..models.parameters import Schema
+
 from .permissions import (IsFacilityManager, IsFacilityManagerOf,
                           IsFacilityManagerOrReadOnly)
+
 from .serializers import (UserSerializer, GroupSerializer,
                           FacilitySerializer, InstrumentSerializer,
                           ExperimentSerializer, DatasetSerializer,
                           DataFileSerializer, DataFileObjectSerializer,
                           StorageBoxSerializer,
                           StorageBoxOptionSerializer,
-                          StorageBoxAttributeSerializer)
+                          StorageBoxAttributeSerializer,
+                          SchemaSerializer)
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -191,3 +195,18 @@ class DataFileObjectViewSet(viewsets.ModelViewSet):
                 self.request.user)
             ).order_by('id')
         return queryset
+
+
+class SchemaViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint that allows metadata schemas to be viewed or listed.
+    """
+    queryset = Schema.objects.order_by('id')
+    serializer_class = SchemaSerializer
+    permission_classes = (AllowAny,)
+    http_method_names = ['get', 'options', 'head']
+
+    def get_queryset(self):
+        if self.request.user.is_superuser:
+            return Schema.objects.order_by('id')
+        return Schema.objects.filter(hidden=False).order_by('id')

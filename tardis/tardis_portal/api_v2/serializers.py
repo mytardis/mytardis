@@ -7,6 +7,7 @@ from ..models.storage import StorageBox, StorageBoxOption, StorageBoxAttribute
 from ..models.experiment import Experiment
 from ..models.dataset import Dataset
 from ..models.datafile import DataFile, DataFileObject
+from ..models.parameters import Schema
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -79,3 +80,10 @@ class DataFileObjectSerializer(serializers.ModelSerializer):
         model = DataFileObject
         fields = ['id', 'datafile', 'storage_box', 'uri', 'verified',
                   'created_time', 'last_verified_time']
+
+
+class SchemaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Schema
+        fields = ['id', 'namespace', 'name', 'type', 'subtype', 'immutable',
+                  'hidden']
