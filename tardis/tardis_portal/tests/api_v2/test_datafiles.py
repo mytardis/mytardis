@@ -3,12 +3,12 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 
 
-class DatasetResourceTests(APITestCase):
-    def test_list_datasets(self):
+class DataFileResourceTests(APITestCase):
+    def test_list_datafiles(self):
         """
-        Ensure we can list datasets.
+        Ensure we can list datafiles.
         """
-        url = reverse('dataset-list')
+        url = reverse('datafile-list')
         # Firstly, test unauthenticated:
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)

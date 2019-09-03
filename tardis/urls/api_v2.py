@@ -9,6 +9,7 @@ router.register(r'facilities', views.FacilityViewSet)
 router.register(r'instruments', views.InstrumentViewSet)
 router.register(r'experiments', views.ExperimentViewSet)
 router.register(r'datasets', views.DatasetViewSet)
+router.register(r'datafiles', views.DataFileViewSet)
 
 # Wire up our API using automatic URL routing.
 # Additionally, we include login URLs for the browsable API.

@@ -6,11 +6,13 @@ from ..models.facility import Facility, facilities_managed_by
 from ..models.instrument import Instrument
 from ..models.experiment import Experiment
 from ..models.dataset import Dataset
+from ..models.datafile import DataFile
 from .permissions import (IsFacilityManager, IsFacilityManagerOf,
                           IsFacilityManagerOrReadOnly)
 from .serializers import (UserSerializer, GroupSerializer,
                           FacilitySerializer, InstrumentSerializer,
-                          ExperimentSerializer, DatasetSerializer)
+                          ExperimentSerializer, DatasetSerializer,
+                          DataFileSerializer)
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -19,7 +21,7 @@ class UserViewSet(viewsets.ModelViewSet):
     """
     queryset = User.objects.order_by('id')
     serializer_class = UserSerializer
-    permission_classes = (IsAdminUser|IsFacilityManager,)
+    permission_classes = (IsAdminUser | IsFacilityManager,)
     http_method_names = ['get', 'options', 'head']
 
     def get_queryset(self):
@@ -27,13 +29,14 @@ class UserViewSet(viewsets.ModelViewSet):
             return User.objects.order_by('id')
         return User.objects.filter(id=self.request.user.id).order_by('id')
 
+
 class GroupViewSet(viewsets.ModelViewSet):
     """
     API endpoint that allows groups to be viewed or listed.
     """
     queryset = Group.objects.order_by('id')
     serializer_class = GroupSerializer
-    permission_classes = (IsAdminUser|IsFacilityManager,)
+    permission_classes = (IsAdminUser | IsFacilityManager,)
     http_method_names = ['get', 'options', 'head']
 
 
@@ -44,7 +47,7 @@ class FacilityViewSet(viewsets.ModelViewSet):
     queryset = Facility.objects.order_by('id')
     serializer_class = FacilitySerializer
     http_method_names = ['get', 'options', 'head']
-    permission_classes = (IsAdminUser|(IsFacilityManager&IsFacilityManagerOf),)
+    permission_classes = (IsAdminUser | (IsFacilityManager & IsFacilityManagerOf),)
 
     def get_queryset(self):
         if self.request.user.is_superuser:
@@ -59,7 +62,7 @@ class InstrumentViewSet(viewsets.ModelViewSet):
     queryset = Instrument.objects.order_by('id')
     serializer_class = InstrumentSerializer
     http_method_names = ['get', 'options', 'head', 'post', 'patch', 'put']
-    permission_classes = (IsAuthenticated&IsFacilityManagerOrReadOnly,)
+    permission_classes = (IsAuthenticated & IsFacilityManagerOrReadOnly,)
 
     def get_queryset(self):
         if self.request.user.is_superuser:
@@ -99,3 +102,28 @@ class DatasetViewSet(viewsets.ModelViewSet):
             experiments__in=Experiment.safe.all(
                 self.request.user)
             ).order_by('id')
+
+
+class DataFileViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint that allows datafiles to be viewed, created or edited.
+    """
+    queryset = DataFile.objects.order_by('id')
+    serializer_class = DataFileSerializer
+    http_method_names = ['get', 'options', 'head', 'post', 'patch', 'put']
+    permission_classes = (AllowAny,)
+
+    def get_queryset(self):
+        if self.request.user.is_superuser:
+            queryset = DataFile.objects.order_by('id')
+        queryset = DataFile.objects.filter(
+            dataset__experiments__in=Experiment.safe.all(
+                self.request.user)
+            ).order_by('id')
+        directory = self.request.query_params.get('directory', None)
+        if directory is not None:
+            queryset = queryset.filter(directory=directory)
+        filename = self.request.query_params.get('filename', None)
+        if filename is not None:
+            queryset = queryset.filter(filename=filename)
+        return queryset

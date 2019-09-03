@@ -29,7 +29,7 @@ class IsFacilityManagerOrReadOnly(permissions.BasePermission):
 
     def has_permission(self, request, view):
         if (request.method in permissions.SAFE_METHODS or
-            request.user and
-            facilities_managed_by(request.user)):
+            (request.user and
+             facilities_managed_by(request.user))):
             return True
         return False
