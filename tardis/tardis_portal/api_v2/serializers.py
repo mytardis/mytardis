@@ -9,7 +9,8 @@ from ..models.dataset import Dataset
 from ..models.datafile import DataFile, DataFileObject
 from ..models.parameters import (Schema, ParameterName, Parameter,
                                  ExperimentParameterSet, ExperimentParameter,
-                                 DatasetParameterSet, DatasetParameter)
+                                 DatasetParameterSet, DatasetParameter,
+                                 DatafileParameterSet, DatafileParameter)
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -126,3 +127,14 @@ class DatasetParameterSetSerializer(serializers.ModelSerializer):
 class DatasetParameterSerializer(ParameterSerializer):
     class Meta(ParameterSerializer.Meta):
         model = DatasetParameter
+
+
+class DatafileParameterSetSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DatafileParameterSet
+        fields = ['id', 'datafile', 'schema']
+
+
+class DatafileParameterSerializer(ParameterSerializer):
+    class Meta(ParameterSerializer.Meta):
+        model = DatafileParameter

@@ -11,7 +11,8 @@ from ..models.dataset import Dataset
 from ..models.datafile import DataFile, DataFileObject
 from ..models.parameters import (Schema, ParameterName,
                                  ExperimentParameterSet, ExperimentParameter,
-                                 DatasetParameterSet, DatasetParameter)
+                                 DatasetParameterSet, DatasetParameter,
+                                 DatafileParameterSet, DatafileParameter)
 
 from .permissions import (IsFacilityManager, IsFacilityManagerOf,
                           IsFacilityManagerOrReadOnly)
@@ -27,14 +28,18 @@ from .serializers import (UserSerializer, GroupSerializer,
                           ExperimentParameterSetSerializer,
                           ExperimentParameterSerializer,
                           DatasetParameterSetSerializer,
-                          DatasetParameterSerializer)
+                          DatasetParameterSerializer,
+                          DatafileParameterSetSerializer,
+                          DatafileParameterSerializer)
 
 
 class UserFilter(django_filters.FilterSet):
     email__iexact = django_filters.CharFilter(field_name='email', lookup_expr='iexact')
+
     class Meta:
         model = User
         fields = ('username', 'email')
+
 
 class UserViewSet(viewsets.ModelViewSet):
     """
@@ -313,5 +318,46 @@ class DatasetParameterViewSet(viewsets.ModelViewSet):
         return DatasetParameter.objects.filter(
             parameterset__schema__hidden=False,
             parameterset__dataset__experiment__in=Experiment.safe.all(
+                self.request.user)
+        ).order_by('id')
+
+
+class DatafileParameterSetViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint that allows datafile metadata parameter sets to be viewed or
+    listed.
+    """
+    queryset = DatafileParameterSet.objects.order_by('id')
+    serializer_class = DatafileParameterSetSerializer
+    permission_classes = (AllowAny,)
+    http_method_names = ['get', 'options', 'head']
+    filter_fields = ('datafile__id', 'schema__id',)
+
+    def get_queryset(self):
+        if self.request.user.is_superuser:
+            return DatafileParameterSet.objects.order_by('id')
+        return DatafileParameterSet.objects.filter(
+            schema__hidden=False,
+            datafile____dataset__experiments__in=Experiment.safe.all(
+                self.request.user)
+        ).order_by('id')
+
+
+class DatafileParameterViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint that allows datafile metadata parameters to be viewed or
+    listed.
+    """
+    queryset = DataFile.objects.order_by('id')
+    serializer_class = DatafileParameterSerializer
+    permission_classes = (AllowAny,)
+    http_method_names = ['get', 'options', 'head']
+
+    def get_queryset(self):
+        if self.request.user.is_superuser:
+            return DatafileParameter.objects.order_by('id')
+        return DatafileParameter.objects.filter(
+            parameterset__schema__hidden=False,
+            parameterset__datafile__dataset__experiment__in=Experiment.safe.all(
                 self.request.user)
         ).order_by('id')
