@@ -2,14 +2,16 @@ from django.contrib.auth.models import User, Group
 from rest_framework import viewsets
 
 from ..models.facility import Facility, facilities_managed_by
-from .permissions import IsSuperUser, IsFacilityManager, IsFacilityManagerOf
+from ..models.instrument import Instrument
+from .permissions import (IsSuperUser, IsFacilityManager, IsFacilityManagerOf,
+                          IsAuthenticated, IsFacilityManagerOrReadOnly)
 from .serializers import (UserSerializer, GroupSerializer,
-                          FacilitySerializer)
+                          FacilitySerializer, InstrumentSerializer)
 
 
 class UserViewSet(viewsets.ModelViewSet):
     """
-    API endpoint that allows users to be viewed or edited.
+    API endpoint that allows users to be viewed or listed.
     """
     queryset = User.objects.order_by('id')
     serializer_class = UserSerializer
@@ -19,7 +21,7 @@ class UserViewSet(viewsets.ModelViewSet):
 
 class GroupViewSet(viewsets.ModelViewSet):
     """
-    API endpoint that allows groups to be viewed or edited.
+    API endpoint that allows groups to be viewed or listed.
     """
     queryset = Group.objects.order_by('id')
     serializer_class = GroupSerializer
@@ -29,7 +31,7 @@ class GroupViewSet(viewsets.ModelViewSet):
 
 class FacilityViewSet(viewsets.ModelViewSet):
     """
-    API endpoint that allows facilities to be viewed or edited.
+    API endpoint that allows facilities to be viewed or listed.
     """
     queryset = Facility.objects.order_by('id')
     serializer_class = FacilitySerializer
@@ -40,3 +42,19 @@ class FacilityViewSet(viewsets.ModelViewSet):
         if self.request.user.is_superuser:
             return Facility.objects.order_by('id')
         return facilities_managed_by(self.request.user)
+
+
+class InstrumentViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint that allows instruments to be viewed, created or edited.
+    """
+    queryset = Instrument.objects.order_by('id')
+    serializer_class = InstrumentSerializer
+    http_method_names = ['get', 'options', 'head', 'post', 'patch', 'put']
+    permission_classes = (IsAuthenticated&IsFacilityManagerOrReadOnly,)
+
+    def get_queryset(self):
+        if self.request.user.is_superuser:
+            return Instrument.objects.order_by('id')
+        return Instrument.objects.filter(
+            facility__in=facilities_managed_by(self.request.user))
