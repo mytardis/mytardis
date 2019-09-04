@@ -27,6 +27,7 @@ class Command(BaseCommand):
         first_name_key = 'givenName'
         last_name_key = 'sn'
         email_key = 'mail'
+        print(ldap_dict)
         for key in ldap_dict.keys():
             test_value = ldap_dict[key]
             if test_value == "first_name":
@@ -43,7 +44,7 @@ class Command(BaseCommand):
                 username = r[settings.LDAP_USER_LOGIN_ATTR][0].decode('utf-8')
                 first_name = r[first_name_key][0].decode('utf-8')
                 last_name = r[last_name_key][0].decode('utf-8')
-                email = r[email_key][0].decode('utf-8')
+                email = [email_key][0]
                 user, created = User.objects.get_or_create(username=username, email=email, first_name=first_name, last_name=last_name)
                 total += 1
                 if created:
@@ -60,4 +61,4 @@ class Command(BaseCommand):
                     print("Added {}".format(user_id))
                 else:
                     print("{} already exists".format(user_id))
-    print("Found {}/{} users, added {}".format(total, len(options['user_id']), total_created))
+        print("Found {}/{} users, added {}".format(total, len(options['user_id']), total_created))

@@ -45,10 +45,10 @@ from .auth.decorators import (
     has_experiment_access,
     has_write_permissions)
 from .auth.localdb_auth import django_user
-from .models.access_control import ObjectACL
+from .models.access_control import ObjectACL, UserProfile, UserAuthentication
 from .models.datafile import DataFile, DataFileObject, compute_checksums
 from .models.dataset import Dataset
-from .models.experiment import Experiment
+from .models.experiment import Experiment, ExperimentAuthor
 from .models.parameters import (
     DatafileParameter,
     DatafileParameterSet,
@@ -384,6 +384,21 @@ class ACLAuthorization(Authorization):
                 bundle.request.user.has_perm('tardis_portal.add_instrument'),
                 bundle.obj.facility in facilities
             ])
+        elif isinstance(bundle.obj, User):
+            return all([
+                bundle.request.user.has_perm('tardis_portal.add_userprofile'),
+                bundle.request.user.has_perm('tardis_portal.add_userauthentication')
+                ])
+        elif isinstance(bundle.obj, UserProfile):
+            return all([
+                bundle.request.user.has_perm('tardis_portal.add_userprofile'),
+                bundle.request.user.has_perm('tardis_portal.add_userauthentication')
+                ])
+        elif isinstance(bundle.obj, UserAuthentication):
+            return all([
+                bundle.request.user.has_perm('tardis_portal.add_userprofile'),
+                bundle.request.user.has_perm('tardis_portal.add_userauthentication')
+                ])
         raise NotImplementedError(type(bundle.obj))
 
     def update_list(self, object_list, bundle):
@@ -449,13 +464,15 @@ class UserResource(ModelResource):
         authentication = default_authentication
         authorization = ACLAuthorization()
         queryset = User.objects.all()
-        allowed_methods = ['get']
+        #allowed_methods = ['get']
         fields = ['username', 'first_name', 'last_name', 'email']
         serializer = default_serializer
         filtering = {
             'username': ('exact', ),
             'email': ('iexact', ),
         }
+
+    
 
     def dehydrate(self, bundle):
         '''
