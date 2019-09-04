@@ -4,6 +4,16 @@ import PropTypes from "prop-types";
 import Cookies from "js-cookie";
 import AdvancedSearchForm from "./AdvancedSearchForm";
 
+function getInstrumentList() {
+  return fetch("/api/v1/instrument/")
+    .then((resp) => {
+      if (resp.ok) {
+        return resp.json();
+      }
+      throw new Error("Something went wrong ... ");
+    });
+}
+
 function SimpleSearchForm({ showResults, searchText }) {
   const [simpleSearchText, setSimpleSearchText] = useState(searchText);
   const [advanceSearchVisible, setAdvancedSearchVisible] = useState(false);
@@ -25,20 +35,14 @@ function SimpleSearchForm({ showResults, searchText }) {
         setIsLoading(false);
       });
   };
-  const getInstrumentList = () => {
-    const tempList = [];
-    fetch("/api/v1/instrument/?limit=0")
-      .then(resp => resp.json())
-      .then((json) => {
-        json.objects.forEach(
-          (value) => {
-            tempList.push(value.name);
-          },
-        );
-      });
-    return (tempList);
-  };
-  const [instrumentList] = useState(getInstrumentList());
+  const instrumentListTemp = [];
+  const jsonResponse = getInstrumentList();
+  jsonResponse.then((json) => {
+    json.objects.forEach((value) => {
+      instrumentListTemp.push(value.name);
+    });
+  });
+  const [instrumentList] = useState(instrumentListTemp);
   const handleSimpleSearchSubmit = (e) => {
     e.preventDefault();
     if (!simpleSearchText) {

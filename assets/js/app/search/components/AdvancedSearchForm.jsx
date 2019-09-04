@@ -8,15 +8,6 @@ import moment from "moment";
 import "react-bootstrap-typeahead/css/Typeahead.css";
 import "react-datetime/css/react-datetime.css";
 
-function getInstrumentList() {
-  return fetch("/api/v1/instrument/")
-    .then((resp) => {
-      if (resp.ok) {
-        return resp.json();
-      }
-      throw new Error("Something went wrong ... ");
-    });
-}
 
 function AdvancedSearchForm({ searchText, showResults, instrumentList }) {
   const [advanceSearchText, setAdvanceSearchText] = useState(searchText);
@@ -43,13 +34,6 @@ function AdvancedSearchForm({ searchText, showResults, instrumentList }) {
   useEffect(() => {
     setAdvanceSearchText(searchText);
   }, [searchText]);
-  const instrumentList = [];
-  const jsonResponse = getInstrumentList();
-  jsonResponse.then((json) => {
-    json.objects.forEach((value) => {
-      instrumentList.push(value.name);
-    });
-  });
 
   const showInstrumentField = () => (instrumentList.length > 0);
 
