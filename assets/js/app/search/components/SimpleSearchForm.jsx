@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 
-import AdvancedSearchForm from "./AdvancedSearchForm";
 import Cookies from "js-cookie";
+import AdvancedSearchForm from "./AdvancedSearchForm";
 
 function SimpleSearchForm({ showResults, searchText }) {
   const [simpleSearchText, setSimpleSearchText] = useState(searchText);
@@ -17,7 +17,7 @@ function SimpleSearchForm({ showResults, searchText }) {
       headers: {
         "Accept": "application/json", // eslint-disable-line quote-props
         "Content-Type": "application/json",
-        "X-CSRFToken": Cookies.get('csrftoken'),
+        "X-CSRFToken": Cookies.get("csrftoken"),
       },
     }).then(response => response.json())
       .then((data) => {

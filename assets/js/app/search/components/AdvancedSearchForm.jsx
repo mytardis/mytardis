@@ -1,4 +1,4 @@
-import Cookies from 'js-cookie';
+import Cookies from "js-cookie";
 import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import DateTime from "react-datetime";
@@ -8,6 +8,15 @@ import moment from "moment";
 import "react-bootstrap-typeahead/css/Typeahead.css";
 import "react-datetime/css/react-datetime.css";
 
+function getInstrumentList() {
+  return fetch("/api/v1/instrument/")
+    .then((resp) => {
+      if (resp.ok) {
+        return resp.json();
+      }
+      throw new Error("Something went wrong ... ");
+    });
+}
 
 function AdvancedSearchForm({ searchText, showResults, instrumentList }) {
   const [advanceSearchText, setAdvanceSearchText] = useState(searchText);
@@ -34,6 +43,13 @@ function AdvancedSearchForm({ searchText, showResults, instrumentList }) {
   useEffect(() => {
     setAdvanceSearchText(searchText);
   }, [searchText]);
+  const instrumentList = [];
+  const jsonResponse = getInstrumentList();
+  jsonResponse.then((json) => {
+    json.objects.forEach((value) => {
+      instrumentList.push(value.name);
+    });
+  });
 
   const showInstrumentField = () => (instrumentList.length > 0);
 
@@ -50,7 +66,7 @@ function AdvancedSearchForm({ searchText, showResults, instrumentList }) {
       headers: {
         "Accept": "application/json", // eslint-disable-line quote-props
         "Content-Type": "application/json",
-        "X-CSRFToken": Cookies.get('csrftoken'),
+        "X-CSRFToken": Cookies.get("csrftoken"),
       },
       body: JSON.stringify(formData),
     }).then(
