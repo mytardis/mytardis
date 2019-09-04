@@ -194,7 +194,9 @@ describe("Result Component", () => {
     expect(simpleSearchForm).toBeTruthy();
   });
   it("Test Render Advance Search Form", () => {
-    const advanceSearchForm = shallow(<AdvancedSearchForm searchText="test" showResults={showResults} />);
+    const advanceSearchForm = shallow(
+      <AdvancedSearchForm searchText="test" showResults={showResults} instrumentList={[]} />,
+    );
     expect(advanceSearchForm).toBeTruthy();
   });
 });
