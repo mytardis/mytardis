@@ -1,4 +1,4 @@
-testRegex = "((\\.|/*.)(spec))\\.js?$";
+automock = false;
 transformIgnorePatterns= ["/node_modules/"];
 module.exports ={
   moduleNameMapper: {
