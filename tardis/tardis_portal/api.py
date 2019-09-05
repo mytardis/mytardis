@@ -14,6 +14,7 @@ from django.conf.urls import url
 from django.contrib.auth.models import AnonymousUser
 from django.contrib.auth.models import User, Permission
 from django.contrib.auth.models import Group
+from django.shortcuts import get_object_or_404
 from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseForbidden, \
     StreamingHttpResponse
@@ -550,15 +551,14 @@ class UserResource(ModelResource):
             if field not in bundle.data:
                 raise KeyError
         bundle.data["password"] = make_password(self.gen_random_password())
-        permissions = [Permission.objects.get(codename='add_experiment'),
-                       Permission.objects.get(codename='change_experiment'),
-                       Permission.objects.get(codename='change_group'),
-                       Permission.objects.get(codename='change_objectacl'),
-                       Permission.objects.get(codename='add_datafile'),
-                       Permission.objects.get(codename='change_dataset'),
-                       Permission.objects.get(codename='add_dataset')]
+        permissions = [get_object_or_404(Permission, codename='add_experiment'),
+                       get_object_or_404(Permission, codename='change_experiment'),
+                       get_object_or_404(Permission, codename='change_group'),
+                       get_object_or_404(Permission, codename='change_objectacl'),
+                       get_object_or_404(Permission, codename='add_datafile'),
+                       get_object_or_404(Permission, codename='change_dataset'),
+                       get_object_or_404(Permission, codename='add_dataset')]
         bundle.data["user_permissions"] = permissions
-        print(bundle.data)
         return bundle
 
     def gen_random_password(self):
