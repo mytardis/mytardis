@@ -27,6 +27,8 @@ from tastypie.constants import ALL_WITH_RELATIONS
 from tastypie.exceptions import ImmediateHttpResponse
 from tastypie.exceptions import NotFound
 from tastypie.exceptions import Unauthorized
+from tastypie.exceptions import TastypieError
+from tastypie.http import HttpBadRequest
 from tastypie.http import HttpUnauthorized
 from tastypie.resources import ModelResource
 from tastypie.serializers import Serializer
@@ -61,6 +63,23 @@ from .models.parameters import (
 from .models.storage import StorageBox, StorageBoxOption, StorageBoxAttribute
 from .models.facility import Facility, facilities_managed_by
 from .models.instrument import Instrument
+
+class CustomBadRequest(TastypieError):
+    """
+    This exception is used to interrupt the flow of processing to immediately
+    return a custom HttpResponse.
+    """
+
+    def __init__(self, code="", message=""):
+        self._response = {
+            "error": {"code": code or "not_provided",
+                      "message": message or "No error message was provided."}}
+
+    @property
+    def response(self):
+        return HttpBadRequest(
+            json.dumps(self._response),
+            content_type='application/json')
 
 
 class PrettyJSONSerializer(Serializer):
@@ -464,15 +483,12 @@ class UserResource(ModelResource):
         authentication = default_authentication
         authorization = ACLAuthorization()
         queryset = User.objects.all()
-        #allowed_methods = ['get']
         fields = ['username', 'first_name', 'last_name', 'email']
         serializer = default_serializer
         filtering = {
             'username': ('exact', ),
             'email': ('iexact', ),
         }
-
-    
 
     def dehydrate(self, bundle):
         '''
@@ -520,6 +536,41 @@ class UserResource(ModelResource):
             bundle.data['email'] = queried_user.email
 
         return bundle
+
+    def hydrate(self, bundle):
+        authuser = bundle.request.user
+        authenticated = authuser.is_authenticated
+        required_fields = ['username',
+                           'first_name',
+                           'email']
+        for field in required_fields:
+            if field not in bundle.data:
+                raise CustomBadRequest(code="missing_key",
+                                       message=f"Must provide {field} when creating a user.")
+        return bundle
+
+    def obj_create(self,
+                   bundle,
+                   **kwargs):
+        try:
+            email = bundle.data["email"]
+            username = bundle.data["username"]
+            if User.objects.filter(email=email):
+                raise CustomBadRequest(
+                    code="duplicate_exception",
+                    message="That email is already used.")
+            if User.objects.filter(username=username):
+                raise CustomBadRequest(
+                    code="duplicate_exception",
+                    message="That username is already used.")
+        except KeyError as missing_key:
+            raise CustomBadRequest(
+                code="missing_key",
+                message="Must provide {missing_key} when creating a user."
+                        .format(missing_key=missing_key))
+        except User.DoesNotExist:
+            pass
+        return super(UserResource, self).obj_create(bundle, **kwargs)
 
 
 class MyTardisModelResource(ModelResource):

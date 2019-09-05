@@ -27,7 +27,6 @@ class Command(BaseCommand):
         first_name_key = 'givenName'
         last_name_key = 'sn'
         email_key = 'mail'
-        print(ldap_dict)
         for key in ldap_dict.keys():
             test_value = ldap_dict[key]
             if test_value == "first_name":
@@ -62,3 +61,4 @@ class Command(BaseCommand):
                 else:
                     print("{} already exists".format(user_id))
         print("Found {}/{} users, added {}".format(total, len(options['user_id']), total_created))
+        l.unbind_s()
