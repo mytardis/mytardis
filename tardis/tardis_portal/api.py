@@ -12,11 +12,12 @@ from wsgiref.util import FileWrapper
 from django.conf import settings
 from django.conf.urls import url
 from django.contrib.auth.models import AnonymousUser
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Permission
 from django.contrib.auth.models import Group
 from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseForbidden, \
     StreamingHttpResponse
+from django.contrib.auth.hashers import make_password
 
 from tastypie import fields
 from tastypie.authentication import BasicAuthentication
@@ -483,7 +484,7 @@ class UserResource(ModelResource):
         authentication = default_authentication
         authorization = ACLAuthorization()
         queryset = User.objects.all()
-        fields = ['username', 'first_name', 'last_name', 'email']
+        fields = ['username', 'first_name', 'last_name', 'email', 'password', 'user_permissions']
         serializer = default_serializer
         filtering = {
             'username': ('exact', ),
@@ -534,6 +535,8 @@ class UserResource(ModelResource):
         # add public information
         if public_user:
             bundle.data['email'] = queried_user.email
+        if 'password' in bundle.data:
+            del bundle.data['password']
 
         return bundle
 
@@ -546,7 +549,25 @@ class UserResource(ModelResource):
         for field in required_fields:
             if field not in bundle.data:
                 raise KeyError
+        bundle.data["password"] = make_password(self.gen_random_password())
+        permissions = [Permission.objects.get(codename='add_experiment'),
+                       Permission.objects.get(codename='change_experiment'),
+                       Permission.objects.get(codename='change_group'),
+                       Permission.objects.get(codename='change_objectacl'),
+                       Permission.objects.get(codename='add_datafile'),
+                       Permission.objects.get(codename='change_dataset'),
+                       Permission.objects.get(codename='add_dataset')]
+        bundle.data["user_permissions"] = permissions
+        print(bundle.data)
         return bundle
+
+    def gen_random_password(self):
+        import random
+        random.seed()
+        characters = 'abcdefghijklmnopqrstuvwxyzABCDFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*()?'
+        passlen = 16
+        password = "".join(random.sample(characters,passlen))
+        return password
 
     def obj_create(self,
                    bundle,
