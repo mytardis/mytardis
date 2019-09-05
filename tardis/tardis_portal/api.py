@@ -545,8 +545,7 @@ class UserResource(ModelResource):
                            'email']
         for field in required_fields:
             if field not in bundle.data:
-                raise CustomBadRequest(code="missing_key",
-                                       message=f"Must provide {field} when creating a user.")
+                raise KeyError
         return bundle
 
     def obj_create(self,
