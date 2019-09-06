@@ -35,11 +35,32 @@
               <div class="accordion-heading" data-parent="#private-experiments">
                 <div id="private-toggle-{{exp.id}}" class="accordion-toggle private-experiment" data-toggle="collapse"  data-parent="#private-experiments">
                   <input type="hidden" class="exp-index" value="{{ forloop.counter }}">
-                  <strong><a class="pull-left explink"
+                  <strong><a class="explink pull-left"
                              href="{% url 'tardis_portal.view_experiment' exp.id %}">{{ exp.title }}</a></strong>
-                  {% experiment_badges exp %}
-                  {% experiment_authors exp %}
-                  {% experiment_download_link exp %}
+                  <ul class="nav nav-pills">
+                    <li class="ml-auto mr-2">{{ exp|experiment_public_access_badge }}</li>
+                    <li class="mr-2">{{ exp|experiment_datafiles_badge }}</li>
+                    <li class="mr-2">{{ exp|experiment_datasets_badge }}</li>
+                    <li>{{ exp|experiment_last_updated_badge }}</li>
+                  </ul>
+                  <small>
+                    {% for author in exp.experimentauthor_set.all %}
+                      {% if not forloop.first %}, {% endif %}
+                      <span property="dc:author">{{ author.author }}</span>
+                    {% endfor %}
+                    &nbsp;
+                  </small>
+                  <span class="pull-right">
+                    {% for dltype, dlurl in exp.get_download_urls.items %}
+                      {% if forloop.first %}
+                        <a class="dllink" href="{{dlurl}}"
+                           title="Download Entire Experiment as {{dltype}}">
+                          <i class="fa fa-download"></i>
+                          <em>Download data as .{{dltype}}</em>
+                        </a>
+                      {% endif %}
+                    {% endfor %}
+                  </span>
                 </div> {% comment %}class="accordion-toggle private-experiment"{% endcomment %}
               </div> {% comment %}class="accordiong-heading"{% endcomment %}
               <div id="collapse-{{exp.id}}"
@@ -70,9 +91,31 @@
               <input type="hidden" class="exp-index" value="{{ forloop.counter }}">
               <strong><a class="pull-left explink"
                          href="{% url 'tardis_portal.view_experiment' exp.id %}">{{ exp.title }}</a></strong>
-              {% experiment_badges exp %}
-              {% experiment_authors exp %}
-              {% experiment_download_link exp %}
+              <ul class="nav nav-pills badgelist">
+                <li class="ml-auto mr-2">{{ exp|experiment_datafiles_badge }}</li>
+                <li class="mr-2">{{ exp|experiment_datasets_badge }}</li>
+                <li class="mr-2">{{ exp|experiment_last_updated_badge }}</li>
+              </ul>
+              <small>
+                {% for author in exp.experimentauthor_set.all %}
+                  {% if not forloop.first %}, {% endif %}
+                  <span property="dc:author">{{ author.author }}</span>
+                {% endfor %}
+                &nbsp;
+              </small>
+              <span class="pull-right">
+                {% if exp.public_download_allowed %}
+                  {% for dltype, dlurl in exp.get_download_urls.items %}
+                    {% if forloop.first %}
+                      <a class="dllink" href="{{dlurl}}"
+                         title="Download Entire Experiment as {{dltype}}">
+                        <i class="fa fa-download"></i>
+                        <em>Download data as .{{dltype}}</em>
+                      </a>
+                    {% endif %}
+                  {% endfor %}
+                 {% endif %}
+              </span>
             </div> {% comment %}class="accordion-toggle public-experiment"{% endcomment %}
           </div> {% comment %}class="accordion-heading"{% endcomment %}
           <div id="collapsepub-{{exp.id}}"
