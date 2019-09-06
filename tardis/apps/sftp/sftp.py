@@ -483,7 +483,13 @@ class MyTSFTPRequestHandler(socketserver.BaseRequestHandler):
             'sftp', MyTSFTPServer, MyTSFTPServerInterface)
 
     def handle(self):
-        self.transport.start_server(server=MyTServerInterface())
+        try:
+            self.transport.start_server(server=MyTServerInterface())
+        except paramiko.SSHException as e:
+            # SSHException: Error reading SSH protocol banner
+            # [Errno 104] Connection reset by peer
+            logger.error("Unable to establish SSH connection: %s" % str(e))
+            return
 
     def handle_timeout(self):
         self.transport.close()
