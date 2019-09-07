@@ -18,7 +18,8 @@ from six import BytesIO
 from django.conf import settings
 from paramiko import InteractiveQuery,  RSAKey, ServerInterface,\
     SFTPAttributes, SFTPHandle,\
-    SFTPServer, SFTPServerInterface, Transport
+    SFTPServer, SFTPServerInterface, Transport,\
+    SSHException
 from paramiko import OPEN_SUCCEEDED, OPEN_FAILED_ADMINISTRATIVELY_PROHIBITED,\
     SFTP_OP_UNSUPPORTED, SFTP_NO_SUCH_FILE
 from paramiko.common import AUTH_FAILED, AUTH_SUCCESSFUL
@@ -485,7 +486,7 @@ class MyTSFTPRequestHandler(socketserver.BaseRequestHandler):
     def handle(self):
         try:
             self.transport.start_server(server=MyTServerInterface())
-        except paramiko.SSHException as e:
+        except SSHException as e:
             # SSHException: Error reading SSH protocol banner
             # [Errno 104] Connection reset by peer
             logger.error("Unable to establish SSH connection: %s" % str(e))
