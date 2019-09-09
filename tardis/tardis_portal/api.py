@@ -677,11 +677,11 @@ class UserProfileResource(ModelResource):
         authentication = default_authentication
         authorization = ACLAuthorization()
         queryset = UserProfile.objects.all()
-        fields = ['username', 'user']
+        always_return_data = True
 
 class UserAuthenticationResource(ModelResource):
-    userProfile = fields.ForeignKey(UserProfileResource, 'user',
-                                    null=True, blank=True)
+    userProfile = fields.ForeignKey(UserProfileResource, attribute='userProfile',
+                                    null=True, blank=True, full=True)
 
     class Meta:
         authentication = default_authentication
@@ -710,7 +710,8 @@ class UserAuthenticationResource(ModelResource):
                    bundle,
                    **kwargs):
         username = bundle.data['username']
-        if User.objects.filter(username=username):
+        if UserProfile.objects.filter(username=username):
+            bundle.data['userProfile'] = UserProfile.objects.filter(username=username)
             bundle.data['authenticationMethod'] = settings.LDAP_METHOD
             bundle = super(UserAuthenticationResource, self).obj_create(bundle, **kwargs)
         else:

@@ -35,16 +35,11 @@ class UserProfile(models.Model):
     rapidConnectEduPersonTargetedID = models.CharField(
         max_length=400, null=True, blank=True)
 
-    username = models.CharField(max_length=400, null=True, blank=True)
-
-    def __init__(self):
-        self.username = self.user.username
-
     class Meta:
         app_label = 'tardis_portal'
 
     def __str__(self):
-        return self.username
+        return self.user.username
 
     def getUserAuthentications(self):
         return self.userAuthentication_set.all()
