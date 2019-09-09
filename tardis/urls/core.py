@@ -10,7 +10,8 @@ from tardis.tardis_portal.views import (
     shared,
     public_data,
     about,
-    stats
+    stats,
+    healthz
 )
 
 core_urls = [
