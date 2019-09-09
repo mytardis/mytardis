@@ -14,6 +14,7 @@ from tardis.tardis_portal.views import (
 )
 
 core_urls = [
+    url(r'^healthz$', healthz, name='tardis.tardis_portal.views.healthz'),
     url(r'^site-settings.xml/$', site_settings, name='tardis-site-settings'),
     url(r'^mydata/$', my_data, name='tardis.tardis_portal.views.my_data'),
     url(r'^shared/$', shared, name='tardis.tardis_portal.views.shared'),
