@@ -670,18 +670,42 @@ class UserResource(MyTardisModelResource):
         #self._assign_permission_to_user(bundle)
         return bundle
 
-    '''def _assign_permission_to_user(self, bundle):
+class UserProfileResource(ModelResource):
+    user = fields.OneToOneField(UserResource, 'user')
+
+    class Meta:
+        queryset = UserProfile.objects.all()
+
+class UserAuthenticationResource(ModelResource):
+    user = fields.ForeignKey(UserProfileResource, 'user')
+
+    class Meta:
+        authentication = default_authentication
+        authorization = ACLAuthorization()
+        queryset = UserAuthentication.objects.all()
+        fields = ['username']
+        serializer = default_serializer
+        filtering = {
+            'username': ('exact', ),
+        }
+        always_return_data = True
+
+    def hydrate(self, bundle):
+        authuser = bundle.request.user
+        authenticated = authuser.is_authenticated
+        required_fields = ['username']
+        return bundle
+
+    def obj_create(self,
+                   bundle,
+                   **kwargs):
         username = bundle.data['username']
         if User.objects.filter(username=username):
-            user = User.objects.filter(username=username)
+            bundle.data['authenticationMethod'] = settings.LDAP_METHOD
+            bundle = super(UserAuthenticationResource, self).obj_create(bundle, **kwargs)
         else:
-            raise CustomBadRequest(
-                code="missing_user",
-                message="Please create the user before assigning permissions")
-        permission = Permission.objects.filter(codename='add_experiment')
-        user.user_permissions.add(permission)
-        user.save()'''
-        
+            raise CustomBadRequest(code='missing user', message='No user by the name: {username} found.'.format(username=username))
+        return bundle
 
 class ExperimentParameterSetResource(ParameterSetResource):
     '''API for ExperimentParameterSets
