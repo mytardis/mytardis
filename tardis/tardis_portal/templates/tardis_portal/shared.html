@@ -14,7 +14,7 @@
       <h2 class="visible-xs">Experiments</h2>
       <div class="pull-right">
         {% if perms.tardis_portal.add_experiment %}
-        <a class="btn btn-warning"
+        <a class="btn btn-warning btn-sm"
            href="{% url 'tardis.tardis_portal.views.create_experiment' %}">
           <i class="fa fa-plus"></i>
           Create
@@ -22,7 +22,7 @@
         {% endif %}
       </div>  <!-- class="pull-right" -->
       <div class="pull-left">
-        <h2 class="hidden-xm" style="text-align: center">Experiments</h2>
+        <h2 class="d-none d-sm-block" style="text-align: center">Experiments</h2>
       </div>
     </div>  <!-- class="col-md-12" -->
   </div>  <!-- class="row" -->
@@ -41,10 +41,10 @@
         Shared Experiment{{ shared_experiments.count|pluralize }}</h3>
       </div>
       <div class="pull-right">
-        <button type="button" class="btn btn-success btn-xs"
+        <button type="button" class="btn btn-success btn-sm"
                 onclick="$('#myshared .panel-collapse').collapse('hide');" >
         Collapse all</button>
-        <button type="button" class="btn btn-success btn-xs"
+        <button type="button" class="btn btn-success btn-sm"
                 onclick="$('#myshared .panel-collapse').collapse('show');" >
         Expand all</button>
       </div>
