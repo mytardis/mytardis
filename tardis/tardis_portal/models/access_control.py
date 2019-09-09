@@ -23,7 +23,6 @@ class UserProfile(models.Model):
        :class:`django.contrib.auth.models.User`
     """
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-
     # This flag will tell us if the main User account was created using any
     # non localdb auth methods. For example, if a first time user authenticates
     # to the system using the VBL auth method, an account will be created for
@@ -36,11 +35,16 @@ class UserProfile(models.Model):
     rapidConnectEduPersonTargetedID = models.CharField(
         max_length=400, null=True, blank=True)
 
+    username = models.CharField(max_length=400, null=True, blank=True)
+
+    def __init__(self):
+        self.username = self.user.username
+
     class Meta:
         app_label = 'tardis_portal'
 
     def __str__(self):
-        return self.user.username
+        return self.username
 
     def getUserAuthentications(self):
         return self.userAuthentication_set.all()

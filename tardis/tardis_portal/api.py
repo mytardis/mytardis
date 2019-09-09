@@ -674,16 +674,20 @@ class UserProfileResource(ModelResource):
     user = fields.OneToOneField(UserResource, 'user')
 
     class Meta:
+        authentication = default_authentication
+        authorization = ACLAuthorization()
         queryset = UserProfile.objects.all()
+        fields = ['username', 'user']
 
 class UserAuthenticationResource(ModelResource):
-    user = fields.ForeignKey(UserProfileResource, 'user')
+    userProfile = fields.ForeignKey(UserProfileResource, 'user',
+                                    null=True, blank=True)
 
     class Meta:
         authentication = default_authentication
         authorization = ACLAuthorization()
         queryset = UserAuthentication.objects.all()
-        fields = ['username']
+        fields = ['username', 'userProfile', 'authenticationMethod']
         serializer = default_serializer
         filtering = {
             'username': ('exact', ),
@@ -693,7 +697,13 @@ class UserAuthenticationResource(ModelResource):
     def hydrate(self, bundle):
         authuser = bundle.request.user
         authenticated = authuser.is_authenticated
-        required_fields = ['username']
+        required_fields = ['username', 'userProfile']
+        username = bundle.data['username']
+        try:
+            userProfile = UserProfile.objects.filter(username=username)
+        except User.DoesNotExist:
+            raise
+        bundle['userProfile'] = userProfile
         return bundle
 
     def obj_create(self,
