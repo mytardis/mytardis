@@ -476,123 +476,6 @@ class GroupResource(ModelResource):
             'name': ('exact',),
         }
 
-
-class UserResource(ModelResource):
-    groups = fields.ManyToManyField(GroupResource, 'groups',
-                                    null=True, full=True)
-
-    class Meta:
-        authentication = default_authentication
-        authorization = ACLAuthorization()
-        queryset = User.objects.all()
-        fields = ['username', 'first_name', 'last_name', 'email', 'password', 'user_permissions']
-        serializer = default_serializer
-        filtering = {
-            'username': ('exact', ),
-            'email': ('iexact', ),
-        }
-
-    def dehydrate(self, bundle):
-        '''
-        use cases::
-
-          public user:
-            anonymous:
-              name, uri, email, id
-            authenticated:
-              other user:
-                name, uri, email, id [, username if facility manager]
-              same user:
-                name, uri, email, id, username
-          private user:
-            anonymous:
-              none
-            authenticated:
-              other user:
-                name, uri, id [, username, email if facility manager]
-              same user:
-                name, uri, email, id, username
-        '''
-        authuser = bundle.request.user
-        authenticated = authuser.is_authenticated
-        queried_user = bundle.obj
-        public_user = queried_user.experiment_set.filter(
-            public_access__gt=1).count() > 0
-        same_user = authuser == queried_user
-
-        # add the database id for convenience
-        bundle.data['id'] = queried_user.id
-
-        # allow the user to find out their username and email
-        # allow facility managers to query other users' username and email
-        if authenticated and \
-                (same_user or facilities_managed_by(authuser).count() > 0):
-            bundle.data['username'] = queried_user.username
-            bundle.data['email'] = queried_user.email
-        else:
-            del(bundle.data['username'])
-            del(bundle.data['email'])
-
-        # add public information
-        if public_user:
-            bundle.data['email'] = queried_user.email
-        if 'password' in bundle.data:
-            del bundle.data['password']
-
-        return bundle
-
-    def hydrate(self, bundle):
-        authuser = bundle.request.user
-        authenticated = authuser.is_authenticated
-        required_fields = ['username',
-                           'first_name',
-                           'email']
-        for field in required_fields:
-            if field not in bundle.data:
-                raise KeyError
-        bundle.data["password"] = make_password(self.gen_random_password())
-        permissions = [get_object_or_404(Permission, codename='add_experiment'),
-                       get_object_or_404(Permission, codename='change_experiment'),
-                       get_object_or_404(Permission, codename='change_group'),
-                       get_object_or_404(Permission, codename='change_objectacl'),
-                       get_object_or_404(Permission, codename='add_datafile'),
-                       get_object_or_404(Permission, codename='change_dataset'),
-                       get_object_or_404(Permission, codename='add_dataset')]
-        bundle.data["user_permissions"] = permissions
-        return bundle
-
-    def gen_random_password(self):
-        import random
-        random.seed()
-        characters = 'abcdefghijklmnopqrstuvwxyzABCDFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*()?'
-        passlen = 16
-        password = "".join(random.sample(characters,passlen))
-        return password
-
-    def obj_create(self,
-                   bundle,
-                   **kwargs):
-        try:
-            email = bundle.data["email"]
-            username = bundle.data["username"]
-            if User.objects.filter(email=email):
-                raise CustomBadRequest(
-                    code="duplicate_exception",
-                    message="That email is already used.")
-            if User.objects.filter(username=username):
-                raise CustomBadRequest(
-                    code="duplicate_exception",
-                    message="That username is already used.")
-        except KeyError as missing_key:
-            raise CustomBadRequest(
-                code="missing_key",
-                message="Must provide {missing_key} when creating a user."
-                        .format(missing_key=missing_key))
-        except User.DoesNotExist:
-            pass
-        return super(UserResource, self).obj_create(bundle, **kwargs)
-
-
 class MyTardisModelResource(ModelResource):
 
     def lookup_kwargs_with_identifiers(self, bundle, kwargs):
@@ -670,7 +553,135 @@ class ParameterSetResource(MyTardisModelResource):
         bundle.obj.schema = schema
         del(bundle.data['schema'])
         return bundle
+    
+#class PermissionsResource(ModelResource):
+#    class Meta:
+#        queryset = Permission.objects.all()
 
+class UserResource(MyTardisModelResource):
+    groups = fields.ManyToManyField(GroupResource, 'groups',
+                                    null=True, full=True)
+    #permissions = fields.ManyToManyField(PermissionsResource, 'permissions',
+    #                                     null=True, full=True)
+
+    class Meta:
+        authentication = default_authentication
+        authorization = ACLAuthorization()
+        queryset = User.objects.all()
+        fields = ['username', 'first_name', 'last_name', 'email', 'password']
+        serializer = default_serializer
+        filtering = {
+            'username': ('exact', ),
+            'email': ('iexact', ),
+        }
+        always_return_data = True
+
+    def dehydrate(self, bundle):
+        '''
+        use cases::
+
+          public user:
+            anonymous:
+              name, uri, email, id
+            authenticated:
+              other user:
+                name, uri, email, id [, username if facility manager]
+              same user:
+                name, uri, email, id, username
+          private user:
+            anonymous:
+              none
+            authenticated:
+              other user:
+                name, uri, id [, username, email if facility manager]
+              same user:
+                name, uri, email, id, username
+        '''
+        authuser = bundle.request.user
+        authenticated = authuser.is_authenticated
+        queried_user = bundle.obj
+        public_user = queried_user.experiment_set.filter(
+            public_access__gt=1).count() > 0
+        same_user = authuser == queried_user
+
+        # add the database id for convenience
+        bundle.data['id'] = queried_user.id
+
+        # allow the user to find out their username and email
+        # allow facility managers to query other users' username and email
+        if authenticated and \
+                (same_user or facilities_managed_by(authuser).count() > 0):
+            bundle.data['username'] = queried_user.username
+            bundle.data['email'] = queried_user.email
+        else:
+            del(bundle.data['username'])
+            del(bundle.data['email'])
+
+        # add public information
+        if public_user:
+            bundle.data['email'] = queried_user.email
+        if 'password' in bundle.data:
+            del bundle.data['password']
+
+        return bundle
+
+    def hydrate(self, bundle):
+        authuser = bundle.request.user
+        authenticated = authuser.is_authenticated
+        required_fields = ['username',
+                           'first_name',
+                           'email']
+        for field in required_fields:
+            if field not in bundle.data:
+                raise KeyError
+        bundle.data["password"] = make_password(self.gen_random_password())
+        return bundle
+
+    def gen_random_password(self):
+        import random
+        random.seed()
+        characters = 'abcdefghijklmnopqrstuvwxyzABCDFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*()?'
+        passlen = 16
+        password = "".join(random.sample(characters,passlen))
+        return password
+
+    def obj_create(self,
+                   bundle,
+                   **kwargs):
+        try:
+            email = bundle.data["email"]
+            username = bundle.data["username"]
+            if User.objects.filter(email=email):
+                raise CustomBadRequest(
+                    code="duplicate_exception",
+                    message="That email is already used.")
+            if User.objects.filter(username=username):
+                raise CustomBadRequest(
+                    code="duplicate_exception",
+                    message="That username is already used.")
+        except KeyError as missing_key:
+            raise CustomBadRequest(
+                code="missing_key",
+                message="Must provide {missing_key} when creating a user."
+                        .format(missing_key=missing_key))
+        except User.DoesNotExist:
+            pass
+        bundle = super(UserResource, self).obj_create(bundle, **kwargs)
+        #self._assign_permission_to_user(bundle)
+        return bundle
+
+    '''def _assign_permission_to_user(self, bundle):
+        username = bundle.data['username']
+        if User.objects.filter(username=username):
+            user = User.objects.filter(username=username)
+        else:
+            raise CustomBadRequest(
+                code="missing_user",
+                message="Please create the user before assigning permissions")
+        permission = Permission.objects.filter(codename='add_experiment')
+        user.user_permissions.add(permission)
+        user.save()'''
+        
 
 class ExperimentParameterSetResource(ParameterSetResource):
     '''API for ExperimentParameterSets

@@ -69,7 +69,11 @@ class UserProfile(models.Model):
 @receiver(post_save, sender=User, dispatch_uid="create_user_profile")
 def create_user_profile(sender, instance, created, **kwargs):
     if created:
-        UserProfile(user=instance).save()
+        user = instance
+        for permissions in settings.DEFAULT_PERMISSIONS:
+            user.user_permissions.add(Permission.objects.get(codename=permissions))
+        user.save()        
+        UserProfile(user=user).save()
 
 
 @python_2_unicode_compatible
