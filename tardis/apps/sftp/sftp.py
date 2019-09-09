@@ -486,10 +486,13 @@ class MyTSFTPRequestHandler(socketserver.BaseRequestHandler):
         try:
             self.transport.start_server(server=MyTServerInterface())
         except SSHException as e:
-            # SSHException: Error reading SSH protocol banner
-            # [Errno 104] Connection reset by peer
-            logger.error("Unable to establish SSH connection: %s" % str(e))
+            logger.error("SSH error: %s" % str(e))
             self.transport.close()
+        except EOFError as e:
+            logger.error("Socket error: %s" % str(e))
+        except Exception as e:
+            logger.error("Error: %s" % str(e))
+
 
     def handle_timeout(self):
         self.transport.close()
