@@ -13,6 +13,8 @@
   <div class="row">
     <div class="col-md-12">
       <h2 class="visible-xs">Experiments</h2>
+    <div class="col-md-9">
+      <h2 class="d-block d-sm-none">Experiments</h2>
       <div class="pull-right">
         {% if perms.tardis_portal.add_experiment %}
         <a id="create-experiment"
@@ -24,7 +26,7 @@
         {% endif %}
       </div>  <!-- class="pull-right" -->
       <div class="pull-left">
-        <h2 class="hidden-xm" style="text-align: center">Experiments</h2>
+        <h2 class="d-none d-sm-block" style="text-align: center">Experiments</h2>
       </div>
     </div>  <!-- class="col-md-12" -->
   </div>  <!-- class="row" -->
