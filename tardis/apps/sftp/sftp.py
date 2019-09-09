@@ -40,8 +40,7 @@ logger = logging.getLogger(__name__)
 path_mapper = make_mapper(settings.DEFAULT_PATH_MAPPER, rootdir=None)
 
 paramiko_log = logging.getLogger('paramiko.transport')
-if not paramiko_log.handlers:
-    paramiko_log.addHandler(logging.FileHandler('sftpd.log'))
+paramiko_log.disabled = True
 
 
 if getattr(settings, 'SFTP_GEVENT', False):
@@ -490,7 +489,7 @@ class MyTSFTPRequestHandler(socketserver.BaseRequestHandler):
             # SSHException: Error reading SSH protocol banner
             # [Errno 104] Connection reset by peer
             logger.error("Unable to establish SSH connection: %s" % str(e))
-            return
+            self.transport.close()
 
     def handle_timeout(self):
         self.transport.close()
