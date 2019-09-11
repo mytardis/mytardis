@@ -10,9 +10,9 @@
 <div id="content" class="container-fluid">
   <div class="row">
     <div class="col-md-12">
-      <h2 class="visible-xs">Experiments</h2>
+      <h2 class="d-block d-sm-none">Experiments</h2>
       <div class="pull-left">
-          <h2 class="hidden-xm" style="text-align: center">Experiments</h2>
+          <h2 class="d-none d-sm-block" style="text-align: center">Experiments</h2>
       </div>
     </div>
   </div>
@@ -29,10 +29,10 @@
         </h3>
       </div>
       <div class="pull-right">
-        <button type="button" class="btn btn-success btn-xs"
+        <button type="button" class="btn btn-success btn-sm"
                 onclick="$('#public-experiments .panel-collapse').collapse('hide');" >
         Collapse all</button>
-        <button type="button" class="btn btn-success btn-xs"
+        <button type="button" class="btn btn-success btn-sm"
                 onclick="$('#public-experiments .panel-collapse').collapse('show');" >
         Expand all</button>
       </div>
@@ -43,11 +43,42 @@
             <div class="accordion-heading">
               <div class="accordion-toggle" data-toggle="collapse"
                    onclick="$('#collapse{{exp.id}}').collapse('toggle');" >
-                <strong><a class="pull-left explink"
+                <strong><a class="pull-left"
                            href="{% url 'tardis_portal.view_experiment' exp.id %}">{{ exp.title }}</a></strong>
-                {% experiment_badges exp %}
-                {% experiment_authors exp %}
-                {% experiment_download_link exp %}
+                <ul class="nav nav-pills badgelist">
+                  <li class="ml-auto mr-2">
+                    {{ exp|experiment_public_access_badge }}
+                  </li>
+                  <li class="mr-2">
+                    {{ exp|experiment_datafiles_badge }}
+                  </li>
+                  <li class="mr-2">
+                    {{ exp|experiment_datasets_badge }}
+                  </li>
+                  <li>
+                    {{ exp|experiment_last_updated_badge }}
+                  </li>
+                </ul>
+                <small>
+                  {% for author in exp.experimentauthor_set.all %}
+                    {% if not forloop.first %}, {% endif %}
+                    <span property="dc:author">{{ author.author }}</span>
+                  {% endfor %}
+                  &nbsp;
+                </small>
+                <span class="pull-right">
+                  {% if exp.public_download_allowed %}
+                  {% for dltype, dlurl in exp.get_download_urls.items %}
+                    {% if forloop.first %}
+                      <a class="dllink" href="{{dlurl}}"
+                         title="Download Entire Experiment as {{dltype}}">
+                        <i class="fa fa-download"></i>
+                        <em>Download data as .{{dltype}}</em>
+                      </a>
+                    {% endif %}
+                  {% endfor %}
+                  {% endif %}
+                </span>
               </div>
             </div>
             <div id="collapse{{exp.id}}"
