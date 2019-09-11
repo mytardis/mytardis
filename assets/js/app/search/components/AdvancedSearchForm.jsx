@@ -1,4 +1,4 @@
-/* global getCookie */
+import Cookies from "js-cookie";
 import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import DateTime from "react-datetime";
@@ -8,7 +8,6 @@ import moment from "moment";
 import "react-bootstrap-typeahead/css/Typeahead.css";
 import "react-datetime/css/react-datetime.css";
 
-const csrftoken = getCookie("csrftoken");
 
 function AdvancedSearchForm({ searchText, showResults, instrumentList }) {
   const [advanceSearchText, setAdvanceSearchText] = useState(searchText);
@@ -51,7 +50,7 @@ function AdvancedSearchForm({ searchText, showResults, instrumentList }) {
       headers: {
         "Accept": "application/json", // eslint-disable-line quote-props
         "Content-Type": "application/json",
-        "X-CSRFToken": csrftoken,
+        "X-CSRFToken": Cookies.get("csrftoken"),
       },
       body: JSON.stringify(formData),
     }).then(
