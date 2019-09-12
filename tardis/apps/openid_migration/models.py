@@ -20,6 +20,9 @@ class OpenidUserMigration(models.Model):
     migration_timestamp = models.DateTimeField(auto_now_add=True)
     migration_status = models.BooleanField(default=False)
 
+    class Meta:
+        app_label = 'openid_migration'
+
     def __str__(self):
         return '%s | %s' % (self.old_user.username, self.new_user.username)
 
@@ -28,6 +31,9 @@ class OpenidUserMigration(models.Model):
 class OpenidACLMigration(models.Model):
     user_migration = models.ForeignKey(OpenidUserMigration, on_delete=models.CASCADE)
     acl_id = models.ForeignKey(ObjectACL)
+
+    class Meta:
+        app_label = 'openid_migration'
 
     def __str__(self):
         return '%s | %s' % (self.user_migration, self.acl_id)
