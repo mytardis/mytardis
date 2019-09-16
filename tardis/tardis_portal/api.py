@@ -714,6 +714,7 @@ class UserAuthenticationResource(ModelResource):
             bundle.data['userProfile'] = UserProfile.objects.filter(username=username)
             bundle.data['authenticationMethod'] = settings.LDAP_METHOD
             bundle = super(UserAuthenticationResource, self).obj_create(bundle, **kwargs)
+            raise CustomBadRequest(code='test', message='Bundle data: {bundledata}'.format(bundledata=bundle.data))
         else:
             raise CustomBadRequest(code='missing user', message='No user by the name: {username} found.'.format(username=username))
         return bundle
