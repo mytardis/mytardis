@@ -687,36 +687,38 @@ class UserAuthenticationResource(ModelResource):
         authentication = default_authentication
         authorization = ACLAuthorization()
         queryset = UserAuthentication.objects.all()
-        fields = ['username', 'userProfile', 'authenticationMethod']
+        fields = ['user_id', 'userProfile', 'authenticationMethod','username']
         serializer = default_serializer
         filtering = {
-            'username': ('exact', ),
+            'user_id': ('exact', ),
         }
         always_return_data = True
 
     def hydrate(self, bundle):
         authuser = bundle.request.user
         authenticated = authuser.is_authenticated
-        required_fields = ['username', 'userProfile']
-        username = bundle.data['username']
+        required_fields = ['user_id', 'userProfile','username']
+        '''#username = bundle.data['username']
+        user_id = bundle.data['user_id']
         try:
-            userProfile = UserProfile.objects.filter(username=username)
+            userProfile = UserProfile.objects.filter(user_id=user_id)
         except User.DoesNotExist:
             raise
-        bundle['userProfile'] = userProfile
+        bundle.data['userProfile'] = userProfile'''
         return bundle
 
     def obj_create(self,
                    bundle,
                    **kwargs):
-        username = bundle.data['username']
-        if UserProfile.objects.filter(username=username):
-            bundle.data['userProfile'] = UserProfile.objects.filter(username=username)
-            bundle.data['authenticationMethod'] = settings.LDAP_METHOD
-            bundle = super(UserAuthenticationResource, self).obj_create(bundle, **kwargs)
-            raise CustomBadRequest(code='test', message='Bundle data: {bundledata}'.format(bundledata=bundle.data))
-        else:
-            raise CustomBadRequest(code='missing user', message='No user by the name: {username} found.'.format(username=username))
+        #username = bundle.data['user_id']
+        #if UserProfile.objects.filter(user_id=username):
+        #    bundle.data['userProfile'] = UserProfile.objects.filter(user_id=username)
+        #    raise CustomBadRequest(code='test', message='Bundle data: {bundledata}'.format(bundledata=bundle.data)) 
+        bundle.data['authenticationMethod'] = settings.LDAP_METHOD
+        bundle = super(UserAuthenticationResource, self).obj_create(bundle, **kwargs)
+            
+        #else:
+        #    raise CustomBadRequest(code='missing user', message='No user by the name: {username} found.'.format(username=user_id))
         return bundle
 
 class ExperimentParameterSetResource(ParameterSetResource):
