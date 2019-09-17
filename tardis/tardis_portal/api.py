@@ -677,7 +677,25 @@ class UserProfileResource(ModelResource):
         authentication = default_authentication
         authorization = ACLAuthorization()
         queryset = UserProfile.objects.all()
+        fields = ['user']
+        serializer = default_serializer
+        filtering = {
+            'user': ('exact', ),
+        }
+        allowed_methods = ['get']
         always_return_data = True
+
+    def dehydrate(self, bundle):
+        authuser = bundle.request.user
+        authenticated = authuser.is_authenticated
+        
+        # add the database id for convenience
+        # bundle.data['id'] = queried_user.id
+
+        # allow the user to find out their username and email
+        # allow facility managers to query other users' username and email
+        if authenticated:
+            return bundle
 
 class UserAuthenticationResource(ModelResource):
     userProfile = fields.ForeignKey(UserProfileResource, attribute='userProfile',
