@@ -104,9 +104,11 @@ class ExperimentIndex(indexes.SearchIndex, indexes.Indexable):
 
 class DatasetIndex(indexes.SearchIndex, indexes.Indexable):
     text = indexes.CharField(document=True)
-    experiment_id_stored = indexes.MultiValueField(indexed=True, stored=True) #indexes.IntegerField(model_attr='experiments', indexed=True)
+    experiment_id_stored = indexes.MultiValueField(indexed=True, stored=True) 
     dataset_id_stored = indexes.IntegerField(model_attr='id') #changed
     dataset_description = indexes.CharField(model_attr='description')
+    dataset_id = indexes.CharField(model_attr='dataset_id')
+    dataset_parameters = indexes.MultiValueField()
 
     def prepare_text(self, obj):
         """Elasticsearch's standard tokenizer won't split on underscores,
@@ -121,6 +123,13 @@ class DatasetIndex(indexes.SearchIndex, indexes.Indexable):
 
     def prepare_experiment_id_stored(self, obj):
         return [exp.id for exp in obj.experiments.all()]
+
+    def prepare_dataset_parameters(self, obj):
+        retdict = {}
+        for paramset in obj.datasetparameterset_set.all():
+            for param in paramset:
+                retdict[param.name.name] = param.get()
+        return retdict
 
     def get_model(self):
         return Dataset
