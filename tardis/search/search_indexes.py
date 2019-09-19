@@ -89,7 +89,7 @@ class ExperimentIndex(indexes.SearchIndex, indexes.Indexable):
         return retdict
 
     def prepare_experiment_users(self, obj):
-        return [user.get_username() for user in obj.get_owners()]
+        return [user.get_username() for user in obj.get_users()]
         
     def prepare_experiment_creator(self, obj):
         return obj.created_by.username
