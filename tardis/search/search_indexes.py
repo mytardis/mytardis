@@ -127,7 +127,7 @@ class DatasetIndex(indexes.SearchIndex, indexes.Indexable):
     def prepare_dataset_parameters(self, obj):
         retdict = {}
         for paramset in obj.datasetparameterset_set.all():
-            for param in paramset:
+            for param in paramset.parameters:
                 retdict[param.name.name] = param.get()
         return retdict
 
