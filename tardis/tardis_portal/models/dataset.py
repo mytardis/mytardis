@@ -1,11 +1,14 @@
 import logging
 from os import path
 
+from six.moves import urllib
+
 from django.conf import settings
 from django.urls import reverse
 from django.db import models
 from django.utils import timezone
 from django.utils.encoding import python_2_unicode_compatible
+from django.utils.functional import cached_property
 
 from ..managers import OracleSafeManager
 from .storage import StorageBox
@@ -166,3 +169,98 @@ class Dataset(models.Model):
         boxes = StorageBox.objects.filter(
             file_objects__datafile__dataset=self).distinct()
         return boxes
+
+    @cached_property
+    def _dirs(self):
+        """
+        Get the directories containing files within a dataset
+
+        Let's use the following example dataset to illustrate.
+        There's nothing in the dataset's top level directory,
+        just a "test files" subdirectory, containing further subdirectories:
+
+        test files/subdir1/
+        test files/subdir2/
+        test files/subdir3/
+        test files/subdir3/subdir4/
+
+        We'll use a raw SQL connection because this needs to be fast
+        for large datasets
+
+        For the dataset above, this method returns the following:
+
+        {'test files': {'subdir1', 'subdir3', 'subdir2'}, 'test files/subdir3': {'subdir4'}}
+        """
+        from django.db import connection
+        cursor = connection.cursor()
+        cursor.execute(
+            "SELECT DISTINCT directory FROM tardis_portal_datafile "
+            "WHERE dataset_id=%s" % self.id)
+        dirs = cursor.fetchall()
+        dirs_dict = dict()
+        for result in dirs:
+            components = result[0].split('/')
+            for index, _ in enumerate(components):
+                key = '/'.join(components[0:index])
+                if not key:
+                    continue
+                if key not in dirs_dict:
+                    dirs_dict[key] = set()
+                dirs_dict[key].add(components[index])
+        return dirs_dict
+
+    def get_dirs(self, basedir=""):
+        """
+        List the directories immediately inside basedir.
+
+        If basedir is empty (the default), list directories with no
+        separator, e.g. "subdir1"
+
+        If basedir is a string without a separator (e.g. "subdir1"),
+        look for directory paths with one separator e.g. "subdir1/subdir2"
+        and include a ".." for navigating back to the dataset's top-level
+        directory.
+
+        Continuing the example from the _dirs property method:
+
+        test files/subdir1/
+        test files/subdir2/
+        test files/subdir3/
+        test files/subdir3/subdir4/
+
+        List directories in the dataset's top level directory:
+        >>> ds.get_dirs("")
+        [('test files', 'test%20files')]
+
+        List directories within the dataset's "test files" directory:
+        >>> ds.get_dirs("test files")
+        [('..', 'test%20files'), ('subdir1', 'test%20files/subdir1'),
+         ('subdir2', 'test%20files/subdir2'), ('subdir3', 'test%20files/subdir3')]
+
+        Request directories within a non-existent directory:
+        >>> ds.get_dirs("test file")
+        []
+
+        List directories within the dataset's "test files/subdir3" directory:
+        >>> ds.get_dirs("test files/subdir3")
+        [('..', 'test%20files/subdir3'), ('subdir4', 'test%20files/subdir3/subdir4')]
+
+        List directories within the dataset's "test files/subdir3/subdir4" directory:
+        >>> ds.get_dirs("test files/subdir3/subdir4")
+        [('..', 'test%20files/subdir3/subdir4')]
+        """
+        dirs_dict = self._dirs
+        if basedir:
+            if basedir not in dirs_dict:
+                if '/' in basedir:
+                    part1, part2 = path.split(basedir)
+                    if part1 in dirs_dict and part2 in dirs_dict[part1]:
+                        return [("..", urllib.parse.quote(basedir))]
+                return []
+            dirs = [(item, urllib.parse.quote(path.join(basedir, item)))
+                    for item in dirs_dict[basedir]]
+            dirs = [("..", urllib.parse.quote(basedir))] + dirs
+        else:
+            dirs = [(key, urllib.parse.quote(key)) for key in dirs_dict
+                    if len(key.split('/')) == 1]
+        return sorted(dirs, key=lambda x: x[0])
