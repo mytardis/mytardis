@@ -189,15 +189,16 @@ def clear_sessions(**kwargs):
     management.call_command("clearsessions", verbosity=0)
 
 
-@tardis_app.task(name='tardis_portal.save_metadata', ignore_result=True)
-def save_metadata(id, name, schema, metadata):
-    """Save all the metadata to a Dataset_Files paramamter set."""
+@tardis_app.task(name='tardis_portal.datafile.save_metadata',
+                 ignore_result=True)
+def df_save_metadata(df_id, name, schema, metadata):
+    """Save all the metadata to a DatafileParameterSet."""
     from .models import ParameterName, Schema, DataFile,\
                         DatafileParameterSet, DatafileParameter
 
-    def getSchema(schema, name):
+    def get_schema(schema, name):
         """
-        Return the schema object that the paramaterset will use.
+        Return the schema object that the parameter set will use.
         """
         try:
             return Schema.objects.get(namespace__exact=schema)
@@ -207,51 +208,53 @@ def save_metadata(id, name, schema, metadata):
             new_schema.save()
             return new_schema
 
-    def getParameters(schema, metadata):
+    def get_param_names(schema, metadata):
         """
-        Return a list of the paramaters that will be saved.
+        Return a list of the parameter names that will be saved.
         """
-        param_objects = ParameterName.objects.filter(schema=schema)
-        parameters = []
-        for p in metadata:
-            parameter = param_objects.filter(name=p).first()
-            if parameter:
-                parameters.append(parameter[0])
-        return parameters
+        schema_pnames = ParameterName.objects.filter(schema=schema)
+        pnames_to_save = []
+        for key in metadata:
+            pname = schema_pnames.filter(name=key).first()
+            if pname:
+                pnames_to_save.append(pname)
+        return pnames_to_save
 
-    data_schema = getSchema(schema, name)
-    parameters = getParameters(data_schema, metadata)
-    if not parameters:
-        print("Bailing out of save_metadata because of 'not parameters'.")
+    data_schema = get_schema(schema, name)
+    param_names = get_param_names(data_schema, metadata)
+    if not param_names:
+        logger.warning(
+            "Bailing out of save_metadata because of 'not param_names'.")
     else:
         # Load datafile
-        df = DataFile.objects.get(id=id)
+        df = DataFile.objects.get(id=df_id)
 
         # Check for existing data
         try:
             ps = DatafileParameterSet.objects.get(schema=data_schema,
                                                   datafile=df)
-            print("Parameter set already exists for {}".format(df.filename))
+            logger.warning(
+                "Parameter set already exists for {}".format(df.filename))
         except DatafileParameterSet.DoesNotExist:
             ps = DatafileParameterSet(schema=data_schema, datafile=df)
             ps.save()
             # Save metadata
-            for p in parameters:
-                print(p.name)
-                if p.name in metadata:
-                    dfp = DatafileParameter(parameterset=ps, name=p)
-                    if p.isNumeric():
-                        if metadata[p.name] != '':
-                            dfp.numerical_value = metadata[p.name]
+            for pname in param_names:
+                print(pname.name)
+                if pname.name in metadata:
+                    dfp = DatafileParameter(parameterset=ps, name=pname)
+                    if pname.isNumeric():
+                        if metadata[pname.name] != '':
+                            dfp.numerical_value = metadata[pname.name]
                             dfp.save()
-                    elif isinstance(metadata[p.name], list):
-                        for val in reversed(metadata[p.name]):
+                    elif isinstance(metadata[pname.name], list):
+                        for val in reversed(metadata[pname.name]):
                             strip_val = val.strip()
                             if strip_val:
                                 dfp = DatafileParameter(parameterset=ps,
-                                                        name=p)
+                                                        name=pname)
                                 dfp.string_value = strip_val
                                 dfp.save()
                     else:
-                        dfp.string_value = metadata[p.name]
+                        dfp.string_value = metadata[pname.name]
                         dfp.save()
