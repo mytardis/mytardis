@@ -822,7 +822,7 @@ class DataFileObject(models.Model):
             tardis_app.send_task(
                 'mytardis.apply_filters',
                 args = [
-                    self.id,
+                    self.datafile.id,
                     self.verified,
                     self.get_full_path(),
                     self.uri
