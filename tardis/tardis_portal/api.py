@@ -153,7 +153,7 @@ class ACLAuthorization(Authorization):
         if isinstance(bundle.obj, ExperimentAuthor):
             experiments = Experiment.safe.all(bundle.request.user)
             return ExperimentAuthor.objects.filter(
-                experiments__in=experiments, id__in=obj_ids)
+                experiment__in=experiments, id__in=obj_ids)
         if isinstance(bundle.obj, ExperimentParameterSet):
             experiments = Experiment.safe.all(bundle.request.user)
             return ExperimentParameterSet.objects.filter(
