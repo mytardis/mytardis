@@ -37,7 +37,9 @@ class Experiment(models.Model):
     :attribute institution_name: The name of the institution who created
        the experiment.
     :attribute internal_id: Identifier generated at the instrument, for this experiment
+    :attribute project_name: UoA project Name
     :attribute project_id: UoA project ID (e.g. RAID)
+    :attribute project_description: UoA project abstract
     :attribute start_time: **Undocumented**
     :attribute end_time: **Undocumented**
     :attribute created_time: **Undocumented**
@@ -72,7 +74,9 @@ class Experiment(models.Model):
                                         default=settings.DEFAULT_INSTITUTION)
     description = models.TextField(blank=True)
     internal_id = models.CharField(max_length=400, null=False, blank=False, unique=True, default=experiment_internal_id_default )
+    project_name = models.CharField(max_length=400, null=True, blank=True, default='No Project')
     project_id = models.CharField(max_length=400, null=False, blank=False, default='No Project ID')
+    project_description = models.TextField(blank=True)
     start_time = models.DateTimeField(null=True, blank=True)
     end_time = models.DateTimeField(null=True, blank=True)
     created_time = models.DateTimeField(auto_now_add=True)
