@@ -52,7 +52,7 @@ from .auth.localdb_auth import django_user
 from .models.access_control import ObjectACL
 from .models.datafile import DataFile, DataFileObject, compute_checksums
 from .models.dataset import Dataset
-from .models.experiment import Experiment
+from .models.experiment import Experiment, ExperimentAuthor
 from .models.parameters import (
     DatafileParameter,
     DatafileParameterSet,
@@ -150,6 +150,10 @@ class ACLAuthorization(Authorization):
         if isinstance(bundle.obj, Experiment):
             experiments = Experiment.safe.all(bundle.request.user)
             return experiments.filter(id__in=obj_ids)
+        if isinstance(bundle.obj, ExperimentAuthor):
+            experiments = Experiment.safe.all(bundle.request.user)
+            return ExperimentAuthor.objects.filter(
+                experiments__in=experiments, id__in=obj_ids)
         if isinstance(bundle.obj, ExperimentParameterSet):
             experiments = Experiment.safe.all(bundle.request.user)
             return ExperimentParameterSet.objects.filter(
@@ -231,6 +235,9 @@ class ACLAuthorization(Authorization):
             return True
         if isinstance(bundle.obj, Experiment):
             return has_experiment_access(bundle.request, bundle.obj.id)
+        if isinstance(bundle.obj, ExperimentAuthor):
+            return has_experiment_access(
+                bundle.request, bundle.obj.experiment.id)
         if isinstance(bundle.obj, ExperimentParameterSet):
             return has_experiment_access(
                 bundle.request, bundle.obj.experiment.id)
@@ -289,6 +296,8 @@ class ACLAuthorization(Authorization):
            bundle.request.user.is_superuser:
             return True
         if isinstance(bundle.obj, Experiment):
+            return bundle.request.user.has_perm('tardis_portal.add_experiment')
+        if isinstance(bundle.obj, ExperimentAuthor):
             return bundle.request.user.has_perm('tardis_portal.add_experiment')
         if isinstance(bundle.obj, ExperimentParameterSet):
             if not bundle.request.user.has_perm(
@@ -616,6 +625,32 @@ class ExperimentResource(MyTardisModelResource):
         bundle.data['created_by'] = user
         bundle = super(ExperimentResource, self).obj_create(bundle, **kwargs)
         return bundle
+
+
+class ExperimentAuthorResource(MyTardisModelResource):
+    '''API for ExperimentAuthors
+    '''
+    experiment = fields.ForeignKey(
+        ExperimentResource, 'experiment', full=True, null=True)
+
+    class Meta(MyTardisModelResource.Meta):
+        queryset = ExperimentAuthor.objects.all()
+        filtering = {
+            'id': ('exact', ),
+            'experiment': ALL_WITH_RELATIONS,
+            'author': ('exact', 'iexact'),
+            'institution': ('exact', 'iexact'),
+            'email': ('exact', 'iexact'),
+            'order': ('exact',),
+            'url': ('exact', 'iexact'),
+        }
+        ordering = [
+            'id',
+            'author',
+            'email',
+            'order'
+        ]
+        always_return_data = True
 
 
 class DatasetResource(MyTardisModelResource):
