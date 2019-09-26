@@ -135,7 +135,7 @@ class DataFile(models.Model):
 
     def get_default_storage_box(self):
         '''
-        try to guess appropriate box from files, dataset or experiment
+        try to guess appropriate box from dataset or use global default
         '''
         if settings.REUSE_DATASET_STORAGE_BOX:
             dataset_boxes = self.dataset.get_all_storage_boxes_used()
