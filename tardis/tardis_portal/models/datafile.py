@@ -139,7 +139,7 @@ class DataFile(models.Model):
         '''
         if settings.REUSE_DATASET_STORAGE_BOX:
             dataset_boxes = self.dataset.get_all_storage_boxes_used()
-            if dataset_boxes:
+            if dataset_boxes.count() == 1:
                 return dataset_boxes[0]
         # TODO: select one accessible to the owner of the file
         return StorageBox.get_default_storage()
