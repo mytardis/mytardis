@@ -893,8 +893,7 @@ class DataFileResource(MyTardisModelResource):
             return request.POST
         if format.startswith('multipart'):
             jsondata = request.POST['json_data']
-            data = super(DataFileResource, self).deserialize(
-                request, jsondata, format='application/json')
+            data = json.loads(jsondata)
             data.update(request.FILES)
             return data
         return super(DataFileResource, self).deserialize(request,
