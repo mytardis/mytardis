@@ -135,19 +135,12 @@ class DataFile(models.Model):
 
     def get_default_storage_box(self):
         '''
-        try to guess appropriate box from files, dataset or experiment
+        try to guess appropriate box from dataset or use global default
         '''
-        boxes_used = StorageBox.objects.filter(file_objects__datafile=self)
-        if boxes_used:
-            return boxes_used[0]
-        dataset_boxes = self.dataset.get_all_storage_boxes_used()
-        if dataset_boxes:
-            return dataset_boxes[0]
-        experiment_boxes = StorageBox.objects.filter(
-            file_objects__datafile__dataset__experiments__in=self
-            .dataset.experiments.all())
-        if experiment_boxes:
-            return experiment_boxes[0]
+        if settings.REUSE_DATASET_STORAGE_BOX:
+            dataset_boxes = self.dataset.get_all_storage_boxes_used()
+            if dataset_boxes.count() == 1:
+                return dataset_boxes[0]
         # TODO: select one accessible to the owner of the file
         return StorageBox.get_default_storage()
 

@@ -164,5 +164,5 @@ class Dataset(models.Model):
 
     def get_all_storage_boxes_used(self):
         boxes = StorageBox.objects.filter(
-            file_objects__datafile__dataset=self)
+            file_objects__datafile__dataset=self).distinct()
         return boxes
