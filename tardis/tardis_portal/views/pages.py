@@ -355,6 +355,13 @@ def about(request):
     return render_response_index(request, 'tardis_portal/about.html', c)
 
 
+def healthz(request):
+    '''
+    returns that the server is alive
+    '''
+    return HttpResponse("OK")
+
+
 @login_required
 def my_data(request):
     '''

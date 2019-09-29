@@ -3,47 +3,46 @@ Releases
 
 4.1
 ---
-* Bootstrap upgraded to v3.4.0
-* Celery upgraded to v4.2.1
-* RabbitMQ task priorities support, dropping support for Redis
-* Storage box related tasks are annotated with the storage box name, visible in "celery inspect active".
-* New Travis CI webhook to run Pylint and unit tests with Python 3
-* New task for clearing Django sessions
-* New timestamps (created and modified) in facility and instrument models
-* Fixed truncated TAR download issue with unverified files
-* Fixed sharing with AAF/Google issue
-* Fixed some broken Font Awesome icons
-* Made autocache task more efficient.
-* Some dependency updates:
-    - Update amqp from 2.3.2 to 2.4.1
-    - Update billiard from 3.5.0.4 to 3.5.0.5
-    - Update Boostrap from 2.3.2 to 3.4.0
-    - Update bleach from 2.1.4 to 3.1.0
-    - Update celery from 3.1.26.post2 to 4.2.1
-    - Update coverage from 4.5.1 to 4.5.2
-    - Update django from 1.11.16 to 1.11.20
-    - Update django-extensions from 1.8.1 to 2.5
-    - Update flexmock from 0.10.2 to 0.10.3
-    - Update gevent from 1.3.6 to 1.4.0
-    - Update gunicorn from 19.7.1 to 19.9.0
-    - Update kombu from 4.2.1 to 4.3.0
-    - Update lxml from 4.2.5 to 4.3.1
-    - Update mysqlclient from 1.3.13 to 1.4.2
-    - Update pillow from 5.2.0 to 5.4.1
-    - Update psycopg2-binary from 2.7.5 to 2.7.7
-    - Update pyjwt from 1.6.4 to 1.7.1
-    - Update pylint from 1.9.3 to 1.9.4
-    - Update python-dateutil from 2.7.5 to 2.8.0
-    - Update python-ldap from 2.4.27 to 3.1.0
-    - Update pytz from 2018.5 to 2018.9
-    - Update requests from 2.19.1 to 2.21.0
-    - Update selenium from 3.14.1 to 3.141.0
-    - Update six from 1.11.0 to 1.12.0
-    - Update social-auth-app-django from 3.0.0 to 3.1.0
-    - Update sphinx from 1.8.1 to 1.8.4
-    - Update sphinx-rtd-theme from 0.4.1 to 0.4.3
-    - Update urllib3 from 1.23 to 1.24.1
-    - Update wand from 0.4.4 to 0.5.0
+* Added React search components and django-elasticsearch-dsl backend
+* Removed post-save filters middleware, replaced with microservice architecture
+* Added RabbitMQ task priorities support, dropped support for Redis as a broker
+* Upgraded Bootstrap CSS framework from v2.3.2 to v3.4.1
+* Added Python 3 support
+* Added webpack to collect static assets (JS / CSS), supporting ES6, JSX etc.
+* Annotated storage box related tasks with their storage box name, visible
+  in "celery inspect active"
+* Added task for clearing Django sessions
+* Added timestamps (created and modified) in facility and instrument models
+* Updated built-in Creative Commons licenses to v4
+* Added django-storages and boto3 to requirements to support S3 storage boxes
+  and storing static assets in S3
+* Improved efficiency of checksums and downloads for files in S3 storage
+* COMPUTE_SHA512 now defaults to False. COMPUTE_MD5 still defaults to True.
+* Legal text for publishing can now be specified in settings
+* Now using Dataset created_time in facility overview instead of experiment
+  created time
+* Added a new setting to prevent large datasets (many files) from being scanned
+  for image files at page load time
+* API v1's instrument resource now allows any authenticated user to list the
+  instrument names, which is used in the new search interface
+* The ExperimentAuthor model now exposed in API v1
+* MyTardis no longer tries to guess an appropriate storage box for new
+  DataFileObjects unless REUSE_DATASET_STORAGE_BOX is True
+* Improved BDD test coverage, now measuring template coverage with
+  django-coverage-plugin
+* Bug fixes (GitHub Issue numbers below)
+  - Fixed #1503
+  - Fixed #1568
+  - Removed bob@bobmail.com from default ADMINS, fixing #1613
+  - Fixed #1664
+  - Fixed #1708
+  - Fixed #1857
+  - Fixed #1853
+  - Fixed concatenated messages issue in user sharing and group sharing dialogs
+  - Fixed #1790
+  - Fixed truncated TAR download issue with unverified files
+  - Fixed sharing with AAF/Google issue
+  - Fixed some broken Font Awesome icons
 
 4.0
 ---

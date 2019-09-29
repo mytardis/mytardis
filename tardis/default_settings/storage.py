@@ -40,3 +40,15 @@ METADATA_STORE_PATH = DEFAULT_STORAGE_BASE_DIR
 storage path for image paths stored in parameters. Better to set to another
 location if possible
 '''
+
+REUSE_DATASET_STORAGE_BOX = True
+'''
+If a new DataFile is created in a Dataset whose files are all stored in the same
+storage box, then the new file will be stored in the same storage box, irrespective
+of the "default" StorageBoxAttribute.
+
+The mytardis-app-mydata app has its own logic for determining the appropriate
+storage box for uploads from a MyData instance.  When a MyData instance
+(an "Uploader") is approved, it will be assigned a storage box which should
+be used for DataFileObjects created from MyData uploads.
+'''

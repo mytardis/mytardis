@@ -1,10 +1,18 @@
-/* global getCookie */
 import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 
+import Cookies from "js-cookie";
 import AdvancedSearchForm from "./AdvancedSearchForm";
 
-const csrftoken = getCookie("csrftoken");
+function getInstrumentList() {
+  return fetch("/api/v1/instrument/")
+    .then((resp) => {
+      if (resp.ok) {
+        return resp.json();
+      }
+      throw new Error("Something went wrong ... ");
+    });
+}
 
 function SimpleSearchForm({ showResults, searchText }) {
   const [simpleSearchText, setSimpleSearchText] = useState(searchText);
@@ -19,7 +27,7 @@ function SimpleSearchForm({ showResults, searchText }) {
       headers: {
         "Accept": "application/json", // eslint-disable-line quote-props
         "Content-Type": "application/json",
-        "X-CSRFToken": csrftoken,
+        "X-CSRFToken": Cookies.get("csrftoken"),
       },
     }).then(response => response.json())
       .then((data) => {
@@ -27,6 +35,14 @@ function SimpleSearchForm({ showResults, searchText }) {
         setIsLoading(false);
       });
   };
+  const instrumentListTemp = [];
+  const jsonResponse = getInstrumentList();
+  jsonResponse.then((json) => {
+    json.objects.forEach((value) => {
+      instrumentListTemp.push(value.name);
+    });
+  });
+  const [instrumentList] = useState(instrumentListTemp);
   const handleSimpleSearchSubmit = (e) => {
     e.preventDefault();
     if (!simpleSearchText) {
@@ -79,6 +95,7 @@ function SimpleSearchForm({ showResults, searchText }) {
           <AdvancedSearchForm
             searchText={simpleSearchText}
             showResults={showResults}
+            instrumentList={instrumentList}
           />
         ) : (
           <button

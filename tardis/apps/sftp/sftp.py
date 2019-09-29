@@ -18,7 +18,8 @@ from six import BytesIO
 from django.conf import settings
 from paramiko import InteractiveQuery,  RSAKey, ServerInterface,\
     SFTPAttributes, SFTPHandle,\
-    SFTPServer, SFTPServerInterface, Transport
+    SFTPServer, SFTPServerInterface, Transport,\
+    SSHException
 from paramiko import OPEN_SUCCEEDED, OPEN_FAILED_ADMINISTRATIVELY_PROHIBITED,\
     SFTP_OP_UNSUPPORTED, SFTP_NO_SUCH_FILE
 from paramiko.common import AUTH_FAILED, AUTH_SUCCESSFUL
@@ -39,8 +40,7 @@ logger = logging.getLogger(__name__)
 path_mapper = make_mapper(settings.DEFAULT_PATH_MAPPER, rootdir=None)
 
 paramiko_log = logging.getLogger('paramiko.transport')
-if not paramiko_log.handlers:
-    paramiko_log.addHandler(logging.FileHandler('sftpd.log'))
+paramiko_log.disabled = True
 
 
 if getattr(settings, 'SFTP_GEVENT', False):
@@ -483,7 +483,16 @@ class MyTSFTPRequestHandler(socketserver.BaseRequestHandler):
             'sftp', MyTSFTPServer, MyTSFTPServerInterface)
 
     def handle(self):
-        self.transport.start_server(server=MyTServerInterface())
+        try:
+            self.transport.start_server(server=MyTServerInterface())
+        except SSHException as e:
+            logger.error("SSH error: %s" % str(e))
+            self.transport.close()
+        except EOFError as e:
+            logger.error("Socket error: %s" % str(e))
+        except Exception as e:
+            logger.error("Error: %s" % str(e))
+
 
     def handle_timeout(self):
         self.transport.close()
