@@ -1,6 +1,6 @@
 Django==1.11.24 # pyup: >=1.11,<2.0
 Wand==0.5.7
-amqp==2.5.1
+amqp==2.5.2
 bleach==3.1.0
 boto3==1.9.236
 celery==4.3.0
