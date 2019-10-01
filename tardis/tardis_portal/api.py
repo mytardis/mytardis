@@ -219,12 +219,17 @@ class ACLAuthorization(Authorization):
             if bundle.request.user.is_authenticated:
                 return object_list
         if isinstance(bundle.obj, StorageBox):
-            return object_list
+            if bundle.request.user.is_authenticated:
+                return object_list
         if isinstance(bundle.obj, StorageBoxOption):
-            return [option for option in object_list
-                    if option.key in StorageBoxOptionResource.accessible_keys]
+            if bundle.request.user.is_authenticated:
+                return [
+                    option for option in object_list
+                    if option.key in StorageBoxOptionResource.accessible_keys
+                ]
         if isinstance(bundle.obj, StorageBoxAttribute):
-            return object_list
+            if bundle.request.user.is_authenticated:
+                return object_list
         return []
 
     def read_detail(self, object_list, bundle):  # noqa # too complex
