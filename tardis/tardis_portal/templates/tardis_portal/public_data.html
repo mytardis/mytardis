@@ -45,13 +45,7 @@
                 <strong><a class="pull-left explink"
                            href="{% url 'tardis_portal.view_experiment' exp.id %}">{{ exp.title }}</a></strong>
                 {% experiment_badges exp %}
-                <small>
-                  {% for author in exp.experimentauthor_set.all %}
-                    {% if not forloop.first %}, {% endif %}
-                    <span property="dc:author">{{ author.author }}</span>
-                  {% endfor %}
-                  &nbsp;
-                </small>
+                {% experiment_authors exp %}
                 {% experiment_download_link exp %}
               </div>
             </div>
