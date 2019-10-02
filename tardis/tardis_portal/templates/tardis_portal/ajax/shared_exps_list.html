@@ -70,14 +70,3 @@
 {% if shared_experiments.paginator.num_pages > 1 %}
   {% block bottom-pagination %}{% pagination shared_experiments paginator page_num query_string %}{% endblock %}
 {% endif %}
-
-<script type="text/javascript">
-$(function() {
-    $(".explink").on("click", function(e) {
-        e.stopPropagation();
-    });
-    $(".dllink").on("click", function(e) {
-        e.stopPropagation();
-    });
-});
-</script>
