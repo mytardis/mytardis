@@ -6,12 +6,12 @@
 {% load static %}
 {% load pagination %}
 
-{% if owned_experiments.paginator.num_pages > 1 %}
-  {% block top-pagination %}{% pagination owned_experiments paginator page_num query_string %}{% endblock %}
-  <!-- Page {{ page_num|add:1 }} of {{ owned_experiments.paginator.num_pages }} -->
+{% if experiments.paginator.num_pages > 1 %}
+  {% block top-pagination %}{% pagination experiments paginator page_num query_string %}{% endblock %}
+  <!-- Page {{ page_num|add:1 }} of {{ experiments.paginator.num_pages }} -->
 {% endif %}
 
-{% for exp in owned_experiments %}
+{% for exp in experiments %}
   <div class="accordion-group">
     <div class="accordion-heading">
       <div id="toggle-{{exp.id}}" class="accordion-toggle" data-toggle="collapse">
@@ -66,8 +66,8 @@
     <a href="{% url 'tardis.tardis_portal.views.create_experiment' %}">Create a new experiment</a>
     and upload your data
   </p>
-{% endfor %} {% comment %} for exp in owned_experiments {% endcomment %}
+{% endfor %} {% comment %} for exp in experiments {% endcomment %}
 
-{% if owned_experiments.paginator.num_pages > 1 %}
-  {% block bottom-pagination %}{% pagination owned_experiments paginator page_num query_string %}{% endblock %}
+{% if experiments.paginator.num_pages > 1 %}
+  {% block bottom-pagination %}{% pagination experiments paginator page_num query_string %}{% endblock %}
 {% endif %}
