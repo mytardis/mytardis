@@ -5,7 +5,7 @@ bleach==3.1.0
 boto3==1.9.236
 celery==4.3.0
 django-bootstrap-form==3.4
-django-extensions==2.2.1
+django-extensions==2.2.2
 django-elasticsearch-dsl==6.4.2
 git+https://github.com/mytardis/django-form-utils.git@django-1.11-upgrade#egg=django-form-utils
 django-jstemplate==1.3.8
