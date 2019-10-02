@@ -341,7 +341,7 @@ def choose_rights(request, experiment_id):
 @never_cache
 @login_required
 def retrieve_owned_exps_list(
-        request, template_name='tardis_portal/ajax/owned_exps_list.html'):
+        request, template_name='tardis_portal/ajax/exps_list.html'):
 
     experiments = Experiment.safe.owned(request.user).order_by('-update_time')
 
@@ -356,7 +356,7 @@ def retrieve_owned_exps_list(
     query_string = '/ajax/owned_exps_list/?page={page}'
 
     c = {
-        'owned_experiments': exps_page,
+        'experiments': exps_page,
         'paginator': paginator,
         'page_num': page_num,
         'query_string': query_string
@@ -367,7 +367,7 @@ def retrieve_owned_exps_list(
 @never_cache
 @login_required
 def retrieve_shared_exps_list(
-        request, template_name='tardis_portal/ajax/shared_exps_list.html'):
+        request, template_name='tardis_portal/ajax/exps_list.html'):
 
     experiments = Experiment.safe.shared(request.user).order_by('-update_time')
 
@@ -381,7 +381,7 @@ def retrieve_shared_exps_list(
 
     query_string = '/ajax/shared_exps_list/?page={page}'
     c = {
-        'shared_experiments': exps_page,
+        'experiments': exps_page,
         'paginator': paginator,
         'page_num': page_num,
         'query_string': query_string
