@@ -82,3 +82,13 @@ def experiment_badges(experiment, **kwargs):
     return {
         'experiment': experiment
     }
+
+
+@register.inclusion_tag('tardis_portal/experiment_tags/experiment_download_link.html')
+def experiment_download_link(experiment, **kwargs):
+    """
+    Displays a download link for an experiment in a list view
+    """
+    return {
+        'experiment': experiment
+    }
