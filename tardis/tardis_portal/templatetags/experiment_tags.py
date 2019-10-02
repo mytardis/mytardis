@@ -72,3 +72,13 @@ def experiment_size_badge(experiment):
         'title': "Experiment size is ~%s" % size,
         'label': size,
     })
+
+
+@register.inclusion_tag('tardis_portal/experiment_tags/experiment_badges.html')
+def experiment_badges(experiment, **kwargs):
+    """
+    Displays badges for an experiment for displaying in an experiment list view
+    """
+    return {
+        'experiment': experiment
+    }

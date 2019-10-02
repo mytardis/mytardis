@@ -18,20 +18,7 @@
         <input type="hidden" class="exp-index" value="{{ forloop.counter }}">
         <strong><a class="pull-left explink"
                    href="{% url 'tardis_portal.view_experiment' exp.id %}">{{ exp.title }}</a></strong>
-        <ul class="nav nav-pills badgelist">
-          <li class="pull-right">
-            {{ exp|experiment_public_access_badge }}
-          </li>
-          <li class="pull-right">
-            {{ exp|experiment_datafiles_badge }}
-          </li>
-          <li class="pull-right">
-            {{ exp|experiment_datasets_badge }}
-          </li>
-          <li class="pull-right">
-            {{ exp|experiment_last_updated_badge }}
-          </li>
-        </ul>
+        {% experiment_badges exp %}
         <small>
           {% for author in exp.experimentauthor_set.all %}
             {% if not forloop.first %}, {% endif %}
