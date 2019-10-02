@@ -30,6 +30,11 @@ $(document).ready(function() {
             $("#total-count").html(fileCountString);
             // Reset progress bar after datafiles-pane has reloaded:
             $("#progress .progress-bar").css("width", "0%");
+
+            $(".archived-file").tooltip({"title": "This file is archived."});
+            $("a.archived-file").on("click", function(evt) {
+                evt.preventDefault();
+            });
         });
     });
 
