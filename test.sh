@@ -51,7 +51,8 @@ case "$TEST_TYPE" in
         DJANGO_SETTINGS_MODULE=tardis.test_settings python manage.py validate_templates && \
         echo $'\nChecking for tabs in templates...\n' && \
         ! grep -r $'\t' tardis/tardis_portal/templates/* && \
-        echo $'\nChecking for duplication in templates...\n' &&
+        echo $'\nChecking for duplication in templates...\n' && \
+        npm install --no-package-lock --no-save jscpd && \
         $(npm bin)/jscpd --reporters consoleFull --min-lines 20 \
             --threshold 0 tardis/tardis_portal/templates/
 	(( exit_status = exit_status || $? ))
