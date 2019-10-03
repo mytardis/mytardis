@@ -12,9 +12,10 @@ def run():
         os.environ.setdefault("DJANGO_SETTINGS_MODULE", custom_settings)
     else:
         os.environ.setdefault("DJANGO_SETTINGS_MODULE", demo_settings)
-        print('Using demo settings in "tardis/default_settings.py",'
-              ' please add your own settings file, '
-              '"tardis/settings.py".')
+        if os.environ["DJANGO_SETTINGS_MODULE"] == demo_settings:
+            print('Using demo settings in "tardis/default_settings.py",'
+                  ' please add your own settings file, '
+                  '"tardis/settings.py".')
 
     from django.core.management import execute_from_command_line
     execute_from_command_line(sys.argv)
