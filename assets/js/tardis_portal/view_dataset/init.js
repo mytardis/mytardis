@@ -140,7 +140,18 @@ $(document).on("click", "#datafiles-pane .datafile-info-toggle", function(evt) {
 
     var href = $this.attr("href");
     $datafileMetadataContainer.html(loadingHTML);
-    $datafileMetadataContainer.load(href);
+    $datafileMetadataContainer.load(href, function() {
+        $(".df-view-button").on("click", function(e) {
+            e.preventDefault();
+            $("#df-view-h1").text(this.innerText);
+            $("#datafile-app").load(this.href);
+            $(this).siblings().each(function() {
+                $(this).removeClass("active");
+            });
+            $(this).addClass("active");
+        });
+        $("#datafile-app").load($("#df-view-0-url").val());
+    });
     $datafileMetadataContainer.show();
 
 });
