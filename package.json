@@ -77,6 +77,7 @@
     "jest-fetch-mock": "^2.1.2",
     "jquery-mockjax": "^2.5.0",
     "js-yaml": "^3.13.1",
+    "jscpd": "^2.0.16",
     "qunit": "^2.9.2",
     "react-test-renderer": "^16.9.0"
   },
