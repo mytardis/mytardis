@@ -244,8 +244,8 @@ var link_account = function() {
             var confirmMessage = "This process would involve merging the two accounts you own.\nWould you like to continue?"
             if (confirm(confirmMessage)) {
               data = {operation: 'mergeAuth', username: username, password: password, authenticationMethod: authenticationMethod,
-	              csrfmiddlewaretoken: '{{csrf_token}}'
-	      };
+                      csrfmiddlewaretoken: '{{csrf_token}}'
+              };
               $.post("{% url 'tardis.tardis_portal.views.manage_auth_methods' %}", data, function(data) {
                 var status = data.status
                 if (status == "success") {
