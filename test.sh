@@ -4,7 +4,7 @@ if [ -v EXTRA_REQS ]; then
     pip install $EXTRA_REQS
 fi
 
-# select test to run with TEST_TYPE, memory pg mysql pylint
+# select test to run with TEST_TYPE, memory pg mysql pylint behave templates
 
 function run_test {
     python test.py test --settings=$1
@@ -44,6 +44,16 @@ case "$TEST_TYPE" in
     behave)
         npm install && npm audit && npm run-script build && \
         npm test && python test.py behave
+	(( exit_status = exit_status || $? ))
+    ;;
+    templates)
+        echo $'Validating templates...\n' && \
+        DJANGO_SETTINGS_MODULE=tardis.test_settings python manage.py validate_templates && \
+        echo $'\nChecking for tabs in templates...\n' && \
+        ! grep -r $'\t' tardis/tardis_portal/templates/* && \
+        echo $'\nChecking for duplication in templates...\n' &&
+        $(npm bin)/jscpd --reporters consoleFull --min-lines 20 \
+            --threshold 0 tardis/tardis_portal/templates/
 	(( exit_status = exit_status || $? ))
     ;;
     *)
