@@ -142,7 +142,7 @@ class LDAPTest(TestCase):
         req.user = user
 
         # Tests getGroups
-        self.assertEqual(l.getGroups(req.user), [b'full', b'systems'])
+        self.assertEqual(list(l.getGroups(req.user)), [b'full', b'systems'])
 
     def test_getgroupbyid(self):
         from ..auth.ldap_auth import ldap_auth
@@ -155,14 +155,14 @@ class LDAPTest(TestCase):
     def test_getgroupsforentity(self):
         from ..auth.ldap_auth import ldap_auth
         l = ldap_auth(force_create=True)
-        self.assertEqual(l.getGroupsForEntity('testuser1'),
+        self.assertEqual(list(l.getGroupsForEntity('testuser1')),
                          [{'id': b'full', 'display': b'Full Group'},
                           {'id': b'systems', 'display': b'Systems Services'}])
 
     def test_searchgroups(self):
         from ..auth.ldap_auth import ldap_auth
         l = ldap_auth(force_create=True)
-        self.assertEqual(l.searchGroups(id='fu*'),
+        self.assertEqual(list(l.searchGroups(id='fu*')),
                          [{'id': b'full',
                            'members': [b'testuser1', b'testuser2', b'testuser3'],
                            'display': b'Full Group'}])
