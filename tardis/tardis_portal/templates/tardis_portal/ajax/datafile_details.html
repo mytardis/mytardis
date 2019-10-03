@@ -2,7 +2,7 @@
   {% if views|length > 1 %}
     {% for view in views %}
       <a class="df-view-button btn btn-warning {% if forloop.first %}active{% endif %}" 
-	 href="{{view.url}}">{{view.name}}</a>
+         href="{{view.url}}">{{view.name}}</a>
        {% endfor %}
     {% endif %}
   <div class="info-box">
@@ -11,11 +11,11 @@
   </div></div>
   <script type="text/javascript">
     $(".df-view-button").on("click", function(e) {
-	e.preventDefault();
-	$("#df-view-h1").text(this.innerText);
-	$("#datafile-app").load(this.href);
-	$(this).siblings().each(function(){$(this).removeClass("active");});
-	$(this).addClass("active");
+        e.preventDefault();
+        $("#df-view-h1").text(this.innerText);
+        $("#datafile-app").load(this.href);
+        $(this).siblings().each(function(){$(this).removeClass("active");});
+        $(this).addClass("active");
     });
     $("#datafile-app").load("{{views.0.url}}");
   </script>
