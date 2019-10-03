@@ -1,6 +1,6 @@
 """
 
-.. moduleauthor:: Ruseell Sim <russell.sim@monash.edu>
+.. moduleauthor:: Russell Sim <russell.sim@monash.edu>
 """
 from unittest import skipIf
 from django.conf import settings
@@ -30,7 +30,7 @@ class LDAPErrorTest(TestCase):
 class LDAPTest(TestCase):
     def setUp(self):
         from .ldap_ldif import test_ldif
-        import tardis.tardis_portal.tests.slapd as slapd
+        from . import slapd
         global server
         if not slapd.Slapd.check_paths():
             raise SkipTest('slapd.Slapd.check_paths() failed, '
@@ -142,8 +142,7 @@ class LDAPTest(TestCase):
         req.user = user
 
         # Tests getGroups
-        self.assertEqual([g for g in l.getGroups(req.user)],
-                         [b'full', b'systems'])
+        self.assertEqual(l.getGroups(req.user), [b'full', b'systems'])
 
     def test_getgroupbyid(self):
         from ..auth.ldap_auth import ldap_auth
@@ -156,14 +155,14 @@ class LDAPTest(TestCase):
     def test_getgroupsforentity(self):
         from ..auth.ldap_auth import ldap_auth
         l = ldap_auth(force_create=True)
-        self.assertEqual([g for g in l.getGroupsForEntity('testuser1')],
+        self.assertEqual(l.getGroupsForEntity('testuser1'),
                          [{'id': b'full', 'display': b'Full Group'},
                           {'id': b'systems', 'display': b'Systems Services'}])
 
     def test_searchgroups(self):
         from ..auth.ldap_auth import ldap_auth
         l = ldap_auth(force_create=True)
-        self.assertEqual([g for g in l.searchGroups(id='fu*')],
+        self.assertEqual(l.searchGroups(id='fu*'),
                          [{'id': b'full',
                            'members': [b'testuser1', b'testuser2', b'testuser3'],
                            'display': b'Full Group'}])

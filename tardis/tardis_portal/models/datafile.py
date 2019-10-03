@@ -1,7 +1,6 @@
-# pylint: disable=R0916
-# remove when file sizes are integers
 import hashlib
 import logging
+import re
 from contextlib import contextmanager
 from tempfile import NamedTemporaryFile
 
@@ -227,7 +226,6 @@ class DataFile(models.Model):
             return self.mimetype
         suffix = path.splitext(self.filename)[-1]
         try:
-            import mimetypes
             return mimetypes.types_map[suffix.lower()]
         except KeyError:
             return 'application/octet-stream'
@@ -239,7 +237,6 @@ class DataFile(models.Model):
             if self.size > render_image_size_limit:
                 return None
 
-        import re
         viewable_mimetype_patterns = ('image/.*', 'text/.*', 'application/pdf')
         if not any(re.match(p, self.get_mimetype())
                    for p in viewable_mimetype_patterns):
@@ -429,10 +426,10 @@ class DataFile(models.Model):
         return mimetype
 
     @property
-    def verified(self, all_dfos=False):
+    def verified(self):
+        """Return True if at least one DataFileObject is verified
+        """
         dfos = [dfo.verified for dfo in self.file_objects.all()]
-        if all_dfos:
-            return all(dfos)
         return any(dfos)
 
     def verify(self, reverify=False):

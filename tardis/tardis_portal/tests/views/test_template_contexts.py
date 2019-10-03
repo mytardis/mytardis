@@ -8,6 +8,8 @@ Tests for view methods supplying context data to templates
 .. moduleauthor::  James Wettenhall <james.wettenhall@monash.edu>
 
 """
+import sys
+
 from flexmock import flexmock
 from mock import patch
 
@@ -66,7 +68,6 @@ class ViewTemplateContextsTest(TestCase):
         """
         from ...views.pages import ExperimentView
         from django.http import HttpRequest
-        import sys
 
         # Default behavior
         views_module = flexmock(sys.modules['tardis.tardis_portal.views'])
@@ -120,7 +121,6 @@ class ViewTemplateContextsTest(TestCase):
         """
         from ...views.pages import DatasetView
         from django.http import HttpRequest
-        import sys
 
         views_module = flexmock(sys.modules['tardis.tardis_portal.views'])
         request = HttpRequest()

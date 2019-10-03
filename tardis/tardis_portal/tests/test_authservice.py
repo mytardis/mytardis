@@ -168,10 +168,8 @@ class AuthServiceTestCase(TestCase):
         # check the correct group provider is registered
         self.assertEqual(len(a._group_providers), 1)
 
-        self.assertEqual(len([g for g in a.getGroupsForEntity('user1')]),
-                         2)
-        self.assertEqual(len([g for g in a.getGroupsForEntity('Group 123')]),
-                         1)
+        self.assertEqual(len(a.getGroupsForEntity('user1')), 2)
+        self.assertEqual(len(a.getGroupsForEntity('Group 123')), 1)
 
     def testAuthenticate(self):
         from ..auth import AuthService

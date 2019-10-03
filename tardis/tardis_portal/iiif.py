@@ -1,4 +1,5 @@
 # pylint: disable=http-response-with-json-dumps,http-response-with-content-type-json
+import hashlib
 import json
 import mimetypes
 
@@ -112,7 +113,6 @@ def compute_etag(request, datafile_id, *args, **kwargs):
     # if SHA-512 sums are unavailable:
     checksum = datafile.sha512sum or datafile.md5sum
     signature = checksum + json.dumps((args, kwargs))
-    import hashlib
     return hashlib.sha1(signature.encode()).hexdigest()
 
 

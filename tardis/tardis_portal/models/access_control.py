@@ -59,7 +59,7 @@ class UserProfile(models.Model):
     @property
     def ext_groups(self):
 
-        import tardis.tardis_portal.auth.fix_circular as fix_circular
+        from ..auth import fix_circular
 
         if not hasattr(self, '_cached_groups'):
             self._cached_groups = fix_circular.getGroups(self.user)
