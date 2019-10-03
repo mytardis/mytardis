@@ -38,6 +38,7 @@ forms module
 '''
 from collections import OrderedDict
 import logging
+import re
 
 import six
 from six.moves import UserDict
@@ -366,7 +367,6 @@ class ExperimentForm(forms.ModelForm):
             return []
 
         def build_dict(order, author_str):
-            import re
             author_str = author_str.strip()
             res = {'order': order}
             # check for email (contains @ sign and one dot after)
@@ -469,8 +469,6 @@ def __getParameterChoices(choicesString):
     textbox.
 
     """
-
-    import re
     paramChoices = ()
 
     # we'll always add '-' as the default value for a dropdown menu just

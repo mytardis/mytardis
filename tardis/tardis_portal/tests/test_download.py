@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import hashlib
 import re
 from os import makedirs
 from os.path import abspath, basename, join, exists, getsize
@@ -31,7 +32,6 @@ except (AttributeError, ImportError):
 
 
 def get_size_and_sha512sum(testfile):
-    import hashlib
     with open(testfile, 'rb') as f:
         contents = f.read()
         return (len(contents), hashlib.sha512(contents).hexdigest())
