@@ -40,7 +40,7 @@
     "moment": "^2.24.0",
     "mustache": "^2.3.0",
     "prop-types": "^15.7.2",
-    "query-string": "^6.8.2",
+    "query-string": "^6.8.3",
     "react": "^16.9.0",
     "react-bootstrap-typeahead": "^4.0.0-alpha.10",
     "react-datetime": "^2.16.3",
