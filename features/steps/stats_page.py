@@ -6,7 +6,7 @@ from selenium.common.exceptions import NoSuchElementException
 
 
 @given("a logged-in admin user")
-def given_a_logged_in_user(context):
+def given_a_logged_in_admin_user(context):
     """
     :type context: behave.runner.Context
     """
