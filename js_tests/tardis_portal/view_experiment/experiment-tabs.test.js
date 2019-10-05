@@ -12,21 +12,20 @@ QUnit.module("tardis_portal.view_experiment.experiment-tabs", {
 });
 QUnit.test("Load experiment tabs", function(assert) {
 
-    $("#qunit-fixture").append(
-        "<ul id=\"experiment-tabs\" class=\"nav nav-pills\">\n" +
-        "  <li><a data-toggle=\"tab\" title=\"Description\" data-url=\"/ajax/experiment/1/description\">Description</a></li>\n" +
-        "  <li><a data-toggle=\"tab\" title=\"Metadata\" data-url=\"/ajax/experiment_metadata/1/\">Metadata</a></li>\n" +
-        "  <li><a data-toggle=\"tab\" title=\"Sharing\" data-url=\"/ajax/experiment/1/share\">Sharing</a></li>\n" +
-        "  <li><a data-toggle=\"tab\" title=\"Transfer Datasets\" data-url=\"/ajax/experiment/1/dataset-transfer\">Transfer Datasets</a></li>\n" +
-        "</ul>\n" +
-        "<div class=\"tab-content\">\n" +
-        "  <div id=\"experiment-tab-description\">\n" +
-        "    <div id=\"experiment_description\" class=\"dl-horizontal\">\n" +
-        "      <!-- ... -->\n" +
-        "    </div>\n" +
-        "  </div>\n" +
-        "</div>\n"
-    );
+    $("#qunit-fixture").append(`
+        <ul id="experiment-tabs" class="nav nav-pills">
+          <li><a data-toggle="tab" title="Description" data-url="/ajax/experiment/1/description">Description</a></li>
+          <li><a data-toggle="tab" title="Metadata" data-url="/ajax/experiment_metadata/1/">Metadata</a></li>
+          <li><a data-toggle="tab" title="Sharing" data-url="/ajax/experiment/1/share">Sharing</a></li>
+          <li><a data-toggle="tab" title="Transfer Datasets" data-url="/ajax/experiment/1/dataset-transfer">Transfer Datasets</a></li>
+        </ul>
+        <div class="tab-content">
+          <div id="experiment-tab-description">
+            <div id="experiment_description" class="dl-horizontal">
+              <!-- ... -->
+            </div>
+          </div>
+        </div>`);
 
     $.mockjax({
         url: "/ajax/experiment_metadata/1/",
