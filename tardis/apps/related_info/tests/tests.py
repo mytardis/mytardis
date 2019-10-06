@@ -53,11 +53,13 @@ class TabTestCase(TestCase):
         self.assertEqual(response.status_code, 403)
         mock_webpack_get_bundle.assert_called()
 
-    def testAccessWithReadPerms(self):
+    @patch('webpack_loader.loader.WebpackLoader.get_bundle')
+    def testAccessWithReadPerms(self, mock_webpack_get_bundle):
         response = self.client.get(
             reverse('tardis.apps.related_info.views.index',
                     args=[self.experiment.id]))
         self.assertEqual(response.status_code, 200)
+        mock_webpack_get_bundle.assert_called()
 
 
 class ListTestCase(TransactionTestCase):
