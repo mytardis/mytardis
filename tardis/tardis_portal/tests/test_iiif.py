@@ -16,7 +16,7 @@ from lxml import etree
 from ..models.experiment import Experiment
 from ..models.access_control import ObjectACL
 from ..models.dataset import Dataset
-from ..models.datafile import DataFile, compute_checksums
+from ..models.datafile import DataFile
 
 """
 Tests for IIIF API.
@@ -58,16 +58,6 @@ def _create_datafile():
                         size=os.path.getsize(tempfile.file.name),
                         filename='iiif_named_file',
                         mimetype='image/tiff')
-    compute_md5 = getattr(settings, 'COMPUTE_MD5', True)
-    compute_sha512 = getattr(settings, 'COMPUTE_SHA512', False)
-    checksums = compute_checksums(
-        open(tempfile.file.name, 'rb'),
-        compute_md5=compute_md5,
-        compute_sha512=compute_sha512)
-    if compute_md5:
-        datafile.md5sum = checksums['md5sum']
-    if compute_sha512:
-        datafile.sha512sum = checksums['sha512sum']
     datafile.save()
     datafile.file_object = tempfile
     return datafile

@@ -29,6 +29,8 @@ from .. import tasks
 from .dataset import Dataset
 from .storage import StorageBox, StorageBoxOption, StorageBoxAttribute
 
+from tardis.celery import tardis_app
+
 logger = logging.getLogger(__name__)
 
 IMAGE_FILTER = (Q(mimetype__startswith='image/') &
@@ -510,8 +512,6 @@ class DataFileObject(models.Model):
         return False
 
     def save(self, *args, **kwargs):
-        from amqp.exceptions import AMQPError
-
         reverify = kwargs.pop('reverify', False)
         super(DataFileObject, self).save(*args, **kwargs)
         if self._changed:
@@ -519,16 +519,19 @@ class DataFileObject(models.Model):
         elif not reverify:
             return
 
-        try:
-            shadow = 'dfo_verify location:%s' % self.storage_box.name
-            tasks.dfo_verify.apply_async(
-                args=[self.id],
-                countdown=5,
-                priority=self.priority,
-                shadow=shadow)
-        except AMQPError:
-            logger.exception(
-                "Failed to submit verification task for DFO ID %s", self.id)
+        if self.uri is not None:
+            try:
+                tardis_app.send_task(
+                    'mytardis.verify_dfo',
+                    args = [
+                        self.id,
+                        self.get_full_path(),
+                        'save'
+                    ],
+                    queue = 'verify',
+                    priority = self.priority)
+            except Exception:
+                logger.exception("Failed to verify file DFO ID %s", self.id)
 
     @property
     def storage_type(self):
@@ -648,11 +651,18 @@ class DataFileObject(models.Model):
         existing = self.datafile.file_objects.filter(storage_box=dest_box)
         if existing.count() > 0:
             if not existing[0].verified and verify:
-                shadow = 'dfo_verify location:%s' % existing[0].storage_box.name
-                tasks.dfo_verify.apply_async(
-                    args=[existing[0].id],
-                    priority=existing[0].priority,
-                    shadow=shadow)
+                try:
+                    tardis_app.send_task(
+                        'mytardis.verify_dfo',
+                        args = [
+                            existing[0].id,
+                            existing[0].get_full_path(),
+                            'copy_file'
+                        ],
+                        queue = 'verify',
+                        priority = existing[0].priority)
+                except Exception:
+                    logger.exception("Failed to verify file DFO ID %s", existing[0].id)
             return existing[0]
         try:
             with transaction.atomic():
@@ -667,11 +677,18 @@ class DataFileObject(models.Model):
                 (self.id, str(e)))
             return False
         if verify:
-            shadow = 'dfo_verify location:%s' % copy.storage_box.name
-            tasks.dfo_verify.apply_async(
-                args=[copy.id],
-                priority=copy.priority,
-                shadow=shadow)
+            try:
+                tardis_app.send_task(
+                    'mytardis.verify_dfo',
+                    args = [
+                        copy.id,
+                        copy.get_full_path(),
+                        'copy_file'
+                    ],
+                    queue = 'verify',
+                    priority = copy.priority)
+            except Exception:
+                logger.exception("Failed to verify file DFO ID %s", copy.id)
         return copy
 
     def move_file(self, dest_box=None):
@@ -688,139 +705,6 @@ class DataFileObject(models.Model):
         if copy and copy.id != self.id and (copy.verified or copy.verify()):
             self.delete()
         return copy
-
-    def calculate_checksums(self, compute_md5=True, compute_sha512=False):
-        """Calculates checksums for a DataFileObject instance
-
-        :param compute_md5: whether to compute md5 default=True
-        :type compute_md5: bool
-        :param compute_sha512: whether to compute sha512, default=True
-        :type compute_sha512: bool
-
-        :return: the checksums as {'md5sum': result, 'sha512sum': result}
-        :rtype: dict
-        """
-        from importlib import import_module
-
-        storage_class_name = self.storage_box.django_storage_class
-        calculate_checksum_methods = getattr(
-            settings, 'CALCULATE_CHECKSUMS_METHODS', {})
-        if storage_class_name in calculate_checksum_methods:
-            calculate_checksum_method = \
-                calculate_checksum_methods[storage_class_name]
-            module_path, method_name = calculate_checksum_method.rsplit('.', 1)
-            module = import_module(module_path)
-            calculate_checksums = getattr(module, method_name)
-            return calculate_checksums(self, compute_md5, compute_sha512)
-
-        return compute_checksums(self.file_object, compute_md5, compute_sha512)
-
-    def verify(self, add_checksums=True, add_size=True):  # too complex # noqa
-        compute_md5 = getattr(settings, 'COMPUTE_MD5', True)
-        compute_sha512 = getattr(settings, 'COMPUTE_SHA512', False)
-        comparisons = ['size']
-        if compute_md5:
-            comparisons.append('md5sum')
-        if compute_sha512:
-            comparisons.append('sha512sum')
-
-        df = self.datafile
-        database = {comp_type: getattr(df, comp_type)
-                    for comp_type in comparisons}
-        database_update = {}
-        empty_value = {db_key: db_val is None or (
-            isinstance(db_val, string_types) and db_val.strip() == '')
-            for db_key, db_val in database.items()}
-        same_values = {key: False for key, empty in empty_value.items()
-                       if not empty}
-        io_error = False
-        io_error_str = 'no error'
-        actual = {}
-        try:
-            actual['size'] = self.file_object.size
-            if not empty_value['size'] and \
-               actual['size'] == database['size']:
-                same_values['size'] = True
-            elif empty_value['size']:
-                # only ever empty when settings.REQ...SIZES = False
-                if add_size:
-                    database_update['size'] = actual['size']
-            if same_values.get('size', True):
-                actual.update(self.calculate_checksums(
-                    compute_md5=compute_md5,
-                    compute_sha512=compute_sha512))
-
-                def collate_checksums(sum_type):
-                    if empty_value[sum_type] and add_checksums:
-                        # all sums only ever empty when not required
-                        database_update[sum_type] = actual[sum_type]
-                    if actual[sum_type] == database[sum_type]:
-                        same_values[sum_type] = True
-
-                if compute_md5:
-                    collate_checksums('md5sum')
-                if compute_sha512:
-                    collate_checksums('sha512sum')
-
-        except IOError as ioe:
-            same_values = {key: False for key in same_values.keys()}
-            io_error = True
-            io_error_str = str(ioe)
-
-        result = all(same_value for same_value in same_values.values())
-        if result:
-            if database_update:
-                for key, val in database_update.items():
-                    setattr(df, key, val)
-                df.save()
-        else:
-            reasons = []
-            if io_error:
-                reasons = [io_error_str]
-            else:
-                for key, the_same in same_values.items():
-                    if not the_same:
-                        reasons.append(
-                            '%s mismatch, database: %s, disk: %s.' % (
-                                key, getattr(df, key),
-                                actual.get(key, 'undefined')))
-            logger.debug('DataFileObject with id %d did not verify. '
-                         'Reasons: %s' %
-                         (self.id, ' '.join(reasons)))
-
-        self.verified = result
-        self.last_verified_time = timezone.now()
-        self.save(update_fields=['verified', 'last_verified_time'])
-        df.update_mimetype()
-        if getattr(settings, 'USE_FILTERS', False):
-            self.apply_filters()
-        return result
-
-    def apply_filters(self):
-        from django.core.files.storage import FileSystemStorage
-        from django.core.files.storage import get_storage_class
-        from tardis.celery import tardis_app
-
-        storage_class = get_storage_class(self.storage_box.django_storage_class)
-        if not issubclass(storage_class, FileSystemStorage):
-            logger.debug(
-		"Can't apply filters for DFO ID %s with storage class %s",
-                self.id, self.storage_box.django_storage_class)
-            return
-
-        try:
-            tardis_app.send_task(
-                'mytardis.apply_filters',
-                args = [
-                    self.datafile.id,
-                    self.verified,
-                    self.get_full_path(),
-                    self.uri
-                ],
-                queue = 'filters',
-                priority = getattr(settings, 'FILTERS_TASK_PRIORITY', 0))
-        except Exception:
-            logger.exception("Failed to apply filters for DFO ID %s", self.id)
 
     def get_full_path(self):
         return self._storage.path(self.uri)

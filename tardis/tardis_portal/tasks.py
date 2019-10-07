@@ -3,12 +3,13 @@ import logging
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.sites.models import Site
-from django.db import transaction
 from django.db.models import Q
+from django.conf import settings
+from django.core.files.storage import FileSystemStorage, get_storage_class
+from django.utils import timezone
 
 from tardis.celery import tardis_app
 from .email import email_user
-
 
 logger = logging.getLogger(__name__)
 
@@ -17,14 +18,23 @@ logger = logging.getLogger(__name__)
 def verify_dfos(**kwargs):
     from .models import DataFileObject
     dfos_to_verify = DataFileObject.objects.filter(verified=False)
-    kwargs['transaction_lock'] = kwargs.get('transaction_lock', True)
     for dfo in dfos_to_verify:
-        kwargs['priority'] = dfo.priority
-        kwargs['shadow'] = 'dfo_verify location:%s' % dfo.storage_box.name
-        dfo_verify.apply_async(args=[dfo.id], **kwargs)
+        try:
+            tardis_app.send_task(
+                'mytardis.verify_dfo',
+                args=[
+                    dfo.id,
+                    dfo.get_full_path(),
+                    'verify_dfos'
+                ],
+                queue='verify',
+                priority=dfo.priority)
+        except Exception:
+            logger.exception("Failed to verify file DFO ID %s", dfo.id)
 
 
-@tardis_app.task(name='tardis_portal.ingest_received_files', ignore_result=True)
+@tardis_app.task(name='tardis_portal.ingest_received_files',
+                 ignore_result=True)
 def ingest_received_files(**kwargs):
     '''
     finds all files stored in temporary storage boxes and attempts to move
@@ -76,7 +86,8 @@ def cache_done_notify(results, user_id, site_id, ct_id, obj_ids):
 
 # "method tasks"
 # StorageBox
-@tardis_app.task(name="tardis_portal.storage_box.copy_files", ignore_result=True)
+@tardis_app.task(name="tardis_portal.storage_box.copy_files",
+                 ignore_result=True)
 def sbox_copy_files(sbox_id, dest_box_id=None):
     from .models import StorageBox
     sbox = StorageBox.objects.get(id=sbox_id)
@@ -87,7 +98,8 @@ def sbox_copy_files(sbox_id, dest_box_id=None):
     return sbox.copy_files(dest_box=dest_box)
 
 
-@tardis_app.task(name="tardis_portal.storage_box.move_files", ignore_result=True)
+@tardis_app.task(name="tardis_portal.storage_box.move_files",
+                 ignore_result=True)
 def sbox_move_files(sbox_id, dest_box_id=None):
     from .models import StorageBox
     sbox = StorageBox.objects.get(id=sbox_id)
@@ -98,7 +110,8 @@ def sbox_move_files(sbox_id, dest_box_id=None):
     return sbox.move_files(dest_box=dest_box)
 
 
-@tardis_app.task(name="tardis_portal.storage_box.cache_files", ignore_result=True)
+@tardis_app.task(name="tardis_portal.storage_box.cache_files",
+                 ignore_result=True)
 def sbox_cache_files(sbox_id):
     """
     Copy all files to faster storage.
@@ -118,14 +131,16 @@ def sbox_cache_files(sbox_id):
                 args=[dfo.id], priority=sbox.priority, shadow=shadow)
 
 
-@tardis_app.task(name='tardis_portal.storage_box.copy_to_master', ignore_result=True)
+@tardis_app.task(name='tardis_portal.storage_box.copy_to_master',
+                 ignore_result=True)
 def sbox_copy_to_master(sbox_id, *args, **kwargs):
     from .models import StorageBox
     sbox = StorageBox.objects.get(id=sbox_id)
     return sbox.copy_to_master(*args, **kwargs)
 
 
-@tardis_app.task(name='tardis_portal.storage_box.move_to_master', ignore_result=True)
+@tardis_app.task(name='tardis_portal.storage_box.move_to_master',
+                 ignore_result=True)
 def sbox_move_to_master(sbox_id, *args, **kwargs):
     from .models import StorageBox
     sbox = StorageBox.objects.get(id=sbox_id)
@@ -170,18 +185,6 @@ def dfo_cache_file(dfo_id):
     return dfo.cache_file()
 
 
-@tardis_app.task(name="tardis_portal.dfo.verify", ignore_result=True)
-def dfo_verify(dfo_id, *args, **kwargs):
-    from .models import DataFileObject
-    # Get dfo locked for write (to prevent concurrent actions)
-    if kwargs.pop('transaction_lock', False):
-        with transaction.atomic():
-            dfo = DataFileObject.objects.select_for_update().get(id=dfo_id)
-            return dfo.verify(*args, **kwargs)
-    dfo = DataFileObject.objects.get(id=dfo_id)
-    return dfo.verify(*args, **kwargs)
-
-
 @tardis_app.task(name='tardis_portal.clear_sessions', ignore_result=True)
 def clear_sessions(**kwargs):
     """Clean up expired sessions using Django management command."""
@@ -193,8 +196,8 @@ def clear_sessions(**kwargs):
                  ignore_result=True)
 def df_save_metadata(df_id, name, schema, metadata):
     """Save all the metadata to a DatafileParameterSet."""
-    from .models import ParameterName, Schema, DataFile,\
-                        DatafileParameterSet, DatafileParameter
+    from .models import ParameterName, Schema, DataFile, \
+        DatafileParameterSet, DatafileParameter
 
     def get_schema(schema, name):
         """
@@ -258,3 +261,33 @@ def df_save_metadata(df_id, name, schema, metadata):
                     else:
                         dfp.string_value = metadata[pname.name]
                         dfp.save()
+
+@tardis_app.task(name='tardis_portal.datafileobject.verified',
+                 ignore_result=True)
+def dfo_verified(dfo_id, checksum):
+    """Save all the metadata to a DatafileParameterSet."""
+    from .models import DataFileObject
+
+    dfo = DataFileObject.objects.get(id=dfo_id)
+    if dfo.datafile.md5sum == checksum:
+        dfo.verified = True
+    dfo.last_verified_time = timezone.now()
+    dfo.save(update_fields=['verified', 'last_verified_time'])
+
+    # Apply filters if required
+    if getattr(settings, 'USE_FILTERS', False):
+        storage_class = get_storage_class(dfo.storage_box.django_storage_class)
+        if issubclass(storage_class, FileSystemStorage):
+            try:
+                tardis_app.send_task(
+                    'mytardis.apply_filters',
+                    args=[
+                        dfo.datafile.id,
+                        dfo.verified,
+                        dfo.get_full_path(),
+                        dfo.uri
+                    ],
+                    queue='filters',
+                    priority=getattr(settings, 'FILTERS_TASK_PRIORITY', 0))
+            except Exception:
+                logger.exception("Failed to apply filters for dfo=%s", dfo.id)

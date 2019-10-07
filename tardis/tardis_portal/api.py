@@ -66,6 +66,8 @@ from .models.storage import StorageBox, StorageBoxOption, StorageBoxAttribute
 from .models.facility import Facility, facilities_managed_by
 from .models.instrument import Instrument
 
+from tardis.celery import tardis_app
+
 
 class PrettyJSONSerializer(Serializer):
     json_indent = 2
@@ -807,11 +809,18 @@ class DataFileResource(MyTardisModelResource):
             [file_record],
             self.build_bundle(obj=file_record, request=request))
         for dfo in file_record.file_objects.all():
-            shadow = 'dfo_verify location:%s' % dfo.storage_box.name
-            tasks.dfo_verify.apply_async(
-                args=[dfo.id],
-                priority=dfo.priority,
-                shadow=shadow)
+            try:
+                tardis_app.send_task(
+                    'mytardis.verify_dfo',
+                    args = [
+                        dfo.id,
+                        dfo.get_full_path(),
+                        'verify_file'
+                    ],
+                    queue = 'verify',
+                    priority = dfo.priority)
+            except Exception:
+                logger.exception("Failed to verify file DFO ID %s", dfo.id)
         return HttpResponse()
 
     def hydrate(self, bundle):
@@ -831,7 +840,6 @@ class DataFileResource(MyTardisModelResource):
                     bundle.data['md5sum'] = checksums['md5sum']
                 if compute_sha512:
                     bundle.data['sha512sum'] = checksums['sha512sum']
-
             if 'replicas' in bundle.data:
                 for replica in bundle.data['replicas']:
                     replica.update({'file_object': newfile})
