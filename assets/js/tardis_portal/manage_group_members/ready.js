@@ -1,4 +1,4 @@
-/* global $ */
+/* manage_group_members/ready.js */
 
 import {userAutocompleteHandler} from "../main";
 
