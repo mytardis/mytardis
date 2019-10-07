@@ -25,6 +25,7 @@ module.exports = {
         tardis_portal_public_data: glob.sync("./assets/js/tardis_portal/public_data/**/*.js"),
         tardis_portal_facility_view: "./assets/js/tardis_portal/facility_view/index.js",
         lib: glob.sync("./assets/js/lib/**/*.js"),
+        search_app : "./assets/js/apps/search/index.jsx",
         test: glob.sync("./js_tests/tardis_portal/**/*.js"),
     },
     output: {
