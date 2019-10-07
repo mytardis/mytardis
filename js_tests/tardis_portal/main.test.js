@@ -1,4 +1,4 @@
-/* global QUnit, $ */
+/* global QUnit */
 
 // Tests for assets/js/tardis_portal/main.js
 
