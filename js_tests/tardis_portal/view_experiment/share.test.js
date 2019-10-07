@@ -68,6 +68,10 @@ QUnit.test("Test clicking on Public Access button", function(assert) {
           <!-- ... -->
           <h3>Step 2: Select a license:</h3>
           <!-- ... -->
+          <h3 >Step 3: Accept The Legal Agreement:</h3>
+          <!-- ... -->
+          <input id="publishing-consent" type="checkbox" value="Agree" />
+          <!-- ... -->
         </form>`;
 
     $.mockjax({
