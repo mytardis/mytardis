@@ -3,11 +3,26 @@ MyTardis Social Authentication
 ##############################
 
 ***********************
+Overview
+***********************
+The MyTardis social auth app allows MyTardis deployments to accept logins using
+OAuth and OpenID Connect. It builds on the
+`Python social auth package <https://python-social-auth.readthedocs.io/en/latest/>`_,
+and uses the `Django social auth app <https://python-social-auth.readthedocs.io/en/latest/configuration/django.html>`_.
+
+***********************
 Usage
 ***********************
 
-To enable the app, include :py:mod:`tardis.apps.social_auth` in
-:py:const:`settings.INSTALLED_APPS`.
+To enable the app, include :py:mod:`social_django` and :py:mod:`tardis.apps.social_auth` in
+:py:const:`settings.INSTALLED_APPS`:
+
+.. code-block:: python
+
+    INSTALLED_APPS += (
+        'social_django',
+        'tardis.apps.social_auth',
+    )
 
 ***********************
 Adding backends
@@ -87,6 +102,7 @@ Once the application is enabled and installed define the following settings to e
     'social_core.pipeline.social_auth.social_user',
     'social_core.pipeline.user.get_username',
     'social_core.pipeline.user.create_user',
+    'tardis.apps.social_auth.auth.social_auth.configure_social_auth_user',
     'tardis.apps.social_auth.auth.social_auth.add_authentication_method',
     'tardis.apps.social_auth.auth.social_auth.approve_user_auth',
     'tardis.apps.social_auth.auth.social_auth.add_user_permissions',
@@ -103,6 +119,7 @@ Once the application is enabled and installed define the following settings to e
     'social_core.pipeline.social_auth.social_user',
     'social_core.pipeline.user.get_username',
     'social_core.pipeline.user.create_user',
+    'tardis.apps.social_auth.auth.social_auth.configure_social_auth_user',
     'tardis.apps.social_auth.auth.social_auth.add_authentication_method',
     'social_core.pipeline.social_auth.associate_user',
     'social_core.pipeline.social_auth.load_extra_data',
