@@ -4,6 +4,8 @@ from behave import when, then
 
 from selenium.common.exceptions import NoSuchElementException
 
+from tardis.tardis_portal.models.dataset import Dataset
+
 
 @when("they click the Add New dataset button")
 def they_click_add_new_dataset_btn(context):
@@ -65,7 +67,9 @@ def they_open_the_exp_url(context):
     """
     :type context: behave.runner.Context
     """
-    context.browser.get(context.base_url + "/experiment/view/1/")
+    dataset = Dataset.objects.filter(description="new dataset1").first()
+    exp_id = dataset.experiments.first().id
+    context.browser.get(context.base_url + "/experiment/view/%s/" % exp_id)
 
 
 @then("they see the newly created dataset")
