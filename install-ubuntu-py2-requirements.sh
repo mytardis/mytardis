@@ -1,5 +1,5 @@
 # for Ubuntu 16.04 or 18.04
-# sudo bash install-ubuntu-requirements.sh
+# sudo bash install-ubuntu-py2-requirements.sh
 
 apt-get update
 apt-get install git libldap2-dev libmagickwand-dev libsasl2-dev \
