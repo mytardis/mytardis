@@ -1,16 +1,7 @@
 /* licenses.js */
-/* global _, async, Mustache */
+/* global _, Mustache */
 
-// Memoized AJAX call (which should make things snappier) to get license JSON
-var loadLicenses = async.memoize(function(publicAccess, callback) {
-    $.ajax({
-        url: "/ajax/license/list?public_access=" + publicAccess,
-        dataType: "json",
-        success: callback
-    });
-});
-
-var selectLicenseOption = function(value) {
+export var selectLicenseOption = function(value) {
     var selectedOption = $(`.license-option input[value="${value}"]`)
         .parents(".license-option");
     selectedOption.find(".use-button").addClass("disabled");
@@ -18,18 +9,28 @@ var selectLicenseOption = function(value) {
 };
 
 export var populateLicenseOptions = function(publicAccess, markSameLicense) {
-    loadLicenses(publicAccess, function(licenses) {
-        $("#license-options").empty();
-        _(licenses).each(function(license) {
-            $("#license-options").append(
-                Mustache.to_html(
-                    Mustache.TEMPLATES["tardis_portal/license_selector"],
-                    license, Mustache.TEMPLATES)
-            );
-            if (markSameLicense) {
-                selectLicenseOption($(`form input[name="${license}"]`).val());
-            }
-        });
+    $.ajax({
+        url: "/ajax/license/list?public_access=" + publicAccess,
+        dataType: "json",
+        success: function(licenses) {
+            $("#license-options").empty();
+            _(licenses).each(function(license) {
+                $("#license-options").append(
+                    Mustache.to_html(
+                        Mustache.TEMPLATES["tardis_portal/license_selector"],
+                        license, Mustache.TEMPLATES)
+                );
+                if (markSameLicense) {
+                    // setTimeout(..., 0) gives the browser a chance to complete
+                    // the append before trying to select the option.
+                    setTimeout(function() {
+                        // A Django form is supplied by the view method, which
+                        // includes some hidden inputs, including #id_license:
+                        selectLicenseOption($("#id_license").val());
+                    }, 0);
+                }
+            });
+        }
     });
 };
 
