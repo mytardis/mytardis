@@ -134,7 +134,6 @@ module.exports = {
         alias: {
             "jquery": __dirname + "/node_modules/jquery",
             "main": __dirname + "/assets/js/tardis_portal/main",
-            "async": __dirname + "/assets/js/lib/async.min",
             "backbonemodels": __dirname + "/assets/js/tardis_portal/backbone-models",
             "experimentabs": __dirname + "/assets/js/tardis_portal/view_experiment/experiment-tabs",
             "experimentshare": __dirname + "/assets/js/tardis_portal/view_experiment/share",
