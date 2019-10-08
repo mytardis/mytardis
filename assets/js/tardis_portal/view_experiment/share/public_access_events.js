@@ -1,7 +1,9 @@
 /* public access events */
 /* global _, Mustache */
 
+import { loadExpTabPane } from "../experiment-tabs.js";
 import { populateLicenseOptions } from "./licenses.js";
+import { selectLicenseOption } from "./licenses.js";
 
 export var addPublicAccessEvents = function() {
     $(document).on("change", "#publishing-consent", function() {
@@ -22,8 +24,7 @@ export var addPublicAccessEvents = function() {
 
     $(document).on("click", "#legal-section .cancel-button", function() {
         // Just refresh this tab pane to reset previous values
-        var expChangeEvent = new Event("experiment-change");
-        $("#legal-section").parents(".tab-pane").dispatchEvent(expChangeEvent);
+        loadExpTabPane("sharing");
         $("#legal-section").modal("hide");
     });
 
@@ -41,8 +42,11 @@ export var addPublicAccessEvents = function() {
             $(this).prop("originalValue") === $(this).val()
         );
     });
-    // Set default state
-    publicAccessSelector.change();
+    // Set default state:
+    populateLicenseOptions($("select[name=public_access]").val(), true);
+    // A Django form is supplied by the view method, which includes some
+    // hidden inputs, including #id_license:
+    selectLicenseOption($("#id_license").val());
 
     $("form.experiment-rights").submit(function(evt) {
         evt.preventDefault();
@@ -74,6 +78,8 @@ export var addPublicAccessEvents = function() {
                         Mustache.TEMPLATES["tardis_portal/rights_update_message"],
                         templateData, Mustache.TEMPLATES)
                 );
+
+                populateLicenseOptions(templateData.public_access, true);
 
                 // update badge on view experiment page
                 $("#experiment-public-access-badge").load("public_access_badge/");
