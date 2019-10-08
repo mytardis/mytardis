@@ -18,7 +18,7 @@ Run this script for Python 3::
 
    sudo bash install-ubuntu-py3-requirements.sh
 
-It will install required packages with this command:
+It will install required packages with these commands:
 
 .. literalinclude:: ../../install-ubuntu-py3-requirements.sh
    :language: bash
@@ -27,7 +27,7 @@ Or run this script for Python 2.7::
 
    sudo bash install-ubuntu-py2-requirements.sh
 
-It will install required packages with this command:
+It will install required packages with these commands:
 
 .. literalinclude:: ../../install-ubuntu-py2-requirements.sh
    :language: bash
