@@ -52,9 +52,11 @@ case "$TEST_TYPE" in
         echo $'\nChecking for tabs in templates...\n' && \
         ! grep -r $'\t' tardis/tardis_portal/templates/* && \
         echo $'\nChecking for duplication in templates...\n' && \
-        npm install --no-package-lock --no-save jscpd && \
         $(npm bin)/jscpd --reporters consoleFull --min-lines 20 \
-            --threshold 0 tardis/tardis_portal/templates/
+            --threshold 0 tardis/tardis_portal/templates/ &&
+        echo $'\nRunning bootlint on templates...\n' && \
+        $(npm bin)/bootlint --disable E001,E041,E047,W001,W002,W003,W005 \
+            tardis/tardis_portal/templates/tardis_portal/*.html
 	(( exit_status = exit_status || $? ))
     ;;
     *)
