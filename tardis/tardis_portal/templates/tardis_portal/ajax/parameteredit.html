@@ -5,20 +5,19 @@
   Parameters saved successfully.
 
 {% else %}
-  <p><strong>Schema: </strong>{{schema.name}}</strong></p>
+  <p><strong>Schema: </strong>{{schema.name}}</p>
   <form id="edit_metadata_form" action='/ajax/edit_{{type}}_parameters/{{parameterset_id}}/' method='post'>{% csrf_token %}
     {{ form.non_field_errors }}
       {% for field in form %}
         {{ field | bootstrap }}
       {% endfor %}
-    <span/>
 
     <div class="input-group">
       <select id="parameternameselect" class="form-control">
         {% for pn in parameternames %}
           {% if not pn.immutable %}
-            <option value="{{pn.name|parametername_form}}" {% if pn.isLongString %}
-                    data-longstring="true"{% endif %}>
+            <option value="{{pn.name|parametername_form}}"
+                    {% if pn.isLongString %} data-longstring="true" {% endif %}>
               {{pn.full_name}} {% if pn.units %}({{pn.units}}){% endif %}
             </option>
           {% endif %}

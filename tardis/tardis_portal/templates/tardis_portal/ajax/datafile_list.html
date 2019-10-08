@@ -12,7 +12,7 @@
     {% endif %}
 
     {% for pagenum in datafiles.paginator.page_range %}
-    <li{% if datafiles.number == pagenum %} class="active"{% endif %}>
+    <li {% if datafiles.number == pagenum %} class="active"{% endif %}>
       <a class="pagelink"
          href="/ajax/datafile_list/{{dataset.id}}/?page={{pagenum}}&{{params}}">
          {{pagenum}}
