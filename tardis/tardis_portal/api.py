@@ -6,6 +6,7 @@ Implemented with Tastypie.
 .. moduleauthor:: Grischa Meyer <grischa@gmail.com>
 .. moduleauthor:: James Wettenhall <james.wettenhall@monash.edu>
 '''
+import logging
 import json
 import re
 from wsgiref.util import FileWrapper
@@ -37,8 +38,8 @@ from tastypie.contrib.contenttypes.fields import GenericForeignKeyField
 
 from uritemplate import URITemplate
 
+from tardis.celery import tardis_app
 from tardis.analytics.tracker import IteratorTracker
-from . import tasks
 from .auth.decorators import (
     get_accessible_datafiles_for_user,
     has_datafile_access,
@@ -66,7 +67,7 @@ from .models.storage import StorageBox, StorageBoxOption, StorageBoxAttribute
 from .models.facility import Facility, facilities_managed_by
 from .models.instrument import Instrument
 
-from tardis.celery import tardis_app
+logger = logging.getLogger(__name__)
 
 
 class PrettyJSONSerializer(Serializer):

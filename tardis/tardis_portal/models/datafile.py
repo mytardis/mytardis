@@ -6,10 +6,10 @@ from tempfile import NamedTemporaryFile
 
 from os import path
 import mimetypes
+import magic
 
 import six
 from six.moves import urllib
-from six import string_types
 
 from django.conf import settings
 from django.core.files import File
@@ -20,16 +20,12 @@ from django.db.models import Q, Sum
 from django.db.models.signals import pre_delete
 from django.dispatch import receiver
 from django.forms.models import model_to_dict
-from django.utils import timezone
 from django.utils.encoding import python_2_unicode_compatible
 
-import magic
-
+from tardis.celery import tardis_app
 from .. import tasks
 from .dataset import Dataset
 from .storage import StorageBox, StorageBoxOption, StorageBoxAttribute
-
-from tardis.celery import tardis_app
 
 logger = logging.getLogger(__name__)
 
