@@ -257,10 +257,8 @@ class Dataset(models.Model):
                     if part1 in dirs_dict and part2 in dirs_dict[part1]:
                         return [("..", urllib.parse.quote(basedir))]
                 return []
-            dirs = [(item, urllib.parse.quote(path.join(basedir, item)))
-                    for item in dirs_dict[basedir]]
-            dirs = [("..", urllib.parse.quote(basedir))] + dirs
+            dirs = [item for item in dirs_dict[basedir]]
         else:
-            dirs = [(key, urllib.parse.quote(key)) for key in dirs_dict
+            dirs = [key for key in dirs_dict
                     if len(key.split('/')) == 1]
         return sorted(dirs, key=lambda x: x[0])

@@ -29,6 +29,7 @@ module.exports = {
         related_info_index_ro: "./assets/js/apps/related_info/index_ro.js",
         lib: glob.sync("./assets/js/lib/**/*.js"),
         search_app : "./assets/js/apps/search/index.jsx",
+        tree_view : "./assets/js/app/tree_view/index.jsx"
     },
     output: {
         path: path.resolve("./assets/bundles/"),
