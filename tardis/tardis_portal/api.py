@@ -40,6 +40,7 @@ from uritemplate import URITemplate
 
 from tardis.celery import tardis_app
 from tardis.analytics.tracker import IteratorTracker
+from . import tasks
 from .auth.decorators import (
     get_accessible_datafiles_for_user,
     has_datafile_access,
@@ -809,19 +810,27 @@ class DataFileResource(MyTardisModelResource):
         self.authorized_read_detail(
             [file_record],
             self.build_bundle(obj=file_record, request=request))
+        verify_ms = getattr(settings, 'VERIFY_AS_SERVICE', False)
         for dfo in file_record.file_objects.all():
-            try:
-                tardis_app.send_task(
-                    'mytardis.verify_dfo',
-                    args = [
-                        dfo.id,
-                        dfo.get_full_path(),
-                        'verify_file'
-                    ],
-                    queue = 'verify',
-                    priority = dfo.priority)
-            except Exception:
-                logger.exception("Failed to verify file DFO ID %s", dfo.id)
+            if verify_ms:
+                try:
+                    tardis_app.send_task(
+                        'mytardis.verify_dfo',
+                        args = [
+                            dfo.id,
+                            dfo.get_full_path(),
+                            'verify_file'
+                        ],
+                        queue = 'verify',
+                        priority = dfo.priority)
+                except Exception:
+                    logger.exception("Failed to verify file DFO ID %s", dfo.id)
+            else:
+                shadow = 'dfo_verify location:%s' % dfo.storage_box.name
+                tasks.dfo_verify.apply_async(
+                    args=[dfo.id],
+                    priority=dfo.priority,
+                    shadow=shadow)
         return HttpResponse()
 
     def hydrate(self, bundle):
@@ -841,6 +850,7 @@ class DataFileResource(MyTardisModelResource):
                     bundle.data['md5sum'] = checksums['md5sum']
                 if compute_sha512:
                     bundle.data['sha512sum'] = checksums['sha512sum']
+
             if 'replicas' in bundle.data:
                 for replica in bundle.data['replicas']:
                     replica.update({'file_object': newfile})

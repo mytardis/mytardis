@@ -3,6 +3,7 @@ import logging
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.sites.models import Site
+from django.db import transaction
 from django.db.models import Q
 from django.conf import settings
 from django.core.files.storage import FileSystemStorage, get_storage_class
@@ -18,19 +19,26 @@ logger = logging.getLogger(__name__)
 def verify_dfos(**kwargs):
     from .models import DataFileObject
     dfos_to_verify = DataFileObject.objects.filter(verified=False)
+    kwargs['transaction_lock'] = kwargs.get('transaction_lock', True)
+    verify_ms = getattr(settings, 'VERIFY_AS_SERVICE', False)
     for dfo in dfos_to_verify:
-        try:
-            tardis_app.send_task(
-                'mytardis.verify_dfo',
-                args=[
-                    dfo.id,
-                    dfo.get_full_path(),
-                    'verify_dfos'
-                ],
-                queue='verify',
-                priority=dfo.priority)
-        except Exception:
-            logger.exception("Failed to verify file DFO ID %s", dfo.id)
+        if verify_ms:
+            try:
+                tardis_app.send_task(
+                    'mytardis.verify_dfo',
+                    args=[
+                        dfo.id,
+                        dfo.get_full_path(),
+                        'verify_dfos'
+                    ],
+                    queue='verify',
+                    priority=dfo.priority)
+            except Exception:
+                logger.exception("Failed to verify file DFO ID %s", dfo.id)
+        else:
+            kwargs['priority'] = dfo.priority
+            kwargs['shadow'] = 'dfo_verify location:%s' % dfo.storage_box.name
+            dfo_verify.apply_async(args=[dfo.id], **kwargs)
 
 
 @tardis_app.task(name='tardis_portal.ingest_received_files',
@@ -183,6 +191,18 @@ def dfo_cache_file(dfo_id):
     from .models import DataFileObject
     dfo = DataFileObject.objects.get(id=dfo_id)
     return dfo.cache_file()
+
+
+@tardis_app.task(name="tardis_portal.dfo.verify", ignore_result=True)
+def dfo_verify(dfo_id, *args, **kwargs):
+    from .models import DataFileObject
+
+    if kwargs.pop('transaction_lock', False):
+        with transaction.atomic():
+            dfo = DataFileObject.objects.select_for_update().get(id=dfo_id)
+            return dfo.verify(*args, **kwargs)
+    dfo = DataFileObject.objects.get(id=dfo_id)
+    return dfo.verify(*args, **kwargs)
 
 
 @tardis_app.task(name='tardis_portal.clear_sessions', ignore_result=True)

@@ -14,6 +14,7 @@ from .debug import *
 from .downloads import *
 from .email import *
 from .filters import *
+from .verify import *
 from .frontend import *
 from .i18n import *
 from .localisation import *
