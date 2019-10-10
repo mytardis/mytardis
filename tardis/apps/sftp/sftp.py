@@ -13,7 +13,7 @@ import stat
 import time
 import uuid
 
-from six import BytesIO
+import six
 
 from django.conf import settings
 from paramiko import InteractiveQuery,  RSAKey, ServerInterface,\
@@ -151,7 +151,7 @@ class DynamicTree(object):
         #         placeholder = df.file_objects.all()[0].uri
         #     else:
         #         placeholder = 'offline file, contact administrator'
-        #     file_obj = BytesIO(placeholder)
+        #     file_obj = six.BytesIO(placeholder)
         # child = self.children[file_name]
         # child.name = file_name
         # child.obj = file_obj
@@ -368,7 +368,7 @@ class MyTSFTPHandle(SFTPHandle):
                 fo = df.file_objects.all()[0]
                 error_string = "%s:%s" % (fo.storage_box.name,
                                           fo.uri)
-                self.readfile = BytesIO(error_string)
+                self.readfile = six.BytesIO(error_string)
 
     def stat(self):
         """
@@ -529,9 +529,12 @@ def start_server(host=None, port=None, keyfile=None):
         current_site = Site.objects.get_current()
         host = current_site.domain
     port = port or getattr(settings, 'SFTP_PORT', 2200)
-    host_key_string = settings.SFTP_HOST_KEY
+    if isinstance(settings.SFTP_HOST_KEY, six.string_types):
+        host_key_bytes = six.b(settings.SFTP_HOST_KEY)
+    else:
+        host_key_bytes = settings.SFTP_HOST_KEY
     host_key = RSAKey.from_private_key(
-        keyfile or BytesIO(host_key_string))
+        keyfile or six.BytesIO(host_key_bytes))
     server = MyTSFTPTCPServer((host, port), host_key=host_key)
     try:
         server.serve_forever()
