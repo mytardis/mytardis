@@ -73,6 +73,7 @@ const TreeExample = ({datasetId}) => {
     useEffect(() => {fetchData('')},[]);
     const onToggle = (node, toggled) => {
       //fetch children
+      console.log(node);
       if (toggled){
         fetchData(node.name);
       }
@@ -102,47 +103,4 @@ const TreeExample = ({datasetId}) => {
 const content = document.getElementById('tree_view');
 const href = window.location.href;
 const datasetId = href.substring(href.lastIndexOf("/")+1);
-console.log(href);
 ReactDOM.render(<TreeExample datasetId={datasetId}/>, content);
-
-/*
-ReactDOM.render(
-    <FileBrowser icons={Icons.FontAwesome(4)} files={[
-      {
-        key: 'photos/animals/',
-        modified: +Moment().subtract(1, 'hours'),
-        size: 1.5 * 1024 * 1024,
-      },
-      {
-        key: 'photos/animals/',
-        modified: +Moment().subtract(3, 'days'),
-        size: 545 * 1024,
-      },
-      {
-        key: 'photos/animals/',
-        modified: +Moment().subtract(3, 'days'),
-        size: 52 * 1024,
-      },
-      {
-        key: 'photos/funny fall.gif',
-        modified: +Moment().subtract(2, 'months'),
-        size: 13.2 * 1024 * 1024,
-      },
-      {
-        key: 'photos/holiday.jpg',
-        modified: +Moment().subtract(25, 'days'),
-        size: 85 * 1024,
-      },
-      {
-        key: 'documents/letter chunks.doc',
-        modified: +Moment().subtract(15, 'days'),
-        size: 480 * 1024,
-      },
-      {
-        key: 'documents/export.pdf',
-        modified: +Moment().subtract(15, 'days'),
-        size: 4.2 * 1024 * 1024,
-      },
-    ]}/>,
-  document.getElementById("tree_view"),
-);*/
