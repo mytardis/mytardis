@@ -8,6 +8,13 @@ $(document).ready(function() {
         function() {
             attachExpAccordionClickHandlers("accordion-toggle", "toggle-", "collapse-", "latest-dataset-", loadLatestDatasetSummary);
             expandFirstExperiments();
+
+            $(".explink").on("click", function(evt) {
+                evt.stopPropagation();
+            });
+            $(".dllink").on("click", function(evt) {
+                evt.stopPropagation();
+            });
         });
 
     // Create a reload event handler
@@ -18,6 +25,13 @@ $(document).ready(function() {
             function() {
                 attachExpAccordionClickHandlers("accordion-toggle", "toggle-", "collapse-", "latest-dataset-", loadLatestDatasetSummary);
                 expandFirstExperiments();
+
+                $(".explink").on("click", function(evt) {
+                    evt.stopPropagation();
+                });
+                $(".dllink").on("click", function(evt) {
+                    evt.stopPropagation();
+                });
             });
     });
 

@@ -226,7 +226,7 @@
         {% endcomment %}
         <div id="django-message-container" >
           {% for message in messages %}
-            <p{% if message.level_tag %} class="alert alert-block alert-{{ message.level_tag }}"{% endif %}>
+            <p{% if message.level_tag %} class="alert alert-block alert-{{ message.level_tag }} alert-dismissible"{% endif %}>
               <a class="close" data-dismiss="alert">&times;</a>
               {% if 'safe' in message.tags %}
                 {{ message|safe }}

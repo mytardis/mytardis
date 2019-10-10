@@ -146,9 +146,10 @@ def retrieve_access_list_group_readonly(request, experiment_id):
     group_acls_user_owned = Experiment.safe.group_acls_user_owned(
         experiment_id)
 
+    group_acls = group_acls_system_owned | group_acls_user_owned
+
     c = {'experiment_id': experiment_id,
-         'group_acls_system_owned': group_acls_system_owned,
-         'group_acls_user_owned': group_acls_user_owned}
+         'group_acls': group_acls}
     return render_response_index(
         request, 'tardis_portal/ajax/access_list_group_readonly.html', c)
 

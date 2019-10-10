@@ -1,0 +1,36 @@
+{% load jstemplate %}
+{% load render_bundle from webpack_loader %}
+
+{% render_bundle 'main' %}
+
+{% mustachejs "related_info/publication" %}
+{% mustachejs "related_info/website" %}
+
+<input type="hidden" id="experiment-id" value="{{ experiment.id }}">
+
+<div class="modal" id="modal-add-related-info" role="dialog" tabindex="-1">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <a class="close" data-dismiss="modal">×</a>
+        <h3>Add/Edit Related Info</h3>
+      </div>
+      <div class="modal-body"></div>
+      <div class="modal-footer">
+        <button class="save-related-info btn btn-success">
+          Save changes
+        </button>
+      </div>
+    </div>  <!-- class="modal-content" -->
+  </div>  <!-- class="modal-dialog" -->
+</div>
+
+<button class="add-related-info btn btn-default pull-right">
+  <i class="icon-plus"></i>
+  Add new
+</button>
+
+<div id="related-info-items"></div>
+
+{% render_bundle 'related_info_index' %}
+

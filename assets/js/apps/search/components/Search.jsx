@@ -96,7 +96,7 @@ function Search() {
   return (
     <main>
       <SimpleSearchForm showResults={showResults} searchText={searchText} />
-      { <Results results={results} counts={counts} /> }
+      <Results results={results} counts={counts} />
     </main>
   );
 }

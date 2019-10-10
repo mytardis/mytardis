@@ -1,9 +1,10 @@
 /* jQuery code for experiment view's Sharing tab */
-/* global $ */
 
-import {userAutocompleteHandler} from "../../main";
+import { userAutocompleteHandler } from "../../main";
 
 import { loadExpTabPane } from "../experiment-tabs.js";
+
+import { addPublicAccessEvents } from "./public_access_events.js";
 
 var loadingHTML = "<img src=\"/static/images/ajax-loader.gif\"/><br />";
 
@@ -22,9 +23,12 @@ export function addChangePublicAccessEventHandlers() {
 
                 if (status === "error") {
                     $(this).html(response);
+                    return;
                 }
 
                 $("#legal-section").hide();
+
+                addPublicAccessEvents();
             });
 
     });

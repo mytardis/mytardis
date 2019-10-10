@@ -11,7 +11,13 @@ $(document).ready(function() {
     });
 
     // load datafiles on page load
-    $("#datafiles-pane").load("/ajax/datafile_list/" + $("#dataset-id").val() + "/");
+    $("#datafiles-pane").load(
+        "/ajax/datafile_list/" + $("#dataset-id").val() + "/", function() {
+            $(".archived-file").tooltip({"title": "This file is archived."});
+            $("a.archived-file").on("click", function(evt) {
+                evt.preventDefault();
+            });
+        });
 
     // Create a reload event handler
     $("#datafiles-pane").on("reload", function() {
@@ -24,6 +30,11 @@ $(document).ready(function() {
             $("#total-count").html(fileCountString);
             // Reset progress bar after datafiles-pane has reloaded:
             $("#progress .progress-bar").css("width", "0%");
+
+            $(".archived-file").tooltip({"title": "This file is archived."});
+            $("a.archived-file").on("click", function(evt) {
+                evt.preventDefault();
+            });
         });
     });
 

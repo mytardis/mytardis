@@ -30,6 +30,7 @@ class SerializerTest(TestCase):
 
     def test_debug_serializer(self):
         with self.settings(DEBUG=False):
+            # pylint: disable=import-outside-toplevel
             import tardis.tardis_portal.api
             reload_module(tardis.tardis_portal.api)
             self.assertEqual(

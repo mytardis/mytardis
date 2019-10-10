@@ -14,14 +14,24 @@ Prerequisites
 Ubuntu (18.04 LTS is recommended)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Run the script::
+Run this script for Python 3::
 
-   sudo bash install-ubuntu-requirements.sh
+   sudo bash install-ubuntu-py3-requirements.sh
 
-It will install required packages with this command:
+It will install required packages with these commands:
 
-.. literalinclude:: ../../install-ubuntu-requirements.sh
+.. literalinclude:: ../../install-ubuntu-py3-requirements.sh
    :language: bash
+
+Or run this script for Python 2.7::
+
+   sudo bash install-ubuntu-py2-requirements.sh
+
+It will install required packages with these commands:
+
+.. literalinclude:: ../../install-ubuntu-py2-requirements.sh
+   :language: bash
+
 
 Download
 --------
@@ -43,14 +53,26 @@ Quick configuration
 -------------------
 
 It is recommended that you use a virtualenv. The list of packages above
-includes the ``virtualenvwrapper`` toolkit. Set up your environment with these
-commands:
+for Python 2.7 includes the ``virtualenvwrapper`` toolkit.
 
-Ubuntu 18.04::
+If using Python 3, you can, install ``virtualenvwrapper``  with
+``sudo pip3 install virtualenvwrapper`` and set the
+``export VIRTUALENV_PYTHON=/usr/bin/python3`` in your ``~/.bashrc`` or
+``~/.profile`` to ensure that ``mkvirtualenv`` will make a Python 3
+virtual environment.  For more information on configuring
+``virtualenvwrapper``, see https://virtualenvwrapper.readthedocs.io/en/latest/install.html#shell-startup-file
+
+To activate ``virtualenvwrapper``:
+
+For Ubuntu 18.04 with Python 3 (using pip3 installed virtualenvwrapper)::
+
+  source /usr/local/bin/virtualenvwrapper.sh
+
+For Ubuntu 18.04 with Python 2.7 (using apt-get installed virtualenvwrapper)::
 
   source /etc/bash_completion.d/virtualenvwrapper
 
-For Ubuntu 16.04::
+For Ubuntu 16.04 with Python 2.7 (using apt-get installed virtualenvwrapper)::
 
   source /usr/share/virtualenvwrapper/virtualenvwrapper.sh
 

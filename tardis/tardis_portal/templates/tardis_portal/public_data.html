@@ -3,12 +3,13 @@
 {% load experimentstats %}
 {% load humanize %}
 {% load bleach_tag %}
+{% load render_bundle from webpack_loader %}
 
 {% block content %}
 
-<div id="content">
+<div id="content" class="container-fluid">
   <div class="row">
-    <div class="col-md-9">
+    <div class="col-md-12">
       <h2 class="visible-xs">Experiments</h2>
       <div class="pull-left">
           <h2 class="hidden-xm" style="text-align: center">Experiments</h2>
@@ -16,7 +17,7 @@
     </div>
   </div>
   <div class="row">
-    <div class="col-md-9">
+    <div class="col-md-12">
       {% if not public_experiments %}
       <p class="alert alert-info">
         No experiments have been published yet.
@@ -44,40 +45,9 @@
                    onclick="$('#collapse{{exp.id}}').collapse('toggle');" >
                 <strong><a class="pull-left explink"
                            href="{% url 'tardis_portal.view_experiment' exp.id %}">{{ exp.title }}</a></strong>
-                <ul class="nav nav-pills badgelist">
-                  <li class="pull-right">
-                    {{ exp|experiment_public_access_badge }}
-                  </li>
-                  <li class="pull-right">
-                    {{ exp|experiment_datafiles_badge }}
-                  </li>
-                  <li class="pull-right">
-                    {{ exp|experiment_datasets_badge }}
-                  </li>
-                  <li class="pull-right">
-                    {{ exp|experiment_last_updated_badge }}
-                  </li>
-                </ul>
-                <small>
-                  {% for author in exp.experimentauthor_set.all %}
-                    {% if not forloop.first %}, {% endif %}
-                    <span property="dc:author">{{ author.author }}</span>
-                  {% endfor %}
-                  &nbsp;
-                </small>
-                <span class="pull-right">
-                  {% if exp.public_download_allowed %}
-                  {% for dltype, dlurl in exp.get_download_urls.items %}
-                    {% if forloop.first %}
-                      <a class="dllink" href="{{dlurl}}"
-                         title="Download Entire Experiment as {{dltype}}">
-                        <i class="fa fa-download"></i>
-                        <em>Download data as .{{dltype}}</em>
-                      </a>
-                    {% endif %}
-                  {% endfor %}
-                  {% endif %}
-                </span>
+                {% experiment_badges exp %}
+                {% experiment_authors exp %}
+                {% experiment_download_link exp %}
               </div>
             </div>
             <div id="collapse{{exp.id}}"
@@ -125,15 +95,5 @@
   </div>
 
 </div>
-<script type="text/javascript">
-$(function() {
-    $("#experiments .accordion-body").collapse({parent:"#experiments", toggle: true});
-    $(".explink").on("click", function(e) {
-        e.stopPropagation();
-    });
-    $(".dllink").on("click", function(e) {
-        e.stopPropagation();
-    });
-});
-</script>
+{% render_bundle 'tardis_portal_public_data' %}
 {% endblock %}

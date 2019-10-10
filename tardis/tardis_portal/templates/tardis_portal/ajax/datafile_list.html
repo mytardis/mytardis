@@ -12,7 +12,7 @@
     {% endif %}
 
     {% for pagenum in datafiles.paginator.page_range %}
-    <li{% if datafiles.number == pagenum %} class="active"{% endif %}>
+    <li {% if datafiles.number == pagenum %} class="active"{% endif %}>
       <a class="pagelink"
          href="/ajax/datafile_list/{{dataset.id}}/?page={{pagenum}}&{{params}}">
          {{pagenum}}
@@ -150,26 +150,5 @@
 </tbody>
 </table>
 </form>
-
-<script type="text/javascript">
-    $(function () {
-        $('.archived-file').tooltip({'title': "This file is archived."});
-        $('a.archived-file').on("click", function(e) {
-            e.preventDefault();
-        });
-    });
-</script>
-{# this appears to break things? Why is it here? -steve #}
-{# <script type="text/javascript"> #}
-{# (function() { #}
-{#   var btnGroups = $('tr.datafile .btn-group'); #}
-{#   var addWidths = function(memo, v, k) { #}
-{#     return memo + $(v).outerWidth(); #}
-{#   }; #}
-{#   var calculatedWidth = _.reduce(btnGroups.first().find('a.btn'), addWidths, 0); #}
-{#   btnGroups.css('width', calculatedWidth+"px"); #}
-{# })(); #}
-{# </script> #}
-
 
 {{ paginator_block }}

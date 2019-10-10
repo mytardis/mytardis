@@ -1,4 +1,3 @@
-/* eslint global-strict: 0, strict: 0, object-shorthand: 0 */
 /* global s */
 
 import { expSharingAjaxReady } from "./share/share.js";

@@ -1,0 +1,13 @@
+{% load jstemplate %}
+{% load render_bundle from webpack_loader %}
+
+{% render_bundle 'main' %}
+
+{% mustachejs "related_info/publication" %}
+{% mustachejs "related_info/website" %}
+
+<input type="hidden" id="experiment-id" value="{{ experiment.id }}">
+
+<div id="related-info-items"></div>
+
+{% render_bundle 'related_info_index_ro' %}

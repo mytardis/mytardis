@@ -35,7 +35,9 @@ tardis_app = Celery('tardis')
 tardis_app.config_from_object('django.conf:settings')
 tardis_app.autodiscover_tasks(lambda: [n.name for n in apps.get_app_configs()])
 
-TEMPLATES[0]['DIRS'].append('.')
+TEMPLATES[0]['DIRS'].append(
+    path.join(path.dirname(__file__),
+    'tardis_portal/tests/rifcs').replace('\\', '/'))
 TEMPLATES[0]['OPTIONS']['debug'] = DEBUG
 
 del STATICFILES_STORAGE  # noqa
