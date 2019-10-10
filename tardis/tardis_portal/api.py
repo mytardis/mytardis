@@ -700,6 +700,11 @@ class DatasetResource(MyTardisModelResource):
                 r'(?:(?P<file_path>.+))?$' % self._meta.resource_name,
                 self.wrap_view('get_datafiles'),
                 name='api_get_datafiles_for_dataset'),
+
+            url(r'^(?P<resource_name>%s)/(?P<pk>\w[\w/-]*)/dirs%s$' %
+                (self._meta.resource_name, trailing_slash()),
+                self.wrap_view('get_dirs'),
+                name='api_get_dir_tree'),
         ]
 
     def get_datafiles(self, request, **kwargs):
@@ -735,6 +740,69 @@ class DatasetResource(MyTardisModelResource):
                     pass
         return super(DatasetResource, self).hydrate_m2m(bundle)
 
+    def get_dirs(self, request, **kwargs):
+        dataset_id = kwargs['pk']
+        data = request.GET['data']
+        base_dir = request.GET['base_dir']
+        dataset = Dataset.objects.get(id=dataset_id)
+        dirs = dataset.get_dirs("")
+        if data and base_dir:
+            # append data
+            json_data = []
+            # list dir under base_dir
+            child_dirs = dataset.get_dirs(base_dir)
+            # list files under base_dir
+            dfs = DataFile.objects.filter(dataset=dataset, directory=base_dir)
+            # if there are directories append this to data
+            json_data = json.loads(data)
+            if len(child_dirs):
+                child_dir_list = self._get_child_dirs(child_dirs)
+                # append to data
+                for item in json_data:
+                    if item['name'] == base_dir:
+                        item['toggled'] = True
+                        for child in child_dir_list:
+                            item['children'].append(child)
+            # if there are files append this
+            if len(dfs):
+                filenames = [df.filename for df in dfs]
+                for item in json_data:
+                    if item['name'] == base_dir:
+                        for file_name in filenames:
+                            child = {'name': file_name}
+                            item['children'].append(child)
+
+            data = json.dumps(json_data)
+            self.method_check(request, allowed=['get'])
+            self.is_authenticated(request)
+            return HttpResponse(data, content_type='application/json', status=200)
+
+        # get files at base level directory
+        child_list = []
+        dfs = DataFile.objects.filter(dataset=dataset, directory='')
+        if len(dfs):
+            filenames = [df.filename for df in dfs]
+            for filename in filenames:
+                children = {}
+                children['name'] = filename
+                child_list.append(children)
+        # get directory and file at root level
+        if len(dirs):
+            for directory in dirs:
+                child_dict = {'name': directory, 'children': []}
+                child_list.append(child_dict)
+
+        data = json.dumps(child_list)
+        self.method_check(request, allowed=['get'])
+        self.is_authenticated(request)
+        return HttpResponse(data, content_type='application/json', status=200)
+
+    def _get_child_dirs(self, child_dirs):
+        child_dir_list = []
+        for dir in child_dirs:
+            child_dict = {'name': dir, 'children': []}
+            child_dir_list.append(child_dict)
+        return child_dir_list
 
 class DataFileResource(MyTardisModelResource):
     dataset = fields.ForeignKey(DatasetResource, 'dataset')
