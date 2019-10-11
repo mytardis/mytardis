@@ -285,13 +285,14 @@ def df_save_metadata(df_id, name, schema, metadata):
 
 @tardis_app.task(name='tardis_portal.datafileobject.verified',
                  ignore_result=True)
-def dfo_verified(dfo_id, checksum):
+def dfo_verified(dfo_id, algorithm, checksum):
     """Save all the metadata to a DatafileParameterSet."""
     from .models import DataFileObject
 
     dfo = DataFileObject.objects.get(id=dfo_id)
-    if dfo.datafile.md5sum == checksum:
-        dfo.verified = True
+    dfo.verified = (
+        algorithm == 'md5' and dfo.datafile.md5sum == checksum) or (
+        algorithm == 'sha512' and dfo.datafile.sha512sum == checksum)
     dfo.last_verified_time = timezone.now()
     dfo.save(update_fields=['verified', 'last_verified_time'])
 
