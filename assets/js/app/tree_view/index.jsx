@@ -90,14 +90,13 @@ const TreeExample = ({datasetId}) => {
     };
 
     return (
-          <Treebeard data={data}
-                  style={styles}
-                  onToggle={onToggle}
-                  decorators={{...decorators, Header, Container}}
-                     animation={false}
-       />
-
-
+          <Treebeard
+            data={data}
+            style={styles}
+            onToggle={onToggle}
+            decorators={{...decorators, Header, Container}}
+            animation={false}
+          />
     )
 };
 const content = document.getElementById('tree_view');
