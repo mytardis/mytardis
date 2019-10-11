@@ -156,3 +156,7 @@ def get_filesystem_safe_experiment_name(experiment):
         exp_title, safe=settings.SAFE_FILESYSTEM_CHARACTERS)
 
     return expt_filename
+
+
+def get_verify_priority(priority):
+    return priority or getattr(settings, 'VERIFY_DEFAULT_PRIORITY', 10)

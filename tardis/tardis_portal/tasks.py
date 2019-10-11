@@ -11,6 +11,7 @@ from django.utils import timezone
 
 from tardis.celery import tardis_app
 from .email import email_user
+from .util import get_verify_priority
 
 logger = logging.getLogger(__name__)
 
@@ -32,7 +33,7 @@ def verify_dfos(**kwargs):
                         'verify_dfos'
                     ],
                     queue='verify',
-                    priority=dfo.priority)
+                    priority=get_verify_priority(dfo.priority))
             except Exception:
                 logger.exception("Failed to verify file DFO ID %s", dfo.id)
         else:

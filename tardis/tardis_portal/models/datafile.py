@@ -25,6 +25,7 @@ from django.utils import timezone
 from django.utils.encoding import python_2_unicode_compatible
 
 from tardis.celery import tardis_app
+from ..util import get_verify_priority
 from .. import tasks
 from .dataset import Dataset
 from .storage import StorageBox, StorageBoxOption, StorageBoxAttribute
@@ -529,7 +530,7 @@ class DataFileObject(models.Model):
                             'save'
                         ],
                         queue = 'verify',
-                        priority = self.priority)
+                        priority = get_verify_priority(self.priority))
                 else:
                     shadow = 'dfo_verify location:%s' % self.storage_box.name
                     tasks.dfo_verify.apply_async(
@@ -669,7 +670,7 @@ class DataFileObject(models.Model):
                                 'copy_file'
                             ],
                             queue = 'verify',
-                            priority = existing[0].priority)
+                            priority = get_verify_priority(existing[0].priority))
                     else:
                         shadow = 'dfo_verify location:%s' % existing[0].storage_box.name
                         tasks.dfo_verify.apply_async(
@@ -703,7 +704,7 @@ class DataFileObject(models.Model):
                             'copy_file'
                         ],
                         queue = 'verify',
-                        priority = copy.priority)
+                        priority = get_verify_priority(copy.priority))
                 else:
                     shadow = 'dfo_verify location:%s' % copy.storage_box.name
                     tasks.dfo_verify.apply_async(

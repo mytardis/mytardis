@@ -67,6 +67,7 @@ from .models.parameters import (
 from .models.storage import StorageBox, StorageBoxOption, StorageBoxAttribute
 from .models.facility import Facility, facilities_managed_by
 from .models.instrument import Instrument
+from .util import get_verify_priority
 
 logger = logging.getLogger(__name__)
 
@@ -822,7 +823,7 @@ class DataFileResource(MyTardisModelResource):
                             'verify_file'
                         ],
                         queue = 'verify',
-                        priority = dfo.priority)
+                        priority = get_verify_priority(dfo.priority))
                 except Exception:
                     logger.exception("Failed to verify file DFO ID %s", dfo.id)
             else:
