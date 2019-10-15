@@ -141,4 +141,7 @@ Get key and secrets from the OIDC provider that you want to enable and add follo
     SOCIAL_AUTH_AAF_TOKEN_URL = 'Get this from AAF'
     SOCIAL_AUTH_AAF_USER_INFO_URL = 'Get this from AAF'
 
+To override MyTardis's default login page (Username / Password) with a more
+appropriate page for AAF and Google authentication, you can use
+https://github.com/mytardis/mytardis-aaf-google-login
 
