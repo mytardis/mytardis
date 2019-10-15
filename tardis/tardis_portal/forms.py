@@ -360,9 +360,7 @@ class ExperimentForm(forms.ModelForm):
                   'institution_name',
                   'description',
                   'internal_id',
-                  'project_name',
-                  'project_id',
-                  'project_description')
+                  'project_id')
 
     class FullExperiment(UserDict):
         """

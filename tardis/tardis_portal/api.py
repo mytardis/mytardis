@@ -781,13 +781,11 @@ class ExperimentResource(MyTardisModelResource):
             'id': ('exact', ),
             'title': ('exact',),
             'internal_id': ('exact',),
-            'project_name': ('exact',),
             'project_id': ('exact',),
         }
         ordering = [
             'title',
             'internal_id',
-            'project_name',
             'project_id',
             'created_time',
             'update_time'
