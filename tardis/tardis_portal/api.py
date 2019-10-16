@@ -7,6 +7,7 @@ Implemented with Tastypie.
 .. moduleauthor:: James Wettenhall <james.wettenhall@monash.edu>
 '''
 import json
+import re
 from wsgiref.util import FileWrapper
 
 from django.conf import settings
@@ -16,7 +17,8 @@ from django.contrib.auth.models import User
 from django.contrib.auth.models import Group
 from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseForbidden, \
-    StreamingHttpResponse
+    StreamingHttpResponse, HttpResponseNotFound
+from django.shortcuts import redirect
 
 from tastypie import fields
 from tastypie.authentication import BasicAuthentication
@@ -33,6 +35,8 @@ from tastypie.serializers import Serializer
 from tastypie.utils import trailing_slash
 from tastypie.contrib.contenttypes.fields import GenericForeignKeyField
 
+from uritemplate import URITemplate
+
 from tardis.analytics.tracker import IteratorTracker
 from . import tasks
 from .auth.decorators import (
@@ -48,7 +52,7 @@ from .auth.localdb_auth import django_user
 from .models.access_control import ObjectACL
 from .models.datafile import DataFile, DataFileObject, compute_checksums
 from .models.dataset import Dataset
-from .models.experiment import Experiment
+from .models.experiment import Experiment, ExperimentAuthor
 from .models.parameters import (
     DatafileParameter,
     DatafileParameterSet,
@@ -108,23 +112,22 @@ class MyTardisAuthentication(object):
                 session_auth_result = True
             request.user.allowed_tokens = tokens
             return session_auth_result
-        else:
-            if auth_info.startswith('Basic'):
-                basic_auth = BasicAuthentication()
-                check = basic_auth.is_authenticated(request, **kwargs)
-                if check:
-                    if isinstance(check, HttpUnauthorized):
-                        return False
-                    request._authentication_backend = basic_auth
-                    return check
-            if auth_info.startswith('ApiKey'):
-                apikey_auth = ApiKeyAuthentication()
-                check = apikey_auth.is_authenticated(request, **kwargs)
-                if check:
-                    if isinstance(check, HttpUnauthorized):
-                        return False
-                    request._authentication_backend = apikey_auth
-                    return check
+        if auth_info.startswith('Basic'):
+            basic_auth = BasicAuthentication()
+            check = basic_auth.is_authenticated(request, **kwargs)
+            if check:
+                if isinstance(check, HttpUnauthorized):
+                    return False
+                request._authentication_backend = basic_auth
+                return check
+        if auth_info.startswith('ApiKey'):
+            apikey_auth = ApiKeyAuthentication()
+            check = apikey_auth.is_authenticated(request, **kwargs)
+            if check:
+                if isinstance(check, HttpUnauthorized):
+                    return False
+                request._authentication_backend = apikey_auth
+                return check
         return False
 
     def get_identifier(self, request):
@@ -147,44 +150,48 @@ class ACLAuthorization(Authorization):
         if isinstance(bundle.obj, Experiment):
             experiments = Experiment.safe.all(bundle.request.user)
             return experiments.filter(id__in=obj_ids)
-        elif isinstance(bundle.obj, ExperimentParameterSet):
+        if isinstance(bundle.obj, ExperimentAuthor):
+            experiments = Experiment.safe.all(bundle.request.user)
+            return ExperimentAuthor.objects.filter(
+                experiment__in=experiments, id__in=obj_ids)
+        if isinstance(bundle.obj, ExperimentParameterSet):
             experiments = Experiment.safe.all(bundle.request.user)
             return ExperimentParameterSet.objects.filter(
                 experiment__in=experiments, id__in=obj_ids)
-        elif isinstance(bundle.obj, ExperimentParameter):
+        if isinstance(bundle.obj, ExperimentParameter):
             experiments = Experiment.safe.all(bundle.request.user)
             return ExperimentParameter.objects.filter(
                 parameterset__experiment__in=experiments,
                 id__in=obj_ids
             )
-        elif isinstance(bundle.obj, Dataset):
+        if isinstance(bundle.obj, Dataset):
             dataset_ids = [ds.id for ds in object_list
                            if has_dataset_access(bundle.request, ds.id)]
             return Dataset.objects.filter(id__in=dataset_ids)
-        elif isinstance(bundle.obj, DatasetParameterSet):
+        if isinstance(bundle.obj, DatasetParameterSet):
             return [dps for dps in object_list
                     if has_dataset_access(bundle.request, dps.dataset.id)]
-        elif isinstance(bundle.obj, DatasetParameter):
+        if isinstance(bundle.obj, DatasetParameter):
             return [dp for dp in object_list
                     if has_dataset_access(bundle.request,
                                           dp.parameterset.dataset.id)]
-        elif isinstance(bundle.obj, DataFile):
+        if isinstance(bundle.obj, DataFile):
             all_files = get_accessible_datafiles_for_user(bundle.request)
             return all_files.filter(id__in=obj_ids)
-        elif isinstance(bundle.obj, DatafileParameterSet):
+        if isinstance(bundle.obj, DatafileParameterSet):
             datafiles = get_accessible_datafiles_for_user(bundle.request)
             return DatafileParameterSet.objects.filter(
                 datafile__in=datafiles, id__in=obj_ids
             )
-        elif isinstance(bundle.obj, DatafileParameter):
+        if isinstance(bundle.obj, DatafileParameter):
             datafiles = get_accessible_datafiles_for_user(bundle.request)
             return DatafileParameter.objects.filter(
                 parameterset__datafile__in=datafiles, id__in=obj_ids)
-        elif isinstance(bundle.obj, Schema):
+        if isinstance(bundle.obj, Schema):
             return object_list
-        elif isinstance(bundle.obj, ParameterName):
+        if isinstance(bundle.obj, ParameterName):
             return object_list
-        elif isinstance(bundle.obj, ObjectACL):
+        if isinstance(bundle.obj, ObjectACL):
             experiment_ids = Experiment.safe.all(
                 bundle.request.user).values_list('id', flat=True)
             return ObjectACL.objects.filter(
@@ -192,7 +199,7 @@ class ACLAuthorization(Authorization):
                 object_id__in=experiment_ids,
                 id__in=obj_ids
             )
-        elif bundle.request.user.is_authenticated and \
+        if bundle.request.user.is_authenticated and \
                 isinstance(bundle.obj, User):
             if facilities_managed_by(bundle.request.user):
                 return object_list
@@ -200,79 +207,86 @@ class ACLAuthorization(Authorization):
                     (user == bundle.request.user or
                      user.experiment_set.filter(public_access__gt=1)
                      .count() > 0)]
-        elif isinstance(bundle.obj, Group):
+        if isinstance(bundle.obj, Group):
             if facilities_managed_by(bundle.request.user).count() > 0:
                 return object_list
             return bundle.request.user.groups.filter(id__in=obj_ids)
-        elif isinstance(bundle.obj, Facility):
+        if isinstance(bundle.obj, Facility):
             facilities = facilities_managed_by(bundle.request.user)
             return [facility for facility in object_list
                     if facility in facilities]
-        elif isinstance(bundle.obj, Instrument):
-            facilities = facilities_managed_by(bundle.request.user)
-            instruments = Instrument.objects.filter(facility__in=facilities)
-            return [instrument for instrument in object_list
-                    if instrument in instruments]
-        elif isinstance(bundle.obj, StorageBox):
-            return object_list
-        elif isinstance(bundle.obj, StorageBoxOption):
-            return [option for option in object_list
-                    if option.key in StorageBoxOptionResource.accessible_keys]
-        elif isinstance(bundle.obj, StorageBoxAttribute):
-            return object_list
-        else:
-            return []
+        if isinstance(bundle.obj, Instrument):
+            if bundle.request.user.is_authenticated:
+                return object_list
+        if isinstance(bundle.obj, StorageBox):
+            if bundle.request.user.is_authenticated:
+                return object_list
+        if isinstance(bundle.obj, StorageBoxOption):
+            if bundle.request.user.is_authenticated:
+                return [
+                    option for option in object_list
+                    if option.key in StorageBoxOptionResource.accessible_keys
+                ]
+        if isinstance(bundle.obj, StorageBoxAttribute):
+            if bundle.request.user.is_authenticated:
+                return object_list
+        return []
 
     def read_detail(self, object_list, bundle):  # noqa # too complex
         if bundle.request.user.is_authenticated and \
            bundle.request.user.is_superuser:
             return True
+        if re.match("^/api/v1/[a-z_]+/schema/$", bundle.request.path):
+            return True
         if isinstance(bundle.obj, Experiment):
             return has_experiment_access(bundle.request, bundle.obj.id)
-        elif isinstance(bundle.obj, ExperimentParameterSet):
+        if isinstance(bundle.obj, ExperimentAuthor):
             return has_experiment_access(
                 bundle.request, bundle.obj.experiment.id)
-        elif isinstance(bundle.obj, ExperimentParameter):
+        if isinstance(bundle.obj, ExperimentParameterSet):
+            return has_experiment_access(
+                bundle.request, bundle.obj.experiment.id)
+        if isinstance(bundle.obj, ExperimentParameter):
             return has_experiment_access(
                 bundle.request, bundle.obj.parameterset.experiment.id)
-        elif isinstance(bundle.obj, Dataset):
+        if isinstance(bundle.obj, Dataset):
             return has_dataset_access(bundle.request, bundle.obj.id)
-        elif isinstance(bundle.obj, DatasetParameterSet):
+        if isinstance(bundle.obj, DatasetParameterSet):
             return has_dataset_access(bundle.request, bundle.obj.dataset.id)
-        elif isinstance(bundle.obj, DatasetParameter):
+        if isinstance(bundle.obj, DatasetParameter):
             return has_dataset_access(
                 bundle.request, bundle.obj.parameterset.dataset.id)
-        elif isinstance(bundle.obj, DataFile):
+        if isinstance(bundle.obj, DataFile):
             return has_datafile_access(bundle.request, bundle.obj.id)
-        elif isinstance(bundle.obj, DatafileParameterSet):
+        if isinstance(bundle.obj, DatafileParameterSet):
             return has_datafile_access(
                 bundle.request, bundle.obj.datafile.id)
-        elif isinstance(bundle.obj, DatafileParameter):
+        if isinstance(bundle.obj, DatafileParameter):
             return has_datafile_access(
                 bundle.request, bundle.obj.parameterset.datafile.id)
-        elif isinstance(bundle.obj, User):
+        if isinstance(bundle.obj, User):
             # allow all authenticated users to read public user info
             # the dehydrate function also adds/removes some information
             authenticated = bundle.request.user.is_authenticated
             public_user = bundle.obj.experiment_set.filter(
                 public_access__gt=1).count() > 0
             return public_user or authenticated
-        elif isinstance(bundle.obj, Schema):
+        if isinstance(bundle.obj, Schema):
             return True
-        elif isinstance(bundle.obj, ParameterName):
+        if isinstance(bundle.obj, ParameterName):
             return True
-        elif isinstance(bundle.obj, StorageBox):
+        if isinstance(bundle.obj, StorageBox):
             return bundle.request.user.is_authenticated
-        elif isinstance(bundle.obj, StorageBoxOption):
+        if isinstance(bundle.obj, StorageBoxOption):
             return bundle.request.user.is_authenticated and \
                 bundle.obj.key in StorageBoxOptionResource.accessible_keys
-        elif isinstance(bundle.obj, StorageBoxAttribute):
+        if isinstance(bundle.obj, StorageBoxAttribute):
             return bundle.request.user.is_authenticated
-        elif isinstance(bundle.obj, Group):
+        if isinstance(bundle.obj, Group):
             return bundle.obj in bundle.request.user.groups.all()
-        elif isinstance(bundle.obj, Facility):
+        if isinstance(bundle.obj, Facility):
             return bundle.obj in facilities_managed_by(bundle.request.user)
-        elif isinstance(bundle.obj, Instrument):
+        if isinstance(bundle.obj, Instrument):
             facilities = facilities_managed_by(bundle.request.user)
             return bundle.obj.facility in facilities
         raise NotImplementedError(type(bundle.obj))
@@ -288,7 +302,9 @@ class ACLAuthorization(Authorization):
             return True
         if isinstance(bundle.obj, Experiment):
             return bundle.request.user.has_perm('tardis_portal.add_experiment')
-        elif isinstance(bundle.obj, ExperimentParameterSet):
+        if isinstance(bundle.obj, ExperimentAuthor):
+            return bundle.request.user.has_perm('tardis_portal.add_experiment')
+        if isinstance(bundle.obj, ExperimentParameterSet):
             if not bundle.request.user.has_perm(
                     'tardis_portal.change_experiment'):
                 return False
@@ -297,16 +313,16 @@ class ACLAuthorization(Authorization):
                 experiment = ExperimentResource.get_via_uri(
                     ExperimentResource(), experiment_uri, bundle.request)
                 return has_write_permissions(bundle.request, experiment.id)
-            elif getattr(bundle.obj.experiment, 'id', False):
+            if getattr(bundle.obj.experiment, 'id', False):
                 return has_write_permissions(bundle.request,
                                              bundle.obj.experiment.id)
             return False
-        elif isinstance(bundle.obj, ExperimentParameter):
+        if isinstance(bundle.obj, ExperimentParameter):
             return bundle.request.user.has_perm(
                 'tardis_portal.change_experiment') and \
                 has_write_permissions(bundle.request,
                                       bundle.obj.parameterset.experiment.id)
-        elif isinstance(bundle.obj, Dataset):
+        if isinstance(bundle.obj, Dataset):
             if not bundle.request.user.has_perm(
                     'tardis_portal.change_dataset'):
                 return False
@@ -322,7 +338,7 @@ class ACLAuthorization(Authorization):
                 else:
                     return False
             return perm
-        elif isinstance(bundle.obj, DatasetParameterSet):
+        if isinstance(bundle.obj, DatasetParameterSet):
             if not bundle.request.user.has_perm(
                     'tardis_portal.change_dataset'):
                 return False
@@ -331,16 +347,16 @@ class ACLAuthorization(Authorization):
                 dataset = DatasetResource.get_via_uri(
                     DatasetResource(), dataset_uri, bundle.request)
                 return has_dataset_write(bundle.request, dataset.id)
-            elif getattr(bundle.obj.dataset, 'id', False):
+            if getattr(bundle.obj.dataset, 'id', False):
                 return has_dataset_write(bundle.request,
                                          bundle.obj.dataset.id)
             return False
-        elif isinstance(bundle.obj, DatasetParameter):
+        if isinstance(bundle.obj, DatasetParameter):
             return bundle.request.user.has_perm(
                 'tardis_portal.change_dataset') and \
                 has_dataset_write(bundle.request,
                                   bundle.obj.parameterset.dataset.id)
-        elif isinstance(bundle.obj, DataFile):
+        if isinstance(bundle.obj, DataFile):
             dataset = DatasetResource.get_via_uri(DatasetResource(),
                                                   bundle.data['dataset'],
                                                   bundle.request)
@@ -349,7 +365,7 @@ class ACLAuthorization(Authorization):
                 bundle.request.user.has_perm('tardis_portal.add_datafile'),
                 has_dataset_write(bundle.request, dataset.id),
             ])
-        elif isinstance(bundle.obj, DatafileParameterSet):
+        if isinstance(bundle.obj, DatafileParameterSet):
             dataset = Dataset.objects.get(
                 pk=bundle.obj.datafile.dataset.id)
             return all([
@@ -357,7 +373,7 @@ class ACLAuthorization(Authorization):
                 bundle.request.user.has_perm('tardis_portal.add_datafile'),
                 has_dataset_write(bundle.request, dataset.id),
             ])
-        elif isinstance(bundle.obj, DatafileParameter):
+        if isinstance(bundle.obj, DatafileParameter):
             dataset = Dataset.objects.get(
                 pk=bundle.obj.parameterset.datafile.dataset.id)
             return all([
@@ -365,20 +381,20 @@ class ACLAuthorization(Authorization):
                 bundle.request.user.has_perm('tardis_portal.add_datafile'),
                 has_dataset_write(bundle.request, dataset.id),
             ])
-        elif isinstance(bundle.obj, DataFileObject):
+        if isinstance(bundle.obj, DataFileObject):
             return all([
                 bundle.request.user.has_perm('tardis_portal.change_dataset'),
                 bundle.request.user.has_perm('tardis_portal.add_datafile'),
                 has_dataset_write(bundle.request,
                                   bundle.obj.datafile.dataset.id),
             ])
-        elif isinstance(bundle.obj, ObjectACL):
+        if isinstance(bundle.obj, ObjectACL):
             return bundle.request.user.has_perm('tardis_portal.add_objectacl')
-        elif isinstance(bundle.obj, Group):
+        if isinstance(bundle.obj, Group):
             return bundle.request.user.has_perm('tardis_portal.add_group')
-        elif isinstance(bundle.obj, Facility):
+        if isinstance(bundle.obj, Facility):
             return bundle.request.user.has_perm('tardis_portal.add_facility')
-        elif isinstance(bundle.obj, Instrument):
+        if isinstance(bundle.obj, Instrument):
             facilities = facilities_managed_by(bundle.request.user)
             return all([
                 bundle.request.user.has_perm('tardis_portal.add_instrument'),
@@ -414,20 +430,6 @@ class ACLAuthorization(Authorization):
                 'tardis_portal.change_experiment') and \
                 has_delete_permissions(bundle.request, bundle.obj.id)
         raise Unauthorized("Sorry, no deletes.")
-
-
-def lookup_by_unique_id_only(resource):
-    '''
-    returns custom lookup function. initialise with resource type
-    '''
-    def lookup_kwargs_with_identifiers(self, bundle, kwargs):
-        if 'id' not in kwargs and 'pk' not in kwargs:
-            # new instance is required
-            return {'id': -1}  # this will not match any exisitng resource
-        return super(resource,
-                     self).lookup_kwargs_with_identifiers(bundle, kwargs)
-
-    return lookup_kwargs_with_identifiers
 
 
 class GroupResource(ModelResource):
@@ -507,10 +509,6 @@ class UserResource(ModelResource):
 
 class MyTardisModelResource(ModelResource):
 
-    def lookup_kwargs_with_identifiers(self, bundle, kwargs):
-        return lookup_by_unique_id_only(MyTardisModelResource)(
-            self, bundle, kwargs)
-
     class Meta:
         authentication = default_authentication
         authorization = ACLAuthorization()
@@ -518,92 +516,40 @@ class MyTardisModelResource(ModelResource):
         object_class = None
 
 
-class SchemaResource(MyTardisModelResource):
-
-    def lookup_kwargs_with_identifiers(self, bundle, kwargs):
-        return lookup_by_unique_id_only(SchemaResource)(self, bundle, kwargs)
+class FacilityResource(MyTardisModelResource):
+    manager_group = fields.ForeignKey(GroupResource, 'manager_group',
+                                      null=True, full=True)
 
     class Meta(MyTardisModelResource.Meta):
-        queryset = Schema.objects.all()
+        queryset = Facility.objects.all()
         filtering = {
             'id': ('exact', ),
-            'namespace': ('exact', ),
+            'manager_group': ALL_WITH_RELATIONS,
+            'name': ('exact', ),
         }
+        ordering = [
+            'id',
+            'name'
+        ]
+        always_return_data = True
 
 
-class ParameterNameResource(MyTardisModelResource):
-    schema = fields.ForeignKey(SchemaResource, 'schema')
+class InstrumentResource(MyTardisModelResource):
+    facility = fields.ForeignKey(FacilityResource, 'facility',
+                                 null=True, full=True)
 
     class Meta(MyTardisModelResource.Meta):
-        queryset = ParameterName.objects.all()
+        queryset = Instrument.objects.all()
         filtering = {
-            'schema': ALL_WITH_RELATIONS,
+            'id': ('exact', ),
+            'facility': ALL_WITH_RELATIONS,
+            'name': ('exact', ),
         }
-
-
-class ParameterResource(MyTardisModelResource):
-    name = fields.ForeignKey(ParameterNameResource, 'name')
-    value = fields.CharField(blank=True)
-
-    def hydrate(self, bundle):
-        '''
-        sets the parametername by uri or name
-        if untyped value is given, set value via parameter method,
-        otherwise use modelresource automatisms
-        '''
-        try:
-            parname = ParameterNameResource.get_via_uri(
-                ParameterNameResource(),
-                bundle.data['name'], bundle.request)
-        except NotFound:
-            parname = bundle.related_obj._get_create_parname(
-                bundle.data['name'])
-        del(bundle.data['name'])
-        bundle.obj.name = parname
-        if 'value' in bundle.data:
-            bundle.obj.set_value(bundle.data['value'])
-            del(bundle.data['value'])
-        return bundle
-
-
-class ParameterSetResource(MyTardisModelResource):
-    schema = fields.ForeignKey(SchemaResource, 'schema', full=True)
-
-    def hydrate_schema(self, bundle):
-        try:
-            schema = SchemaResource.get_via_uri(SchemaResource(),
-                                                bundle.data['schema'],
-                                                bundle.request)
-        except NotFound:
-            try:
-                schema = Schema.objects.get(namespace=bundle.data['schema'])
-            except Schema.DoesNotExist:
-                raise
-        bundle.obj.schema = schema
-        del(bundle.data['schema'])
-        return bundle
-
-
-class ExperimentParameterSetResource(ParameterSetResource):
-    '''API for ExperimentParameterSets
-    '''
-    experiment = fields.ForeignKey(
-        'tardis.tardis_portal.api.ExperimentResource', 'experiment')
-    parameters = fields.ToManyField(
-        'tardis.tardis_portal.api.ExperimentParameterResource',
-        'experimentparameter_set',
-        related_name='parameterset', full=True, null=True)
-
-    class Meta(ParameterSetResource.Meta):
-        queryset = ExperimentParameterSet.objects.all()
-
-
-class ExperimentParameterResource(ParameterResource):
-    parameterset = fields.ForeignKey(ExperimentParameterSetResource,
-                                     'parameterset')
-
-    class Meta(ParameterResource.Meta):
-        queryset = ExperimentParameter.objects.all()
+        ordering = [
+            'id',
+            'name'
+        ]
+        always_return_data = True
 
 
 class ExperimentResource(MyTardisModelResource):
@@ -615,7 +561,7 @@ class ExperimentResource(MyTardisModelResource):
     '''
     created_by = fields.ForeignKey(UserResource, 'created_by')
     parameter_sets = fields.ToManyField(
-        ExperimentParameterSetResource,
+        'tardis.tardis_portal.api.ExperimentParameterSetResource',
         'experimentparameterset_set',
         related_name='experiment',
         full=True, null=True)
@@ -627,6 +573,7 @@ class ExperimentResource(MyTardisModelResource):
             'title': ('exact',),
         }
         ordering = [
+            'id',
             'title',
             'created_time',
             'update_time'
@@ -685,92 +632,29 @@ class ExperimentResource(MyTardisModelResource):
         return bundle
 
 
-class DatasetParameterSetResource(ParameterSetResource):
-    dataset = fields.ForeignKey(
-        'tardis.tardis_portal.api.DatasetResource', 'dataset')
-    parameters = fields.ToManyField(
-        'tardis.tardis_portal.api.DatasetParameterResource',
-        'datasetparameter_set',
-        related_name='parameterset', full=True, null=True)
-
-    class Meta(ParameterSetResource.Meta):
-        queryset = DatasetParameterSet.objects.all()
-
-
-class DatasetParameterResource(ParameterResource):
-    parameterset = fields.ForeignKey(DatasetParameterSetResource,
-                                     'parameterset')
-
-    class Meta(ParameterResource.Meta):
-        queryset = DatasetParameter.objects.all()
-
-
-class StorageBoxResource(MyTardisModelResource):
-    options = fields.ToManyField(
-        'tardis.tardis_portal.api.StorageBoxOptionResource',
-        attribute=lambda bundle: StorageBoxOption.objects
-        .filter(storage_box=bundle.obj,
-                key__in=StorageBoxOptionResource.accessible_keys),
-        related_name='storage_box',
-        full=True, null=True)
-    attributes = fields.ToManyField(
-        'tardis.tardis_portal.api.StorageBoxAttributeResource',
-        'attributes',
-        related_name='storage_box',
-        full=True, null=True)
+class ExperimentAuthorResource(MyTardisModelResource):
+    '''API for ExperimentAuthors
+    '''
+    experiment = fields.ForeignKey(
+        ExperimentResource, 'experiment', full=True, null=True)
 
     class Meta(MyTardisModelResource.Meta):
-        queryset = StorageBox.objects.all()
-
-
-class StorageBoxOptionResource(MyTardisModelResource):
-    accessible_keys = ['location']
-    storage_box = fields.ForeignKey(
-        'tardis.tardis_portal.api.StorageBoxResource',
-        'storage_box',
-        related_name='options',
-        full=False)
-
-    class Meta(MyTardisModelResource.Meta):
-        queryset = StorageBoxOption.objects.all()
-
-
-class StorageBoxAttributeResource(MyTardisModelResource):
-    storage_box = fields.ForeignKey(
-        'tardis.tardis_portal.api.StorageBoxResource',
-        'storage_box',
-        related_name='attributes',
-        full=False)
-
-    class Meta(MyTardisModelResource.Meta):
-        queryset = StorageBoxAttribute.objects.all()
-
-
-class FacilityResource(MyTardisModelResource):
-    manager_group = fields.ForeignKey(GroupResource, 'manager_group',
-                                      null=True, full=True)
-
-    class Meta(MyTardisModelResource.Meta):
-        queryset = Facility.objects.all()
+        queryset = ExperimentAuthor.objects.all()
         filtering = {
             'id': ('exact', ),
-            'manager_group': ALL_WITH_RELATIONS,
-            'name': ('exact', ),
+            'experiment': ALL_WITH_RELATIONS,
+            'author': ('exact', 'iexact'),
+            'institution': ('exact', 'iexact'),
+            'email': ('exact', 'iexact'),
+            'order': ('exact',),
+            'url': ('exact', 'iexact'),
         }
-        always_return_data = True
-
-
-class InstrumentResource(MyTardisModelResource):
-    facility = fields.ForeignKey(FacilityResource, 'facility',
-                                 null=True, full=True)
-
-    class Meta(MyTardisModelResource.Meta):
-        queryset = Instrument.objects.all()
-        filtering = {
-            'id': ('exact', ),
-            'facility': ALL_WITH_RELATIONS,
-            'name': ('exact', ),
-        }
+        ordering = [
+            'id',
+            'author',
+            'email',
+            'order'
+        ]
         always_return_data = True
 
 
@@ -778,7 +662,7 @@ class DatasetResource(MyTardisModelResource):
     experiments = fields.ToManyField(
         ExperimentResource, 'experiments', related_name='datasets')
     parameter_sets = fields.ToManyField(
-        DatasetParameterSetResource,
+        'tardis.tardis_portal.api.DatasetParameterSetResource',
         'datasetparameterset_set',
         related_name='dataset',
         full=True, null=True)
@@ -798,6 +682,7 @@ class DatasetResource(MyTardisModelResource):
             'instrument': ALL_WITH_RELATIONS,
         }
         ordering = [
+            'id',
             'description'
         ]
         always_return_data = True
@@ -851,6 +736,7 @@ class DataFileResource(MyTardisModelResource):
             'filename': ('exact', ),
         }
         ordering = [
+            'id',
             'filename',
             'modification_time'
         ]
@@ -873,6 +759,19 @@ class DataFileResource(MyTardisModelResource):
         self.authorized_read_detail(
             [file_record],
             self.build_bundle(obj=file_record, request=request))
+
+        preferred_dfo = file_record.get_preferred_dfo()
+        if not preferred_dfo:
+            # No verified DataFileObject exists for this DataFile
+            return HttpResponseNotFound()
+
+        storage_class_name = preferred_dfo.storage_box.django_storage_class
+        download_uri_templates = getattr(
+            settings, 'DOWNLOAD_URI_TEMPLATES', {})
+        if storage_class_name in download_uri_templates:
+            template = URITemplate(download_uri_templates[storage_class_name])
+            return redirect(template.expand(dfo_id=preferred_dfo.id))
+
         file_object = file_record.get_file()
         wrapper = FileWrapper(file_object)
         tracker_data = dict(
@@ -908,7 +807,11 @@ class DataFileResource(MyTardisModelResource):
             [file_record],
             self.build_bundle(obj=file_record, request=request))
         for dfo in file_record.file_objects.all():
-            tasks.dfo_verify.delay(dfo.id)
+            shadow = 'dfo_verify location:%s' % dfo.storage_box.name
+            tasks.dfo_verify.apply_async(
+                args=[dfo.id],
+                priority=dfo.priority,
+                shadow=shadow)
         return HttpResponse()
 
     def hydrate(self, bundle):
@@ -916,7 +819,7 @@ class DataFileResource(MyTardisModelResource):
             # have POSTed file
             newfile = bundle.data['attached_file'][0]
             compute_md5 = getattr(settings, 'COMPUTE_MD5', True)
-            compute_sha512 = getattr(settings, 'COMPUTE_SHA512', True)
+            compute_sha512 = getattr(settings, 'COMPUTE_SHA512', False)
             if (compute_md5 and 'md5sum' not in bundle.data) or \
                     (compute_sha512 and 'sha512sum' not in bundle.data):
                 checksums = compute_checksums(
@@ -995,8 +898,7 @@ class DataFileResource(MyTardisModelResource):
             return request.POST
         if format.startswith('multipart'):
             jsondata = request.POST['json_data']
-            data = super(DataFileResource, self).deserialize(
-                request, jsondata, format='application/json')
+            data = json.loads(jsondata)
             data.update(request.FILES)
             return data
         return super(DataFileResource, self).deserialize(request,
@@ -1011,6 +913,69 @@ class DataFileResource(MyTardisModelResource):
             request._body = ''
 
         return super(DataFileResource, self).put_detail(request, **kwargs)
+
+
+class SchemaResource(MyTardisModelResource):
+
+    class Meta(MyTardisModelResource.Meta):
+        queryset = Schema.objects.all()
+        filtering = {
+            'id': ('exact', ),
+            'namespace': ('exact', ),
+        }
+        ordering = [
+            'id'
+        ]
+
+
+class ParameterNameResource(MyTardisModelResource):
+    schema = fields.ForeignKey(SchemaResource, 'schema')
+
+    class Meta(MyTardisModelResource.Meta):
+        queryset = ParameterName.objects.all()
+        filtering = {
+            'schema': ALL_WITH_RELATIONS,
+        }
+
+
+class ParameterResource(MyTardisModelResource):
+    name = fields.ForeignKey(ParameterNameResource, 'name')
+    value = fields.CharField(blank=True)
+
+    def hydrate(self, bundle):
+        '''
+        sets the parametername by uri or name
+        if untyped value is given, set value via parameter method,
+        otherwise use modelresource automatisms
+        '''
+        try:
+            parname = ParameterNameResource.get_via_uri(
+                ParameterNameResource(),
+                bundle.data['name'], bundle.request)
+        except NotFound:
+            parname = bundle.related_obj._get_create_parname(
+                bundle.data['name'])
+        del(bundle.data['name'])
+        bundle.obj.name = parname
+        if 'value' in bundle.data:
+            bundle.obj.set_value(bundle.data['value'])
+            del(bundle.data['value'])
+        return bundle
+
+
+class ParameterSetResource(MyTardisModelResource):
+    schema = fields.ForeignKey(SchemaResource, 'schema', full=True)
+
+    def hydrate_schema(self, bundle):
+        try:
+            schema = SchemaResource.get_via_uri(SchemaResource(),
+                                                bundle.data['schema'],
+                                                bundle.request)
+        except NotFound:
+            schema = Schema.objects.get(namespace=bundle.data['schema'])
+        bundle.obj.schema = schema
+        del(bundle.data['schema'])
+        return bundle
 
 
 class DatafileParameterSetResource(ParameterSetResource):
@@ -1047,6 +1012,9 @@ class ReplicaResource(MyTardisModelResource):
             'verified': ('exact',),
             'url': ('exact', 'startswith'),
         }
+        ordering = [
+            'id'
+        ]
 
     def hydrate(self, bundle):
         if 'url' in bundle.data:
@@ -1094,6 +1062,9 @@ class ObjectACLResource(MyTardisModelResource):
             'pluginId': ('exact', ),
             'entityId': ('exact', ),
         }
+        ordering = [
+            'id'
+        ]
 
     def hydrate(self, bundle):
         # Fill in the content type.
@@ -1103,3 +1074,93 @@ class ObjectACLResource(MyTardisModelResource):
         else:
             raise NotImplementedError(str(bundle.obj))
         return bundle
+
+
+class ExperimentParameterSetResource(ParameterSetResource):
+    '''API for ExperimentParameterSets
+    '''
+    experiment = fields.ForeignKey(ExperimentResource, 'experiment')
+    parameters = fields.ToManyField(
+        'tardis.tardis_portal.api.ExperimentParameterResource',
+        'experimentparameter_set',
+        related_name='parameterset', full=True, null=True)
+
+    class Meta(ParameterSetResource.Meta):
+        queryset = ExperimentParameterSet.objects.all()
+
+
+class ExperimentParameterResource(ParameterResource):
+    parameterset = fields.ForeignKey(ExperimentParameterSetResource,
+                                     'parameterset')
+
+    class Meta(ParameterResource.Meta):
+        queryset = ExperimentParameter.objects.all()
+
+
+class DatasetParameterSetResource(ParameterSetResource):
+    dataset = fields.ForeignKey(DatasetResource, 'dataset')
+    parameters = fields.ToManyField(
+        'tardis.tardis_portal.api.DatasetParameterResource',
+        'datasetparameter_set',
+        related_name='parameterset', full=True, null=True)
+
+    class Meta(ParameterSetResource.Meta):
+        queryset = DatasetParameterSet.objects.all()
+
+
+class DatasetParameterResource(ParameterResource):
+    parameterset = fields.ForeignKey(DatasetParameterSetResource,
+                                     'parameterset')
+
+    class Meta(ParameterResource.Meta):
+        queryset = DatasetParameter.objects.all()
+
+
+class StorageBoxResource(MyTardisModelResource):
+    options = fields.ToManyField(
+        'tardis.tardis_portal.api.StorageBoxOptionResource',
+        attribute=lambda bundle: StorageBoxOption.objects
+        .filter(storage_box=bundle.obj,
+                key__in=StorageBoxOptionResource.accessible_keys),
+        related_name='storage_box',
+        full=True, null=True)
+    attributes = fields.ToManyField(
+        'tardis.tardis_portal.api.StorageBoxAttributeResource',
+        'attributes',
+        related_name='storage_box',
+        full=True, null=True)
+
+    class Meta(MyTardisModelResource.Meta):
+        queryset = StorageBox.objects.all()
+        ordering = [
+            'id'
+        ]
+
+
+class StorageBoxOptionResource(MyTardisModelResource):
+    accessible_keys = ['location']
+    storage_box = fields.ForeignKey(
+        StorageBoxResource,
+        'storage_box',
+        related_name='options',
+        full=False)
+
+    class Meta(MyTardisModelResource.Meta):
+        queryset = StorageBoxOption.objects.all()
+        ordering = [
+            'id'
+        ]
+
+
+class StorageBoxAttributeResource(MyTardisModelResource):
+    storage_box = fields.ForeignKey(
+        StorageBoxResource,
+        'storage_box',
+        related_name='attributes',
+        full=False)
+
+    class Meta(MyTardisModelResource.Meta):
+        queryset = StorageBoxAttribute.objects.all()
+        ordering = [
+            'id'
+        ]

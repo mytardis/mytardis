@@ -20,7 +20,7 @@ class MyTardisAuthenticationTest(MyTardisResourceTestCase):
             '/api/v1/experiment/'))
         good_credentials = self.create_basic(username=self.username,
                                              password=self.password)
-        bad_credentials = self.create_basic(username=self.username,
+        bad_credentials = self.create_basic(username=self.username,  # nosec
                                             password="wrong pw, dude!")
         self.assertHttpOK(self.api_client.get(
             '/api/v1/experiment/',

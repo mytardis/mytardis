@@ -5,6 +5,7 @@ views.py.
 
 .. moduleauthor:: Gerson Galang <gerson.galang@versi.edu.au>
 '''
+import json
 import logging
 
 from django.conf import settings
@@ -325,7 +326,6 @@ def _getSupportedAuthMethods():
 
 def _getJsonFailedResponse(errorMessage):
     '''Return a failed JSON HttpResponse.'''
-    import json
     response = {"status": "fail", "errorMessage": errorMessage}
     return HttpResponse(json.dumps(response),
         content_type="application/json")
@@ -333,7 +333,6 @@ def _getJsonFailedResponse(errorMessage):
 
 def _getJsonSuccessResponse(data={}):
     '''Return a successful JSON HttpResponse.'''
-    import json
     response = {"status": "success", "data": data}
     return HttpResponse(json.dumps(response),
         content_type="application/json")
@@ -341,7 +340,6 @@ def _getJsonSuccessResponse(data={}):
 
 def _getJsonConfirmResponse(data={}):
     '''Return a JSON HttpResponse asking the user for confirmation'''
-    import json
     response = {"status": "confirm", "data": data}
     return HttpResponse(json.dumps(response),
         content_type="application/json")

@@ -45,7 +45,6 @@ class PublishService():
             self._remove_rifcs_from_oai_dir(oaipath)
 
     def _remove_rifcs_from_oai_dir(self, oaipath):
-        import os
         filename = os.path.join(oaipath, "MyTARDIS-%s.xml" % self.experiment.id)
         if os.path.exists(filename):
             os.remove(filename)

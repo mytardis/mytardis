@@ -6,6 +6,7 @@ views that perform some action and don't return anything very useful
 import json
 import logging
 
+from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.sites.models import Site
 from django.http import HttpResponse
@@ -29,6 +30,7 @@ def cache_dataset(request, dataset_id=None, notify=True):
     if notify:
         run_this = chord(run_this)(
             cache_done_notify.subtask(kwargs={
+                'priority': settings.DEFAULT_EMAIL_TASK_PRIORITY,
                 'user_id': request.user.id,
                 'site_id': Site.objects.get_current(request).id,
                 'ct_id': ContentType.objects.get_for_model(Dataset).id,

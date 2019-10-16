@@ -26,8 +26,8 @@ class UserProfile(models.Model):
 
     # This flag will tell us if the main User account was created using any
     # non localdb auth methods. For example, if a first time user authenticates
-    # to the system using the VBL auth method, an account will be created for
-    # him, say "vbl_user001" and the field isDjangoAccount will be set to
+    # to the system using the ldap auth method, an account will be created for
+    # him, say "ldap_user001" and the field isDjangoAccount will be set to
     # False.
     isDjangoAccount = models.BooleanField(
         null=False, blank=False, default=True)
@@ -59,7 +59,7 @@ class UserProfile(models.Model):
     @property
     def ext_groups(self):
 
-        import tardis.tardis_portal.auth.fix_circular as fix_circular
+        from ..auth import fix_circular
 
         if not hasattr(self, '_cached_groups'):
             self._cached_groups = fix_circular.getGroups(self.user)
@@ -151,7 +151,7 @@ class UserAuthentication(models.Model):
             user.user_permissions.add(Permission.objects.get(codename='change_dataset'))
             # send email to user
             from tardis.apps.social_auth.auth.social_auth import send_account_approved_email
-            send_account_approved_email(user, self.authenticationMethod)
+            send_account_approved_email(user.id, self.authenticationMethod)
 
         super(UserAuthentication, self).save(*args, **kwargs)
 
@@ -234,7 +234,7 @@ class ObjectACL(models.Model):
         """
         if self.pluginId == 'django_user':
             return User.objects.get(pk=self.entityId)
-        elif self.pluginId == 'django_group':
+        if self.pluginId == 'django_group':
             return Group.objects.get(pk=self.entityId)
         return None
 

@@ -1,3 +1,4 @@
+import datetime
 import logging
 from django.conf import settings
 from django.db import models
@@ -10,9 +11,10 @@ from .experiment import Experiment
 
 logger = logging.getLogger(__name__)
 
+
 def _token_expiry():
-    import datetime as dt
-    return dt.datetime.now().date() + dt.timedelta(settings.TOKEN_EXPIRY_DAYS)
+    return (datetime.datetime.now().date() +
+            datetime.timedelta(settings.TOKEN_EXPIRY_DAYS))
 
 
 @python_2_unicode_compatible
@@ -38,7 +40,7 @@ class Token(models.Model):
     def _randomise_token(self):
         from random import choice
         self.token = ''.join(choice(self._TOKEN_CHARS)
-                                for _ in range(settings.TOKEN_LENGTH))
+                             for _ in range(settings.TOKEN_LENGTH))
 
     def save_with_random_token(self):
         from django.db import IntegrityError
@@ -60,20 +62,19 @@ class Token(models.Model):
         self.save()  # give up and raise the exception
 
     def is_expired(self):
-        import datetime as dt
-        return self.expiry_date and self.expiry_date < dt.datetime.now().date()
+        return (self.expiry_date and
+                self.expiry_date < datetime.datetime.now().date())
 
     def _get_expiry_as_datetime(self):
-        import datetime as dt
         exp = self.expiry_date
-        return dt.datetime(exp.year, exp.month, exp.day, 23, 59, 59)
+        return datetime.datetime(exp.year, exp.month, exp.day, 23, 59, 59)
 
     @staticmethod
     def _tomorrow_4am():
-        import datetime as dt
-        today = dt.datetime.now().date()
-        tomorrow = today + dt.timedelta(1)
-        tomorrow_4am = dt.datetime(tomorrow.year, tomorrow.month, tomorrow.day, 4)
+        today = datetime.datetime.now().date()
+        tomorrow = today + datetime.timedelta(1)
+        tomorrow_4am = datetime.datetime(
+            tomorrow.year, tomorrow.month, tomorrow.day, 4)
         return tomorrow_4am
 
     def get_session_expiry(self):
@@ -85,8 +86,7 @@ class Token(models.Model):
             It is the responsibility of token_auth to set the session expiry
         '''
         if self.is_expired():
-            import datetime as dt
-            return dt.datetime.now()
+            return datetime.datetime.now()
 
         expire_tomorrow_morning = self._tomorrow_4am()
         token_as_datetime = self._get_expiry_as_datetime()

@@ -12,13 +12,10 @@ from django.urls import reverse
 from django.http import HttpResponse
 from django.views.decorators.cache import never_cache
 from django.contrib.auth.decorators import login_required
-from haystack.query import SearchQuerySet
-from tardis.search.utils import SearchQueryString
 from ..auth import decorators as authz
 from ..forms import RightsForm
 from ..models import Experiment, DataFile, Dataset, Schema, \
     DatafileParameterSet, UserProfile
-from ..search_query import FacetFixedSearchQuery
 from ..shortcuts import return_response_error, \
     return_response_not_found, render_response_index
 from ..util import render_public_access_badge
@@ -229,34 +226,10 @@ def retrieve_datafile_list(
 
     params = {}
 
-    query = None
-    highlighted_dsf_pks = []
-
-    if 'query' in request.GET:
-        search_query = FacetFixedSearchQuery()
-        sqs = SearchQuerySet(query=search_query)
-        query = SearchQueryString(request.GET['query'])
-        results = sqs.raw_search(
-            query.query_string() + ' AND dataset_id_stored:%i' %
-            (int(dataset_id))).load_all()
-        highlighted_dsf_pks = [int(r.pk) for r in results
-                               if r.model_name == 'datafile' and
-                               r.dataset_id_stored == int(dataset_id)]
-
-        params['query'] = query.query_string()
-
-    elif 'datafileResults' in request.session and 'search' in request.GET:
-        highlighted_dsf_pks = [r.pk
-                               for r in request.session['datafileResults']]
-
     dataset_results = \
         DataFile.objects.filter(
             dataset__pk=dataset_id,
         ).order_by('filename')
-
-    if request.GET.get('limit', False) and highlighted_dsf_pks:
-        dataset_results = dataset_results.filter(pk__in=highlighted_dsf_pks)
-        params['limit'] = request.GET['limit']
 
     filename_search = None
 
@@ -304,10 +277,8 @@ def retrieve_datafile_list(
         'dataset': Dataset.objects.get(id=dataset_id),
         'filename_search': filename_search,
         'is_owner': is_owner,
-        'highlighted_datafiles': highlighted_dsf_pks,
         'has_download_permissions': has_download_permissions,
         'has_write_permissions': has_write_permissions,
-        'search_query': query,
         'params': urllib.parse.urlencode(params),
     }
     _add_protocols_and_organizations(request, None, c)
@@ -358,7 +329,9 @@ def choose_rights(request, experiment_id):
             experiment.save()
     else:
         form = RightsForm({'public_access': experiment.public_access,
-                           'license': experiment.license_id})
+                           'license': experiment.license_id,
+                           'legal_text': getattr(settings, 'LEGAL_TEXT',
+                                                 'No Legal Agreement Specified')})
 
     c = {'form': form, 'experiment': experiment}
     return render_response_index(
@@ -368,7 +341,7 @@ def choose_rights(request, experiment_id):
 @never_cache
 @login_required
 def retrieve_owned_exps_list(
-        request, template_name='tardis_portal/ajax/owned_exps_list.html'):
+        request, template_name='tardis_portal/ajax/exps_list.html'):
 
     experiments = Experiment.safe.owned(request.user).order_by('-update_time')
 
@@ -383,7 +356,7 @@ def retrieve_owned_exps_list(
     query_string = '/ajax/owned_exps_list/?page={page}'
 
     c = {
-        'owned_experiments': exps_page,
+        'experiments': exps_page,
         'paginator': paginator,
         'page_num': page_num,
         'query_string': query_string
@@ -394,7 +367,7 @@ def retrieve_owned_exps_list(
 @never_cache
 @login_required
 def retrieve_shared_exps_list(
-        request, template_name='tardis_portal/ajax/shared_exps_list.html'):
+        request, template_name='tardis_portal/ajax/exps_list.html'):
 
     experiments = Experiment.safe.shared(request.user).order_by('-update_time')
 
@@ -408,7 +381,7 @@ def retrieve_shared_exps_list(
 
     query_string = '/ajax/shared_exps_list/?page={page}'
     c = {
-        'shared_experiments': exps_page,
+        'experiments': exps_page,
         'paginator': paginator,
         'page_num': page_num,
         'query_string': query_string

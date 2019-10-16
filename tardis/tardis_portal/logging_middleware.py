@@ -149,4 +149,3 @@ class LoggingMiddleware(object):
 
         extra = {'ip': ip, 'user': user, 'method': method, 'status': status}
         self.logger.error('%s %s' % (request.path, exception), extra=extra)
-        return None

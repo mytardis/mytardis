@@ -96,6 +96,15 @@ class StorageBox(models.Model):
         except StorageBoxAttribute.DoesNotExist:
             return False
 
+    @property
+    def priority(self):
+        '''
+        Default priority for tasks which take this box as an argument
+        '''
+        return int(getattr(
+            self.attributes.filter(key='priority').first(),
+            'value', settings.DEFAULT_TASK_PRIORITY))
+
     def get_options_as_dict(self):
         opts_dict = {}
         # using ugly for loop for python 2.6 compatibility
@@ -122,7 +131,7 @@ class StorageBox(models.Model):
                   if box.storage_type == StorageBox.CACHE]
         if len(caches) == 1:
             return caches[0]
-        elif len(caches) > 1:
+        if len(caches) > 1:
             return caches[random.choice(range(len(caches)))]
         return None
 
@@ -133,18 +142,6 @@ class StorageBox(models.Model):
     def move_files(self, dest_box=None):
         for dfo in self.file_objects.all():
             dfo.move_file(dest_box)
-
-    def cache_files(self):
-        """
-        Copy all files to faster storage.
-
-        This can be used to copy data from a Vault cache (containing data
-        which will soon be pushed to tape) to Object Storage, so that the
-        data can always be accessed quickly from Object Storage, and the
-        Vault can be used for disaster recovery if necessary.
-        """
-        for dfo in self.file_objects.all():
-            dfo.cache_file()
 
     def copy_to_master(self):
         if getattr(self, 'master_box'):
@@ -252,7 +249,7 @@ class StorageBoxOption(models.Model):
             return None
         if self.value_type == StorageBoxOption.STRING:
             return self.value
-        return pickle.loads(self.value)
+        return pickle.loads(str(self.value))
 
     @unpickled_value.setter
     def unpickled_value(self, input_value):

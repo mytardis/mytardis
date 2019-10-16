@@ -1,4 +1,5 @@
 # pylint: disable=http-response-with-json-dumps,http-response-with-content-type-json
+import hashlib
 import json
 import mimetypes
 
@@ -92,11 +93,10 @@ def _do_resize(img, size):
                 # Height determines resize
                 pct_resize(height/img.height)
             return True
-        else:
-            # Exact dimensions *without* aspect ratio preserved
-            w, h = [int(round(float(n))) for n in size.split(',')[:2]]
-            img.resize(w, h)
-            return True
+        # Exact dimensions *without* aspect ratio preserved
+        w, h = [int(round(float(n))) for n in size.split(',')[:2]]
+        img.resize(w, h)
+        return True
     return False
 
 
@@ -113,8 +113,7 @@ def compute_etag(request, datafile_id, *args, **kwargs):
     # if SHA-512 sums are unavailable:
     checksum = datafile.sha512sum or datafile.md5sum
     signature = checksum + json.dumps((args, kwargs))
-    import hashlib
-    return hashlib.sha1(signature).hexdigest()
+    return hashlib.sha1(signature.encode()).hexdigest()
 
 
 @etag(compute_etag)

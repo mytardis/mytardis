@@ -1,4 +1,6 @@
 import json
+
+from mock import patch
 import six
 
 from django.contrib.auth.models import Permission
@@ -42,18 +44,22 @@ class TabTestCase(TestCase):
         self.client = client
         self.experiment = experiment
 
-    def testAccessWithoutReadPerms(self):
+    @patch('webpack_loader.loader.WebpackLoader.get_bundle')
+    def testAccessWithoutReadPerms(self, mock_webpack_get_bundle):
         client = Client()
         response = client.get(
             reverse('tardis.apps.related_info.views.index',
                     args=[self.experiment.id]))
         self.assertEqual(response.status_code, 403)
+        mock_webpack_get_bundle.assert_called()
 
-    def testAccessWithReadPerms(self):
+    @patch('webpack_loader.loader.WebpackLoader.get_bundle')
+    def testAccessWithReadPerms(self, mock_webpack_get_bundle):
         response = self.client.get(
             reverse('tardis.apps.related_info.views.index',
                     args=[self.experiment.id]))
         self.assertEqual(response.status_code, 200)
+        mock_webpack_get_bundle.assert_called()
 
 
 class ListTestCase(TransactionTestCase):
@@ -85,7 +91,7 @@ class ListTestCase(TransactionTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(
             response['Content-Type'], 'application/json; charset=utf-8')
-        self.assertEqual(response.content, '[]')
+        self.assertEqual(response.content, b'[]')
 
     def testHandlesSingleEntry(self):
         from ..views import SCHEMA_URI
@@ -164,12 +170,14 @@ class GetTestCase(TransactionTestCase):
         self.client = client
         self.experiment = experiment
 
-    def testHandlesNotFound(self):
+    @patch('webpack_loader.loader.WebpackLoader.get_bundle')
+    def testHandlesNotFound(self, mock_webpack_get_bundle):
         response = self.client.get(
             reverse('tardis.apps.related_info.views.' +
                     'get_or_update_or_delete_related_info',
                     args=[self.experiment.id, 0]))
         self.assertEqual(response.status_code, 404)
+        mock_webpack_get_bundle.assert_called()
 
     def testHandlesFound(self):
         from ..views import SCHEMA_URI
@@ -215,7 +223,8 @@ class CreateTestCase(TransactionTestCase):
         self.client = client
         self.experiment = experiment
 
-    def testMustHaveWrite(self):
+    @patch('webpack_loader.loader.WebpackLoader.get_bundle')
+    def testMustHaveWrite(self, mock_webpack_get_bundle):
         self.acl.canWrite = False
         self.acl.save()
         params = {'type': 'website',
@@ -229,6 +238,7 @@ class CreateTestCase(TransactionTestCase):
             data=json.dumps(params),
             content_type='application/json')
         self.assertEqual(response.status_code, 403)
+        mock_webpack_get_bundle.assert_called()
 
     def testCanCreate(self):
         params = {'type': 'website',
@@ -312,7 +322,8 @@ class UpdateTestCase(TransactionTestCase):
         self.assertEqual(response.status_code, 201)
         return json.loads(response.content)
 
-    def testMustHaveWrite(self):
+    @patch('webpack_loader.loader.WebpackLoader.get_bundle')
+    def testMustHaveWrite(self, mock_webpack_get_bundle):
         related_info_id = self._create_initial_entry()['id']
         self.acl.canWrite = False
         self.acl.save()
@@ -325,6 +336,7 @@ class UpdateTestCase(TransactionTestCase):
             data=json.dumps(params),
             content_type='application/json')
         self.assertEqual(response.status_code, 403)
+        mock_webpack_get_bundle.assert_called()
 
     def testDetectsBadInput(self):
         def do_put(params):
@@ -385,7 +397,8 @@ class DeleteTestCase(TransactionTestCase):
         self.assertEqual(response.status_code, 201)
         return json.loads(response.content)
 
-    def testMustHaveWrite(self):
+    @patch('webpack_loader.loader.WebpackLoader.get_bundle')
+    def testMustHaveWrite(self, mock_webpack_get_bundle):
         related_info_id = self._create_initial_entry()['id']
         self.acl.canWrite = False
         self.acl.save()
@@ -394,6 +407,7 @@ class DeleteTestCase(TransactionTestCase):
                     'get_or_update_or_delete_related_info',
                     args=[self.experiment.id, related_info_id]))
         self.assertEqual(response.status_code, 403)
+        mock_webpack_get_bundle.assert_called()
 
     def testCanDelete(self):
         response = self.client.delete(
@@ -403,4 +417,4 @@ class DeleteTestCase(TransactionTestCase):
                           self._create_initial_entry()['id']]))
         self.assertEqual(response.status_code, 200)
         obj = json.loads(response.content)
-        self.assertGreater(obj.keys(), 1)
+        self.assertGreater(len(obj.keys()), 1)

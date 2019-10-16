@@ -6,7 +6,6 @@ import logging
 from six.moves import urllib
 
 import jwt
-import pwgen
 
 from django.conf import settings
 from django.contrib import auth as djauth
@@ -25,7 +24,7 @@ from django.views.decorators.debug import sensitive_post_parameters
 
 from ..auth import auth_service
 from ..auth.localdb_auth import auth_key as localdb_auth_key
-from ..forms import ManageAccountForm, CreateUserPermissionsForm, LoginForm
+from ..forms import ManageAccountForm, CreateUserPermissionsForm
 from ..models import JTI, UserProfile, UserAuthentication
 from ..shortcuts import render_response_index
 from ..views.utils import _redirect_303
@@ -60,8 +59,7 @@ def rcauth(request):
             request.session.pop('jws', None)
             django_logout(request)
             return redirect('/')
-        else:
-            JTI(jti=jti).save()
+        JTI(jti=jti).save()
 
         if verified_jwt['aud'] == settings.RAPID_CONNECT_CONFIG['aud'] and \
            verified_jwt['iss'] == settings.RAPID_CONNECT_CONFIG['iss']:
@@ -84,7 +82,6 @@ def rcauth(request):
             user_args = {
                 'id': institution_email.lower(),
                 'email': institution_email.lower(),
-                'password': pwgen.pwgen(),
                 'first_name': first_name,
                 'last_name': request.session['attributes']['surname'],
             }
@@ -240,8 +237,7 @@ def login(request):
             return HttpResponseRedirect(next_page)
 
         c = {'status': "Sorry, username and password don't match.",
-             'error': True,
-             'loginForm': LoginForm()}
+             'error': True}
 
         return HttpResponseForbidden(
             render_response_index(request, 'tardis_portal/login.html', c))
@@ -252,8 +248,7 @@ def login(request):
         next_page = u.path
     else:
         next_page = '/'
-    c = {'loginForm': LoginForm(),
-         'next_page': next_page}
+    c = {'next_page': next_page}
 
     c['RAPID_CONNECT_ENABLED'] = settings.RAPID_CONNECT_ENABLED
     c['RAPID_CONNECT_LOGIN_URL'] = settings.RAPID_CONNECT_CONFIG[
@@ -275,9 +270,9 @@ def manage_auth_methods(request):
         operation = request.POST['operation']
         if operation == 'addAuth':
             return add_auth_method(request)
-        elif operation == 'mergeAuth':
+        if operation == 'mergeAuth':
             return merge_auth_method(request)
-        elif operation == 'removeAuth':
+        if operation == 'removeAuth':
             return remove_auth_method(request)
         return edit_auth_method(request)
     # if GET, we'll just give the initial list of auth methods for the user

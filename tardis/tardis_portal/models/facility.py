@@ -29,9 +29,9 @@ class Facility(models.Model):
         verbose_name_plural = 'Facilities'
         ordering = ('name',)
 
-    def save(self):
+    def save(self, *args, **kwargs):
         self.modified_time = timezone.now()
-        super(Facility, self).save()
+        super(Facility, self).save(*args, **kwargs)
 
     def __str__(self):
         return self.name

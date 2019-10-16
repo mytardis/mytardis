@@ -1,6 +1,6 @@
 """
 
-.. moduleauthor:: Ruseell Sim <russell.sim@monash.edu>
+.. moduleauthor:: Russell Sim <russell.sim@monash.edu>
 """
 from unittest import skipIf
 from django.conf import settings
@@ -19,8 +19,8 @@ class LDAPErrorTest(TestCase):
 
     def test_search(self):
         from ..auth.ldap_auth import ldap_auth
-        l = ldap_auth()
-        self.assertEqual(l._query('', '', ''), None)
+        l = ldap_auth(force_create=True)
+        self.assertEqual(l._query('', '', []), None)
 
 
 # this test might still skip if SlapD.check_paths() is False
@@ -30,16 +30,16 @@ class LDAPErrorTest(TestCase):
 class LDAPTest(TestCase):
     def setUp(self):
         from .ldap_ldif import test_ldif
-        import tardis.tardis_portal.tests.slapd as slapd
+        from . import slapd
         global server
         if not slapd.Slapd.check_paths():
             raise SkipTest('slapd.Slapd.check_paths() failed, '
                            'so skipping LDAPTest')
 
         server = slapd.Slapd()
-        server.set_port(38911)
         server.set_dn_suffix("dc=example, dc=com")
         server.start()
+        settings.LDAP_URL = server.get_url()
         base = server.get_dn_suffix()
 
         server.ldapadd("\n".join(test_ldif) + "\n")
@@ -53,35 +53,35 @@ class LDAPTest(TestCase):
         from django.conf import settings
         from ..auth.ldap_auth import ldap_auth
 
-        l = ldap_auth()
+        l = ldap_auth(force_create=True)
         res = l._query(settings.LDAP_USER_BASE, '(objectClass=*)', ['givenName', 'sn'])
         res1 = [('ou=People,dc=example,dc=com', {}),
                 ('uid=testuser1,ou=People,dc=example,dc=com',
-                 {'givenName': ['Test'], 'sn': ['User']}),
+                 {'givenName': [b'Test'], 'sn': [b'User']}),
                 ('uid=testuser2,ou=People,dc=example,dc=com',
-                 {'givenName': ['Test'], 'sn': ['User2']}),
+                 {'givenName': [b'Test'], 'sn': [b'User2']}),
                 ('uid=testuser3,ou=People,dc=example,dc=com',
-                 {'givenName': ['Test'], 'sn': ['User3']})]
+                 {'givenName': [b'Test'], 'sn': [b'User3']})]
         self.assertEqual(res, res1)
 
         res = l._query(settings.LDAP_GROUP_BASE, '(objectClass=*)', ['cn'])
         res1 = [('ou=Group,dc=example,dc=com', {}),
                 ('cn=empty,ou=Group,dc=example,dc=com',
-                 {'cn': ['empty']}),
+                 {'cn': [b'empty']}),
                 ('cn=full,ou=Group,dc=example,dc=com',
-                 {'cn': ['full']}),
+                 {'cn': [b'full']}),
                 ('cn=systems,ou=Group,dc=example,dc=com',
-                 {'cn': ['systems']})]
+                 {'cn': [b'systems']})]
         self.assertEqual(res, res1)
 
     def test_getuserbyid(self):
         from ..auth.ldap_auth import ldap_auth
-        l = ldap_auth()
+        l = ldap_auth(force_create=True)
         user = l.getUserById('testuser1')
-        user1 = {'id': 'testuser1',
-                 'email': 't.user@example.com',
-                 'first_name': 'Test',
-                 'last_name': 'User'}
+        user1 = {'id': b'testuser1',
+                 'email': b't.user@example.com',
+                 'first_name': b'Test',
+                 'last_name': b'User'}
         self.assertEqual(user, user1)
 
         user = l.getUserById('nulluser')
@@ -92,27 +92,28 @@ class LDAPTest(TestCase):
         from django.contrib.auth.models import User
 
         # Tests Authenticate API
-        l = ldap_auth()
+        l = ldap_auth(force_create=True)
         rf = RequestFactory()
         req = rf.post('')
         req._post = {'username': 'testuser1',
                      'password': 'kklk',
                      'authMethod': 'ldap'}
         u = l.authenticate(req)
-        u1 = {'email': 't.user@example.com',
-              'first_name': 'Test',
-              'last_name': 'User',
-              'id': 'testuser1'}
+        u1 = {'email': b't.user@example.com',
+              'first_name': b'Test',
+              'last_name': b'User',
+              'id': b'testuser1'}
         self.assertEqual(u, u1)
 
         # Test authservice API
-        from ..auth import auth_service
+        from ..auth.authservice import AuthService
+        auth_service = AuthService()
         req = rf.post('')
         req._post = {'username': 'testuser1',
                      'password': 'kklk',
                      'authMethod': 'ldap'}
         user = auth_service.authenticate('ldap', request=req)
-        self.assertTrue(isinstance(user, User))
+        self.assertIsInstance(user, User)
 
         # Check that there is an entry in the user authentication table
         from ..models import UserAuthentication
@@ -127,41 +128,41 @@ class LDAPTest(TestCase):
 
     def test_getgroups(self):
         from django.contrib.auth.models import User
-        from ..auth import auth_service
+        from ..auth.authservice import AuthService
+        from ..auth.ldap_auth import ldap_auth
+        l = ldap_auth(force_create=True)
+        auth_service = AuthService()
         rf = RequestFactory()
         req = rf.post('')
         req._post = {'username': 'testuser1',
                      'password': 'kklk',
                      'authMethod': 'ldap'}
         user = auth_service.authenticate('ldap', request=req)
-        self.assertTrue(isinstance(user, User))
+        self.assertIsInstance(user, User)
         req.user = user
 
-        from ..auth.ldap_auth import ldap_auth
         # Tests getGroups
-        l = ldap_auth()
-        self.assertEqual([g for g in l.getGroups(req.user)],
-                         ['full', 'systems'])
+        self.assertEqual(list(l.getGroups(req.user)), [b'full', b'systems'])
 
     def test_getgroupbyid(self):
         from ..auth.ldap_auth import ldap_auth
 
-        l = ldap_auth()
+        l = ldap_auth(force_create=True)
         self.assertEqual(l.getGroupById('full'),
-                         {'id': 'full', 'display': 'Full Group'})
+                         {'id': b'full', 'display': b'Full Group'})
         self.assertEqual(l.getGroupById('invalid'), None)
 
     def test_getgroupsforentity(self):
         from ..auth.ldap_auth import ldap_auth
-        l = ldap_auth()
-        self.assertEqual([g for g in l.getGroupsForEntity('testuser1')],
-                         [{'id': 'full', 'display': 'Full Group'},
-                          {'id': 'systems', 'display': 'Systems Services'}])
+        l = ldap_auth(force_create=True)
+        self.assertEqual(list(l.getGroupsForEntity('testuser1')),
+                         [{'id': b'full', 'display': b'Full Group'},
+                          {'id': b'systems', 'display': b'Systems Services'}])
 
     def test_searchgroups(self):
         from ..auth.ldap_auth import ldap_auth
-        l = ldap_auth()
-        self.assertEqual([g for g in l.searchGroups(id='fu*')],
-                         [{'id': 'full',
-                           'members': ['testuser1', 'testuser2', 'testuser3'],
-                           'display': 'Full Group'}])
+        l = ldap_auth(force_create=True)
+        self.assertEqual(list(l.searchGroups(id='fu*')),
+                         [{'id': b'full',
+                           'members': [b'testuser1', b'testuser2', b'testuser3'],
+                           'display': b'Full Group'}])

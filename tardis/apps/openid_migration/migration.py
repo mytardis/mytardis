@@ -132,7 +132,9 @@ def do_migration(request):
     # send email for successful migration
     # TODO : get request user auth method
     logger.info("sending email to %s", user.email)
-    notify_migration_status.delay(user, new_user.username, auth_provider[1])
+    notify_migration_status.apply_async(
+        args=[user.id, new_user.username, auth_provider[1]],
+        priority=settings.DEFAULT_EMAIL_TASK_PRIORITY)
     logger.info("migration complete")
 
     if new_user.has_perm('openid_migration.add_openidusermigration'):

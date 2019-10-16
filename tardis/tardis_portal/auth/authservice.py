@@ -36,6 +36,7 @@ models.py
 .. moduleauthor:: Russell Sim <russell.sim@monash.edu>
 
 """
+from functools import cmp_to_key
 import logging
 from importlib import import_module
 
@@ -311,8 +312,13 @@ class AuthService():
 
             def cmp(x, y):
                 return (x > y) - (x < y)
-            result.sort(lambda a, b: cmp(a.get(sort_by, '').lower(),
-                                         b.get(sort_by, '').lower()))
+
+            def compare(a, b):
+                return cmp(
+                    a.get(sort_by, '').lower(),
+                    b.get(sort_by, '').lower())
+
+            result.sort(key=cmp_to_key(compare))
 
         if max_results:
             try:

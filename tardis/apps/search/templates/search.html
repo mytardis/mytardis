@@ -1,0 +1,11 @@
+{% extends "tardis_portal/portal_template.html" %}
+{% load render_bundle from webpack_loader %}
+{% load bleach_tag %}
+
+{% block content %}
+
+    <div id="search-app"></div>
+    <div>
+    </div>
+    {% render_bundle 'search_app' %}
+{% endblock content%}

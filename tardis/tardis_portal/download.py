@@ -284,7 +284,7 @@ class UncachedTarStream(TarFile):
         else:
             result_buf = uc_buf
         if remainder is not None:
-            result_buf = ''.join([remainder, result_buf])
+            result_buf = b''.join([remainder, result_buf])
         stream_buffers = []
         while len(result_buf) >= self.http_buffersize:
             stream_buffers.append(result_buf[:self.http_buffersize])
@@ -462,7 +462,6 @@ def streaming_download_datafiles(request):  # too complex # noqa
     # Create the HttpResponse object with the appropriate headers.
     # TODO: handle no datafile, invalid filename, all http links
     # TODO: intelligent selection of temp file versus in-memory buffering.
-    logger.error('In download_datafiles !!')
     comptype = getattr(settings, 'DEFAULT_ARCHIVE_FORMATS', ['tar'])[0]
     organization = getattr(settings, 'DEFAULT_PATH_MAPPER', 'classic')
     if 'comptype' in request.POST:

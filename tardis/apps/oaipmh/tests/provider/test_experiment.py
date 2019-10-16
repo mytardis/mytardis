@@ -108,7 +108,7 @@ class AbstractExperimentProviderTC():
         headers = self._getProvider() \
             .listIdentifiers(self._getProviderMetadataPrefix())
         # First is not public, so should not appear
-        self.assertEqual(len(headers), 1)
+        self.assertEqual(len(list(headers)), 1)
 
     def testListIdentifiersDoesNotHandleSets(self):
         def call_with_set():
@@ -120,7 +120,7 @@ class AbstractExperimentProviderTC():
 
     def testListMetadataFormats(self):
         self.assertEqual(
-            map(lambda t: t[0], self._getProvider().listMetadataFormats()),
+            list(map(lambda t: t[0], self._getProvider().listMetadataFormats())),
             [self._getProviderMetadataPrefix()])
 
     def testListSets(self):
@@ -162,7 +162,9 @@ class DcExperimentProviderTestCase(AbstractExperimentProviderTC, TestCase):
     def testListRecords(self):
         results = self._getProvider().listRecords('oai_dc')
         # Iterate through headers
+        result_count = 0
         for header, metadata, _ in results:
+            result_count += 1
             e = self._experiment if header.identifier() == _get_first_exp_id() \
                 else self._experiment2
             self.assertIn(str(e.id), header.identifier())
@@ -174,13 +176,13 @@ class DcExperimentProviderTestCase(AbstractExperimentProviderTC, TestCase):
             self.assertEqual(
                 metadata.getField('description'), [str(e.description)])
         # There should have been two
-        self.assertEqual(len(results), 2)
+        self.assertEqual(result_count, 2)
         # Remove public flag on first one
         self._experiment.public_access = Experiment.PUBLIC_ACCESS_NONE
         self._experiment.save()
         headers = self._getProvider().listRecords('oai_dc')
         # First one not public, so should not appear
-        self.assertEqual(len(headers), 1)
+        self.assertEqual(len(list(headers)), 1)
 
 
 class RifCsExperimentProviderTestCase(AbstractExperimentProviderTC, TestCase):
@@ -218,7 +220,7 @@ class RifCsExperimentProviderTestCase(AbstractExperimentProviderTC, TestCase):
             metadata.getField('licence_name'),
             License.get_none_option_license().name)
         self.assertEqual(
-            metadata.getField('related_info'),
+            list(metadata.getField('related_info')),
             [{'notes': 'This is a note.', \
                        'identifier': 'https://www.example.com/', \
                        'type': 'website', \
@@ -231,7 +233,9 @@ class RifCsExperimentProviderTestCase(AbstractExperimentProviderTC, TestCase):
     def testListRecords(self):
         results = self._getProvider().listRecords('rif')
         # Iterate through headers
+        result_count = 0
         for header, metadata, _ in results:
+            result_count += 1
             if header.identifier().startswith('experiment'):
                 e = self._experiment if header.identifier() == _get_first_exp_id() \
                     else self._experiment2
@@ -254,7 +258,7 @@ class RifCsExperimentProviderTestCase(AbstractExperimentProviderTC, TestCase):
                     ps_id = ExperimentParameterSet.objects\
                       .filter(experiment=self._experiment,schema__namespace=ns).first().id
                     self.assertEqual(
-                        metadata.getField('related_info'),
+                        list(metadata.getField('related_info')),
                         [{'notes': 'This is a note.', \
                                    'identifier': 'https://www.example.com/', \
                                    'type': 'website', \
@@ -262,7 +266,7 @@ class RifCsExperimentProviderTestCase(AbstractExperimentProviderTC, TestCase):
                                    'title': 'Google'}])
                 else:
                     self.assertEqual(
-                        metadata.getField('related_info'), [{}])
+                        list(metadata.getField('related_info')), [{}])
             else:
                 self.assertIn(str(self._user.id), header.identifier())
                 self.assertEqual(
@@ -278,13 +282,13 @@ class RifCsExperimentProviderTestCase(AbstractExperimentProviderTC, TestCase):
                     metadata.getField('family_name'),
                     str(self._user.last_name))
         # There should have been two
-        self.assertEqual(len(results), 2)
+        self.assertEqual(result_count, 2)
         # Remove public flag on first experiment
         self._experiment.public_access = Experiment.PUBLIC_ACCESS_NONE
         self._experiment.save()
         headers = self._getProvider().listRecords('rif')
         # Should now be one
-        self.assertEqual(len(headers), 1)
+        self.assertEqual(len(list(headers)), 1)
 
     def tearDown(self):
         pass

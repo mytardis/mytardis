@@ -1,4 +1,5 @@
 {% extends "tardis_portal/portal_template.html" %}
+{% load render_bundle from webpack_loader %}
 {% load basiccomparisonfilters %}
 {% load capture %}
 {% load static from staticfiles %}
@@ -18,35 +19,27 @@
 
 <input type="hidden" id="experiment-id" value="{{ experiment.id }}">
 <input type="hidden" id="csrf-token" value="{{ csrf_token }}">
-<script type="text/javascript"
-        src="{% static 'js/jquery/tardis_portal/view_experiment/init.js' %}">
-</script>
-
+{% render_bundle 'tardis_portal_view_experiment_init' %}
+{% render_bundle 'tardis_portal_view_experiment_share' %}
 {% endblock %}
 
 {% block content %}
+    {% render_bundle 'tardis_portal' %}
+<div class="modal" id="modal-metadata" role="dialog" tabindex="-1">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <a class="close" data-dismiss="modal">&times;</a>
+        <h1 class="title">Add Parameters</h1>
+      </div>
 
-<div class="modal hide fade" id="modal-metadata">
-  <div class="modal-header">
-    <a class="close" data-dismiss="modal">&times;</a>
-    <h1 class="title">Add Parameters</h1>
-  </div>
+      <div class="loading-placeholder" style="display: none">
+        <p>Please wait... <img src="{% static 'images/ajax-loader.gif'%}" alt="loading" /></p>
+      </div>
 
-  <div class="loading-placeholder" style="display: none">
-    <p>Please wait... <img src="{% static 'images/ajax-loader.gif'%}" alt="loading" /></p>
-  </div>
-
-  <div class="modal-body"></div>
-
-  <div class="modal-footer">
-    <button id="add_edit_metadata_save_button"
-            class="submit-button btn btn-success"
-            type="submit"
-            form="add_metadata_form">
-      <i class="fa fa-ok"></i>
-      Save
-    </button>
-  </div>
+      <div class="modal-body"></div>
+    </div>  <!-- class="modal-content" -->
+  </div>  <!-- class="modal-dialog" -->
 </div>
 
 <div class="page-header">
@@ -54,7 +47,7 @@
   {% if not experiment.public %}
   <div class="pull-right">
     {% if push_to_enabled and is_authenticated %}
-    <a class="btn btn-mini btn-primary" title="Push to..."
+    <a class="btn btn-xs btn-primary" title="Push to..."
        onclick="window.open('{{ push_to_url }}', 'push-to', 'width=800, height=600'); return false;"
        href="{{ push_to_url }}" target="_blank">
       <i class="fa fa-upload"></i>
@@ -62,7 +55,7 @@
     </a>
     {% endif %}
     {% if has_write_permissions %}
-    <a class="btn btn-mini btn-warning" title="Edit Experiment"
+    <a class="btn btn-xs btn-warning" title="Edit Experiment"
        href="{{ experiment.get_edit_url }}">
       <i class="fa fa-pencil"></i>
       Edit Experiment
@@ -90,11 +83,11 @@
   </p>
 </div>
 
-<div class="row-fluid" >
-  <div class="span5">
+<div class="row" >
+  <div class="col-md-5">
   <div align="center" style="margin-bottom: -20px">
   <div id="abstractHolder" style="display: none">{{ experiment.description|bleach|linebreaksbr }}</div>
-  <a id="abstract-toggle" class="btn btn-mini" title="Show Description">
+  <a id="abstract-toggle" class="btn btn-default btn-xs" title="Show Description">
      Toggle Full Description
   </a>
   </div>
@@ -107,7 +100,7 @@
     <!-- Tab buttons -->
     <ul id="experiment-tabs" class="nav nav-pills">
       {% for appurl, appname in apps %}
-      <li><a data-toggle="tab" title="{{appname}}" href="{{ appurl }}">{{ appname }}</a></li>
+      <li><a data-toggle="tab" title="{{appname}}" data-url="{{ appurl }}">{{ appname }}</a></li>
       {% endfor %}
     </ul>
     <div class="tab-content">
@@ -116,22 +109,9 @@
       </div>
     </div>
   </div>
-  <hr class="visible-phone"/>
-  <div id="datasets-pane" class="span7">
+  <div id="datasets-pane" class="col-md-7">
     {% include "tardis_portal/ajax/experiment_datasets.html" %}
   </div>
 </div>
-<script type="text/javascript"
-        src="{% static 'js/jquery/tardis_portal/view_experiment/experiment-tabs.js' %}">
-</script>
-<script type="text/javascript"
-        src="{% static 'js/jquery/tardis_portal/view_experiment/dataset-tiles.js' %}">
-</script>
-<script type="text/javascript"
-        src="{% static 'js/jquery/tardis_portal/view_experiment/activate-tooltips.js' %}">
-</script>
-<script type="text/javascript"
-        src="{% static 'js/jquery/tardis_portal/view_experiment/abbreviate-abstract.js' %}">
-</script>
-
+    {% render_bundle 'tardis_portal_view_experiment' %}
 {% endblock %}

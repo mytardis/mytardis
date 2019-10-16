@@ -24,9 +24,14 @@ class MyTardisResourceTestCase(ResourceTestCaseMixin, TestCase):
     def setUp(self):
         super(MyTardisResourceTestCase, self).setUp()
         self.username = 'mytardis'
-        self.password = 'mytardis'
+        self.password = 'mytardis'  # nosec
         self.user = User.objects.create_user(username=self.username,
                                              password=self.password)
+        self.admin_username = 'admin'
+        self.admin_password = 'admin'  # nosec
+        self.admin_user = User.objects.create_user(
+            username=self.admin_username, password=self.admin_password,
+            is_superuser=True)
         test_auth_service = AuthService()
         test_auth_service._set_user_from_dict(  # pylint: disable=W0212
             self.user,
@@ -72,6 +77,10 @@ class MyTardisResourceTestCase(ResourceTestCaseMixin, TestCase):
     def get_credentials(self):
         return self.create_basic(username=self.username,
                                  password=self.password)
+
+    def get_admin_credentials(self):
+        return self.create_basic(username=self.admin_username,
+                                 password=self.admin_password)
 
     def get_apikey_credentials(self):
         return self.create_apikey(username=self.username,

@@ -1,5 +1,7 @@
 import pytz
 
+import six
+
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils.timezone import is_aware, make_aware
@@ -141,12 +143,11 @@ class ParameterSetManager(object):
         if value:
             if par.name.isNumeric():
                 return par.numerical_value
-            elif par.name.isDateTime():
+            if par.name.isDateTime():
                 if is_aware(par.datetime_value):
                     return par.datetime_value
                 return make_aware(par.datetime_value, LOCAL_TZ)
-            else:
-                return par.string_value
+            return par.string_value
         return par
 
     def get_params(self, parname, value=False):
@@ -189,8 +190,8 @@ class ParameterSetManager(object):
             if value is not None:
                 self.new_param(parname, value, fullparname)
 
-    def set_params_from_dict(self, dict):
-        for (key, value) in dict.iteritems():
+    def set_params_from_dict(self, params_dict):
+        for (key, value) in six.iteritems(params_dict):
             if isinstance(value, list):
                 self.set_param_list(key, value)
             else:

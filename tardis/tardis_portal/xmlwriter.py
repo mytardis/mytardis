@@ -29,7 +29,7 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 import logging
-from os import path
+import os
 from django.conf import settings
 from .shortcuts import render_to_file
 
@@ -64,7 +64,6 @@ class XMLWriter:
         :returns: The full path to the created file
         :rtype: string
         """
-        import os
         filename = os.path.join(dest_dir, dest_filename)
         render_to_file(template_path, filename, context)
         return filename
@@ -95,8 +94,8 @@ class XMLWriter:
         :rtype: string
         """
 
-        filename = settings.OAI_DOCS_PATH + path.sep + prefix_dir + \
-            path.sep + str(objectprefix) + "-" + str(uniqueid) + ".xml"
+        filename = settings.OAI_DOCS_PATH + os.path.sep + prefix_dir + \
+            os.path.sep + str(objectprefix) + "-" + str(uniqueid) + ".xml"
 
         render_to_file(templatepath,
             filename, context)
@@ -124,8 +123,8 @@ class XMLWriter:
         :rtype: string
         """
 
-        filename = settings.OAI_DOCS_PATH + path.sep + prefix_dir + \
-            path.sep + str(objectprefix) + "-" + \
+        filename = settings.OAI_DOCS_PATH + os.path.sep + prefix_dir + \
+            os.path.sep + str(objectprefix) + "-" + \
             uniqueid + ".xml"
 
         f = open(filename, "w")

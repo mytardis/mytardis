@@ -6,7 +6,7 @@
 {% capture as action_bar %}
   {% if has_download_permissions or has_write_permissions %}
     {% if has_download_permissions %}
-      <button type="submit" class="btn btn-mini download-selected">
+      <button type="submit" class="btn btn-default btn-xs download-selected">
         <i class="fa fa-download"></i>
         Download Selected
       </button>
@@ -22,7 +22,8 @@
 {% if has_download_permissions or has_write_permissions %}
 
   {% if has_write_permissions and not experiment.is_publication %}
-  <a class="add-dataset btn btn-mini pull-right"
+  <a id="add-dataset"
+     class="add-dataset btn btn-default btn-xs pull-right"
      href="{% url 'tardis.tardis_portal.views.add_dataset' experiment.id %}">
     <i class="fa fa-plus"></i>
     Add New

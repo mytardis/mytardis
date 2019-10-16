@@ -3,24 +3,29 @@ Setting up BDD with Selenium and Behave
 """
 
 from django.core import management
-from npm.finders import npm_install
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 
 
 def before_all(context):
-
-    npm_install()
 
     chrome_options = Options()
     chrome_options.add_argument('--headless')
     chrome_options.add_argument('--no-sandbox')
     chrome_options.add_argument('--disable-dev-shm-usage')
 
-    context.browser = webdriver.Chrome(executable_path="/usr/local/bin/chromedriver", chrome_options=chrome_options)
+    capabilities = DesiredCapabilities.CHROME
+    capabilities['loggingPrefs'] = {'browser': 'SEVERE'}
+
+    context.browser = webdriver.Chrome(
+        executable_path="/usr/local/bin/chromedriver",
+        chrome_options=chrome_options,
+        desired_capabilities=capabilities)
     context.browser.set_page_load_timeout(10)
     context.browser.implicitly_wait(10)
     context.browser.maximize_window()
+
 
 def before_scenario(context, scenario):
     # Reset the database before each scenario

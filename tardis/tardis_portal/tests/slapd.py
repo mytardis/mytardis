@@ -4,6 +4,7 @@ and talking to it with ldapsearch/ldapadd.
 """
 import base64
 
+import signal
 import sys
 import os
 from os import path as os_path
@@ -32,7 +33,7 @@ def mkdirs(path):
 def which(executable):
     try:
         return subprocess.check_output(
-            ['which', executable]).strip().replace('//', '/')
+            ['which', executable]).strip().replace(b'//', b'/')
     except subprocess.CalledProcessError:
         return None
 
@@ -147,9 +148,6 @@ class Slapd:
     def get_tmpdir(self):
         return self._tmpdir
 
-    def __del__(self):
-        self.stop()
-
     def configure(self, cfg):
         """
         Appends slapd.conf configuration lines to cfg.
@@ -244,15 +242,7 @@ class Slapd:
         """Stops the slapd server, and waits for it to terminate"""
         if self._proc is not None:
             self._log.debug("stopping slapd")
-            if hasattr(self._proc, 'terminate'):
-                self._proc.terminate()
-            else:
-                import posix
-                import signal
-                posix.kill(self._proc.pid, signal.SIGHUP)
-                #time.sleep(1)
-                #posix.kill(self._proc.pid, signal.SIGTERM)
-                #posix.kill(self._proc.pid, signal.SIGKILL)
+            os.kill(self._proc.pid, signal.SIGTERM)
             self.wait()
 
     def restart(self):
@@ -290,9 +280,12 @@ class Slapd:
                 self.PATH_SLAPTEST,
                 verboseflag,
                 "-f", config_path
-            ])
-            if p.wait() != 0:
-                raise RuntimeError("configuration test failed")
+            ],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT)
+            output = p.communicate()[0]
+            if p.returncode != 0:
+                raise RuntimeError("configuration test failed: %s" % output)
             self._log.debug("configuration seems ok")
         finally:
             os.remove(config_path)
@@ -305,10 +298,11 @@ class Slapd:
                               "-D", self.get_root_dn(),
                               "-w", self.get_root_password(),
                               "-H", self.get_url()] + extra_args,
-                             stdin=subprocess.PIPE, stdout=subprocess.PIPE)
-        p.communicate(ldif)
-        if p.wait() != 0:
-            raise RuntimeError("ldapadd process failed")
+                             stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+                             stderr=subprocess.STDOUT)
+        output = p.communicate(ldif.encode())[0]
+        if p.returncode != 0:
+            raise RuntimeError("ldapadd process failed: %s" % output)
 
     def ldapsearch(self, base=None, filter='(objectClass=*)', attrs=[],
                    scope='sub', extra_args=[]):

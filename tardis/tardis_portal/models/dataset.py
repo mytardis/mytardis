@@ -62,17 +62,14 @@ class Dataset(models.Model):
     def is_online(self):
         return all(df.is_online for df in self.datafile_set.all())
 
-    def getParameterSets(self, schemaType=None):
+    def getParameterSets(self):
         """Return the dataset parametersets associated with this
         experiment.
 
         """
         from .parameters import Schema
-        if schemaType == Schema.DATASET or schemaType is None:
-            return self.datasetparameterset_set.filter(
-                schema__type=Schema.DATASET)
-        else:
-            raise Schema.UnsupportedType
+        return self.datasetparameterset_set.filter(
+            schema__type=Schema.DATASET)
 
     def __str__(self):
         return self.description
@@ -115,7 +112,12 @@ class Dataset(models.Model):
         return ('tardis.tardis_portal.views.edit_dataset', (self.id,))
 
     def get_images(self):
-        from .datafile import IMAGE_FILTER
+        from .datafile import DataFile, IMAGE_FILTER
+        render_image_ds_size_limit = getattr(
+            settings, 'RENDER_IMAGE_DATASET_SIZE_LIMIT', 0)
+        if render_image_ds_size_limit and \
+                self.datafile_set.count() > render_image_ds_size_limit:
+            return DataFile.objects.none()
         return self.datafile_set.order_by('filename').filter(IMAGE_FILTER)\
             .filter(file_objects__verified=True).distinct()
 
@@ -162,5 +164,5 @@ class Dataset(models.Model):
 
     def get_all_storage_boxes_used(self):
         boxes = StorageBox.objects.filter(
-            file_objects__datafile__dataset=self)
+            file_objects__datafile__dataset=self).distinct()
         return boxes

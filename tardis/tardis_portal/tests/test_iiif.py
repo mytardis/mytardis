@@ -59,9 +59,9 @@ def _create_datafile():
                         filename='iiif_named_file',
                         mimetype='image/tiff')
     compute_md5 = getattr(settings, 'COMPUTE_MD5', True)
-    compute_sha512 = getattr(settings, 'COMPUTE_SHA512', True)
+    compute_sha512 = getattr(settings, 'COMPUTE_SHA512', False)
     checksums = compute_checksums(
-        open(tempfile.file.name, 'r'),
+        open(tempfile.file.name, 'rb'),
         compute_md5=compute_md5,
         compute_sha512=compute_sha512)
     if compute_md5:

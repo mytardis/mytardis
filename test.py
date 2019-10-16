@@ -16,6 +16,9 @@ if __name__ == "__main__":
     # coverage reports:
     cov = coverage.coverage(source=['tardis'], omit=['*/tests/*'])
     cov.set_option('report:show_missing', True)
+    if len(sys.argv) > 1 and sys.argv[1] == "behave":
+        cov.set_option('run:plugins', ['django_coverage_plugin'])
+        cov.set_option('report:include', ['*.html', '*.js'])
     cov.erase()
     cov.start()
 

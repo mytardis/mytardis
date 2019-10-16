@@ -1,0 +1,8 @@
+{% load experiment_tags %}
+
+<ul class="nav nav-pills badgelist">
+  <li class="pull-right">{{ experiment|experiment_public_access_badge }}</li>
+  <li class="pull-right">{{ experiment|experiment_datafiles_badge }}</li>
+  <li class="pull-right">{{ experiment|experiment_datasets_badge }}</li>
+  <li class="pull-right">{{ experiment|experiment_last_updated_badge }}</li>
+</ul>

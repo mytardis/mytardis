@@ -1,7 +1,6 @@
 {% load static from staticfiles %}
-<script type="text/javascript" src="{% static 'clipboard/dist/clipboard.min.js' %}"></script>
 <script type="text/javascript">
-    var clipboard = new Clipboard('.btn.clipboard');
+    var clipboard = new ClipboardJS('.btn.clipboard');
     {% comment %}
     clipboard.on('success', function(e) {
         console.log(e);
@@ -18,7 +17,7 @@
     {% if not tokens %}
       <p>No tokens defined </p>
     {% else %}
-    <table class="table table-striped span12">
+    <table class="table table-striped col-md-12">
             <tr>
                 <th style="width: 40%;">
                     Temporary Link
@@ -40,14 +39,14 @@
                 <td>
                     <a href="{{ token.url }}"
                     style="font-weight: bold;">Page link</a><br/>
-                    <button class="btn clipboard" data-clipboard-text="{{ token.url }}">
+                    <button type="button" class="btn btn-default clipboard" data-clipboard-text="{{ token.url }}">
                         <span class="fa fa-share"></span> Copy to clipboard</button>
                 </td>
                {% if token.download_url %}
                 <td>
                     <a href="{{ token.download_url }}"
                     style="font-weight: bold;">Archive link</a><br/>
-                    <button class="btn clipboard" data-clipboard-text="{{ token.download_url }}">
+                    <button type="button" class="btn btn-default clipboard" data-clipboard-text="{{ token.download_url }}">
                         <span class="fa fa-share"></span> Copy to clipboard</button>
                 </td>
                 {% endif %}
@@ -61,7 +60,7 @@
                 {% if token.is_owner %}
                   <a title="Delete Token"
                     href="{% url 'tardis.tardis_portal.views.token_delete' token.id %}"
-                    class="token_delete btn btn-danger btn-mini"
+                    class="token_delete btn btn-danger btn-xs"
                     data-toggle_selector="#token_toggle_{{token.experiment_id}}">
                     <i class="fa fa-remove"></i>
                     Delete

@@ -52,7 +52,7 @@ class Command(BaseCommand):
             schemas = models.Schema.objects.filter(namespace__in=namespaces)
             if not schemas:
                 raise CommandError('No schemas found')
-            schema_set = set([s.namespace for s in schemas])
+            schema_set = set(s.namespace for s in schemas)
             arg_set = set(args)
             skipped = arg_set - schema_set
             if skipped:
