@@ -1,6 +1,11 @@
 Releases
 ========
 
+4.1.1
+-----
+* Fix Python 3 bug with string encoding in deep download mapper
+  which affected directory names in SFTP interface.
+
 4.1
 ---
 * Added React search components and django-elasticsearch-dsl backend
