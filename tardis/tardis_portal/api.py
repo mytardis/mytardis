@@ -667,7 +667,6 @@ class UserResource(MyTardisModelResource):
         except User.DoesNotExist:
             pass
         bundle = super(UserResource, self).obj_create(bundle, **kwargs)
-        #self._assign_permission_to_user(bundle)
         return bundle
 
 class UserProfileResource(ModelResource):
@@ -728,15 +727,9 @@ class UserAuthenticationResource(ModelResource):
     def obj_create(self,
                    bundle,
                    **kwargs):
-        #username = bundle.data['user_id']
-        #if UserProfile.objects.filter(user_id=username):
-        #    bundle.data['userProfile'] = UserProfile.objects.filter(user_id=username)
-        #    raise CustomBadRequest(code='test', message='Bundle data: {bundledata}'.format(bundledata=bundle.data)) 
+
         bundle.data['authenticationMethod'] = settings.LDAP_METHOD
         bundle = super(UserAuthenticationResource, self).obj_create(bundle, **kwargs)
-            
-        #else:
-        #    raise CustomBadRequest(code='missing user', message='No user by the name: {username} found.'.format(username=user_id))
         return bundle
 
 class ExperimentParameterSetResource(ParameterSetResource):
