@@ -348,7 +348,7 @@ class DatafileParameterViewSet(viewsets.ModelViewSet):
     API endpoint that allows datafile metadata parameters to be viewed or
     listed.
     """
-    queryset = DataFile.objects.order_by('id')
+    queryset = DatafileParameter.objects.order_by('id')
     serializer_class = DatafileParameterSerializer
     permission_classes = (AllowAny,)
     http_method_names = ['get', 'options', 'head']
