@@ -7,5 +7,5 @@ apt-get install git libldap2-dev libmagickwand-dev libsasl2-dev \
   python-dev python-pip python-virtualenv virtualenvwrapper \
   zlib1g-dev libfreetype6-dev libjpeg-dev
 
-curl -sL https://deb.nodesource.com/setup_10.x | sudo -E bash -
+curl -sL https://deb.nodesource.com/setup_12.x | sudo -E bash -
 sudo apt-get install -y nodejs
