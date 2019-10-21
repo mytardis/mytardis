@@ -1,6 +1,12 @@
 Releases
 ========
 
+4.1.2
+-----
+* Allow .jsx files to be included in assets/js/tardis_portal/ and ensure that
+  they won't be linted using the jQuery ESLint configuration
+* Switch back to the official version of the pyoai dependency
+
 4.1.1
 -----
 * Fix Python 3 bug with string encoding in deep download mapper
