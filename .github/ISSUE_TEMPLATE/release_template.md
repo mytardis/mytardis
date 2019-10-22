@@ -1,6 +1,7 @@
-## First working day after 7th
+## Feature freeze day
 
-Stable branch should be created after the 7th. The 7th is the last date to reliably get things in.
+The stable branch should be created immediately after the feature freeze day.
+The feature freeze day is the last date to reliably get things in.
 
 - [ ] Create the `Pick into series-X.Y` label if it doesn't exist: [https://github.com/mytardis/mytardis/labels](https://github.com/mytardis/mytardis/labels)
   - Label name: `Pick into series-X.Y`
@@ -12,11 +13,12 @@ Stable branch should be created after the 7th. The 7th is the last date to relia
     @channel
 
     I am about to create the `series-X.Y` branch. Everything merged into `develop`
-    after this point will go into next month's release. Only regression and security fixes
-    will be cherry-picked into `series-X.Y`.
+    after this point will go into the `series-X.{Y+1}` release. Only regression and
+    security fixes will be cherry-picked into `series-X.Y`.
 
     If your PR is targeting this release and has been approved but hasn't
-    been merged yet, please ping me here. Also, please update your pull requests with the correct milestone (`X.Y` for this release).
+    been merged yet, please ping me here. Also, please update your pull requests with
+    the correct milestone (`X.Y` for this release).
 
     Please submit regression and security fixes as PRs to `develop` and ensure that
     they are labelled with the `Pick into series-X.Y` label.
@@ -33,7 +35,7 @@ Stable branch should be created after the 7th. The 7th is the last date to relia
   - [ ] `tardis/__init__.py`
 
 
-## RC1
+## Release Candidate 1 (RC1)
 
 - Follow the [Creating RC1] guide:
   - [ ] Create an PR on `develop` updating the `docs/admin/install.rst` guide (as needed).
@@ -42,7 +44,7 @@ Stable branch should be created after the 7th. The 7th is the last date to relia
 
 [Creating RC1]: https://github.com/mytardis/release/blob/master/general/release-candidates.md#creating-rc1
 
-## Subsequent RCs
+## Subsequent Release Candidates (RCs)
 
 - Create additional release candidates as needed, using [Creating subsequent RCs] guide.
 
@@ -54,11 +56,11 @@ Keep in mind that:
 
 [Creating subsequent RCs]: https://github.com/mytardis/release/blob/master/general/release-candidates.md#creating-subsequent-rcs
 
-## Final RC
+## Final Release Candidate (RC)
 
-The final RC should be created on the 20th of the month.
+The final RC should be created two days before the release day.
 
-## 22nd: release day
+## Release Day
 
 No new code can added to the release that was not included in the final RC.
 
