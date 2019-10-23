@@ -1,6 +1,11 @@
 Releases
 ========
 
+4.1.3
+-----
+* Update the https-proxy-agent version in package-lock.json to avoid having
+  "npm install" display "found 1 high severity vulnerability".
+
 4.1.2
 -----
 * Allow .jsx files to be included in assets/js/tardis_portal/ and ensure that
