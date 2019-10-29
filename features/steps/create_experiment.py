@@ -6,7 +6,7 @@ from selenium.common.exceptions import NoSuchElementException
 
 from tardis.tardis_portal.models.experiment import Experiment
 
-from wait import wait_ajax_loaded
+from wait import wait_for_jquery
 
 
 @when("they click the Create Experiment button")
@@ -23,6 +23,7 @@ def they_see_exp_form(context):
     """
     :type context: behave.runner.Context
     """
+    wait_for_jquery(context)
     try:
         create_exp_form = \
             context.browser.find_element_by_id("create_experiment_form")
@@ -50,7 +51,7 @@ def a_new_exp_is_created(context):
     """
     :type context: behave.runner.Context
     """
-    wait_ajax_loaded(context)
+    wait_for_jquery(context)
     created_alert = context.browser.find_element_by_css_selector(
         "span[class='message']")
     context.test.assertEqual(
@@ -127,7 +128,7 @@ def they_see_the_change_public_access_form(context):
     """
     :type context: behave.runner.Context
     """
-    wait_ajax_loaded(context)
+    wait_for_jquery(context)
     exp_id = Experiment.objects.get(title="test exp1").id
     form = context.browser.find_element_by_css_selector("form.experiment-rights")
     context.test.assertIn(
