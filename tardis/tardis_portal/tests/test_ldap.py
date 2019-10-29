@@ -78,10 +78,10 @@ class LDAPTest(TestCase):
         from ..auth.ldap_auth import ldap_auth
         l = ldap_auth(force_create=True)
         user = l.getUserById('testuser1')
-        user1 = {'id': b'testuser1',
-                 'email': b't.user@example.com',
-                 'first_name': b'Test',
-                 'last_name': b'User'}
+        user1 = {'id': 'testuser1',
+                 'email': 't.user@example.com',
+                 'first_name': 'Test',
+                 'last_name': 'User'}
         self.assertEqual(user, user1)
 
         user = l.getUserById('nulluser')
@@ -99,10 +99,10 @@ class LDAPTest(TestCase):
                      'password': 'kklk',
                      'authMethod': 'ldap'}
         u = l.authenticate(req)
-        u1 = {'email': b't.user@example.com',
-              'first_name': b'Test',
-              'last_name': b'User',
-              'id': b'testuser1'}
+        u1 = {'email': 't.user@example.com',
+              'first_name': 'Test',
+              'last_name': 'User',
+              'id': 'testuser1'}
         self.assertEqual(u, u1)
 
         # Test authservice API
@@ -142,27 +142,27 @@ class LDAPTest(TestCase):
         req.user = user
 
         # Tests getGroups
-        self.assertEqual(list(l.getGroups(req.user)), [b'full', b'systems'])
+        self.assertEqual(list(l.getGroups(req.user)), ['full', 'systems'])
 
     def test_getgroupbyid(self):
         from ..auth.ldap_auth import ldap_auth
 
         l = ldap_auth(force_create=True)
         self.assertEqual(l.getGroupById('full'),
-                         {'id': b'full', 'display': b'Full Group'})
+                         {'id': 'full', 'display': 'Full Group'})
         self.assertEqual(l.getGroupById('invalid'), None)
 
     def test_getgroupsforentity(self):
         from ..auth.ldap_auth import ldap_auth
         l = ldap_auth(force_create=True)
         self.assertEqual(list(l.getGroupsForEntity('testuser1')),
-                         [{'id': b'full', 'display': b'Full Group'},
-                          {'id': b'systems', 'display': b'Systems Services'}])
+                         [{'id': 'full', 'display': 'Full Group'},
+                          {'id': 'systems', 'display': 'Systems Services'}])
 
     def test_searchgroups(self):
         from ..auth.ldap_auth import ldap_auth
         l = ldap_auth(force_create=True)
         self.assertEqual(list(l.searchGroups(id='fu*')),
-                         [{'id': b'full',
-                           'members': [b'testuser1', b'testuser2', b'testuser3'],
-                           'display': b'Full Group'}])
+                         [{'id': 'full',
+                           'members': ['testuser1', 'testuser2', 'testuser3'],
+                           'display': 'Full Group'}])
