@@ -434,6 +434,7 @@ class ACLAuthorization(Authorization):
 
 class GroupResource(ModelResource):
     class Meta:
+        object_class = Group
         queryset = Group.objects.all()
         authentication = default_authentication
         authorization = ACLAuthorization()
@@ -448,6 +449,7 @@ class UserResource(ModelResource):
                                     null=True, full=True)
 
     class Meta:
+        object_class = User
         authentication = default_authentication
         authorization = ACLAuthorization()
         queryset = User.objects.all()
@@ -521,6 +523,7 @@ class FacilityResource(MyTardisModelResource):
                                       null=True, full=True)
 
     class Meta(MyTardisModelResource.Meta):
+        object_class = Facility
         queryset = Facility.objects.all()
         filtering = {
             'id': ('exact', ),
@@ -539,6 +542,7 @@ class InstrumentResource(MyTardisModelResource):
                                  null=True, full=True)
 
     class Meta(MyTardisModelResource.Meta):
+        object_class = Instrument
         queryset = Instrument.objects.all()
         filtering = {
             'id': ('exact', ),
@@ -567,6 +571,7 @@ class ExperimentResource(MyTardisModelResource):
         full=True, null=True)
 
     class Meta(MyTardisModelResource.Meta):
+        object_class = Experiment
         queryset = Experiment.objects.all()
         filtering = {
             'id': ('exact', ),
@@ -639,6 +644,7 @@ class ExperimentAuthorResource(MyTardisModelResource):
         ExperimentResource, 'experiment', full=True, null=True)
 
     class Meta(MyTardisModelResource.Meta):
+        object_class = ExperimentAuthor
         queryset = ExperimentAuthor.objects.all()
         filtering = {
             'id': ('exact', ),
@@ -673,6 +679,7 @@ class DatasetResource(MyTardisModelResource):
         full=True)
 
     class Meta(MyTardisModelResource.Meta):
+        object_class = Dataset
         queryset = Dataset.objects.all()
         filtering = {
             'id': ('exact', ),
@@ -744,6 +751,7 @@ class DataFileResource(MyTardisModelResource):
     temp_url = None
 
     class Meta(MyTardisModelResource.Meta):
+        object_class = DataFile
         queryset = DataFile.objects.all()
         filtering = {
             'directory': ('exact', 'startswith'),
@@ -933,6 +941,7 @@ class DataFileResource(MyTardisModelResource):
 class SchemaResource(MyTardisModelResource):
 
     class Meta(MyTardisModelResource.Meta):
+        object_class = Schema
         queryset = Schema.objects.all()
         filtering = {
             'id': ('exact', ),
@@ -947,6 +956,7 @@ class ParameterNameResource(MyTardisModelResource):
     schema = fields.ForeignKey(SchemaResource, 'schema')
 
     class Meta(MyTardisModelResource.Meta):
+        object_class = ParameterName
         queryset = ParameterName.objects.all()
         filtering = {
             'schema': ALL_WITH_RELATIONS,
@@ -1002,6 +1012,7 @@ class DatafileParameterSetResource(ParameterSetResource):
         related_name='parameterset', full=True, null=True)
 
     class Meta(ParameterSetResource.Meta):
+        object_class = DatafileParameterSet
         queryset = DatafileParameterSet.objects.all()
 
 
@@ -1010,6 +1021,7 @@ class DatafileParameterResource(ParameterResource):
                                      'parameterset')
 
     class Meta(ParameterResource.Meta):
+        object_class = DatafileParameter
         queryset = DatafileParameter.objects.all()
 
 
@@ -1022,6 +1034,7 @@ class ReplicaResource(MyTardisModelResource):
     datafile = fields.ForeignKey(DataFileResource, 'datafile')
 
     class Meta(MyTardisModelResource.Meta):
+        object_class = DataFileObject
         queryset = DataFileObject.objects.all()
         filtering = {
             'verified': ('exact',),
@@ -1070,6 +1083,7 @@ class ObjectACLResource(MyTardisModelResource):
     }, 'content_object')
 
     class Meta:
+        object_class = ObjectACL
         authentication = default_authentication
         authorization = ACLAuthorization()
         queryset = ObjectACL.objects.all()
@@ -1101,6 +1115,7 @@ class ExperimentParameterSetResource(ParameterSetResource):
         related_name='parameterset', full=True, null=True)
 
     class Meta(ParameterSetResource.Meta):
+        object_class = ExperimentParameterSet
         queryset = ExperimentParameterSet.objects.all()
 
 
@@ -1109,6 +1124,7 @@ class ExperimentParameterResource(ParameterResource):
                                      'parameterset')
 
     class Meta(ParameterResource.Meta):
+        object_class = ExperimentParameter
         queryset = ExperimentParameter.objects.all()
 
 
@@ -1120,6 +1136,7 @@ class DatasetParameterSetResource(ParameterSetResource):
         related_name='parameterset', full=True, null=True)
 
     class Meta(ParameterSetResource.Meta):
+        object_class = DatasetParameterSet
         queryset = DatasetParameterSet.objects.all()
 
 
@@ -1128,6 +1145,7 @@ class DatasetParameterResource(ParameterResource):
                                      'parameterset')
 
     class Meta(ParameterResource.Meta):
+        object_class = DatasetParameter
         queryset = DatasetParameter.objects.all()
 
 
@@ -1146,6 +1164,7 @@ class StorageBoxResource(MyTardisModelResource):
         full=True, null=True)
 
     class Meta(MyTardisModelResource.Meta):
+        object_class = StorageBox
         queryset = StorageBox.objects.all()
         ordering = [
             'id'
@@ -1161,6 +1180,7 @@ class StorageBoxOptionResource(MyTardisModelResource):
         full=False)
 
     class Meta(MyTardisModelResource.Meta):
+        object_class = StorageBoxOption
         queryset = StorageBoxOption.objects.all()
         ordering = [
             'id'
@@ -1175,6 +1195,7 @@ class StorageBoxAttributeResource(MyTardisModelResource):
         full=False)
 
     class Meta(MyTardisModelResource.Meta):
+        object_class = StorageBoxAttribute
         queryset = StorageBoxAttribute.objects.all()
         ordering = [
             'id'
