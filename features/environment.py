@@ -1,7 +1,7 @@
 """
 Setting up BDD with Selenium and Behave
 """
-
+from django.conf import settings
 from django.core import management
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
@@ -25,6 +25,8 @@ def before_all(context):
     context.browser.set_page_load_timeout(10)
     context.browser.implicitly_wait(10)
     context.browser.maximize_window()
+
+    settings.SESSION_ENGINE = "django.contrib.sessions.backends.signed_cookies"
 
 
 def before_scenario(context, scenario):
