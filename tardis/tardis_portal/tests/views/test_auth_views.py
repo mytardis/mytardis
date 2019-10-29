@@ -43,7 +43,7 @@ class UserGroupListsTestCase(TestCase):
                                   password=self.accounts[0][1])
         self.assertTrue(login)
 
-        self.groups = [b'group1', b'group2', b'group3', b'group4']
+        self.groups = ['group1', 'group2', 'group3', 'group4']
         for groupname in self.groups:
             group = Group(name=groupname)
             group.save()
@@ -104,7 +104,7 @@ class UserGroupListsTestCase(TestCase):
 
         response = self.client.get('/ajax/group_list/')
         self.assertEqual(response.status_code, 200)
-        ret_names = response.content.split(b' ~ ')
+        ret_names = response.content.decode().split(' ~ ')
         self.assertTrue(len(ret_names) == Group.objects.count())
 
         for (group_name, ret_name) in zip(self.groups, ret_names):
