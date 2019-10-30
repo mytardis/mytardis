@@ -26,7 +26,7 @@ def verify_dfos(**kwargs):
         if verify_ms:
             try:
                 tardis_app.send_task(
-                    'mytardis.verify_dfo',
+                    'verify_dfo',
                     args=[
                         dfo.id,
                         dfo.get_full_path(),

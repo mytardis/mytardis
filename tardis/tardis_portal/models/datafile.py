@@ -523,7 +523,7 @@ class DataFileObject(models.Model):
             try:
                 if verify_ms:
                     tardis_app.send_task(
-                        'mytardis.verify_dfo',
+                        'verify_dfo',
                         args = [
                             self.id,
                             self.get_full_path(),
@@ -663,7 +663,7 @@ class DataFileObject(models.Model):
                 try:
                     if verify_ms:
                         tardis_app.send_task(
-                            'mytardis.verify_dfo',
+                            'verify_dfo',
                             args = [
                                 existing[0].id,
                                 existing[0].get_full_path(),
@@ -697,7 +697,7 @@ class DataFileObject(models.Model):
             try:
                 if verify_ms:
                     tardis_app.send_task(
-                        'mytardis.verify_dfo',
+                        'verify_dfo',
                         args = [
                             copy.id,
                             copy.get_full_path(),
