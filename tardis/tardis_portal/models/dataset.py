@@ -85,11 +85,11 @@ class Dataset(models.Model):
         from .datafile import DataFile
         return DataFile.objects.filter(dataset=self)
 
-    @models.permalink
     def get_absolute_url(self):
         """Return the absolute url to the current ``Dataset``"""
-        return ('tardis_portal.view_dataset', (),
-                {'dataset_id': self.id})
+        return reverse(
+            'tardis_portal.view_dataset',
+            kwargs={'dataset_id': self.id})
 
     def get_download_urls(self):
         view = 'tardis.tardis_portal.download.streaming_download_' \
@@ -104,12 +104,13 @@ class Dataset(models.Model):
 
         return urls
 
-    @models.permalink
     def get_edit_url(self):
         """Return the absolute url to the edit view of the current
         ``Dataset``
         """
-        return ('tardis.tardis_portal.views.edit_dataset', (self.id,))
+        return reverse(
+            'tardis.tardis_portal.views.edit_dataset',
+            args=[self.id])
 
     def get_images(self):
         from .datafile import DataFile, IMAGE_FILTER
