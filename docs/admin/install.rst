@@ -535,7 +535,7 @@ need the following in your ``settings.py``::
   SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 For more information, including warnings on the risks of misconfiguring this setting,
-see: https://docs.djangoproject.com/en/1.11/ref/settings/#secure-proxy-ssl-header
+see: https://docs.djangoproject.com/en/2.2/ref/settings/#secure-proxy-ssl-header
 
 Don't forget to create the static files directory and give it appropriate
 permissions. The location is set in the ``settings.py`` file.
