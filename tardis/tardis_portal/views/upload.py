@@ -5,7 +5,7 @@ views for uploading files via HTTP
 import logging
 
 from django.http import HttpResponse
-from django.shortcuts import render_to_response
+from django.shortcuts import render
 
 from ..auth import decorators as authz
 from ..models import Dataset, DataFile
@@ -32,7 +32,7 @@ def upload_complete(request,
         'speed': request.POST['speed'],
         'errorCount': request.POST['errorCount'],
         }
-    return render_to_response(template_name, c)
+    return render(request, template_name, c)
 
 
 @authz.upload_auth
