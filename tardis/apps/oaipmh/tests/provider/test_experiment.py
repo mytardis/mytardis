@@ -99,7 +99,7 @@ class AbstractExperimentProviderTC():
             e = self._experiment if header.identifier() == _get_first_exp_id() \
                 else self._experiment2
             self.assertIn(str(e.id), header.identifier())
-            self.assertEquals(
+            self.assertEqual(
                 header.datestamp().replace(tzinfo=pytz.utc),
                 get_local_time(e.update_time))
         # Remove public flag on first experiment
