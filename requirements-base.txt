@@ -1,4 +1,4 @@
-Django==2.0.13 # pyup: >=2.0,<2.1
+Django==2.1.13 # pyup: >=2.1,<2.2
 Wand==0.5.7
 amqp==2.5.2
 bleach==3.1.0
@@ -10,7 +10,7 @@ django-elasticsearch-dsl==6.4.2
 git+https://github.com/mytardis/django-form-utils.git@django-1.11-upgrade#egg=django-form-utils
 django-jstemplate==1.3.8
 django-registration-redux==2.6
-django-tastypie==0.14.1
+django-tastypie==0.14.2
 git+https://github.com/mytardis/django-tastypie-swagger.git@mytardis-dj2.0#egg=django-tastypie-swagger
 django-user-agents==0.4.0
 django-webpack-loader==0.6.0
