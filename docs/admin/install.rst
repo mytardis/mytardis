@@ -23,15 +23,6 @@ It will install required packages with these commands:
 .. literalinclude:: ../../install-ubuntu-py3-requirements.sh
    :language: bash
 
-Or run this script for Python 2.7::
-
-   sudo bash install-ubuntu-py2-requirements.sh
-
-It will install required packages with these commands:
-
-.. literalinclude:: ../../install-ubuntu-py2-requirements.sh
-   :language: bash
-
 
 Download
 --------
@@ -52,10 +43,7 @@ Or, to get the current development branch::
 Quick configuration
 -------------------
 
-It is recommended that you use a virtualenv. The list of packages above
-for Python 2.7 includes the ``virtualenvwrapper`` toolkit.
-
-If using Python 3, you can, install ``virtualenvwrapper``  with
+If you want to use ``virtualenvwrapper``, you can install it with
 ``sudo pip3 install virtualenvwrapper`` and set the
 ``export VIRTUALENV_PYTHON=/usr/bin/python3`` in your ``~/.bashrc`` or
 ``~/.profile`` to ensure that ``mkvirtualenv`` will make a Python 3
@@ -67,14 +55,6 @@ To activate ``virtualenvwrapper``:
 For Ubuntu 18.04 with Python 3 (using pip3 installed virtualenvwrapper)::
 
   source /usr/local/bin/virtualenvwrapper.sh
-
-For Ubuntu 18.04 with Python 2.7 (using apt-get installed virtualenvwrapper)::
-
-  source /etc/bash_completion.d/virtualenvwrapper
-
-For Ubuntu 16.04 with Python 2.7 (using apt-get installed virtualenvwrapper)::
-
-  source /usr/share/virtualenvwrapper/virtualenvwrapper.sh
 
 Then create the ``mytardis`` virtual environment ::
 
