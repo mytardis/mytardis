@@ -3,12 +3,13 @@
 {% load experimentstats %}
 {% load humanize %}
 {% load bleach_tag %}
+{% load render_bundle from webpack_loader %}
 
 {% block content %}
 
-<div id="content">
+<div id="content" class="container-fluid">
   <div class="row">
-    <div class="col-md-9">
+    <div class="col-md-12">
       <h2 class="visible-xs">Experiments</h2>
       <div class="pull-left">
           <h2 class="hidden-xm" style="text-align: center">Experiments</h2>
@@ -16,7 +17,7 @@
     </div>
   </div>
   <div class="row">
-    <div class="col-md-9">
+    <div class="col-md-12">
       {% if not public_experiments %}
       <p class="alert alert-info">
         No experiments have been published yet.
@@ -94,15 +95,5 @@
   </div>
 
 </div>
-<script type="text/javascript">
-$(function() {
-    $("#experiments .accordion-body").collapse({parent:"#experiments", toggle: true});
-    $(".explink").on("click", function(e) {
-        e.stopPropagation();
-    });
-    $(".dllink").on("click", function(e) {
-        e.stopPropagation();
-    });
-});
-</script>
+{% render_bundle 'tardis_portal_public_data' %}
 {% endblock %}

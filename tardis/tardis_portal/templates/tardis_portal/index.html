@@ -9,7 +9,7 @@
 {% endblock script %}
 
 {% block content %}
-<div id="content">
+<div id="content" class="container-fluid">
   <div class="page-header">
     <h1>{{site_title|default:'MyTardis'}} Data Store</h1>
   </div>
@@ -26,7 +26,7 @@
     </p>
   {% endif %}
   <div class="row">
-    <div class="col-md-9">
+    <div class="col-md-12">
       {% if is_authenticated %}
         <h3>Your most recent experiments <small><strong>(<a href="{% url 'tardis.tardis_portal.views.my_data' %}">view all</a>)</strong></small></h3>
         <div id="private-experiments" class="panel-group experiments">
@@ -87,7 +87,7 @@
         <p>There is no public data available on this server.</p>
       {% endfor %}
       </div> {% comment %}id="public-experiments" class="panel-group experiments"{% endcomment %}
-    </div> {% comment %}class="col-md-9"{% endcomment %}
+    </div> {% comment %}class="col-md-12"{% endcomment %}
   </div> {% comment %}class="row"{% endcomment %}
 </div> {% comment %}id="content"{% endcomment %}
 <input type="hidden" id="exps-expand-accordion" value="{{ exps_expand_accordion }}">

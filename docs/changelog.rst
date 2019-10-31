@@ -1,6 +1,22 @@
 Releases
 ========
 
+4.1.3
+-----
+* Update the https-proxy-agent version in package-lock.json to avoid having
+  "npm install" display "found 1 high severity vulnerability".
+
+4.1.2
+-----
+* Allow .jsx files to be included in assets/js/tardis_portal/ and ensure that
+  they won't be linted using the jQuery ESLint configuration
+* Switch back to the official version of the pyoai dependency
+
+4.1.1
+-----
+* Fix Python 3 bug with string encoding in deep download mapper
+  which affected directory names in SFTP interface.
+
 4.1
 ---
 * Added React search components and django-elasticsearch-dsl backend
@@ -43,6 +59,32 @@ Releases
   - Fixed truncated TAR download issue with unverified files
   - Fixed sharing with AAF/Google issue
   - Fixed some broken Font Awesome icons
+
+4.0.2
+-----
+* Upgraded Django to 1.11.23
+* Upgraded vulnerable dependencies of JS dev dependencies
+* Fixed #1844 (remove a hard-coded LDAP attribute)
+
+4.0.1
+-----
+* Removed anzsrc_codes tardis app which contained a potentially insecure dependency (rdflib)
+* Added created_time and modified_time fiels in the Instrument and Facility models
+* Updated Python and Javascript dependencies which had vulnerabilities reported since the v4.0 release.
+* Fixed token authentication (#1531, 615d9df)
+* Fixed some Font Awesome icons (1ac549d)
+* Fixed an incomplete database migration for the Dataset created_time field. This fix is included in the tardis/tardis_portal/migrations/0016_add_timestamps.py migration which also adds the created_time and modified_time fields to the Instrument and Facility models (ec238b4)
+* Removed hard-coded LDAP attributes (#1664, 96a0fbf)
+* Fixed issue with get_accessible_datafiles_for_user potentially returning an empty list instead of an empty QuerySet (a13cefc)
+* Fixed issue with Add/Save Experiment Metadata - added a form attribute to the Save button. (fd2393a)
+* In S3 storage documentation, removed reference to old fork of django-storages. (f0c62d5)
+* Fixed issue where MyTardis could try to verify SHA512 sums even when COMPUTE_SHA512 was set to False (#1419, 1da1b3b)
+* In S3 storage documentation, removed reference to old fork of django-storages. (f0c62d5)
+* Fixed issue where MyTardis could try to verify SHA512 sums even when COMPUTE_SHA512 was set to False (#1419, 1da1b3b)
+* Fixed issue where downloading a TAR of a dataset including unverified files could result in a "Truncated tar archive" error (#1425, b4fa17c)
+* Fixed issue where MyTardis tried to retrieve thumbnail images for non-image files, resulting in 404 errors (e261065)
+* Fixed issue where failing to set ADMINS in tardis/settings.py could cause MyTardis to attempt to send emails to bob@bobmail.com (#1613, f8ed6dd)
+* Fixed issue where Facility Overview's "Load more" button was enabled while content was still loading. (a28a253)
 
 4.0
 ---

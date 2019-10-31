@@ -7,5 +7,5 @@ require("./components/Search.css");
 
 ReactDOM.render(
   <Search />,
-  document.getElementById("app"),
+  document.getElementById("search-app"),
 );

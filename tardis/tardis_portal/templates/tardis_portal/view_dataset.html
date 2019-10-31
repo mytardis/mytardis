@@ -179,7 +179,7 @@
 </div>
 
 <div class="row" >
-  <div class="col-md-7">
+  <div class="col-md-6">
     {% block dataset_content_preview %}
     {% if dataset.get_images.exists %}
     <div style="margin-bottom: 20px">
@@ -224,12 +224,12 @@
     <div id="metadata-pane-datafile">
        <h3>Datafile Information</h3>
        <div id="datafile-info">
-	 <div class="info-box">
-	   <em>Click the
-	   <i class="fa fa-list"></i>
-	   button next to any file to view details and actions.
-	   </em>
-	 </div>
+         <div class="info-box">
+           <em>Click the
+             <i class="fa fa-list"></i>
+             button next to any file to view details and actions.
+           </em>
+         </div>
        </div>
        {# include "tardis_portal/ajax/datafile_details.html" #}
     </div>  <!-- id="metadata-pane-datafile" -->
@@ -262,9 +262,9 @@
         {% endif %}
       </div>  <!-- class="info-box" -->
     </div>  <!-- "other-experiments-pane" -->
-  </div>  <!-- class="col-md-8" -->
+  </div>  <!-- class="col-md-6" -->
 
-  <div class="col-md-5"> {# side bar #}
+  <div class="col-md-6"> {# datafiles pane #}
   <div class="row">
     <div class="col-md-8">
       <h3 id="total-count" style="display: inline">

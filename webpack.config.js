@@ -14,6 +14,8 @@ module.exports = {
     entry: {
         main: "./assets/js/index.js",
         tardis_portal: glob.sync("./assets/js/tardis_portal/*.js"),
+        tardis_portal_add_or_edit_dataset: glob.sync("./assets/js/tardis_portal/add_or_edit_dataset/*.js"),
+        tardis_portal_create_experiment: glob.sync("./assets/js/tardis_portal/create_experiment/*.js"),
         tardis_portal_view_experiment_init: glob.sync("./assets/js/tardis_portal/view_experiment/init/init.js"),
         tardis_portal_view_experiment_share: glob.sync("./assets/js/tardis_portal/view_experiment/share/share.js"),
         tardis_portal_view_experiment: glob.sync("./assets/js/tardis_portal/view_experiment/*.js"),
@@ -22,9 +24,13 @@ module.exports = {
         tardis_portal_index: glob.sync("./assets/js/tardis_portal/index/**/*.js"),
         tardis_portal_my_data: glob.sync("./assets/js/tardis_portal/my_data/**/*.js"),
         tardis_portal_shared: glob.sync("./assets/js/tardis_portal/shared/**/*.js"),
+        tardis_portal_public_data: glob.sync("./assets/js/tardis_portal/public_data/**/*.js"),
         tardis_portal_facility_view: "./assets/js/tardis_portal/facility_view/index.js",
+        tardis_portal_auth_methods: "./assets/js/tardis_portal/auth_methods/auth_methods.js",
+        related_info_index: "./assets/js/apps/related_info/index.js",
+        related_info_index_ro: "./assets/js/apps/related_info/index_ro.js",
         lib: glob.sync("./assets/js/lib/**/*.js"),
-        app : "./assets/js/app/search/index.jsx",
+        search_app : "./assets/js/apps/search/index.jsx",
     },
     output: {
         path: path.resolve("./assets/bundles/"),
@@ -131,7 +137,6 @@ module.exports = {
         alias: {
             "jquery": __dirname + "/node_modules/jquery",
             "main": __dirname + "/assets/js/tardis_portal/main",
-            "async": __dirname + "/assets/js/lib/async.min",
             "backbonemodels": __dirname + "/assets/js/tardis_portal/backbone-models",
         },
     }

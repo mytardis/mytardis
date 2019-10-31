@@ -35,8 +35,8 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'MyTardis'
-copyright = u'2019, MyTardis Development Team'
+project = 'MyTardis'
+copyright = '2019, MyTardis Development Team'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -91,7 +91,8 @@ html_theme = "sphinx_rtd_theme"
 # API doc generation
 # ------------------
 
-execfile("generate-api-docs.py")
+with open("generate-api-docs.py", 'r') as generate_api_docs:
+    exec(generate_api_docs.read())
 
 
 # If not '', a 'Last updated on:' timestamp is inserted at every page bottom,
@@ -145,8 +146,8 @@ latex_paper_size = 'a4'
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, document class [howto/manual]).
 latex_documents = [
-  ('index', 'tardis.tex', ur'MyTardis Documentation',
-   ur'', 'manual'),
+  ('index', 'tardis.tex', 'MyTardis Documentation',
+   '', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of

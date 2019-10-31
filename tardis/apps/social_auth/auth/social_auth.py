@@ -11,6 +11,7 @@ from django.urls import reverse
 from celery.task import task
 
 from tardis.tardis_portal.models import UserAuthentication
+from tardis.tardis_portal.auth.utils import configure_user
 
 from tardis.apps.openid_migration.models import OpenidUserMigration
 from tardis.apps.social_auth import default_settings as social_auth_default_settings
@@ -18,6 +19,18 @@ from tardis.apps.openid_migration import default_settings as openid_migration_de
 from tardis import default_settings
 
 logger = logging.getLogger(__name__)
+
+
+def configure_social_auth_user(**kwargs):
+    """Applies configuration used for external (non-Django) accounts.
+
+    Adds user to settings.NEW_USER_INITIAL_GROUPS and sets isDjangoAccount
+    to False in their UserProfile, so that MyTardis won't allow them to
+    change their password.
+    """
+    user = kwargs.get('user')
+    configure_user(user)
+    return kwargs
 
 
 def add_authentication_method(**kwargs):

@@ -23,7 +23,11 @@ class MockRifCsProvider(RifCsProvider):
         return LICENSE_URL_VALUE
 
     def get_template(self, experiment):
-        return "tardis/tardis_portal/tests/rifcs/default.xml"
+        '''
+        tardis.test_settings adds this to the template dirs:
+        tardis/tardis_portal/tests/rifcs/
+        '''
+        return "default.xml"
 
     def get_rifcs_context(self, experiment):
         c = dict()

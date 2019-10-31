@@ -47,7 +47,7 @@ Developing for MyTardis
 -----------------------
 MyTardis is mostly written in the `Python programming language <https://www.python.org/>`_ and is built on top of the `Django web framework <https://www.djangoproject.com/>`_. A complete installation of the service also includes an `Elasticsearch <https://www.elastic.co/>`_ index, a `RabbitMQ <https://www.rabbitmq.com/>`_-based task queue, an `Nginx <http://nginx.org/>`_ server, and a `PostgreSQL <http://www.postgresql.org/>`_ database.
 
-To set up and manage these services we employ the `SaltStack <https://saltstack.com/>`_ orchestration software and cloud technologies.
+To set up and manage these services we employ the `Kubernetes <https://kubernetes.io/>`_ orchestration software and cloud technologies.
 
 `Read more... <http://www.mytardis.org/for-developers/>`_
 
@@ -105,17 +105,17 @@ The default branch on GitHub is ``develop``. This is the cutting edge
 development version. Please DO NOT use this in production, as it may have bugs
 that eat your data.
 
-The ``master`` branch is the current stable release with all the latest bugfixes
+The ``master`` branch is the current stable release with all the latest bug fixes
 included. It will move to newer versions automatically. Follow this branch
 if you want to stay up to date in a production environment.
 
 Each version has its own branch named by version number. At the time of
-writing, the latest release is ``4.0.2``, tagged from the ``series-4.0``
+writing, the latest release is ``4.1.3``, tagged from the ``series-4.1``
 branch. Follow this branch for your production installation and
 perform version upgrades manually.
 
-Each bugfix or set of fixes bumps the minor version and each new release is
-tagged, eg. ``4.0.3``. Use tagged releases if you are paranoid about changes to
+Each bug fix or set of fixes bumps the minor version and each new release is
+tagged, eg. ``4.1.4``. Use tagged releases if you are paranoid about changes to
 the code you have not tested yourself.
 
 To follow development, please see the contributing section below.

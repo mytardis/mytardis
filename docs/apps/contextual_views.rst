@@ -158,6 +158,9 @@ class-based view (or view function) to a Django
 `Site <https://docs.djangoproject.com/en/1.11/ref/contrib/sites/>`_. A ``Site`` is
 specified by SITE_ID (an integer) or the domain name of the incoming request.
 
+For an example MyTardis app which provides a login view, see
+https://github.com/mytardis/mytardis-aaf-google-login
+
 Good practice for app developers
 ================================
 

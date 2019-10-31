@@ -23,53 +23,56 @@ QUnit.module("tardis_portal.ajax.share", {
 
 QUnit.test("Test clicking on Public Access button", function(assert) {
 
-    $("#qunit-fixture").append(
-        "<input type=\"hidden\" id=\"experiment-id\" value=\"1\">\n" +
-        "<a class=\"public_access_link btn btn-mini\"" +
-        " title=\"Change\">\n" +
-        "  <i class=\"fa fa-cog\"></i>\n" +
-        "  Change Public Access\n" +
-        "</a>\n" +
-        "\n" +
-        "<!-- public access modal !-->\n" +
-        "<div class=\"modal hide fade\" id=\"modal-public-access\">\n" +
-        "  <!-- ... -->\n" +
-        "  <div class=\"modal-body\"></div>\n" +
-        "</div>\n" +
+    $("#qunit-fixture").append(`
+        <input type="hidden" id="experiment-id" value="1">
+        <a class="public_access_link btn btn-mini"
+           title="Change">
+          <i class="fa fa-cog"></i>
+          Change Public Access
+        </a>
+
+        <!-- public access modal !-->
+        <div class="modal hide fade" id="modal-public-access">
+          <!-- ... -->
+          <div class="modal-body"></div>
+        </div>
    
-        "<div class=\"modal hide fade\" id=\"modal-metadata\">\n" +
-        "  <div class=\"modal-header\">\n" +
-        "    <a class=\"close\" data-dismiss=\"modal\">&times;</a>\n" +
-        "    <h1 class=\"title\">Add Parameters</h1>\n" +
-        "  </div>\n" +
+        <div class="modal hide fade" id="modal-metadata">
+          <div class="modal-header">
+            <a class="close" data-dismiss="modal">&times;</a>
+            <h1 class="title">Add Parameters</h1>
+          </div>
 
-        "  <div class=\"loading-placeholder\" style=\"display: none\">\n" +
-        "    <p>Please wait... <img src=\"/static/images/ajax-loader.gif\" alt=\"loading\" /></p>\n" +
-        "  </div>\n" +
+          <div class="loading-placeholder" style="display: none">
+            <p>Please wait... <img src="/static/images/ajax-loader.gif" alt="loading" /></p>
+          </div>
 
-        "  <div class=\"modal-body\"></div>\n" +
+          <div class="modal-body"></div>
 
-        "  <div class=\"modal-footer\">\n" +
-        "    <button class=\"submit-button btn btn-success\">\n" +
-        "      <i class=\"fa fa-ok\"></i>\n" +
-        "      Save\n" +
-        "    </button>\n" +
-        "  </div>\n" +
-        "</div> \n"
-    );
+          <div class="modal-footer">
+            <button class="submit-button btn btn-success">
+              <i class="fa fa-ok"></i>
+              Save
+            </button>
+          </div>
+        </div>`);
 
-    var publicAccessPanelHtml =
-        "<!-- Success / Error Message -->\n" + 
-        "<div id=\"choose-rights-message\"></div>\n" + 
-        "<!-- Selection form -->\n" + 
-        "<h3>Step 1: Change Public Access:</h3>\n" + 
-        "<br/>\n" + 
-        "<form action=\"/ajax/experiment/1/rights\"\n" + 
-        "      method=\"post\" class=\"experiment-rights form-horizontal\">\n" +
-        "  <!-- ... -->\n" +
-        "  <h3>Step 2: Select a license:</h3>\n" +
-        "  <!-- ... -->\n" +
-        "</form>\n";
+    var publicAccessPanelHtml = `
+        <!-- Success / Error Message -->
+        <div id="choose-rights-message"></div>
+        <!-- Selection form -->
+        <h3>Step 1: Change Public Access:</h3>
+        <br/>
+        <form action="/ajax/experiment/1/rights"
+              method="post" class="experiment-rights form-horizontal">
+          <!-- ... -->
+          <h3>Step 2: Select a license:</h3>
+          <!-- ... -->
+          <h3 >Step 3: Accept The Legal Agreement:</h3>
+          <!-- ... -->
+          <input id="publishing-consent" type="checkbox" value="Agree" />
+          <!-- ... -->
+        </form>`;
 
     $.mockjax({
         url: "/ajax/experiment/1/rights",
@@ -87,14 +90,14 @@ QUnit.test("Test clicking on Public Access button", function(assert) {
     $.mockjax({
         url: "/ajax/license/list?public_access=1",
         contentType: "text/json",
-        responseText: "[{" +
-            "\"name\": \"Unspecified License\", " +
-            "\"url\": \"http://en.wikipedia.org/wiki/Copyright#Exclusive_rights\", " +
-            "\"is_active\": true, " +
-            "\"allows_distribution\": false, " +
-            "\"internal_description\": \"\n No license is explicitly specified. You implicitly retain all rights\n under copyright.\n \", " +
-            "\"image_url\": \"\", \"id\": \"\"" +
-            "}]"
+        responseText: `[{
+            "name": "Unspecified License",
+            "url": "http://en.wikipedia.org/wiki/Copyright#Exclusive_rights",
+            "is_active": true,
+            "allows_distribution": false,
+            "internal_description": "\n No license is explicitly specified. You implicitly retain all rights\n under copyright.\n ",
+            "image_url": "", "id": ""
+        }]`
     });
 
     $.mockjax({
@@ -127,34 +130,34 @@ QUnit.test("Test clicking on Public Access button", function(assert) {
 
 QUnit.test("Test clicking on Change User Sharing button", function(assert) {
 
-    $("#qunit-fixture").append(
-        "<input type=\"hidden\" id=\"experiment-id\" value=\"1\">\n" +
-        "\n" +
-        "<a class=\"share_link btn btn-mini\"" +
-        "   title=\"Change\">\n" +
-        "  <i class=\"fa fa-share\"></i>\n" +
-        "  Change User Sharing\n" +
-        "</a>\n" +
-        "\n" +
-        "<!-- sharing user modal !-->\n" +
-        "<div class=\"modal hide fade\" id=\"modal-share\">\n" +
-        "  <!-- ... -->\n" +
-        "  <div class=\"modal-body\"></div>\n" +
-        "</div>");
+    $("#qunit-fixture").append(`
+        <input type="hidden" id="experiment-id" value="1">
 
-    var userAccessPanelHtml = 
-        "<div class=\"access_list1\">\n" +
-        "  <div class=\"users\">\n" +
-        "    <h3>Current User Permissions</h3>\n" +
-        "    <!-- ... -->\n" +
-        "  </div> <!-- users -->\n" +
-        "  <h3>Add new user</h3>\n" +
-        "  <!-- ... -->\n" +
-        "  Username:\n" +
-        "  <!-- ... -->\n" +
-        "  Permissions: \n" +
-        "  <!-- ... -->\n" +
-        "</div>";
+        <a class="share_link btn btn-mini"
+           title="Change">
+          <i class="fa fa-share"></i>
+          Change User Sharing
+        </a>
+
+        <!-- sharing user modal !-->
+        <div class="modal hide fade" id="modal-share">
+          <!-- ... -->
+          <div class="modal-body"></div>
+        </div>`);
+
+    var userAccessPanelHtml = `
+        <div class="access_list1">
+          <div class="users">
+            <h3>Current User Permissions</h3>
+            <!-- ... -->
+          </div> <!-- users -->
+          <h3>Add new user</h3>
+          <!-- ... -->
+          Username:
+          <!-- ... -->
+          Permissions:
+          <!-- ... -->
+        </div>`;
 
     $.mockjax({
         url: "/experiment/control_panel/1/access_list/user/",
@@ -165,13 +168,13 @@ QUnit.test("Test clicking on Change User Sharing button", function(assert) {
     $.mockjax({
         url: "/ajax/user_list/",
         contentType: "test/json",
-        responseText: "[{" +
-            "\"username\": \"testuser1\", " +
-            "\"first_name\": \"Test\", " +
-            "\"last_name\": \"User1\", " +
-            "\"email\": \"testuser1@example.com\", " +
-            "\"auth_methods\": [\"testuser1:localdb:Local DB\"]" +
-            "}]"
+        responseText: `[{
+            "username": "testuser1",
+            "first_name": "Test",
+            "last_name": "User1",
+            "email": "testuser1@example.com",
+            "auth_methods": ["testuser1:localdb:Local DB"]
+        }]`
     });
 
     // addUserSharingEventHandlers needs to be run after the QUnit fixtures
@@ -190,30 +193,30 @@ QUnit.test("Test clicking on Change User Sharing button", function(assert) {
 
 QUnit.test("Test clicking on Change Group Sharing button", function(assert) {
 
-    $("#qunit-fixture").append(
-        "<input type=\"hidden\" id=\"experiment-id\" value=\"1\">\n");
+    $("#qunit-fixture").append(`
+        <input type="hidden" id="experiment-id" value="1">`);
 
-    $("#qunit-fixture").append(
-        "<a class=\"share_link_group btn btn-mini\" title=\"Change\">\n" +
-        "  <i class=\"fa fa-share\"></i>\n" +
-        "  Change Group Sharing\n" +
-        "</a>\n");
+    $("#qunit-fixture").append(`
+        <a class="share_link_group btn btn-mini" title="Change">
+          <i class="fa fa-share"></i>
+          Change Group Sharing
+        </a>`);
 
-    $("#qunit-fixture").append(
-        "<!-- sharing group modal !-->\n" +
-        "<div class=\"modal hide fade\" id=\"modal-share-group\">\n" +
-        "  <!-- ... -->\n" +
-        "  <div class=\"modal-body\"></div>\n" +
-        "</div>\n");
+    $("#qunit-fixture").append(`
+        <!-- sharing group modal !-->
+        <div class="modal hide fade" id="modal-share-group">
+          <!-- ... -->
+          <div class="modal-body"></div>
+        </div>`);
 
-    var groupAccessPanelHtml =
-        "<div class=\"access_list2\">\n" +
-        "  <div class=\"groups\">\n" +
-        "    <!-- ... -->\n" +
-        "  </div> <!-- groups -->\n" +
-        "  <strong><label>Add group to experiment: </label></strong>\n" +
-        "  <!-- ... -->\n" +
-        "</div>";
+    var groupAccessPanelHtml = `
+        <div class="access_list2">
+          <div class="groups">
+            <!-- ... -->
+          </div> <!-- groups -->
+          <strong><label>Add group to experiment: </label></strong>
+          <!-- ... -->
+        </div>`;
 
     $.mockjax({
         url: "/experiment/control_panel/1/access_list/group/",
