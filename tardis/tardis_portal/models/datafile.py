@@ -851,7 +851,7 @@ class DataFileObject(models.Model):
 
         try:
             tardis_app.send_task(
-                'mytardis.apply_filters',
+                'apply_filters',
                 args = [
                     self.datafile.id,
                     self.verified,

@@ -302,7 +302,7 @@ def dfo_verified(dfo_id, algorithm, checksum):
         if issubclass(storage_class, FileSystemStorage):
             try:
                 tardis_app.send_task(
-                    'mytardis.apply_filters',
+                    'apply_filters',
                     args=[
                         dfo.datafile.id,
                         dfo.verified,
