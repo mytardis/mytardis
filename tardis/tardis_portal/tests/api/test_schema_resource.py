@@ -34,7 +34,7 @@ class SchemaResourceTest(MyTardisResourceTestCase):
             '/api/v1/schema/%d/' % self.test_schema.id,
             authentication=self.get_admin_credentials())
         self.assertHttpOK(response)
-        returned_data = json.loads(response.content)
+        returned_data = json.loads(response.content.decode())
         for key, value in six.iteritems(expected_output):
             self.assertTrue(key in returned_data)
             self.assertEqual(returned_data[key], value)
@@ -49,7 +49,7 @@ class SchemaResourceTest(MyTardisResourceTestCase):
             % urllib.parse.quote(self.test_schema.namespace),
             authentication=self.get_admin_credentials())
         self.assertHttpOK(response)
-        returned_data = json.loads(response.content)
+        returned_data = json.loads(response.content.decode())
         self.assertEqual(returned_data['meta']['total_count'], 1)
         returned_object = returned_data['objects'][0]
         for key, value in six.iteritems(expected_output):

@@ -100,7 +100,7 @@ class FacilityOverviewTestCase(TestCase):
         request.user = self.user
         response = facility_overview_experiments(
             request, self.facility.id, start_index, end_index)
-        dataset_list = json.loads(response.content)
+        dataset_list = json.loads(response.content.decode())
         self.assertEqual(
             [dataset['description'] for dataset in dataset_list],
             [self.dataset.description])

@@ -25,7 +25,7 @@ class GroupResourceTest(MyTardisResourceTestCase):
         response = self.api_client.get('/api/v1/group/%d/' % group_id,
                                      authentication=self.get_credentials())
         self.assertHttpOK(response)
-        returned_data = json.loads(response.content)
+        returned_data = json.loads(response.content.decode())
         for key, value in six.iteritems(expected_output):
             self.assertTrue(key in returned_data)
             self.assertEqual(returned_data[key], value)
@@ -41,7 +41,7 @@ class GroupResourceTest(MyTardisResourceTestCase):
             urllib.parse.quote(self.testgroup.name),
             authentication=self.get_credentials())
         self.assertHttpOK(response)
-        returned_data = json.loads(response.content)
+        returned_data = json.loads(response.content.decode())
         self.assertEqual(returned_data['meta']['total_count'], 1)
         returned_group = returned_data['objects'][0]
         for key, value in six.iteritems(expected_output):

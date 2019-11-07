@@ -198,13 +198,13 @@ class ExperimentTestCase(TestCase):
         # Check the JSON
         response = client.get(json_url)
         self.assertEqual(response.status_code, 200)
-        items = json.loads(response.content)
+        items = json.loads(response.content.decode())
         for item in items:
             check_item(item)
             # Check there's an individual resource
             response = client.get(json_url+str(item['id']))
             self.assertEqual(response.status_code, 200)
-            item = json.loads(response.content)
+            item = json.loads(response.content.decode())
             check_item(item)
             # Attempt to remove the dataset from the original experiment
             # Should fail because it would leave the dataset orphaned
@@ -218,7 +218,7 @@ class ExperimentTestCase(TestCase):
             response = client.put(new_url,
                                   data=json.dumps(item),
                                   content_type='application/json')
-            item = json.loads(response.content)
+            item = json.loads(response.content.decode())
             check_item(item)
             # This dataset should now have two experiments
             self.assertEqual(
@@ -231,7 +231,7 @@ class ExperimentTestCase(TestCase):
                                   data=json.dumps(item),
                                   content_type='application/json')
             self.assertEqual(response.status_code, 200)
-            item = json.loads(response.content)
+            item = json.loads(response.content.decode())
             check_item(item)
             self.assertEqual(
                 sorted(item['experiments']),
@@ -241,7 +241,7 @@ class ExperimentTestCase(TestCase):
             response = client.delete(json_url+str(item['id']),
                                      content_type='application/json')
             self.assertEqual(response.status_code, 200)
-            item = json.loads(response.content)
+            item = json.loads(response.content.decode())
             check_item(item)
             # Expect the item is now in all but the first experiment
             self.assertEqual(
