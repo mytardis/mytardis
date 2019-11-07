@@ -255,10 +255,12 @@ class Dataset(models.Model):
                 if '/' in basedir:
                     part1, part2 = path.split(basedir)
                     if part1 in dirs_dict and part2 in dirs_dict[part1]:
-                        return [("..", urllib.parse.quote(basedir))]
+                        return [("..", basedir)]
                 return []
-            dirs = [item for item in dirs_dict[basedir]]
+            dirs = [(item, ("%s/%s" % (basedir, item)))
+                    for item in dirs_dict[basedir]]
+            dirs = [("..", basedir)] + dirs
         else:
-            dirs = [key for key in dirs_dict
+            dirs = [(key, key) for key in dirs_dict
                     if len(key.split('/')) == 1]
         return sorted(dirs, key=lambda x: x[0])
