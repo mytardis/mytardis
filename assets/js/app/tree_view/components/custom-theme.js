@@ -15,12 +15,13 @@ export default {
                 padding: '2px'
             },
             link: {
+                cursor: 'pointer',
                 position: 'relative',
                 padding: '0px 5px',
                 display: 'block'
             },
             activeLink: {
-                // background: '#007aff36'
+                background: '#007aff36'
             },
             toggle: {
                 base: {
