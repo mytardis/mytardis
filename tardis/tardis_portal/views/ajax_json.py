@@ -60,7 +60,7 @@ def dataset_json(request, experiment_id=None, dataset_id=None):
         # Obviously you can't do this if you don't own the dataset
         if not can_update():
             return HttpResponseForbidden()
-        data = json.loads(request.body)
+        data = json.loads(request.body.decode())
         # Detect if any experiments are new, and add the dataset to them
         add_experiments(frozenset(data['experiments']))
         # Include the experiment we PUT to, as it may also be new

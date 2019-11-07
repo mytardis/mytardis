@@ -112,7 +112,7 @@ class ListTestCase(TransactionTestCase):
         self.assertEqual(
             response['Content-Type'], 'application/json; charset=utf-8')
 
-        objs = json.loads(response.content)
+        objs = json.loads(response.content.decode())
         self.assertEqual(len(objs), 1)
         for k, v in params.items():
             self.assertEqual(objs[0][k], v)
@@ -137,7 +137,7 @@ class ListTestCase(TransactionTestCase):
         self.assertEqual(
             response['Content-Type'], 'application/json; charset=utf-8')
 
-        objs = json.loads(response.content)
+        objs = json.loads(response.content.decode())
         self.assertEqual(len(objs), 10)
 
         for obj in objs:
@@ -196,7 +196,7 @@ class GetTestCase(TransactionTestCase):
                     args=[self.experiment.id, psm.parameterset.id]))
         self.assertEqual(response.status_code, 200)
 
-        obj = json.loads(response.content)
+        obj = json.loads(response.content.decode())
         for k, v in params.items():
             self.assertEqual(obj[k], v)
 
@@ -253,7 +253,7 @@ class CreateTestCase(TransactionTestCase):
             content_type='application/json')
         # Check that content reports as created, returns the created object
         self.assertEqual(response.status_code, 201)
-        obj = json.loads(response.content)
+        obj = json.loads(response.content.decode())
         self.assertIsInstance(
             obj['id'], int, 'Created object should have an ID.')
         for k, v in params.items():
@@ -320,7 +320,7 @@ class UpdateTestCase(TransactionTestCase):
                                     data=json.dumps(params),
                                     content_type='application/json')
         self.assertEqual(response.status_code, 201)
-        return json.loads(response.content)
+        return json.loads(response.content.decode())
 
     @patch('webpack_loader.loader.WebpackLoader.get_bundle')
     def testMustHaveWrite(self, mock_webpack_get_bundle):
@@ -395,7 +395,7 @@ class DeleteTestCase(TransactionTestCase):
                                     data=json.dumps(params),
                                     content_type='application/json')
         self.assertEqual(response.status_code, 201)
-        return json.loads(response.content)
+        return json.loads(response.content.decode())
 
     @patch('webpack_loader.loader.WebpackLoader.get_bundle')
     def testMustHaveWrite(self, mock_webpack_get_bundle):
@@ -416,5 +416,5 @@ class DeleteTestCase(TransactionTestCase):
                     args=[self.experiment.id,
                           self._create_initial_entry()['id']]))
         self.assertEqual(response.status_code, 200)
-        obj = json.loads(response.content)
+        obj = json.loads(response.content.decode())
         self.assertGreater(len(obj.keys()), 1)

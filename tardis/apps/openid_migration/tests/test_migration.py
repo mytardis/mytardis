@@ -64,5 +64,5 @@ class OpenIDMigrationTestCase(TestCase):
         messages = FallbackStorage(request)
         setattr(request, '_messages', messages)
         response = do_migration(request)
-        d = json.loads(response.content)
+        d = json.loads(response.content.decode())
         self.assertEqual(d['status'], 'success')
