@@ -70,7 +70,7 @@ class AuthenticationTestCase(TestCase):
             'username': 'test@test.com', 'password': 'testpass',
             'authenticationMethod': 'localdb'})
 
-        self.assertTrue(json.loads(response.content)['status'])
+        self.assertTrue(json.loads(response.content.decode())['status'])
         self.client.logout()
 
     def test_djangoauth(self):

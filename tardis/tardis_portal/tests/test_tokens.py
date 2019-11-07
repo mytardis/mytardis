@@ -238,11 +238,11 @@ class TokenTestCase(TestCase):
         response = retrieve_access_list_tokens(
             request, experiment_id=experiment.id)
         matches = re.findall(
-            b'href="/token/delete/[0-9]+/"', response.content)
+            'href="/token/delete/[0-9]+/"', response.content.decode())
         self.assertEqual(len(matches), 1)
         self.assertIn(
-            b'href="/token/delete/%d/"' % token.id,
-            response.content)
+            'href="/token/delete/%d/"' % token.id,
+            response.content.decode())
 
     @patch('webpack_loader.loader.WebpackLoader.get_bundle')
     def test_create_token(self, mock_webpack_get_bundle):
@@ -268,7 +268,7 @@ class TokenTestCase(TestCase):
         request.user = self.user
         response = create_token(
             request, experiment_id=experiment.id)
-        response_dict = json.loads(response.content)
+        response_dict = json.loads(response.content.decode())
         self.assertEqual(response_dict['success'], True)
 
         token = Token.objects.get(experiment=experiment)
@@ -299,7 +299,7 @@ class TokenTestCase(TestCase):
         request.user = self.user
         response = token_delete(
             request, token_id=token.id)
-        response_dict = json.loads(response.content)
+        response_dict = json.loads(response.content.decode())
         # We haven't yet created an ObjectACL to associate self.user
         # with the experiment, so request.user shouldn't be allowed
         # to delete the token:
@@ -311,7 +311,7 @@ class TokenTestCase(TestCase):
         acl.save()
         response = token_delete(
             request, token_id=token.id)
-        response_dict = json.loads(response.content)
+        response_dict = json.loads(response.content.decode())
         # Now request.user should be authorised to delete the token:
         self.assertEqual(response_dict['success'], True)
         self.assertIsNone(Token.objects.filter(id=token.id).first())

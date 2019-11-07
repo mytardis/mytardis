@@ -179,7 +179,7 @@ class RestfulExperimentParameterSet(object):
         from .auth.decorators import has_experiment_write
         if not has_experiment_write(request, experiment_id):
             return return_response_error(request)
-        form = self.form_cls(json.loads(request.body))
+        form = self.form_cls(json.loads(request.body.decode()))
         if not form.is_valid():
             return HttpResponse('', status=400)
         ps = ExperimentParameterSet(experiment_id=experiment_id,
@@ -196,7 +196,7 @@ class RestfulExperimentParameterSet(object):
         if not has_experiment_write(request, experiment_id):
             return return_response_error(request)
 
-        form = self.form_cls(json.loads(request.body))
+        form = self.form_cls(json.loads(request.body.decode()))
         if not form.is_valid():
             return HttpResponse('', status=400)
 

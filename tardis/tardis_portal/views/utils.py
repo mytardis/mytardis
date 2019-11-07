@@ -144,7 +144,7 @@ class HttpResponseSeeAlso(HttpResponseRedirect):
 
 def feedback(request):
     if request.method == 'POST':
-        feedback_data = json.loads(request.POST['data'])
+        feedback_data = json.loads(request.POST['data'].decode())
         message = feedback_data[0]['Issue']
         img_base64 = feedback_data[1]
         img = img_base64.replace('data:image/png;base64,', '').decode('base64')
