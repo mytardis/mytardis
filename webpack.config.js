@@ -36,6 +36,7 @@ module.exports = {
         path: path.resolve("./assets/bundles/"),
         filename: "[name]-[hash].js"
     },
+    devtool: 'source-map',
     optimization: {
         minimizer: [
             new TerserPlugin({
