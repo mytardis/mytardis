@@ -45,7 +45,7 @@ class InstrumentResourceTest(MyTardisResourceTestCase):
         output = self.api_client.get('/api/v1/instrument/%d/' %
                                      instrument_id,
                                      authentication=self.get_credentials())
-        returned_data = json.loads(output.content)
+        returned_data = json.loads(output.content.decode())
         for key, value in six.iteritems(expected_output):
             self.assertTrue(key in returned_data)
             if not key.endswith("_time"):
@@ -82,7 +82,7 @@ class InstrumentResourceTest(MyTardisResourceTestCase):
         output = self.api_client.get('/api/v1/instrument/?name=%s'
                                      % urllib.parse.quote(self.testinstrument.name),
                                      authentication=self.get_credentials())
-        returned_data = json.loads(output.content)
+        returned_data = json.loads(output.content.decode())
         self.assertEqual(returned_data['meta']['total_count'], 1)
         returned_object = returned_data['objects'][0]
         for key, value in six.iteritems(expected_output):

@@ -23,7 +23,7 @@ class UserResourceTest(MyTardisResourceTestCase):
             '/api/v1/user/%d/' % self.user.id,
             authentication=self.get_admin_credentials())
         self.assertHttpOK(response)
-        returned_data = json.loads(response.content)
+        returned_data = json.loads(response.content.decode())
         for key, value in six.iteritems(expected_output):
             self.assertTrue(key in returned_data)
             self.assertEqual(returned_data[key], value)
@@ -38,7 +38,7 @@ class UserResourceTest(MyTardisResourceTestCase):
             urllib.parse.quote(self.user.username),
             authentication=self.get_credentials())
         self.assertHttpOK(response)
-        returned_data = json.loads(response.content)
+        returned_data = json.loads(response.content.decode())
         self.assertEqual(returned_data['meta']['total_count'], 1)
         returned_user = returned_data['objects'][0]
         for key, value in six.iteritems(expected_output):

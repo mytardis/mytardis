@@ -43,7 +43,7 @@ class DatasetResourceTest(MyTardisResourceTestCase):
             % urllib.parse.quote(self.ds_no_instrument.description)
         output = self.api_client.get(uri,
                                      authentication=self.get_credentials())
-        returned_data = json.loads(output.content)
+        returned_data = json.loads(output.content.decode())
         self.assertEqual(returned_data['meta']['total_count'], 1)
         returned_object = returned_data['objects'][0]
         self.assertTrue('description' in returned_object)
@@ -57,7 +57,7 @@ class DatasetResourceTest(MyTardisResourceTestCase):
             % urllib.parse.quote(self.ds_with_instrument.description)
         output = self.api_client.get(uri,
                                      authentication=self.get_credentials())
-        returned_data = json.loads(output.content)
+        returned_data = json.loads(output.content.decode())
         self.assertEqual(returned_data['meta']['total_count'], 1)
         returned_object = returned_data['objects'][0]
         self.assertTrue('description' in returned_object)
@@ -73,7 +73,7 @@ class DatasetResourceTest(MyTardisResourceTestCase):
             % self.extra_instrument.id
         output = self.api_client.get(uri,
                                      authentication=self.get_credentials())
-        returned_data = json.loads(output.content)
+        returned_data = json.loads(output.content.decode())
         self.assertEqual(returned_data['meta']['total_count'], 1)
         returned_object = returned_data['objects'][0]
         self.assertTrue('instrument' in returned_object)
@@ -101,5 +101,5 @@ class DatasetResourceTest(MyTardisResourceTestCase):
         uri = '/api/v1/dataset/%d/files/' % ds_id
         response = self.api_client.get(
             uri, authentication=self.get_credentials())
-        returned_data = json.loads(response.content)
+        returned_data = json.loads(response.content.decode())
         self.assertEqual(returned_data['meta']['total_count'], 0)
