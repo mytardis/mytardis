@@ -109,6 +109,8 @@ class DatasetParameterSetResourceTest(MyTardisResourceTestCase):
             '/api/v1/datasetparameterset/',
             data=post_data,
             authentication=self.get_credentials()))
+        self.user.user_permissions.add(
+            Permission.objects.get(codename='change_dataset'))
 
 
 class DatasetParameterResourceTest(MyTardisResourceTestCase):
