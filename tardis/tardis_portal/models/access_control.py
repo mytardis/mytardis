@@ -23,7 +23,6 @@ class UserProfile(models.Model):
        :class:`django.contrib.auth.models.User`
     """
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-
     # This flag will tell us if the main User account was created using any
     # non localdb auth methods. For example, if a first time user authenticates
     # to the system using the VBL auth method, an account will be created for
@@ -69,7 +68,11 @@ class UserProfile(models.Model):
 @receiver(post_save, sender=User, dispatch_uid="create_user_profile")
 def create_user_profile(sender, instance, created, **kwargs):
     if created:
-        UserProfile(user=instance).save()
+        user = instance
+        for permissions in settings.DEFAULT_PERMISSIONS:
+            user.user_permissions.add(Permission.objects.get(codename=permissions))
+        user.save()        
+        UserProfile(user=user).save()
 
 
 @python_2_unicode_compatible

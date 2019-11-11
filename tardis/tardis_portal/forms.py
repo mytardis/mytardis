@@ -356,7 +356,11 @@ class ExperimentForm(forms.ModelForm):
 
     class Meta:
         model = models.Experiment
-        fields = ('title', 'institution_name', 'description', 'internal_id', 'project_id')
+        fields = ('title',
+                  'institution_name',
+                  'description',
+                  'internal_id',
+                  'project_id')
 
     class FullExperiment(UserDict):
         """

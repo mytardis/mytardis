@@ -43,14 +43,18 @@ class Command(BaseCommand):
                 username = r[settings.LDAP_USER_LOGIN_ATTR][0].decode('utf-8')
                 first_name = r[first_name_key][0].decode('utf-8')
                 last_name = r[last_name_key][0].decode('utf-8')
-                email = r[email_key][0].decode('utf-8')
+                email = [email_key][0]
                 user, created = User.objects.get_or_create(username=username, email=email, first_name=first_name, last_name=last_name)
                 total += 1
                 if created:
                     user.set_password(self.gen_random_password())
                     user.user_permissions.add(Permission.objects.get(codename='add_experiment'))
+                    user.user_permissions.add(Permission.objects.get(codename='change_experiment'))
+                    user.user_permissions.add(Permission.objects.get(codename='change_group'))
                     user.user_permissions.add(Permission.objects.get(codename='add_dataset'))
                     user.user_permissions.add(Permission.objects.get(codename='add_datafile'))
+                    user.user_permissions.add(Permission.objects.get(codename='change_objectacl'))
+                    user.user_permissions.add(Permission.objects.get(codename='change_dataset'))
                     user.save()
                     authentication = UserAuthentication(userProfile=user.userprofile,
                                                         username=username,
@@ -60,4 +64,5 @@ class Command(BaseCommand):
                     print("Added {}".format(user_id))
                 else:
                     print("{} already exists".format(user_id))
-    print("Found {}/{} users, added {}".format(total, len(options['user_id']), total_created))
+        print("Found {}/{} users, added {}".format(total, len(options['user_id']), total_created))
+        l.unbind_s()

@@ -72,7 +72,7 @@ class Experiment(models.Model):
                                         default=settings.DEFAULT_INSTITUTION)
     description = models.TextField(blank=True)
     internal_id = models.CharField(max_length=400, null=False, blank=False, unique=True, default=experiment_internal_id_default )
-    project_id = models.CharField(max_length=400, null=False, blank=False, default='No Project ID')
+    project_id = models.CharField(max_length=400, null=False, blank=False)
     start_time = models.DateTimeField(null=True, blank=True)
     end_time = models.DateTimeField(null=True, blank=True)
     created_time = models.DateTimeField(auto_now_add=True)
@@ -221,6 +221,13 @@ class Experiment(models.Model):
                                         canRead=True)
         return [acl.get_related_object() for acl in acls]
 
+    def get_users(self):
+        acls = ObjectACL.objects.filter(pluginId='django_user',
+                                        content_type=self.get_ct(),
+                                        object_id=self.id,
+                                        canRead=True)
+        return [acl.get_related_object() for acl in acls]
+    
     def _has_view_perm(self, user_obj):
         '''
         Called from the ACLAwareBackend class's has_perm method

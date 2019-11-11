@@ -44,6 +44,7 @@ from django.conf import settings
 from haystack import indexes
 
 from tardis.tardis_portal.models import Dataset, Experiment
+from tardis.tardis_portal.models import ExperimentParameterSet, ExperimentParameter
 
 logger = logging.getLogger(__name__)
 
@@ -58,8 +59,12 @@ class ExperimentIndex(indexes.SearchIndex, indexes.Indexable):
     experiment_end_time = indexes.DateTimeField(model_attr='end_time', default=None)
     experiment_update_time = indexes.DateTimeField(model_attr='update_time', default=None)
     experiment_institution_name = indexes.CharField(model_attr='institution_name', default=None)
+    experiment_internal_id = indexes.CharField(model_attr='internal_id')
+    experiment_project_id = indexes.CharField(model_attr='project_id')
     experiment_creator = indexes.CharField()
     experiment_author = indexes.MultiValueField()
+    experiment_parameters = indexes.MultiValueField()
+    experiment_users = indexes.MultiValueField()
 
     def prepare_text(self, obj):
         """Elasticsearch's standard tokenizer won't split on underscores,
@@ -76,6 +81,16 @@ class ExperimentIndex(indexes.SearchIndex, indexes.Indexable):
     def prepare_experimentauthor(self, obj):
         return [author.author for author in obj.experimentauthor_set.all()]
 
+    def prepare_experiment_parameters(self, obj):
+        retdict = {}
+        for paramset in obj.experimentparameterset_set.all():
+            for param in paramset.parameters:
+                retdict[param.name.name] = param.get()
+        return retdict
+
+    def prepare_experiment_users(self, obj):
+        return [user.get_username() for user in obj.get_users()]
+        
     def prepare_experiment_creator(self, obj):
         return obj.created_by.username
 
@@ -89,9 +104,11 @@ class ExperimentIndex(indexes.SearchIndex, indexes.Indexable):
 
 class DatasetIndex(indexes.SearchIndex, indexes.Indexable):
     text = indexes.CharField(document=True)
-    experiment_id_stored = indexes.MultiValueField(indexed=True, stored=True) #indexes.IntegerField(model_attr='experiments', indexed=True)
+    experiment_id_stored = indexes.MultiValueField(indexed=True, stored=True) 
     dataset_id_stored = indexes.IntegerField(model_attr='id') #changed
     dataset_description = indexes.CharField(model_attr='description')
+    dataset_id = indexes.CharField(model_attr='dataset_id')
+    dataset_parameters = indexes.MultiValueField()
 
     def prepare_text(self, obj):
         """Elasticsearch's standard tokenizer won't split on underscores,
@@ -106,6 +123,13 @@ class DatasetIndex(indexes.SearchIndex, indexes.Indexable):
 
     def prepare_experiment_id_stored(self, obj):
         return [exp.id for exp in obj.experiments.all()]
+
+    def prepare_dataset_parameters(self, obj):
+        retdict = {}
+        for paramset in obj.datasetparameterset_set.all():
+            for param in paramset.parameters:
+                retdict[param.name.name] = param.get()
+        return retdict
 
     def get_model(self):
         return Dataset
