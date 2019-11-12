@@ -25,7 +25,7 @@ const Header = ({ node, style, iconClass }) => {
       <div style={style.base}>
         <div style={{ ...style.title }}>
             <i className={`fa fa-${iconTypeClass}`} style={iconStyle}/>
-            {`${node.name}`}
+            {node.name}
         </div>
       </div>
     );
@@ -66,7 +66,6 @@ const TreeExample = ({datasetId}) => {
     const onToggle = (node, toggled) => {
       //fetch children
       if (toggled && node.children.length === 0){
-        console.log("fetching");
         fetchChildDirs(node.name);
       }else {
         node.toggled = toggled;
@@ -82,14 +81,19 @@ const TreeExample = ({datasetId}) => {
       setData(Object.assign([], data))
     };
     const onFilterMouseUp = ({target: {value}}) => {
-      console.log(value);
       const filter = value.trim();
       if (!filter) {
-          return this.setState(() => ({data}));
+        //return initial tree state
+        return fetchBaseDirs('');
       }
-      let filtered = filters.filterTree(data, filter);
-      filtered = filters.expandFilteredNodes(filtered, filter);
-      setData(filtered);
+      let filtered_data = []
+      data.forEach(function(item) {
+        let filtered = filters.filterTree(item, filter);
+        filtered = filters.expandFilteredNodes(filtered, filter);
+        filtered_data.push(filtered)
+      });
+
+      setData(filtered_data)
     };
     return (
       <Fragment>
