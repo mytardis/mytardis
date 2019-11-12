@@ -67,6 +67,7 @@ export default {
                     lineHeight: '24px',
                     verticalAlign: 'middle',
                     fontSize : '18px',
+                    cursor: 'pointer'
                 }
             },
             subtree: {
