@@ -1,36 +1,42 @@
 {% extends "tardis_portal/portal_template.html" %}
+{% load render_bundle from webpack_loader %}
 
 {% block content %}
-    <div class="page-header">
-      <h1 class="title">{{ subtitle }}</h1>
+  <div class="page-header">
+    <h1 class="title">{{ subtitle }}</h1>
+  </div>
+  {{ form.non_field_errors }}
+  <div class="row">
+    <div class="col-md-9">
+      <form id="create_experiment_form" action="" method="POST"
+            class="form-horizontal">{% csrf_token %}
+        {% load bootstrap %}
+        {{ form.title|bootstrap_horizontal:'col-md-3' }}
+        {{ form.authors|bootstrap_horizontal:'col-md-3' }}
+        {{ form.institution_name|bootstrap_horizontal:'col-md-3' }}
+        {{ form.description|bootstrap_horizontal:'col-md-3' }}
+        <div class="form-group">
+          <div class="col-md-offset-3 col-md-4">
+            <button type="submit" class="btn btn-primary">
+              <i class="fa fa-ok"></i> Save
+            </button>
+            {% if experiment_id %}
+            <button type="button" class="btn btn-default">
+              <a href="{% url 'tardis_portal.view_experiment' experiment_id %}">
+                 Cancel
+            </a>
+            </button>
+            {% else %}
+            <button type="button" class="btn btn-default">
+               <a href="{% url 'tardis.tardis_portal.views.my_data' %}">
+               Cancel
+               </a>
+            </button>
+            {% endif %}
+          </div>
+        </div>
+      </form>
     </div>
-    {{ form.non_field_errors }}
-  <form id="create_experiment_form" action="" method="POST"
-        class="form-horizontal">{% csrf_token %}
-      {% load bootstrap %}
-      <fieldset>
-        {{ form.title|bootstrap }}
-        {{ form.project_id|bootstrap }}
-        {{ form.internal_id|bootstrap }}
-        {{ form.authors|bootstrap }}
-        {{ form.institution_name|bootstrap }}
-        {{ form.description|bootstrap }}
-      </fieldset>
-      <div class="form-actions">
-        <button type="submit" class="btn btn-primary">
-          <i class="fa fa-ok"></i> Save
-        </button>
-        {% if experiment_id %}
-        <a class="btn"
-           href="{% url 'tardis_portal.view_experiment' experiment_id %}">
-           Cancel
-        </a>
-        {% else %}
-        <a class="btn"
-           href="{% url 'tardis.tardis_portal.views.my_data' %}">
-           Cancel
-        </a>
-        {% endif %}
-      </div>
-  </form>
+  </div>
+  {% render_bundle 'tardis_portal_create_experiment' %}
 {% endblock %}

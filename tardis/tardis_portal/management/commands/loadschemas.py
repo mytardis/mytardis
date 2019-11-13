@@ -66,9 +66,9 @@ class Command(BaseCommand):
                         if not options.get('replace', False):
                             obj.object.pk = None
                         obj.save(using=using)
-                except (SystemExit, KeyboardInterrupt):
-                    raise
-                except Exception:
+                except Exception as err:
+                    if isinstance(err, (SystemExit, KeyboardInterrupt)):
+                        raise
                     data.close()
                 data.close()
 

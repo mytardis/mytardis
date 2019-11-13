@@ -21,6 +21,7 @@ from tardis.tardis_portal.api import (
     ExperimentParameterResource,
     ExperimentParameterSetResource,
     ExperimentResource,
+    ExperimentAuthorResource,
     FacilityResource,
     GroupResource,
     InstrumentResource,
@@ -49,6 +50,7 @@ v1_api.register(DatafileParameterResource())
 v1_api.register(ExperimentParameterResource())
 v1_api.register(ExperimentParameterSetResource())
 v1_api.register(ExperimentResource())
+v1_api.register(ExperimentAuthorResource())
 v1_api.register(LocationResource())
 v1_api.register(ParameterNameResource())
 v1_api.register(ReplicaResource())

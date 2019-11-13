@@ -60,7 +60,7 @@ def dataset_json(request, experiment_id=None, dataset_id=None):
         # Obviously you can't do this if you don't own the dataset
         if not can_update():
             return HttpResponseForbidden()
-        data = json.loads(request.body)
+        data = json.loads(request.body.decode())
         # Detect if any experiments are new, and add the dataset to them
         add_experiments(frozenset(data['experiments']))
         # Include the experiment we PUT to, as it may also be new
@@ -88,10 +88,10 @@ def dataset_json(request, experiment_id=None, dataset_id=None):
     has_download_permissions = \
         authz.has_dataset_download_access(request, dataset_id)
 
-    return HttpResponse(json.dumps(get_dataset_info(dataset,
-                                                    has_download_permissions), cls=DjangoJSONEncoder),
-                        content_type='application/json')
-
+    dataset_dict = get_dataset_info(dataset, has_download_permissions)
+    return HttpResponse(
+        json.dumps(dataset_dict, cls=DjangoJSONEncoder, default=str),
+        content_type='application/json')
 
 @never_cache
 @authz.experiment_access_required
@@ -110,8 +110,9 @@ def experiment_datasets_json(request, experiment_id):
                          exclude=['datafiles'])
         for ds in experiment.datasets.all().order_by(dataset_ordering)]
 
-    return HttpResponse(json.dumps(objects, cls=DjangoJSONEncoder), content_type='application/json')
-
+    return HttpResponse(
+        json.dumps(objects, cls=DjangoJSONEncoder, default=str),
+        content_type='application/json')
 
 def retrieve_licenses(request):
     try:

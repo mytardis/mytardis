@@ -59,9 +59,9 @@ def _create_datafile():
                         filename='iiif_named_file',
                         mimetype='image/tiff')
     compute_md5 = getattr(settings, 'COMPUTE_MD5', True)
-    compute_sha512 = getattr(settings, 'COMPUTE_SHA512', True)
+    compute_sha512 = getattr(settings, 'COMPUTE_SHA512', False)
     checksums = compute_checksums(
-        open(tempfile.file.name, 'r'),
+        open(tempfile.file.name, 'rb'),
         compute_md5=compute_md5,
         compute_sha512=compute_sha512)
     if compute_md5:
@@ -103,7 +103,7 @@ class Level0TestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         # Check the response content is good
         nsmap = {'i': 'http://library.stanford.edu/iiif/image-api/ns/'}
-        xml = etree.fromstring(response.content)
+        xml = etree.fromstring(response.content.decode())
         identifier = xml.xpath('/i:info/i:identifier', namespaces=nsmap)[0]
         self.assertEqual(int(identifier.text), self.datafile.id)
         height = xml.xpath('/i:info/i:height', namespaces=nsmap)[0]
@@ -122,7 +122,7 @@ class Level0TestCase(TestCase):
                     kwargs=kwargs))
         self.assertEqual(response.status_code, 200)
         # Check the response content is good
-        data = json.loads(response.content)
+        data = json.loads(response.content.decode())
         self.assertEqual(data['identifier'], self.datafile.id)
         self.assertEqual(data['height'], self.height)
         self.assertEqual(data['width'], self.width)

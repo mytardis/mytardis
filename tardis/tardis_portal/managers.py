@@ -126,7 +126,8 @@ class ExperimentManager(OracleSafeManager):
 
     def _query_all_public(self):
         from .models import Experiment
-        return ~Q(public_access=Experiment.PUBLIC_ACCESS_NONE)
+        return ~Q(public_access=Experiment.PUBLIC_ACCESS_NONE) &\
+               ~Q(public_access=Experiment.PUBLIC_ACCESS_EMBARGO)
 
     def get(self, user, experiment_id):
         """
@@ -143,8 +144,7 @@ class ExperimentManager(OracleSafeManager):
 
         if user.has_perm('tardis_acls.view_experiment', experiment):
             return experiment
-        else:
-            raise PermissionDenied
+        raise PermissionDenied
 
     def owned(self, user):
         """

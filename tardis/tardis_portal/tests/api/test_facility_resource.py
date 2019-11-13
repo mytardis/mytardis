@@ -33,7 +33,7 @@ class FacilityResourceTest(MyTardisResourceTestCase):
         }
         output = self.api_client.get('/api/v1/facility/%d/' % first_facility,
                                      authentication=self.get_credentials())
-        returned_data = json.loads(output.content)
+        returned_data = json.loads(output.content.decode())
         for key, value in six.iteritems(expected_output):
             self.assertTrue(key in returned_data)
             self.assertEqual(returned_data[key], value)
@@ -54,7 +54,7 @@ class FacilityResourceTest(MyTardisResourceTestCase):
         output = self.api_client.get('/api/v1/facility/?name=%s'
                                      % urllib.parse.quote(self.testfacility.name),
                                      authentication=self.get_credentials())
-        returned_data = json.loads(output.content)
+        returned_data = json.loads(output.content.decode())
         self.assertEqual(returned_data['meta']['total_count'], 1)
         returned_object = returned_data['objects'][0]
         for key, value in six.iteritems(expected_output):
@@ -84,7 +84,7 @@ class FacilityResourceTest(MyTardisResourceTestCase):
         output = self.api_client.get('/api/v1/facility/?manager_group__id=%d' %
                                      group_id,
                                      authentication=self.get_credentials())
-        returned_data = json.loads(output.content)
+        returned_data = json.loads(output.content.decode())
         self.assertEqual(returned_data['meta']['total_count'], 1)
         returned_object = returned_data['objects'][0]
         for key, value in six.iteritems(expected_output):

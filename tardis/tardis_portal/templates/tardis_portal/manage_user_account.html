@@ -4,15 +4,21 @@
 
 
 {% block content %}
-<form class="form-horizontal" method="post" action="">{% csrf_token %}
-{{ form|bootstrap }}
+<br/>
+<div class="row">
+  <div class="col-sm-7">
+    <form class="form-horizontal" method="post" action="">{% csrf_token %}
+      {{ form|bootstrap_horizontal:'col-sm-3' }}
 
-<div class="form-actions">
-  <button type="submit" class="btn btn-primary">
-    <i class="fa fa-user"></i>
-    Save
-  </button>
+      <div class="form-group">
+        <div class="col-sm-offset-3 col-sm-3">
+          <button type="submit" class="btn btn-primary">
+            <i class="fa fa-user"></i>
+            Save
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
 </div>
-
-</form>
-{% endblock %}+
+{% endblock %}

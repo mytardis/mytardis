@@ -8,9 +8,7 @@ import json
 
 from django.contrib.auth.models import User
 
-import six
-
-from ...models.experiment import Experiment
+from ...models.experiment import Experiment, ExperimentAuthor
 from ...models.parameters import (ExperimentParameter,
                                   ExperimentParameterSet,
                                   ParameterName,
@@ -84,6 +82,18 @@ class ExperimentResourceTest(MyTardisResourceTestCase):
         self.assertEqual(parameter_count + 4,
                          ExperimentParameter.objects.count())
 
+        # Now try creating an ExperimentAuthor record:
+        exp_id = Experiment.objects.first().id
+        post_data = {
+            "experiment": "/api/v1/experiment/%s/" % exp_id,
+            "author": "Author Name",
+            "order": 1
+        }
+        self.assertHttpCreated(self.api_client.post(
+            '/api/v1/experimentauthor/',
+            data=post_data,
+            authentication=self.get_credentials()))
+
     def test_get_experiment(self):
         exp_id = Experiment.objects.first().id
         user_id = User.objects.first().id
@@ -107,8 +117,33 @@ class ExperimentResourceTest(MyTardisResourceTestCase):
         }
         output = self.api_client.get('/api/v1/experiment/%d/' % exp_id,
                                      authentication=self.get_credentials())
-        returned_data = json.loads(output.content)
-        for key, value in six.iteritems(expected_output):
+        returned_data = json.loads(output.content.decode())
+        for key, value in expected_output.items():
             self.assertTrue(key in returned_data)
             if not key.endswith("_time"):
                 self.assertEqual(returned_data[key], value)
+
+    def test_get_experiment_author(self):
+        exp = Experiment.objects.first()
+        exp_author = ExperimentAuthor.objects.create(
+            experiment=exp,
+            author="Author Name",
+            email="Author.Name@example.com",
+            order=1)
+        expected_output = {
+            "author": "Author Name",
+            "email": "Author.Name@example.com",
+            "order": 1,
+            "url": None
+        }
+        output = self.api_client.get(
+            '/api/v1/experimentauthor/%d/' % exp_author.id,
+            authentication=self.get_credentials())
+        returned_data = json.loads(output.content.decode())
+        for key, value in expected_output.items():
+            self.assertEqual(returned_data[key], value)
+        self.assertEqual(
+            returned_data["experiment"]["id"], exp.id)
+        self.assertEqual(
+            returned_data["experiment"]["resource_uri"],
+            "/api/v1/experiment/%d/" % exp.id)

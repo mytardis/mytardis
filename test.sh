@@ -4,7 +4,7 @@ if [ -v EXTRA_REQS ]; then
     pip install $EXTRA_REQS
 fi
 
-# select test to run with TEST_TYPE, memory pg mysql pylint
+# select test to run with TEST_TYPE, memory pg mysql pylint behave templates
 
 function run_test {
     python test.py test --settings=$1
@@ -42,8 +42,23 @@ case "$TEST_TYPE" in
 	(( exit_status = exit_status || $? ))
     ;;
     behave)
-        npm install && npm install phantomjs-prebuilt && npm test \
-        && python manage.py behave --settings=tardis.test_settings
+        npm install && npm audit --production && npm run-script build && \
+        npm test && python test.py behave
+	(( exit_status = exit_status || $? ))
+    ;;
+    templates)
+        echo $'Validating templates...\n' && \
+        DJANGO_SETTINGS_MODULE=tardis.test_settings python manage.py validate_templates && \
+        echo $'\nChecking for tabs in templates...\n' && \
+        ! grep -r $'\t' tardis/tardis_portal/templates/* && \
+        echo $'\nChecking for duplication in templates...\n' && \
+	npm install --no-package-lock --no-save jscpd && \
+        $(npm bin)/jscpd --reporters consoleFull --min-lines 20 \
+            --threshold 0 tardis/tardis_portal/templates/ &&
+        echo $'\nRunning bootlint on templates...\n' && \
+	npm install --no-package-lock --no-save bootlint && \
+        $(npm bin)/bootlint --disable E001,E041,E047,W001,W002,W003,W005 \
+            tardis/tardis_portal/templates/tardis_portal/*.html
 	(( exit_status = exit_status || $? ))
     ;;
     *)

@@ -32,8 +32,8 @@ class TarDownloadTestCase(TestCase):
         self.ds = self.exp.datasets.create(
             description="testing tar download dataset")
 
-        datafile_content = "\n".join(['some data %d' % i
-                                      for i in range(1000)])
+        datafile_content = b"\n".join([b'some data %d' % i
+                                       for i in range(1000)])
         filesize = len(datafile_content)
         md5sum = hashlib.md5(datafile_content).hexdigest()
         # create test datafiles and datafile objects
@@ -68,7 +68,7 @@ class TarDownloadTestCase(TestCase):
             args=(self.exp.id, 'tar')))
         with NamedTemporaryFile('w') as tarfile:
             for c in response.streaming_content:
-                tarfile.write(c)
+                tarfile.write(c.decode())
             tarfile.flush()
             self.assertEqual(int(response['Content-Length']),
                              os.stat(tarfile.name).st_size)

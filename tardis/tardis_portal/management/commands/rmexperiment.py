@@ -116,7 +116,7 @@ class Command(BaseCommand):
             self.stdout.write("    {0} total dataset(s), containing {1} file(s)\n".format(
                     datasets.count(), datafiles.count()))
             self.stdout.write("    {0} non-shared dataset(s), containing {1} file(s)\n".format(
-                    len(uniqueDatasets), len(uniqueDatafiles)))
+                    len(list(uniqueDatasets)), len(list(uniqueDatafiles))))
             if uniqueDatasets and not listOnly:
                 self.stdout.write("        (The non-shared datasets and files will be deleted)\n")
 

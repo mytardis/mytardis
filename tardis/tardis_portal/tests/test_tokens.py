@@ -43,6 +43,8 @@ from django.test import TestCase
 from django.conf import settings
 from django.contrib.auth.models import User
 
+from mock import patch
+
 from ..models import Experiment
 from ..models import ObjectACL
 from ..models import Token
@@ -236,13 +238,14 @@ class TokenTestCase(TestCase):
         response = retrieve_access_list_tokens(
             request, experiment_id=experiment.id)
         matches = re.findall(
-            'href="/token/delete/[0-9]+/"', response.content)
+            'href="/token/delete/[0-9]+/"', response.content.decode())
         self.assertEqual(len(matches), 1)
         self.assertIn(
-            'href="/token/delete/%s/"' % token.id,
-            response.content)
+            'href="/token/delete/%d/"' % token.id,
+            response.content.decode())
 
-    def test_create_token(self):
+    @patch('webpack_loader.loader.WebpackLoader.get_bundle')
+    def test_create_token(self, mock_webpack_get_bundle):
         from ..views.authorisation import create_token
 
         sys.modules['datetime'].datetime = old_datetime
@@ -265,15 +268,17 @@ class TokenTestCase(TestCase):
         request.user = self.user
         response = create_token(
             request, experiment_id=experiment.id)
-        response_dict = json.loads(response.content)
+        response_dict = json.loads(response.content.decode())
         self.assertEqual(response_dict['success'], True)
 
         token = Token.objects.get(experiment=experiment)
         url = "/experiment/view/%s/?token=%s" % (experiment.id, token.token)
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
+        mock_webpack_get_bundle.assert_called()
 
-    def test_token_delete(self):
+    @patch('webpack_loader.loader.WebpackLoader.get_bundle')
+    def test_token_delete(self, mock_webpack_get_bundle):
         from ..views.authorisation import token_delete
 
         sys.modules['datetime'].datetime = old_datetime
@@ -294,7 +299,7 @@ class TokenTestCase(TestCase):
         request.user = self.user
         response = token_delete(
             request, token_id=token.id)
-        response_dict = json.loads(response.content)
+        response_dict = json.loads(response.content.decode())
         # We haven't yet created an ObjectACL to associate self.user
         # with the experiment, so request.user shouldn't be allowed
         # to delete the token:
@@ -306,7 +311,7 @@ class TokenTestCase(TestCase):
         acl.save()
         response = token_delete(
             request, token_id=token.id)
-        response_dict = json.loads(response.content)
+        response_dict = json.loads(response.content.decode())
         # Now request.user should be authorised to delete the token:
         self.assertEqual(response_dict['success'], True)
         self.assertIsNone(Token.objects.filter(id=token.id).first())
@@ -314,3 +319,4 @@ class TokenTestCase(TestCase):
         url = "/experiment/view/%s/?token=%s" % (experiment.id, token.token)
         response = self.client.get(url)
         self.assertEqual(response.status_code, 403)
+        mock_webpack_get_bundle.assert_called()

@@ -64,4 +64,3 @@ class TokenAuthMiddleware(object):
         all_tokens_list = list(all_tokens_set)
         request.user.allowed_tokens = all_tokens_list
         request.session['allowed_tokens'] = all_tokens_list
-        return None

@@ -1,6 +1,7 @@
 import logging
 
 from django.conf import settings
+from django.contrib.auth.models import User
 
 from celery.task import task
 
@@ -13,8 +14,9 @@ logger = logging.getLogger(__name__)
 
 
 @task
-def notify_migration_status(user, new_username, new_authmethod):
+def notify_migration_status(user_id, new_username, new_authmethod):
 
+    user = User.objects.get(id=user_id)
     subject, message_content = email_migration_success(user, new_username, new_authmethod)
     try:
         user.email_user(subject,

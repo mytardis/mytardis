@@ -1,74 +1,11 @@
 {% load static from staticfiles %}
 {% block content %}
-
+{% load render_bundle from webpack_loader %}
 <!-- Scripts -->
 {% load jstemplate %}
 {% mustachejs "tardis_portal/license_selector" %}
 {% mustachejs "tardis_portal/rights_update_message" %}
 {% mustachejs "tardis_portal/ajax_error" %}
-<script type="text/javascript">
-// Memoized AJAX call (which should make things snappier) to get license JSON
-var loadLicenses = async.memoize(function(public_access, callback) {
-  $.ajax({
-    url: '/ajax/license/list?public_access='+public_access,
-    dataType: 'json',
-    success: callback
-  });
-});
-
-var selectLicenseOption = function(value) {
-  var selectedOption = $('.license-option input[value="'+value+'"]')
-                        .parents('.license-option');
-  selectedOption.find('.use-button').addClass('disabled');
-  selectedOption.find('.use-button').text('Selected');
-};
-
-var populateLicenseOptions = function(public_access, markSameLicense) {
-  loadLicenses(public_access, function(licenses) {
-    $('#license-options').empty();
-    _(licenses).each(function (license) {
-      $('#license-options').append(
-          Mustache.to_html(
-              Mustache.TEMPLATES['tardis_portal/license_selector'],
-              license, Mustache.TEMPLATES)
-      );
-      if (markSameLicense)
-        selectLicenseOption($('form input[name="license"]').val());
-    });
-  });
-};
-</script>
-
-<script type="text/javascript">
-$(document).on("change", '#publishing-consent', function() {
-  // (submit disabled) <=> !(consent checked)
-  $('#legal-section .submit-button').prop('disabled', !$(this).prop('checked'))
-});
-// Disable submit button (as consent checkbox should start unchecked)
-$('#publishing-consent').trigger('change');
-// Disable consent until we've loaded the legal text
-$('#publishing-consent').prop('disabled', true)
-// Get legal text
-$.ajax({
-  url: "{% static 'publishing_legal.txt' %}",
-  dataType: 'html',
-  success: function(data) {
-    $('#publishing-legal-text').html(data);
-    $('#publishing-consent').prop('disabled', false);
-  }
-});
-
-$(document).on("click", '#legal-section .submit-button', function() {
-  // Submit form
-  $('form.experiment-rights').trigger('submit');
-  $('#legal-section').hide();
-});
-$(document).on("click", '#legal-section .cancel-button', function() {
-  // Just refresh this tab pane to reset previous values
-  $('#legal-section').parents('.tab-pane').trigger('experiment-change');
-  $('#legal-section').hide();
-});
-</script>
 
 <!-- Success / Error Message -->
 <div id="choose-rights-message"></div>
@@ -79,134 +16,33 @@ $(document).on("click", '#legal-section .cancel-button', function() {
 <form action="{% url 'tardis.tardis_portal.views.choose_rights' experiment.id %}"
       method="post" class="experiment-rights form-horizontal">{% csrf_token %}
   {% load bootstrap %}
-  {{ form|bootstrap }}
-
-  <!-- Public Access selector logic -->
-  <script type="text/javascript">
-  var publicAccessSelector = $('select[name="public_access"]');
-  // Remember the original value
-  publicAccessSelector.prop('originalValue', publicAccessSelector.val());
-  // Change licence options when the public access changes.
-  publicAccessSelector.change(function() {
-    populateLicenseOptions(
-      $(this).val(),
-      // So we can change public access levels without necessarilly changing
-      // licences, mark the current licence as selected only if the public
-      // access level is still the original.
-      $(this).prop('originalValue') == $(this).val()
-    );
-  });
-  // Set default state
-  publicAccessSelector.change();
-  </script>
+  {{ form|bootstrap_horizontal:'col-md-3' }}
 
 <h3>Step 2: Select a license:</h3>
   <div id="license-options"></div>
-  <script type="text/javascript">
-  $(document).on('click', '#license-options .use-button', function(evt) {
-    // Get the selected ID from hidden input
-    var id = $(this).parents('.license-option').find('input.license-id').val();
-    // Set the licence ID for the form
-    $(this).parents('form').find('input[name="license"]').val(id);
-    // Enable all buttons, then disable the one we selected
-    $(this).parents('#license-options')
-           .find('.use-button')
-           .removeClass('disabled')
-           .text('Use');
-    $(this).addClass('disabled');
-    $(this).text('Selected');
-    // Hide any current messages
-    $(this).parents('.tab-pane').find('.alert .close').click();
-    // Show confirmation window
-    $('#selected-license-text').html($(this).parents('.license-option')
-           .find('.controls').html());
-    $('#legal-section').show();
-    $('#license-options').hide();
-  });
-
-  $(document).on('click', '#reselect-license', function(){
-      $('#selected-license-text').html('');
-      $('#license-options').show();
-      $('#legal-section').hide();
-  })
-  </script>
-
-
-</form>
-<script type="text/javascript">
-$('form.experiment-rights').submit(function(evt) {
-  evt.preventDefault();
-  var form = $(evt.target);
-
-  // Get data for success message
-  var templateData = _.reduce(form.serializeArray(), function(obj, v) {
-    obj[v['name']] = v['value'];
-    return obj
-  }, {});
-  templateData['changed_access'] =
-    (templateData['public_access'] !=
-      $('select[name="public_access"]').prop('originalValue'));
-
-  // Submit form
-  $.ajax({
-    type: form.attr('method'),
-    url:  form.attr('action'),
-    data: form.serialize(),
-    success: function(data) {
-      var thisModal = $(form).parents('.modal-body');
-      // Load new values into pane
-      thisModal.html(data);
-      // Show update message
-      $('#legal-section').hide();
-
-      $('#choose-rights-message').html(
-          Mustache.to_html(
-              Mustache.TEMPLATES['tardis_portal/rights_update_message'],
-              templateData, Mustache.TEMPLATES)
-      );
-
-      // update badge on view experiment page
-      $('#experiment-public-access-badge').load("public_access_badge/")
-    },
-    error: function(jqXHR, textStatus, errorThrown) {
-      var errorData = {'message': errorThrown};
-      errorData[textStatus] = true;
-      // Show error message
-      $('#choose-rights-message').html(
-          Mustache.to_html(
-              Mustache.TEMPLATES['tardis_portal/ajax_error'],
-              errorData, Mustache.TEMPLATES)
-      );
-    }
-  });
-});
-</script>
-
-<!-- Confirmation Dialog -->
 <div id="selected-license-text"></div>
 <div id="legal-section">
-    <a id="reselect-license">Reselect License</a>
-    <br/><br/>
-    <h3 class="title">Step 3: Accept The Legal Agreement:</h3>
-
-  <div class="form-horizontal">
-    <pre id="publishing-legal-text"></pre>
-    <label class="checkbox">
+  <a id="reselect-license">Reselect License</a>
+  <br/><br/>
+<h3 >Step 3: Accept The Legal Agreement:</h3>
+  <pre id="publishing-legal-text"
+       style="white-space: pre-wrap; word-break: keep-all;">{{ form.legal_text.value }}</pre>
+  <div class="checkbox">
+    <label>
       <input id="publishing-consent" type="checkbox" value="Agree" />
       I agree to the above terms
     </label>
   </div>
-  <div class="footer">
-    <button class="submit-button btn btn-success">
+  <br>
+    <button type="button" class="submit-button btn btn-success">
       <i class="fa fa-ok"></i>
       Confirm
     </button>
-    <button class="cancel-button btn">
+    <button type="button" class="cancel-button btn btn-default"
+            data-dismiss="modal">
       <i class="fa fa-cancel"></i>
       Cancel
     </button>
   </div>
-  <br/>
-</div>
-
+</form>
 {% endblock %}

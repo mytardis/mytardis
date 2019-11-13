@@ -1,21 +1,15 @@
 # pylint: disable=http-response-with-json-dumps,http-response-with-content-type-json
 import json
 import re
+from html import escape
 
-from django.conf import settings
-from django.urls import reverse
+import six
+
 from django.shortcuts import render
 from django.http import HttpResponse
 from django.http import HttpResponseRedirect
 from django.template.loader import render_to_string
 from django.contrib.sites.models import Site
-
-try:
-    # Python 3
-    from html import escape
-except ImportError:
-    # Python 2
-    from cgi import escape
 
 from .models import ExperimentParameterSet
 from .ParameterSetManager import ParameterSetManager
@@ -23,22 +17,6 @@ from .ParameterSetManager import ParameterSetManager
 
 def render_response_index(request, *args, **kwargs):
     return render(request, *args, **kwargs)
-
-
-def render_response_search(request, url, c):
-
-    links = {}
-    for app in settings.INSTALLED_APPS:
-        if app.startswith('tardis.apps.'):
-            view = '%s.views.search' % app
-            try:
-                links[app.split('.')[2]] = reverse(view)
-            except:
-                pass
-
-    c['links'] = links
-
-    return render(request, url, c)
 
 
 def render_error_message(request, message, status=400):
@@ -104,8 +82,10 @@ def render_to_file(template, filename, context):
     # an error when written to file if the string contain diacritics. We
     # need to do a utf-8 encoding before writing to file
     # see http://packages.python.org/kitchen/unicode-frustrations.html
-    open(filename, "w").write(string_for_output.encode('utf8', 'replace'))
-
+    if six.PY2:
+        open(filename, "w").write(str(string_for_output.encode('utf8', 'replace')))
+    else:
+        open(filename, "w").write(string_for_output)
 
 
 class RestfulExperimentParameterSet(object):
@@ -145,8 +125,8 @@ class RestfulExperimentParameterSet(object):
         '''
         psm = ParameterSetManager(ps)
         return dict([('id', ps.id)]+ # Use set ID
-                    zip(self.parameter_names,
-                        (psm.get_param(k, True) for k in self.parameter_names)))
+                    list(zip(self.parameter_names,
+                         (psm.get_param(k, True) for k in self.parameter_names))))
 
     def _get_view_functions(self):
         context = self
@@ -161,7 +141,7 @@ class RestfulExperimentParameterSet(object):
         def get_or_update_or_delete(request, *args, **kwargs):
             if request.method == 'PUT':
                 return context._update(request, *args, **kwargs)
-            elif request.method == 'DELETE':
+            if request.method == 'DELETE':
                 return context._delete(request, *args, **kwargs)
             return context._get(request, *args, **kwargs)
 
@@ -199,7 +179,7 @@ class RestfulExperimentParameterSet(object):
         from .auth.decorators import has_experiment_write
         if not has_experiment_write(request, experiment_id):
             return return_response_error(request)
-        form = self.form_cls(json.loads(request.body))
+        form = self.form_cls(json.loads(request.body.decode()))
         if not form.is_valid():
             return HttpResponse('', status=400)
         ps = ExperimentParameterSet(experiment_id=experiment_id,
@@ -216,7 +196,7 @@ class RestfulExperimentParameterSet(object):
         if not has_experiment_write(request, experiment_id):
             return return_response_error(request)
 
-        form = self.form_cls(json.loads(request.body))
+        form = self.form_cls(json.loads(request.body.decode()))
         if not form.is_valid():
             return HttpResponse('', status=400)
 

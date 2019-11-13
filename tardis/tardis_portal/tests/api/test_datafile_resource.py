@@ -4,10 +4,14 @@ Testing the DataFile resource in MyTardis's Tastypie-based REST API
 .. moduleauthor:: Grischa Meyer <grischa@gmail.com>
 .. moduleauthor:: James Wettenhall <james.wettenhall@monash.edu>
 '''
+import hashlib
+import json
 import os
 import tempfile
 
 from django.test.client import Client
+
+import magic
 
 from ...models.datafile import DataFile, DataFileObject
 from ...models.dataset import Dataset
@@ -81,6 +85,36 @@ class DataFileResourceTest(MyTardisResourceTestCase):
         new_file = DataFile.objects.order_by('-pk')[0]
         self.assertEqual(file_content, new_file.get_file().read())
 
+    def test_create_df_for_staging(self):
+        ds_id = Dataset.objects.first().id
+        post_data = {
+            "dataset": "/api/v1/dataset/%d/" % ds_id,
+            "filename": "mytestfile.txt",
+            "md5sum": "930e419034038dfad994f0d2e602146c",
+            "size": "8",
+            "mimetype": "text/plain",
+            "parameter_sets": []
+        }
+
+        datafile_count = DataFile.objects.count()
+        dfo_count = DataFileObject.objects.count()
+        response = self.django_client.post(
+            '/api/v1/dataset_file/',
+            json.dumps(post_data),
+            content_type='application/json')
+        self.assertHttpCreated(response)
+        self.assertEqual(datafile_count + 1, DataFile.objects.count())
+        self.assertEqual(dfo_count + 1, DataFileObject.objects.count())
+        new_datafile = DataFile.objects.order_by('-pk')[0]
+        new_dfo = DataFileObject.objects.order_by('-pk')[0]
+        self.assertEqual(response.content, new_dfo.get_full_path().encode())
+
+        # Now check we can submit a verification request for that file:
+        response = self.django_client.get(
+            '/api/v1/dataset_file/%s/verify/'
+            % new_datafile.id)
+        self.assertHttpOK(response)
+
     def test_shared_fs_single_file(self):
         pass
 
@@ -106,8 +140,7 @@ class DataFileResourceTest(MyTardisResourceTestCase):
             return '/api/v1/%s/%d/' % (res_type, dataset.id)
 
         def md5sum(filename):
-            import hashlib
-            md5 = hashlib.md5()
+            md5 = hashlib.md5()  # nosec
             with open(filename, 'rb') as file_obj:
                 for chunk in iter(
                         lambda: file_obj.read(128*md5.block_size), b''):
@@ -115,7 +148,6 @@ class DataFileResourceTest(MyTardisResourceTestCase):
             return md5.hexdigest()
 
         def guess_mime(filename):
-            import magic
             mime = magic.Magic(mime=True)
             return mime.from_file(filename)
 
@@ -153,10 +185,17 @@ class DataFileResourceTest(MyTardisResourceTestCase):
 
     def test_download_file(self):
         '''
-        Doesn't actually check the content downloaded yet
-        Just checks if the download API endpoint responds with 200
+        Re-run the upload test in order to create a verified file to
+        download - it will be verified immediately becase
+        CELERY_ALWAYS_EAGER is True in test_settings.py
+
+        Then download the file, check the HTTP status code and check
+        the file content.
         '''
-        output = self.api_client.get(
-            '/api/v1/dataset_file/%d/download/' % self.datafile.id,
+        self.test_post_single_file()
+        uploaded_file = DataFile.objects.order_by('-pk')[0]
+        response = self.api_client.get(
+            '/api/v1/dataset_file/%d/download/' % uploaded_file.id,
             authentication=self.get_credentials())
-        self.assertEqual(output.status_code, 200)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.getvalue(), b"123test\n")

@@ -14,23 +14,19 @@ from django.conf import settings
 from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.auth.models import User, Group
 from django.contrib.sites.models import Site
-from django.urls import reverse
 from django.db import transaction
 from django.db import IntegrityError
 from django.db.models import Q
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse
 from django.views.decorators.cache import never_cache
 from django.views.decorators.http import require_POST
 
-from ..auth import decorators as authz, auth_service
+from ..auth import decorators as authz
 from ..auth.localdb_auth import auth_key as localdb_auth_key, \
     django_user
-from ..forms import ChangeUserPermissionsForm, \
-    ChangeGroupPermissionsForm, CreateGroupPermissionsForm
 from ..models import UserAuthentication, UserProfile, Experiment, \
     Token, GroupAdmin, ObjectACL
-from ..shortcuts import render_response_index, \
-    return_response_error, render_error_message
+from ..shortcuts import render_response_index, return_response_error
 
 logger = logging.getLogger(__name__)
 
@@ -60,7 +56,7 @@ def retrieve_user_list(request):
         q |= Q(first_name__icontains=' '.join(tokens[:-1])) &\
             Q(last_name__icontains=tokens[-1])
 
-    users_query = User.objects\
+    users_query = User.objects.filter(is_active=True)\
                       .filter(q).distinct() .select_related('userprofile')
 
     # HACK FOR ORACLE - QUERY GENERATED DOES NOT WORK WITH LIMIT SO USING
@@ -71,21 +67,12 @@ def retrieve_user_list(request):
     user_auths = list(UserAuthentication.objects.filter(
         userProfile__user__in=first_n_users))
     auth_methods = dict((ap[0], ap[1]) for ap in settings.AUTH_PROVIDERS)
-    """
-    users = [ {
-        "username": "ksr",
-        "first_name": "Kieran",
-        "last_name": "Spear",
-        "email": "email@address.com",
-        "auth_methods": [ "ksr:vbl:VBL", "ksr:localdb:Local DB" ]
-    } , ... ]
-    """
     users = []
     for u in users_query:
         fields = ('first_name', 'last_name', 'username', 'email')
         # Convert attributes to dictionary keys and make sure all values
         # are strings.
-        user = dict([(k, str(getattr(u, k))) for k in fields])
+        user = {k: str(getattr(u, k)) for k in fields}
         try:
             user['auth_methods'] = [
                 '%s:%s:%s' %
@@ -137,8 +124,6 @@ def retrieve_access_list_user_readonly(request, experiment_id):
 @authz.experiment_ownership_required
 def retrieve_access_list_group(request, experiment_id):
 
-    from ..forms import AddGroupPermissionsForm
-
     group_acls_system_owned = Experiment.safe.group_acls_system_owned(
         experiment_id)
 
@@ -147,8 +132,7 @@ def retrieve_access_list_group(request, experiment_id):
 
     c = {'group_acls_user_owned': group_acls_user_owned,
          'group_acls_system_owned': group_acls_system_owned,
-         'experiment_id': experiment_id,
-         'addGroupPermissionsForm': AddGroupPermissionsForm()}
+         'experiment_id': experiment_id}
     return render_response_index(
         request, 'tardis_portal/ajax/access_list_group.html', c)
 
@@ -162,9 +146,10 @@ def retrieve_access_list_group_readonly(request, experiment_id):
     group_acls_user_owned = Experiment.safe.group_acls_user_owned(
         experiment_id)
 
+    group_acls = group_acls_system_owned | group_acls_user_owned
+
     c = {'experiment_id': experiment_id,
-         'group_acls_system_owned': group_acls_system_owned,
-         'group_acls_user_owned': group_acls_user_owned}
+         'group_acls': group_acls}
     return render_response_index(
         request, 'tardis_portal/ajax/access_list_group_readonly.html', c)
 
@@ -269,22 +254,16 @@ def add_user_to_group(request, group_id, username):
 
     authMethod = localdb_auth_key
     isAdmin = False
+    logger.info("isAdmin: %s", str(isAdmin))
 
     if 'isAdmin' in request.GET:
         if request.GET['isAdmin'] == 'true':
             isAdmin = True
+    logger.info("isAdmin: %s", str(isAdmin))
 
     try:
-        authMethod = request.GET['authMethod']
-        if authMethod == localdb_auth_key:
-            user = User.objects.get(username=username)
-        else:
-            user = UserAuthentication.objects.get(
-                username=username,
-                authenticationMethod=authMethod).userProfile.user
+        user = User.objects.get(username=username)
     except User.DoesNotExist:
-        return return_response_error(request)
-    except UserAuthentication.DoesNotExist:
         return return_response_error(request)
 
     try:
@@ -293,12 +272,13 @@ def add_user_to_group(request, group_id, username):
         return HttpResponse('Group does not exist.')
 
     if user.groups.filter(name=group.name).count() > 0:
-        return HttpResponse('User %s is already member of that group.'
+        return HttpResponse('User %s is already a member of that group.'
                             % username)
 
     user.groups.add(group)
     user.save()
 
+    logger.info("isAdmin: %s", str(isAdmin))
     if isAdmin:
         groupadmin = GroupAdmin(user=user, group=group)
         groupadmin.save()
@@ -316,18 +296,19 @@ def remove_user_from_group(request, group_id, username):
     try:
         user = User.objects.get(username=username)
     except User.DoesNotExist:
-        return HttpResponse('User %s does not exist.' % username)
+        return HttpResponse('User %s does not exist.' % username, status=400)
     try:
         group = Group.objects.get(pk=group_id)
     except Group.DoesNotExist:
-        return HttpResponse('Group does not exist.')
+        return HttpResponse('Group does not exist.', status=400)
 
     if user.groups.filter(name=group.name).count() == 0:
         return HttpResponse('User %s is not member of that group.'
-                            % username)
+                            % username, status=400)
 
     if request.user == user:
-        return HttpResponse('You cannot remove yourself from that group.')
+        return HttpResponse(
+            'You cannot remove yourself from that group.', status=400)
 
     user.groups.remove(group)
     user.save()
@@ -368,15 +349,20 @@ def add_experiment_access_user(request, experiment_id, username):
             isOwner = True
 
     authMethod = request.GET['authMethod']
-    user = auth_service.getUser(authMethod, username)
-    if user is None:
-        return HttpResponse('User %s does not exist.' % (username))
+    try:
+        user = User.objects.get(username=username)
+        if not user.is_active:
+            return HttpResponse(
+                'User %s is inactive.' % (username), status=400)
+    except User.DoesNotExist:
+        return HttpResponse('User %s does not exist.' % (username), status=400)
 
     try:
         experiment = Experiment.objects.get(pk=experiment_id)
     except Experiment.DoesNotExist:
-        return HttpResponse('Experiment (id=%d) does not exist.'
-                            % (experiment.id))
+        return HttpResponse(
+            'Experiment (id=%d) does not exist.' % (experiment.id),
+            status=400)
 
     acl = ObjectACL.objects.filter(
         content_type=experiment.get_ct(),
@@ -406,7 +392,7 @@ def add_experiment_access_user(request, experiment_id, username):
             request,
             'tardis_portal/ajax/add_user_result.html', c)
 
-    return HttpResponse('User already has experiment access.')
+    return HttpResponse('User already has experiment access.', status=400)
 
 
 @never_cache
@@ -415,12 +401,12 @@ def remove_experiment_access_user(request, experiment_id, username):
     try:
         user = User.objects.get(username=username)
     except User.DoesNotExist:
-        return HttpResponse('User %s does not exist' % username)
+        return HttpResponse('User %s does not exist' % username, status=400)
 
     try:
         Experiment.objects.get(pk=experiment_id)
     except Experiment.DoesNotExist:
-        return HttpResponse('Experiment does not exist')
+        return HttpResponse('Experiment does not exist', status=400)
 
     expt_acls = Experiment.safe.user_acls(experiment_id)
 
@@ -430,7 +416,7 @@ def remove_experiment_access_user(request, experiment_id, username):
     if target_acl.count() == 0:
         return HttpResponse('The user %s does not have access to this '
                             'experiment.'
-                            % username)
+                            % username, status=400)
 
     if expt_acls.count() >= 1:
         if len(owner_acls) > 1 or \
@@ -440,118 +426,12 @@ def remove_experiment_access_user(request, experiment_id, username):
         return HttpResponse(
             'All experiments must have at least one user as '
             'owner. Add an additional owner first before '
-            'removing this one.')
-    else:
-        # the user shouldn't really ever see this in normal operation
-        return HttpResponse(
-            'Experiment has no permissions (of type OWNER_OWNED) !')
+            'removing this one.', status=400)
 
-
-@never_cache
-@authz.experiment_ownership_required
-def change_user_permissions(request, experiment_id, username):
-
-    try:
-        user = User.objects.get(username=username)
-    except User.DoesNotExist:
-        return return_response_error(request)
-
-    try:
-        experiment = Experiment.objects.get(pk=experiment_id)
-    except Experiment.DoesNotExist:
-        return return_response_error(request)
-
-    try:
-        expt_acls = Experiment.safe.user_acls(experiment_id)
-        acl = None
-        for eacl in expt_acls:
-            if eacl.pluginId == 'django_user' and \
-               eacl.get_related_object().id == user.id:
-                acl = eacl
-        # acl = expt_acls.filter(entityId=str(user.id))
-        if acl is None:
-            raise ObjectACL.DoesNotExist
-        owner_acls = [oacl for oacl in expt_acls if oacl.isOwner]
-    except ObjectACL.DoesNotExist:
-        return return_response_error(request)
-
-    if request.method == 'POST':
-        form = ChangeUserPermissionsForm(request.POST, instance=acl)
-
-        if form.is_valid():
-            if 'isOwner' in form.changed_data and \
-                            form.cleaned_data['isOwner'] is False and \
-                            len(owner_acls) == 1:
-                owner = owner_acls[0].get_related_object()
-                plugin = owner_acls[0].pluginId
-                if plugin == 'django_user' and owner.id == user.id:
-                    return render_error_message(
-                        request,
-                        'Cannot remove ownership, every experiment must have at '
-                        'least one user owner.', status=409)
-            form.save()
-            url = reverse('tardis.tardis_portal.views.control_panel')
-            return HttpResponseRedirect(url)
-
-    else:
-        form = ChangeUserPermissionsForm(instance=acl)
-        c = {'form': form,
-             'header':
-             "Change User Permissions for '%s'" % user.username}
-
-    return render_response_index(
-        request, 'tardis_portal/form_template.html', c)
-
-
-@never_cache
-@authz.experiment_ownership_required
-def change_group_permissions(request, experiment_id, group_id):
-
-    try:
-        group = Group.objects.get(pk=group_id)
-    except Group.DoesNotExist:
-        return return_response_error(request)
-
-    try:
-        experiment = Experiment.objects.get(pk=experiment_id)
-    except Experiment.DoesNotExist:
-        return return_response_error(request)
-
-    try:
-        acl = ObjectACL.objects.get(
-            content_type=experiment.get_ct(),
-            object_id=experiment.id,
-            pluginId='django_group',
-            entityId=str(group.id),
-            aclOwnershipType=ObjectACL.OWNER_OWNED)
-    except ObjectACL.DoesNotExist:
-        return return_response_error(request)
-
-    if request.method == 'POST':
-        form = ChangeGroupPermissionsForm(request.POST)
-
-        if form.is_valid():
-            acl.canRead = form.cleaned_data['canRead']
-            acl.canWrite = form.cleaned_data['canWrite']
-            acl.canDelete = form.cleaned_data['canDelete']
-            acl.effectiveDate = form.cleaned_data['effectiveDate']
-            acl.expiryDate = form.cleaned_data['expiryDate']
-            acl.save()
-            return HttpResponseRedirect('/experiment/control_panel/')
-
-    else:
-        form = ChangeGroupPermissionsForm(
-            initial={'canRead': acl.canRead,
-                     'canWrite': acl.canWrite,
-                     'canDelete': acl.canDelete,
-                     'effectiveDate': acl.effectiveDate,
-                     'expiryDate': acl.expiryDate})
-
-    c = {'form': form,
-         'header': "Change Group Permissions for '%s'" % group.name}
-
-    return render_response_index(
-        request, 'tardis_portal/form_template.html', c)
+    # the user shouldn't really ever see this in normal operation
+    return HttpResponse(
+        'Experiment has no permissions (of type OWNER_OWNED) !',
+        status=400)
 
 
 @transaction.atomic  # too complex # noqa
@@ -559,12 +439,9 @@ def change_group_permissions(request, experiment_id, group_id):
 def create_group(request):
 
     if 'group' not in request.GET:
-        c = {'createGroupPermissionsForm':
-             CreateGroupPermissionsForm()}
-
         response = render_response_index(
             request,
-            'tardis_portal/ajax/create_group.html', c)
+            'tardis_portal/ajax/create_group.html', {})
         return response
 
     authMethod = localdb_auth_key
@@ -581,9 +458,6 @@ def create_group(request):
     if 'admin' in request.GET:
         admin = request.GET['admin']
 
-    if 'authMethod' in request.GET:
-        authMethod = request.GET['authMethod']
-
     try:
         with transaction.atomic():
             group = Group(name=groupname)
@@ -596,17 +470,8 @@ def create_group(request):
     adminuser = None
     if admin:
         try:
-            authMethod = request.GET['authMethod']
-            if authMethod == localdb_auth_key:
-                adminuser = User.objects.get(username=admin)
-            else:
-                adminuser = UserAuthentication.objects.get(
-                    username=admin,
-                    authenticationMethod=authMethod).userProfile.user
-
+            adminuser = User.objects.get(username=admin)
         except User.DoesNotExist:
-            return HttpResponse('User %s does not exist' % (admin))
-        except UserAuthentication.DoesNotExist:
             return HttpResponse('User %s does not exist' % (admin))
 
         # create admin for this group and add it to the group
@@ -648,12 +513,14 @@ def add_experiment_access_group(request, experiment_id, groupname):
         experiment = Experiment.objects.get(pk=experiment_id)
     except Experiment.DoesNotExist:
         return HttpResponse('Experiment (id=%d) does not exist' %
-                            (experiment_id))
+                            (experiment_id),
+                            status=400)
 
     try:
         group = Group.objects.get(name=groupname)
     except Group.DoesNotExist:
-        return HttpResponse('Group %s does not exist' % (groupname))
+        return HttpResponse(
+            'Group %s does not exist' % (groupname), status=400)
 
     acl = ObjectACL.objects.filter(
         content_type=experiment.get_ct(),
@@ -664,9 +531,10 @@ def add_experiment_access_group(request, experiment_id, groupname):
 
     if acl.count() > 0:
         # An ACL already exists for this experiment/group.
-        return HttpResponse('Could not create group %s '
-                            '(It is likely that it already exists)' %
-                            (groupname))
+        return HttpResponse('Could not add group %s '
+                            '(It has already been added)' %
+                            (groupname),
+                            status=400)
 
     acl = ObjectACL(content_object=experiment,
                     pluginId='django_group',
@@ -713,7 +581,7 @@ def remove_experiment_access_group(request, experiment_id, group_id):
     if acl.count() == 1:
         acl[0].delete()
         return HttpResponse('OK')
-    elif acl.count() == 0:
+    if acl.count() == 0:
         return HttpResponse('No ACL available.'
                             'It is likely the group doesnt have access to'
                             'this experiment.')

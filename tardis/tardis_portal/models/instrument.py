@@ -21,24 +21,20 @@ class Instrument(models.Model):
         unique_together = ['name', 'facility']
         ordering = ('name', )
 
-    def save(self):
+    def save(self, *args, **kwargs):
         self.modified_time = timezone.now()
-        super(Instrument, self).save()
+        super(Instrument, self).save(*args, **kwargs)
 
     def __str__(self):
         return self.name
 
-    def getParameterSets(self, schemaType=None):
+    def getParameterSets(self):
         '''Return the instrument parametersets associated with this
         instrument.
-
         '''
         from .parameters import Schema
-        if schemaType == Schema.INSTRUMENT or schemaType is None:
-            return self.instrumentparameterset_set.filter(
-                schema__type=Schema.INSTRUMENT)
-        else:
-            raise Schema.UnsupportedType
+        return self.instrumentparameterset_set.filter(
+            schema__type=Schema.INSTRUMENT)
 
     def _has_change_perm(self, user_obj):
         """
