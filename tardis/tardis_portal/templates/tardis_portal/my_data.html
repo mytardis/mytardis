@@ -12,8 +12,6 @@
 <div id="content" class="container-fluid">
   <div class="row">
     <div class="col-md-12">
-      <h2 class="visible-xs">Experiments</h2>
-    <div class="col-md-9">
       <h2 class="d-block d-sm-none">Experiments</h2>
       <div class="pull-right">
         {% if perms.tardis_portal.add_experiment %}
@@ -54,10 +52,9 @@
         Expand all</button>
       </div>
       <div class="clearfix"></div>
-      <div id="myowned" class="mydata accordion experiments"></div>
+      <div id="myowned" class="panel-group experiments"></div>
       <br/>
       {% endif %}
-
     </div>  <!-- class="col-md-12" -->
   </div>  <!-- class="row" -->
 </div>  <!-- id="content" -->
