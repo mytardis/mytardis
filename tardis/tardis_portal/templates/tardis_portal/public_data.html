@@ -57,7 +57,7 @@
                       <li class="list-inline-item m-0">{{ exp|experiment_public_access_badge }}</li>
                     </ul>
                   </div>
-                </div>
+                </div> {% comment %} class="row" {% endcomment %}
                 <div class="row">
                   <div class="col-6">
                     <small>
@@ -84,8 +84,7 @@
                     </span>
                   </div>
                 </div>
-              </div>
-              <div id="collapse{{exp.id}}"
+                <div id="collapse{{exp.id}}"
                    class="panel-collapse collapse in">
                 <div class="accordion-inner">
                   <p><em>{{exp.description|default:""|bleach}}</em></p>
@@ -121,6 +120,7 @@
                   {% endfor %}
                 </div>
             </div>
+              </div>
           </div>
         {% endfor %}
       </div>

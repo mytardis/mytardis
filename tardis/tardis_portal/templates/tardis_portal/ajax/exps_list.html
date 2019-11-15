@@ -33,8 +33,7 @@
           {% experiment_download_link exp %}
         </span>
       </div>
-    </div>{% comment %} class="card-header" {% endcomment %}
-
+    </div>{% comment %} class="row" {% endcomment %}
     <div id="collapse-{{exp.id}}"
          class="panel-collapse collapse">
       <div class="accordion-inner">
@@ -42,7 +41,8 @@
         <div id="latest-dataset-{{exp.id}}"></div>
       </div> {% comment %} class="accordion-inner" {% endcomment %}
     </div> {% comment %} class="accordion-body" {% endcomment %}
-  </div> {% comment %} class="accordion-group" {% endcomment %}
+  </div>
+  </div>{% comment %} class="card" {% endcomment %}
 {% empty %}
   <p>You do not own any Experiment on this server.<br/>
     <a href="{% url 'tardis.tardis_portal.views.create_experiment' %}">Create a new experiment</a>
