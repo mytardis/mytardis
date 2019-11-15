@@ -126,7 +126,6 @@ div.copylink {
 /* index page */
 .experiments .accordion-toggle .explink {
     font-size: 1.3em;
-    max-width: 67%;
 }
 .experiments .accordion-toggle .badgelist {
     margin-bottom: 4px;
