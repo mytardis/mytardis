@@ -75,7 +75,6 @@
                       </span>
                     </div>
                   </div>
-                </div>
               <div class="">
                 <div id="collapse-{{exp.id}}"
                    class="collapse">
@@ -139,14 +138,14 @@
                 </span>
                 </div>
               </div>
-            </div>
-            <div id="collapsepub-{{exp.id}}"
+              <div id="collapsepub-{{exp.id}}"
                  class="panel-collapse collapse">
               <div class="accordion-inner">
                 <p>{{exp.description|default:"<em>No description</em>"|bleach}}</p>
                 <div id="public-recent-datasets-{{exp.id}}"></div>
               </div> {% comment %}class="accordion-inner"{% endcomment %}
-            </div> {% comment %}class="accordion-body"{% endcomment %}
+            </div>
+            </div>
           </div> {% comment %}class="accordion-group"{% endcomment %}
           {% empty %}
           <p>There is no public data available on this server.</p>
