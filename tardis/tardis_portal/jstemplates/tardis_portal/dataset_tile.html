@@ -49,27 +49,29 @@
       {{/description}}
       </a>
     </p>
-  </div>
-  {{#show_instr_facil}}
-  <div class="float-left">
+     {{#show_instr_facil}}
     <p style="color:grey;font-size:100%;">
-    {{#instrument}}
-    Instrument: {{instrument}}
-    {{/instrument}}
-    {{#facility}}
-    {{#instrument}}<br>{{/instrument}}
-    Facility: {{facility}}
-    {{/facility}}
+      {{#instrument}}
+      Instrument: {{instrument}}
+      {{/instrument}}
+      {{#facility}}
+      {{#instrument}}<br>{{/instrument}}
+      Facility: {{facility}}
+      {{/facility}}
     </p>
-    {{/show_instr_facil}}
-    {{#directory}}
+      {{/show_instr_facil}}
+      {{#directory}}
     <p style="color:grey;font-size:100%;">Folder:
       <span style="color:#3a87ad;font-weight:bold;" id="folder">{{directory}}</span></p>
-    {{/directory}}
-    {{#datasettype}}
+      {{/directory}}
+      {{#datasettype}}
     <p style="color:grey;font-size:100%;">{{datasettype}}</p>
     {{/datasettype}}
     <div style="clear: both"></div>
+  </div>
+
+  <div class="float-left">
+
   </div>
 
 </div>
