@@ -293,7 +293,13 @@ h4 {font-size: 14px;}
 h4 small {font-size: 12px;}
 h5 {font-size: 12px;}
 h6 {font-size: 11px;color: #999999;text-transform: uppercase;}
-.page-header { margin-top: 10px; margin-bottom: 10px; }
+.page-header {
+    margin-top: 10px;
+    margin-bottom: 10px;
+    padding-bottom: 9px;
+    margin: 40px 0 20px;
+    border-bottom: 1px solid #eeeeee
+}
 
 .datasets.thumbnails {
     list-style-type: none;
