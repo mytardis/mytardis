@@ -401,10 +401,7 @@ class Parameter(models.Model):
             # input validation happens elsewhere and may be less permissive)
             datevalue = dateutil.parser.parse(value)
             if settings.USE_TZ and is_naive(datevalue):
-                if LOCAL_TZ is not None:
-                    datevalue = make_aware(datevalue, LOCAL_TZ)
-                else:
-                    datevalue = make_aware(datevalue, LOCAL_TZ, is_dst=False)
+                datevalue = make_aware(datevalue, LOCAL_TZ, settings.IS_DST)
             elif not settings.USE_TZ and is_aware(datevalue):
                 datevalue = make_naive(datevalue, LOCAL_TZ)
             self.datetime_value = datevalue

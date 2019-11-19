@@ -146,11 +146,7 @@ class ParameterSetManager(object):
             if par.name.isDateTime():
                 if is_aware(par.datetime_value):
                     return par.datetime_value
-                if LOCAL_TZ is not None:
-                    return make_aware(par.datetime_value, LOCAL_TZ)
-                else:
-                    return make_aware(par.datetime_value, LOCAL_TZ,
-                        is_dst=False)
+                return make_aware(par.datetime_value, LOCAL_TZ, settings.IS_DST)
             return par.string_value
         return par
 
