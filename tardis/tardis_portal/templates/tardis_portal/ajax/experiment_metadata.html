@@ -1,14 +1,15 @@
 {% load capture %}
 
-
-<div class="pull-right">
+<div class="container-fluid">
+  <div class="float-right">
     {% if has_write_permissions and not experiment.locked and not experiment.is_publication %}
-        <a title="Add" class="add-metadata btn btn-default btn-xs"
+        <a title="Add" class="add-metadata btn btn-outline-secondary btn-sm"
            href="{% url 'tardis.tardis_portal.views.add_experiment_par' experiment.id %}">
           <i class="fa fa-plus"></i>
           Add Experiment Metadata
         </a>
     {% endif %}
+  </div>
 </div>
 
 <br />
@@ -28,7 +29,7 @@
         {% include "tardis_portal/ajax/parameter_table.html" with parameters=parameterset.experimentparameter_set.all %}
     </div>
 {% empty %}
-  <div class="alert alert-info">
+  <div class="alert alert-info mt-3" >
     There is no metadata for this experiment.
   </div>
 {% endfor %}

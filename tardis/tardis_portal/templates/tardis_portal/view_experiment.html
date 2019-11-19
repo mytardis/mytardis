@@ -46,7 +46,7 @@
 <div class="page-header">
   <h4>Experiment</h4>
   {% if not experiment.public %}
-  <div class="pull-right">
+  <div class="float-right">
     {% if push_to_enabled and is_authenticated %}
     <a class="btn btn-sm btn-primary" title="Push to..."
        onclick="window.open('{{ push_to_url }}', 'push-to', 'width=800, height=600'); return false;"
@@ -86,19 +86,16 @@
 
 <div class="row" >
   <div class="col-md-5">
-
   <div class="card border-0">
-    <div class="card-body" style="padding: unset">
-      <div align="center" style="margin-bottom: -20px">
-        <div id="abstractHolder" style="display: none">{{ experiment.description|bleach|linebreaksbr }}</div>
-        <a id="abstract-toggle" class="btn btn-secondary btn-sm" title="Show Description">
-           Toggle Full Description
-        </a>
+    <div class="card-body">
+      <div id="collapseDescription">
+        <p class="font-weight-bold collapsed text-center" data-toggle="collapse"
+           href="#collapseContent" aria-expanded="false" aria-controls="collapseContent" title="Show Description">
+        </p>
+        <p class="card-text bg-light collapse" id="collapseContent" property="dc:abstract">
+        {{ experiment.description|bleach|linebreaksbr }}
+        </p>
       </div>
-      <p class="abstract card-text bg-light info-box" property="dc:abstract">
-        <span id="abstractText">
-        </span>
-      </p>
     </div>
   </div>
     <!-- Tab buttons -->

@@ -41,9 +41,27 @@ body {
   text-overflow: ellipsis;
 }
 
-#abstract-toggle {
-    margin-bottom: -7px;
-    display: none;
+#collapseDescription {
+    font-size: 14px;
+    line-height: 1.5;
+}
+#collapseDescription p.collapsing {
+    min-height: 42px !important;
+}
+#collapseDescription p.collapse:not(.show) {
+    height: 42px !important;
+    overflow: hidden;
+
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+#collapseDescription p.collapsed:after  {
+    content: '+ Show Description';
+}
+
+#collapseDescription p:not(.collapsed):after {
+    content: '- Hide Description';
 }
 
 .truncated-text {
