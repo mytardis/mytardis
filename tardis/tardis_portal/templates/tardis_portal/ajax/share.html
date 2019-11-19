@@ -103,7 +103,7 @@
             </dl>
         </p>
         {% if is_owner or is_superuser %}
-        <a class="public_access_link btn btn-default btn-xs" title="Change">
+        <a class="public_access_link btn btn-outline-secondary btn-sm" title="Change">
           <i class="fa fa-cog"></i>
           Change Public Access
         </a>
@@ -116,7 +116,7 @@
     <p>Users who have a share in this experiment:</p>
     <div id="experiment_user_list"></div>
     {% if is_owner or is_superuser %}
-    <a class="share_link btn btn-default btn-xs" title="Change">
+    <a class="share_link btn btn-outline-secondary btn-sm" title="Change">
         <i class="fa fa-share"></i>
         Change User Sharing
     </a>
@@ -126,7 +126,7 @@
     <p>Groups who have a share in this experiment:</p>
     <div id="experiment_group_list"></div>
     {% if is_owner or is_superuser %}
-    <a class="share_link_group btn btn-default btn-xs" title="Change">
+    <a class="share_link_group btn btn-outline-secondary btn-sm" title="Change">
         <i class="fa fa-share"></i>
         Change Group Sharing
     </a>
@@ -154,7 +154,7 @@
         {% if is_owner or is_superuser %}
         <a title="Create New Temporary Link"
             href="{{ experiment.get_create_token_url }}"
-            class="create_token_link btn btn-default btn-xs">
+            class="create_token_link btn btn-outline-secondary btn-sm">
             <i class="fa fa-plus"></i>
             Create New Temporary Link
         </a>
