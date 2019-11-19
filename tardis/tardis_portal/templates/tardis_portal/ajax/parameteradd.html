@@ -10,16 +10,21 @@
     {% csrf_token %}
     <div class="form-horizontal">
       <div class="form-group">
-        <label class="control-label col-md-2" style="text-align:left;"
-               for="schemaselect">Schema</label>
-        <div class="col-md-6">
-          <select id="schemaselect" class="form-control" data-type="{{type}}" data-parent_object_id="{{parentObject.id}}">
-          {% for schema in all_schema %}
-            <option value="{{schema.id}}" {% if schema.id == schema_id %}selected{% endif %}>{{schema.name}}</option>
-          {% endfor %}
-          </select>
+        <div class="row">
+          <div class="col-md-2">
+             <label style="text-align:left;"
+                   for="schemaselect">Schema
+             </label>
+          </div>
+          <div class="col-md-6">
+            <select id="schemaselect" class="form-control" data-type="{{type}}" data-parent_object_id="{{parentObject.id}}">
+            {% for schema in all_schema %}
+              <option value="{{schema.id}}" {% if schema.id == schema_id %}selected{% endif %}>{{schema.name}}</option>
+            {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-4"></div>
         </div>
-        <div class="col-md-4"></div>
       </div>
     </div>
     {{ form.non_field_errors }}
@@ -34,7 +39,7 @@
 
     <div class="form-group">
       <footer class="col-md-12 text-right">
-        <button type="button" class="cancel-button btn btn-default"
+        <button type="button" class="cancel-button btn btn-secondary"
                 data-dismiss="modal">
           <i class="fa fa-close"></i>
           Cancel
