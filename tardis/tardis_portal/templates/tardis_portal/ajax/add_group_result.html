@@ -11,13 +11,13 @@
     </div>
     <div class="col-md-4">
       {% if group_acl.canRead %}
-      <span class="label label-success">Read</span>
+      <span class="badge badge-success">Read</span>
       {% endif %}
       {% if group_acl.canWrite %}
-      <span class="label label-success">Edit</span>
+      <span class="badge badge-success">Edit</span>
       {% endif %}
       {% if group_acl.isOwner %}
-      <span class="label label-info">Owner</span>
+      <span class="badge badge-info">Owner</span>
       {% endif %}
     </div>
     {% if system %}
@@ -26,9 +26,9 @@
     </div>
     {% else %}
     <div class="col-md-4">
-      <a class="remove_group btn btn-xs btn-danger"
+      <a class="remove_group btn btn-sm btn-danger"
          href="{% url 'tardis.tardis_portal.views.remove_experiment_access_group' experiment_id group.id %}">
-        <i class="fa fa-remove"></i> Delete
+        <i class="fa fa-trash"></i>
       </a>
     </div>
     {% endif %}
