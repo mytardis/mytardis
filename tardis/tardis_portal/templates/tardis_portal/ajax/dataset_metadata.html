@@ -17,7 +17,7 @@
   {% capture as edit_control %}
    {% if has_write_permissions and not parameterset.schema.immutable %}
    <div class="pull-right">
-       <a class="edit-metadata btn btn-default btn-xm btn-warning" href="{% url 'tardis.tardis_portal.views.edit_dataset_par' parameterset.id %}">
+       <a class="edit-metadata btn btn-default btn-sm btn-warning" href="{% url 'tardis.tardis_portal.views.edit_dataset_par' parameterset.id %}">
           <i class="fa fa-pencil"></i>
           Edit
        </a>

@@ -90,11 +90,11 @@
   <div class="card border-0">
     <div class="card-body">
       <div id="collapseDescription">
-        <p class="font-weight-bold collapsed text-center" data-toggle="collapse"
-           href="#collapseContent" aria-expanded="false" aria-controls="collapseContent" title="Show Description">
-        </p>
         <p class="card-text bg-light collapse" id="collapseContent" property="dc:abstract">
         {{ experiment.description|bleach|linebreaksbr }}
+        </p>
+        <p class="font-weight-bold collapsed" data-toggle="collapse"
+           href="#collapseContent" aria-expanded="false" aria-controls="collapseContent" title="Show Description">
         </p>
       </div>
     </div>

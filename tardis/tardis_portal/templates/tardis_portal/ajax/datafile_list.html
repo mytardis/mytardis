@@ -2,18 +2,21 @@
 <input type="hidden" id="datafile-count" value="{{datafile_count}}"/>
 {% capture as paginator_block %}
 {% if datafiles.paginator.num_pages > 1 %}
-  <ul class="pagination" style="margin-left: auto; margin-right: auto; display: table;">
+  <nav class="d-flex justify-content-center">
+    <ul class="pagination">
     {% if datafiles.has_previous %}
-    <li>
-      <a class="pagelink" href="/ajax/datafile_list/{{dataset.id}}/?page={{ datafiles.previous_page_number }}&{{params}}">&laquo;</a>
+    <li class="page-item">
+      <a class="page-link" href="/ajax/datafile_list/{{dataset.id}}/?page={{ datafiles.previous_page_number }}&{{params}}">&laquo;</a>
     </li>
     {% else %}
-    <li class="disabled"><a href="#">&laquo;</a></li>
+    <li class="disabled page-item">
+      <a class="page-link" href="#">&laquo;</a>
+    </li>
     {% endif %}
 
     {% for pagenum in datafiles.paginator.page_range %}
-    <li {% if datafiles.number == pagenum %} class="active"{% endif %}>
-      <a class="pagelink"
+    <li {% if datafiles.number == pagenum %} class="active page-item"{% endif %}>
+      <a class="page-link"
          href="/ajax/datafile_list/{{dataset.id}}/?page={{pagenum}}&{{params}}">
          {{pagenum}}
       </a>
@@ -21,14 +24,15 @@
     {% endfor %}
 
     {% if datafiles.has_next %}
-    <li>
-      <a class="pagelink" href="/ajax/datafile_list/{{dataset.id}}/?page={{ datafiles.next_page_number }}&{{params}}">&raquo;</a>
+    <li class="page-item">
+      <a class="page-link" href="/ajax/datafile_list/{{dataset.id}}/?page={{ datafiles.next_page_number }}&{{params}}">&raquo;</a>
     </li>
     {% else %}
-    <li class="disabled"><a href="#">&raquo;</a></li>
+    <li class="disabled page-item"><a class="page-link" href="#">&raquo;</a></li>
     {% endif %}
   </ul>
   <!-- Page {{ dataset.number }} of {{ dataset.paginator.num_pages }} -->
+  </nav>
 {% endif %}
 {% endcapture %}
 
