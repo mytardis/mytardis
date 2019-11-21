@@ -96,8 +96,8 @@
     </div>  <!-- modal-content -->
   </div>  <!-- modal-dialog -->
 </div>
-
-<div class="page-header">
+<div class="row">
+  <div class="page-header col-md-12">
   <h4>Dataset</h4>
     <div class="float-right">
   {% if push_to_enabled and is_authenticated %}
@@ -183,8 +183,8 @@
     <p style="text-align:left; margin-top:10px;">
   </p>
 </div>
-
-<div class="row" >
+</div>
+<div class="row">
   <div class="col-md-6">
     {% block dataset_content_preview %}
     {% if dataset.get_images.exists %}
