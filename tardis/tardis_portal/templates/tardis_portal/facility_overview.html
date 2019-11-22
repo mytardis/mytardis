@@ -125,7 +125,7 @@
                 <div class="row" ng-show="facilityCtrl.datasets.length" ng-cloak>
                   <!-- Data filters -->
                   <div class="col-md-12">
-                    <div class="card">
+                    <div class="card mb-2">
                       <div class="card-body">
                         <form class="form-inline">
                       <div class="form-group mr-2">
@@ -312,7 +312,7 @@
   </button>
 </script>
 <script type="text/ng-template" id="datafileCount">
-  <span class="label label-default"
+  <span class="badge badge-pill badge-secondary"
         ng-class="(dataset.verified_datafiles_count<dataset.datafile_count||!dataset.datafile_count)?'label-danger':''">
     <ng-pluralize count="dataset.verified_datafiles_count"
                   when="{'0': 'no verified files', 'one': '1 verified file', 'other': '{} verified files'}">
