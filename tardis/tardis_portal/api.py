@@ -713,6 +713,21 @@ class DatasetResource(MyTardisModelResource):
         df_res = DataFileResource()
         return df_res.dispatch('list', request, **kwargs)
 
+    def hydrate_m2m(self, bundle):
+        '''
+        Create experiment-dataset associations first, because they affect
+        authorization for adding other related resources, e.g. metadata
+        '''
+        if getattr(bundle.obj, 'id', False):
+            for exp_uri in bundle.data.get('experiments', []):
+                try:
+                    exp = ExperimentResource.get_via_uri(
+                        ExperimentResource(), exp_uri, bundle.request)
+                    bundle.obj.experiments.add(exp)
+                except NotFound:
+                    pass
+        return super(DatasetResource, self).hydrate_m2m(bundle)
+
 
 class DataFileResource(MyTardisModelResource):
     dataset = fields.ForeignKey(DatasetResource, 'dataset')
