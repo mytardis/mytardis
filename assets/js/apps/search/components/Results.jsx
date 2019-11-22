@@ -11,25 +11,25 @@ function Results({ results, counts }) {
       </div>
       <div id="tabbed-pane" className="container">
         <ul className="nav nav-tabs" style={{ fontWeight: 600 }}>
-          <li className="active">
-            <a href="#1a" data-toggle="tab">
+          <li className="nav-item">
+            <a className="nav-link active" href="#1a" data-toggle="tab">
               <i className="fa fa-flask fa-2x" />
               Experiments
-              <span className="badge badge-light">{counts.experimentsCount}</span>
+              <span className="badge badge-secondary">{counts.experimentsCount}</span>
             </a>
           </li>
-          <li>
-            <a href="#2a" data-toggle="tab">
+          <li className="nav-item">
+            <a className="nav-link" href="#2a" data-toggle="tab">
               <i className="fa fa-folder fa-2x" />
               Datasets
-              <span className="badge badge-light">{counts.datasetsCount}</span>
+              <span className="badge badge-secondary">{counts.datasetsCount}</span>
             </a>
           </li>
-          <li>
-            <a href="#3a" data-toggle="tab">
+          <li className="nav-item">
+            <a className="nav-link" href="#3a" data-toggle="tab">
               <i className="fa fa-file fa-2x" />
               Datafiles
-              <span className="badge badge-light">{counts.datafilesCount}</span>
+              <span className="badge badge-secondary">{counts.datafilesCount}</span>
             </a>
           </li>
         </ul>
