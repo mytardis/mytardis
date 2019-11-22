@@ -129,9 +129,8 @@ function AdvancedSearchForm({ searchText, showResults, instrumentList }) {
         <button
           type="submit"
           className="btn btn-primary"
-          onClick={handleAdvancedSearchFormSubmit}
-        >
-          <span className="glyphicon glyphicon-search" aria-hidden="true" />
+          onClick={handleAdvancedSearchFormSubmit}>
+          <i className="fa fa-search" aria-hidden="true"/>
         </button>
         {isLoading && (
           <div className="col-md-6" style={{ textAlign: "center", position: "absolute" }}>
