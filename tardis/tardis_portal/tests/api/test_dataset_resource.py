@@ -90,11 +90,18 @@ class DatasetResourceTest(MyTardisResourceTestCase):
             ],
             "immutable": False}
         dataset_count = Dataset.objects.count()
-        self.assertHttpCreated(self.api_client.post(
+        response = self.api_client.post(
             '/api/v1/dataset/',
             data=post_data,
-            authentication=self.get_credentials()))
+            authentication=self.get_credentials())
+        self.assertHttpCreated(response)
         self.assertEqual(dataset_count + 1, Dataset.objects.count())
+        created_dataset_uri = response['Location']
+        created_dataset_id = created_dataset_uri.split('/')[-2]
+        created_dataset = Dataset.objects.get(id=created_dataset_id)
+        self.assertEqual(created_dataset.experiments.count(), 1)
+        self.assertEqual(
+            created_dataset.experiments.first().id, exp_id)
 
     def test_get_dataset_files(self):
         ds_id = self.ds_no_instrument.id
