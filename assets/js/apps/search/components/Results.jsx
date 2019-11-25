@@ -10,7 +10,6 @@ function Results({ results, counts }) {
         <h2>Search Results </h2>
       </div>
       <div id="tabbed-pane" className="container">
-        <ul className="nav nav-tabs" style={{ fontWeight: 600 }}>
         <ul className="nav nav-tabs" style={{ fontWeight: 600 }} id="searchTab" role="tablist">
           <li className="nav-item">
             <a className="nav-link active" id="experiments-tab" data-toggle="tab" href="#experiments" role="tab"
@@ -18,7 +17,7 @@ function Results({ results, counts }) {
                aria-selected="true">
                <i className="fa fa-flask fa-2x" />
               Experiments
-              <span className="badge badge-secondary">{counts.experimentsCount}</span>
+              <span className="badge badge-secondary count-badge">{counts.experimentsCount}</span>
             </a>
           </li>
           <li className="nav-item">
@@ -26,7 +25,7 @@ function Results({ results, counts }) {
                aria-controls="profile" aria-selected="false">
               <i className="fa fa-folder fa-2x" />
               Datasets
-              <span className="badge badge-secondary">{counts.datasetsCount}</span>
+              <span className="badge badge-secondary count-badge">{counts.datasetsCount}</span>
             </a>
           </li>
           <li className="nav-item">
@@ -34,7 +33,7 @@ function Results({ results, counts }) {
                aria-controls="contact" aria-selected="false">
               <i className="fa fa-file fa-2x" />
               Datafiles
-              <span className="badge badge-secondary">{counts.datafilesCount}</span>
+              <span className="badge badge-secondary count-badge">{counts.datafilesCount}</span>
             </a>
           </li>
         </ul>

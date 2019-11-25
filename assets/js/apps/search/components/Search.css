@@ -23,10 +23,12 @@ app {
 .btn-primary {
     border-radius: 0px;
 }
-.badge {
-    margin-left: 5px;
+.count-badge{
+    margin-left: 10px;
     border-radius: 10px;
 }
+
+
 .panel{
     border: none;
     box-shadow: none;
