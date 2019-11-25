@@ -271,7 +271,7 @@ class ExperimentListsTest(TestCase):
         request.GET = QueryDict('')
         response = retrieve_shared_exps_list(request)
         self.assertEqual(response.status_code, 200)
-        self.assertIn(b'<ul class="pagination"', response.content)
+        self.assertIn(b'<ul class="pagination justify-content-center"', response.content)
         self.assertIn(b'Page 1 of 10', response.content)
 
         # Now let's reduce the number of shared experiments from
