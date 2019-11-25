@@ -11,30 +11,35 @@ function Results({ results, counts }) {
       </div>
       <div id="tabbed-pane" className="container">
         <ul className="nav nav-tabs" style={{ fontWeight: 600 }}>
+        <ul className="nav nav-tabs" style={{ fontWeight: 600 }} id="searchTab" role="tablist">
           <li className="nav-item">
-            <a className="nav-link active" href="#1a" data-toggle="tab">
-              <i className="fa fa-flask fa-2x" />
+            <a className="nav-link active" id="experiments-tab" data-toggle="tab" href="#experiments" role="tab"
+               aria-controls="experiments"
+               aria-selected="true">
+               <i className="fa fa-flask fa-2x" />
               Experiments
               <span className="badge badge-secondary">{counts.experimentsCount}</span>
             </a>
           </li>
           <li className="nav-item">
-            <a className="nav-link" href="#2a" data-toggle="tab">
+            <a className="nav-link" id="datasets-tab" data-toggle="tab" href="#datasets" role="tab"
+               aria-controls="profile" aria-selected="false">
               <i className="fa fa-folder fa-2x" />
               Datasets
               <span className="badge badge-secondary">{counts.datasetsCount}</span>
             </a>
           </li>
           <li className="nav-item">
-            <a className="nav-link" href="#3a" data-toggle="tab">
+            <a className="nav-link" id="datafiles-tab" data-toggle="tab" href="#datafiles" role="tab"
+               aria-controls="contact" aria-selected="false">
               <i className="fa fa-file fa-2x" />
               Datafiles
               <span className="badge badge-secondary">{counts.datafilesCount}</span>
             </a>
           </li>
         </ul>
-        <div className="tab-content">
-          <div className="tab-pane active" id="1a">
+        <div className="tab-content" id="myTabContent">
+          <div className="tab-pane fade show active" id="experiments" role="tabpanel" aria-labelledby="experiments-tab">
             <div className="result-list">
               { counts.experimentsCount === 0
                 ? <span>No matching experiment found.</span> : <span /> }
@@ -49,7 +54,7 @@ function Results({ results, counts }) {
               )}
             </div>
           </div>
-          <div className="tab-pane" id="2a">
+          <div className="tab-pane fade" id="datasets" role="tabpanel" aria-labelledby="datasets-tab">
             <div className="result-list">
               { counts.datasetsCount === 0
                 ? <span>No matching dataset found.</span> : <span />
@@ -65,7 +70,7 @@ function Results({ results, counts }) {
               )}
             </div>
           </div>
-          <div className="tab-pane" id="3a">
+          <div className="tab-pane fade" id="datafiles" role="tabpanel" aria-labelledby="datafiles-tab">
             <div className="result-list">
               { counts.datafilesCount === 0
                 ? <span>No matching datafile found.</span> : <span />
