@@ -206,12 +206,6 @@ div.copylink {
 }
 /* end index page */
 
-.badge {
-    -webkit-border-radius: 0px;
-    -moz-border-radius: 0px;
-    border-radius: 0px;
-}
-
 /* dataset tiles */
 .ds-thumb canvas {
     width: 100px;
