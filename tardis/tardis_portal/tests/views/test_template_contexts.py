@@ -213,7 +213,8 @@ class ExperimentListsTest(TestCase):
         mock_webpack_get_bundle.assert_called()
         # jQuery hasn't populated the div yet:
         self.assertIn(
-            b'<div id="myowned" class="mydata accordion experiments"></div>',
+
+            b'<div id="myowned" class="mydata panel-group experiments"></div>',
             response.content)
 
         # Owned experiments:
@@ -223,7 +224,7 @@ class ExperimentListsTest(TestCase):
         request.GET = QueryDict('')
         response = retrieve_owned_exps_list(request)
         self.assertEqual(response.status_code, 200)
-        self.assertIn(b'<ul class="pagination"', response.content)
+        self.assertIn(b'<ul class="pagination justify-content-center"', response.content)
         self.assertIn(b'Page 1 of 5', response.content)
 
         # Now let's reduce the number of owned experiments from
