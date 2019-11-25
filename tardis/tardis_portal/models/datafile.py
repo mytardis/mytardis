@@ -3,13 +3,11 @@ import logging
 import re
 from contextlib import contextmanager
 from tempfile import NamedTemporaryFile
+from urllib.parse import quote
 
 from os import path
 import mimetypes
 
-import six
-from six.moves import urllib
-from six import string_types
 
 from django.conf import settings
 from django.core.files import File
@@ -502,7 +500,7 @@ class DataFileObject(models.Model):
     def _changed(self):
         """return True if anything has changed since last save"""
         new_values = self._current_values
-        for k, v in six.iteritems(new_values):
+        for k, v in new_values.items():
             if k not in self._initial_values:
                 return True
             if self._initial_values[k] != v:
@@ -546,10 +544,10 @@ class DataFileObject(models.Model):
 
         def default_identifier(dfo):
             path_parts = ["%s-%s" % (
-                urllib.parse.quote(dfo.datafile.dataset.description, safe='') or 'untitled',
+                quote(dfo.datafile.dataset.description, safe='') or 'untitled',
                 dfo.datafile.dataset.id)]
             if dfo.datafile.directory is not None:
-                path_parts += [urllib.parse.quote(dfo.datafile.directory)]
+                path_parts += [quote(dfo.datafile.directory)]
             path_parts += [dfo.datafile.filename.strip()]
             uri = path.join(*path_parts)
             return uri
@@ -729,7 +727,7 @@ class DataFileObject(models.Model):
                     for comp_type in comparisons}
         database_update = {}
         empty_value = {db_key: db_val is None or (
-            isinstance(db_val, string_types) and db_val.strip() == '')
+            isinstance(db_val, str) and db_val.strip() == '')
             for db_key, db_val in database.items()}
         same_values = {key: False for key, empty in empty_value.items()
                        if not empty}

@@ -1,7 +1,5 @@
 import pytz
 
-import six
-
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils.timezone import is_aware, make_aware
@@ -191,7 +189,7 @@ class ParameterSetManager(object):
                 self.new_param(parname, value, fullparname)
 
     def set_params_from_dict(self, params_dict):
-        for (key, value) in six.iteritems(params_dict):
+        for (key, value) in params_dict.items():
             if isinstance(value, list):
                 self.set_param_list(key, value)
             else:

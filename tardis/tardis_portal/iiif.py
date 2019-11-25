@@ -3,7 +3,7 @@ import hashlib
 import json
 import mimetypes
 
-from six import BytesIO
+from io import BytesIO
 
 from wand.exceptions import WandException
 from wand.image import Image
