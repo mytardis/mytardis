@@ -5,8 +5,7 @@ Testing the User resource in MyTardis's Tastypie-based REST API
 '''
 import json
 
-import six
-from six.moves import urllib
+from urllib.parse import quote
 
 from . import MyTardisResourceTestCase
 
@@ -24,7 +23,7 @@ class UserResourceTest(MyTardisResourceTestCase):
             authentication=self.get_admin_credentials())
         self.assertHttpOK(response)
         returned_data = json.loads(response.content.decode())
-        for key, value in six.iteritems(expected_output):
+        for key, value in expected_output.items():
             self.assertTrue(key in returned_data)
             self.assertEqual(returned_data[key], value)
 
@@ -34,13 +33,12 @@ class UserResourceTest(MyTardisResourceTestCase):
             "username": self.user.username
         }
         response = self.api_client.get(
-            '/api/v1/user/?username=%s' %
-            urllib.parse.quote(self.user.username),
+            '/api/v1/user/?username=%s' % quote(self.user.username),
             authentication=self.get_credentials())
         self.assertHttpOK(response)
         returned_data = json.loads(response.content.decode())
         self.assertEqual(returned_data['meta']['total_count'], 1)
         returned_user = returned_data['objects'][0]
-        for key, value in six.iteritems(expected_output):
+        for key, value in expected_output.items():
             self.assertTrue(key in returned_user)
             self.assertEqual(returned_user[key], value)

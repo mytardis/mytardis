@@ -6,10 +6,9 @@ Testing the Group resource in MyTardis's Tastypie-based REST API
 '''
 import json
 
-from django.contrib.auth.models import Group
+from urllib.parse import quote
 
-import six
-from six.moves import urllib
+from django.contrib.auth.models import Group
 
 from . import MyTardisResourceTestCase
 
@@ -26,7 +25,7 @@ class GroupResourceTest(MyTardisResourceTestCase):
                                      authentication=self.get_credentials())
         self.assertHttpOK(response)
         returned_data = json.loads(response.content.decode())
-        for key, value in six.iteritems(expected_output):
+        for key, value in expected_output.items():
             self.assertTrue(key in returned_data)
             self.assertEqual(returned_data[key], value)
 
@@ -37,13 +36,12 @@ class GroupResourceTest(MyTardisResourceTestCase):
             "name": "Test Group",
         }
         response = self.api_client.get(
-            '/api/v1/group/?name=%s' %
-            urllib.parse.quote(self.testgroup.name),
+            '/api/v1/group/?name=%s' % quote(self.testgroup.name),
             authentication=self.get_credentials())
         self.assertHttpOK(response)
         returned_data = json.loads(response.content.decode())
         self.assertEqual(returned_data['meta']['total_count'], 1)
         returned_group = returned_data['objects'][0]
-        for key, value in six.iteritems(expected_output):
+        for key, value in expected_output.items():
             self.assertTrue(key in returned_group)
             self.assertEqual(returned_group[key], value)

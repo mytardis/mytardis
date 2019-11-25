@@ -9,7 +9,6 @@ from django.test import TestCase
 from django.test.client import Client
 # from nose.plugins.skip import SkipTest
 
-import six
 from wand.image import Image
 from lxml import etree
 
@@ -77,8 +76,7 @@ def _check_compliance_level(testCase, response):
     """
     Current complies with Level 1 API, so should assert no more.
     """
-    six.assertRegex(
-        testCase,
+    testCase.assertRegex(
         response['Link'],
         r'\<http:\/\/library.stanford.edu\/iiif\/image-api\/' +
         r'compliance.html#level[01]\>;rel="compliesTo"',
