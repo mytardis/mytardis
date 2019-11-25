@@ -1,6 +1,11 @@
 Releases
 ========
 
+4.2-in-development
+------------------
+* Upgraded Django to 2.2.6
+* Dropped support for Python 2
+
 4.1.5
 -----
 * Update AngularJS to address the SNYK-JS-ANGULAR-534884 vulnerability.

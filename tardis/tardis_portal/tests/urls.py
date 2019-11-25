@@ -1,6 +1,6 @@
 from django.conf.urls import include, url
 from django.contrib.auth.urls import urlpatterns
-from django.contrib.auth.views import logout
+from django.contrib.auth.views import LogoutView
 from django.http import HttpResponse
 from django.template import Template, RequestContext
 
@@ -50,6 +50,6 @@ urlpatterns += [
     url(r'^accounts/', include(accounts_urls)),
     url(r'^download/', include(download_urls)),
     url(r'^apps/sftp/', include(sftp.urls)),
-    url(r'^logout/$', logout, {'next_page': '/'},
+    url(r'^logout/$', LogoutView.as_view(), {'next_page': '/'},
         name='django.contrib.auth.views.logout'),
 ]

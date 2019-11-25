@@ -2,6 +2,8 @@ from behave import given, when, then
 
 from django.contrib.auth.models import User, Permission
 
+from wait import wait_for_jquery
+
 
 @given("a logged-in user with change user-auth perms")
 def given_a_logged_in_user_with_change_user_auth_perms(context):
@@ -43,6 +45,8 @@ def they_see_the_auth_methods_page(context):
     """
     :type context: behave.runner.Context
     """
+    wait_for_jquery(context)
+
     auth_list_div = context.browser.find_element_by_id("authList")
 
     context.test.assertIn(

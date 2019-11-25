@@ -6,7 +6,6 @@ Testing the serializer in the Tastypie-based MyTardis REST API
 '''
 from django.test import TestCase
 
-import six
 from six.moves import reload_module
 
 
@@ -18,14 +17,9 @@ class SerializerTest(TestCase):
                      "reformatted": 2,
                      "be": ["pretty", "and", "indented"]}
         test_output = test_serializer.to_json(test_data)
-        if six.PY2:
-            ref_output = '{\n  "be": [\n    "pretty", \n    "and", \n' +\
-                         '    "indented"\n  ], \n  "reformatted": 2, \n' +\
-                         '  "ugly": "json data"\n}\n'
-        else:
-            ref_output = '{\n  "be": [\n    "pretty",\n    "and",\n' +\
-                         '    "indented"\n  ],\n  "reformatted": 2,\n' +\
-                         '  "ugly": "json data"\n}\n'
+        ref_output = '{\n  "be": [\n    "pretty",\n    "and",\n' +\
+                     '    "indented"\n  ],\n  "reformatted": 2,\n' +\
+                     '  "ugly": "json data"\n}\n'
         self.assertEqual(test_output, ref_output)
 
     def test_debug_serializer(self):
