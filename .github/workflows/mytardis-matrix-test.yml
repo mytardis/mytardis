@@ -1,0 +1,26 @@
+name: Test Mytardis
+
+on: [push, pull_request]
+
+jobs:
+  build:
+
+    runs-on: [ubuntu-18.04]
+    strategy:
+      matrix:
+        python-version: [ '3.5', '3.6', '3.7', '3.8' ]
+    name: Python ${{ matrix.python-version }}
+    steps:
+    - uses: actions/checkout@v1
+    - name: Set up Python 
+      uses: actions/setup-python@v1
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -Ur requirements.txt
+    - name: run tests
+      run: |
+        mkdir -p var/store
+        python test.py
