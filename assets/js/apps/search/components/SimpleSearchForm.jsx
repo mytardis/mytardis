@@ -16,9 +16,7 @@ function getInstrumentList() {
 
 function SimpleSearchForm({ showResults, searchText }) {
   const [simpleSearchText, setSimpleSearchText] = useState(searchText);
-  const [advanceSearchVisible, setAdvancedSearchVisible] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
-  const toggleAdvancedSearch = () => setAdvancedSearchVisible(!advanceSearchVisible);
   const fetchResults = () => {
     // fetch results
     setIsLoading(true);
