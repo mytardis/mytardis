@@ -12,25 +12,45 @@ function Results({ results, counts }) {
       <div id="tabbed-pane" className="container">
         <ul className="nav nav-tabs" style={{ fontWeight: 600 }} id="searchTab" role="tablist">
           <li className="nav-item">
-            <a className="nav-link active" id="experiments-tab" data-toggle="tab" href="#experiments" role="tab"
-               aria-controls="experiments"
-               aria-selected="true">
-               <i className="fa fa-flask fa-2x" />
+            <a
+              className="nav-link active"
+              id="experiments-tab"
+              data-toggle="tab"
+              href="#experiments"
+              role="tab"
+              aria-controls="experiments"
+              aria-selected="true"
+            >
+              <i className="fa fa-flask fa-2x" />
               Experiments
               <span className="badge badge-secondary count-badge">{counts.experimentsCount}</span>
             </a>
           </li>
           <li className="nav-item">
-            <a className="nav-link" id="datasets-tab" data-toggle="tab" href="#datasets" role="tab"
-               aria-controls="profile" aria-selected="false">
+            <a
+              className="nav-link"
+              id="datasets-tab"
+              data-toggle="tab"
+              href="#datasets"
+              role="tab"
+              aria-controls="profile"
+              aria-selected="false"
+            >
               <i className="fa fa-folder fa-2x" />
               Datasets
               <span className="badge badge-secondary count-badge">{counts.datasetsCount}</span>
             </a>
           </li>
           <li className="nav-item">
-            <a className="nav-link" id="datafiles-tab" data-toggle="tab" href="#datafiles" role="tab"
-               aria-controls="contact" aria-selected="false">
+            <a
+              className="nav-link"
+              id="datafiles-tab"
+              data-toggle="tab"
+              href="#datafiles"
+              role="tab"
+              aria-controls="contact"
+              aria-selected="false"
+            >
               <i className="fa fa-file fa-2x" />
               Datafiles
               <span className="badge badge-secondary count-badge">{counts.datafilesCount}</span>

@@ -67,32 +67,33 @@ function SimpleSearchForm({ showResults, searchText }) {
           <div className="card align-items-center">
             <div className="card-body">
               <div className="row align-items-center">
-              <div className="col-md-12">
-                <form className="form-horizontal" onSubmit={handleSimpleSearchSubmit} id="simple-search">
-                  <div className="input-group mb-3">
-                    <input type="text"
-                           name="simple_search_text"
-                           onChange={event => handleSimpleSearchTextChange(event, event.target.value)}
-                           value={simpleSearchText}
-                           className="form-control"
-                           placeholder="Search for Experiments, Datasets, Datafiles"
-                    />
-                    <div className="input-group-append">
-                      <button className="input-group-text" id="basic-addon2">
-                        <a className="fa fa-search"></a>
-                      </button>
+                <div className="col-md-12">
+                  <form className="form-horizontal" onSubmit={handleSimpleSearchSubmit} id="simple-search">
+                    <div className="input-group mb-3">
+                      <input
+                        type="text"
+                        name="simple_search_text"
+                        onChange={event => handleSimpleSearchTextChange(event, event.target.value)}
+                        value={simpleSearchText}
+                        className="form-control"
+                        placeholder="Search for Experiments, Datasets, Datafiles"
+                      />
+                      <div className="input-group-append">
+                        <button className="input-group-text" id="basic-addon2">
+                          <a className="fa fa-search" />
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                  <AdvancedSearchForm
-                        searchText={simpleSearchText}
-                        showResults={showResults}
-                        instrumentList={instrumentList}
-                  />
-                </form>
+                    <AdvancedSearchForm
+                      searchText={simpleSearchText}
+                      showResults={showResults}
+                      instrumentList={instrumentList}
+                    />
+                  </form>
+                </div>
               </div>
             </div>
           </div>
-        </div>
         </div>
       </div>
       {isLoading
