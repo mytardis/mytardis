@@ -77,7 +77,7 @@ function SimpleSearchForm({ showResults, searchText }) {
                         placeholder="Search for Experiments, Datasets, Datafiles"
                       />
                       <div className="input-group-append">
-                        <button className="input-group-text" id="basic-addon2">
+                        <button type="button" className="input-group-text" id="basic-addon2">
                           <a className="fa fa-search" />
                         </button>
                       </div>
