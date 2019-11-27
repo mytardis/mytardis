@@ -31,3 +31,6 @@ jobs:
       run: |
         mkdir -p var/store
         python test.py
+    - name: run pylint
+      run: |
+        pylint --rcfile .pylintrc tardis
