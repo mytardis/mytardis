@@ -37,16 +37,18 @@
 </div>
 
 <div class="modal" id="keyAddModal" role="dialog" tabindex="-1">
-  <div class="modal-dialog" role="document">
+  <div class="modal-dialog modal-lg" role="document">
     <form id="keyAddForm" class="modal-content">
       <div class="modal-header">
+        <h3 class="modal-title">Add SSH Keys</h3>
         <button type="button" class="close" data-dismiss="modal" onclick="sftp.clearKeyAddForm()">×</button>
-        <h3>Add SSH Keys</h3>
-        <span>Add your own public SSH Key using the form below.</span>
-        <span><b>Important:</b> Don't add your private key.</span>
       </div>
       <div class="modal-body">
-        <div class="form-group">
+        <div>
+          <span>Add your own public SSH Key using the form below.</span>
+          <span><b>Important:</b> Don't add your private key.</span>
+        </div>
+        <div class="form-group mt-1">
           <label for="keyName">Device Name:</label>
           <input type="text" id="keyName" class="form-control" name="name">
         </div>
@@ -55,25 +57,25 @@
           <textarea id="key" class="form-control" rows="6" name="public_key"></textarea>
         </div>
         <div class="form-group">
-          <div id="keyAddAlert" class="alert alert-danger hide">
+          <div id="keyAddAlert" class="alert alert-danger" style="display: none;">
             <div id="keyAddAlertMessage"></div>
           </div>
         </div>
       </div>
       <div class="modal-footer">
         <button class="btn btn-primary pull-right" style="margin: 0px 0px 10px 10px;" onclick="sftp.addKey()">Add Key</button>
-        <button class="btn btn-default pull-right" style="margin: 0px 0px 10px 10px;" data-dismiss="modal" onclick="sftp.clearKeyAddForm()">Close</button>
+        <button class="btn btn-outline-secondary pull-right" style="margin: 0px 0px 10px 10px;" data-dismiss="modal" onclick="sftp.clearKeyAddForm()">Close</button>
       </div>
     </form>  <!-- class="modal-content" -->
   </div>  <!-- class="modal-dialog" -->
 </div>
 
 <div class="modal" id="keyGenerateModal" role="dialog" tabindex="-1">
-  <div class="modal-dialog" role="document">
+  <div class="modal-dialog modal-lg" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" onclick="sftp.clearKeyGenerateForm()">×</button>
         <h3>Generate an SSH key pair</h3>
+        <button type="button" class="close" data-dismiss="modal" onclick="sftp.clearKeyGenerateForm()">×</button>
       </div>
       <div class="modal-body">
         <p>{{site_title|default:'MyTardis'}} can generate an SSH key pair for you. Only the public part of the key pair will be stored by {{site_title|default:'MyTardis'}} and you will be provided with a one time opportunity to download the private part of the key pair.</p>
@@ -88,7 +90,7 @@
         </form>
         <br/>
         <p><b>Important:</b> Keep your private key in a safe place. Anyone with access to the private key will be able to access your data on {{site_title|default:'MyTardis'}}.</p>
-        <div id="keyGenerateAlert" class="alert alert-danger hide">
+        <div id="keyGenerateAlert" class="alert alert-danger" style="display: none">
           <div id="keyGenerateAlertMessage"></div>
         </div>
       </div>
