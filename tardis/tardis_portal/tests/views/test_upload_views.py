@@ -114,6 +114,7 @@ class UploadTestCase(TestCase):
         post = QueryDict(
             '&'.join(['%s=%s' % (k, v) for (k, v) in data]))
         request = HttpRequest()
+        request.user = self.user
         request.POST = post
         response = upload_complete(request)
         self.assertTrue(b'<p>Number: 1</p>' in response.content)

@@ -43,7 +43,7 @@ class DatasetResourceTest(MyTardisResourceTestCase):
             % urllib.parse.quote(self.ds_no_instrument.description)
         output = self.api_client.get(uri,
                                      authentication=self.get_credentials())
-        returned_data = json.loads(output.content)
+        returned_data = json.loads(output.content.decode())
         self.assertEqual(returned_data['meta']['total_count'], 1)
         returned_object = returned_data['objects'][0]
         self.assertTrue('description' in returned_object)
@@ -57,7 +57,7 @@ class DatasetResourceTest(MyTardisResourceTestCase):
             % urllib.parse.quote(self.ds_with_instrument.description)
         output = self.api_client.get(uri,
                                      authentication=self.get_credentials())
-        returned_data = json.loads(output.content)
+        returned_data = json.loads(output.content.decode())
         self.assertEqual(returned_data['meta']['total_count'], 1)
         returned_object = returned_data['objects'][0]
         self.assertTrue('description' in returned_object)
@@ -73,7 +73,7 @@ class DatasetResourceTest(MyTardisResourceTestCase):
             % self.extra_instrument.id
         output = self.api_client.get(uri,
                                      authentication=self.get_credentials())
-        returned_data = json.loads(output.content)
+        returned_data = json.loads(output.content.decode())
         self.assertEqual(returned_data['meta']['total_count'], 1)
         returned_object = returned_data['objects'][0]
         self.assertTrue('instrument' in returned_object)
@@ -90,16 +90,23 @@ class DatasetResourceTest(MyTardisResourceTestCase):
             ],
             "immutable": False}
         dataset_count = Dataset.objects.count()
-        self.assertHttpCreated(self.api_client.post(
+        response = self.api_client.post(
             '/api/v1/dataset/',
             data=post_data,
-            authentication=self.get_credentials()))
+            authentication=self.get_credentials())
+        self.assertHttpCreated(response)
         self.assertEqual(dataset_count + 1, Dataset.objects.count())
+        created_dataset_uri = response['Location']
+        created_dataset_id = created_dataset_uri.split('/')[-2]
+        created_dataset = Dataset.objects.get(id=created_dataset_id)
+        self.assertEqual(created_dataset.experiments.count(), 1)
+        self.assertEqual(
+            created_dataset.experiments.first().id, exp_id)
 
     def test_get_dataset_files(self):
         ds_id = self.ds_no_instrument.id
         uri = '/api/v1/dataset/%d/files/' % ds_id
         response = self.api_client.get(
             uri, authentication=self.get_credentials())
-        returned_data = json.loads(response.content)
+        returned_data = json.loads(response.content.decode())
         self.assertEqual(returned_data['meta']['total_count'], 0)

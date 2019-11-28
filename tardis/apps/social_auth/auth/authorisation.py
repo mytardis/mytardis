@@ -30,7 +30,7 @@ class AAFOpenId(BaseOAuth2):
             headers = {'Authorization': 'Bearer ' + access_token}
             headers['Content-Type'] = 'application/x-www-form-urlencoded'
             response = requests.get(self.USER_INFO_URL, headers=headers)
-            d = json.loads(response.content)
+            d = json.loads(response.content.decode())
             return d
         except ValueError:
             return None

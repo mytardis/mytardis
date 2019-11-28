@@ -27,15 +27,15 @@ class DumpSchemasTestCase(TestCase):
         '''
         schemas = json.loads(
             call_command('dumpschemas',
-                         namespaces=['http://www.example.com/schema1.xml',
-                                     'http://www.example.com/schema2.xml']))
+                         'http://www.example.com/schema1.xml',
+                         'http://www.example.com/schema2.xml'))
         self.assertEqual(len(schemas), 2)
         schemas = json.loads(
             call_command('dumpschemas',
-                         namespaces=['http://www.example.com/schema1.xml']))
+                         'http://www.example.com/schema1.xml'))
         self.assertEqual(len(schemas), 1)
         with self.assertRaises(CommandError):
-            call_command('dumpschemas', namespaces=['invalid'])
+            call_command('dumpschemas', 'invalid')
 
     def tearDown(self):
         self.schema1.delete()

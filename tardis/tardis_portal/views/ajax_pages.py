@@ -1,9 +1,9 @@
 """
 views that return HTML that is injected into pages
 """
-
 import logging
-from six.moves import urllib
+
+from urllib.parse import urlencode
 
 from django.conf import settings
 from django.core.exceptions import PermissionDenied
@@ -279,7 +279,7 @@ def retrieve_datafile_list(
         'is_owner': is_owner,
         'has_download_permissions': has_download_permissions,
         'has_write_permissions': has_write_permissions,
-        'params': urllib.parse.urlencode(params),
+        'params': urlencode(params),
     }
     _add_protocols_and_organizations(request, None, c)
     return render_response_index(request, template_name, c)

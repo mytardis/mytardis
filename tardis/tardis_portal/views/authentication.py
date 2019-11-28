@@ -3,7 +3,7 @@ views that have to do with authentication
 """
 import logging
 
-from six.moves import urllib
+from urllib.parse import urlparse
 
 import jwt
 
@@ -243,7 +243,7 @@ def login(request):
             render_response_index(request, 'tardis_portal/login.html', c))
 
     url = request.META.get('HTTP_REFERER', '/')
-    u = urllib.parse.urlparse(url)
+    u = urlparse(url)
     if u.netloc == request.META.get('HTTP_HOST', ""):
         next_page = u.path
     else:

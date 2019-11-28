@@ -5,8 +5,6 @@ Testing the StorageBox resources in MyTardis's Tastypie-based REST API
 '''
 import json
 
-import six
-
 from ...models.storage import StorageBox
 
 from . import MyTardisResourceTestCase
@@ -24,8 +22,8 @@ class StorageBoxResourceTest(MyTardisResourceTestCase):
             '/api/v1/storagebox/%d/?format=json' % box.id,
             authentication=self.get_admin_credentials())
         self.assertHttpOK(response)
-        returned_data = json.loads(response.content)
-        for key, value in six.iteritems(expected_output):
+        returned_data = json.loads(response.content.decode())
+        for key, value in expected_output.items():
             self.assertTrue(key in returned_data)
             self.assertEqual(returned_data[key], value)
 
@@ -44,8 +42,8 @@ class StorageBoxOptionResourceTest(MyTardisResourceTestCase):
             '/api/v1/storageboxoption/%d/?format=json' % location.id,
             authentication=self.get_credentials())
         self.assertHttpOK(response)
-        returned_data = json.loads(response.content)
-        for key, value in six.iteritems(expected_output):
+        returned_data = json.loads(response.content.decode())
+        for key, value in expected_output.items():
             self.assertTrue(key in returned_data)
             self.assertEqual(returned_data[key], value)
 
@@ -61,10 +59,10 @@ class StorageBoxOptionResourceTest(MyTardisResourceTestCase):
             '/api/v1/storageboxoption/?storagebox__id=%d&format=json' % box.id,
             authentication=self.get_credentials())
         self.assertHttpOK(response)
-        returned_data = json.loads(response.content)
+        returned_data = json.loads(response.content.decode())
         self.assertEqual(returned_data['meta']['total_count'], 1)
         returned_option = returned_data['objects'][0]
-        for key, value in six.iteritems(expected_output):
+        for key, value in expected_output.items():
             self.assertTrue(key in returned_option)
             self.assertEqual(returned_option[key], value)
 
@@ -77,5 +75,5 @@ class StorageBoxAttributeResourceTest(MyTardisResourceTestCase):
             '/api/v1/storageboxattribute/?storagebox__id=%d&format=json' % box.id,
             authentication=self.get_credentials())
         self.assertHttpOK(response)
-        returned_data = json.loads(response.content)
+        returned_data = json.loads(response.content.decode())
         self.assertEqual(returned_data['meta']['total_count'], 0)

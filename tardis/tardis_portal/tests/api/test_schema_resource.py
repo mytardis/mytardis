@@ -7,8 +7,7 @@ Testing the Schema resource in MyTardis's Tastypie-based REST API
 '''
 import json
 
-import six
-from six.moves import urllib
+from urllib.parse import quote
 
 from ...models.parameters import Schema
 
@@ -34,8 +33,8 @@ class SchemaResourceTest(MyTardisResourceTestCase):
             '/api/v1/schema/%d/' % self.test_schema.id,
             authentication=self.get_admin_credentials())
         self.assertHttpOK(response)
-        returned_data = json.loads(response.content)
-        for key, value in six.iteritems(expected_output):
+        returned_data = json.loads(response.content.decode())
+        for key, value in expected_output.items():
             self.assertTrue(key in returned_data)
             self.assertEqual(returned_data[key], value)
 
@@ -46,12 +45,12 @@ class SchemaResourceTest(MyTardisResourceTestCase):
         }
         response = self.api_client.get(
             '/api/v1/schema/?namespace=%s&format=json'
-            % urllib.parse.quote(self.test_schema.namespace),
+            % quote(self.test_schema.namespace),
             authentication=self.get_admin_credentials())
         self.assertHttpOK(response)
-        returned_data = json.loads(response.content)
+        returned_data = json.loads(response.content.decode())
         self.assertEqual(returned_data['meta']['total_count'], 1)
         returned_object = returned_data['objects'][0]
-        for key, value in six.iteritems(expected_output):
+        for key, value in expected_output.items():
             self.assertTrue(key in returned_object)
             self.assertEqual(returned_object[key], value)

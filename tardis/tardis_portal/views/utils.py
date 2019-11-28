@@ -5,9 +5,6 @@ helper functions used by other views
 import json
 import logging
 
-import six
-from six.moves import filter
-
 from django.conf import settings
 from django.core.mail import EmailMessage
 from django.urls import reverse
@@ -42,7 +39,7 @@ def _add_protocols_and_organizations(request, collection_object, c):
     if collection_object:
         c['protocol'] = []
         download_urls = collection_object.get_download_urls()
-        for key, value in six.iteritems(download_urls):
+        for key, value in download_urls.items():
             if cannot_do_zip and key == 'zip':
                 continue
             c['protocol'] += [[key, value]]
@@ -144,7 +141,7 @@ class HttpResponseSeeAlso(HttpResponseRedirect):
 
 def feedback(request):
     if request.method == 'POST':
-        feedback_data = json.loads(request.POST['data'])
+        feedback_data = json.loads(request.POST['data'].decode())
         message = feedback_data[0]['Issue']
         img_base64 = feedback_data[1]
         img = img_base64.replace('data:image/png;base64,', '').decode('base64')

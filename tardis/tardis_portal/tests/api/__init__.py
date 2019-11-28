@@ -40,6 +40,8 @@ class MyTardisResourceTestCase(ResourceTestCaseMixin, TestCase):
                        'email': 'api_test@mytardis.org'},
             auth_method="None")
         self.user.user_permissions.add(
+            Permission.objects.get(codename='change_experiment'))
+        self.user.user_permissions.add(
             Permission.objects.get(codename='change_dataset'))
         self.user.user_permissions.add(
             Permission.objects.get(codename='add_datafile'))

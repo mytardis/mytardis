@@ -1,6 +1,26 @@
 Releases
 ========
 
+4.2-in-development
+------------------
+* Upgraded Django to 2.2.6
+* Dropped support for Python 2
+
+4.1.5
+-----
+* Update AngularJS to address the SNYK-JS-ANGULAR-534884 vulnerability.
+* Update the handlebars version in package-lock.json to avoid having
+  "npm install" report high severity vulnerabilities.
+* Fix the dataset metadata API test which was failing on Python 3.5.
+
+4.1.4
+-----
+* Fixed duplicate form submission bugs for create experiment/dataset
+* Fixed search bug which restricted instrument drop-down to 20 records
+* Fixed some byte string encoding issues with LDAP auth in Python 3
+* Fixed Python 3.5 unit tests
+* Fixed pickled StorageBoxOption values for Python 3
+
 4.1.3
 -----
 * Update the https-proxy-agent version in package-lock.json to avoid having

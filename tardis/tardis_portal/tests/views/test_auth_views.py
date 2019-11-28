@@ -53,7 +53,7 @@ class UserGroupListsTestCase(TestCase):
         # Match all
         response = self.client.get('/ajax/user_list/?q=')
         self.assertEqual(response.status_code, 200)
-        users_dict = json.loads(response.content)
+        users_dict = json.loads(response.content.decode())
         self.assertTrue(len(users_dict) == self.users.count())
         for user in self.users:
             user_info = [u for u in users_dict
@@ -65,7 +65,7 @@ class UserGroupListsTestCase(TestCase):
         # Match on first name
         response = self.client.get('/ajax/user_list/?q=threefirst')
         self.assertEqual(response.status_code, 200)
-        users_dict = json.loads(response.content)
+        users_dict = json.loads(response.content.decode())
 
         self.assertTrue(len(users_dict) == 1)
         acct = self.users.get(username='user3')
@@ -76,7 +76,7 @@ class UserGroupListsTestCase(TestCase):
         # Match on last name
         response = self.client.get('/ajax/user_list/?q=twolast')
         self.assertEqual(response.status_code, 200)
-        users_dict = json.loads(response.content)
+        users_dict = json.loads(response.content.decode())
 
         self.assertTrue(len(users_dict) == 1)
         acct = self.users.get(username='user2')
@@ -87,7 +87,7 @@ class UserGroupListsTestCase(TestCase):
         # Case insensitive matching
         response = self.client.get('/ajax/user_list/?q=TWOFIRSTNAME')
         self.assertEqual(response.status_code, 200)
-        users_dict = json.loads(response.content)
+        users_dict = json.loads(response.content.decode())
         self.assertTrue(len(users_dict) == 1)
         acct = self.users.get(username='user2')
         self.assertTrue(users_dict[0]['username'] == acct.username)
@@ -96,7 +96,7 @@ class UserGroupListsTestCase(TestCase):
         response = self.client.get(
             '/ajax/user_list/?q=onefirstname useronelast')
         self.assertEqual(response.status_code, 200)
-        users_dict = json.loads(response.content)
+        users_dict = json.loads(response.content.decode())
         self.assertTrue(len(users_dict) == 1)
         self.assertTrue(users_dict[0]['username'] == 'user1')
 
@@ -144,7 +144,7 @@ class UserListTestCase(TestCase):
         # Match all
         response = self.client.get('/ajax/user_list/?q=')
         self.assertEqual(response.status_code, 200)
-        users_dict = json.loads(response.content)
+        users_dict = json.loads(response.content.decode())
         self.assertEqual(len(self.users), len(users_dict))
         for user in self.users:
             user_info = [u for u in users_dict
@@ -156,7 +156,7 @@ class UserListTestCase(TestCase):
         # Match on last name
         response = self.client.get('/ajax/user_list/?q=useronelastname')
         self.assertEqual(response.status_code, 200)
-        users_dict = json.loads(response.content)
+        users_dict = json.loads(response.content.decode())
 
         self.assertEqual(len(users_dict), 1)
 

@@ -5,7 +5,7 @@ import Cookies from "js-cookie";
 import AdvancedSearchForm from "./AdvancedSearchForm";
 
 function getInstrumentList() {
-  return fetch("/api/v1/instrument/")
+  return fetch("/api/v1/instrument/?limit=0")
     .then((resp) => {
       if (resp.ok) {
         return resp.json();

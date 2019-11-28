@@ -30,7 +30,7 @@ class OpenidUserMigration(models.Model):
 @python_2_unicode_compatible
 class OpenidACLMigration(models.Model):
     user_migration = models.ForeignKey(OpenidUserMigration, on_delete=models.CASCADE)
-    acl_id = models.ForeignKey(ObjectACL)
+    acl_id = models.ForeignKey(ObjectACL, on_delete=models.CASCADE)
 
     class Meta:
         app_label = 'openid_migration'
