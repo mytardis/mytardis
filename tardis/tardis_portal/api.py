@@ -847,7 +847,6 @@ class DatasetResource(MyTardisModelResource):
             dfs = DataFile.objects.filter(dataset=dataset, directory=part2)
             filenames = [df.filename for df in dfs]
             if part1 == '..':
-                print part1
                 for file_name in filenames:
                     child = {'name': file_name}
                     json_data['children'].append(child)

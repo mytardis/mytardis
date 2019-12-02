@@ -1,8 +1,6 @@
 import logging
 from os import path
 
-from six.moves import urllib
-
 from django.conf import settings
 from django.urls import reverse
 from django.db import models
