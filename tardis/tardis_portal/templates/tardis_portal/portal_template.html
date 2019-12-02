@@ -164,14 +164,15 @@
           {% else %}
             {% if registration_enabled %}
             <li>
-              <a href="{% url 'tardis.tardis_portal.views.register' %}">
+              <a class="btn btn-link"
+                 href="{% url 'tardis.tardis_portal.views.register' %}">
                 Register
               </a>
             </li>
             {% endif %}
             <li>
             {% if RAPID_CONNECT_ENABLED %}
-                <a id="login-button" href={{ RAPID_CONNECT_LOGIN_URL }}>
+                <a class="btn btn-outline-light" id="login-button" href={{ RAPID_CONNECT_LOGIN_URL }}>
                   <i class="fa fa-sign-in"></i>
                   Log In
                 </a>
