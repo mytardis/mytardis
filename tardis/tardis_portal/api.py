@@ -17,7 +17,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth.models import Group
 from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseForbidden, \
-    StreamingHttpResponse, HttpResponseNotFound
+    StreamingHttpResponse, HttpResponseNotFound, JsonResponse
 from django.shortcuts import redirect
 
 from tastypie import fields
@@ -753,12 +753,12 @@ class DatasetResource(MyTardisModelResource):
         dfs = DataFile.objects.filter(dataset=dataset, directory='')
         child_list = []
         # append directories list
-        if len(dirs):
+        if dirs:
             for directory in dirs:
                 child_dict = {'name': directory[0], 'children': []}
                 child_list.append(child_dict)
                 # append files to list
-        if len(dfs):
+        if dfs:
             filenames = [df.filename for df in dfs]
             for filename in filenames:
                 children = {}
@@ -768,7 +768,7 @@ class DatasetResource(MyTardisModelResource):
         data = json.dumps(child_list)
         self.method_check(request, allowed=['get'])
         self.is_authenticated(request)
-        return HttpResponse(data, content_type='application/json', status=200)
+        return JsonResponse(child_list, status=200, safe=False)
 
     def get_child_dirs(self, request, **kwargs):
         dataset_id = kwargs['pk']
@@ -782,10 +782,9 @@ class DatasetResource(MyTardisModelResource):
             base_dir_dict = next((item for item in json_data if item['name'] == base_dir), None)
             # if not base directory
             if base_dir_dict is None:
-                data = json.dumps(json_data)
                 self.method_check(request, allowed=['get'])
                 self.is_authenticated(request)
-                return HttpResponse(data, content_type='application/json', status=200)
+                return JsonResponse(json_data, status=200, safe=False)
 
             if len(base_dir_dict['children']) == 0:
                 # list dir under base_dir
@@ -794,7 +793,7 @@ class DatasetResource(MyTardisModelResource):
                 dfs = DataFile.objects.filter(dataset=dataset, directory=base_dir)
                 # walk the directory tree and append files and dirs
                 # if there are directories append this to data
-                if len(child_dirs):
+                if child_dirs:
                     child_dir_list = self._get_child_dirs(child_dirs)
                     # append to data
                     for item in json_data:
@@ -809,7 +808,7 @@ class DatasetResource(MyTardisModelResource):
                                 cursor = cursor+1
 
                 # if there are files append this
-                if len(dfs):
+                if dfs:
                     filenames = [df.filename for df in dfs]
                     for item in json_data:
                         if item['name'] == base_dir:
@@ -820,11 +819,9 @@ class DatasetResource(MyTardisModelResource):
                 for item in json_data:
                     if item['name'] == base_dir:
                         item['toggled'] = True
-
-            data = json.dumps(json_data)
             self.method_check(request, allowed=['get'])
             self.is_authenticated(request)
-            return HttpResponse(data, content_type='application/json', status=200)
+            return JsonResponse(json_data, status=200, safe=False)
 
     def _get_child_dirs(self, child_dirs):
         # <type 'list'>: [('..', u'Al_container_2019-06-20_155310'), (u'Al_container', 'Al_container_2019-06-20_155310%5CAl_container')]
