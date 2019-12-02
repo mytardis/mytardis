@@ -20,7 +20,7 @@
     <h1>{{ remote_destination_name }}</h1>
     <div ng-if="!loading">
         <p>Enter a destination for your files:</p>
-        <button type="button" class="btn btn-default" ng-click="destinationPath = defaultPath"><span class="glyphicon glyphicon-home" aria-hidden="true"></span></button>
+        <button type="button" class="btn btn-outline-secondary" ng-click="destinationPath = defaultPath"><span class="glyphicon glyphicon-home" aria-hidden="true"></span></button>
         <input type="text" class="typeahead" sf-typeahead datasets="validPaths" options="pathOptions" ng-model="destinationPath" />
         <a ng-href="?path={{ destinationPath }}" role="button" class="btn btn-primary">Push</a>
         <img src="/static/push-to/ajax-loader.gif" ng-if="ajaxRunning" />

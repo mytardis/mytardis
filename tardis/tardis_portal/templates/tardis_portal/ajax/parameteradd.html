@@ -1,5 +1,5 @@
 {% load formfieldfilters %}
-{% load bootstrap %}
+{% load widget_tweaks %}
 
 {% if success %}
   Parameters saved successfully.
@@ -29,7 +29,12 @@
     </div>
     {{ form.non_field_errors }}
       {% for field in form %}
-        {{ field | bootstrap }}
+        <div class="form-group">
+          <label class="col-form-label-sm py-0" for="{{field.name}}">{{field.label}}</label>
+          <div class="col-md-9 pl-0">
+            {{ field | add_class:"form-control form-control-sm" }}
+          </div>
+        </div>
       {% endfor %}
 
     <p><em>Leave a parameter blank to remove</em></p>
@@ -39,12 +44,12 @@
 
     <div class="form-group">
       <footer class="col-md-12 text-right">
-        <button type="button" class="cancel-button btn btn-outline-secondary"
+        <button type="button" class="cancel-button btn btn-sm btn-outline-secondary"
                 data-dismiss="modal">
           <i class="fa fa-close"></i>
           Cancel
         </button>
-        <button type="submit" class="submit-button btn btn-primary">
+        <button type="submit" class="submit-button btn btn-sm btn-primary">
           <i class="fa fa-check"></i>
           Save
         </button>

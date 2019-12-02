@@ -348,9 +348,6 @@ class ExperimentForm(forms.ModelForm):
                 "(http://nla.gov.au/nla.party-1480342)"}),
             help_text="Comma-separated authors and optional emails/URLs")
 
-        for _, field in self.fields.items():
-            field.widget.attrs['class'] = "col-md-8"
-
     def _format_author(self, author):
         if author.email or author.url:
             author_contacts = [author.email, author.url]

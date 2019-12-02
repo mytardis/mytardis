@@ -4,7 +4,7 @@
 export var selectLicenseOption = function(value) {
     var selectedOption = $(`.license-option input[value="${value}"]`)
         .parents(".license-option");
-    selectedOption.find(".use-button").addClass("disabled");
+    selectedOption.find(".use-button").attr("disabled", true);
     selectedOption.find(".use-button").text("Selected");
 };
 
@@ -42,9 +42,9 @@ $(document).on("click", "#license-options .use-button", function(evt) {
     // Enable all buttons, then disable the one we selected
     $(this).parents("#license-options")
         .find(".use-button")
-        .removeClass("disabled")
+        .attr("disabled", false)
         .text("Use");
-    $(this).addClass("disabled");
+    $(this).attr("disabled", true);
     $(this).text("Selected");
     // Hide any current messages
     $(this).parents(".tab-pane").find(".alert .close").click();

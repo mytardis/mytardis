@@ -1,6 +1,5 @@
 {% extends "tardis_portal/portal_template.html" %}
 {% load static from staticfiles %}
-{% load bootstrap %}
 
 {% block script %}
 <script  type="text/javascript" src="{% static 'js/sftp/sftp.js' %}"></script>
@@ -15,13 +14,13 @@
   <h2>SSH Keys</h2>
   <p>Add and manage your public SSH keys for accessing {{site_title|default:'MyTardis'}} via SFTP.</p>
   <div class="row">
-    <div class="pull-right" style="margin: 0px 0px 10px 10px;">
+    <div class="ml-auto" style="margin: 0px 0px 10px 10px;">
       <a class="btn btn-success" data-toggle="modal" href="#keyGenerateModal">
         <i class="fa fa-plus"></i>
         <span>Generate key</span>
       </a>
     </div>
-    <div class="pull-right" style="margin: 0px 0px 10px 10px;">
+    <div style="margin: 0px 0px 10px 10px;">
       <a class="btn btn-success" data-toggle="modal" href="#keyAddModal">
         <i class="fa fa-plus"></i>
         <span>Add key</span>
@@ -63,8 +62,8 @@
         </div>
       </div>
       <div class="modal-footer">
-        <button class="btn btn-primary pull-right" style="margin: 0px 0px 10px 10px;" onclick="sftp.addKey()">Add Key</button>
-        <button class="btn btn-outline-secondary pull-right" style="margin: 0px 0px 10px 10px;" data-dismiss="modal" onclick="sftp.clearKeyAddForm()">Close</button>
+        <button class="btn btn-primary" style="margin: 0px 0px 10px 10px;" onclick="sftp.addKey()">Add Key</button>
+        <button class="btn btn-outline-secondary" style="margin: 0px 0px 10px 10px;" data-dismiss="modal" onclick="sftp.clearKeyAddForm()">Close</button>
       </div>
     </form>  <!-- class="modal-content" -->
   </div>  <!-- class="modal-dialog" -->
@@ -81,11 +80,30 @@
         <p>{{site_title|default:'MyTardis'}} can generate an SSH key pair for you. Only the public part of the key pair will be stored by {{site_title|default:'MyTardis'}} and you will be provided with a one time opportunity to download the private part of the key pair.</p>
         <br>
         <form id="keyGenerateForm" action="{% url 'tardis.apps.sftp:sftp_keys' %}" method="post">
-            {{ form | bootstrap }}
           {% if enable_generate %}
-          <input type="submit" class="btn btn-default" value="Generate & Download">
           {% else %}
-          <input type="submit" class="btn btn-default disabled" value="Generate & Download">
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+              The SSH key generation feature has been disabled because your connection is insecure.
+              Please contact your MyTardis service administrator about securing your connection.
+	      <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+		<span aria-hidden="true">&times;</span>
+	      </button>
+            </div>
+          {% endif %}
+          <div class="form-group">
+            <label class="col-form-label" for="id_name">Name</label>
+            <div class=" ">
+              {% if enable_generate %}
+                <input type="text" name="name" maxlength="256" class="form-control" required="required" id="id_name">
+              {% else %}
+                <input type="text" name="name" maxlength="256" class="form-control" disabled required="" id="id_name">
+              {% endif %}
+            </div>
+          </div>
+          {% if enable_generate %}
+          <input type="submit" class="btn btn-outline-secondary" value="Generate & Download">
+          {% else %}
+          <input type="submit" class="btn btn-outline-secondary" disabled value="Generate & Download">
           {% endif %}
         </form>
         <br/>
@@ -95,7 +113,7 @@
         </div>
       </div>
       <div class="modal-footer">
-        <button class="btn btn-default" data-dismiss="modal" onclick="sftp.clearKeyGenerateForm()">Close</button>
+        <button class="btn btn-outline-secondary" data-dismiss="modal" onclick="sftp.clearKeyGenerateForm()">Close</button>
       </div>
     </div>  <!-- class="modal-content" -->
   </div>  <!-- class="modal-dialog" -->
