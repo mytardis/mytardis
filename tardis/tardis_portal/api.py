@@ -765,7 +765,6 @@ class DatasetResource(MyTardisModelResource):
                 children['name'] = filename
                 child_list.append(children)
 
-        data = json.dumps(child_list)
         self.method_check(request, allowed=['get'])
         self.is_authenticated(request)
         return JsonResponse(child_list, status=200, safe=False)
@@ -775,56 +774,55 @@ class DatasetResource(MyTardisModelResource):
         data = request.GET['data']
         base_dir = request.GET['dir_name']
         dataset = Dataset.objects.get(id=dataset_id)
-        if data and base_dir:
-            json_data = []
-            json_data = json.loads(data)
-            # append data only if not present, else return toggled state to true
-            base_dir_dict = next((item for item in json_data if item['name'] == base_dir), None)
-            # if not base directory
-            if base_dir_dict is None:
-                self.method_check(request, allowed=['get'])
-                self.is_authenticated(request)
-                return JsonResponse(json_data, status=200, safe=False)
-
-            if len(base_dir_dict['children']) == 0:
-                # list dir under base_dir
-                child_dirs = dataset.get_dirs(base_dir)
-                # list files under base_dir
-                dfs = DataFile.objects.filter(dataset=dataset, directory=base_dir)
-                # walk the directory tree and append files and dirs
-                # if there are directories append this to data
-                if child_dirs:
-                    child_dir_list = self._get_child_dirs(child_dirs)
-                    # append to data
-                    for item in json_data:
-                        if item['name'] == base_dir:
-                            cursor = 0
-                            item['toggled'] = True
-                            for child in child_dir_list:
-                                item['children'].append(child)
-                                # get subdir for this dir
-                                sub_child_dirs = dataset.get_dirs(base_dir+"/"+child['name'])
-                                self._get_sub_child_dirs(sub_child_dirs, item['children'][cursor], dataset)
-                                cursor = cursor+1
-
-                # if there are files append this
-                if dfs:
-                    filenames = [df.filename for df in dfs]
-                    for item in json_data:
-                        if item['name'] == base_dir:
-                            for file_name in filenames:
-                                child = {'name': file_name}
-                                item['children'].append(child)
-            else:
-                for item in json_data:
-                    if item['name'] == base_dir:
-                        item['toggled'] = True
+        if not (data and base_dir):
+            return HttpResponse('Please specify base directory and data to append', status=400)
+        json_data = json.loads(data)
+        # append data only if not present, else return toggled state to true
+        base_dir_dict = next((item for item in json_data if item['name'] == base_dir), None)
+        # if not base directory
+        if base_dir_dict is None:
             self.method_check(request, allowed=['get'])
             self.is_authenticated(request)
             return JsonResponse(json_data, status=200, safe=False)
 
+        if len(base_dir_dict['children']) == 0:
+            # list dir under base_dir
+            child_dirs = dataset.get_dirs(base_dir)
+            # list files under base_dir
+            dfs = DataFile.objects.filter(dataset=dataset, directory=base_dir)
+            # walk the directory tree and append files and dirs
+            # if there are directories append this to data
+            if child_dirs:
+                child_dir_list = self._get_child_dirs(child_dirs)
+                # append to data
+                for item in json_data:
+                    if item['name'] == base_dir:
+                        cursor = 0
+                        item['toggled'] = True
+                        for child in child_dir_list:
+                            item['children'].append(child)
+                            # get subdir for this dir
+                            sub_child_dirs = dataset.get_dirs(base_dir+"/"+child['name'])
+                            self._get_sub_child_dirs(sub_child_dirs, item['children'][cursor], dataset)
+                            cursor = cursor+1
+
+            # if there are files append this
+            if dfs:
+                filenames = [df.filename for df in dfs]
+                for item in json_data:
+                    if item['name'] == base_dir:
+                        for file_name in filenames:
+                            child = {'name': file_name}
+                            item['children'].append(child)
+        else:
+            for item in json_data:
+                if item['name'] == base_dir:
+                    item['toggled'] = True
+        self.method_check(request, allowed=['get'])
+        self.is_authenticated(request)
+        return JsonResponse(json_data, status=200, safe=False)
+
     def _get_child_dirs(self, child_dirs):
-        # <type 'list'>: [('..', u'Al_container_2019-06-20_155310'), (u'Al_container', 'Al_container_2019-06-20_155310%5CAl_container')]
         child_dir_list = []
         for dir in child_dirs:
             part1, part2 = dir
@@ -834,8 +832,6 @@ class DatasetResource(MyTardisModelResource):
         return child_dir_list
 
     def _get_sub_child_dirs(self, sub_child_dirs, item, dataset):
-        # item : <type 'list'>: [{'name': u'child_1', 'children': []}]
-         # <type 'list'>: [('..', u'parent_1/child_1'), (u'child_1_1', u'parent_1/child_1/child_1_1'), (u'child_1_1 - Copy', 'parent_1/child_1/child_1_1%20-%20Copy')]
         child_dir_list = []
         json_data = item  # {'name': u'child_1', 'children': []}
         for dir in sub_child_dirs:
