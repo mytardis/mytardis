@@ -22,7 +22,7 @@
     </div>
     <div class="col-md-6">
       <div class="dropdown show float-right" ng-show="facilityCtrl.showFacilitySelector()" ng-cloak>
-        <a class="btn btn-primary dropdown-toggle"
+        <a class="btn btn-outline-secondary dropdown-toggle"
            data-toggle="dropdown">Facility: {{facilityCtrl.selectedFacilityName}}
           <span class="caret"></span>
         </a>
@@ -280,7 +280,7 @@
                   </div>  <!-- row -->
                   <div class="row">
                     <div class="col-md-12" style="text-align:center">
-                      <button type="button" class="btn btn-default btn-lg"
+                      <button type="button" class="btn btn-outline-secondary btn-lg"
                               ng-click="facilityCtrl.loadMoreEntries(50)"
                               ng-class="(facilityCtrl.currentFetchLimit >= facilityCtrl.totalDatasets)?'disabled':''"
                               ng-hide="facilityCtrl.loading"
@@ -303,7 +303,7 @@
     </div>  <!-- row  -->
 </div>  <!-- id="content" -->
 <script type="text/ng-template" id="showHideFileListButton">
-  <button type="button" class="btn btn-xs btn-info"
+  <button type="button" class="btn btn-sm btn-info"
           ng-click="facilityCtrl.toggleFileList(dataset)">
       <i class="fa fa-list-alt"></i>
       <span ng-hide="facilityCtrl.isFileListVisible(dataset.id)">Show</span>

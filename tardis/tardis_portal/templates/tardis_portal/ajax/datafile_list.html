@@ -57,7 +57,7 @@
             <thead>
             <tr id="datafile-selectors" class="js-required">
                 <td colspan="3">
-                    Select: <a class="dataset_selector_all btn btn-default btn-xs">All</a> / <a class="dataset_selector_none btn btn-default btn-xs">None</a>
+                    Select: <a class="dataset_selector_all btn btn-outline-secondary btn-sm">All</a> / <a class="dataset_selector_none btn btn-outline-secondary btn-sm">None</a>
                     <div class="pull-right">
                         <button type="submit" class="btn btn-outline-secondary btn-sm download-selected">
                             <i class="fa fa-download"></i>
@@ -143,7 +143,7 @@
                         {% endif %}
 
                         <a id="datafile_metadata_toggle_{{datafile.id}}" title="Show/Hide Metadata"
-                           class="btn btn-default btn-outline-secondary datafile-info-toggle metadata_hidden" href="/ajax/datafile_details/{{datafile.id}}/">
+                           class="btn btn-outline-secondary datafile-info-toggle metadata_hidden" href="/ajax/datafile_details/{{datafile.id}}/">
                             <i class="fa fa-list fa-lg"></i>
                         </a>
                     </div>

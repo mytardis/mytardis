@@ -23,7 +23,7 @@
 
   {% if has_write_permissions and not experiment.is_publication %}
   <a id="add-dataset"
-     class="add-dataset btn btn-outline-secondary btn-sm pull-right"
+     class="add-dataset btn btn-primary btn-sm pull-right"
      href="{% url 'tardis.tardis_portal.views.add_dataset' experiment.id %}">
     <i class="fa fa-plus"></i>
     Add New

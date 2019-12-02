@@ -24,17 +24,15 @@
             Save
           </button>
           {% if dataset %}
-            <button type="button" class="btn btn-default">
-              <a href="{% url 'tardis_portal.view_dataset' dataset.id %}">
-                 Cancel
-            </a>
-            </button>
-          {% else %}
-            <button type="button" class="btn btn-default">
-               <a href="{% url 'tardis.tardis_portal.views.my_data' %}">
+            <a class="btn btn-outline-secondary"
+               href="{% url 'tardis_portal.view_dataset' dataset.id %}">
                Cancel
-               </a>
-            </button>
+            </a>
+          {% else %}
+            <a class="btn btn-outline-secondary"
+               href="{% url 'tardis.tardis_portal.views.my_data' %}">
+               Cancel
+            </a>
           {% endif %}
         </div>
       </div>
