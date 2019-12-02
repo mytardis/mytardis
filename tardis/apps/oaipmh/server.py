@@ -1,5 +1,6 @@
 from datetime import datetime
 import itertools
+from functools import reduce
 from importlib import import_module
 
 from django.conf import settings
@@ -7,8 +8,6 @@ from django.core.exceptions import ImproperlyConfigured
 from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
 from django.urls import reverse
-
-from six.moves import reduce
 
 from oaipmh.common import Identify
 import oaipmh.error
