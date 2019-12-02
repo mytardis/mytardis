@@ -75,15 +75,16 @@
                       </span>
                     </div>
                   </div>
+              </div> <!-- card-header -->
               <div class="">
                 <div id="collapse-{{exp.id}}"
                    class="collapse">
-                <div class="accordion-inner">
-                  <p>{{exp.description|default:"<em>No description</em>"|bleach}}</p>
-                  <div id="private-recent-datasets-{{exp.id}}"></div>
-                </div> {% comment %}class="accordion-inner"{% endcomment %}
+                  <div class="accordion-inner">
+                    <p>{{exp.description|default:"<em>No description</em>"|bleach}}</p>
+                    <div id="private-recent-datasets-{{exp.id}}"></div>
+                  </div> {% comment %}class="accordion-inner"{% endcomment %}
+                </div>
               </div> {% comment %}class="accordion-body"{% endcomment %}
-              </div>
             </div>
           {% endfor %}
           </div>
@@ -151,9 +152,8 @@
           <p>There is no public data available on this server.</p>
         {% endfor %}
         </div> {% comment %}id="public-experiments" class="panel-group experiments"{% endcomment %}
-      </div> {% comment %}class="col-md-12"{% endcomment %}
-    </div> {% comment %}class="row"{% endcomment %}
-  </div>
+    </div> {% comment %}class="col-md-12"{% endcomment %}
+  </div> {% comment %}class="row"{% endcomment %}
 </div> {% comment %}id="content"{% endcomment %}
 <input type="hidden" id="exps-expand-accordion" value="{{ exps_expand_accordion }}">
 {% render_bundle 'tardis_portal_index' %}
