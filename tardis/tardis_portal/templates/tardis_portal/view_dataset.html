@@ -332,22 +332,38 @@
               <div class="progress-bar progress-bar-success" style="background-color:blue;height:4px;width:0%;"></div>
           </div>
       </div>
-      <div id="datafiles-pane" class="dropzone"></div>
-      <div id="dropzone" class="dropzone" style="
-border: 6px dashed lightgrey;
--moz-border-radius: 40px;
-border-radius: 40px;
-height: 210px;
-text-align: center;
-font-size: 40px;
-padding-top: 150px;
-font-weight: bold;
-color: lightgrey;
-display: none;
-margin-top: 20px;
-      ">Drop files here
+      <ul id="datafile-nav" class="nav nav-tabs" role="tablist">
+        <li class="nav-item">
+          <a class="nav-link active" href="#tree-view" id="datafile-tree" role="tab" data-toggle="tab"
+             aria-controls="tree-view" aria-expanded="true">Tree View</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#legacy-view" role="tab" id="datafile-list" data-toggle="tab"
+             aria-controls="legacy-view">List View</a>
+        </li>
+      </ul>
+    <div id="datafile-nav-content" class="tab-content">
+      <div role="tabpanel" class="tab-pane fade show active" id="tree-view" aria-labelledby="datafile-tree">
+        <div id="tree_view"></div>
       </div>
-  </div>
+      <div role="tabpanel" class="tab-pane fade" id="legacy-view" aria-labelledby="datafile-legacy">
+        <div id="datafiles-pane" class="dropzone"></div>
+        <div id="dropzone" class="dropzone" style="
+                          border: 6px dashed lightgrey;
+                          -moz-border-radius: 40px;
+                          border-radius: 40px;
+                          height: 210px;
+                          text-align: center;
+                          font-size: 40px;
+                          padding-top: 150px;
+                          font-weight: bold;
+                          color: lightgrey;
+                          display: none;
+                          margin-top: 20px;">Drop files here
+        </div>
+      </div>
+    </div>
+    </div>
 </div>
 {% block finalscript %}
 <input type="hidden" id="upload-method" value="{{ upload_method }}">
@@ -356,5 +372,5 @@ margin-top: 20px;
 {% endif %}
 <input type="hidden" id="csrf-token" value="{{ csrf_token }}">
 {% endblock finalscript %}
-
+{% render_bundle 'tree_view' %}
 {% endblock %}
