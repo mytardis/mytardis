@@ -198,7 +198,10 @@ class Dataset(models.Model):
         dirs = cursor.fetchall()
         dirs_dict = dict()
         for result in dirs:
-            components = result[0].split('/')
+            if result[0] is None:
+                components = ['']
+            else:
+                components = result[0].split('/')
             for index, _ in enumerate(components):
                 key = '/'.join(components[0:index])
                 if not key:

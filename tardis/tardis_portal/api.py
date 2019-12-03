@@ -750,7 +750,8 @@ class DatasetResource(MyTardisModelResource):
         # get dirs at root level
         dirs = dataset.get_dirs("")
         # get files at root level
-        dfs = DataFile.objects.filter(dataset=dataset, directory='')
+        dfs = (DataFile.objects.filter(dataset=dataset, directory='') |
+               DataFile.objects.filter(dataset=dataset, directory__isnull=True)).distinct()
         child_list = []
         # append directories list
         if dirs:
