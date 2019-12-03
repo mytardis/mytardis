@@ -14,7 +14,7 @@
 {% for userAuth in userAuthMethodList %}
 <div class="authMethod" id="authMethod_{{ userAuth.2 }}"
      data-auth-desc="{{ userAuth.1 }}">
-  <table class="table table-condensed table-bordered">
+  <table class="table table-sm table-bordered">
     <tr>
       <th>Username:</th>
       <td> {{ userAuth.0 }} &nbsp;
@@ -114,7 +114,7 @@
   </div>
 
   <div class="authMethod">
-    <table class="table table-condensed table-bordered">
+    <table class="table table-sm table-bordered">
       <tr>
         <th>Username:</th>
         <td><span class="username"></span> &nbsp;
