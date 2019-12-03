@@ -12,11 +12,11 @@
 <div id="content" class="container-fluid">
   <div class="row">
     <div class="col-md-12">
-      <h2 class="visible-xs">Experiments</h2>
+      <h2 class="d-block d-sm-none">Experiments</h2>
       <div class="pull-right">
         {% if perms.tardis_portal.add_experiment %}
         <a id="create-experiment"
-           class="btn btn-warning"
+           class="btn btn-primary btn-sm"
            href="{% url 'tardis.tardis_portal.views.create_experiment' %}">
           <i class="fa fa-plus"></i>
           Create
@@ -24,7 +24,7 @@
         {% endif %}
       </div>  <!-- class="pull-right" -->
       <div class="pull-left">
-        <h2 class="hidden-xm" style="text-align: center">Experiments</h2>
+        <h2 class="d-none d-sm-block" style="text-align: center">Experiments</h2>
       </div>
     </div>  <!-- class="col-md-12" -->
   </div>  <!-- class="row" -->
@@ -44,18 +44,17 @@
         </h3>
       </div>
       <div class="pull-right">
-        <button type="button" class="btn btn-success btn-xs"
+        <button type="button" class="btn btn-success btn-sm"
                 onclick="$('#myowned .panel-collapse').collapse('hide');" >
         Collapse all</button>
-        <button type="button" class="btn btn-success btn-xs"
+        <button type="button" class="btn btn-success btn-sm"
                 onclick="$('#myowned .panel-collapse').collapse('show');" >
         Expand all</button>
       </div>
       <div class="clearfix"></div>
-      <div id="myowned" class="mydata accordion experiments"></div>
+      <div id="myowned" class="mydata panel-group experiments"></div>
       <br/>
       {% endif %}
-
     </div>  <!-- class="col-md-12" -->
   </div>  <!-- class="row" -->
 </div>  <!-- id="content" -->

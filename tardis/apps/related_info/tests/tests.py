@@ -1,7 +1,6 @@
 import json
 
 from mock import patch
-import six
 
 from django.contrib.auth.models import Permission
 from django.test import TestCase, TransactionTestCase
@@ -142,11 +141,10 @@ class ListTestCase(TransactionTestCase):
 
         for obj in objs:
             self.assertEqual(obj['type'], 'website')
-            six.assertRegex(
-                self,
+            self.assertRegex(
                 obj['identifier'], r'www.example.test/\d+$', obj['identifier'])
-            six.assertRegex(self, obj['title'], r'^Title #\d+$')
-            six.assertRegex(self, obj['notes'], r'note #\d+\.$')
+            self.assertRegex(obj['title'], r'^Title #\d+$')
+            self.assertRegex(obj['notes'], r'note #\d+\.$')
 
 
 class GetTestCase(TransactionTestCase):

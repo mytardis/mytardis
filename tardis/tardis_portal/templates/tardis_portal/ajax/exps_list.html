@@ -12,17 +12,28 @@
 {% endif %}
 
 {% for exp in experiments %}
-  <div class="accordion-group">
-    <div class="accordion-heading">
-      <div id="toggle-{{exp.id}}" class="accordion-toggle" data-toggle="collapse">
-        <input type="hidden" class="exp-index" value="{{ forloop.counter }}">
-        <strong><a class="pull-left explink"
-                   href="{% url 'tardis_portal.view_experiment' exp.id %}">{{ exp.title }}</a></strong>
-        {% experiment_badges exp %}
+  <div class="card border-0" style="background-color: #f5fbff">
+    <div class="card-header border-bottom-0" style="background-color: rgba(0,0,0,0)">
+      <div class="row">
+        <div id="toggle-{{exp.id}}" class="accordion-toggle col-8" data-toggle="collapse">
+          <input type="hidden" class="exp-index" value="{{ forloop.counter }}">
+          <strong><a class="pull-left explink"
+                     href="{% url 'tardis_portal.view_experiment' exp.id %}">{{ exp.title }}</a></strong>
+        </div>
+        <div class="col">
+          {% experiment_badges exp %}
+        </div>
+      </div> {% comment %} class="row" {% endcomment %}
+      <div class="row">
+      <div class="col-6">
         {% experiment_authors exp %}
-        {% experiment_download_link exp %}
-      </div> {% comment %} class="accordion-toggle" {% endcomment %}
-    </div> {% comment %} class="accordion-heading" {% endcomment %}
+      </div>
+      <div class="col">
+        <span class="float-right">
+          {% experiment_download_link exp %}
+        </span>
+      </div>
+    </div>{% comment %} class="row" {% endcomment %}
     <div id="collapse-{{exp.id}}"
          class="panel-collapse collapse">
       <div class="accordion-inner">
@@ -30,7 +41,8 @@
         <div id="latest-dataset-{{exp.id}}"></div>
       </div> {% comment %} class="accordion-inner" {% endcomment %}
     </div> {% comment %} class="accordion-body" {% endcomment %}
-  </div> {% comment %} class="accordion-group" {% endcomment %}
+  </div>
+  </div>{% comment %} class="card" {% endcomment %}
 {% empty %}
   <p>You do not own any Experiment on this server.<br/>
     <a href="{% url 'tardis.tardis_portal.views.create_experiment' %}">Create a new experiment</a>

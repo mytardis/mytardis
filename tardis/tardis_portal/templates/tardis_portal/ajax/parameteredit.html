@@ -1,5 +1,5 @@
 {% load formfieldfilters %}
-{% load bootstrap %}
+{% load widget_tweaks %}
 
 {% if success %}
   Parameters saved successfully.
@@ -9,11 +9,16 @@
   <form id="edit_metadata_form" action='/ajax/edit_{{type}}_parameters/{{parameterset_id}}/' method='post'>{% csrf_token %}
     {{ form.non_field_errors }}
       {% for field in form %}
-        {{ field | bootstrap }}
+        <div class="form-group">
+          <label class="col-form-label-sm py-0" for="{{field.name}}">{{field.label}}</label>
+          <div class="col-md-9 pl-0">
+            {{ field | add_class:"form-control form-control-sm" }}
+          </div>
+        </div>
       {% endfor %}
 
-    <div class="input-group">
-      <select id="parameternameselect" class="form-control">
+    <div class="form-group row">
+      <select id="parameternameselect" class="form-control form-control-sm ml-3 col-md-6">
         {% for pn in parameternames %}
           {% if not pn.immutable %}
             <option value="{{pn.name|parametername_form}}"
@@ -23,12 +28,10 @@
           {% endif %}
         {% endfor %}
       </select>
-      <div class="input-group-btn">
-        <button id="add_new_parameter" type="button" class="btn btn-info">
-          <i class="fa fa-plus"></i>
-          Add Metadata Parameter
-        </button>
-      </div>
+      <button id="add_new_parameter" type="button" class="btn btn-success btn-sm my-0">
+        <i class="fa fa-plus"></i>
+        Add Metadata Parameter
+      </button>
     </div>
 
     <p style="padding-top: 10px; padding-bottom: 10px;"><em>Leave a parameter blank to remove</em></p>
@@ -38,12 +41,12 @@
 
     <div class="form-group">
       <footer class="col-md-12 text-right">
-        <button type="button" class="cancel-button btn btn-default"
+        <button type="button" class="cancel-button btn btn-outline-secondary"
                 data-dismiss="modal">
           <i class="fa fa-close"></i>
           Cancel
         </button>
-        <button type="submit" class="submit-button btn btn-success">
+        <button type="submit" class="submit-button btn btn-primary">
           <i class="fa fa-check"></i>
           Save
         </button>

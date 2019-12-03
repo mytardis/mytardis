@@ -202,7 +202,7 @@ $(document).on("click", "#request-fast-access", function(evt) {
     });
 });
 
-$(document).on("click", ".pagelink", function(event) {
+$(document).on("click", ".page-link", function(event) {
     var href = $(this).attr("href");
     $(this).html(loadingHTML);
     $("#datafiles-pane").load(href, function() {

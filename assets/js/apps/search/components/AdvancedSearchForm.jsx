@@ -78,8 +78,11 @@ function AdvancedSearchForm({ searchText, showResults, instrumentList }) {
   };
 
   return (
-    <form id="adv-search-form" className="form-horizontal">
+    <form id="adv-search-form" className="border-top form-horizontal">
       <div className="form-group" id="adv-search">
+        <div>
+          <label className="font-weight-bold">Advance Search</label>
+        </div>
         <label htmlFor="filter">Filter by Date created</label>
         <div className="form-group row">
           <div className="col-xs-6" style={{ paddingLeft: 0, paddingRight: 15 }}>
@@ -131,7 +134,7 @@ function AdvancedSearchForm({ searchText, showResults, instrumentList }) {
           className="btn btn-primary"
           onClick={handleAdvancedSearchFormSubmit}
         >
-          <span className="glyphicon glyphicon-search" aria-hidden="true" />
+          <i className="fa fa-search" aria-hidden="true" />
         </button>
         {isLoading && (
           <div className="col-md-6" style={{ textAlign: "center", position: "absolute" }}>

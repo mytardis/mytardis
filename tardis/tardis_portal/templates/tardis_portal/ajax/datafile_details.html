@@ -1,7 +1,7 @@
 {% if datafile_id %}
   {% if views|length > 1 %}
     {% for view in views %}
-      <a class="df-view-button btn btn-warning {% if forloop.first %}active{% endif %}" 
+      <a class="df-view-button btn btn-outline-secondary {% if forloop.first %}active{% endif %}"
          href="{{view.url}}">{{view.name}}</a>
     {% endfor %}
   {% endif %}
