@@ -1,12 +1,10 @@
 import React, {useState, useEffect, Fragment} from "react";
 
-import  {Treebeard}  from 'react-treebeard';
+import  {Treebeard, decorators}  from 'react-treebeard';
 import styles from './custom-theme';
-import Header from './Header'
-import Container from './Container'
-import decorators from 'react-treebeard/dist/components/decorators';
-import {Div} from 'react-treebeard/dist/components/common';
-import * as filters from './filter'
+import Header from './Header';
+import Container from './Container';
+import * as filters from './filter';
 
 import Cookies from "js-cookie";
 import PropTypes from "prop-types";
@@ -76,8 +74,8 @@ const TreeView = ({datasetId}) => {
     };
     return (
       <Fragment>
-        <Div style={styles}>
-          <Div className="input-group">
+        <div style={styles}>
+          <div className="input-group">
               <span className="input-group-addon">
                   <i className="fa fa-search"/>
               </span>
@@ -87,9 +85,9 @@ const TreeView = ({datasetId}) => {
                   placeholder="Search the tree..."
                   type="text"
               />
-          </Div>
-        </Div>
-        <Div style={styles}>
+          </div>
+        </div>
+        <div style={styles}>
           <Treebeard
             data={data}
             style={styles}
@@ -97,7 +95,7 @@ const TreeView = ({datasetId}) => {
             decorators={{...decorators, Header, Container}}
             animation={false}
           />
-        </Div>
+        </div>
       </Fragment>
 
     )
