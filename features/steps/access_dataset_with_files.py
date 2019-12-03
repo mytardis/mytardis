@@ -76,6 +76,6 @@ def they_see_the_dataset_with_files(context):
     datafile_list_tab.click()
     datafile_info_toggle = context.browser.find_element_by_css_selector(".datafile-info-toggle")
     datafile_info_toggle.click()
-    """
     no_metadata_msg = context.browser.find_element_by_css_selector(".datafile_parameters em")
     context.test.assertIn("There is no metadata for this file", no_metadata_msg.get_attribute("innerHTML"))
+    """
