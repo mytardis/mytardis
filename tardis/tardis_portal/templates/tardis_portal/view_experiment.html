@@ -86,19 +86,18 @@
 </div>
 
 <div class="row" >
-  <div class="col-md-5">
-  <div class="card border-0">
-    <div class="card-body">
-      <div id="collapseDescription">
-        <p class="card-text bg-light collapse" id="collapseContent" property="dc:abstract">
-        {{ experiment.description|bleach|linebreaksbr }}
-        </p>
-        <p class="font-weight-bold collapsed" data-toggle="collapse"
-           href="#collapseContent" aria-expanded="false" aria-controls="collapseContent" title="Show Description">
-        </p>
-      </div>
+  <div class="col-md-6">
+    <div align="center" style="margin-bottom: -20px;">
+      <div id="abstractHolder" style="display: none">{{ experiment.description|bleach|linebreaksbr }}</div>
+      <a id="abstract-toggle" class="btn btn-outline-secondary bg-light btn-sm p-1"
+         title="Show Description"
+         style="display: inline; color: black;">Toggle Full Description</a>
     </div>
-  </div>
+    <div class="pt-2">
+      <p class="abstract bg-light rounded info-box abstract-clickable ml-0" property="dc:abstract" style="height: 60px;">
+        <span id="abstractText">{{ experiment.description }}</span>
+      </p>
+    </div>
     <!-- Tab buttons -->
     <ul id="experiment-tabs" class="nav nav-tabs" style="padding-top: 1.25rem">
       {% for appurl, appname in apps %}
@@ -111,7 +110,7 @@
       </div>
     </div>
   </div>
-  <div id="datasets-pane" class="col-md-7">
+  <div id="datasets-pane" class="col-md-6">
     {% include "tardis_portal/ajax/experiment_datasets.html" %}
   </div>
 </div>
