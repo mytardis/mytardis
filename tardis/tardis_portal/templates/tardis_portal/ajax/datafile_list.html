@@ -1,42 +1,11 @@
-{% load capture %}
+{% load pagination %}
+
 <input type="hidden" id="datafile-count" value="{{datafile_count}}"/>
-{% capture as paginator_block %}
+
 {% if datafiles.paginator.num_pages > 1 %}
-  <nav class="d-flex justify-content-center">
-    <ul class="pagination">
-    {% if datafiles.has_previous %}
-    <li class="page-item">
-      <a class="page-link" href="/ajax/datafile_list/{{dataset.id}}/?page={{ datafiles.previous_page_number }}&{{params}}">&laquo;</a>
-    </li>
-    {% else %}
-    <li class="disabled page-item">
-      <a class="page-link" href="#">&laquo;</a>
-    </li>
-    {% endif %}
-
-    {% for pagenum in datafiles.paginator.page_range %}
-    <li {% if datafiles.number == pagenum %} class="active page-item"{% endif %}>
-      <a class="page-link"
-         href="/ajax/datafile_list/{{dataset.id}}/?page={{pagenum}}&{{params}}">
-         {{pagenum}}
-      </a>
-    </li>
-    {% endfor %}
-
-    {% if datafiles.has_next %}
-    <li class="page-item">
-      <a class="page-link" href="/ajax/datafile_list/{{dataset.id}}/?page={{ datafiles.next_page_number }}&{{params}}">&raquo;</a>
-    </li>
-    {% else %}
-    <li class="disabled page-item"><a class="page-link" href="#">&raquo;</a></li>
-    {% endif %}
-  </ul>
-  <!-- Page {{ dataset.number }} of {{ dataset.paginator.num_pages }} -->
-  </nav>
+  {% block top-pagination %}{% pagination datafiles paginator page_num query_string %}{% endblock %}
+  <!-- Page {{ page_num|add:1 }} of {{ datafiles.paginator.num_pages }} -->
 {% endif %}
-{% endcapture %}
-
-{{ paginator_block }}
 
 <p id="filename-search" class="js-required" data-action="/ajax/datafile_list/{{dataset.id}}/" data-method="GET" style="padding: 5px 0 5px 10px; border: 1px solid #DDDDDD;">
 <input id="filename-search-text" style="width: 95%; font-size: 100%; margin-top: 5px;"
@@ -52,7 +21,7 @@
 <form id="datafile-download" method="POST" action="{% url 'tardis.tardis_portal.download.streaming_download_datafiles' %}" target="_blank">{% csrf_token %}
 
     <div class="clearfix"></div>
-    <table class="datafiles table table-condensed">
+    <table class="datafiles table table-sm">
         {% if has_download_permissions %}
             <thead>
             <tr id="datafile-selectors" class="js-required">
@@ -128,7 +97,7 @@
                 <td style="width: 130px;">
                     <div class="btn-group pull-right">
                         {% if has_download_permissions and datafile.verified %}
-                            <a class="btn btn-outline-secondary btn-sm {% if datafile.is_online %}" title="Download"
+                            <a class="btn btn-outline-secondary btn-sm py-1 {% if datafile.is_online %}" title="Download"
                                {% else %} archived-file disabled"{% endif %}
                                href="{{ datafile.get_download_url }}">
                                 <i class="fa fa-download fa-lg"></i>
@@ -137,13 +106,13 @@
                         {% if has_write_permissions and not immutable %}
                             <a title="Add Metadata" href="{% url 'tardis.tardis_portal.views.add_datafile_par' datafile.id %}"
                                data-toggle_selector="#datafile_metadata_toggle_{{datafile.id}}"
-                               class="btn btn-outline-secondary btn-sm add-metadata">
+                               class="btn btn-outline-secondary btn-sm py-1 add-metadata">
                                 <i class="fa fa-plus fa-lg"></i>
                             </a>
                         {% endif %}
 
                         <a id="datafile_metadata_toggle_{{datafile.id}}" title="Show/Hide Metadata"
-                           class="btn btn-outline-secondary datafile-info-toggle metadata_hidden" href="/ajax/datafile_details/{{datafile.id}}/">
+                           class="btn btn-outline-secondary btn-wm py-1 datafile-info-toggle metadata_hidden" href="/ajax/datafile_details/{{datafile.id}}/">
                             <i class="fa fa-list fa-lg"></i>
                         </a>
                     </div>
