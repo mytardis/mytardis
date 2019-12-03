@@ -17,7 +17,7 @@ var sftp = (function() {
             <div class='text-right pull-right'>\
               <button id='delete-btn' class='btn btn-danger' \
                       onclick='sftp.handleKeyDelete(" + rowData.id + ")'>\
-                <i class='fa fa-remove'></i>\
+                <i class='fa fa-trash'></i>\
                 Delete\
               </button>\
           </td></tr>";

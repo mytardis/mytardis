@@ -109,7 +109,7 @@ def user_menu_processor(request):
             label='Group Management'))
         user_menu.append(dict(divider='True'))
     user_menu.append(dict(
-        url=reverse('django.contrib.auth.views.logout'),
+        url=reverse('logout'),
         icon='fa fa-sign-out',
         label='Log Out'))
 
