@@ -76,7 +76,7 @@ const TreeView = ({datasetId}) => {
       <Fragment>
         <div style={styles}>
           <div className="input-group">
-              <span className="input-group-addon">
+              <span className="input-group-text">
                   <i className="fa fa-search"/>
               </span>
               <input
