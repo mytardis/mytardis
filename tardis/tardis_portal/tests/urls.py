@@ -51,5 +51,5 @@ urlpatterns += [
     url(r'^download/', include(download_urls)),
     url(r'^apps/sftp/', include(sftp.urls)),
     url(r'^logout/$', LogoutView.as_view(), {'next_page': '/'},
-        name='django.contrib.auth.views.logout'),
+        name='logout'),
 ]
