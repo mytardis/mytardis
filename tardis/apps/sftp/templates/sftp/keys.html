@@ -15,13 +15,13 @@
   <p>Add and manage your public SSH keys for accessing {{site_title|default:'MyTardis'}} via SFTP.</p>
   <div class="row">
     <div class="ml-auto" style="margin: 0px 0px 10px 10px;">
-      <a class="btn btn-success" data-toggle="modal" href="#keyGenerateModal">
+      <a class="btn btn-outline-secondary" data-toggle="modal" href="#keyGenerateModal">
         <i class="fa fa-plus"></i>
         <span>Generate key</span>
       </a>
     </div>
     <div style="margin: 0px 0px 10px 10px;">
-      <a class="btn btn-success" data-toggle="modal" href="#keyAddModal">
+      <a class="btn btn-outline-secondary" data-toggle="modal" href="#keyAddModal">
         <i class="fa fa-plus"></i>
         <span>Add key</span>
       </a>
@@ -62,8 +62,14 @@
         </div>
       </div>
       <div class="modal-footer">
-        <button class="btn btn-primary" style="margin: 0px 0px 10px 10px;" onclick="sftp.addKey()">Add Key</button>
-        <button class="btn btn-outline-secondary" style="margin: 0px 0px 10px 10px;" data-dismiss="modal" onclick="sftp.clearKeyAddForm()">Close</button>
+        <button class="btn btn-outline-secondary" style="margin: 0px 0px 10px 10px;" data-dismiss="modal" onclick="sftp.clearKeyAddForm()">
+          <i class="fa fa-close"></i>
+          Close
+        </button>
+        <button class="btn btn-primary" style="margin: 0px 0px 10px 10px;" onclick="sftp.addKey()">
+          <i class="fa fa-plus"></i>
+          Add Key
+        </button>
       </div>
     </form>  <!-- class="modal-content" -->
   </div>  <!-- class="modal-dialog" -->
@@ -101,10 +107,13 @@
             </div>
           </div>
           {% if enable_generate %}
-          <input type="submit" class="btn btn-outline-secondary" value="Generate & Download">
+            <button type="submit" class="btn btn-outline-secondary">
           {% else %}
-          <input type="submit" class="btn btn-outline-secondary" disabled value="Generate & Download">
+            <button type="submit" class="btn btn-outline-secondary" disabled>
           {% endif %}
+              <i class="fa fa-download"></i>
+              Generate &amp; Download
+            </button>
         </form>
         <br/>
         <p><b>Important:</b> Keep your private key in a safe place. Anyone with access to the private key will be able to access your data on {{site_title|default:'MyTardis'}}.</p>
@@ -113,7 +122,10 @@
         </div>
       </div>
       <div class="modal-footer">
-        <button class="btn btn-outline-secondary" data-dismiss="modal" onclick="sftp.clearKeyGenerateForm()">Close</button>
+        <button class="btn btn-outline-secondary" data-dismiss="modal" onclick="sftp.clearKeyGenerateForm()">
+          <i class="fa fa-close"></i>
+          Close
+        </button>
       </div>
     </div>  <!-- class="modal-content" -->
   </div>  <!-- class="modal-dialog" -->
