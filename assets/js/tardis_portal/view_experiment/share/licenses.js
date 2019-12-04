@@ -51,14 +51,16 @@ $(document).on("click", "#license-options .use-button", function(evt) {
     // Show confirmation window
     $("#selected-license-text").html($(this).parents(".license-option")
         .find(".col-md-10").html());
-    $("#legal-section").show();
     $("#license-options").hide();
+    $("#legal-section").show();
+    $("#confirm-license-btn-group").show();
 });
 
 $(document).on("click", "#reselect-license", function() {
     $("#selected-license-text").html("");
     $("#license-options").show();
     $("#legal-section").hide();
+    $("#confirm-license-btn-group").hide();
 });
 
 $(document).on("click", "#license-options .use-button", function(evt) {
@@ -78,12 +80,14 @@ $(document).on("click", "#license-options .use-button", function(evt) {
     // Show confirmation window
     $("#selected-license-text").html($(this).parents(".license-option")
         .find(".col-md-10").html());
-    $("#legal-section").show();
     $("#license-options").hide();
+    $("#legal-section").show();
+    $("#confirm-license-btn-group").show();
 });
 
 $(document).on("click", "#reselect-license", function() {
     $("#selected-license-text").html("");
     $("#license-options").show();
     $("#legal-section").hide();
+    $("#confirm-license-btn-group").hide();
 });

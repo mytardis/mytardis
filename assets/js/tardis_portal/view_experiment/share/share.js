@@ -27,6 +27,7 @@ export function addChangePublicAccessEventHandlers() {
                 }
 
                 $("#legal-section").hide();
+                $("#confirm-license-btn-group").hide();
 
                 addPublicAccessEvents();
             });
