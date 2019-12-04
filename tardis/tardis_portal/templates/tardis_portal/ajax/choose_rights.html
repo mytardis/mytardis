@@ -37,13 +37,13 @@
          style="white-space: pre-wrap; word-break: keep-all;">{{ form.legal_text.value }}</pre>
     <div class="checkbox">
       <label>
-        <input id="publishing-consent" type="checkbox" value="Agree" />
+        <input id="publishing-consent" type="checkbox" required value="Agree" />
         I agree to the above terms
       </label>
     </div>
   </div>
   <br>
-  <div class="form-group text-right">
+  <div id="confirm-license-btn-group" class="form-group text-right">
     <button type="button" class="cancel-button btn btn-outline-secondary"
             data-dismiss="modal">
       <i class="fa fa-close"></i>
