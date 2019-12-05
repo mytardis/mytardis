@@ -10,7 +10,7 @@ import Cookies from "js-cookie";
 import PropTypes from "prop-types";
 
 
-const TreeView = ({datasetId}) => {
+const TreeView = ({datasetId, modified}) => {
 
     const [cursor, setCursor] = useState(false);
     const [baseData, setBaseData] = useState([]);
@@ -27,7 +27,9 @@ const TreeView = ({datasetId}) => {
         .then((data) => { setBaseData(data); setData(data)  })
     };
     const fetchChildDirs = (dirName) => {
-      fetch('/api/v1/dataset/'+datasetId+'/child-dirs/?dir_name='+dirName+'&data='+JSON.stringify(data),{
+      const encodedDir = encodeURIComponent(dirName);
+      const encodedData = encodeURIComponent(JSON.stringify(data));
+      fetch(`/api/v1/dataset/${datasetId}/child-dirs/?dir_name=${encodedDir}&data=${encodedData}`,{
         method: 'get',
         headers: {
             "Accept": "application/json", // eslint-disable-line quote-props
@@ -39,10 +41,10 @@ const TreeView = ({datasetId}) => {
     };
     useEffect(() => {
       fetchBaseDirs('')
-    },[]);
+    },[datasetId, modified]);
     const onToggle = (node, toggled) => {
       //fetch children
-      if (toggled && node.children.length === 0){
+      if (toggled && node.children && node.children.length === 0){
         fetchChildDirs(node.name);
       }else {
         node.toggled = toggled;
@@ -97,11 +99,16 @@ const TreeView = ({datasetId}) => {
           />
         </div>
       </Fragment>
-
     )
 };
 
 TreeView.propTypes = {
-    datasetId: PropTypes.string,
+  datasetId: PropTypes.string.isRequired,
+  modified: PropTypes.string,
 };
+
+TreeView.defaultProps = {
+  modified: "",
+};
+
 export default TreeView;
