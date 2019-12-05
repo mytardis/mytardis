@@ -1,6 +1,5 @@
 var loadingHTML = "<img src=\"/static/images/ajax-loader.gif\"/><br />";
 
-var prevFileSelect = null;
 
 // file selectors
 jQuery(document).on("click", ".dataset_selector_all", function() {
@@ -129,14 +128,8 @@ $(document).on("click", "#datafiles-pane .datafile-info-toggle", function(evt) {
 
     $datafileMetadataContainer.toggle();
 
-    if(prevFileSelect)
-    {
-        prevFileSelect.removeClass("file-select");
-    }
-
     var fileSelect = $this.parents("tr.datafile");
     fileSelect.addClass("file-select");
-    prevFileSelect = fileSelect;
 
     var href = $this.attr("href");
     $datafileMetadataContainer.html(loadingHTML);
