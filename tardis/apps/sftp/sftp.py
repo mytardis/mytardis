@@ -45,9 +45,7 @@ paramiko_log.disabled = True
 
 if getattr(settings, 'SFTP_GEVENT', False):
     from gevent import monkey
-    from django.db import connection
     monkey.patch_all()
-    connection.allow_thread_sharing = True
 
 # django db related modules must be imported after monkey-patching
 from django.contrib.sites.models import Site  # noqa
