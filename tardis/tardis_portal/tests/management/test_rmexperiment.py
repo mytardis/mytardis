@@ -59,7 +59,7 @@ def _create_test_dataset(nosDatafiles):
     ds_.save()
     for i in range(0, nosDatafiles):
         df_ = DataFile(dataset=ds_, filename='file_%d' % i, size='21',
-                       sha512sum='bogus')
+                       algorithm='sha512', checksum='bogus')
         df_.save()
     ds_.save()
     return ds_

@@ -35,7 +35,6 @@ class TarDownloadTestCase(TestCase):
         datafile_content = b"\n".join([b'some data %d' % i
                                        for i in range(1000)])
         filesize = len(datafile_content)
-        md5sum = hashlib.md5(datafile_content).hexdigest()
         # create test datafiles and datafile objects
         self.dfs = []
         for i in range(20):
@@ -43,7 +42,8 @@ class TarDownloadTestCase(TestCase):
                 filename='testfile%d.txt' % i,
                 mimetype='text/plain',
                 size=filesize,
-                md5sum=md5sum,
+                algorithm="md5",
+                checksum=hashlib.md5(datafile_content).hexdigest(),
                 directory='/'.join([
                     'testdir%d' % i
                     for i in range(i, i + 4)

@@ -87,8 +87,8 @@ class ParameterSetManagerTestCase(TestCase):
         self.dataset.save()
 
         self.datafile = DataFile(dataset=self.dataset,
-                                 filename="testfile.txt",
-                                 size="42", md5sum='bogus')
+                                 filename="testfile.txt", size="42",
+                                 algorithm='md5', checksum='bogus')
         self.datafile.save()
 
         self.dfo = DataFileObject(
@@ -428,8 +428,8 @@ class EditParameterSetTestCase(TestCase):
         self.datasetparameterset.save()
 
         self.datafile = DataFile(dataset=self.dataset,
-                                 filename="testfile.txt",
-                                 size="42", md5sum='bogus')
+                                 filename="testfile.txt", size="42",
+                                 algorithm='md5', checksum='bogus')
         self.datafile.save()
 
         self.datafileparameterset = DatafileParameterSet(

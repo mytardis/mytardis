@@ -28,7 +28,7 @@ class DatafileSaveMetadataTestCase(TestCase):
         self.dataset = Dataset.objects.create(description="Test dataset")
         self.datafile = DataFile.objects.create(
             dataset=self.dataset, filename="testfile.txt",
-            size=42, md5sum="bogus")
+            size=42, algorithm="md5", checksum="bogus")
 
     def tearDown(self):
         self.schema.delete()

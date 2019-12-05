@@ -48,7 +48,7 @@ class ContextualViewTest(TestCase):
 
         self.datafile = DataFile(dataset=self.dataset,
                                  size=42, filename="foo",
-                                 md5sum="junk")
+                                 algorithm="md5", checksum="junk")
         self.datafile.save()
 
         self.testschema = Schema(namespace="http://test.com/test/schema",

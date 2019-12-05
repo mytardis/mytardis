@@ -315,8 +315,9 @@ def dfo_verified(dfo_id, algorithm, checksum):
 
     dfo = DataFileObject.objects.get(id=dfo_id)
     dfo.verified = (
-        algorithm == 'md5' and dfo.datafile.md5sum == checksum) or (
-        algorithm == 'sha512' and dfo.datafile.sha512sum == checksum)
+        dfo.datafile.algorithm == algorithm and
+        dfo.datafile.checksum == checksum
+    )
     dfo.last_verified_time = timezone.now()
     dfo.save(update_fields=['verified', 'last_verified_time'])
 

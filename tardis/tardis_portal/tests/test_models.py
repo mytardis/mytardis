@@ -342,7 +342,7 @@ class ModelTestCase(TestCase):
                 settings.REQUIRE_DATAFILE_SIZES = True
                 settings.REQUIRE_DATAFILE_CHECKSUMS = False
                 DataFile(dataset=dataset, filename='foo.txt',
-                         md5sum='bad').save()
+                         algorithm='md5', checksum='bad').save()
             with self.assertRaises(Exception):
                 settings.REQUIRE_DATAFILE_SIZES = False
                 settings.REQUIRE_DATAFILE_CHECKSUMS = True
@@ -396,7 +396,8 @@ class ModelTestCase(TestCase):
         df_file = DataFile(dataset=dataset,
                            filename='file.txt',
                            size=42,
-                           md5sum='bogus')
+                           algorithm='md5',
+                           checksum='bogus')
         df_file.save()
 
         df_schema = Schema(

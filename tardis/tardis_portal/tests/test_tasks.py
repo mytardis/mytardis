@@ -37,7 +37,8 @@ class BackgroundTaskTestCase(TestCase):
         datafile = DataFile(dataset=self.dataset)
         datafile.filename = cf.name
         datafile.size = len(content)
-        datafile.md5sum = hashlib.md5(content).hexdigest()
+        datafile.algorithm = 'md5'
+        datafile.checksum = hashlib.md5(content).hexdigest()
         datafile.save()
         datafile.file_object = cf
 
@@ -60,7 +61,8 @@ class BackgroundTaskTestCase(TestCase):
         datafile = DataFile(dataset=self.dataset)
         datafile.filename = cf.name
         datafile.size = len(content) - 1
-        datafile.md5sum = hashlib.md5(content).hexdigest()
+        datafile.algorithm = 'md5'
+        datafile.checksum = hashlib.md5(content).hexdigest()
         datafile.save()
         datafile.file_object = cf
         # verify explicitly to catch Exceptions hidden by celery

@@ -55,13 +55,12 @@ def upload(request, dataset_id):
     if request.method == 'POST':
         logger.debug('got POST')
         if request.FILES:
-
             uploaded_file_post = request.FILES['Filedata']
             logger.debug('done upload')
             datafile = DataFile(dataset=dataset,
                                 filename=uploaded_file_post.name,
                                 size=uploaded_file_post.size)
-            datafile.save(require_checksums=False)
+            datafile.save(require_checksum=False)
             logger.debug('created file')
             datafile.file_object = uploaded_file_post
             logger.debug('saved datafile')

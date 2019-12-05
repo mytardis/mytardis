@@ -40,7 +40,7 @@ class ParametersTestCase(TestCase):
 
         self.datafile = DataFile(
             dataset=self.dataset, filename="testfile.txt",
-            size=10, md5sum="bogus")
+            size=10, algorithm="md5", checksum="bogus")
         self.datafile.save()
 
         self.schema = Schema(

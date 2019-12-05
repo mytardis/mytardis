@@ -45,7 +45,8 @@ class ModelTestCase(TestCase):
         dataset.save()
 
         df_file = DataFile(
-            dataset=dataset, filename='file.txt', size=42, md5sum='bogus')
+            dataset=dataset, filename='file.txt', size=42,
+            algorithm='md5', checksum='bogus')
         df_file.save()
 
         receiving_box = df_file.get_receiving_storage_box()
