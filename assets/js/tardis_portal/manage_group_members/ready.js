@@ -18,6 +18,24 @@ $(document).ready(function() {
                 modal.find(".loading-placeholder").hide();
                 modal.find("#error-message").parents(".alert-danger").hide();
 
+                $("#id_addgroup").on("keydown", function() {
+                    /* Validation is server-side.
+                     * When user starts typing in an input to correct a validation
+                     * error, the invalid status should be removed. */
+                    $(this).removeClass("is-invalid");
+                    $(this)[0].setCustomValidity("");
+                    $("#create-group-form").removeClass("was-validated");
+                });
+
+                $("#id_groupadmin").on("keydown", function() {
+                    /* Validation is server-side.
+                     * When user starts typing in an input to correct a validation
+                     * error, the invalid status should be removed. */
+                    $(this).removeClass("is-invalid");
+                    $(this)[0].setCustomValidity("");
+                    $("#create-group-form").removeClass("was-validated");
+                });
+
                 $("#group.form_submit").unbind("click");
                 $("#group.form_submit").on("click", function(event) {
                     event.preventDefault();
@@ -34,11 +52,32 @@ $(document).ready(function() {
                         url: action,
                         dataType: "text",
                         success: function(data) {
+                            $("#create-group-form").addClass("was-validated");
                             modal.modal("hide");
                         },
                         error: function(jqXHR, textStatus, errorThrown) {
-                            modal.find("#error-message").html(jqXHR.responseText);
-                            modal.find("#error-message").parents(".alert-danger").show();
+                            var response = JSON.parse(jqXHR.responseText);
+                            if (response && "field" in response && response.field) {
+                                var inputElement = $("#" + response.field);
+                                inputElement.addClass("is-invalid");
+
+                                // Without this line, a tick might be displayed implying that
+                                // the input is valid, even when it has the "is-invalid" class:
+                                inputElement[0].setCustomValidity(response.message);
+
+                                var feedbackElement = inputElement.siblings(".invalid-feedback");
+                                feedbackElement.html(response.message);
+
+                                $("#create-group-form").addClass("was-validated");
+                            }
+                            else if (response) {
+                                modal.find("#error-message").html(jqXHR.response.message);
+                                modal.find("#error-message").parents(".alert-danger").show();
+                            }
+                            else {
+                                modal.find("#error-message").html(jqXHR.responseText);
+                                modal.find("#error-message").parents(".alert-danger").show();
+                            }
                         }
                     });
                     return false;
@@ -60,19 +99,48 @@ $(document).ready(function() {
         evt.preventDefault();
         var form = $(this);
         var authMethod = form.find("[name=authMethod]").val();
-        var usersuggest = form.find("[name=adduser]").val();
+        var username = form.find("[name=adduser]").val();
         var groupId = form.find("[name=group_id]").val();
         var usersDiv = form.parents(".access_list").children(".users");
         var isAdmin = form.find("[name=admin]").is(":checked");
-        var action = "/group/" + groupId + "/add/" + usersuggest + "/?isAdmin=" + isAdmin + "&authMethod=" + authMethod;
+        var action = "/group/" + groupId + "/add/" + username + "/?isAdmin=" + isAdmin + "&authMethod=" + authMethod;
+
+        if (!username) {
+            var userInput = form.find("[name=adduser]");
+            var feedbackElement = userInput.siblings(".invalid-feedback");
+            userInput.addClass("is-invalid");
+
+            var msg = "User cannot be blank";
+            // Without this line, a tick might be displayed implying that
+            // the input is valid, even when it has the "is-invalid" class:
+            userInput[0].setCustomValidity(msg);
+
+            feedbackElement.html(msg);
+            form.addClass("was-validated");
+            return false;
+        }
+
         $.ajax({
             type: "GET",
             url: action,
             success: function(data) {
                 usersDiv.hide().append(data).fadeIn();
             },
-            error: function(data) {
-                alert("Error adding user");
+            error: function(jqXHR, textStatus, errorThrown) {
+                var response = JSON.parse(jqXHR.responseText);
+                if (response && "field" in response && response.field) {
+                    var inputElement = $("#" + response.field);
+                    inputElement.addClass("is-invalid");
+
+                    // Without this line, a tick might be displayed implying that
+                    // the input is valid, even when it has the "is-invalid" class:
+                    inputElement[0].setCustomValidity(response.message);
+
+                    var invalidFeedbackElement = inputElement.siblings(".invalid-feedback");
+                    invalidFeedbackElement.html(response.message);
+
+                    form.addClass("was-validated");
+                }
             }
         });
     });
@@ -80,17 +148,26 @@ $(document).ready(function() {
     $(document).on("click", ".remove_user", function(evt) {
         evt.preventDefault();
 
-        var accessList = $(this).parents(".access_list_user");
+        var accessListUser = $(this).parents(".access_list_user");
+        var accessList = $(this).parents(".access_list");
+        var addUserForm = accessList.find(".add-user-form");
+        var removeUserButton = $(this);
 
         $.ajax({
             "url": $(this).attr("href"),
             "success": function(data) {
-                if (data === "OK") {
-                    accessList.fadeOut(500);
-                } else {
-                    alert(data);
-                }
+                accessListUser.fadeOut(500);
+            },
+            "error": function(jqXHR, textStatus, errorThrown) {
+                removeUserButton.parents(".users").find(".alert").show();
+            },
+            "complete": function(jqXHR, textStatus, errorThrown) {
+                var inputElement = accessList.find("[name=adduser]");
+                inputElement.removeClass("is-invalid");
+                inputElement[0].setCustomValidity("");
+                addUserForm.removeClass("was-validated");
             }
+
         });
     });
     //
@@ -101,6 +178,7 @@ $(document).ready(function() {
     $(document).on("click", ".member_list_user_toggle", function(evt) {
         evt.preventDefault();
 
+        var groupId = $(this).data("group_id");
         var icon = $(this).find("i");
         icon.toggleClass("fa fa-folder-open");
         icon.toggleClass("fa fa-folder");
@@ -113,6 +191,9 @@ $(document).ready(function() {
             return;
         }
 
+        // Remove any existing add-user form before showing a new one:
+        $(".add-user-form").remove();
+
         userList.html(loadingHTML);
         // Load (jQuery AJAX "load()") and show access list
         userList.load(this.href, function() {
@@ -124,7 +205,7 @@ $(document).ready(function() {
                     var autocompleteHandler = function(usersForHandler, query, callback) {
                         return callback(userAutocompleteHandler(query, usersForHandler));
                     };
-                    $("#id_adduser").typeahead({
+                    $("#id_adduser-" + groupId).typeahead({
                         "source": autocompleteHandler.bind(this, users),
                         "displayText": function(item) {
                             return item.label;
@@ -132,6 +213,22 @@ $(document).ready(function() {
                         "updater": function(item) {
                             return item.value;
                         }
+                    });
+                    $("#id_adduser-" + groupId).on("keydown", function() {
+                        /* Validation is server-side.
+                         * When user starts typing in an input to correct a validation
+                         * error, the invalid status should be removed. */
+                        $(this).removeClass("is-invalid");
+                        $(this)[0].setCustomValidity("");
+                        $(".add-user-form").removeClass("was-validated");
+                    });
+                    /**
+                     * Used to hide an alert instead of it removing it
+                     * which is the default action of when using
+                     * Bootstrap's data-dismiss attribute.
+                     */
+                    $("[data-hide]").on("click", function() {
+                        $(this).closest("." + $(this).data("hide")).hide();
                     });
                 }
             });
