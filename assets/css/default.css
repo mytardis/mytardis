@@ -337,3 +337,6 @@ h6 {font-size: 11px;color: #999999;text-transform: uppercase;}
     max-height: calc(100vh - 100px);
     overflow-y: auto;
 }
+.w-66 {
+    width: 66%;
+}

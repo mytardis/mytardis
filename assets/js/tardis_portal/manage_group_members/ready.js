@@ -58,14 +58,16 @@ $(document).ready(function() {
                         error: function(jqXHR, textStatus, errorThrown) {
                             var response = JSON.parse(jqXHR.responseText);
                             if (response && "field" in response && response.field) {
-                                $("#" + response.field).addClass("is-invalid");
+                                var inputElement = $("#" + response.field);
+                                inputElement.addClass("is-invalid");
 
                                 // Without this line, a tick might be displayed implying that
                                 // the input is valid, even when it has the "is-invalid" class:
-                                $("#" + response.field)[0].setCustomValidity(response.message);
+                                inputElement[0].setCustomValidity(response.message);
 
-                                $("#" + response.field + "-validation").html(response.message);
-                                $("#" + response.field + "-validation").addClass("invalid-feedback");
+                                var feedbackElement = inputElement.siblings(".invalid-feedback");
+                                feedbackElement.html(response.message);
+
                                 $("#create-group-form").addClass("was-validated");
                             }
                             else if (response) {
@@ -105,7 +107,7 @@ $(document).ready(function() {
 
         if (!username) {
             var userInput = form.find("[name=adduser]");
-            var userInputValidation = $("#id_adduser-" + groupId + "-validation");
+            var feedbackElement = userInput.siblings(".invalid-feedback");
             userInput.addClass("is-invalid");
 
             var msg = "User cannot be blank";
@@ -113,8 +115,7 @@ $(document).ready(function() {
             // the input is valid, even when it has the "is-invalid" class:
             userInput[0].setCustomValidity(msg);
 
-            userInputValidation.html(msg);
-            userInputValidation.addClass("invalid-feedback");
+            feedbackElement.html(msg);
             form.addClass("was-validated");
             return false;
         }
@@ -128,14 +129,16 @@ $(document).ready(function() {
             error: function(jqXHR, textStatus, errorThrown) {
                 var response = JSON.parse(jqXHR.responseText);
                 if (response && "field" in response && response.field) {
-                    $("#" + response.field).addClass("is-invalid");
+                    var inputElement = $("#" + response.field);
+                    inputElement.addClass("is-invalid");
 
                     // Without this line, a tick might be displayed implying that
                     // the input is valid, even when it has the "is-invalid" class:
-                    form.find("#" + response.field)[0].setCustomValidity(response.message);
+                    inputElement[0].setCustomValidity(response.message);
 
-                    form.find("#" + response.field + "-validation").html(response.message);
-                    form.find("#" + response.field + "-validation").addClass("invalid-feedback");
+                    var invalidFeedbackElement = inputElement.siblings(".invalid-feedback");
+                    invalidFeedbackElement.html(response.message);
+
                     form.addClass("was-validated");
                 }
             }
@@ -145,17 +148,26 @@ $(document).ready(function() {
     $(document).on("click", ".remove_user", function(evt) {
         evt.preventDefault();
 
-        var accessList = $(this).parents(".access_list_user");
+        var accessListUser = $(this).parents(".access_list_user");
+        var accessList = $(this).parents(".access_list");
+        var addUserForm = accessList.find(".add-user-form");
+        var removeUserButton = $(this);
 
         $.ajax({
             "url": $(this).attr("href"),
             "success": function(data) {
-                if (data === "OK") {
-                    accessList.fadeOut(500);
-                } else {
-                    alert(data);
-                }
+                accessListUser.fadeOut(500);
+            },
+            "error": function(jqXHR, textStatus, errorThrown) {
+                removeUserButton.parents(".users").find(".alert").show();
+            },
+            "complete": function(jqXHR, textStatus, errorThrown) {
+                var inputElement = accessList.find("[name=adduser]");
+                inputElement.removeClass("is-invalid");
+                inputElement[0].setCustomValidity("");
+                addUserForm.removeClass("was-validated");
             }
+
         });
     });
     //
@@ -209,6 +221,14 @@ $(document).ready(function() {
                         $(this).removeClass("is-invalid");
                         $(this)[0].setCustomValidity("");
                         $(".add-user-form").removeClass("was-validated");
+                    });
+                    /**
+                     * Used to hide an alert instead of it removing it
+                     * which is the default action of when using
+                     * Bootstrap's data-dismiss attribute.
+                     */
+                    $("[data-hide]").on("click", function() {
+                        $(this).closest("." + $(this).data("hide")).hide();
                     });
                 }
             });

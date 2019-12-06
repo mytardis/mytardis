@@ -247,7 +247,7 @@ class ObjectACLTestCase(TestCase):
         self.assertEqual(response_dict['field'], 'id_adduser-%s' % group.id)
         self.assertEqual(
             response_dict['message'],
-            'User %s is already a member of that group.' % self.user2.username)
+            'User %s is already a member of this group.' % self.user2.username)
 
         # user1 is not allowed to modify acls for experiment2
         response = self.client1.get('/experiment/control_panel/%i/access_list'

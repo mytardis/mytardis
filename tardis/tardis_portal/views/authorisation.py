@@ -281,7 +281,7 @@ def add_user_to_group(request, group_id, username):
     if user.groups.filter(name=group.name).count() > 0:
         return JsonResponse(
             dict(
-                message='User %s is already a member of that group.' % username,
+                message='User %s is already a member of this group.' % username,
                 field='id_adduser-%s' % group_id
             ),
             status=400)

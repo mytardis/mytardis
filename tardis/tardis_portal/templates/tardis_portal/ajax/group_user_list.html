@@ -1,4 +1,8 @@
-<div class="users w-75">
+<div class="users w-66">
+  <div class="alert alert-danger alert-dismissible" style="display: none;">
+    <button type="button" class="close" data-hide="alert">×</button>
+    <span class="message">You cannot remove yourself from this group.</span>
+  </div>
 {% for user in users %}
   {% include "tardis_portal/ajax/add_user_to_group_result.html" %}
 {% endfor %}
@@ -11,7 +15,7 @@
         <input type="text" name="adduser" id="id_adduser-{{group_id}}" required
                class="usersuggest form-control"
                maxlength="100" autocomplete="off">
-        <div id="id_adduser-{{group_id}}-validation"></div>
+        <div class="invalid-feedback"></div>
       </div>
   </div>
 
