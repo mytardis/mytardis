@@ -15,7 +15,7 @@ from django.contrib.sites.models import Site
 from django.db import transaction
 from django.db import IntegrityError
 from django.db.models import Q
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.views.decorators.cache import never_cache
 from django.views.decorators.http import require_POST
 
@@ -24,7 +24,7 @@ from ..auth.localdb_auth import auth_key as localdb_auth_key, \
     django_user
 from ..models import UserAuthentication, UserProfile, Experiment, \
     Token, GroupAdmin, ObjectACL
-from ..shortcuts import render_response_index, return_response_error
+from ..shortcuts import render_response_index
 
 logger = logging.getLogger(__name__)
 
@@ -262,16 +262,29 @@ def add_user_to_group(request, group_id, username):
     try:
         user = User.objects.get(username=username)
     except User.DoesNotExist:
-        return return_response_error(request)
+        return JsonResponse(
+            dict(
+                message='User %s does not exist.' % username,
+                field='id_adduser-%s' % group_id
+            ),
+            status=400)
 
     try:
         group = Group.objects.get(pk=group_id)
     except Group.DoesNotExist:
-        return HttpResponse('Group does not exist.')
+        return JsonResponse(
+            dict(
+                message='Group does not exist',
+            ),
+            status=400)
 
     if user.groups.filter(name=group.name).count() > 0:
-        return HttpResponse('User %s is already a member of that group.'
-                            % username)
+        return JsonResponse(
+            dict(
+                message='User %s is already a member of that group.' % username,
+                field='id_adduser-%s' % group_id
+            ),
+            status=400)
 
     user.groups.add(group)
     user.save()
@@ -450,8 +463,12 @@ def create_group(request):
         groupname = request.GET['group']
 
     if not groupname:
-        return HttpResponse('Group name cannot be blank',
-                            status=400)
+        return JsonResponse(
+            dict(
+                message='Group name cannot be blank',
+                field='id_addgroup'
+            ),
+            status=400)
 
     if 'admin' in request.GET:
         admin = request.GET['admin']
@@ -461,16 +478,26 @@ def create_group(request):
             group = Group(name=groupname)
             group.save()
     except IntegrityError:
-        return HttpResponse('Could not create group %s '
-                            '(It is likely that it already exists)' %
-                            (groupname), status=409)
+        return JsonResponse(
+            dict(
+                message=('Could not create group %s '
+                         '(It is likely that it already exists)'
+                         % groupname),
+                field='id_addgroup'
+            ),
+            status=409)
 
     adminuser = None
     if admin:
         try:
             adminuser = User.objects.get(username=admin)
         except User.DoesNotExist:
-            return HttpResponse('User %s does not exist' % (admin))
+            return JsonResponse(
+                dict(
+                    message='User %s does not exist' % admin,
+                    field='id_groupadmin'
+                ),
+                status=400)
 
         # create admin for this group and add it to the group
         groupadmin = GroupAdmin(user=adminuser, group=group)
