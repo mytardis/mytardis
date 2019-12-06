@@ -126,7 +126,6 @@ $(document).ready(function() {
                 usersDiv.hide().append(data).fadeIn();
             },
             error: function(jqXHR, textStatus, errorThrown) {
-                console.log(jqXHR.responseText);
                 var response = JSON.parse(jqXHR.responseText);
                 if (response && "field" in response && response.field) {
                     $("#" + response.field).addClass("is-invalid");
