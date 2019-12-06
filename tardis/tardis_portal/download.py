@@ -532,7 +532,7 @@ def streaming_download_datafiles(request):  # too complex # noqa
         expid = request.POST['expid']
         experiment = Experiment.objects.get(id=expid)
     except (KeyError, Experiment.DoesNotExist):
-        experiment = iter(df_set).next().dataset.get_first_experiment()
+        experiment = iter(df_set).__next__().dataset.get_first_experiment()
 
     exp_title = get_filesystem_safe_experiment_name(experiment)
     filename = '%s-selection.tar' % exp_title
