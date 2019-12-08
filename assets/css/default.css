@@ -16,6 +16,13 @@ body {
   text-shadow: 0 1px 0 rgba(255, 255, 255, .1), 0 0 30px rgba(255, 255, 255, .125);
 }
 
+@media (max-width: 991px) {
+    .navbar {
+        overflow: auto;
+        max-height: 85vh;
+        align-items: flex-start;
+    }
+}
 /* Centered title */
 .navbar .center-title {
   position: absolute;
