@@ -9,12 +9,11 @@ import Header from './Header';
 import Container from './Container';
 import * as filters from './filter';
 
-
 const TreeView = ({ datasetId, modified }) => {
   const [cursor, setCursor] = useState(false);
   const [data, setData] = useState([]);
   const fetchBaseDirs = () => {
-    fetch(`/api/v1/dataset/${datasetId}/base-dirs/`, {
+    fetch(`/api/v1/dataset/${datasetId}/root-dir-nodes/`, {
       method: 'get',
       headers: {
         'Accept': 'application/json', // eslint-disable-line quote-props
@@ -23,17 +22,29 @@ const TreeView = ({ datasetId, modified }) => {
     }).then(responseJson => (responseJson.json()))
       .then((response) => { setData(response); });
   };
-  const fetchChildDirs = (dirName) => {
-    const encodedDir = encodeURIComponent(dirName);
-    const encodedData = encodeURIComponent(JSON.stringify(data));
-    fetch(`/api/v1/dataset/${datasetId}/child-dirs/?dir_name=${encodedDir}&data=${encodedData}`, {
+  const fetchChildDirs = (dirPath) => {
+    const encodedDir = encodeURIComponent(dirPath);
+    fetch(`/api/v1/dataset/${datasetId}/child-dir-nodes/?dir_name=${encodedDir}`, {
       method: 'get',
       headers: {
         'Accept': 'application/json', // eslint-disable-line quote-props
         'Content-Type': 'application/json',
       },
-    }).then(responseJson => (responseJson.json()))
-      .then((response) => { setData(response); });
+    }).then(response => (response.json()))
+      .then((childNodes) => {
+        const components = dirPath.split('/');
+        const updatedData = Object.assign([], data);
+        let nodeArrayToUpdate = updatedData;
+        components.forEach((component) => {
+          updatedData.forEach((node) => {
+            if (node.name === component && node.children) {
+              nodeArrayToUpdate = node.children;
+            }
+          });
+          Object.assign(nodeArrayToUpdate, childNodes);
+        });
+        setData(updatedData);
+      });
   };
   useEffect(() => {
     fetchBaseDirs('');
@@ -41,7 +52,7 @@ const TreeView = ({ datasetId, modified }) => {
   const onToggle = (node, toggled) => {
     // fetch children:
     if (toggled && node.children && node.children.length === 0) {
-      fetchChildDirs(node.name);
+      fetchChildDirs(node.path);
     } else {
       node.toggled = toggled;
     }

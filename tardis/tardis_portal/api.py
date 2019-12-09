@@ -701,14 +701,14 @@ class DatasetResource(MyTardisModelResource):
                 self.wrap_view('get_datafiles'),
                 name='api_get_datafiles_for_dataset'),
 
-            url(r'^(?P<resource_name>%s)/(?P<pk>\w[\w/-]*)/base-dirs%s$' %
+            url(r'^(?P<resource_name>%s)/(?P<pk>\w[\w/-]*)/root-dir-nodes%s$' %
                 (self._meta.resource_name, trailing_slash()),
-                self.wrap_view('get_base_dirs'),
-                name='api_get_base_dir_tree'),
-            url(r'^(?P<resource_name>%s)/(?P<pk>\w[\w/-]*)/child-dirs%s$' %
+                self.wrap_view('get_root_dir_nodes'),
+                name='api_get_root_dir_nodes'),
+            url(r'^(?P<resource_name>%s)/(?P<pk>\w[\w/-]*)/child-dir-nodes%s$' %
                 (self._meta.resource_name, trailing_slash()),
-                self.wrap_view('get_child_dirs'),
-                name='api_get_child_dir_tree'),
+                self.wrap_view('get_child_dir_nodes'),
+                name='api_get_child_dir_nodes'),
         ]
 
     def get_datafiles(self, request, **kwargs):
@@ -744,7 +744,12 @@ class DatasetResource(MyTardisModelResource):
                     pass
         return super(DatasetResource, self).hydrate_m2m(bundle)
 
-    def get_base_dirs(self, request, **kwargs):
+    def get_root_dir_nodes(self, request, **kwargs):
+        '''Return JSON-serialized list of filenames/folders in the dataset's root directory
+        '''
+        self.method_check(request, allowed=['get'])
+        self.is_authenticated(request)
+
         dataset_id = kwargs['pk']
         dataset = Dataset.objects.get(id=dataset_id)
         # get dirs at root level
@@ -770,79 +775,51 @@ class DatasetResource(MyTardisModelResource):
                 children['name'] = filename
                 child_list.append(children)
 
-        self.method_check(request, allowed=['get'])
-        self.is_authenticated(request)
         return JsonResponse(child_list, status=200, safe=False)
 
-    def get_child_dirs(self, request, **kwargs):
-        dataset_id = kwargs['pk']
-        data = request.GET['data']
-        base_dir = request.GET['dir_name']
-        dataset = Dataset.objects.get(id=dataset_id)
-        if not (data and base_dir):
-            return HttpResponse('Please specify base directory and data to append', status=400)
-        json_data = json.loads(data)
-        # append data only if not present, else return toggled state to true
-        base_dir_dict = next((item for item in json_data if item['name'] == base_dir), None)
-        # if not base directory
-        if base_dir_dict is None:
-            self.method_check(request, allowed=['get'])
-            self.is_authenticated(request)
-            return JsonResponse(json_data, status=200, safe=False)
-
-        if len(base_dir_dict['children']) == 0:
-            # list dir under base_dir
-            child_dir_tuples = dataset.get_dir_tuples(base_dir)
-            # list files under base_dir
-            dfs = DataFile.objects.filter(dataset=dataset, directory=base_dir)
-            # walk the directory tree and append files and dirs
-            # if there are directories append this to data
-            if child_dir_tuples:
-                child_dir_list = self._get_child_dirs(child_dir_tuples)
-                # append to data
-                for item in json_data:
-                    if item['name'] == base_dir:
-                        cursor = 0
-                        item['toggled'] = True
-                        for child in child_dir_list:
-                            item['children'].append(child)
-                            # get subdir for this dir
-                            sub_child_dirs = dataset.get_dir_tuples(base_dir+"/"+child['name'])
-                            self._get_sub_child_dirs(sub_child_dirs, item['children'][cursor], dataset)
-                            cursor = cursor+1
-
-            # if there are files append this
-            if dfs:
-                filenames = [df.filename for df in dfs]
-                for item in json_data:
-                    if item['name'] == base_dir:
-                        for file_name in filenames:
-                            child = {'name': file_name}
-                            item['children'].append(child)
-        else:
-            for item in json_data:
-                if item['name'] == base_dir:
-                    item['toggled'] = True
+    def get_child_dir_nodes(self, request, **kwargs):
+        '''Return JSON-serialized list of filenames/folders within a child subdirectory
+        '''
         self.method_check(request, allowed=['get'])
         self.is_authenticated(request)
-        return JsonResponse(json_data, status=200, safe=False)
 
-    def _get_child_dirs(self, child_dir_tuples):
-        child_dir_list = []
-        for dir_tuple in child_dir_tuples:
-            part1, part2 = dir_tuple
-            if part1 != '..':
-                child_dict = {
-                    'name': part1,
-                    'path': part2,
-                    'children': []
-                }
-                child_dir_list.append(child_dict)
-        return child_dir_list
+        dataset_id = kwargs['pk']
+        tree_nodes_json = request.GET.get('data', '[]')
+        base_dir = request.GET.get('dir_name', None)
+        dataset = Dataset.objects.get(id=dataset_id)
+        if not (tree_nodes_json and base_dir):
+            return HttpResponse('Please specify base directory', status=400)
+        tree_nodes = json.loads(tree_nodes_json)
 
-    def _get_sub_child_dirs(self, sub_child_dirs, item, dataset):
+        # Previously this method checked the tree nodes data passed
+        # in to determine whether children has already been loaded,
+        # but now that logic will be moved to the front-end component.
+
+        # list dir under base_dir
+        child_dir_tuples = dataset.get_dir_tuples(base_dir)
+        # list files under base_dir
+        dfs = DataFile.objects.filter(dataset=dataset, directory=base_dir)
+        # walk the directory tree and append files and dirs
+        # if there are directories append this to data
+        child_list = []
+        if child_dir_tuples:
+            child_list = dataset.get_dir_nodes(child_dir_tuples)
+
+        # if there are files append this
+        if dfs:
+            filenames = [df.filename for df in dfs]
+            for file_name in filenames:
+                child = {'name': file_name}
+                child_list.append(child)
+
+        return JsonResponse(child_list, status=200, safe=False)
+
+    def _populate_children(self, sub_child_dirs, dir_node, dataset):
+        '''Populate the children list in a directory node
+
+        Example dir_node: {'name': u'child_1', 'children': []}
+        '''
         child_dir_list = []
-        json_data = item  # {'name': u'child_1', 'children': []}
         for dir in sub_child_dirs:
             part1, part2 = dir
             # get files for this dir
@@ -851,15 +828,13 @@ class DatasetResource(MyTardisModelResource):
             if part1 == '..':
                 for file_name in filenames:
                     child = {'name': file_name}
-                    json_data['children'].append(child)
+                    dir_node['children'].append(child)
             else:
                 children = []
                 for file_name in filenames:
                     child = {'name': file_name}
                     children.append(child)
-                json_data['children'].append({'name': part2.rpartition('/')[2], 'children': children})
-
-        return child_dir_list.append(json_data)
+                dir_node['children'].append({'name': part2.rpartition('/')[2], 'children': children})
 
 
 class DataFileResource(MyTardisModelResource):
