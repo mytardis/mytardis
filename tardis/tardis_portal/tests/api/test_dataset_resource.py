@@ -9,6 +9,7 @@ import json
 
 from urllib.parse import quote
 
+from ...models.datafile import DataFile
 from ...models.dataset import Dataset
 from ...models.experiment import Experiment
 from ...models.instrument import Instrument
@@ -110,3 +111,50 @@ class DatasetResourceTest(MyTardisResourceTestCase):
             uri, authentication=self.get_credentials())
         returned_data = json.loads(response.content.decode())
         self.assertEqual(returned_data['meta']['total_count'], 0)
+
+    def test_get_base_dirs(self):
+        dataset = Dataset.objects.create(description='test dataset')
+        uri = '/api/v1/dataset/%d/base-dirs/' % dataset.id
+        response = self.api_client.get(
+            uri, authentication=self.get_credentials())
+        returned_data = json.loads(response.content.decode())
+        self.assertEqual(returned_data, [])
+
+        DataFile.objects.create(
+            dataset=dataset, filename='filename1', size=0, md5sum='bogus')
+        response = self.api_client.get(
+            uri, authentication=self.get_credentials())
+        returned_data = json.loads(response.content.decode())
+        self.assertEqual(returned_data, [
+            {
+                'name': 'filename1'
+            }
+        ])
+
+        DataFile.objects.create(
+            dataset=dataset, filename='filename2', size=0, md5sum='bogus',
+            directory='subdir')
+        response = self.api_client.get(
+            uri, authentication=self.get_credentials())
+        returned_data = json.loads(response.content.decode())
+        # The children list in the 'subdir' node is empty below,
+        # because the root-dir-nodes API endpoint is designed to
+        # only show files and folders immediately within the dataset's
+        # top-level directory:
+        expected_data = [
+            {
+                'name': 'filename1'
+
+            },
+            {
+                'name': 'subdir',
+                'path': 'subdir',
+                'children' : []
+            }
+        ]
+        self.assertEqual(
+            sorted(returned_data, key=lambda x: x['name']),
+            sorted(expected_data, key=lambda x: x['name'])
+        )
+
+        dataset.delete()

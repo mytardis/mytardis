@@ -748,15 +748,19 @@ class DatasetResource(MyTardisModelResource):
         dataset_id = kwargs['pk']
         dataset = Dataset.objects.get(id=dataset_id)
         # get dirs at root level
-        dirs = dataset.get_dirs("")
+        dir_tuples = dataset.get_dir_tuples("")
         # get files at root level
         dfs = (DataFile.objects.filter(dataset=dataset, directory='') |
                DataFile.objects.filter(dataset=dataset, directory__isnull=True)).distinct()
         child_list = []
         # append directories list
-        if dirs:
-            for directory in dirs:
-                child_dict = {'name': directory[0], 'children': []}
+        if dir_tuples:
+            for dir_tuple in dir_tuples:
+                child_dict = {
+                    'name': dir_tuple[0],
+                    'path': dir_tuple[1],
+                    'children': []
+                }
                 child_list.append(child_dict)
                 # append files to list
         if dfs:
@@ -788,13 +792,13 @@ class DatasetResource(MyTardisModelResource):
 
         if len(base_dir_dict['children']) == 0:
             # list dir under base_dir
-            child_dirs = dataset.get_dirs(base_dir)
+            child_dir_tuples = dataset.get_dir_tuples(base_dir)
             # list files under base_dir
             dfs = DataFile.objects.filter(dataset=dataset, directory=base_dir)
             # walk the directory tree and append files and dirs
             # if there are directories append this to data
-            if child_dirs:
-                child_dir_list = self._get_child_dirs(child_dirs)
+            if child_dir_tuples:
+                child_dir_list = self._get_child_dirs(child_dir_tuples)
                 # append to data
                 for item in json_data:
                     if item['name'] == base_dir:
@@ -803,7 +807,7 @@ class DatasetResource(MyTardisModelResource):
                         for child in child_dir_list:
                             item['children'].append(child)
                             # get subdir for this dir
-                            sub_child_dirs = dataset.get_dirs(base_dir+"/"+child['name'])
+                            sub_child_dirs = dataset.get_dir_tuples(base_dir+"/"+child['name'])
                             self._get_sub_child_dirs(sub_child_dirs, item['children'][cursor], dataset)
                             cursor = cursor+1
 
@@ -823,12 +827,16 @@ class DatasetResource(MyTardisModelResource):
         self.is_authenticated(request)
         return JsonResponse(json_data, status=200, safe=False)
 
-    def _get_child_dirs(self, child_dirs):
+    def _get_child_dirs(self, child_dir_tuples):
         child_dir_list = []
-        for dir in child_dirs:
-            part1, part2 = dir
+        for dir_tuple in child_dir_tuples:
+            part1, part2 = dir_tuple
             if part1 != '..':
-                child_dict = {'name': part1, 'children': []}
+                child_dict = {
+                    'name': part1,
+                    'path': part2,
+                    'children': []
+                }
                 child_dir_list.append(child_dict)
         return child_dir_list
 
