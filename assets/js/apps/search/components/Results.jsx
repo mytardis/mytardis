@@ -1,7 +1,7 @@
-import React from "react";
-import PropTypes from "prop-types";
+import React from 'react';
+import PropTypes from 'prop-types';
 
-import Result from "./Result";
+import Result from './Result';
 
 function Results({ results, counts }) {
   return (
@@ -64,8 +64,8 @@ function Results({ results, counts }) {
                 ? <span>No matching experiment found.</span> : <span /> }
               {results.map(
                 (result) => {
-                  let res = "";
-                  if (result.type === "experiment") {
+                  let res = '';
+                  if (result.type === 'experiment') {
                     res = <Result key={result.id} result={result} />;
                   }
                   return res;
@@ -80,8 +80,8 @@ function Results({ results, counts }) {
               }
               {results.map(
                 (result) => {
-                  let res = "";
-                  if (result.type === "dataset") {
+                  let res = '';
+                  if (result.type === 'dataset') {
                     res = <Result key={result.id} result={result} />;
                   }
                   return res;
@@ -96,8 +96,8 @@ function Results({ results, counts }) {
               }
               {results.map(
                 (result) => {
-                  let res = "";
-                  if (result.type === "datafile") {
+                  let res = '';
+                  if (result.type === 'datafile') {
                     res = <Result key={result.id} result={result} />;
                   }
                   return res;

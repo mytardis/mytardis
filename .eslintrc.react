@@ -14,7 +14,7 @@
         }
     },
     "rules": {
-        "quotes": [1, "double"],
+        "quotes": [1, "single"],
         "no-underscore-dangle": 0,
         "jsx-a11y/label-has-associated-control": 0,
         "jsx-a11y/label-has-for": 0,
