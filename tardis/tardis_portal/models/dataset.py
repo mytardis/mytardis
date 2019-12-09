@@ -198,10 +198,12 @@ class Dataset(models.Model):
         dirs = cursor.fetchall()
         dirs_dict = dict()
         for result in dirs:
-            if result[0] is None:
-                components = ['']
-            else:
-                components = result[0].split('/')
+            if not result[0]:
+                continue
+            if '/' not in result[0]:
+                dirs_dict[result[0]] = set()
+                continue
+            components = result[0].split('/')
             for index, _ in enumerate(components):
                 key = '/'.join(components[0:index])
                 if not key:
@@ -211,7 +213,7 @@ class Dataset(models.Model):
                 dirs_dict[key].add(components[index])
         return dirs_dict
 
-    def get_dirs(self, basedir=""):
+    def get_dir_tuples(self, basedir=""):
         """
         List the directories immediately inside basedir.
 
@@ -231,25 +233,25 @@ class Dataset(models.Model):
         test files/subdir3/subdir4/
 
         List directories in the dataset's top level directory:
-        >>> ds.get_dirs("")
-        [('test files', 'test%20files')]
+        >>> ds.get_dir_tuples("")
+        [('test files')]
 
         List directories within the dataset's "test files" directory:
-        >>> ds.get_dirs("test files")
-        [('..', 'test%20files'), ('subdir1', 'test%20files/subdir1'),
-         ('subdir2', 'test%20files/subdir2'), ('subdir3', 'test%20files/subdir3')]
+        >>> ds.get_dir_tuples("test files")
+        [('..', 'test files'), ('subdir1', 'test /filessubdir1'),
+         ('subdir2', 'test files/subdir2'), ('subdir3', 'test files/subdir3')]
 
         Request directories within a non-existent directory:
-        >>> ds.get_dirs("test file")
+        >>> ds.get_dir_tuples("test file")
         []
 
         List directories within the dataset's "test files/subdir3" directory:
-        >>> ds.get_dirs("test files/subdir3")
-        [('..', 'test%20files/subdir3'), ('subdir4', 'test%20files/subdir3/subdir4')]
+        >>> ds.get_dir_tuples("test files/subdir3")
+        [('..', 'test files/subdir3'), ('subdir4', 'test files/subdir3/subdir4')]
 
         List directories within the dataset's "test files/subdir3/subdir4" directory:
-        >>> ds.get_dirs("test files/subdir3/subdir4")
-        [('..', 'test%20files/subdir3/subdir4')]
+        >>> ds.get_dir_tuples("test files/subdir3/subdir4")
+        [('..', 'test files/subdir3/subdir4')]
         """
         dirs_dict = self._dirs
         if basedir:
@@ -266,3 +268,109 @@ class Dataset(models.Model):
             dirs = [(key, key) for key in dirs_dict
                     if len(key.split('/')) == 1]
         return sorted(dirs, key=lambda x: x[0])
+
+    def get_dir_nodes(self, dir_tuples):
+        """Return child node's subdirectories in format required for tree view
+
+        Given a list of ('subdir', 'path/to/subdir') tuples for a dataset
+        directory node, return a list of {'name': 'subdir', 'children': []}
+        dictionaries required for the tree view.
+
+        Unlike the get_dir_tuples method which only lists files and directories
+        immediately within the supplied basedir, the get_dir_nodes method is
+        recursive.
+
+        Continuing the example from the _dirs property method:
+
+        test files/subdir1/
+        test files/subdir2/
+        test files/subdir3/
+        test files/subdir3/subdir4/
+
+        List directories in the dataset's top level directory:
+        >>> dir_tuples = ds.get_dir_tuples("")
+        >>> ds.get_dir_nodes(dir_tuples)
+        [
+            {
+                'name': 'test files',
+                'children': [
+                    {
+                        'name': 'subdir1',
+                        'path': 'test files/subdir1',
+                        'children': []
+                    },
+                    {
+                        'name': 'subdir2',
+                        'path': 'test files/subdir2',
+                        'children': []
+                    },
+                    {
+                        'name': 'subdir3',
+                        'path': 'test files/subdir3',
+                        'children': [
+                            'name': 'subdir4',
+                            'path': 'test files/subdir3/subdir4',
+                            'children': []
+                        ]
+                    },
+                ]
+            }
+        ]
+
+        List directories within the dataset's "test files" directory:
+        >>> dir_tuples = ds.get_dir_tuples("test files")
+        >>> ds.get_dir_nodes(dir_tuples)
+        [
+            {
+                'name': 'subdir1',
+                'path': 'test files/subdir1',
+                'children': []
+            },
+            {
+                'name': 'subdir2',
+                'path': 'test files/subdir2',
+                'children': []
+            },
+            {
+                'name': 'subdir3',
+                'path': 'test files/subdir3',
+                'children': [
+                    'name': 'subdir4',
+                    'path': 'test files/subdir3/subdir4',
+                    'children': []
+                ]
+            },
+        ]
+
+        Request directories within a non-existent directory:
+        >>> dir_tuples = ds.get_dir_tuples("test file")
+        >>> ds.get_dir_nodes(dir_tuples)
+        []
+
+        List directories within the dataset's "test files/subdir3" directory:
+        >>> dir_tuples = ds.get_dir_tuples("test files3/subdir3")
+        >>> ds.get_dir_nodes(dir_tuples)
+        [
+            'name': 'subdir4',
+            'path': 'test files/subdir3/subdir4',
+            'children': []
+        ]
+
+        """
+        dir_list = []
+        basedir = ""
+        for dir_tuple in dir_tuples:
+            if dir_tuple[0] == '..':
+                basedir = dir_tuple[1]
+        for dir_tuple in dir_tuples:
+            dir_name, dir_path = dir_tuple
+            if dir_name == '..':
+                continue
+            subdir_tuples = self.get_dir_tuples(dir_path)
+            child_dict = {
+                'name': dir_name,
+                'path': dir_path,
+                'children': self.get_dir_nodes(subdir_tuples)
+            }
+            dir_list.append(child_dict)
+        return dir_list
