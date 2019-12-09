@@ -1,16 +1,16 @@
-import React, { useState, useEffect } from "react";
-import PropTypes from "prop-types";
+import React, { useState, useEffect } from 'react';
+import PropTypes from 'prop-types';
 
-import Cookies from "js-cookie";
-import AdvancedSearchForm from "./AdvancedSearchForm";
+import Cookies from 'js-cookie';
+import AdvancedSearchForm from './AdvancedSearchForm';
 
 function getInstrumentList() {
-  return fetch("/api/v1/instrument/?limit=0")
+  return fetch('/api/v1/instrument/?limit=0')
     .then((resp) => {
       if (resp.ok) {
         return resp.json();
       }
-      throw new Error("Something went wrong ... ");
+      throw new Error('Something went wrong ... ');
     });
 }
 
@@ -21,11 +21,11 @@ function SimpleSearchForm({ showResults, searchText }) {
     // fetch results
     setIsLoading(true);
     fetch(`/api/v1/search_simple-search/?query=${simpleSearchText}`, {
-      method: "get",
+      method: 'get',
       headers: {
-        "Accept": "application/json", // eslint-disable-line quote-props
-        "Content-Type": "application/json",
-        "X-CSRFToken": Cookies.get("csrftoken"),
+        'Accept': 'application/json', // eslint-disable-line quote-props
+        'Content-Type': 'application/json',
+        'X-CSRFToken': Cookies.get('csrftoken'),
       },
     }).then(response => response.json())
       .then((data) => {
@@ -100,8 +100,8 @@ function SimpleSearchForm({ showResults, searchText }) {
       </div>
       {isLoading
        && (
-       <div className="col-md-12" style={{ textAlign: "center", position: "absolute" }}>
-         <div id="spinner" style={{ textAlign: "center" }}>
+       <div className="col-md-12" style={{ textAlign: 'center', position: 'absolute' }}>
+         <div id="spinner" style={{ textAlign: 'center' }}>
            <i id="mo-spin-icon" className="fa fa-spinner fa-pulse fa-2x" />
          </div>
        </div>
