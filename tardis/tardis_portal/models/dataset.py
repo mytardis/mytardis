@@ -276,9 +276,9 @@ class Dataset(models.Model):
         directory node, return a list of {'name': 'subdir', 'children': []}
         dictionaries required for the tree view.
 
-        Unlike the get_dir_tuples method which only lists files and directories
-        immediately within the supplied basedir, the get_dir_nodes method is
-        recursive.
+        Like the get_dir_tuples method, the get_dir_nodes method only lists
+        files and directories immediately within the supplied basedir, so
+        any subdirectories will have an empty children array.
 
         Continuing the example from the _dirs property method:
 
@@ -293,27 +293,8 @@ class Dataset(models.Model):
         [
             {
                 'name': 'test files',
-                'children': [
-                    {
-                        'name': 'subdir1',
-                        'path': 'test files/subdir1',
-                        'children': []
-                    },
-                    {
-                        'name': 'subdir2',
-                        'path': 'test files/subdir2',
-                        'children': []
-                    },
-                    {
-                        'name': 'subdir3',
-                        'path': 'test files/subdir3',
-                        'children': [
-                            'name': 'subdir4',
-                            'path': 'test files/subdir3/subdir4',
-                            'children': []
-                        ]
-                    },
-                ]
+                'path': '',
+                'children': []
             }
         ]
 
@@ -334,11 +315,7 @@ class Dataset(models.Model):
             {
                 'name': 'subdir3',
                 'path': 'test files/subdir3',
-                'children': [
-                    'name': 'subdir4',
-                    'path': 'test files/subdir3/subdir4',
-                    'children': []
-                ]
+                'children': []
             },
         ]
 
@@ -370,7 +347,7 @@ class Dataset(models.Model):
             child_dict = {
                 'name': dir_name,
                 'path': dir_path,
-                'children': self.get_dir_nodes(subdir_tuples)
+                'children': []
             }
             dir_list.append(child_dict)
         return dir_list
