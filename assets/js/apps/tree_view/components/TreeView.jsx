@@ -22,9 +22,9 @@ const TreeView = ({ datasetId, modified }) => {
     }).then(responseJson => (responseJson.json()))
       .then((response) => { setData(response); });
   };
-  const fetchChildDirs = (dirPath) => {
+  const fetchChildDirs = (node, dirPath) => {
     const encodedDir = encodeURIComponent(dirPath);
-    fetch(`/api/v1/dataset/${datasetId}/child-dir-nodes/?dir_name=${encodedDir}`, {
+    fetch(`/api/v1/dataset/${datasetId}/child-dir-nodes/?dir_path=${encodedDir}`, {
       method: 'get',
       headers: {
         'Accept': 'application/json', // eslint-disable-line quote-props
@@ -32,18 +32,9 @@ const TreeView = ({ datasetId, modified }) => {
       },
     }).then(response => (response.json()))
       .then((childNodes) => {
-        const components = dirPath.split('/');
-        const updatedData = Object.assign([], data);
-        let nodeArrayToUpdate = updatedData;
-        components.forEach((component) => {
-          updatedData.forEach((node) => {
-            if (node.name === component && node.children) {
-              nodeArrayToUpdate = node.children;
-            }
-          });
-          Object.assign(nodeArrayToUpdate, childNodes);
-        });
-        setData(updatedData);
+        node.children = childNodes;
+        node.toggled = true;
+        setData(Object.assign([], data));
       });
   };
   useEffect(() => {
@@ -52,9 +43,8 @@ const TreeView = ({ datasetId, modified }) => {
   const onToggle = (node, toggled) => {
     // fetch children:
     if (toggled && node.children && node.children.length === 0) {
-      fetchChildDirs(node.path);
-    } else {
-      node.toggled = toggled;
+      fetchChildDirs(node, node.path);
+      return;
     }
     if (cursor) {
       cursor.active = false;

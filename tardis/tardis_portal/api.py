@@ -785,7 +785,7 @@ class DatasetResource(MyTardisModelResource):
 
         dataset_id = kwargs['pk']
         tree_nodes_json = request.GET.get('data', '[]')
-        base_dir = request.GET.get('dir_name', None)
+        base_dir = request.GET.get('dir_path', None)
         dataset = Dataset.objects.get(id=dataset_id)
         if not (tree_nodes_json and base_dir):
             return HttpResponse('Please specify base directory', status=400)

@@ -161,7 +161,7 @@ class DatasetResourceTest(MyTardisResourceTestCase):
 
     def test_get_child_dir_nodes(self):
         dataset = Dataset.objects.create(description='test dataset')
-        uri = '/api/v1/dataset/%d/child-dir-nodes/?dir_name=subdir' % dataset.id
+        uri = '/api/v1/dataset/%d/child-dir-nodes/?dir_path=subdir' % dataset.id
         response = self.api_client.get(
             uri, authentication=self.get_credentials())
         returned_data = json.loads(response.content.decode())
@@ -205,7 +205,7 @@ class DatasetResourceTest(MyTardisResourceTestCase):
         response = self.api_client.get(
             uri, authentication=self.get_credentials())
         returned_data = json.loads(response.content.decode())
-        # 'filename3' is not in the dir_name we are querying,
+        # 'filename3' is not in the dir_path we are querying,
         # so it shouldn't appear in the results:
         expected_data = [
             {
@@ -240,6 +240,21 @@ class DatasetResourceTest(MyTardisResourceTestCase):
                 'path': 'subdir/subdir3',
                 'children': []
             }
+        ]
+        self.assertEqual(
+            sorted(returned_data, key=lambda x: x['name']),
+            sorted(expected_data, key=lambda x: x['name'])
+        )
+
+        uri = '/api/v1/dataset/%d/child-dir-nodes/?dir_path=subdir/subdir3' % dataset.id
+        response = self.api_client.get(
+            uri, authentication=self.get_credentials())
+        returned_data = json.loads(response.content.decode())
+        expected_data = [
+            {
+                'name': 'filename4'
+
+            },
         ]
         self.assertEqual(
             sorted(returned_data, key=lambda x: x['name']),
