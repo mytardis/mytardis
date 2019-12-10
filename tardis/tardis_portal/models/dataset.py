@@ -6,7 +6,6 @@ from django.urls import reverse
 from django.db import models
 from django.utils import timezone
 from django.utils.encoding import python_2_unicode_compatible
-from django.utils.functional import cached_property
 
 from ..managers import OracleSafeManager
 from .storage import StorageBox
@@ -169,50 +168,6 @@ class Dataset(models.Model):
             file_objects__datafile__dataset=self).distinct()
         return boxes
 
-    @cached_property
-    def _dirs(self):
-        """
-        Get the directories containing files within a dataset
-
-        Let's use the following example dataset to illustrate.
-        There's nothing in the dataset's top level directory,
-        just a "test files" subdirectory, containing further subdirectories:
-
-        test files/subdir1/
-        test files/subdir2/
-        test files/subdir3/
-        test files/subdir3/subdir4/
-
-        We'll use a raw SQL connection because this needs to be fast
-        for large datasets
-
-        For the dataset above, this method returns the following:
-
-        {'test files': {'subdir1', 'subdir3', 'subdir2'}, 'test files/subdir3': {'subdir4'}}
-        """
-        from django.db import connection
-        cursor = connection.cursor()
-        cursor.execute(
-            "SELECT DISTINCT directory FROM tardis_portal_datafile "
-            "WHERE dataset_id=%s" % self.id)
-        dirs = cursor.fetchall()
-        dirs_dict = dict()
-        for result in dirs:
-            if not result[0]:
-                continue
-            if '/' not in result[0]:
-                dirs_dict[result[0]] = set()
-                continue
-            components = result[0].split('/')
-            for index, _ in enumerate(components):
-                key = '/'.join(components[0:index])
-                if not key:
-                    continue
-                if key not in dirs_dict:
-                    dirs_dict[key] = set()
-                dirs_dict[key].add(components[index])
-        return dirs_dict
-
     def get_dir_tuples(self, basedir=""):
         """
         List the directories immediately inside basedir.
@@ -253,21 +208,26 @@ class Dataset(models.Model):
         >>> ds.get_dir_tuples("test files/subdir3/subdir4")
         [('..', 'test files/subdir3/subdir4')]
         """
-        dirs_dict = self._dirs
+        from .datafile import DataFile
+
+        dir_tuples = []
         if basedir:
-            if basedir not in dirs_dict:
-                if '/' in basedir:
-                    part1, part2 = path.split(basedir)
-                    if part1 in dirs_dict and part2 in dirs_dict[part1]:
-                        return [("..", basedir)]
-                return []
-            dirs = [(item, ("%s/%s" % (basedir, item)))
-                    for item in dirs_dict[basedir]]
-            dirs = [("..", basedir)] + dirs
-        else:
-            dirs = [(key, key) for key in dirs_dict
-                    if len(key.split('/')) == 1]
-        return sorted(dirs, key=lambda x: x[0])
+            dir_tuples.append(('..', basedir))
+        dirs_query = DataFile.objects.filter(dataset=self)
+        if basedir:
+            dirs_query = dirs_query.filter(directory__startswith='%s/' % basedir)
+        dir_paths = set(dirs_query.values_list('directory', flat=True))
+        for dir_path in dir_paths:
+            if not dir_path:
+                continue
+            dir_name = dir_path.lstrip(basedir).lstrip('/').split('/')[0]
+            # Reconstruct the dir_path, eliminating subdirs within dir_name:
+            dir_path = '/'.join([basedir, dir_name]).lstrip('/')
+            dir_tuple = (dir_name, dir_path)
+            if dir_name and dir_tuple not in dir_tuples:
+                dir_tuples.append((dir_name, dir_path))
+
+        return sorted(dir_tuples, key=lambda x: x[0])
 
     def get_dir_nodes(self, dir_tuples):
         """Return child node's subdirectories in format required for tree view

@@ -121,19 +121,11 @@ class DatasetResourceTest(MyTardisResourceTestCase):
         self.assertEqual(returned_data, [])
 
         DataFile.objects.create(
-            dataset=dataset, filename='filename1', size=0, md5sum='bogus')
-        response = self.api_client.get(
-            uri, authentication=self.get_credentials())
-        returned_data = json.loads(response.content.decode())
-        self.assertEqual(returned_data, [
-            {
-                'name': 'filename1'
-            }
-        ])
-
-        DataFile.objects.create(
             dataset=dataset, filename='filename2', size=0, md5sum='bogus',
             directory='subdir')
+        DataFile.objects.create(
+            dataset=dataset, filename='filename1', size=0, md5sum='bogus')
+
         response = self.api_client.get(
             uri, authentication=self.get_credentials())
         returned_data = json.loads(response.content.decode())
@@ -262,3 +254,41 @@ class DatasetResourceTest(MyTardisResourceTestCase):
         )
 
         dataset.delete()
+
+    def test_get_child_dir_nodes_no_files_in_root_dir(self):
+        dataset = Dataset.objects.create(description='test dataset')
+        encoded_subdir1 = quote("subdir#1")
+        uri = '/api/v1/dataset/%d/child-dir-nodes/?dir_path=%s' % (dataset.id, encoded_subdir1)
+
+        DataFile.objects.create(
+            dataset=dataset, filename='filename1', size=0, md5sum='bogus',
+            directory='subdir#1')
+        response = self.api_client.get(
+            uri, authentication=self.get_credentials())
+        returned_data = json.loads(response.content.decode())
+        self.assertEqual(returned_data, [
+            {
+                'name': 'filename1'
+            }
+        ])
+
+        DataFile.objects.create(
+            dataset=dataset, filename='filename2', size=0, md5sum='bogus',
+            directory='subdir#1/subdir#2')
+        uri = '/api/v1/dataset/%d/child-dir-nodes/?dir_path=%s' % (dataset.id, encoded_subdir1)
+        response = self.api_client.get(
+            uri, authentication=self.get_credentials())
+        returned_data = json.loads(response.content.decode())
+        expected_data = [
+            {
+                'name': 'filename1',
+            },
+            {
+                'name': 'subdir#2',
+                'path': 'subdir#1/subdir#2',
+                'children': []
+            }
+        ]
+        self.assertEqual(
+            sorted(returned_data, key=lambda x: x['name']),
+            sorted(expected_data, key=lambda x: x['name']))

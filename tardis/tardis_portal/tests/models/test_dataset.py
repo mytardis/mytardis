@@ -64,9 +64,6 @@ class DatasetTestCase(ModelTestCase):
         self.assertEqual(dir_tuples, [])
         self.assertEqual(dataset.get_dir_nodes(dir_tuples), [])
 
-        # Retrieve dataset again from DB to clear cache,
-        # because dataset._dirs uses @cached_property:
-        dataset = Dataset.objects.get(id=dataset.id)
         DataFile.objects.create(
             dataset=dataset, filename='filename1', size=0, md5sum='bogus')
         basedir = ''
@@ -74,7 +71,6 @@ class DatasetTestCase(ModelTestCase):
         self.assertEqual(dir_tuples, [])
         self.assertEqual(dataset.get_dir_nodes(dir_tuples), [])
 
-        dataset = Dataset.objects.get(id=dataset.id)
         DataFile.objects.create(
             dataset=dataset, filename='filename2', size=0, md5sum='bogus',
             directory=None)
@@ -83,7 +79,6 @@ class DatasetTestCase(ModelTestCase):
         self.assertEqual(dir_tuples, [])
         self.assertEqual(dataset.get_dir_nodes(dir_tuples), [])
 
-        dataset = Dataset.objects.get(id=dataset.id)
         DataFile.objects.create(
             dataset=dataset, filename='filename3', size=0, md5sum='bogus',
             directory='')
@@ -92,7 +87,6 @@ class DatasetTestCase(ModelTestCase):
         self.assertEqual(dir_tuples, [])
         self.assertEqual(dataset.get_dir_nodes(dir_tuples), [])
 
-        dataset = Dataset.objects.get(id=dataset.id)
         DataFile.objects.create(
             dataset=dataset, filename='filename4', size=0, md5sum='bogus',
             directory='dir1')
@@ -109,11 +103,9 @@ class DatasetTestCase(ModelTestCase):
                 }
             ])
 
-        dataset = Dataset.objects.get(id=dataset.id)
         DataFile.objects.create(
             dataset=dataset, filename='filename5', size=0, md5sum='bogus',
             directory='dir1/subdir1')
-        self.assertEqual(dataset.get_dir_tuples(''), [('dir1', 'dir1')])
         basedir = 'dir1'
         dir_tuples = dataset.get_dir_tuples(basedir)
         self.assertEqual(
@@ -133,7 +125,6 @@ class DatasetTestCase(ModelTestCase):
         self.assertEqual(dir_tuples, [('..', 'dir1/subdir1')])
         self.assertEqual(dataset.get_dir_nodes(dir_tuples), [])
 
-        dataset = Dataset.objects.get(id=dataset.id)
         DataFile.objects.create(
             dataset=dataset, filename='filename6', size=0, md5sum='bogus',
             directory='dir2/subdir2')
