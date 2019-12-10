@@ -220,7 +220,10 @@ class Dataset(models.Model):
         for dir_path in dir_paths:
             if not dir_path:
                 continue
-            dir_name = dir_path.lstrip(basedir).lstrip('/').split('/')[0]
+            if basedir:
+                dir_name = dir_path[len(basedir)+1:].lstrip('/').split('/')[0]
+            else:
+                dir_name = dir_path.split('/')[0]
             # Reconstruct the dir_path, eliminating subdirs within dir_name:
             dir_path = '/'.join([basedir, dir_name]).lstrip('/')
             dir_tuple = (dir_name, dir_path)
