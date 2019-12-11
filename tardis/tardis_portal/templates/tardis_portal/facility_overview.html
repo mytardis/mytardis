@@ -303,7 +303,7 @@
     </div>  <!-- row  -->
 </div>  <!-- id="content" -->
 <script type="text/ng-template" id="showHideFileListButton">
-  <button type="button" class="btn btn-sm btn-info"
+  <button type="button" class="btn btn-sm btn-outline-secondary px-1 py-0"
           ng-click="facilityCtrl.toggleFileList(dataset)">
       <i class="fa fa-list-alt"></i>
       <span ng-hide="facilityCtrl.isFileListVisible(dataset.id)">Show</span>
@@ -312,8 +312,8 @@
   </button>
 </script>
 <script type="text/ng-template" id="datafileCount">
-  <span class="badge badge-secondary"
-        ng-class="(dataset.verified_datafiles_count<dataset.datafile_count||!dataset.datafile_count)?'label-danger':''">
+  <span class="badge"
+        ng-class="(dataset.verified_datafiles_count<dataset.datafile_count||!dataset.datafile_count)?'badge-danger':'badge-info'">
     <ng-pluralize count="dataset.verified_datafiles_count"
                   when="{'0': 'no verified files', 'one': '1 verified file', 'other': '{} verified files'}">
     </ng-pluralize>
