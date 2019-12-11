@@ -38,7 +38,6 @@
                          class="accordion-toggle private-experiment col-8"
                          data-toggle="collapse"  data-parent="#private-experiments">
                       <input type="hidden" class="exp-index" value="{{ forloop.counter }}">
-                      <i class="fa fa-flask"></i>
                       <a class="explink"
                          href="{% url 'tardis_portal.view_experiment' exp.id %}">{{ exp.title }}</a>
                     </div>
@@ -101,7 +100,6 @@
                    class="accordion-toggle public-experiment col-8"
                    data-toggle="collapse"  data-parent="#public-experiments">
                   <input type="hidden" class="exp-index" value="{{ forloop.counter }}">
-                  <i class="fa fa-flask"></i>
                   <a class="explink"
                      href="{% url 'tardis_portal.view_experiment' exp.id %}">{{ exp.title }}</a>
                 </div>
