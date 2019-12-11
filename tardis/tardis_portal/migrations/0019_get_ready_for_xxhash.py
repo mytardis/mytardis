@@ -21,9 +21,9 @@ class Migration(migrations.Migration):
             field=models.CharField(blank=True, max_length=128),
         ),
         migrations.RunSQL(
-            "UPDATE tardis_portal_datafile SET checksum=md5sum, algorithm='md5' WHERE algorithm IS NULL AND md5sum IS NOT NULL"
+            "UPDATE tardis_portal_datafile SET checksum=md5sum, algorithm='md5' WHERE algorithm='' AND md5sum IS NOT NULL"
         ),
         migrations.RunSQL(
-            "UPDATE tardis_portal_datafile SET checksum=sha512sum, algorithm='sha512' WHERE algorithm IS NULL AND sha512sum IS NOT NULL"
+            "UPDATE tardis_portal_datafile SET checksum=sha512sum, algorithm='sha512' WHERE algorithm='' AND sha512sum IS NOT NULL"
         )
     ]
