@@ -17,8 +17,9 @@
       <div class="row">
         <div id="toggle-{{exp.id}}" class="accordion-toggle col-8" data-toggle="collapse">
           <input type="hidden" class="exp-index" value="{{ forloop.counter }}">
-          <strong><a class="pull-left explink"
-                     href="{% url 'tardis_portal.view_experiment' exp.id %}">{{ exp.title }}</a></strong>
+          <i class="fa fa-flask"></i>
+          <a class="explink"
+             href="{% url 'tardis_portal.view_experiment' exp.id %}">{{ exp.title }}</a>
         </div>
         <div class="col">
           {% experiment_badges exp %}

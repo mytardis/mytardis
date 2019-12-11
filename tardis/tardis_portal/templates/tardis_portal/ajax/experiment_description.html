@@ -86,11 +86,7 @@
               {{ owner.username }}
             {% endif %}
           {% endcapture %}
-          {% if owner.email %}
-            <a href="mailto:{{owner.email}}">{{owner_text}}</a>
-          {% else %}
-            {{owner_text}}
-          {% endif %}
+          {{owner_text}}
           </dd>
         {% endfor %}
       </dl>
@@ -126,8 +122,11 @@
         </a>
       {% endfor %}
     {% endif %}
-    <a href="{% url "tardis.apps.sftp:index" %}?object_id={{ experiment.id }}&object_type=experiment"
-       target="_blank" class="btn btn-outline-secondary btn-sm" title="Download with SFTP">SFTP</a>
+      <a href="{% url "tardis.apps.sftp:index" %}?object_id={{ experiment.id }}&object_type=experiment"
+         target="_blank" class="btn btn-outline-secondary btn-sm" title="Download with SFTP">
+        <i class="fa fa-download"></i>
+        SFTP
+      </a>
     </dd>
   </dl>
   {% endif %}

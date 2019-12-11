@@ -13,10 +13,10 @@
   <div class="row">
     <div class="col-md-12">
       <h2 class="d-block d-sm-none">Experiments</h2>
-      <div class="pull-right">
+      <div class="pull-right pb-1">
         {% if perms.tardis_portal.add_experiment %}
         <a id="create-experiment"
-           class="btn btn-primary btn-sm"
+           class="btn btn-primary"
            href="{% url 'tardis.tardis_portal.views.create_experiment' %}">
           <i class="fa fa-plus"></i>
           Create

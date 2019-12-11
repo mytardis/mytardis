@@ -64,9 +64,9 @@ export default {
                     left: '-21px'
                 },
                 title: {
-                    lineHeight: '24px',
+                    lineHeight: '20px',
                     verticalAlign: 'middle',
-                    fontSize : '18px',
+                    fontSize : '16px',
                     cursor: 'pointer'
                 }
             },

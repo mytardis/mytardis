@@ -1,13 +1,11 @@
 <div class="access_list_group group" style="margin-top: 1ex; margin-bottom: 1ex">
   <div class="access_list_group_row row">
     <div class="col-md-4">
-      <strong>
-        <a href="{% url 'tardis.tardis_portal.views.retrieve_group_userlist_readonly' group.id %}"
-           class="members-hidden member_list_user_toggle small">
-          <i class="fa fa-folder"></i>
-          {{ group.name }}
-        </a>
-      </strong>
+      <i class="fa fa-folder o-6"></i>
+      <a href="{% url 'tardis.tardis_portal.views.retrieve_group_userlist_readonly' group.id %}"
+         class="group-link members-hidden member_list_user_toggle">
+        {{ group.name }}
+      </a>
     </div>
     <div class="col-md-4">
       {% if group_acl.canRead %}

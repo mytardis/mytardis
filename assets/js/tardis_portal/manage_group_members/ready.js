@@ -4,6 +4,51 @@ import {userAutocompleteHandler} from "../main";
 
 var loadingHTML = "<img src=\"/static/images/ajax-loader.gif\"/>";
 
+function loadUserListForGroup($userList, url, groupId) {
+    // Remove any existing add-user form before showing a new one:
+    $(".add-user-form").remove();
+
+    $userList.html(loadingHTML);
+    // Load (jQuery AJAX "load()") and show access list
+    $userList.load(url, function() {
+        // Load user list and activate field autocompletion
+        $.ajax({
+            "dataType": "json",
+            "url": "/ajax/user_list/",
+            "success": function(users) {
+                var autocompleteHandler = function(usersForHandler, query, callback) {
+                    return callback(userAutocompleteHandler(query, usersForHandler));
+                };
+                $("#id_adduser-" + groupId).typeahead({
+                    "source": autocompleteHandler.bind(this, users),
+                    "displayText": function(item) {
+                        return item.label;
+                    },
+                    "updater": function(item) {
+                        return item.value;
+                    }
+                });
+                $("#id_adduser-" + groupId).on("keydown", function() {
+                    /* Validation is server-side.
+                     * When user starts typing in an input to correct a validation
+                     * error, the invalid status should be removed. */
+                    $(this).removeClass("is-invalid");
+                    $(this)[0].setCustomValidity("");
+                    $(".add-user-form").removeClass("was-validated");
+                });
+                /**
+                 * Used to hide an alert instead of it removing it
+                 * which is the default action of when using
+                 * Bootstrap's data-dismiss attribute.
+                 */
+                $("[data-hide]").on("click", function() {
+                    $(this).closest("." + $(this).data("hide")).hide();
+                });
+            }
+        });
+    }).show();
+}
+
 $(document).ready(function() {
 
     $(document).on("click", ".create_group_link", function(evt) {
@@ -175,64 +220,40 @@ $(document).ready(function() {
     $("#grouplist").html(loadingHTML + "</br>");
     $("#grouplist").load("/ajax/group_list_by_user/");
 
-    $(document).on("click", ".member_list_user_toggle", function(evt) {
+    $(document).on("click", "a.member_list_user_toggle", function(evt) {
         evt.preventDefault();
 
         var groupId = $(this).data("group_id");
-        var icon = $(this).find("i");
-        icon.toggleClass("fa fa-folder-open");
-        icon.toggleClass("fa fa-folder");
+        var $icon = $(this).siblings("a").find("i.group-icon");
+        $icon.toggleClass("fa-folder fa-folder-open");
         $(this).toggleClass("members-shown members-hidden");
 
-        var userList = $(this).parents(".group").find(".access_list");
+        var $userList = $(this).parents(".group").find(".access_list");
         // If not showing members, just hide user list
         if (!$(this).hasClass("members-shown")) {
-            userList.hide();
+            $userList.hide();
             return;
         }
 
-        // Remove any existing add-user form before showing a new one:
-        $(".add-user-form").remove();
+        loadUserListForGroup($userList, this.href, groupId);
+    });
 
-        userList.html(loadingHTML);
-        // Load (jQuery AJAX "load()") and show access list
-        userList.load(this.href, function() {
-            // Load user list and activate field autocompletion
-            $.ajax({
-                "dataType": "json",
-                "url": "/ajax/user_list/",
-                "success": function(users) {
-                    var autocompleteHandler = function(usersForHandler, query, callback) {
-                        return callback(userAutocompleteHandler(query, usersForHandler));
-                    };
-                    $("#id_adduser-" + groupId).typeahead({
-                        "source": autocompleteHandler.bind(this, users),
-                        "displayText": function(item) {
-                            return item.label;
-                        },
-                        "updater": function(item) {
-                            return item.value;
-                        }
-                    });
-                    $("#id_adduser-" + groupId).on("keydown", function() {
-                        /* Validation is server-side.
-                         * When user starts typing in an input to correct a validation
-                         * error, the invalid status should be removed. */
-                        $(this).removeClass("is-invalid");
-                        $(this)[0].setCustomValidity("");
-                        $(".add-user-form").removeClass("was-validated");
-                    });
-                    /**
-                     * Used to hide an alert instead of it removing it
-                     * which is the default action of when using
-                     * Bootstrap's data-dismiss attribute.
-                     */
-                    $("[data-hide]").on("click", function() {
-                        $(this).closest("." + $(this).data("hide")).hide();
-                    });
-                }
-            });
-        }).show();
+    $(document).on("click", "a i.group-icon", function(evt) {
+        evt.preventDefault();
+
+        var $groupLink = $(this).parent().siblings("a.member_list_user_toggle");
+        var groupId = $groupLink.data("group_id");
+        $(this).toggleClass("fa-folder fa-folder-open");
+        $groupLink.toggleClass("members-shown members-hidden");
+
+        var $userList = $groupLink.parents(".group").find(".access_list");
+        // If not showing members, just hide user list
+        if (!$groupLink.hasClass("members-shown")) {
+            $userList.hide();
+            return;
+        }
+
+        loadUserListForGroup($userList, $groupLink.attr("href"), groupId);
     });
 
     // add user

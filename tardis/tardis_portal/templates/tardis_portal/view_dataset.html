@@ -318,10 +318,16 @@
                     {% endif %}
                     <a target="_blank"
                        href="{% url "tardis.apps.sftp:index" %}?object_id={{ dataset.id }}&object_type=dataset"
-                       class="btn btn-outline-secondary btn-sm" title="Download with SFTP">SFTP</a>
+                       class="btn btn-outline-secondary btn-sm" title="Download with SFTP">
+                      <i class="fa fa-download"></i>
+                      SFTP
+                    </a>
                     <a class="btn btn-outline-secondary btn-sm"
                        href="{% url 'tardis_portal.dataset_checksums' dataset.id %}"
-                       title="Download MD5 checksums for all files in this Dataset">MD5</a>
+                       title="Download MD5 checksums for all files in this Dataset">
+                      <i class="fa fa-download"></i>
+                      MD5
+                    </a>
                 </p>
             {% endif %}
         {% endblock downloads %}
