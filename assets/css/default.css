@@ -5,6 +5,11 @@ body {
   min-height: 100%;
 }
 
+/* Icons */
+i.o-6 {
+  opacity: 0.6;
+}
+
 /* Inset brand in nav bar */
 .navbar .brand a {
   color: #0097E2;
@@ -107,13 +112,46 @@ div.copylink {
     color: #0088CC;
 }
 
-.dataset-link {
-    font-weight: bold;
+/* Dataset links */
+
+a.dataset-link {
     font-size: 110%;
+    color: black;
 }
 
+a.dataset-link :hover {
+    color: black;
+}
+
+/* Black links */
+
+a.explink, a.dllink, a[rel=license] {
+    color: black;
+}
+
+a.explink, a.dllink, a[rel=license] :hover {
+    color: black;
+}
+
+/* Group links */
+
+a.group-link {
+    color: black;
+    font-weight: normal;
+}
+
+a.group-link :hover {
+    color: black;
+    font-weight: normal;
+}
+
+i.group-icon :hover {
+    cursor: pointer;
+}
+
+/* Miscellaneous */
+
 .datafile_name {
-    font-weight: bold;
     word-break: break-all;
 }
 
@@ -187,6 +225,7 @@ div.copylink {
 .accordion-inner .dataset-list-item {
   border: none;
   background-color: transparent !important;
+  color: black;
   padding-left: 10px;
   padding-right: 5px;
   padding-top: 5px;
@@ -346,4 +385,8 @@ h6 {font-size: 11px;color: #999999;text-transform: uppercase;}
 }
 .w-66 {
     width: 66%;
+}
+.fa-sigma:before {
+content: "\03a3";
+font-family: sans-serif;
 }

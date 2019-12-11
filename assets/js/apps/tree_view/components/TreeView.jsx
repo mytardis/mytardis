@@ -86,7 +86,7 @@ const TreeView = ({ datasetId, modified }) => {
           />
         </div>
       </div>
-      <div style={styles}>
+      <div className="p-1" style={styles}>
         <Treebeard
           data={data}
           style={styles}

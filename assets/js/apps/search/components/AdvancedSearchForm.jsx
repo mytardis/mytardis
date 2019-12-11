@@ -81,7 +81,7 @@ function AdvancedSearchForm({ searchText, showResults, instrumentList }) {
     <form id="adv-search-form" className="border-top form-horizontal">
       <div className="form-group" id="adv-search">
         <div>
-          <label className="font-weight-bold">Advance Search</label>
+          <label className="font-weight-bold">Advanced Search</label>
         </div>
         <label htmlFor="filter">Filter by Date created</label>
         <div className="form-group row">

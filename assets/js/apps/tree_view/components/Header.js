@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 
 const Header = ({ node, style, iconClass }) => {
     const [iconTypeClass, setIconTypeClass] = useState(iconClass);
-    const iconStyle = {marginRight: '5px'};
+    const iconStyle = {marginRight: '5px', opacity: '0.6'};
     return (
       <div style={style.base}>
         <div style={{ ...style.title }}>

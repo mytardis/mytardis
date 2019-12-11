@@ -43,11 +43,10 @@
                 <div class="row">
                   <div class="accordion-toggle col-8" data-toggle="collapse"
                        onclick="$('#collapse{{exp.id}}').collapse('toggle');" >
-                    <strong>
-                      <a class="pull-left explink"
-                         href="{% url 'tardis_portal.view_experiment' exp.id %}">{{ exp.title }}
-                      </a>
-                    </strong>
+                    <i class="fa fa-flask"></i>
+                    <a class="explink"
+                       href="{% url 'tardis_portal.view_experiment' exp.id %}">{{ exp.title }}
+                    </a>
                   </div>
                   <div class="col">
                     <ul class="list-inline float-right list-unstyled">
@@ -91,10 +90,14 @@
                   {% for ds in exp.datasets.all|dictsortreversed:"id"|slice:":1" %}
                     {% if forloop.first %}
                       <ul class="list-group">
-                        <li class="list-group-item dataset-list-header">Latest dataset in this experiment</li>
+                        <li class="list-group-item dataset-list-header pb-1">Latest dataset in this experiment</li>
                     {% endif %}
                     <li class="list-group-item dataset-list-item">
-                        <a href="{% url 'tardis_portal.view_dataset' ds.id %}"><strong>{{ ds.description }}</strong></a>
+                        <i class="fa fa-folder o-6"></i>
+                        <a class="dataset-link"
+                           href="{% url 'tardis_portal.view_dataset' ds.id %}">
+                          {{ ds.description }}
+                        </a>
                     {% if exp.public_download_allowed %}
                       {% for datafile in ds.get_images|slice:":5" %}
                         {% if forloop.first %}
