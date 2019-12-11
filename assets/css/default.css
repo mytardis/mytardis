@@ -125,11 +125,11 @@ a.dataset-link :hover {
 
 /* Black links */
 
-a.explink, a.dllink, a[rel=license] {
+a.explink, a.dllink, a[rel=license], table td a {
     color: black;
 }
 
-a.explink, a.dllink, a[rel=license] :hover {
+a.explink, a.dllink, a[rel=license] :hover, table td a {
     color: black;
 }
 
