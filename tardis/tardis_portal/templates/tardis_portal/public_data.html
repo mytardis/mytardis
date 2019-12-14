@@ -120,7 +120,11 @@
                         </ul>
                       {% endif %}
                       {% empty %}
-                      <em>There are no datasets in this experiment.</em>
+                        <ul class="list-group borderless mt-2">
+                          <li class="list-group-item dataset-list-header small px-1 py-1">
+                            <em>There are no datasets in this experiment.</em>
+                          </li>
+                        </ul>
                     {% endfor %}
                 </div>
               </div>
