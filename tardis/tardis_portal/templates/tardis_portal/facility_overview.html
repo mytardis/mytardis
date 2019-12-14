@@ -22,20 +22,18 @@
     </div>
     <div class="col-md-6">
       <div class="dropdown show float-right" ng-show="facilityCtrl.showFacilitySelector()" ng-cloak>
-        <a class="btn btn-outline-secondary dropdown-toggle"
+        <button class="btn btn-outline-secondary dropdown-toggle"
            data-toggle="dropdown">Facility: {{facilityCtrl.selectedFacilityName}}
           <span class="caret"></span>
-        </a>
-        <ul class="dropdown-menu dropdown-menu-right">
-            <li style="text-align:center"><strong>Select a
-                facility</strong></li>
-            <li class="dropdown-item" ng-repeat="facility in facilityCtrl.facilities">
-                <a href="#"
-                   ng-click="facilityCtrl.selectFacility(facility.id,facility.name)">
-                  {{facility.name}}
-                </a>
-            </li>
-        </ul>
+        </button>
+        <div class="dropdown-menu dropdown-menu-right">
+            <h6 class="dropdown-header"><strong>Select a facility</strong></h6>
+            <a class="dropdown-item" ng-repeat="facility in facilityCtrl.facilities"
+               href="#"
+               ng-click="facilityCtrl.selectFacility(facility.id,facility.name)">
+               {{facility.name}}
+            </a>
+        </div>
       </div>  <!-- div class="btn-group pull-right" -->
     </div>
   </div>
@@ -53,18 +51,24 @@
               <div class="row">
                 <div class="col-md-8" style="text-align: center" ng-cloak>
                   <!-- Data sorting options -->
-                  <ul class="nav nav-pills">
-                    <li class="nav-item" ng-click="facilityCtrl.selectDataView(1); unsetFileListVisibility();"
-                        ng-class="{ active:facilityCtrl.isDataViewSelected(1) }">
-                        <a class="nav-link" href="#">Latest data</a>
+                  <ul class="nav nav-tabs">
+                    <li class="nav-item" ng-click="facilityCtrl.selectDataView(1); unsetFileListVisibility();">
+                        <a class="nav-link"
+                           ng-class="{ active:facilityCtrl.isDataViewSelected(1) }"
+                           href="#">Latest data
+                        </a>
                     </li>
-                    <li class="nav-item" ng-click="facilityCtrl.selectDataView(2); facilityCtrl.unsetFileListVisibility();"
-                        ng-class="{ active:facilityCtrl.isDataViewSelected(2) }">
-                        <a class="nav-link" href="#">Data by instrument</a>
+                    <li class="nav-item" ng-click="facilityCtrl.selectDataView(2); facilityCtrl.unsetFileListVisibility();">
+                        <a class="nav-link"
+                           ng-class="{ active:facilityCtrl.isDataViewSelected(2) }"
+                           href="#">Data by instrument
+                        </a>
                     </li>
-                    <li class="nav-item" ng-click="facilityCtrl.selectDataView(3); facilityCtrl.unsetFileListVisibility();"
-                        ng-class="{ active:facilityCtrl.isDataViewSelected(3) }">
-                        <a class="nav-link" href="#">Data by user</a>
+                    <li class="nav-item" ng-click="facilityCtrl.selectDataView(3); facilityCtrl.unsetFileListVisibility();">
+                        <a class="nav-link"
+                           ng-class="{ active:facilityCtrl.isDataViewSelected(3) }"
+                           href="#">Data by user
+                        </a>
                     </li>
                   </ul>
                 </div>
@@ -125,7 +129,7 @@
                 <div class="row" ng-show="facilityCtrl.datasets.length" ng-cloak>
                   <!-- Data filters -->
                   <div class="col-md-12">
-                    <div class="card mb-2">
+                    <div class="card mb-2" style="border-top: 0">
                       <div class="card-body">
                         <form class="form-inline">
                       <div class="form-group mr-2">
@@ -162,7 +166,7 @@
                        ng-show="facilityCtrl.isDataViewSelected(1) && !facilityCtrl.loading"
                        ng-cloak>
                     <h2>Latest {{facilityCtrl.selectedFacilityName}} datasets</h2>
-                    <table class="table table-striped table-bordered table-sm">
+                    <table class="table table-striped table-bordered table-sm small">
                       <tr>
                         <th>Owner</th>
                         <th>Group</th>
@@ -200,7 +204,7 @@
                        ng-cloak>
                     <h2>Latest {{facilityCtrl.selectedFacilityName}} datasets by
                         instrument</h2>
-                    <table class="table table-striped table-bordered table-sm">
+                    <table class="table table-striped table-bordered table-sm small">
                       <tr>
                         <th>Owner</th>
                         <th>Group</th>
@@ -243,7 +247,7 @@
                        ng-show="facilityCtrl.isDataViewSelected(3) && !facilityCtrl.loading"
                        ng-cloak>
                     <h2>Latest {{facilityCtrl.selectedFacilityName}} datasets by user</h2>
-                    <table class="table table-striped table-bordered table-sm">
+                    <table class="table table-striped table-bordered table-sm small">
                       <tr>
                         <th>Experiment</th>
                         <th>Dataset description</th>
@@ -280,7 +284,7 @@
                   </div>  <!-- row -->
                   <div class="row">
                     <div class="col-md-12" style="text-align:center">
-                      <button type="button" class="btn btn-outline-secondary btn-lg"
+                      <button type="button" class="btn btn-outline-secondary"
                               ng-click="facilityCtrl.loadMoreEntries(50)"
                               ng-class="(facilityCtrl.currentFetchLimit >= facilityCtrl.totalDatasets)?'disabled':''"
                               ng-hide="facilityCtrl.loading"
@@ -328,7 +332,7 @@
 <script type="text/ng-template" id="fileList">
     <div style="max-height: 200px; overflow-y: scroll;">
         <div ng-hide="dataset.datafiles">Loading datafiles...</div>
-        <table class="table table-bordered table-sm table-striped"
+        <table class="table table-bordered table-sm small table-striped"
                ng-show="dataset.datafiles">
             <tr>
                 <th>File name</th>
