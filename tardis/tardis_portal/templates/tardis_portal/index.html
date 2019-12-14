@@ -11,7 +11,7 @@
 {% block content %}
 <div id="content" class="container-fluid">
   <div class="page-header">
-    <h1>{{site_title|default:'MyTardis'}} Data Store</h1>
+    <h1 class="mb-1">{{site_title|default:'MyTardis'}} Data Store</h1>
   </div>
   {% if not is_authenticated %}
     <p>
@@ -28,17 +28,20 @@
   <div class="row">
     <div class="col-md-12">
       {% if is_authenticated %}
-        <h3>Your most recent experiments <small><strong>(<a href="{% url 'tardis.tardis_portal.views.my_data' %}">view all</a>)</strong></small></h3>
+      <h3>
+        Your most recent experiments
+        <small>(<a href="{% url 'tardis.tardis_portal.views.my_data' %}">view all</a>)</small>
+      </h3>
         <div id="private-experiments" class="panel-group experiments">
           {% for exp in private_experiments %}
-            <div class="card border-0" style="background-color: #f5fbff">
-              <div class="card-header border-bottom-0" style="background-color: rgba(0, 0, 0, 0);" data-parent="#private-experiments">
+            <div class="card mb-2" style="background-color: #f5fbff">
+              <div class="card-body py-2" style="background-color: rgba(0, 0, 0, 0);" data-parent="#private-experiments">
                   <div class="row">
                     <div id="private-toggle-{{exp.id}}"
-                         class="accordion-toggle private-experiment col-8"
+                         class="accordion-toggle private-experiment col-8 px-1"
                          data-toggle="collapse"  data-parent="#private-experiments">
                       <input type="hidden" class="exp-index" value="{{ forloop.counter }}">
-                      <a class="explink"
+                      <a class="card-title explink"
                          href="{% url 'tardis_portal.view_experiment' exp.id %}">{{ exp.title }}</a>
                     </div>
                     <div class="col">
@@ -51,14 +54,10 @@
                     </div>
                   </div>
                   <div class="row">
-                    <div class="col-6">
-                      <small>
-                        {% for author in exp.experimentauthor_set.all %}
-                          {% if not forloop.first %}, {% endif %}
-                          <span property="dc:author">{{ author.author }}</span>
-                        {% endfor %}
-                         &nbsp;
-                      </small>
+                    <div class="card-subtitle text-muted col-6 px-1">
+                      {% for author in exp.experimentauthor_set.all %}
+                        <span property="dc:author">{{ author.author }}{% if not forloop.last %}, {% endif %}</span>
+                      {% endfor %}&nbsp;
                     </div>
                     <div class="col">
                       <span class="float-right">
@@ -74,33 +73,32 @@
                       </span>
                     </div>
                   </div>
-              </div> <!-- card-header -->
-              <div class="">
-                <div id="collapse-{{exp.id}}"
-                   class="collapse">
-                  <div class="accordion-inner">
-                    <p>{{exp.description|default:"<em>No description</em>"|bleach}}</p>
-                    <div id="private-recent-datasets-{{exp.id}}"></div>
-                  </div> {% comment %}class="accordion-inner"{% endcomment %}
-                </div>
-              </div> {% comment %}class="accordion-body"{% endcomment %}
-            </div>
-          {% endfor %}
+                  <div class="row">
+                    <div id="collapse-{{exp.id}}" class="collapse col-md-9 px-1">
+                      <div class="accordion-inner">
+                        <p class="card-text small mb-1">{{exp.description|default:"<em>No description</em>"|bleach}}</p>
+                        <div id="private-recent-datasets-{{exp.id}}"></div>
+                      </div> {% comment %}class="accordion-inner"{% endcomment %}
+                    </div>
+                  </div>
+              </div> <!-- card-body -->
           </div>
-        {% endif %}
-        {% with total=public_experiments|length %}
-          <h3>The {{ total }} most recent public experiment{{total|pluralize}}</h3>
-        {% endwith %}
-        <div id="public-experiments" class="experiments">
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% with total=public_experiments|length %}
+      <h3>The {{ total }} most recent public experiment{{total|pluralize}}</h3>
+    {% endwith %}
+    <div id="public-experiments" class="experiments">
         {% for exp in public_experiments %}
-          <div class="card border-0" style="background-color: #f5fbff">
-            <div class="card-header border-bottom-0" style="background-color: rgba(0, 0, 0, 0);" data-parent="#public-experiments">
+          <div class="card mb-2" style="background-color: #f5fbff">
+            <div class="card-header" style="background-color: rgba(0, 0, 0, 0);" data-parent="#public-experiments">
               <div class="row">
                 <div id="public-toggle-{{exp.id}}"
-                   class="accordion-toggle public-experiment col-8"
+                   class="accordion-toggle public-experiment col-8 px-1"
                    data-toggle="collapse"  data-parent="#public-experiments">
                   <input type="hidden" class="exp-index" value="{{ forloop.counter }}">
-                  <a class="explink"
+                  <a class="card-title explink"
                      href="{% url 'tardis_portal.view_experiment' exp.id %}">{{ exp.title }}</a>
                 </div>
                 <div class="col">
@@ -112,14 +110,11 @@
                 </div>
               </div>
               <div class="row">
-                <div class="col-6">
-                  <small>
-                    {% for author in exp.experimentauthor_set.all %}
-                      {% if not forloop.first %}, {% endif %}
-                      <span property="dc:author">{{ author.author }}</span>
-                    {% endfor %}
-                    &nbsp;
-                  </small>
+                <div class="card-subtitle text-muted col-6 px-1">
+                  {% for author in exp.experimentauthor_set.all %}
+                    <span property="dc:author">{{ author.author }}{% if not forloop.last %}, {% endif %}</span>
+                  {% endfor %}
+                  &nbsp;
                 </div>
                 <div class="col">
                   <span class="float-right">
@@ -137,15 +132,16 @@
                 </span>
                 </div>
               </div>
-              <div id="collapsepub-{{exp.id}}"
-                 class="panel-collapse collapse">
-              <div class="accordion-inner">
-                <p>{{exp.description|default:"<em>No description</em>"|bleach}}</p>
-                <div id="public-recent-datasets-{{exp.id}}"></div>
-              </div> {% comment %}class="accordion-inner"{% endcomment %}
+              <div class="row">
+                <div id="collapsepub-{{exp.id}}" class="collapse col-md-9 px-1">
+                  <div class="accordion-inner">
+                    <p class="card-text small mb-1">{{exp.description|default:"<em>No description</em>"|bleach}}</p>
+                    <div id="public-recent-datasets-{{exp.id}}"></div>
+                  </div> {% comment %}class="accordion-inner"{% endcomment %}
+                </div>
+              </div>
             </div>
-            </div>
-          </div> {% comment %}class="accordion-group"{% endcomment %}
+          </div> {% comment %}class="card"{% endcomment %}
           {% empty %}
           <p>There is no public data available on this server.</p>
         {% endfor %}

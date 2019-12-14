@@ -9,9 +9,9 @@
 <div id="content" class="container-fluid">
   <div class="row">
     <div class="col-md-12">
-      <h2 class="d-block d-sm-none">Experiments</h2>
+      <h3 class="d-block d-sm-none">Experiments</h3>
       <div class="pull-left">
-          <h2 class="hidden-xm" style="text-align: center">Experiments</h2>
+          <h3 class="hidden-xm" style="text-align: center">Experiments</h3>
       </div>
     </div>
   </div>
@@ -23,27 +23,27 @@
       </p>
       {% else %}
       <div class="pull-left">
-        <h3><strong>{{ public_experiments.count }}</strong>
+        <h4><strong>{{ public_experiments.count }}</strong>
         Public Experiment{{ public_experiments.count|pluralize}}
-        </h3>
+        </h4>
       </div>
       <div class="pull-right">
-        <button type="button" class="btn btn-success btn-sm"
-                onclick="$('#public-experiments .panel-collapse').collapse('hide');" >
+        <button type="button" class="btn btn-outline-secondary btn-sm"
+                onclick="$('#public-experiments .collapse').collapse('hide');" >
         Collapse all</button>
-        <button type="button" class="btn btn-success btn-sm"
-                onclick="$('#public-experiments .panel-collapse').collapse('show');" >
+        <button type="button" class="btn btn-outline-secondary btn-sm"
+                onclick="$('#public-experiments .collapse').collapse('show');" >
         Expand all</button>
       </div>
       <div class="clearfix"></div>
       <div id="public-experiments" class="panel-group experiments">
         {% for exp in public_experiments %}
-          <div class="card border-0" style="background-color: #f5fbff">
-              <div class="card-header border-bottom-0" style="background-color: rgba(0, 0, 0, 0);" data-parent="#private-experiments">
+          <div class="card mb-2" style="background-color: #f5fbff">
+              <div class="card-body py-2" style="background-color: rgba(0, 0, 0, 0);" data-parent="#private-experiments">
                 <div class="row">
-                  <div class="accordion-toggle col-8" data-toggle="collapse"
+                  <div class="accordion-toggle col-8 px-1" data-toggle="collapse"
                        onclick="$('#collapse{{exp.id}}').collapse('toggle');" >
-                    <a class="explink"
+                    <a class="card-title explink"
                        href="{% url 'tardis_portal.view_experiment' exp.id %}">{{ exp.title }}
                     </a>
                   </div>
@@ -57,14 +57,12 @@
                   </div>
                 </div> {% comment %} class="row" {% endcomment %}
                 <div class="row">
-                  <div class="col-6">
-                    <small>
-                      {% for author in exp.experimentauthor_set.all %}
-                        {% if not forloop.first %}, {% endif %}
-                        <span property="dc:author">{{ author.author }}</span>
-                      {% endfor %}
-                        &nbsp;
-                    </small>
+                  <div class="card-subtitle text-muted col-6 px-1">
+                    {% for author in exp.experimentauthor_set.all %}
+                      {% if not forloop.first %}, {% endif %}
+                      <span property="dc:author">{{ author.author }}</span>
+                    {% endfor %}
+                      &nbsp;
                   </div>
                   <div class="col">
                     <span class="float-right">
@@ -82,48 +80,53 @@
                     </span>
                   </div>
                 </div>
-                <div id="collapse{{exp.id}}"
-                   class="panel-collapse collapse in">
-                <div class="accordion-inner">
-                  <p><em>{{exp.description|default:""|bleach}}</em></p>
-                  {% for ds in exp.datasets.all|dictsortreversed:"id"|slice:":1" %}
-                    {% if forloop.first %}
-                      <ul class="list-group">
-                        <li class="list-group-item dataset-list-header pb-1">Latest dataset in this experiment</li>
-                    {% endif %}
-                    <li class="list-group-item dataset-list-item">
-                        <i class="fa fa-folder o-6"></i>
-                        <a class="dataset-link"
-                           href="{% url 'tardis_portal.view_dataset' ds.id %}">
-                          {{ ds.description }}
-                        </a>
-                    {% if exp.public_download_allowed %}
-                      {% for datafile in ds.get_images|slice:":5" %}
-                        {% if forloop.first %}
-                          <ul class="thumbnails list-inline">
-                        {% endif %}
-                        <li class="list-inline-item">
-                          <a class="thumbnail" href="{% url 'tardis.tardis_portal.download.view_datafile' datafile.id %}">{% url 'tardis.tardis_portal.iiif.download_image' datafile_id=datafile.id region='full' size=',50' rotation=0 quality='native' format='jpg' as thumbnail %}
-                          <img alt="Thumbnail for Datafile #{{datafile.id}}"
-                               src="{{ thumbnail }}"
-                               onerror="$(this).hide()"/></a>
-                        </li>
-                        {% if forloop.last %}
-                          </ul>
-                        {% endif %}
-                      {% endfor %}
+                <div class="row">
+                  <div id="collapse{{exp.id}}" class="collapse col-md-9 px-1 in">
+                  <div class="accordion-inner">
+                    <p class="card-text small mb-1">
+                      {{exp.description|default:""|bleach}}
+                    </p>
+                    {% for ds in exp.datasets.all|dictsortreversed:"id"|slice:":1" %}
+                      {% if forloop.first %}
+                        <ul class="list-group borderless mt-2">
+                          <li class="list-group-item dataset-list-header small py-1">
+                            <em>Latest dataset in this experiment:</em>
+                          </li>
                       {% endif %}
-                    </li>
-                    {% if forloop.last %}
-                      </ul>
-                    {% endif %}
-                    {% empty %}
-                    There are no datasets in this experiment
-                  {% endfor %}
+                      <li class="list-group-item dataset-list-item small py-1">
+                          <i class="fa fa-folder o-6"></i>
+                          <a class="dataset-link"
+                             href="{% url 'tardis_portal.view_dataset' ds.id %}">
+                            {{ ds.description }}
+                          </a>
+                      {% if exp.public_download_allowed %}
+                        {% for datafile in ds.get_images|slice:":5" %}
+                          {% if forloop.first %}
+                            <ul class="thumbnails list-inline">
+                          {% endif %}
+                          <li class="list-inline-item">
+                            <a class="thumbnail" href="{% url 'tardis.tardis_portal.download.view_datafile' datafile.id %}">{% url 'tardis.tardis_portal.iiif.download_image' datafile_id=datafile.id region='full' size=',50' rotation=0 quality='native' format='jpg' as thumbnail %}
+                            <img alt="Thumbnail for Datafile #{{datafile.id}}"
+                               src="{{ thumbnail }}"
+                                 onerror="$(this).hide()"/></a>
+                          </li>
+                          {% if forloop.last %}
+                            </ul>
+                          {% endif %}
+                        {% endfor %}
+                        {% endif %}
+                      </li>
+                      {% if forloop.last %}
+                        </ul>
+                      {% endif %}
+                      {% empty %}
+                      <em>There are no datasets in this experiment.</em>
+                    {% endfor %}
                 </div>
-            </div>
               </div>
+            </div>
           </div>
+        </div>
         {% endfor %}
       </div>
     {% endif %}

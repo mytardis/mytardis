@@ -1,9 +1,11 @@
 {% for ds in exp.datasets.all|dictsortreversed:"id"|slice:":1" %}
   {% if forloop.first %}
-    <ul class="list-group">
-      <li class="list-group-item dataset-list-header small pb-1">Latest dataset in this experiment</li>
+    <ul class="list-group borderless mt-2">
+      <li class="list-group-item dataset-list-header small py-1">
+        <em>Latest dataset in this experiment:</em>
+      </li>
   {% endif %}
-  <li class="list-group-item dataset-list-item">
+  <li class="list-group-item dataset-list-item small py-1">
     <i class="fa fa-folder o-6"></i>
     <a class="dataset-link"
        href="{% url 'tardis_portal.view_dataset' ds.id %}">
@@ -29,5 +31,7 @@
     </ul>
   {% endif %}
 {% empty %}
-  There are no datasets in this experiment
+  <small>
+    <em>There are no datasets in this experiment.</em>
+  </small>
 {% endfor %}
