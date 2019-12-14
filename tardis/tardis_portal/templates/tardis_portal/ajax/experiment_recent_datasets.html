@@ -2,12 +2,12 @@
   {% if forloop.first %}
     <ul class="list-group borderless mt-2">
     {% with total=exp.datasets.all|length %}
-      <li class="list-group-item dataset-list-header small py-1">
+      <li class="list-group-item dataset-list-header small px-1 py-1">
         <em>The most recent dataset{{total|pluralize}} in this experiment:</em>
       </li>
     {% endwith %}
   {% endif %}
-  <li class="list-group-item dataset-list-item small py-1">
+  <li class="list-group-item dataset-list-item small px-2 py-1">
     <i class="fa fa-folder o-6"></i>
     <a class="dataset-link"
        href="{% url 'tardis_portal.view_dataset' ds.id %}">
