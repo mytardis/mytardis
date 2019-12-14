@@ -1,6 +1,6 @@
 <div class="card-body">
   <div class="float-left" style="margin-right: 10px">
-    <div style="text-align: center; font-size: 32px">
+    <div style="display: flex; text-align: center; font-size: 32px">
       <i class="fa fa-folder-open o-6"></i>
     </div>
     <br/>
@@ -40,7 +40,8 @@
   </div>
   {{/show_dataset_thumbnails}}
   <div class="float-left">
-    <p><a class="dataset-link" href="{{ url }}">
+    <p class="mb-2">
+      <a class="dataset-link" href="{{ url }}">
       {{#description}}
       {{ description }}
       {{/description}}
