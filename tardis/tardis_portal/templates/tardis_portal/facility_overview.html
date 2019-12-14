@@ -75,35 +75,34 @@
                 <div class="col-md-4">
                   <!-- Auto-refresh button -->
                   <div class="btn-group pull-right" ng-cloak>
-                    <button type="button" class="btn btn-outline-secondary"
+                    <button type="button" class="btn btn-outline-secondary btn-sm"
                             ng-click="facilityCtrl.fetchFacilityData(0,facilityCtrl.defaultFetchLimit); facilityCtrl.refreshCountdown = facilityCtrl.refreshInterval">
                       <i class="fa fa-refresh"></i>
                       Refresh
                     </button>
-                    <button type="button" class="btn btn-outline-secondary dropdown-toggle"
+                    <button type="button" class="btn btn-outline-secondary btn-sm dropdown-toggle"
                             data-toggle="dropdown">
                       Auto refresh
                       <span ng-show="facilityCtrl.refreshInterval === 0">(never)</span>
                       <span ng-hide="facilityCtrl.refreshInterval === 0">({{facilityCtrl.refreshCountdownFmt()}})</span>
                       <span class="caret"></span>
                     </button>
-                    <ul class="dropdown-menu">
-                      <li><a href="#"
-                             ng-click="facilityCtrl.setRefreshInterval(0)">Never</a>
-                      </li>
-                      <li><a href="#"
-                             ng-click="facilityCtrl.setRefreshInterval(10)">Every
-                          10 seconds</a></li>
-                      <li><a href="#"
-                             ng-click="facilityCtrl.setRefreshInterval(30)">Every
-                          30 seconds</a></li>
-                      <li><a href="#"
-                             ng-click="facilityCtrl.setRefreshInterval(60)">Every
-                          minute</a></li>
-                      <li><a href="#"
-                             ng-click="facilityCtrl.setRefreshInterval(300)">Every
-                          5 minutes</a></li>
-                    </ul>  <!-- dropdown-menu -->
+                    <div class="dropdown-menu">
+                      <a href="#" class="dropdown-item"
+                         ng-click="facilityCtrl.setRefreshInterval(0)">Never</a>
+                      <a href="#" class="dropdown-item"
+                         ng-click="facilityCtrl.setRefreshInterval(10)">Every
+                          10 seconds</a>
+                      <a href="#" class="dropdown-item"
+                         ng-click="facilityCtrl.setRefreshInterval(30)">Every
+                          30 seconds</a>
+                      <a href="#" class="dropdown-item"
+                         ng-click="facilityCtrl.setRefreshInterval(60)">Every
+                          minute</a>
+                      <a href="#" class="dropdown-item"
+                         ng-click="facilityCtrl.setRefreshInterval(300)">Every
+                          5 minutes</a>
+                    </div>  <!-- dropdown-menu -->
                   </div>  <!-- btn-group pull-right Auto-refresh button -->
                 </div>  <!-- col-md-4 -->
             </div>  <!-- row -->

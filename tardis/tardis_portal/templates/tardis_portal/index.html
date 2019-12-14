@@ -38,7 +38,7 @@
               <div class="card-body py-2" style="background-color: rgba(0, 0, 0, 0);" data-parent="#private-experiments">
                   <div class="row">
                     <div id="private-toggle-{{exp.id}}"
-                         class="accordion-toggle private-experiment col-8 px-1"
+                         class="accordion-toggle private-experiment col-md-8 px-1"
                          data-toggle="collapse"  data-parent="#private-experiments">
                       <input type="hidden" class="exp-index" value="{{ forloop.counter }}">
                       <a class="card-title explink"
@@ -95,7 +95,7 @@
             <div class="card-header" style="background-color: rgba(0, 0, 0, 0);" data-parent="#public-experiments">
               <div class="row">
                 <div id="public-toggle-{{exp.id}}"
-                   class="accordion-toggle public-experiment col-8 px-1"
+                   class="accordion-toggle public-experiment col-md-8 px-1"
                    data-toggle="collapse"  data-parent="#public-experiments">
                   <input type="hidden" class="exp-index" value="{{ forloop.counter }}">
                   <a class="card-title explink"
