@@ -124,33 +124,43 @@
     {% endif %}
   </h1>
   {% if from_instrument or from_facility %}
-    <span style="padding-top: 4px">
-        <small>
-          {% if from_instrument %}
-            <span style="margin-right: 2em;">
-              Instrument: {{ from_instrument }}
-            </span>
-          {% endif %}
-          {% if from_facility %}
-            <span style="margin-right: 2em;">
-              Facility: {{  from_facility }}
-            </span>
-          {% endif %}
-        </small>
-    </span>
+    <div class="row">
+      <div class="col-md-9">
+        <span style="padding-top: 4px">
+            <small>
+              {% if from_instrument %}
+                <span style="margin-right: 2em;">
+                  Instrument: {{ from_instrument }}
+                </span>
+              {% endif %}
+              {% if from_facility %}
+                <span style="margin-right: 2em;">
+                  Facility: {{  from_facility }}
+                </span>
+              {% endif %}
+            </small>
+        </span>
+      </div>
+    </div>
   {% endif %}
   {% if from_experiment %}
-  <span style="padding-top: 4px">
-      <small>
-      From the experiment:
-      <a
-         class="experiment-link"
-         href="{{ from_experiment.get_absolute_url }}">
-      {{ from_experiment.title }}
-      </a>
-      </small>
-  </span>
+    <div class="row">
+      <div class="col-md-9">
+        <span style="padding-top: 4px">
+            <small>
+            From the experiment:
+            <a
+               class="experiment-link"
+               href="{{ from_experiment.get_absolute_url }}">
+            {{ from_experiment.title }}
+            </a>
+            </small>
+        </span>
+      </div>
+    </div>
   {% else %}
+    <div class="row">
+      <div class="col-md-9">
         {% if other_experiments|length == 1 %}
         <span style="padding-top: 4px">
             <small>
@@ -165,14 +175,20 @@
         </span>
         {% endfor %}
         {% endif %}
+      </div>
+    </div>
 
   {% endif %}
   {% if dataset.immutable %}
-  <span style="padding-top: 4px">
-      <small>
-      This experiment has been set to immutable on creation (cannot be modified)
-      </small>
-  </span>
+    <div class="row">
+      <div class="col-md-9">
+        <span style="padding-top: 4px">
+            <small>
+            This experiment has been set to immutable on creation (cannot be modified)
+            </small>
+        </span>
+      </div>
+    </div>
   {% endif %}
 
     <p class="float-right mb-1">
