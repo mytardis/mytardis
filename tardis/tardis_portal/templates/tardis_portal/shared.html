@@ -11,7 +11,7 @@
 <div id="content" class="container-fluid">
   <div class="row">
     <div class="col-md-12">
-      <h2 class="d-block d-sm-none">Experiments</h2>
+      <h3 class="d-block d-sm-none">Experiments</h3>
       <div class="pull-right pb-1">
         {% if perms.tardis_portal.add_experiment %}
         <a class="btn btn-primary"
@@ -22,7 +22,7 @@
         {% endif %}
       </div>  <!-- class="pull-right" -->
       <div class="pull-left">
-        <h2 class="d-none d-sm-block" style="text-align: center">Experiments</h2>
+        <h3 class="d-none d-sm-block" style="text-align: center">Experiments</h3>
       </div>
     </div>  <!-- class="col-md-12" -->
   </div>  <!-- class="row" -->
@@ -37,15 +37,15 @@
 
       {% if shared_experiments %}
       <div class="pull-left">
-        <h3><strong>{{ shared_experiments.count }}</strong>
-        Shared Experiment{{ shared_experiments.count|pluralize }}</h3>
+        <h4><strong>{{ shared_experiments.count }}</strong>
+        Shared Experiment{{ shared_experiments.count|pluralize }}</h4>
       </div>
       <div class="pull-right">
-        <button type="button" class="btn btn-success btn-sm"
-                onclick="$('#myshared .panel-collapse').collapse('hide');" >
+        <button type="button" class="btn btn-outline-secondary btn-sm"
+                onclick="$('#myshared .collapse').collapse('hide');" >
         Collapse all</button>
-        <button type="button" class="btn btn-success btn-sm"
-                onclick="$('#myshared .panel-collapse').collapse('show');" >
+        <button type="button" class="btn btn-outline-secondary btn-sm"
+                onclick="$('#myshared .collapse').collapse('show');" >
         Expand all</button>
       </div>
       <div class="clearfix"></div>

@@ -186,61 +186,16 @@ i.group-icon :hover {
     text-decoration: none;
 }
 
+.experiments .card .accordion-toggle {
+    cursor: pointer;
+}
+
 /* index page */
 .experiments .accordion-toggle .explink {
     font-size: 1.3em;
 }
 .experiments .accordion-toggle .badgelist {
     margin-bottom: 4px;
-}
-.experiments .accordion-body {
-    background-color: #E8F6FF;
-}
-.experiments .accordion-inner {
-    -webkit-border-radius: 0px;
-    -moz-border-radius: 0px;
-    border-radius: 0px;
-    border: none;
-    padding-top:5px;
-    padding-right:10px;
-    padding-left:10px;
-    background-color: #E8F6FF;
-    margin: 0px 0px;
-}
-.experiments .accordion-inner p {
-    width: 75%;
-}
-.experiments .accordion-inner .dataset-list-header {
-    margin-left: -15px;
-    font-style: italic;
-    font-size: 11px;
-    border: none;
-    background-color: transparent !important;
-    padding-top: 5px;
-    padding-left: 5px;
-}
-.accordion-inner .list-group {
-    padding-left: 10px;
-}
-.accordion-inner .dataset-list-item {
-  border: none;
-  background-color: transparent !important;
-  color: black;
-  padding-left: 10px;
-  padding-right: 5px;
-  padding-top: 5px;
-  padding-bottom: 2px;
-}
-.experiments .accordion-inner .thumbnails li {
-    margin-bottom: 5px;
-    margin-top: 2px;
-}
-.experiments .accordion-group {
-    border: none;
-    -webkit-border-radius: 0px;
-    -moz-border-radius: 0px;
-    border-radius: 0px;
-    background-color: #F5FBFF;
 }
 .experiments .nav .nav-header {
     font-size: 11px;
@@ -262,11 +217,12 @@ i.group-icon :hover {
 .mydata .accordion-toggle .explink {
     font-size: 1.3em;
     max-width: 67%;
+    cursor: pointer;
 }
 .mydata .accordion-toggle .badgelist {
     margin-bottom: 4px;
 }
-.mydata .accordion-body {
+/*.mydata .accordion-body {
     background-color: #E8F6FF;
 }
 .mydata .accordion-inner {
@@ -279,7 +235,7 @@ i.group-icon :hover {
     padding-left:10px;
     background-color: #E8F6FF;
     margin: 0px 0px;
-}
+}*/
 .mydata .accordion-inner p {
     width: 75%;
 }
@@ -303,6 +259,11 @@ i.group-icon :hover {
     font-style: italic;
     text-transform: none;
 }
+
+.borderless .list-group-item {
+    border: none;
+}
+
 /* end index page */
 /* autocomplete defaults */
 .ui-autocomplete {
@@ -329,28 +290,6 @@ i.group-icon :hover {
 
 /* end search */
 
-/* MyTardis has switched from Bootstrap 2.0.4 to 2.3.2 for compatibilty with
- * later versions of jQuery, but this changes the default heading sizes, so
- * for now, we'll revert to the heading sizes from 2.0.4, until we have time
- * to upgrade to a more recent Bootstrap */
-h1, h2, h3, h4, h5, h6 {
-  margin: 0;
-  font-family: inherit;
-  font-weight: bold;
-  color: inherit;
-  text-rendering: optimizelegibility;
-}
-h1 {font-size: 30px; line-height: 36px;}
-h1 small {font-size: 18px;}
-h2 {font-size: 24px; line-height: 36px;}
-h2 small {font-size: 18px;}
-h3 {font-size: 18px; line-height: 27px;}
-h3 small {font-size: 14px;}
-h4,h5,h6 {line-height: 18px;}
-h4 {font-size: 14px;}
-h4 small {font-size: 12px;}
-h5 {font-size: 12px;}
-h6 {font-size: 11px;color: #999999;text-transform: uppercase;}
 .page-header {
     margin-top: 10px;
     margin-bottom: 10px;
@@ -370,11 +309,6 @@ h6 {font-size: 11px;color: #999999;text-transform: uppercase;}
     margin-bottom: 0;
 }
 
-/* Padding from Bootstrap v2: */
-.accordion-heading .accordion-toggle {
-  padding: 8px 15px;
-}
-
 /* Ensure modals have vertical scrollbars if necessary */
 .modal-dialog {
     overflow-y: initial !important
@@ -386,7 +320,20 @@ h6 {font-size: 11px;color: #999999;text-transform: uppercase;}
 .w-66 {
     width: 66%;
 }
-.fa-sigma:before {
-content: "\03a3";
-font-family: sans-serif;
+
+/* Make headings smaller than the Bootstrap default */
+h1 {
+    font-size: 2rem
+}
+h2 {
+    font-size: 1.75rem
+}
+h3 {
+    font-size: 1.5rem
+}
+h4 {
+    font-size: 1.25rem
+}
+h5 {
+    font-size: 1.125rem
 }

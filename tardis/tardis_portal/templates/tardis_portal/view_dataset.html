@@ -98,7 +98,7 @@
 </div>
 <div class="row">
   <div class="page-header col-md-12">
-  <h4>Dataset</h4>
+  <h5 class="mb-1">Dataset</h5>
     <div class="float-right">
   {% if push_to_enabled and is_authenticated %}
     <a class="btn btn-sm btn-outline-secondary" title="Push to..."
@@ -116,7 +116,7 @@
     </a>
   {% endif %}
     </div>
-  <h1>
+  <h1 class="mb-1">
     {% if dataset.description %}
       <span property="dc:title">{{ dataset.description }}</span>
     {% else %}
@@ -124,7 +124,7 @@
     {% endif %}
   </h1>
   {% if from_instrument or from_facility %}
-    <h4 style="padding-top: 4px">
+    <span style="padding-top: 4px">
         <small>
           {% if from_instrument %}
             <span style="margin-right: 2em;">
@@ -137,10 +137,10 @@
             </span>
           {% endif %}
         </small>
-    </h4>
+    </span>
   {% endif %}
   {% if from_experiment %}
-  <h4 style="padding-top: 4px">
+  <span style="padding-top: 4px">
       <small>
       From the experiment:
       <a
@@ -149,10 +149,10 @@
       {{ from_experiment.title }}
       </a>
       </small>
-  </h4>
+  </span>
   {% else %}
         {% if other_experiments|length == 1 %}
-        <h4 style="padding-top: 4px">
+        <span style="padding-top: 4px">
             <small>
             From the experiment:
         {% for other_experiment in other_experiments %}
@@ -162,20 +162,20 @@
             {{ other_experiment.title }}
             </a>
             </small>
-        </h4>
+        </span>
         {% endfor %}
         {% endif %}
 
   {% endif %}
   {% if dataset.immutable %}
-  <h4 style="padding-top: 4px">
+  <span style="padding-top: 4px">
       <small>
       This experiment has been set to immutable on creation (cannot be modified)
       </small>
-  </h4>
+  </span>
   {% endif %}
 
-    <p class="float-right">
+    <p class="float-right mb-1">
     {{ dataset|dataset_experiments_badge}}&nbsp;
     {{ dataset|dataset_datafiles_badge }}&nbsp;
     {{ dataset|dataset_size_badge }}
@@ -279,7 +279,7 @@
     </div>
     <div class="col-md-4">
 {% if has_write_permissions and perms.tardis_portal.add_datafile and not experiment.public and not immutable %}
-    <span class="btn btn-sm btn-primary fileinput-button pull-right">
+    <span class="btn btn-sm btn-primary fileinput-button mb-1 pull-right">
         <i class="fa fa-plus"></i>
         <span>Add files...</span>
         <input id="fileupload" type="file" name="attached_file"
