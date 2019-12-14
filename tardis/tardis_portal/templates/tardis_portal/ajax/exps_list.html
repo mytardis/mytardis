@@ -15,7 +15,7 @@
   <div class="card mb-2" style="background-color: #f5fbff">
     <div class="card-body py-2" style="background-color: rgba(0,0,0,0)">
       <div class="row">
-        <div id="toggle-{{exp.id}}" class="accordion-toggle col-8 px-1" data-toggle="collapse">
+        <div id="toggle-{{exp.id}}" class="accordion-toggle col-md-8 px-1" data-toggle="collapse">
           <input type="hidden" class="exp-index" value="{{ forloop.counter }}">
           <a class="explink"
              href="{% url 'tardis_portal.view_experiment' exp.id %}">{{ exp.title }}</a>
