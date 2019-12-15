@@ -17,7 +17,7 @@
 {% endcapture %}
 
 <h3 style="display: inline">
-{{experiment.datasets.count}} Dataset{% if experiment.datasets.count|gt:1 %}s{%endif%}
+  {{experiment.datasets.count}} Dataset{{experiment.datasets.count|pluralize}}
 </h3>
 {% if has_download_permissions or has_write_permissions %}
 
