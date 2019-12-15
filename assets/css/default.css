@@ -186,6 +186,10 @@ i.group-icon :hover {
     text-decoration: none;
 }
 
+.experiments .card {
+    border-color: rgba(0, 0, 0, 0.06);
+}
+
 .experiments .card .accordion-toggle {
     cursor: pointer;
 }
