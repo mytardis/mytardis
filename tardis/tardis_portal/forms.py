@@ -581,7 +581,7 @@ def create_parameterset_edit_form(parameterset, request=None):
                 {'base_fields': fields})
 
 
-def save_datafile_edit_form(parameterset, request):
+def save_parameter_edit_form(parameterset, request):
 
     psm = ParameterSetManager(parameterset=parameterset)
     psm.delete_all_params()
@@ -593,8 +593,12 @@ def save_datafile_edit_form(parameterset, request):
 
             psm.new_param(stripped_key, value)
 
+    psm = ParameterSetManager(parameterset=parameterset)
+    if not psm.parameters.exists():
+        parameterset.delete()
 
-def create_datafile_add_form(schema, parentObject, request=None):
+
+def create_parameter_add_form(schema, parentObject, request=None):
 
     from .models import ParameterName
 
@@ -677,7 +681,7 @@ def create_datafile_add_form(schema, parentObject, request=None):
                 {'base_fields': fields})
 
 
-def save_datafile_add_form(schema, parentObject, request):
+def save_parameter_add_form(schema, parentObject, request):
 
     psm = ParameterSetManager(schema=schema,
                               parentObject=parentObject)

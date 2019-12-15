@@ -12,18 +12,17 @@
       <div class="form-group">
         <div class="row">
           <div class="col-md-2">
-             <label style="text-align:left;"
-                   for="schemaselect">Schema
+             <label class="col-form-label" for="schemaselect">
+               <strong>Schema</strong>
              </label>
           </div>
-          <div class="col-md-6">
+          <div class="col-md-9 ml-4 mr-0">
             <select id="schemaselect" class="form-control" data-type="{{type}}" data-parent_object_id="{{parentObject.id}}">
             {% for schema in all_schema %}
               <option value="{{schema.id}}" {% if schema.id == schema_id %}selected{% endif %}>{{schema.name}}</option>
             {% endfor %}
             </select>
           </div>
-          <div class="col-md-4"></div>
         </div>
       </div>
     </div>
@@ -31,7 +30,7 @@
       {% for field in form %}
         <div class="form-group">
           <label class="col-form-label-sm py-0" for="{{field.name}}">{{field.label}}</label>
-          <div class="col-md-9 pl-0">
+          <div class="col-md-12 pl-0">
             {{ field | add_class:"form-control form-control-sm" }}
           </div>
         </div>

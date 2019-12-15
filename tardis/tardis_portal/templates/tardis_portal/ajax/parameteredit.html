@@ -11,7 +11,7 @@
       {% for field in form %}
         <div class="form-group">
           <label class="col-form-label-sm py-0" for="{{field.name}}">{{field.label}}</label>
-          <div class="col-md-9 pl-0">
+          <div class="col-md-12 pl-0">
             {{ field | add_class:"form-control form-control-sm" }}
           </div>
         </div>
@@ -28,7 +28,7 @@
           {% endif %}
         {% endfor %}
       </select>
-      <button id="add_new_parameter" type="button" class="btn btn-success btn-sm my-0">
+      <button id="add_new_parameter" type="button" class="btn btn-success btn-sm ml-1 my-0">
         <i class="fa fa-plus"></i>
         Add Metadata Parameter
       </button>
