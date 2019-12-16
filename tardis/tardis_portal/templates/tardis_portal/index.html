@@ -34,8 +34,8 @@
       </h3>
         <div id="private-experiments" class="panel-group experiments">
           {% for exp in private_experiments %}
-            <div class="card mb-2" style="background-color: #f5fbff">
-              <div class="card-body py-2" style="background-color: rgba(0, 0, 0, 0);" data-parent="#private-experiments">
+            <div class="card mb-2">
+              <div class="card-header py-2" data-parent="#private-experiments">
                   <div class="row">
                     <div id="private-toggle-{{exp.id}}"
                          class="accordion-toggle private-experiment col-md-8 px-1"
@@ -54,7 +54,7 @@
                     </div>
                   </div>
                   <div class="row">
-                    <div class="card-subtitle text-muted col-6 px-1">
+                    <div class="card-subtitle text-muted small col-6 px-1">
                       {% for author in exp.experimentauthor_set.all %}
                         <span property="dc:author">{{ author.author }}{% if not forloop.last %}, {% endif %}</span>
                       {% endfor %}&nbsp;
@@ -73,15 +73,17 @@
                       </span>
                     </div>
                   </div>
+              </div>
+              <div id="collapse-{{exp.id}}" class="card-body py-2 collapse" data-parent="#private-experiments">
                   <div class="row">
-                    <div id="collapse-{{exp.id}}" class="collapse col-md-9 px-1">
+                    <div class="col-md-9 px-1">
                       <div class="accordion-inner">
                         <p class="card-text small mb-1">{{exp.description|default:"<em>No description</em>"|bleach}}</p>
                         <div id="private-recent-datasets-{{exp.id}}"></div>
                       </div> {% comment %}class="accordion-inner"{% endcomment %}
                     </div>
                   </div>
-              </div> <!-- card-body -->
+              </div>
           </div>
         {% endfor %}
     </div>
@@ -91,8 +93,8 @@
     {% endwith %}
     <div id="public-experiments" class="experiments">
         {% for exp in public_experiments %}
-          <div class="card mb-2" style="background-color: #f5fbff">
-            <div class="card-header" style="background-color: rgba(0, 0, 0, 0);" data-parent="#public-experiments">
+          <div class="card mb-2">
+            <div class="card-header" data-parent="#public-experiments">
               <div class="row">
                 <div id="public-toggle-{{exp.id}}"
                    class="accordion-toggle public-experiment col-md-8 px-1"
@@ -110,7 +112,7 @@
                 </div>
               </div>
               <div class="row">
-                <div class="card-subtitle text-muted col-6 px-1">
+                <div class="card-subtitle text-muted small col-6 px-1">
                   {% for author in exp.experimentauthor_set.all %}
                     <span property="dc:author">{{ author.author }}{% if not forloop.last %}, {% endif %}</span>
                   {% endfor %}
@@ -132,8 +134,10 @@
                 </span>
                 </div>
               </div>
+            </div>
+            <div id="collapsepub-{{exp.id}}" class="card-body py-2 collapse" data-parent="#public-experiments">
               <div class="row">
-                <div id="collapsepub-{{exp.id}}" class="collapse col-md-9 px-1">
+                <div class="col-md-9 px-1">
                   <div class="accordion-inner">
                     <p class="card-text small mb-1">{{exp.description|default:"<em>No description</em>"|bleach}}</p>
                     <div id="public-recent-datasets-{{exp.id}}"></div>
