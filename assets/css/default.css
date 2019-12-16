@@ -195,10 +195,6 @@ i.group-icon :hover {
 }
 
 .experiments .card-body {
-    -webkit-border-radius: 0px;
-    -moz-border-radius: 0px;
-    border-radius: 0px;
-    border: none;
     background-color: #E8F6FF;
 }
 
@@ -207,7 +203,6 @@ i.group-icon :hover {
     padding-top: 5px;
     padding-left: 5px;
 }
-
 
 /* index page */
 .experiments .accordion-toggle .explink {
@@ -218,9 +213,6 @@ i.group-icon :hover {
 }
 .experiments .card-header {
     border: none;
-    -webkit-border-radius: 0px;
-    -moz-border-radius: 0px;
-    border-radius: 0px;
     background-color: #F5FBFF;
 }
 .experiments .nav .nav-header {
@@ -248,26 +240,12 @@ i.group-icon :hover {
 .mydata .accordion-toggle .badgelist {
     margin-bottom: 4px;
 }
-.mydata .card-body {
-    -webkit-border-radius: 0px;
-    -moz-border-radius: 0px;
-    border-radius: 0px;
-    border: none;
-    background-color: #E8F6FF;
-}
 .mydata .card-body p {
     width: 75%;
 }
 .mydata .card-body .thumbnails li {
     margin-bottom: 5px;
     margin-top: 2px;
-}
-.mydata .card-header {
-    border: none;
-    -webkit-border-radius: 0px;
-    -moz-border-radius: 0px;
-    border-radius: 0px;
-    background-color: #F5FBFF;
 }
 .mydata .nav .nav-header {
     font-size: 11px;
