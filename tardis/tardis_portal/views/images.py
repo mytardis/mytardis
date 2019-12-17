@@ -25,7 +25,7 @@ def load_image(request, parameter):
 
     from wsgiref.util import FileWrapper
     try:
-        wrapper = FileWrapper(open(file_path))
+        wrapper = FileWrapper(open(file_path, 'rb'))
     except IOError:
         return HttpResponseNotFound()
     return HttpResponse(wrapper, content_type=parameter.name.units)
