@@ -40,7 +40,8 @@ class ParameterTestCase(ModelTestCase):
         df_file = DataFile(dataset=dataset,
                            filename='file.txt',
                            size=42,
-                           md5sum='bogus')
+                           algorithm='md5',
+                           checksum='bogus')
         df_file.save()
 
         df_schema = Schema(
