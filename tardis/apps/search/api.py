@@ -113,13 +113,13 @@ class SearchAppResource(Resource):
         for item in results:
             for hit in item.hits.hits:
                 if hit["_index"] == "dataset":
-                    result_dict["datasets"].append(hit)
+                    result_dict["datasets"].append(hit.to_dict())
 
                 elif hit["_index"] == "experiments":
-                    result_dict["experiments"].append(hit)
+                    result_dict["experiments"].append(hit.to_dict())
 
                 elif hit["_index"] == "datafile":
-                    result_dict["datafiles"].append(hit)
+                    result_dict["datafiles"].append(hit.to_dict())
 
         return [SearchObject(id=1, hits=result_dict)]
 
@@ -151,13 +151,13 @@ def simple_search_public_data(query_text):
     for item in results:
         for hit in item.hits.hits:
             if hit["_index"] == "dataset":
-                result_dict["datasets"].append(hit)
+                result_dict["datasets"].append(hit.to_dict())
 
             elif hit["_index"] == "experiments":
-                result_dict["experiments"].append(hit)
+                result_dict["experiments"].append(hit.to_dict())
 
             elif hit["_index"] == "datafile":
-                result_dict["datafiles"].append(hit)
+                result_dict["datafiles"].append(hit.to_dict())
     return result_dict
 
 
@@ -276,13 +276,13 @@ class AdvanceSearchAppResource(Resource):
         for item in result:
             for hit in item.hits.hits:
                 if hit["_index"] == "dataset":
-                    result_dict["datasets"].append(hit)
+                    result_dict["datasets"].append(hit.to_dict())
 
                 elif hit["_index"] == "experiments":
-                    result_dict["experiments"].append(hit)
+                    result_dict["experiments"].append(hit.to_dict())
 
                 elif hit["_index"] == "datafile":
-                    result_dict["datafiles"].append(hit)
+                    result_dict["datafiles"].append(hit.to_dict())
 
         if bundle.request.method == 'POST':
             bundle.obj = SearchObject(id=1, hits=result_dict)
