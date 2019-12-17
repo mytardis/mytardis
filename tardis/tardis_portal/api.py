@@ -843,7 +843,8 @@ class DataFileResource(MyTardisModelResource):
                         args = [
                             dfo.id,
                             dfo.get_full_path(),
-                            'verify_file'
+                            'verify_file',
+                            dfo.datafile.algorithm
                         ],
                         queue = 'verify',
                         priority = get_verify_priority(dfo.priority))

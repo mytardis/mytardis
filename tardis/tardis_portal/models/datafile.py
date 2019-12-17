@@ -520,7 +520,8 @@ class DataFileObject(models.Model):
                         args = [
                             self.id,
                             self.get_full_path(),
-                            'save'
+                            'save',
+                            self.datafile.algorithm
                         ],
                         queue = 'verify',
                         priority = get_verify_priority(self.priority))
@@ -660,7 +661,8 @@ class DataFileObject(models.Model):
                             args = [
                                 existing[0].id,
                                 existing[0].get_full_path(),
-                                'copy_file'
+                                'copy_file',
+                                existing[0].datafile.algorithm
                             ],
                             queue = 'verify',
                             priority = get_verify_priority(existing[0].priority))
@@ -694,7 +696,8 @@ class DataFileObject(models.Model):
                         args = [
                             copy.id,
                             copy.get_full_path(),
-                            'copy_file'
+                            'copy_file',
+                            copy.datafile.algorithm
                         ],
                         queue = 'verify',
                         priority = get_verify_priority(copy.priority))
