@@ -40,7 +40,7 @@ $(document).ready(function() {
     expandFirstExperiments();
 });
 
-$(document).on("click", ".pagelink", function() {
+$(document).on("click", ".page-link", function() {
     var loadingHTML = "<img src=\"/static/images/ajax-loader.gif\"/><br />";
     var href = $(this).attr("href");
     $(this).html(loadingHTML);

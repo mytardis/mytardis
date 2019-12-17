@@ -73,9 +73,11 @@ def they_see_the_dataset_with_files(context):
     datafiles_tbody = context.browser.find_element_by_css_selector("table.datafiles tbody")
     context.test.assertIn("testfile1.txt", datafiles_tbody.get_attribute("innerHTML"))
     context.test.assertIn("testfile2.txt", datafiles_tbody.get_attribute("innerHTML"))
-
+    """
+    datafile_list_tab = context.browser.find_element_by_id("datafile-list")
+    datafile_list_tab.click()
     datafile_info_toggle = context.browser.find_element_by_css_selector(".datafile-info-toggle")
     datafile_info_toggle.click()
-
     no_metadata_msg = context.browser.find_element_by_css_selector(".datafile_parameters em")
     context.test.assertIn("There is no metadata for this file", no_metadata_msg.get_attribute("innerHTML"))
+    """

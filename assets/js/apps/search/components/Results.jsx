@@ -1,7 +1,7 @@
-import React from "react";
-import PropTypes from "prop-types";
+import React from 'react';
+import PropTypes from 'prop-types';
 
-import Result from "./Result";
+import Result from './Result';
 
 function Results({ results, counts }) {
   return (
@@ -10,38 +10,62 @@ function Results({ results, counts }) {
         <h2>Search Results </h2>
       </div>
       <div id="tabbed-pane" className="container">
-        <ul className="nav nav-tabs" style={{ fontWeight: 600 }}>
-          <li className="active">
-            <a href="#1a" data-toggle="tab">
+        <ul className="nav nav-tabs" style={{ fontWeight: 600 }} id="searchTab" role="tablist">
+          <li className="nav-item">
+            <a
+              className="nav-link active"
+              id="experiments-tab"
+              data-toggle="tab"
+              href="#experiments"
+              role="tab"
+              aria-controls="experiments"
+              aria-selected="true"
+            >
               <i className="fa fa-flask fa-2x" />
               Experiments
-              <span className="badge badge-light">{counts.experimentsCount}</span>
+              <span className="badge badge-secondary count-badge">{counts.experimentsCount}</span>
             </a>
           </li>
-          <li>
-            <a href="#2a" data-toggle="tab">
+          <li className="nav-item">
+            <a
+              className="nav-link"
+              id="datasets-tab"
+              data-toggle="tab"
+              href="#datasets"
+              role="tab"
+              aria-controls="profile"
+              aria-selected="false"
+            >
               <i className="fa fa-folder fa-2x" />
               Datasets
-              <span className="badge badge-light">{counts.datasetsCount}</span>
+              <span className="badge badge-secondary count-badge">{counts.datasetsCount}</span>
             </a>
           </li>
-          <li>
-            <a href="#3a" data-toggle="tab">
+          <li className="nav-item">
+            <a
+              className="nav-link"
+              id="datafiles-tab"
+              data-toggle="tab"
+              href="#datafiles"
+              role="tab"
+              aria-controls="contact"
+              aria-selected="false"
+            >
               <i className="fa fa-file fa-2x" />
               Datafiles
-              <span className="badge badge-light">{counts.datafilesCount}</span>
+              <span className="badge badge-secondary count-badge">{counts.datafilesCount}</span>
             </a>
           </li>
         </ul>
-        <div className="tab-content">
-          <div className="tab-pane active" id="1a">
+        <div className="tab-content" id="myTabContent">
+          <div className="tab-pane fade show active" id="experiments" role="tabpanel" aria-labelledby="experiments-tab">
             <div className="result-list">
               { counts.experimentsCount === 0
                 ? <span>No matching experiment found.</span> : <span /> }
               {results.map(
                 (result) => {
-                  let res = "";
-                  if (result.type === "experiment") {
+                  let res = '';
+                  if (result.type === 'experiment') {
                     res = <Result key={result.id} result={result} />;
                   }
                   return res;
@@ -49,15 +73,15 @@ function Results({ results, counts }) {
               )}
             </div>
           </div>
-          <div className="tab-pane" id="2a">
+          <div className="tab-pane fade" id="datasets" role="tabpanel" aria-labelledby="datasets-tab">
             <div className="result-list">
               { counts.datasetsCount === 0
                 ? <span>No matching dataset found.</span> : <span />
               }
               {results.map(
                 (result) => {
-                  let res = "";
-                  if (result.type === "dataset") {
+                  let res = '';
+                  if (result.type === 'dataset') {
                     res = <Result key={result.id} result={result} />;
                   }
                   return res;
@@ -65,15 +89,15 @@ function Results({ results, counts }) {
               )}
             </div>
           </div>
-          <div className="tab-pane" id="3a">
+          <div className="tab-pane fade" id="datafiles" role="tabpanel" aria-labelledby="datafiles-tab">
             <div className="result-list">
               { counts.datafilesCount === 0
                 ? <span>No matching datafile found.</span> : <span />
               }
               {results.map(
                 (result) => {
-                  let res = "";
-                  if (result.type === "datafile") {
+                  let res = '';
+                  if (result.type === 'datafile') {
                     res = <Result key={result.id} result={result} />;
                   }
                   return res;

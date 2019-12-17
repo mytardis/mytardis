@@ -4,9 +4,9 @@ Testing the serializer in the Tastypie-based MyTardis REST API
 .. moduleauthor:: Grischa Meyer <grischa@gmail.com>
 .. moduleauthor:: James Wettenhall <james.wettenhall@monash.edu>
 '''
-from django.test import TestCase
+import importlib
 
-from six.moves import reload_module
+from django.test import TestCase
 
 
 class SerializerTest(TestCase):
@@ -26,12 +26,12 @@ class SerializerTest(TestCase):
         with self.settings(DEBUG=False):
             # pylint: disable=import-outside-toplevel
             import tardis.tardis_portal.api
-            reload_module(tardis.tardis_portal.api)
+            importlib.reload(tardis.tardis_portal.api)
             self.assertEqual(
                 type(tardis.tardis_portal.api.default_serializer).__name__,
                 'Serializer')
         with self.settings(DEBUG=True):
-            reload_module(tardis.tardis_portal.api)
+            importlib.reload(tardis.tardis_portal.api)
             self.assertEqual(
                 type(tardis.tardis_portal.api.default_serializer).__name__,
                 'PrettyJSONSerializer')

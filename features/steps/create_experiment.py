@@ -133,6 +133,7 @@ def they_see_the_change_public_access_form(context):
     form = context.browser.find_element_by_css_selector("form.experiment-rights")
     context.test.assertIn(
         "/ajax/experiment/%s/rights" % exp_id, form.get_attribute("action"))
-    close_link = context.browser.find_element_by_css_selector("#modal-public-access a.close")
+    close_link = context.browser.\
+        find_element_by_css_selector("#modal-public-access > div > div > div.modal-header > button > span")
     close_link.click()
     time.sleep(0.5)

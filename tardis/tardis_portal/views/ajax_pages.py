@@ -247,14 +247,14 @@ def retrieve_datafile_list(
     paginator = Paginator(dataset_results, pgresults)
 
     try:
-        page = int(request.GET.get('page', '1'))
+        page_num = int(request.GET.get('page', '0'))
     except ValueError:
-        page = 1
+        page_num = 0
 
     # If page request (9999) is out of range, deliver last page of results.
 
     try:
-        dataset = paginator.page(page)
+        dataset = paginator.page(page_num + 1)
     except (EmptyPage, InvalidPage):
         dataset = paginator.page(paginator.num_pages)
 
@@ -269,10 +269,13 @@ def retrieve_datafile_list(
 
     immutable = Dataset.objects.get(id=dataset_id).immutable
 
+    query_string = '/ajax/datafile_list/%s/?page={page}' % dataset_id
+
     c = {
         'datafiles': dataset,
         'datafile_count': dataset_results.count(),
         'paginator': paginator,
+        'page_num': page_num,
         'immutable': immutable,
         'dataset': Dataset.objects.get(id=dataset_id),
         'filename_search': filename_search,
@@ -280,6 +283,7 @@ def retrieve_datafile_list(
         'has_download_permissions': has_download_permissions,
         'has_write_permissions': has_write_permissions,
         'params': urlencode(params),
+        'query_string': query_string,
     }
     _add_protocols_and_organizations(request, None, c)
     return render_response_index(request, template_name, c)

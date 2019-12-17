@@ -1,14 +1,26 @@
+{% load widget_tweaks %}
 {% if not user_created %}
 <div class="user_create">
-    <p>
       {% for field in createUserPermissionsForm %}
-        <p>{{ field.label }}:<br/> {{ field }}</p>
+        <div class="form-group">
+          <label class="col-form-label-sm py-0" for="{{field.name}}">{{field.label}}</label>
+          <div class="col-md-9 pl-0">
+            {{ field | add_class:"form-control" }}
+          </div>
+        </div>
       {% endfor %}
-      <a class="form_submit btn btn-primary" id="user" href="">
-        <i class="fa fa-plus"></i>
-        Create User
-      </a>
-    </p>
+
+      <div class="form-group text-right">
+        <button type="button" class="cancel-button btn btn-outline-secondary"
+                data-dismiss="modal">
+          <i class="fa fa-close"></i>
+          Cancel
+        </button>
+        <button type="button" class="form_submit btn btn-primary" id="user" href="">
+          <i class="fa fa-plus"></i>
+          Create User
+        </button>
+      </div>
 </div>
 {% else %}
 Created user: {{user_created}}

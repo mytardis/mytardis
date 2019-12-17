@@ -1,10 +1,9 @@
-Django==2.2.7 # pyup: >=2.2,<3
+Django==2.2.8 # pyup: >=2.2,<3
 Wand==0.5.7
 amqp==2.5.2
 bleach==3.1.0
 boto3==1.9.242
 celery==4.3.0
-django-bootstrap-form==3.4
 django-extensions==2.2.3
 django-elasticsearch-dsl==6.4.2
 git+https://github.com/mytardis/django-form-utils.git@django-1.11-upgrade#egg=django-form-utils
@@ -14,6 +13,7 @@ django-tastypie==0.14.2
 git+https://github.com/mytardis/django-tastypie-swagger.git@mytardis-dj2.0#egg=django-tastypie-swagger
 django-user-agents==0.4.0
 django-webpack-loader==0.6.0
+django-widget-tweaks==1.4.5
 elasticsearch==6.4.0 # pyup: <7.0
 django-storages==1.7.2
 gunicorn==19.9.0
@@ -34,5 +34,3 @@ git+https://github.com/mytardis/python-magic.git#egg=python-magic
 pytz==2019.2
 requests==2.22.0
 uritemplate==3.0.0
-django-webpack-loader==0.6.0
-xxhash==1.4.3

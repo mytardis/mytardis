@@ -1,10 +1,11 @@
 import os
 import unittest
 
+from io import StringIO
+
 from django.core.management import call_command
 from django.conf import settings
 from django.contrib.auth.models import User
-from django.utils.six import StringIO
 from django.test import TestCase, modify_settings, override_settings
 
 from tardis.tardis_portal.models import Experiment, Dataset, DataFile
