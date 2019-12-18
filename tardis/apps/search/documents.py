@@ -42,15 +42,13 @@ class ExperimentDocument(Document):
     start_time = fields.DateField()
     end_time = fields.DateField()
     update_time = fields.DateField()
-    institution_name = fields.StringField()
+    institution_name = fields.KeywordField()
     created_by = fields.ObjectField(properties={
-        'username': fields.StringField(
-            fields={'raw': fields.KeywordField()},
-        )
+        'username': fields.KeywordField()
     })
     objectacls = fields.ObjectField(properties={
-        'pluginId': fields.StringField(),
-        'entityId': fields.StringField()
+        'pluginId': fields.KeywordField(),
+        'entityId': fields.KeywordField()
     }
     )
 
@@ -85,8 +83,8 @@ class DatasetDocument(Document):
                     }
         ),
         'objectacls': fields.ObjectField(properties={
-            'pluginId': fields.StringField(),
-            'entityId': fields.StringField()
+            'pluginId': fields.KeywordField(),
+            'entityId': fields.KeywordField()
         }
         ),
         'public_access': fields.IntegerField()
@@ -116,6 +114,9 @@ class DatasetDocument(Document):
 
 @registry.register_document
 class DataFileDocument(Document):
+    def parallel_bulk(self, actions, **kwargs):
+        Document.parallel_bulk(self, actions=actions, chunk_size=10000, thread_count=8)
+
     class Index:
         name = 'datafile'
         settings = {'number_of_shards': 1,
@@ -131,8 +132,8 @@ class DataFileDocument(Document):
         'experiments': fields.NestedField(properties={
             'id': fields.IntegerField(),
             'objectacls': fields.ObjectField(properties={
-                'pluginId': fields.StringField(),
-                'entityId': fields.StringField()
+                'pluginId': fields.KeywordField(),
+                'entityId': fields.KeywordField()
             }
             ),
             'public_access': fields.IntegerField()
