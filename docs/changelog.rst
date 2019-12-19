@@ -1,6 +1,20 @@
 Releases
 ========
 
+4.2.0
+-----
+* Upgraded Django to 2.2.6
+* Dropped support for Python 2
+* Dataset view now includes a tree file browser
+* Upgraded Bootstrap to 4.1.3
+
+4.1.5
+-----
+* Update AngularJS to address the SNYK-JS-ANGULAR-534884 vulnerability.
+* Update the handlebars version in package-lock.json to avoid having
+  "npm install" report high severity vulnerabilities.
+* Fix the dataset metadata API test which was failing on Python 3.5.
+
 4.1.4
 -----
 * Fixed duplicate form submission bugs for create experiment/dataset

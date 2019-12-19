@@ -2,10 +2,11 @@ import os
 import json
 import unittest
 
+from io import StringIO
+
 from django.test import modify_settings, override_settings
 from django.core.management import call_command
 from django.conf import settings
-from django.utils.six import StringIO
 
 from tardis.tardis_portal.models import Dataset, DataFile
 from tardis.tardis_portal.tests.api import MyTardisResourceTestCase

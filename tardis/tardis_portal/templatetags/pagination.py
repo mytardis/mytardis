@@ -15,10 +15,10 @@ def paginator_number(data_list, paginator, page_num, query_string, page_index):
     Generates an individual page index link in a paginated list.
     """
     if page_index == DOT:
-        return mark_safe('<li class="disabled"><a href="#">...</a></li> ')
+        return mark_safe('<li class=" page-item disabled"><a class="page-link" href="#">...</a></li> ')
     if page_index == page_num:
-        return format_html('<li class="active"><span>{}</span></li> ', page_index + 1)
-    return format_html('<li><a class="pagelink" href="{}"{}>{}</a></li> ',
+        return format_html('<li class="page-item active"><span class="page-link">{}</span></li> ', page_index + 1)
+    return format_html('<li class="page-item"><a class="page-link" href="{}"{}>{}</a></li> ',
                        query_string.format(page=page_index),
                        mark_safe(' class="end"' if page_index == paginator.num_pages - 1 else ''),
                        page_index + 1)

@@ -5,8 +5,6 @@ Testing the StorageBox resources in MyTardis's Tastypie-based REST API
 '''
 import json
 
-import six
-
 from ...models.storage import StorageBox
 
 from . import MyTardisResourceTestCase
@@ -25,7 +23,7 @@ class StorageBoxResourceTest(MyTardisResourceTestCase):
             authentication=self.get_admin_credentials())
         self.assertHttpOK(response)
         returned_data = json.loads(response.content.decode())
-        for key, value in six.iteritems(expected_output):
+        for key, value in expected_output.items():
             self.assertTrue(key in returned_data)
             self.assertEqual(returned_data[key], value)
 
@@ -45,7 +43,7 @@ class StorageBoxOptionResourceTest(MyTardisResourceTestCase):
             authentication=self.get_credentials())
         self.assertHttpOK(response)
         returned_data = json.loads(response.content.decode())
-        for key, value in six.iteritems(expected_output):
+        for key, value in expected_output.items():
             self.assertTrue(key in returned_data)
             self.assertEqual(returned_data[key], value)
 
@@ -64,7 +62,7 @@ class StorageBoxOptionResourceTest(MyTardisResourceTestCase):
         returned_data = json.loads(response.content.decode())
         self.assertEqual(returned_data['meta']['total_count'], 1)
         returned_option = returned_data['objects'][0]
-        for key, value in six.iteritems(expected_output):
+        for key, value in expected_output.items():
             self.assertTrue(key in returned_option)
             self.assertEqual(returned_option[key], value)
 

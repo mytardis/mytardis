@@ -36,12 +36,11 @@ forms module
 .. moduleauthor::  Gerson Galang <gerson.galang@versi.edu.au>
 
 '''
-from collections import OrderedDict
 import logging
 import re
 
-import six
-from six.moves import UserDict
+from collections import OrderedDict
+from collections import UserDict
 
 from django import forms
 from django.contrib.sites.shortcuts import get_current_site
@@ -354,9 +353,6 @@ class ExperimentForm(forms.ModelForm):
                 "(http://nla.gov.au/nla.party-1480342)"}),
             help_text="Comma-separated authors and optional emails/URLs")
 
-        for _, field in self.fields.items():
-            field.widget.attrs['class'] = "col-md-8"
-
     def _format_author(self, author):
         if author.email or author.url:
             author_contacts = [author.email, author.url]
@@ -513,7 +509,7 @@ def create_parameterset_edit_form(parameterset, request=None):
     if request:
         fields = OrderedDict()
 
-        for key, value in sorted(six.iteritems(request.POST)):
+        for key, value in sorted(request.POST.items()):
 
             x = 1
             stripped_key = key.replace('_s47_', '/')
@@ -590,20 +586,24 @@ def create_parameterset_edit_form(parameterset, request=None):
                 {'base_fields': fields})
 
 
-def save_datafile_edit_form(parameterset, request):
+def save_parameter_edit_form(parameterset, request):
 
     psm = ParameterSetManager(parameterset=parameterset)
     psm.delete_all_params()
 
-    for key, value in sorted(six.iteritems(request.POST)):
+    for key, value in sorted(request.POST.items()):
         if value:
             stripped_key = key.replace('_s47_', '/')
             stripped_key = stripped_key.rpartition('__')[0]
 
             psm.new_param(stripped_key, value)
 
+    psm = ParameterSetManager(parameterset=parameterset)
+    if not psm.parameters.exists():
+        parameterset.delete()
 
-def create_datafile_add_form(schema, parentObject, request=None):
+
+def create_parameter_add_form(schema, parentObject, request=None):
 
     from .models import ParameterName
 
@@ -611,7 +611,7 @@ def create_datafile_add_form(schema, parentObject, request=None):
     if request:
         fields = OrderedDict()
 
-        for key, value in sorted(six.iteritems(request.POST)):
+        for key, value in sorted(request.POST.items()):
 
             x = 1
 
@@ -686,12 +686,12 @@ def create_datafile_add_form(schema, parentObject, request=None):
                 {'base_fields': fields})
 
 
-def save_datafile_add_form(schema, parentObject, request):
+def save_parameter_add_form(schema, parentObject, request):
 
     psm = ParameterSetManager(schema=schema,
                               parentObject=parentObject)
 
-    for key, value in sorted(six.iteritems(request.POST)):
+    for key, value in sorted(request.POST.items()):
         if value:
             stripped_key = key.replace('_s47_', '/')
             stripped_key = stripped_key.rpartition('__')[0]
