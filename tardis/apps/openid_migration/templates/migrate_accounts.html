@@ -1,10 +1,8 @@
 {% extends "tardis_portal/portal_template.html" %}
-{% load bootstrap %}
 {% load static from staticfiles %}
+{% load widget_tweaks %}
 
 {% block script %}
-
-  {% include "tardis_portal/javascript_libraries.html" %}
 
 {% endblock %}
 
@@ -32,22 +30,30 @@
     {% endif %}
     </div>
 <div id="authForm" class="container-fluid">
-    <div id="step">
+    <div id="step1">
         <b>Step 1:</b>
             The account you are going to migrate your settings and data from
 
     </div>
-    <div class="row-fluid col-wrap">
-        <div class="span4 login-box col">
-            <form id="authForm" class="form-horizontal" style="padding-top: 20px ; ">
+    <div class="row col-wrap">
+        <div class="col-md-4 login-box col">
+            <form class="form-horizontal" style="padding-top: 20px ; ">
                 {% csrf_token %}
-                {% for field in authForm %}
-                     {{ field|bootstrap }}
-                {% endfor %}
-
-                <div class="control-group">
-                  <div class="controls">
-                    <button type="submit" id="verify-my-account" class="btn btn-info btn-small">
+                <div class="form-group row">
+                  <label class="col-form-label col-md-2" for="id_username">Username</label>
+                  <div class="col-md-10 ">
+                    {{ authForm.username | add_class:"form-control" }}
+                  </div>
+                </div>
+                <div class="form-group row">
+                  <label class="col-form-label col-md-2" for="id_password">Password</label>
+                  <div class="col-md-10 ">
+                    {{ authForm.password | add_class:"form-control" }}
+                  </div>
+                </div>
+                <div class="form-group row">
+                  <div class="offset-md-2 col-md-10">
+                    <button type="submit" id="verify-my-account" class="btn btn-info btn-sm">
                         <i class="fa fa-sign-in"></i> Verify my Account
                     </button>
                   </div>
@@ -59,31 +65,36 @@
 </div> <!-- authForm -->
 
 <div id="template-block" style="display: none">
-    <p class="alert-error-msg alert alert-error">
+    <p class="alert-error-msg alert alert-danger alert-dismissible">
         <a class="close" data-dismiss="alert">&times;</a>
         <span class="msg"></span>
     </p>
 </div>
 <div id="confirm-migrate" class="container-fluid" style="display: none">
-    <div id="step">
+    <div id="step2">
         <b>Step 2: </b>
             Are you sure you want to migrate all the data,
         groups and instrument associations, and setting between the following accounts?
 
     </div>
-    <div class="row-fluid" style="margin-top: 30px">
-        <div class="span3" style="text-align: center">
+    <div class="row" style="margin-top: 30px">
+        <div class="col-md-3" style="text-align: center">
             <h3>Legacy<br>Authentication</h3>
         </div>
-        <div class="span3 offset2" style="text-align: center">
-            <img id="aaf_img" src="{% static 'openid_migration/images/aaf-logo.png' %}" class="center-image" style="display: none">
-            <img id="google_img" src="{% static 'openid_migration/images/google-logo.png' %}" class="center-image" style="display: none">
+        <div class="col-md-2"></div>
+        <div class="col-md-3 col-md-offset-2" style="text-align: center">
+            <img id="aaf_img" alt="AAF"
+                 src="{% static 'openid_migration/images/aaf-logo.png' %}"
+                 class="center-image" style="display: none">
+            <img id="google_img" alt="Google"
+                 src="{% static 'openid_migration/images/google-logo.png' %}"
+                 class="center-image" style="display: none">
         </div>
     </div>
-    <div class="row-fluid" style="margin-top: 10px">
-        <div class="span3" style="text-align: center">
+    <div class="row" style="margin-top: 10px">
+        <div class="col-md-3" style="text-align: center">
             <div id="source" style="font-weight: bold; text-align: center">Old User</div>
-            <div id="user-table" style="margin-top: 20px">
+            <div id="old-user-table" style="margin-top: 20px">
                 <table class="table table-bordered" >
                     <tbody>
                         <tr id="old_username">
@@ -97,15 +108,15 @@
             </div>
         </div>
 
-        <div class="span2" style="text-align: center">
+        <div class="col-md-2" style="text-align: center">
             <div id="spinner" style="display: none">
                 <i id="mo-spin-icon" class="fa fa-spinner fa-pulse fa-5x"></i>
             </div>
             <i class="fa fa-angle-double-right fa-3x"></i>
         </div>
-        <div class="span3" style="text-align: center">
+        <div class="col-md-3" style="text-align: center">
             <div id="current" style="font-weight: bold; text-align: center">New User</div>
-            <div id="user-table" style="margin-top: 20px">
+            <div id="new-user-table" style="margin-top: 20px">
                 <table class="table table-bordered" >
                     <tbody>
                         <tr id="new_username">
@@ -119,8 +130,8 @@
             </div>
         </div>
     </div>
-    <div class="row-fluid">
-        <div id="confirm_button" class="confirm-buttons span8">
+    <div class="row">
+        <div id="confirm_button" class="confirm-buttons col-md-8">
         <button type="button" class="btn btn-success" id="confirm_true">Migrate</button>
         <button type="button" class="btn btn-danger"  id="confirm_false">Cancel</button>
     </div>
@@ -128,13 +139,10 @@
 
 </div>
 <div id="migration-failed-message" style="display: none">
-    <p class="alert-info-msg alert alert-error">
+    <p class="alert-info-msg alert alert-danger">
          <span class="msg">Something went wrong. An email has been sent to your {{site_title}} administrator.
          </span>
     </p>
-</div>
-
-    </div>
 </div>
 
 <input type="hidden" id="csrf-token" value="{{ csrf_token }}">

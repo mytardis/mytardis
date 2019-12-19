@@ -1,7 +1,6 @@
 from tardis.default_settings import USER_MENU_MODIFIERS
 
 SFTP_PORT = 2200
-SFTP_GEVENT = False
 # SFTP_HOST_KEY = (
 #     "-----BEGIN RSA PRIVATE KEY-----\n"
 #     "...\n"

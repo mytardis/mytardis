@@ -11,6 +11,7 @@ from django.urls import reverse
 from celery.task import task
 
 from tardis.tardis_portal.models import UserAuthentication
+from tardis.tardis_portal.auth.utils import configure_user
 
 from tardis.apps.openid_migration.models import OpenidUserMigration
 from tardis.apps.social_auth import default_settings as social_auth_default_settings
@@ -18,6 +19,18 @@ from tardis.apps.openid_migration import default_settings as openid_migration_de
 from tardis import default_settings
 
 logger = logging.getLogger(__name__)
+
+
+def configure_social_auth_user(**kwargs):
+    """Applies configuration used for external (non-Django) accounts.
+
+    Adds user to settings.NEW_USER_INITIAL_GROUPS and sets isDjangoAccount
+    to False in their UserProfile, so that MyTardis won't allow them to
+    change their password.
+    """
+    user = kwargs.get('user')
+    configure_user(user)
+    return kwargs
 
 
 def add_authentication_method(**kwargs):
@@ -141,8 +154,9 @@ def send_admin_email(**kwargs):
 
 
 @task(name="social_auth_account_approved", ignore_result=True)
-def send_account_approved_email(user, authMethod):
+def send_account_approved_email(user_id, authMethod):
     """Sends user email once account is approved by admin"""
+    user = User.objects.get(id=user_id)
     site_title = getattr(settings, 'SITE_TITLE', 'MyTardis')
     # get instruction link from settings
     account_migration_instructions_links = getattr(
@@ -155,14 +169,14 @@ def send_account_approved_email(user, authMethod):
     message = (
         "Dear %s %s, \n\nWelcome to %s. \n\n"
         "Your account has been approved. "
-        "Please use  the \"Sign in with %s\" button on the login page to "
+        "Please use  the \"Log in with your %s\" link on the login page to "
         "log in to %s. "
         "If you have an existing %s account and would like to "
         "migrate your data and settings to your new account, "
         "follow the instructions on %s \n\n"
         "Thanks,\n"
         "%s Team\n"
-        % (user.first_name, user.last_name, site_title, authMethod,
+        % (user.first_name, user.last_name, site_title, 'Google Account',
            site_title, site_title, account_migration_instructions_link,
            site_title))
     try:

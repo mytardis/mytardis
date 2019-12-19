@@ -3,13 +3,13 @@ Tests relating to facility overview
 '''
 import json
 
+from io import BytesIO
+
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.auth.models import Group
 from django.test import RequestFactory
 from django.test import TestCase
-
-from six import BytesIO
 
 from ..models.datafile import DataFile
 from ..models.datafile import DataFileObject
@@ -56,8 +56,8 @@ class FacilityOverviewTestCase(TestCase):
         self.dataset.save()
 
         def _build(dataset, filename, url):
-            datafile_content = "\n".join(['some data %d' % i
-                                          for i in range(1000)])
+            datafile_content = b"\n".join([b'some data %d' % i
+                                           for i in range(1000)])
             filesize = len(datafile_content)
             datafile = DataFile(
                 dataset=dataset, filename=filename, size=filesize)
@@ -100,7 +100,7 @@ class FacilityOverviewTestCase(TestCase):
         request.user = self.user
         response = facility_overview_experiments(
             request, self.facility.id, start_index, end_index)
-        dataset_list = json.loads(response.content)
+        dataset_list = json.loads(response.content.decode())
         self.assertEqual(
             [dataset['description'] for dataset in dataset_list],
             [self.dataset.description])

@@ -6,10 +6,9 @@ Testing the Group resource in MyTardis's Tastypie-based REST API
 '''
 import json
 
-from django.contrib.auth.models import Group
+from urllib.parse import quote
 
-import six
-from six.moves import urllib
+from django.contrib.auth.models import Group
 
 from . import MyTardisResourceTestCase
 
@@ -22,10 +21,11 @@ class GroupResourceTest(MyTardisResourceTestCase):
             "id": group_id,
             "name": "Test Group",
         }
-        output = self.api_client.get('/api/v1/group/%d/' % group_id,
+        response = self.api_client.get('/api/v1/group/%d/' % group_id,
                                      authentication=self.get_credentials())
-        returned_data = json.loads(output.content)
-        for key, value in six.iteritems(expected_output):
+        self.assertHttpOK(response)
+        returned_data = json.loads(response.content.decode())
+        for key, value in expected_output.items():
             self.assertTrue(key in returned_data)
             self.assertEqual(returned_data[key], value)
 
@@ -35,11 +35,13 @@ class GroupResourceTest(MyTardisResourceTestCase):
             "id": group_id,
             "name": "Test Group",
         }
-        output = self.api_client.get(
-            '/api/v1/group/%d/?name=%s' %
-            (group_id, urllib.parse.quote(self.testgroup.name)),
+        response = self.api_client.get(
+            '/api/v1/group/?name=%s' % quote(self.testgroup.name),
             authentication=self.get_credentials())
-        returned_data = json.loads(output.content)
-        for key, value in six.iteritems(expected_output):
-            self.assertTrue(key in returned_data)
-            self.assertEqual(returned_data[key], value)
+        self.assertHttpOK(response)
+        returned_data = json.loads(response.content.decode())
+        self.assertEqual(returned_data['meta']['total_count'], 1)
+        returned_group = returned_data['objects'][0]
+        for key, value in expected_output.items():
+            self.assertTrue(key in returned_group)
+            self.assertEqual(returned_group[key], value)

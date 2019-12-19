@@ -3,29 +3,14 @@
 Filter Setup
 ============
 
-:mod:`~tardis.tardis_portal.filters`
+With the ``USE_FILTERS`` option set to True in settings,
+filters will be called once a file object has been verified.
 
+Filters allow post-processing of uploaded files and can be used to extract
+metadata from file headers and/or generate thumbnail images.
 
-Filters are called once an object has been saved to the database. They
-build on the `Django Signals Infrastructure`_.
+The DataFileObject's verify method submits a task called "mytardis.apply_filters"
+to the message broker (RabbitMQ).
 
-In the *settings.py* file filters are activated by specifying them
-within the ``POST_SAVE_FILTERS`` variable, for example
-
-.. code-block:: python
-
-   POST_SAVE_FILTERS = [
-       ("tardis.tardis_portal.filters.exif.EXIFFilter",
-        ["EXIF", "http://exif.schema"]),
-   ]
-
-The format they are specified in is
-
-.. code-block:: python
-
-   (<filter class path>, [args], {kwargs})
-
-Where ``args`` and ``kwargs`` are both optional.
-
-.. _`Django Signals Infrastructure`: https://docs.djangoproject.com/en/dev/topics/signals/
-
+This task can be picked up by the "mytardis-filters" microservice:
+https://github.com/mytardis/mytardis-filters or by your own custom microservice.

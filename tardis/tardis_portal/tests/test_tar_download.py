@@ -4,8 +4,8 @@ import os
 from tarfile import TarFile
 from tempfile import NamedTemporaryFile
 
-from six import BytesIO
-from six.moves import urllib
+from io import BytesIO
+from urllib.parse import quote
 
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -32,8 +32,8 @@ class TarDownloadTestCase(TestCase):
         self.ds = self.exp.datasets.create(
             description="testing tar download dataset")
 
-        datafile_content = "\n".join(['some data %d' % i
-                                      for i in range(1000)])
+        datafile_content = b"\n".join([b'some data %d' % i
+                                       for i in range(1000)])
         filesize = len(datafile_content)
         md5sum = hashlib.md5(datafile_content).hexdigest()
         # create test datafiles and datafile objects
@@ -68,7 +68,7 @@ class TarDownloadTestCase(TestCase):
             args=(self.exp.id, 'tar')))
         with NamedTemporaryFile('w') as tarfile:
             for c in response.streaming_content:
-                tarfile.write(c)
+                tarfile.write(c.decode())
             tarfile.flush()
             self.assertEqual(int(response['Content-Length']),
                              os.stat(tarfile.name).st_size)
@@ -77,12 +77,12 @@ class TarDownloadTestCase(TestCase):
                 exp_title = self.exp.title.replace(' ', '_')
             else:
                 exp_title = self.exp.title
-            exp_title = urllib.parse.quote(exp_title,
+            exp_title = quote(exp_title,
                               safe=settings.SAFE_FILESYSTEM_CHARACTERS)
             for df in self.dfs:
                 full_path = os.path.join(
                     exp_title,
-                    urllib.parse.quote(self.ds.description,
+                    quote(self.ds.description,
                           safe=settings.SAFE_FILESYSTEM_CHARACTERS),
                     df.directory, df.filename)
                 # docker has a file path limit of ~240 characters

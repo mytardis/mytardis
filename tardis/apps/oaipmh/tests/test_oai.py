@@ -243,9 +243,9 @@ class EndpointTestCase(TestCase):
         formats = xml.xpath('/o:OAI-PMH/o:ListMetadataFormats' +
                             '/o:metadataFormat/o:metadataPrefix',
                             namespaces=ns)
-        assert len(formats) == 2
-        assert formats[0].text == 'oai_dc'
-        assert formats[1].text == 'rif'
+        self.assertEqual(
+            sorted([fmt.text for fmt in formats]),
+            ['oai_dc', 'rif'])
         # With Identifier
         args = {
             'verb': 'ListMetadataFormats',
@@ -262,9 +262,9 @@ class EndpointTestCase(TestCase):
         formats = xml.xpath('/o:OAI-PMH/o:ListMetadataFormats' +
                             '/o:metadataFormat/o:metadataPrefix',
                             namespaces=ns)
-        assert len(formats) == 2
-        assert formats[0].text == 'oai_dc'
-        assert formats[1].text == 'rif'
+        self.assertEqual(
+            sorted([fmt.text for fmt in formats]),
+            ['oai_dc', 'rif'])
 
 
     def testListRecords(self):

@@ -1,6 +1,4 @@
 var sftp = (function() {
-    "use strict";
-
     function createKeyAlert(msg, level) {
         return "<div id='keyTable' class='alert alert-block alert-" + level + "'>\
         <span class='message'>" + msg + "</span> \
@@ -9,20 +7,20 @@ var sftp = (function() {
 
     function addKeyRow(rowData) {
         return "<tr id='keyRow" + rowData.id + "'>\
-        <td style='padding: 16px 20px'>\
-        <div class='row-fluid' id='center-content'>\
-        <div class='span10 pull-left'>\
-        <strong>" + rowData.name + "</strong><br>\
-        <span>Type: " + rowData.key_type.toUpperCase() + "</span><br>\
-        <span style='word-break: break-all;'>Fingerprint: " + rowData.fingerprint + "</span><br>\
-        <span>Date added: " + rowData.added + "</span>\
-        </div>\
-        <div class='span2 text-right pull-right'>\
-        <button id='delete-btn' class='btn' \
-        onclick='sftp.handleKeyDelete(" + rowData.id + ")'>\
-        <b>Delete<b></button>\
-        </div>\
-        </td></tr>";
+          <td style='padding: 16px 20px'>\
+              <div class='pull-left'>\
+                <strong>" + rowData.name + "</strong><br>\
+                <span>Type: " + rowData.key_type.toUpperCase() + "</span><br>\
+                <span style='word-break: break-all;'>Fingerprint: " + rowData.fingerprint + "</span><br>\
+                <span>Date added: " + rowData.added + "</span>\
+              </div>\
+            <div class='text-right pull-right'>\
+              <button id='delete-btn' class='btn btn-danger' \
+                      onclick='sftp.handleKeyDelete(" + rowData.id + ")'>\
+                <i class='fa fa-trash'></i>\
+                Delete\
+              </button>\
+          </td></tr>";
     }
 
     function createKeyTable(keyData) {
@@ -44,7 +42,7 @@ var sftp = (function() {
         }
 
         $.ajax(
-            "/api/v1/sftp/key/"
+            "/api/v1/sftp_publickey/"
         ).done(function(json, _textStatus, _jqXHR) {
             var objs = json.objects;
             if (objs.length > 0) {
@@ -62,7 +60,7 @@ var sftp = (function() {
 
     function handleKeyDelete(keyId) {
         $.ajax(
-            "/api/v1/sftp/key/" + keyId,
+            "/api/v1/sftp_publickey/" + keyId,
             {
                 method: "DELETE",
                 headers: {
@@ -103,7 +101,7 @@ var sftp = (function() {
                 }, {});
 
             $.ajax(
-                "/api/v1/sftp/key/",
+                "/api/v1/sftp_publickey/",
                 {
                     method: "POST",
                     headers: {
@@ -120,7 +118,7 @@ var sftp = (function() {
             }).fail(function(jqXHR, _textStatus, err) {
                 if (jqXHR.responseJSON !== "undefined") {
                     // eslint-disable-next-line dot-notation
-                    err = jqXHR.responseJSON["sftp/key"]["__all__"][0];
+                    err = jqXHR.responseJSON["sftp_publickey"]["__all__"][0];
                     $("#keyAddAlertMessage").text(err);
                     $("#keyAddAlert").show();
                 } else {
@@ -158,7 +156,6 @@ var sftp = (function() {
 }());
 
 $(document).on("submit", "#keyGenerateForm", function(e) {
-    "use strict";
     e.preventDefault();
     var url = $(this).prop("action");
     var method = $(this).prop("method");
@@ -200,7 +197,6 @@ $(document).on("submit", "#keyGenerateForm", function(e) {
 });
 
 $(document).ready(function() {
-    "use strict";
     sftp.loadKeyTable(false);
 });
 

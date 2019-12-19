@@ -36,10 +36,11 @@ forms module
 .. moduleauthor::  Gerson Galang <gerson.galang@versi.edu.au>
 
 '''
-from collections import OrderedDict
 import logging
+import re
 
-from six.moves import UserDict
+from collections import OrderedDict
+from collections import UserDict
 
 from django import forms
 from django.contrib.sites.shortcuts import get_current_site
@@ -48,16 +49,12 @@ from django.forms.utils import ErrorList
 from django.forms.models import ModelChoiceField
 from django.forms.widgets import HiddenInput
 from django.forms import ModelForm
-from django.contrib.auth.forms import AuthenticationForm
 from django.conf import settings
 from django.db import transaction
 from django.contrib.auth.models import User
 from django.utils.translation import ugettext_lazy as _
-from django.forms.widgets import SelectDateWidget
+from django.contrib.auth.forms import AuthenticationForm
 
-from haystack.forms import SearchForm
-
-from form_utils import forms as formutils
 from registration.models import RegistrationProfile
 
 from . import models
@@ -79,6 +76,9 @@ def getAuthMethodChoices():
     return authMethodChoices
 
 
+attrs_dict = {'class': 'required'}
+
+
 class LoginForm(AuthenticationForm):
     # authMethod = forms.CharField()
 
@@ -87,15 +87,6 @@ class LoginForm(AuthenticationForm):
         self.fields['username'] = forms.CharField(required=True,
                                                   label="Username",
                                                   max_length=75)
-
-        # authMethods = ((None, "Any"),) + getAuthMethodChoices()
-        # self.fields['authMethod'] = \
-        #     forms.CharField(required=True,
-        #                     widget=forms.Select(choices=authMethods),
-        #                     label='Authentication Method')
-
-
-attrs_dict = {'class': 'required'}
 
 
 class RegistrationForm(forms.Form):
@@ -181,37 +172,6 @@ class RegistrationForm(forms.Form):
         return user
 
 
-class ChangeUserPermissionsForm(ModelForm):
-
-    class Meta:
-        from .models import ObjectACL
-        model = ObjectACL
-        fields = [
-            'canDelete',
-            'canRead',
-            'canWrite',
-            'effectiveDate',
-            'expiryDate',
-            'isOwner',
-        ]
-        widgets = {
-            'expiryDate': SelectDateWidget(),
-            'effectiveDate': SelectDateWidget()}
-
-
-class ChangeGroupPermissionsForm(forms.Form):
-
-    canRead = forms.BooleanField(label='canRead', required=False)
-    canWrite = forms.BooleanField(label='canWrite', required=False)
-    canDelete = forms.BooleanField(label='', required=False,
-                                   widget=forms.HiddenInput)
-
-    effectiveDate = forms.DateTimeField(
-        label='Effective Date', widget=SelectDateWidget(), required=False)
-    expiryDate = forms.DateTimeField(
-        label='Expiry Date', widget=SelectDateWidget(), required=False)
-
-
 class AddUserPermissionsForm(forms.Form):
 
     entered_user = forms.CharField(
@@ -229,27 +189,6 @@ class AddUserPermissionsForm(forms.Form):
     delete = forms.BooleanField(label='', required=False,
                                 widget=forms.HiddenInput)
     delete.widget.attrs['class'] = 'canDelete'
-
-
-class AddGroupPermissionsForm(forms.Form):
-
-    addgroup = forms.CharField(label='Group', required=False, max_length=100)
-    addgroup.widget.attrs['class'] = 'groupsuggest'
-    authMethod = forms.CharField(
-        required=True,
-        widget=forms.Select(choices=getAuthMethodChoices()),
-        label='Authentication Method')
-
-
-class CreateGroupPermissionsForm(forms.Form):
-    addgroup = forms.CharField(label='Group', required=False, max_length=100)
-    addgroup.widget.attrs['class'] = 'groupsuggest'
-    authMethod = forms.CharField(
-        required=True,
-        widget=forms.Select(choices=getAuthMethodChoices()),
-        label='Authentication Method')
-    adduser = forms.CharField(label='User', required=False, max_length=100)
-    adduser.widget.attrs['class'] = 'usersuggest'
 
 
 class ManageGroupPermissionsForm(forms.Form):
@@ -414,9 +353,6 @@ class ExperimentForm(forms.ModelForm):
                 "(http://nla.gov.au/nla.party-1480342)"}),
             help_text="Comma-separated authors and optional emails/URLs")
 
-        for _, field in self.fields.items():
-            field.widget.attrs['class'] = "span8"
-
     def _format_author(self, author):
         if author.email or author.url:
             author_contacts = [author.email, author.url]
@@ -432,7 +368,6 @@ class ExperimentForm(forms.ModelForm):
             return []
 
         def build_dict(order, author_str):
-            import re
             author_str = author_str.strip()
             res = {'order': order}
             # check for email (contains @ sign and one dot after)
@@ -526,75 +461,6 @@ class ExperimentForm(forms.ModelForm):
         return True
 
 
-def createSearchExperimentForm():
-
-    from .models import ParameterName
-
-    fields = {}
-    fields['title'] = forms.CharField(label='Title',
-            max_length=20, required=False)
-    fields['description'] = forms.CharField(label='Experiment Description',
-            max_length=20, required=False)
-    fields['institutionName'] = forms.CharField(label='Institution Name',
-            max_length=20, required=False)
-    fields['creator'] = forms.CharField(label='Author\'s Name',
-            max_length=20, required=False)
-    fields['date'] = forms.DateTimeField(label='Experiment Date',
-            widget=SelectDateWidget(), required=False)
-
-    fieldsets = [('main fields', {'fields': ['title', 'description', 'institutionName', 'creator', 'date']})]
-
-    schemaAndFieldLists = []
-    experimentSchemata = models.Schema.objects.filter(type=models.Schema.EXPERIMENT)
-    for schema in experimentSchemata:
-        searchableParameterNames = \
-            schema.parametername_set.filter(is_searchable=True)
-        fieldNames = []
-        schemaAndFieldLists.append((schema, fieldNames))
-        for parameterName in searchableParameterNames:
-            fieldName = parameterName.getUniqueShortName()
-            if parameterName.data_type == ParameterName.NUMERIC:
-                if parameterName.comparison_type \
-                    == ParameterName.RANGE_COMPARISON:
-                    fields[fieldName + 'From'] = \
-                        forms.DecimalField(label=parameterName.full_name
-                            + ' From', required=False)
-                    fields[fieldName + 'To'] = \
-                        forms.DecimalField(label=parameterName.full_name
-                            + ' To', required=False)
-                    fieldNames.append(fieldName + 'From')
-                    fieldNames.append(fieldName + 'To')
-                else:
-                    # note that we'll also ignore the choices text box entry
-                    # even if it's filled if the parameter is of numeric type
-                    # TODO: decide if we are to raise an exception if
-                    #       parameterName.choices is not empty
-                    fields[fieldName] = \
-                        forms.DecimalField(label=parameterName.full_name,
-                            required=False)
-                    fieldNames.append(fieldName)
-            else:  # parameter is a string
-                if parameterName.choices != '':
-                    fields[fieldName] = \
-                        forms.CharField(label=parameterName.full_name,
-                        widget=forms.Select(choices=__getParameterChoices(
-                        parameterName.choices)), required=False)
-                else:
-                    fields[fieldName] = \
-                        forms.CharField(label=parameterName.full_name,
-                        max_length=255, required=False)
-                fieldNames.append(fieldName)
-
-    for schema, fieldlist in schemaAndFieldLists:
-        name = schema.name if schema.name is not None else 'No schema name'
-        if fieldlist:
-            fieldsets.append((name, {'fields': fieldlist}))
-
-    return type('SearchExperimentForm', (formutils.BetterBaseForm, forms.BaseForm, ),
-                {'base_fields': fields, 'base_fieldsets': fieldsets,
-                 'base_row_attrs': {}})
-
-
 def __getParameterChoices(choicesString):
     """Handle the choices string in this format:
     '(hello:hi how are you), (yes:i am here), (no:joe)'
@@ -604,8 +470,6 @@ def __getParameterChoices(choicesString):
     textbox.
 
     """
-
-    import re
     paramChoices = ()
 
     # we'll always add '-' as the default value for a dropdown menu just
@@ -645,7 +509,7 @@ def create_parameterset_edit_form(parameterset, request=None):
     if request:
         fields = OrderedDict()
 
-        for key, value in sorted(request.POST.iteritems()):
+        for key, value in sorted(request.POST.items()):
 
             x = 1
             stripped_key = key.replace('_s47_', '/')
@@ -722,20 +586,24 @@ def create_parameterset_edit_form(parameterset, request=None):
                 {'base_fields': fields})
 
 
-def save_datafile_edit_form(parameterset, request):
+def save_parameter_edit_form(parameterset, request):
 
     psm = ParameterSetManager(parameterset=parameterset)
     psm.delete_all_params()
 
-    for key, value in sorted(request.POST.iteritems()):
+    for key, value in sorted(request.POST.items()):
         if value:
             stripped_key = key.replace('_s47_', '/')
             stripped_key = stripped_key.rpartition('__')[0]
 
             psm.new_param(stripped_key, value)
 
+    psm = ParameterSetManager(parameterset=parameterset)
+    if not psm.parameters.exists():
+        parameterset.delete()
 
-def create_datafile_add_form(schema, parentObject, request=None):
+
+def create_parameter_add_form(schema, parentObject, request=None):
 
     from .models import ParameterName
 
@@ -743,7 +611,7 @@ def create_datafile_add_form(schema, parentObject, request=None):
     if request:
         fields = OrderedDict()
 
-        for key, value in sorted(request.POST.iteritems()):
+        for key, value in sorted(request.POST.items()):
 
             x = 1
 
@@ -818,29 +686,17 @@ def create_datafile_add_form(schema, parentObject, request=None):
                 {'base_fields': fields})
 
 
-def save_datafile_add_form(schema, parentObject, request):
+def save_parameter_add_form(schema, parentObject, request):
 
     psm = ParameterSetManager(schema=schema,
                               parentObject=parentObject)
 
-    for key, value in sorted(request.POST.iteritems()):
+    for key, value in sorted(request.POST.items()):
         if value:
             stripped_key = key.replace('_s47_', '/')
             stripped_key = stripped_key.rpartition('__')[0]
 
             psm.new_param(stripped_key, value)
-
-class RawSearchForm(SearchForm):
-
-    def search(self):
-        query = self.cleaned_data['q']
-        # NOTE: end_offset = 1 is just a quick hack way to stop haystack getting lots of search
-        # results even though we dont need them. Fix this to properly set rows=0
-        sqs = self.searchqueryset.facet('experiment_id_stored').raw_search(query, end_offset=1)
-        if self.load_all:
-            sqs = sqs.load_all()
-
-        return sqs
 
 
 class RightsForm(ModelForm):
@@ -848,9 +704,11 @@ class RightsForm(ModelForm):
     Form for changing public access and licence.
 
     """
+    legal_text = forms.CharField(label="Legal Text", widget=forms.HiddenInput())
+
     class Meta:
         model = Experiment
-        fields = ('public_access', 'license')
+        fields = ('public_access', 'license', 'legal_text')
         widgets = {
             'license': HiddenInput()
         }

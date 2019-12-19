@@ -2,6 +2,7 @@
 import json
 import requests
 
+from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse
 from django.http import HttpResponse, HttpResponseForbidden, \
@@ -316,18 +317,26 @@ def _initiate_push(
             kwargs=redirect_args) + '?next=%s' % callback_url
         return redirect(redirect_url)
 
+    push_to_priority = settings.DEFAULT_TASK_PRIORITY + 1
+
     if obj_type == 'experiment':
-        tasks.push_experiment_to_host.delay(
-            request.user.pk, credential.pk, remote_host_id, push_obj_id,
-            destination)
+        tasks.push_experiment_to_host.apply_async(
+            args=[
+                request.user.pk, credential.pk, remote_host_id, push_obj_id,
+                destination],
+            priority=push_to_priority)
     elif obj_type == 'dataset':
-        tasks.push_dataset_to_host.delay(
-            request.user.pk, credential.pk, remote_host_id, push_obj_id,
-            destination)
+        tasks.push_dataset_to_host.apply_async(
+            args=[
+                request.user.pk, credential.pk, remote_host_id, push_obj_id,
+                destination],
+            priority=push_to_priority)
     elif obj_type == 'datafile':
-        tasks.push_datafile_to_host.delay(
-            request.user.pk, credential.pk, remote_host_id, push_obj_id,
-            destination)
+        tasks.push_datafile_to_host.apply_async(
+            args=[
+                request.user.pk, credential.pk, remote_host_id, push_obj_id,
+                destination],
+            priority=push_to_priority)
 
     success_message = ('The requested item will be pushed to %s. <strong>You '
                        'will be notified by email once this has been '
@@ -495,7 +504,6 @@ def oauth_callback(request):
         'redirect_uri': oauth_callback_url(request)
     }
 
-    # Verify=False is a bad thing, but I need it for now
     r = requests.post(
         oauth_service.oauth_token_url, data,
         auth=(

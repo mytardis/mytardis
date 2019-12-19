@@ -1,7 +1,7 @@
 -r requirements-base.txt
 -r requirements-docs.txt
 -r requirements-test.txt
-python-ldap==3.2.0
+-r requirements-ldap.txt
 
 # apps go here:
 -r tardis/apps/social_auth/requirements.txt

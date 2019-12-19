@@ -2,7 +2,7 @@
 
 .. moduleauthor:: James Wettenhall <james.wettenhall@monash.edu>
 """
-from io import StringIO
+from io import BytesIO
 
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -11,9 +11,11 @@ from django.test import RequestFactory
 from django.test import TestCase
 
 from flexmock import flexmock
+from mock import patch
 from paramiko.common import AUTH_SUCCESSFUL, AUTH_FAILED
 from paramiko.ssh_exception import SSHException
 from paramiko.rsakey import RSAKey
+from paramiko.py3compat import StringIO
 
 from tardis.tardis_portal.download import make_mapper
 
@@ -59,8 +61,7 @@ class SFTPTest(TestCase):
         self.dataset.save()
 
         def _build(dataset, filename, url):
-            datafile_content = u"\n".join([u'some data %d' % i
-                                          for i in range(1000)])
+            datafile_content = b"\n".join([b'some data %d' % i for i in range(1000)])
             filesize = len(datafile_content)
             datafile = DataFile(
                 dataset=dataset, filename=filename, size=filesize)
@@ -69,7 +70,7 @@ class SFTPTest(TestCase):
                 datafile=datafile,
                 storage_box=datafile.get_default_storage_box(),
                 uri=url)
-            dfo.file_object = StringIO(datafile_content)
+            dfo.file_object = BytesIO(datafile_content)
             dfo.save()
             return datafile
 
@@ -137,7 +138,7 @@ class SFTPTest(TestCase):
             "BCkvug2OZQqQ=="
         )
 
-        priv_key_str = u"""-----BEGIN RSA PRIVATE KEY-----
+        priv_key_str = """-----BEGIN RSA PRIVATE KEY-----
 MIICXgIBAAKBgQCzvWE391K1pyBvePGpwDWMboSLIp5L5sMq+bXPPeJPSLOm9dnm
 8XexZOpeg14UpsYcmrkzVPeooaqz5PqtaHO46CdK11dScs2a8PLnavGkJRf25/PD
 XxlHkiZXXbAfW+6t5aVJxSJ4Jt4FV0aDqMaaYxy4ikw6daBCkvug2OZQqQIDAQAB
@@ -184,7 +185,8 @@ QKHf8Ha+rOx3B7Dbljc+Xdpcn9VyRmDlSqzX9aCkr18mNg==
         self.user.is_active = True
         self.user.save()
 
-    def test_sftp_dynamic_docs_experiment(self):
+    @patch('webpack_loader.loader.WebpackLoader.get_bundle')
+    def test_sftp_dynamic_docs_experiment(self, mock_webpack_get_bundle):
         factory = RequestFactory()
         request = factory.get(
             '/sftp_access/?object_type=experiment&object_id=%s'
@@ -193,12 +195,14 @@ QKHf8Ha+rOx3B7Dbljc+Xdpcn9VyRmDlSqzX9aCkr18mNg==
         response = sftp_access(request)
         path_mapper = make_mapper(settings.DEFAULT_PATH_MAPPER, rootdir=None)
         self.assertIn(
-            "sftp://tardis_user1@testserver:2200"
-            "/home/tardis_user1/experiments/%s"
-            % path_mapper(self.exp),
+            b"sftp://tardis_user1@testserver:2200"
+            b"/home/tardis_user1/experiments/%s"
+            % path_mapper(self.exp).encode(),
             response.content)
+        mock_webpack_get_bundle.assert_called()
 
-    def test_sftp_dynamic_docs_dataset(self):
+    @patch('webpack_loader.loader.WebpackLoader.get_bundle')
+    def test_sftp_dynamic_docs_dataset(self, mock_webpack_get_bundle):
         factory = RequestFactory()
         request = factory.get(
             '/sftp_access/?object_type=dataset&object_id=%s'
@@ -207,10 +211,12 @@ QKHf8Ha+rOx3B7Dbljc+Xdpcn9VyRmDlSqzX9aCkr18mNg==
         response = sftp_access(request)
         path_mapper = make_mapper(settings.DEFAULT_PATH_MAPPER, rootdir=None)
         self.assertIn(
-            "sftp://tardis_user1@testserver:2200"
-            "/home/tardis_user1/experiments/%s/%s"
-            % (path_mapper(self.exp), path_mapper(self.dataset)),
+            b"sftp://tardis_user1@testserver:2200"
+            b"/home/tardis_user1/experiments/%s/%s"
+            % (path_mapper(self.exp).encode(),
+               path_mapper(self.dataset).encode()),
             response.content)
+        mock_webpack_get_bundle.assert_called()
 
     def test_cybderduck_connection_window(self):
         factory = RequestFactory()

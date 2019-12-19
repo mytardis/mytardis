@@ -4,7 +4,6 @@ Tests
 
 Running the Test Suite
 ----------------------
-
 Run this command to run the unit tests::
 
     ./test.py
@@ -62,10 +61,6 @@ The QUnit tests reside in the ``js_tests/`` directory.
 
 Running ``npm install`` will install everything you need, whereas
 ``npm install --production`` will skip the ``devDependencies``.
-
-You will need PhantomJS to run the QUnit tests, which can be installed with::
-
-    npm install -g phantomjs-prebuilt
 
 You can run the QUnit tests with::
 

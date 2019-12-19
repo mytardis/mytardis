@@ -19,8 +19,8 @@ def bytes_available(ssh_client, path):
     try:
         if len(cmd_output) == 5:
             return int(cmd_output[2]) * 1024
-        elif len(cmd_output) == 6:
-            return int(cmd_output[3]) * 1024
+        assert len(cmd_output) == 6
+        return int(cmd_output[3]) * 1024
     except ValueError:
         pass
     return "unknown"

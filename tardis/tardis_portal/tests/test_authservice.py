@@ -120,19 +120,19 @@ class AuthServiceTestCase(TestCase):
         self.assertTrue(login)
         self.assertIn(SESSION_KEY, c.session)
 
-        r = str(c.get('/test/groups/'))
-        self.assertEqual(r.count('mockdb'), 2)
-        self.assertTrue(',1)' in r)
-        self.assertTrue(',2)' in r)
+        r = c.get('/test/groups/')
+        self.assertEqual(r.content.count(b'mockdb'), 2)
+        self.assertTrue(b',1)' in r.content)
+        self.assertTrue(b',2)' in r.content)
 
         login = c.login(username='mockdb_user2', password='secret')
         self.assertTrue(login)
         self.assertIn(SESSION_KEY, c.session)
 
-        r = str(c.get('/test/groups/'))
-        self.assertEqual(r.count('mockdb'), 2, r)
-        self.assertTrue(',1)' in r)
-        self.assertTrue(',3)' in r)
+        r = c.get('/test/groups/')
+        self.assertEqual(r.content.count(b'mockdb'), 2, r)
+        self.assertTrue(b',1)' in r.content)
+        self.assertTrue(b',3)' in r.content)
 
     def testGroupSearch(self):
         from ..auth import AuthService
@@ -168,10 +168,8 @@ class AuthServiceTestCase(TestCase):
         # check the correct group provider is registered
         self.assertEqual(len(a._group_providers), 1)
 
-        self.assertEqual(len([g for g in a.getGroupsForEntity('user1')]),
-                         2)
-        self.assertEqual(len([g for g in a.getGroupsForEntity('Group 123')]),
-                         1)
+        self.assertEqual(len(list(a.getGroupsForEntity('user1'))), 2)
+        self.assertEqual(len(list(a.getGroupsForEntity('Group 123'))), 1)
 
     def testAuthenticate(self):
         from ..auth import AuthService

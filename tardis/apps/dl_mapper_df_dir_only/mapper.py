@@ -12,7 +12,6 @@ def df_dir_only(datafile, rootdir):
                             datafile.filename)
     if rootdir != 'datasets':
         return os.path.join(rootdir, filepath)
-    elif exp is not None:
+    if exp is not None:
         return os.path.join(exp.title, filepath)
-    else:
-        raise Exception
+    raise Exception

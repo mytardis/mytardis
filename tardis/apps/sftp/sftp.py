@@ -4,7 +4,7 @@ SFTP Server
 # pylint: disable=C0411,C0412,C0413
 # disabling import order check for monkey patching
 
-import SocketServer
+import socketserver
 import base64
 import collections
 import logging
@@ -13,12 +13,13 @@ import stat
 import time
 import uuid
 
-from six import BytesIO
+from paramiko.py3compat import StringIO
 
 from django.conf import settings
 from paramiko import InteractiveQuery,  RSAKey, ServerInterface,\
     SFTPAttributes, SFTPHandle,\
-    SFTPServer, SFTPServerInterface, Transport
+    SFTPServer, SFTPServerInterface, Transport,\
+    SSHException
 from paramiko import OPEN_SUCCEEDED, OPEN_FAILED_ADMINISTRATIVELY_PROHIBITED,\
     SFTP_OP_UNSUPPORTED, SFTP_NO_SUCH_FILE
 from paramiko.common import AUTH_FAILED, AUTH_SUCCESSFUL
@@ -39,15 +40,8 @@ logger = logging.getLogger(__name__)
 path_mapper = make_mapper(settings.DEFAULT_PATH_MAPPER, rootdir=None)
 
 paramiko_log = logging.getLogger('paramiko.transport')
-if not paramiko_log.handlers:
-    paramiko_log.addHandler(logging.FileHandler('sftpd.log'))
+paramiko_log.disabled = True
 
-
-if getattr(settings, 'SFTP_GEVENT', False):
-    from gevent import monkey
-    from django.db import connection
-    monkey.patch_all()
-    connection.allow_thread_sharing = True
 
 # django db related modules must be imported after monkey-patching
 from django.contrib.sites.models import Site  # noqa
@@ -151,7 +145,7 @@ class DynamicTree(object):
         #         placeholder = df.file_objects.all()[0].uri
         #     else:
         #         placeholder = 'offline file, contact administrator'
-        #     file_obj = BytesIO(placeholder)
+        #     file_obj = StringIO(placeholder)
         # child = self.children[file_name]
         # child.name = file_name
         # child.obj = file_obj
@@ -368,7 +362,7 @@ class MyTSFTPHandle(SFTPHandle):
                 fo = df.file_objects.all()[0]
                 error_string = "%s:%s" % (fo.storage_box.name,
                                           fo.uri)
-                self.readfile = BytesIO(error_string)
+                self.readfile = StringIO(error_string)
 
     def stat(self):
         """
@@ -468,7 +462,7 @@ class MyTSFTPServer(SFTPServer):
         super(MyTSFTPServer, self).__init__(*args, **kwargs)
 
 
-class MyTSFTPRequestHandler(SocketServer.BaseRequestHandler):
+class MyTSFTPRequestHandler(socketserver.BaseRequestHandler):
     timeout = 60
     auth_timeout = 60
 
@@ -483,13 +477,22 @@ class MyTSFTPRequestHandler(SocketServer.BaseRequestHandler):
             'sftp', MyTSFTPServer, MyTSFTPServerInterface)
 
     def handle(self):
-        self.transport.start_server(server=MyTServerInterface())
+        try:
+            self.transport.start_server(server=MyTServerInterface())
+        except SSHException as e:
+            logger.error("SSH error: %s" % str(e))
+            self.transport.close()
+        except EOFError as e:
+            logger.error("Socket error: %s" % str(e))
+        except Exception as e:
+            logger.error("Error: %s" % str(e))
+
 
     def handle_timeout(self):
         self.transport.close()
 
 
-class MyTSFTPTCPServer(SocketServer.TCPServer):
+class MyTSFTPTCPServer(socketserver.TCPServer):
     # If the server stops/starts quickly, don't fail because of
     # "port in use" error.
     allow_reuse_address = True
@@ -498,7 +501,7 @@ class MyTSFTPTCPServer(SocketServer.TCPServer):
         self.host_key = host_key
         if RequestHandlerClass is None:
             RequestHandlerClass = MyTSFTPRequestHandler
-        SocketServer.TCPServer.__init__(self, address, RequestHandlerClass)
+        socketserver.TCPServer.__init__(self, address, RequestHandlerClass)
 
     def shutdown_request(self, request):
         # Prevent TCPServer from closing the connection prematurely
@@ -520,9 +523,8 @@ def start_server(host=None, port=None, keyfile=None):
         current_site = Site.objects.get_current()
         host = current_site.domain
     port = port or getattr(settings, 'SFTP_PORT', 2200)
-    host_key_string = settings.SFTP_HOST_KEY
     host_key = RSAKey.from_private_key(
-        keyfile or BytesIO(host_key_string))
+        keyfile or StringIO(settings.SFTP_HOST_KEY))
     server = MyTSFTPTCPServer((host, port), host_key=host_key)
     try:
         server.serve_forever()

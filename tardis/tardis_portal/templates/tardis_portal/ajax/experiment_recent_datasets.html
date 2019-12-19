@@ -1,17 +1,23 @@
 {% for ds in exp.datasets.all|dictsortreversed:"id"|slice:":5" %}
   {% if forloop.first %}
-    <ul class="nav nav-list">
+    <ul class="list-group borderless mt-2">
     {% with total=exp.datasets.all|length %}
-      <li class="nav-header dataset-list-header">The most recent dataset{{total|pluralize}} in this experiment</li>
+      <li class="list-group-item dataset-list-header small px-1 py-1">
+        <em>The most recent dataset{{total|pluralize}} in this experiment:</em>
+      </li>
     {% endwith %}
   {% endif %}
-  <li>
-    <a href="{% url 'tardis_portal.view_dataset' ds.id %}"><strong>{{ ds.description }}</strong></a>
+  <li class="list-group-item dataset-list-item small px-2 py-1">
+    <i class="fa fa-folder o-6"></i>
+    <a class="dataset-link"
+       href="{% url 'tardis_portal.view_dataset' ds.id %}">
+      {{ ds.description }}
+    </a>
     {% for datafile in ds.get_images|slice:":5" %}
       {% if forloop.first %}
-        <ul class="thumbnails">
+        <ul class="thumbnails list-inline">
       {% endif %}
-      <li>
+      <li class="list-inline-item">
         <a class="thumbnail" href="{% url 'tardis.tardis_portal.download.view_datafile' datafile.id %}">{% url 'tardis.tardis_portal.iiif.download_image' datafile_id=datafile.id region='full' size=',50' rotation=0 quality='native' format='jpg' as thumbnail %}
         <img alt="Thumbnail for Datafile #{{datafile.id}}"
              src="{{ thumbnail }}"

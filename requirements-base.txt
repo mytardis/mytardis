@@ -1,44 +1,36 @@
-Django==1.11.23 # pyup: >=1.11,<2.0
-Wand==0.4.4
-amqp==1.4.9 # pyup: <2
-beautifulsoup4==4.6.3
-billiard==3.3.0.23 # pyup: < 3.4
-bleach==2.1.4
-celery==3.1.26.post2 # pyup: <4
--e git+https://github.com/mytardis/django-bootstrap-form.git@mytardis-dj1.9-bootstrap-v2#egg=django-bootstrap-form
-django-extensions==1.8.1
--e git+https://github.com/mytardis/django-form-utils.git@django-1.11-upgrade#egg=django-form-utils
-django-haystack==2.8.1
+Django==2.2.8 # pyup: >=2.2,<3
+Wand==0.5.7
+amqp==2.5.2
+bleach==3.1.0
+boto3==1.9.242
+celery==4.3.0
+django-extensions==2.2.3
+django-elasticsearch-dsl==6.4.2
+git+https://github.com/mytardis/django-form-utils.git@django-1.11-upgrade#egg=django-form-utils
 django-jstemplate==1.3.8
-django-npm==1.0.0
-django-registration-redux==2.4
-# django-tastypie
--e git+https://github.com/mytardis/django-tastypie.git@mytardis-dj1.9#egg=django-tastypie
--e git+https://github.com/mytardis/django-tastypie-swagger.git@mytardis-dj1.9#egg=django-tastypie-swagger
-django-user-agents==0.3.2
-elasticsearch==1.9.0 # pyup: <2
-gunicorn==19.7.1
-gevent==1.3.6
-html2text==2018.1.9
+django-registration-redux==2.6
+django-tastypie==0.14.2
+git+https://github.com/mytardis/django-tastypie-swagger.git@mytardis-dj2.0#egg=django-tastypie-swagger
+django-user-agents==0.4.0
+django-webpack-loader==0.6.0
+django-widget-tweaks==1.4.5
+elasticsearch==6.4.0 # pyup: <7.0
+django-storages==1.7.2
+gunicorn==19.9.0
+gevent==1.4.0
+html2text==2019.8.11
 html5lib==1.0.1
 isodate==0.6.0
-pyjwt==1.6.4
-kombu==3.0.37 # pyup: <4
-lxml==4.2.5
+pyjwt==1.7.1
+kombu==4.6.5
+lxml==4.4.1
 paramiko==2.6.0
-pillow==5.2.0
-pwgen==0.8.2.post0
-pylint==1.9.3 # pyup: <2.0
-pylint-django==0.11.1 # pyup: <2.0
+pillow==6.2.0
 pyoai==2.5.0
-pysolr==2.1.0 # pyup: >=2.1.0,<3
 pystache==0.5.4
-python-dateutil==2.7.5
+python-dateutil==2.8.0
 # python-magic
--e git+https://github.com/mytardis/python-magic.git#egg=python-magic
-pytz==2018.5
+git+https://github.com/mytardis/python-magic.git#egg=python-magic
+pytz==2019.2
 requests==2.22.0
-six==1.11.0
-urllib3==1.23
-wsgiref==0.1.2
-pyasn1_modules==0.2.6
+uritemplate==3.0.0

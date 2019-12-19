@@ -4,6 +4,9 @@
     <meta charset="utf-8">
     <title>MyTardis JavaScript Tests</title>
     <link rel="stylesheet" href="../node_modules/qunit/qunit/qunit.css">
+    <script>
+        MyTardisJavascriptUnitTesting = true;
+    </script>
 </head>
 <body>
 
@@ -44,50 +47,12 @@
 
     <script src="../node_modules/qunit/qunit/qunit.js"></script>
 
-    <!-- Most of the dependencies below are normally loaded in -->
-    <!-- tardis/tardis_portal/templates/tardis_portal/javascript_libraries.html -->
-     
-    <script type="text/javascript" src="../node_modules/jquery/dist/jquery.min.js"></script>
-    <script type="text/javascript" src="../node_modules/jquery-migrate/dist/jquery-migrate.min.js"></script>
-    <script type="text/javascript" src="../tardis/tardis_portal/static/js/lib/jquery.cookie.js"></script>
-
-    <script type="text/javascript" src="../node_modules/jquery-mockjax/dist/jquery.mockjax.js"></script>
-
-    <script type="text/javascript" src="../tardis/tardis_portal/static/js/lib/async.min.js"></script> 
-    <script type="text/javascript" src="../node_modules/underscore/underscore-min.js"></script>
-    <script type="text/javascript" src="../node_modules/underscore.string/dist/underscore.string.js"></script>
-    <script type="text/javascript" src="../node_modules/sprintf-js/dist/sprintf.min.js"></script>
-
-    <!-- Backbone.js -->
-    <script type="text/javascript" src="../node_modules/backbone/backbone-min.js"></script>
-
-    <!-- Backbone Forms -->
-    <link rel="stylesheet" type="text/css"
-	    href="../node_modules/backbone-forms/distribution/templates/default.css"/>
-    <script src="../node_modules/backbone-forms/distribution/backbone-forms.js"></script>
-    <script src="../node_modules/backbone-forms/distribution/editors/jquery-ui.js"></script>
-    <script src="../node_modules/backbone-forms/distribution/templates/bootstrap.js"></script>
-
-    <!-- MyTardis's Backbone.js models -->
-    <script type="text/javascript" src="../tardis/tardis_portal/static/js/backbone-models.js"></script>
-
-    <!-- Mustache.js -->
-    <script type="text/javascript" src="../node_modules/mustache/mustache.min.js"></script>
-
-    <!-- django.mustache.js is provided by django-jstemplate, but we don't want to make -->
-    <!-- the Javascript tests dependent on the virtualenv, so we have copied django.mustache.js into -->
-    <!-- tardis/tardis_portal/static/js/lib/ along with other third party Javascript dependencies. -->
-    <script type="text/javascript" src="../tardis/tardis_portal/static/js/lib/django.mustache.js"></script>
-
-    <!-- bootstrap.js is normally loaded in -->
-    <!-- tardis/tardis_portal/templates/tardis_portal/portal_template.html -->
-    <script type="text/javascript" src="../tardis/tardis_portal/static/js/lib/bootstrap-2.3.2/js/bootstrap.js"></script>
+    <script type="text/javascript" src="../assets/bundles/main.js"></script>
+    <script type="text/javascript" src="../assets/bundles/lib.js"></script>
+    <script type="text/javascript" src="../assets/bundles/tardis_portal.js"></script>
 
     <!-- MyTardis jQuery Tests -->
-
-    <script src="./jquery/main.test.js"></script>
-    <script src="./jquery/tardis_portal/ajax/share.test.js"></script>
-    <script src="./jquery/tardis_portal/view_experiment/experiment-tabs.test.js"></script>
+     <script type="text/javascript" src="../assets/bundles/test.js"></script>
 
 </body>
 </html>

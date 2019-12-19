@@ -112,17 +112,14 @@ class Experiment(models.Model):
                 self.PUBLICATION_SCHEMA_ROOT)
         ).count() > 0
 
-    def getParameterSets(self, schemaType=None):
+    def getParameterSets(self):
         """Return the experiment parametersets associated with this
         experiment.
 
         """
         from .parameters import Schema
-        if schemaType == Schema.EXPERIMENT or schemaType is None:
-            return self.experimentparameterset_set.filter(
-                schema__type=Schema.EXPERIMENT)
-        else:
-            raise Schema.UnsupportedType
+        return self.experimentparameterset_set.filter(
+            schema__type=Schema.EXPERIMENT)
 
     def __str__(self):
         return self.title
@@ -139,28 +136,27 @@ class Experiment(models.Model):
                 dirname = None
         return dirname
 
-    @models.permalink
     def get_absolute_url(self):
         """Return the absolute url to the current ``Experiment``"""
-        return ('tardis_portal.view_experiment', (),
-                {'experiment_id': self.id})
+        return reverse(
+            'tardis_portal.view_experiment',
+            kwargs={'experiment_id': self.id})
 
-    @models.permalink
     def get_edit_url(self):
         """Return the absolute url to the edit view of the current
         ``Experiment``
-
         """
-        return ('tardis.tardis_portal.views.edit_experiment', (),
-                {'experiment_id': self.id})
+        return reverse(
+            'tardis.tardis_portal.views.edit_experiment',
+            kwargs={'experiment_id': self.id})
 
-    @models.permalink
     def get_create_token_url(self):
         """Return the absolute url to the create token view of the current
         ``Experiment``
         """
-        return ('tardis.tardis_portal.views.create_token', (),
-                {'experiment_id': self.id})
+        return reverse(
+            'tardis.tardis_portal.views.create_token',
+            kwargs={'experiment_id': self.id})
 
     def get_datafiles(self):
         from .datafile import DataFile

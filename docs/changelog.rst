@@ -1,6 +1,87 @@
 Releases
 ========
 
+4.2.0
+-----
+* Upgraded Django to 2.2.6
+* Dropped support for Python 2
+* Dataset view now includes a tree file browser
+* Upgraded Bootstrap to 4.1.3
+
+4.1.5
+-----
+* Update AngularJS to address the SNYK-JS-ANGULAR-534884 vulnerability.
+* Update the handlebars version in package-lock.json to avoid having
+  "npm install" report high severity vulnerabilities.
+* Fix the dataset metadata API test which was failing on Python 3.5.
+
+4.1.4
+-----
+* Fixed duplicate form submission bugs for create experiment/dataset
+* Fixed search bug which restricted instrument drop-down to 20 records
+* Fixed some byte string encoding issues with LDAP auth in Python 3
+* Fixed Python 3.5 unit tests
+* Fixed pickled StorageBoxOption values for Python 3
+
+4.1.3
+-----
+* Update the https-proxy-agent version in package-lock.json to avoid having
+  "npm install" display "found 1 high severity vulnerability".
+
+4.1.2
+-----
+* Allow .jsx files to be included in assets/js/tardis_portal/ and ensure that
+  they won't be linted using the jQuery ESLint configuration
+* Switch back to the official version of the pyoai dependency
+
+4.1.1
+-----
+* Fix Python 3 bug with string encoding in deep download mapper
+  which affected directory names in SFTP interface.
+
+4.1
+---
+* Added React search components and django-elasticsearch-dsl backend
+* Removed post-save filters middleware, replaced with microservice architecture
+* Added RabbitMQ task priorities support, dropped support for Redis as a broker
+* Upgraded Bootstrap CSS framework from v2.3.2 to v3.4.1
+* Added Python 3 support
+* Added webpack to collect static assets (JS / CSS), supporting ES6, JSX etc.
+* Annotated storage box related tasks with their storage box name, visible
+  in "celery inspect active"
+* Added task for clearing Django sessions
+* Added timestamps (created and modified) in facility and instrument models
+* Updated built-in Creative Commons licenses to v4
+* Added django-storages and boto3 to requirements to support S3 storage boxes
+  and storing static assets in S3
+* Improved efficiency of checksums and downloads for files in S3 storage
+* COMPUTE_SHA512 now defaults to False. COMPUTE_MD5 still defaults to True.
+* Legal text for publishing can now be specified in settings
+* Now using Dataset created_time in facility overview instead of experiment
+  created time
+* Added a new setting to prevent large datasets (many files) from being scanned
+  for image files at page load time
+* API v1's instrument resource now allows any authenticated user to list the
+  instrument names, which is used in the new search interface
+* The ExperimentAuthor model now exposed in API v1
+* MyTardis no longer tries to guess an appropriate storage box for new
+  DataFileObjects unless REUSE_DATASET_STORAGE_BOX is True
+* Improved BDD test coverage, now measuring template coverage with
+  django-coverage-plugin
+* Bug fixes (GitHub Issue numbers below)
+  - Fixed #1503
+  - Fixed #1568
+  - Removed bob@bobmail.com from default ADMINS, fixing #1613
+  - Fixed #1664
+  - Fixed #1708
+  - Fixed #1857
+  - Fixed #1853
+  - Fixed concatenated messages issue in user sharing and group sharing dialogs
+  - Fixed #1790
+  - Fixed truncated TAR download issue with unverified files
+  - Fixed sharing with AAF/Google issue
+  - Fixed some broken Font Awesome icons
+
 4.0.2
 -----
 * Upgraded Django to 1.11.23

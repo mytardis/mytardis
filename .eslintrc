@@ -1,9 +1,16 @@
 {
-    "extends": "eslint:recommended",
-    "rules": {
+  "extends": "eslint:recommended",
+  "parserOptions": {
+    "ecmaVersion": 7,
+    "sourceType": "module",
+    "ecmaFeatures": {
+      "jsx": true
+    }
+  },
+  "rules": {
         "camelcase": [1, {"properties": "always"}],
         "comma-spacing": [2, {"before": false, "after": true}],
-        "complexity": ["error", { "max": 4 }],
+        "complexity": ["error", { "max": 5 }],
         "curly": [2, "all"],
         "dot-notation": [2, {"allowKeywords": true}],
         "eqeqeq": [1],
@@ -21,20 +28,40 @@
         "no-shadow": [2, {"hoist": "functions"}],
         "no-use-before-define": [1],
         "object-shorthand": 0,
-        "quotes": [1, "double"],
-        "linebreak-style": [2, "unix"],
+        "quotes": [1, "double", { "allowTemplateLiterals": true }],
+        "linebreak-style": 0,
         "semi": [2, "always"],
         "space-before-blocks": [2, "always"],
         "space-before-function-paren": [2, {"anonymous": "never", "named": "never"}],
         "space-infix-ops": [2, {"int32Hint": false}],
-        "strict": [0, "function"],
+        "strict": 2,
         "wrap-iife": [1]
     },
-    "env": {
-        "browser": true,
-        "commonjs": true,
-        "jquery": true
-    },
-    "globals": {
+  "env": {
+    "browser": true,
+    "commonjs": true,
+    "jquery": true
+  },
+  "overrides": [
+    {
+      "files": [
+        "assets/js/tardis_portal/facility_view/*.js"
+      ],
+      "globals": {
+        "angular": true
+      },
+      "rules": {
+        "quotes": [0, "double"],
+        "indent": 0,
+        "complexity": [
+          "error",
+          {
+            "max": 7
+          }
+        ]
+      }
     }
+  ],
+  "globals": {
+  }
 }

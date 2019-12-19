@@ -220,10 +220,11 @@ class RifCsExperimentProvider(AbstractExperimentProvider):
             psm = ParameterSetManager(ps)
             parameter_names = ['type', 'identifier', 'title', 'notes']
             try:
-                return dict([('id', ps.id)] +  # Use set ID
-                            zip(parameter_names,
-                                (psm.get_param(k, True) \
-                                 for k in parameter_names)))
+                parameters = {
+                    key: psm.get_param(key, True)
+                    for key in parameter_names}
+                parameters['id'] = ps.id
+                return parameters
             except ExperimentParameter.DoesNotExist:
                 return dict()  # drop Related_Info record with missing fields
 

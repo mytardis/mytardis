@@ -6,6 +6,10 @@ RUN groupadd -r webapp && useradd -r -g webapp webapp
 ENV DEBIAN_FRONTEND noninteractive
 RUN echo 'APT::Get::Assume-Yes "true";' > /etc/apt/apt.conf.d/90assumeyes
 
+# http://bugs.python.org/issue19846
+# > At the moment, setting "LANG=C" on a Linux system *fundamentally breaks Python 3*, and that's not OK.
+ENV LANG C.UTF-8
+
 RUN apt-get update && apt-get install \
     -qy \
     -o APT::Install-Recommends=false \
@@ -18,9 +22,10 @@ RUN apt-get update && apt-get install \
     libssl-dev \
     libxml2-dev \
     libxslt1-dev \
-    python-pip \
-    python-virtualenv \
-    virtualenvwrapper \
+    python3-pip \
+    python3-dev \
+    python3-venv \
+    python3-setuptools \
     libmagic-dev \
     libmagickwand-dev \
     libmysqlclient20 \
@@ -34,7 +39,7 @@ RUN chown -R webapp:webapp /appenv
 
 RUN chown -R webapp:webapp /home/webapp
 USER webapp
-RUN virtualenv --system-site-packages /appenv
-RUN . /appenv/bin/activate; pip install -U -e "git+https://github.com/pypa/pip.git#egg=pip" wheel
+RUN python3 -m venv /appenv
+RUN . /appenv/bin/activate; pip install -U pip wheel
 COPY . /home/webapp/
 USER root
