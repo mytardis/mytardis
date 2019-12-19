@@ -1,4 +1,5 @@
 import logging
+from django.conf import settings
 
 from django.contrib.auth.models import User
 from elasticsearch_dsl import analysis, analyzer
@@ -12,6 +13,8 @@ from tardis.tardis_portal.models import Dataset, Experiment, \
 logger = logging.getLogger(__name__)
 
 
+elasticsearch_parallel_index_settings = getattr(settings, 'ELASTICSEARCH_PARALLEL_INDEX_SETTINGS', {})
+
 trigram = analysis.tokenizer('trigram', 'nGram', min_gram=3, max_gram=3)
 
 analyzer = analyzer(
@@ -23,6 +26,10 @@ analyzer = analyzer(
 
 @registry.register_document
 class ExperimentDocument(Document):
+    def parallel_bulk(self, actions, **kwargs):
+        Document.parallel_bulk(self, actions=actions,
+                               **elasticsearch_parallel_index_settings)
+
     class Index:
         name = 'experiments'
         settings = {'number_of_shards': 1,
@@ -66,6 +73,10 @@ class ExperimentDocument(Document):
 
 @registry.register_document
 class DatasetDocument(Document):
+    def parallel_bulk(self, actions, **kwargs):
+        Document.parallel_bulk(self, actions=actions,
+                               **elasticsearch_parallel_index_settings)
+
     class Index:
         name = 'dataset'
         settings = {'number_of_shards': 1,
@@ -115,7 +126,8 @@ class DatasetDocument(Document):
 @registry.register_document
 class DataFileDocument(Document):
     def parallel_bulk(self, actions, **kwargs):
-        Document.parallel_bulk(self, actions=actions, chunk_size=10000, thread_count=8)
+        Document.parallel_bulk(self, actions=actions,
+                               **elasticsearch_parallel_index_settings)
 
     class Index:
         name = 'datafile'
