@@ -33,4 +33,4 @@ python-dateutil==2.8.0
 git+https://github.com/mytardis/python-magic.git#egg=python-magic
 pytz==2019.2
 requests==2.22.0
-uritemplate==3.0.0
+uritemplate==3.0.1
