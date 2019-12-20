@@ -11,7 +11,7 @@
     <div class="col-md-12">
       <h3 class="d-block d-sm-none">Experiments</h3>
       <div class="pull-left">
-          <h3 class="hidden-xm" style="text-align: center">Experiments</h3>
+          <h3 class="d-none d-sm-block" style="text-align: center">Experiments</h3>
       </div>
     </div>
   </div>
@@ -39,10 +39,10 @@
       <div id="public-experiments" class="panel-group experiments">
         {% for exp in public_experiments %}
           <div class="card mb-2">
-              <div class="card-header" data-parent="#public-experiments">
+              <div class="card-header accordion-toggle" data-parent="#public-experiments"
+                   data-toggle="collapse" onclick="$('#collapse{{exp.id}}').collapse('toggle');">
                 <div class="row">
-                  <div class="accordion-toggle col-md-8 px-1" data-toggle="collapse"
-                       onclick="$('#collapse{{exp.id}}').collapse('toggle');" >
+                  <div class="col-md-8 px-1 pb-1">
                     <a class="card-title explink"
                        href="{% url 'tardis_portal.view_experiment' exp.id %}">{{ exp.title }}
                     </a>

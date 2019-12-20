@@ -207,6 +207,7 @@ i.group-icon :hover {
 /* index page */
 .experiments .accordion-toggle .explink {
     font-size: 1.1em;
+    font-weight: 500;
 }
 .experiments .accordion-toggle .badgelist {
     margin-bottom: 4px;
@@ -234,6 +235,7 @@ i.group-icon :hover {
 /* mydata page */
 .mydata .accordion-toggle .explink {
     font-size: 1.1em;
+    font-weight: 500;
     max-width: 67%;
     cursor: pointer;
 }
