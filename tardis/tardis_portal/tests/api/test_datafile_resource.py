@@ -45,8 +45,8 @@ class DataFileResourceTest(MyTardisResourceTestCase):
         self.test_parname2.save()
 
         self.datafile = DataFile(dataset=self.testds,
-                                 filename="testfile.txt",
-                                 size="42", md5sum='bogus')
+                                 filename="testfile.txt", size="42",
+                                 algorithm="md5", checksum="bogus")
         self.datafile.save()
 
     def test_post_single_file(self):

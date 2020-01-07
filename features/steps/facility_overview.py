@@ -30,7 +30,8 @@ def given_a_logged_in_facility_manager(context):
     dataset = Dataset.objects.create(
         description="Test Dataset", instrument=instrument)
     datafile = DataFile.objects.create(
-        filename="testfile.txt", size=12345, md5sum="bogus", dataset=dataset)
+        filename="testfile.txt", size=12345,
+        algorithm="md5", checksum="bogus", dataset=dataset)
     context.browser.get(context.base_url + "/login/")
     username_field = context.browser.find_element_by_id("id_username")
     username_field.send_keys(user.username)

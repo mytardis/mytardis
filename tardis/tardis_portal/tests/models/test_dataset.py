@@ -65,14 +65,16 @@ class DatasetTestCase(ModelTestCase):
         self.assertEqual(dataset.get_dir_nodes(dir_tuples), [])
 
         DataFile.objects.create(
-            dataset=dataset, filename='filename1', size=0, md5sum='bogus')
+            dataset=dataset, filename='filename1',
+            size=0, algorithm='md5', checksum='bogus')
         basedir = ''
         dir_tuples = dataset.get_dir_tuples(basedir)
         self.assertEqual(dir_tuples, [])
         self.assertEqual(dataset.get_dir_nodes(dir_tuples), [])
 
         DataFile.objects.create(
-            dataset=dataset, filename='filename2', size=0, md5sum='bogus',
+            dataset=dataset, filename='filename2',
+            size=0, algorithm='md5', checksum='bogus',
             directory=None)
         basedir = ''
         dir_tuples = dataset.get_dir_tuples(basedir)
@@ -80,7 +82,8 @@ class DatasetTestCase(ModelTestCase):
         self.assertEqual(dataset.get_dir_nodes(dir_tuples), [])
 
         DataFile.objects.create(
-            dataset=dataset, filename='filename3', size=0, md5sum='bogus',
+            dataset=dataset, filename='filename3',
+            size=0, algorithm='md5', checksum='bogus',
             directory='')
         basedir = ''
         dir_tuples = dataset.get_dir_tuples(basedir)
@@ -88,7 +91,8 @@ class DatasetTestCase(ModelTestCase):
         self.assertEqual(dataset.get_dir_nodes(dir_tuples), [])
 
         DataFile.objects.create(
-            dataset=dataset, filename='filename4', size=0, md5sum='bogus',
+            dataset=dataset, filename='filename4',
+            size=0, algorithm='md5', checksum='bogus',
             directory='dir1')
         basedir = ''
         dir_tuples = dataset.get_dir_tuples(basedir)
@@ -104,7 +108,8 @@ class DatasetTestCase(ModelTestCase):
             ])
 
         DataFile.objects.create(
-            dataset=dataset, filename='filename5', size=0, md5sum='bogus',
+            dataset=dataset, filename='filename5',
+            size=0, algorithm='md5', checksum='bogus',
             directory='dir1/subdir1')
         basedir = 'dir1'
         dir_tuples = dataset.get_dir_tuples(basedir)
@@ -126,7 +131,8 @@ class DatasetTestCase(ModelTestCase):
         self.assertEqual(dataset.get_dir_nodes(dir_tuples), [])
 
         DataFile.objects.create(
-            dataset=dataset, filename='filename6', size=0, md5sum='bogus',
+            dataset=dataset, filename='filename6',
+            size=0, algorithm='md5', checksum='bogus',
             directory='dir2/subdir2')
         basedir = ''
         dir_tuples = dataset.get_dir_tuples(basedir)

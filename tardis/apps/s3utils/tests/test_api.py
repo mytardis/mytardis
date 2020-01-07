@@ -22,8 +22,8 @@ class S3UtilsAppApiTestCase(MyTardisResourceTestCase):
         # and is accessible using self.get_credentials()
         self.dataset.experiments.add(self.testexp)
         self.datafile = DataFile.objects.create(
-            dataset=self.dataset, filename='test.txt',
-            size=8, md5sum="930e419034038dfad994f0d2e602146c")
+            dataset=self.dataset, filename='test.txt', size=8,
+            algorithm="md5", checksum="930e419034038dfad994f0d2e602146c")
         self.s3_storage_box = StorageBox.objects.create(
             name='S3 Storage Box',
             django_storage_class='storages.backends.s3boto3.S3Boto3Storage')

@@ -31,9 +31,11 @@ def given_a_logged_in_user_with_dataset_access(context):
     dataset = Dataset.objects.create(description="Test Dataset")
     dataset.experiments.add(experiment)
     datafile1 = DataFile.objects.create(
-        filename="testfile1.txt", size=12345, md5sum="bogus", dataset=dataset)
+        filename="testfile1.txt", size=12345,
+        algorithm="md5", checksum="bogus", dataset=dataset)
     datafile2 = DataFile.objects.create(
-        filename="testfile2.txt", size=123456, md5sum="bogus2", dataset=dataset)
+        filename="testfile2.txt", size=123456,
+        algorithm="md5", checksum="bogus2", dataset=dataset)
     context.browser.get(context.base_url + "/login/")
     username_field = context.browser.find_element_by_id("id_username")
     username_field.send_keys(user.username)

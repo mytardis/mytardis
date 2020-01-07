@@ -6,6 +6,7 @@ Implemented with Tastypie.
 .. moduleauthor:: Grischa Meyer <grischa@gmail.com>
 .. moduleauthor:: James Wettenhall <james.wettenhall@monash.edu>
 '''
+import logging
 import json
 import re
 from wsgiref.util import FileWrapper
@@ -37,6 +38,7 @@ from tastypie.contrib.contenttypes.fields import GenericForeignKeyField
 
 from uritemplate import URITemplate
 
+from tardis.celery import tardis_app
 from tardis.analytics.tracker import IteratorTracker
 from . import tasks
 from .auth.decorators import (
@@ -50,7 +52,7 @@ from .auth.decorators import (
     has_write_permissions)
 from .auth.localdb_auth import django_user
 from .models.access_control import ObjectACL
-from .models.datafile import DataFile, DataFileObject, compute_checksums
+from .models.datafile import DataFile, DataFileObject, compute_checksum
 from .models.dataset import Dataset
 from .models.experiment import Experiment, ExperimentAuthor
 from .models.parameters import (
@@ -65,6 +67,9 @@ from .models.parameters import (
 from .models.storage import StorageBox, StorageBoxOption, StorageBoxAttribute
 from .models.facility import Facility, facilities_managed_by
 from .models.instrument import Instrument
+from .util import get_verify_priority
+
+logger = logging.getLogger(__name__)
 
 
 class PrettyJSONSerializer(Serializer):
@@ -930,38 +935,55 @@ class DataFileResource(MyTardisModelResource):
         self.authorized_read_detail(
             [file_record],
             self.build_bundle(obj=file_record, request=request))
+        verify_ms = getattr(settings, 'VERIFY_AS_SERVICE', False)
         for dfo in file_record.file_objects.all():
-            shadow = 'dfo_verify location:%s' % dfo.storage_box.name
-            tasks.dfo_verify.apply_async(
-                args=[dfo.id],
-                priority=dfo.priority,
-                shadow=shadow)
+            if verify_ms:
+                try:
+                    tardis_app.send_task(
+                        'verify_dfo',
+                        args = [
+                            dfo.id,
+                            dfo.get_full_path(),
+                            'verify_file',
+                            dfo.datafile.algorithm
+                        ],
+                        queue = 'verify',
+                        priority = get_verify_priority(dfo.priority))
+                except Exception:
+                    logger.exception("Failed to verify file DFO ID %s", dfo.id)
+            else:
+                shadow = 'dfo_verify location:%s' % dfo.storage_box.name
+                tasks.dfo_verify.apply_async(
+                    args=[dfo.id],
+                    priority=dfo.priority,
+                    shadow=shadow)
         return HttpResponse()
 
     def hydrate(self, bundle):
+        if 'algorithm' not in bundle.data or 'checksum' not in bundle.data:
+            # support legacy clients
+            if 'md5sum' in bundle.data:
+                bundle.data['algorithm'] = 'md5'
+                bundle.data['checksum'] = bundle.data['md5sum']
+                del(bundle.data['md5sum'])
+            elif 'sha512sum' in bundle.data:
+                bundle.data['algorithm'] = 'sha512'
+                bundle.data['checksum'] = bundle.data['sha512sum']
+                del(bundle.data['sha512sum'])
         if 'attached_file' in bundle.data:
             # have POSTed file
             newfile = bundle.data['attached_file'][0]
-            compute_md5 = getattr(settings, 'COMPUTE_MD5', True)
-            compute_sha512 = getattr(settings, 'COMPUTE_SHA512', False)
-            if (compute_md5 and 'md5sum' not in bundle.data) or \
-                    (compute_sha512 and 'sha512sum' not in bundle.data):
-                checksums = compute_checksums(
-                    newfile,
-                    compute_md5=compute_md5,
-                    compute_sha512=compute_sha512,
-                    close_file=False)
-                if compute_md5:
-                    bundle.data['md5sum'] = checksums['md5sum']
-                if compute_sha512:
-                    bundle.data['sha512sum'] = checksums['sha512sum']
-
+            algorithm = getattr(settings, 'VERIFY_DEFAULT_ALGORITHM', 'md5')
+            bundle.data['algorithm'] = algorithm
+            bundle.data['checksum'] = compute_checksum(
+                newfile,
+                algorithm,
+                close_file=False)
             if 'replicas' in bundle.data:
                 for replica in bundle.data['replicas']:
                     replica.update({'file_object': newfile})
             else:
                 bundle.data['replicas'] = [{'file_object': newfile}]
-
             del(bundle.data['attached_file'])
         return bundle
 

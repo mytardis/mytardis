@@ -27,9 +27,10 @@ class CopyMoveTestCase(TestCase):
     def setUp(self):
         self.dataset = Dataset.objects.create(description="test-dataset")
         file_content = u'bla'
-        md5sum = hashlib.md5(file_content.encode('utf-8')).hexdigest()
         self.datafile = DataFile.objects.create(
-            dataset=self.dataset, filename="file.txt", size=3, md5sum=md5sum)
+            dataset=self.dataset, filename="file.txt",
+            size=3, algorithm="md5",
+            checksum=hashlib.md5(file_content.encode('utf-8')).hexdigest())
         self.default_storage_box = StorageBox.get_default_storage()
         with tempfile.NamedTemporaryFile() as temp:
             second_location = temp.name

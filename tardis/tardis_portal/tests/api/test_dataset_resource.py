@@ -121,10 +121,12 @@ class DatasetResourceTest(MyTardisResourceTestCase):
         self.assertEqual(returned_data, [])
 
         DataFile.objects.create(
-            dataset=dataset, filename='filename2', size=0, md5sum='bogus',
+            dataset=dataset, filename='filename2',
+            size=0, algorithm='md5', checksum='bogus',
             directory='subdir')
         DataFile.objects.create(
-            dataset=dataset, filename='filename1', size=0, md5sum='bogus')
+            dataset=dataset, filename='filename1',
+            size=0, algorithm='md5', checksum='bogus')
 
         response = self.api_client.get(
             uri, authentication=self.get_credentials())
@@ -160,7 +162,8 @@ class DatasetResourceTest(MyTardisResourceTestCase):
         self.assertEqual(returned_data, [])
 
         DataFile.objects.create(
-            dataset=dataset, filename='filename1', size=0, md5sum='bogus',
+            dataset=dataset, filename='filename1',
+            size=0, algorithm='md5', checksum='bogus',
             directory='subdir')
         response = self.api_client.get(
             uri, authentication=self.get_credentials())
@@ -172,7 +175,8 @@ class DatasetResourceTest(MyTardisResourceTestCase):
         ])
 
         DataFile.objects.create(
-            dataset=dataset, filename='filename2', size=0, md5sum='bogus',
+            dataset=dataset, filename='filename2',
+            size=0, algorithm='md5', checksum='bogus',
             directory='subdir')
         response = self.api_client.get(
             uri, authentication=self.get_credentials())
@@ -192,7 +196,8 @@ class DatasetResourceTest(MyTardisResourceTestCase):
         )
 
         DataFile.objects.create(
-            dataset=dataset, filename='filename3', size=0, md5sum='bogus',
+            dataset=dataset, filename='filename3',
+            size=0, algorithm='md5', checksum='bogus',
             directory='subdir2')
         response = self.api_client.get(
             uri, authentication=self.get_credentials())
@@ -214,7 +219,8 @@ class DatasetResourceTest(MyTardisResourceTestCase):
         )
 
         DataFile.objects.create(
-            dataset=dataset, filename='filename4', size=0, md5sum='bogus',
+            dataset=dataset, filename='filename4',
+            size=0, algorithm='md5', checksum='bogus',
             directory='subdir/subdir3')
         response = self.api_client.get(
             uri, authentication=self.get_credentials())
@@ -261,7 +267,8 @@ class DatasetResourceTest(MyTardisResourceTestCase):
         uri = '/api/v1/dataset/%d/child-dir-nodes/?dir_path=%s' % (dataset.id, encoded_subdir1)
 
         DataFile.objects.create(
-            dataset=dataset, filename='filename1', size=0, md5sum='bogus',
+            dataset=dataset, filename='filename1',
+            size=0, algorithm='md5', checksum='bogus',
             directory='subdir#1')
         response = self.api_client.get(
             uri, authentication=self.get_credentials())
@@ -273,7 +280,8 @@ class DatasetResourceTest(MyTardisResourceTestCase):
         ])
 
         DataFile.objects.create(
-            dataset=dataset, filename='filename2', size=0, md5sum='bogus',
+            dataset=dataset, filename='filename2',
+            size=0, algorithm='md5', checksum='bogus',
             directory='subdir#1/subdir#2')
         uri = '/api/v1/dataset/%d/child-dir-nodes/?dir_path=%s' % (dataset.id, encoded_subdir1)
         response = self.api_client.get(

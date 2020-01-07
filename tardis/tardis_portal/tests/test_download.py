@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-
-import hashlib
 import re
 
 from functools import reduce
@@ -22,7 +20,7 @@ from django.contrib.auth.models import User
 
 from ..models.experiment import Experiment
 from ..models.dataset import Dataset
-from ..models.datafile import DataFile, DataFileObject
+from ..models.datafile import DataFile, DataFileObject, compute_checksum
 
 
 try:
@@ -32,10 +30,10 @@ except (AttributeError, ImportError):
     IMAGEMAGICK_AVAILABLE = False
 
 
-def get_size_and_sha512sum(testfile):
+def get_size_and_checksum(testfile, algorithm):
     with open(testfile, 'rb') as f:
         contents = f.read()
-        return (len(contents), hashlib.sha512(contents).hexdigest())
+        return (len(contents), compute_checksum(f, algorithm))
 
 
 def _generate_test_image(testfile):
@@ -114,13 +112,15 @@ class DownloadTestCase(TestCase):
         self.datafile2 = self._build_datafile(testfile2, filename2,
                                               self.dataset2)
 
-    def _build_datafile(self, testfile, filename, dataset, checksum=None,
-                        size=None, mimetype=''):
-        filesize, sha512sum = get_size_and_sha512sum(testfile)
+    def _build_datafile(self, testfile, filename, dataset, size=None,
+                        algorithm='md5', checksum=None, mimetype=''):
+
+        filesize, chksum = get_size_and_checksum(testfile, algorithm)
         datafile = DataFile(dataset=dataset, filename=filename,
                             mimetype=mimetype,
                             size=size if size is not None else filesize,
-                            sha512sum=(checksum if checksum else sha512sum))
+                            algorithm=algorithm,
+                            checksum=checksum if checksum else chksum)
         datafile.save()
         dfo = DataFileObject(
             datafile=datafile,
@@ -365,9 +365,10 @@ class DownloadTestCase(TestCase):
             # XXX Test disabled because lib magic can't be loaded
             pass
         self.assertEqual(df.size, 13)
-        self.assertEqual(df.md5sum, '8ddd8be4b179a529afa5f2ffae4b9858')
+        self.assertEqual(df.algorithm, 'md5')
+        self.assertEqual(df.checksum, '8ddd8be4b179a529afa5f2ffae4b9858')
 
-        # Now check we can calculate checksums and infer the mime type
+        # Now check we can calculate checksum and infer the mime type
         # for a JPG file.
         filename = 'tardis/tardis_portal/tests/test_data/ands-logo-hi-res.jpg'
 
@@ -384,12 +385,14 @@ class DownloadTestCase(TestCase):
             # XXX Test disabled because lib magic can't be loaded
             pass
         self.assertEqual(pdf1.size, 14232)
-        self.assertEqual(pdf1.md5sum, 'c450d5126ffe3d14643815204daf1bfb')
+        self.assertEqual(pdf1.algorithm, 'md5')
+        self.assertEqual(pdf1.checksum, 'c450d5126ffe3d14643815204daf1bfb')
 
         # Now check that we can override the physical file meta information
         # We are setting size/checksums that don't match the actual file, so
         # the
         pdf2 = self._build_datafile(filename, filename, dataset,
+                                    algorithm='sha512',
                                     checksum=('cf83e1357eefb8bdf1542850d66d800'
                                               '7d620e4050b5715dc83f4a921d36ce9'
                                               'ce47d0d13c5d85f2b0ff8318d2877ee'
@@ -400,7 +403,6 @@ class DownloadTestCase(TestCase):
                                               'officedocument.presentationml.'
                                               'presentation'))
         self.assertEqual(pdf2.size, 0)
-        self.assertEqual(pdf2.md5sum, '')
         self.assertEqual(pdf2.file_objects.get().verified, False)
         pdf2 = DataFile.objects.get(pk=pdf2.pk)
         try:
@@ -412,7 +414,6 @@ class DownloadTestCase(TestCase):
             # XXX Test disabled because lib magic can't be loaded
             pass
         self.assertEqual(pdf2.size, 0)
-        self.assertEqual(pdf2.md5sum, '')
 
         pdf2.mimetype = ''
         pdf2.save()
