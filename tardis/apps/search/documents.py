@@ -141,27 +141,28 @@ class DataFileDocument(Document):
     modification_time = fields.DateField()
     dataset = fields.NestedField(properties={
         'id': fields.IntegerField(),
-        'experiments': fields.NestedField(properties={
-            'id': fields.IntegerField(),
-            'objectacls': fields.ObjectField(properties={
-                'pluginId': fields.KeywordField(),
-                'entityId': fields.KeywordField()
-            }
-            ),
-            'public_access': fields.IntegerField()
-        }
-        ),
-    }
-    )
+    })
+
+    experiments = fields.ObjectField()
+
+    def prepare_experiments(self, instance):
+        experiments = []
+        exps = instance.dataset.experiments.all()
+        for exp in exps:
+            exp_dict = {}
+            exp_dict['id'] = exp.id
+            exp_dict['public_access'] = exp.public_access
+            oacls = exp.objectacls.all().values('entityId', 'pluginId')
+            exp_dict['objectacls'] = list(oacls)
+            experiments.append(exp_dict)
+        return experiments
 
     class Django:
         model = DataFile
         related_models = [Dataset, Experiment]
-        queryset_pagination = 10000
+        queryset_pagination = 100000
 
     def get_instances_from_related(self, related_instance):
         if isinstance(related_instance, Dataset):
             return related_instance.datafile_set.all()
-        if isinstance(related_instance, Experiment):
-            return DataFile.objects.filter(dataset__experiments=related_instance)
         return None
