@@ -160,7 +160,7 @@ class DataFileDocument(Document):
     class Django:
         model = DataFile
         related_models = [Dataset, Experiment]
-        queryset_pagination = 100000
+        queryset_pagination = 5000
 
     def get_instances_from_related(self, related_instance):
         if isinstance(related_instance, Dataset):
