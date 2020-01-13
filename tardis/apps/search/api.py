@@ -100,14 +100,14 @@ class SearchAppResource(Resource):
                     .query('nested', path='experiments', query=query_dataset_oacl))
 
         query_datafile = Q("match", filename=query_text)
-        query_datafile_oacl = Q("term", **{'dataset.experiments.objectacls.entityId': user.id}) | \
-            Q("term", **{'dataset.experiments.public_access': 100})
+        query_datafile_oacl = Q("term", experiments__objectacls__entityId=user.id) | \
+            Q("term", experiments__public_access=100)
         for group in groups:
             query_datafile_oacl = query_datafile_oacl | \
-                                 Q("term", **{'dataset.experiments.objectacls.entityId': group.id})
+                                 Q("term", experiments__objectacls__entityId=group.id)
+        query_datafile = query_datafile & query_datafile_oacl
         ms = ms.add(Search(index='datafile')
-                    .extra(size=MAX_SEARCH_RESULTS, min_score=MIN_CUTOFF_SCORE).query(query_datafile)
-                    .query('nested', path='dataset.experiments', query=query_datafile_oacl))
+                    .extra(size=MAX_SEARCH_RESULTS, min_score=MIN_CUTOFF_SCORE).query(query_datafile))
         results = ms.execute()
         result_dict = {k: [] for k in ["experiments", "datasets", "datafiles"]}
         for item in results:
@@ -143,10 +143,11 @@ def simple_search_public_data(query_text):
                 .extra(size=MAX_SEARCH_RESULTS, min_score=MIN_CUTOFF_SCORE).query(query_dataset)
                 .query('nested', path='experiments', query=query_dataset_oacl))
     query_datafile = Q("match", filename=query_text)
-    query_datafile_oacl = Q("term", **{'dataset.experiments.public_access': 100})
+    query_datafile_oacl = Q("term", experiments__public_access=100)
+    query_datafile = query_datafile & query_datafile_oacl
     ms = ms.add(Search(index='datafile')
-                .extra(size=MAX_SEARCH_RESULTS, min_score=MIN_CUTOFF_SCORE).query(query_datafile)
-                .query('nested', path='dataset.experiments', query=query_datafile_oacl))
+                .extra(size=MAX_SEARCH_RESULTS, min_score=MIN_CUTOFF_SCORE)
+                .query(query_datafile))
     results = ms.execute()
     for item in results:
         for hit in item.hits.hits:
@@ -259,18 +260,19 @@ class AdvanceSearchAppResource(Resource):
         if 'datafile' in index_list:
             query_datafile = Q("match", filename=query_text)
             if user.is_authenticated:
-                query_datafile_oacl = Q("term", **{'dataset.experiments.objectacls.entityId': user.id}) | \
-                                      Q("term", **{'dataset.experiments.public_access': 100})
+                query_datafile_oacl = Q("term", experiments__objectacls__entityId=user.id) | \
+                                      Q("term", experiments__public_access=100)
                 for group in groups:
                     query_datafile_oacl = query_datafile_oacl | \
-                                          Q("term", **{'dataset.experiments.objectacls.entityId': group.id})
+                                          Q("term", experiments__objectacls__entityId=group.id)
             else:
-                query_datafile_oacl = Q("term", **{'dataset.experiments.public_access': 100})
+                query_datafile_oacl = Q("term", experiments__public_access=100)
             if start_date is not None:
                 query_datafile = query_datafile & Q("range", created_time={'gte': start_date, 'lte': end_date})
+            query_datafile = query_datafile & query_datafile_oacl
             ms = ms.add(Search(index='datafile')
-                        .extra(size=MAX_SEARCH_RESULTS, min_score=MIN_CUTOFF_SCORE).query(query_datafile)
-                        .query('nested', path='dataset.experiments', query=query_datafile_oacl))
+                        .extra(size=MAX_SEARCH_RESULTS, min_score=MIN_CUTOFF_SCORE)
+                        .query(query_datafile))
         result = ms.execute()
         result_dict = {k: [] for k in ["experiments", "datasets", "datafiles"]}
         for item in result:
