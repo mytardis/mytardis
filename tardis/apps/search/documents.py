@@ -61,13 +61,15 @@ class ExperimentDocument(Document):
 
     class Django:
         model = Experiment
-        related_models = [User, ObjectACL]
+        related_models = [User, ObjectACL, DataFile]
 
     def get_instances_from_related(self, related_instance):
         if isinstance(related_instance, User):
             return related_instance.experiment_set.all()
         if isinstance(related_instance, ObjectACL):
             return related_instance.content_object
+        if isinstance(related_instance, DataFile):
+            related_instance.dataset.experiments.all()
         return None
 
 
@@ -165,4 +167,6 @@ class DataFileDocument(Document):
     def get_instances_from_related(self, related_instance):
         if isinstance(related_instance, Dataset):
             return related_instance.datafile_set.all()
+        if isinstance(related_instance, Experiment):
+            return DataFile.objects.filter(dataset__experiments=related_instance)
         return None
