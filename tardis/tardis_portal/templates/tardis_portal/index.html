@@ -46,7 +46,7 @@
                     </div>
                     <div class="col">
                       <ul class="list-inline float-right list-unstyled">
-                        <li class="list-inline-item m-0">{{ exp|experiment_last_updated_badge }}</li>
+                        <li class="list-inline-item m-0"><div class="badges" id="badge-{{exp.id}}"></div></li>
                         <li class="list-inline-item m-0">{{ exp|experiment_datasets_badge }}</li>
                         <li class="list-inline-item m-0">{{ exp|experiment_datafiles_badge }}</li>
                         <li class="list-inline-item m-0">{{ exp|experiment_public_access_badge }}</li>
@@ -155,4 +155,5 @@
 </div> {% comment %}id="content"{% endcomment %}
 <input type="hidden" id="exps-expand-accordion" value="{{ exps_expand_accordion }}">
 {% render_bundle 'tardis_portal_index' %}
+  {% render_bundle 'index_page_badges' %}
 {% endblock content %}

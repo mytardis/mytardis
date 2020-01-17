@@ -31,7 +31,8 @@ module.exports = {
         related_info_index_ro: "./assets/js/apps/related_info/index_ro.js",
         lib: glob.sync("./assets/js/lib/**/*.js"),
         search_app : "./assets/js/apps/search/index.jsx",
-        tree_view : "./assets/js/apps/tree_view/index.jsx"
+        tree_view : "./assets/js/apps/tree_view/index.jsx",
+        index_page_badges: "./assets/js/apps/badges/components/index-page-badges.js"
     },
     output: {
         path: path.resolve("./assets/bundles/"),
