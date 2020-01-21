@@ -18,7 +18,7 @@ export const naturalDay = (date) => {
   } else if (durationDays > 1 && durationDays < 7){
     return 'a week ago'
   } else {
-    return momentDate.format('do MMMM YYYY');
+    return momentDate.format('Do MMMM YYYY');
   }
   
 };
