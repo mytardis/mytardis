@@ -1,5 +1,9 @@
-export const fetchExperimentData = (experimentID) => {
-  return fetch("/api/v1/experiment/"+experimentID+"/?format=json").then(
-    response => response.json()
-  )
-};
+import "core-js/stable";
+import "regenerator-runtime/runtime";
+
+async function fetchExperimentData (experimentID) {
+  const response = await fetch("/api/v1/experiment/"+experimentID+"/?format=json");
+  return await response.json();
+}
+
+export default fetchExperimentData;
