@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 
-import ExperimentLastUpdatedBadge from "./experiment_last_updated_badge";
+import ExperimentLastUpdatedBadge from "./ExperimentLastUpdateBadge";
 
 
 document.querySelectorAll('.badges')

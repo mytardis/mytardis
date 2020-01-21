@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, {Fragment, useState} from "react";
 import moment from "moment";
 import Badge from 'react-bootstrap/Badge';
 import PropTypes from 'prop-types';
-import { fetchExperimentData } from './FetchData';
+import fetchExperimentData from './FetchData';
 import {naturalDay} from "./humanize";
 
 const ExperimentLastUpdatedBadge = ({ experimentID }) => {
@@ -10,7 +10,7 @@ const ExperimentLastUpdatedBadge = ({ experimentID }) => {
   const [content, setContent] = useState('');
   const [title, setTitle] = useState('');
 
-  useEffect(() => {
+  React.useEffect(() => {
     fetchExperimentData(experimentID).then((data) => {
       const date = new Date(data.update_time);
       setLastUpdatedTime(naturalDay(date));
@@ -19,11 +19,13 @@ const ExperimentLastUpdatedBadge = ({ experimentID }) => {
     });
   }, []);
   return (
-    <Badge variant="info" content={content} title={title}>
-      <i className="fa fa-clock-o" />
-&nbsp;
+    <Fragment>
+      <Badge variant="info" content={content} title={title}>
+      <i className="fa fa-clock-o" />&nbsp;
       {lastUpdatedTime}
     </Badge>
+    </Fragment>
+
   );
 };
 
