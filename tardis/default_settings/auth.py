@@ -30,6 +30,7 @@ AUTH_PROVIDERS = (
 
 
 AUTHENTICATION_BACKENDS = (
+	'graphql_jwt.backends.JSONWebTokenBackend',
     'django.contrib.auth.backends.ModelBackend',
     'tardis.tardis_portal.auth.authorisation.ACLAwareBackend',
 )
