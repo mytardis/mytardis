@@ -1,13 +1,9 @@
 import graphene
-from graphene import Node
-from graphene_django.types import DjangoObjectType
 from graphene_django.filter import DjangoFilterConnectionField
-from graphene_django.debug import DjangoDebug
-from graphql import GraphQLError
 
 import graphql_jwt
 
-from ..models.facility import Facility as FacilityModel, facilities_managed_by
+from ..models.facility import facilities_managed_by
 from ..models.instrument import Instrument as InstrumentModel
 from ..models.experiment import Experiment as ExperimentModel
 from ..models.dataset import Dataset as DatasetModel
@@ -15,7 +11,7 @@ from ..models.dataset import Dataset as DatasetModel
 from .user import UserType, UserSignIn
 from .facility import FacilityType
 from .instrument import InstrumentType
-from .experiment import ExperimentType, CreateExperiment, UpdateExperiment
+from .experiment import ExperimentType
 from .dataset import DatasetType
 
 

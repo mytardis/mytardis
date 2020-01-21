@@ -1,7 +1,7 @@
 import graphene
 from graphene import Node
 from graphene_django.types import DjangoObjectType
-from django_filters import FilterSet, OrderingFilter
+# from django_filters import FilterSet, OrderingFilter
 from graphql_jwt.decorators import login_required
 
 from .utils import ExtendedConnection
