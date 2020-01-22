@@ -3,12 +3,15 @@ from graphene_django.filter import DjangoFilterConnectionField
 
 import graphql_jwt
 
-from ..models.facility import facilities_managed_by
+from django.contrib.auth.models import Group as GroupModel
+
+from ..models.facility import Facility as FacilityModel
 from ..models.instrument import Instrument as InstrumentModel
 from ..models.experiment import Experiment as ExperimentModel
 from ..models.dataset import Dataset as DatasetModel
 
 from .user import UserType, UserSignIn
+from .group import GroupType
 from .facility import FacilityType
 from .instrument import InstrumentType
 from .experiment import ExperimentType
@@ -24,10 +27,19 @@ class Query(graphene.ObjectType):
             return user
         return None
 
+    groups = DjangoFilterConnectionField(GroupType)
+    def resolve_groups(self, info, **kwargs):
+        user = info.context.user
+        if user.is_authenticated and user.is_superuser:
+            return GroupModel.objects.all()
+        return GroupModel.objects.none()
+
     facilities = DjangoFilterConnectionField(FacilityType)
     def resolve_facilities(self, info, **kwargs):
         user = info.context.user
-        return facilities_managed_by(user)
+        if user.is_authenticated and user.is_superuser:
+            return FacilityModel.objects.all()
+        return FacilityModel.objects.filter(manager_group__user=user)
 
     instruments = DjangoFilterConnectionField(InstrumentType)
     def resolve_instruments(self, info, **kwargs):

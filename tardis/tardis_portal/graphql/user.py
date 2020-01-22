@@ -1,17 +1,17 @@
 import graphene
 from graphene import Node
-from graphene_django import DjangoObjectType
+from graphene_django.types import DjangoObjectType
 
 import graphql_jwt
 
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User as UserModel
 
 from .utils import ExtendedConnection
 
 
 class UserType(DjangoObjectType):
     class Meta:
-        model = User
+        model = UserModel
         fields = ('id', 'username', 'first_name', 'last_name', 'email')
         interfaces = (Node,)
         connection_class = ExtendedConnection
