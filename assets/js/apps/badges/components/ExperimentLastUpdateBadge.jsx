@@ -1,9 +1,9 @@
-import React, {Fragment, useState} from "react";
-import moment from "moment";
+import React, { Fragment, useState } from 'react';
+import moment from 'moment';
 import Badge from 'react-bootstrap/Badge';
 import PropTypes from 'prop-types';
 import fetchExperimentData from './FetchData';
-import {naturalDay} from "./humanize";
+import { naturalDay } from './humanize';
 
 const ExperimentLastUpdatedBadge = ({ experimentID }) => {
   const [lastUpdatedTime, setLastUpdatedTime] = useState('');
@@ -15,15 +15,16 @@ const ExperimentLastUpdatedBadge = ({ experimentID }) => {
       const date = new Date(data.update_time);
       setLastUpdatedTime(naturalDay(date));
       setContent(date.toISOString());
-      setTitle("Last updated: "+moment(date, "DD-MM-YYYY").format("llll"))
+      setTitle(`Last updated: ${moment(date, 'DD-MM-YYYY').format('llll')}`);
     });
   }, []);
   return (
     <Fragment>
       <Badge variant="info" content={content} title={title}>
-      <i className="fa fa-clock-o" />&nbsp;
-      {lastUpdatedTime}
-    </Badge>
+        <i className="fa fa-clock-o" />
+&nbsp;
+        {lastUpdatedTime}
+      </Badge>
     </Fragment>
 
   );
