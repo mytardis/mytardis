@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom';
 
 import ExperimentLastUpdatedBadge from './ExperimentLastUpdateBadge';
 import PublicAccessBadge from './PublicAccessBadge';
+import DatasetCountBadge from './DatasetCountBadge';
 
 
 document.querySelectorAll('.badges')
@@ -11,6 +12,7 @@ document.querySelectorAll('.badges')
     ReactDOM.render(
       <Fragment>
         <ExperimentLastUpdatedBadge experimentID={experimentID} />
+        <DatasetCountBadge experimentID={experimentID} />
         <PublicAccessBadge experimentID={experimentID} />
       </Fragment>, domContainer,
     );
