@@ -6,6 +6,7 @@ import fetchExperimentData from './utils/FetchData';
 import { naturalDay } from './utils/humanize';
 
 const ExperimentLastUpdatedBadge = ({ experimentID }) => {
+  const [loading, setLoading] = useState(true);
   const [lastUpdatedTime, setLastUpdatedTime] = useState('');
   const [content, setContent] = useState('');
   const [title, setTitle] = useState('');
@@ -16,15 +17,21 @@ const ExperimentLastUpdatedBadge = ({ experimentID }) => {
       setLastUpdatedTime(naturalDay(date));
       setContent(date.toISOString());
       setTitle(`Last updated: ${moment(date, 'DD-MM-YYYY').format('llll')}`);
+      setLoading(false);
     });
   }, []);
   return (
     <Fragment>
-      <Badge variant="info" content={content} title={title}>
-        <i className="fa fa-clock-o" />
+      {loading
+        ? <span className="spinner-grow spinner-grow-sm" role="status" aria-hidden="true" />
+        : (
+          <Badge variant="info" content={content} title={title}>
+            <i className="fa fa-clock-o" />
 &nbsp;
-        {lastUpdatedTime}
-      </Badge>
+            {lastUpdatedTime}
+          </Badge>
+        )
+        }
     </Fragment>
 
   );
