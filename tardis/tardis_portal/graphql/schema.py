@@ -10,7 +10,7 @@ from ..models.instrument import Instrument as InstrumentModel
 from ..models.experiment import Experiment as ExperimentModel
 from ..models.dataset import Dataset as DatasetModel
 
-from .user import UserType, UserSignIn
+from .user import UserType, UserSignIn, ApiSignIn
 from .group import GroupType
 from .facility import FacilityType
 from .instrument import InstrumentType
@@ -44,7 +44,7 @@ class Query(graphene.ObjectType):
     instruments = DjangoFilterConnectionField(InstrumentType)
     def resolve_instruments(self, info, **kwargs):
         user = info.context.user
-        facilities = facilities_managed_by(user)
+        facilities = FacilityModel.objects.filter(manager_group__user=user)
         return InstrumentModel.objects.filter(facility__in=facilities)
 
     experiments = DjangoFilterConnectionField(ExperimentType)
@@ -60,10 +60,12 @@ class Query(graphene.ObjectType):
 
 
 class Mutation(graphene.ObjectType):
-    verify_token = graphql_jwt.Verify.Field()
-    refresh_token = graphql_jwt.Refresh.Field()
+    verify_token = graphql_jwt.relay.Verify.Field()
+    refresh_token = graphql_jwt.relay.Refresh.Field()
+    revoke_token = graphql_jwt.relay.Revoke.Field()
 
     user_sign_in = UserSignIn.Field()
+    api_key_sign_in = ApiSignIn.Field()
 
     # create_experiment = CreateExperiment.Field()
     # update_experiment = UpdateExperiment.Field()
