@@ -12,10 +12,20 @@ document.querySelectorAll('.badges')
     const experimentID = domContainer.id.split('-')[1];
     ReactDOM.render(
       <Fragment>
-        <ExperimentLastUpdatedBadge experimentID={experimentID} />
-        <DatasetCountBadge experimentID={experimentID} />
-        <DatafileCountBadge experimentID={experimentID} />
-        <PublicAccessBadge experimentID={experimentID} />
+        <ul className="list-inline float-right list-unstyled">
+          <li className="mr-1 list-inline-item">
+            <ExperimentLastUpdatedBadge experimentID={experimentID} />
+          </li>
+          <li className="mr-1 list-inline-item">
+            <DatasetCountBadge experimentID={experimentID} />
+          </li>
+          <li className="mr-1 list-inline-item">
+            <DatafileCountBadge experimentID={experimentID} />
+          </li>
+          <li className="mr-1 list-inline-item">
+            <PublicAccessBadge experimentID={experimentID} />
+          </li>
+        </ul>
       </Fragment>, domContainer,
     );
   });
