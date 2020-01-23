@@ -2,8 +2,8 @@ import React, { Fragment, useState } from 'react';
 import moment from 'moment';
 import Badge from 'react-bootstrap/Badge';
 import PropTypes from 'prop-types';
-import fetchExperimentData from './FetchData';
-import { naturalDay } from './humanize';
+import fetchExperimentData from './utils/FetchData';
+import { naturalDay } from './utils/humanize';
 
 const ExperimentLastUpdatedBadge = ({ experimentID }) => {
   const [lastUpdatedTime, setLastUpdatedTime] = useState('');

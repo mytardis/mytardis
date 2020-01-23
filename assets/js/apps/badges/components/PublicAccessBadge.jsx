@@ -1,7 +1,7 @@
 import React, { Fragment, useState } from 'react';
 import Badge from 'react-bootstrap/Badge';
 import PropTypes from 'prop-types';
-import fetchExperimentData from './FetchData';
+import fetchExperimentData from './utils/FetchData';
 
 const PublicAccessBadge = ({ experimentID }) => {
   const [publicAccess, setPublicAccess] = useState('');

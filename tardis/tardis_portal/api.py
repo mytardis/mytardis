@@ -603,6 +603,8 @@ class ExperimentResource(MyTardisModelResource):
         bundle.data['owner_ids'] = [o.id for o in owners]
         dataset_count = exp.datasets.all().count()
         bundle.data['dataset_count'] = dataset_count
+        datafile_count = exp.get_datafiles().count()
+        bundle.data['datafile_count'] = datafile_count
         return bundle
 
     def hydrate_m2m(self, bundle):

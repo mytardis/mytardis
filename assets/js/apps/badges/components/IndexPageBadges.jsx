@@ -4,6 +4,7 @@ import ReactDOM from 'react-dom';
 import ExperimentLastUpdatedBadge from './ExperimentLastUpdateBadge';
 import PublicAccessBadge from './PublicAccessBadge';
 import DatasetCountBadge from './DatasetCountBadge';
+import DatafileCountBadge from "./DatafileCountBadge";
 
 
 document.querySelectorAll('.badges')
@@ -13,6 +14,7 @@ document.querySelectorAll('.badges')
       <Fragment>
         <ExperimentLastUpdatedBadge experimentID={experimentID} />
         <DatasetCountBadge experimentID={experimentID} />
+        <DatafileCountBadge experimentID={experimentID}/>
         <PublicAccessBadge experimentID={experimentID} />
       </Fragment>, domContainer,
     );
