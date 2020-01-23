@@ -41,6 +41,7 @@
     "minimatch": "^3.0.2",
     "moment": "^2.27.0",
     "mustache": "^2.3.0",
+    "pluralize": "^8.0.0",
     "prop-types": "^15.7.2",
     "query-string": "^6.13.1",
     "react": "^16.13.0",
