@@ -1,10 +1,10 @@
 import React, { Fragment, useState } from 'react';
 import Badge from 'react-bootstrap/Badge';
 import PropTypes from 'prop-types';
+import pluralize from 'pluralize';
 import fetchExperimentData from './utils/FetchData';
-import pluralize from 'pluralize'
 
-const DatafileCountBadge = ({experimentID}) => {
+const DatafileCountBadge = ({ experimentID }) => {
   const [datafileCount, setDataFileCount] = useState('');
   const [title, setTitle] = useState('');
 
@@ -12,18 +12,19 @@ const DatafileCountBadge = ({experimentID}) => {
     fetchExperimentData(experimentID).then((data) => {
       const count = data.datafile_count;
       setDataFileCount(count);
-      setTitle(count+ ' ' + pluralize('file', count))
+      setTitle(`${count} ${pluralize('file', count)}`);
     });
   }, []);
 
-  return(
+  return (
     <Fragment>
-      <Badge variant={'info'} title={title}>
-        <i className={'fa fa-file'}/>&nbsp;
+      <Badge variant="info" title={title}>
+        <i className="fa fa-file" />
+&nbsp;
         {datafileCount}
       </Badge>
     </Fragment>
-  )
+  );
 };
 
 DatafileCountBadge.propTypes = {
