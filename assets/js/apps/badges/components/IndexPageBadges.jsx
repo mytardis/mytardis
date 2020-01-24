@@ -7,6 +7,7 @@ import PublicAccessBadge from './PublicAccessBadge';
 import DatasetCountBadge from './DatasetCountBadge';
 import DatafileCountBadge from './DatafileCountBadge';
 import fetchExperimentData from './utils/FetchData';
+import Spinner from "./utils/Spinner";
 
 
 const IndexPageBadges = ({ experimentID }) => {
@@ -19,7 +20,7 @@ const IndexPageBadges = ({ experimentID }) => {
     });
   }, []);
   return (
-    isLoading ? <span className="float-right spinner-grow spinner-grow-sm" role="status" aria-hidden="true" />
+    isLoading ? <Spinner />
       : (
         <Fragment>
           <ul className="list-inline float-right list-unstyled">
