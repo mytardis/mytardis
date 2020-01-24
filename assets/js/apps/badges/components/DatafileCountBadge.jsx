@@ -2,18 +2,16 @@ import React, { Fragment, useState } from 'react';
 import Badge from 'react-bootstrap/Badge';
 import PropTypes from 'prop-types';
 import pluralize from 'pluralize';
-import fetchExperimentData from './utils/FetchData';
 
-const DatafileCountBadge = ({ experimentID }) => {
+
+const DatafileCountBadge = ({ experimentData }) => {
   const [datafileCount, setDataFileCount] = useState('');
   const [title, setTitle] = useState('');
 
   React.useState(() => {
-    fetchExperimentData(experimentID).then((data) => {
-      const count = data.datafile_count;
-      setDataFileCount(count);
-      setTitle(`${count} ${pluralize('file', count)}`);
-    });
+    const count = experimentData.datafile_count;
+    setDataFileCount(count);
+    setTitle(`${count} ${pluralize('file', count)}`);
   }, []);
 
   return (
@@ -28,7 +26,7 @@ const DatafileCountBadge = ({ experimentID }) => {
 };
 
 DatafileCountBadge.propTypes = {
-  experimentID: PropTypes.string.isRequired,
+  experimentData: PropTypes.string.isRequired,
 };
 
 export default DatafileCountBadge;
