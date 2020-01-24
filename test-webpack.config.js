@@ -30,7 +30,9 @@ module.exports = {
         lib: glob.sync("./assets/js/lib/**/*.js"),
         search_app : "./assets/js/apps/search/index.jsx",
         test: glob.sync("./js_tests/tardis_portal/**/*.js"),
-        tree_view : "./assets/js/apps/tree_view/index.jsx"
+        tree_view : "./assets/js/apps/tree_view/index.jsx",
+        index_page_badges: "./assets/js/apps/badges/components/IndexPageBadges.jsx",
+        experiment_view_badges: "./assets/js/apps/badges/components/ExperimentViewPageBadges.jsx"
     },
     output: {
         path: path.resolve("./assets/bundles/"),
