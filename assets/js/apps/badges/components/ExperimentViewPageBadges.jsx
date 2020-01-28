@@ -55,3 +55,5 @@ const experimentID = elem.id.split('-')[1];
 ReactDOM.render(
   <ExperimentViewPageBadges experimentID={experimentID} />, elem,
 );
+
+export default ExperimentViewPageBadges;

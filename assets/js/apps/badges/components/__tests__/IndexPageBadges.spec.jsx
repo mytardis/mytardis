@@ -32,8 +32,6 @@ describe('renders badges on index page', () => {
     expect(container.textContent).toContain('13th January 2020');
     expect(container.querySelector('span').attributes.getNamedItem('title').value)
       .toEqual('Last updated: Mon, Jan 13, 2020 2:00 PM');
-    expect(container.querySelector('span').attributes.getNamedItem('content').value)
-      .toEqual('2020-01-13T03:00:08.908Z');
   });
   it('should render dataset count badge', async () => {
     await act(async () => {
