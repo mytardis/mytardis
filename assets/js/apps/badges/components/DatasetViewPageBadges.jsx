@@ -1,11 +1,11 @@
 import React, { Fragment, useState } from 'react';
 import ReactDOM from 'react-dom';
-import PropTypes from "prop-types";
-import { fetchDatasetData } from "./utils/FetchData";
-import Spinner from "./utils/Spinner";
-import DatasetSizeBadge from "./DatasetSizeBadge";
-import DatasetExperimentCountBadge from "./DatasetExperimentCountBadge";
-import DatasetDatafileCountBadge from "./DatasetDatafileCountBadge";
+import PropTypes from 'prop-types';
+import { fetchDatasetData } from './utils/FetchData';
+import Spinner from './utils/Spinner';
+import DatasetSizeBadge from './DatasetSizeBadge';
+import DatasetExperimentCountBadge from './DatasetExperimentCountBadge';
+import DatasetDatafileCountBadge from './DatasetDatafileCountBadge';
 
 
 const DatasetViewPageBadges = ({ datasetID }) => {

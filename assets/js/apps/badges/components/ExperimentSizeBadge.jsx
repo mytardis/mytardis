@@ -1,7 +1,7 @@
 import React, { Fragment, useState } from 'react';
 import fileSize from 'filesize';
 import Badge from 'react-bootstrap/Badge';
-import PropTypes from "prop-types";
+import PropTypes from 'prop-types';
 
 const ExperimentSizeBadge = ({ experimentData }) => {
   const [experimentSize, setExperimentSize] = useState('');

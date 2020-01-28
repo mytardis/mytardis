@@ -7,7 +7,7 @@ import PublicAccessBadge from './PublicAccessBadge';
 import DatasetCountBadge from './DatasetCountBadge';
 import DatafileCountBadge from './DatafileCountBadge';
 import { fetchExperimentData } from './utils/FetchData';
-import Spinner from "./utils/Spinner";
+import Spinner from './utils/Spinner';
 
 
 const IndexPageBadges = ({ experimentID }) => {
