@@ -53,3 +53,5 @@ document.querySelectorAll('.badges')
       <IndexPageBadges experimentID={experimentID} />, domContainer,
     );
   });
+
+export default IndexPageBadges;
