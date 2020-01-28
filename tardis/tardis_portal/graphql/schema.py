@@ -14,7 +14,7 @@ from .user import UserType, UserSignIn, ApiSignIn
 from .group import GroupType
 from .facility import FacilityType
 from .instrument import InstrumentType
-from .experiment import ExperimentType
+from .experiment import ExperimentType, ExperimentTypeFilter
 from .dataset import DatasetType
 
 
@@ -47,7 +47,7 @@ class Query(graphene.ObjectType):
         facilities = FacilityModel.objects.filter(manager_group__user=user)
         return InstrumentModel.objects.filter(facility__in=facilities)
 
-    experiments = DjangoFilterConnectionField(ExperimentType)
+    experiments = DjangoFilterConnectionField(ExperimentType, filterset_class=ExperimentTypeFilter)
     def resolve_experiments(self, info, **kwargs):
         user = info.context.user
         return ExperimentModel.safe.all(user)

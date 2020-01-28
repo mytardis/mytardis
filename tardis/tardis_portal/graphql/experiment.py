@@ -1,7 +1,7 @@
 import graphene
 from graphene import Node
 from graphene_django.types import DjangoObjectType
-# from django_filters import FilterSet, OrderingFilter
+from django_filters import FilterSet, OrderingFilter, NumberFilter
 from graphql_jwt.decorators import login_required
 
 from .utils import ExtendedConnection
@@ -9,22 +9,28 @@ from ..models.experiment import Experiment as ExperimentModel
 from ..models.access_control import ObjectACL
 
 
+class ExperimentTypeFilter(FilterSet):
+    class Meta:
+        model = ExperimentModel
+        fields = ()
+
+    id = NumberFilter(field_name='id')
+
+    order_by = OrderingFilter(
+        fields=(
+            ('created_time', 'createdTime'),
+            ('created_by', 'createdBy')
+        )
+    )
+
+
 class ExperimentType(DjangoObjectType):
     class Meta:
         model = ExperimentModel
-        filter_fields = {
-            'id': ['exact']
-        }
         interfaces = (Node,)
         connection_class = ExtendedConnection
 
     pk = graphene.Field(type=graphene.Int, source='pk')
-
-    # order_by = OrderingFilter(
-    #     fields=(
-    #         ('createdTime', 'created_time'),
-    #     )
-    # )
 
 
 class CreateExperiment(graphene.Mutation):
