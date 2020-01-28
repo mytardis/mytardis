@@ -6,7 +6,7 @@ import ExperimentLastUpdatedBadge from './ExperimentLastUpdateBadge';
 import PublicAccessBadge from './PublicAccessBadge';
 import DatasetCountBadge from './DatasetCountBadge';
 import DatafileCountBadge from './DatafileCountBadge';
-import fetchExperimentData from './utils/FetchData';
+import { fetchExperimentData } from './utils/FetchData';
 import Spinner from "./utils/Spinner";
 
 

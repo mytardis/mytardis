@@ -6,7 +6,9 @@ import ExperimentLastUpdatedBadge from './ExperimentLastUpdateBadge';
 import PublicAccessBadge from './PublicAccessBadge';
 import DatasetCountBadge from './DatasetCountBadge';
 import DatafileCountBadge from './DatafileCountBadge';
-import fetchExperimentData from './utils/FetchData';
+import { fetchExperimentData } from './utils/FetchData';
+import Spinner from "./utils/Spinner";
+import ExperimentSizeBadge from "./ExperimentSizeBadge";
 
 
 const ExperimentViewPageBadges = ({ experimentID }) => {
@@ -21,7 +23,7 @@ const ExperimentViewPageBadges = ({ experimentID }) => {
   }, []);
 
   return (
-    isLoading ? <span className="float-right spinner-grow spinner-grow-sm" role="status" aria-hidden="true" />
+    isLoading ? <Spinner />
       : (
         <Fragment>
           <span className="mr-2">
@@ -29,6 +31,9 @@ const ExperimentViewPageBadges = ({ experimentID }) => {
           </span>
           <span className="mr-2">
             <DatafileCountBadge experimentData={expData} />
+          </span>
+          <span className="mr-2">
+            <ExperimentSizeBadge experimentData={expData} />
           </span>
           <span className="mr-2">
             <ExperimentLastUpdatedBadge experimentData={expData} />

@@ -605,6 +605,8 @@ class ExperimentResource(MyTardisModelResource):
         bundle.data['dataset_count'] = dataset_count
         datafile_count = exp.get_datafiles().count()
         bundle.data['datafile_count'] = datafile_count
+        experiment_size = exp.get_size()
+        bundle.data['experiment_size'] = experiment_size
         return bundle
 
     def hydrate_m2m(self, bundle):
@@ -697,6 +699,16 @@ class DatasetResource(MyTardisModelResource):
             'description'
         ]
         always_return_data = True
+
+    def dehydrate(self, bundle):
+        dataset = bundle.obj
+        size = dataset.get_size()
+        bundle.data['dataset_size'] = size
+        dataset_experiment_count = dataset.experiments.count()
+        bundle.data['dataset_experiment_count'] = dataset_experiment_count
+        dataset_datafile_count = dataset.datafile_set.count()
+        bundle.data['dataset_datafile_count'] = dataset_datafile_count
+        return bundle
 
     def prepend_urls(self):
         return [
