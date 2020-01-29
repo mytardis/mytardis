@@ -1,7 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { act } from '@testing-library/react';
-import renderer from 'react-test-renderer';
 import IndexPageBadges from '../IndexPageBadges';
 
 global.fetch = require('jest-fetch-mock');
