@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { act } from '@testing-library/react';
+import renderer from 'react-test-renderer';
 import IndexPageBadges from '../IndexPageBadges';
 
 global.fetch = require('jest-fetch-mock');
@@ -25,6 +26,12 @@ afterEach(() => {
   container = null;
 });
 describe('renders badges on index page', () => {
+  it('should render correctly', async () => {
+    await act(async () => {
+      ReactDOM.render(<IndexPageBadges experimentID="123" />, container);
+    });
+    expect(container).toMatchSnapshot();
+  });
   it('should render last updated badge', async () => {
     await act(async () => {
       ReactDOM.render(<IndexPageBadges experimentID="123" />, container);

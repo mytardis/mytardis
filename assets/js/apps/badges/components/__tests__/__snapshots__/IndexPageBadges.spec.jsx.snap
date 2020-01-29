@@ -1,0 +1,67 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`renders badges on index page should render correctly 1`] = `
+<div>
+  <ul
+    class="list-inline float-right list-unstyled"
+  >
+    <li
+      class="mr-1 list-inline-item"
+    >
+      <span
+        class="badge badge-info"
+        content="2020-01-13T03:00:08.908Z"
+        title="Last updated: Mon, Jan 13, 2020 2:00 PM"
+      >
+        <i
+          class="fa fa-clock-o"
+        />
+         
+        13th January 2020
+      </span>
+    </li>
+    <li
+      class="mr-1 list-inline-item"
+    >
+      <span
+        class="badge badge-info"
+        title="1 dataset"
+      >
+        <i
+          class="fa fa-folder"
+        />
+         
+        1
+      </span>
+    </li>
+    <li
+      class="mr-1 list-inline-item"
+    >
+      <span
+        class="badge badge-info"
+        title="100 files"
+      >
+        <i
+          class="fa fa-file"
+        />
+         
+        100
+      </span>
+    </li>
+    <li
+      class="mr-1 list-inline-item"
+    >
+      <span
+        class="badge badge-secondary"
+        content=" No public access"
+        title=" No public access"
+      >
+        <i
+          class="fa fa-eye-slash"
+        />
+         Private
+      </span>
+    </li>
+  </ul>
+</div>
+`;
