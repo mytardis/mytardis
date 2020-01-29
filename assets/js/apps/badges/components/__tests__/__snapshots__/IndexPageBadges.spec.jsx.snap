@@ -10,7 +10,6 @@ exports[`renders badges on index page should render correctly 1`] = `
     >
       <span
         class="badge badge-info"
-        content="2020-01-13T03:00:08.908Z"
         title="Last updated: Mon, Jan 13, 2020 2:00 PM"
       >
         <i

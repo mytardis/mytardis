@@ -7,13 +7,11 @@ import { naturalDay } from './utils/humanize';
 const ExperimentLastUpdatedBadge = ({ experimentData }) => {
   const [loading, setLoading] = useState(true);
   const [lastUpdatedTime, setLastUpdatedTime] = useState('');
-  const [content, setContent] = useState('');
   const [title, setTitle] = useState('');
 
   React.useEffect(() => {
     const date = new Date(experimentData.update_time);
     setLastUpdatedTime(naturalDay(date));
-    setContent(date.toISOString());
     setTitle(`Last updated: ${moment(date, 'DD-MM-YYYY').format('llll')}`);
     setLoading(false);
   }, [experimentData]);
@@ -22,7 +20,7 @@ const ExperimentLastUpdatedBadge = ({ experimentData }) => {
       {loading
         ? <span className=" float-right spinner-grow spinner-grow-sm" role="status" aria-hidden="true" />
         : (
-          <Badge variant="info" content={content} title={title}>
+          <Badge variant="info" title={title}>
             <i className="fa fa-clock-o" />
 &nbsp;
             {lastUpdatedTime}
