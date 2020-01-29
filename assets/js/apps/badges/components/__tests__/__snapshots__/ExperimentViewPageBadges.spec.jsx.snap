@@ -1,0 +1,76 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`renders badges on experiment view page should render all badges 1`] = `
+<div
+  class="badges"
+  id="experiment-1234"
+>
+  <span
+    class="mr-2"
+  >
+    <span
+      class="badge badge-info"
+      title="1 dataset"
+    >
+      <i
+        class="fa fa-folder"
+      />
+       
+      1
+    </span>
+  </span>
+  <span
+    class="mr-2"
+  >
+    <span
+      class="badge badge-info"
+      title="100 files"
+    >
+      <i
+        class="fa fa-file"
+      />
+       
+      100
+    </span>
+  </span>
+  <span
+    class="mr-2"
+  >
+    <span
+      class="badge badge-info"
+      title="Experiment size is ~ 1 KB"
+    >
+      1 KB
+    </span>
+  </span>
+  <span
+    class="mr-2"
+  >
+    <span
+      class="badge badge-info"
+      content="2020-01-13T03:00:08.908Z"
+      title="Last updated: Mon, Jan 13, 2020 2:00 PM"
+    >
+      <i
+        class="fa fa-clock-o"
+      />
+       
+      13th January 2020
+    </span>
+  </span>
+  <span
+    class="mr-2"
+  >
+    <span
+      class="badge badge-secondary"
+      content=" No public access"
+      title=" No public access"
+    >
+      <i
+        class="fa fa-eye-slash"
+      />
+       Private
+    </span>
+  </span>
+</div>
+`;

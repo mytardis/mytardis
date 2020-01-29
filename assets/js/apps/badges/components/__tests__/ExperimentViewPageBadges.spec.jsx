@@ -33,6 +33,7 @@ describe('renders badges on experiment view page', () => {
     await act(async () => {
       ReactDOM.render(<ExperimentViewPageBadges experimentID="123" />, container);
     });
+    expect(container).toMatchSnapshot();
     expect(container.querySelectorAll('span').length)
       .toEqual(10);
   });

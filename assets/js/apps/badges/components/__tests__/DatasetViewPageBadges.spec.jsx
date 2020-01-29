@@ -31,6 +31,7 @@ describe('renders badges on experiment view page', () => {
     await act(async () => {
       ReactDOM.render(<DatasetViewPageBadges datasetID="123" />, container);
     });
+    expect(container).toMatchSnapshot();
     expect(container.querySelectorAll('span').length)
       .toEqual(6);
   });
