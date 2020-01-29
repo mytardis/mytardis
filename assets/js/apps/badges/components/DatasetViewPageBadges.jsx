@@ -42,8 +42,12 @@ DatasetViewPageBadges.propTypes = {
 };
 
 const elem = document.querySelector('.badges');
-const datasetID = elem.id.split('-')[1];
+let datasetID = null;
+if (elem) {
+  [, datasetID] = elem.id.split('-');
+  ReactDOM.render(
+    <DatasetViewPageBadges datasetID={datasetID} />, elem,
+  );
+}
 
-ReactDOM.render(
-  <DatasetViewPageBadges datasetID={datasetID} />, elem,
-);
+export default DatasetViewPageBadges;

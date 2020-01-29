@@ -51,9 +51,12 @@ ExperimentViewPageBadges.propTypes = {
 };
 
 const elem = document.querySelector('.badges');
-const experimentID = elem.id.split('-')[1];
-ReactDOM.render(
-  <ExperimentViewPageBadges experimentID={experimentID} />, elem,
-);
+let experimentID = null;
+if (elem) {
+  [, experimentID] = elem.id.split('-');
+  ReactDOM.render(
+    <ExperimentViewPageBadges experimentID={experimentID} />, elem,
+  );
+}
 
 export default ExperimentViewPageBadges;

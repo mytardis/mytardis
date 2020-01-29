@@ -1,12 +1,11 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { act } from '@testing-library/react';
-import IndexPageBadges from "../IndexPageBadges";
-import ExperimentViewPageBadges from "../ExperimentViewPageBadges";
+import ExperimentViewPageBadges from '../ExperimentViewPageBadges';
 
 global.fetch = require('jest-fetch-mock');
 
-let fakeExperimentData = {
+const fakeExperimentData = {
   update_time: '2020-01-13T14:00:08.908600',
   dataset_count: 1,
   datafile_count: 100,
@@ -19,6 +18,8 @@ beforeEach(() => {
     json: () => Promise.resolve(fakeExperimentData),
   }));
   container = document.createElement('div');
+  container.setAttribute('id', 'experiment-1234');
+  container.setAttribute('class', 'badges');
   document.body.appendChild(container);
 });
 afterEach(() => {
@@ -28,11 +29,39 @@ afterEach(() => {
 });
 
 describe('renders badges on experiment view page', () => {
-  it('should render experiment size badge', async () => {
+  it('should render all badges', async () => {
     await act(async () => {
-      ReactDOM.render(<ExperimentViewPageBadges experimentID={"123"} />, container);
+      ReactDOM.render(<ExperimentViewPageBadges experimentID="123" />, container);
     });
-    expect(container.querySelector('span').textContent)
+    expect(container.querySelectorAll('span').length)
+      .toEqual(10);
+  });
+  it('should render dataset count badge', async () => {
+    await act(async () => {
+      ReactDOM.render(<ExperimentViewPageBadges experimentID="123" />, container);
+    });
+    expect(container.querySelectorAll('span')[0].textContent.trim())
+      .toEqual('1');
+  });
+  it('should render datafile count badge', async () => {
+    await act(async () => {
+      ReactDOM.render(<ExperimentViewPageBadges experimentID="123" />, container);
+    });
+    expect(container.querySelectorAll('span')[2].textContent.trim())
+      .toEqual('100');
+  });
+  it('should render last updated badge', async () => {
+    await act(async () => {
+      ReactDOM.render(<ExperimentViewPageBadges experimentID="123" />, container);
+    });
+    expect(container.querySelectorAll('span')[6].textContent.trim())
+      .toEqual('13th January 2020');
+  });
+  it('should render public access badge', async () => {
+    await act(async () => {
+      ReactDOM.render(<ExperimentViewPageBadges experimentID="123" />, container);
+    });
+    expect(container.querySelectorAll('span')[8].textContent.trim())
       .toEqual('Private');
   });
 });
