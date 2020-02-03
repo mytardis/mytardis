@@ -109,3 +109,34 @@ describe('renders child nodes when clicked on parent node', () => {
     expect(component.find('Header').get(0).props.node.children[0].name).toEqual('child_1');
   });
 });
+
+describe('test filter on tree view', () => {
+  let component;
+  beforeEach(async () => {
+    jest.spyOn(global, 'fetch').mockImplementation(() => Promise.resolve({
+      json: () => Promise.resolve(fakeTreeData),
+    }));
+    await act(async () => {
+      component = mount(<TreeView datasetId="1234" modified="" />);
+    });
+    component.update();
+  });
+  it('with empty filter it should display all nodes', async () => {
+    jest.spyOn(global, 'fetch').mockImplementation(() => Promise.resolve({
+      json: () => Promise.resolve(fakeChildData),
+    }));
+    await act(async () => {
+      component.find('NodeHeader').first().simulate('click');
+    });
+    component.update();
+    expect(component.find('NodeHeader')).toHaveLength(4);
+  });
+  it('should filter tree list with change in input', async () => {
+    await act(async () => {
+      component.find('input').simulate('change', { target: { value: 'Child_2.txt' } });
+      component.find('input').simulate('keyUp');
+    });
+    component.update();
+    expect(component.find('NodeHeader')).toHaveLength(4);
+  });
+});
