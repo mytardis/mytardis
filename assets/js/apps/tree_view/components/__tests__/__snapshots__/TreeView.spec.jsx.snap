@@ -1,0 +1,112 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`renders initial tree view on page load should render folder tree correctly 1`] = `
+<div>
+  <div>
+    <div
+      class="input-group"
+    >
+      <span
+        class="input-group-text"
+      >
+        <i
+          class="fa fa-search"
+        />
+      </span>
+      <input
+        class="form-control"
+        placeholder="Search the tree..."
+        type="text"
+      />
+    </div>
+  </div>
+  <div
+    class="p-1"
+  >
+    <ul
+      class="css-1tl97mg"
+    >
+      <li
+        class="css-ya4lz1"
+      >
+        <div>
+          <div
+            style="display: inline-block; vertical-align: top; color: rgb(0, 0, 0); padding-bottom: 2px;"
+          >
+            <div
+              style="line-height: 20px; vertical-align: middle; font-size: 16px; cursor: pointer;"
+            >
+              <i
+                class="fa fa-folder"
+                style="margin-right: 5px; opacity: 0.6;"
+              />
+              parent_1
+            </div>
+          </div>
+        </div>
+        <div />
+      </li>
+      <li
+        class="css-ya4lz1"
+      >
+        <div>
+          <div
+            style="display: inline-block; vertical-align: top; color: rgb(0, 0, 0); padding-bottom: 2px;"
+          >
+            <div
+              style="line-height: 20px; vertical-align: middle; font-size: 16px; cursor: pointer;"
+            >
+              <i
+                class="fa fa-folder"
+                style="margin-right: 5px; opacity: 0.6;"
+              />
+              parent_2
+            </div>
+          </div>
+        </div>
+        <div />
+      </li>
+      <li
+        class="css-ya4lz1"
+      >
+        <div>
+          <div
+            style="display: inline-block; vertical-align: top; color: rgb(0, 0, 0); padding-bottom: 2px;"
+          >
+            <div
+              style="line-height: 20px; vertical-align: middle; font-size: 16px; cursor: pointer;"
+            >
+              <i
+                class="fa fa-file-text"
+                style="margin-right: 5px; opacity: 0.6;"
+              />
+              Parent.txt
+            </div>
+          </div>
+        </div>
+        <div />
+      </li>
+      <li
+        class="css-ya4lz1"
+      >
+        <div>
+          <div
+            style="display: inline-block; vertical-align: top; color: rgb(0, 0, 0); padding-bottom: 2px;"
+          >
+            <div
+              style="line-height: 20px; vertical-align: middle; font-size: 16px; cursor: pointer;"
+            >
+              <i
+                class="fa fa-file-text"
+                style="margin-right: 5px; opacity: 0.6;"
+              />
+              STORM-6.jpg
+            </div>
+          </div>
+        </div>
+        <div />
+      </li>
+    </ul>
+  </div>
+</div>
+`;
