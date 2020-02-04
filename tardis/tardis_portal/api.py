@@ -769,10 +769,10 @@ class DatasetResource(MyTardisModelResource):
                 child_list.append(child_dict)
                 # append files to list
         if dfs:
-            filenames = [df.filename for df in dfs]
-            for filename in filenames:
+            for df in dfs:
                 children = {}
-                children['name'] = filename
+                children['name'] = df.filename
+                children['id'] = df.id
                 child_list.append(children)
 
         return JsonResponse(child_list, status=200, safe=False)
@@ -805,9 +805,8 @@ class DatasetResource(MyTardisModelResource):
 
         # if there are files append this
         if dfs:
-            filenames = [df.filename for df in dfs]
-            for file_name in filenames:
-                child = {'name': file_name}
+            for df in dfs:
+                child = {'name': df.filename, 'id': df.id}
                 child_list.append(child)
 
         return JsonResponse(child_list, status=200, safe=False)
