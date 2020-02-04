@@ -18,7 +18,7 @@ from . import MyTardisResourceTestCase
 
 class DatasetParameterSetResourceTest(MyTardisResourceTestCase):
     def setUp(self):
-        super(DatasetParameterSetResourceTest, self).setUp()
+        super().setUp()
         self.test_schema = Schema.objects.create(
             namespace="http://schema.namespace/dataset/1",
             type=Schema.DATASET)

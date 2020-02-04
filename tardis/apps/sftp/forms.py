@@ -15,7 +15,7 @@ class KeyAddForm(forms.Form):
     public_key = forms.CharField(required=True, widget=forms.Textarea)
 
     def clean(self):
-        data = super(KeyAddForm, self).clean()
+        data = super().clean()
         key_type = data.get('key_type')
         public_key = data.get('public_key')
 
