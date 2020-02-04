@@ -370,7 +370,7 @@ class DataFile(models.Model):
                                                preview_image_par.string_value))
 
             if path.exists(file_path):
-                preview_image_file = open(file_path)
+                preview_image_file = open(file_path, 'rb')
                 return preview_image_file
 
         render_image_size_limit = getattr(settings, 'RENDER_IMAGE_SIZE_LIMIT',
