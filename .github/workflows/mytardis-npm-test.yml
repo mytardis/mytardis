@@ -14,7 +14,7 @@ jobs:
       - run: npm install
       - run: npm run test-react
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v1
+        uses: codecov/codecov-action@v1.0.5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           file: coverage/coverage-final.json
