@@ -120,10 +120,10 @@ class DatasetResourceTest(MyTardisResourceTestCase):
         returned_data = json.loads(response.content.decode())
         self.assertEqual(returned_data, [])
 
-        DataFile.objects.create(
+        df2 = DataFile.objects.create(
             dataset=dataset, filename='filename2', size=0, md5sum='bogus',
             directory='subdir')
-        DataFile.objects.create(
+        df1 = DataFile.objects.create(
             dataset=dataset, filename='filename1', size=0, md5sum='bogus')
 
         response = self.api_client.get(
@@ -136,7 +136,7 @@ class DatasetResourceTest(MyTardisResourceTestCase):
         expected_data = [
             {
                 'name': 'filename1',
-                'id': 2
+                'id': df1.id
 
             },
             {
@@ -160,7 +160,7 @@ class DatasetResourceTest(MyTardisResourceTestCase):
         returned_data = json.loads(response.content.decode())
         self.assertEqual(returned_data, [])
 
-        DataFile.objects.create(
+        df1 = DataFile.objects.create(
             dataset=dataset, filename='filename1', size=0, md5sum='bogus',
             directory='subdir')
         response = self.api_client.get(
@@ -169,11 +169,11 @@ class DatasetResourceTest(MyTardisResourceTestCase):
         self.assertEqual(returned_data, [
             {
                 'name': 'filename1',
-                'id': 1
+                'id': df1.id
             }
         ])
 
-        DataFile.objects.create(
+        df2 = DataFile.objects.create(
             dataset=dataset, filename='filename2', size=0, md5sum='bogus',
             directory='subdir')
         response = self.api_client.get(
@@ -182,12 +182,12 @@ class DatasetResourceTest(MyTardisResourceTestCase):
         expected_data = [
             {
                 'name': 'filename1',
-                'id': 1
+                'id': df1.id
 
             },
             {
                 'name': 'filename2',
-                'id': 2
+                'id': df2.id
             }
         ]
         self.assertEqual(
@@ -195,7 +195,7 @@ class DatasetResourceTest(MyTardisResourceTestCase):
             sorted(expected_data, key=lambda x: x['name'])
         )
 
-        DataFile.objects.create(
+        df3 = DataFile.objects.create(
             dataset=dataset, filename='filename3', size=0, md5sum='bogus',
             directory='subdir2')
         response = self.api_client.get(
@@ -206,12 +206,12 @@ class DatasetResourceTest(MyTardisResourceTestCase):
         expected_data = [
             {
                 'name': 'filename1',
-                'id': 1
+                'id': df1.id
 
             },
             {
                 'name': 'filename2',
-                'id': 2
+                'id': df2.id
             }
         ]
         self.assertEqual(
@@ -219,7 +219,7 @@ class DatasetResourceTest(MyTardisResourceTestCase):
             sorted(expected_data, key=lambda x: x['name'])
         )
 
-        DataFile.objects.create(
+        df4 = DataFile.objects.create(
             dataset=dataset, filename='filename4', size=0, md5sum='bogus',
             directory='subdir/subdir3')
         response = self.api_client.get(
@@ -228,12 +228,12 @@ class DatasetResourceTest(MyTardisResourceTestCase):
         expected_data = [
             {
                 'name': 'filename1',
-                'id': 1
+                'id': df1.id
 
             },
             {
                 'name': 'filename2',
-                'id': 2
+                'id': df2.id
             },
             {
                 'name': 'subdir3',
@@ -253,7 +253,7 @@ class DatasetResourceTest(MyTardisResourceTestCase):
         expected_data = [
             {
                 'name': 'filename4',
-                'id': 4
+                'id': df4.id
 
             },
         ]
@@ -269,7 +269,7 @@ class DatasetResourceTest(MyTardisResourceTestCase):
         encoded_subdir1 = quote("subdir#1")
         uri = '/api/v1/dataset/%d/child-dir-nodes/?dir_path=%s' % (dataset.id, encoded_subdir1)
 
-        DataFile.objects.create(
+        df1 = DataFile.objects.create(
             dataset=dataset, filename='filename1', size=0, md5sum='bogus',
             directory='subdir#1')
         response = self.api_client.get(
@@ -278,11 +278,11 @@ class DatasetResourceTest(MyTardisResourceTestCase):
         self.assertEqual(returned_data, [
             {
                 'name': 'filename1',
-                'id': 1
+                'id': df1.id
             }
         ])
 
-        DataFile.objects.create(
+        df2 = DataFile.objects.create(
             dataset=dataset, filename='filename2', size=0, md5sum='bogus',
             directory='subdir#1/subdir#2')
         uri = '/api/v1/dataset/%d/child-dir-nodes/?dir_path=%s' % (dataset.id, encoded_subdir1)
@@ -292,7 +292,7 @@ class DatasetResourceTest(MyTardisResourceTestCase):
         expected_data = [
             {
                 'name': 'filename1',
-                'id': 1
+                'id': df1.id
             },
             {
                 'name': 'subdir#2',
