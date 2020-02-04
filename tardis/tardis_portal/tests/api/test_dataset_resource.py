@@ -135,7 +135,8 @@ class DatasetResourceTest(MyTardisResourceTestCase):
         # top-level directory:
         expected_data = [
             {
-                'name': 'filename1'
+                'name': 'filename1',
+                'id': 2
 
             },
             {
@@ -167,7 +168,8 @@ class DatasetResourceTest(MyTardisResourceTestCase):
         returned_data = json.loads(response.content.decode())
         self.assertEqual(returned_data, [
             {
-                'name': 'filename1'
+                'name': 'filename1',
+                'id': 1
             }
         ])
 
@@ -179,11 +181,13 @@ class DatasetResourceTest(MyTardisResourceTestCase):
         returned_data = json.loads(response.content.decode())
         expected_data = [
             {
-                'name': 'filename1'
+                'name': 'filename1',
+                'id': 1
 
             },
             {
-                'name': 'filename2'
+                'name': 'filename2',
+                'id': 2
             }
         ]
         self.assertEqual(
@@ -201,11 +205,13 @@ class DatasetResourceTest(MyTardisResourceTestCase):
         # so it shouldn't appear in the results:
         expected_data = [
             {
-                'name': 'filename1'
+                'name': 'filename1',
+                'id': 1
 
             },
             {
-                'name': 'filename2'
+                'name': 'filename2',
+                'id': 2
             }
         ]
         self.assertEqual(
@@ -221,11 +227,13 @@ class DatasetResourceTest(MyTardisResourceTestCase):
         returned_data = json.loads(response.content.decode())
         expected_data = [
             {
-                'name': 'filename1'
+                'name': 'filename1',
+                'id': 1
 
             },
             {
-                'name': 'filename2'
+                'name': 'filename2',
+                'id': 2
             },
             {
                 'name': 'subdir3',
@@ -244,7 +252,8 @@ class DatasetResourceTest(MyTardisResourceTestCase):
         returned_data = json.loads(response.content.decode())
         expected_data = [
             {
-                'name': 'filename4'
+                'name': 'filename4',
+                'id': 4
 
             },
         ]
@@ -268,7 +277,8 @@ class DatasetResourceTest(MyTardisResourceTestCase):
         returned_data = json.loads(response.content.decode())
         self.assertEqual(returned_data, [
             {
-                'name': 'filename1'
+                'name': 'filename1',
+                'id': 1
             }
         ])
 
@@ -282,6 +292,7 @@ class DatasetResourceTest(MyTardisResourceTestCase):
         expected_data = [
             {
                 'name': 'filename1',
+                'id': 1
             },
             {
                 'name': 'subdir#2',
