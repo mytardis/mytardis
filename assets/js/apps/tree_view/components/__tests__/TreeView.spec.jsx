@@ -22,9 +22,11 @@ const fakeTreeData = [{
 },
 {
   name: 'Parent.txt',
+  id: 11985776,
 },
 {
   name: 'STORM-6.jpg',
+  id: 11985840,
 }];
 const fakeChildData = [
   {
@@ -39,9 +41,11 @@ const fakeChildData = [
   },
   {
     name: 'Child_1.txt',
+    id: 11985763,
   },
   {
     name: 'Child_2.txt',
+    id: 11985764,
   }];
 
 describe('renders initial tree view on page load', () => {
