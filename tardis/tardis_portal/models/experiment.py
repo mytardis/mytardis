@@ -88,7 +88,7 @@ class Experiment(models.Model):
         app_label = 'tardis_portal'
 
     def save(self, *args, **kwargs):
-        super(Experiment, self).save(*args, **kwargs)
+        super().save(*args, **kwargs)
         from .hooks import publish_public_expt_rifcs
         publish_public_expt_rifcs(self)
 
@@ -275,7 +275,7 @@ class ExperimentAuthor(models.Model):
         help_text="URL identifier for the author")
 
     def save(self, *args, **kwargs):
-        super(ExperimentAuthor, self).save(*args, **kwargs)
+        super().save(*args, **kwargs)
         try:
             from .hooks import publish_public_expt_rifcs
             publish_public_expt_rifcs(self.experiment)
