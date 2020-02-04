@@ -83,7 +83,7 @@ class LoginForm(AuthenticationForm):
     # authMethod = forms.CharField()
 
     def __init__(self, *args, **kwargs):
-        super(LoginForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.fields['username'] = forms.CharField(required=True,
                                                   label="Username",
                                                   max_length=75)
@@ -320,15 +320,15 @@ class ExperimentForm(forms.ModelForm):
                  initial=None, error_class=ErrorList, label_suffix=':',
                  empty_permitted=False, instance=None, extra=0):
 
-        super(ExperimentForm, self).__init__(data=data,
-                                             files=files,
-                                             auto_id=auto_id,
-                                             prefix=prefix,
-                                             initial=initial,
-                                             instance=instance,
-                                             error_class=error_class,
-                                             label_suffix=label_suffix,
-                                             empty_permitted=False)
+        super().__init__(data=data,
+                         files=files,
+                         auto_id=auto_id,
+                         prefix=prefix,
+                         initial=initial,
+                         instance=instance,
+                         error_class=error_class,
+                         label_suffix=label_suffix,
+                         empty_permitted=False)
 
         # fix up experiment form
         if instance and not data:
@@ -418,7 +418,7 @@ class ExperimentForm(forms.ModelForm):
             for author in authors:
                 author.delete()
 
-        experiment = super(ExperimentForm, self).save(commit)
+        experiment = super().save(commit)
 
         authors = []
         experiment_authors = []
@@ -709,7 +709,7 @@ class RightsForm(ModelForm):
         }
 
     def clean(self):
-        cleaned_data = super(RightsForm, self).clean()
+        cleaned_data = super().clean()
         public_access = cleaned_data.get("public_access")
         license_ = cleaned_data.get("license")
 

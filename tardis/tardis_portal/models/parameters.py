@@ -299,12 +299,12 @@ class ParameterSet(models.Model, ParameterSetManagerMixin):
         self.blank_param = self.parameter_class
 
     def __init__(self, *args, **kwargs):
-        super(ParameterSet, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         if self.pk is not None:  # we have a ParameterSet that's manageable
             self._init_parameterset_accessors()
 
     def save(self, *args, **kwargs):
-        super(ParameterSet, self).save(*args, **kwargs)
+        super().save(*args, **kwargs)
         self._init_parameterset_accessors()
 
     def _get_label(self):
@@ -481,7 +481,7 @@ class ExperimentParameter(Parameter):
     parameter_type = 'Experiment'
 
     def save(self, *args, **kwargs):
-        super(ExperimentParameter, self).save(*args, **kwargs)
+        super().save(*args, **kwargs)
         try:
             from .hooks import publish_public_expt_rifcs
             publish_public_expt_rifcs(self.parameterset.experiment)
