@@ -12,4 +12,4 @@ jobs:
         with:
           node-version: '10.x'
       - run: npm install
-      - run: nmp test-react
+      - run: npm test-react
