@@ -1,6 +1,7 @@
 import logging
 from os import path
 
+from datetime import datetime
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.fields import GenericRelation
@@ -17,6 +18,8 @@ from .license import License
 
 logger = logging.getLogger(__name__)
 
+def experiment_internal_id_default():
+    return datetime.now().strftime('WUI-%Y-%M-%d-%H-%M-%S.%f')
 
 @python_2_unicode_compatible
 class Experiment(models.Model):
@@ -33,6 +36,8 @@ class Experiment(models.Model):
     :attribute description: The description of the experiment.
     :attribute institution_name: The name of the institution who created
        the experiment.
+    :attribute internal_id: Identifier generated at the instrument, for this experiment
+    :attribute project_id: UoA project ID (e.g. RAID)
     :attribute start_time: **Undocumented**
     :attribute end_time: **Undocumented**
     :attribute created_time: **Undocumented**
@@ -66,6 +71,8 @@ class Experiment(models.Model):
     institution_name = models.CharField(max_length=400,
                                         default=settings.DEFAULT_INSTITUTION)
     description = models.TextField(blank=True)
+    internal_id = models.CharField(max_length=400, null=False, blank=False, unique=True, default=experiment_internal_id_default )
+    project_id = models.CharField(max_length=400, null=False, blank=False)
     start_time = models.DateTimeField(null=True, blank=True)
     end_time = models.DateTimeField(null=True, blank=True)
     created_time = models.DateTimeField(auto_now_add=True)
@@ -83,7 +90,7 @@ class Experiment(models.Model):
     objectacls = GenericRelation(ObjectACL)
     objects = OracleSafeManager()
     safe = ExperimentManager()  # The acl-aware specific manager.
-
+    
     class Meta:
         app_label = 'tardis_portal'
 
@@ -202,6 +209,13 @@ class Experiment(models.Model):
                                         content_type=self.get_ct(),
                                         object_id=self.id,
                                         isOwner=True)
+        return [acl.get_related_object() for acl in acls]
+
+    def get_users(self):
+        acls = ObjectACL.objects.filter(pluginId='django_user',
+                                        content_type=self.get_ct(),
+                                        object_id=self.id,
+                                        canRead=True)
         return [acl.get_related_object() for acl in acls]
 
     def get_groups(self):

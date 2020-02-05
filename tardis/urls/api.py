@@ -34,6 +34,8 @@ from tardis.tardis_portal.api import (
     StorageBoxOptionResource,
     StorageBoxResource,
     UserResource,
+    UserAuthenticationResource,
+    UserProfileResource,
 )
 
 logger = logging.getLogger(__name__)
@@ -57,6 +59,8 @@ v1_api.register(StorageBoxResource())
 v1_api.register(StorageBoxOptionResource())
 v1_api.register(StorageBoxAttributeResource())
 v1_api.register(UserResource())
+v1_api.register(UserAuthenticationResource())
+v1_api.register(UserProfileResource())
 v1_api.register(GroupResource())
 v1_api.register(ObjectACLResource())
 v1_api.register(FacilityResource())

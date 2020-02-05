@@ -1,3 +1,8 @@
+import {
+    configureKeywordsSelect,
+    updateKeywords
+} from "./keywords.js";
+
 /* global prevFileSelect */
 $(document).ready(function() {
 
@@ -57,4 +62,8 @@ $(document).ready(function() {
     if ($("#upload-method").val() === true) {
         $("#upload_button_code").load($("#upload-method-url").val());
     }
+    configureKeywordsSelect();
+    $(".keywords").on("select2:select select2:unselect", function(evt) {
+        updateKeywords();
+    });
 });
