@@ -1,9 +1,9 @@
-import React, { useState } from "react";
+import React, { useState } from 'react';
 
-import Results from "./Results";
-import SimpleSearchForm from "./SimpleSearchForm";
+import Results from './Results';
+import SimpleSearchForm from './SimpleSearchForm';
 
-const queryString = require("query-string");
+const queryString = require('query-string');
 
 const parsed = queryString.parse(window.location.search);
 
@@ -12,13 +12,13 @@ export function createExperimentResultData(hits, newResults) {
     const createdTime = new Date(hit._source.created_time).toDateString();
     const updateTime = new Date(hit._source.update_time).toDateString();
     let renderedDescription = hit._source.description;
-    if (renderedDescription === "") {
-      renderedDescription = "No description available for this experiment";
+    if (renderedDescription === '') {
+      renderedDescription = 'No description available for this experiment';
     }
     newResults = [...newResults, {
       title: hit._source.title,
       description: renderedDescription,
-      type: "experiment",
+      type: 'experiment',
       id: hit._source.id,
       url: `/experiment/view/${hit._source.id}/`,
       institution_name: hit._source.institution_name,
@@ -36,7 +36,7 @@ export function createDatasetResultData(hits, newResults) {
     const updateTime = new Date(hit._source.modified_time).toDateString();
     newResults = [...newResults, {
       title: hit._source.description,
-      type: "dataset",
+      type: 'dataset',
       id: hit._source.id,
       url: `/dataset/${hit._source.id}`,
       experiments: hit._source.experiments,
@@ -54,7 +54,7 @@ export function createDataFileResultData(hits, newResults) {
     const updateTime = new Date(hit._source.modification_time).toDateString();
     newResults = [...newResults, {
       title: hit._source.filename,
-      type: "datafile",
+      type: 'datafile',
       id: hit._id,
       url: `/datafile/view/${hit._id}`,
       created_time: createdTime,
@@ -70,7 +70,7 @@ export function createDataFileResultData(hits, newResults) {
 function Search() {
   const [results, setResults] = useState([]);
   const [counts, setCounts] = useState([]);
-  const searchText = !parsed.q ? "" : parsed.q;
+  const searchText = !parsed.q ? '' : parsed.q;
   const showResults = ((result) => {
     let newResults = [];
     const _counts = {

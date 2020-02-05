@@ -48,7 +48,8 @@ def experiment_datafiles_badge(experiment):
 @register.filter
 def experiment_last_updated_badge(experiment):
     return render_mustache('tardis_portal/badges/last_updated_badge', {
-        'actual_time': experiment.update_time.strftime('%a %d %b %Y %H:%M'),
+        'actual_time': get_local_time(experiment.update_time)\
+                        .strftime('%a %d %b %Y %H:%M'),
         'iso_time': get_local_time(experiment.update_time).isoformat(),
         'natural_time': naturalday(experiment.update_time),
     })

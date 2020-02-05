@@ -3,7 +3,7 @@ from os import path
 
 from django.contrib import admin
 
-from django.contrib.auth.views import logout
+from django.contrib.auth.views import LogoutView
 from django.conf.urls import include, url
 from django.conf import settings
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
@@ -98,8 +98,7 @@ urlpatterns = [
     url(r'^display/', include(display_urls)),
 
     # Login/out
-    url(r'^logout/$', logout, {'next_page': '/'},
-        name='django.contrib.auth.views.logout'),
+    url(r'^logout/$', LogoutView.as_view(), name='logout'),
 
     # Rapid Connect
     url(r'^rc/', include(rapidconnect_urls)),

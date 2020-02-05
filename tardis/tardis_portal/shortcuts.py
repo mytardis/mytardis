@@ -3,8 +3,6 @@ import json
 import re
 from html import escape
 
-import six
-
 from django.shortcuts import render
 from django.http import HttpResponse
 from django.http import HttpResponseRedirect
@@ -77,15 +75,16 @@ def get_experiment_referer(request, dataset_id):
 
 
 def render_to_file(template, filename, context):
+    '''Write the output of render_to_string to a file.
+
+    The :func:`~django.template.loader.render_to_string`
+    method returns a unicode string, which can be written
+    to a file with ``locale.getpreferredencoding()``,
+    usually UTF-8.
+    '''
     string_for_output = render_to_string(template, context)
-    # The render_to_string method returns a unicode string, which will cause
-    # an error when written to file if the string contain diacritics. We
-    # need to do a utf-8 encoding before writing to file
-    # see http://packages.python.org/kitchen/unicode-frustrations.html
-    if six.PY2:
-        open(filename, "w").write(str(string_for_output.encode('utf8', 'replace')))
-    else:
-        open(filename, "w").write(string_for_output)
+    with open(filename, 'w') as output_file:
+        output_file.write(string_for_output)
 
 
 class RestfulExperimentParameterSet(object):

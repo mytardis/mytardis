@@ -1,6 +1,6 @@
 import base64
 
-from six import StringIO
+from io import StringIO
 
 from django import forms
 from django.apps import apps

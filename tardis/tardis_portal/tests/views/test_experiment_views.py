@@ -9,11 +9,9 @@ Tests for view methods relating to experiments
 
 """
 import json
+from urllib.parse import urlparse
 
 from mock import patch
-
-from six.moves import urllib
-from six.moves import map
 
 from django.urls import resolve, reverse
 from django.test import TestCase
@@ -75,7 +73,7 @@ class ExperimentTestCase(TestCase):
         response = client.get(created_url)
         self.assertEqual(response.status_code, 200)
 
-        experiment_id = resolve(urllib.parse.urlparse(created_url).path)\
+        experiment_id = resolve(urlparse(created_url).path)\
             .kwargs['experiment_id']
         experiment = Experiment.objects.get(id=experiment_id)
         for attr in ('title', 'description', 'institution_name'):
@@ -125,7 +123,7 @@ class ExperimentTestCase(TestCase):
         response = client.get(created_url)
         self.assertEqual(response.status_code, 200)
 
-        experiment_id = resolve(urllib.parse.urlparse(created_url).path)\
+        experiment_id = resolve(urlparse(created_url).path)\
             .kwargs['experiment_id']
         experiment = Experiment.objects.get(id=experiment_id)
         for attr in ('title', 'description', 'institution_name'):

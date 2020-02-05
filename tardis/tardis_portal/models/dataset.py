@@ -1,6 +1,7 @@
 import logging
 from os import path
 
+from datetime import datetime
 from django.conf import settings
 from django.urls import reverse
 from django.db import models
@@ -17,6 +18,8 @@ from taggit.managers import TaggableManager
 
 logger = logging.getLogger(__name__)
 
+def dataset_id_default():
+    return datetime.now().strftime('DTST-%Y-%M-%d-%H-%M-%S.%f')
 
 @python_2_unicode_compatible
 class Dataset(models.Model):
@@ -38,11 +41,13 @@ class Dataset(models.Model):
         this data
     :attribute description: Description of this dataset, which usually \
         corresponds to the folder name on the instrument PC
+    :attribute dataset_id: A unique identifier to the dataset generated at instrument.
     :attribute immutable: Whether this dataset is read-only
     """
 
     experiments = models.ManyToManyField(Experiment, related_name='datasets')
     description = models.TextField(blank=True)
+    dataset_id = models.CharField(max_length=400, null=False, blank=False, unique=True, default=dataset_id_default )
     directory = models.CharField(blank=True, null=True, max_length=255)
     created_time = models.DateTimeField(null=True, blank=True, default=timezone.now)
     modified_time = models.DateTimeField(null=True, blank=True)
@@ -96,11 +101,11 @@ class Dataset(models.Model):
         from .datafile import DataFile
         return DataFile.objects.filter(dataset=self)
 
-    @models.permalink
     def get_absolute_url(self):
         """Return the absolute url to the current ``Dataset``"""
-        return ('tardis_portal.view_dataset', (),
-                {'dataset_id': self.id})
+        return reverse(
+            'tardis_portal.view_dataset',
+            kwargs={'dataset_id': self.id})
 
     def get_download_urls(self):
         view = 'tardis.tardis_portal.download.streaming_download_' \
@@ -115,12 +120,13 @@ class Dataset(models.Model):
 
         return urls
 
-    @models.permalink
     def get_edit_url(self):
         """Return the absolute url to the edit view of the current
         ``Dataset``
         """
-        return ('tardis.tardis_portal.views.edit_dataset', (self.id,))
+        return reverse(
+            'tardis.tardis_portal.views.edit_dataset',
+            args=[self.id])
 
     def get_images(self):
         from .datafile import DataFile, IMAGE_FILTER
@@ -177,3 +183,150 @@ class Dataset(models.Model):
         boxes = StorageBox.objects.filter(
             file_objects__datafile__dataset=self).distinct()
         return boxes
+
+    def get_dir_tuples(self, basedir=""):
+        """
+        List the directories immediately inside basedir.
+
+        If basedir is empty (the default), list directories with no
+        separator, e.g. "subdir1"
+
+        If basedir is a string without a separator (e.g. "subdir1"),
+        look for directory paths with one separator e.g. "subdir1/subdir2"
+        and include a ".." for navigating back to the dataset's top-level
+        directory.
+
+        Continuing the example from the _dirs property method:
+
+        test files/subdir1/
+        test files/subdir2/
+        test files/subdir3/
+        test files/subdir3/subdir4/
+
+        List directories in the dataset's top level directory:
+        >>> ds.get_dir_tuples("")
+        [('test files')]
+
+        List directories within the dataset's "test files" directory:
+        >>> ds.get_dir_tuples("test files")
+        [('..', 'test files'), ('subdir1', 'test /filessubdir1'),
+         ('subdir2', 'test files/subdir2'), ('subdir3', 'test files/subdir3')]
+
+        Request directories within a non-existent directory:
+        >>> ds.get_dir_tuples("test file")
+        []
+
+        List directories within the dataset's "test files/subdir3" directory:
+        >>> ds.get_dir_tuples("test files/subdir3")
+        [('..', 'test files/subdir3'), ('subdir4', 'test files/subdir3/subdir4')]
+
+        List directories within the dataset's "test files/subdir3/subdir4" directory:
+        >>> ds.get_dir_tuples("test files/subdir3/subdir4")
+        [('..', 'test files/subdir3/subdir4')]
+        """
+        from .datafile import DataFile
+
+        dir_tuples = []
+        if basedir:
+            dir_tuples.append(('..', basedir))
+        dirs_query = DataFile.objects.filter(dataset=self)
+        if basedir:
+            dirs_query = dirs_query.filter(directory__startswith='%s/' % basedir)
+        dir_paths = set(dirs_query.values_list('directory', flat=True))
+        for dir_path in dir_paths:
+            if not dir_path:
+                continue
+            if basedir:
+                dir_name = dir_path[len(basedir)+1:].lstrip('/').split('/')[0]
+            else:
+                dir_name = dir_path.split('/')[0]
+            # Reconstruct the dir_path, eliminating subdirs within dir_name:
+            dir_path = '/'.join([basedir, dir_name]).lstrip('/')
+            dir_tuple = (dir_name, dir_path)
+            if dir_name and dir_tuple not in dir_tuples:
+                dir_tuples.append((dir_name, dir_path))
+
+        return sorted(dir_tuples, key=lambda x: x[0])
+
+    def get_dir_nodes(self, dir_tuples):
+        """Return child node's subdirectories in format required for tree view
+
+        Given a list of ('subdir', 'path/to/subdir') tuples for a dataset
+        directory node, return a list of {'name': 'subdir', 'children': []}
+        dictionaries required for the tree view.
+
+        Like the get_dir_tuples method, the get_dir_nodes method only lists
+        files and directories immediately within the supplied basedir, so
+        any subdirectories will have an empty children array.
+
+        Continuing the example from the _dirs property method:
+
+        test files/subdir1/
+        test files/subdir2/
+        test files/subdir3/
+        test files/subdir3/subdir4/
+
+        List directories in the dataset's top level directory:
+        >>> dir_tuples = ds.get_dir_tuples("")
+        >>> ds.get_dir_nodes(dir_tuples)
+        [
+            {
+                'name': 'test files',
+                'path': '',
+                'children': []
+            }
+        ]
+
+        List directories within the dataset's "test files" directory:
+        >>> dir_tuples = ds.get_dir_tuples("test files")
+        >>> ds.get_dir_nodes(dir_tuples)
+        [
+            {
+                'name': 'subdir1',
+                'path': 'test files/subdir1',
+                'children': []
+            },
+            {
+                'name': 'subdir2',
+                'path': 'test files/subdir2',
+                'children': []
+            },
+            {
+                'name': 'subdir3',
+                'path': 'test files/subdir3',
+                'children': []
+            },
+        ]
+
+        Request directories within a non-existent directory:
+        >>> dir_tuples = ds.get_dir_tuples("test file")
+        >>> ds.get_dir_nodes(dir_tuples)
+        []
+
+        List directories within the dataset's "test files/subdir3" directory:
+        >>> dir_tuples = ds.get_dir_tuples("test files3/subdir3")
+        >>> ds.get_dir_nodes(dir_tuples)
+        [
+            'name': 'subdir4',
+            'path': 'test files/subdir3/subdir4',
+            'children': []
+        ]
+
+        """
+        dir_list = []
+        basedir = ""
+        for dir_tuple in dir_tuples:
+            if dir_tuple[0] == '..':
+                basedir = dir_tuple[1]
+        for dir_tuple in dir_tuples:
+            dir_name, dir_path = dir_tuple
+            if dir_name == '..':
+                continue
+            subdir_tuples = self.get_dir_tuples(dir_path)
+            child_dict = {
+                'name': dir_name,
+                'path': dir_path,
+                'children': []
+            }
+            dir_list.append(child_dict)
+        return dir_list

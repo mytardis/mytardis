@@ -35,8 +35,10 @@
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <a class="close" data-dismiss="modal">&times;</a>
         <h1 class="title"></h1>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
       </div>
 
       <div class="loading-placeholder" style="display: none">
@@ -53,8 +55,10 @@
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <a class="close" data-dismiss="modal">&times;</a>
         <h1 class="title">Request sent</h1>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
       </div>
 
       <div class="loading-placeholder" style="display: none">
@@ -78,8 +82,10 @@
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <a class="close" data-dismiss="modal">&times;</a>
         <h1 class="title">Import Files</h1>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
       </div>
 
       <div class="loading-placeholder" style="display: none">
@@ -90,12 +96,12 @@
     </div>  <!-- modal-content -->
   </div>  <!-- modal-dialog -->
 </div>
-
-<div class="page-header">
-  <h4>Dataset</h4>
-    <div class="pull-right">
+<div class="row">
+  <div class="page-header col-md-12">
+  <h5 class="mb-1">Dataset</h5>
+    <div class="float-right">
   {% if push_to_enabled and is_authenticated %}
-    <a class="btn btn-xs btn-primary" title="Push to..."
+    <a class="btn btn-sm btn-outline-secondary" title="Push to..."
        onclick="window.open('{{ push_to_url }}', 'push-to', 'width=800, height=600'); return false;"
        href="{{ push_to_url }}" target="_blank">
       <i class="fa fa-upload"></i>
@@ -103,14 +109,14 @@
     </a>
   {% endif %}
   {% if has_write_permissions and is_authenticated %}
-    <a class="btn btn-warning btn-xs" title="Edit Dataset"
+    <a class="btn btn-outline-secondary btn-sm" title="Edit Dataset"
        href="{{ dataset.get_edit_url }}">
       <i class="fa fa-pencil"></i>
       Edit Dataset
     </a>
   {% endif %}
     </div>
-  <h1>
+  <h1 class="mb-1">
     {% if dataset.description %}
       <span property="dc:title">{{ dataset.description }}</span>
     {% else %}
@@ -118,35 +124,45 @@
     {% endif %}
   </h1>
   {% if from_instrument or from_facility %}
-    <h4 style="padding-top: 4px">
-        <small>
-          {% if from_instrument %}
-            <span style="margin-right: 2em;">
-              Instrument: {{ from_instrument }}
-            </span>
-          {% endif %}
-          {% if from_facility %}
-            <span style="margin-right: 2em;">
-              Facility: {{  from_facility }}
-            </span>
-          {% endif %}
-        </small>
-    </h4>
+    <div class="row">
+      <div class="col-md-9">
+        <span style="padding-top: 4px">
+            <small>
+              {% if from_instrument %}
+                <span style="margin-right: 2em;">
+                  Instrument: {{ from_instrument }}
+                </span>
+              {% endif %}
+              {% if from_facility %}
+                <span style="margin-right: 2em;">
+                  Facility: {{  from_facility }}
+                </span>
+              {% endif %}
+            </small>
+        </span>
+      </div>
+    </div>
   {% endif %}
   {% if from_experiment %}
-  <h4 style="padding-top: 4px">
-      <small>
-      From the experiment:
-      <a
-         class="experiment-link"
-         href="{{ from_experiment.get_absolute_url }}">
-      {{ from_experiment.title }}
-      </a>
-      </small>
-  </h4>
+    <div class="row">
+      <div class="col-md-9">
+        <span style="padding-top: 4px">
+            <small>
+            From the experiment:
+            <a
+               class="experiment-link"
+               href="{{ from_experiment.get_absolute_url }}">
+            {{ from_experiment.title }}
+            </a>
+            </small>
+        </span>
+      </div>
+    </div>
   {% else %}
+    <div class="row">
+      <div class="col-md-9">
         {% if other_experiments|length == 1 %}
-        <h4 style="padding-top: 4px">
+        <span style="padding-top: 4px">
             <small>
             From the experiment:
         {% for other_experiment in other_experiments %}
@@ -156,20 +172,26 @@
             {{ other_experiment.title }}
             </a>
             </small>
-        </h4>
+        </span>
         {% endfor %}
         {% endif %}
+      </div>
+    </div>
 
   {% endif %}
   {% if dataset.immutable %}
-  <h4 style="padding-top: 4px">
-      <small>
-      This experiment has been set to immutable on creation (cannot be modified)
-      </small>
-  </h4>
+    <div class="row">
+      <div class="col-md-9">
+        <span style="padding-top: 4px">
+            <small>
+            This experiment has been set to immutable on creation (cannot be modified)
+            </small>
+        </span>
+      </div>
+    </div>
   {% endif %}
 
-    <p class="pull-right">
+    <p class="float-right mb-1">
     {{ dataset|dataset_experiments_badge}}&nbsp;
     {{ dataset|dataset_datafiles_badge }}&nbsp;
     {{ dataset|dataset_size_badge }}
@@ -177,8 +199,8 @@
     <p style="text-align:left; margin-top:10px;">
   </p>
 </div>
-
-<div class="row" >
+</div>
+<div class="row">
   <div class="col-md-6">
     <div id="dataset-keywords">
       <h3>Keyword(s)</h3>
@@ -283,8 +305,8 @@
     </div>
     <div class="col-md-4">
 {% if has_write_permissions and perms.tardis_portal.add_datafile and not experiment.public and not immutable %}
-    <span class="btn btn-sm btn-success fileinput-button pull-right">
-        <i class="glyphicon glyphicon-plus"></i>
+    <span class="btn btn-sm btn-primary fileinput-button mb-1 pull-right">
+        <i class="fa fa-plus"></i>
         <span>Add files...</span>
         <input id="fileupload" type="file" name="attached_file"
                data-url="/api/v1/dataset_file/" multiple>
@@ -300,7 +322,7 @@
                     {% if organization|length > 1 %}
                         {% for p in protocol %}
                             {% for o in organization %}
-                                <a class="btn btn-primary btn-xs" href="{{p.1}}{{o}}"
+                                <a class="btn btn-outline-secondary btn-sm" href="{{p.1}}{{o}}"
                                    title="Download Entire Experiment as {{p.0|upper}} with {{o}} organization">
                                     <i class="fa fa-download"></i>
                                     {% if o == default_organization %}
@@ -313,7 +335,7 @@
                         {% endfor %}
                     {% else %}
                         {% for p in protocol %}
-                            <a class="btn btn-primary btn-xs" href="{{p.1}}"
+                            <a class="btn btn-outline-secondary btn-sm" href="{{p.1}}"
                                title="Download Entire Dataset as {{p.0|upper}}">
                                 <i class="fa fa-download"></i>
                                 {{p.0|upper}}
@@ -322,10 +344,16 @@
                     {% endif %}
                     <a target="_blank"
                        href="{% url "tardis.apps.sftp:index" %}?object_id={{ dataset.id }}&object_type=dataset"
-                       class="btn btn-primary btn-xs" title="Download with SFTP">SFTP</a>
-                    <a class="btn btn-primary btn-xs"
+                       class="btn btn-outline-secondary btn-sm" title="Download with SFTP">
+                      <i class="fa fa-download"></i>
+                      SFTP
+                    </a>
+                    <a class="btn btn-outline-secondary btn-sm"
                        href="{% url 'tardis_portal.dataset_checksums' dataset.id %}"
-                       title="Download MD5 checksums for all files in this Dataset">MD5</a>
+                       title="Download MD5 checksums for all files in this Dataset">
+                      <i class="fa fa-download"></i>
+                      MD5
+                    </a>
                 </p>
             {% endif %}
         {% endblock downloads %}
@@ -336,22 +364,38 @@
               <div class="progress-bar progress-bar-success" style="background-color:blue;height:4px;width:0%;"></div>
           </div>
       </div>
-      <div id="datafiles-pane" class="dropzone"></div>
-      <div id="dropzone" class="dropzone" style="
-border: 6px dashed lightgrey;
--moz-border-radius: 40px;
-border-radius: 40px;
-height: 210px;
-text-align: center;
-font-size: 40px;
-padding-top: 150px;
-font-weight: bold;
-color: lightgrey;
-display: none;
-margin-top: 20px;
-      ">Drop files here
+      <ul id="datafile-nav" class="nav nav-tabs" role="tablist">
+        <li class="nav-item">
+          <a class="nav-link active" href="#tree-view" id="datafile-tree" role="tab" data-toggle="tab"
+             aria-controls="tree-view" aria-expanded="true">Tree View</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#legacy-view" role="tab" id="datafile-list" data-toggle="tab"
+             aria-controls="legacy-view">List View</a>
+        </li>
+      </ul>
+    <div id="datafile-nav-content" class="tab-content">
+      <div role="tabpanel" class="tab-pane fade show active" id="tree-view" aria-labelledby="datafile-tree">
+        <div id="tree_view"></div>
       </div>
-  </div>
+      <div role="tabpanel" class="tab-pane fade" id="legacy-view" aria-labelledby="datafile-legacy">
+        <div id="datafiles-pane" class="dropzone"></div>
+        <div id="dropzone" class="dropzone" style="
+                          border: 6px dashed lightgrey;
+                          -moz-border-radius: 40px;
+                          border-radius: 40px;
+                          height: 210px;
+                          text-align: center;
+                          font-size: 40px;
+                          padding-top: 150px;
+                          font-weight: bold;
+                          color: lightgrey;
+                          display: none;
+                          margin-top: 20px;">Drop files here
+        </div>
+      </div>
+    </div>
+    </div>
 </div>
 {% block finalscript %}
 <input type="hidden" id="upload-method" value="{{ upload_method }}">
@@ -360,5 +404,5 @@ margin-top: 20px;
 {% endif %}
 <input type="hidden" id="csrf-token" value="{{ csrf_token }}">
 {% endblock finalscript %}
-
+{% render_bundle 'tree_view' %}
 {% endblock %}

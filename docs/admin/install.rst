@@ -23,15 +23,6 @@ It will install required packages with these commands:
 .. literalinclude:: ../../install-ubuntu-py3-requirements.sh
    :language: bash
 
-Or run this script for Python 2.7::
-
-   sudo bash install-ubuntu-py2-requirements.sh
-
-It will install required packages with these commands:
-
-.. literalinclude:: ../../install-ubuntu-py2-requirements.sh
-   :language: bash
-
 
 Download
 --------
@@ -52,10 +43,7 @@ Or, to get the current development branch::
 Quick configuration
 -------------------
 
-It is recommended that you use a virtualenv. The list of packages above
-for Python 2.7 includes the ``virtualenvwrapper`` toolkit.
-
-If using Python 3, you can, install ``virtualenvwrapper``  with
+If you want to use ``virtualenvwrapper``, you can install it with
 ``sudo pip3 install virtualenvwrapper`` and set the
 ``export VIRTUALENV_PYTHON=/usr/bin/python3`` in your ``~/.bashrc`` or
 ``~/.profile`` to ensure that ``mkvirtualenv`` will make a Python 3
@@ -67,14 +55,6 @@ To activate ``virtualenvwrapper``:
 For Ubuntu 18.04 with Python 3 (using pip3 installed virtualenvwrapper)::
 
   source /usr/local/bin/virtualenvwrapper.sh
-
-For Ubuntu 18.04 with Python 2.7 (using apt-get installed virtualenvwrapper)::
-
-  source /etc/bash_completion.d/virtualenvwrapper
-
-For Ubuntu 16.04 with Python 2.7 (using apt-get installed virtualenvwrapper)::
-
-  source /usr/share/virtualenvwrapper/virtualenvwrapper.sh
 
 Then create the ``mytardis`` virtual environment ::
 
@@ -167,8 +147,31 @@ An automatically generated documentation of the settings can be found in
 Essential Production Settings
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-These settings are essential if you want to run MyTardis in production mode
-(``DEBUG = False``).
+When deploying to production, you should read
+`Django's deployment checklist <https://docs.djangoproject.com/en/1.11/howto/deployment/checklist/>`_.
+
+.. warning::
+    MyTardis's built-in default settings don't include all of the settings required
+    to run a secure (HTTPS) deployment.  Django provides a check command which you
+    can run on your production (or pre-production) server to help you to identify
+    missing settings related to security::
+
+        ./manage.py check --deploy
+
+The following settings are essential if you want to run MyTardis in production.
+
+.. attribute:: DEBUG
+
+   This must be set to False for production, otherwise your users will see
+   tracebacks containing sensitive information when they encounter an unhandled
+   exception (Internal Server Error).
+
+.. warning::
+    After setting ``DEBUG`` to ``False``, unhandled exceptions will trigger
+    Internal Server Error emails to
+    `ADMINS <https://docs.djangoproject.com/en/1.11/ref/settings/#std:setting-ADMINS>`_
+    which does not scale well. Django suggests "using an error monitoring system such
+    as Sentry before your inbox is flooded by reports".
 
 .. attribute:: SECRET_KEY
 
@@ -179,14 +182,12 @@ These settings are essential if you want to run MyTardis in production mode
 
      echo "SECRET_KEY='`python manage.py generate_secret_key`'" >> tardis/settings.py
 
-However, the more complex command shown above needs to be used at installation
-time.
-
 .. attribute:: ALLOWED_HOSTS
 
    ``ALLOWED_HOSTS`` is a list of hostnames and/or IP addresses under which the
    server is accessible. If this is not set you will get a 500 Error for any
-   request.
+   request, due to Django raising a SuspiciousOperation exception.
+   For more information, see: https://docs.djangoproject.com/en/1.11/ref/settings/#allowed-hosts
 
 Database
 ~~~~~~~~
@@ -535,7 +536,7 @@ need the following in your ``settings.py``::
   SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 For more information, including warnings on the risks of misconfiguring this setting,
-see: https://docs.djangoproject.com/en/1.11/ref/settings/#secure-proxy-ssl-header
+see: https://docs.djangoproject.com/en/2.2/ref/settings/#secure-proxy-ssl-header
 
 Don't forget to create the static files directory and give it appropriate
 permissions. The location is set in the ``settings.py`` file.

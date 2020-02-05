@@ -15,7 +15,6 @@ from django.utils.encoding import python_2_unicode_compatible
 
 import dateutil.parser
 import pytz
-from six import text_type
 
 from ..ParameterSetManager import ParameterSetManager
 from ..managers import OracleSafeManager, ParameterNameManager, SchemaManager
@@ -190,7 +189,7 @@ class ParameterName(models.Model):
         return self.data_type == self.DATETIME
 
     def getUniqueShortName(self):
-        return self.name + '_' + text_type(self.id)
+        return self.name + '_' + str(self.id)
 
     def is_json(self):
         return self.data_type == self.JSON
@@ -401,7 +400,7 @@ class Parameter(models.Model):
             # input validation happens elsewhere and may be less permissive)
             datevalue = dateutil.parser.parse(value)
             if settings.USE_TZ and is_naive(datevalue):
-                datevalue = make_aware(datevalue, LOCAL_TZ)
+                datevalue = make_aware(datevalue, LOCAL_TZ, settings.IS_DST)
             elif not settings.USE_TZ and is_aware(datevalue):
                 datevalue = make_naive(datevalue, LOCAL_TZ)
             self.datetime_value = datevalue

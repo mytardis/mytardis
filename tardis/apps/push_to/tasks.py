@@ -1,8 +1,6 @@
 from django.conf import settings
 from django.contrib.auth.models import User
 
-from six import string_types
-
 from tardis.tardis_portal.models import Experiment, Dataset, DataFile
 from tardis.celery import tardis_app
 from tardis.tardis_portal.util import split_path
@@ -103,7 +101,7 @@ def make_dirs(sftp_client, dir_list):
 def do_file_copy(credential_id, remote_host_id, datafile_map, base_dir=None):
     if base_dir is None:
         base_dir = ['mytardis-data']
-    elif isinstance(base_dir, string_types):
+    elif isinstance(base_dir, str):
         base_dir = split_path(base_dir) + ['mytardis-data']
 
     credential = Credential.objects.get(pk=credential_id)

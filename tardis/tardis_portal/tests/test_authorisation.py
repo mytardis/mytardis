@@ -1,4 +1,5 @@
 import datetime
+import json
 import logging
 
 from django.test import TestCase
@@ -241,10 +242,12 @@ class ObjectACLTestCase(TestCase):
                                     % (group.id,
                                        self.user2.username,
                                        localdb_auth_key))
+        self.assertEqual(response.status_code, 400)
+        response_dict = json.loads(response.content.decode())
+        self.assertEqual(response_dict['field'], 'id_adduser-%s' % group.id)
         self.assertEqual(
-            response.content,
-            b'User %s is already a member of that group.'
-            % self.user2.username.encode())
+            response_dict['message'],
+            'User %s is already a member of this group.' % self.user2.username)
 
         # user1 is not allowed to modify acls for experiment2
         response = self.client1.get('/experiment/control_panel/%i/access_list'

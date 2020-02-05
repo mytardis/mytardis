@@ -7,8 +7,9 @@ Testing the Dataset resource in MyTardis's Tastypie-based REST API
 
 import json
 
-from six.moves import urllib
+from urllib.parse import quote
 
+from ...models.datafile import DataFile
 from ...models.dataset import Dataset
 from ...models.experiment import Experiment
 from ...models.instrument import Instrument
@@ -44,7 +45,7 @@ class DatasetResourceTest(MyTardisResourceTestCase):
 
     def test_get_dataset_no_instrument(self):
         uri = '/api/v1/dataset/?description=%s' \
-            % urllib.parse.quote(self.ds_no_instrument.description)
+            % quote(self.ds_no_instrument.description)
         output = self.api_client.get(uri,
                                      authentication=self.get_credentials())
         returned_data = json.loads(output.content.decode())
@@ -58,7 +59,7 @@ class DatasetResourceTest(MyTardisResourceTestCase):
 
     def test_get_dataset_with_instrument(self):
         uri = '/api/v1/dataset/?description=%s' \
-            % urllib.parse.quote(self.ds_with_instrument.description)
+            % quote(self.ds_with_instrument.description)
         output = self.api_client.get(uri,
                                      authentication=self.get_credentials())
         returned_data = json.loads(output.content.decode())
@@ -94,11 +95,18 @@ class DatasetResourceTest(MyTardisResourceTestCase):
             ],
             "immutable": False}
         dataset_count = Dataset.objects.count()
-        self.assertHttpCreated(self.api_client.post(
+        response = self.api_client.post(
             '/api/v1/dataset/',
             data=post_data,
-            authentication=self.get_credentials()))
+            authentication=self.get_credentials())
+        self.assertHttpCreated(response)
         self.assertEqual(dataset_count + 1, Dataset.objects.count())
+        created_dataset_uri = response['Location']
+        created_dataset_id = created_dataset_uri.split('/')[-2]
+        created_dataset = Dataset.objects.get(id=created_dataset_id)
+        self.assertEqual(created_dataset.experiments.count(), 1)
+        self.assertEqual(
+            created_dataset.experiments.first().id, exp_id)
 
     def test_get_dataset_files(self):
         ds_id = self.ds_no_instrument.id

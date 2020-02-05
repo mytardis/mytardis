@@ -47,7 +47,7 @@ class Experiment(models.Model):
     :attribute safe: ACL aware model manager
 
     """
-
+    
     PUBLIC_ACCESS_NONE = 1
     PUBLIC_ACCESS_EMBARGO = 25
     PUBLIC_ACCESS_METADATA = 50
@@ -136,28 +136,27 @@ class Experiment(models.Model):
                 dirname = None
         return dirname
 
-    @models.permalink
     def get_absolute_url(self):
         """Return the absolute url to the current ``Experiment``"""
-        return ('tardis_portal.view_experiment', (),
-                {'experiment_id': self.id})
+        return reverse(
+            'tardis_portal.view_experiment',
+            kwargs={'experiment_id': self.id})
 
-    @models.permalink
     def get_edit_url(self):
         """Return the absolute url to the edit view of the current
         ``Experiment``
-
         """
-        return ('tardis.tardis_portal.views.edit_experiment', (),
-                {'experiment_id': self.id})
+        return reverse(
+            'tardis.tardis_portal.views.edit_experiment',
+            kwargs={'experiment_id': self.id})
 
-    @models.permalink
     def get_create_token_url(self):
         """Return the absolute url to the create token view of the current
         ``Experiment``
         """
-        return ('tardis.tardis_portal.views.create_token', (),
-                {'experiment_id': self.id})
+        return reverse(
+            'tardis.tardis_portal.views.create_token',
+            kwargs={'experiment_id': self.id})
 
     def get_datafiles(self):
         from .datafile import DataFile
@@ -225,6 +224,13 @@ class Experiment(models.Model):
                                         canRead=True)
         return [acl.get_related_object() for acl in acls]
 
+    def get_users(self):
+        acls = ObjectACL.objects.filter(pluginId='django_user',
+                                        content_type=self.get_ct(),
+                                        object_id=self.id,
+                                        canRead=True)
+        return [acl.get_related_object() for acl in acls]
+    
     def _has_view_perm(self, user_obj):
         '''
         Called from the ACLAwareBackend class's has_perm method

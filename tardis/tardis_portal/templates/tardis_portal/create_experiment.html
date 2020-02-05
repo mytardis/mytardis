@@ -1,13 +1,14 @@
 {% extends "tardis_portal/portal_template.html" %}
 {% load render_bundle from webpack_loader %}
+{% load widget_tweaks %}
 
 {% block content %}
+<div id="content" class="container">
   <div class="page-header">
     <h1 class="title">{{ subtitle }}</h1>
   </div>
-  {{ form.non_field_errors }}
   <div class="row">
-    <div class="col-md-9">
+    <div class="col-md-12">
       <form id="create_experiment_form" action="" method="POST"
             class="form-horizontal">{% csrf_token %}
         {% load bootstrap %}
@@ -27,18 +28,15 @@
               <a href="{% url 'tardis_portal.view_experiment' experiment_id %}">
                  Cancel
             </a>
+            <button type="submit" class="btn btn-primary mr-0">
+              <i class="fa fa-check"></i>
+              Save
             </button>
-            {% else %}
-            <button type="button" class="btn btn-default">
-               <a href="{% url 'tardis.tardis_portal.views.my_data' %}">
-               Cancel
-               </a>
-            </button>
-            {% endif %}
           </div>
         </div>
       </form>
     </div>
   </div>
   {% render_bundle 'tardis_portal_create_experiment' %}
+</div>
 {% endblock %}
