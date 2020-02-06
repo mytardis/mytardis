@@ -33,7 +33,7 @@ class FacilityTypeFilter(FilterSet):
         # must contain strings or (field name, param name) pairs
         fields=(
             ('name', 'name'),
-            ('created_time', 'createdTime')
+            ('created_time', 'created_time')
         )
     )
 

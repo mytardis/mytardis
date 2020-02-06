@@ -41,8 +41,8 @@ class ExperimentTypeFilter(FilterSet):
     order_by = OrderingFilter(
         # must contain strings or (field name, param name) pairs
         fields=(
-            ('title', 'name'),
-            ('created_time', 'createdTime')
+            ('title', 'title'),
+            ('created_time', 'created_time')
         )
     )
 
