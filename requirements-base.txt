@@ -34,8 +34,10 @@ git+https://github.com/mytardis/python-magic.git#egg=python-magic
 pytz==2019.2
 requests==2.22.0
 uritemplate==3.0.0
+# GraphQL
 graphene-django==2.8.0
-django-filter>=2
+graphene-django-plus==1.3.2
+django-filter==2.2.0
 django-graphql-jwt==0.3.0
 django-graphiql==0.4.4
 django-cors-headers==3.2.1

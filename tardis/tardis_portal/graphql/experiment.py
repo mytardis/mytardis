@@ -1,75 +1,90 @@
 import graphene
-from graphene import Node
-from graphene_django.types import DjangoObjectType
-from django_filters import FilterSet, OrderingFilter, NumberFilter
-from graphql_jwt.decorators import login_required
+from graphene import relay
+from django_filters import FilterSet, OrderingFilter
+
+import itertools
+from django.db import (
+    models,
+    transaction,
+)
+
+from graphene_django_plus.types import ModelType
+from graphene_django_plus.mutations import (
+    ModelCreateMutation,
+    ModelUpdateMutation
+)
 
 from .utils import ExtendedConnection
+
 from ..models.experiment import Experiment as ExperimentModel
 from ..models.access_control import ObjectACL
+
+
+class ExperimentType(ModelType):
+    class Meta:
+        model = ExperimentModel
+        permissions = ['tardis_portal.view_experiment']
+        interfaces = [relay.Node]
+        connection_class = ExtendedConnection
+
+    pk = graphene.Int(source='pk')
 
 
 class ExperimentTypeFilter(FilterSet):
     class Meta:
         model = ExperimentModel
-        fields = ()
-
-    id = NumberFilter(field_name='id')
+        fields = {
+            'title': ['exact', 'contains'],
+            'created_time': ['lte', 'gte']
+        }
 
     order_by = OrderingFilter(
+        # must contain strings or (field name, param name) pairs
         fields=(
-            ('created_time', 'createdTime'),
-            ('created_by', 'createdBy')
+            ('title', 'name'),
+            ('created_time', 'createdTime')
         )
     )
 
 
-class ExperimentType(DjangoObjectType):
+class CreateExperiment(ModelCreateMutation):
     class Meta:
         model = ExperimentModel
-        interfaces = (Node,)
-        connection_class = ExtendedConnection
+        permissions = ['tardis_portal.add_experiment']
+        required_fields = ['title', 'institution_name', 'description']
+        exclude_fields = ['created_by', 'created_time', 'update_time']
 
-    pk = graphene.Field(type=graphene.Int, source='pk')
+    @classmethod
+    def clean_instance(cls, instance, clean_input):
+        return instance
 
-
-class CreateExperiment(graphene.Mutation):
-    class Input:
-        title = graphene.String(required=True)
-
-    experiment = graphene.Field(ExperimentType)
-
-    @login_required
-    def mutate(self, info, **kwargs):
+    @classmethod
+    def before_save(cls, info, instance, cleaned_input=None):
         user = info.context.user
-        experiment = ExperimentModel.objects.create(
-            title=kwargs.get('title'),
-            created_by=user)
-        acl = ObjectACL.objects.create(
-            content_object=experiment,
+        instance.created_by = user
+        try:
+            instance.full_clean()
+        except Exception as e:
+            raise e
+
+    @classmethod
+    def after_save(cls, info, instance, cleaned_input=None):
+        user = info.context.user
+        acl = ObjectACL(
+            content_object=instance,
             pluginId="django_user",
             entityId=user.id,
             isOwner=True,
             canRead=True,
             canWrite=True,
             canDelete=True,
-            aclOwnershipType=ObjectACL.OWNER_OWNED)
-        return CreateExperiment(experiment=experiment)
+            aclOwnershipType=ObjectACL.OWNER_OWNED
+        )
+        acl.save()
 
 
-class UpdateExperiment(graphene.Mutation):
-    class Input:
-        id = graphene.Int(required=True)
-        title = graphene.String(required=True)
-
-    experiment = graphene.Field(ExperimentType)
-
-    @login_required
-    def mutate(self, info, **kwargs):
-        user = info.context.user
-        experiment = ExperimentModel.objects.get(pk=kwargs.get('id'))
-        if experiment.created_by != user:
-            return None
-        experiment.title = kwargs.get('title')
-        experiment.save()
-        return UpdateExperiment(experiment=experiment)
+class UpdateExperiment(ModelUpdateMutation):
+    class Meta:
+        model = ExperimentModel
+        permissions = ['tardis_portal.change_experiment']
+        exclude_fields = ['created_by', 'created_time', 'update_time']
