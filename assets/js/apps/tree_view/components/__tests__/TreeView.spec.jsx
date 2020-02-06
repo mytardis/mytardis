@@ -80,26 +80,18 @@ describe('renders initial tree view on page load', () => {
   });
 });
 
-describe('renders child nodes when clicked on parent node', () => {
-  let container = null;
-  beforeEach(() => {
+describe('test rendering child nodes and filter', () => {
+  let component = null;
+  beforeEach(async () => {
     jest.spyOn(global, 'fetch').mockImplementation(() => Promise.resolve({
       json: () => Promise.resolve(fakeTreeData),
     }));
-    container = document.createElement('div');
-    document.body.appendChild(container);
-  });
-  afterEach(() => {
-    // cleanup on exiting
-    container.remove();
-    container = null;
-  });
-  it('should render child nodes when clicked on parent', async () => {
-    let component;
     await act(async () => {
       component = mount(<TreeView datasetId="1234" modified="" />);
     });
     component.update();
+  });
+  it('should render child nodes when clicked on parent', async () => {
     jest.spyOn(global, 'fetch').mockImplementation(() => Promise.resolve({
       json: () => Promise.resolve(fakeChildData),
     }));
@@ -112,35 +104,15 @@ describe('renders child nodes when clicked on parent node', () => {
     expect(component.find('Header').get(0).props.node.children.length).toEqual(4);
     expect(component.find('Header').get(0).props.node.children[0].name).toEqual('child_1');
   });
-});
-
-describe('test filter on tree view', () => {
-  let component;
-  beforeEach(async () => {
-    jest.spyOn(global, 'fetch').mockImplementation(() => Promise.resolve({
-      json: () => Promise.resolve(fakeTreeData),
-    }));
+  it('should filter tree node on search text change', async () => {
     await act(async () => {
-      component = mount(<TreeView datasetId="1234" modified="" />);
+      const searchField = component.find('input.form-control');
+      searchField.simulate('keyUp', { target: { name: 'search-input', value: '2' } });
+      // searchField.simulate('keyUp', { keyCode: 50 });
+      setImmediate(() => {
+        component.update();
+        expect(component.find('NodeHeader')).toHaveLength(6);
+      });
     });
-    component.update();
-  });
-  it('with empty filter it should display all nodes', async () => {
-    jest.spyOn(global, 'fetch').mockImplementation(() => Promise.resolve({
-      json: () => Promise.resolve(fakeChildData),
-    }));
-    await act(async () => {
-      component.find('NodeHeader').first().simulate('click');
-    });
-    component.update();
-    expect(component.find('NodeHeader')).toHaveLength(4);
-  });
-  it('should filter tree list with change in input', async () => {
-    await act(async () => {
-      component.find('input').simulate('change', { target: { value: 'Child_2.txt' } });
-      component.find('input').simulate('keyUp');
-    });
-    component.update();
-    expect(component.find('NodeHeader')).toHaveLength(4);
   });
 });

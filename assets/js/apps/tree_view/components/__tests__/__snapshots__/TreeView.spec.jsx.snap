@@ -2,6 +2,18 @@
 
 exports[`renders initial tree view on page load should render folder tree correctly 1`] = `
 <div>
+  <button
+    class="btn btn-outline-secondary"
+    count="0"
+    style="margin-bottom: 12px; font-weight: bold;"
+    title="Download"
+    type="submit"
+  >
+    <i
+      class="fa fa-download fa-sm mr-1 "
+    />
+    Select All
+  </button>
   <div>
     <div
       class="input-group"
@@ -15,6 +27,7 @@ exports[`renders initial tree view on page load should render folder tree correc
       </span>
       <input
         class="form-control"
+        name="search-input"
         placeholder="Search the tree..."
         type="text"
       />
@@ -36,12 +49,18 @@ exports[`renders initial tree view on page load should render folder tree correc
             <div
               style="line-height: 20px; vertical-align: middle; font-size: 16px; cursor: pointer;"
             >
+              <input
+                class="datafile_checkbox"
+                style="margin-right: 5px;"
+                type="checkbox"
+                value="parent_1"
+              />
               <i
                 class="fa fa-folder"
                 style="margin-right: 5px; opacity: 0.6;"
               />
               parent_1
-              <br />
+              
             </div>
           </div>
         </div>
@@ -57,12 +76,18 @@ exports[`renders initial tree view on page load should render folder tree correc
             <div
               style="line-height: 20px; vertical-align: middle; font-size: 16px; cursor: pointer;"
             >
+              <input
+                class="datafile_checkbox"
+                style="margin-right: 5px;"
+                type="checkbox"
+                value="parent_2"
+              />
               <i
                 class="fa fa-folder"
                 style="margin-right: 5px; opacity: 0.6;"
               />
               parent_2
-              <br />
+              
             </div>
           </div>
         </div>
@@ -78,14 +103,21 @@ exports[`renders initial tree view on page load should render folder tree correc
             <div
               style="line-height: 20px; vertical-align: middle; font-size: 16px; cursor: pointer;"
             >
+              <input
+                class="datafile_checkbox"
+                style="margin-right: 5px;"
+                type="checkbox"
+                value="Parent.txt"
+              />
               <i
                 class="fa fa-file-text"
                 style="margin-right: 5px; opacity: 0.6;"
               />
               Parent.txt
               <a
-                class="btn btn-sm"
+                class="btn-sm"
                 href="/api/v1/dataset_file/11985776/download/"
+                style="color: Black;"
                 title="Download"
               >
                 <i
@@ -107,14 +139,21 @@ exports[`renders initial tree view on page load should render folder tree correc
             <div
               style="line-height: 20px; vertical-align: middle; font-size: 16px; cursor: pointer;"
             >
+              <input
+                class="datafile_checkbox"
+                style="margin-right: 5px;"
+                type="checkbox"
+                value="STORM-6.jpg"
+              />
               <i
                 class="fa fa-file-text"
                 style="margin-right: 5px; opacity: 0.6;"
               />
               STORM-6.jpg
               <a
-                class="btn btn-sm"
+                class="btn-sm"
                 href="/api/v1/dataset_file/11985840/download/"
+                style="color: Black;"
                 title="Download"
               >
                 <i
