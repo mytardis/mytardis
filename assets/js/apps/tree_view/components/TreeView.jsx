@@ -9,6 +9,7 @@ import Header from './Header';
 import Container from './Container';
 import * as filters from './filter';
 import 'regenerator-runtime/runtime';
+import { TreeDownloadButton } from './Download';
 
 const TreeView = ({ datasetId, modified }) => {
   const [cursor, setCursor] = useState(false);
@@ -43,6 +44,7 @@ const TreeView = ({ datasetId, modified }) => {
   }, [datasetId, modified]);
   const onToggle = (node, toggled) => {
     // fetch children:
+    // console.log(`on toggle ${node.name}`);
     if (toggled && node.children && node.children.length === 0) {
       fetchChildDirs(node, node.path);
       return;
@@ -72,14 +74,21 @@ const TreeView = ({ datasetId, modified }) => {
 
     setData(filteredData);
   };
+  const onSelect = (node) => {
+    node.toggled = !node.toggled;
+    node.selected = !node.selected;
+    // console.log(`on select ${node.name}`);
+  };
   return (
     <Fragment>
+      <TreeDownloadButton count={0} />
       <div style={styles}>
         <div className="input-group">
           <span className="input-group-text">
             <i className="fa fa-search" />
           </span>
           <input
+            name="search-input"
             className="form-control"
             onKeyUp={onFilterMouseUp}
             placeholder="Search the tree..."
@@ -92,6 +101,7 @@ const TreeView = ({ datasetId, modified }) => {
           data={data}
           style={styles}
           onToggle={onToggle}
+          onSelect={onSelect}
           decorators={{ ...decorators, Header, Container }}
           animation={false}
         />
