@@ -2,12 +2,6 @@ import graphene
 from graphene import relay
 from django_filters import FilterSet, OrderingFilter
 
-import itertools
-from django.db import (
-    models,
-    transaction,
-)
-
 from graphene_django_plus.types import ModelType
 from graphene_django_plus.mutations import (
     ModelCreateMutation,
