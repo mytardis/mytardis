@@ -16,6 +16,7 @@ INSTALLED_APPS = (
     'jstemplate',
     'graphene_django',
     'django_filters',
+    'crispy_forms', # required for django_filters
     'corsheaders',
     'tastypie',
     'tastypie_swagger',
