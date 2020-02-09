@@ -3,7 +3,7 @@
 from __future__ import unicode_literals
 
 from django.db import migrations, models
-
+import tardis.tardis_portal.models.experiment
 
 class Migration(migrations.Migration):
 

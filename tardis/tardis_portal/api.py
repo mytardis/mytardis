@@ -515,6 +515,42 @@ class MyTardisModelResource(ModelResource):
         serializer = default_serializer
         object_class = None
 
+class FacilityResource(MyTardisModelResource):
+    manager_group = fields.ForeignKey(GroupResource, 'manager_group',
+                                      null=True, full=True)
+
+    class Meta(MyTardisModelResource.Meta):
+        queryset = Facility.objects.all()
+        filtering = {
+            'id': ('exact', ),
+            'manager_group': ALL_WITH_RELATIONS,
+            'name': ('exact', ),
+        }
+        ordering = [
+            'id',
+            'name'
+        ]
+        always_return_data = True
+
+
+class InstrumentResource(MyTardisModelResource):
+    facility = fields.ForeignKey(FacilityResource, 'facility',
+                                 null=True, full=True)
+
+    class Meta(MyTardisModelResource.Meta):
+        queryset = Instrument.objects.all()
+        filtering = {
+            'id': ('exact', ),
+            'facility': ALL_WITH_RELATIONS,
+            'name': ('exact', ),
+        }
+        ordering = [
+            'id',
+            'name'
+        ]
+        always_return_data = True
+
+
 
 class SchemaResource(MyTardisModelResource):
 
