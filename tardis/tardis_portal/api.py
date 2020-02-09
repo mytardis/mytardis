@@ -93,6 +93,24 @@ class CustomBadRequest(TastypieError):
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 class PrettyJSONSerializer(Serializer):
     json_indent = 2
 
