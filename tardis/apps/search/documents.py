@@ -101,7 +101,8 @@ class DatasetDocument(Document):
     )
     created_time = fields.DateField()
     modified_time = fields.DateField()
-
+    tags = fields.StringField(attr='tags_for_indexing')
+    
     class Django:
         model = Dataset
         related_models = [Experiment, Instrument]

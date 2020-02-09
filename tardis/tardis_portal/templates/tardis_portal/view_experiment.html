@@ -67,6 +67,8 @@
   <h1>
     <span property="dc:title">{{ experiment.title }}</span>
     <br/>
+    <span property="dc:title">Project: {{ experiment.project_id }}</span>
+    <br/>
     <small>
         {% for author in experiment.experimentauthor_set.all %}{% capture as creator_span %}<span
                 property="dc:creator"

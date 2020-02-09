@@ -19,15 +19,17 @@ from elasticsearch_dsl import MultiSearch, Q
 from tardis.tardis_portal.api import default_authentication
 from tardis.tardis_portal.models import Instrument
 
+import logging
+
 LOCAL_TZ = pytz.timezone(settings.TIME_ZONE)
 MAX_SEARCH_RESULTS = settings.MAX_SEARCH_RESULTS
 MIN_CUTOFF_SCORE = settings.MIN_CUTOFF_SCORE
-
 
 class PrettyJSONSerializer(Serializer):
     json_indent = 2
 
     def to_json(self, data, options=None):
+        logging.info("The data is " + str(data))
         options = options or {}
         data = self.to_simple(data, options)
         return json.dumps(data, cls=json.JSONEncoder,
@@ -69,8 +71,9 @@ class SearchAppResource(Resource):
         return kwargs
 
     def get_object_list(self, request):
+        logging.warn("Testing search app")
         user = request.user
-        query_text = request.GET.get('query', None)
+        query_text = request.GET.get('query', None)      
         if not user.is_authenticated:
             result_dict = simple_search_public_data(query_text)
             return [SearchObject(id=1, hits=result_dict)]
@@ -90,6 +93,7 @@ class SearchAppResource(Resource):
                     .query(query_exp))
 
         query_dataset = Q("match", description=query_text)
+        query_dataset = query_dataset | Q("match", tags=query_text)
         query_dataset_oacl = Q("term", **{'experiments.objectacls.entityId': user.id}) | \
             Q("term", **{'experiments.public_access': 100})
         for group in groups:
@@ -138,6 +142,7 @@ def simple_search_public_data(query_text):
                 .extra(size=MAX_SEARCH_RESULTS, min_score=MIN_CUTOFF_SCORE)
                 .query(query_exp))
     query_dataset = Q("match", description=query_text)
+    query_dataset = query_dataset | Q("match", tags=query_text)
     query_dataset_oacl = Q("term", **{'experiments.public_access': 100})
     ms = ms.add(Search(index='dataset')
                 .extra(size=MAX_SEARCH_RESULTS, min_score=MIN_CUTOFF_SCORE).query(query_dataset)
@@ -240,6 +245,7 @@ class AdvanceSearchAppResource(Resource):
                         .query(query_exp))
         if 'dataset' in index_list:
             query_dataset = Q("match", description=query_text)
+            query_dataset = query_dataset | Q("match", tags=query_text)
             if user.is_authenticated:
                 query_dataset_oacl = Q("term", **{'experiments.objectacls.entityId': user.id}) | \
                                      Q("term", **{'experiments.public_access': 100})

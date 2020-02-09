@@ -49,7 +49,7 @@ from .auth.decorators import (
     has_experiment_access,
     has_write_permissions)
 from .auth.localdb_auth import django_user
-from .models.access_control import ObjectACL
+from .models.access_control import ObjectACL, UserProfile, UserAuthentication
 from .models.datafile import DataFile, DataFileObject, compute_checksums
 from .models.dataset import Dataset
 from .models.experiment import Experiment, ExperimentAuthor
@@ -65,6 +65,24 @@ from .models.parameters import (
 from .models.storage import StorageBox, StorageBoxOption, StorageBoxAttribute
 from .models.facility import Facility, facilities_managed_by
 from .models.instrument import Instrument
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 class PrettyJSONSerializer(Serializer):
@@ -112,6 +130,7 @@ class MyTardisAuthentication(object):
                 session_auth_result = True
             request.user.allowed_tokens = tokens
             return session_auth_result
+        
         if auth_info.startswith('Basic'):
             basic_auth = BasicAuthentication()
             check = basic_auth.is_authenticated(request, **kwargs)
@@ -400,6 +419,21 @@ class ACLAuthorization(Authorization):
                 bundle.request.user.has_perm('tardis_portal.add_instrument'),
                 bundle.obj.facility in facilities
             ])
+        if isinstance(bundle.obj, User):
+            return all([
+                bundle.request.user.has_perm('tardis_portal.add_userprofile'),
+                bundle.request.user.has_perm('tardis_portal.add_userauthentication')
+                ])
+        if isinstance(bundle.obj, UserProfile):
+            return all([
+                bundle.request.user.has_perm('tardis_portal.add_userprofile'),
+                bundle.request.user.has_perm('tardis_portal.add_userauthentication')
+                ])
+        if isinstance(bundle.obj, UserAuthentication):
+            return all([
+                bundle.request.user.has_perm('tardis_portal.add_userprofile'),
+                bundle.request.user.has_perm('tardis_portal.add_userauthentication')
+                ])
         raise NotImplementedError(type(bundle.obj))
 
     def update_list(self, object_list, bundle):
@@ -452,7 +486,7 @@ class UserResource(ModelResource):
         authorization = ACLAuthorization()
         queryset = User.objects.all()
         allowed_methods = ['get']
-        fields = ['username', 'first_name', 'last_name', 'email']
+        fields = ['username', 'first_name', 'last_name', 'email', 'password']
         serializer = default_serializer
         filtering = {
             'username': ('exact', ),
@@ -503,9 +537,109 @@ class UserResource(ModelResource):
         # add public information
         if public_user:
             bundle.data['email'] = queried_user.email
-
+        if 'password' in bundle.data:
+            del bundle.data['password']
+            
         return bundle
 
+    def hydrate(self, bundle):
+        authuser = bundle.request.user
+        authenticated = authuser.is_authenticated
+        required_fields = ['username',
+                           'first_name',
+                           'email']
+        for field in required_fields:
+            if field not in bundle.data:
+                raise KeyError
+        bundle.data["password"] = make_password(self.gen_random_password())
+        return bundle
+
+    def gen_random_password(self):
+        import random
+        random.seed()
+        characters = 'abcdefghijklmnopqrstuvwxyzABCDFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*()?'
+        passlen = 16
+        password = "".join(random.sample(characters,passlen))
+        return password
+
+    def obj_create(self,
+                   bundle,
+                   **kwargs):
+        try:
+            email = bundle.data["email"]
+            username = bundle.data["username"]
+            if User.objects.filter(email=email):
+                raise Exception(
+                    message="User cannot be created as the supplied email is already used.")
+            if User.objects.filter(username=username):
+                raise Exception(
+                    message="User cannot be created as the supplied username is already used.")
+        except KeyError as missing_key:
+            raise Exception(
+                message="Must provide {missing_key} when creating a user."
+                        .format(missing_key=missing_key))
+        except User.DoesNotExist:
+            pass
+        bundle = super(UserResource, self).obj_create(bundle, **kwargs)
+        return bundle
+
+class UserProfileResource(ModelResource):
+    user = fields.OneToOneField(UserResource, 'user')
+
+    class Meta:
+        authentication = default_authentication
+        authorization = ACLAuthorization()
+        queryset = UserProfile.objects.all()
+        fields = ['user']
+        serializer = default_serializer
+        filtering = {
+            'user': ('exact', ),
+        }
+        allowed_methods = ['get']
+        always_return_data = True
+
+    def dehydrate(self, bundle):
+        authuser = bundle.request.user
+        authenticated = authuser.is_authenticated
+        
+        if authenticated:
+            return bundle
+
+class UserAuthenticationResource(ModelResource):
+    userProfile = fields.ForeignKey(UserProfileResource, attribute='userProfile',
+                                    null=True, blank=True, full=True)
+
+    class Meta:
+        authentication = default_authentication
+        authorization = ACLAuthorization()
+        queryset = UserAuthentication.objects.all()
+        fields = ['user_id', 'userProfile', 'authenticationMethod','username']
+        serializer = default_serializer
+        filtering = {
+            'user_id': ('exact', ),
+        }
+        always_return_data = True
+
+    def hydrate(self, bundle):
+        authuser = bundle.request.user
+        authenticated = authuser.is_authenticated
+        required_fields = ['user_id', 'userProfile','username']
+        '''#username = bundle.data['username']
+        user_id = bundle.data['user_id']
+        try:
+            userProfile = UserProfile.objects.filter(user_id=user_id)
+        except User.DoesNotExist:
+            raise
+        bundle.data['userProfile'] = userProfile'''
+        return bundle
+
+    def obj_create(self,
+                   bundle,
+                   **kwargs):
+
+        bundle.data['authenticationMethod'] = settings.LDAP_METHOD
+        bundle = super(UserAuthenticationResource, self).obj_create(bundle, **kwargs)
+        return bundle
 
 class MyTardisModelResource(ModelResource):
 
@@ -579,7 +713,7 @@ class ExperimentResource(MyTardisModelResource):
             'update_time'
         ]
         always_return_data = True
-
+    
     def dehydrate(self, bundle):
         exp = bundle.obj
         authors = [{'name': a.author, 'url': a.url}
@@ -671,6 +805,16 @@ class DatasetResource(MyTardisModelResource):
         'instrument',
         null=True,
         full=True)
+
+    tags = fields.ListField()
+
+    def dehydrate_tags(self, bundle):
+        return list(map(str, bundle.obj.tags.all()))
+
+    def save_m2m(self, bundle):
+        tags = bundle.data.get('tags', [])
+        bundle.obj.tags.set(*tags)
+        return super(DatasetResource, self).save_m2m(bundle)
 
     class Meta(MyTardisModelResource.Meta):
         queryset = Dataset.objects.all()

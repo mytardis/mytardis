@@ -12,6 +12,8 @@
             class="form-horizontal">{% csrf_token %}
         {% load bootstrap %}
         {{ form.title|bootstrap_horizontal:'col-md-3' }}
+	{{ form.project_id|bootstrap_horizontal:'col-md-3' }}
+        {{ form.internal_id|bootstrap_horizontal:'col-md-3' }}
         {{ form.authors|bootstrap_horizontal:'col-md-3' }}
         {{ form.institution_name|bootstrap_horizontal:'col-md-3' }}
         {{ form.description|bootstrap_horizontal:'col-md-3' }}

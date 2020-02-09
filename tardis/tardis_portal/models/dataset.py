@@ -13,6 +13,8 @@ from .storage import StorageBox
 from .experiment import Experiment
 from .instrument import Instrument
 
+from taggit.managers import TaggableManager
+
 logger = logging.getLogger(__name__)
 
 
@@ -48,7 +50,8 @@ class Dataset(models.Model):
     instrument = models.ForeignKey(Instrument, null=True, blank=True,
                                    on_delete=models.CASCADE)
     objects = OracleSafeManager()
-
+    tags = TaggableManager(blank=True)
+    
     class Meta:
         app_label = 'tardis_portal'
         ordering = ['-id']
@@ -61,6 +64,14 @@ class Dataset(models.Model):
     @property
     def is_online(self):
         return all(df.is_online for df in self.datafile_set.all())
+
+    @property
+    def tags_for_indexing(self):
+        """Tags for indexing
+
+        Used in Elasticsearch indexing.
+        """
+        return " ".join([tag.name for tag in self.tags.all()])
 
     def getParameterSets(self):
         """Return the dataset parametersets associated with this
