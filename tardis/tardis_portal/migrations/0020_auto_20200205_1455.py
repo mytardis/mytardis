@@ -13,7 +13,7 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.AddField(
+        migrations.AlterField(
             model_name='experiment',
             name='internal_id',
             field=models.CharField(default=tardis.tardis_portal.models.experiment.experiment_internal_id_default, max_length=400, unique=True),
