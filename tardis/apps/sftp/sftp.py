@@ -483,7 +483,8 @@ class MyTSFTPRequestHandler(socketserver.BaseRequestHandler):
             logger.error("SSH error: %s" % str(e))
             self.transport.close()
         except EOFError as e:
-            logger.error("Socket error: %s" % str(e))
+            # Don't throw an error
+            logger.warning("Socket error: %s" % str(e))
         except Exception as e:
             logger.error("Error: %s" % str(e))
 
