@@ -8,6 +8,7 @@ import styles from './custom-theme';
 import Header from './Header';
 import Container from './Container';
 import * as filters from './filter';
+import 'regenerator-runtime/runtime';
 
 const TreeView = ({ datasetId, modified }) => {
   const [cursor, setCursor] = useState(false);

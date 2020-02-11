@@ -15,7 +15,7 @@ from django.conf.urls import url
 from django.contrib.auth.models import AnonymousUser
 from django.contrib.auth.models import User
 from django.contrib.auth.models import Group
-from django.db import IntegrityError
+from django.db import IntegrityError, transaction
 from django.http import HttpResponse, HttpResponseForbidden, \
     StreamingHttpResponse, HttpResponseNotFound, JsonResponse
 from django.shortcuts import redirect
@@ -623,7 +623,7 @@ class ExperimentResource(MyTardisModelResource):
                             aclOwnershipType=ObjectACL.OWNER_OWNED)
             acl.save()
 
-        return super(ExperimentResource, self).hydrate_m2m(bundle)
+        return super().hydrate_m2m(bundle)
 
     def obj_create(self, bundle, **kwargs):
         '''experiments need at least one ACL to be available through the
@@ -633,7 +633,7 @@ class ExperimentResource(MyTardisModelResource):
         '''
         user = bundle.request.user
         bundle.data['created_by'] = user
-        bundle = super(ExperimentResource, self).obj_create(bundle, **kwargs)
+        bundle = super().obj_create(bundle, **kwargs)
         return bundle
 
 
@@ -742,7 +742,7 @@ class DatasetResource(MyTardisModelResource):
                     bundle.obj.experiments.add(exp)
                 except NotFound:
                     pass
-        return super(DatasetResource, self).hydrate_m2m(bundle)
+        return super().hydrate_m2m(bundle)
 
     def get_root_dir_nodes(self, request, **kwargs):
         '''Return JSON-serialized list of filenames/folders in the dataset's root directory
@@ -965,6 +965,7 @@ class DataFileResource(MyTardisModelResource):
             del(bundle.data['attached_file'])
         return bundle
 
+    @transaction.atomic
     def obj_create(self, bundle, **kwargs):
         '''
         Creates a new DataFile object from the provided bundle.data dict.
@@ -972,7 +973,7 @@ class DataFileResource(MyTardisModelResource):
         If a duplicate key error occurs, responds with HTTP Error 409: CONFLICT
         '''
         try:
-            retval = super(DataFileResource, self).obj_create(bundle, **kwargs)
+            retval = super().obj_create(bundle, **kwargs)
         except IntegrityError as err:
             if "duplicate key" in str(err):
                 raise ImmediateHttpResponse(HttpResponse(status=409))
@@ -992,8 +993,7 @@ class DataFileResource(MyTardisModelResource):
         return retval
 
     def post_list(self, request, **kwargs):
-        response = super(DataFileResource, self).post_list(request,
-                                                           **kwargs)
+        response = super().post_list(request, **kwargs)
         if self.temp_url is not None:
             response.content = self.temp_url
             self.temp_url = None
@@ -1025,8 +1025,7 @@ class DataFileResource(MyTardisModelResource):
             data = json.loads(jsondata)
             data.update(request.FILES)
             return data
-        return super(DataFileResource, self).deserialize(request,
-                                                         data, format)
+        return super().deserialize(request, data, format)
 
     def put_detail(self, request, **kwargs):
         '''
@@ -1036,7 +1035,7 @@ class DataFileResource(MyTardisModelResource):
                 not hasattr(request, '_body'):
             request._body = ''
 
-        return super(DataFileResource, self).put_detail(request, **kwargs)
+        return super().put_detail(request, **kwargs)
 
 
 class SchemaResource(MyTardisModelResource):

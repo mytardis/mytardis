@@ -68,7 +68,8 @@ def get_accessible_datafiles_for_user(request):
     if experiments.count() == 0:
         return DataFile.objects.none()
 
-    queries = [Q(dataset__experiments__id=e.id) for e in experiments]
+    queries = [Q(dataset__experiments__id=id)
+        for id in experiments.values_list('id', flat=True)]
 
     query = queries.pop()
     for item in queries:

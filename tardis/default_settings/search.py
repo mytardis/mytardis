@@ -18,6 +18,16 @@ ELASTICSEARCH_DSL_INDEX_SETTINGS = {
 }
 '''
 
+ELASTICSEARCH_PARALLEL_INDEX_SETTINGS = {
+    'chunk_size': 500,
+    'thread_count': 4
+}
+'''
+Setting for running elastic search index in parallel mode to get indexing speed boost while indexing
+https://django-elasticsearch-dsl.readthedocs.io/en/latest/settings.html#elasticsearch-dsl-parallel
+'''
+
+
 MAX_SEARCH_RESULTS = 100
 '''
 Limits the maximum number of search results for each model (Experiment, Dataset and DataFile).

@@ -128,7 +128,7 @@ class HttpResponseMethodNotAllowed(HttpResponse):
     status_code = 303
 
     def __init__(self, *args, **kwargs):
-        super(HttpResponseMethodNotAllowed, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         try:
             self["Allow"] = kwargs['allow']
         except:

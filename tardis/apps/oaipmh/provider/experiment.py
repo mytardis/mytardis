@@ -166,8 +166,7 @@ class DcExperimentProvider(AbstractExperimentProvider):
 
     def _get_in_range(self, from_, until):
         return filter(lambda obj: isinstance(obj, Experiment),
-                      super(DcExperimentProvider, self)
-                      ._get_in_range(from_, until))
+                      super()._get_in_range(from_, until))
 
     def _get_id_from_identifier(self, identifier):
         return self._split_type_and_id(identifier, ["experiment"])

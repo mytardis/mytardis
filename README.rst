@@ -20,6 +20,10 @@ MyTardis
 .. image:: https://coveralls.io/repos/mytardis/mytardis/badge.svg?branch=develop
   :target: https://coveralls.io/r/mytardis/mytardis?branch=develop
   :alt: Coveralls Badge
+  
+.. image:: https://codecov.io/gh/mytardis/mytardis/branch/develop/graph/badge.svg
+  :alt: Codecov Badge
+  :target: https://codecov.io/gh/mytardis/mytardis
 
 Overview
 --------

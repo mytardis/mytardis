@@ -19,7 +19,7 @@ from . import MyTardisResourceTestCase
 
 class DatasetResourceTest(MyTardisResourceTestCase):
     def setUp(self):
-        super(DatasetResourceTest, self).setUp()
+        super().setUp()
         self.extra_instrument = Instrument()
         self.extra_instrument = Instrument(name="Extra Instrument",
                                            facility=self.testfacility)
