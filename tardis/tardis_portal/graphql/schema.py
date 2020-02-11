@@ -28,7 +28,8 @@ from .experiment import (
     CreateExperiment, UpdateExperiment
 )
 from .dataset import (
-    DatasetType
+    DatasetType, DatasetTypeFilter,
+    CreateDataset, UpdateDataset
 )
 
 
@@ -89,7 +90,8 @@ class Query(graphene.ObjectType):
         return None
 
     datasets = DjangoFilterConnectionField(
-        DatasetType
+        DatasetType,
+        filterset_class=DatasetTypeFilter
     )
     def resolve_datasets(self, info, **kwargs):
         user = info.context.user
@@ -118,3 +120,6 @@ class Mutation(graphene.ObjectType):
 
     create_experiment = CreateExperiment.Field()
     update_experiment = UpdateExperiment.Field()
+
+    create_dataset = CreateDataset.Field()
+    update_dataset = UpdateDataset.Field()
