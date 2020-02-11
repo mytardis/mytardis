@@ -3,12 +3,14 @@ from graphene_django.filter import DjangoFilterConnectionField
 
 import graphql_jwt
 
+from django.db.models import Q
 from django.contrib.auth.models import Group as GroupModel
 
 from ..models.facility import Facility as FacilityModel
 from ..models.instrument import Instrument as InstrumentModel
 from ..models.experiment import Experiment as ExperimentModel
 from ..models.dataset import Dataset as DatasetModel
+from ..models.datafile import DataFile as DataFileModel
 
 from .user import UserType, UserSignIn, ApiSignIn
 from .group import (
@@ -30,6 +32,10 @@ from .experiment import (
 from .dataset import (
     DatasetType, DatasetTypeFilter,
     CreateDataset, UpdateDataset
+)
+from .datafile import (
+    DataFileType, DataFileTypeFilter,
+    CreateDataFile, UpdateDataFile
 )
 
 
@@ -100,6 +106,23 @@ class Query(graphene.ObjectType):
             return DatasetModel.objects.filter(experiments__in=experiments)
         return None
 
+    datafiles = DjangoFilterConnectionField(
+        DataFileType,
+        filterset_class=DataFileTypeFilter
+    )
+    def resolve_datafiles(self, info, **kwargs):
+        user = info.context.user
+        if user.is_authenticated:
+            experiments = ExperimentModel.safe.all(user)
+            if experiments.count() != 0:
+                queries = [Q(dataset__experiments__id=id)
+                    for id in experiments.values_list('id', flat=True)]
+                query = queries.pop()
+                for item in queries:
+                    query |= item
+                return DataFileModel.objects.filter(query)
+        return None
+
 
 class Mutation(graphene.ObjectType):
     verify_token = graphql_jwt.relay.Verify.Field()
@@ -123,3 +146,6 @@ class Mutation(graphene.ObjectType):
 
     create_dataset = CreateDataset.Field()
     update_dataset = UpdateDataset.Field()
+
+    create_datafile = CreateDataFile.Field()
+    update_datafile = UpdateDataFile.Field()
