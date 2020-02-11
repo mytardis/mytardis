@@ -13,6 +13,11 @@ from ..models.datafile import (
     DataFile as DataFileModel,
     DataFileObject as DataFileObjectModel
 )
+from ..models.storage import (
+    StorageBox as StorageBoxModel,
+    StorageBoxOption as StorageBoxOptionModel,
+    StorageBoxAttribute as StorageBoxAttributeModel
+)
 
 from .user import UserType, UserSignIn, ApiSignIn
 from .group import (
@@ -42,6 +47,18 @@ from .datafile import (
 from .datafileobject import (
     DataFileObjectType, DataFileObjectTypeFilter,
     CreateDataFileObject, UpdateDataFileObject
+)
+from .storagebox import (
+    StorageBoxType, StorageBoxTypeFilter,
+    CreateStorageBox, UpdateStorageBox
+)
+from .storageboxoption import (
+    StorageBoxOptionType, StorageBoxOptionTypeFilter,
+    CreateStorageBoxOption, UpdateStorageBoxOption
+)
+from .storageboxattribute import (
+    StorageBoxAttributeType, StorageBoxAttributeTypeFilter,
+    CreateStorageBoxAttribute, UpdateStorageBoxAttribute
 )
 from .utils import (
     get_accessible_experiments,
@@ -139,6 +156,36 @@ class Query(graphene.ObjectType):
             )
         return None
 
+    storageboxes = DjangoFilterConnectionField(
+        StorageBoxType,
+        filterset_class=StorageBoxTypeFilter
+    )
+    def resolve_storageboxes(self, info, **kwargs):
+        user = info.context.user
+        if user.is_authenticated:
+            return StorageBoxModel.objects.all()
+        return None
+
+    storageboxoptions = DjangoFilterConnectionField(
+        StorageBoxOptionType,
+        filterset_class=StorageBoxOptionTypeFilter
+    )
+    def resolve_storageboxoptions(self, info, **kwargs):
+        user = info.context.user
+        if user.is_authenticated:
+            return StorageBoxOptionModel.objects.all()
+        return None
+
+    storageboxattributes = DjangoFilterConnectionField(
+        StorageBoxAttributeType,
+        filterset_class=StorageBoxAttributeTypeFilter
+    )
+    def resolve_storageboxattributes(self, info, **kwargs):
+        user = info.context.user
+        if user.is_authenticated:
+            return StorageBoxAttributeModel.objects.all()
+        return None
+
 
 class Mutation(graphene.ObjectType):
     verify_token = graphql_jwt.relay.Verify.Field()
@@ -168,3 +215,12 @@ class Mutation(graphene.ObjectType):
 
     create_datafileobject = CreateDataFileObject.Field()
     update_datafileobject = UpdateDataFileObject.Field()
+
+    create_storagebox = CreateStorageBox.Field()
+    update_storagebox = UpdateStorageBox.Field()
+
+    create_storageboxoption = CreateStorageBoxOption.Field()
+    update_storageboxoption = UpdateStorageBoxOption.Field()
+
+    create_storageboxattribute = CreateStorageBoxAttribute.Field()
+    update_storageboxattribute = UpdateStorageBoxAttribute.Field()
