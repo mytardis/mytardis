@@ -3,14 +3,16 @@ from graphene_django.filter import DjangoFilterConnectionField
 
 import graphql_jwt
 
-from django.db.models import Q
 from django.contrib.auth.models import Group as GroupModel
 
 from ..models.facility import Facility as FacilityModel
 from ..models.instrument import Instrument as InstrumentModel
 from ..models.experiment import Experiment as ExperimentModel
 from ..models.dataset import Dataset as DatasetModel
-from ..models.datafile import DataFile as DataFileModel
+from ..models.datafile import (
+    DataFile as DataFileModel,
+    DataFileObject as DataFileObjectModel
+)
 
 from .user import UserType, UserSignIn, ApiSignIn
 from .group import (
@@ -36,6 +38,14 @@ from .dataset import (
 from .datafile import (
     DataFileType, DataFileTypeFilter,
     CreateDataFile, UpdateDataFile
+)
+from .datafileobject import (
+    DataFileObjectType, DataFileObjectTypeFilter,
+    CreateDataFileObject, UpdateDataFileObject
+)
+from .utils import (
+    get_accessible_experiments,
+    get_accessible_datafiles
 )
 
 
@@ -92,7 +102,7 @@ class Query(graphene.ObjectType):
     def resolve_experiments(self, info, **kwargs):
         user = info.context.user
         if user.is_authenticated:
-            return ExperimentModel.safe.all(user)
+            return get_accessible_experiments(user)
         return None
 
     datasets = DjangoFilterConnectionField(
@@ -102,8 +112,9 @@ class Query(graphene.ObjectType):
     def resolve_datasets(self, info, **kwargs):
         user = info.context.user
         if user.is_authenticated:
-            experiments = ExperimentModel.safe.all(user)
-            return DatasetModel.objects.filter(experiments__in=experiments)
+            return DatasetModel.objects.filter(
+                experiments__in=get_accessible_experiments(user)
+            )
         return None
 
     datafiles = DjangoFilterConnectionField(
@@ -113,14 +124,19 @@ class Query(graphene.ObjectType):
     def resolve_datafiles(self, info, **kwargs):
         user = info.context.user
         if user.is_authenticated:
-            experiments = ExperimentModel.safe.all(user)
-            if experiments.count() != 0:
-                queries = [Q(dataset__experiments__id=id)
-                    for id in experiments.values_list('id', flat=True)]
-                query = queries.pop()
-                for item in queries:
-                    query |= item
-                return DataFileModel.objects.filter(query)
+            return get_accessible_datafiles(user)
+        return None
+
+    datafileobjects = DjangoFilterConnectionField(
+        DataFileObjectType,
+        filterset_class=DataFileObjectTypeFilter
+    )
+    def resolve_datafileobjects(self, info, **kwargs):
+        user = info.context.user
+        if user.is_authenticated:
+            return DataFileObjectModel.objects.filter(
+                datafile__in=get_accessible_datafiles(user)
+            )
         return None
 
 
@@ -149,3 +165,6 @@ class Mutation(graphene.ObjectType):
 
     create_datafile = CreateDataFile.Field()
     update_datafile = UpdateDataFile.Field()
+
+    create_datafileobject = CreateDataFileObject.Field()
+    update_datafileobject = UpdateDataFileObject.Field()

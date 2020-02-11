@@ -10,45 +10,43 @@ from graphene_django_plus.mutations import (
 
 from .utils import ExtendedConnection
 
-from ..models.datafile import DataFile as DataFileModel
+from ..models.datafile import DataFileObject as DataFileObjectModel
 
 
-class DataFileType(ModelType):
+class DataFileObjectType(ModelType):
     class Meta:
-        model = DataFileModel
-        permissions = ['tardis_portal.view_datafile']
+        model = DataFileObjectModel
+        permissions = ['tardis_portal.view_datafileobject']
         interfaces = [relay.Node]
         connection_class = ExtendedConnection
 
     pk = graphene.Int(source='pk')
 
 
-class DataFileTypeFilter(FilterSet):
+class DataFileObjectTypeFilter(FilterSet):
     class Meta:
-        model = DataFileModel
+        model = DataFileObjectModel
         fields = {
-            'filename': ['exact', 'contains'],
-            'directory': ['exact', 'contains'],
+            'verified': ['exact'],
             'created_time': ['lte', 'gte']
         }
 
     order_by = OrderingFilter(
         # must contain strings or (field name, param name) pairs
         fields=(
-            ('filename', 'filename'),
-            ('directory', 'directory'),
+            ('verified', 'verified'),
             ('created_time', 'created_time')
         )
     )
 
 
-class CreateDataFile(ModelCreateMutation):
+class CreateDataFileObject(ModelCreateMutation):
     class Meta:
-        model = DataFileModel
-        permissions = ['tardis_portal.add_datafile']
+        model = DataFileObjectModel
+        permissions = ['tardis_portal.add_datafileobject']
 
 
-class UpdateDataFile(ModelUpdateMutation):
+class UpdateDataFileObject(ModelUpdateMutation):
     class Meta:
-        model = DataFileModel
-        permissions = ['tardis_portal.change_datafile']
+        model = DataFileObjectModel
+        permissions = ['tardis_portal.change_datafileobject']
