@@ -11,10 +11,10 @@ const Header = ({
       <div style={{ ...style.title }}>
         <input
           type="checkbox"
-          defaultChecked={node.selected}
           className="datafile_checkbox"
+          checked={node.selected}
           style={{ marginRight: '5px' }}
-          value={`${node.name}`}
+          value={`${node.selected}`}
           onClick={onSelect}
         />
         <i className={`fa fa-${iconClass}`} style={iconStyle} />

@@ -3,17 +3,20 @@ import React, { useState, useEffect, Fragment } from 'react';
 import { Treebeard, decorators } from 'react-treebeard';
 
 import PropTypes from 'prop-types';
-
+import { saveAs } from 'file-saver';
+import Cookies from 'js-cookie';
 import styles from './custom-theme';
 import Header from './Header';
 import Container from './Container';
-import * as filters from './filter';
+import * as filters from './Filter';
 import 'regenerator-runtime/runtime';
 import { TreeDownloadButton } from './Download';
+
 
 const TreeView = ({ datasetId, modified }) => {
   const [cursor, setCursor] = useState(false);
   const [data, setData] = useState([]);
+  const [selectedCount, setSelectedCount] = useState(0);
   const fetchBaseDirs = () => {
     fetch(`/api/v1/dataset/${datasetId}/root-dir-nodes/`, {
       method: 'get',
@@ -36,8 +39,14 @@ const TreeView = ({ datasetId, modified }) => {
       .then((childNodes) => {
         node.children = childNodes;
         node.toggled = true;
+        if (node.selected) {
+          node.children.forEach((childNode) => {
+            childNode.selected = true;
+          });
+        }
         setData(Object.assign([], data));
       });
+    //
   };
   useEffect(() => {
     fetchBaseDirs('');
@@ -76,12 +85,64 @@ const TreeView = ({ datasetId, modified }) => {
   };
   const onSelect = (node) => {
     node.toggled = !node.toggled;
-    node.selected = !node.selected;
-    // console.log(`on select ${node.name}`);
+    if (node.selected) {
+      // select all child nodes
+      node.selected = false;
+      setSelectedCount(selectedCount - 1);
+      node.children.forEach((childNode) => {
+        childNode.selected = false;
+        setSelectedCount(selectedCount - 1);
+      });
+    } else {
+      node.selected = true;
+      setSelectedCount(selectedCount + 1);
+    }
+  };
+  const downloadSelected = (event) => {
+    let fileName = '';
+    event.preventDefault();
+    const formData = new FormData(event.target);
+    console.log(data);
+    let selectedData = [];
+    data.forEach((item) => {
+      const selected = filters.findSelected(item, []);
+      selectedData = [...selectedData, ...selected];
+    });
+    console.log(selectedData);
+    selectedData.forEach((id) => {
+      if (typeof id === 'number') {
+        formData.append('datafile', id.toString());
+      }
+    });
+    fetch('/download/datafiles/', {
+      method: 'POST',
+      body: formData,
+      headers: {
+        'X-CSRFToken': Cookies.get('csrftoken'),
+      },
+    }).then((resp) => {
+      console.log(resp);
+      const disposition = resp.headers.get('Content-Disposition');
+      console.log(disposition);
+      if (disposition && disposition.indexOf('attachment') !== -1) {
+        const filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
+        const matches = filenameRegex.exec(disposition);
+        console.log(matches[1]);
+        if (matches != null && matches[1]) {
+          fileName = matches[1].replace(/['"]/g, '');
+        }
+      }
+      resp.blob().then((fileContent) => {
+        saveAs(fileContent, fileName);
+      });
+    });
   };
   return (
     <Fragment>
-      <TreeDownloadButton count={0} />
+      <TreeDownloadButton
+        count={selectedCount}
+        onClick={downloadSelected}
+      />
       <div style={styles}>
         <div className="input-group">
           <span className="input-group-text">
