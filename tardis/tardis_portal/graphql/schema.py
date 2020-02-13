@@ -7,10 +7,8 @@ from django.contrib.auth.models import Group as GroupModel
 
 from ..models.facility import Facility as FacilityModel
 from ..models.instrument import Instrument as InstrumentModel
-from ..models.experiment import Experiment as ExperimentModel
 from ..models.dataset import Dataset as DatasetModel
 from ..models.datafile import (
-    DataFile as DataFileModel,
     DataFileObject as DataFileObjectModel
 )
 from ..models.storage import (
