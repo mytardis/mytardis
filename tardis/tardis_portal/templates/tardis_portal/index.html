@@ -73,9 +73,11 @@
                       </span>
                     </div>
                   </div>
-                  <div class="row">
-                    <div id="collapse-{{exp.id}}" class="collapse col-md-9 px-1">
-                      <div class="accordion-inner">
+	      </div>
+              <div id="collapse-{{exp.id}}" class="card-body py-2 collapse" data-parent="#private-experiments">
+                <div class="row">
+		  <div class="col-md-9 px-1">
+                    <div class="accordion-inner">
                         <p class="card-text small mb-1">{{exp.description|default:"<em>No description</em>"|bleach}}</p>
                         <div id="private-recent-datasets-{{exp.id}}"></div>
                       </div> {% comment %}class="accordion-inner"{% endcomment %}
