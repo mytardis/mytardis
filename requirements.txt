@@ -5,4 +5,4 @@
 
 # apps go here:
 -r tardis/apps/social_auth/requirements.txt
--r requirements-local.txt
+#-r requirements-local.txt

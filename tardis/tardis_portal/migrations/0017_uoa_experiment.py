@@ -3,7 +3,7 @@
 from __future__ import unicode_literals
 
 from django.db import migrations, models
-
+import tardis.tardis_portal.models.experiment
 
 class Migration(migrations.Migration):
 
@@ -15,7 +15,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='experiment',
             name='internal_id',
-            field=models.CharField(default=b'WUI-2019-03-02-13-03-50.499650', max_length=400, unique=True),
+            field=models.CharField(default=tardis.tardis_portal.models.experiment.experiment_internal_id_default, max_length=400, unique=True),
         ),
         migrations.AddField(
             model_name='experiment',
