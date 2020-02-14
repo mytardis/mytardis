@@ -11,6 +11,7 @@ class Instrument(models.Model):
     Represents an instrument belonging to a facility that produces data
     '''
     name = models.CharField(max_length=100)
+    instrument_id = models.CharField(max_length=255)
     created_time = models.DateTimeField(null=True, blank=True, default=timezone.now)
     modified_time = models.DateTimeField(null=True, blank=True)
     facility = models.ForeignKey(Facility, on_delete=models.CASCADE)
