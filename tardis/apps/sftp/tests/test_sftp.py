@@ -77,7 +77,7 @@ class SFTPTest(TestCase):
         saved_setting = settings.REQUIRE_DATAFILE_CHECKSUMS
         try:
             settings.REQUIRE_DATAFILE_CHECKSUMS = False
-            df_file = _build(self.dataset, 'file.txt', 'path/file.txt')
+            _build(self.dataset, 'file.txt', 'path/file.txt')
         finally:
             settings.REQUIRE_DATAFILE_CHECKSUMS = saved_setting
 
@@ -161,7 +161,7 @@ QKHf8Ha+rOx3B7Dbljc+Xdpcn9VyRmDlSqzX9aCkr18mNg==
             AUTH_FAILED
         )
 
-        pub_key_rec = SFTPPublicKey.objects.create(
+        SFTPPublicKey.objects.create(
             user = self.user,
             name = "TestKey",
             key_type = "ssh-rsa",

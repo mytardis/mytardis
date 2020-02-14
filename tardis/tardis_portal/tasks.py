@@ -27,7 +27,7 @@ def cleanup_dfos():
         dfid = dfo.datafile_id
         try:
             dfo.delete()
-        except OSError as e:
+        except OSError:
             # we can't delete file if it does not exist
             dfo.uri = None
             dfo.save(update_fields=['uri'])

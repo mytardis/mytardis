@@ -176,7 +176,7 @@ class Slapd:
     def _write_config(self):
         """Writes the slapd.conf file out, and returns the path to it."""
         path = os.path.join(self._tmpdir, "slapd.conf")
-        ldif_dir = mkdirs(self._tmpdir)
+        mkdirs(self._tmpdir)
         if os.access(path, os.F_OK):
             self._log.debug("deleting existing %s", path)
             os.remove(path)
