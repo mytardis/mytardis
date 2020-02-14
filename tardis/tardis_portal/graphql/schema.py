@@ -161,7 +161,8 @@ class Query(graphene.ObjectType):
     def resolve_storageboxes(self, info, **kwargs):
         user = info.context.user
         if user.is_authenticated:
-            return StorageBoxModel.objects.all()
+            if user.is_superuser:
+                return StorageBoxModel.objects.all()
         return None
 
     storageboxoptions = DjangoFilterConnectionField(
@@ -171,7 +172,8 @@ class Query(graphene.ObjectType):
     def resolve_storageboxoptions(self, info, **kwargs):
         user = info.context.user
         if user.is_authenticated:
-            return StorageBoxOptionModel.objects.all()
+            if user.is_superuser:
+                return StorageBoxOptionModel.objects.all()
         return None
 
     storageboxattributes = DjangoFilterConnectionField(
@@ -181,7 +183,8 @@ class Query(graphene.ObjectType):
     def resolve_storageboxattributes(self, info, **kwargs):
         user = info.context.user
         if user.is_authenticated:
-            return StorageBoxAttributeModel.objects.all()
+            if user.is_superuser:
+                return StorageBoxAttributeModel.objects.all()
         return None
 
 
