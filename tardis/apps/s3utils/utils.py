@@ -77,9 +77,6 @@ def calculate_checksums(dfo, compute_md5=True, compute_sha512=False):
     """
     from botocore.client import Config
     options = dfo.storage_box.options.all()
-    signature_version = options.filter(key='signature_version').first()
-    if signature_version:
-        config = Config(signature_version=signature_version.value)
     boto3_kwargs = dict(config=Config())
     for option in options:
         key = option.key

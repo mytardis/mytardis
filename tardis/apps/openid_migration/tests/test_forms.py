@@ -17,6 +17,7 @@ class OpenIDMigrationFormTestCase(TestCase):
 
     def test_init(self):
         form = openid_user_migration_form()
+        self.assertEqual(sorted(list(form.base_fields.keys())), ['password', 'username'])
 
     # TODO: Test valid data
     # def test_valid_data(self):

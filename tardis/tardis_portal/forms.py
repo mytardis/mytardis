@@ -448,7 +448,7 @@ class ExperimentForm(forms.ModelForm):
 
         # TODO since this is a compound field, this should merge the errors
         for ae in self.experiment_authors:
-            for name, error in ae.errors.items():
+            for name, _ in ae.errors.items():
                 if isinstance(ae.fields[name], ModelChoiceField):
                     continue
                 if ae.is_bound and bool(ae.errors[name]):

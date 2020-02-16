@@ -784,12 +784,10 @@ class DatasetResource(MyTardisModelResource):
         self.is_authenticated(request)
 
         dataset_id = kwargs['pk']
-        tree_nodes_json = request.GET.get('data', '[]')
         base_dir = request.GET.get('dir_path', None)
         dataset = Dataset.objects.get(id=dataset_id)
-        if not (tree_nodes_json and base_dir):
+        if not base_dir:
             return HttpResponse('Please specify base directory', status=400)
-        tree_nodes = json.loads(tree_nodes_json)
 
         # Previously this method checked the tree nodes data passed
         # in to determine whether children has already been loaded,
@@ -819,7 +817,6 @@ class DatasetResource(MyTardisModelResource):
 
         Example dir_node: {'name': u'child_1', 'children': []}
         '''
-        child_dir_list = []
         for dir in sub_child_dirs:
             part1, part2 = dir
             # get files for this dir

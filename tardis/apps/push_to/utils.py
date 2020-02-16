@@ -10,7 +10,7 @@ def shell_escape(s):
 
 
 def bytes_available(ssh_client, path):
-    stdin, stdout, stderr = ssh_client.exec_command(
+    _, stdout, _ = ssh_client.exec_command(
         'df -k %s | tail -n 1' % shell_escape(path))
     cmd_output = stdout.read().split()
 
