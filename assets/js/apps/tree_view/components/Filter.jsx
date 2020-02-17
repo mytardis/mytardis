@@ -43,18 +43,22 @@ export const findSelectedNode = (node) => {
     // selectedIds.push(node.id);
   }
   if (node.children && node.children.length) {
-    const selectedNode = node.children.find(child => findSelectedNode(child));
+    node.children.find(child => findSelectedNode(child));
   }
   return selectedIds;
 };
 export const findSelected = (node, selectedIds) => {
-  // if i don't have children and im selected
+  // if i don't have children and im selected, I am a file
   if (!node.children && node.selected) {
-    selectedIds.push(node.id);
+    selectedIds.push(node);
   }
   // if i don't have children and im not selected
   if (!node.children && !node.selected) {
     return [];
+  }
+  // if i don't have children and I am selected, I am a selected folder with no child
+  if (node.children && !node.children.length && node.selected) {
+    selectedIds.push(node);
   }
   // if i have children, recursively find selected
   if (node.children && node.children.length) {
