@@ -2,18 +2,34 @@
 
 exports[`renders initial tree view on page load should render folder tree correctly 1`] = `
 <div>
-  <button
-    class="btn btn-outline-secondary"
-    count="0"
-    style="margin-bottom: 12px; font-weight: bold;"
-    title="Download"
-    type="submit"
-  >
-    <i
-      class="fa fa-download fa-sm mr-1 "
+  <form>
+    <input
+      type="hidden"
     />
-    Select All
-  </button>
+    <input
+      name="comptype"
+      type="hidden"
+      value="tar"
+    />
+    <input
+      name="organization"
+      type="hidden"
+      value="deep-storage"
+    />
+    <button
+      class="btn btn-outline-secondary"
+      style="margin-bottom: 12px; font-weight: bold;"
+      title="Start selecting files to download"
+      type="submit"
+      value="submit"
+    >
+      <i
+        class="fa fa-download fa-sm mr-1 "
+      />
+      Select Files...
+      
+    </button>
+  </form>
   <div>
     <div
       class="input-group"
@@ -53,7 +69,6 @@ exports[`renders initial tree view on page load should render folder tree correc
                 class="datafile_checkbox"
                 style="margin-right: 5px;"
                 type="checkbox"
-                value="parent_1"
               />
               <i
                 class="fa fa-folder"
@@ -80,7 +95,6 @@ exports[`renders initial tree view on page load should render folder tree correc
                 class="datafile_checkbox"
                 style="margin-right: 5px;"
                 type="checkbox"
-                value="parent_2"
               />
               <i
                 class="fa fa-folder"
@@ -107,7 +121,6 @@ exports[`renders initial tree view on page load should render folder tree correc
                 class="datafile_checkbox"
                 style="margin-right: 5px;"
                 type="checkbox"
-                value="Parent.txt"
               />
               <i
                 class="fa fa-file-text"
@@ -143,7 +156,6 @@ exports[`renders initial tree view on page load should render folder tree correc
                 class="datafile_checkbox"
                 style="margin-right: 5px;"
                 type="checkbox"
-                value="STORM-6.jpg"
               />
               <i
                 class="fa fa-file-text"
