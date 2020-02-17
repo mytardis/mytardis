@@ -10,7 +10,10 @@ from graphene_django_plus.mutations import (
 
 from .utils import ExtendedConnection
 
-from ..models.experiment import Experiment as ExperimentModel
+from ..models.experiment import (
+    Experiment as ExperimentModel,
+    ExperimentAuthor as ExperimentAuthorModel
+)
 from ..models.access_control import ObjectACL
 
 
@@ -82,3 +85,41 @@ class UpdateExperiment(ModelUpdateMutation):
         model = ExperimentModel
         permissions = ['tardis_portal.change_experiment']
         exclude_fields = ['created_by', 'created_time', 'update_time']
+
+
+class ExperimentAuthorType(ModelType):
+    class Meta:
+        model = ExperimentAuthorModel
+        permissions = ['tardis_portal.view_experimentauthor']
+        interfaces = [relay.Node]
+        connection_class = ExtendedConnection
+
+    pk = graphene.Int(source='pk')
+
+
+class ExperimentAuthorTypeFilter(FilterSet):
+    class Meta:
+        model = ExperimentAuthorModel
+        fields = {
+            'author': ['exact', 'contains']
+        }
+
+    order_by = OrderingFilter(
+        # must contain strings or (field name, param name) pairs
+        fields=(
+            ('author', 'author'),
+            ('order', 'order')
+        )
+    )
+
+
+class CreateExperimentAuthor(ModelCreateMutation):
+    class Meta:
+        model = ExperimentAuthorModel
+        permissions = ['tardis_portal.add_experimentauthor']
+
+
+class UpdateExperimentAuthor(ModelUpdateMutation):
+    class Meta:
+        model = ExperimentAuthorModel
+        permissions = ['tardis_portal.change_experimentauthor']

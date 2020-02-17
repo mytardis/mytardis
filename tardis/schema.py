@@ -1,11 +1,11 @@
 import graphene
-import tardis.tardis_portal.graphql.schema
+from tardis.tardis_portal.graphql.schema import tardisQuery, tardisMutation
 
 
-class Query(tardis.tardis_portal.graphql.schema.Query, graphene.ObjectType):
+class Query(tardisQuery, graphene.ObjectType):
     pass
 
-class Mutation(tardis.tardis_portal.graphql.schema.Mutation, graphene.ObjectType):
+class Mutation(tardisMutation, graphene.ObjectType):
     pass
 
 

@@ -16,6 +16,10 @@ from ..models.storage import (
     StorageBoxOption as StorageBoxOptionModel,
     StorageBoxAttribute as StorageBoxAttributeModel
 )
+from ..models.parameters import (
+    Schema as SchemaModel,
+    ParameterName as ParameterNameModel
+)
 
 from .user import UserType, UserSignIn, ApiSignIn
 from .group import (
@@ -32,7 +36,8 @@ from .instrument import (
 )
 from .experiment import (
     ExperimentType, ExperimentTypeFilter,
-    CreateExperiment, UpdateExperiment
+    CreateExperiment, UpdateExperiment,
+    CreateExperimentAuthor, UpdateExperimentAuthor
 )
 from .dataset import (
     DatasetType, DatasetTypeFilter,
@@ -58,13 +63,29 @@ from .storageboxattribute import (
     StorageBoxAttributeType, StorageBoxAttributeTypeFilter,
     CreateStorageBoxAttribute, UpdateStorageBoxAttribute
 )
+from .storageboxattribute import (
+    StorageBoxAttributeType, StorageBoxAttributeTypeFilter,
+    CreateStorageBoxAttribute, UpdateStorageBoxAttribute
+)
+from .parameters import (
+    TardisSchemaType, TardisSchemaTypeFilter,
+    CreateSchema, UpdateSchema,
+    ParameterNameType, ParameterNameTypeFilter,
+    CreateParameterName, UpdateParameterName,
+    CreateExperimentParameterSet, UpdateExperimentParameterSet,
+    CreateExperimentParameter, UpdateExperimentParameter,
+    CreateDatasetParameterSet, UpdateDatasetParameterSet,
+    CreateDatasetParameter, UpdateDatasetParameter,
+    CreateDatafileParameterSet, UpdateDatafileParameterSet,
+    CreateDatafileParameter, UpdateDatafileParameter
+)
 from .utils import (
     get_accessible_experiments,
     get_accessible_datafiles
 )
 
 
-class Query(graphene.ObjectType):
+class tardisQuery(graphene.ObjectType):
 
     user = graphene.Field(UserType)
     def resolve_user(self, info, **kwargs):
@@ -187,8 +208,30 @@ class Query(graphene.ObjectType):
                 return StorageBoxAttributeModel.objects.all()
         return None
 
+    schemas = DjangoFilterConnectionField(
+        TardisSchemaType,
+        filterset_class=TardisSchemaTypeFilter
+    )
+    def resolve_schemas(self, info, **kwargs):
+        user = info.context.user
+        if user.is_authenticated:
+            if user.is_superuser:
+                return SchemaModel.objects.all()
+        return None
 
-class Mutation(graphene.ObjectType):
+    parameternames = DjangoFilterConnectionField(
+        ParameterNameType,
+        filterset_class=ParameterNameTypeFilter
+    )
+    def resolve_parameternames(self, info, **kwargs):
+        user = info.context.user
+        if user.is_authenticated:
+            if user.is_superuser:
+                return ParameterNameModel.objects.all()
+        return None
+
+
+class tardisMutation(graphene.ObjectType):
     verify_token = graphql_jwt.relay.Verify.Field()
     refresh_token = graphql_jwt.relay.Refresh.Field()
     revoke_token = graphql_jwt.relay.Revoke.Field()
@@ -208,6 +251,9 @@ class Mutation(graphene.ObjectType):
     create_experiment = CreateExperiment.Field()
     update_experiment = UpdateExperiment.Field()
 
+    create_experimentauthor = CreateExperimentAuthor.Field()
+    update_experimentauthor = UpdateExperimentAuthor.Field()
+
     create_dataset = CreateDataset.Field()
     update_dataset = UpdateDataset.Field()
 
@@ -225,3 +271,27 @@ class Mutation(graphene.ObjectType):
 
     create_storageboxattribute = CreateStorageBoxAttribute.Field()
     update_storageboxattribute = UpdateStorageBoxAttribute.Field()
+
+    create_schema = CreateSchema.Field()
+    update_schema = UpdateSchema.Field()
+
+    create_parametername = CreateParameterName.Field()
+    update_parametername = UpdateParameterName.Field()
+
+    create_experimentparameterset = CreateExperimentParameterSet.Field()
+    update_experimentparameterset = UpdateExperimentParameterSet.Field()
+
+    create_experimentparameter = CreateExperimentParameter.Field()
+    update_experimentparameter = UpdateExperimentParameter.Field()
+
+    create_datasetparameterset = CreateDatasetParameterSet.Field()
+    update_datasetparameterset = UpdateDatasetParameterSet.Field()
+
+    create_datasetparameter = CreateDatasetParameter.Field()
+    update_datasetparameter = UpdateDatasetParameter.Field()
+
+    create_datafileparameterset = CreateDatafileParameterSet.Field()
+    update_datafileparameterset = UpdateDatafileParameterSet.Field()
+
+    create_datafileparameter = CreateDatafileParameter.Field()
+    update_datafileparameter = UpdateDatafileParameter.Field()
