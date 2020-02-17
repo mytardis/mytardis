@@ -12,10 +12,9 @@ const Header = ({
         <input
           type="checkbox"
           className="datafile_checkbox"
-          checked={node.selected}
           style={{ marginRight: '5px' }}
-          value={`${node.selected}`}
           onClick={onSelect}
+          defaultChecked={node.selected}
         />
         <i className={`fa fa-${iconClass}`} style={iconStyle} />
         {node.name}
