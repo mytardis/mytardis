@@ -143,4 +143,53 @@ describe('test rendering child nodes and filter', () => {
       });
     });
   });
+  it('should select all child nodes, if parent node is selected', async () => {
+    await act(async () => {
+      component.find('NodeHeader').first().simulate('click');
+    });
+    component.update();
+    expect(component.find('NodeHeader')).toHaveLength(8);
+    expect(component.find('Header').get(0).props.iconClass).toEqual('folder-open');
+    expect(component.find('Header').get(1).props.node.selected).toBeTruthy();
+    expect(component.find('Header').get(2).props.node.selected).toBeTruthy();
+  });
+  it('should deselect all child nodes, if parent node is selected', async () => {
+    await act(async () => {
+      const checkBox = component.find({ type: 'checkbox' }).first();
+      checkBox.simulate('click');
+    });
+    component.update();
+    expect(component.find('NodeHeader')).toHaveLength(8);
+    expect(component.find('Header').get(1).props.node.selected).toBeFalsy();
+    expect(component.find('Header').get(2).props.node.selected).toBeFalsy();
+  });
+  it('should select child node with no children', async () => {
+    await act(async () => {
+      const checkBox = component.find({ type: 'checkbox' }).last();
+      checkBox.simulate('click');
+    });
+    component.update();
+    expect(component.find('NodeHeader')).toHaveLength(8);
+    expect(component.find('Header').get(7).props.node.selected).toBeTruthy();
+  });
+  it('should deselect child node with no children', async () => {
+    expect(component.find('Header').get(7).props.node.selected).toBeTruthy();
+    await act(async () => {
+      const checkBox = component.find({ type: 'checkbox' }).last();
+      checkBox.simulate('click');
+    });
+    component.update();
+    expect(component.find('NodeHeader')).toHaveLength(8);
+    expect(component.find('Header').get(7).props.node.selected).toBeFalsy();
+  });
+  it('should deselect folder nodes', async () => {
+    expect(component.find('Header').get(1).props.node.selected).toBeFalsy();
+    await act(async () => {
+      const checkBox = component.find({ type: 'checkbox' }).at(1).simulate('click');
+      checkBox.simulate('click');
+    });
+    component.update();
+    expect(component.find('NodeHeader')).toHaveLength(8);
+    expect(component.find('Header').get(1).props.node.selected).toBeFalsy();
+  });
 });

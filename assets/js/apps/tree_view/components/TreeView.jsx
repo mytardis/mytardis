@@ -135,7 +135,6 @@ const TreeView = ({ datasetId, modified }) => {
       const selected = filters.findSelected(item, []);
       selectedData = [...selectedData, ...selected];
     });
-    console.log(selectedData);
     // if folder is selected, get array of promises
     // This will resolve to a list of ids for each folder
     let selectedFileIds = [];
