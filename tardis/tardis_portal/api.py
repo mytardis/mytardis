@@ -709,6 +709,10 @@ class DatasetResource(MyTardisModelResource):
                 (self._meta.resource_name, trailing_slash()),
                 self.wrap_view('get_child_dir_nodes'),
                 name='api_get_child_dir_nodes'),
+            url(r'^(?P<resource_name>%s)/(?P<pk>\w[\w/-]*)/child-dir-files%s$' %
+                (self._meta.resource_name, trailing_slash()),
+                self.wrap_view('get_child_dir_files'),
+                name='api_get_child_dir_files'),
         ]
 
     def get_datafiles(self, request, **kwargs):
@@ -810,6 +814,25 @@ class DatasetResource(MyTardisModelResource):
                 child_list.append(child)
 
         return JsonResponse(child_list, status=200, safe=False)
+
+    def get_child_dir_files(self, request, **kwargs):
+        """
+        Return a list of datafile Ids within a child subdirectory
+        :param request:
+        :param kwargs:
+        :return: a list of datafile IDs
+        """
+        self.method_check(request, allowed=['get'])
+        self.is_authenticated(request)
+        dataset_id = kwargs['pk']
+        dir_path = request.GET.get('dir_path', None)
+        if not dir_path:
+            return HttpResponse('Please specify folder path')
+
+        df_list = DataFile.objects.filter(dataset__id=dataset_id, directory=dir_path) | \
+            DataFile.objects.filter(dataset__id=dataset_id, directory__startswith=dir_path+"/")
+        ids = [df.id for df in df_list]
+        return JsonResponse(ids, status=200, safe=False)
 
     def _populate_children(self, sub_child_dirs, dir_node, dataset):
         '''Populate the children list in a directory node
