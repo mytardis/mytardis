@@ -3,7 +3,6 @@ import ReactDOM from 'react-dom';
 import { act } from '@testing-library/react';
 import { configure, mount } from 'enzyme';
 import Adapter from 'enzyme-adapter-react-16';
-import FileSaver from 'file-saver';
 import TreeView from '../TreeView';
 
 global.fetch = require('jest-fetch-mock');
@@ -246,7 +245,6 @@ describe('test download selected files', () => {
       checkBox.simulate('click');
     });
     component.update();
-    console.log(component.debug());
     // click on Download
     fetch.mockResponseOnce('[\'a\', \'b\', \'c\', \'d\']', {
       status: 200,
