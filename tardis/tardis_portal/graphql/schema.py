@@ -45,7 +45,8 @@ from .dataset import (
 )
 from .datafile import (
     DataFileType, DataFileTypeFilter,
-    CreateDataFile, UpdateDataFile
+    CreateDataFile, UpdateDataFile,
+    UploadDataFile
 )
 from .datafileobject import (
     DataFileObjectType, DataFileObjectTypeFilter,
@@ -259,6 +260,7 @@ class tardisMutation(graphene.ObjectType):
 
     create_datafile = CreateDataFile.Field()
     update_datafile = UpdateDataFile.Field()
+    upload_datafile = UploadDataFile.Field()
 
     create_datafileobject = CreateDataFileObject.Field()
     update_datafileobject = UpdateDataFileObject.Field()
