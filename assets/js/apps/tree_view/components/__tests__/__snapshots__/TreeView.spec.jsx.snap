@@ -185,5 +185,3 @@ exports[`renders initial tree view on page load should render folder tree correc
   </div>
 </div>
 `;
-
-exports[`test filter, select and toggle node should render child nodes when clicked on parent 1`] = `null`;
