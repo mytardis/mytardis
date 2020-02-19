@@ -115,6 +115,8 @@ const TreeView = ({ datasetId, modified }) => {
     if (!filter) {
       // set initial tree state:
       fetchBaseDirs('');
+      // set count to 0
+      setSelectedCount(0);
     }
     const filteredData = [];
     data.forEach((item) => {

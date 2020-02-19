@@ -14,7 +14,8 @@ const Header = ({
           className="datafile_checkbox"
           style={{ marginRight: '5px' }}
           onClick={onSelect}
-          defaultChecked={node.selected}
+          checked={node.selected}
+          readOnly
         />
         <i className={`fa fa-${iconClass}`} style={iconStyle} />
         {node.name}
