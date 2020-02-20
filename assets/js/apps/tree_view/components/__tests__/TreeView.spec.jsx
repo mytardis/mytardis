@@ -4,7 +4,7 @@ import { act } from '@testing-library/react';
 import { configure, mount } from 'enzyme';
 import Adapter from 'enzyme-adapter-react-16';
 import TreeView from '../TreeView';
-import * as utils from '../Utils';
+
 
 global.fetch = require('jest-fetch-mock');
 
@@ -275,6 +275,8 @@ describe('test download selected files', () => {
       checkBox.simulate('click');
     });
     component.update();
+    // eslint-disable-next-line global-require
+    const utils = require('../Utils');
     utils.FetchFilesInDir = jest.fn(() => [11985763]);
     fetch.mockResponseOnce('[\'a\', \'b\', \'c\', \'d\']', {
       status: 200,
@@ -295,5 +297,16 @@ describe('test download selected files', () => {
     expect(fetch.mock.calls.length).toEqual(20);
     expect(fetch.mock.calls[19][1].body.getAll('datafile'))
       .toEqual(['11985763', '11985764', '11985776', '11985840', '11985763', '11985763']);
+  });
+  it('should call api to get files in subdir', () => {
+    jest.clearAllMocks().resetModules();
+    // eslint-disable-next-line global-require
+    const utils = require('../Utils');
+    jest.spyOn(global, 'fetch').mockImplementation(() => Promise.resolve({
+      json: () => Promise.resolve(12345),
+    }));
+    const response = utils.FetchFilesInDir('1234', 'Parent_1/');
+    expect(fetch.mock.calls.length).toEqual(1);
+    expect(fetch).toHaveBeenCalledWith('/api/v1/dataset/1234/child-dir-files/?dir_path=Parent_1/');
   });
 });
