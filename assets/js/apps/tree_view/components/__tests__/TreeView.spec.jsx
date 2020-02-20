@@ -4,6 +4,7 @@ import { act } from '@testing-library/react';
 import { configure, mount } from 'enzyme';
 import Adapter from 'enzyme-adapter-react-16';
 import TreeView from '../TreeView';
+import * as utils from '../Utils';
 
 global.fetch = require('jest-fetch-mock');
 
@@ -262,5 +263,37 @@ describe('test download selected files', () => {
       downloadButton.simulate('click');
     });
     component.update();
+    expect(fetch.mock.calls.length).toEqual(18);
+    expect(fetch.mock.calls[17][1].body.get('comptype')).toEqual('tar');
+    expect(fetch.mock.calls[17][1].body.get('organization')).toEqual('deep-storage');
+    expect(fetch.mock.calls[17][1].body.getAll('datafile')).toEqual(['11985776', '11985840']);
+  });
+  it('should download all files within a selected folder', async () => {
+    // select Parent_1 folder
+    await act(async () => {
+      const checkBox = component.find({ type: 'checkbox' }).at(0);
+      checkBox.simulate('click');
+    });
+    component.update();
+    utils.FetchFilesInDir = jest.fn(() => [11985763]);
+    fetch.mockResponseOnce('[\'a\', \'b\', \'c\', \'d\']', {
+      status: 200,
+      headers: {
+        'content-type': 'application/x-tar',
+        'Content-Disposition': 'attachment; filename=manish-selection.tar',
+        'Content-Length': '71680',
+      },
+    });
+    jest.mock('file-saver', () => ({ saveAs: jest.fn() }));
+    global.Blob = function f(content, options) { return ({ content, options }); };
+    global.URL.createObjectURL = jest.fn();
+    const downloadButton = component.find('form').simulate('submit');
+    await act(async () => {
+      downloadButton.simulate('click');
+    });
+    component.update();
+    expect(fetch.mock.calls.length).toEqual(20);
+    expect(fetch.mock.calls[19][1].body.getAll('datafile'))
+      .toEqual(['11985763', '11985764', '11985776', '11985840', '11985763', '11985763']);
   });
 });
