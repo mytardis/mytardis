@@ -10,9 +10,10 @@ class userSignInTestCase(GraphQLTestCase):
     GRAPHQL_SCHEMA = schema
 
     def setUp(self):
+        self.password = 'bobby*123!'
         self.user = get_user_model().objects.create_user(
             username='bob',
-            password='bobby*123!',
+            password=self.password,
             email='bob@bobby.com.au',
             is_active=True
         )
@@ -35,7 +36,7 @@ class userSignInTestCase(GraphQLTestCase):
             op_name='userSignIn',
             input_data={
                 'username': self.user.username,
-                'password': self.user.password
+                'password': self.password
             }
         ).content)
         self.assertFalse('errors' in rsp)
