@@ -22,7 +22,7 @@ class userSignInTestCase(GraphQLTestCase):
         self.user.delete()
 
     def test_user_sign_in(self):
-        rsp = json.loads(self.query('''
+        rsp = self.query('''
             mutation userSignIn($input: UserSignInInput!) {
                 userSignIn(input: $input) {
                     token
@@ -38,7 +38,8 @@ class userSignInTestCase(GraphQLTestCase):
                 'username': self.user.username,
                 'password': self.password
             }
-        ).content)
+        )
+        rsp = json.loads(rsp.content.decode('utf-8'))
         self.assertFalse('errors' in rsp)
         self.assertTrue('data' in rsp)
         self.assertTrue('userSignIn' in rsp['data'])
