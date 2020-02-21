@@ -68,7 +68,7 @@ urlpatterns = [
     url(r'', include(core_urls)),
 
     # GraphQL
-    url(r'^graphql$', csrf_exempt(GraphQLView.as_view(
+    url(r'^graphql/', csrf_exempt(GraphQLView.as_view(
         graphiql=getattr(settings, 'GRAPHIQL', False)))),
 
     # API views
