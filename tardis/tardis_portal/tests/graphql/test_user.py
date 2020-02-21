@@ -9,7 +9,7 @@ class userSignInTestCase(JSONWebTokenTestCase):
     def setUp(self):
         self.user = get_user_model().objects.create_user(
             username='bob',
-            password='bobby',
+            password='bobby*312',
             email='bob@bobby.com.au',
             is_active=True
         )
