@@ -4,7 +4,7 @@ from django_filters import FilterSet, OrderingFilter
 
 from django.conf import settings
 
-from graphene_django_plus.types import ModelType, UploadType
+from graphene_django_plus.types import ModelType
 from graphene_django_plus.mutations import (
     ModelCreateMutation,
     ModelUpdateMutation
