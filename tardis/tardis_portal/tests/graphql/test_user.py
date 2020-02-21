@@ -1,5 +1,3 @@
-import json
-
 from graphql_jwt.testcases import JSONWebTokenTestCase
 from django.contrib.auth import get_user_model
 
