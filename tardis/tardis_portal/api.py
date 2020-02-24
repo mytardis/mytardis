@@ -776,6 +776,7 @@ class DatasetResource(MyTardisModelResource):
             for df in dfs:
                 children = {}
                 children['name'] = df.filename
+                children['verified'] = df.verified
                 children['id'] = df.id
                 child_list.append(children)
 
@@ -810,7 +811,7 @@ class DatasetResource(MyTardisModelResource):
         # if there are files append this
         if dfs:
             for df in dfs:
-                child = {'name': df.filename, 'id': df.id}
+                child = {'name': df.filename, 'id': df.id, 'verified': df.verified}
                 child_list.append(child)
 
         return JsonResponse(child_list, status=200, safe=False)

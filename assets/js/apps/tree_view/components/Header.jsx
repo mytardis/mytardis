@@ -6,6 +6,10 @@ const Header = ({
   onSelect, node, style, iconClass,
 }) => {
   const iconStyle = { marginRight: '5px', opacity: '0.6' };
+  let isDisabled = false;
+  if (!node.children && !node.verified) {
+    isDisabled = true;
+  }
   return (
     <div style={style.base}>
       <div style={{ ...style.title }}>
@@ -16,6 +20,7 @@ const Header = ({
           onClick={onSelect}
           checked={node.selected}
           readOnly
+          disabled={isDisabled}
         />
         <i className={`fa fa-${iconClass}`} style={iconStyle} />
         {node.name}
