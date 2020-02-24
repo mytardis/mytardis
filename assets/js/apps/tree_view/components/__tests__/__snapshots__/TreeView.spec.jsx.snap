@@ -133,7 +133,7 @@ exports[`renders initial tree view on page load should render folder tree correc
               <a
                 class="btn-sm"
                 href="/api/v1/dataset_file/11985776/download/"
-                style="color: Black;"
+                style="color: black;"
                 title="Download"
               >
                 <i
@@ -157,6 +157,7 @@ exports[`renders initial tree view on page load should render folder tree correc
             >
               <input
                 class="datafile_checkbox"
+                disabled=""
                 readonly=""
                 style="margin-right: 5px;"
                 type="checkbox"
@@ -165,11 +166,16 @@ exports[`renders initial tree view on page load should render folder tree correc
                 class="fa fa-file-text"
                 style="margin-right: 5px; opacity: 0.6;"
               />
-              STORM-6.jpg
+              <span
+                style="color: red;"
+              >
+                STORM-6.jpg
+                (unverified)
+              </span>
               <a
                 class="btn-sm"
                 href="/api/v1/dataset_file/11985840/download/"
-                style="color: Black;"
+                style="pointer-events: none; cursor: default; text-decoration: none; color: grey;"
                 title="Download"
               >
                 <i

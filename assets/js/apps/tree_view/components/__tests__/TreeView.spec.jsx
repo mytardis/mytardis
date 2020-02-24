@@ -23,10 +23,12 @@ const fakeTreeData = [{
 {
   name: 'Parent.txt',
   id: 11985776,
+  verified: true,
 },
 {
   name: 'STORM-6.jpg',
   id: 11985840,
+  verified: false,
 }];
 const fakeChildData = [
   {
@@ -42,10 +44,12 @@ const fakeChildData = [
   {
     name: 'Child_1.txt',
     id: 11985763,
+    verified: true,
   },
   {
     name: 'Child_2.txt',
     id: 11985764,
+    verified: true,
   }];
 
 let container = null;
@@ -84,7 +88,7 @@ describe('renders initial tree view on page load', () => {
     expect(container.querySelector('ul').children[0].textContent).toEqual('parent_1');
     expect(container.querySelector('ul').children[1].textContent).toEqual('parent_2');
     expect(container.querySelector('ul').children[2].textContent).toEqual('Parent.txt');
-    expect(container.querySelector('ul').children[3].textContent).toEqual('STORM-6.jpg');
+    expect(container.querySelector('ul').children[3].textContent).toEqual('STORM-6.jpg(unverified)');
   });
 });
 
@@ -214,22 +218,22 @@ describe('test filter, select and toggle node', () => {
   });
   it('should select child node with no children', async () => {
     await act(async () => {
-      const checkBox = component.find({ type: 'checkbox' }).last();
+      const checkBox = component.find({ type: 'checkbox' }).at(6);
       checkBox.simulate('click');
     });
     component.update();
     expect(component.find('NodeHeader')).toHaveLength(8);
-    expect(component.find('Header').get(7).props.node.selected).toBeTruthy();
+    expect(component.find('Header').get(6).props.node.selected).toBeTruthy();
   });
   it('should deselect child node with no children', async () => {
-    expect(component.find('Header').get(7).props.node.selected).toBeTruthy();
+    expect(component.find('Header').get(6).props.node.selected).toBeTruthy();
     await act(async () => {
-      const checkBox = component.find({ type: 'checkbox' }).last();
+      const checkBox = component.find({ type: 'checkbox' }).at(6);
       checkBox.simulate('click');
     });
     component.update();
     expect(component.find('NodeHeader')).toHaveLength(8);
-    expect(component.find('Header').get(7).props.node.selected).toBeFalsy();
+    expect(component.find('Header').get(6).props.node.selected).toBeFalsy();
   });
 });
 
@@ -237,7 +241,7 @@ describe('test download selected files', () => {
   it('should download selected files', async () => {
     // select 2 files at root of the tree
     await act(async () => {
-      const checkBox = component.find({ type: 'checkbox' }).at(7);
+      const checkBox = component.find({ type: 'checkbox' }).at(3);
       checkBox.simulate('click');
     });
     component.update();
@@ -263,11 +267,10 @@ describe('test download selected files', () => {
       downloadButton.simulate('click');
     });
     component.update();
-    console.log(component.debug());
     expect(fetch.mock.calls.length).toEqual(18);
     expect(fetch.mock.calls[17][1].body.get('comptype')).toEqual('tar');
     expect(fetch.mock.calls[17][1].body.get('organization')).toEqual('deep-storage');
-    expect(fetch.mock.calls[17][1].body.getAll('datafile')).toEqual(['11985776', '11985840']);
+    expect(fetch.mock.calls[17][1].body.getAll('datafile')).toEqual(['11985763', '11985776']);
   });
   it('should download all files within a selected folder', async () => {
     // select Parent_1/child_1 folder
@@ -278,7 +281,7 @@ describe('test download selected files', () => {
     component.update();
     // eslint-disable-next-line global-require
     const utils = require('../Utils');
-    utils.FetchFilesInDir = jest.fn(() => [11985763]);
+    utils.FetchFilesInDir = jest.fn(() => [11985777]);
     fetch.mockResponseOnce('[\'a\', \'b\', \'c\', \'d\']', {
       status: 200,
       headers: {
@@ -301,10 +304,7 @@ describe('test download selected files', () => {
     // expect methos to be POST
     expect(fetch.mock.calls["19"][1].method).toEqual('POST');
     // expect form data to include 3 datafile
-    expect(fetch.mock.calls['19']['1'].body.getAll('datafile')).toEqual(['11985776', '11985840', '11985763']);
-    // expect form to post three ids(two for file and one for folder)
-    expect(fetch.mock.calls[19][1].body.getAll('datafile'))
-      .toEqual(['11985776', '11985840', '11985763']);
+    expect(fetch.mock.calls['19']['1'].body.getAll('datafile')).toEqual(['11985763', '11985776', '11985777']);
   });
   it('should call api to get files in subdir', () => {
     jest.clearAllMocks().resetModules();
@@ -313,6 +313,7 @@ describe('test download selected files', () => {
     jest.spyOn(global, 'fetch').mockImplementation(() => Promise.resolve({
       json: () => Promise.resolve(12345),
     }));
+    // eslint-disable-next-line no-unused-vars
     const response = utils.FetchFilesInDir('1234', 'Parent_1/');
     expect(fetch.mock.calls.length).toEqual(1);
     expect(fetch).toHaveBeenCalledWith('/api/v1/dataset/1234/child-dir-files/?dir_path=Parent_1/');
