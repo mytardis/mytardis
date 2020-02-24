@@ -263,15 +263,16 @@ describe('test download selected files', () => {
       downloadButton.simulate('click');
     });
     component.update();
+    console.log(component.debug());
     expect(fetch.mock.calls.length).toEqual(18);
     expect(fetch.mock.calls[17][1].body.get('comptype')).toEqual('tar');
     expect(fetch.mock.calls[17][1].body.get('organization')).toEqual('deep-storage');
     expect(fetch.mock.calls[17][1].body.getAll('datafile')).toEqual(['11985776', '11985840']);
   });
   it('should download all files within a selected folder', async () => {
-    // select Parent_1 folder
+    // select Parent_1/child_1 folder
     await act(async () => {
-      const checkBox = component.find({ type: 'checkbox' }).at(0);
+      const checkBox = component.find({ type: 'checkbox' }).at(1);
       checkBox.simulate('click');
     });
     component.update();
@@ -295,8 +296,15 @@ describe('test download selected files', () => {
     });
     component.update();
     expect(fetch.mock.calls.length).toEqual(20);
+    // expect download datafile endpoint is called
+    expect(fetch.mock.calls["19"][0]).toEqual('/download/datafiles/');
+    // expect methos to be POST
+    expect(fetch.mock.calls["19"][1].method).toEqual('POST');
+    // expect form data to include 3 datafile
+    expect(fetch.mock.calls['19']['1'].body.getAll('datafile')).toEqual(['11985776', '11985840', '11985763']);
+    // expect form to post three ids(two for file and one for folder)
     expect(fetch.mock.calls[19][1].body.getAll('datafile'))
-      .toEqual(['11985763', '11985764', '11985776', '11985840', '11985763', '11985763']);
+      .toEqual(['11985776', '11985840', '11985763']);
   });
   it('should call api to get files in subdir', () => {
     jest.clearAllMocks().resetModules();
