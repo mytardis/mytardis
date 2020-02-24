@@ -1,13 +1,21 @@
 import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
 
-const FileDownloadButton = ({ href }) => (
-  <Fragment>
-    <a className="btn-sm" style={{ color: 'Black' }} title="Download" href={href}>
-      <i className="fa fa-download fa-sm" />
-    </a>
-  </Fragment>
-);
+const FileDownloadButton = ({ href, isDisabled }) => {
+  const notActive = {
+    pointerEvents: 'none',
+    cursor: 'default',
+    textDecoration: 'none',
+    color: 'grey',
+  };
+  return (
+    <Fragment>
+      <a className="btn-sm" style={isDisabled ? notActive : { color: 'black' }} title="Download" href={href}>
+        <i className="fa fa-download fa-sm" />
+      </a>
+    </Fragment>
+  );
+};
 
 const TreeDownloadButton = ({ count, onClick }) => (
   <Fragment>
@@ -43,6 +51,7 @@ const TreeDownloadButton = ({ count, onClick }) => (
 
 FileDownloadButton.propTypes = {
   href: PropTypes.string.isRequired,
+  isDisabled: PropTypes.bool.isRequired,
 };
 TreeDownloadButton.propTypes = {
   count: PropTypes.number.isRequired,

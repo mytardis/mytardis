@@ -23,8 +23,14 @@ const Header = ({
           disabled={isDisabled}
         />
         <i className={`fa fa-${iconClass}`} style={iconStyle} />
-        {node.name}
-        {iconClass === 'file-text' ? <FileDownloadButton href={`/api/v1/dataset_file/${node.id}/download/`} /> : ''}
+        {isDisabled ? (
+          <span style={{ color: 'red' }}>
+            {node.name}
+            (unverified)
+          </span>
+        ) : node.name}
+        {iconClass === 'file-text'
+          ? <FileDownloadButton href={`/api/v1/dataset_file/${node.id}/download/`} isDisabled={isDisabled} /> : ''}
       </div>
     </div>
   );
