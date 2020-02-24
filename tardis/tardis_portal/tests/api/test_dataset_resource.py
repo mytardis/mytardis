@@ -136,7 +136,8 @@ class DatasetResourceTest(MyTardisResourceTestCase):
         expected_data = [
             {
                 'name': 'filename1',
-                'id': df1.id
+                'id': df1.id,
+                'verified': False
 
             },
             {
@@ -169,7 +170,8 @@ class DatasetResourceTest(MyTardisResourceTestCase):
         self.assertEqual(returned_data, [
             {
                 'name': 'filename1',
-                'id': df1.id
+                'id': df1.id,
+                'verified': False
             }
         ])
 
@@ -182,12 +184,14 @@ class DatasetResourceTest(MyTardisResourceTestCase):
         expected_data = [
             {
                 'name': 'filename1',
-                'id': df1.id
+                'id': df1.id,
+                'verified': False
 
             },
             {
                 'name': 'filename2',
-                'id': df2.id
+                'id': df2.id,
+                'verified': False
             }
         ]
         self.assertEqual(
@@ -206,12 +210,14 @@ class DatasetResourceTest(MyTardisResourceTestCase):
         expected_data = [
             {
                 'name': 'filename1',
-                'id': df1.id
+                'id': df1.id,
+                'verified': False
 
             },
             {
                 'name': 'filename2',
-                'id': df2.id
+                'id': df2.id,
+                'verified': False
             }
         ]
         self.assertEqual(
@@ -228,12 +234,14 @@ class DatasetResourceTest(MyTardisResourceTestCase):
         expected_data = [
             {
                 'name': 'filename1',
-                'id': df1.id
+                'id': df1.id,
+                'verified': False
 
             },
             {
                 'name': 'filename2',
-                'id': df2.id
+                'id': df2.id,
+                'verified': False
             },
             {
                 'name': 'subdir3',
@@ -253,7 +261,8 @@ class DatasetResourceTest(MyTardisResourceTestCase):
         expected_data = [
             {
                 'name': 'filename4',
-                'id': df4.id
+                'id': df4.id,
+                'verified': False
 
             },
         ]
@@ -278,7 +287,8 @@ class DatasetResourceTest(MyTardisResourceTestCase):
         self.assertEqual(returned_data, [
             {
                 'name': 'filename1',
-                'id': df1.id
+                'id': df1.id,
+                'verified': False
             }
         ])
 
@@ -292,7 +302,8 @@ class DatasetResourceTest(MyTardisResourceTestCase):
         expected_data = [
             {
                 'name': 'filename1',
-                'id': df1.id
+                'id': df1.id,
+                'verified': False
             },
             {
                 'name': 'subdir#2',
