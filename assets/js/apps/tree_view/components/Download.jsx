@@ -36,9 +36,10 @@ const TreeDownloadButton = ({ count, onClick }) => (
       <button
         className="btn btn-outline-secondary"
         style={{ marginBottom: '12px', fontWeight: 'bold' }}
-        title="Start selecting files to download"
+        title={count > 0 ? `Download ${count} selected files/folders` : 'Start selecting files to download'}
         type="submit"
         value="submit"
+        disabled={!(count > 0)}
       >
         <i className="fa fa-download fa-sm mr-1 " />
         {count > 0 ? 'Download Selected' : 'Select Files...'}

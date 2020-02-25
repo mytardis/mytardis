@@ -18,6 +18,7 @@ exports[`renders initial tree view on page load should render folder tree correc
     />
     <button
       class="btn btn-outline-secondary"
+      disabled=""
       style="margin-bottom: 12px; font-weight: bold;"
       title="Start selecting files to download"
       type="submit"
