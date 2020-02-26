@@ -13,7 +13,7 @@ from django.utils.encoding import python_2_unicode_compatible
 
 from ..managers import OracleSafeManager, ExperimentManager
 from .access_control import ObjectACL
-
+from .parameters import ExperimentParameter
 from .license import License
 
 logger = logging.getLogger(__name__)
@@ -47,7 +47,7 @@ class Experiment(models.Model):
     :attribute safe: ACL aware model manager
 
     """
-    
+
     PUBLIC_ACCESS_NONE = 1
     PUBLIC_ACCESS_EMBARGO = 25
     PUBLIC_ACCESS_METADATA = 50
@@ -90,7 +90,7 @@ class Experiment(models.Model):
     objectacls = GenericRelation(ObjectACL)
     objects = OracleSafeManager()
     safe = ExperimentManager()  # The acl-aware specific manager.
-    
+
     class Meta:
         app_label = 'tardis_portal'
 
@@ -111,6 +111,9 @@ class Experiment(models.Model):
                 settings, 'PUBLICATION_SCHEMA_ROOT',
                 self.PUBLICATION_SCHEMA_ROOT)
         ).count() > 0
+
+    def getParametersforIndexing(self):
+        return ExperimentParameter.objects.get()
 
     def getParameterSets(self):
         """Return the experiment parametersets associated with this
@@ -230,7 +233,7 @@ class Experiment(models.Model):
                                         object_id=self.id,
                                         canRead=True)
         return [acl.get_related_object() for acl in acls]
-    
+
     def _has_view_perm(self, user_obj):
         '''
         Called from the ACLAwareBackend class's has_perm method
