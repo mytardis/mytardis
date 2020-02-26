@@ -819,9 +819,11 @@ class DatasetResource(MyTardisModelResource):
     def get_child_dir_files(self, request, **kwargs):
         """
         Return a list of datafile Ids within a child subdirectory
-        :param request:
+        :param request: a HTTP Request instance
+        :type request: :class:`django.http.HttpRequest`
         :param kwargs:
         :return: a list of datafile IDs
+        :rtype: JsonResponse: :class: `django.http.JsonResponse`
         """
         self.method_check(request, allowed=['get'])
         self.is_authenticated(request)
