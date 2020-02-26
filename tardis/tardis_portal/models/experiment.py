@@ -13,7 +13,6 @@ from django.utils.encoding import python_2_unicode_compatible
 
 from ..managers import OracleSafeManager, ExperimentManager
 from .access_control import ObjectACL
-from .parameters import ExperimentParameter
 from .license import License
 
 logger = logging.getLogger(__name__)
@@ -113,6 +112,7 @@ class Experiment(models.Model):
         ).count() > 0
 
     def getParametersforIndexing(self):
+        from .parameters import ExperimentParameter
         return ExperimentParameter.objects.get()
 
     def getParameterSets(self):
