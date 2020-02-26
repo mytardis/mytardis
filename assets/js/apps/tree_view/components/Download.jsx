@@ -35,7 +35,7 @@ const TreeDownloadButton = ({ count, onClick }) => (
       />
       <button
         className="btn btn-outline-secondary"
-        style={{ marginBottom: '12px', fontWeight: 'bold' }}
+        style={{ marginBottom: '12px', fontWeight: 'bold', marginRight: '2px' }}
         title={count > 0 ? `Download ${count} selected files/folders` : 'Start selecting files to download'}
         type="submit"
         value="submit"
@@ -50,6 +50,27 @@ const TreeDownloadButton = ({ count, onClick }) => (
   </Fragment>
 );
 
+const TreeSelectButton = ({ count, onClick, buttonText }) => (
+  <Fragment>
+    <button
+      className="btn btn-outline-secondary"
+      style={{ marginBottom: '12px', fontWeight: 'bold' }}
+      title={count > 0 ? 'Select None' : 'Select All'}
+      type="submit"
+      value="submit"
+      onClick={onClick}
+    >
+      {buttonText}
+    </button>
+  </Fragment>
+);
+
+TreeSelectButton.propTypes = {
+  count: PropTypes.number.isRequired,
+  onClick: PropTypes.func.isRequired,
+  buttonText: PropTypes.string.isRequired,
+};
+
 FileDownloadButton.propTypes = {
   href: PropTypes.string.isRequired,
   isDisabled: PropTypes.bool.isRequired,
@@ -59,4 +80,4 @@ TreeDownloadButton.propTypes = {
   onClick: PropTypes.func.isRequired,
 };
 
-export { FileDownloadButton, TreeDownloadButton };
+export { FileDownloadButton, TreeDownloadButton, TreeSelectButton };

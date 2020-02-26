@@ -8,7 +8,7 @@ import Header from './Header';
 import Container from './Container';
 import * as filters from './Filter';
 import 'regenerator-runtime/runtime';
-import { TreeDownloadButton } from './Download';
+import { TreeDownloadButton, TreeSelectButton } from './Download';
 import { DownloadArchive, FetchFilesInDir } from './Utils';
 
 
@@ -16,6 +16,7 @@ const TreeView = ({ datasetId, modified }) => {
   const [cursor, setCursor] = useState(false);
   const [data, setData] = useState([]);
   const [selectedCount, setSelectedCount] = useState(0);
+  const [isAllSelected, setIsAllSelected] = useState(false);
   const onSelect = (node) => {
     node.toggled = !node.toggled;
     if (node.selected) {
@@ -166,12 +167,52 @@ const TreeView = ({ datasetId, modified }) => {
       DownloadArchive(formData);
     });
   };
+  const toggleSelection = (event) => {
+    event.preventDefault();
+    console.log(`select all clicked ${isAllSelected}`);
+    // if count < 1 select all else select None
+    const selectedData = [];
+    if (!isAllSelected) {
+      data.forEach((item) => {
+        const selectedNodes = filters.toggleSelection(item, true);
+        selectedData.push(selectedNodes);
+      });
+    } else {
+      data.forEach((item) => {
+        const selectedNodes = filters.toggleSelection(item, false);
+        selectedData.push(selectedNodes);
+      });
+    }
+    // set data
+    setData(selectedData);
+    // set all selected to true
+    setIsAllSelected(!isAllSelected);
+    // set count
+    let count = 0;
+    selectedData.forEach((item) => {
+      const selectedItemCount = filters.countSelection(item, 0);
+      count += selectedItemCount;
+      console.log(`count is ${selectedItemCount}`);
+    });
+    setSelectedCount(count);
+  };
   return (
     <Fragment>
-      <TreeDownloadButton
-        count={selectedCount}
-        onClick={downloadSelected}
-      />
+      <div>
+        <div style={{ float: 'left' }}>
+          <TreeDownloadButton
+            count={selectedCount}
+            onClick={downloadSelected}
+          />
+        </div>
+        <div>
+          <TreeSelectButton
+            count={selectedCount}
+            onClick={toggleSelection}
+            buttonText={isAllSelected ? 'Select None' : 'Select All'}
+          />
+        </div>
+      </div>
       <div style={styles}>
         <div className="input-group">
           <span className="input-group-text">

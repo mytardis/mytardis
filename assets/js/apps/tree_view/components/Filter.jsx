@@ -36,6 +36,35 @@ export const expandFilteredNodes = (node, filter, matcher = defaultMatcher) => {
   });
 };
 
+export const toggleSelection = (node, toggleType) => {
+  let { children } = node;
+  // toggle  node selection only if verified = true
+  if (!children && !node.verified) {
+    return Object.assign({}, node, { selected: false });
+  }
+  // toggle  all descendents
+  if (children && node.children.length) {
+    children = node.children
+      .map(child => toggleSelection(child, toggleType));
+  }
+  return Object.assign({}, node, { children, selected: toggleType });
+};
+
+export const countSelection = (node, count) => {
+  if (node.selected) {
+    count += 1;
+  }
+  // count selected descendents
+  if (node.children && node.children.length) {
+    let childCount = 0;
+    node.children.forEach((child) => {
+      childCount = countSelection(child, childCount);
+    });
+    count += childCount;
+  }
+  return count;
+};
+
 export const findSelectedNode = (node) => {
   let selectedIds = [];
   if (node.selected) {
