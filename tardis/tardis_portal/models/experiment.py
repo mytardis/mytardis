@@ -113,7 +113,7 @@ class Experiment(models.Model):
 
     def getParametersforIndexing(self):
         from .parameters import ExperimentParameter
-        param_glob = ExperimentParameter.objects.all().values_list('value','string_value','numerical_value')
+        param_glob = ExperimentParameter.objects.all().values_list('datetime_value','string_value','numerical_value')
         return  " ".join(set([item for sublist in param_glob for item in sublist]))
 
     def getParameterSets(self):
