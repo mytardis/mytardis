@@ -24,12 +24,9 @@ const TreeView = ({ datasetId, modified }) => {
       // if this is a folder and has child nodes
       if (node.children && node.children.length) {
         node.selected = false;
-        let childCount = 1;
         node.children.forEach((childNode) => {
           childNode.selected = false;
-          childCount += 1;
         });
-        setSelectedCount(selectedCount - childCount);
       } else {
         node.selected = false;
         setSelectedCount(selectedCount - 1);
@@ -40,21 +37,24 @@ const TreeView = ({ datasetId, modified }) => {
       if (node.children && !node.children.length) {
         // add this node to selecteNode list
         node.selected = true;
-        setSelectedCount(selectedCount + 1);
       }
       // if this is a folder with child
       if (node.children && node.children.length) {
-        let childCount = 1;
         node.children.forEach((childNode) => {
           childNode.selected = true;
-          childCount += 1;
         });
-        setSelectedCount(selectedCount + childCount);
       } else {
         node.selected = true;
-        setSelectedCount(selectedCount + 1);
       }
     }
+    // set selected count
+    // set count
+    let count = 0;
+    data.forEach((item) => {
+      const selectedItemCount = filters.countSelection(item, 0);
+      count += selectedItemCount;
+    });
+    setSelectedCount(count);
   };
   const fetchBaseDirs = () => {
     fetch(`/api/v1/dataset/${datasetId}/root-dir-nodes/`, {
@@ -169,7 +169,6 @@ const TreeView = ({ datasetId, modified }) => {
   };
   const toggleSelection = (event) => {
     event.preventDefault();
-    console.log(`select all clicked ${isAllSelected}`);
     // if count < 1 select all else select None
     const selectedData = [];
     if (!isAllSelected) {
@@ -192,7 +191,6 @@ const TreeView = ({ datasetId, modified }) => {
     selectedData.forEach((item) => {
       const selectedItemCount = filters.countSelection(item, 0);
       count += selectedItemCount;
-      console.log(`count is ${selectedItemCount}`);
     });
     setSelectedCount(count);
   };

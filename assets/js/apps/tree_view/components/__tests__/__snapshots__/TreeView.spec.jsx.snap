@@ -2,35 +2,52 @@
 
 exports[`renders initial tree view on page load should render folder tree correctly 1`] = `
 <div>
-  <form>
-    <input
-      type="hidden"
-    />
-    <input
-      name="comptype"
-      type="hidden"
-      value="tar"
-    />
-    <input
-      name="organization"
-      type="hidden"
-      value="deep-storage"
-    />
-    <button
-      class="btn btn-outline-secondary"
-      disabled=""
-      style="margin-bottom: 12px; font-weight: bold;"
-      title="Start selecting files to download"
-      type="submit"
-      value="submit"
+  <div>
+    <div
+      style="float: left;"
     >
-      <i
-        class="fa fa-download fa-sm mr-1 "
-      />
-      Select Files...
-      
-    </button>
-  </form>
+      <form>
+        <input
+          type="hidden"
+        />
+        <input
+          name="comptype"
+          type="hidden"
+          value="tar"
+        />
+        <input
+          name="organization"
+          type="hidden"
+          value="deep-storage"
+        />
+        <button
+          class="btn btn-outline-secondary"
+          disabled=""
+          style="margin-bottom: 12px; font-weight: bold; margin-right: 2px;"
+          title="Start selecting files to download"
+          type="submit"
+          value="submit"
+        >
+          <i
+            class="fa fa-download fa-sm mr-1 "
+          />
+          Select Files...
+          
+        </button>
+      </form>
+    </div>
+    <div>
+      <button
+        class="btn btn-outline-secondary"
+        style="margin-bottom: 12px; font-weight: bold;"
+        title="Select All"
+        type="submit"
+        value="submit"
+      >
+        Select All
+      </button>
+    </div>
+  </div>
   <div>
     <div
       class="input-group"

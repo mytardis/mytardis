@@ -235,6 +235,27 @@ describe('test filter, select and toggle node', () => {
     expect(component.find('NodeHeader')).toHaveLength(8);
     expect(component.find('Header').get(6).props.node.selected).toBeFalsy();
   });
+  it('should select all nodes when select All button is clicked', async () => {
+    // find select all button
+    await act(async () => {
+      const selectAllButton = component.find('button').at(1);
+      selectAllButton.simulate('click');
+    });
+    component.update();
+  });
+  it('should deselect all nodes when select None button is clicked', async () => {
+    // find select all button
+    await act(async () => {
+      const selectAllButton = component.find('button').at(1);
+      selectAllButton.simulate('click');
+    });
+    component.update();
+    await act(async () => {
+      const selectAllButton = component.find('button').at(1);
+      selectAllButton.simulate('click');
+    });
+    component.update();
+  });
 });
 
 describe('test download selected files', () => {
@@ -267,10 +288,10 @@ describe('test download selected files', () => {
       downloadButton.simulate('click');
     });
     component.update();
-    expect(fetch.mock.calls.length).toEqual(18);
-    expect(fetch.mock.calls[17][1].body.get('comptype')).toEqual('tar');
-    expect(fetch.mock.calls[17][1].body.get('organization')).toEqual('deep-storage');
-    expect(fetch.mock.calls[17][1].body.getAll('datafile')).toEqual(['11985763', '11985776']);
+    expect(fetch.mock.calls.length).toEqual(20);
+    expect(fetch.mock.calls[19][1].body.get('comptype')).toEqual('tar');
+    expect(fetch.mock.calls[19][1].body.get('organization')).toEqual('deep-storage');
+    expect(fetch.mock.calls[19][1].body.getAll('datafile')).toEqual(['11985763', '11985776']);
   });
   it('should download all files within a selected folder', async () => {
     // select Parent_1/child_1 folder
@@ -298,13 +319,13 @@ describe('test download selected files', () => {
       downloadButton.simulate('click');
     });
     component.update();
-    expect(fetch.mock.calls.length).toEqual(20);
+    expect(fetch.mock.calls.length).toEqual(22);
     // expect download datafile endpoint is called
-    expect(fetch.mock.calls["19"][0]).toEqual('/download/datafiles/');
+    expect(fetch.mock.calls["21"][0]).toEqual('/download/datafiles/');
     // expect methos to be POST
-    expect(fetch.mock.calls["19"][1].method).toEqual('POST');
+    expect(fetch.mock.calls["21"][1].method).toEqual('POST');
     // expect form data to include 3 datafile
-    expect(fetch.mock.calls['19']['1'].body.getAll('datafile')).toEqual(['11985763', '11985776', '11985777']);
+    expect(fetch.mock.calls['21']['1'].body.getAll('datafile')).toEqual(['11985763', '11985776', '11985777']);
   });
   it('should call api to get files in subdir', () => {
     jest.clearAllMocks().resetModules();
