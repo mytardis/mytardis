@@ -47,7 +47,7 @@ class Experiment(models.Model):
     :attribute safe: ACL aware model manager
 
     """
-    
+
     PUBLIC_ACCESS_NONE = 1
     PUBLIC_ACCESS_EMBARGO = 25
     PUBLIC_ACCESS_METADATA = 50
@@ -90,7 +90,7 @@ class Experiment(models.Model):
     objectacls = GenericRelation(ObjectACL)
     objects = OracleSafeManager()
     safe = ExperimentManager()  # The acl-aware specific manager.
-    
+
     class Meta:
         app_label = 'tardis_portal'
 
@@ -120,6 +120,14 @@ class Experiment(models.Model):
         from .parameters import Schema
         return self.experimentparameterset_set.filter(
             schema__type=Schema.EXPERIMENT)
+
+    def getParametersforIndexing(self):
+        """Returns the experiment parameters associated with this
+        experiment, formatted for elasticsearch.
+
+        """
+        param_glob = self.getParameterSets().objects.all().values_list('datetime_value','string_value','numerical_value')
+        return  " ".join( str(s) for s in set([item for sublist in param_glob for item in sublist]))
 
     def __str__(self):
         return self.title
@@ -230,7 +238,7 @@ class Experiment(models.Model):
                                         object_id=self.id,
                                         canRead=True)
         return [acl.get_related_object() for acl in acls]
-    
+
     def _has_view_perm(self, user_obj):
         '''
         Called from the ACLAwareBackend class's has_perm method
