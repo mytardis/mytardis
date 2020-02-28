@@ -1,7 +1,5 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Results Component Render Results Component 1`] = `null`;
-
 exports[`Search Component Render Search Component 1`] = `
 <div>
   <main>
