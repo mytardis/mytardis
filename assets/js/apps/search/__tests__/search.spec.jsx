@@ -13,7 +13,6 @@ import Result from '../components/Result';
 import Results from '../components/Results';
 import SimpleSearchForm from '../components/SimpleSearchForm';
 import AdvancedSearchForm from '../components/AdvancedSearchForm';
-import TreeView from "../../tree_view/components/TreeView";
 
 global.fetch = require('jest-fetch-mock');
 
@@ -262,8 +261,10 @@ describe('Result Component', () => {
     jest.spyOn(global, 'fetch').mockImplementation(() => Promise.resolve({
       json: () => Promise.resolve(apiResponse),
     }));
-    const simpleSearchForm = mount(<SimpleSearchForm showResults={showResults} searchText="test" />);
-    expect(simpleSearchForm).toBeTruthy();
+    await act(async () => {
+      const simpleSearchForm = mount(<SimpleSearchForm showResults={showResults} searchText="test" />);
+      expect(simpleSearchForm).toBeTruthy();
+    });
   });
   it('Test Render Advanced Search Form', async () => {
     jest.spyOn(global, 'fetch').mockImplementationOnce(() => Promise.resolve({
