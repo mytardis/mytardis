@@ -9,7 +9,7 @@ import 'react-bootstrap-typeahead/css/Typeahead.css';
 import 'react-datetime/css/react-datetime.css';
 
 
-function AdvancedSearchForm({ searchText, showResults, instrumentList }) {
+function AdvancedSearchForm({ searchText, showResults }) {
   const [advanceSearchText, setAdvanceSearchText] = useState(searchText);
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
@@ -17,7 +17,8 @@ function AdvancedSearchForm({ searchText, showResults, instrumentList }) {
   const [selectedInstrumentList, setSelectedInstrumentList] = useState([]);
   const typeOptions = ['Dataset', 'Experiment', 'Datafile'];
   const [selectedTypeTag, setSelectedTypeTag] = useState(typeOptions);
-
+  const [instrumentList, setInstrumentList] = useState([]);
+  const [instrumentListDisplay, setInstrumentListDisplay] = useState(false);
   const getFormData = () => {
     let data = { text: advanceSearchText, TypeTag: selectedTypeTag };
     if (startDate !== '') {
@@ -34,9 +35,18 @@ function AdvancedSearchForm({ searchText, showResults, instrumentList }) {
   useEffect(() => {
     setAdvanceSearchText(searchText);
   }, [searchText]);
-
-  const showInstrumentField = () => (instrumentList.length > 0);
-
+  useEffect(async () => {
+    const response = await fetch('/api/v1/instrument/?limit=0');
+    const instrumentListTemp = [];
+    response.json().then((json) => {
+      json.objects.forEach((value) => {
+        instrumentListTemp.push(value.name);
+      });
+      return instrumentListTemp;
+    }).then((list) => {
+      setInstrumentList(list);
+    });
+  }, [searchText]);
 
   const handleAdvancedSearchFormSubmit = (event) => {
     event.preventDefault();
@@ -119,7 +129,7 @@ function AdvancedSearchForm({ searchText, showResults, instrumentList }) {
           placeholder="Search in Experiments, Datasets or Datafiles"
           defaultSelected={typeOptions.slice(0, 3)}
         />
-        <div style={showInstrumentField() ? {} : { display: 'none' }}>
+        <div style={instrumentList.length > 0 ? { display: 'block' } : { display: 'None' }}>
           <label htmlFor="contain">Filter by Instrument</label>
           <Typeahead
             multiple
@@ -151,7 +161,6 @@ function AdvancedSearchForm({ searchText, showResults, instrumentList }) {
 AdvancedSearchForm.propTypes = {
   showResults: PropTypes.func.isRequired,
   searchText: PropTypes.string.isRequired,
-  instrumentList: PropTypes.arrayOf(String).isRequired,
 };
 
 export default AdvancedSearchForm;
