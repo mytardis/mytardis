@@ -41,7 +41,7 @@ function SimpleSearchForm({ showResults, searchText }) {
       return;
     }
     fetchResults();
-  }, searchText);
+  }, [searchText]);
   return (
     <main>
       <div className="row">

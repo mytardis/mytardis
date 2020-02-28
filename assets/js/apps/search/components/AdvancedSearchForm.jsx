@@ -1,5 +1,5 @@
 import Cookies from 'js-cookie';
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import DateTime from 'react-datetime';
 import { Typeahead } from 'react-bootstrap-typeahead';
@@ -18,7 +18,6 @@ function AdvancedSearchForm({ searchText, showResults }) {
   const typeOptions = ['Dataset', 'Experiment', 'Datafile'];
   const [selectedTypeTag, setSelectedTypeTag] = useState(typeOptions);
   const [instrumentList, setInstrumentList] = useState([]);
-  const [instrumentListDisplay, setInstrumentListDisplay] = useState(false);
   const getFormData = () => {
     let data = { text: advanceSearchText, TypeTag: selectedTypeTag };
     if (startDate !== '') {
@@ -35,10 +34,14 @@ function AdvancedSearchForm({ searchText, showResults }) {
   useEffect(() => {
     setAdvanceSearchText(searchText);
   }, [searchText]);
-  useEffect(async () => {
-    const response = await fetch('/api/v1/instrument/?limit=0');
+  useEffect(() => {
+    async function fetchInstrumentList() {
+      const response = await fetch('/api/v1/instrument/?limit=0');
+      return response.json();
+    }
+    const jsonResponse = fetchInstrumentList();
     const instrumentListTemp = [];
-    response.json().then((json) => {
+    jsonResponse.then((json) => {
       json.objects.forEach((value) => {
         instrumentListTemp.push(value.name);
       });
@@ -123,6 +126,7 @@ function AdvancedSearchForm({ searchText, showResults }) {
 
         <label htmlFor="contain">Search In</label>
         <Typeahead
+          id="modelType"
           multiple
           onChange={(selected) => { handleTypeTagChange(selected); }}
           options={typeOptions}
@@ -132,6 +136,7 @@ function AdvancedSearchForm({ searchText, showResults }) {
         <div style={instrumentList.length > 0 ? { display: 'block' } : { display: 'None' }}>
           <label htmlFor="contain">Filter by Instrument</label>
           <Typeahead
+            id="instrumentList"
             multiple
             labelKey="name"
             onChange={(selected) => { handleInstrumentListChange(selected); }}
