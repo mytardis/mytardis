@@ -261,10 +261,19 @@ describe('Result Component', () => {
     jest.spyOn(global, 'fetch').mockImplementation(() => Promise.resolve({
       json: () => Promise.resolve(apiResponse),
     }));
+    let component = null;
     await act(async () => {
-      const simpleSearchForm = mount(<SimpleSearchForm showResults={showResults} searchText="test" />);
-      expect(simpleSearchForm).toBeTruthy();
+      component = mount(<SimpleSearchForm showResults={showResults} searchText="test" />, { attachTo: container});
+      expect(component).toBeTruthy();
     });
+    expect(component.debug()).toMatchSnapshot();
+    await act(async () => {
+      component.find('button').at(0).simulate('click');
+    });
+    component.update();
+    // expect fetch to be called
+    expect(fetch.mock.calls.length).toEqual(3);
+    expect(fetch.mock.calls[2][0]).toEqual('/api/v1/search_simple-search/?query=test');
   });
   it('Test Render Advanced Search Form', async () => {
     jest.spyOn(global, 'fetch').mockImplementationOnce(() => Promise.resolve({
