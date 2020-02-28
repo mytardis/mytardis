@@ -211,6 +211,22 @@ describe('Search Component', () => {
     });
     expect(container).toMatchSnapshot();
   });
+  it('Render Search Component with results', async () => {
+    jest.spyOn(global, 'fetch').mockImplementation(() => Promise.resolve({
+      json: () => Promise.resolve(apiResponse),
+    }));
+    let component = null;
+    await act(async () => {
+      component = mount(<Search />, { attachTo: container });
+    });
+    await act(async () => {
+      const searchInput = component.find('input').first();
+      searchInput.simulate('change', { target: { value: 'test' } });
+      component.find('button').at(0).simulate('click');
+    });
+    component.update();
+    console.log(component.debug());
+  });
 });
 describe('Results Component', () => {
   it('Render Results Component', () => {
@@ -263,7 +279,7 @@ describe('Result Component', () => {
     }));
     let component = null;
     await act(async () => {
-      component = mount(<SimpleSearchForm showResults={showResults} searchText="test" />, { attachTo: container});
+      component = mount(<SimpleSearchForm showResults={showResults} searchText="test" />, { attachTo: container });
       expect(component).toBeTruthy();
     });
     expect(component.debug()).toMatchSnapshot();
