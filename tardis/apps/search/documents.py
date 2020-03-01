@@ -53,7 +53,7 @@ class ExperimentDocument(Document):
         'entityId': fields.StringField()
     }
     )
-    tags = fields.StringField(attr='getParametersforIndexing')
+    tags = fields.TextField(attr='getParametersforIndexing')
 
     class Django:
         model = Experiment

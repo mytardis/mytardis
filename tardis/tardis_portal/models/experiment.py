@@ -125,6 +125,19 @@ class Experiment(models.Model):
         return self.experimentparameterset_set.filter(
             schema__type=Schema.EXPERIMENT)
 
+    def getParametersforIndexing(self):
+        """Returns the experiment parameters associated with this
+        experiment, formatted for elasticsearch.
+
+        """
+        from .parameters import ExperimentParameter
+        paramset = self.getParameterSets()
+
+        param_glob = ExperimentParameter.objects.filter(
+            parameterset=paramset).all().values_list('datetime_value','string_value','numerical_value')
+        return  " ".join( str(s) for s in set([item for sublist in param_glob for item in sublist]))
+
+
     def __str__(self):
         return self.title
 
