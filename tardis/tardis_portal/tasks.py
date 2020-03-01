@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 
 @tardis_app.task(name="tardis_portal.cleanup_dfs", ignore_result=True)
-def cleanup_dfs():
+def cleanup_dfs(**kwargs):
     from .models import DataFile, DataFileObject
     dfs = DataFile.objects.raw('''
         SELECT df.id
@@ -30,7 +30,7 @@ def cleanup_dfs():
 
 
 @tardis_app.task(name="tardis_portal.cleanup_dfos", ignore_result=True)
-def cleanup_dfos():
+def cleanup_dfos(**kwargs):
     import pytz
     from datetime import datetime, timedelta
     from django.conf import settings
