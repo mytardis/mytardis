@@ -130,7 +130,7 @@ class Experiment(models.Model):
         paramset = self.getParameterSets()
 
         param_glob = ExperimentParameter.objects.filter(
-            parameterset=paramset).all().values_list('datetime_value','string_value','numerical_value')
+            parameterset__in=paramset).all().values_list('datetime_value','string_value','numerical_value')
         return  " ".join( str(s) for s in set([item for sublist in param_glob for item in sublist]))
 
 
