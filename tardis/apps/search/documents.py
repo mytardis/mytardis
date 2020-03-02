@@ -53,7 +53,7 @@ class ExperimentDocument(Document):
         'entityId': fields.StringField()
     }
     )
-    tags = fields.TextField(attr='getParametersforIndexing')
+    paramtags = fields.TextField(attr='getParametersforIndexing')
 
     class Django:
         model = Experiment
@@ -103,6 +103,7 @@ class DatasetDocument(Document):
     created_time = fields.DateField()
     modified_time = fields.DateField()
     tags = fields.StringField(attr='tags_for_indexing')
+    paramtags = fields.TextField(attr='getParametersforIndexing')
 
     class Django:
         model = Dataset
@@ -142,6 +143,7 @@ class DataFileDocument(Document):
         ),
     }
     )
+    paramtags = fields.TextField(attr='getParametersforIndexing')
 
     class Django:
         model = DataFile

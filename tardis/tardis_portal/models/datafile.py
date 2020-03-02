@@ -219,6 +219,18 @@ class DataFile(models.Model):
         return "%s %s # %s" % (checksum,
                                self.filename, self.mimetype)
 
+    def getParametersforIndexing(self):
+        """Returns the Datafile parameters associated with this
+        Datafile, formatted for elasticsearch.
+
+        """
+        from .parameters import DatafileParameter
+        paramset = self.getParameterSets()
+
+        param_glob = DatafileParameter.objects.filter(
+            parameterset__in=paramset).all().values_list('datetime_value','string_value','numerical_value')
+        return  " ".join( str(s) for s in set([item for sublist in param_glob for item in sublist]))
+
     def get_mimetype(self):
         if self.mimetype:
             return self.mimetype
