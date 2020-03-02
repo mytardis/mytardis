@@ -16,7 +16,7 @@ from tardis.tardis_portal.models.storage import StorageBox, StorageBoxOption
 
 class S3UtilsAppApiTestCase(MyTardisResourceTestCase):
     def setUp(self):
-        super(S3UtilsAppApiTestCase, self).setUp()
+        super().setUp()
         self.dataset = Dataset.objects.create(description='Test Dataset')
         # self.testexp is defined in MyTardisResourceTestCase
         # and is accessible using self.get_credentials()

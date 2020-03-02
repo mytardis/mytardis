@@ -194,12 +194,27 @@ i.group-icon :hover {
     cursor: pointer;
 }
 
+.experiments .card-body {
+    background-color: #E8F6FF;
+}
+
+.experiments .accordion-inner .dataset-list-header {
+    font-style: italic;
+    padding-top: 5px;
+    padding-left: 5px;
+}
+
 /* index page */
 .experiments .accordion-toggle .explink {
-    font-size: 1.3em;
+    font-size: 1.1em;
+    font-weight: 500;
 }
 .experiments .accordion-toggle .badgelist {
     margin-bottom: 4px;
+}
+.experiments .card-header {
+    border: none;
+    background-color: #F5FBFF;
 }
 .experiments .nav .nav-header {
     font-size: 11px;
@@ -219,41 +234,20 @@ i.group-icon :hover {
 
 /* mydata page */
 .mydata .accordion-toggle .explink {
-    font-size: 1.3em;
+    font-size: 1.1em;
+    font-weight: 500;
     max-width: 67%;
     cursor: pointer;
 }
 .mydata .accordion-toggle .badgelist {
     margin-bottom: 4px;
 }
-/*.mydata .accordion-body {
-    background-color: #E8F6FF;
-}
-.mydata .accordion-inner {
-    -webkit-border-radius: 0px;
-    -moz-border-radius: 0px;
-    border-radius: 0px;
-    border: none;
-    padding-top:5px;
-    padding-right:10px;
-    padding-left:10px;
-    background-color: #E8F6FF;
-    margin: 0px 0px;
-}*/
-.mydata .accordion-inner p {
+.mydata .card-body p {
     width: 75%;
 }
-.mydata .accordion-inner .thumbnails li {
+.mydata .card-body .thumbnails li {
     margin-bottom: 5px;
     margin-top: 2px;
-}
-.mydata .accordion-group {
-    border: none;
-    -webkit-border-radius: 0px;
-    -moz-border-radius: 0px;
-    border-radius: 0px;
-    background-color: #F5FBFF;
-    margin-bottom: 20px;
 }
 .mydata .nav .nav-header {
     font-size: 11px;
@@ -266,6 +260,7 @@ i.group-icon :hover {
 
 .borderless .list-group-item {
     border: none;
+    background-color: transparent !important;
 }
 
 /* end index page */

@@ -9,6 +9,9 @@ import json
 import os
 import tempfile
 
+import mock
+
+from django.db.utils import DatabaseError
 from django.test.client import Client
 
 import magic
@@ -23,7 +26,7 @@ from . import MyTardisResourceTestCase
 
 class DataFileResourceTest(MyTardisResourceTestCase):
     def setUp(self):
-        super(DataFileResourceTest, self).setUp()
+        super().setUp()
         self.django_client = Client()
         self.django_client.login(username=self.username,
                                  password=self.password)
@@ -199,3 +202,45 @@ class DataFileResourceTest(MyTardisResourceTestCase):
             authentication=self.get_credentials())
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.getvalue(), b"123test\n")
+
+    def test_failed_dfo_creation(self):
+        """Ensure we roll back DataFile creation if DataFileObject creation fails
+
+        The DataFile creation should be rolled back because of the @transaction.atomic
+        decorator before api.py's DataFileAppResource class's obj_create method.
+        """
+        ds_id = Dataset.objects.first().id
+        post_data = {
+            "dataset": "/api/v1/dataset/%d/" % ds_id,
+            "filename": "mytestfile.txt",
+            "md5sum": "930e419034038dfad994f0d2e602146c",
+            "size": "8",
+            "mimetype": "text/plain",
+            "parameter_sets": [],
+        }
+
+        datafile_count = DataFile.objects.count()
+        dfo_count = DataFileObject.objects.count()
+
+        with mock.patch(
+            "tardis.tardis_portal.models.datafile.DataFileObject.save"
+        ) as dfo_save_mock:
+            dfo_save_mock.side_effect = DatabaseError("database connection error")
+            # If we used the default SERVER_NAME of "testserver" below,
+            # Tastypie would re-raise the exception, rather than returning
+            # a 500 error in JSON format, which would then generate a 500.html
+            # response which would expect the webpack bundle to be available.
+            # We just want to test the case where Tastypie returns a JSON response
+            # with 500 status, so we change the SERVER_NAME:
+            with self.assertRaises(DatabaseError):
+                response = self.django_client.post(
+                    "/api/v1/dataset_file/",
+                    json.dumps(post_data),
+                    content_type="application/json",
+                    SERVER_NAME="not-testserver"
+                )
+                self.assertHttpApplicationError(response)
+
+        # Ensure that we haven't created a DataFile or a DataFileObject:
+        self.assertEqual(datafile_count, DataFile.objects.count())
+        self.assertEqual(dfo_count, DataFileObject.objects.count())

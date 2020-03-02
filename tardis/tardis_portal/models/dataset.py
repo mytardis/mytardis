@@ -64,7 +64,7 @@ class Dataset(models.Model):
     def save(self, force_insert=False, force_update=False, using=None,
              update_fields=None):
         self.modified_time = timezone.now()
-        super(Dataset, self).save()
+        super().save()
 
     @property
     def is_online(self):

@@ -14,7 +14,7 @@ from django.conf.urls import url
 from django.contrib.auth.models import AnonymousUser
 from django.contrib.auth.models import User
 from django.contrib.auth.models import Group
-from django.db import IntegrityError
+from django.db import IntegrityError, transaction
 from django.http import HttpResponse, HttpResponseForbidden, \
     StreamingHttpResponse, HttpResponseNotFound, JsonResponse
 from django.shortcuts import redirect
@@ -1078,6 +1078,7 @@ class DataFileResource(MyTardisModelResource):
             del(bundle.data['attached_file'])
         return bundle
 
+    @transaction.atomic
     def obj_create(self, bundle, **kwargs):
         '''
         Creates a new DataFile object from the provided bundle.data dict.

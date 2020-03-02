@@ -19,7 +19,7 @@ from . import MyTardisResourceTestCase
 
 class ExperimentResourceTest(MyTardisResourceTestCase):
     def setUp(self):
-        super(ExperimentResourceTest, self).setUp()
+        super().setUp()
         df_schema_name = "http://experi-mental.com/"
         self.test_schema = Schema(namespace=df_schema_name,
                                   type=Schema.EXPERIMENT)
