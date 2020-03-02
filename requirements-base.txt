@@ -21,7 +21,7 @@ html2text==2019.8.11
 html5lib==1.0.1
 isodate==0.6.0
 pyjwt==1.7.1
-kombu==4.6.5
+kombu==4.6.8
 lxml==4.4.1
 paramiko==2.6.0
 pillow==6.2.0
