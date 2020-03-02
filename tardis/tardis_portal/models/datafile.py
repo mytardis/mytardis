@@ -199,7 +199,7 @@ class DataFile(models.Model):
                                 self.size)
         self.update_mimetype(save=False)
 
-        super(DataFile, self).save(*args, **kwargs)
+        super().save(*args, **kwargs)
 
     def get_size(self):
         return self.size
@@ -370,7 +370,7 @@ class DataFile(models.Model):
                                                preview_image_par.string_value))
 
             if path.exists(file_path):
-                preview_image_file = open(file_path)
+                preview_image_file = open(file_path, 'rb')
                 return preview_image_file
 
         render_image_size_limit = getattr(settings, 'RENDER_IMAGE_SIZE_LIMIT',
@@ -487,7 +487,7 @@ class DataFileObject(models.Model):
         """Stores values prior to changes for change detection in
         self._initial_values
         """
-        super(DataFileObject, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self._initial_values = self._current_values
 
     @property
@@ -511,7 +511,7 @@ class DataFileObject(models.Model):
         from amqp.exceptions import AMQPError
 
         reverify = kwargs.pop('reverify', False)
-        super(DataFileObject, self).save(*args, **kwargs)
+        super().save(*args, **kwargs)
         if self._changed:
             self._initial_values = self._current_values
         elif not reverify:
