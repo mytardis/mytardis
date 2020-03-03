@@ -92,7 +92,7 @@ class Dataset(models.Model):
         dataset, formatted for elasticsearch.
 
         """
-        from .parameters import DatasetParameter
+        from .parameters import DatasetParameter, ParameterName
         paramset = self.getParameterSets()
 
         param_glob = DatasetParameter.objects.filter(

@@ -224,7 +224,7 @@ class DataFile(models.Model):
         Datafile, formatted for elasticsearch.
 
         """
-        from .parameters import DatafileParameter
+        from .parameters import DatafileParameter, ParameterName
         paramset = self.getParameterSets()
 
         param_glob = DatafileParameter.objects.filter(
