@@ -134,7 +134,10 @@ class Experiment(models.Model):
         param_list = []
         for sublist in param_glob:
             full_name = ParameterName.objects.get(id=sublist[0]).full_name
-            string2append = (full_name+','+str(sublist[1])+','+sublist[2]+','+str(sublist[3]))
+            string2append = ('('+full_name)
+            for value in sublist[1:]:
+                if str(value) not 'None':
+                    string2append+=str(value)
             param_list.append(string2append)
         return  " ".join(param_list)
 
