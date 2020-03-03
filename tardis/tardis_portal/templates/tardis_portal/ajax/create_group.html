@@ -1,36 +1,31 @@
 <div class="group_create">
-    <p>
-      Name:<br/>
-      {% for field in createGroupPermissionsForm %}
-          {% if field.label == "Authentication Method" %}
-    		<div class="newgroup">
-    	      {{ field.label }}:<br/> {{ field }}
-    		<br/><br/>
-    		</div>
-          {% else %}
-              {% if field.label == "Group" %}
-                  {{ field }}
-              {% else %}
-    	          {% if field.label == "User" %}
-    	              Group admin (enter username exactly - you will automatically be added as an admin):
-    	              <br/> {{ field }}
-    				<br/>
-    				<br/>
-    	          {% else %}
-    		   		  {% if field.label == "DELETE" %}
-    					<br/><br/>
-    					</div>
-    				  {% else %}
-    	                 {{ field }} {{ field.label }}
-    					<br/>
-    	 			  {% endif %}
-    	          {% endif %}
-    	      {% endif %}
-          {% endif %}
-      {% endfor %}
-      <a class="form_submit btn btn-primary" id="group" href="">
+  <form id="create-group-form" role="form" novalidate>
+    <div class="form-group">
+      <label class="col-form-label" for="id_addgroup">Name:</label>
+      <input type="text" name="addgroup" id="id_addgroup" required
+             class="form-control groupsuggest" maxlength="100">
+      <div class="invalid-feedback"></div>
+    </div>
+
+    <div class="form-group">
+      <label class="col-form-label" for="id_groupadmin">
+          Group admin (enter username exactly - you will automatically be added as an admin):
+      </label>
+      <input type="text" name="groupadmin" id="id_groupadmin"
+             class="form-control usersuggest" maxlength="100">
+      <div class="invalid-feedback"></div>
+    </div>
+
+    <div class="form-group text-right pt-2">
+      <button type="button" class="cancel-button btn btn-outline-secondary"
+              data-dismiss="modal">
+        <i class="fa fa-close"></i>
+        Cancel
+      </button>
+      <button type="submit" class="form_submit btn btn-primary" id="group">
         <i class="fa fa-plus"></i>
         Create Group
-      </a>
-    </p>
+      </button>
+    </div>
+  </form>
 </div>

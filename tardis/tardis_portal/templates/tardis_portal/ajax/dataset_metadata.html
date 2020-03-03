@@ -4,7 +4,7 @@
 <div class="pull-right">
   <a title="Add"
      href="{% url 'tardis.tardis_portal.views.add_dataset_par' dataset.id %}"
-     class="add-metadata btn btn-mini"
+     class="add-metadata btn btn-outline-secondary btn-sm"
      style="margin-right: 20px">
     <i class="fa fa-plus"></i>
     Add Dataset Metadata
@@ -17,7 +17,7 @@
   {% capture as edit_control %}
    {% if has_write_permissions and not parameterset.schema.immutable %}
    <div class="pull-right">
-       <a class="edit-metadata btn btn-mini btn-warning" href="{% url 'tardis.tardis_portal.views.edit_dataset_par' parameterset.id %}">
+       <a class="edit-metadata btn btn-sm btn-outline-secondary" href="{% url 'tardis.tardis_portal.views.edit_dataset_par' parameterset.id %}">
           <i class="fa fa-pencil"></i>
           Edit
        </a>
@@ -32,4 +32,4 @@
         There is no metadata for this dataset.
     </div>
 {% endfor %}
-</div>
+</div>  <!-- .info-box -->

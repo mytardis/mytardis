@@ -1,0 +1,3 @@
+{% for author in experiment.experimentauthor_set.all %}
+  <span property="dc:author">{{ author.author }}{% if not forloop.last %}, {% endif %}</span>
+{% endfor %}

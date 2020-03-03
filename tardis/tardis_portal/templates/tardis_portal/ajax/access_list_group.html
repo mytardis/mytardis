@@ -11,53 +11,39 @@
   {% endwith %}
 {% endfor %}
 </div> <!-- groups -->
-<p>
-  <strong><label>Add group to experiment: </label></strong>
+<div id="group-sharing-messages">
+</div>
+<form>
+  <div class="form-group">
+    <label class="col-form-label" for="id_group">Add group to experiment:</label>
+    <input type="text" name="group" autocomplete="group"
+           class="form-control groupsuggest" id="id_group" required
+           placeholder="group" style="max-width: 200px;">
+  </div>
 
-  {% for field in addGroupPermissionsForm %}
-      {% if field.label == "Authentication Method" %}
-		<div class="newgroup" style="display: none">
-	      {{ field.label }}: {{ field }}
-		<br/><br/>
-		</div>
-      {% else %}
-          {% if field.label == "Group" %}
-              {{ field }}
-          {% else %}
-	          {% if field.label == "User" %}
-	              Group admin: {{ field }}
-				<br/><br/>
-				Group permissions:
-				<br/>
-	          {% else %}
-		   		  {% if field.label == "DELETE" %}
-					<br/><br/>
-					</div>
-				  {% else %}
-	                 {{ field }} {{ field.label }}
-					<br/>
-	 			  {% endif %}
-	          {% endif %}
-	      {% endif %}
-      {% endif %}
-  {% endfor %}
-  Permissions:
-  <br/>
-      <select id="id_permission_group">
+  <div class="form-group">
+    <label class="col-form-label" for="id_permissions">Permissions</label>
+    <select id="id_permission_group" class="form-control" style="max-width: 200px;">
       <option value="read">View Only</option>
       <option value="edit">View and Edit</option>
       <option value="owner">Full Owner</option>
-  </select>
-  <p><em>Owner Groups have the ability to change access controls and share experiments with others.</em></p>
-  <br/>
-  <a class="form_submit btn btn-primary" id="group" href="">
+    </select>
+  </div>
+
+  <div class="form-group">
+    <p class="col-form-label"><em>Owner Groups have the ability to change access controls and share experiments with others.</em></p>
+  </div>
+
+  <button type="button" class="form_submit btn btn-primary" id="group" href="">
     <i class="fa fa-plus"></i>
     Add Group
-  </a>
+  </button>
+
   <input type="hidden" name="experiment_id" class="experiment_id" value="{{experiment_id}}">
-</p>
-<div>Go to <a href="{% url 'tardis.tardis_portal.views.manage_groups' %}">
+</form>
+
+<p style="padding-top: 20px;">Go to <a href="{% url 'tardis.tardis_portal.views.manage_groups' %}">
   <i class="fa fa-user" style="text-shadow: 2px -2px #666666"></i>
   Group Management
-</a></div>
+</a></p>
 </div>

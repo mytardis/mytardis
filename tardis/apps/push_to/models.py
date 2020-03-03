@@ -1,6 +1,6 @@
 import base64
 
-from six import BytesIO
+from io import StringIO
 
 from django import forms
 from django.apps import apps
@@ -11,10 +11,8 @@ from django.db import models
 from django.utils.encoding import python_2_unicode_compatible
 
 from paramiko import RSAKey, SSHClient, MissingHostKeyPolicy, \
-    AutoAddPolicy, PKey, DSSKey, ECDSAKey
+    AutoAddPolicy, PKey, DSSKey, ECDSAKey, PublicBlob
 from paramiko.config import SSH_PORT
-from paramiko.message import Message
-from paramiko.py3compat import encodebytes
 
 from .apps import PushToConfig
 from .exceptions import NoSuitableCredential
@@ -51,7 +49,7 @@ class KeyPair(models.Model):
         if self.key_type and self.private_key and not self.public_key:
             self.public_key = self.key.get_base64()
 
-        super(KeyPair, self).save(*args, **kwargs)
+        super().save(*args, **kwargs)
 
     @property
     def key(self):
@@ -73,7 +71,7 @@ class KeyPair(models.Model):
         if self.public_key:
             public_key = base64.b64decode(self.public_key)
         if self.private_key:
-            private_key = BytesIO(self.private_key)
+            private_key = StringIO(self.private_key)
 
         if self.key_type == 'ssh-dss':
             pkey = DSSKey(data=public_key, file_obj=private_key)
@@ -83,7 +81,7 @@ class KeyPair(models.Model):
             pkey = ECDSAKey(data=public_key, file_obj=private_key)
         elif self.key_type == 'ssh-rsa-cert-v01@openssh.com':
             pkey = RSAKey(data=public_key, file_obj=private_key)
-            pkey.load_certificate(Message(public_key))
+            pkey.public_blob = PublicBlob(self.key_type, public_key)
         else:
             raise ValidationError('Unsupported key type: ' + self.key_type)
 
@@ -101,13 +99,13 @@ class KeyPair(models.Model):
             raise ValueError('invalid PKey object supplied')
         if pkey.public_blob is not None:
             self.key_type = pkey.public_blob.key_type
-            self.public_key = encodebytes(pkey.public_blob.key_blob)
+            self.public_key = base64.b64encode(pkey.public_blob.key_blob).decode()
         else:
             self.key_type = pkey.get_name()
             self.public_key = pkey.get_base64()
         self.private_key = None
         if pkey.can_sign():
-            key_data = BytesIO()
+            key_data = StringIO()
             pkey.write_private_key(key_data)
             self.private_key = key_data.getvalue()
 

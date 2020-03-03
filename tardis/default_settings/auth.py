@@ -83,5 +83,32 @@ Rapid Connect.
 # settings for login URL
 LOGIN_URL = '/login/'
 
+# setting for logout redirect URL
+LOGOUT_REDIRECT_URL = '/'
+
 # disable /accounts/login
 INCLUDE_AUTH_URLS = False
+
+
+#################
+# LDAP settings #
+#################
+# To use LDAP, add 'tardis.tardis_portal.auth.ldap_auth.ldap_auth'
+# to AUTH_PROVIDERS, e.g.
+# AUTH_PROVIDERS = (
+#    ('ldap', 'LDAP',
+#     'tardis.tardis_portal.auth.ldap_auth.ldap_auth'),
+# )
+LDAP_USE_TLS = False
+LDAP_URL = 'ldap://localhost:38911/'
+
+LDAP_USER_LOGIN_ATTR = 'uid'
+LDAP_USER_ATTR_MAP = {'givenName': 'first_name', 'sn': 'last_name', 'mail': 'email'}
+LDAP_GROUP_ID_ATTR = 'cn'
+LDAP_GROUP_ATTR_MAP = {'description': 'display'}
+
+LDAP_ADMIN_USER = ''
+LDAP_ADMIN_PASSWORD = ''
+LDAP_BASE = 'dc=example, dc=com'
+LDAP_USER_BASE = 'ou=People, ' + LDAP_BASE
+LDAP_GROUP_BASE = 'ou=Group, ' + LDAP_BASE

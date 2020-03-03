@@ -23,11 +23,10 @@ class UserProfile(models.Model):
        :class:`django.contrib.auth.models.User`
     """
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-
     # This flag will tell us if the main User account was created using any
     # non localdb auth methods. For example, if a first time user authenticates
-    # to the system using the VBL auth method, an account will be created for
-    # him, say "vbl_user001" and the field isDjangoAccount will be set to
+    # to the system using the ldap auth method, an account will be created for
+    # him, say "ldap_user001" and the field isDjangoAccount will be set to
     # False.
     isDjangoAccount = models.BooleanField(
         null=False, blank=False, default=True)
@@ -59,7 +58,7 @@ class UserProfile(models.Model):
     @property
     def ext_groups(self):
 
-        import tardis.tardis_portal.auth.fix_circular as fix_circular
+        from ..auth import fix_circular
 
         if not hasattr(self, '_cached_groups'):
             self._cached_groups = fix_circular.getGroups(self.user)
@@ -69,7 +68,11 @@ class UserProfile(models.Model):
 @receiver(post_save, sender=User, dispatch_uid="create_user_profile")
 def create_user_profile(sender, instance, created, **kwargs):
     if created:
-        UserProfile(user=instance).save()
+        user = instance
+        for permissions in settings.DEFAULT_PERMISSIONS:
+            user.user_permissions.add(Permission.objects.get(codename=permissions))
+        user.save()        
+        UserProfile(user=user).save()
 
 
 @python_2_unicode_compatible
@@ -113,7 +116,7 @@ class UserAuthentication(models.Model):
             self.CHOICES += ((authMethods[0], authMethods[1]),)
         self._comparisonChoicesDict = dict(self.CHOICES)
 
-        super(UserAuthentication, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.__original_approved = self.approved
 
     def getAuthMethodDescription(self):
@@ -125,12 +128,12 @@ class UserAuthentication(models.Model):
     def save(self, *args, **kwargs):
         # check if social auth is enabled
         if 'tardis.apps.social_auth' not in settings.INSTALLED_APPS:
-            super(UserAuthentication, self).save(*args, **kwargs)
+            super().save(*args, **kwargs)
             return
         # check if authentication method requires admin approval
         from tardis.apps.social_auth.auth.social_auth import requires_admin_approval
         if not requires_admin_approval(self.authenticationMethod):
-            super(UserAuthentication, self).save(*args, **kwargs)
+            super().save(*args, **kwargs)
             return
         # check if social_auth is enabled
         is_social_auth_enabled = 'tardis.apps.social_auth' in settings.INSTALLED_APPS
@@ -151,9 +154,9 @@ class UserAuthentication(models.Model):
             user.user_permissions.add(Permission.objects.get(codename='change_dataset'))
             # send email to user
             from tardis.apps.social_auth.auth.social_auth import send_account_approved_email
-            send_account_approved_email(user, self.authenticationMethod)
+            send_account_approved_email(user.id, self.authenticationMethod)
 
-        super(UserAuthentication, self).save(*args, **kwargs)
+        super().save(*args, **kwargs)
 
 
 
@@ -234,7 +237,7 @@ class ObjectACL(models.Model):
         """
         if self.pluginId == 'django_user':
             return User.objects.get(pk=self.entityId)
-        elif self.pluginId == 'django_group':
+        if self.pluginId == 'django_group':
             return Group.objects.get(pk=self.entityId)
         return None
 

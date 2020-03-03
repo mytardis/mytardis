@@ -1,4 +1,7 @@
 import re
+
+import six
+
 from django.apps import AppConfig
 from django.apps import apps
 from django.conf import settings
@@ -65,16 +68,16 @@ def check_app_dependencies(app_configs, **kwargs):
     :rtype: list of strings
     """
 
-    installed_apps = dict([(app_config.name, app_config) for app_config in
-                     apps.app_configs.itervalues()])
+    installed_apps = {app_config.name: app_config for app_config in
+                      six.itervalues(apps.app_configs)}
 
     # According to https://docs.djangoproject.com/en/1.8/topics/checks/#writing-your-own-checks
     # app_configs may contain a list of apps to check, but if it's None, all
     # apps should be inspected.
     if app_configs:
-        apps_to_check = app_configs.itervalues()
+        apps_to_check = six.itervalues(app_configs)
     else:
-        apps_to_check = installed_apps.itervalues()
+        apps_to_check = six.itervalues(installed_apps)
 
     errors = []
     for app in apps_to_check:

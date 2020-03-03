@@ -148,7 +148,8 @@ def facility_overview_experiments(request, facility_id, start_index,
     '''
     json facility datasets
     '''
-
+    start_index = int(start_index)
+    end_index = int(end_index)
     dataset_objects = Dataset.objects.filter(
         instrument__facility__manager_group__user=request.user,
         instrument__facility__id=facility_id
@@ -176,8 +177,8 @@ def facility_overview_experiments(request, facility_id, start_index,
             "parent_experiment": {
                 "id": parent_experiment.id,
                 "title": parent_experiment.title,
-                "created_time": datetime_to_us(parent_experiment.created_time),
             },
+            "created_time": datetime_to_us(dataset.created_time),
             "description": dataset.description,
             "institution": parent_experiment.institution_name,
             "datafile_count": dataset_info['datafile_count'],

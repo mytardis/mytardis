@@ -28,24 +28,24 @@
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 -->
 <site-settings>
-	<email-endswith>monash.edu.au</email-endswith>
-	<register>
-		<url>{{baseurl}}/experiment/register/</url>
-		<username>user</username>
-		<password>pass</password>
-	</register>
-	<transfer>
-		<type>gridftp</type>
-		<user>tardis</user>
-		<password>{{proxy}}</password>
-		<sl>gsiftp://gridftpdev.its.monash.edu.au</sl>
-		<serversite>{{filestorepath}}</serversite>
-		<optionFast>true</optionFast>
-		<optionPenable>true</optionPenable>
-		<optionP>10</optionP>
-		<optionBSenable>false</optionBSenable>
-		<optionBS>0</optionBS>
-		<optionTCPBSenable>false</optionTCPBSenable>
-		<optionTCPBS>0</optionTCPBS>
-	</transfer>
+    <email-endswith>monash.edu.au</email-endswith>
+    <register>
+        <url>{{baseurl}}/experiment/register/</url>
+        <username>user</username>
+        <password>pass</password>
+    </register>
+    <transfer>
+        <type>gridftp</type>
+        <user>tardis</user>
+        <password>{{proxy}}</password>
+        <sl>gsiftp://gridftpdev.its.monash.edu.au</sl>
+        <serversite>{{filestorepath}}</serversite>
+        <optionFast>true</optionFast>
+        <optionPenable>true</optionPenable>
+        <optionP>10</optionP>
+        <optionBSenable>false</optionBSenable>
+        <optionBS>0</optionBS>
+        <optionTCPBSenable>false</optionTCPBSenable>
+        <optionTCPBS>0</optionTCPBS>
+    </transfer>
 </site-settings>

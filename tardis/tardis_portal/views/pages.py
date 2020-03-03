@@ -8,9 +8,8 @@ from os import path
 import inspect
 import types
 
-from six import string_types
-
 from django.conf import settings
+from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.exceptions import PermissionDenied, ImproperlyConfigured
@@ -23,7 +22,6 @@ from django.http import (HttpResponse,
 from django.views.decorators.cache import cache_page
 from django.views.generic.base import TemplateView, View
 
-from tardis.search.utils import SearchQueryString
 from ..auth import decorators as authz
 from ..auth.decorators import (
     has_experiment_write,
@@ -139,7 +137,7 @@ class IndexView(TemplateView):
         :return: A dictionary of values for the view/template.
         :rtype: dict
         """
-        c = super(IndexView, self).get_context_data(**kwargs)
+        c = super().get_context_data(**kwargs)
         status = ''
         limit = 8
         c['status'] = status
@@ -254,7 +252,7 @@ class DatasetView(TemplateView):
             except (EmptyPage, InvalidPage):
                 return paginator.page(paginator.num_pages)
 
-        c = super(DatasetView, self).get_context_data(**kwargs)
+        c = super().get_context_data(**kwargs)
 
         dataset_id = dataset.id
         dataset_instrument = dataset.instrument
@@ -355,6 +353,13 @@ def about(request):
     return render_response_index(request, 'tardis_portal/about.html', c)
 
 
+def healthz(request):
+    '''
+    returns that the server is alive
+    '''
+    return HttpResponse("OK")
+
+
 @login_required
 def my_data(request):
     '''
@@ -408,7 +413,7 @@ def _resolve_view(view_function_or_string):
     :rtype: types.FunctionType
     :raises TypeError:
     """
-    if isinstance(view_function_or_string, string_types):
+    if isinstance(view_function_or_string, str):
         x = view_function_or_string.split('.')
         obj_path, obj_name = ('.'.join(x[:-1]), x[-1])
         module = __import__(obj_path, fromlist=[obj_name])
@@ -467,7 +472,7 @@ class ExperimentView(TemplateView):
         :rtype: dict
         """
 
-        c = super(ExperimentView, self).get_context_data(**kwargs)
+        c = super().get_context_data(**kwargs)
 
         c['experiment'] = experiment
         c['has_write_permissions'] = \
@@ -498,10 +503,6 @@ class ExperimentView(TemplateView):
             c['status'] = request.POST['status']
         if 'error' in request.POST:
             c['error'] = request.POST['error']
-        if 'query' in request.GET:
-            c['search_query'] = SearchQueryString(request.GET['query'])
-        if 'search' in request.GET:
-            c['search'] = request.GET['search']
         if 'load' in request.GET:
             c['load'] = request.GET['load']
 
@@ -555,7 +556,8 @@ class ExperimentView(TemplateView):
         if experiment_id is None:
             return return_response_error(request)
         if not request.user.is_authenticated and \
-                not Experiment.safe.public().filter(id=experiment_id):
+                not Experiment.safe.public().filter(id=experiment_id) and \
+                'token' not in request.GET:
             return return_response_error(request)
 
         try:
@@ -658,7 +660,8 @@ def create_experiment(request,
             # group/owner assignment stuff, soon to be replaced
 
             experiment = full_experiment['experiment']
-            experiment.created_by = request.user
+            # a workaround for django-elastic-search issue #155
+            experiment.created_by = User.objects.get(id=request.user.id)
             full_experiment.save_m2m()
 
             # add defaul ACL
@@ -712,7 +715,8 @@ def edit_experiment(request, experiment_id,
         if form.is_valid():
             full_experiment = form.save(commit=False)
             experiment = full_experiment['experiment']
-            experiment.created_by = request.user
+            # a workaround for django-elastic-search issue #155
+            experiment.created_by = User.objects.get(id=request.user.id)
             full_experiment.save_m2m()
 
             request.POST = {'status': "Experiment Saved."}
@@ -781,20 +785,6 @@ def edit_dataset(request, dataset_id):
         request, 'tardis_portal/add_or_edit_dataset.html', c)
 
 
-@login_required()
-def control_panel(request):
-
-    experiments = Experiment.safe.owned(request.user)
-    if experiments:
-        experiments = experiments.order_by('title')
-
-    c = {'experiments': experiments,
-         'subtitle': 'Experiment Control Panel'}
-
-    return render_response_index(
-        request, 'tardis_portal/control_panel.html', c)
-
-
 def _get_dataset_checksums(dataset, type='md5'):
     valid_types = ['md5', 'sha512']
     if type not in valid_types:
@@ -826,11 +816,11 @@ def checksums_download(request, dataset_id, **kwargs):
             get_filesystem_safe_dataset_name(dataset))
         return response
 
-    elif format == 'json':
+    if format == 'json':
         jdict = {'checksums': []}
         for c in checksums:
             jdict['checksums'].append({'checksum': c[0], 'file': c[1], 'type': type})
 
         return JsonResponse(jdict)
-    else:
-        raise ValueError("Invalid format. Valid formats are 'text' or 'json'")
+
+    raise ValueError("Invalid format. Valid formats are 'text' or 'json'")

@@ -1,7 +1,5 @@
 /* tardis/apps/openid_migration/static/js/openid_migration/migrate_accounts.js */
 
-/* eslint global-strict: 0, strict: 0, object-shorthand: 0 */
-
 var updateUserData = function(data) {
     $("#new_email").append("<td>" + data.data.new_user_email + "</td>");
     $("#old_username").append("<td>" + data.data.old_username + "</td>");

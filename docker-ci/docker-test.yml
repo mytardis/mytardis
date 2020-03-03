@@ -1,0 +1,28 @@
+version: "2"
+services:
+  run:
+    build:
+      context: ..
+      dockerfile: docker-ci/Dockerfile-run
+    image: mytardis/mytardis-run
+  test:
+    build:
+      context: ..
+      dockerfile: docker-ci/Dockerfile-test
+    image: mytardis/mytardis-test
+    depends_on:
+      - run
+      - pg
+      - mysql
+    links:
+      - pg
+      - mysql
+  pg:
+    image: postgres:9.6
+    environment:
+      POSTGRES_PASSWORD: postgres
+  mysql:
+    image: mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: mysql
+    command: --default-authentication-plugin=mysql_native_password

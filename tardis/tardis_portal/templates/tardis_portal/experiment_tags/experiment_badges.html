@@ -1,0 +1,8 @@
+{% load experiment_tags %}
+
+<ul class="list-inline float-right list-unstyled">
+  <li class="list-inline-item m-0">{{ experiment|experiment_last_updated_badge }}</li>
+  <li class="list-inline-item m-0">{{ experiment|experiment_datasets_badge }}</li>
+  <li class="list-inline-item m-0">{{ experiment|experiment_datafiles_badge }}</li>
+  <li class="list-inline-item m-0">{{ experiment|experiment_public_access_badge }}</li>
+</ul>

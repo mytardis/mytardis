@@ -1,6 +1,6 @@
 from django.conf.urls import include, url
 from django.contrib.auth.urls import urlpatterns
-from django.contrib.auth.views import logout
+from django.contrib.auth.views import LogoutView
 from django.http import HttpResponse
 from django.template import Template, RequestContext
 
@@ -13,7 +13,6 @@ from ..views.pages import ExperimentView
 from ..views import load_datafile_image
 from ..views import load_dataset_image
 from ..views import load_experiment_image
-from . import mock_vbl_download
 
 def groups_view(request):
     """
@@ -35,10 +34,6 @@ urlpatterns += [
     url(r'^test/download/datafile/(?P<datafile_id>\d+)/$',
         download.download_datafile,
         name='tardis.tardis_portal.download.download_datafile'),
-    url(r'^test/vbl/download/datafile/(?P<datafile_id>\d+)/$',
-        mock_vbl_download.download_datafile,
-        name='tardis.tardis_portal.tests.'
-        'mock_vbl_download.download_datafile'),
     url(r'^test/ExperimentImage/load/(?P<parameter_id>\d+)/$',
         load_experiment_image,
         name='tardis.tardis_portal.views.load_experiment_image'),
@@ -55,6 +50,6 @@ urlpatterns += [
     url(r'^accounts/', include(accounts_urls)),
     url(r'^download/', include(download_urls)),
     url(r'^apps/sftp/', include(sftp.urls)),
-    url(r'^logout/$', logout, {'next_page': '/'},
-        name='django.contrib.auth.views.logout'),
+    url(r'^logout/$', LogoutView.as_view(), {'next_page': '/'},
+        name='logout'),
 ]

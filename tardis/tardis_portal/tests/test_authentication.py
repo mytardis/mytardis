@@ -4,11 +4,12 @@ Created on 19/01/2011
 .. moduleauthor:: Gerson Galang <gerson.galang@versi.edu.au>
 '''
 import json
+
+from mock import patch
+
 from django.test import TestCase
 from django.test.client import Client
 from django.contrib.auth.models import User, Permission
-
-from ..models import UserAuthentication
 
 
 class AuthenticationTestCase(TestCase):
@@ -44,57 +45,8 @@ class AuthenticationTestCase(TestCase):
                              "Sorry, username and password don't match.")
             self.client.logout()
 
-    def testCreateNewAccount(self):
-        username = 'test@test.com'
-        authMethod = 'vbl'
-        password = 'testpass'
-
-        userAuth = UserAuthentication.objects.filter(
-            username=username, authenticationMethod=authMethod)
-        self.assertEqual(userAuth.count(), 0)
-
-        response = self.client.post(self.loginUrl, {'username': username,
-            'password': password, 'authMethod': authMethod})
-
-        self.assertEqual(response.status_code, 302)
-        userAuth = UserAuthentication.objects.get(
-            username=username, authenticationMethod=authMethod)
-
-        self.assertTrue(userAuth is not None)
-        self.assertEqual(userAuth.userProfile.user.username, 'vbl_test')
-
-        self.client.logout()
-
-        # Exception handling in tardis/tardis_portal/tests/mock_vbl_auth.py
-        # doesn't play nicely with Django's TransactionTestCase, leading to
-        # TransactionManagementError: An error occurred in the current transaction.
-        # You can't execute queries until the end of the 'atomic' block.
-        # (when running tests with the "mysql" database engine).
-        test_failed_vbl_create_user = False
-        if test_failed_vbl_create_user:
-            username = 'test@test1.com'
-            authMethod = 'vbl'
-            password = 'testpass'
-
-            response = self.client.post(self.loginUrl, {'username': username,
-                'password': password, 'authMethod': authMethod})
-            self.assertEqual(response.status_code, 403)
-
-            userAuth = UserAuthentication.objects.filter(
-                username=username, authenticationMethod=authMethod)
-            self.assertEqual(userAuth.count(), 0)
-            self.client.logout()
-
-            username = 'test@test.com'
-            authMethod = 'vbl'
-            password = 'testpasss'
-
-            response = self.client.post(self.loginUrl, {'username': username,
-                'password': password, 'authMethod': authMethod})
-            self.assertEqual(response.status_code, 403)
-            self.client.logout()
-
-    def testManageAuthMethods(self):
+    @patch('webpack_loader.loader.WebpackLoader.get_bundle')
+    def testManageAuthMethods(self, mock_webpack_get_bundle):
         response = self.client.get(self.manageAuthMethodsUrl)
 
         # check if the response is a redirect to the login page
@@ -106,6 +58,7 @@ class AuthenticationTestCase(TestCase):
             'password': 'test', 'authMethod': 'localdb'})
 
         response = self.client.get(self.manageAuthMethodsUrl)
+        mock_webpack_get_bundle.assert_called()
         self.assertEqual(len(response.context['userAuthMethodList']), 1, response)
         self.assertTrue(response.context['isDjangoAccount'] is True)
         self.assertTrue(len(response.context['supportedAuthMethods']), 1)
@@ -115,9 +68,9 @@ class AuthenticationTestCase(TestCase):
         response = self.client.post(
             self.manageAuthMethodsUrl, {'operation': 'addAuth',
             'username': 'test@test.com', 'password': 'testpass',
-            'authenticationMethod': 'vbl'})
+            'authenticationMethod': 'localdb'})
 
-        self.assertTrue(json.loads(response.content)['status'])
+        self.assertTrue(json.loads(response.content.decode())['status'])
         self.client.logout()
 
     def test_djangoauth(self):

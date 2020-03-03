@@ -18,10 +18,10 @@ group_urls = [
         name='tardis.tardis_portal.views.retrieve_group_userlist'),
     url(r'^(?P<group_id>\d+)/readonly$', retrieve_group_userlist_readonly,
         name='tardis.tardis_portal.views.retrieve_group_userlist_readonly'),
-    url(r'^(?P<group_id>\d+)/add/(?P<username>[\w\.]+)/$',
+    url(r'^(?P<group_id>\d+)/add/(?P<username>[\w.@+-]+)/$',
         add_user_to_group,
         name='tardis.tardis_portal.views.add_user_to_group'),
-    url(r'^(?P<group_id>\d+)/remove/(?P<username>[\w\.]+)/$',
+    url(r'^(?P<group_id>\d+)/remove/(?P<username>[\w.@+-]+)/$',
         remove_user_from_group,
         name='tardis.tardis_portal.views.remove_user_from_group'),
 ]

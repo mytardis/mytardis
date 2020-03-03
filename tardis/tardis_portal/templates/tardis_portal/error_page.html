@@ -1,16 +1,7 @@
 {% extends "tardis_portal/portal_template.html" %}
 
-{% block script %}
-<script type="text/javascript">
-$(document).ready(function () {
-  // Hide the login nav bar, because it's likely to be wrong.
-//  $('.login-nav').hide();
-});
-</script>
-{% endblock %}
-
 {% block content %}
-<h1 class="msg alert alert-error" style="text-align: center; padding: 20px">
+<h1 class="msg alert alert-danger" style="text-align: center; padding: 20px">
   <span class="main" style="line-height: 100%">
   {% block error_code %}
   {% endblock %}</span>

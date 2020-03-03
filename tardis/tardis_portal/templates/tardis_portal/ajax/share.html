@@ -1,9 +1,6 @@
 {% load static from staticfiles %}
 {% load experiment_tags %}
 {% block script %}
-<script type="text/javascript"
-        src="{% static 'js/jquery/tardis_portal/ajax/share.js' %}">
-</script>
 {% endblock %}
 {% block content %}
 
@@ -14,54 +11,69 @@
 {% mustachejs "tardis_portal/ajax_error" %}
 
 <!-- public access modal !-->
-<div class="modal hide fade" id="modal-public-access">
-  <div class="modal-header">
-    <a class="close" data-dismiss="modal">&times;</a>
-    <h1 class="title">Public Access</h1>
-  </div>
+<div class="modal" id="modal-public-access" role="dialog" tabindex="-1">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="title">Public Access</h1>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
 
-  <div class="loading-placeholder" style="display: none">
-    <p>Please wait... <img src="{% static 'images/ajax-loader.gif'%}" alt="loading" /></p>
-  </div>
+      <div class="loading-placeholder" style="display: none">
+        <p>Please wait... <img src="{% static 'images/ajax-loader.gif'%}" alt="loading" /></p>
+      </div>
 
-  <div class="modal-body"></div>
-
+      <div class="modal-body"></div>
+    </div>  <!-- class="modal-content" -->
+  </div>  <!-- class="modal-dialog" -->
 </div>
 
 <!-- sharing user modal !-->
-<div class="modal hide fade" id="modal-share">
-  <div class="modal-header">
-    <a class="close" data-dismiss="modal">&times;</a>
-    <h1 class="title">User Sharing</h1>
-  </div>
+<div class="modal" id="modal-share" role="dialog" tabindex="-1">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="title">User Sharing</h1>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
 
-  <div class="loading-placeholder" style="display: none">
-    <p>Please wait... <img src="{% static 'images/ajax-loader.gif'%}" alt="loading" /></p>
-  </div>
+      <div class="loading-placeholder" style="display: none">
+        <p>Please wait... <img src="{% static 'images/ajax-loader.gif'%}" alt="loading" /></p>
+      </div>
 
-  <div class="modal-body">
-  </div>
-
+      <div class="modal-body">
+      </div>
+    </div>  <!-- class="modal-content" -->
+  </div>  <!-- class="modal-dialog" -->
 </div>
 
 <!-- sharing group modal !-->
-<div class="modal hide fade" id="modal-share-group">
-  <div class="modal-header">
-    <a class="close" data-dismiss="modal">&times;</a>
-    <h1 class="title">Group Sharing</h1>
-  </div>
+<div class="modal" id="modal-share-group" role="dialog" tabindex="-1">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="title">Group Sharing</h1>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
 
-  <div class="loading-placeholder" style="display: none">
-    <p>Please wait... <img src="{% static 'images/ajax-loader.gif'%}" alt="loading" /></p>
-  </div>
+      <div class="loading-placeholder" style="display: none">
+        <p>Please wait... <img src="{% static 'images/ajax-loader.gif'%}" alt="loading" /></p>
+      </div>
 
-  <div class="modal-body">
-  </div>
-
+      <div class="modal-body">
+      </div>
+    </div>  <!-- class="modal-content" -->
+  </div>  <!-- class="modal-dialog" -->
 </div>
 
 <div class="sharing-sections">
-    <div class="sharing-section public-access row-fluid">
+    <div class="sharing-section public-access">
     <h3>Public Access</h3>
         <p>
             <dl>
@@ -74,8 +86,8 @@
               <dt>Current License</dt>
               <dd>
                 {% if experiment.license_id %}
-                  <div class="row-fluid">
-                    <div class="span6">
+                  <div class="row">
+                    <div class="col-md-6">
                       This experiment data is licensed under
                       <a rel="license"
                          property="dc:license"
@@ -83,7 +95,7 @@
                         {{ experiment.license.name }}</a>.
                     </div>
                     {% if experiment.license.image_url != None %}
-                    <div class="span6">
+                    <div class="col-md-6">
                       <img src="{{ experiment.license.image_url }}"/>
                     </div>
                     {% endif %}
@@ -97,20 +109,20 @@
             </dl>
         </p>
         {% if is_owner or is_superuser %}
-        <a class="public_access_link btn btn-mini" title="Change">
+        <a class="public_access_link btn btn-outline-secondary btn-sm" title="Change">
           <i class="fa fa-cog"></i>
           Change Public Access
         </a>
         {% endif %}
     </div>
     <hr/>
-    <div class="sharing-section sharing row-fluid">
+    <div class="sharing-section sharing">
     <h3>Sharing</h3>
     <h4>Users</h4>
     <p>Users who have a share in this experiment:</p>
-    <div id="experiment_user_list"/>
+    <div id="experiment_user_list"></div>
     {% if is_owner or is_superuser %}
-    <a class="share_link btn btn-mini" title="Change">
+    <a class="share_link btn btn-outline-secondary btn-sm" title="Change">
         <i class="fa fa-share"></i>
         Change User Sharing
     </a>
@@ -118,16 +130,16 @@
     <br/><br/>
     <h4>Groups</h4>
     <p>Groups who have a share in this experiment:</p>
-    <div id="experiment_group_list"/>
+    <div id="experiment_group_list"></div>
     {% if is_owner or is_superuser %}
-    <a class="share_link_group btn btn-mini" title="Change">
+    <a class="share_link_group btn btn-outline-secondary btn-sm" title="Change">
         <i class="fa fa-share"></i>
         Change Group Sharing
     </a>
     {% endif %}
     </div>
     <hr/>
-    <div class="sharing-section sharing row-fluid">
+    <div class="sharing-section sharing">
     <h3>Links</h3>
         {% if public_link %}
         <p>This experiment can be viewed by everybody with the link below:</p>
@@ -143,18 +155,18 @@
     {% if has_download_permissions %}
     <br/>
     <p>Temporary access links provide full access to recipients regardless of an experiment's public status.</p>
-    <div id="experiment_token_list"/>
+    <div id="experiment_token_list"></div>
 
         {% if is_owner or is_superuser %}
         <a title="Create New Temporary Link"
             href="{{ experiment.get_create_token_url }}"
-            class="create_token_link btn btn-mini">
-            <i class="fa fa-plus-sign"></i>
+            class="create_token_link btn btn-outline-secondary btn-sm">
+            <i class="fa fa-plus"></i>
             Create New Temporary Link
         </a>
         {% endif %}
     {% endif %}
     </div>
-    </div>
+</div>
 
 {% endblock %}

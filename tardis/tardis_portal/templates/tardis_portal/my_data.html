@@ -1,5 +1,6 @@
 {% extends "tardis_portal/portal_template.html" %}
 {% load static from staticfiles %}
+{% load render_bundle from webpack_loader %}
 {% load experiment_tags %}
 {% load experimentstats %}
 {% load humanize %}
@@ -8,32 +9,28 @@
 
 {% block content %}
 
-<div id="content">
-  <div class="row-fluid">
-    <div class="span9">
-      <h2 class="visible-phone">Experiments</h2>
-      <div class="pull-right">
+<div id="content" class="container-fluid">
+  <div class="row">
+    <div class="col-md-12">
+      <h3 class="d-block d-sm-none">Experiments</h3>
+      <div class="pull-right pb-1">
         {% if perms.tardis_portal.add_experiment %}
-        <a class="btn btn-warning"
+        <a id="create-experiment"
+           class="btn btn-primary"
            href="{% url 'tardis.tardis_portal.views.create_experiment' %}">
           <i class="fa fa-plus"></i>
           Create
         </a>
         {% endif %}
-{#        <a class="btn btn-primary"#}
-{#           href="{% url 'tardis.search.views.search_experiment' %}">#}
-{#          <i class="fa fa-search"></i>#}
-{#          Search#}
-{#        </a>#}
       </div>  <!-- class="pull-right" -->
       <div class="pull-left">
-        <h2 class="hidden-phone" style="text-align: center">Experiments</h2>
+        <h3 class="d-none d-sm-block" style="text-align: center">Experiments</h3>
       </div>
-    </div>  <!-- class="span9" -->
-  </div>  <!-- class="row-fluid" -->
+    </div>  <!-- class="col-md-12" -->
+  </div>  <!-- class="row" -->
 
-  <div class="row-fluid">
-    <div class="span9">
+  <div class="row">
+    <div class="col-md-12">
       {% if not owned_experiments %}
       <p class="alert alert-info">
         You do not have access to any private experiments.
@@ -42,33 +39,26 @@
 
       {% if owned_experiments %}
       <div class="pull-left">
-        <h3><strong>{{ owned_experiments.count }}</strong>
+        <h4><strong>{{ owned_experiments.count }}</strong>
         Experiment{{ owned_experiments.count|pluralize}} You Own
-        </h3>
+        </h4>
       </div>
-      <div class="pull-right">
-        <button class="btn btn-success btn-mini"
-                onclick="$('#myowned .accordion-body').collapse('hide');" >
+      <div class="pull-right mb-1">
+        <button type="button" class="btn btn-outline-secondary btn-sm"
+                onclick="$('#myowned .collapse').collapse('hide');" >
         Collapse all</button>
-        <button class="btn btn-success btn-mini"
-                onclick="$('#myowned .accordion-body').collapse('show');" >
+        <button type="button" class="btn btn-outline-secondary btn-sm"
+                onclick="$('#myowned .collapse').collapse('show');" >
         Expand all</button>
       </div>
       <div class="clearfix"></div>
-      <div id="myowned" class="mydata accordion"></div>
+      <div id="myowned" class="mydata panel-group experiments"></div>
       <br/>
       {% endif %}
-
-    </div>  <!-- class="span9" -->
-  </div>  <!-- class="row-fluid" -->
+    </div>  <!-- class="col-md-12" -->
+  </div>  <!-- class="row" -->
 </div>  <!-- id="content" -->
 
 <input type="hidden" id="exps-expand-accordion" value="{{ exps_expand_accordion }}">
-<script type="text/javascript"
-        src="{% static 'js/jquery/tardis_portal/experiment-accordion.js' %}">
-</script>
-
-<script type="text/javascript"
-        src="{% static 'js/jquery/tardis_portal/my_data.js' %}">
-</script>
+{% render_bundle 'tardis_portal_my_data' %}
 {% endblock %}

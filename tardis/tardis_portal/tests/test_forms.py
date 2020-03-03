@@ -82,7 +82,8 @@ class RightsFormTestCase(TestCase):
         # Check we accept valid input
         for public_access, license_id in suitableCombinations:
             data = {'public_access': str(public_access),
-                    'license': license_id }
+                    'license': license_id,
+                    'legal_text': str('No legal Text')}
             form = RightsForm(data)
             self.assertTrue(form.is_valid(), form.errors)
 

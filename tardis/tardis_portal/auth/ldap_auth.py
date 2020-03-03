@@ -89,7 +89,7 @@ class LDAPBackend(AuthProvider, UserProvider, GroupProvider):
         try:
             l = ldap.initialize(self._url)
         except ldap.LDAPError as e:
-            logger.error(e.message['desc'], ": ", self._url)
+            logger.error("%s: %s" % (str(e), self._url))
             return None
         l.protocol_version = ldap.VERSION3
 
@@ -110,7 +110,7 @@ class LDAPBackend(AuthProvider, UserProvider, GroupProvider):
             result_type, result_data = l.result(ldap_result_id, 1)
             return result_data
         except ldap.LDAPError as e:
-            logger.error(e.message['desc'])
+            logger.error(str(e))
         finally:
             l and l.unbind_s()
         return None
@@ -155,19 +155,17 @@ class LDAPBackend(AuthProvider, UserProvider, GroupProvider):
             # Now let's get the attributes we need for this user:
             if self._admin_user and self._admin_pass:
                 l.simple_bind_s(self._admin_user, self._admin_pass)
-            retrieveAttributes = self._user_attr_map.keys() + \
+            retrieveAttributes = list(self._user_attr_map.keys()) + \
                                  [self._login_attr]
             ldap_result = l.search_s(self._base, ldap.SCOPE_SUBTREE,
                                      userRDN, retrieveAttributes)
 
-            if ldap_result[0][1]['uid'][0] == username:
+            if ldap_result[0][1][self._login_attr][0] == username.encode():
                 # check if the given username in combination with the LDAP
                 # auth method is already in the UserAuthentication table
                 user = ldap_result[0][1]
-                return {'first_name': user['givenName'][0],
-                        'last_name': user['sn'][0],
-                        "id": user['uid'][0],
-                        "email": user['mail'][0]}
+                return {tardis_key: user[ldap_key][0].decode()
+                        for ldap_key, tardis_key in self._user_attr_map.items()}
             return None
 
         except ldap.LDAPError:
@@ -198,15 +196,15 @@ class LDAPBackend(AuthProvider, UserProvider, GroupProvider):
         """
         result = self._query(self._user_base,
                              '(%s=%s)' % (self._login_attr, id),
-                             self._user_attr_map.keys() + [self._login_attr])
+                             list(self._user_attr_map.keys()) + [self._login_attr])
 
         user = {}
 
         if not result:
             return None
 
-        for k, v in result[0][1].items():
-            user[self._user_attr_map[k]] = v[0]
+        for key, val in result[0][1].items():
+            user[self._user_attr_map[key]] = val[0].decode()
         return user
 
 
@@ -217,7 +215,7 @@ class LDAPBackend(AuthProvider, UserProvider, GroupProvider):
 
         l = None
         try:
-            retrieveAttributes = ["uid"]
+            retrieveAttributes = [self._login_attr]
             l = ldap.initialize(self._url)
             l.protocol_version = ldap.VERSION3
             searchFilter = '(|(mail=%s)(mailalternateaddress=%s))' % (email,
@@ -226,8 +224,8 @@ class LDAPBackend(AuthProvider, UserProvider, GroupProvider):
                                       searchFilter, retrieveAttributes)
 
             logger.debug(ldap_result)
-            if ldap_result[0][1]['uid'][0]:
-                return ldap_result[0][1]['uid'][0]
+            if ldap_result[0][1][self._login_attr][0]:
+                return ldap_result[0][1][self._login_attr][0]
             return None
 
         except ldap.LDAPError:
@@ -247,7 +245,7 @@ class LDAPBackend(AuthProvider, UserProvider, GroupProvider):
         """return an iteration of the available groups.
         """
         try:
-            # check if a user exists that can authenticate using the VBL
+            # check if a user exists that can authenticate using the ldap
             # auth method
             userAuth = UserAuthentication.objects.get(
                 userProfile__user=user,
@@ -257,12 +255,12 @@ class LDAPBackend(AuthProvider, UserProvider, GroupProvider):
         result = self._query(self._group_base,
                              "(&(objectClass=posixGroup)(%s=%s))" % \
                              ("memberUid", userAuth.username),
-                             self._group_attr_map.keys())
+                             list(self._group_attr_map.keys()))
         if not result:
             return
 
-        for g, a in result:
-            yield a[self._group_id][0]
+        for _, attr in result:
+            yield attr[self._group_id][0].decode()
 
     def getGroupById(self, id):
         """return the group associated with the id::
@@ -274,35 +272,35 @@ class LDAPBackend(AuthProvider, UserProvider, GroupProvider):
         result = self._query(self._group_base,
                              "(&(objectClass=posixGroup)(%s=%s))" % \
                              (self._group_id, id),
-                             self._group_attr_map.keys())
+                             list(self._group_attr_map.keys()))
         if not result:
             return None
 
         group = {}
-        for k, v in result[0][1].items():
-            group[self._group_attr_map[k]] = v[0]
+        for key, val in result[0][1].items():
+            group[self._group_attr_map[key]] = val[0].decode()
         return group
 
     def searchGroups(self, **filter):
         reverse_attr = {}
-        for k, v in self._group_attr_map.items():
-            reverse_attr[v] = k
+        for key, val in self._group_attr_map.items():
+            reverse_attr[val] = key
 
         qstr = ""
-        for k, v in filter.items():
-            qstr += "(%s=%s)" % (reverse_attr[k], v)
+        for key, val in filter.items():
+            qstr += "(%s=%s)" % (reverse_attr[key], val)
         result = self._query(self._group_base,
                              "(&(objectClass=posixGroup)%s)" % qstr,
-                             self._group_attr_map.keys() + ["memberUid"])
+                             list(self._group_attr_map.keys()) + ["memberUid"])
         if not result:
             return
 
-        for g, a in result:
+        for _, attr in result:
             group = {}
-            for k, v in a.items():
-                if k in self._group_attr_map:
-                    group[self._group_attr_map[k]] = v[0]
-            group["members"] = a["memberUid"]
+            for key, val in attr.items():
+                if key in self._group_attr_map:
+                    group[self._group_attr_map[key]] = val[0].decode()
+            group["members"] = [member.decode() for member in attr["memberUid"]]
             yield group
 
     def getGroupsForEntity(self, id):
@@ -311,24 +309,24 @@ class LDAPBackend(AuthProvider, UserProvider, GroupProvider):
         result = self._query(self._group_base,
                              "(&(objectClass=posixGroup)(%s=%s))" % \
                              ("memberUid", id),
-                             self._group_attr_map.keys())
+                             list(self._group_attr_map.keys()))
         if not result:
             return
 
-        for g, a in result:
+        for _, attr in result:
             group = {}
-            for k, v in a.items():
-                group[self._group_attr_map[k]] = v[0]
+            for key, val in attr.items():
+                group[self._group_attr_map[key]] = val[0].decode()
             yield group
 
 _ldap_auth = None
 
 
-def ldap_auth():
+def ldap_auth(force_create=False):
     """Return an initialised LDAP backend.
     """
     global _ldap_auth
-    if _ldap_auth:
+    if _ldap_auth and not force_create:
         return _ldap_auth
     try:
         base = settings.LDAP_BASE

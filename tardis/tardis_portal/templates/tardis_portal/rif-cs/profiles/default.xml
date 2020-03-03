@@ -39,11 +39,10 @@
                 <key>{{located_in}}</key>
                 <relation type="isLocatedIn"/>
             </relatedObject>
-{% for forcode in anzsrcfor %}            <subject type="anzsrc-for">{{forcode}}</subject>{% endfor %}
 {% for lcode in localcodes %}            <subject type="local">{{lcode}}</subject>{% endfor %}
 {% if license_title %}            <description type="rights">This work is licensed under a {{license_title}} (link below)</description>{% endif %}
 {% for note in notes %}            <description type="note">{{note}}</description>{% endfor %}
-{% if produced_bys %}			<description type="note">Information on the format and analysis of the data in this collection is available from the {{blnoun}} link(s) on this page (Is produced by:).</description>{% endif %}            
+{% if produced_bys %}              <description type="note">Information on the format and analysis of the data in this collection is available from the {{blnoun}} link(s) on this page (Is produced by:).</description>{% endif %}            
             <description type="brief">{{description}}
 {% if sample_description_list %}
 Samples: 

@@ -1,15 +1,13 @@
-# pylint: disable=R0916
-# remove when file sizes are integers
 import hashlib
 import logging
+import re
 from contextlib import contextmanager
 from tempfile import NamedTemporaryFile
+from urllib.parse import quote
 
 from os import path
 import mimetypes
 
-from six.moves import urllib
-from six import string_types
 
 from django.conf import settings
 from django.core.files import File
@@ -134,19 +132,12 @@ class DataFile(models.Model):
 
     def get_default_storage_box(self):
         '''
-        try to guess appropriate box from files, dataset or experiment
+        try to guess appropriate box from dataset or use global default
         '''
-        boxes_used = StorageBox.objects.filter(file_objects__datafile=self)
-        if boxes_used:
-            return boxes_used[0]
-        dataset_boxes = self.dataset.get_all_storage_boxes_used()
-        if dataset_boxes:
-            return dataset_boxes[0]
-        experiment_boxes = StorageBox.objects.filter(
-            file_objects__datafile__dataset__experiments__in=self
-            .dataset.experiments.all())
-        if experiment_boxes:
-            return experiment_boxes[0]
+        if settings.REUSE_DATASET_STORAGE_BOX:
+            dataset_boxes = self.dataset.get_all_storage_boxes_used()
+            if dataset_boxes.count() == 1:
+                return dataset_boxes[0]
         # TODO: select one accessible to the owner of the file
         return StorageBox.get_default_storage()
 
@@ -202,27 +193,23 @@ class DataFile(models.Model):
                 not self.sha512sum and \
                 require_checksums:
             raise Exception('Every Datafile requires a checksum')
-        elif settings.REQUIRE_DATAFILE_SIZES:
+        if settings.REQUIRE_DATAFILE_SIZES:
             if self.size < 0:
                 raise Exception('Invalid Datafile size (must be >= 0): %d' %
                                 self.size)
         self.update_mimetype(save=False)
 
-        super(DataFile, self).save(*args, **kwargs)
+        super().save(*args, **kwargs)
 
     def get_size(self):
         return self.size
 
-    def getParameterSets(self, schemaType=None):
+    def getParameterSets(self):
         """Return datafile parametersets associated with this datafile.
-
         """
         from .parameters import Schema
-        if schemaType == Schema.DATAFILE or schemaType is None:
-            return self.datafileparameterset_set.filter(
-                schema__type=Schema.DATAFILE)
-        else:
-            raise Schema.UnsupportedType
+        return self.datafileparameterset_set.filter(
+            schema__type=Schema.DATAFILE)
 
     def __str__(self):
         if self.sha512sum is not None and len(self.sha512sum) > 31:
@@ -232,28 +219,42 @@ class DataFile(models.Model):
         return "%s %s # %s" % (checksum,
                                self.filename, self.mimetype)
 
+    def getParametersforIndexing(self):
+        """Returns the Datafile parameters associated with this
+        Datafile, formatted for elasticsearch.
+
+        """
+        from .parameters import DatafileParameter, ParameterName
+        paramset = self.getParameterSets()
+
+        param_glob = DatafileParameter.objects.filter(
+            parameterset__in=paramset).all().values_list('name','datetime_value','string_value','numerical_value')
+        param_list = []
+        for sublist in param_glob:
+            full_name = ParameterName.objects.get(id=sublist[0]).full_name
+            string2append = (full_name+'=')
+            for value in sublist[1:]:
+                if value is not None:
+                    string2append+=str(value)
+            param_list.append(string2append.replace(" ","%20"))
+        return  " ".join(param_list)
+
     def get_mimetype(self):
         if self.mimetype:
             return self.mimetype
-        else:
-            suffix = path.splitext(self.filename)[-1]
-            try:
-                import mimetypes
-                return mimetypes.types_map[suffix.lower()]
-            except KeyError:
-                return 'application/octet-stream'
+        suffix = path.splitext(self.filename)[-1]
+        try:
+            return mimetypes.types_map[suffix.lower()]
+        except KeyError:
+            return 'application/octet-stream'
 
     def get_view_url(self):
         render_image_size_limit = getattr(settings, 'RENDER_IMAGE_SIZE_LIMIT',
                                           0)
         if render_image_size_limit:
-            try:
-                if self.size > render_image_size_limit:
-                    return None
-            except ValueError:
+            if self.size > render_image_size_limit:
                 return None
 
-        import re
         viewable_mimetype_patterns = ('image/.*', 'text/.*', 'application/pdf')
         if not any(re.match(p, self.get_mimetype())
                    for p in viewable_mimetype_patterns):
@@ -285,7 +286,9 @@ class DataFile(models.Model):
         if dfo is None:
             return None
         if dfo.storage_type in (StorageBox.TAPE,):
-            tasks.dfo_cache_file.apply_async(args=[dfo.id])
+            shadow = 'dfo_cache_file location:%s' % dfo.storage_box.name
+            tasks.dfo_cache_file.apply_async(
+                args=[dfo.id], priority=dfo.priority, shadow=shadow)
         return dfo.file_object
 
     def get_preferred_dfo(self, verified_only=True):
@@ -387,7 +390,7 @@ class DataFile(models.Model):
                                                preview_image_par.string_value))
 
             if path.exists(file_path):
-                preview_image_file = open(file_path)
+                preview_image_file = open(file_path, 'rb')
                 return preview_image_file
 
         render_image_size_limit = getattr(settings, 'RENDER_IMAGE_SIZE_LIMIT',
@@ -441,10 +444,10 @@ class DataFile(models.Model):
         return mimetype
 
     @property
-    def verified(self, all_dfos=False):
+    def verified(self):
+        """Return True if at least one DataFileObject is verified
+        """
         dfos = [dfo.verified for dfo in self.file_objects.all()]
-        if all_dfos:
-            return all(dfos)
         return any(dfos)
 
     def verify(self, reverify=False):
@@ -504,7 +507,7 @@ class DataFileObject(models.Model):
         """Stores values prior to changes for change detection in
         self._initial_values
         """
-        super(DataFileObject, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self._initial_values = self._current_values
 
     @property
@@ -517,7 +520,7 @@ class DataFileObject(models.Model):
     def _changed(self):
         """return True if anything has changed since last save"""
         new_values = self._current_values
-        for k, v in new_values.iteritems():
+        for k, v in new_values.items():
             if k not in self._initial_values:
                 return True
             if self._initial_values[k] != v:
@@ -525,13 +528,25 @@ class DataFileObject(models.Model):
         return False
 
     def save(self, *args, **kwargs):
+        from amqp.exceptions import AMQPError
+
         reverify = kwargs.pop('reverify', False)
-        super(DataFileObject, self).save(*args, **kwargs)
+        super().save(*args, **kwargs)
         if self._changed:
             self._initial_values = self._current_values
         elif not reverify:
             return
-        tasks.dfo_verify.apply_async(countdown=5, args=[self.id])
+
+        try:
+            shadow = 'dfo_verify location:%s' % self.storage_box.name
+            tasks.dfo_verify.apply_async(
+                args=[self.id],
+                countdown=5,
+                priority=self.priority,
+                shadow=shadow)
+        except AMQPError:
+            logger.exception(
+                "Failed to submit verification task for DFO ID %s", self.id)
 
     @property
     def storage_type(self):
@@ -549,10 +564,10 @@ class DataFileObject(models.Model):
 
         def default_identifier(dfo):
             path_parts = ["%s-%s" % (
-                urllib.parse.quote(dfo.datafile.dataset.description, safe='') or 'untitled',
+                quote(dfo.datafile.dataset.description, safe='') or 'untitled',
                 dfo.datafile.dataset.id)]
             if dfo.datafile.directory is not None:
-                path_parts += [urllib.parse.quote(dfo.datafile.directory)]
+                path_parts += [quote(dfo.datafile.directory)]
             path_parts += [dfo.datafile.filename.strip()]
             uri = path.join(*path_parts)
             return uri
@@ -594,7 +609,8 @@ class DataFileObject(models.Model):
         cached_file_object = getattr(self, '_cached_file_object', None)
         if cached_file_object is None or cached_file_object.closed:
             cached_file_object = self._storage.open(self.uri or
-                                                    self._create_uri())
+                                                    self._create_uri(),
+                                                    mode='rb')
             self._cached_file_object = cached_file_object
         return self._cached_file_object
 
@@ -607,7 +623,7 @@ class DataFileObject(models.Model):
         """
         if file_object.closed:
             file_object = File(file_object)
-            file_object.open()
+            file_object.open(mode='rb')
         file_object.seek(0)
         self.uri = self._storage.save(self.uri or self.create_set_uri(),
                                       file_object)  # TODO: define behaviour
@@ -650,7 +666,11 @@ class DataFileObject(models.Model):
         existing = self.datafile.file_objects.filter(storage_box=dest_box)
         if existing.count() > 0:
             if not existing[0].verified and verify:
-                tasks.dfo_verify.delay(existing[0].id)
+                shadow = 'dfo_verify location:%s' % existing[0].storage_box.name
+                tasks.dfo_verify.apply_async(
+                    args=[existing[0].id],
+                    priority=existing[0].priority,
+                    shadow=shadow)
             return existing[0]
         try:
             with transaction.atomic():
@@ -665,7 +685,11 @@ class DataFileObject(models.Model):
                 (self.id, str(e)))
             return False
         if verify:
-            tasks.dfo_verify.delay(copy.id)
+            shadow = 'dfo_verify location:%s' % copy.storage_box.name
+            tasks.dfo_verify.apply_async(
+                args=[copy.id],
+                priority=copy.priority,
+                shadow=shadow)
         return copy
 
     def move_file(self, dest_box=None):
@@ -683,15 +707,47 @@ class DataFileObject(models.Model):
             self.delete()
         return copy
 
+    def calculate_checksums(self, compute_md5=True, compute_sha512=False):
+        """Calculates checksums for a DataFileObject instance
+
+        :param compute_md5: whether to compute md5 default=True
+        :type compute_md5: bool
+        :param compute_sha512: whether to compute sha512, default=True
+        :type compute_sha512: bool
+
+        :return: the checksums as {'md5sum': result, 'sha512sum': result}
+        :rtype: dict
+        """
+        from importlib import import_module
+
+        storage_class_name = self.storage_box.django_storage_class
+        calculate_checksum_methods = getattr(
+            settings, 'CALCULATE_CHECKSUMS_METHODS', {})
+        if storage_class_name in calculate_checksum_methods:
+            calculate_checksum_method = \
+                calculate_checksum_methods[storage_class_name]
+            module_path, method_name = calculate_checksum_method.rsplit('.', 1)
+            module = import_module(module_path)
+            calculate_checksums = getattr(module, method_name)
+            return calculate_checksums(self, compute_md5, compute_sha512)
+
+        return compute_checksums(self.file_object, compute_md5, compute_sha512)
+
     def verify(self, add_checksums=True, add_size=True):  # too complex # noqa
-        comparisons = ['size', 'md5sum', 'sha512sum']
+        compute_md5 = getattr(settings, 'COMPUTE_MD5', True)
+        compute_sha512 = getattr(settings, 'COMPUTE_SHA512', False)
+        comparisons = ['size']
+        if compute_md5:
+            comparisons.append('md5sum')
+        if compute_sha512:
+            comparisons.append('sha512sum')
 
         df = self.datafile
         database = {comp_type: getattr(df, comp_type)
                     for comp_type in comparisons}
         database_update = {}
         empty_value = {db_key: db_val is None or (
-            isinstance(db_val, string_types) and db_val.strip() == '')
+            isinstance(db_val, str) and db_val.strip() == '')
             for db_key, db_val in database.items()}
         same_values = {key: False for key, empty in empty_value.items()
                        if not empty}
@@ -708,10 +764,7 @@ class DataFileObject(models.Model):
                 if add_size:
                     database_update['size'] = actual['size']
             if same_values.get('size', True):
-                compute_md5 = getattr(settings, 'COMPUTE_MD5', True)
-                compute_sha512 = getattr(settings, 'COMPUTE_SHA512', True)
-                actual.update(compute_checksums(
-                    self.file_object,
+                actual.update(self.calculate_checksums(
                     compute_md5=compute_md5,
                     compute_sha512=compute_sha512))
 
@@ -757,7 +810,35 @@ class DataFileObject(models.Model):
         self.last_verified_time = timezone.now()
         self.save(update_fields=['verified', 'last_verified_time'])
         df.update_mimetype()
+        if getattr(settings, 'USE_FILTERS', False):
+            self.apply_filters()
         return result
+
+    def apply_filters(self):
+        from django.core.files.storage import FileSystemStorage
+        from django.core.files.storage import get_storage_class
+        from tardis.celery import tardis_app
+
+        storage_class = get_storage_class(self.storage_box.django_storage_class)
+        if not issubclass(storage_class, FileSystemStorage):
+            logger.debug(
+		"Can't apply filters for DFO ID %s with storage class %s",
+                self.id, self.storage_box.django_storage_class)
+            return
+
+        try:
+            tardis_app.send_task(
+                'mytardis.apply_filters',
+                args = [
+                    self.datafile.id,
+                    self.verified,
+                    self.get_full_path(),
+                    self.uri
+                ],
+                queue = 'filters',
+                priority = getattr(settings, 'FILTERS_TASK_PRIORITY', 0))
+        except Exception:
+            logger.exception("Failed to apply filters for DFO ID %s", self.id)
 
     def get_full_path(self):
         return self._storage.path(self.uri)
@@ -768,6 +849,13 @@ class DataFileObject(models.Model):
     @property
     def modified_time(self):
         return self._storage.get_modified_time(self.uri)
+
+    @property
+    def priority(self):
+        '''
+        Default priority for tasks which take this DFO as an argument
+        '''
+        return self.storage_box.priority
 
 
 @receiver(pre_delete, sender=DataFileObject, dispatch_uid='dfo_delete')
@@ -794,7 +882,7 @@ def delete_dfo(sender, instance, **kwargs):
 
 def compute_checksums(file_object,
                       compute_md5=True,
-                      compute_sha512=True,
+                      compute_sha512=False,
                       close_file=True):
     """Computes checksums for a python file object
 
@@ -821,7 +909,7 @@ def compute_checksums(file_object,
     update_fns = {'md5sum': lambda x, y: x.update(y),
                   'sha512sum': lambda x, y: x.update(y)}
     file_object.seek(0)
-    for chunk in iter(lambda: file_object.read(32 * blocksize), ''):
+    for chunk in iter(lambda: file_object.read(32 * blocksize), b''):
         for key, val in results.items():
             update_fns[key](val, chunk)
     if close_file:

@@ -1,76 +1,78 @@
-<div class="pull-left" style="margin-right: 10px">
-  <div style="text-align: center; font-size: 32px">
-    <i class="fa fa-folder-open"></i>
+<div class="card-body">
+  <div class="float-left" style="margin-right: 10px">
+    <div style="display: flex; text-align: center; font-size: 32px">
+      <i class="fa fa-folder-open o-6"></i>
+    </div>
+    <br/>
+    <label class="dataset-download-box label label-info"
+           for="dataset-checkbox-{{id}}"
+           title="Mark dataset for download">
+      <i class="fa fa-download"></i>
+      <input id="dataset-checkbox-{{id}}"
+             name="dataset"
+             type="checkbox"
+             class="dataset_checkbox"
+             style="display: inline"
+             value="{{id}}" />
+    </label>
   </div>
-  <br/>
-  <label class="dataset-download-box badge badge-info"
-         for="dataset-checkbox-{{id}}"
-         title="Mark dataset for download">
-    <i class="fa fa-download"></i>
-    <input id="dataset-checkbox-{{id}}"
-           name="dataset"
-           type="checkbox"
-           class="dataset_checkbox"
-           style="display: inline"
-           value="{{id}}" />
-  </label>
-</div>
-<div class="pull-left" style="margin-right: 10px">
-</div>
-<div class="pull-right" style="text-align: right">
-  <p class="js-required">
-    <a class="close" rel="tooltip" href="#"
-       style="float: none;" onclick="return false;"
-       title="Remove dataset from experiment">
-      &times;
-    </a>
-  </p>
-  <p>
+  <div class="float-left" style="margin-right: 10px">
+  </div>
+  <div class="float-right" style="text-align: right">
+    <p>
       {{{ dataset_datafiles_badge }}}
-  </p>
-  <p>
+    </p>
+    <p>
       {{{ dataset_size_badge }}}
-  </p>
+    </p>
 
-</div>
-{{#show_dataset_thumbnails}}
-  <div class="pull-left ds-thumb" style="margin-right: 10px">
+  </div>
+  {{#show_dataset_thumbnails}}
+  <div class="float-left ds-thumb" style="margin-right: 10px">
     {{#thumbnail}}
-        <img alt="Thumbnail for Dataset #{{ id }}"
-             src="{{ thumbnail }}"
-             onerror="$(this).parent().append('<canvas></canvas>');$(this).remove();"/>
+    <img alt="Thumbnail for Dataset #{{ id }}"
+         src="{{ thumbnail }}"
+         onerror="$(this).parent().append('<canvas></canvas>');$(this).remove();"/>
     {{/thumbnail}}
     {{^thumbnail}}
-        <canvas style="width: 100px"></canvas>
+    <canvas style="width: 100px"></canvas>
     {{/thumbnail}}
   </div>
-{{/show_dataset_thumbnails}}
-<p>
-  <a class="dataset-link" href="{{ url }}">
-  {{#description}}
-    {{ description }}
-  {{/description}}
-  {{^description}}
-    <em>Dataset #{{id}}</em>
-  {{/description}}
-  </a>
-</p>
-{{#show_instr_facil}}
-<p style="color:grey;font-size:100%;">
-  {{#instrument}}
-  Instrument: {{instrument}}
-  {{/instrument}}
-  {{#facility}}
-  {{#instrument}}<br>{{/instrument}}
-  Facility: {{facility}}
-  {{/facility}}
-</p>
-{{/show_instr_facil}}
-{{#directory}}
-<p style="color:grey;font-size:100%;">Folder:
-<span style="color:#3a87ad;font-weight:bold;" id="folder">{{directory}}</span></p>
-{{/directory}}
-{{#datasettype}}
-<p style="color:grey;font-size:100%;">{{datasettype}}</p>
-{{/datasettype}}
-<div style="clear: both"></div>
+  {{/show_dataset_thumbnails}}
+  <div class="float-left">
+    <p class="mb-2">
+      <a class="dataset-link" href="{{ url }}">
+      {{#description}}
+      {{ description }}
+      {{/description}}
+      {{^description}}
+      <em>Dataset #{{id}}</em>
+      {{/description}}
+      </a>
+    </p>
+     {{#show_instr_facil}}
+    <p style="color:grey;font-size:100%;">
+      {{#instrument}}
+      Instrument: {{instrument}}
+      {{/instrument}}
+      {{#facility}}
+      {{#instrument}}<br>{{/instrument}}
+      Facility: {{facility}}
+      {{/facility}}
+    </p>
+      {{/show_instr_facil}}
+      {{#directory}}
+    <p style="color:grey;font-size:100%;">Folder:
+      <span style="color:#3a87ad;font-weight:bold;" id="folder">{{directory}}</span></p>
+      {{/directory}}
+      {{#datasettype}}
+    <p style="color:grey;font-size:100%;">{{datasettype}}</p>
+    {{/datasettype}}
+    <div style="clear: both"></div>
+  </div>
+
+  <div class="float-left">
+
+  </div>
+
+</div>

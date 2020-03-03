@@ -1,6 +1,6 @@
 <div class="users">
-  <div class="access_list_user row-fluid" style="margin-top: 1ex; margin-bottom: 1ex">
-    <div class="span10">
+  <div class="access_list_user row" style="margin-top: 1ex; margin-bottom: 1ex">
+    <div class="col-md-10">
         <table class="table table-striped">
                 <tr>
                     <th>
@@ -28,13 +28,13 @@
                     </td>
                     <td>
                           {% if user_acl.canRead %}
-                          <span class="label label-success">Read</span>
+                          <span class="badge badge-success">Read</span>
                           {% endif %}
                           {% if user_acl.canWrite %}
-                          <span class="label label-success">Edit</span>
+                          <span class="badge badge-success">Edit</span>
                           {% endif %}
                           {% if user_acl.isOwner %}
-                          <span class="label label-info">Owner</span>
+                          <span class="badge badge-info">Owner</span>
                           {% endif %}
                     </td>
                 </tr>

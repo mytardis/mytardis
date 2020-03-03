@@ -13,20 +13,20 @@ INSTALLED_APPS = (
     'django.contrib.admindocs',
     'django.contrib.humanize',
     'registration',
-    'bootstrapform',
     'jstemplate',
-    'kombu.transport.django',
     'tastypie',
     'tastypie_swagger',
+    'webpack_loader',
+    'widget_tweaks',
     'tardis.tardis_portal',
     'tardis.tardis_portal.templatetags',
-    'tardis.search',
     'tardis.analytics',
     # these optional apps, may require extra settings
     'tardis.apps.oaipmh',
     'tardis.apps.sftp',
     # 'tardis.apps.push_to',
     # 'tardis.apps.social_auth',
+    'taggit',
 )
 
 USER_MENU_MODIFIERS = []

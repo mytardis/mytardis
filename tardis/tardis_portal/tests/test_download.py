@@ -1,15 +1,18 @@
 # -*- coding: utf-8 -*-
 
+import hashlib
 import re
+
+from functools import reduce
 from os import makedirs
 from os.path import abspath, basename, join, exists, getsize
 from shutil import rmtree
 from zipfile import is_zipfile, ZipFile
 from tarfile import is_tarfile, TarFile
 from tempfile import NamedTemporaryFile
+from urllib.parse import quote
 
-from six.moves import urllib
-from six.moves import reduce
+from mock import patch
 
 from django.test import TestCase
 from django.test.client import Client
@@ -30,7 +33,6 @@ except (AttributeError, ImportError):
 
 
 def get_size_and_sha512sum(testfile):
-    import hashlib
     with open(testfile, 'rb') as f:
         contents = f.read()
         return (len(contents), hashlib.sha512(contents).hexdigest())
@@ -124,7 +126,7 @@ class DownloadTestCase(TestCase):
             datafile=datafile,
             storage_box=datafile.get_default_storage_box())
         dfo.save()
-        with open(testfile, 'r') as sourcefile:
+        with open(testfile, 'rb') as sourcefile:
             dfo.file_object = sourcefile
         return DataFile.objects.get(pk=datafile.pk)
 
@@ -135,7 +137,8 @@ class DownloadTestCase(TestCase):
         rmtree(self.dest1)
         rmtree(self.dest2)
 
-    def testView(self):
+    @patch('webpack_loader.loader.WebpackLoader.get_bundle')
+    def testView(self, mock_webpack_get_bundle):
         client = Client()
 
         # check view of file1
@@ -145,10 +148,8 @@ class DownloadTestCase(TestCase):
                          'inline; filename="%s"'
                          % self.datafile1.filename)
         self.assertEqual(response.status_code, 200)
-        response_content = ""
-        for c in response.streaming_content:
-            response_content += c
-        self.assertEqual(response_content, 'Hello World!\n')
+        response_content = b"".join(response.streaming_content)
+        self.assertEqual(response_content, b'Hello World!\n')
 
         # check view of file2
         response = client.get('/datafile/view/%i/' % self.datafile2.id)
@@ -161,6 +162,8 @@ class DownloadTestCase(TestCase):
         response = client.get('/datafile/view/%i/' % self.datafile2.id)
         self.assertEqual(response.status_code, 200)
 
+        mock_webpack_get_bundle.assert_called()
+
         # The following behaviour relies on ImageMagick
         if IMAGEMAGICK_AVAILABLE:
             # file2 should have a ".png" filename
@@ -169,7 +172,7 @@ class DownloadTestCase(TestCase):
                              % (self.datafile2.filename+'.png'))
             # file2 should be a PNG
             self.assertEqual(response['Content-Type'], 'image/png')
-            png_signature = "\x89PNG\r\n\x1a\n"
+            png_signature = b"\x89PNG\r\n\x1a\n"
             self.assertEqual(response.content[0:8], png_signature)
         else:
             # file2 should have a ".tiff" filename
@@ -183,7 +186,7 @@ class DownloadTestCase(TestCase):
 
     def _check_tar_file(self, content, rootdir, datafiles,
                         simpleNames=False, noTxt=False):
-        with NamedTemporaryFile('w') as tempfile:
+        with NamedTemporaryFile('wb') as tempfile:
             for c in content:
                 tempfile.write(c)
             tempfile.flush()
@@ -222,7 +225,8 @@ class DownloadTestCase(TestCase):
             self.assertFalse(pattern.search(name))
         self.assertEqual(len(names), len(datafiles))
 
-    def testDownload(self):
+    @patch('webpack_loader.loader.WebpackLoader.get_bundle')
+    def testDownload(self, mock_webpack_get_bundle):
         client = Client()
 
         # check download for experiment1 as tar
@@ -232,7 +236,7 @@ class DownloadTestCase(TestCase):
             exp1_title = self.experiment1.title.replace(' ', '_')
         else:
             exp1_title = self.experiment1.title
-        exp1_title = urllib.parse.quote(exp1_title,
+        exp1_title = quote(exp1_title,
                            safe=settings.SAFE_FILESYSTEM_CHARACTERS)
         self.assertEqual(response['Content-Disposition'],
                          'attachment; filename="%s-complete.tar"'
@@ -251,10 +255,8 @@ class DownloadTestCase(TestCase):
                          'attachment; filename="%s"'
                          % self.datafile1.filename)
         self.assertEqual(response.status_code, 200)
-        response_content = ""
-        for c in response.streaming_content:
-            response_content += c
-        self.assertEqual(response_content, 'Hello World!\n')
+        response_content = b"".join(response.streaming_content)
+        self.assertEqual(response_content, b'Hello World!\n')
 
         # requesting file2 should be forbidden...
         response = client.get('/download/datafile/%i/' % self.datafile2.id)
@@ -309,10 +311,8 @@ class DownloadTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         # This should be a TIFF (which often starts with "II\x2a\x00")
         self.assertEqual(response['Content-Type'], 'image/tiff')
-        response_content = ""
-        for c in response.streaming_content:
-            response_content += c
-        self.assertEqual(response_content[0:4], "II\x2a\x00")
+        response_content = b"".join(response.streaming_content)
+        self.assertEqual(response_content[0:4], b"II\x2a\x00")
 
         # check experiment tar download with alternative organization
         response = client.get('/download/experiment/%i/tar/' %
@@ -338,11 +338,12 @@ class DownloadTestCase(TestCase):
             exp2_title = self.experiment2.title.replace(' ', '_')
         else:
             exp2_title = self.experiment2.title
-        exp2_title = urllib.parse.quote(exp2_title,
+        exp2_title = quote(exp2_title,
                            safe=settings.SAFE_FILESYSTEM_CHARACTERS)
         response = client.get('/download/experiment/%i/tar/' %
                               self.experiment2.id)
         self.assertEqual(response.status_code, 200)
+        mock_webpack_get_bundle.assert_called()
         self.assertEqual(response['Content-Disposition'],
                          'attachment; filename="%s-complete.tar"'
                          % exp2_title)
@@ -358,7 +359,7 @@ class DownloadTestCase(TestCase):
         df = DataFile.objects.get(pk=self.datafile1.id)  # skipping test # noqa # pylint: disable=W0101
 
         try:
-            from magic import Magic
+            from magic import Magic  # pylint: disable=W0611
             self.assertEqual(df.mimetype, 'text/plain; charset=us-ascii')
         except:
             # XXX Test disabled because lib magic can't be loaded
@@ -377,7 +378,7 @@ class DownloadTestCase(TestCase):
         pdf1 = DataFile.objects.get(pk=pdf1.pk)
 
         try:
-            from magic import Magic  # noqa
+            from magic import Magic  # pylint: disable=W0611
             self.assertEqual(pdf1.mimetype, 'image/jpeg')
         except:
             # XXX Test disabled because lib magic can't be loaded
@@ -403,7 +404,7 @@ class DownloadTestCase(TestCase):
         self.assertEqual(pdf2.file_objects.get().verified, False)
         pdf2 = DataFile.objects.get(pk=pdf2.pk)
         try:
-            from magic import Magic  # noqa
+            from magic import Magic  # pylint: disable=W0611
             self.assertEqual(pdf2.mimetype, ('application/vnd.openxmlformats-'
                                              'officedocument.presentationml.'
                                              'presentation'))
@@ -419,7 +420,7 @@ class DownloadTestCase(TestCase):
         pdf2 = DataFile.objects.get(pk=pdf2.pk)
 
         try:
-            from magic import Magic  # noqa
+            from magic import Magic  # pylint: disable=W0611
             self.assertEqual(pdf2.mimetype, 'application/pdf')
         except:
             # XXX Test disabled because lib magic can't be loaded

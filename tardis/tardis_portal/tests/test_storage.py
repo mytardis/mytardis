@@ -6,6 +6,7 @@ http://docs.djangoproject.com/en/dev/topics/testing/
 
 """
 from django.test import TestCase
+
 from ..models import StorageBox, StorageBoxOption
 from ..models import Dataset
 from ..models import DataFile
@@ -28,6 +29,7 @@ class ModelTestCase(TestCase):
                                          key='an_option',
                                          value=string_input)
         string_option.save()
+
         object_option = StorageBoxOption(storage_box=self.test_box,
                                          key='optional',
                                          value_type=StorageBoxOption.PICKLE)

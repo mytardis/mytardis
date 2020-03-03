@@ -2,6 +2,7 @@
 Generic tracking and analytics interface
 Supports Google Analytics through ga.py, others may follow
 """
+import six
 
 from tardis.analytics import ga
 
@@ -33,6 +34,8 @@ class IteratorTracker(object):
 
     def __next__(self):
         try:
+            if six.PY3:
+                return self._iterator.__next__()
             return self._iterator.next()
         except StopIteration:
             self.complete = True

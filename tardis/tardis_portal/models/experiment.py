@@ -1,6 +1,7 @@
 import logging
 from os import path
 
+from datetime import datetime
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.fields import GenericRelation
@@ -17,6 +18,8 @@ from .license import License
 
 logger = logging.getLogger(__name__)
 
+def experiment_internal_id_default():
+    return datetime.now().strftime('WUI-%Y-%M-%d-%H-%M-%S.%f')
 
 @python_2_unicode_compatible
 class Experiment(models.Model):
@@ -33,6 +36,8 @@ class Experiment(models.Model):
     :attribute description: The description of the experiment.
     :attribute institution_name: The name of the institution who created
        the experiment.
+    :attribute internal_id: Identifier generated at the instrument, for this experiment
+    :attribute project_id: UoA project ID (e.g. RAID)
     :attribute start_time: **Undocumented**
     :attribute end_time: **Undocumented**
     :attribute created_time: **Undocumented**
@@ -66,6 +71,8 @@ class Experiment(models.Model):
     institution_name = models.CharField(max_length=400,
                                         default=settings.DEFAULT_INSTITUTION)
     description = models.TextField(blank=True)
+    internal_id = models.CharField(max_length=400, null=False, blank=False, unique=True, default=experiment_internal_id_default )
+    project_id = models.CharField(max_length=400, null=False, blank=False)
     start_time = models.DateTimeField(null=True, blank=True)
     end_time = models.DateTimeField(null=True, blank=True)
     created_time = models.DateTimeField(auto_now_add=True)
@@ -88,7 +95,7 @@ class Experiment(models.Model):
         app_label = 'tardis_portal'
 
     def save(self, *args, **kwargs):
-        super(Experiment, self).save(*args, **kwargs)
+        super().save(*args, **kwargs)
         from .hooks import publish_public_expt_rifcs
         publish_public_expt_rifcs(self)
 
@@ -105,17 +112,35 @@ class Experiment(models.Model):
                 self.PUBLICATION_SCHEMA_ROOT)
         ).count() > 0
 
-    def getParameterSets(self, schemaType=None):
+    def getParameterSets(self):
         """Return the experiment parametersets associated with this
         experiment.
 
         """
         from .parameters import Schema
-        if schemaType == Schema.EXPERIMENT or schemaType is None:
-            return self.experimentparameterset_set.filter(
-                schema__type=Schema.EXPERIMENT)
-        else:
-            raise Schema.UnsupportedType
+        return self.experimentparameterset_set.filter(
+            schema__type=Schema.EXPERIMENT)
+
+    def getParametersforIndexing(self):
+        """Returns the experiment parameters associated with this
+        experiment, formatted for elasticsearch.
+
+        """
+        from .parameters import ExperimentParameter, ParameterName
+        paramset = self.getParameterSets()
+
+        param_glob = ExperimentParameter.objects.filter(
+            parameterset__in=paramset).all().values_list('name','datetime_value','string_value','numerical_value')
+        param_list = []
+        for sublist in param_glob:
+            full_name = ParameterName.objects.get(id=sublist[0]).full_name
+            string2append = (full_name+'=')
+            for value in sublist[1:]:
+                if value is not None:
+                    string2append+=str(value)
+            param_list.append(string2append.replace(" ","%20"))
+        return  " ".join(param_list)
+
 
     def __str__(self):
         return self.title
@@ -132,28 +157,27 @@ class Experiment(models.Model):
                 dirname = None
         return dirname
 
-    @models.permalink
     def get_absolute_url(self):
         """Return the absolute url to the current ``Experiment``"""
-        return ('tardis_portal.view_experiment', (),
-                {'experiment_id': self.id})
+        return reverse(
+            'tardis_portal.view_experiment',
+            kwargs={'experiment_id': self.id})
 
-    @models.permalink
     def get_edit_url(self):
         """Return the absolute url to the edit view of the current
         ``Experiment``
-
         """
-        return ('tardis.tardis_portal.views.edit_experiment', (),
-                {'experiment_id': self.id})
+        return reverse(
+            'tardis.tardis_portal.views.edit_experiment',
+            kwargs={'experiment_id': self.id})
 
-    @models.permalink
     def get_create_token_url(self):
         """Return the absolute url to the create token view of the current
         ``Experiment``
         """
-        return ('tardis.tardis_portal.views.create_token', (),
-                {'experiment_id': self.id})
+        return reverse(
+            'tardis.tardis_portal.views.create_token',
+            kwargs={'experiment_id': self.id})
 
     def get_datafiles(self):
         from .datafile import DataFile
@@ -207,8 +231,22 @@ class Experiment(models.Model):
                                         isOwner=True)
         return [acl.get_related_object() for acl in acls]
 
+    def get_users(self):
+        acls = ObjectACL.objects.filter(pluginId='django_user',
+                                        content_type=self.get_ct(),
+                                        object_id=self.id,
+                                        canRead=True)
+        return [acl.get_related_object() for acl in acls]
+
     def get_groups(self):
         acls = ObjectACL.objects.filter(pluginId='django_group',
+                                        content_type=self.get_ct(),
+                                        object_id=self.id,
+                                        canRead=True)
+        return [acl.get_related_object() for acl in acls]
+
+    def get_users(self):
+        acls = ObjectACL.objects.filter(pluginId='django_user',
                                         content_type=self.get_ct(),
                                         object_id=self.id,
                                         canRead=True)
@@ -279,7 +317,7 @@ class ExperimentAuthor(models.Model):
         help_text="URL identifier for the author")
 
     def save(self, *args, **kwargs):
-        super(ExperimentAuthor, self).save(*args, **kwargs)
+        super().save(*args, **kwargs)
         try:
             from .hooks import publish_public_expt_rifcs
             publish_public_expt_rifcs(self.experiment)
