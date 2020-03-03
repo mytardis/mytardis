@@ -802,6 +802,7 @@ class DatasetResource(MyTardisModelResource):
             'description': ('exact', ),
             'directory': ('exact', ),
             'instrument': ALL_WITH_RELATIONS,
+            'dataset_id': ('exact', ),
         }
         ordering = [
             'id',
