@@ -136,9 +136,9 @@ class Experiment(models.Model):
             full_name = ParameterName.objects.get(id=sublist[0]).full_name
             string2append = ('('+full_name)
             for value in sublist[1:]:
-                if str(value) is not 'None':
+                if value is not None:
                     string2append+=str(value)
-            param_list.append(string2append)
+            param_list.append(string2append+')')
         return  " ".join(param_list)
 
 
