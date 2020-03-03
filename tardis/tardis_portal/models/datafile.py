@@ -224,12 +224,20 @@ class DataFile(models.Model):
         Datafile, formatted for elasticsearch.
 
         """
-        from .parameters import DatafileParameter
+        from .parameters import DatafileParameter, ParameterName
         paramset = self.getParameterSets()
 
         param_glob = DatafileParameter.objects.filter(
-            parameterset__in=paramset).all().values_list('datetime_value','string_value','numerical_value')
-        return  " ".join( str(s) for s in set([item for sublist in param_glob for item in sublist])).replace(" None ", " ")
+            parameterset__in=paramset).all().values_list('name','datetime_value','string_value','numerical_value')
+        param_list = []
+        for sublist in param_glob:
+            full_name = ParameterName.objects.get(id=sublist[0]).full_name
+            string2append = (full_name+'=')
+            for value in sublist[1:]:
+                if value is not None:
+                    string2append+=str(value)
+            param_list.append(string2append.replace(" ","%20"))
+        return  " ".join(param_list)
 
     def get_mimetype(self):
         if self.mimetype:

@@ -92,12 +92,20 @@ class Dataset(models.Model):
         dataset, formatted for elasticsearch.
 
         """
-        from .parameters import DatasetParameter
+        from .parameters import DatasetParameter, ParameterName
         paramset = self.getParameterSets()
 
         param_glob = DatasetParameter.objects.filter(
-            parameterset__in=paramset).all().values_list('datetime_value','string_value','numerical_value')
-        return  " ".join( str(s) for s in set([item for sublist in param_glob for item in sublist])).replace(" None ", " ")
+            parameterset__in=paramset).all().values_list('name','datetime_value','string_value','numerical_value')
+        param_list = []
+        for sublist in param_glob:
+            full_name = ParameterName.objects.get(id=sublist[0]).full_name
+            string2append = (full_name+'=')
+            for value in sublist[1:]:
+                if value is not None:
+                    string2append+=str(value)
+            param_list.append(string2append.replace(" ","%20"))
+        return  " ".join(param_list)
 
     def __str__(self):
         return self.description
