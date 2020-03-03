@@ -31,7 +31,7 @@ class Facility(models.Model):
 
     def save(self, *args, **kwargs):
         self.modified_time = timezone.now()
-        super(Facility, self).save(*args, **kwargs)
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.name

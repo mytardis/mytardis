@@ -12,10 +12,12 @@
 {% endif %}
 
 {% for exp in experiments %}
-  <div class="card mb-2" style="background-color: #f5fbff">
-    <div class="card-body py-2" style="background-color: rgba(0,0,0,0)">
+  <div class="card mb-2">
+    <div id="toggle-{{exp.id}}"
+         class="card-header accordion-toggle py-2" data-parent="#experiments"
+         data-toggle="collapse">
       <div class="row">
-        <div id="toggle-{{exp.id}}" class="accordion-toggle col-md-8 px-1" data-toggle="collapse">
+        <div class="col-md-8 px-1 pb-1">
           <input type="hidden" class="exp-index" value="{{ forloop.counter }}">
           <a class="explink"
              href="{% url 'tardis_portal.view_experiment' exp.id %}">{{ exp.title }}</a>
@@ -23,9 +25,9 @@
         <div class="col">
           {% experiment_badges exp %}
         </div>
-      </div> {% comment %} class="row" {% endcomment %}
+      </div>
       <div class="row">
-        <div class="card-subtitle text-muted col-6 px-1">
+        <div class="card-subtitle text-muted small col-6 px-1">
           {% experiment_authors exp %}
         </div>
         <div class="col">
@@ -33,23 +35,25 @@
             {% experiment_download_link exp %}
           </span>
         </div>
-      </div>{% comment %} class="row" {% endcomment %}
+      </div>
+    </div>
+    <div id="collapse-{{exp.id}}" class="card-body collapse py-2">
       <div class="row">
-        <div id="collapse-{{exp.id}}" class="collapse col-md-9 px-1">
+        <div class="col-md-9 px-1">
           <div class="accordion-inner">
             <p class="card-text small mb-1">{{exp.description|default:""|bleach}}</p>
             <div id="latest-dataset-{{exp.id}}"></div>
-          </div> {% comment %} class="accordion-inner" {% endcomment %}
-        </div> {% comment %} class="accordion-body" {% endcomment %}
+          </div>
+        </div>
       </div>
     </div>
-  </div>{% comment %} class="card" {% endcomment %}
+  </div>
 {% empty %}
   <p>You do not own any Experiment on this server.<br/>
     <a href="{% url 'tardis.tardis_portal.views.create_experiment' %}">Create a new experiment</a>
     and upload your data
   </p>
-{% endfor %} {% comment %} for exp in experiments {% endcomment %}
+{% endfor %}
 
 {% if experiments.paginator.num_pages > 1 %}
   {% block bottom-pagination %}{% pagination experiments paginator page_num query_string %}{% endblock %}

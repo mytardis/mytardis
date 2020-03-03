@@ -11,7 +11,7 @@
     <div class="col-md-12">
       <h3 class="d-block d-sm-none">Experiments</h3>
       <div class="pull-left">
-          <h3 class="hidden-xm" style="text-align: center">Experiments</h3>
+          <h3 class="d-none d-sm-block" style="text-align: center">Experiments</h3>
       </div>
     </div>
   </div>
@@ -38,11 +38,11 @@
       <div class="clearfix"></div>
       <div id="public-experiments" class="panel-group experiments">
         {% for exp in public_experiments %}
-          <div class="card mb-2" style="background-color: #f5fbff">
-              <div class="card-body py-2" style="background-color: rgba(0, 0, 0, 0);" data-parent="#private-experiments">
+          <div class="card mb-2">
+              <div class="card-header accordion-toggle" data-parent="#public-experiments"
+                   data-toggle="collapse" onclick="$('#collapse{{exp.id}}').collapse('toggle');">
                 <div class="row">
-                  <div class="accordion-toggle col-md-8 px-1" data-toggle="collapse"
-                       onclick="$('#collapse{{exp.id}}').collapse('toggle');" >
+                  <div class="col-md-8 px-1 pb-1">
                     <a class="card-title explink"
                        href="{% url 'tardis_portal.view_experiment' exp.id %}">{{ exp.title }}
                     </a>
@@ -57,7 +57,7 @@
                   </div>
                 </div> {% comment %} class="row" {% endcomment %}
                 <div class="row">
-                  <div class="card-subtitle text-muted col-6 px-1">
+                  <div class="card-subtitle text-muted small col-6 px-1">
                     {% for author in exp.experimentauthor_set.all %}
                       {% if not forloop.first %}, {% endif %}
                       <span property="dc:author">{{ author.author }}</span>
@@ -80,8 +80,10 @@
                     </span>
                   </div>
                 </div>
+              </div>
+              <div id="collapse{{exp.id}}" class="card-body collapse in py-2" data-parent="#public-experiments">
                 <div class="row">
-                  <div id="collapse{{exp.id}}" class="collapse col-md-9 px-1 in">
+                  <div class="col-md-9 px-1">
                   <div class="accordion-inner">
                     <p class="card-text small mb-1">
                       {{exp.description|default:""|bleach}}

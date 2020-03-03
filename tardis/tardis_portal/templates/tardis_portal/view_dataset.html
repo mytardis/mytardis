@@ -217,19 +217,19 @@
     <div style="margin-bottom: 20px">
     <h3>Preview Images</h3>
     <div class="info-box">
-      <div id="preview" class="carousel" data-ride="carousel"
+      <div id="preview" class="carousel slide" data-ride="carousel"
            style="margin: auto;">
         <!-- Carousel items -->
-        <div class="carousel-inner" style="background-color: white;">
+        <div class="carousel-inner">
           {% for datafile in dataset.get_images|slice:carousel_slice %}
-            <div class="{{ forloop.first|yesno:'active ,' }}item" style="height: 100%">
+            <div class="{{ forloop.first|yesno:'active ,' }}carousel-item" style="height: 100%">
               {% url 'tardis.tardis_portal.iiif.download_image' datafile_id=datafile.id region='full' size='!320,240' rotation=0 quality='native' format='jpg' as thumbnail %}
               {% url 'tardis.tardis_portal.iiif.download_image' datafile_id=datafile.id region='full' size='full' rotation=0 quality='native' format='png' as image %}
               <a href="{{ image }}">
                 <img alt="Preview image for Datafile #{{ datafile.id }}"
                      src="{{ thumbnail }}"
                      style="display: block; margin-left: auto; margin-right: auto;"
-                     onerror="$(this).parents('.item').remove()"/>
+                     onerror="$(this).parents('.carousel-item').remove()"/>
               </a>
               <div class="carousel-caption">
                 <h4>{{ datafile.filename }}</h4>
@@ -239,12 +239,12 @@
         </div>
         {% if dataset.get_images|slice:":2"|length > 1 %}
             <!-- Carousel nav -->
-            <a class="left carousel-control" href="#preview" role="button" data-slide="prev">
-              <span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span>
+            <a class="carousel-control-prev" href="#preview" role="button" data-slide="prev">
+              <i class="fa fa-chevron-left" style="color: darkgrey; font-size: larger"></i>
               <span class="sr-only">Previous</span>
             </a>
-            <a class="right carousel-control" href="#preview" role="button" data-slide="next">
-              <span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>
+            <a class="carousel-control-next" href="#preview" role="button" data-slide="next">
+              <i class="fa fa-chevron-right" style="color: darkgrey; font-size: larger"></i>
               <span class="sr-only">Next</span>
             </a>
         {% endif %}
