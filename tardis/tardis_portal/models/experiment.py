@@ -133,7 +133,7 @@ class Experiment(models.Model):
             parameterset__in=paramset).all().values_list('name','datetime_value','string_value','numerical_value')
         param_list = []
         for sublist in param_glob:
-            full_name = ParameterName.objects.get(id=sublist[0]).values_list('full_name')
+            full_name = ParameterName.objects.get(id=sublist[0]).full_name
             string2append = (full_name+','+str(sublist[1])+','+sublist[2]+','+str(sublist[3]))
             param_list.append(string2append)
         return  " ".join(param_list)
