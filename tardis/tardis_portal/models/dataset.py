@@ -97,7 +97,7 @@ class Dataset(models.Model):
 
         param_glob = DatasetParameter.objects.filter(
             parameterset__in=paramset).all().values_list('datetime_value','string_value','numerical_value')
-        return  " ".join( str(s) for s in set([item for sublist in param_glob for item in sublist]))
+        return  " ".join( str(s) for s in set([item for sublist in param_glob for item in sublist])).replace(" None ", " ")
 
     def __str__(self):
         return self.description
