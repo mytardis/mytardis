@@ -56,7 +56,7 @@ class Dataset(models.Model):
                                    on_delete=models.CASCADE)
     objects = OracleSafeManager()
     tags = TaggableManager(blank=True)
-    
+
     class Meta:
         app_label = 'tardis_portal'
         ordering = ['-id']
@@ -86,6 +86,26 @@ class Dataset(models.Model):
         from .parameters import Schema
         return self.datasetparameterset_set.filter(
             schema__type=Schema.DATASET)
+
+    def getParametersforIndexing(self):
+        """Returns the dataset parameters associated with this
+        dataset, formatted for elasticsearch.
+
+        """
+        from .parameters import DatasetParameter, ParameterName
+        paramset = self.getParameterSets()
+
+        param_glob = DatasetParameter.objects.filter(
+            parameterset__in=paramset).all().values_list('name','datetime_value','string_value','numerical_value')
+        param_list = []
+        for sublist in param_glob:
+            full_name = ParameterName.objects.get(id=sublist[0]).full_name
+            string2append = (full_name+'=')
+            for value in sublist[1:]:
+                if value is not None:
+                    string2append+=str(value)
+            param_list.append(string2append.replace(" ","%20"))
+        return  " ".join(param_list)
 
     def __str__(self):
         return self.description

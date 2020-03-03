@@ -14,6 +14,7 @@ from django.conf.urls import url
 from django.contrib.auth.models import AnonymousUser
 from django.contrib.auth.models import User
 from django.contrib.auth.models import Group
+from django.contrib.auth.hashers import make_password
 from django.db import IntegrityError, transaction
 from django.http import HttpResponse, HttpResponseForbidden, \
     StreamingHttpResponse, HttpResponseNotFound, JsonResponse
@@ -467,7 +468,7 @@ class UserResource(ModelResource):
         authentication = default_authentication
         authorization = ACLAuthorization()
         queryset = User.objects.all()
-        allowed_methods = ['get']
+        allowed_methods = ['get','post','put']
         fields = ['username', 'first_name', 'last_name', 'email']
         serializer = default_serializer
         filtering = {
