@@ -126,12 +126,17 @@ class Experiment(models.Model):
         experiment, formatted for elasticsearch.
 
         """
-        from .parameters import ExperimentParameter
+        from .parameters import ExperimentParameter, ParameterName
         paramset = self.getParameterSets()
 
         param_glob = ExperimentParameter.objects.filter(
             parameterset__in=paramset).all().values_list('name','datetime_value','string_value','numerical_value')
-        return  " ".join( str(s) for s in set([item for sublist in param_glob for item in sublist])).replace(" None ", " ")
+        param_list = []
+        for sublist in param_glob:
+            full_name = ParameterName.objects.get(id=sublist[0]).values_list('full_name')
+            string2append = (full_name+','+str(sublist[1])+','+sublist[2]+','+str(sublist[3]))
+            param_list.append(string2append)
+        return  " ".join(param_list)
 
 
     def __str__(self):
