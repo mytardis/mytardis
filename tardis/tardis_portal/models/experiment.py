@@ -138,8 +138,8 @@ class Experiment(models.Model):
             for value in sublist[1:]:
                 if value is not None:
                     string2append+=str(value)
-            param_list.append(string2append)
-        return  " ".join(param_list.replace(" ","%20"))
+            param_list.append(string2append.replace(" ","%20"))
+        return  " ".join(param_list)
 
 
     def __str__(self):
