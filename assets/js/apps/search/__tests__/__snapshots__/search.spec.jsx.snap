@@ -49,7 +49,7 @@ exports[`Result Component Test Render Simple Search Form 1`] = `
                                                     </span>
                                                   </th>
                                                   <th className=\\"rdtSwitch\\" onClick={[Function]} colSpan={5} data-value={1}>
-                                                    February 2020
+                                                    February 2017
                                                   </th>
                                                   <th className=\\"rdtNext\\" onClick={[Function]}>
                                                     <span>
@@ -83,15 +83,6 @@ exports[`Result Component Test Render Simple Search Form 1`] = `
                                               </thead>
                                               <tbody>
                                                 <tr>
-                                                  <td data-value={26} className=\\"rdtDay rdtOld\\" onClick={[Function: bound updateSelectedDate]}>
-                                                    26
-                                                  </td>
-                                                  <td data-value={27} className=\\"rdtDay rdtOld\\" onClick={[Function: bound updateSelectedDate]}>
-                                                    27
-                                                  </td>
-                                                  <td data-value={28} className=\\"rdtDay rdtOld\\" onClick={[Function: bound updateSelectedDate]}>
-                                                    28
-                                                  </td>
                                                   <td data-value={29} className=\\"rdtDay rdtOld\\" onClick={[Function: bound updateSelectedDate]}>
                                                     29
                                                   </td>
@@ -104,8 +95,6 @@ exports[`Result Component Test Render Simple Search Form 1`] = `
                                                   <td data-value={1} className=\\"rdtDay\\" onClick={[Function: bound updateSelectedDate]}>
                                                     1
                                                   </td>
-                                                </tr>
-                                                <tr>
                                                   <td data-value={2} className=\\"rdtDay\\" onClick={[Function: bound updateSelectedDate]}>
                                                     2
                                                   </td>
@@ -115,6 +104,8 @@ exports[`Result Component Test Render Simple Search Form 1`] = `
                                                   <td data-value={4} className=\\"rdtDay\\" onClick={[Function: bound updateSelectedDate]}>
                                                     4
                                                   </td>
+                                                </tr>
+                                                <tr>
                                                   <td data-value={5} className=\\"rdtDay\\" onClick={[Function: bound updateSelectedDate]}>
                                                     5
                                                   </td>
@@ -127,8 +118,6 @@ exports[`Result Component Test Render Simple Search Form 1`] = `
                                                   <td data-value={8} className=\\"rdtDay\\" onClick={[Function: bound updateSelectedDate]}>
                                                     8
                                                   </td>
-                                                </tr>
-                                                <tr>
                                                   <td data-value={9} className=\\"rdtDay\\" onClick={[Function: bound updateSelectedDate]}>
                                                     9
                                                   </td>
@@ -138,66 +127,63 @@ exports[`Result Component Test Render Simple Search Form 1`] = `
                                                   <td data-value={11} className=\\"rdtDay\\" onClick={[Function: bound updateSelectedDate]}>
                                                     11
                                                   </td>
+                                                </tr>
+                                                <tr>
                                                   <td data-value={12} className=\\"rdtDay\\" onClick={[Function: bound updateSelectedDate]}>
                                                     12
                                                   </td>
                                                   <td data-value={13} className=\\"rdtDay\\" onClick={[Function: bound updateSelectedDate]}>
                                                     13
                                                   </td>
-                                                  <td data-value={14} className=\\"rdtDay\\" onClick={[Function: bound updateSelectedDate]}>
+                                                  <td data-value={14} className=\\"rdtDay rdtToday\\" onClick={[Function: bound updateSelectedDate]}>
                                                     14
                                                   </td>
-                                                  <td data-value={15} className=\\"rdtDay\\" onClick={[Function: bound updateSelectedDate]}>
+                                                  <td data-value={15} className=\\"rdtDay rdtDisabled\\">
                                                     15
                                                   </td>
-                                                </tr>
-                                                <tr>
-                                                  <td data-value={16} className=\\"rdtDay\\" onClick={[Function: bound updateSelectedDate]}>
+                                                  <td data-value={16} className=\\"rdtDay rdtDisabled\\">
                                                     16
                                                   </td>
-                                                  <td data-value={17} className=\\"rdtDay\\" onClick={[Function: bound updateSelectedDate]}>
+                                                  <td data-value={17} className=\\"rdtDay rdtDisabled\\">
                                                     17
                                                   </td>
-                                                  <td data-value={18} className=\\"rdtDay\\" onClick={[Function: bound updateSelectedDate]}>
+                                                  <td data-value={18} className=\\"rdtDay rdtDisabled\\">
                                                     18
                                                   </td>
-                                                  <td data-value={19} className=\\"rdtDay\\" onClick={[Function: bound updateSelectedDate]}>
+                                                </tr>
+                                                <tr>
+                                                  <td data-value={19} className=\\"rdtDay rdtDisabled\\">
                                                     19
                                                   </td>
-                                                  <td data-value={20} className=\\"rdtDay\\" onClick={[Function: bound updateSelectedDate]}>
+                                                  <td data-value={20} className=\\"rdtDay rdtDisabled\\">
                                                     20
                                                   </td>
-                                                  <td data-value={21} className=\\"rdtDay\\" onClick={[Function: bound updateSelectedDate]}>
+                                                  <td data-value={21} className=\\"rdtDay rdtDisabled\\">
                                                     21
                                                   </td>
-                                                  <td data-value={22} className=\\"rdtDay\\" onClick={[Function: bound updateSelectedDate]}>
+                                                  <td data-value={22} className=\\"rdtDay rdtDisabled\\">
                                                     22
                                                   </td>
-                                                </tr>
-                                                <tr>
-                                                  <td data-value={23} className=\\"rdtDay\\" onClick={[Function: bound updateSelectedDate]}>
+                                                  <td data-value={23} className=\\"rdtDay rdtDisabled\\">
                                                     23
                                                   </td>
-                                                  <td data-value={24} className=\\"rdtDay\\" onClick={[Function: bound updateSelectedDate]}>
+                                                  <td data-value={24} className=\\"rdtDay rdtDisabled\\">
                                                     24
                                                   </td>
-                                                  <td data-value={25} className=\\"rdtDay\\" onClick={[Function: bound updateSelectedDate]}>
+                                                  <td data-value={25} className=\\"rdtDay rdtDisabled\\">
                                                     25
-                                                  </td>
-                                                  <td data-value={26} className=\\"rdtDay\\" onClick={[Function: bound updateSelectedDate]}>
-                                                    26
-                                                  </td>
-                                                  <td data-value={27} className=\\"rdtDay\\" onClick={[Function: bound updateSelectedDate]}>
-                                                    27
-                                                  </td>
-                                                  <td data-value={28} className=\\"rdtDay rdtToday\\" onClick={[Function: bound updateSelectedDate]}>
-                                                    28
-                                                  </td>
-                                                  <td data-value={29} className=\\"rdtDay rdtDisabled\\">
-                                                    29
                                                   </td>
                                                 </tr>
                                                 <tr>
+                                                  <td data-value={26} className=\\"rdtDay rdtDisabled\\">
+                                                    26
+                                                  </td>
+                                                  <td data-value={27} className=\\"rdtDay rdtDisabled\\">
+                                                    27
+                                                  </td>
+                                                  <td data-value={28} className=\\"rdtDay rdtDisabled\\">
+                                                    28
+                                                  </td>
                                                   <td data-value={1} className=\\"rdtDay rdtNew rdtDisabled\\">
                                                     1
                                                   </td>
@@ -210,6 +196,8 @@ exports[`Result Component Test Render Simple Search Form 1`] = `
                                                   <td data-value={4} className=\\"rdtDay rdtNew rdtDisabled\\">
                                                     4
                                                   </td>
+                                                </tr>
+                                                <tr>
                                                   <td data-value={5} className=\\"rdtDay rdtNew rdtDisabled\\">
                                                     5
                                                   </td>
@@ -218,6 +206,18 @@ exports[`Result Component Test Render Simple Search Form 1`] = `
                                                   </td>
                                                   <td data-value={7} className=\\"rdtDay rdtNew rdtDisabled\\">
                                                     7
+                                                  </td>
+                                                  <td data-value={8} className=\\"rdtDay rdtNew rdtDisabled\\">
+                                                    8
+                                                  </td>
+                                                  <td data-value={9} className=\\"rdtDay rdtNew rdtDisabled\\">
+                                                    9
+                                                  </td>
+                                                  <td data-value={10} className=\\"rdtDay rdtNew rdtDisabled\\">
+                                                    10
+                                                  </td>
+                                                  <td data-value={11} className=\\"rdtDay rdtNew rdtDisabled\\">
+                                                    11
                                                   </td>
                                                 </tr>
                                               </tbody>
@@ -250,7 +250,7 @@ exports[`Result Component Test Render Simple Search Form 1`] = `
                                                     </span>
                                                   </th>
                                                   <th className=\\"rdtSwitch\\" onClick={[Function]} colSpan={5} data-value={1}>
-                                                    February 2020
+                                                    February 2017
                                                   </th>
                                                   <th className=\\"rdtNext\\" onClick={[Function]}>
                                                     <span>
@@ -284,15 +284,6 @@ exports[`Result Component Test Render Simple Search Form 1`] = `
                                               </thead>
                                               <tbody>
                                                 <tr>
-                                                  <td data-value={26} className=\\"rdtDay rdtOld rdtDisabled\\">
-                                                    26
-                                                  </td>
-                                                  <td data-value={27} className=\\"rdtDay rdtOld rdtDisabled\\">
-                                                    27
-                                                  </td>
-                                                  <td data-value={28} className=\\"rdtDay rdtOld rdtDisabled\\">
-                                                    28
-                                                  </td>
                                                   <td data-value={29} className=\\"rdtDay rdtOld rdtDisabled\\">
                                                     29
                                                   </td>
@@ -305,8 +296,6 @@ exports[`Result Component Test Render Simple Search Form 1`] = `
                                                   <td data-value={1} className=\\"rdtDay rdtDisabled\\">
                                                     1
                                                   </td>
-                                                </tr>
-                                                <tr>
                                                   <td data-value={2} className=\\"rdtDay rdtDisabled\\">
                                                     2
                                                   </td>
@@ -316,6 +305,8 @@ exports[`Result Component Test Render Simple Search Form 1`] = `
                                                   <td data-value={4} className=\\"rdtDay rdtDisabled\\">
                                                     4
                                                   </td>
+                                                </tr>
+                                                <tr>
                                                   <td data-value={5} className=\\"rdtDay rdtDisabled\\">
                                                     5
                                                   </td>
@@ -328,8 +319,6 @@ exports[`Result Component Test Render Simple Search Form 1`] = `
                                                   <td data-value={8} className=\\"rdtDay rdtDisabled\\">
                                                     8
                                                   </td>
-                                                </tr>
-                                                <tr>
                                                   <td data-value={9} className=\\"rdtDay rdtDisabled\\">
                                                     9
                                                   </td>
@@ -339,20 +328,20 @@ exports[`Result Component Test Render Simple Search Form 1`] = `
                                                   <td data-value={11} className=\\"rdtDay rdtDisabled\\">
                                                     11
                                                   </td>
+                                                </tr>
+                                                <tr>
                                                   <td data-value={12} className=\\"rdtDay rdtDisabled\\">
                                                     12
                                                   </td>
                                                   <td data-value={13} className=\\"rdtDay rdtDisabled\\">
                                                     13
                                                   </td>
-                                                  <td data-value={14} className=\\"rdtDay rdtDisabled\\">
+                                                  <td data-value={14} className=\\"rdtDay rdtToday rdtDisabled\\">
                                                     14
                                                   </td>
                                                   <td data-value={15} className=\\"rdtDay rdtDisabled\\">
                                                     15
                                                   </td>
-                                                </tr>
-                                                <tr>
                                                   <td data-value={16} className=\\"rdtDay rdtDisabled\\">
                                                     16
                                                   </td>
@@ -362,6 +351,8 @@ exports[`Result Component Test Render Simple Search Form 1`] = `
                                                   <td data-value={18} className=\\"rdtDay rdtDisabled\\">
                                                     18
                                                   </td>
+                                                </tr>
+                                                <tr>
                                                   <td data-value={19} className=\\"rdtDay rdtDisabled\\">
                                                     19
                                                   </td>
@@ -374,8 +365,6 @@ exports[`Result Component Test Render Simple Search Form 1`] = `
                                                   <td data-value={22} className=\\"rdtDay rdtDisabled\\">
                                                     22
                                                   </td>
-                                                </tr>
-                                                <tr>
                                                   <td data-value={23} className=\\"rdtDay rdtDisabled\\">
                                                     23
                                                   </td>
@@ -385,20 +374,17 @@ exports[`Result Component Test Render Simple Search Form 1`] = `
                                                   <td data-value={25} className=\\"rdtDay rdtDisabled\\">
                                                     25
                                                   </td>
+                                                </tr>
+                                                <tr>
                                                   <td data-value={26} className=\\"rdtDay rdtDisabled\\">
                                                     26
                                                   </td>
                                                   <td data-value={27} className=\\"rdtDay rdtDisabled\\">
                                                     27
                                                   </td>
-                                                  <td data-value={28} className=\\"rdtDay rdtToday rdtDisabled\\">
+                                                  <td data-value={28} className=\\"rdtDay rdtDisabled\\">
                                                     28
                                                   </td>
-                                                  <td data-value={29} className=\\"rdtDay rdtDisabled\\">
-                                                    29
-                                                  </td>
-                                                </tr>
-                                                <tr>
                                                   <td data-value={1} className=\\"rdtDay rdtNew rdtDisabled\\">
                                                     1
                                                   </td>
@@ -411,6 +397,8 @@ exports[`Result Component Test Render Simple Search Form 1`] = `
                                                   <td data-value={4} className=\\"rdtDay rdtNew rdtDisabled\\">
                                                     4
                                                   </td>
+                                                </tr>
+                                                <tr>
                                                   <td data-value={5} className=\\"rdtDay rdtNew rdtDisabled\\">
                                                     5
                                                   </td>
@@ -419,6 +407,18 @@ exports[`Result Component Test Render Simple Search Form 1`] = `
                                                   </td>
                                                   <td data-value={7} className=\\"rdtDay rdtNew rdtDisabled\\">
                                                     7
+                                                  </td>
+                                                  <td data-value={8} className=\\"rdtDay rdtNew rdtDisabled\\">
+                                                    8
+                                                  </td>
+                                                  <td data-value={9} className=\\"rdtDay rdtNew rdtDisabled\\">
+                                                    9
+                                                  </td>
+                                                  <td data-value={10} className=\\"rdtDay rdtNew rdtDisabled\\">
+                                                    10
+                                                  </td>
+                                                  <td data-value={11} className=\\"rdtDay rdtNew rdtDisabled\\">
+                                                    11
                                                   </td>
                                                 </tr>
                                               </tbody>
@@ -679,7 +679,7 @@ exports[`Search Component Render Search Component 1`] = `
                                           colspan="5"
                                           data-value="1"
                                         >
-                                          February 2020
+                                          February 2017
                                         </th>
                                         <th
                                           class="rdtNext"
@@ -731,24 +731,6 @@ exports[`Search Component Render Search Component 1`] = `
                                       <tr>
                                         <td
                                           class="rdtDay rdtOld"
-                                          data-value="26"
-                                        >
-                                          26
-                                        </td>
-                                        <td
-                                          class="rdtDay rdtOld"
-                                          data-value="27"
-                                        >
-                                          27
-                                        </td>
-                                        <td
-                                          class="rdtDay rdtOld"
-                                          data-value="28"
-                                        >
-                                          28
-                                        </td>
-                                        <td
-                                          class="rdtDay rdtOld"
                                           data-value="29"
                                         >
                                           29
@@ -771,8 +753,6 @@ exports[`Search Component Render Search Component 1`] = `
                                         >
                                           1
                                         </td>
-                                      </tr>
-                                      <tr>
                                         <td
                                           class="rdtDay"
                                           data-value="2"
@@ -791,6 +771,8 @@ exports[`Search Component Render Search Component 1`] = `
                                         >
                                           4
                                         </td>
+                                      </tr>
+                                      <tr>
                                         <td
                                           class="rdtDay"
                                           data-value="5"
@@ -815,8 +797,6 @@ exports[`Search Component Render Search Component 1`] = `
                                         >
                                           8
                                         </td>
-                                      </tr>
-                                      <tr>
                                         <td
                                           class="rdtDay"
                                           data-value="9"
@@ -835,6 +815,8 @@ exports[`Search Component Render Search Component 1`] = `
                                         >
                                           11
                                         </td>
+                                      </tr>
+                                      <tr>
                                         <td
                                           class="rdtDay"
                                           data-value="12"
@@ -848,107 +830,99 @@ exports[`Search Component Render Search Component 1`] = `
                                           13
                                         </td>
                                         <td
-                                          class="rdtDay"
+                                          class="rdtDay rdtToday"
                                           data-value="14"
                                         >
                                           14
                                         </td>
                                         <td
-                                          class="rdtDay"
+                                          class="rdtDay rdtDisabled"
                                           data-value="15"
                                         >
                                           15
                                         </td>
-                                      </tr>
-                                      <tr>
                                         <td
-                                          class="rdtDay"
+                                          class="rdtDay rdtDisabled"
                                           data-value="16"
                                         >
                                           16
                                         </td>
                                         <td
-                                          class="rdtDay"
+                                          class="rdtDay rdtDisabled"
                                           data-value="17"
                                         >
                                           17
                                         </td>
                                         <td
-                                          class="rdtDay"
+                                          class="rdtDay rdtDisabled"
                                           data-value="18"
                                         >
                                           18
                                         </td>
+                                      </tr>
+                                      <tr>
                                         <td
-                                          class="rdtDay"
+                                          class="rdtDay rdtDisabled"
                                           data-value="19"
                                         >
                                           19
                                         </td>
                                         <td
-                                          class="rdtDay"
+                                          class="rdtDay rdtDisabled"
                                           data-value="20"
                                         >
                                           20
                                         </td>
                                         <td
-                                          class="rdtDay"
+                                          class="rdtDay rdtDisabled"
                                           data-value="21"
                                         >
                                           21
                                         </td>
                                         <td
-                                          class="rdtDay"
+                                          class="rdtDay rdtDisabled"
                                           data-value="22"
                                         >
                                           22
                                         </td>
-                                      </tr>
-                                      <tr>
                                         <td
-                                          class="rdtDay"
+                                          class="rdtDay rdtDisabled"
                                           data-value="23"
                                         >
                                           23
                                         </td>
                                         <td
-                                          class="rdtDay"
+                                          class="rdtDay rdtDisabled"
                                           data-value="24"
                                         >
                                           24
                                         </td>
                                         <td
-                                          class="rdtDay"
+                                          class="rdtDay rdtDisabled"
                                           data-value="25"
                                         >
                                           25
                                         </td>
+                                      </tr>
+                                      <tr>
                                         <td
-                                          class="rdtDay"
+                                          class="rdtDay rdtDisabled"
                                           data-value="26"
                                         >
                                           26
                                         </td>
                                         <td
-                                          class="rdtDay"
+                                          class="rdtDay rdtDisabled"
                                           data-value="27"
                                         >
                                           27
                                         </td>
                                         <td
-                                          class="rdtDay rdtToday"
+                                          class="rdtDay rdtDisabled"
                                           data-value="28"
                                         >
                                           28
                                         </td>
-                                        <td
-                                          class="rdtDay rdtDisabled"
-                                          data-value="29"
-                                        >
-                                          29
-                                        </td>
-                                      </tr>
-                                      <tr>
                                         <td
                                           class="rdtDay rdtNew rdtDisabled"
                                           data-value="1"
@@ -973,6 +947,8 @@ exports[`Search Component Render Search Component 1`] = `
                                         >
                                           4
                                         </td>
+                                      </tr>
+                                      <tr>
                                         <td
                                           class="rdtDay rdtNew rdtDisabled"
                                           data-value="5"
@@ -990,6 +966,30 @@ exports[`Search Component Render Search Component 1`] = `
                                           data-value="7"
                                         >
                                           7
+                                        </td>
+                                        <td
+                                          class="rdtDay rdtNew rdtDisabled"
+                                          data-value="8"
+                                        >
+                                          8
+                                        </td>
+                                        <td
+                                          class="rdtDay rdtNew rdtDisabled"
+                                          data-value="9"
+                                        >
+                                          9
+                                        </td>
+                                        <td
+                                          class="rdtDay rdtNew rdtDisabled"
+                                          data-value="10"
+                                        >
+                                          10
+                                        </td>
+                                        <td
+                                          class="rdtDay rdtNew rdtDisabled"
+                                          data-value="11"
+                                        >
+                                          11
                                         </td>
                                       </tr>
                                     </tbody>
@@ -1032,7 +1032,7 @@ exports[`Search Component Render Search Component 1`] = `
                                           colspan="5"
                                           data-value="1"
                                         >
-                                          February 2020
+                                          February 2017
                                         </th>
                                         <th
                                           class="rdtNext"
@@ -1084,24 +1084,6 @@ exports[`Search Component Render Search Component 1`] = `
                                       <tr>
                                         <td
                                           class="rdtDay rdtOld rdtDisabled"
-                                          data-value="26"
-                                        >
-                                          26
-                                        </td>
-                                        <td
-                                          class="rdtDay rdtOld rdtDisabled"
-                                          data-value="27"
-                                        >
-                                          27
-                                        </td>
-                                        <td
-                                          class="rdtDay rdtOld rdtDisabled"
-                                          data-value="28"
-                                        >
-                                          28
-                                        </td>
-                                        <td
-                                          class="rdtDay rdtOld rdtDisabled"
                                           data-value="29"
                                         >
                                           29
@@ -1124,8 +1106,6 @@ exports[`Search Component Render Search Component 1`] = `
                                         >
                                           1
                                         </td>
-                                      </tr>
-                                      <tr>
                                         <td
                                           class="rdtDay rdtDisabled"
                                           data-value="2"
@@ -1144,6 +1124,8 @@ exports[`Search Component Render Search Component 1`] = `
                                         >
                                           4
                                         </td>
+                                      </tr>
+                                      <tr>
                                         <td
                                           class="rdtDay rdtDisabled"
                                           data-value="5"
@@ -1168,8 +1150,6 @@ exports[`Search Component Render Search Component 1`] = `
                                         >
                                           8
                                         </td>
-                                      </tr>
-                                      <tr>
                                         <td
                                           class="rdtDay rdtDisabled"
                                           data-value="9"
@@ -1188,6 +1168,8 @@ exports[`Search Component Render Search Component 1`] = `
                                         >
                                           11
                                         </td>
+                                      </tr>
+                                      <tr>
                                         <td
                                           class="rdtDay rdtDisabled"
                                           data-value="12"
@@ -1201,7 +1183,7 @@ exports[`Search Component Render Search Component 1`] = `
                                           13
                                         </td>
                                         <td
-                                          class="rdtDay rdtDisabled"
+                                          class="rdtDay rdtToday rdtDisabled"
                                           data-value="14"
                                         >
                                           14
@@ -1212,8 +1194,6 @@ exports[`Search Component Render Search Component 1`] = `
                                         >
                                           15
                                         </td>
-                                      </tr>
-                                      <tr>
                                         <td
                                           class="rdtDay rdtDisabled"
                                           data-value="16"
@@ -1232,6 +1212,8 @@ exports[`Search Component Render Search Component 1`] = `
                                         >
                                           18
                                         </td>
+                                      </tr>
+                                      <tr>
                                         <td
                                           class="rdtDay rdtDisabled"
                                           data-value="19"
@@ -1256,8 +1238,6 @@ exports[`Search Component Render Search Component 1`] = `
                                         >
                                           22
                                         </td>
-                                      </tr>
-                                      <tr>
                                         <td
                                           class="rdtDay rdtDisabled"
                                           data-value="23"
@@ -1276,6 +1256,8 @@ exports[`Search Component Render Search Component 1`] = `
                                         >
                                           25
                                         </td>
+                                      </tr>
+                                      <tr>
                                         <td
                                           class="rdtDay rdtDisabled"
                                           data-value="26"
@@ -1289,19 +1271,11 @@ exports[`Search Component Render Search Component 1`] = `
                                           27
                                         </td>
                                         <td
-                                          class="rdtDay rdtToday rdtDisabled"
+                                          class="rdtDay rdtDisabled"
                                           data-value="28"
                                         >
                                           28
                                         </td>
-                                        <td
-                                          class="rdtDay rdtDisabled"
-                                          data-value="29"
-                                        >
-                                          29
-                                        </td>
-                                      </tr>
-                                      <tr>
                                         <td
                                           class="rdtDay rdtNew rdtDisabled"
                                           data-value="1"
@@ -1326,6 +1300,8 @@ exports[`Search Component Render Search Component 1`] = `
                                         >
                                           4
                                         </td>
+                                      </tr>
+                                      <tr>
                                         <td
                                           class="rdtDay rdtNew rdtDisabled"
                                           data-value="5"
@@ -1343,6 +1319,30 @@ exports[`Search Component Render Search Component 1`] = `
                                           data-value="7"
                                         >
                                           7
+                                        </td>
+                                        <td
+                                          class="rdtDay rdtNew rdtDisabled"
+                                          data-value="8"
+                                        >
+                                          8
+                                        </td>
+                                        <td
+                                          class="rdtDay rdtNew rdtDisabled"
+                                          data-value="9"
+                                        >
+                                          9
+                                        </td>
+                                        <td
+                                          class="rdtDay rdtNew rdtDisabled"
+                                          data-value="10"
+                                        >
+                                          10
+                                        </td>
+                                        <td
+                                          class="rdtDay rdtNew rdtDisabled"
+                                          data-value="11"
+                                        >
+                                          11
                                         </td>
                                       </tr>
                                     </tbody>
