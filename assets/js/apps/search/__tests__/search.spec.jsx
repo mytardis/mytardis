@@ -14,6 +14,7 @@ import Results from '../components/Results';
 import SimpleSearchForm from '../components/SimpleSearchForm';
 import AdvancedSearchForm from '../components/AdvancedSearchForm';
 
+
 global.fetch = require('jest-fetch-mock');
 
 configure({ adapter: new Adapter() });
@@ -206,6 +207,8 @@ describe('Search Component', () => {
     jest.spyOn(global, 'fetch').mockImplementation(() => Promise.resolve({
       json: () => Promise.resolve(apiResponse),
     }));
+    // making test more deterministic with mocking date.now
+    jest.spyOn(Date, 'now').mockImplementation(() => 1487076708000);
     await act(async () => {
       ReactDOM.render(<Search />, container);
     });
@@ -225,7 +228,6 @@ describe('Search Component', () => {
       component.find('button').at(0).simulate('click');
     });
     component.update();
-    console.log(component.debug());
   });
 });
 describe('Results Component', () => {
@@ -278,6 +280,7 @@ describe('Result Component', () => {
       json: () => Promise.resolve(apiResponse),
     }));
     let component = null;
+    jest.spyOn(Date, 'now').mockImplementation(() => 1487076708000);
     await act(async () => {
       component = mount(<SimpleSearchForm showResults={showResults} searchText="test" />, { attachTo: container });
       expect(component).toBeTruthy();
