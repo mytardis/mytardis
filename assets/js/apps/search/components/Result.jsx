@@ -177,12 +177,12 @@ function Result({ result }) {
 }
 Result.propTypes = {
   result: PropTypes.shape({
-    id: PropTypes.string.isRequired,
+    id: PropTypes.number.isRequired,
     type: PropTypes.string.isRequired,
     title: PropTypes.string.isRequired,
     url: PropTypes.string.isRequired,
-    created_time: PropTypes.instanceOf(Date).isRequired,
-    update_time: PropTypes.instanceOf(Date).isRequired,
+    created_time: PropTypes.string.isRequired,
+    update_time: PropTypes.string.isRequired,
     description: PropTypes.string,
     institution_name: PropTypes.string,
     instrument: PropTypes.string,
