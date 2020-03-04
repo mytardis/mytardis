@@ -115,19 +115,15 @@ Results.propTypes = {
     PropTypes.shape({
       title: PropTypes.string.isRequired,
       type: PropTypes.string.isRequired,
-      id: PropTypes.string.isRequired,
+      id: PropTypes.number.isRequired,
       url: PropTypes.string.isRequired,
-      institution_name: PropTypes.string.isRequired,
-      created_time: PropTypes.instanceOf(Date).isRequired,
-      update_time: PropTypes.instanceOf(Date).isRequired,
+      institution_name: PropTypes.string,
+      created_time: PropTypes.string.isRequired,
+      update_time: PropTypes.string.isRequired,
       created_by: PropTypes.string.isRequired,
     }),
   ).isRequired,
-  counts: PropTypes.shape({
-    experimentsCount: PropTypes.number.isRequired,
-    datasetsCount: PropTypes.number.isRequired,
-    datafilesCount: PropTypes.number.isRequired,
-  }).isRequired,
+  counts: PropTypes.object.isRequired,
 };
 
 export default Results;
