@@ -39,6 +39,7 @@ from .models import Dataset
 from .models import DataFile
 from .models import DataFileObject
 from .models import Experiment
+from .models import StorageBox, StorageBoxOption
 from .auth.decorators import has_datafile_download_access
 from .auth.decorators import experiment_download_required
 from .auth.decorators import dataset_download_required
@@ -57,6 +58,8 @@ def _create_download_response(request, datafile_id, disposition='attachment'):  
     # Get datafile (and return 404 if absent)
     try:
         datafile = DataFile.objects.get(pk=datafile_id)
+        logger.debug(datafile)
+        logger.debug(dir(datafile))
     except DataFile.DoesNotExist:
         return return_response_not_found(request)
     # Check users has access to datafile
@@ -200,6 +203,33 @@ def _get_datafile_details_for_archive(mapper, datafiles):
         if mapped_pathname:
             res.append((df, mapper(df)))
     return res
+
+class S3Downloader():
+    '''
+    Mint a time limited url to the S3 object store.
+    Using Python requests, call this url
+    '''
+
+    import boto3
+    import requests
+    import backoff
+    from urllib.parse import urljoin
+    
+    def __init__(self,
+                 datafile):
+        self.access_key = getattr(settings, 'AWS_S3_ACCESS_KEY_ID')
+        self.secret_key = getattr(settings, 'AWS_S3_SECRET_ACCESS_KEY')
+        self.endpoint_url = getattr(settings, 'AWS_S3_HOST')
+        self.session_token = getattr(settings, 'AWS_SESSION_TOKEN')
+        self.datafile = datafile
+        self.s3_client = boto3.client('s3',
+                                      aws_access_key = self.access_key,
+                                      aws_secret_access = self.secret_key,
+                                      aws_session_token = self.session_token)
+        self.api_url = urljoin(self.server,
+                               '/api/v1/%s/')
+
+    #def __get_bucket_from_datafile(self):
 
 
 class UncachedTarStream(TarFile):
