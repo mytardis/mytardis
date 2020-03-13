@@ -1,13 +1,8 @@
-/* global prevFileSelect */
 $(document).ready(function() {
 
     // Create a reload event handler
     $("#metadata-pane").on("reload", function() {
         $(this).load("/ajax/dataset_metadata/" + $("#dataset-id").val() + "/");
-        if(prevFileSelect)
-        {
-            $("#datafile-info").load(prevFileSelect.find(".datafile-info-toggle").attr("href"));
-        }
     });
 
     // load datafiles on page load

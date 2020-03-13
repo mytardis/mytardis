@@ -14,6 +14,8 @@ from tardis.tardis_portal.models import Experiment, ObjectACL
 from tardis.tardis_portal.models import UserAuthentication, UserProfile
 
 from ..migration import do_migration
+from ..models import OpenidUserMigration
+from ..utils import rollback_migration
 
 
 class OpenIDMigrationTestCase(TestCase):
@@ -66,3 +68,13 @@ class OpenIDMigrationTestCase(TestCase):
         response = do_migration(request)
         d = json.loads(response.content.decode())
         self.assertEqual(d['status'], 'success')
+
+        # Test rolling back migration:
+        user_old_id = self.user_old.id
+        user_new_id = self.user_new.id
+        self.assertTrue(User.objects.get(id=user_new_id).is_active)
+        self.assertFalse(User.objects.get(id=user_old_id).is_active)
+        user_migration = OpenidUserMigration.objects.get(new_user=self.user_new)
+        rollback_migration(user_migration)
+        self.assertFalse(User.objects.filter(id=user_new_id).exists())
+        self.assertTrue(User.objects.get(id=user_old_id).is_active)

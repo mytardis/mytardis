@@ -13,6 +13,46 @@ from .email import email_user
 logger = logging.getLogger(__name__)
 
 
+@tardis_app.task(name="tardis_portal.cleanup_dfs", ignore_result=True)
+def cleanup_dfs(**kwargs):
+    from .models import DataFile, DataFileObject
+    dfs = DataFile.objects.raw('''
+        SELECT df.id
+        FROM tardis_portal_datafile AS df
+        LEFT JOIN tardis_portal_datafileobject AS dfo
+        ON dfo.datafile_id = df.id
+        WHERE dfo.id IS NULL
+    ''')
+    for df in dfs:
+        dfid = df.id
+        if DataFileObject.objects.filter(datafile_id=dfid).count() == 0:
+            DataFile.objects.get(id=dfid).delete()
+
+
+@tardis_app.task(name="tardis_portal.cleanup_dfos", ignore_result=True)
+def cleanup_dfos(**kwargs):
+    import pytz
+    from datetime import datetime, timedelta
+    from django.conf import settings
+    from .models import DataFile, DataFileObject
+    tz = pytz.timezone(settings.TIME_ZONE)
+    wait_until = datetime.now(tz) - timedelta(hours=24)
+    dfos = DataFileObject.objects.filter(created_time__lte=wait_until,
+                                         verified=False)
+    for dfo in dfos:
+        dfid = dfo.datafile_id
+        try:
+            dfo.delete()
+        except OSError as e:
+            # we can't delete file if it does not exist
+            dfo.uri = None
+            dfo.save(update_fields=['uri'])
+            dfo.delete()
+        finally:
+            if DataFileObject.objects.filter(datafile_id=dfid).count() == 0:
+                DataFile.objects.get(id=dfid).delete()
+
+
 @tardis_app.task(name="tardis_portal.verify_dfos", ignore_result=True)
 def verify_dfos(**kwargs):
     from .models import DataFileObject

@@ -83,6 +83,9 @@ Rapid Connect.
 # settings for login URL
 LOGIN_URL = '/login/'
 
+# setting for logout redirect URL
+LOGOUT_REDIRECT_URL = '/'
+
 # disable /accounts/login
 INCLUDE_AUTH_URLS = False
 

@@ -1,4 +1,9 @@
 /* global showMsg */
+
+import React from "react";
+import ReactDOM from "react-dom";
+import TreeView from "../../apps/tree_view/components/TreeView";
+
 require("imports-loader?define=>false&exports=>false!blueimp-file-upload/js/vendor/jquery.ui.widget");
 require("imports-loader?define=>false&exports=>false!blueimp-file-upload/js/jquery.fileupload");
 require("imports-loader?define=>false&exports=>false!blueimp-file-upload/js/jquery.iframe-transport");
@@ -40,6 +45,15 @@ $(function() {
             setTimeout(function() {
                 var reloadEvent = new Event("reload");
                 $("#datafiles-pane")[0].dispatchEvent(reloadEvent);
+                ReactDOM.render(
+                    React.createElement(
+                        TreeView, {
+                            datasetId: $("#dataset-id").val(),
+                            modified: String(Date.now())
+                        }, null
+                    ),
+                    $("#tree_view")[0]
+                );
             }, 500);
         }
     });

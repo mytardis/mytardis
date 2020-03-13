@@ -1,33 +1,31 @@
-import React, { useState, useEffect } from "react";
-import PropTypes from "prop-types";
+import React, { useState, useEffect } from 'react';
+import PropTypes from 'prop-types';
 
-import Cookies from "js-cookie";
-import AdvancedSearchForm from "./AdvancedSearchForm";
+import Cookies from 'js-cookie';
+import AdvancedSearchForm from './AdvancedSearchForm';
 
 function getInstrumentList() {
-  return fetch("/api/v1/instrument/?limit=0")
+  return fetch('/api/v1/instrument/?limit=0')
     .then((resp) => {
       if (resp.ok) {
         return resp.json();
       }
-      throw new Error("Something went wrong ... ");
+      throw new Error('Something went wrong ... ');
     });
 }
 
 function SimpleSearchForm({ showResults, searchText }) {
   const [simpleSearchText, setSimpleSearchText] = useState(searchText);
-  const [advanceSearchVisible, setAdvancedSearchVisible] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const toggleAdvancedSearch = () => setAdvancedSearchVisible(!advanceSearchVisible);
   const fetchResults = () => {
     // fetch results
     setIsLoading(true);
     fetch(`/api/v1/search_simple-search/?query=${simpleSearchText}`, {
-      method: "get",
+      method: 'get',
       headers: {
-        "Accept": "application/json", // eslint-disable-line quote-props
-        "Content-Type": "application/json",
-        "X-CSRFToken": Cookies.get("csrftoken"),
+        'Accept': 'application/json', // eslint-disable-line quote-props
+        'Content-Type': 'application/json',
+        'X-CSRFToken': Cookies.get('csrftoken'),
       },
     }).then(response => response.json())
       .then((data) => {
@@ -62,50 +60,52 @@ function SimpleSearchForm({ showResults, searchText }) {
   }, searchText);
   return (
     <main>
-      <form onSubmit={handleSimpleSearchSubmit} id="simple-search">
-        <input
-          type="text"
-          name="simple_search_text"
-          onChange={event => handleSimpleSearchTextChange(event, event.target.value)}
-          value={simpleSearchText}
-          className="form-control"
-          placeholder="Search for Experiments, Datasets, Datafiles"
-        />
-      </form>
+      <div className="row">
+        <div className="mx-auto align-items-center">
+          <div className="card align-items-center">
+            <div className="card-body">
+              <div className="row align-items-center">
+                <div className="col-md-12">
+                  <form className="form-horizontal" onSubmit={handleSimpleSearchSubmit} id="simple-search">
+                    <div className="input-group mb-3">
+                      <input
+                        type="text"
+                        name="simple_search_text"
+                        onChange={event => handleSimpleSearchTextChange(event, event.target.value)}
+                        value={simpleSearchText}
+                        className="form-control"
+                        placeholder="Search for Experiments, Datasets, Datafiles"
+                      />
+                      <div className="input-group-append">
+                        <button
+                          type="button"
+                          className="input-group-text"
+                          onClick={handleSimpleSearchSubmit}
+                        >
+                          <span className="fa fa-search" />
+                        </button>
+                      </div>
+                    </div>
+                    <AdvancedSearchForm
+                      searchText={simpleSearchText}
+                      showResults={showResults}
+                      instrumentList={instrumentList}
+                    />
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
       {isLoading
        && (
-       <div className="col-md-12" style={{ textAlign: "center", position: "absolute" }}>
-         <div id="spinner" style={{ textAlign: "center" }}>
+       <div className="col-md-12" style={{ textAlign: 'center', position: 'absolute' }}>
+         <div id="spinner" style={{ textAlign: 'center' }}>
            <i id="mo-spin-icon" className="fa fa-spinner fa-pulse fa-2x" />
          </div>
        </div>
        )
-      }
-      <button
-        type="button"
-        onClick={toggleAdvancedSearch}
-        className="btn btn-default dropdown-toggle"
-        data-toggle="dropdown"
-        aria-expanded="false"
-      >
-        <span className="caret" />
-      </button>
-      {
-        advanceSearchVisible ? (
-          <AdvancedSearchForm
-            searchText={simpleSearchText}
-            showResults={showResults}
-            instrumentList={instrumentList}
-          />
-        ) : (
-          <button
-            type="submit"
-            className="simple-search btn btn-primary"
-            onClick={handleSimpleSearchSubmit}
-          >
-            <span className="glyphicon glyphicon-search" aria-hidden="true" />
-          </button>
-        )
       }
     </main>
   );

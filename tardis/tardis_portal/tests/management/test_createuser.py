@@ -19,6 +19,9 @@ class CreateUserTestCase(TestCase):
         without any runtime exceptions by mocking the raw_input username and
         email entry
         '''
+        from tardis.tardis_portal.management.commands.createuser import Command
+
+        cmd = Command()
 
         def test_get_username(_):
             return 'testuser2'
@@ -29,6 +32,8 @@ class CreateUserTestCase(TestCase):
         def test_get_password(_):
             return 'Open Sesame!'
 
-        call_command(
-            'createuser', interactive=True, get_username=test_get_username,
+        args = []
+        options = dict(
+            interactive=True, get_username=test_get_username,
             get_email=test_get_email, get_password=test_get_password)
+        cmd.handle(*args, **options)

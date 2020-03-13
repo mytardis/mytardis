@@ -1,4 +1,4 @@
-from wait import wait_ajax_loaded
+from wait import wait_for_jquery
 
 from behave import when, then
 
@@ -47,7 +47,7 @@ def a_new_dataset_is_created(context):
     """
     :type context: behave.runner.Context
     """
-    wait_ajax_loaded(context)
+    wait_for_jquery(context)
     title_span = context.browser.find_element_by_css_selector(
         "span[property='dc:title']")
     context.test.assertEqual(
@@ -77,6 +77,6 @@ def they_see_newly_created_dataset(context):
     """
     :type context: behave.runner.Context
     """
-    wait_ajax_loaded(context)
+    wait_for_jquery(context)
     dataset_link = context.browser.find_element_by_css_selector("a.dataset-link")
     context.test.assertIn("new dataset", dataset_link.get_attribute("innerHTML"))

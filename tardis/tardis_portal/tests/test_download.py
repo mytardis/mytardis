@@ -2,16 +2,17 @@
 
 import hashlib
 import re
+
+from functools import reduce
 from os import makedirs
 from os.path import abspath, basename, join, exists, getsize
 from shutil import rmtree
 from zipfile import is_zipfile, ZipFile
 from tarfile import is_tarfile, TarFile
 from tempfile import NamedTemporaryFile
+from urllib.parse import quote
 
 from mock import patch
-from six.moves import urllib
-from six.moves import reduce
 
 from django.test import TestCase
 from django.test.client import Client
@@ -235,7 +236,7 @@ class DownloadTestCase(TestCase):
             exp1_title = self.experiment1.title.replace(' ', '_')
         else:
             exp1_title = self.experiment1.title
-        exp1_title = urllib.parse.quote(exp1_title,
+        exp1_title = quote(exp1_title,
                            safe=settings.SAFE_FILESYSTEM_CHARACTERS)
         self.assertEqual(response['Content-Disposition'],
                          'attachment; filename="%s-complete.tar"'
@@ -337,7 +338,7 @@ class DownloadTestCase(TestCase):
             exp2_title = self.experiment2.title.replace(' ', '_')
         else:
             exp2_title = self.experiment2.title
-        exp2_title = urllib.parse.quote(exp2_title,
+        exp2_title = quote(exp2_title,
                            safe=settings.SAFE_FILESYSTEM_CHARACTERS)
         response = client.get('/download/experiment/%i/tar/' %
                               self.experiment2.id)

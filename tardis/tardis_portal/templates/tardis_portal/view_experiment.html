@@ -29,10 +29,11 @@
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <a class="close" data-dismiss="modal">&times;</a>
-        <h1 class="title">Add Parameters</h1>
+        <h1 class="modal-title">Add Parameters</h1>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
       </div>
-
       <div class="loading-placeholder" style="display: none">
         <p>Please wait... <img src="{% static 'images/ajax-loader.gif'%}" alt="loading" /></p>
       </div>
@@ -45,9 +46,9 @@
 <div class="page-header">
   <h4>Experiment</h4>
   {% if not experiment.public %}
-  <div class="pull-right">
+  <div class="float-right">
     {% if push_to_enabled and is_authenticated %}
-    <a class="btn btn-xs btn-primary" title="Push to..."
+    <a class="btn btn-sm btn-outline-secondary" title="Push to..."
        onclick="window.open('{{ push_to_url }}', 'push-to', 'width=800, height=600'); return false;"
        href="{{ push_to_url }}" target="_blank">
       <i class="fa fa-upload"></i>
@@ -55,7 +56,7 @@
     </a>
     {% endif %}
     {% if has_write_permissions %}
-    <a class="btn btn-xs btn-warning" title="Edit Experiment"
+    <a class="btn btn-sm btn-outline-secondary" title="Edit Experiment"
        href="{{ experiment.get_edit_url }}">
       <i class="fa fa-pencil"></i>
       Edit Experiment
@@ -63,17 +64,14 @@
     {% endif %}
   </div>
   {% endif %}
-  <h1>
-    <span property="dc:title">{{ experiment.title }}</span>
-    <br/>
-    <small>
-        {% for author in experiment.experimentauthor_set.all %}{% capture as creator_span %}<span
-                property="dc:creator"
-                style="white-space: nowrap;">{{ author.author }}</span>{% endcapture %}{% if not forloop.first %}, {% endif %}{% if author.email %}<a
-                href="mailto:{{ author.email }}">{{ creator_span }}</a>{% endif %}{% if author.url %}<a
-                href="{{ author.url }}">{{ creator_span }}</a>{% endif %}{% if not author.email and not author.url %}{{ creator_span }}{% endif %}{% endfor %}
-    </small>
-  </h1>
+  <h1><span property="dc:title">{{ experiment.title }}</span></h1>
+  <span class="text-muted">
+    {% for author in experiment.experimentauthor_set.all %}{% capture as creator_span %}<span
+            property="dc:creator"
+            style="white-space: nowrap;">{{ author.author }}</span>{% endcapture %}{% if not forloop.first %}, {% endif %}{% if author.email %}<a
+            href="mailto:{{ author.email }}">{{ creator_span }}</a>{% endif %}{% if author.url %}<a
+            href="{{ author.url }}">{{ creator_span }}</a>{% endif %}{% if not author.email and not author.url %}{{ creator_span }}{% endif %}{% endfor %}
+  </span>
   <p style="text-align: right">
     {{ experiment|experiment_datasets_badge}}&nbsp;
     {{ experiment|experiment_datafiles_badge }}&nbsp;
@@ -84,23 +82,22 @@
 </div>
 
 <div class="row" >
-  <div class="col-md-5">
-  <div align="center" style="margin-bottom: -20px">
-  <div id="abstractHolder" style="display: none">{{ experiment.description|bleach|linebreaksbr }}</div>
-  <a id="abstract-toggle" class="btn btn-default btn-xs" title="Show Description">
-     Toggle Full Description
-  </a>
-  </div>
-  <div style="padding-top:10px;">
-  <p class="abstract well info-box" property="dc:abstract">
-      <span id="abstractText">
-      </span>
-  </p>
-  </div>
+  <div class="col-md-6">
+    <div align="center" style="margin-bottom: -20px;">
+      <div id="abstractHolder" style="display: none">{{ experiment.description|bleach|linebreaksbr }}</div>
+      <a id="abstract-toggle" class="btn btn-outline-secondary bg-light btn-sm p-1"
+         title="Show Description"
+         style="display: inline; color: black;">Toggle Full Description</a>
+    </div>
+    <div class="pt-2">
+      <p class="abstract bg-light rounded info-box abstract-clickable ml-0" property="dc:abstract" style="height: 60px;">
+        <span id="abstractText">{{ experiment.description }}</span>
+      </p>
+    </div>
     <!-- Tab buttons -->
-    <ul id="experiment-tabs" class="nav nav-pills">
+    <ul id="experiment-tabs" class="nav nav-tabs" style="padding-top: 1.25rem">
       {% for appurl, appname in apps %}
-      <li><a data-toggle="tab" title="{{appname}}" data-url="{{ appurl }}">{{ appname }}</a></li>
+      <li class="nav-item"><a class="nav-link" data-toggle="tab" title="{{appname}}" data-url="{{ appurl }}">{{ appname }}</a></li>
       {% endfor %}
     </ul>
     <div class="tab-content">
@@ -109,7 +106,7 @@
       </div>
     </div>
   </div>
-  <div id="datasets-pane" class="col-md-7">
+  <div id="datasets-pane" class="col-md-6">
     {% include "tardis_portal/ajax/experiment_datasets.html" %}
   </div>
 </div>

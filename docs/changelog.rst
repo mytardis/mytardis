@@ -1,6 +1,23 @@
 Releases
 ========
 
+4.2.0
+-----
+* Upgraded Django from 1.11.26 to 2.2.6
+* Upgraded Bootstrap from 3.4.1 to 4.1.3
+* Continuous Integration testing implemented for Python 3.5, 3.6, 3.7 and 3.8
+* Dropped support for Python 2
+* Dataset view now has a tree-based file browser
+* Added a task which can be scheduled to clean up unverified files
+* Added a task which can be scheduled to clean up DataFiles without DataFileObjects
+* Bug fixes
+  - Ensured thumbnail image files are opened in binary format, required for Python 3
+  - Fixed bug with downloads on Python 3 by removing use of .__next__()
+  - Fixed bugs in Push To's encoding/decoding of SSH certificates in Python 3
+  - Fixed bug in MyTardis SFTP service relating to use of gevent with Django 2.2
+* Dependency updates
+  - Python and JS dependencies have been updated to address vulnerabilities.
+
 4.1.5
 -----
 * Update AngularJS to address the SNYK-JS-ANGULAR-534884 vulnerability.

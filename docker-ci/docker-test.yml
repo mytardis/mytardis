@@ -18,7 +18,7 @@ services:
       - pg
       - mysql
   pg:
-    image: postgres
+    image: postgres:9.6
     environment:
       POSTGRES_PASSWORD: postgres
   mysql:
