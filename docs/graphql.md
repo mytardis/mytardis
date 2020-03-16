@@ -136,7 +136,7 @@ will return
 }
 ```
 
-And if we send same request with header `Authorization: Bearer <token>`
+And if we send same request with header `Authorization: JWT <token>`
 
 ```
 {
@@ -201,6 +201,43 @@ Get all instruments, including facility data.
 }
 ```
 
+## Pagination
+
+Following example will fetch first 20 records, asking for total number of records and `endCursor` anchor for subsequent call.
+
+```
+{
+  instruments(first:20) {
+    totalCount
+    pageInfo {
+      endCursor
+    }
+    edges {
+      node {
+        name
+      }
+    }
+  }
+}
+```
+
+Next page (use `endCursor` from prior request as `after` parameter):
+
+```
+{
+  instruments(first:20, after:"YXJyYXljb25uZWN0aW9uOjE5") {
+    pageInfo {
+      endCursor
+    }
+    edges {
+      node {
+        name
+      }
+    }
+  }
+}
+```
+
 ## Create record
 
 Input element `facility` has ID reference to a corresponding facility.
@@ -218,3 +255,17 @@ mutation {
 }
 ```
 
+## Update record
+
+```
+mutation {
+  updateInstrument(input: {
+    id: "SW5zdHJ1bWVudFR5cGU6Mzk0",
+    name: "Test!"
+  }) {
+    instrument {
+      name
+    }
+  }
+}
+```
