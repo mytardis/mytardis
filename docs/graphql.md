@@ -9,6 +9,18 @@ Entities in GraphQL are not identified by URLs. Instead, a GraphQL server operat
 A standard GraphQL POST request should use the `application/json` content type and include a JSON-encoded body.
 
 ```
+{
+  "query": "...",
+  "operationName": "...",
+  "variables": { "myVariable": "someValue", ... }
+}
+```
+
+Parameters `operationName` and `variables` are optional.
+
+If the `application/graphql` Content-Type header is present, POST body contents will be GraphQL query string.
+
+```
 query {
   users {
     firstname
