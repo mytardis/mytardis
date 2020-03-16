@@ -58,8 +58,9 @@ def _create_download_response(request, datafile_id, disposition='attachment'):  
     # Get datafile (and return 404 if absent)
     try:
         datafile = DataFile.objects.get(pk=datafile_id)
-        logger.debug(datafile)
-        logger.debug(dir(datafile))
+        logging.basicConfig(filename='home/mytardis/mytardis/chris.log', filemode='w')
+        logging.debug(datafile)
+        logging.debug(dir(datafile))
     except DataFile.DoesNotExist:
         return return_response_not_found(request)
     # Check users has access to datafile
@@ -114,10 +115,18 @@ def _create_download_response(request, datafile_id, disposition='attachment'):  
 
 
 def view_datafile(request, datafile_id):
+    datafile = DataFile.objects.get(pk=datafile_id)
+    #logging.basicConfig(filename='/home/mytardis/mytardis/chris.log', filemode='w')
+    logger.error(datafile)
+    logger.error(dir(datafile))
     return _create_download_response(request, datafile_id, 'inline')
 
 
 def download_datafile(request, datafile_id):
+    datafile = DataFile.objects.get(pk=datafile_id)
+    #logger.basicConfig(filename='/home/mytardis/mytardis/chris.log', filemode='w')
+    logger.error(datafile)
+    logger.error(dir(datafile))
     return _create_download_response(request, datafile_id)
 
 
