@@ -147,3 +147,74 @@ And if we send same request with header `Authorization: Bearer <token>`
   }
 }
 ```
+
+## Join data in one query
+
+Get all instruments, including facility data.
+
+```
+{
+  instruments {
+    edges {
+      node {
+        id
+        pk
+        name
+        facility {
+          id
+          pk
+          name
+        }
+      }
+    }
+  }
+}
+```
+
+## Filtering
+
+```
+{
+  facilities(name_Contains:"AR") {
+    edges {
+      node {
+        id
+        pk
+        name
+      }
+    }
+  }
+}
+```
+
+## Sorting
+
+```
+{
+  facilities(orderBy:"-name") {
+    edges {
+      node {
+        name
+      }
+    }
+  }
+}
+```
+
+## Create record
+
+Input element `facility` has ID reference to a corresponding facility.
+
+```
+mutation {
+  createInstrument(input: {
+    name: "Test ABC",
+    facility: "RmFjaWxpdHlUeXBlOjEyMQ=="
+  }) {
+    instrument {
+      id
+    }
+  }
+}
+```
+
