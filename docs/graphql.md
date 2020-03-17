@@ -269,3 +269,118 @@ mutation {
   }
 }
 ```
+
+# Backend
+
+### Requirements
+
+```
+graphene-django
+graphene-django-plus
+django-filter
+django-crispy-forms
+django-graphql-jwt
+django-graphiql
+django-cors-headers
+```
+
+### Config
+
+```
+authentication_backends:
+  - graphql_jwt.backends.JSONWebTokenBackend
+```
+
+### Settings
+
+`tardis.default_settings.graphql`
+
+### Schema
+
+`tardis.schema` -> `tardis.tardis_portal.graphql.schema`
+
+### Model
+
+```
+import graphene
+from graphene import relay
+from django_filters import FilterSet, OrderingFilter
+
+from graphene_django_plus.types import ModelType
+from graphene_django_plus.mutations import (
+    ModelCreateMutation,
+    ModelUpdateMutation
+)
+
+from django.contrib.auth.models import Group as GroupModel
+
+from .utils import ExtendedConnection
+
+
+class GroupType(ModelType):
+    class Meta:
+        model = GroupModel
+        permissions = ['auth.view_group']
+        interfaces = [relay.Node]
+        connection_class = ExtendedConnection
+
+    pk = graphene.Int(source='pk')
+
+
+class GroupTypeFilter(FilterSet):
+    class Meta:
+        model = GroupModel
+        fields = {
+            'name': ['exact', 'contains']
+        }
+
+    order_by = OrderingFilter(
+        # must contain strings or (field name, param name) pairs
+        fields=(
+            ('name', 'name')
+        )
+    )
+
+
+class CreateGroup(ModelCreateMutation):
+    class Meta:
+        model = GroupModel
+        permissions = ['auth.add_group']
+
+
+class UpdateGroup(ModelUpdateMutation):
+    class Meta:
+        model = GroupModel
+        permissions = ['auth.change_group']
+```
+
+Model integration in to schema:
+
+```
+from .group import (
+    GroupType, GroupTypeFilter,
+    CreateGroup, UpdateGroup
+)
+
+
+class tardisQuery(graphene.ObjectType):
+
+    groups = DjangoFilterConnectionField(
+        GroupType,
+        filterset_class=GroupTypeFilter
+    )
+
+    def resolve_groups(self, info, **kwargs):
+        user = info.context.user
+        if user.is_authenticated:
+            if user.is_superuser:
+                return GroupModel.objects.all()
+            return GroupModel.objects.filter(user=user)
+        return None
+
+
+class tardisMutation(graphene.ObjectType):
+
+    create_group = CreateGroup.Field()
+    update_group = UpdateGroup.Field()
+```
