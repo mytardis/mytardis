@@ -12,14 +12,13 @@ from django.utils.encoding import python_2_unicode_compatible
 
 from ..managers import OracleSafeManager#, ExperimentManager
 from .access_control import ObjectACL
-from .experiment import Experiment
 
 from .license import License
 
 logger = logging.getLogger(__name__)
 
 @python_2_unicode_compatible
-class Poject(models.Model):
+class Project(models.Model):
     """A project is a collection of :class: '~tardis.tardis_portal.experiment.Experiment'
     records. A project can have multiple Experiments but an experiment has only one 
     Project.
@@ -38,7 +37,7 @@ class Poject(models.Model):
         (PUBLIC_ACCESS_METADATA, 'Public Metadata only (no data file access)'),
         (PUBLIC_ACCESS_FULL, 'Public'),
     )
-    project_id = models.CharFile(max_length=255, null=False, blank=False, unique=True)
+    project_id = models.CharField(max_length=255, null=False, blank=False, unique=True)
     project_name = models.CharField(max_length=255, null=False, blank=False)
     project_description = models.TextField()
     locked = models.BooleanField(default=False)
@@ -56,6 +55,7 @@ class Poject(models.Model):
         super(Project, self).save(*args, **kwargs)
 
     def get_experiments(self):
-        return Experiment.objects.filter(experiment__project=self)
+        #return Experiment.objects.filter(experiment__project=self)
+        pass
 
 
