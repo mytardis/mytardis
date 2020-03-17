@@ -80,7 +80,7 @@ class Experiment(models.Model):
     created_time = models.DateTimeField(auto_now_add=True)
     update_time = models.DateTimeField(auto_now=True)
     created_by = models.ForeignKey(User, on_delete=models.CASCADE)
-    handle = models.TextField(null=True, blank=True)
+    #handle = models.TextField(null=True, blank=True)
     locked = models.BooleanField(default=False)
     public_access = \
         models.PositiveSmallIntegerField(choices=PUBLIC_ACCESS_CHOICES,

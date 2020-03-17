@@ -37,14 +37,23 @@ class Project(models.Model):
         (PUBLIC_ACCESS_METADATA, 'Public Metadata only (no data file access)'),
         (PUBLIC_ACCESS_FULL, 'Public'),
     )
-    project_id = models.CharField(max_length=255, null=False, blank=False, unique=True)
-    project_name = models.CharField(max_length=255, null=False, blank=False)
-    project_description = models.TextField()
+    raid = models.CharField(max_length=255, null=False, blank=False, unique=True)
+    name = models.CharField(max_length=255, null=False, blank=False)
+    description = models.TextField()
     locked = models.BooleanField(default=False)
     public_access = \
         models.PositiveSmallIntegerField(choices=PUBLIC_ACCESS_CHOICES,
                                          null=False,
                                          default=PUBLIC_ACCESS_NONE)
+    owner = models.OneToOneField(User, on_delete=models.CASCADE)
+    contact = models.ManyToManyField(User,
+                                     related_name='contacts',
+                                     null=True,
+                                     blank=True)
+    member = models.ManyToManyField(User,
+                                    related_name='members',
+                                    null=True,
+                                    blank=True)
     objectacls = GenericRelation(ObjectACL)
     objects = OracleSafeManager()
 
