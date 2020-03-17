@@ -73,6 +73,7 @@ class Experiment(models.Model):
     description = models.TextField(blank=True)
     internal_id = models.CharField(max_length=400, null=False, blank=False, unique=True, default=experiment_internal_id_default )
     project_id = models.CharField(max_length=400, null=False, blank=False)
+    project = models.ForeignKey(Project, on_delete=models.CASCADE)
     start_time = models.DateTimeField(null=True, blank=True)
     end_time = models.DateTimeField(null=True, blank=True)
     created_time = models.DateTimeField(auto_now_add=True)

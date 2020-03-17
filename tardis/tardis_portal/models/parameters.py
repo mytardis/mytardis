@@ -154,6 +154,7 @@ class ParameterName(models.Model):
     #       represented in the DB. doing it this way is just a bit wasteful.
     choices = models.CharField(max_length=500, blank=True)
     order = models.PositiveIntegerField(default=9999, null=True, blank=True)
+    is_viewable = models.BooleanField(default=True)
     objects = ParameterNameManager()
 
     class Meta:
