@@ -15,11 +15,11 @@ from django.contrib.auth.decorators import login_required
 from ..auth import decorators as authz
 from ..forms import RightsForm
 from ..models import Experiment, DataFile, Dataset, Schema, \
-    DatafileParameterSet, UserProfile
+    DatafileParameterSet, UserProfile, Project
 from ..shortcuts import return_response_error, \
     return_response_not_found, render_response_index
 from ..util import render_public_access_badge
-from ..views.pages import ExperimentView
+from ..views.pages import ExperimentView, ProjectView
 from ..views.utils import _add_protocols_and_organizations
 
 logger = logging.getLogger(__name__)
