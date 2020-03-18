@@ -55,6 +55,7 @@ from .datafile import DataFileObject
 from .storage import StorageBox
 from .storage import StorageBoxOption
 from .storage import StorageBoxAttribute
+from .project import Project
 
 from .jti import JTI
 

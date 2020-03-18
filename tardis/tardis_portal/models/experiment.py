@@ -13,6 +13,7 @@ from django.utils.encoding import python_2_unicode_compatible
 
 from ..managers import OracleSafeManager, ExperimentManager
 from .access_control import ObjectACL
+from .project import Project
 
 from .license import License
 
@@ -73,13 +74,13 @@ class Experiment(models.Model):
     description = models.TextField(blank=True)
     internal_id = models.CharField(max_length=400, null=False, blank=False, unique=True, default=experiment_internal_id_default )
     project_id = models.CharField(max_length=400, null=False, blank=False)
-    project = models.ForeignKey(Project, on_delete=models.CASCADE)
+    project_model = models.ForeignKey(Project, on_delete=models.CASCADE, null=True)
     start_time = models.DateTimeField(null=True, blank=True)
     end_time = models.DateTimeField(null=True, blank=True)
     created_time = models.DateTimeField(auto_now_add=True)
     update_time = models.DateTimeField(auto_now=True)
     created_by = models.ForeignKey(User, on_delete=models.CASCADE)
-    handle = models.TextField(null=True, blank=True)
+    #handle = models.TextField(null=True, blank=True)
     locked = models.BooleanField(default=False)
     public_access = \
         models.PositiveSmallIntegerField(choices=PUBLIC_ACCESS_CHOICES,

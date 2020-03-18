@@ -270,7 +270,21 @@ class DatasetForm(forms.ModelForm):
             'instrument',
         ]
 
+class ProjectForm(forms.ModelForm):
 
+    name = forms.CharField()
+
+    class Meta:
+        model = models.Project
+        fields = [
+            'name',
+            'raid',
+            'description',
+            'owner',
+            'contact',
+            'member'
+            ]
+        
 class ExperimentAuthor(forms.ModelForm):
 
     class Meta:
