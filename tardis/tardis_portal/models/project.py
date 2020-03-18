@@ -45,7 +45,10 @@ class Project(models.Model):
         models.PositiveSmallIntegerField(choices=PUBLIC_ACCESS_CHOICES,
                                          null=False,
                                          default=PUBLIC_ACCESS_NONE)
-    owner = models.OneToOneField(User, on_delete=models.CASCADE)
+    #TODO Remove null=True on rebuild database
+    owner = models.OneToOneField(User,
+                                 null=True,
+                                 on_delete=models.CASCADE)
     contact = models.ManyToManyField(User,
                                      related_name='contacts',
                                      null=True,
