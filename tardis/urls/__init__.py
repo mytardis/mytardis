@@ -31,6 +31,7 @@ from .experiment import experiment_urls
 from .facility import facility_urls
 from .group import group_urls
 from .token import token_urls
+from .project import project_urls
 
 admin.autodiscover()
 
@@ -72,6 +73,9 @@ urlpatterns = [
 
     # Experiment Views
     url(r'^experiment/', include(experiment_urls)),
+
+    # Project Views
+    url(r'^project/', include(project_urls)),
 
     # Dataset Views
     url(r'^dataset/', include(dataset_urls)),
