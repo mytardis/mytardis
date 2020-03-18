@@ -19,6 +19,7 @@ import pytz
 from ..ParameterSetManager import ParameterSetManager
 from ..managers import OracleSafeManager, ParameterNameManager, SchemaManager
 
+from .project import Project
 from .experiment import Experiment
 from .dataset import Dataset
 from .datafile import DataFile
@@ -195,6 +196,9 @@ class ParameterName(models.Model):
     def is_json(self):
         return self.data_type == self.JSON
 
+    def is_sensitive(self):
+        return self.is_viewable
+
 
 def _get_filename_parameter_as_image_element(parameter):
     """
@@ -348,6 +352,7 @@ class Parameter(models.Model):
     link_gfk = GenericForeignKey('link_ct', 'link_id')
     objects = OracleSafeManager()
     parameter_type = 'Abstract'
+    sensitive_metadata = models.BooleanField(default=False)
 
     class Meta:
         abstract = True
@@ -377,6 +382,9 @@ class Parameter(models.Model):
         elif isinstance(self.link_gfk, Experiment):
             url = reverse('tardis_portal.view_experiment',
                           kwargs={'experiment_id': self.link_id})
+        elif isinstance(self.link_gfk, Project):
+            url = reverse('tardis_portal.view_project',
+                          kwargs={'project_id': self.link_id})
         elif self.link_gfk is None and self.string_value:
             url = self.string_value
         else:
@@ -422,7 +430,7 @@ class Parameter(models.Model):
                 match = resolve(value)
                 if match.view_name == u'api_dispatch_detail':
                     model_name = match.kwargs.get(u'resource_name', None)
-                    if model_name not in ('experiment', 'dataset'):
+                    if model_name not in ('experiment', 'dataset', 'project'):
                         model_name, pk = None, None
                     else:
                         pk = match.kwargs.get('pk', None)
@@ -432,6 +440,9 @@ class Parameter(models.Model):
                 elif match.view_name.endswith('view_dataset'):
                     model_name = 'dataset'
                     pk = match.kwargs.get('dataset_id')
+                elif match.view_name.endswith('view_project'):
+                    model_name = 'project'
+                    pk = match.kwargs.get('project_id')
                 else:
                     model_name, pk = None, None
 
@@ -489,6 +500,11 @@ class ExperimentParameter(Parameter):
         except Exception:
             logger.exception('')
 
+class ProjectParameter(Parameter):
+    parameterset = models.ForeignKey(
+        'ProjectParameterSet', on_delete=models.CASCADE)
+    parameter_type = 'Project'
+
 
 class InstrumentParameter(Parameter):
     parameterset = models.ForeignKey(
@@ -526,6 +542,13 @@ class ExperimentParameterSet(ParameterSet):
 
     def _get_label(self):
         return ('experiment.title', 'Experiment')
+
+class ProjectParameterSet(ParameterSet):
+    project = models.ForeignKey(Project, on_delete=models.CASCADE)
+    parameter_class = ProjectParameter
+
+    def _get_label(self):
+        return('project.project_name', 'Project')
 
 
 @python_2_unicode_compatible
