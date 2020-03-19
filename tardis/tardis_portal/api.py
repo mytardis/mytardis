@@ -53,6 +53,7 @@ from .models.access_control import ObjectACL, UserProfile, UserAuthentication
 from .models.datafile import DataFile, DataFileObject, compute_checksums
 from .models.dataset import Dataset
 from .models.experiment import Experiment, ExperimentAuthor
+from .models.project import Project
 from .models.parameters import (
     DatafileParameter,
     DatafileParameterSet,
@@ -645,6 +646,23 @@ class FacilityResource(MyTardisModelResource):
             'id',
             'name'
         ]
+        always_return_data = True
+
+class ProjectResource(ModelResource):
+    class Meta:
+        authentication = default_authentication
+        authorization = ACLAuthorization()
+        object_class = Project
+        queryset = Project.objects.all()
+        filtering = {
+            'id': ('exact'),
+            'name': ('exact'),
+            'raid': ('exact'),
+            }
+        ordering = [
+            'id',
+            'name',
+            ]
         always_return_data = True
 
 

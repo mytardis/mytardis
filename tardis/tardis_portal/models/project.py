@@ -37,8 +37,8 @@ class Project(models.Model):
         (PUBLIC_ACCESS_METADATA, 'Public Metadata only (no data file access)'),
         (PUBLIC_ACCESS_FULL, 'Public'),
     )
-    raid = models.CharField(max_length=255, null=False, blank=False, unique=True)
     name = models.CharField(max_length=255, null=False, blank=False)
+    raid = models.CharField(max_length=255, null=False, blank=False, unique=True)
     description = models.TextField()
     locked = models.BooleanField(default=False)
     public_access = \
@@ -66,8 +66,9 @@ class Project(models.Model):
     def save(self, *args, **kwargs):
         super(Project, self).save(*args, **kwargs)
 
-    def get_experiments(self):
-        #return Experiment.objects.filter(experiment__project=self)
-        pass
+    def __str__(self):
+        return self.name
+
+        
 
 

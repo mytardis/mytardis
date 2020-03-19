@@ -344,7 +344,7 @@ class DatasetView(TemplateView):
 #Project View
 #=================================
 class ProjectView(TemplateView):
-    template_name = 'tardis_portal/view_project.html'
+    template_name = 'tardis_portal/create_project.html'
 
     # TODO: Can me make this a generic function like site_routed_view
     #       that will take an Experiment, Dataset or DataFile and
@@ -412,7 +412,7 @@ class ProjectView(TemplateView):
              }
         )
 
-        _add_protocols_and_organizations(request, project, c)
+        #_add_protocols_and_organizations(request, project, c)
 
         return c
 
@@ -437,7 +437,7 @@ class ProjectView(TemplateView):
         try:
             #if not authz.has_dataset_access(request, dataset_id):
             #    return return_response_error(request)
-            dataset = Project.objects.get(id=project_id)
+            project = Project.objects.get(id=project_id)
         except Project.DoesNotExist:
             return return_response_not_found(request)
 
@@ -821,10 +821,13 @@ def create_project(request):
             project.raid = form.cleaned_data['raid']
             project.description = form.cleaned_data['description']
             project.owner = form.cleaned_data['owner']
-            project.contact = form.cleaned_data['contact']
-            project.member = form.cleaned_data['member']
             project.save()
-            return _redirect_303('tardis_portal.view_project',
+            contacts = form.cleaned_data.get('contact')
+            project.contact.add(*contacts)
+            members = form.cleaned_data.get('member')
+            project.member.add(*members)  
+            project.save()
+            return _redirect_303('tardis_portal.create_project',
                                  project.id)
     else:
         form = ProjectForm()

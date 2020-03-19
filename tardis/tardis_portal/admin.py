@@ -75,6 +75,9 @@ class ExperimentAdmin(admin.ModelAdmin):
 class DatasetAdmin(admin.ModelAdmin):
     search_fields = ['description', 'id']
 
+class ProjectAdmin(admin.ModelAdmin):
+    search_fields = ['name', 'id']
+
 
 class StorageBoxAttributeInlineForm(forms.ModelForm):
 
@@ -206,6 +209,7 @@ class InstrumentAdmin(admin.ModelAdmin):
 admin.site.register(models.Facility, FacilityAdmin)
 admin.site.register(models.Instrument, InstrumentAdmin)
 admin.site.register(models.Experiment, ExperimentAdmin)
+admin.site.register(models.Project, ProjectAdmin)
 admin.site.register(models.License)
 admin.site.register(models.Dataset, DatasetAdmin)
 admin.site.register(models.DataFile, DatafileAdmin)
