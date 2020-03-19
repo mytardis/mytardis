@@ -225,7 +225,7 @@ class ObjectACL(models.Model):
     object_id = models.PositiveIntegerField()
     content_object = GenericForeignKey('content_type', 'object_id')
     canRead = models.BooleanField(default=False)
-    #canDownload = models.BooleanField(default=False)
+    canDownload = models.BooleanField(default=False)
     canWrite = models.BooleanField(default=False)
     canDelete = models.BooleanField(default=False)
     isOwner = models.BooleanField(default=False)
