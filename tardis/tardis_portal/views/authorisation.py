@@ -339,6 +339,7 @@ def remove_user_from_group(request, group_id, username):
 def add_experiment_access_user(request, experiment_id, username):
 
     canRead = False
+    canDownload = False
     canWrite = False
     canDelete = False
     isOwner = False
@@ -346,6 +347,10 @@ def add_experiment_access_user(request, experiment_id, username):
     if 'canRead' in request.GET:
         if request.GET['canRead'] == 'true':
             canRead = True
+
+    if 'canDownload' in request.GET:
+        if request.GET['canDownload'] == 'true':
+            canDownload = True
 
     if 'canWrite' in request.GET:
         if request.GET['canWrite'] == 'true':
@@ -387,6 +392,7 @@ def add_experiment_access_user(request, experiment_id, username):
                         pluginId=django_user,
                         entityId=str(user.id),
                         canRead=canRead,
+                        canDownload=canDownload,
                         canWrite=canWrite,
                         canDelete=canDelete,
                         isOwner=isOwner,
@@ -530,6 +536,7 @@ def create_group(request):
 def add_experiment_access_group(request, experiment_id, groupname):
 
     canRead = request.GET.get('canRead') == 'true'
+    canDownload = request.GET.get('canDownload') == 'true'
     canWrite = request.GET.get('canWrite') == 'true'
     canDelete = request.GET.get('canDelete') == 'true'
     isOwner = request.GET.get('isOwner') == 'true'
@@ -565,6 +572,7 @@ def add_experiment_access_group(request, experiment_id, groupname):
                     pluginId='django_group',
                     entityId=str(group.id),
                     canRead=canRead,
+                    canDownload=canDownload,
                     canWrite=canWrite,
                     canDelete=canDelete,
                     isOwner=isOwner,

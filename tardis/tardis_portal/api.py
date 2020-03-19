@@ -590,10 +590,10 @@ class UserProfileResource(MyTardisModelResource):
     def dehydrate(self, bundle):
         authuser = bundle.request.user
         authenticated = authuser.is_authenticated
-        
+
         if authenticated:
             return bundle
-        
+
 class UserAuthenticationResource(MyTardisModelResource):
     userProfile = fields.ForeignKey(UserProfileResource, attribute='userProfile',
                                     null=True, blank=True, full=True)
@@ -719,7 +719,7 @@ class ExperimentResource(MyTardisModelResource):
             'update_time'
         ]
         always_return_data = True
-    
+
     def dehydrate(self, bundle):
         exp = bundle.obj
         authors = [{'name': a.author, 'url': a.url}
@@ -752,6 +752,7 @@ class ExperimentResource(MyTardisModelResource):
                             pluginId=django_user,
                             entityId=str(bundle.request.user.id),
                             canRead=True,
+                            canDownload=True,
                             canWrite=True,
                             canDelete=True,
                             isOwner=True,

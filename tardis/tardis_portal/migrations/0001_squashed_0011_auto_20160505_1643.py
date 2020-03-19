@@ -288,6 +288,7 @@ class Migration(migrations.Migration):
                 ('entityId', models.CharField(max_length=320)),
                 ('object_id', models.PositiveIntegerField()),
                 ('canRead', models.BooleanField(default=False)),
+                ('canDownload', models.BooleanField(default=False)),
                 ('canWrite', models.BooleanField(default=False)),
                 ('canDelete', models.BooleanField(default=False)),
                 ('isOwner', models.BooleanField(default=False)),
