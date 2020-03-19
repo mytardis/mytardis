@@ -15,6 +15,7 @@ class Instrument(models.Model):
     created_time = models.DateTimeField(null=True, blank=True, default=timezone.now)
     modified_time = models.DateTimeField(null=True, blank=True)
     facility = models.ForeignKey(Facility, on_delete=models.CASCADE)
+    description = models.TextField(blank=True, default='No description')
 
     class Meta:
         app_label = 'tardis_portal'

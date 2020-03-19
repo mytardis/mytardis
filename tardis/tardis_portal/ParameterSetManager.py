@@ -4,6 +4,7 @@ from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils.timezone import is_aware, make_aware
 
+from .models.project import Project
 from .models.experiment import Experiment
 from .models.dataset import Dataset
 from .models.datafile import DataFile
@@ -46,9 +47,11 @@ class ParameterSetManager(object):
             DatasetParameterSet,
             DatafileParameterSet,
             ExperimentParameterSet,
+            ProjectParameterSet,
             DatasetParameter,
             DatafileParameter,
             ExperimentParameter,
+            ProjectParameter,
             ParameterSet)
 
         if issubclass(type(self), ParameterSet):
