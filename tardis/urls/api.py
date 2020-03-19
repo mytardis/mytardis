@@ -36,7 +36,6 @@ from tardis.tardis_portal.api import (
     UserResource,
     UserAuthenticationResource,
     UserProfileResource,
-    ProjectResource,
 )
 
 logger = logging.getLogger(__name__)
@@ -54,7 +53,6 @@ v1_api.register(ExperimentResource())
 v1_api.register(ExperimentAuthorResource())
 v1_api.register(LocationResource())
 v1_api.register(ParameterNameResource())
-v1_api.register(ProjectResource())
 v1_api.register(ReplicaResource())
 v1_api.register(SchemaResource())
 v1_api.register(StorageBoxResource())
