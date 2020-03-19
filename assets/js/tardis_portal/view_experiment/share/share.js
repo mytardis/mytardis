@@ -314,7 +314,7 @@ const groupSharingModalLoaded = function() {
         var permissions = $("#id_permission_group").val();
 
         var canRead = false;
-        var canDownload = false:
+        var canDownload = false;
         var canWrite = false;
         var isOwner = false;
         var canDelete = false;
