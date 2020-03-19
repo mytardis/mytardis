@@ -820,8 +820,11 @@ def create_project(request):
             project.raid = form.cleaned_data['raid']
             project.description = form.cleaned_data['description']
             project.owner = form.cleaned_data['owner']
-            project.contact = form.cleaned_data['contact']
-            project.member = form.cleaned_data['member']
+            project.save()
+            contacts = form.cleaned_data.get('contact')
+            project.contact.add(*contacts)
+            members = form.cleaned_data.get('member')
+            project.member.add(*members)  
             project.save()
             return _redirect_303('tardis_portal.view_project',
                                  project.id)
