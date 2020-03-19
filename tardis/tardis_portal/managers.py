@@ -68,18 +68,18 @@ class ExperimentManager(OracleSafeManager):
         return super().get_queryset().filter(
             query).distinct()
 
-    def owned_and_shared(self, user):
+    def owned_and_shared(self, user, downloadable=False):
         return super().get_queryset().filter(
-            self._query_owned_and_shared(user)).distinct()
+            self._query_owned_and_shared(user, downloadable)).distinct()
 
     def shared(self, user):
         return super().get_queryset().filter(
             self._query_shared(user)).distinct()
 
-    def _query_owned_and_shared(self, user):
-        return self._query_shared(user) | self._query_owned(user)
+    def _query_owned_and_shared(self, user, downloadable=False):
+        return self._query_shared(user, downloadable) | self._query_owned(user)
 
-    def _query_shared(self, user):
+    def _query_shared(self, user, downloadable=False):
         '''
         get all shared experiments, not owned ones
         '''
@@ -91,36 +91,63 @@ class ExperimentManager(OracleSafeManager):
             query = Q(id=None)
             tgp = TokenGroupProvider()
             for group in tgp.getGroups(user):
-                query |= Q(objectacls__pluginId=tgp.name,
+                if downloadable:
+                    query |= Q(objectacls__pluginId=tgp.name,
+                               objectacls__entityId=str(group),
+                               objectacls__canDownload=True) &\
+                        (Q(objectacls__effectiveDate__lte=datetime.today())
+                         | Q(objectacls__effectiveDate__isnull=True)) &\
+                        (Q(objectacls__expiryDate__gte=datetime.today())
+                         | Q(objectacls__expiryDate__isnull=True))
+                else:
+                    query |= Q(objectacls__pluginId=tgp.name,
+                               objectacls__entityId=str(group),
+                               objectacls__canRead=True) &\
+                        (Q(objectacls__effectiveDate__lte=datetime.today())
+                         | Q(objectacls__effectiveDate__isnull=True)) &\
+                        (Q(objectacls__expiryDate__gte=datetime.today())
+                         | Q(objectacls__expiryDate__isnull=True))
+            return query
+
+        # for which experiments does the user have read access
+        # based on USER permissions?
+        if downloadable:
+            query = Q(objectacls__pluginId=django_user,
+                      objectacls__entityId=str(user.id),
+                      objectacls__canDownload=True,
+                      objectacls__isOwner=False) &\
+                (Q(objectacls__effectiveDate__lte=datetime.today())
+                 | Q(objectacls__effectiveDate__isnull=True)) &\
+                (Q(objectacls__expiryDate__gte=datetime.today())
+                 | Q(objectacls__expiryDate__isnull=True))
+        else:
+            query = Q(objectacls__pluginId=django_user,
+                      objectacls__entityId=str(user.id),
+                      objectacls__canRead=True,
+                      objectacls__isOwner=False) &\
+                (Q(objectacls__effectiveDate__lte=datetime.today())
+                 | Q(objectacls__effectiveDate__isnull=True)) &\
+                (Q(objectacls__expiryDate__gte=datetime.today())
+                 | Q(objectacls__expiryDate__isnull=True))
+        # for which does experiments does the user have read access
+        # based on GROUP permissions
+        for name, group in user.userprofile.ext_groups:
+            if downloadable:
+                query |= Q(objectacls__pluginId=name,
+                           objectacls__entityId=str(group),
+                           objectacls__canDownload=True) &\
+                    (Q(objectacls__effectiveDate__lte=datetime.today())
+                     | Q(objectacls__effectiveDate__isnull=True)) &\
+                    (Q(objectacls__expiryDate__gte=datetime.today())
+                     | Q(objectacls__expiryDate__isnull=True))
+            else:
+                query |= Q(objectacls__pluginId=name,
                            objectacls__entityId=str(group),
                            objectacls__canRead=True) &\
                     (Q(objectacls__effectiveDate__lte=datetime.today())
                      | Q(objectacls__effectiveDate__isnull=True)) &\
                     (Q(objectacls__expiryDate__gte=datetime.today())
                      | Q(objectacls__expiryDate__isnull=True))
-            return query
-
-        # for which experiments does the user have read access
-        # based on USER permissions?
-        query = Q(objectacls__pluginId=django_user,
-                  objectacls__entityId=str(user.id),
-                  objectacls__canRead=True,
-                  objectacls__isOwner=False) &\
-            (Q(objectacls__effectiveDate__lte=datetime.today())
-             | Q(objectacls__effectiveDate__isnull=True)) &\
-            (Q(objectacls__expiryDate__gte=datetime.today())
-             | Q(objectacls__expiryDate__isnull=True))
-
-        # for which does experiments does the user have read access
-        # based on GROUP permissions
-        for name, group in user.userprofile.ext_groups:
-            query |= Q(objectacls__pluginId=name,
-                       objectacls__entityId=str(group),
-                       objectacls__canRead=True) &\
-                (Q(objectacls__effectiveDate__lte=datetime.today())
-                 | Q(objectacls__effectiveDate__isnull=True)) &\
-                (Q(objectacls__expiryDate__gte=datetime.today())
-                 | Q(objectacls__expiryDate__isnull=True))
         return query
 
     def _query_all_public(self):

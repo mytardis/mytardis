@@ -73,7 +73,7 @@ def create_user_profile(sender, instance, created, **kwargs):
         user = instance
         for permissions in settings.DEFAULT_PERMISSIONS:
             user.user_permissions.add(Permission.objects.get(codename=permissions))
-        user.save()        
+        user.save()
         UserProfile(user=user).save()
 
 
@@ -196,6 +196,7 @@ class ObjectACL(models.Model):
     :attribute object_type: a foreign key to ContentType
     :attribute object_id: the primary key/id of the object_type
     :attribute canRead: gives the user read access
+    :attribute canDownload: gives the user download access
     :attribute canWrite: gives the user write access
     :attribute canDelete: gives the user delete permission
     :attribute isOwner: the experiment owner flag.
@@ -224,6 +225,7 @@ class ObjectACL(models.Model):
     object_id = models.PositiveIntegerField()
     content_object = GenericForeignKey('content_type', 'object_id')
     canRead = models.BooleanField(default=False)
+    canDownload = models.BooleanField(default=False)
     canWrite = models.BooleanField(default=False)
     canDelete = models.BooleanField(default=False)
     isOwner = models.BooleanField(default=False)

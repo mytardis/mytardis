@@ -120,26 +120,33 @@ const userSharingModalLoaded = function() {
         var permissions = $(this).siblings("#id_permission").val();
 
         var canRead = false;
+        var canDownload = false;
         var canWrite = false;
         var isOwner = false;
         var canDelete = false;
         if (permissions === "read") {
             canRead = true;
         }
+        if (permissions === "download") {
+            canRead = true;
+            canDownload = true;
+        }
         else if (permissions === "edit") {
             canRead = true;
+            canDownload = true;
             canWrite = true;
         }
         else if (permissions === "owner") {
             canRead = true;
+            canDownload = true;
             canWrite = true;
             isOwner = true;
             canDelete = true;
         }
 
         permissions = "/?authMethod=" + authMethod + "&canRead=" + canRead +
-                      "&canWrite=" + canWrite + "&canDelete=" + canDelete +
-                      "&isOwner=" + isOwner;
+                      "&canDownload=" + canDownload +"&canWrite=" + canWrite +
+                      "&canDelete=" + canDelete + "&isOwner=" + isOwner;
         var action = "/experiment/control_panel/" + $("#experiment-id").val() +
             "/access_list/add/user/" + username + permissions;
 
@@ -307,25 +314,32 @@ const groupSharingModalLoaded = function() {
         var permissions = $("#id_permission_group").val();
 
         var canRead = false;
+        var canDownload = false;
         var canWrite = false;
         var isOwner = false;
         var canDelete = false;
         if(permissions === "read") {
             canRead = true;
         }
+        if(permissions === "download") {
+            canDownload = true;
+        }
         else if(permissions === "edit") {
             canRead = true;
+            canDownload = true;
             canWrite = true;
         }
         else if(permissions === "owner") {
             canRead = true;
+            canDownload = true;
             canWrite = true;
             isOwner = true;
             canDelete = true;
         }
 
-        permissions = "/?canRead=" + canRead + "&canWrite=" + canWrite +
-                      "&canDelete=" + canDelete + "&isOwner=" + isOwner;
+        permissions = "/?canRead=" + canRead + "&canDownload=" + canDownload +
+                      "&canWrite=" + canWrite +"&canDelete=" + canDelete +
+                      "&isOwner=" + isOwner;
         action = action + permissions;
 
         $.ajax({

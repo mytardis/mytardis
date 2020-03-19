@@ -96,7 +96,7 @@ def has_experiment_write(request, experiment_id):
 
 def has_experiment_download_access(request, experiment_id):
 
-    if Experiment.safe.owned_and_shared(request.user) \
+    if Experiment.safe.owned_and_shared(request.user, downloadable=True) \
                       .filter(id=experiment_id) \
                       .exists():
 
