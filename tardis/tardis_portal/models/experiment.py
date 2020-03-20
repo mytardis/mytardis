@@ -92,9 +92,20 @@ class Experiment(models.Model):
     objectacls = GenericRelation(ObjectACL)
     objects = OracleSafeManager()
     safe = ExperimentManager()  # The acl-aware specific manager.
+    is_sensitive = models.BooleanField(default=False)
+    embargo_until = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         app_label = 'tardis_portal'
+
+    def is_sensitive(self):
+        return self.is_sensitive
+
+    def is_embargoed(self):
+        if self.embargo_until:
+            if datetime.now() < self.embargo_until:
+                return True
+        return False
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)

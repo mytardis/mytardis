@@ -1,5 +1,6 @@
 import logging
 from os import path
+from datetime import datetime
 
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -59,6 +60,8 @@ class Project(models.Model):
                                     blank=True)
     objectacls = GenericRelation(ObjectACL)
     objects = OracleSafeManager()
+    is_sensitive = models.BooleanField(default=False)
+    embargo_until = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         app_label = 'tardis_portal'
@@ -69,6 +72,13 @@ class Project(models.Model):
     def __str__(self):
         return self.name
 
-        
+    def is_sensitive(self):
+        return self.is_sensitive
+
+    def is_embargoed(self):
+        if self.embargo_until:
+            if datetime.now() < self.embargo_until:
+                return True
+        return False
 
 

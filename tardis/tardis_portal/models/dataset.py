@@ -56,6 +56,8 @@ class Dataset(models.Model):
                                    on_delete=models.CASCADE)
     objects = OracleSafeManager()
     tags = TaggableManager(blank=True)
+    is_sensitive = models.BooleanField(default=False)
+    embargo_until = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         app_label = 'tardis_portal'
@@ -66,6 +68,15 @@ class Dataset(models.Model):
         self.modified_time = timezone.now()
         super().save()
 
+    def is_sensitive(self):
+        return self.is_sensitive
+
+    def is_embargoed(self):
+        if self.embargo_until:
+            if datetime.now() < self.embargo_until:
+                return True
+        return False
+        
     @property
     def is_online(self):
         return all(df.is_online for df in self.datafile_set.all())
