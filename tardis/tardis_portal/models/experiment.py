@@ -92,7 +92,7 @@ class Experiment(models.Model):
     objectacls = GenericRelation(ObjectACL)
     objects = OracleSafeManager()
     safe = ExperimentManager()  # The acl-aware specific manager.
-    is_sensitive = models.BooleanField(default=False)
+    sensitive = models.BooleanField(default=False)
     embargo_until = models.DateTimeField(null=True, blank=True)
 
     class Meta:

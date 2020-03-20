@@ -54,7 +54,7 @@ class Dataset(models.Model):
     immutable = models.BooleanField(default=False)
     instrument = models.ForeignKey(Instrument, null=True, blank=True,
                                    on_delete=models.CASCADE)
-    is_sensitive = models.BooleanField(default=False)
+    sensitive = models.BooleanField(default=False)
     embargo_until = models.DateTimeField(null=True, blank=True)
     objects = OracleSafeManager()
     tags = TaggableManager(blank=True)
@@ -70,7 +70,7 @@ class Dataset(models.Model):
         super().save()
 
     def is_sensitive(self):
-        return self.is_sensitive
+        return self.sensitive
 
     def is_embargoed(self):
         if self.embargo_until:

@@ -60,7 +60,7 @@ class Project(models.Model):
                                     blank=True)
     objectacls = GenericRelation(ObjectACL)
     objects = OracleSafeManager()
-    is_sensitive = models.BooleanField(default=False)
+    sensitive = models.BooleanField(default=False)
     embargo_until = models.DateTimeField(null=True, blank=True)
 
     class Meta:

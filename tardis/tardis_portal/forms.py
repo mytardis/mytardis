@@ -268,8 +268,8 @@ class DatasetForm(forms.ModelForm):
             'dataset_id',
             'directory',
             'instrument',
-            #'is_sensitive',
-            #'embargo_until',
+            'sensitive',
+            'embargo_until',
         ]
 
 class ProjectForm(forms.ModelForm):
@@ -285,8 +285,8 @@ class ProjectForm(forms.ModelForm):
             'owner',
             'contact',
             'member',
-            #'is_sensitive',
-            #'embargo_until',
+            'sensitive',
+            'embargo_until',
             ]
         
 class ExperimentAuthor(forms.ModelForm):
@@ -319,9 +319,9 @@ class ExperimentForm(forms.ModelForm):
                   'institution_name',
                   'description',
                   'internal_id',
-                  'project_id',)
-                  #'is_sensitive',
-                  #'embargo_until',)
+                  'project_id',
+                  'sensitive',
+                  'embargo_until',)
 
     class FullExperiment(UserDict):
         """
