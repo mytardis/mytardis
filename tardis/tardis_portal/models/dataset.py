@@ -54,10 +54,11 @@ class Dataset(models.Model):
     immutable = models.BooleanField(default=False)
     instrument = models.ForeignKey(Instrument, null=True, blank=True,
                                    on_delete=models.CASCADE)
-    objects = OracleSafeManager()
-    tags = TaggableManager(blank=True)
     is_sensitive = models.BooleanField(default=False)
     embargo_until = models.DateTimeField(null=True, blank=True)
+    objects = OracleSafeManager()
+    tags = TaggableManager(blank=True)
+    
 
     class Meta:
         app_label = 'tardis_portal'
