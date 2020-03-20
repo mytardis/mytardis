@@ -147,8 +147,31 @@ An automatically generated documentation of the settings can be found in
 Essential Production Settings
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-These settings are essential if you want to run MyTardis in production mode
-(``DEBUG = False``).
+When deploying to production, you should read
+`Django's deployment checklist <https://docs.djangoproject.com/en/1.11/howto/deployment/checklist/>`_.
+
+.. warning::
+    MyTardis's built-in default settings don't include all of the settings required
+    to run a secure (HTTPS) deployment.  Django provides a check command which you
+    can run on your production (or pre-production) server to help you to identify
+    missing settings related to security::
+
+        ./manage.py check --deploy
+
+The following settings are essential if you want to run MyTardis in production.
+
+.. attribute:: DEBUG
+
+   This must be set to False for production, otherwise your users will see
+   tracebacks containing sensitive information when they encounter an unhandled
+   exception (Internal Server Error).
+
+.. warning::
+    After setting ``DEBUG`` to ``False``, unhandled exceptions will trigger
+    Internal Server Error emails to
+    `ADMINS <https://docs.djangoproject.com/en/1.11/ref/settings/#std:setting-ADMINS>`_
+    which does not scale well. Django suggests "using an error monitoring system such
+    as Sentry before your inbox is flooded by reports".
 
 .. attribute:: SECRET_KEY
 
@@ -159,14 +182,12 @@ These settings are essential if you want to run MyTardis in production mode
 
      echo "SECRET_KEY='`python manage.py generate_secret_key`'" >> tardis/settings.py
 
-However, the more complex command shown above needs to be used at installation
-time.
-
 .. attribute:: ALLOWED_HOSTS
 
    ``ALLOWED_HOSTS`` is a list of hostnames and/or IP addresses under which the
    server is accessible. If this is not set you will get a 500 Error for any
-   request.
+   request, due to Django raising a SuspiciousOperation exception.
+   For more information, see: https://docs.djangoproject.com/en/1.11/ref/settings/#allowed-hosts
 
 Database
 ~~~~~~~~
