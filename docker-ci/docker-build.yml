@@ -11,7 +11,5 @@ services:
       dockerfile: docker-ci/Dockerfile-build
     volumes:
       - ../wheelhouse:/wheelhouse
-      - ../tardis:/home/webapp/tardis
-      - ../docs:/home/webapp/docs
     depends_on:
       - base
