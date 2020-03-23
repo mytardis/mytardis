@@ -164,6 +164,7 @@ class DataFileDocument(Document):
     class Django:
         model = DataFile
         related_models = [Dataset, Experiment]
+        queryset_pagination = 5000 # same as chunk_size
 
     def get_instances_from_related(self, related_instance):
         if isinstance(related_instance, Dataset):
