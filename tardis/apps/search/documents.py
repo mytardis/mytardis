@@ -166,6 +166,11 @@ class DataFileDocument(Document):
         related_models = [Dataset, Experiment]
         queryset_pagination = 5000 # same as chunk_size
 
+    def get_queryset(self):
+        return super(DataFileDocument, self).get_queryset().select_related(
+            'dataset'
+        )
+
     def get_instances_from_related(self, related_instance):
         if isinstance(related_instance, Dataset):
             return related_instance.datafile_set.all()
