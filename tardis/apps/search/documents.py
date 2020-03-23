@@ -13,6 +13,10 @@ from tardis.tardis_portal.models import Dataset, Experiment, \
 logger = logging.getLogger(__name__)
 
 
+elasticsearch_index_settings = getattr(settings, 'ELASTICSEARCH_DSL_INDEX_SETTINGS', {
+    'number_of_shards': 1,
+    'number_of_replicas': 0
+})
 elasticsearch_parallel_index_settings = getattr(settings, 'ELASTICSEARCH_PARALLEL_INDEX_SETTINGS', {})
 
 trigram = analysis.tokenizer('trigram', 'nGram', min_gram=3, max_gram=3)
@@ -32,8 +36,7 @@ class ExperimentDocument(Document):
 
     class Index:
         name = 'experiments'
-        settings = {'number_of_shards': 1,
-                    'number_of_replicas': 0}
+        settings = elasticsearch_index_settings
 
     id = fields.IntegerField()
     title = fields.TextField(
@@ -81,8 +84,7 @@ class DatasetDocument(Document):
 
     class Index:
         name = 'dataset'
-        settings = {'number_of_shards': 1,
-                    'number_of_replicas': 0}
+        settings = elasticsearch_index_settings
 
     id = fields.IntegerField()
     description = fields.TextField(
@@ -133,8 +135,8 @@ class DataFileDocument(Document):
 
     class Index:
         name = 'datafile'
-        settings = {'number_of_shards': 1,
-                    'number_of_replicas': 0}
+        settings = elasticsearch_index_settings
+
     filename = fields.TextField(
         fields={'raw': fields.KeywordField()},
         analyzer=analyzer
@@ -162,7 +164,6 @@ class DataFileDocument(Document):
     class Django:
         model = DataFile
         related_models = [Dataset, Experiment]
-        queryset_pagination = 5000
 
     def get_instances_from_related(self, related_instance):
         if isinstance(related_instance, Dataset):
