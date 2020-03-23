@@ -322,6 +322,7 @@ const groupSharingModalLoaded = function() {
             canRead = true;
         }
         if(permissions === "download") {
+            canRead = true;
             canDownload = true;
         }
         else if(permissions === "edit") {
