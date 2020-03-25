@@ -10,6 +10,7 @@ import mimetypes
 
 
 from django.conf import settings
+from django.contrib.contenttypes.fields import GenericRelation
 from django.core.files import File
 from django.urls import reverse
 from django.db import models
@@ -24,6 +25,8 @@ from django.utils.encoding import python_2_unicode_compatible
 import magic
 
 from .. import tasks
+from ..managers import OracleSafeManager
+from .access_control import ObjectACL
 from .dataset import Dataset
 from .storage import StorageBox, StorageBoxOption, StorageBoxAttribute
 
@@ -71,6 +74,8 @@ class DataFile(models.Model):
     deleted = models.BooleanField(default=False)
     deleted_time = models.DateTimeField(blank=True, null=True)
     version = models.IntegerField(default=1)
+    objects = OracleSafeManager()
+    objectacls = GenericRelation(ObjectACL)
 
     @property
     def file_object(self):
