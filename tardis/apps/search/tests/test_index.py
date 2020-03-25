@@ -77,7 +77,7 @@ class IndexExperimentTestCase(TestCase):
         search = DatasetDocument.search()
         query = search.query("match", description='test_dataset')
         result = query.execute(ignore_cache=True)
-        self.assertEqual(result.hits.total, 1)
+        self.assertEqual(result.hits.total.value, 1)
         # search on datafile
         settings.REQUIRE_DATAFILE_SIZES = False
         settings.REQUIRE_DATAFILE_CHECKSUMS = False

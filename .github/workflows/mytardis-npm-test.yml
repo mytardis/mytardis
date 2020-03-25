@@ -1,0 +1,22 @@
+name: Run Jest tests
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@v1
+      - name: Setup node
+        uses: actions/setup-node@v1
+        with:
+          node-version: '10.x'
+      - run: npm install
+      - run: npm run test-react
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v1.0.5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          file: coverage/coverage-final.json
+          flags: reacttests
+          fail_ci_if_error: false

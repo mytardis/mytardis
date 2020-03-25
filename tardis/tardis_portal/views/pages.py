@@ -137,7 +137,7 @@ class IndexView(TemplateView):
         :return: A dictionary of values for the view/template.
         :rtype: dict
         """
-        c = super(IndexView, self).get_context_data(**kwargs)
+        c = super().get_context_data(**kwargs)
         status = ''
         limit = 8
         c['status'] = status
@@ -252,7 +252,7 @@ class DatasetView(TemplateView):
             except (EmptyPage, InvalidPage):
                 return paginator.page(paginator.num_pages)
 
-        c = super(DatasetView, self).get_context_data(**kwargs)
+        c = super().get_context_data(**kwargs)
 
         dataset_id = dataset.id
         dataset_instrument = dataset.instrument
@@ -472,7 +472,7 @@ class ExperimentView(TemplateView):
         :rtype: dict
         """
 
-        c = super(ExperimentView, self).get_context_data(**kwargs)
+        c = super().get_context_data(**kwargs)
 
         c['experiment'] = experiment
         c['has_write_permissions'] = \

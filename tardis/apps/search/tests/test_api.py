@@ -28,7 +28,7 @@ from tardis.tardis_portal.tests.api import MyTardisResourceTestCase
     )
 class SimpleSearchTest(MyTardisResourceTestCase):
     def setUp(self):
-        super(SimpleSearchTest, self).setUp()
+        super().setUp()
         self.out = StringIO()
         call_command('search_index', stdout=self.out,
                      action='delete', force=True)

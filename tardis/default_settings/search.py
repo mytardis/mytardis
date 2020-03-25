@@ -14,9 +14,20 @@ ELASTICSEARCH_DSL = {
     }
 }
 ELASTICSEARCH_DSL_INDEX_SETTINGS = {
-    'number_of_shards': 1
+    'number_of_shards': 1,
+    'number_of_replicas': 0
 }
 '''
+
+ELASTICSEARCH_PARALLEL_INDEX_SETTINGS = {
+    'chunk_size': 500,
+    'thread_count': 4
+}
+'''
+Setting for running elastic search index in parallel mode to get indexing speed boost while indexing
+https://django-elasticsearch-dsl.readthedocs.io/en/latest/settings.html#elasticsearch-dsl-parallel
+'''
+
 
 MAX_SEARCH_RESULTS = 100
 '''

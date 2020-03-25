@@ -23,7 +23,7 @@ from . import MyTardisResourceTestCase
 
 class DataFileResourceTest(MyTardisResourceTestCase):
     def setUp(self):
-        super(DataFileResourceTest, self).setUp()
+        super().setUp()
         self.django_client = Client()
         self.django_client.login(username=self.username,
                                  password=self.password)
