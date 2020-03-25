@@ -1371,6 +1371,7 @@ exports[`Search Component Render Search Component 1`] = `
                             >
                               <div
                                 class="rbt-token rbt-token-removeable"
+                                option="Dataset"
                                 tabindex="0"
                               >
                                 Dataset
@@ -1394,6 +1395,7 @@ exports[`Search Component Render Search Component 1`] = `
                               </div>
                               <div
                                 class="rbt-token rbt-token-removeable"
+                                option="Experiment"
                                 tabindex="0"
                               >
                                 Experiment
@@ -1417,6 +1419,7 @@ exports[`Search Component Render Search Component 1`] = `
                               </div>
                               <div
                                 class="rbt-token rbt-token-removeable"
+                                option="Datafile"
                                 tabindex="0"
                               >
                                 Datafile
