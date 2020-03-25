@@ -22,7 +22,7 @@ html5lib==1.0.1
 isodate==0.6.0
 pyjwt==1.7.1
 kombu==4.6.8
-lxml==4.4.1
+lxml==4.5.0
 paramiko==2.6.0
 pillow==7.0.0
 pyoai==2.5.0
