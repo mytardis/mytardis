@@ -85,11 +85,7 @@
     "qunit": "^2.9.3",
     "react-test-renderer": "^16.10.2"
   },
-  "resolutions": {
-    "minimist": "1.2.5"
-  },
   "scripts": {
-    "preinstall": "npx npm-force-resolutions",
     "eslint.jquery": "eslint -c .eslintrc --ext .js assets/js/tardis_portal js_tests/tardis_portal/ tardis/apps/sftp/static/js/sftp/sftp.js tardis/apps/openid_migration/static/js/openid_migration/migrate_accounts.js",
     "eslint.angular": "eslint -c .eslintrc.angular assets/js/tardis_portal/facility_view/facility_view.js",
     "eslint.react": "eslint -c .eslintrc.react --ext .jsx assets/js/apps/",
