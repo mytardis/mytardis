@@ -1,0 +1,1668 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Result Component Test Render Simple Search Form 1`] = `
+"<SimpleSearchForm showResults={[Function: showResults]} searchText=\\"test\\">
+  <main>
+    <div className=\\"row\\">
+      <div className=\\"mx-auto align-items-center\\">
+        <div className=\\"card align-items-center\\">
+          <div className=\\"card-body\\">
+            <div className=\\"row align-items-center\\">
+              <div className=\\"col-md-12\\">
+                <form className=\\"form-horizontal\\" onSubmit={[Function: handleSimpleSearchSubmit]} id=\\"simple-search\\">
+                  <div className=\\"input-group mb-3\\">
+                    <input type=\\"text\\" name=\\"simple_search_text\\" onChange={[Function: onChange]} value=\\"test\\" className=\\"form-control\\" placeholder=\\"Search for Experiments, Datasets, Datafiles\\" />
+                    <div className=\\"input-group-append\\">
+                      <button type=\\"button\\" className=\\"input-group-text\\" onClick={[Function: handleSimpleSearchSubmit]}>
+                        <span className=\\"fa fa-search\\" />
+                      </button>
+                    </div>
+                  </div>
+                  <AdvancedSearchForm searchText=\\"test\\" showResults={[Function: showResults]}>
+                    <form id=\\"adv-search-form\\" className=\\"border-top form-horizontal\\">
+                      <div className=\\"form-group\\" id=\\"adv-search\\">
+                        <div>
+                          <label className=\\"font-weight-bold\\">
+                            Advanced Search
+                          </label>
+                        </div>
+                        <label htmlFor=\\"filter\\">
+                          Filter by Date created
+                        </label>
+                        <div className=\\"form-group row\\">
+                          <div className=\\"col-xs-6\\" style={{...}}>
+                            <DateTime id=\\"select-start-date\\" inputProps={{...}} timeFormat={false} dateFormat=\\"DD-MM-YYYY\\" isValidDate={[Function: validStartDate]} closeOnSelect={true} value=\\"\\" onChange={[Function: handleStartDateChange]} className=\\"\\" defaultValue=\\"\\" input={true} onFocus={[Function: onFocus]} onBlur={[Function: onBlur]} onViewModeChange={[Function: onViewModeChange]} onNavigateBack={[Function: onNavigateBack]} onNavigateForward={[Function: onNavigateForward]} timeConstraints={{...}} strictParsing={true} closeOnTab={true} utc={false}>
+                              <OnClickOutside(Component) className=\\"rdt\\" onClickOut={[Function: bound handleClickOutside]} eventTypes={{...}} excludeScrollbar={false} outsideClickIgnoreClass=\\"ignore-react-onclickoutside\\" preventDefault={false} stopPropagation={false}>
+                                <Component className=\\"rdt\\" onClickOut={[Function: bound handleClickOutside]} eventTypes={{...}} outsideClickIgnoreClass=\\"ignore-react-onclickoutside\\" preventDefault={false} stopPropagation={false} disableOnClickOutside={[Function]} enableOnClickOutside={[Function]}>
+                                  <div className=\\"rdt\\">
+                                    <input type=\\"text\\" className=\\"form-control\\" value=\\"\\" placeholder=\\"Select start date\\" onClick={[Function]} onFocus={[Function]} onChange={[Function]} onKeyDown={[Function]} />
+                                    <div className=\\"rdtPicker\\">
+                                      <Component view=\\"days\\" viewProps={{...}}>
+                                        <Component dateFormat=\\"DD-MM-YYYY\\" timeFormat=\\"\\" value=\\"\\" isValidDate={[Function: validStartDate]} renderDay={[undefined]} renderMonth={[undefined]} renderYear={[undefined]} timeConstraints={{...}} viewDate={{...}} selectedDate={[undefined]} updateOn=\\"days\\" setDate={[Function: bound setDate]} setTime={[Function: bound setTime]} showView={[Function: bound showView]} addTime={[Function: bound addTime]} subtractTime={[Function: bound subtractTime]} updateSelectedDate={[Function: bound updateSelectedDate]} localMoment={[Function: bound localMoment]} handleClickOutside={[Function: bound handleClickOutside]}>
+                                          <div className=\\"rdtDays\\">
+                                            <table>
+                                              <thead>
+                                                <tr>
+                                                  <th className=\\"rdtPrev\\" onClick={[Function]}>
+                                                    <span>
+                                                      ‹
+                                                    </span>
+                                                  </th>
+                                                  <th className=\\"rdtSwitch\\" onClick={[Function]} colSpan={5} data-value={1}>
+                                                    February 2017
+                                                  </th>
+                                                  <th className=\\"rdtNext\\" onClick={[Function]}>
+                                                    <span>
+                                                      ›
+                                                    </span>
+                                                  </th>
+                                                </tr>
+                                                <tr>
+                                                  <th className=\\"dow\\">
+                                                    Su
+                                                  </th>
+                                                  <th className=\\"dow\\">
+                                                    Mo
+                                                  </th>
+                                                  <th className=\\"dow\\">
+                                                    Tu
+                                                  </th>
+                                                  <th className=\\"dow\\">
+                                                    We
+                                                  </th>
+                                                  <th className=\\"dow\\">
+                                                    Th
+                                                  </th>
+                                                  <th className=\\"dow\\">
+                                                    Fr
+                                                  </th>
+                                                  <th className=\\"dow\\">
+                                                    Sa
+                                                  </th>
+                                                </tr>
+                                              </thead>
+                                              <tbody>
+                                                <tr>
+                                                  <td data-value={29} className=\\"rdtDay rdtOld\\" onClick={[Function: bound updateSelectedDate]}>
+                                                    29
+                                                  </td>
+                                                  <td data-value={30} className=\\"rdtDay rdtOld\\" onClick={[Function: bound updateSelectedDate]}>
+                                                    30
+                                                  </td>
+                                                  <td data-value={31} className=\\"rdtDay rdtOld\\" onClick={[Function: bound updateSelectedDate]}>
+                                                    31
+                                                  </td>
+                                                  <td data-value={1} className=\\"rdtDay\\" onClick={[Function: bound updateSelectedDate]}>
+                                                    1
+                                                  </td>
+                                                  <td data-value={2} className=\\"rdtDay\\" onClick={[Function: bound updateSelectedDate]}>
+                                                    2
+                                                  </td>
+                                                  <td data-value={3} className=\\"rdtDay\\" onClick={[Function: bound updateSelectedDate]}>
+                                                    3
+                                                  </td>
+                                                  <td data-value={4} className=\\"rdtDay\\" onClick={[Function: bound updateSelectedDate]}>
+                                                    4
+                                                  </td>
+                                                </tr>
+                                                <tr>
+                                                  <td data-value={5} className=\\"rdtDay\\" onClick={[Function: bound updateSelectedDate]}>
+                                                    5
+                                                  </td>
+                                                  <td data-value={6} className=\\"rdtDay\\" onClick={[Function: bound updateSelectedDate]}>
+                                                    6
+                                                  </td>
+                                                  <td data-value={7} className=\\"rdtDay\\" onClick={[Function: bound updateSelectedDate]}>
+                                                    7
+                                                  </td>
+                                                  <td data-value={8} className=\\"rdtDay\\" onClick={[Function: bound updateSelectedDate]}>
+                                                    8
+                                                  </td>
+                                                  <td data-value={9} className=\\"rdtDay\\" onClick={[Function: bound updateSelectedDate]}>
+                                                    9
+                                                  </td>
+                                                  <td data-value={10} className=\\"rdtDay\\" onClick={[Function: bound updateSelectedDate]}>
+                                                    10
+                                                  </td>
+                                                  <td data-value={11} className=\\"rdtDay\\" onClick={[Function: bound updateSelectedDate]}>
+                                                    11
+                                                  </td>
+                                                </tr>
+                                                <tr>
+                                                  <td data-value={12} className=\\"rdtDay\\" onClick={[Function: bound updateSelectedDate]}>
+                                                    12
+                                                  </td>
+                                                  <td data-value={13} className=\\"rdtDay\\" onClick={[Function: bound updateSelectedDate]}>
+                                                    13
+                                                  </td>
+                                                  <td data-value={14} className=\\"rdtDay rdtToday\\" onClick={[Function: bound updateSelectedDate]}>
+                                                    14
+                                                  </td>
+                                                  <td data-value={15} className=\\"rdtDay rdtDisabled\\">
+                                                    15
+                                                  </td>
+                                                  <td data-value={16} className=\\"rdtDay rdtDisabled\\">
+                                                    16
+                                                  </td>
+                                                  <td data-value={17} className=\\"rdtDay rdtDisabled\\">
+                                                    17
+                                                  </td>
+                                                  <td data-value={18} className=\\"rdtDay rdtDisabled\\">
+                                                    18
+                                                  </td>
+                                                </tr>
+                                                <tr>
+                                                  <td data-value={19} className=\\"rdtDay rdtDisabled\\">
+                                                    19
+                                                  </td>
+                                                  <td data-value={20} className=\\"rdtDay rdtDisabled\\">
+                                                    20
+                                                  </td>
+                                                  <td data-value={21} className=\\"rdtDay rdtDisabled\\">
+                                                    21
+                                                  </td>
+                                                  <td data-value={22} className=\\"rdtDay rdtDisabled\\">
+                                                    22
+                                                  </td>
+                                                  <td data-value={23} className=\\"rdtDay rdtDisabled\\">
+                                                    23
+                                                  </td>
+                                                  <td data-value={24} className=\\"rdtDay rdtDisabled\\">
+                                                    24
+                                                  </td>
+                                                  <td data-value={25} className=\\"rdtDay rdtDisabled\\">
+                                                    25
+                                                  </td>
+                                                </tr>
+                                                <tr>
+                                                  <td data-value={26} className=\\"rdtDay rdtDisabled\\">
+                                                    26
+                                                  </td>
+                                                  <td data-value={27} className=\\"rdtDay rdtDisabled\\">
+                                                    27
+                                                  </td>
+                                                  <td data-value={28} className=\\"rdtDay rdtDisabled\\">
+                                                    28
+                                                  </td>
+                                                  <td data-value={1} className=\\"rdtDay rdtNew rdtDisabled\\">
+                                                    1
+                                                  </td>
+                                                  <td data-value={2} className=\\"rdtDay rdtNew rdtDisabled\\">
+                                                    2
+                                                  </td>
+                                                  <td data-value={3} className=\\"rdtDay rdtNew rdtDisabled\\">
+                                                    3
+                                                  </td>
+                                                  <td data-value={4} className=\\"rdtDay rdtNew rdtDisabled\\">
+                                                    4
+                                                  </td>
+                                                </tr>
+                                                <tr>
+                                                  <td data-value={5} className=\\"rdtDay rdtNew rdtDisabled\\">
+                                                    5
+                                                  </td>
+                                                  <td data-value={6} className=\\"rdtDay rdtNew rdtDisabled\\">
+                                                    6
+                                                  </td>
+                                                  <td data-value={7} className=\\"rdtDay rdtNew rdtDisabled\\">
+                                                    7
+                                                  </td>
+                                                  <td data-value={8} className=\\"rdtDay rdtNew rdtDisabled\\">
+                                                    8
+                                                  </td>
+                                                  <td data-value={9} className=\\"rdtDay rdtNew rdtDisabled\\">
+                                                    9
+                                                  </td>
+                                                  <td data-value={10} className=\\"rdtDay rdtNew rdtDisabled\\">
+                                                    10
+                                                  </td>
+                                                  <td data-value={11} className=\\"rdtDay rdtNew rdtDisabled\\">
+                                                    11
+                                                  </td>
+                                                </tr>
+                                              </tbody>
+                                            </table>
+                                          </div>
+                                        </Component>
+                                      </Component>
+                                    </div>
+                                  </div>
+                                </Component>
+                              </OnClickOutside(Component)>
+                            </DateTime>
+                          </div>
+                          <div className=\\"col-xs-6\\" style={{...}}>
+                            <DateTime inputProps={{...}} timeFormat={false} dateFormat=\\"DD-MM-YYYY\\" isValidDate={[Function: validEndDate]} closeOnSelect={true} value=\\"\\" onChange={[Function: handleEndDateChange]} className=\\"\\" defaultValue=\\"\\" input={true} onFocus={[Function: onFocus]} onBlur={[Function: onBlur]} onViewModeChange={[Function: onViewModeChange]} onNavigateBack={[Function: onNavigateBack]} onNavigateForward={[Function: onNavigateForward]} timeConstraints={{...}} strictParsing={true} closeOnTab={true} utc={false}>
+                              <OnClickOutside(Component) className=\\"rdt\\" onClickOut={[Function: bound handleClickOutside]} eventTypes={{...}} excludeScrollbar={false} outsideClickIgnoreClass=\\"ignore-react-onclickoutside\\" preventDefault={false} stopPropagation={false}>
+                                <Component className=\\"rdt\\" onClickOut={[Function: bound handleClickOutside]} eventTypes={{...}} outsideClickIgnoreClass=\\"ignore-react-onclickoutside\\" preventDefault={false} stopPropagation={false} disableOnClickOutside={[Function]} enableOnClickOutside={[Function]}>
+                                  <div className=\\"rdt\\">
+                                    <input type=\\"text\\" className=\\"form-control\\" value=\\"\\" placeholder=\\"Select end date\\" onClick={[Function]} onFocus={[Function]} onChange={[Function]} onKeyDown={[Function]} />
+                                    <div className=\\"rdtPicker\\">
+                                      <Component view=\\"days\\" viewProps={{...}}>
+                                        <Component dateFormat=\\"DD-MM-YYYY\\" timeFormat=\\"\\" value=\\"\\" isValidDate={[Function: validEndDate]} renderDay={[undefined]} renderMonth={[undefined]} renderYear={[undefined]} timeConstraints={{...}} viewDate={{...}} selectedDate={[undefined]} updateOn=\\"days\\" setDate={[Function: bound setDate]} setTime={[Function: bound setTime]} showView={[Function: bound showView]} addTime={[Function: bound addTime]} subtractTime={[Function: bound subtractTime]} updateSelectedDate={[Function: bound updateSelectedDate]} localMoment={[Function: bound localMoment]} handleClickOutside={[Function: bound handleClickOutside]}>
+                                          <div className=\\"rdtDays\\">
+                                            <table>
+                                              <thead>
+                                                <tr>
+                                                  <th className=\\"rdtPrev\\" onClick={[Function]}>
+                                                    <span>
+                                                      ‹
+                                                    </span>
+                                                  </th>
+                                                  <th className=\\"rdtSwitch\\" onClick={[Function]} colSpan={5} data-value={1}>
+                                                    February 2017
+                                                  </th>
+                                                  <th className=\\"rdtNext\\" onClick={[Function]}>
+                                                    <span>
+                                                      ›
+                                                    </span>
+                                                  </th>
+                                                </tr>
+                                                <tr>
+                                                  <th className=\\"dow\\">
+                                                    Su
+                                                  </th>
+                                                  <th className=\\"dow\\">
+                                                    Mo
+                                                  </th>
+                                                  <th className=\\"dow\\">
+                                                    Tu
+                                                  </th>
+                                                  <th className=\\"dow\\">
+                                                    We
+                                                  </th>
+                                                  <th className=\\"dow\\">
+                                                    Th
+                                                  </th>
+                                                  <th className=\\"dow\\">
+                                                    Fr
+                                                  </th>
+                                                  <th className=\\"dow\\">
+                                                    Sa
+                                                  </th>
+                                                </tr>
+                                              </thead>
+                                              <tbody>
+                                                <tr>
+                                                  <td data-value={29} className=\\"rdtDay rdtOld rdtDisabled\\">
+                                                    29
+                                                  </td>
+                                                  <td data-value={30} className=\\"rdtDay rdtOld rdtDisabled\\">
+                                                    30
+                                                  </td>
+                                                  <td data-value={31} className=\\"rdtDay rdtOld rdtDisabled\\">
+                                                    31
+                                                  </td>
+                                                  <td data-value={1} className=\\"rdtDay rdtDisabled\\">
+                                                    1
+                                                  </td>
+                                                  <td data-value={2} className=\\"rdtDay rdtDisabled\\">
+                                                    2
+                                                  </td>
+                                                  <td data-value={3} className=\\"rdtDay rdtDisabled\\">
+                                                    3
+                                                  </td>
+                                                  <td data-value={4} className=\\"rdtDay rdtDisabled\\">
+                                                    4
+                                                  </td>
+                                                </tr>
+                                                <tr>
+                                                  <td data-value={5} className=\\"rdtDay rdtDisabled\\">
+                                                    5
+                                                  </td>
+                                                  <td data-value={6} className=\\"rdtDay rdtDisabled\\">
+                                                    6
+                                                  </td>
+                                                  <td data-value={7} className=\\"rdtDay rdtDisabled\\">
+                                                    7
+                                                  </td>
+                                                  <td data-value={8} className=\\"rdtDay rdtDisabled\\">
+                                                    8
+                                                  </td>
+                                                  <td data-value={9} className=\\"rdtDay rdtDisabled\\">
+                                                    9
+                                                  </td>
+                                                  <td data-value={10} className=\\"rdtDay rdtDisabled\\">
+                                                    10
+                                                  </td>
+                                                  <td data-value={11} className=\\"rdtDay rdtDisabled\\">
+                                                    11
+                                                  </td>
+                                                </tr>
+                                                <tr>
+                                                  <td data-value={12} className=\\"rdtDay rdtDisabled\\">
+                                                    12
+                                                  </td>
+                                                  <td data-value={13} className=\\"rdtDay rdtDisabled\\">
+                                                    13
+                                                  </td>
+                                                  <td data-value={14} className=\\"rdtDay rdtToday rdtDisabled\\">
+                                                    14
+                                                  </td>
+                                                  <td data-value={15} className=\\"rdtDay rdtDisabled\\">
+                                                    15
+                                                  </td>
+                                                  <td data-value={16} className=\\"rdtDay rdtDisabled\\">
+                                                    16
+                                                  </td>
+                                                  <td data-value={17} className=\\"rdtDay rdtDisabled\\">
+                                                    17
+                                                  </td>
+                                                  <td data-value={18} className=\\"rdtDay rdtDisabled\\">
+                                                    18
+                                                  </td>
+                                                </tr>
+                                                <tr>
+                                                  <td data-value={19} className=\\"rdtDay rdtDisabled\\">
+                                                    19
+                                                  </td>
+                                                  <td data-value={20} className=\\"rdtDay rdtDisabled\\">
+                                                    20
+                                                  </td>
+                                                  <td data-value={21} className=\\"rdtDay rdtDisabled\\">
+                                                    21
+                                                  </td>
+                                                  <td data-value={22} className=\\"rdtDay rdtDisabled\\">
+                                                    22
+                                                  </td>
+                                                  <td data-value={23} className=\\"rdtDay rdtDisabled\\">
+                                                    23
+                                                  </td>
+                                                  <td data-value={24} className=\\"rdtDay rdtDisabled\\">
+                                                    24
+                                                  </td>
+                                                  <td data-value={25} className=\\"rdtDay rdtDisabled\\">
+                                                    25
+                                                  </td>
+                                                </tr>
+                                                <tr>
+                                                  <td data-value={26} className=\\"rdtDay rdtDisabled\\">
+                                                    26
+                                                  </td>
+                                                  <td data-value={27} className=\\"rdtDay rdtDisabled\\">
+                                                    27
+                                                  </td>
+                                                  <td data-value={28} className=\\"rdtDay rdtDisabled\\">
+                                                    28
+                                                  </td>
+                                                  <td data-value={1} className=\\"rdtDay rdtNew rdtDisabled\\">
+                                                    1
+                                                  </td>
+                                                  <td data-value={2} className=\\"rdtDay rdtNew rdtDisabled\\">
+                                                    2
+                                                  </td>
+                                                  <td data-value={3} className=\\"rdtDay rdtNew rdtDisabled\\">
+                                                    3
+                                                  </td>
+                                                  <td data-value={4} className=\\"rdtDay rdtNew rdtDisabled\\">
+                                                    4
+                                                  </td>
+                                                </tr>
+                                                <tr>
+                                                  <td data-value={5} className=\\"rdtDay rdtNew rdtDisabled\\">
+                                                    5
+                                                  </td>
+                                                  <td data-value={6} className=\\"rdtDay rdtNew rdtDisabled\\">
+                                                    6
+                                                  </td>
+                                                  <td data-value={7} className=\\"rdtDay rdtNew rdtDisabled\\">
+                                                    7
+                                                  </td>
+                                                  <td data-value={8} className=\\"rdtDay rdtNew rdtDisabled\\">
+                                                    8
+                                                  </td>
+                                                  <td data-value={9} className=\\"rdtDay rdtNew rdtDisabled\\">
+                                                    9
+                                                  </td>
+                                                  <td data-value={10} className=\\"rdtDay rdtNew rdtDisabled\\">
+                                                    10
+                                                  </td>
+                                                  <td data-value={11} className=\\"rdtDay rdtNew rdtDisabled\\">
+                                                    11
+                                                  </td>
+                                                </tr>
+                                              </tbody>
+                                            </table>
+                                          </div>
+                                        </Component>
+                                      </Component>
+                                    </div>
+                                  </div>
+                                </Component>
+                              </OnClickOutside(Component)>
+                            </DateTime>
+                          </div>
+                        </div>
+                        <label htmlFor=\\"contain\\">
+                          Search In
+                        </label>
+                        <TypeaheadComponent id=\\"modelType\\" multiple={true} onChange={[Function: onChange]} options={{...}} placeholder=\\"Search in Experiments, Datasets or Datafiles\\" defaultSelected={{...}} clearButton={false} inputProps={{...}} isInvalid={false} isLoading={false} isValid={false} renderMenu={[Function: renderMenu]} renderToken={[Function: renderToken]}>
+                          <Typeahead id=\\"modelType\\" multiple={true} onChange={[Function: onChange]} options={{...}} placeholder=\\"Search in Experiments, Datasets or Datafiles\\" defaultSelected={{...}} clearButton={false} inputProps={{...}} isInvalid={false} isLoading={false} isValid={false} renderMenu={[Function: renderMenu]} renderToken={[Function: renderToken]} allowNew={false} autoFocus={false} caseSensitive={false} defaultInputValue=\\"\\" defaultOpen={false} filterBy={{...}} highlightOnlyResult={false} ignoreDiacritics={true} labelKey=\\"label\\" maxResults={100} minLength={0} onBlur={[Function: noop]} onFocus={[Function: noop]} onInputChange={[Function: noop]} onKeyDown={[Function: noop]} onMenuToggle={[Function: noop]} onPaginate={[Function: noop]} paginate={true} selectHintOnEnter={false}>
+                            <TypeaheadManager id=\\"modelType\\" multiple={true} options={{...}} placeholder=\\"Search in Experiments, Datasets or Datafiles\\" defaultSelected={{...}} clearButton={false} inputProps={{...}} isInvalid={false} isLoading={false} isValid={false} renderMenu={[Function: renderMenu]} renderToken={[Function: renderToken]} allowNew={false} autoFocus={false} caseSensitive={false} defaultInputValue=\\"\\" defaultOpen={false} filterBy={{...}} highlightOnlyResult={false} ignoreDiacritics={true} labelKey=\\"label\\" maxResults={100} minLength={0} onBlur={[Function]} onFocus={[Function]} onInputChange={[Function: noop]} onKeyDown={[Function]} onMenuToggle={[Function: noop]} onPaginate={[Function: noop]} paginate={true} selectHintOnEnter={false} activeIndex={-1} activeItem={{...}} initialItem={{...}} isFocused={false} selected={{...}} showMenu={false} shownResults={100} text=\\"\\" inputNode={[undefined]} inputRef={[Function]} isMenuShown={false} items={{...}} onActiveItemChange={[Function]} onAdd={[Function]} onChange={[Function]} onClear={[Function]} onHide={[Function]} onInitialItemChange={[Function]} onMenuItemClick={[Function]} onRemove={[Function]} results={{...}}>
+                              <RootCloseWrapper disabled={true} onRootClose={[Function]} event=\\"click\\">
+                                <div className=\\"rbt\\" style={{...}} tabIndex={-1}>
+                                  <withClassNames(TypeaheadInputMulti) autoComplete=\\"off\\" placeholder=\\"Search in Experiments, Datasets or Datafiles\\" type=\\"text\\" inputRef={[Function]} onBlur={[Function]} onChange={[Function]} onKeyDown={[Function]} value=\\"\\" aria-activedescendant={[undefined]} aria-autocomplete=\\"list\\" aria-expanded={[undefined]} aria-haspopup=\\"listbox\\" aria-owns={[undefined]} className=\\"\\" onClick={[Function]} onFocus={[Function]} role={[undefined]} inputClassName={[undefined]} bsSize={[undefined]} isInvalid={false} isValid={false} selected={{...}}>
+                                    <TypeaheadInputMulti autoComplete=\\"off\\" placeholder=\\"Search in Experiments, Datasets or Datafiles\\" type=\\"text\\" inputRef={[Function]} onBlur={[Function]} onChange={[Function]} onKeyDown={[Function]} value=\\"\\" aria-activedescendant={[undefined]} aria-autocomplete=\\"list\\" aria-expanded={[undefined]} aria-haspopup=\\"listbox\\" aria-owns={[undefined]} onClick={[Function]} onFocus={[Function]} role={[undefined]} inputClassName={[undefined]} selected={{...}} className=\\"form-control rbt-input\\">
+                                      <div className=\\"rbt-input-multi form-control rbt-input\\" disabled={[undefined]} onClick={[Function]} onFocus={[Function]} tabIndex={-1}>
+                                        <div className=\\"rbt-input-wrapper\\">
+                                          <tokenContainer(Token) disabled={[undefined]} onRemove={[Function]} option=\\"Dataset\\" tabIndex={[undefined]} onBlur={[Function: noop]} onClick={[Function: noop]} onFocus={[Function: noop]}>
+                                            <RootCloseWrapper disabled={true} onRootClose={[Function]} event=\\"click\\">
+                                              <Token disabled={false} onRemove={[Function]} option=\\"Dataset\\" tabIndex={0} onBlur={[Function]} onClick={[Function]} onFocus={[Function]} active={false} onKeyDown={[Function]}>
+                                                <div disabled={false} option=\\"Dataset\\" tabIndex={0} onBlur={[Function]} onClick={[Function]} onFocus={[Function]} onKeyDown={[Function]} className=\\"rbt-token rbt-token-removeable\\">
+                                                  Dataset
+                                                  <ClearButton className=\\"rbt-token-remove-button\\" label=\\"Remove\\" onClick={[Function]} tabIndex={-1}>
+                                                    <button tabIndex={-1} aria-label=\\"Remove\\" className=\\"close rbt-close rbt-token-remove-button\\" onClick={[Function: onClick]} type=\\"button\\">
+                                                      <span aria-hidden=\\"true\\">
+                                                        ×
+                                                      </span>
+                                                      <span className=\\"sr-only\\">
+                                                        Remove
+                                                      </span>
+                                                    </button>
+                                                  </ClearButton>
+                                                </div>
+                                              </Token>
+                                            </RootCloseWrapper>
+                                          </tokenContainer(Token)>
+                                          <tokenContainer(Token) disabled={[undefined]} onRemove={[Function]} option=\\"Experiment\\" tabIndex={[undefined]} onBlur={[Function: noop]} onClick={[Function: noop]} onFocus={[Function: noop]}>
+                                            <RootCloseWrapper disabled={true} onRootClose={[Function]} event=\\"click\\">
+                                              <Token disabled={false} onRemove={[Function]} option=\\"Experiment\\" tabIndex={0} onBlur={[Function]} onClick={[Function]} onFocus={[Function]} active={false} onKeyDown={[Function]}>
+                                                <div disabled={false} option=\\"Experiment\\" tabIndex={0} onBlur={[Function]} onClick={[Function]} onFocus={[Function]} onKeyDown={[Function]} className=\\"rbt-token rbt-token-removeable\\">
+                                                  Experiment
+                                                  <ClearButton className=\\"rbt-token-remove-button\\" label=\\"Remove\\" onClick={[Function]} tabIndex={-1}>
+                                                    <button tabIndex={-1} aria-label=\\"Remove\\" className=\\"close rbt-close rbt-token-remove-button\\" onClick={[Function: onClick]} type=\\"button\\">
+                                                      <span aria-hidden=\\"true\\">
+                                                        ×
+                                                      </span>
+                                                      <span className=\\"sr-only\\">
+                                                        Remove
+                                                      </span>
+                                                    </button>
+                                                  </ClearButton>
+                                                </div>
+                                              </Token>
+                                            </RootCloseWrapper>
+                                          </tokenContainer(Token)>
+                                          <tokenContainer(Token) disabled={[undefined]} onRemove={[Function]} option=\\"Datafile\\" tabIndex={[undefined]} onBlur={[Function: noop]} onClick={[Function: noop]} onFocus={[Function: noop]}>
+                                            <RootCloseWrapper disabled={true} onRootClose={[Function]} event=\\"click\\">
+                                              <Token disabled={false} onRemove={[Function]} option=\\"Datafile\\" tabIndex={0} onBlur={[Function]} onClick={[Function]} onFocus={[Function]} active={false} onKeyDown={[Function]}>
+                                                <div disabled={false} option=\\"Datafile\\" tabIndex={0} onBlur={[Function]} onClick={[Function]} onFocus={[Function]} onKeyDown={[Function]} className=\\"rbt-token rbt-token-removeable\\">
+                                                  Datafile
+                                                  <ClearButton className=\\"rbt-token-remove-button\\" label=\\"Remove\\" onClick={[Function]} tabIndex={-1}>
+                                                    <button tabIndex={-1} aria-label=\\"Remove\\" className=\\"close rbt-close rbt-token-remove-button\\" onClick={[Function: onClick]} type=\\"button\\">
+                                                      <span aria-hidden=\\"true\\">
+                                                        ×
+                                                      </span>
+                                                      <span className=\\"sr-only\\">
+                                                        Remove
+                                                      </span>
+                                                    </button>
+                                                  </ClearButton>
+                                                </div>
+                                              </Token>
+                                            </RootCloseWrapper>
+                                          </tokenContainer(Token)>
+                                          <ForwardRef autoComplete=\\"off\\" type=\\"text\\" onBlur={[Function]} onChange={[Function]} onKeyDown={[Function]} value=\\"\\" aria-activedescendant={[undefined]} aria-autocomplete=\\"list\\" aria-expanded={[undefined]} aria-haspopup=\\"listbox\\" aria-owns={[undefined]} onClick={[Function]} onFocus={[Function]} role={[undefined]} className={[undefined]} placeholder=\\"\\" style={{...}}>
+                                            <_class autoComplete=\\"off\\" type=\\"text\\" onBlur={[Function]} onChange={[Function]} onKeyDown={[Function]} value=\\"\\" aria-activedescendant={[undefined]} aria-autocomplete=\\"list\\" aria-expanded={[undefined]} aria-haspopup=\\"listbox\\" aria-owns={[undefined]} onClick={[Function]} onFocus={[Function]} role={[undefined]} className={[undefined]} placeholder=\\"\\" style={{...}} forwardedRef={[Function]}>
+                                              <hintContainer(Component) autoComplete=\\"off\\" type=\\"text\\" onBlur={[Function]} onChange={[Function]} onKeyDown={[Function]} value=\\"\\" aria-activedescendant={[undefined]} aria-autocomplete=\\"list\\" aria-expanded={[undefined]} aria-haspopup=\\"listbox\\" aria-owns={[undefined]} onClick={[Function]} onFocus={[Function]} role={[undefined]} className={[undefined]} placeholder=\\"\\" style={{...}} forwardedRef={[Function]} hintText=\\"\\" initialItem={{...}} inputNode={[undefined]} onAdd={[Function]} selectHintOnEnter={false}>
+                                                <div style={{...}}>
+                                                  <ForwardRef autoComplete=\\"off\\" type=\\"text\\" onBlur={[Function]} onChange={[Function]} onKeyDown={[Function]} value=\\"\\" aria-activedescendant={[undefined]} aria-autocomplete=\\"list\\" aria-expanded={[undefined]} aria-haspopup=\\"listbox\\" aria-owns={[undefined]} onClick={[Function]} onFocus={[Function]} role={[undefined]} className={[undefined]} placeholder=\\"\\" style={{...}}>
+                                                    <input autoComplete=\\"off\\" type=\\"text\\" onBlur={[Function]} onChange={[Function]} onKeyDown={[Function]} value=\\"\\" aria-activedescendant={[undefined]} aria-autocomplete=\\"list\\" aria-expanded={[undefined]} aria-haspopup=\\"listbox\\" aria-owns={[undefined]} onClick={[Function]} onFocus={[Function]} role={[undefined]} className=\\"rbt-input-main\\" placeholder=\\"\\" style={{...}} />
+                                                  </ForwardRef>
+                                                  <input aria-hidden={true} className=\\"rbt-input-hint\\" readOnly={true} style={{...}} tabIndex={-1} value=\\"\\" />
+                                                </div>
+                                              </hintContainer(Component)>
+                                            </_class>
+                                          </ForwardRef>
+                                        </div>
+                                      </div>
+                                    </TypeaheadInputMulti>
+                                  </withClassNames(TypeaheadInputMulti)>
+                                  <Overlay isMenuShown={false} referenceElement={[undefined]} align=\\"justify\\" dropup={false} flip={false} positionFixed={false} />
+                                </div>
+                              </RootCloseWrapper>
+                            </TypeaheadManager>
+                          </Typeahead>
+                        </TypeaheadComponent>
+                        <div style={{...}}>
+                          <label htmlFor=\\"contain\\">
+                            Filter by Instrument
+                          </label>
+                          <TypeaheadComponent id=\\"instrumentList\\" multiple={true} labelKey=\\"name\\" onChange={[Function: onChange]} placeholder=\\"Start typing to select instruments\\" options={{...}} clearButton={false} inputProps={{...}} isInvalid={false} isLoading={false} isValid={false} renderMenu={[Function: renderMenu]} renderToken={[Function: renderToken]}>
+                            <Typeahead id=\\"instrumentList\\" multiple={true} labelKey=\\"name\\" onChange={[Function: onChange]} placeholder=\\"Start typing to select instruments\\" options={{...}} clearButton={false} inputProps={{...}} isInvalid={false} isLoading={false} isValid={false} renderMenu={[Function: renderMenu]} renderToken={[Function: renderToken]} allowNew={false} autoFocus={false} caseSensitive={false} defaultInputValue=\\"\\" defaultOpen={false} defaultSelected={{...}} filterBy={{...}} highlightOnlyResult={false} ignoreDiacritics={true} maxResults={100} minLength={0} onBlur={[Function: noop]} onFocus={[Function: noop]} onInputChange={[Function: noop]} onKeyDown={[Function: noop]} onMenuToggle={[Function: noop]} onPaginate={[Function: noop]} paginate={true} selectHintOnEnter={false}>
+                              <TypeaheadManager id=\\"instrumentList\\" multiple={true} labelKey=\\"name\\" placeholder=\\"Start typing to select instruments\\" options={{...}} clearButton={false} inputProps={{...}} isInvalid={false} isLoading={false} isValid={false} renderMenu={[Function: renderMenu]} renderToken={[Function: renderToken]} allowNew={false} autoFocus={false} caseSensitive={false} defaultInputValue=\\"\\" defaultOpen={false} defaultSelected={{...}} filterBy={{...}} highlightOnlyResult={false} ignoreDiacritics={true} maxResults={100} minLength={0} onBlur={[Function]} onFocus={[Function]} onInputChange={[Function: noop]} onKeyDown={[Function]} onMenuToggle={[Function: noop]} onPaginate={[Function: noop]} paginate={true} selectHintOnEnter={false} activeIndex={-1} activeItem={{...}} initialItem={{...}} isFocused={false} selected={{...}} showMenu={false} shownResults={100} text=\\"\\" inputNode={[undefined]} inputRef={[Function]} isMenuShown={false} items={{...}} onActiveItemChange={[Function]} onAdd={[Function]} onChange={[Function]} onClear={[Function]} onHide={[Function]} onInitialItemChange={[Function]} onMenuItemClick={[Function]} onRemove={[Function]} results={{...}}>
+                                <RootCloseWrapper disabled={true} onRootClose={[Function]} event=\\"click\\">
+                                  <div className=\\"rbt\\" style={{...}} tabIndex={-1}>
+                                    <withClassNames(TypeaheadInputMulti) autoComplete=\\"off\\" placeholder=\\"Start typing to select instruments\\" type=\\"text\\" inputRef={[Function]} onBlur={[Function]} onChange={[Function]} onKeyDown={[Function]} value=\\"\\" aria-activedescendant={[undefined]} aria-autocomplete=\\"list\\" aria-expanded={[undefined]} aria-haspopup=\\"listbox\\" aria-owns={[undefined]} className=\\"\\" onClick={[Function]} onFocus={[Function]} role={[undefined]} inputClassName={[undefined]} bsSize={[undefined]} isInvalid={false} isValid={false} selected={{...}}>
+                                      <TypeaheadInputMulti autoComplete=\\"off\\" placeholder=\\"Start typing to select instruments\\" type=\\"text\\" inputRef={[Function]} onBlur={[Function]} onChange={[Function]} onKeyDown={[Function]} value=\\"\\" aria-activedescendant={[undefined]} aria-autocomplete=\\"list\\" aria-expanded={[undefined]} aria-haspopup=\\"listbox\\" aria-owns={[undefined]} onClick={[Function]} onFocus={[Function]} role={[undefined]} inputClassName={[undefined]} selected={{...}} className=\\"form-control rbt-input\\">
+                                        <div className=\\"rbt-input-multi form-control rbt-input\\" disabled={[undefined]} onClick={[Function]} onFocus={[Function]} tabIndex={-1}>
+                                          <div className=\\"rbt-input-wrapper\\">
+                                            <ForwardRef autoComplete=\\"off\\" type=\\"text\\" onBlur={[Function]} onChange={[Function]} onKeyDown={[Function]} value=\\"\\" aria-activedescendant={[undefined]} aria-autocomplete=\\"list\\" aria-expanded={[undefined]} aria-haspopup=\\"listbox\\" aria-owns={[undefined]} onClick={[Function]} onFocus={[Function]} role={[undefined]} className={[undefined]} placeholder=\\"Start typing to select instruments\\" style={{...}}>
+                                              <_class autoComplete=\\"off\\" type=\\"text\\" onBlur={[Function]} onChange={[Function]} onKeyDown={[Function]} value=\\"\\" aria-activedescendant={[undefined]} aria-autocomplete=\\"list\\" aria-expanded={[undefined]} aria-haspopup=\\"listbox\\" aria-owns={[undefined]} onClick={[Function]} onFocus={[Function]} role={[undefined]} className={[undefined]} placeholder=\\"Start typing to select instruments\\" style={{...}} forwardedRef={[Function]}>
+                                                <hintContainer(Component) autoComplete=\\"off\\" type=\\"text\\" onBlur={[Function]} onChange={[Function]} onKeyDown={[Function]} value=\\"\\" aria-activedescendant={[undefined]} aria-autocomplete=\\"list\\" aria-expanded={[undefined]} aria-haspopup=\\"listbox\\" aria-owns={[undefined]} onClick={[Function]} onFocus={[Function]} role={[undefined]} className={[undefined]} placeholder=\\"Start typing to select instruments\\" style={{...}} forwardedRef={[Function]} hintText=\\"\\" initialItem={{...}} inputNode={[undefined]} onAdd={[Function]} selectHintOnEnter={false}>
+                                                  <div style={{...}}>
+                                                    <ForwardRef autoComplete=\\"off\\" type=\\"text\\" onBlur={[Function]} onChange={[Function]} onKeyDown={[Function]} value=\\"\\" aria-activedescendant={[undefined]} aria-autocomplete=\\"list\\" aria-expanded={[undefined]} aria-haspopup=\\"listbox\\" aria-owns={[undefined]} onClick={[Function]} onFocus={[Function]} role={[undefined]} className={[undefined]} placeholder=\\"Start typing to select instruments\\" style={{...}}>
+                                                      <input autoComplete=\\"off\\" type=\\"text\\" onBlur={[Function]} onChange={[Function]} onKeyDown={[Function]} value=\\"\\" aria-activedescendant={[undefined]} aria-autocomplete=\\"list\\" aria-expanded={[undefined]} aria-haspopup=\\"listbox\\" aria-owns={[undefined]} onClick={[Function]} onFocus={[Function]} role={[undefined]} className=\\"rbt-input-main\\" placeholder=\\"Start typing to select instruments\\" style={{...}} />
+                                                    </ForwardRef>
+                                                    <input aria-hidden={true} className=\\"rbt-input-hint\\" readOnly={true} style={{...}} tabIndex={-1} value=\\"\\" />
+                                                  </div>
+                                                </hintContainer(Component)>
+                                              </_class>
+                                            </ForwardRef>
+                                          </div>
+                                        </div>
+                                      </TypeaheadInputMulti>
+                                    </withClassNames(TypeaheadInputMulti)>
+                                    <Overlay isMenuShown={false} referenceElement={[undefined]} align=\\"justify\\" dropup={false} flip={false} positionFixed={false} />
+                                  </div>
+                                </RootCloseWrapper>
+                              </TypeaheadManager>
+                            </Typeahead>
+                          </TypeaheadComponent>
+                        </div>
+                        <button type=\\"submit\\" className=\\"btn btn-primary\\" onClick={[Function: handleAdvancedSearchFormSubmit]}>
+                          <i className=\\"fa fa-search\\" aria-hidden=\\"true\\" />
+                        </button>
+                      </div>
+                    </form>
+                  </AdvancedSearchForm>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</SimpleSearchForm>"
+`;
+
+exports[`Search Component Render Search Component 1`] = `
+<div>
+  <main>
+    <main>
+      <div
+        class="row"
+      >
+        <div
+          class="mx-auto align-items-center"
+        >
+          <div
+            class="card align-items-center"
+          >
+            <div
+              class="card-body"
+            >
+              <div
+                class="row align-items-center"
+              >
+                <div
+                  class="col-md-12"
+                >
+                  <form
+                    class="form-horizontal"
+                    id="simple-search"
+                  >
+                    <div
+                      class="input-group mb-3"
+                    >
+                      <input
+                        class="form-control"
+                        name="simple_search_text"
+                        placeholder="Search for Experiments, Datasets, Datafiles"
+                        type="text"
+                        value=""
+                      />
+                      <div
+                        class="input-group-append"
+                      >
+                        <button
+                          class="input-group-text"
+                          type="button"
+                        >
+                          <span
+                            class="fa fa-search"
+                          />
+                        </button>
+                      </div>
+                    </div>
+                    <form
+                      class="border-top form-horizontal"
+                      id="adv-search-form"
+                    >
+                      <div
+                        class="form-group"
+                        id="adv-search"
+                      >
+                        <div>
+                          <label
+                            class="font-weight-bold"
+                          >
+                            Advanced Search
+                          </label>
+                        </div>
+                        <label
+                          for="filter"
+                        >
+                          Filter by Date created
+                        </label>
+                        <div
+                          class="form-group row"
+                        >
+                          <div
+                            class="col-xs-6"
+                            style="padding-left: 0px; padding-right: 15px;"
+                          >
+                            <div
+                              class="rdt"
+                            >
+                              <input
+                                class="form-control"
+                                placeholder="Select start date"
+                                type="text"
+                                value=""
+                              />
+                              <div
+                                class="rdtPicker"
+                              >
+                                <div
+                                  class="rdtDays"
+                                >
+                                  <table>
+                                    <thead>
+                                      <tr>
+                                        <th
+                                          class="rdtPrev"
+                                        >
+                                          <span>
+                                            ‹
+                                          </span>
+                                        </th>
+                                        <th
+                                          class="rdtSwitch"
+                                          colspan="5"
+                                          data-value="1"
+                                        >
+                                          February 2017
+                                        </th>
+                                        <th
+                                          class="rdtNext"
+                                        >
+                                          <span>
+                                            ›
+                                          </span>
+                                        </th>
+                                      </tr>
+                                      <tr>
+                                        <th
+                                          class="dow"
+                                        >
+                                          Su
+                                        </th>
+                                        <th
+                                          class="dow"
+                                        >
+                                          Mo
+                                        </th>
+                                        <th
+                                          class="dow"
+                                        >
+                                          Tu
+                                        </th>
+                                        <th
+                                          class="dow"
+                                        >
+                                          We
+                                        </th>
+                                        <th
+                                          class="dow"
+                                        >
+                                          Th
+                                        </th>
+                                        <th
+                                          class="dow"
+                                        >
+                                          Fr
+                                        </th>
+                                        <th
+                                          class="dow"
+                                        >
+                                          Sa
+                                        </th>
+                                      </tr>
+                                    </thead>
+                                    <tbody>
+                                      <tr>
+                                        <td
+                                          class="rdtDay rdtOld"
+                                          data-value="29"
+                                        >
+                                          29
+                                        </td>
+                                        <td
+                                          class="rdtDay rdtOld"
+                                          data-value="30"
+                                        >
+                                          30
+                                        </td>
+                                        <td
+                                          class="rdtDay rdtOld"
+                                          data-value="31"
+                                        >
+                                          31
+                                        </td>
+                                        <td
+                                          class="rdtDay"
+                                          data-value="1"
+                                        >
+                                          1
+                                        </td>
+                                        <td
+                                          class="rdtDay"
+                                          data-value="2"
+                                        >
+                                          2
+                                        </td>
+                                        <td
+                                          class="rdtDay"
+                                          data-value="3"
+                                        >
+                                          3
+                                        </td>
+                                        <td
+                                          class="rdtDay"
+                                          data-value="4"
+                                        >
+                                          4
+                                        </td>
+                                      </tr>
+                                      <tr>
+                                        <td
+                                          class="rdtDay"
+                                          data-value="5"
+                                        >
+                                          5
+                                        </td>
+                                        <td
+                                          class="rdtDay"
+                                          data-value="6"
+                                        >
+                                          6
+                                        </td>
+                                        <td
+                                          class="rdtDay"
+                                          data-value="7"
+                                        >
+                                          7
+                                        </td>
+                                        <td
+                                          class="rdtDay"
+                                          data-value="8"
+                                        >
+                                          8
+                                        </td>
+                                        <td
+                                          class="rdtDay"
+                                          data-value="9"
+                                        >
+                                          9
+                                        </td>
+                                        <td
+                                          class="rdtDay"
+                                          data-value="10"
+                                        >
+                                          10
+                                        </td>
+                                        <td
+                                          class="rdtDay"
+                                          data-value="11"
+                                        >
+                                          11
+                                        </td>
+                                      </tr>
+                                      <tr>
+                                        <td
+                                          class="rdtDay"
+                                          data-value="12"
+                                        >
+                                          12
+                                        </td>
+                                        <td
+                                          class="rdtDay"
+                                          data-value="13"
+                                        >
+                                          13
+                                        </td>
+                                        <td
+                                          class="rdtDay rdtToday"
+                                          data-value="14"
+                                        >
+                                          14
+                                        </td>
+                                        <td
+                                          class="rdtDay rdtDisabled"
+                                          data-value="15"
+                                        >
+                                          15
+                                        </td>
+                                        <td
+                                          class="rdtDay rdtDisabled"
+                                          data-value="16"
+                                        >
+                                          16
+                                        </td>
+                                        <td
+                                          class="rdtDay rdtDisabled"
+                                          data-value="17"
+                                        >
+                                          17
+                                        </td>
+                                        <td
+                                          class="rdtDay rdtDisabled"
+                                          data-value="18"
+                                        >
+                                          18
+                                        </td>
+                                      </tr>
+                                      <tr>
+                                        <td
+                                          class="rdtDay rdtDisabled"
+                                          data-value="19"
+                                        >
+                                          19
+                                        </td>
+                                        <td
+                                          class="rdtDay rdtDisabled"
+                                          data-value="20"
+                                        >
+                                          20
+                                        </td>
+                                        <td
+                                          class="rdtDay rdtDisabled"
+                                          data-value="21"
+                                        >
+                                          21
+                                        </td>
+                                        <td
+                                          class="rdtDay rdtDisabled"
+                                          data-value="22"
+                                        >
+                                          22
+                                        </td>
+                                        <td
+                                          class="rdtDay rdtDisabled"
+                                          data-value="23"
+                                        >
+                                          23
+                                        </td>
+                                        <td
+                                          class="rdtDay rdtDisabled"
+                                          data-value="24"
+                                        >
+                                          24
+                                        </td>
+                                        <td
+                                          class="rdtDay rdtDisabled"
+                                          data-value="25"
+                                        >
+                                          25
+                                        </td>
+                                      </tr>
+                                      <tr>
+                                        <td
+                                          class="rdtDay rdtDisabled"
+                                          data-value="26"
+                                        >
+                                          26
+                                        </td>
+                                        <td
+                                          class="rdtDay rdtDisabled"
+                                          data-value="27"
+                                        >
+                                          27
+                                        </td>
+                                        <td
+                                          class="rdtDay rdtDisabled"
+                                          data-value="28"
+                                        >
+                                          28
+                                        </td>
+                                        <td
+                                          class="rdtDay rdtNew rdtDisabled"
+                                          data-value="1"
+                                        >
+                                          1
+                                        </td>
+                                        <td
+                                          class="rdtDay rdtNew rdtDisabled"
+                                          data-value="2"
+                                        >
+                                          2
+                                        </td>
+                                        <td
+                                          class="rdtDay rdtNew rdtDisabled"
+                                          data-value="3"
+                                        >
+                                          3
+                                        </td>
+                                        <td
+                                          class="rdtDay rdtNew rdtDisabled"
+                                          data-value="4"
+                                        >
+                                          4
+                                        </td>
+                                      </tr>
+                                      <tr>
+                                        <td
+                                          class="rdtDay rdtNew rdtDisabled"
+                                          data-value="5"
+                                        >
+                                          5
+                                        </td>
+                                        <td
+                                          class="rdtDay rdtNew rdtDisabled"
+                                          data-value="6"
+                                        >
+                                          6
+                                        </td>
+                                        <td
+                                          class="rdtDay rdtNew rdtDisabled"
+                                          data-value="7"
+                                        >
+                                          7
+                                        </td>
+                                        <td
+                                          class="rdtDay rdtNew rdtDisabled"
+                                          data-value="8"
+                                        >
+                                          8
+                                        </td>
+                                        <td
+                                          class="rdtDay rdtNew rdtDisabled"
+                                          data-value="9"
+                                        >
+                                          9
+                                        </td>
+                                        <td
+                                          class="rdtDay rdtNew rdtDisabled"
+                                          data-value="10"
+                                        >
+                                          10
+                                        </td>
+                                        <td
+                                          class="rdtDay rdtNew rdtDisabled"
+                                          data-value="11"
+                                        >
+                                          11
+                                        </td>
+                                      </tr>
+                                    </tbody>
+                                  </table>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                          <div
+                            class="col-xs-6"
+                            style="padding-right: 0px;"
+                          >
+                            <div
+                              class="rdt"
+                            >
+                              <input
+                                class="form-control"
+                                placeholder="Select end date"
+                                type="text"
+                                value=""
+                              />
+                              <div
+                                class="rdtPicker"
+                              >
+                                <div
+                                  class="rdtDays"
+                                >
+                                  <table>
+                                    <thead>
+                                      <tr>
+                                        <th
+                                          class="rdtPrev"
+                                        >
+                                          <span>
+                                            ‹
+                                          </span>
+                                        </th>
+                                        <th
+                                          class="rdtSwitch"
+                                          colspan="5"
+                                          data-value="1"
+                                        >
+                                          February 2017
+                                        </th>
+                                        <th
+                                          class="rdtNext"
+                                        >
+                                          <span>
+                                            ›
+                                          </span>
+                                        </th>
+                                      </tr>
+                                      <tr>
+                                        <th
+                                          class="dow"
+                                        >
+                                          Su
+                                        </th>
+                                        <th
+                                          class="dow"
+                                        >
+                                          Mo
+                                        </th>
+                                        <th
+                                          class="dow"
+                                        >
+                                          Tu
+                                        </th>
+                                        <th
+                                          class="dow"
+                                        >
+                                          We
+                                        </th>
+                                        <th
+                                          class="dow"
+                                        >
+                                          Th
+                                        </th>
+                                        <th
+                                          class="dow"
+                                        >
+                                          Fr
+                                        </th>
+                                        <th
+                                          class="dow"
+                                        >
+                                          Sa
+                                        </th>
+                                      </tr>
+                                    </thead>
+                                    <tbody>
+                                      <tr>
+                                        <td
+                                          class="rdtDay rdtOld rdtDisabled"
+                                          data-value="29"
+                                        >
+                                          29
+                                        </td>
+                                        <td
+                                          class="rdtDay rdtOld rdtDisabled"
+                                          data-value="30"
+                                        >
+                                          30
+                                        </td>
+                                        <td
+                                          class="rdtDay rdtOld rdtDisabled"
+                                          data-value="31"
+                                        >
+                                          31
+                                        </td>
+                                        <td
+                                          class="rdtDay rdtDisabled"
+                                          data-value="1"
+                                        >
+                                          1
+                                        </td>
+                                        <td
+                                          class="rdtDay rdtDisabled"
+                                          data-value="2"
+                                        >
+                                          2
+                                        </td>
+                                        <td
+                                          class="rdtDay rdtDisabled"
+                                          data-value="3"
+                                        >
+                                          3
+                                        </td>
+                                        <td
+                                          class="rdtDay rdtDisabled"
+                                          data-value="4"
+                                        >
+                                          4
+                                        </td>
+                                      </tr>
+                                      <tr>
+                                        <td
+                                          class="rdtDay rdtDisabled"
+                                          data-value="5"
+                                        >
+                                          5
+                                        </td>
+                                        <td
+                                          class="rdtDay rdtDisabled"
+                                          data-value="6"
+                                        >
+                                          6
+                                        </td>
+                                        <td
+                                          class="rdtDay rdtDisabled"
+                                          data-value="7"
+                                        >
+                                          7
+                                        </td>
+                                        <td
+                                          class="rdtDay rdtDisabled"
+                                          data-value="8"
+                                        >
+                                          8
+                                        </td>
+                                        <td
+                                          class="rdtDay rdtDisabled"
+                                          data-value="9"
+                                        >
+                                          9
+                                        </td>
+                                        <td
+                                          class="rdtDay rdtDisabled"
+                                          data-value="10"
+                                        >
+                                          10
+                                        </td>
+                                        <td
+                                          class="rdtDay rdtDisabled"
+                                          data-value="11"
+                                        >
+                                          11
+                                        </td>
+                                      </tr>
+                                      <tr>
+                                        <td
+                                          class="rdtDay rdtDisabled"
+                                          data-value="12"
+                                        >
+                                          12
+                                        </td>
+                                        <td
+                                          class="rdtDay rdtDisabled"
+                                          data-value="13"
+                                        >
+                                          13
+                                        </td>
+                                        <td
+                                          class="rdtDay rdtToday rdtDisabled"
+                                          data-value="14"
+                                        >
+                                          14
+                                        </td>
+                                        <td
+                                          class="rdtDay rdtDisabled"
+                                          data-value="15"
+                                        >
+                                          15
+                                        </td>
+                                        <td
+                                          class="rdtDay rdtDisabled"
+                                          data-value="16"
+                                        >
+                                          16
+                                        </td>
+                                        <td
+                                          class="rdtDay rdtDisabled"
+                                          data-value="17"
+                                        >
+                                          17
+                                        </td>
+                                        <td
+                                          class="rdtDay rdtDisabled"
+                                          data-value="18"
+                                        >
+                                          18
+                                        </td>
+                                      </tr>
+                                      <tr>
+                                        <td
+                                          class="rdtDay rdtDisabled"
+                                          data-value="19"
+                                        >
+                                          19
+                                        </td>
+                                        <td
+                                          class="rdtDay rdtDisabled"
+                                          data-value="20"
+                                        >
+                                          20
+                                        </td>
+                                        <td
+                                          class="rdtDay rdtDisabled"
+                                          data-value="21"
+                                        >
+                                          21
+                                        </td>
+                                        <td
+                                          class="rdtDay rdtDisabled"
+                                          data-value="22"
+                                        >
+                                          22
+                                        </td>
+                                        <td
+                                          class="rdtDay rdtDisabled"
+                                          data-value="23"
+                                        >
+                                          23
+                                        </td>
+                                        <td
+                                          class="rdtDay rdtDisabled"
+                                          data-value="24"
+                                        >
+                                          24
+                                        </td>
+                                        <td
+                                          class="rdtDay rdtDisabled"
+                                          data-value="25"
+                                        >
+                                          25
+                                        </td>
+                                      </tr>
+                                      <tr>
+                                        <td
+                                          class="rdtDay rdtDisabled"
+                                          data-value="26"
+                                        >
+                                          26
+                                        </td>
+                                        <td
+                                          class="rdtDay rdtDisabled"
+                                          data-value="27"
+                                        >
+                                          27
+                                        </td>
+                                        <td
+                                          class="rdtDay rdtDisabled"
+                                          data-value="28"
+                                        >
+                                          28
+                                        </td>
+                                        <td
+                                          class="rdtDay rdtNew rdtDisabled"
+                                          data-value="1"
+                                        >
+                                          1
+                                        </td>
+                                        <td
+                                          class="rdtDay rdtNew rdtDisabled"
+                                          data-value="2"
+                                        >
+                                          2
+                                        </td>
+                                        <td
+                                          class="rdtDay rdtNew rdtDisabled"
+                                          data-value="3"
+                                        >
+                                          3
+                                        </td>
+                                        <td
+                                          class="rdtDay rdtNew rdtDisabled"
+                                          data-value="4"
+                                        >
+                                          4
+                                        </td>
+                                      </tr>
+                                      <tr>
+                                        <td
+                                          class="rdtDay rdtNew rdtDisabled"
+                                          data-value="5"
+                                        >
+                                          5
+                                        </td>
+                                        <td
+                                          class="rdtDay rdtNew rdtDisabled"
+                                          data-value="6"
+                                        >
+                                          6
+                                        </td>
+                                        <td
+                                          class="rdtDay rdtNew rdtDisabled"
+                                          data-value="7"
+                                        >
+                                          7
+                                        </td>
+                                        <td
+                                          class="rdtDay rdtNew rdtDisabled"
+                                          data-value="8"
+                                        >
+                                          8
+                                        </td>
+                                        <td
+                                          class="rdtDay rdtNew rdtDisabled"
+                                          data-value="9"
+                                        >
+                                          9
+                                        </td>
+                                        <td
+                                          class="rdtDay rdtNew rdtDisabled"
+                                          data-value="10"
+                                        >
+                                          10
+                                        </td>
+                                        <td
+                                          class="rdtDay rdtNew rdtDisabled"
+                                          data-value="11"
+                                        >
+                                          11
+                                        </td>
+                                      </tr>
+                                    </tbody>
+                                  </table>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        <label
+                          for="contain"
+                        >
+                          Search In
+                        </label>
+                        <div
+                          class="rbt"
+                          style="outline: none; position: relative;"
+                          tabindex="-1"
+                        >
+                          <div
+                            class="rbt-input-multi form-control rbt-input"
+                            tabindex="-1"
+                          >
+                            <div
+                              class="rbt-input-wrapper"
+                            >
+                              <div
+                                class="rbt-token rbt-token-removeable"
+                                option="Dataset"
+                                tabindex="0"
+                              >
+                                Dataset
+                                <button
+                                  aria-label="Remove"
+                                  class="close rbt-close rbt-token-remove-button"
+                                  tabindex="-1"
+                                  type="button"
+                                >
+                                  <span
+                                    aria-hidden="true"
+                                  >
+                                    ×
+                                  </span>
+                                  <span
+                                    class="sr-only"
+                                  >
+                                    Remove
+                                  </span>
+                                </button>
+                              </div>
+                              <div
+                                class="rbt-token rbt-token-removeable"
+                                option="Experiment"
+                                tabindex="0"
+                              >
+                                Experiment
+                                <button
+                                  aria-label="Remove"
+                                  class="close rbt-close rbt-token-remove-button"
+                                  tabindex="-1"
+                                  type="button"
+                                >
+                                  <span
+                                    aria-hidden="true"
+                                  >
+                                    ×
+                                  </span>
+                                  <span
+                                    class="sr-only"
+                                  >
+                                    Remove
+                                  </span>
+                                </button>
+                              </div>
+                              <div
+                                class="rbt-token rbt-token-removeable"
+                                option="Datafile"
+                                tabindex="0"
+                              >
+                                Datafile
+                                <button
+                                  aria-label="Remove"
+                                  class="close rbt-close rbt-token-remove-button"
+                                  tabindex="-1"
+                                  type="button"
+                                >
+                                  <span
+                                    aria-hidden="true"
+                                  >
+                                    ×
+                                  </span>
+                                  <span
+                                    class="sr-only"
+                                  >
+                                    Remove
+                                  </span>
+                                </button>
+                              </div>
+                              <div
+                                style="display: flex; flex: 1; height: 100%; position: relative;"
+                              >
+                                <input
+                                  aria-autocomplete="list"
+                                  aria-haspopup="listbox"
+                                  autocomplete="off"
+                                  class="rbt-input-main"
+                                  placeholder=""
+                                  style="background-color: transparent; border: 0px; box-shadow: none; cursor: inherit; outline: none; padding: 0px; width: 100%; z-index: 1;"
+                                  type="text"
+                                  value=""
+                                />
+                                <input
+                                  aria-hidden="true"
+                                  class="rbt-input-hint"
+                                  readonly=""
+                                  style="background-color: transparent; border-color: transparent; box-shadow: none; color: rgba(0, 0, 0, 0.35); left: 0px; pointer-events: none; position: absolute; top: 0px; width: 100%; border-style: inset inset inset inset; border-width: 0px 0px 0px 0px; line-height: normal; padding: 0px 0px 0px 0px;"
+                                  tabindex="-1"
+                                  value=""
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        <div
+                          style="display: block;"
+                        >
+                          <label
+                            for="contain"
+                          >
+                            Filter by Instrument
+                          </label>
+                          <div
+                            class="rbt"
+                            style="outline: none; position: relative;"
+                            tabindex="-1"
+                          >
+                            <div
+                              class="rbt-input-multi form-control rbt-input"
+                              tabindex="-1"
+                            >
+                              <div
+                                class="rbt-input-wrapper"
+                              >
+                                <div
+                                  style="display: flex; flex: 1; height: 100%; position: relative;"
+                                >
+                                  <input
+                                    aria-autocomplete="list"
+                                    aria-haspopup="listbox"
+                                    autocomplete="off"
+                                    class="rbt-input-main"
+                                    placeholder="Start typing to select instruments"
+                                    style="background-color: transparent; border: 0px; box-shadow: none; cursor: inherit; outline: none; padding: 0px; width: 100%; z-index: 1;"
+                                    type="text"
+                                    value=""
+                                  />
+                                  <input
+                                    aria-hidden="true"
+                                    class="rbt-input-hint"
+                                    readonly=""
+                                    style="background-color: transparent; border-color: transparent; box-shadow: none; color: rgba(0, 0, 0, 0.35); left: 0px; pointer-events: none; position: absolute; top: 0px; width: 100%; border-style: inset inset inset inset; border-width: 0px 0px 0px 0px; line-height: normal; padding: 0px 0px 0px 0px;"
+                                    tabindex="-1"
+                                    value=""
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        <button
+                          class="btn btn-primary"
+                          type="submit"
+                        >
+                          <i
+                            aria-hidden="true"
+                            class="fa fa-search"
+                          />
+                        </button>
+                      </div>
+                    </form>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+    <div
+      style="margin-top: 15px;"
+    >
+      <div
+        class="container"
+        style="margin-bottom: 10px;"
+      >
+        <h2>
+          Search Results 
+        </h2>
+      </div>
+      <div
+        class="container"
+        id="tabbed-pane"
+      >
+        <ul
+          class="nav nav-tabs"
+          id="searchTab"
+          role="tablist"
+          style="font-weight: 600;"
+        >
+          <li
+            class="nav-item"
+          >
+            <a
+              aria-controls="experiments"
+              aria-selected="true"
+              class="nav-link active"
+              data-toggle="tab"
+              href="#experiments"
+              id="experiments-tab"
+              role="tab"
+            >
+              <i
+                class="fa fa-flask fa-2x"
+              />
+              Experiments
+              <span
+                class="badge badge-secondary count-badge"
+              />
+            </a>
+          </li>
+          <li
+            class="nav-item"
+          >
+            <a
+              aria-controls="profile"
+              aria-selected="false"
+              class="nav-link"
+              data-toggle="tab"
+              href="#datasets"
+              id="datasets-tab"
+              role="tab"
+            >
+              <i
+                class="fa fa-folder fa-2x"
+              />
+              Datasets
+              <span
+                class="badge badge-secondary count-badge"
+              />
+            </a>
+          </li>
+          <li
+            class="nav-item"
+          >
+            <a
+              aria-controls="contact"
+              aria-selected="false"
+              class="nav-link"
+              data-toggle="tab"
+              href="#datafiles"
+              id="datafiles-tab"
+              role="tab"
+            >
+              <i
+                class="fa fa-file fa-2x"
+              />
+              Datafiles
+              <span
+                class="badge badge-secondary count-badge"
+              />
+            </a>
+          </li>
+        </ul>
+        <div
+          class="tab-content"
+          id="myTabContent"
+        >
+          <div
+            aria-labelledby="experiments-tab"
+            class="tab-pane fade show active"
+            id="experiments"
+            role="tabpanel"
+          >
+            <div
+              class="result-list"
+            >
+              <span />
+            </div>
+          </div>
+          <div
+            aria-labelledby="datasets-tab"
+            class="tab-pane fade"
+            id="datasets"
+            role="tabpanel"
+          >
+            <div
+              class="result-list"
+            >
+              <span />
+            </div>
+          </div>
+          <div
+            aria-labelledby="datafiles-tab"
+            class="tab-pane fade"
+            id="datafiles"
+            role="tabpanel"
+          >
+            <div
+              class="result-list"
+            >
+              <span />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+`;
