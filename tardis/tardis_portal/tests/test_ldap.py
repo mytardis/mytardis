@@ -117,7 +117,7 @@ class LDAPTest(TestCase):
 
         # Check that there is an entry in the user authentication table
         from ..models import UserAuthentication
-        userAuth = UserAuthentication.objects.get(
+        UserAuthentication.objects.get(
             userProfile__user=user,
             authenticationMethod=l.name)
 

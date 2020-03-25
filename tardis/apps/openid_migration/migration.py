@@ -6,7 +6,7 @@ from django.conf import settings
 
 from tastypie.models import ApiKey
 
-from tardis.tardis_portal.models import User, UserProfile, UserAuthentication, \
+from tardis.tardis_portal.models import User, UserAuthentication, \
     ObjectACL, Group
 from tardis.tardis_portal.auth.authentication import _getJsonFailedResponse,\
     _getJsonSuccessResponse, _getJsonConfirmResponse
@@ -38,11 +38,6 @@ def do_migration(request):
 
     from tardis.tardis_portal.auth import auth_service
 
-    userAuthMethodList = []
-
-    # the list of supported non-local DB authentication methods
-    supportedAuthMethods = getSupportedAuthMethods()
-
     # let's try and authenticate here
     user = auth_service.authenticate(authMethod="None", request=request)
 
@@ -58,9 +53,6 @@ def do_migration(request):
 
     logger.info("starting migration from %s to %s", user.username,
                 request.user.username)
-    # check if the "request.user" has a userProfile
-    userProfile, created = UserProfile.objects.get_or_create(
-        user=request.user)
     # get request user authentication method
     data = _setupJsonData(old_user=user, new_user=request.user)
     # get authenticated user backend
@@ -299,7 +291,7 @@ def getSupportedAuthMethods():
     # the list of supported non-local DB authentication methods
     supportedAuthMethods = {}
 
-    for authKey, authDisplayName, authBackend in settings.AUTH_PROVIDERS:
+    for authKey, authDisplayName, _ in settings.AUTH_PROVIDERS:
         supportedAuthMethods[authKey] = authDisplayName
 
     return supportedAuthMethods

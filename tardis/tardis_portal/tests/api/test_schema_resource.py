@@ -16,7 +16,7 @@ from . import MyTardisResourceTestCase
 
 class SchemaResourceTest(MyTardisResourceTestCase):
     def setUp(self):
-        super(SchemaResourceTest, self).setUp()
+        super().setUp()
         self.test_schema = Schema.objects.create(
 	    namespace="http://schema.namespace",
 	    type=Schema.DATAFILE)
