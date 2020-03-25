@@ -49,7 +49,7 @@ class KeyPair(models.Model):
         if self.key_type and self.private_key and not self.public_key:
             self.public_key = self.key.get_base64()
 
-        super(KeyPair, self).save(*args, **kwargs)
+        super().save(*args, **kwargs)
 
     @property
     def key(self):

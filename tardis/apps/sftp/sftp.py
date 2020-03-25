@@ -354,7 +354,7 @@ class MyTSFTPHandle(SFTPHandle):
             to L{SFTPServerInterface.open}
         :param None optional_args: unused
         """
-        super(MyTSFTPHandle, self).__init__(flags=flags)
+        super().__init__(flags=flags)
         try:
             self.readfile = df.file_object
         except IOError:
@@ -380,7 +380,7 @@ class MyTSFTPHandle(SFTPHandle):
 class MyTServerInterface(ServerInterface):
 
     def __init__(self):
-        super(MyTServerInterface, self).__init__()
+        super().__init__()
         self.username = None
         self.user = None
 
@@ -459,7 +459,7 @@ class MyTSFTPServer(SFTPServer):
 
     def __init__(self, *args, **kwargs):
         kwargs['client_ip'] = args[0].transport.getpeername()[0]
-        super(MyTSFTPServer, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
 
 class MyTSFTPRequestHandler(socketserver.BaseRequestHandler):
@@ -483,7 +483,8 @@ class MyTSFTPRequestHandler(socketserver.BaseRequestHandler):
             logger.error("SSH error: %s" % str(e))
             self.transport.close()
         except EOFError as e:
-            logger.error("Socket error: %s" % str(e))
+            # Don't throw an error
+            logger.warning("Socket error: %s" % str(e))
         except Exception as e:
             logger.error("Error: %s" % str(e))
 

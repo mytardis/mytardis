@@ -104,7 +104,7 @@ def get_dataset_info(dataset, include_thumbnail=False, exclude=None):  # too com
             schemas = {}
             for ps in dataset.getParameterSets():
                 schemas[ps.schema.namespace] = ps.schema
-            for ns, view_fn in settings.DATASET_VIEWS:
+            for ns, _ in settings.DATASET_VIEWS:
                 if ns in schemas:
                     obj["datasettype"] = schemas[ns].name
                     break
@@ -128,7 +128,7 @@ class HttpResponseMethodNotAllowed(HttpResponse):
     status_code = 303
 
     def __init__(self, *args, **kwargs):
-        super(HttpResponseMethodNotAllowed, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         try:
             self["Allow"] = kwargs['allow']
         except:
