@@ -151,12 +151,14 @@ $(document).on("click", ".add-metadata", function(evt) {
     evt.preventDefault();
     $("#modal-metadata .modal-header .title").text("Add Metadata");
     loadModalRemoteBody(this, "#modal-metadata");
+    $("#add_edit_metadata_save_button").attr("form", "add_metadata_form");
 });
 
 $(document).on("click", ".edit-metadata", function(evt) {
     evt.preventDefault();
     $("#modal-metadata .modal-header .title").text("Edit Metadata");
     loadModalRemoteBody(this, "#modal-metadata");
+    $("#add_edit_metadata_save_button").attr("form", "edit_metadata_form");
 });
 
 $("#modal-metadata .submit-button").click(function() {

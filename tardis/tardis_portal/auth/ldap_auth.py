@@ -107,7 +107,7 @@ class LDAPBackend(AuthProvider, UserProvider, GroupProvider):
         try:
             ldap_result_id = l.search(base, searchScope,
                                       filterstr, attrlist)
-            result_type, result_data = l.result(ldap_result_id, 1)
+            _, result_data = l.result(ldap_result_id, 1)
             return result_data
         except ldap.LDAPError as e:
             logger.error(str(e))

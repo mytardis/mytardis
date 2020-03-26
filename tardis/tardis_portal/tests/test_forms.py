@@ -93,7 +93,3 @@ class RightsFormTestCase(TestCase):
                     'license': license_id }
             form = RightsForm(data)
             self.assertFalse(form.is_valid())
-
-    def test_needs_confirmation(self):
-        suitable_data = {'public_access': str(Experiment.PUBLIC_ACCESS_NONE),
-                         'license': ''}

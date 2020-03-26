@@ -311,7 +311,7 @@ def choose_rights(request, experiment_id):
         if not settings.REQUIRE_VALID_PUBLIC_CONTACTS:
             return True
 
-        userProfile, created = UserProfile.objects.get_or_create(
+        userProfile, _ = UserProfile.objects.get_or_create(
             user=owner)
 
         return userProfile.isValidPublicContact()

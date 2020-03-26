@@ -166,21 +166,16 @@ class ProxyingServer(IOAI):
             ``metadataNamespace`` tuples (each entry in the tuple is a string).
         :rtype: frozenset
         """
-        id_known = False
-
         def appendFormats(list_, p):
             try:
                 return list_ + p.listMetadataFormats(**kwargs)
             except oaipmh.error.IdDoesNotExistError:
                 return list_
             except oaipmh.error.NoMetadataFormatsError:
-                id_known = True
                 return list_
         formats = frozenset(reduce(appendFormats, self.providers, []))
         if 'identifier' in kwargs:
             if not formats:
-                if id_known:
-                    raise oaipmh.error.NoMetadataFormatsError
                 raise oaipmh.error.IdDoesNotExistError
         return formats
 

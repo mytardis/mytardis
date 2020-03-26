@@ -1,4 +1,3 @@
-import datetime
 import json
 import logging
 
@@ -168,11 +167,6 @@ class ObjectACLTestCase(TestCase):
                                     '&canWrite=true&canDelete=false&isOwner=true'
                                     % (self.experiment1.id, 'group1'))
         self.assertEqual(response.status_code, 200)
-
-        # ok, now do some tricky stuff
-        today = datetime.datetime.today()
-        yesterday = today - datetime.timedelta(days=1)
-        tomorrow = today + datetime.timedelta(days=1)
 
         # add user3 to experiment1
         response = self.client1.get('/experiment/control_panel/%i/access_list'
