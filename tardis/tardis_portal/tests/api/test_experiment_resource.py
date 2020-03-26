@@ -19,7 +19,7 @@ from . import MyTardisResourceTestCase
 
 class ExperimentResourceTest(MyTardisResourceTestCase):
     def setUp(self):
-        super(ExperimentResourceTest, self).setUp()
+        super().setUp()
         df_schema_name = "http://experi-mental.com/"
         self.test_schema = Schema(namespace=df_schema_name,
                                   type=Schema.EXPERIMENT)
@@ -117,7 +117,7 @@ class ExperimentResourceTest(MyTardisResourceTestCase):
         }
         output = self.api_client.get('/api/v1/experiment/%d/' % exp_id,
                                      authentication=self.get_credentials())
-        returned_data = json.loads(output.content)
+        returned_data = json.loads(output.content.decode())
         for key, value in expected_output.items():
             self.assertTrue(key in returned_data)
             if not key.endswith("_time"):
@@ -139,7 +139,7 @@ class ExperimentResourceTest(MyTardisResourceTestCase):
         output = self.api_client.get(
             '/api/v1/experimentauthor/%d/' % exp_author.id,
             authentication=self.get_credentials())
-        returned_data = json.loads(output.content)
+        returned_data = json.loads(output.content.decode())
         for key, value in expected_output.items():
             self.assertEqual(returned_data[key], value)
         self.assertEqual(

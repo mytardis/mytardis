@@ -22,7 +22,7 @@ class MyTardisResourceTestCase(ResourceTestCaseMixin, TestCase):
     abstract class without tests to combine common settings in one place
     '''
     def setUp(self):
-        super(MyTardisResourceTestCase, self).setUp()
+        super().setUp()
         self.username = 'mytardis'
         self.password = 'mytardis'  # nosec
         self.user = User.objects.create_user(username=self.username,
@@ -39,6 +39,8 @@ class MyTardisResourceTestCase(ResourceTestCaseMixin, TestCase):
                        'last_name': 'MyTardis API',
                        'email': 'api_test@mytardis.org'},
             auth_method="None")
+        self.user.user_permissions.add(
+            Permission.objects.get(codename='change_experiment'))
         self.user.user_permissions.add(
             Permission.objects.get(codename='change_dataset'))
         self.user.user_permissions.add(

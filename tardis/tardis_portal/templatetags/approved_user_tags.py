@@ -32,7 +32,7 @@ def check_if_user_not_approved(request):
 
 
 def get_matching_authmethod(backend):
-    for authKey, authDisplayName, authBackend in settings.AUTH_PROVIDERS:
+    for authKey, _, authBackend in settings.AUTH_PROVIDERS:
         if backend == authBackend:
             return authKey
     if backend == 'django.contrib.auth.backends.ModelBackend':

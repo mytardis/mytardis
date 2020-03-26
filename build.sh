@@ -5,8 +5,6 @@ exit
 
 # for Ubuntu 16.04 or 18.04
 # sudo bash install-ubuntu-py3-requirements.sh
-# OR
-# sudo bash install-ubuntu-py2-requirements.sh
 # # optionally:
 # # sudo apt-get install memcached python-memcache
 

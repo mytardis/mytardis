@@ -9,11 +9,9 @@ Tests for view methods relating to experiments
 
 """
 import json
+from urllib.parse import urlparse
 
 from mock import patch
-
-from six.moves import urllib
-from six.moves import map
 
 from django.urls import resolve, reverse
 from django.test import TestCase
@@ -75,7 +73,7 @@ class ExperimentTestCase(TestCase):
         response = client.get(created_url)
         self.assertEqual(response.status_code, 200)
 
-        experiment_id = resolve(urllib.parse.urlparse(created_url).path)\
+        experiment_id = resolve(urlparse(created_url).path)\
             .kwargs['experiment_id']
         experiment = Experiment.objects.get(id=experiment_id)
         for attr in ('title', 'description', 'institution_name'):
@@ -125,7 +123,7 @@ class ExperimentTestCase(TestCase):
         response = client.get(created_url)
         self.assertEqual(response.status_code, 200)
 
-        experiment_id = resolve(urllib.parse.urlparse(created_url).path)\
+        experiment_id = resolve(urlparse(created_url).path)\
             .kwargs['experiment_id']
         experiment = Experiment.objects.get(id=experiment_id)
         for attr in ('title', 'description', 'institution_name'):
@@ -198,13 +196,13 @@ class ExperimentTestCase(TestCase):
         # Check the JSON
         response = client.get(json_url)
         self.assertEqual(response.status_code, 200)
-        items = json.loads(response.content)
+        items = json.loads(response.content.decode())
         for item in items:
             check_item(item)
             # Check there's an individual resource
             response = client.get(json_url+str(item['id']))
             self.assertEqual(response.status_code, 200)
-            item = json.loads(response.content)
+            item = json.loads(response.content.decode())
             check_item(item)
             # Attempt to remove the dataset from the original experiment
             # Should fail because it would leave the dataset orphaned
@@ -218,7 +216,7 @@ class ExperimentTestCase(TestCase):
             response = client.put(new_url,
                                   data=json.dumps(item),
                                   content_type='application/json')
-            item = json.loads(response.content)
+            item = json.loads(response.content.decode())
             check_item(item)
             # This dataset should now have two experiments
             self.assertEqual(
@@ -231,7 +229,7 @@ class ExperimentTestCase(TestCase):
                                   data=json.dumps(item),
                                   content_type='application/json')
             self.assertEqual(response.status_code, 200)
-            item = json.loads(response.content)
+            item = json.loads(response.content.decode())
             check_item(item)
             self.assertEqual(
                 sorted(item['experiments']),
@@ -241,7 +239,7 @@ class ExperimentTestCase(TestCase):
             response = client.delete(json_url+str(item['id']),
                                      content_type='application/json')
             self.assertEqual(response.status_code, 200)
-            item = json.loads(response.content)
+            item = json.loads(response.content.decode())
             check_item(item)
             # Expect the item is now in all but the first experiment
             self.assertEqual(

@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (c) 2010-2011, Monash e-Research Centre
+# Copyright (c) 2010, Monash e-Research Centre
 #   (Monash University, Australia)
-# Copyright (c) 2010-2011, VeRSI Consortium
+# Copyright (c) 2010, VeRSI Consortium
 #   (Victorian eResearch Strategic Initiative, Australia)
 # All rights reserved.
 # Redistribution and use in source and binary forms, with or without
@@ -28,26 +28,22 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-'''
-Created on 02/09/2010
+"""
+tests/models/__init__.py
+http://docs.djangoproject.com/en/dev/topics/testing/
 
-.. moduleauthor::  Gerson Galang <gerson.galang@versi.edu.au>
-'''
+.. moduleauthor::  Russell Sim <russell.sim@monash.edu>
+.. moduleauthor::  James Wettenhall <james.wettenhall@monash.edu>
 
-
-class UnsupportedSearchQueryTypeError(Exception):
-
-    def __init__(self, msg):
-        Exception.__init__(self, msg)
-
-
-class SearchQueryTypeUnprovidedError(Exception):
-
-    def __init__(self, msg):
-        Exception.__init__(self, msg)
+"""
+from django.contrib.auth.models import User
+from django.test import TestCase
 
 
-class ParameterChoicesFormatError(Exception):
+class ModelTestCase(TestCase):
 
-    def __init__(self, msg):
-        Exception.__init__(self, msg)
+    def setUp(self):
+        user = 'tardis_user1'
+        pwd = 'secret'
+        email = ''
+        self.user = User.objects.create_user(user, email, pwd)

@@ -1,10 +1,11 @@
 import os
 import unittest
 
+from io import StringIO
+
 from django.core.management import call_command
 from django.conf import settings
 from django.contrib.auth.models import User
-from django.utils.six import StringIO
 from django.test import TestCase, modify_settings, override_settings
 
 from tardis.tardis_portal.models import Experiment, Dataset, DataFile
@@ -76,7 +77,7 @@ class IndexExperimentTestCase(TestCase):
         search = DatasetDocument.search()
         query = search.query("match", description='test_dataset')
         result = query.execute(ignore_cache=True)
-        self.assertEqual(result.hits.total, 1)
+        self.assertEqual(result.hits.total.value, 1)
         # search on datafile
         settings.REQUIRE_DATAFILE_SIZES = False
         settings.REQUIRE_DATAFILE_CHECKSUMS = False

@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import PropTypes from "prop-types";
+import React, { useState } from 'react';
+import PropTypes from 'prop-types';
 
 function Result({ result }) {
   const [dataToggleClass, setDataToggleClass] = useState(false);
@@ -10,7 +10,7 @@ function Result({ result }) {
     <div className="accordion-group" style={{ marginLeft: 20 }}>
       <div className="accordion-heading">
         <div className="accordion-body">
-          <span style={{ fontSize: 11, fontStyle: "italic" }}>
+          <span style={{ fontSize: 11, fontStyle: 'italic' }}>
             {`This dataset belongs to the following ${datasetResult.experiments.length} experiment(s):`}
           </span>
           <ul>
@@ -35,11 +35,11 @@ function Result({ result }) {
     <div className="accordion-group" style={{ marginLeft: 20 }}>
       <div className="accordion-heading">
         <div className="accordion-body">
-          <span style={{ fontSize: 11, fontStyle: "italic" }}>
+          <span style={{ fontSize: 11, fontStyle: 'italic' }}>
             This datafile is from following dataset:
           </span>
           <div>
-            <span style={{ fontWeight: "bold", marginLeft: 5 }}>
+            <span style={{ fontWeight: 'bold', marginLeft: 5 }}>
               <a href={datafileResult.dataset_url}>{datafileResult.dataset_description}</a>
             </span>
           </div>
@@ -51,7 +51,7 @@ function Result({ result }) {
     <div className="result" id={`${result.type}-${result.id}`}>
       <div className="panel panel-default">
         <div className="panel-body">
-          {result.type === "dataset"
+          {result.type === 'dataset'
           && (
           <div>
             <button
@@ -61,15 +61,15 @@ function Result({ result }) {
               data-target="#data"
               name="showChild"
             >
-              <i className={dataToggleClass ? "fa fa-plus" : "fa fa-minus"} />
+              <i className={dataToggleClass ? 'fa fa-plus' : 'fa fa-minus'} />
             </button>
-            <a style={{ fontWeight: "bold" }} href={result.url}>{result.title}</a>
+            <a style={{ fontWeight: 'bold' }} href={result.url}>{result.title}</a>
             <ul
               className="nav nav-pills badgelist pull-right"
-              style={{ display: "inline-block" }}
+              style={{ display: 'inline-block' }}
             >
               <li className="pull-right">
-                <span className="label label-info" title={`Date Created: ${result.created_time}`}>
+                <span className="badge badge-info mr-2" title={`Date Created: ${result.created_time}`}>
                   <i className="fa fa-clock-o" />
                   <span>
                     {result.created_time}
@@ -79,7 +79,7 @@ function Result({ result }) {
               {result.instrument
               && (
               <li className="pull-right">
-                <span className="label label-info" title={`Instrument Name: ${result.instrument}`}>
+                <span className="badge badge-info mr-2" title={`Instrument Name: ${result.instrument}`}>
                   {/* upgrade to font-awesome 5 will bring this icon */}
                   <i className="fa fa-microscope" />
                   <span>
@@ -95,7 +95,7 @@ function Result({ result }) {
           </div>
           )
           }
-          {result.type === "experiment"
+          {result.type === 'experiment'
           && (
           <div>
             <button
@@ -105,12 +105,12 @@ function Result({ result }) {
               data-target="#data"
               name="showChild"
             >
-              <i className={dataToggleClass ? "fa fa-plus" : "fa fa-minus"} />
+              <i className={dataToggleClass ? 'fa fa-plus' : 'fa fa-minus'} />
             </button>
-            <a style={{ fontWeight: "bold", display: "inline-block" }} href={result.url}>{result.title}</a>
-            <ul className="nav nav-pills badgelist pull-right" style={{ display: "inline-block" }}>
+            <a style={{ fontWeight: 'bold', display: 'inline-block' }} href={result.url}>{result.title}</a>
+            <ul className="nav nav-pills badgelist pull-right" style={{ display: 'inline-block' }}>
               <li className="pull-right">
-                <span className="label label-info" title={`Date Created: ${result.created_time}`}>
+                <span className="badge badge-info mr-2" title={`Date Created: ${result.created_time}`}>
                   <i className="fa fa-clock-o" />
                   <span>
                     {result.created_time}
@@ -118,7 +118,7 @@ function Result({ result }) {
                 </span>
               </li>
               <li className="pull-right">
-                <span className="label label-info" title={`Created by: ${result.created_by}`}>
+                <span className="badge badge-info mr-2" title={`Created by: ${result.created_by}`}>
                   <i className="fa fa-user" />
                   <span>
                     {result.created_by}
@@ -128,7 +128,7 @@ function Result({ result }) {
               {result.institution_name
               && (
                 <li className="pull-right">
-                  <span className="label label-info" title={`Institution Name: ${result.institution_name}`}>
+                  <span className="badge badge-info mr-2" title={`Institution Name: ${result.institution_name}`}>
                     <i className="fa fa-institution" />
                     <span>
                       {result.institution_name}
@@ -143,7 +143,7 @@ function Result({ result }) {
           </div>
           )
           }
-          {result.type === "datafile"
+          {result.type === 'datafile'
           && (
           <div>
             <button
@@ -153,12 +153,12 @@ function Result({ result }) {
               data-target="#data"
               name="showChild"
             >
-              <i className={dataToggleClass ? "fa fa-plus" : "fa fa-minus"} />
+              <i className={dataToggleClass ? 'fa fa-plus' : 'fa fa-minus'} />
             </button>
-            <a style={{ fontWeight: "bold" }} href={result.url}>{result.title}</a>
-            <ul className="nav nav-pills badgelist pull-right" style={{ display: "inline-block" }}>
+            <a style={{ fontWeight: 'bold' }} href={result.url}>{result.title}</a>
+            <ul className="nav nav-pills badgelist pull-right" style={{ display: 'inline-block' }}>
               <li className="pull-right">
-                <span className="label label-info" title={`Date Created: ${result.created_time}`}>
+                <span className="badge badge-info mr-2" title={`Date Created: ${result.created_time}`}>
                   <i className="fa fa-clock-o" />
                   <span>
                     {result.created_time}
@@ -177,12 +177,12 @@ function Result({ result }) {
 }
 Result.propTypes = {
   result: PropTypes.shape({
-    id: PropTypes.string.isRequired,
+    id: PropTypes.number.isRequired,
     type: PropTypes.string.isRequired,
     title: PropTypes.string.isRequired,
     url: PropTypes.string.isRequired,
-    created_time: PropTypes.instanceOf(Date).isRequired,
-    update_time: PropTypes.instanceOf(Date).isRequired,
+    created_time: PropTypes.string.isRequired,
+    update_time: PropTypes.string.isRequired,
     description: PropTypes.string,
     institution_name: PropTypes.string,
     instrument: PropTypes.string,

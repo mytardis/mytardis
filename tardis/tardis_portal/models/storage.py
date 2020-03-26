@@ -1,3 +1,4 @@
+import base64
 import os
 import logging
 import pickle
@@ -249,14 +250,14 @@ class StorageBoxOption(models.Model):
             return None
         if self.value_type == StorageBoxOption.STRING:
             return self.value
-        return pickle.loads(str(self.value))
+        return pickle.loads(base64.b64decode(self.value))
 
     @unpickled_value.setter
     def unpickled_value(self, input_value):
         if self.value_type == StorageBoxOption.STRING:
             self.value = input_value
         else:
-            self.value = pickle.dumps(input_value)
+            self.value = base64.b64encode(pickle.dumps(input_value)).decode()
 
 
 @python_2_unicode_compatible

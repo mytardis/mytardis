@@ -8,8 +8,6 @@ from os import path
 import inspect
 import types
 
-from six import string_types
-
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required, permission_required
@@ -139,7 +137,7 @@ class IndexView(TemplateView):
         :return: A dictionary of values for the view/template.
         :rtype: dict
         """
-        c = super(IndexView, self).get_context_data(**kwargs)
+        c = super().get_context_data(**kwargs)
         status = ''
         limit = 8
         c['status'] = status
@@ -254,7 +252,7 @@ class DatasetView(TemplateView):
             except (EmptyPage, InvalidPage):
                 return paginator.page(paginator.num_pages)
 
-        c = super(DatasetView, self).get_context_data(**kwargs)
+        c = super().get_context_data(**kwargs)
 
         dataset_id = dataset.id
         dataset_instrument = dataset.instrument
@@ -415,7 +413,7 @@ def _resolve_view(view_function_or_string):
     :rtype: types.FunctionType
     :raises TypeError:
     """
-    if isinstance(view_function_or_string, string_types):
+    if isinstance(view_function_or_string, str):
         x = view_function_or_string.split('.')
         obj_path, obj_name = ('.'.join(x[:-1]), x[-1])
         module = __import__(obj_path, fromlist=[obj_name])
@@ -474,7 +472,7 @@ class ExperimentView(TemplateView):
         :rtype: dict
         """
 
-        c = super(ExperimentView, self).get_context_data(**kwargs)
+        c = super().get_context_data(**kwargs)
 
         c['experiment'] = experiment
         c['has_write_permissions'] = \

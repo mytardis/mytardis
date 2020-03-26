@@ -167,7 +167,7 @@ latex_documents = [
 # If false, no module index is generated.
 #latex_use_modindex = True
 
-
-# Example configuration for intersphinx: refer to the Python standard library.
-intersphinx_mapping = {'http://docs.python.org/dev': None,
-                       'http://docs.djangoproject.com/en/1.11/': 'http://docs.djangoproject.com/en/1.11/_objects'}
+intersphinx_mapping = {
+    'python': ('https://docs.python.org/3', None),
+    'django': ('https://docs.djangoproject.com/en/2.2/', 'https://docs.djangoproject.com/en/2.2/_objects/'),
+}

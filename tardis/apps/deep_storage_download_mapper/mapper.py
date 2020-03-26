@@ -5,34 +5,13 @@ It recreates the structure as stored in the datafile directory
 '''
 import os
 
-import six
-from six.moves import urllib
+from urllib.parse import quote
 
 from django.conf import settings
 
 from tardis.tardis_portal.models.datafile import DataFile
 from tardis.tardis_portal.models.dataset import Dataset
 from tardis.tardis_portal.models.experiment import Experiment
-
-
-def encode_if_py2(string):
-    """UTF-8 encode string if necessary for Python 2.7.
-
-    If we get a unicode string in Python 2.7, e.g.  u'ünicode', we encode
-    it as UTF-8 before URL quoting it.
-
-    We use "six.text_type" rather than "unicode" to check the string type
-    in Python 2.7, to avoid getting an undefined variable error when
-    linting in Python 3.
-
-    In Python 3, it is not necessary to explicitly encode in UTF-8 before URL
-    quoting, and attempting to combine a bytes-encoded string with a database
-    ID in Python 3 using "%s_%d" % (b"foo", 123) gives "b'foo'_123" instead of
-    "foo_123", so it's best to avoid explict encoding.
-    """
-    if six.PY2 and isinstance(string, six.text_type):
-        return string.encode('utf-8')
-    return string
 
 
 def deep_storage_mapper(obj, rootdir=None):
@@ -55,19 +34,19 @@ def deep_storage_mapper(obj, rootdir=None):
     safe = settings.SAFE_FILESYSTEM_CHARACTERS
     if not rootdir:
         if isinstance(obj, DataFile):
-            return urllib.parse.quote(encode_if_py2(obj.filename), safe=safe)
+            return quote(obj.filename, safe=safe)
         if isinstance(obj, Dataset):
             if settings.DATASET_SPACES_TO_UNDERSCORES:
                 desc = obj.description.replace(' ', '_')
             else:
                 desc = obj.description
-            return urllib.parse.quote("%s_%d" % (encode_if_py2(desc), obj.id), safe=safe)
+            return quote("%s_%d" % (desc, obj.id), safe=safe)
         if isinstance(obj, Experiment):
             if settings.EXP_SPACES_TO_UNDERSCORES:
                 title = obj.title.replace(' ', '_')
             else:
                 title = obj.title
-            return urllib.parse.quote("%s_%d" % (encode_if_py2(title), obj.id), safe=safe)
+            return quote("%s_%d" % (title, obj.id), safe=safe)
         raise NotImplementedError(type(obj))
 
     if not isinstance(obj, DataFile):
@@ -77,8 +56,7 @@ def deep_storage_mapper(obj, rootdir=None):
     dataset = datafile.dataset
     exp = dataset.get_first_experiment()
     filepath = os.path.join(dataset.directory or '',
-                            urllib.parse.quote(encode_if_py2(dataset.description),
-                                               safe=safe),
+                            quote(dataset.description, safe=safe),
                             datafile.directory or '', datafile.filename)
     if rootdir != 'datasets':
         return os.path.join(rootdir, filepath)

@@ -6,10 +6,10 @@ Testing the Facility resource in MyTardis's Tastypie-based REST API
 '''
 import json
 
+from urllib.parse import quote
+
 from django.contrib.auth.models import Group
 
-import six
-from six.moves import urllib
 
 from ...models.facility import Facility
 
@@ -33,8 +33,8 @@ class FacilityResourceTest(MyTardisResourceTestCase):
         }
         output = self.api_client.get('/api/v1/facility/%d/' % first_facility,
                                      authentication=self.get_credentials())
-        returned_data = json.loads(output.content)
-        for key, value in six.iteritems(expected_output):
+        returned_data = json.loads(output.content.decode())
+        for key, value in expected_output.items():
             self.assertTrue(key in returned_data)
             self.assertEqual(returned_data[key], value)
 
@@ -52,12 +52,12 @@ class FacilityResourceTest(MyTardisResourceTestCase):
             "resource_uri": "/api/v1/facility/%d/" % first_facility
         }
         output = self.api_client.get('/api/v1/facility/?name=%s'
-                                     % urllib.parse.quote(self.testfacility.name),
+                                     % quote(self.testfacility.name),
                                      authentication=self.get_credentials())
-        returned_data = json.loads(output.content)
+        returned_data = json.loads(output.content.decode())
         self.assertEqual(returned_data['meta']['total_count'], 1)
         returned_object = returned_data['objects'][0]
-        for key, value in six.iteritems(expected_output):
+        for key, value in expected_output.items():
             self.assertTrue(key in returned_object)
             self.assertEqual(returned_object[key], value)
 
@@ -84,9 +84,9 @@ class FacilityResourceTest(MyTardisResourceTestCase):
         output = self.api_client.get('/api/v1/facility/?manager_group__id=%d' %
                                      group_id,
                                      authentication=self.get_credentials())
-        returned_data = json.loads(output.content)
+        returned_data = json.loads(output.content.decode())
         self.assertEqual(returned_data['meta']['total_count'], 1)
         returned_object = returned_data['objects'][0]
-        for key, value in six.iteritems(expected_output):
+        for key, value in expected_output.items():
             self.assertTrue(key in returned_object)
             self.assertEqual(returned_object[key], value)

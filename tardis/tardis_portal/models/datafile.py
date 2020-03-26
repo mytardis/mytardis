@@ -3,13 +3,11 @@ import logging
 import re
 from contextlib import contextmanager
 from tempfile import NamedTemporaryFile
+from urllib.parse import quote
 
 from os import path
 import mimetypes
 
-import six
-from six.moves import urllib
-from six import string_types
 
 from django.conf import settings
 from django.core.files import File
@@ -201,7 +199,7 @@ class DataFile(models.Model):
                                 self.size)
         self.update_mimetype(save=False)
 
-        super(DataFile, self).save(*args, **kwargs)
+        super().save(*args, **kwargs)
 
     def get_size(self):
         return self.size
@@ -372,7 +370,7 @@ class DataFile(models.Model):
                                                preview_image_par.string_value))
 
             if path.exists(file_path):
-                preview_image_file = open(file_path)
+                preview_image_file = open(file_path, 'rb')
                 return preview_image_file
 
         render_image_size_limit = getattr(settings, 'RENDER_IMAGE_SIZE_LIMIT',
@@ -489,7 +487,7 @@ class DataFileObject(models.Model):
         """Stores values prior to changes for change detection in
         self._initial_values
         """
-        super(DataFileObject, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self._initial_values = self._current_values
 
     @property
@@ -502,7 +500,7 @@ class DataFileObject(models.Model):
     def _changed(self):
         """return True if anything has changed since last save"""
         new_values = self._current_values
-        for k, v in six.iteritems(new_values):
+        for k, v in new_values.items():
             if k not in self._initial_values:
                 return True
             if self._initial_values[k] != v:
@@ -513,7 +511,7 @@ class DataFileObject(models.Model):
         from amqp.exceptions import AMQPError
 
         reverify = kwargs.pop('reverify', False)
-        super(DataFileObject, self).save(*args, **kwargs)
+        super().save(*args, **kwargs)
         if self._changed:
             self._initial_values = self._current_values
         elif not reverify:
@@ -546,10 +544,10 @@ class DataFileObject(models.Model):
 
         def default_identifier(dfo):
             path_parts = ["%s-%s" % (
-                urllib.parse.quote(dfo.datafile.dataset.description, safe='') or 'untitled',
+                quote(dfo.datafile.dataset.description, safe='') or 'untitled',
                 dfo.datafile.dataset.id)]
             if dfo.datafile.directory is not None:
-                path_parts += [urllib.parse.quote(dfo.datafile.directory)]
+                path_parts += [quote(dfo.datafile.directory)]
             path_parts += [dfo.datafile.filename.strip()]
             uri = path.join(*path_parts)
             return uri
@@ -729,7 +727,7 @@ class DataFileObject(models.Model):
                     for comp_type in comparisons}
         database_update = {}
         empty_value = {db_key: db_val is None or (
-            isinstance(db_val, string_types) and db_val.strip() == '')
+            isinstance(db_val, str) and db_val.strip() == '')
             for db_key, db_val in database.items()}
         same_values = {key: False for key, empty in empty_value.items()
                        if not empty}

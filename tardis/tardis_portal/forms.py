@@ -36,12 +36,11 @@ forms module
 .. moduleauthor::  Gerson Galang <gerson.galang@versi.edu.au>
 
 '''
-from collections import OrderedDict
 import logging
 import re
 
-import six
-from six.moves import UserDict
+from collections import OrderedDict
+from collections import UserDict
 
 from django import forms
 from django.contrib.sites.shortcuts import get_current_site
@@ -84,7 +83,7 @@ class LoginForm(AuthenticationForm):
     # authMethod = forms.CharField()
 
     def __init__(self, *args, **kwargs):
-        super(LoginForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.fields['username'] = forms.CharField(required=True,
                                                   label="Username",
                                                   max_length=75)
@@ -321,15 +320,15 @@ class ExperimentForm(forms.ModelForm):
                  initial=None, error_class=ErrorList, label_suffix=':',
                  empty_permitted=False, instance=None, extra=0):
 
-        super(ExperimentForm, self).__init__(data=data,
-                                             files=files,
-                                             auto_id=auto_id,
-                                             prefix=prefix,
-                                             initial=initial,
-                                             instance=instance,
-                                             error_class=error_class,
-                                             label_suffix=label_suffix,
-                                             empty_permitted=False)
+        super().__init__(data=data,
+                         files=files,
+                         auto_id=auto_id,
+                         prefix=prefix,
+                         initial=initial,
+                         instance=instance,
+                         error_class=error_class,
+                         label_suffix=label_suffix,
+                         empty_permitted=False)
 
         # fix up experiment form
         if instance and not data:
@@ -348,9 +347,6 @@ class ExperimentForm(forms.ModelForm):
                 'placeholder': "eg. Howard W. Florey, Brian Schmidt " +
                 "(http://nla.gov.au/nla.party-1480342)"}),
             help_text="Comma-separated authors and optional emails/URLs")
-
-        for _, field in self.fields.items():
-            field.widget.attrs['class'] = "col-md-8"
 
     def _format_author(self, author):
         if author.email or author.url:
@@ -422,7 +418,7 @@ class ExperimentForm(forms.ModelForm):
             for author in authors:
                 author.delete()
 
-        experiment = super(ExperimentForm, self).save(commit)
+        experiment = super().save(commit)
 
         authors = []
         experiment_authors = []
@@ -452,7 +448,7 @@ class ExperimentForm(forms.ModelForm):
 
         # TODO since this is a compound field, this should merge the errors
         for ae in self.experiment_authors:
-            for name, error in ae.errors.items():
+            for name, _ in ae.errors.items():
                 if isinstance(ae.fields[name], ModelChoiceField):
                     continue
                 if ae.is_bound and bool(ae.errors[name]):
@@ -508,7 +504,7 @@ def create_parameterset_edit_form(parameterset, request=None):
     if request:
         fields = OrderedDict()
 
-        for key, value in sorted(six.iteritems(request.POST)):
+        for key, value in sorted(request.POST.items()):
 
             x = 1
             stripped_key = key.replace('_s47_', '/')
@@ -585,20 +581,24 @@ def create_parameterset_edit_form(parameterset, request=None):
                 {'base_fields': fields})
 
 
-def save_datafile_edit_form(parameterset, request):
+def save_parameter_edit_form(parameterset, request):
 
     psm = ParameterSetManager(parameterset=parameterset)
     psm.delete_all_params()
 
-    for key, value in sorted(six.iteritems(request.POST)):
+    for key, value in sorted(request.POST.items()):
         if value:
             stripped_key = key.replace('_s47_', '/')
             stripped_key = stripped_key.rpartition('__')[0]
 
             psm.new_param(stripped_key, value)
 
+    psm = ParameterSetManager(parameterset=parameterset)
+    if not psm.parameters.exists():
+        parameterset.delete()
 
-def create_datafile_add_form(schema, parentObject, request=None):
+
+def create_parameter_add_form(schema, parentObject, request=None):
 
     from .models import ParameterName
 
@@ -606,7 +606,7 @@ def create_datafile_add_form(schema, parentObject, request=None):
     if request:
         fields = OrderedDict()
 
-        for key, value in sorted(six.iteritems(request.POST)):
+        for key, value in sorted(request.POST.items()):
 
             x = 1
 
@@ -681,12 +681,12 @@ def create_datafile_add_form(schema, parentObject, request=None):
                 {'base_fields': fields})
 
 
-def save_datafile_add_form(schema, parentObject, request):
+def save_parameter_add_form(schema, parentObject, request):
 
     psm = ParameterSetManager(schema=schema,
                               parentObject=parentObject)
 
-    for key, value in sorted(six.iteritems(request.POST)):
+    for key, value in sorted(request.POST.items()):
         if value:
             stripped_key = key.replace('_s47_', '/')
             stripped_key = stripped_key.rpartition('__')[0]
@@ -709,7 +709,7 @@ class RightsForm(ModelForm):
         }
 
     def clean(self):
-        cleaned_data = super(RightsForm, self).clean()
+        cleaned_data = super().clean()
         public_access = cleaned_data.get("public_access")
         license_ = cleaned_data.get("license")
 

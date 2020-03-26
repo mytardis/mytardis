@@ -2,10 +2,11 @@ import os
 import json
 import unittest
 
+from io import StringIO
+
 from django.test import modify_settings, override_settings
 from django.core.management import call_command
 from django.conf import settings
-from django.utils.six import StringIO
 
 from tardis.tardis_portal.models import Dataset, DataFile
 from tardis.tardis_portal.tests.api import MyTardisResourceTestCase
@@ -27,7 +28,7 @@ from tardis.tardis_portal.tests.api import MyTardisResourceTestCase
     )
 class SimpleSearchTest(MyTardisResourceTestCase):
     def setUp(self):
-        super(SimpleSearchTest, self).setUp()
+        super().setUp()
         self.out = StringIO()
         call_command('search_index', stdout=self.out,
                      action='delete', force=True)
@@ -46,7 +47,7 @@ class SimpleSearchTest(MyTardisResourceTestCase):
     def test_simple_search_authenticated_user(self):
         response = self.api_client.get('/api/v1/search_simple-search/?query=test',
                                        authentication=self.get_credentials())
-        data = json.loads(response.content)
+        data = json.loads(response.content.decode())
         self.assertEqual(len(data['objects'][0]['hits']['experiments']), 1)
         self.assertEqual(len(data['objects'][0]['hits']['datasets']), 1)
         self.assertEqual(len(data['objects'][0]['hits']['datafiles']), 1)
@@ -55,7 +56,7 @@ class SimpleSearchTest(MyTardisResourceTestCase):
         self.testexp.public_access = 100
         self.testexp.save()
         response = self.api_client.get('/api/v1/search_simple-search/?query=test')
-        data = json.loads(response.content)
+        data = json.loads(response.content.decode())
         self.assertEqual(len(data['objects'][0]['hits']['experiments']), 1)
         self.assertEqual(len(data['objects'][0]['hits']['datasets']), 1)
         self.assertEqual(len(data['objects'][0]['hits']['datafiles']), 1)
@@ -65,7 +66,7 @@ class SimpleSearchTest(MyTardisResourceTestCase):
         self.testexp.save()
         response = self.api_client.post('/api/v1/search_advance-search/',
                                         data={"text": "test", "TypeTag": ["Dataset", "Experiment", "Datafile"]})
-        data = json.loads(response.content)
+        data = json.loads(response.content.decode())
         self.assertEqual(len(data['hits']['experiments']), 1)
         self.assertEqual(len(data['hits']['datasets']), 1)
         self.assertEqual(len(data['hits']['datafiles']), 1)
@@ -74,7 +75,7 @@ class SimpleSearchTest(MyTardisResourceTestCase):
         response = self.api_client.post('/api/v1/search_advance-search/',
                                         data={"text": "test", "TypeTag": ["Dataset", "Experiment", "Datafile"]},
                                         authentication=self.get_credentials())
-        data = json.loads(response.content)
+        data = json.loads(response.content.decode())
         self.assertEqual(len(data['hits']['experiments']), 1)
         self.assertEqual(len(data['hits']['datasets']), 1)
         self.assertEqual(len(data['hits']['datafiles']), 1)
