@@ -11,7 +11,7 @@ and authorization
 """
 import json
 
-from mock import patch
+from unittest.mock import patch
 
 from django.urls import reverse
 from django.test import TestCase
@@ -234,7 +234,7 @@ class ManageAccountTestCase(TestCase):
         response = client.get(manage_url)
         # Expect 200 OK and a form
         self.assertEqual(response.status_code, 200)
-        mock_webpack_get_bundle.assert_called()
+        self.assertNotEqual(mock_webpack_get_bundle.call_count, 0)
         response.content.index(b'name="first_name"')
         response.content.index(b'name="last_name"')
         response.content.index(b'name="email"')

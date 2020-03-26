@@ -38,12 +38,12 @@ import sys
 import datetime
 from datetime import datetime as old_datetime
 
+from unittest.mock import patch
+
 from django.test import RequestFactory
 from django.test import TestCase
 from django.conf import settings
 from django.contrib.auth.models import User
-
-from mock import patch
 
 from ..models import Experiment
 from ..models import ObjectACL
@@ -275,7 +275,7 @@ class TokenTestCase(TestCase):
         url = "/experiment/view/%s/?token=%s" % (experiment.id, token.token)
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
-        mock_webpack_get_bundle.assert_called()
+        self.assertNotEqual(mock_webpack_get_bundle.call_count, 0)
 
     @patch('webpack_loader.loader.WebpackLoader.get_bundle')
     def test_token_delete(self, mock_webpack_get_bundle):
@@ -319,4 +319,4 @@ class TokenTestCase(TestCase):
         url = "/experiment/view/%s/?token=%s" % (experiment.id, token.token)
         response = self.client.get(url)
         self.assertEqual(response.status_code, 403)
-        mock_webpack_get_bundle.assert_called()
+        self.assertNotEqual(mock_webpack_get_bundle.call_count, 0)

@@ -10,7 +10,7 @@ import os
 import re
 from io import StringIO
 
-from mock import patch
+from unittest.mock import patch
 
 from django.conf import settings
 from django.db import models
@@ -46,7 +46,7 @@ class DataFileTestCase(ModelTestCase):
             # to verify the DFO which will trigger an attempt
             # to apply filters because we are overriding the
             # USE_FILTERS setting to True in this test:
-            mock_send_task.assert_called()
+            self.assertNotEqual(mock_send_task.call_count, 0)
             return datafile
 
         exp = Experiment(title='test exp1',
