@@ -11,7 +11,7 @@ Tests for view methods supplying context data to templates
 import sys
 
 from flexmock import flexmock
-from mock import patch
+from unittest.mock import patch
 
 from django.conf import settings
 from django.test import TestCase

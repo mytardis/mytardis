@@ -11,7 +11,7 @@ from django.test import RequestFactory
 from django.test import TestCase
 
 from flexmock import flexmock
-from mock import patch
+from unittest.mock import patch
 from paramiko.common import AUTH_SUCCESSFUL, AUTH_FAILED
 from paramiko.ssh_exception import SSHException
 from paramiko.rsakey import RSAKey

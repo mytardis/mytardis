@@ -43,7 +43,7 @@ from django.test import TestCase
 from django.conf import settings
 from django.contrib.auth.models import User
 
-from mock import patch
+from unittest.mock import patch
 
 from ..models import Experiment
 from ..models import ObjectACL

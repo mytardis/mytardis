@@ -44,7 +44,7 @@ from django.test import TestCase
 from django.test.client import Client
 from django.contrib.auth.models import User
 
-from mock import patch
+from unittest.mock import patch
 
 from ..models import Experiment, ObjectACL, Dataset
 from ..auth.localdb_auth import django_user

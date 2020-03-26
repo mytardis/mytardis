@@ -10,7 +10,7 @@ import os
 import re
 from io import StringIO
 
-from mock import patch
+from unittest.mock import patch
 
 from django.conf import settings
 from django.db import models

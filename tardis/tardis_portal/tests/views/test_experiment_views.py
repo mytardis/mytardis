@@ -11,7 +11,7 @@ Tests for view methods relating to experiments
 import json
 from urllib.parse import urlparse
 
-from mock import patch
+from unittest.mock import patch
 
 from django.urls import resolve, reverse
 from django.test import TestCase

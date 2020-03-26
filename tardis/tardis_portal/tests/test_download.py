@@ -12,7 +12,7 @@ from tarfile import is_tarfile, TarFile
 from tempfile import NamedTemporaryFile
 from urllib.parse import quote
 
-from mock import patch
+from unittest.mock import patch
 
 from django.test import TestCase
 from django.test.client import Client

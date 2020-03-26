@@ -5,7 +5,7 @@ from django.test import TestCase
 from django.test.client import Client
 from django.contrib.auth.models import User, Permission
 
-from mock import patch
+from unittest.mock import patch
 
 
 class OpenIDMigrationViewTestCase(TestCase):
