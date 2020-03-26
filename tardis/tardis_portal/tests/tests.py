@@ -40,11 +40,11 @@ http://docs.djangoproject.com/en/dev/topics/testing/
 
 import unittest
 
+from unittest.mock import patch
+
 from django.test import TestCase
 from django.test.client import Client
 from django.contrib.auth.models import User
-
-from unittest.mock import patch
 
 from ..models import Experiment, ObjectACL, Dataset
 from ..auth.localdb_auth import django_user

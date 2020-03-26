@@ -4,14 +4,15 @@
 """
 from io import BytesIO
 
+from unittest.mock import patch
+from flexmock import flexmock
+
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.management import call_command
 from django.test import RequestFactory
 from django.test import TestCase
 
-from flexmock import flexmock
-from unittest.mock import patch
 from paramiko.common import AUTH_SUCCESSFUL, AUTH_FAILED
 from paramiko.ssh_exception import SSHException
 from paramiko.rsakey import RSAKey

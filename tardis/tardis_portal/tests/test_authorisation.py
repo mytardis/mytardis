@@ -1,12 +1,12 @@
 import json
 import logging
 
+from unittest.mock import patch
+
 from django.test import TestCase
 from django.test.client import Client
 
 from django.contrib.auth.models import User, Group, Permission, AnonymousUser
-
-from unittest.mock import patch
 
 from ..auth.localdb_auth import django_user
 from ..auth.localdb_auth import auth_key as localdb_auth_key
