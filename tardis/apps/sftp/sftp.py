@@ -524,10 +524,11 @@ def start_server(host=None, port=None, keyfile=None):
         current_site = Site.objects.get_current()
         host = current_site.domain
     port = port or getattr(settings, 'SFTP_PORT', 2200)
-    host_key_content = keyfile or StringIO(settings.SFTP_HOST_KEY)
-    if host_key_content is None or host_key_content.len == 0:
-        raise SSHException("SSH error: empty SFTP host key")
-    host_key = RSAKey.from_private_key(host_key_content)
+    try:
+        host_key = RSAKey.from_private_key(
+            keyfile or StringIO(settings.SFTP_HOST_KEY))
+    except:
+        raise SSHException("SSH error: failed loading SFTP host key")
     server = MyTSFTPTCPServer((host, port), host_key=host_key)
     try:
         server.serve_forever()
