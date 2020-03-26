@@ -58,7 +58,7 @@ class AuthenticationTestCase(TestCase):
             'password': 'test', 'authMethod': 'localdb'})
 
         response = self.client.get(self.manageAuthMethodsUrl)
-        mock_webpack_get_bundle.assert_called()
+        self.assertEqual(mock_webpack_get_bundle.call_count, 1)
         self.assertEqual(len(response.context['userAuthMethodList']), 1, response)
         self.assertTrue(response.context['isDjangoAccount'] is True)
         self.assertTrue(len(response.context['supportedAuthMethods']), 1)
