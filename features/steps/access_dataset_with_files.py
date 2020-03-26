@@ -7,7 +7,7 @@ from tardis.tardis_portal.models.datafile import DataFile
 from tardis.tardis_portal.models.dataset import Dataset
 from tardis.tardis_portal.models.experiment import Experiment
 
-from wait import wait_ajax_loaded
+from wait import wait_for_jquery
 
 
 @given("a logged-in user with dataset access")
@@ -50,7 +50,7 @@ def they_open_the_dataset_view_url(context):
     """
     dataset_id = Dataset.objects.first().id
     context.browser.get(context.base_url + "/dataset/%s" % dataset_id)
-    wait_ajax_loaded(context)
+    wait_for_jquery(context)
 
     console_errors = []
     for entry in context.browser.get_log("browser"):
@@ -71,9 +71,11 @@ def they_see_the_dataset_with_files(context):
     datafiles_tbody = context.browser.find_element_by_css_selector("table.datafiles tbody")
     context.test.assertIn("testfile1.txt", datafiles_tbody.get_attribute("innerHTML"))
     context.test.assertIn("testfile2.txt", datafiles_tbody.get_attribute("innerHTML"))
-
+    """
+    datafile_list_tab = context.browser.find_element_by_id("datafile-list")
+    datafile_list_tab.click()
     datafile_info_toggle = context.browser.find_element_by_css_selector(".datafile-info-toggle")
     datafile_info_toggle.click()
-
     no_metadata_msg = context.browser.find_element_by_css_selector(".datafile_parameters em")
     context.test.assertIn("There is no metadata for this file", no_metadata_msg.get_attribute("innerHTML"))
+    """

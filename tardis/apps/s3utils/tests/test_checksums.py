@@ -19,7 +19,7 @@ from tardis.tardis_portal.models.storage import StorageBox, StorageBoxOption
                  "Windows doesn't have md5sum and sha512sum binaries")
 class S3UtilsAppChecksumsTestCase(TestCase):
     def setUp(self):
-        super(S3UtilsAppChecksumsTestCase, self).setUp()
+        super().setUp()
         self.dataset = Dataset.objects.create(description='Test Dataset')
         # Create a DataFile record with the correct size, MD5 sum and
         # SHA 512 sum to represent a file containing the string 'test'
@@ -69,6 +69,6 @@ class S3UtilsAppChecksumsTestCase(TestCase):
             self.assertEqual(checksums['sha512sum'], self.datafile.sha512sum)
 
     def tearDown(self):
-        super(S3UtilsAppChecksumsTestCase, self).tearDown()
+        super().tearDown()
         self.dataset.delete()
         self.s3_storage_box.delete()

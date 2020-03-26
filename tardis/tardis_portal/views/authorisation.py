@@ -6,9 +6,7 @@ views that have to do with authorisations
 import json
 import logging
 from operator import itemgetter
-from six.moves import urllib
-#from urllib import urlencode
-#from urlparse import urlparse, parse_qs
+from urllib.parse import urlencode, urlparse, parse_qs
 
 from django.conf import settings
 from django.contrib.auth.decorators import login_required, permission_required
@@ -17,16 +15,15 @@ from django.contrib.sites.models import Site
 from django.db import transaction
 from django.db import IntegrityError
 from django.db.models import Q
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.views.decorators.cache import never_cache
 from django.views.decorators.http import require_POST
 
 from ..auth import decorators as authz
-from ..auth.localdb_auth import auth_key as localdb_auth_key, \
-    django_user
+from ..auth.localdb_auth import django_user
 from ..models import UserAuthentication, UserProfile, Experiment, \
     Token, GroupAdmin, ObjectACL
-from ..shortcuts import render_response_index, return_response_error
+from ..shortcuts import render_response_index
 
 logger = logging.getLogger(__name__)
 
@@ -172,11 +169,11 @@ def retrieve_access_list_tokens(request, experiment_id):
     def token_url(url, token):
         if not url:
             return ''
-        u = urllib.parse.urlparse(url)
-        query = urllib.parse.parse_qs(u.query)
+        u = urlparse(url)
+        query = parse_qs(u.query)
         query.pop('token', None)
         query['token'] = token.token
-        u = u._replace(query=urllib.parse.urlencode(query, True))
+        u = u._replace(query=urlencode(query, True))
         return u.geturl()
         # return '%s?token=%s' % (request.META['HTTP_REFERER'], token.token)
 
@@ -212,7 +209,11 @@ def retrieve_group_userlist(request, group_id):
 
     from ..forms import ManageGroupPermissionsForm
     users = User.objects.filter(groups__id=group_id)
-    c = {'users': users, 'group_id': group_id,
+    group_admins = []
+    for user in users:
+        if GroupAdmin.objects.filter(user=user, group__id=group_id).exists():
+            group_admins.append(user)
+    c = {'users': users, 'group_id': group_id, 'group_admins': group_admins,
          'manageGroupPermissionsForm': ManageGroupPermissionsForm()}
     return render_response_index(
         request, 'tardis_portal/ajax/group_user_list.html', c)
@@ -223,7 +224,11 @@ def retrieve_group_userlist_readonly(request, group_id):
 
     from ..forms import ManageGroupPermissionsForm
     users = User.objects.filter(groups__id=group_id)
-    c = {'users': users, 'group_id': group_id,
+    group_admins = []
+    for user in users:
+        if GroupAdmin.objects.filter(user=user, group__id=group_id).exists():
+            group_admins.append(user)
+    c = {'users': users, 'group_id': group_id, 'group_admins': group_admins,
          'manageGroupPermissionsForm': ManageGroupPermissionsForm()}
     return render_response_index(
         request, 'tardis_portal/ajax/group_user_list_readonly.html', c)
@@ -252,7 +257,6 @@ def manage_groups(request):
 @authz.group_ownership_required
 def add_user_to_group(request, group_id, username):
 
-    authMethod = localdb_auth_key
     isAdmin = False
     logger.info("isAdmin: %s", str(isAdmin))
 
@@ -264,16 +268,29 @@ def add_user_to_group(request, group_id, username):
     try:
         user = User.objects.get(username=username)
     except User.DoesNotExist:
-        return return_response_error(request)
+        return JsonResponse(
+            dict(
+                message='User %s does not exist.' % username,
+                field='id_adduser-%s' % group_id
+            ),
+            status=400)
 
     try:
         group = Group.objects.get(pk=group_id)
     except Group.DoesNotExist:
-        return HttpResponse('Group does not exist.')
+        return JsonResponse(
+            dict(
+                message='Group does not exist',
+            ),
+            status=400)
 
     if user.groups.filter(name=group.name).count() > 0:
-        return HttpResponse('User %s is already a member of that group.'
-                            % username)
+        return JsonResponse(
+            dict(
+                message='User %s is already a member of this group.' % username,
+                field='id_adduser-%s' % group_id
+            ),
+            status=400)
 
     user.groups.add(group)
     user.save()
@@ -444,7 +461,6 @@ def create_group(request):
             'tardis_portal/ajax/create_group.html', {})
         return response
 
-    authMethod = localdb_auth_key
     admin = None
     groupname = None
 
@@ -452,8 +468,12 @@ def create_group(request):
         groupname = request.GET['group']
 
     if not groupname:
-        return HttpResponse('Group name cannot be blank',
-                            status=400)
+        return JsonResponse(
+            dict(
+                message='Group name cannot be blank',
+                field='id_addgroup'
+            ),
+            status=400)
 
     if 'admin' in request.GET:
         admin = request.GET['admin']
@@ -463,16 +483,26 @@ def create_group(request):
             group = Group(name=groupname)
             group.save()
     except IntegrityError:
-        return HttpResponse('Could not create group %s '
-                            '(It is likely that it already exists)' %
-                            (groupname), status=409)
+        return JsonResponse(
+            dict(
+                message=('Could not create group %s '
+                         '(It is likely that it already exists)'
+                         % groupname),
+                field='id_addgroup'
+            ),
+            status=409)
 
     adminuser = None
     if admin:
         try:
             adminuser = User.objects.get(username=admin)
         except User.DoesNotExist:
-            return HttpResponse('User %s does not exist' % (admin))
+            return JsonResponse(
+                dict(
+                    message='User %s does not exist' % admin,
+                    field='id_groupadmin'
+                ),
+                status=400)
 
         # create admin for this group and add it to the group
         groupadmin = GroupAdmin(user=adminuser, group=group)

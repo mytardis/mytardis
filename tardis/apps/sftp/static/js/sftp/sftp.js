@@ -17,7 +17,7 @@ var sftp = (function() {
             <div class='text-right pull-right'>\
               <button id='delete-btn' class='btn btn-danger' \
                       onclick='sftp.handleKeyDelete(" + rowData.id + ")'>\
-                <i class='fa fa-remove'></i>\
+                <i class='fa fa-trash'></i>\
                 Delete\
               </button>\
           </td></tr>";
@@ -42,7 +42,7 @@ var sftp = (function() {
         }
 
         $.ajax(
-            "/api/v1/sftp/key/"
+            "/api/v1/sftp_publickey/"
         ).done(function(json, _textStatus, _jqXHR) {
             var objs = json.objects;
             if (objs.length > 0) {
@@ -60,7 +60,7 @@ var sftp = (function() {
 
     function handleKeyDelete(keyId) {
         $.ajax(
-            "/api/v1/sftp/key/" + keyId,
+            "/api/v1/sftp_publickey/" + keyId,
             {
                 method: "DELETE",
                 headers: {
@@ -101,7 +101,7 @@ var sftp = (function() {
                 }, {});
 
             $.ajax(
-                "/api/v1/sftp/key/",
+                "/api/v1/sftp_publickey/",
                 {
                     method: "POST",
                     headers: {
@@ -118,7 +118,7 @@ var sftp = (function() {
             }).fail(function(jqXHR, _textStatus, err) {
                 if (jqXHR.responseJSON !== "undefined") {
                     // eslint-disable-next-line dot-notation
-                    err = jqXHR.responseJSON["sftp/key"]["__all__"][0];
+                    err = jqXHR.responseJSON["sftp_publickey"]["__all__"][0];
                     $("#keyAddAlertMessage").text(err);
                     $("#keyAddAlert").show();
                 } else {

@@ -4,6 +4,8 @@ from behave import when, then
 
 from selenium.common.exceptions import NoSuchElementException
 
+from wait import wait_for_jquery
+
 
 @when("they open the manage groups url")
 def they_open_the_manage_groups_url(context):
@@ -18,12 +20,7 @@ def they_see_the_manage_groups_page(context):
     """
     :type context: behave.runner.Context
     """
-    ajax_complete = bool(
-        context.browser.execute_script("return jQuery.active == 0"))
-    while not ajax_complete:
-        time.sleep(0.1)
-        ajax_complete = bool(
-            context.browser.execute_script("return jQuery.active == 0"))
+    wait_for_jquery(context)
 
     try:
         title = context.browser.find_element_by_css_selector(".page-header h1")

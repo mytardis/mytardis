@@ -12,5 +12,4 @@ class MyTardisLocalFileSystemStorage(FileSystemStorage):
         if location is None:
             location = getattr(settings, "DEFAULT_STORAGE_BASE_DIR",
                                '/var/lib/mytardis/store')
-        super(MyTardisLocalFileSystemStorage, self).__init__(
-            location, base_url)
+        super().__init__(location, base_url)

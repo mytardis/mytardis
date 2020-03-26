@@ -19,13 +19,13 @@
                       </td>
                       <td>
                           {% if group_acl.canRead %}
-                          <span class="label label-success">Read</span>
+                          <span class="badge badge-success">Read</span>
                           {% endif %}
                           {% if group_acl.canWrite %}
-                          <span class="label label-success">Edit</span>
+                          <span class="badge badge-success">Edit</span>
                           {% endif %}
                           {% if group_acl.isOwner %}
-                          <span class="label label-info">Owner</span>
+                          <span class="badge badge-info">Owner</span>
                           {% endif %}
                       </td>
                   </tr>

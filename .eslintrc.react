@@ -14,11 +14,16 @@
         }
     },
     "rules": {
-        "quotes": [1, "double"],
+        "quotes": [1, "single"],
         "no-underscore-dangle": 0,
         "jsx-a11y/label-has-associated-control": 0,
         "jsx-a11y/label-has-for": 0,
         "no-param-reassign": 0,
-        "linebreak-style": 0
+        "linebreak-style": 0,
+        "react/forbid-prop-types": [ true,
+          {
+            "forbid": ['any', 'array',], "checkContextTypes": 1, "checkChildContextTypes": 1,
+          }
+        ]
     }
 }

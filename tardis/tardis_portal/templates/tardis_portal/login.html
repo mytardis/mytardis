@@ -10,25 +10,27 @@
     <br><br>
     <p><img src="https://rapid.aaf.edu.au/aaf_service_223x54.png" alt="AAF Rapid Connect"> </p>
     <br><br>
-    <p> <a href={{ RAPID_CONNECT_LOGIN_URL }} class="btn btn-lg btn-info">LOGIN VIA THE AUSTRALIAN ACCESS FEDERATION</a> </p>
+    <p> <a href={{ RAPID_CONNECT_LOGIN_URL }} class="btn btn-lg btn-primary">LOGIN VIA THE AUSTRALIAN ACCESS FEDERATION</a> </p>
 
 {% else %}
 
+<div class="container pt-2">
+ <div class="row">
   <div class="col-md-7">
     <form id="login-form" class="form-horizontal" action method="post">
       {% csrf_token %}
       <legend>Please Log In</legend>
       <input name="next_page" type="hidden" value="{{ next_page|default:"/" }}" />
-      <div class="form-group">
-        <label class="control-label col-md-2" for="id_username">Username</label>
+      <div class="form-group row">
+        <label class="col-form-label col-md-2" for="id_username">Username</label>
         <div class="col-md-5">
           <input type="text" name="username" autocomplete="username"
                  class="form-control" id="id_username" required
                  placeholder="username" style="max-width: 200px;">
         </div>
       </div>
-      <div class="form-group">
-        <label class="control-label col-md-2" for="id_password">Password</label>
+      <div class="form-group row">
+        <label class="col-form-label col-md-2" for="id_password">Password</label>
         <div class="col-md-5">
           <input type="password" name="password" autocomplete="current-password"
                  class="form-control" id="id_password" required placeholder="password"
@@ -36,9 +38,9 @@
         </div>
       </div>
       <div class="form-group">
-        <div class="col-md-offset-2 col-md-2">
+        <div class="offset-md-2 col-md-5 pl-1">
             <button id="login-button"
-                    type="submit" class="btn btn-info"
+                    type="submit" class="btn btn-primary"
                     style="min-width: 80px; max-width: 200px;">
             <i class="fa fa-sign-in"></i> Log In
           </button>
@@ -46,6 +48,8 @@
       </div>
     </form>
   </div>
+ </div>
+</div>
 
 {% endif %}
 

@@ -5,6 +5,11 @@ body {
   min-height: 100%;
 }
 
+/* Icons */
+i.o-6 {
+  opacity: 0.6;
+}
+
 /* Inset brand in nav bar */
 .navbar .brand a {
   color: #0097E2;
@@ -16,6 +21,13 @@ body {
   text-shadow: 0 1px 0 rgba(255, 255, 255, .1), 0 0 30px rgba(255, 255, 255, .125);
 }
 
+@media (max-width: 991px) {
+    .navbar {
+        overflow: auto;
+        max-height: 85vh;
+        align-items: flex-start;
+    }
+}
 /* Centered title */
 .navbar .center-title {
   position: absolute;
@@ -41,9 +53,27 @@ body {
   text-overflow: ellipsis;
 }
 
-#abstract-toggle {
-    margin-bottom: -7px;
-    display: none;
+#collapseDescription {
+    font-size: 14px;
+    line-height: 1.5;
+}
+#collapseDescription p.collapsing {
+    min-height: 42px !important;
+}
+#collapseDescription p.collapse:not(.show) {
+    height: 42px !important;
+    overflow: hidden;
+
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+#collapseDescription p.collapsed:after  {
+    content: '+ Show Description';
+}
+
+#collapseDescription p:not(.collapsed):after {
+    content: '- Hide Description';
 }
 
 .truncated-text {
@@ -82,13 +112,46 @@ div.copylink {
     color: #0088CC;
 }
 
-.dataset-link {
-    font-weight: bold;
+/* Dataset links */
+
+a.dataset-link {
     font-size: 110%;
+    color: black;
 }
 
+a.dataset-link :hover {
+    color: black;
+}
+
+/* Black links */
+
+a.explink, a.dllink, a[rel=license], table td a {
+    color: black;
+}
+
+a.explink, a.dllink, a[rel=license] :hover, table td a {
+    color: black;
+}
+
+/* Group links */
+
+a.group-link {
+    color: black;
+    font-weight: normal;
+}
+
+a.group-link :hover {
+    color: black;
+    font-weight: normal;
+}
+
+i.group-icon :hover {
+    cursor: pointer;
+}
+
+/* Miscellaneous */
+
 .datafile_name {
-    font-weight: bold;
     word-break: break-all;
 }
 
@@ -123,60 +186,34 @@ div.copylink {
     text-decoration: none;
 }
 
+.experiments .card {
+    border-color: rgba(0, 0, 0, 0.06);
+}
+
+.experiments .card .accordion-toggle {
+    cursor: pointer;
+}
+
+.experiments .card-body {
+    background-color: #E8F6FF;
+}
+
+.experiments .accordion-inner .dataset-list-header {
+    font-style: italic;
+    padding-top: 5px;
+    padding-left: 5px;
+}
+
 /* index page */
 .experiments .accordion-toggle .explink {
-    font-size: 1.3em;
-    max-width: 67%;
+    font-size: 1.1em;
+    font-weight: 500;
 }
 .experiments .accordion-toggle .badgelist {
     margin-bottom: 4px;
 }
-.experiments .accordion-body {
-    background-color: #E8F6FF;
-}
-.experiments .accordion-inner {
-    -webkit-border-radius: 0px;
-    -moz-border-radius: 0px;
-    border-radius: 0px;
+.experiments .card-header {
     border: none;
-    padding-top:5px;
-    padding-right:10px;
-    padding-left:10px;
-    background-color: #E8F6FF;
-    margin: 0px 0px;
-}
-.experiments .accordion-inner p {
-    width: 75%;
-}
-.experiments .accordion-inner .dataset-list-header {
-    margin-left: -15px;
-    font-style: italic;
-    font-size: 11px;
-    border: none;
-    background-color: transparent !important;
-    padding-top: 5px;
-    padding-left: 5px;
-}
-.accordion-inner .list-group {
-    padding-left: 10px;
-}
-.accordion-inner .dataset-list-item {
-  border: none;
-  background-color: transparent !important;
-  padding-left: 10px;
-  padding-right: 5px;
-  padding-top: 5px;
-  padding-bottom: 2px;
-}
-.experiments .accordion-inner .thumbnails li {
-    margin-bottom: 5px;
-    margin-top: 2px;
-}
-.experiments .accordion-group {
-    border: none;
-    -webkit-border-radius: 0px;
-    -moz-border-radius: 0px;
-    border-radius: 0px;
     background-color: #F5FBFF;
 }
 .experiments .nav .nav-header {
@@ -189,12 +226,6 @@ div.copylink {
 }
 /* end index page */
 
-.badge {
-    -webkit-border-radius: 0px;
-    -moz-border-radius: 0px;
-    border-radius: 0px;
-}
-
 /* dataset tiles */
 .ds-thumb canvas {
     width: 100px;
@@ -203,40 +234,20 @@ div.copylink {
 
 /* mydata page */
 .mydata .accordion-toggle .explink {
-    font-size: 1.3em;
+    font-size: 1.1em;
+    font-weight: 500;
     max-width: 67%;
+    cursor: pointer;
 }
 .mydata .accordion-toggle .badgelist {
     margin-bottom: 4px;
 }
-.mydata .accordion-body {
-    background-color: #E8F6FF;
-}
-.mydata .accordion-inner {
-    -webkit-border-radius: 0px;
-    -moz-border-radius: 0px;
-    border-radius: 0px;
-    border: none;
-    padding-top:5px;
-    padding-right:10px;
-    padding-left:10px;
-    background-color: #E8F6FF;
-    margin: 0px 0px;
-}
-.mydata .accordion-inner p {
+.mydata .card-body p {
     width: 75%;
 }
-.mydata .accordion-inner .thumbnails li {
+.mydata .card-body .thumbnails li {
     margin-bottom: 5px;
     margin-top: 2px;
-}
-.mydata .accordion-group {
-    border: none;
-    -webkit-border-radius: 0px;
-    -moz-border-radius: 0px;
-    border-radius: 0px;
-    background-color: #F5FBFF;
-    margin-bottom: 20px;
 }
 .mydata .nav .nav-header {
     font-size: 11px;
@@ -246,6 +257,12 @@ div.copylink {
     font-style: italic;
     text-transform: none;
 }
+
+.borderless .list-group-item {
+    border: none;
+    background-color: transparent !important;
+}
+
 /* end index page */
 /* autocomplete defaults */
 .ui-autocomplete {
@@ -272,29 +289,12 @@ div.copylink {
 
 /* end search */
 
-/* MyTardis has switched from Bootstrap 2.0.4 to 2.3.2 for compatibilty with
- * later versions of jQuery, but this changes the default heading sizes, so
- * for now, we'll revert to the heading sizes from 2.0.4, until we have time
- * to upgrade to a more recent Bootstrap */
-h1, h2, h3, h4, h5, h6 {
-  margin: 0;
-  font-family: inherit;
-  font-weight: bold;
-  color: inherit;
-  text-rendering: optimizelegibility;
+.page-header {
+    margin-top: 10px;
+    margin-bottom: 10px;
+    padding-bottom: 9px;
+    border-bottom: 1px solid #eeeeee
 }
-h1 {font-size: 30px; line-height: 36px;}
-h1 small {font-size: 18px;}
-h2 {font-size: 24px; line-height: 36px;}
-h2 small {font-size: 18px;}
-h3 {font-size: 18px; line-height: 27px;}
-h3 small {font-size: 14px;}
-h4,h5,h6 {line-height: 18px;}
-h4 {font-size: 14px;}
-h4 small {font-size: 12px;}
-h5 {font-size: 12px;}
-h6 {font-size: 11px;color: #999999;text-transform: uppercase;}
-.page-header { margin-top: 10px; margin-bottom: 10px; }
 
 .datasets.thumbnails {
     list-style-type: none;
@@ -308,11 +308,6 @@ h6 {font-size: 11px;color: #999999;text-transform: uppercase;}
     margin-bottom: 0;
 }
 
-/* Padding from Bootstrap v2: */
-.accordion-heading .accordion-toggle {
-  padding: 8px 15px;
-}
-
 /* Ensure modals have vertical scrollbars if necessary */
 .modal-dialog {
     overflow-y: initial !important
@@ -320,4 +315,24 @@ h6 {font-size: 11px;color: #999999;text-transform: uppercase;}
 .modal-body {
     max-height: calc(100vh - 100px);
     overflow-y: auto;
+}
+.w-66 {
+    width: 66%;
+}
+
+/* Make headings smaller than the Bootstrap default */
+h1 {
+    font-size: 2rem
+}
+h2 {
+    font-size: 1.75rem
+}
+h3 {
+    font-size: 1.5rem
+}
+h4 {
+    font-size: 1.25rem
+}
+h5 {
+    font-size: 1.125rem
 }

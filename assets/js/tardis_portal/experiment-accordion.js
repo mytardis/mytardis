@@ -41,8 +41,8 @@ var loadRecentDatasetsSummary = function(divIdPrefix, experimentId) {
 /**
  * Attaches click handlers to the experiment accordion elements.
  * @param {string} accordionToggleClass - Used to select the accordion-toggle elements to add click handlers to
- * @param {string} accordionToggleIdPrefix - Prefix of the accordion-tody element's ID, e.g. "toggle-"
- * @param {string} accordionBodyIdPrefix - Prefix of the accordion-body element's ID, e.g. "collapse"
+ * @param {string} accordionToggleIdPrefix - Prefix of the accordion-toggle element's ID, e.g. "toggle-"
+ * @param {string} accordionBodyIdPrefix - Prefix of the card-body element's ID, e.g. "collapse-"
  * @param {string} divIdPrefix - Prefix of the div element's ID, e.g. "public-recent-datasets-"
  * @param {function} loadDatasetsSummary - Either loadLatestDatasetSummary or loadRecentDatasetsSummary
  */

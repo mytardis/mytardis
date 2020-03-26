@@ -6,6 +6,8 @@ from tardis.tardis_portal.models.access_control import ObjectACL
 from tardis.tardis_portal.models.dataset import Dataset
 from tardis.tardis_portal.models.experiment import Experiment
 
+from wait import wait_for_jquery
+
 
 @given("a logged-in experiment-sharing user")
 def given_a_logged_in_experiment_sharing_user(context):
@@ -56,6 +58,7 @@ def exp_in_shared_view(context):
     """
     :type context: behave.runner.Context
     """
+    wait_for_jquery(context)
     explink = context.browser.find_element_by_css_selector("a.explink")
     context.test.assertIn("Shared Experiment1", explink.get_attribute("innerHTML"))
 
@@ -89,6 +92,7 @@ def exp_in_public_view(context):
     """
     :type context: behave.runner.Context
     """
+    wait_for_jquery(context)
     explink = context.browser.find_element_by_css_selector("a.explink")
     context.test.assertIn("Public Experiment1", explink.get_attribute("innerHTML"))
     dataset_li = context.browser.find_element_by_css_selector(".dataset-list-item")

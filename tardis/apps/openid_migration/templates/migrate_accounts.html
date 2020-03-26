@@ -1,6 +1,6 @@
 {% extends "tardis_portal/portal_template.html" %}
-{% load bootstrap %}
 {% load static from staticfiles %}
+{% load widget_tweaks %}
 
 {% block script %}
 
@@ -39,9 +39,20 @@
         <div class="col-md-4 login-box col">
             <form class="form-horizontal" style="padding-top: 20px ; ">
                 {% csrf_token %}
-                {{ authForm|bootstrap_horizontal:'col-md-2' }}
-                <div class="form-group">
-                  <div class="col-md-10 col-md-offset-2">
+                <div class="form-group row">
+                  <label class="col-form-label col-md-2" for="id_username">Username</label>
+                  <div class="col-md-10 ">
+                    {{ authForm.username | add_class:"form-control" }}
+                  </div>
+                </div>
+                <div class="form-group row">
+                  <label class="col-form-label col-md-2" for="id_password">Password</label>
+                  <div class="col-md-10 ">
+                    {{ authForm.password | add_class:"form-control" }}
+                  </div>
+                </div>
+                <div class="form-group row">
+                  <div class="offset-md-2 col-md-10">
                     <button type="submit" id="verify-my-account" class="btn btn-info btn-sm">
                         <i class="fa fa-sign-in"></i> Verify my Account
                     </button>
@@ -70,6 +81,7 @@
         <div class="col-md-3" style="text-align: center">
             <h3>Legacy<br>Authentication</h3>
         </div>
+        <div class="col-md-2"></div>
         <div class="col-md-3 col-md-offset-2" style="text-align: center">
             <img id="aaf_img" alt="AAF"
                  src="{% static 'openid_migration/images/aaf-logo.png' %}"
