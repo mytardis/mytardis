@@ -8,7 +8,7 @@ from django.contrib.auth.decorators import login_required
 
 from ..auth import decorators as authz
 from ..forms import create_parameterset_edit_form, \
-    save_datafile_edit_form, create_datafile_add_form, save_datafile_add_form
+    save_parameter_edit_form, create_parameter_add_form, save_parameter_add_form
 from ..models import ExperimentParameterSet, DatasetParameterSet, \
     DatafileParameterSet, ParameterName, DataFile, Schema, Dataset, Experiment
 from ..shortcuts import return_response_error, render_response_index
@@ -58,7 +58,7 @@ def edit_parameters(request, parameterset, otype):
         form = DynamicForm(request.POST)
 
         if form.is_valid():
-            save_datafile_edit_form(parameterset, request)
+            save_parameter_edit_form(parameterset, request)
 
             success = True
         else:
@@ -136,14 +136,14 @@ def add_par(request, parentObject, otype, stype):
     if request.method == 'POST':
         request = remove_csrf_token(request)
 
-        class DynamicForm(create_datafile_add_form(
+        class DynamicForm(create_parameter_add_form(
                 schema.namespace, parentObject, request=request)):
             pass
 
         form = DynamicForm(request.POST)
 
         if form.is_valid():
-            save_datafile_add_form(schema.namespace, parentObject, request)
+            save_parameter_add_form(schema.namespace, parentObject, request)
 
             success = True
         else:
@@ -151,7 +151,7 @@ def add_par(request, parentObject, otype, stype):
 
     else:
 
-        class DynamicForm(create_datafile_add_form(
+        class DynamicForm(create_parameter_add_form(
                 schema.namespace, parentObject)):
             pass
 

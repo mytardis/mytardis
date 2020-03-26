@@ -10,7 +10,7 @@ STATIC_ROOT = path.abspath(path.join(path.dirname(__file__), '../..', 'static'))
 
 # Use cachable copies of static files
 STATICFILES_STORAGE = \
-    'django.contrib.staticfiles.storage.CachedStaticFilesStorage'
+    'django.contrib.staticfiles.storage.ManifestStaticFilesStorage'
 
 STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.FileSystemFinder',

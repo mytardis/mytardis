@@ -14,8 +14,6 @@ import sys
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction, DEFAULT_DB_ALIAS
 
-from six import reraise
-
 from ...models import Experiment, Dataset, DataFile
 from ...models import ExperimentAuthor, ObjectACL
 from ...models import ExperimentParameterSet, ExperimentParameter
@@ -153,8 +151,8 @@ class Command(BaseCommand):
                 authors.delete()
                 exp.delete()
         except Exception:
-            exc_class, exc, tb = sys.exc_info()
+            exc_class, exc, _ = sys.exc_info()
             new_exc = CommandError(
                 "Exception %s has occurred: rolled back transaction"
                 % (exc or exc_class))
-            reraise(new_exc.__class__, new_exc, tb)
+            raise new_exc.__class__(new_exc)

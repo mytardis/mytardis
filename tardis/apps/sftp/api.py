@@ -39,7 +39,7 @@ class SFTPPublicKeyAppResource(ModelResource):
         authentication = default_authentication
         authorization = SFTPACLAuthorization()
         validation = key_add_form
-        resource_name = 'sftp/key'
+        resource_name = 'publickey'
         filtering = {
             'id': ('exact',),
             'name': ('exact',),

@@ -9,7 +9,6 @@ from django.test import TestCase
 from django.test.client import Client
 # from nose.plugins.skip import SkipTest
 
-import six
 from wand.image import Image
 from lxml import etree
 
@@ -77,8 +76,7 @@ def _check_compliance_level(testCase, response):
     """
     Current complies with Level 1 API, so should assert no more.
     """
-    six.assertRegex(
-        testCase,
+    testCase.assertRegex(
         response['Link'],
         r'\<http:\/\/library.stanford.edu\/iiif\/image-api\/' +
         r'compliance.html#level[01]\>;rel="compliesTo"',
@@ -103,7 +101,7 @@ class Level0TestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         # Check the response content is good
         nsmap = {'i': 'http://library.stanford.edu/iiif/image-api/ns/'}
-        xml = etree.fromstring(response.content)
+        xml = etree.fromstring(response.content.decode())
         identifier = xml.xpath('/i:info/i:identifier', namespaces=nsmap)[0]
         self.assertEqual(int(identifier.text), self.datafile.id)
         height = xml.xpath('/i:info/i:height', namespaces=nsmap)[0]
@@ -122,7 +120,7 @@ class Level0TestCase(TestCase):
                     kwargs=kwargs))
         self.assertEqual(response.status_code, 200)
         # Check the response content is good
-        data = json.loads(response.content)
+        data = json.loads(response.content.decode())
         self.assertEqual(data['identifier'], self.datafile.id)
         self.assertEqual(data['height'], self.height)
         self.assertEqual(data['width'], self.width)

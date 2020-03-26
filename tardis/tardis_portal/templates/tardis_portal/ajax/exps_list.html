@@ -12,31 +12,48 @@
 {% endif %}
 
 {% for exp in experiments %}
-  <div class="accordion-group">
-    <div class="accordion-heading">
-      <div id="toggle-{{exp.id}}" class="accordion-toggle" data-toggle="collapse">
-        <input type="hidden" class="exp-index" value="{{ forloop.counter }}">
-        <strong><a class="pull-left explink"
-                   href="{% url 'tardis_portal.view_experiment' exp.id %}">{{ exp.title }}</a></strong>
-        {% experiment_badges exp %}
-        {% experiment_authors exp %}
-        {% experiment_download_link exp %}
-      </div> {% comment %} class="accordion-toggle" {% endcomment %}
-    </div> {% comment %} class="accordion-heading" {% endcomment %}
-    <div id="collapse-{{exp.id}}"
-         class="panel-collapse collapse">
-      <div class="accordion-inner">
-        <p>{{exp.description|default:""|bleach}}</p>
-        <div id="latest-dataset-{{exp.id}}"></div>
-      </div> {% comment %} class="accordion-inner" {% endcomment %}
-    </div> {% comment %} class="accordion-body" {% endcomment %}
-  </div> {% comment %} class="accordion-group" {% endcomment %}
+  <div class="card mb-2">
+    <div id="toggle-{{exp.id}}"
+         class="card-header accordion-toggle py-2" data-parent="#experiments"
+         data-toggle="collapse">
+      <div class="row">
+        <div class="col-md-8 px-1 pb-1">
+          <input type="hidden" class="exp-index" value="{{ forloop.counter }}">
+          <a class="explink"
+             href="{% url 'tardis_portal.view_experiment' exp.id %}">{{ exp.title }}</a>
+        </div>
+        <div class="col">
+          {% experiment_badges exp %}
+        </div>
+      </div>
+      <div class="row">
+        <div class="card-subtitle text-muted small col-6 px-1">
+          {% experiment_authors exp %}
+        </div>
+        <div class="col">
+          <span class="float-right">
+            {% experiment_download_link exp %}
+          </span>
+        </div>
+      </div>
+    </div>
+    <div id="collapse-{{exp.id}}" class="card-body collapse py-2">
+      <div class="row">
+        <div class="col-md-9 px-1">
+          <div class="accordion-inner">
+            <p class="card-text small mb-1">{{exp.description|default:""|bleach}}</p>
+            <div id="latest-dataset-{{exp.id}}"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 {% empty %}
   <p>You do not own any Experiment on this server.<br/>
     <a href="{% url 'tardis.tardis_portal.views.create_experiment' %}">Create a new experiment</a>
     and upload your data
   </p>
-{% endfor %} {% comment %} for exp in experiments {% endcomment %}
+{% endfor %}
 
 {% if experiments.paginator.num_pages > 1 %}
   {% block bottom-pagination %}{% pagination experiments paginator page_num query_string %}{% endblock %}

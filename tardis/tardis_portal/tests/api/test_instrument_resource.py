@@ -6,10 +6,9 @@ Testing the Instrument resource in MyTardis's Tastypie-based REST API
 '''
 import json
 
-from django.contrib.auth.models import Group
+from urllib.parse import quote
 
-import six
-from six.moves import urllib
+from django.contrib.auth.models import Group
 
 from ...models.facility import Facility
 from ...models.instrument import Instrument
@@ -45,12 +44,12 @@ class InstrumentResourceTest(MyTardisResourceTestCase):
         output = self.api_client.get('/api/v1/instrument/%d/' %
                                      instrument_id,
                                      authentication=self.get_credentials())
-        returned_data = json.loads(output.content)
-        for key, value in six.iteritems(expected_output):
+        returned_data = json.loads(output.content.decode())
+        for key, value in expected_output.items():
             self.assertTrue(key in returned_data)
             if not key.endswith("_time"):
                 if isinstance(returned_data[key], dict):
-                    for subkey, subvalue in six.iteritems(returned_data[key]):
+                    for subkey, subvalue in returned_data[key].items():
                         if not subkey.endswith("_time"):
                             self.assertEqual(returned_data[key][subkey], subvalue)
                 else:
@@ -80,16 +79,16 @@ class InstrumentResourceTest(MyTardisResourceTestCase):
             "modified_time": "2018-11-29T12:00:00.000001"
         }
         output = self.api_client.get('/api/v1/instrument/?name=%s'
-                                     % urllib.parse.quote(self.testinstrument.name),
+                                     % quote(self.testinstrument.name),
                                      authentication=self.get_credentials())
-        returned_data = json.loads(output.content)
+        returned_data = json.loads(output.content.decode())
         self.assertEqual(returned_data['meta']['total_count'], 1)
         returned_object = returned_data['objects'][0]
-        for key, value in six.iteritems(expected_output):
+        for key, value in expected_output.items():
             self.assertTrue(key in returned_object)
             if not key.endswith("_time"):
                 if isinstance(returned_object[key], dict):
-                    for subkey, subvalue in six.iteritems(returned_object[key]):
+                    for subkey, subvalue in returned_object[key].items():
                         if not subkey.endswith("_time"):
                             self.assertEqual(returned_object[key][subkey], subvalue)
                 else:

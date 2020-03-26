@@ -10,7 +10,7 @@
   "rules": {
         "camelcase": [1, {"properties": "always"}],
         "comma-spacing": [2, {"before": false, "after": true}],
-        "complexity": ["error", { "max": 4 }],
+        "complexity": ["error", { "max": 5 }],
         "curly": [2, "all"],
         "dot-notation": [2, {"allowKeywords": true}],
         "eqeqeq": [1],

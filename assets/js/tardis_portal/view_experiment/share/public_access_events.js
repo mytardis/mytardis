@@ -8,18 +8,18 @@ import { selectLicenseOption } from "./licenses.js";
 export var addPublicAccessEvents = function() {
     $(document).on("change", "#publishing-consent", function() {
         // (submit disabled) <=> !(consent checked)
-        $("#legal-section .submit-button").prop("disabled", !$(this).prop("checked"));
+        $("form.experiment-rights .submit-button").prop("disabled", !$(this).prop("checked"));
     });
 
     // Disable submit button (as consent checkbox should start unchecked)
-    var changeEvent = new Event("change");
-    $("#publishing-consent")[0].dispatchEvent(changeEvent);
+    $("form.experiment-rights .submit-button").prop("disabled", true);
 
-    $(document).on("click", "#legal-section .submit-button", function() {
+    $(document).on("click", "form.experiment-rights .submit-button", function() {
         // Submit form
         var submitEvent = new Event("submit");
         $("form.experiment-rights")[0].dispatchEvent(submitEvent);
         $("#legal-section").hide();
+        $("#confirm-license-btn-group").hide();
     });
 
     $(document).on("click", "#legal-section .cancel-button", function() {
@@ -72,6 +72,7 @@ export var addPublicAccessEvents = function() {
                 thisModal.html(data);
                 // Show update message
                 $("#legal-section").hide();
+                $("#confirm-license-btn-group").hide();
 
                 $("#choose-rights-message").html(
                     Mustache.to_html(

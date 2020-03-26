@@ -29,9 +29,8 @@ class OracleSafeManager(models.Manager):
         if connection.settings_dict['ENGINE'] == 'django.db.backends.oracle':
             fields = [a.attname for a in self.model._meta.fields
                       if a.db_type(connection=connection) == 'NCLOB']
-            return \
-                super(OracleSafeManager, self).get_queryset().defer(*fields)
-        return super(OracleSafeManager, self).get_queryset()
+            return super().get_queryset().defer(*fields)
+        return super().get_queryset()
 
 
 class ExperimentManager(OracleSafeManager):
@@ -61,20 +60,20 @@ class ExperimentManager(OracleSafeManager):
         query = self._query_all_public() |\
             self._query_owned_and_shared(user)
 
-        return super(ExperimentManager, self).get_queryset().filter(
+        return super().get_queryset().filter(
             query).distinct()
 
     def public(self):
         query = self._query_all_public()
-        return super(ExperimentManager, self).get_queryset().filter(
+        return super().get_queryset().filter(
             query).distinct()
 
     def owned_and_shared(self, user):
-        return super(ExperimentManager, self).get_queryset().filter(
+        return super().get_queryset().filter(
             self._query_owned_and_shared(user)).distinct()
 
     def shared(self, user):
-        return super(ExperimentManager, self).get_queryset().filter(
+        return super().get_queryset().filter(
             self._query_shared(user)).distinct()
 
     def _query_owned_and_shared(self, user):
@@ -140,7 +139,7 @@ class ExperimentManager(OracleSafeManager):
         :rtype: Experiment
         :raises PermissionDenied:
         """
-        experiment = super(ExperimentManager, self).get(pk=experiment_id)
+        experiment = super().get(pk=experiment_id)
 
         if user.has_perm('tardis_acls.view_experiment', experiment):
             return experiment
@@ -158,12 +157,12 @@ class ExperimentManager(OracleSafeManager):
 
         # the user must be authenticated
         if not user.is_authenticated:
-            return super(ExperimentManager, self).get_queryset().none()
+            return super().get_queryset().none()
 
         query = self._query_owned(user)
         for group in user.groups.all():
             query |= self._query_owned_by_group(group)
-        return super(ExperimentManager, self).get_queryset().filter(query).distinct()
+        return super().get_queryset().filter(query).distinct()
 
         # return self.owned_by_user(user)
 
@@ -198,14 +197,14 @@ class ExperimentManager(OracleSafeManager):
         :rtype: QuerySet
         """
         query = self._query_owned(user)
-        return super(ExperimentManager, self).get_queryset().filter(query)
+        return super().get_queryset().filter(query)
 
     def owned_by_group(self, group):
         """
         Return all experiments that are owned by a particular group
         """
         query = self._query_owned_by_group(group)
-        return super(ExperimentManager, self).get_queryset().filter(query)
+        return super().get_queryset().filter(query)
 
     def owned_by_user_id(self, userId):
         """
@@ -216,7 +215,7 @@ class ExperimentManager(OracleSafeManager):
         :rtype: QuerySet
         """
         query = self._query_owned(user=None, user_id=userId)
-        return super(ExperimentManager, self).get_queryset().filter(query)
+        return super().get_queryset().filter(query)
 
     def user_acls(self, experiment_id):
         """
@@ -227,7 +226,7 @@ class ExperimentManager(OracleSafeManager):
         :returns: QuerySet of ACLs
         :rtype: QuerySet
         """
-        experiment = super(ExperimentManager, self).get(pk=experiment_id)
+        experiment = super().get(pk=experiment_id)
 
         return ObjectACL.objects.filter(
             pluginId=django_user,

@@ -56,9 +56,9 @@ case "$TEST_TYPE" in
         $(npm bin)/jscpd --reporters consoleFull --min-lines 20 \
             --threshold 0 tardis/tardis_portal/templates/ &&
         echo $'\nRunning bootlint on templates...\n' && \
-	npm install --no-package-lock --no-save bootlint && \
-        $(npm bin)/bootlint --disable E001,E041,E047,W001,W002,W003,W005 \
-            tardis/tardis_portal/templates/tardis_portal/*.html
+	# npm install --no-package-lock --no-save bootlint && \
+  #      $(npm bin)/bootlint --disable E001,E041,E047,W001,W002,W003,W005 \
+  #          tardis/tardis_portal/templates/tardis_portal/*.html
 	(( exit_status = exit_status || $? ))
     ;;
     *)

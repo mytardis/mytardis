@@ -11,7 +11,7 @@
 {% block content %}
 <div id="content" class="container-fluid">
   <div class="page-header">
-    <h1>{{site_title|default:'MyTardis'}} Data Store</h1>
+    <h1 class="mb-1">{{site_title|default:'MyTardis'}} Data Store</h1>
   </div>
   {% if not is_authenticated %}
     <p>
@@ -28,65 +28,128 @@
   <div class="row">
     <div class="col-md-12">
       {% if is_authenticated %}
-        <h3>Your most recent experiments <small><strong>(<a href="{% url 'tardis.tardis_portal.views.my_data' %}">view all</a>)</strong></small></h3>
+      <h3>
+        Your most recent experiments
+        <small>(<a href="{% url 'tardis.tardis_portal.views.my_data' %}">view all</a>)</small>
+      </h3>
         <div id="private-experiments" class="panel-group experiments">
           {% for exp in private_experiments %}
-            <div class="accordion-group">
-              <div class="accordion-heading" data-parent="#private-experiments">
-                <div id="private-toggle-{{exp.id}}" class="accordion-toggle private-experiment" data-toggle="collapse"  data-parent="#private-experiments">
+            <div class="card mb-2">
+              <div id="private-toggle-{{exp.id}}"
+                   class="card-header accordion-toggle private-experiment py-2"
+                   data-toggle="collapse" data-parent="#private-experiments">
+                  <div class="row">
+                    <div class="col-md-8 px-1 pb-1">
+                      <input type="hidden" class="exp-index" value="{{ forloop.counter }}">
+                      <a class="card-title explink"
+                         href="{% url 'tardis_portal.view_experiment' exp.id %}">{{ exp.title }}</a>
+                    </div>
+                    <div class="col">
+                      <ul class="list-inline float-right list-unstyled">
+                        <li class="list-inline-item m-0">{{ exp|experiment_last_updated_badge }}</li>
+                        <li class="list-inline-item m-0">{{ exp|experiment_datasets_badge }}</li>
+                        <li class="list-inline-item m-0">{{ exp|experiment_datafiles_badge }}</li>
+                        <li class="list-inline-item m-0">{{ exp|experiment_public_access_badge }}</li>
+                      </ul>
+                    </div>
+                  </div>
+                  <div class="row">
+                    <div class="card-subtitle text-muted small col-6 px-1">
+                      {% for author in exp.experimentauthor_set.all %}
+                        <span property="dc:author">{{ author.author }}{% if not forloop.last %}, {% endif %}</span>
+                      {% endfor %}&nbsp;
+                    </div>
+                    <div class="col">
+                      <span class="float-right">
+                       {% for dltype, dlurl in exp.get_download_urls.items %}
+                        {% if forloop.first %}
+                          <a class="dllink" href="{{dlurl}}"
+                             title="Download Entire Experiment as {{dltype}}">
+                            <i class="fa fa-download"></i>
+                            <em>Download data as .{{dltype}}</em>
+                          </a>
+                        {% endif %}
+                      {% endfor %}
+                      </span>
+                    </div>
+                  </div>
+              </div>
+              <div id="collapse-{{exp.id}}" class="card-body py-2 collapse" data-parent="#private-experiments">
+                  <div class="row">
+                    <div class="col-md-9 px-1">
+                      <div class="accordion-inner">
+                        <p class="card-text small mb-1">{{exp.description|default:"<em>No description</em>"|bleach}}</p>
+                        <div id="private-recent-datasets-{{exp.id}}"></div>
+                      </div> {% comment %}class="accordion-inner"{% endcomment %}
+                    </div>
+                  </div>
+              </div>
+          </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% with total=public_experiments|length %}
+      <h3>The {{ total }} most recent public experiment{{total|pluralize}}</h3>
+    {% endwith %}
+    <div id="public-experiments" class="experiments">
+        {% for exp in public_experiments %}
+          <div class="card mb-2">
+            <div id="public-toggle-{{exp.id}}"
+                 class="card-header accordion-toggle public-experiment py-2"
+                 data-toggle="collapse" data-parent="#public-experiments">
+              <div class="row">
+                <div class="col-md-8 px-1 pb-1">
                   <input type="hidden" class="exp-index" value="{{ forloop.counter }}">
-                  <strong><a class="pull-left explink"
-                             href="{% url 'tardis_portal.view_experiment' exp.id %}">{{ exp.title }}</a></strong>
-                  {% experiment_badges exp %}
-                  {% experiment_authors exp %}
-                  {% experiment_download_link exp %}
-                </div> {% comment %}class="accordion-toggle private-experiment"{% endcomment %}
-              </div> {% comment %}class="accordiong-heading"{% endcomment %}
-              <div id="collapse-{{exp.id}}"
-                   class="panel-collapse collapse">
-                <div class="accordion-inner">
-                  <p>{{exp.description|default:"<em>No description</em>"|bleach}}</p>
-                  <div id="private-recent-datasets-{{exp.id}}"></div>
-                </div> {% comment %}class="accordion-inner"{% endcomment %}
-              </div> {% comment %}class="accordion-body"{% endcomment %}
-            </div> {% comment %}class="accordion-group"{% endcomment %}
-            {% empty %}
-            <p>You have no data stored on this server.<br/>
-            <a href="{% url 'tardis.tardis_portal.views.create_experiment' %}">Create
-            a new experiment</a> and upload your data</p>
-          {% endfor %}
-          <br/>
-        </div> {% comment%}id="private-experiments" class="panel-group experiments"{% endcomment %}
-      {% endif %}
-
-      {% with total=public_experiments|length %}
-        <h3>The {{ total }} most recent public experiment{{total|pluralize}}</h3>
-      {% endwith %}
-      <div id="public-experiments" class="panel-group experiments">
-      {% for exp in public_experiments %}
-        <div class="accordion-group">
-          <div class="accordion-heading" data-parent="#public-experiments">
-            <div id="public-toggle-{{exp.id}}" class="accordion-toggle public-experiment" data-toggle="collapse"  data-parent="#public-experiments">
-              <input type="hidden" class="exp-index" value="{{ forloop.counter }}">
-              <strong><a class="pull-left explink"
-                         href="{% url 'tardis_portal.view_experiment' exp.id %}">{{ exp.title }}</a></strong>
-              {% experiment_badges exp %}
-              {% experiment_authors exp %}
-              {% experiment_download_link exp %}
-            </div> {% comment %}class="accordion-toggle public-experiment"{% endcomment %}
-          </div> {% comment %}class="accordion-heading"{% endcomment %}
-          <div id="collapsepub-{{exp.id}}"
-               class="panel-collapse collapse">
-            <div class="accordion-inner">
-              <p>{{exp.description|default:"<em>No description</em>"|bleach}}</p>
-              <div id="public-recent-datasets-{{exp.id}}"></div>
-            </div> {% comment %}class="accordion-inner"{% endcomment %}
-          </div> {% comment %}class="accordion-body"{% endcomment %}
-        </div> {% comment %}class="accordion-group"{% endcomment %}
-        {% empty %}
-        <p>There is no public data available on this server.</p>
-      {% endfor %}
-      </div> {% comment %}id="public-experiments" class="panel-group experiments"{% endcomment %}
+                  <a class="card-title explink"
+                     href="{% url 'tardis_portal.view_experiment' exp.id %}">{{ exp.title }}</a>
+                </div>
+                <div class="col">
+                  <ul class="list-inline float-right list-unstyled">
+                    <li class="list-inline-item m-0">{{ exp|experiment_last_updated_badge }}</li>
+                    <li class="list-inline-item m-0">{{ exp|experiment_datasets_badge }}</li>
+                    <li class="list-inline-item m-0">{{ exp|experiment_datafiles_badge }}</li>
+                  </ul>
+                </div>
+              </div>
+              <div class="row">
+                <div class="card-subtitle text-muted small col-6 px-1">
+                  {% for author in exp.experimentauthor_set.all %}
+                    <span property="dc:author">{{ author.author }}{% if not forloop.last %}, {% endif %}</span>
+                  {% endfor %}
+                  &nbsp;
+                </div>
+                <div class="col">
+                  <span class="float-right">
+                  {% if exp.public_download_allowed %}
+                    {% for dltype, dlurl in exp.get_download_urls.items %}
+                      {% if forloop.first %}
+                        <a class="dllink" href="{{dlurl}}"
+                           title="Download Entire Experiment as {{dltype}}">
+                          <i class="fa fa-download"></i>
+                          <em>Download data as .{{dltype}}</em>
+                        </a>
+                      {% endif %}
+                    {% endfor %}
+                   {% endif %}
+                </span>
+                </div>
+              </div>
+            </div>
+            <div id="collapsepub-{{exp.id}}" class="card-body py-2 collapse" data-parent="#public-experiments">
+              <div class="row">
+                <div class="col-md-9 px-1">
+                  <div class="accordion-inner">
+                    <p class="card-text small mb-1">{{exp.description|default:"<em>No description</em>"|bleach}}</p>
+                    <div id="public-recent-datasets-{{exp.id}}"></div>
+                  </div> {% comment %}class="accordion-inner"{% endcomment %}
+                </div>
+              </div>
+            </div>
+          </div> {% comment %}class="card"{% endcomment %}
+          {% empty %}
+          <p>There is no public data available on this server.</p>
+        {% endfor %}
+        </div> {% comment %}id="public-experiments" class="panel-group experiments"{% endcomment %}
     </div> {% comment %}class="col-md-12"{% endcomment %}
   </div> {% comment %}class="row"{% endcomment %}
 </div> {% comment %}id="content"{% endcomment %}

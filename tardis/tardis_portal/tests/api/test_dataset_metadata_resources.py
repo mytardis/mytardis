@@ -18,11 +18,11 @@ from . import MyTardisResourceTestCase
 
 class DatasetParameterSetResourceTest(MyTardisResourceTestCase):
     def setUp(self):
-        super(DatasetParameterSetResourceTest, self).setUp()
+        super().setUp()
         self.test_schema = Schema.objects.create(
             namespace="http://schema.namespace/dataset/1",
             type=Schema.DATASET)
-        self.test_param1_name = ParameterName(
+        self.test_param1_name = ParameterName.objects.create(
             schema=self.test_schema,
             name='param1_name',
             data_type=ParameterName.STRING)
@@ -109,6 +109,8 @@ class DatasetParameterSetResourceTest(MyTardisResourceTestCase):
             '/api/v1/datasetparameterset/',
             data=post_data,
             authentication=self.get_credentials()))
+        self.user.user_permissions.add(
+            Permission.objects.get(codename='change_dataset'))
 
 
 class DatasetParameterResourceTest(MyTardisResourceTestCase):
