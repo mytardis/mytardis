@@ -54,7 +54,7 @@ class ExperimentTestCase(TestCase):
         # Check the form is accessible
         response = client.get(create_url)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(mock_webpack_get_bundle.call_count, 1)
+        self.assertNotEqual(mock_webpack_get_bundle.call_count, 0)
 
         # Create client and go to account management URL
         data = {'title': 'The Elements',

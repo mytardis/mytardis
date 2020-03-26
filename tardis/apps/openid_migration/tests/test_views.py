@@ -31,4 +31,4 @@ class OpenIDMigrationViewTestCase(TestCase):
         self.assertTrue(login)
         response = client.get('/apps/openid-migration/migrate-accounts/')
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(mock_webpack_get_bundle.call_count, 1)
+        self.assertNotEqual(mock_webpack_get_bundle.call_count, 0)

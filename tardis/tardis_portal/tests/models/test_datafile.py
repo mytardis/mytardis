@@ -46,7 +46,7 @@ class DataFileTestCase(ModelTestCase):
             # to verify the DFO which will trigger an attempt
             # to apply filters because we are overriding the
             # USE_FILTERS setting to True in this test:
-            self.assertEqual(mock_send_task.call_count, 1)
+            self.assertNotEqual(mock_send_task.call_count, 0)
             return datafile
 
         exp = Experiment(title='test exp1',

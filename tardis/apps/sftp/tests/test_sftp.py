@@ -199,7 +199,7 @@ QKHf8Ha+rOx3B7Dbljc+Xdpcn9VyRmDlSqzX9aCkr18mNg==
             b"/home/tardis_user1/experiments/%s"
             % path_mapper(self.exp).encode(),
             response.content)
-        self.assertEqual(mock_webpack_get_bundle.call_count, 1)
+        self.assertNotEqual(mock_webpack_get_bundle.call_count, 0)
 
     @patch('webpack_loader.loader.WebpackLoader.get_bundle')
     def test_sftp_dynamic_docs_dataset(self, mock_webpack_get_bundle):
@@ -216,7 +216,7 @@ QKHf8Ha+rOx3B7Dbljc+Xdpcn9VyRmDlSqzX9aCkr18mNg==
             % (path_mapper(self.exp).encode(),
                path_mapper(self.dataset).encode()),
             response.content)
-        self.assertEqual(mock_webpack_get_bundle.call_count, 1)
+        self.assertNotEqual(mock_webpack_get_bundle.call_count, 0)
 
     def test_cybderduck_connection_window(self):
         factory = RequestFactory()

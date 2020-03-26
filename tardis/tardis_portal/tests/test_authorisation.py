@@ -181,7 +181,7 @@ class ObjectACLTestCase(TestCase):
         response = self.client3.get('/experiment/view/%i/'
                                    % (self.experiment1.id))
         self.assertEqual(response.status_code, 403)
-        self.assertEqual(mock_webpack_get_bundle.call_count, 1)
+        self.assertNotEqual(mock_webpack_get_bundle.call_count, 0)
 
     @patch('webpack_loader.loader.WebpackLoader.get_bundle')
     def testReadAccess(self, mock_webpack_get_bundle):
@@ -193,7 +193,7 @@ class ObjectACLTestCase(TestCase):
         response = self.client1.get('/experiment/view/%i/'
                                    % (self.experiment1.id))
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(mock_webpack_get_bundle.call_count, 1)
+        self.assertNotEqual(mock_webpack_get_bundle.call_count, 0)
 
         # user1 should not be allowed to see experiment2
         response = self.client1.get('/experiment/view/%i/'
@@ -505,7 +505,7 @@ class ObjectACLTestCase(TestCase):
         self.assertTrue(login)
         response = self.client1.get('/experiment/edit/%i/' % (self.experiment1.id))
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(mock_webpack_get_bundle.call_count, 1)
+        self.assertNotEqual(mock_webpack_get_bundle.call_count, 0)
 
         # write access has not been granted for experiment2
         response = self.client1.get('/experiment/edit/%i/' % (self.experiment2.id))
@@ -608,7 +608,7 @@ class ObjectACLTestCase(TestCase):
 
         acl.delete()
         self.client3.logout()
-        self.assertEqual(mock_webpack_get_bundle.call_count, 1)
+        self.assertNotEqual(mock_webpack_get_bundle.call_count, 0)
 
 
     def testOwnedExperiments(self):

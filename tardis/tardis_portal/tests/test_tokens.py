@@ -275,7 +275,7 @@ class TokenTestCase(TestCase):
         url = "/experiment/view/%s/?token=%s" % (experiment.id, token.token)
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(mock_webpack_get_bundle.call_count, 1)
+        self.assertNotEqual(mock_webpack_get_bundle.call_count, 0)
 
     @patch('webpack_loader.loader.WebpackLoader.get_bundle')
     def test_token_delete(self, mock_webpack_get_bundle):
@@ -319,4 +319,4 @@ class TokenTestCase(TestCase):
         url = "/experiment/view/%s/?token=%s" % (experiment.id, token.token)
         response = self.client.get(url)
         self.assertEqual(response.status_code, 403)
-        self.assertEqual(mock_webpack_get_bundle.call_count, 1)
+        self.assertNotEqual(mock_webpack_get_bundle.call_count, 0)

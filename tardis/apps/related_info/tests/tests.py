@@ -50,7 +50,7 @@ class TabTestCase(TestCase):
             reverse('tardis.apps.related_info.views.index',
                     args=[self.experiment.id]))
         self.assertEqual(response.status_code, 403)
-        self.assertEqual(mock_webpack_get_bundle.call_count, 1)
+        self.assertNotEqual(mock_webpack_get_bundle.call_count, 0)
 
     @patch('webpack_loader.loader.WebpackLoader.get_bundle')
     def testAccessWithReadPerms(self, mock_webpack_get_bundle):
@@ -58,7 +58,7 @@ class TabTestCase(TestCase):
             reverse('tardis.apps.related_info.views.index',
                     args=[self.experiment.id]))
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(mock_webpack_get_bundle.call_count, 1)
+        self.assertNotEqual(mock_webpack_get_bundle.call_count, 0)
 
 
 class ListTestCase(TransactionTestCase):
@@ -175,7 +175,7 @@ class GetTestCase(TransactionTestCase):
                     'get_or_update_or_delete_related_info',
                     args=[self.experiment.id, 0]))
         self.assertEqual(response.status_code, 404)
-        self.assertEqual(mock_webpack_get_bundle.call_count, 1)
+        self.assertNotEqual(mock_webpack_get_bundle.call_count, 0)
 
     def testHandlesFound(self):
         from ..views import SCHEMA_URI
@@ -236,7 +236,7 @@ class CreateTestCase(TransactionTestCase):
             data=json.dumps(params),
             content_type='application/json')
         self.assertEqual(response.status_code, 403)
-        self.assertEqual(mock_webpack_get_bundle.call_count, 1)
+        self.assertNotEqual(mock_webpack_get_bundle.call_count, 0)
 
     def testCanCreate(self):
         params = {'type': 'website',
@@ -334,7 +334,7 @@ class UpdateTestCase(TransactionTestCase):
             data=json.dumps(params),
             content_type='application/json')
         self.assertEqual(response.status_code, 403)
-        self.assertEqual(mock_webpack_get_bundle.call_count, 1)
+        self.assertNotEqual(mock_webpack_get_bundle.call_count, 0)
 
     def testDetectsBadInput(self):
         def do_put(params):
@@ -405,7 +405,7 @@ class DeleteTestCase(TransactionTestCase):
                     'get_or_update_or_delete_related_info',
                     args=[self.experiment.id, related_info_id]))
         self.assertEqual(response.status_code, 403)
-        self.assertEqual(mock_webpack_get_bundle.call_count, 1)
+        self.assertNotEqual(mock_webpack_get_bundle.call_count, 0)
 
     def testCanDelete(self):
         response = self.client.delete(

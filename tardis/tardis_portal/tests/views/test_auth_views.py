@@ -234,7 +234,7 @@ class ManageAccountTestCase(TestCase):
         response = client.get(manage_url)
         # Expect 200 OK and a form
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(mock_webpack_get_bundle.call_count, 1)
+        self.assertNotEqual(mock_webpack_get_bundle.call_count, 0)
         response.content.index(b'name="first_name"')
         response.content.index(b'name="last_name"')
         response.content.index(b'name="email"')
