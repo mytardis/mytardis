@@ -14,7 +14,7 @@ git+https://github.com/mytardis/django-tastypie-swagger.git@mytardis-dj2.0#egg=d
 django-user-agents==0.4.0
 django-webpack-loader==0.7.0
 django-widget-tweaks==1.4.8
-django-storages==1.7.2
+django-storages==1.9.1
 gunicorn==19.9.0
 gevent==1.4.0
 html2text==2019.8.11
