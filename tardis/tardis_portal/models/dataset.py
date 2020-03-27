@@ -298,15 +298,10 @@ class Dataset(models.Model):
 
         """
         dir_list = []
-        basedir = ""
-        for dir_tuple in dir_tuples:
-            if dir_tuple[0] == '..':
-                basedir = dir_tuple[1]
         for dir_tuple in dir_tuples:
             dir_name, dir_path = dir_tuple
             if dir_name == '..':
                 continue
-            subdir_tuples = self.get_dir_tuples(dir_path)
             child_dict = {
                 'name': dir_name,
                 'path': dir_path,

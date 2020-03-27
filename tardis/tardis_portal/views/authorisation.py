@@ -20,8 +20,7 @@ from django.views.decorators.cache import never_cache
 from django.views.decorators.http import require_POST
 
 from ..auth import decorators as authz
-from ..auth.localdb_auth import auth_key as localdb_auth_key, \
-    django_user
+from ..auth.localdb_auth import django_user
 from ..models import UserAuthentication, UserProfile, Experiment, \
     Token, GroupAdmin, ObjectACL
 from ..shortcuts import render_response_index
@@ -210,7 +209,11 @@ def retrieve_group_userlist(request, group_id):
 
     from ..forms import ManageGroupPermissionsForm
     users = User.objects.filter(groups__id=group_id)
-    c = {'users': users, 'group_id': group_id,
+    group_admins = []
+    for user in users:
+        if GroupAdmin.objects.filter(user=user, group__id=group_id).exists():
+            group_admins.append(user)
+    c = {'users': users, 'group_id': group_id, 'group_admins': group_admins,
          'manageGroupPermissionsForm': ManageGroupPermissionsForm()}
     return render_response_index(
         request, 'tardis_portal/ajax/group_user_list.html', c)
@@ -221,7 +224,11 @@ def retrieve_group_userlist_readonly(request, group_id):
 
     from ..forms import ManageGroupPermissionsForm
     users = User.objects.filter(groups__id=group_id)
-    c = {'users': users, 'group_id': group_id,
+    group_admins = []
+    for user in users:
+        if GroupAdmin.objects.filter(user=user, group__id=group_id).exists():
+            group_admins.append(user)
+    c = {'users': users, 'group_id': group_id, 'group_admins': group_admins,
          'manageGroupPermissionsForm': ManageGroupPermissionsForm()}
     return render_response_index(
         request, 'tardis_portal/ajax/group_user_list_readonly.html', c)
@@ -250,7 +257,6 @@ def manage_groups(request):
 @authz.group_ownership_required
 def add_user_to_group(request, group_id, username):
 
-    authMethod = localdb_auth_key
     isAdmin = False
     logger.info("isAdmin: %s", str(isAdmin))
 
@@ -455,7 +461,6 @@ def create_group(request):
             'tardis_portal/ajax/create_group.html', {})
         return response
 
-    authMethod = localdb_auth_key
     admin = None
     groupname = None
 

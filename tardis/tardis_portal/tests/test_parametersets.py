@@ -319,8 +319,6 @@ class ParameterSetManagerTestCase(TestCase):
                 schema=self.schema, datafile=self.datafile)
         self.datafileparameterset3.save()
 
-        psm = ParameterSetManager(parameterset=self.datafileparameterset3)
-
         # Create a Parameter of type LINK to an unresolvable (non-URL)
         # free-text value
         self.freetext_link_param = DatafileParameter(

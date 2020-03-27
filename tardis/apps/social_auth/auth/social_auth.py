@@ -64,7 +64,7 @@ def get_auth_method(authenticatedBackendName):
     methods in settings
     """
 
-    for authKey, authDisplayName, authBackend in settings.AUTH_PROVIDERS:
+    for authKey, _, authBackend in settings.AUTH_PROVIDERS:
         authBackendClassName = authBackend.split('.')[-1]
         if authBackendClassName == authenticatedBackendName:
             return authKey

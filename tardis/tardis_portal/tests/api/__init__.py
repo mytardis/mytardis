@@ -5,7 +5,7 @@ Testing the tastypie-based mytardis api
 .. moduleauthor:: James Wettenhall <james.wettenhall@monash.edu>
 '''
 from django.contrib.auth.models import User, Group, Permission
-from django.test import TransactionTestCase
+from django.test import TestCase
 
 from tastypie.test import ResourceTestCaseMixin
 
@@ -17,7 +17,7 @@ from ...models.facility import Facility
 from ...models.instrument import Instrument
 
 
-class MyTardisResourceTestCase(ResourceTestCaseMixin, TransactionTestCase):
+class MyTardisResourceTestCase(ResourceTestCaseMixin, TestCase):
     '''
     abstract class without tests to combine common settings in one place
     '''

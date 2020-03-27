@@ -4,6 +4,52 @@ exports[`renders initial tree view on page load should render folder tree correc
 <div>
   <div>
     <div
+      style="float: left;"
+    >
+      <form>
+        <input
+          type="hidden"
+        />
+        <input
+          name="comptype"
+          type="hidden"
+          value="tar"
+        />
+        <input
+          name="organization"
+          type="hidden"
+          value="deep-storage"
+        />
+        <button
+          class="btn btn-outline-secondary"
+          disabled=""
+          style="margin-bottom: 12px; font-weight: bold; margin-right: 2px;"
+          title="Start selecting files to download"
+          type="submit"
+          value="submit"
+        >
+          <i
+            class="fa fa-download fa-sm mr-1 "
+          />
+          Select Files...
+          
+        </button>
+      </form>
+    </div>
+    <div>
+      <button
+        class="btn btn-outline-secondary"
+        style="margin-bottom: 12px; font-weight: bold;"
+        title="Select All"
+        type="submit"
+        value="submit"
+      >
+        Select All
+      </button>
+    </div>
+  </div>
+  <div>
+    <div
       class="input-group"
     >
       <span
@@ -15,6 +61,7 @@ exports[`renders initial tree view on page load should render folder tree correc
       </span>
       <input
         class="form-control"
+        name="search-input"
         placeholder="Search the tree..."
         type="text"
       />
@@ -36,11 +83,18 @@ exports[`renders initial tree view on page load should render folder tree correc
             <div
               style="line-height: 20px; vertical-align: middle; font-size: 16px; cursor: pointer;"
             >
+              <input
+                class="datafile_checkbox"
+                readonly=""
+                style="margin-right: 5px;"
+                type="checkbox"
+              />
               <i
                 class="fa fa-folder"
                 style="margin-right: 5px; opacity: 0.6;"
               />
               parent_1
+              
             </div>
           </div>
         </div>
@@ -56,11 +110,18 @@ exports[`renders initial tree view on page load should render folder tree correc
             <div
               style="line-height: 20px; vertical-align: middle; font-size: 16px; cursor: pointer;"
             >
+              <input
+                class="datafile_checkbox"
+                readonly=""
+                style="margin-right: 5px;"
+                type="checkbox"
+              />
               <i
                 class="fa fa-folder"
                 style="margin-right: 5px; opacity: 0.6;"
               />
               parent_2
+              
             </div>
           </div>
         </div>
@@ -76,11 +137,27 @@ exports[`renders initial tree view on page load should render folder tree correc
             <div
               style="line-height: 20px; vertical-align: middle; font-size: 16px; cursor: pointer;"
             >
+              <input
+                class="datafile_checkbox"
+                readonly=""
+                style="margin-right: 5px;"
+                type="checkbox"
+              />
               <i
                 class="fa fa-file-text"
                 style="margin-right: 5px; opacity: 0.6;"
               />
               Parent.txt
+              <a
+                class="btn-sm"
+                href="/api/v1/dataset_file/11985776/download/"
+                style="color: black;"
+                title="Download"
+              >
+                <i
+                  class="fa fa-download fa-sm"
+                />
+              </a>
             </div>
           </div>
         </div>
@@ -96,11 +173,33 @@ exports[`renders initial tree view on page load should render folder tree correc
             <div
               style="line-height: 20px; vertical-align: middle; font-size: 16px; cursor: pointer;"
             >
+              <input
+                class="datafile_checkbox"
+                disabled=""
+                readonly=""
+                style="margin-right: 5px;"
+                type="checkbox"
+              />
               <i
                 class="fa fa-file-text"
                 style="margin-right: 5px; opacity: 0.6;"
               />
-              STORM-6.jpg
+              <span
+                style="color: red;"
+              >
+                STORM-6.jpg
+                (unverified)
+              </span>
+              <a
+                class="btn-sm"
+                href="/api/v1/dataset_file/11985840/download/"
+                style="pointer-events: none; cursor: default; text-decoration: none; color: grey;"
+                title="Download"
+              >
+                <i
+                  class="fa fa-download fa-sm"
+                />
+              </a>
             </div>
           </div>
         </div>
