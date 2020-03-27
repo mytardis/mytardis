@@ -78,7 +78,7 @@
     "grunt-webpack": "^3.1.3",
     "identity-obj-proxy": "^3.0.0",
     "jest": "^25.2.0",
-    "jest-fetch-mock": "^2.1.2",
+    "jest-fetch-mock": "^3.0.3",
     "jquery-mockjax": "^2.5.0",
     "js-yaml": "^3.13.1",
     "jscpd": "^2.0.16",
