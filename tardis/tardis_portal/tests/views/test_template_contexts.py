@@ -10,8 +10,8 @@ Tests for view methods supplying context data to templates
 """
 import sys
 
+from unittest.mock import patch
 from flexmock import flexmock
-from mock import patch
 
 from django.conf import settings
 from django.test import TestCase
@@ -86,7 +86,7 @@ class ViewTemplateContextsTest(TestCase):
         view_fn = ExperimentView.as_view()
         response = view_fn(request, experiment_id=self.exp.id)
         self.assertEqual(response.status_code, 200)
-        mock_webpack_get_bundle.assert_called()
+        self.assertNotEqual(mock_webpack_get_bundle.call_count, 0)
 
         # Behavior with USER_AGENT_SENSING enabled and a request.user_agent
         saved_setting = getattr(settings, "USER_AGENT_SENSING", None)
@@ -135,7 +135,7 @@ class ViewTemplateContextsTest(TestCase):
         view_fn = DatasetView.as_view()
         response = view_fn(request, dataset_id=self.dataset.id)
         self.assertEqual(response.status_code, 200)
-        mock_webpack_get_bundle.assert_called()
+        self.assertNotEqual(mock_webpack_get_bundle.call_count, 0)
 
         # Behavior with USER_AGENT_SENSING enabled and a request.user_agent
         saved_setting = getattr(settings, "USER_AGENT_SENSING", None)
@@ -210,7 +210,7 @@ class ExperimentListsTest(TestCase):
         request.user = self.user
         response = my_data(request)
         self.assertEqual(response.status_code, 200)
-        mock_webpack_get_bundle.assert_called()
+        self.assertNotEqual(mock_webpack_get_bundle.call_count, 0)
         # jQuery hasn't populated the div yet:
         self.assertIn(
 
@@ -257,7 +257,7 @@ class ExperimentListsTest(TestCase):
         request.user = self.user
         response = shared(request)
         self.assertEqual(response.status_code, 200)
-        mock_webpack_get_bundle.assert_called()
+        self.assertNotEqual(mock_webpack_get_bundle.call_count, 0)
 
         # jQuery hasn't populated the div yet:
         self.assertIn(

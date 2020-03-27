@@ -5,7 +5,7 @@ Created on 19/01/2011
 '''
 import json
 
-from mock import patch
+from unittest.mock import patch
 
 from django.test import TestCase
 from django.test.client import Client
@@ -58,7 +58,7 @@ class AuthenticationTestCase(TestCase):
             'password': 'test', 'authMethod': 'localdb'})
 
         response = self.client.get(self.manageAuthMethodsUrl)
-        mock_webpack_get_bundle.assert_called()
+        self.assertNotEqual(mock_webpack_get_bundle.call_count, 0)
         self.assertEqual(len(response.context['userAuthMethodList']), 1, response)
         self.assertTrue(response.context['isDjangoAccount'] is True)
         self.assertTrue(len(response.context['supportedAuthMethods']), 1)
