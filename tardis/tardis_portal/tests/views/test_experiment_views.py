@@ -11,7 +11,7 @@ Tests for view methods relating to experiments
 import json
 from urllib.parse import urlparse
 
-from mock import patch
+from unittest.mock import patch
 
 from django.urls import resolve, reverse
 from django.test import TestCase
@@ -54,7 +54,7 @@ class ExperimentTestCase(TestCase):
         # Check the form is accessible
         response = client.get(create_url)
         self.assertEqual(response.status_code, 200)
-        mock_webpack_get_bundle.assert_called()
+        self.assertNotEqual(mock_webpack_get_bundle.call_count, 0)
 
         # Create client and go to account management URL
         data = {'title': 'The Elements',
