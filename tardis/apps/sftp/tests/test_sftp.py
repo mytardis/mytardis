@@ -4,14 +4,15 @@
 """
 from io import BytesIO
 
+from unittest.mock import patch
+from flexmock import flexmock
+
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.management import call_command
 from django.test import RequestFactory
 from django.test import TestCase
 
-from flexmock import flexmock
-from mock import patch
 from paramiko.common import AUTH_SUCCESSFUL, AUTH_FAILED
 from paramiko.ssh_exception import SSHException
 from paramiko.rsakey import RSAKey
@@ -199,7 +200,7 @@ QKHf8Ha+rOx3B7Dbljc+Xdpcn9VyRmDlSqzX9aCkr18mNg==
             b"/home/tardis_user1/experiments/%s"
             % path_mapper(self.exp).encode(),
             response.content)
-        mock_webpack_get_bundle.assert_called()
+        self.assertNotEqual(mock_webpack_get_bundle.call_count, 0)
 
     @patch('webpack_loader.loader.WebpackLoader.get_bundle')
     def test_sftp_dynamic_docs_dataset(self, mock_webpack_get_bundle):
@@ -216,7 +217,7 @@ QKHf8Ha+rOx3B7Dbljc+Xdpcn9VyRmDlSqzX9aCkr18mNg==
             % (path_mapper(self.exp).encode(),
                path_mapper(self.dataset).encode()),
             response.content)
-        mock_webpack_get_bundle.assert_called()
+        self.assertNotEqual(mock_webpack_get_bundle.call_count, 0)
 
     def test_cybderduck_connection_window(self):
         factory = RequestFactory()

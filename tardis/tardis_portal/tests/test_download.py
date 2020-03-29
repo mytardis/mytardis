@@ -12,7 +12,7 @@ from tarfile import is_tarfile, TarFile
 from tempfile import NamedTemporaryFile
 from urllib.parse import quote
 
-from mock import patch
+from unittest.mock import patch
 
 from django.test import TestCase
 from django.test.client import Client
@@ -162,7 +162,7 @@ class DownloadTestCase(TestCase):
         response = client.get('/datafile/view/%i/' % self.datafile2.id)
         self.assertEqual(response.status_code, 200)
 
-        mock_webpack_get_bundle.assert_called()
+        self.assertNotEqual(mock_webpack_get_bundle.call_count, 0)
 
         # The following behaviour relies on ImageMagick
         if IMAGEMAGICK_AVAILABLE:
@@ -343,7 +343,7 @@ class DownloadTestCase(TestCase):
         response = client.get('/download/experiment/%i/tar/' %
                               self.experiment2.id)
         self.assertEqual(response.status_code, 200)
-        mock_webpack_get_bundle.assert_called()
+        self.assertNotEqual(mock_webpack_get_bundle.call_count, 0)
         self.assertEqual(response['Content-Disposition'],
                          'attachment; filename="%s-complete.tar"'
                          % exp2_title)
