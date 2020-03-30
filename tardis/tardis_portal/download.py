@@ -58,7 +58,7 @@ def _create_download_response(request, datafile_id, disposition='attachment'):  
     # Get datafile (and return 404 if absent)
     try:
         datafile = DataFile.objects.get(pk=datafile_id)
-        logging.basicConfig(filename='home/mytardis/mytardis/chris.log', filemode='w')
+        #logging.basicConfig(filename='home/mytardis/mytardis/chris.log', filemode='w')
         logging.debug(datafile)
         logging.debug(dir(datafile))
     except DataFile.DoesNotExist:
@@ -223,7 +223,7 @@ class S3Downloader():
     import requests
     import backoff
     from urllib.parse import urljoin
-    
+
     def __init__(self,
                  datafile):
         self.access_key = getattr(settings, 'AWS_S3_ACCESS_KEY_ID')
