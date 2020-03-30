@@ -20,6 +20,11 @@ from ..models.parameters import (
     Schema as SchemaModel,
     ParameterName as ParameterNameModel
 )
+from ...apps.mydata.models.uploader import (
+    Uploader as UploaderModel,
+    UploaderRegistrationRequest as UploaderRegistrationRequestModel,
+    UploaderSetting as UploaderSettingModel
+)
 
 from .user import UserType, UserSignIn, ApiSignIn
 from .group import (
@@ -82,7 +87,11 @@ from .parameters import (
 )
 from .uploader import (
     UploaderType, UploaderTypeFilter,
-    CreateUploader, UpdateUploader
+    CreateUploader, UpdateUploader,
+    UploaderRegistrationRequestType, UploaderRegistrationRequestTypeFilter,
+    CreateUploaderRegistrationRequest, UpdateUploaderRegistrationRequest,
+    UploaderSettingType, UploaderSettingTypeFilter,
+    CreateUploaderSetting, UpdateUploaderSetting
 )
 from .utils import (
     get_accessible_experiments,
@@ -315,3 +324,9 @@ class tardisMutation(graphene.ObjectType):
 
     create_uploader = CreateUploader.Field()
     update_uploader = UpdateUploader.Field()
+
+    create_uploaderregistrationrequest = CreateUploaderRegistrationRequest.Field()
+    update_uploaderregistrationrequest = UpdateUploaderRegistrationRequest.Field()
+
+    create_uploadersetting = CreateUploaderSetting.Field()
+    update_uploadersetting = UpdateUploaderSetting.Field()
