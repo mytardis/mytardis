@@ -65,6 +65,19 @@ def fpupload(request, dataset_id):
                                         filename=picked_file.name,
                                         size=picked_file.size)
                     datafile.save()
+
+                    # add defaul ACL
+                    acl = ObjectACL(content_object=datafile,
+                                    pluginId=django_user,
+                                    entityId=str(request.user.id),
+                                    canRead=True,
+                                    canDownload=True,
+                                    canWrite=True,
+                                    canDelete=True,
+                                    isOwner=True,
+                                    aclOwnershipType=ObjectACL.OWNER_OWNED)
+                    acl.save()
+
                     datafile.file_object = picked_file
 
     return HttpResponse(json.dumps({"result": True}))
