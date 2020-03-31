@@ -47,9 +47,9 @@ class Project(models.Model):
                                          null=False,
                                          default=PUBLIC_ACCESS_NONE)
     #TODO Remove null=True on rebuild database
-    owner = models.OneToOneField(User,
-                                 null=True,
-                                 on_delete=models.CASCADE)
+    owner = models.ManyToManyField(User,
+                                   null=True,
+                                   blank=True)
     contact = models.ManyToManyField(User,
                                      related_name='contacts',
                                      null=True,

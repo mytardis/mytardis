@@ -58,9 +58,6 @@ def _create_download_response(request, datafile_id, disposition='attachment'):  
     # Get datafile (and return 404 if absent)
     try:
         datafile = DataFile.objects.get(pk=datafile_id)
-        logging.basicConfig(filename='home/mytardis/mytardis/chris.log', filemode='w')
-        logging.debug(datafile)
-        logging.debug(dir(datafile))
     except DataFile.DoesNotExist:
         return return_response_not_found(request)
     # Check users has access to datafile
@@ -85,20 +82,26 @@ def _create_download_response(request, datafile_id, disposition='attachment'):  
         # a bare ?ignore_verification_status is True
         if ignore_verif.lower() in [u'', u'1', u'true']:
             verified_only = False
-
-        # Get file object for datafile
-        file_obj = datafile.get_file(verified_only=verified_only)
-        if not file_obj:
-            # If file path doesn't resolve, return not found
-            if verified_only:
-                return render_error_message(request,
-                                            "File is unverified, "
-                                            "please try again later.",
-                                            status=503)
-            return return_response_not_found(request)
-        wrapper = FileWrapper(file_obj, blksize=65535)
-        response = StreamingHttpResponse(wrapper,
-                                         content_type=datafile.get_mimetype())
+        logger.info(f'Datafile size: {datafile.get_size()}')
+        if datafile.get_size() > 10*1024*1024: # 10 MB
+            logger.info('Going into S3')
+            s3factory = S3Downloader(datafile)
+            response = s3factory.download_datafile()
+        else:
+            # Get file object for datafile
+            file_obj = datafile.get_file(verified_only=verified_only)
+            if not file_obj:
+                # If file path doesn't resolve, return not found
+                if verified_only:
+                    return render_error_message(request,
+                                                "File is unverified, "
+                                                "please try again later.",
+                                                status=503)
+                return return_response_not_found(request)
+            wrapper = FileWrapper(file_obj, blksize=65535)
+            # Replace this with a direct call to s3
+            response = StreamingHttpResponse(wrapper,
+                                             content_type=datafile.get_mimetype())
         response['Content-Disposition'] = \
             '%s; filename="%s"' % (disposition, datafile.filename)
         return response
@@ -116,17 +119,11 @@ def _create_download_response(request, datafile_id, disposition='attachment'):  
 
 def view_datafile(request, datafile_id):
     datafile = DataFile.objects.get(pk=datafile_id)
-    #logging.basicConfig(filename='/home/mytardis/mytardis/chris.log', filemode='w')
-    logger.error(datafile)
-    logger.error(dir(datafile))
     return _create_download_response(request, datafile_id, 'inline')
 
 
 def download_datafile(request, datafile_id):
     datafile = DataFile.objects.get(pk=datafile_id)
-    #logger.basicConfig(filename='/home/mytardis/mytardis/chris.log', filemode='w')
-    logger.error(datafile)
-    logger.error(dir(datafile))
     return _create_download_response(request, datafile_id)
 
 
@@ -230,15 +227,41 @@ class S3Downloader():
         self.secret_key = getattr(settings, 'AWS_S3_SECRET_ACCESS_KEY')
         self.endpoint_url = getattr(settings, 'AWS_S3_HOST')
         self.session_token = getattr(settings, 'AWS_SESSION_TOKEN')
+        endpoint_url = getattr(settings, 'AWS_S3_ENDPOINT_URL')
         self.datafile = datafile
         self.s3_client = boto3.client('s3',
                                       aws_access_key = self.access_key,
                                       aws_secret_access = self.secret_key,
-                                      aws_session_token = self.session_token)
-        self.api_url = urljoin(self.server,
-                               '/api/v1/%s/')
+                                      aws_session_token = self.session_token,
+                                      endpoint_url = endpoint_url)
+        
+    def __get_bucket_from_datafile(self):
+        self.dfo = self.datafile.get_file(verified_only=verified_only)
+        self.storage_box = self.dfo.storage_box
+        options = self.storage_box.options
+        for option in options:
+            if option.key == 'bucket_name':
+                logger.info(option.value)
+                return option.value
+        return False
 
-    #def __get_bucket_from_datafile(self):
+    def __mint_time_limited_url(self):
+        try:
+            url = sself.s3_client.generate_presigned_url('get_object',
+                                                         Params={'Bucket': self.__get_bucket_from_datafile(self.datafile),
+                                                                 'Key':self.dfo.get_full_path()},
+                                                         ExpiresIn=3600)
+            logger.info(url)
+        except ClientError as e:
+            logger.error(e)
+            return None
+        return url
+
+    def dowload_datafile(self):
+        url = self.__mint_time_limited_url()
+        if url is not None:
+            response = requests.get(url)
+        return response
 
 
 class UncachedTarStream(TarFile):

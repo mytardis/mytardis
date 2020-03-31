@@ -46,8 +46,10 @@ class Schema(models.Model):
     DATAFILE = 3
     NONE = 4
     INSTRUMENT = 5
+    PROJECT = 11
 
     _SCHEMA_TYPES = (
+        (PROJECT, 'Project schema'),
         (EXPERIMENT, 'Experiment schema'),
         (DATASET, 'Dataset schema'),
         (DATAFILE, 'Datafile schema'),
@@ -56,6 +58,7 @@ class Schema(models.Model):
     )
 
     _SCHEMA_TYPES_SHORT = (
+        (PROJECT, 'project'),
         (EXPERIMENT, 'experiment'),
         (DATASET, 'dataset'),
         (DATAFILE, 'datafile'),
