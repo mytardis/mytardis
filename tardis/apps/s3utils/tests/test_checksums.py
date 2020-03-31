@@ -6,7 +6,7 @@ Testing the s3util app's ability to calculate checksums for S3 objects
 import unittest
 import sys
 
-from mock import patch
+from unittest.mock import patch
 
 from django.test import TestCase
 

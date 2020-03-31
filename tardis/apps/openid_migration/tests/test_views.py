@@ -1,11 +1,11 @@
 '''
 Tests related to OpenID migration views
 '''
+from unittest.mock import patch
+
 from django.test import TestCase
 from django.test.client import Client
 from django.contrib.auth.models import User, Permission
-
-from mock import patch
 
 
 class OpenIDMigrationViewTestCase(TestCase):
@@ -31,4 +31,4 @@ class OpenIDMigrationViewTestCase(TestCase):
         self.assertTrue(login)
         response = client.get('/apps/openid-migration/migrate-accounts/')
         self.assertEqual(response.status_code, 200)
-        mock_webpack_get_bundle.assert_called()
+        self.assertNotEqual(mock_webpack_get_bundle.call_count, 0)
