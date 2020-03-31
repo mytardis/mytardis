@@ -405,7 +405,7 @@ class ProjectView(TemplateView):
         c['subtitle'] = project.name
         c['project'] = project
 
-            
+
         c.update(
             {'project': project,
              'subtitle': project.name,
@@ -825,8 +825,21 @@ def create_project(request):
             contacts = form.cleaned_data.get('contact')
             project.contact.add(*contacts)
             members = form.cleaned_data.get('member')
-            project.member.add(*members)  
+            project.member.add(*members)
             project.save()
+
+            # add defaul ACL
+            acl = ObjectACL(content_object=project,
+                            pluginId=django_user,
+                            entityId=str(request.user.id),
+                            canRead=True,
+                            canDownload=True,
+                            canWrite=True,
+                            canDelete=True,
+                            isOwner=True,
+                            aclOwnershipType=ObjectACL.OWNER_OWNED)
+            acl.save()
+
             return _redirect_303('tardis_portal.create_project',
                                  project.id)
     else:
@@ -925,6 +938,19 @@ def add_dataset(request, experiment_id):
             experiment = Experiment.objects.get(id=experiment_id)
             dataset.experiments.add(experiment)
             dataset.save()
+
+            # add defaul ACL
+            acl = ObjectACL(content_object=dataset,
+                            pluginId=django_user,
+                            entityId=str(request.user.id),
+                            canRead=True,
+                            canDownload=True,
+                            canWrite=True,
+                            canDelete=True,
+                            isOwner=True,
+                            aclOwnershipType=ObjectACL.OWNER_OWNED)
+            acl.save()
+
             return _redirect_303('tardis_portal.view_dataset',
                                  dataset.id)
     else:

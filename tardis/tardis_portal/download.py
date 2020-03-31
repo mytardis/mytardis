@@ -220,7 +220,7 @@ class S3Downloader():
     import requests
     import backoff
     from urllib.parse import urljoin
-    
+
     def __init__(self,
                  datafile):
         self.access_key = getattr(settings, 'AWS_S3_ACCESS_KEY_ID')
