@@ -2,7 +2,7 @@ Django==2.2.11 # pyup: >=2.2,<3
 Wand==0.5.9
 amqp==2.5.2
 bleach==3.1.4
-boto3==1.12.31
+boto3==1.12.32
 celery==4.4.2
 django-extensions==2.2.9
 django-elasticsearch-dsl==7.1.1
