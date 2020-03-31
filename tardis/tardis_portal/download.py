@@ -82,7 +82,7 @@ def _create_download_response(request, datafile_id, disposition='attachment'):  
         # a bare ?ignore_verification_status is True
         if ignore_verif.lower() in [u'', u'1', u'true']:
             verified_only = False
-        logger.info(f'Datafile size: {datafile.get_size()}')
+        logger.info('Datafile size: {dfs}'.format(dfs=datafile.get_size()))
         if datafile.get_size() > 10*1024*1024: # 10 MB
             logger.info('Going into S3')
             s3factory = S3Downloader(datafile)
@@ -234,7 +234,7 @@ class S3Downloader():
                                       aws_secret_access = self.secret_key,
                                       aws_session_token = self.session_token,
                                       endpoint_url = endpoint_url)
-        
+
     def __get_bucket_from_datafile(self):
         self.dfo = self.datafile.get_file(verified_only=verified_only)
         self.storage_box = self.dfo.storage_box
