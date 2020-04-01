@@ -1,8 +1,7 @@
-import inspect
-from graphene import ObjectType, Schema
-
-from importlib import import_module
 import logging
+from importlib import import_module
+
+from graphene import ObjectType, Schema
 
 from tardis.app_config import get_tardis_apps
 
