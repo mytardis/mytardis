@@ -1,12 +1,31 @@
-import graphene
-from tardis.tardis_portal.graphql.schema import tardisQuery, tardisMutation
+import inspect
+from graphene import ObjectType, Schema
+
+from importlib import import_module
+import logging
+
+from tardis.app_config import get_tardis_apps
+
+logger = logging.getLogger(__name__)
 
 
-class Query(tardisQuery, graphene.ObjectType):
+combinedQuery = []
+combinedMutation = []
+
+apps = [("tardis_portal", "tardis.tardis_portal")] + get_tardis_apps()
+
+for app_name, app in apps:
+    try:
+        app_schema = import_module("{}.graphql.schema".format(app))
+        combinedQuery.append(getattr(app_schema, "tardisQuery"))
+        combinedMutation.append(getattr(app_schema, "tardisMutation"))
+    except ImportError as e:
+        logger.debug("App {} schema import error: {}".format(app_name, str(e)))
+
+class Query(*combinedQuery, ObjectType):
     pass
 
-class Mutation(tardisMutation, graphene.ObjectType):
+class Mutation(*combinedMutation, ObjectType):
     pass
 
-
-schema = graphene.Schema(query=Query, mutation=Mutation)
+schema = Schema(query=Query, mutation=Mutation)

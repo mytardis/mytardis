@@ -20,11 +20,6 @@ from ..models.parameters import (
     Schema as SchemaModel,
     ParameterName as ParameterNameModel
 )
-from ...apps.mydata.models.uploader import (
-    Uploader as UploaderModel,
-    UploaderRegistrationRequest as UploaderRegistrationRequestModel,
-    UploaderSetting as UploaderSettingModel
-)
 
 from .user import UserType, UserSignIn, ApiSignIn
 from .group import (
@@ -84,14 +79,6 @@ from .parameters import (
     CreateDatasetParameter, UpdateDatasetParameter,
     CreateDatafileParameterSet, UpdateDatafileParameterSet,
     CreateDatafileParameter, UpdateDatafileParameter
-)
-from .uploader import (
-    UploaderType, UploaderTypeFilter,
-    CreateUploader, UpdateUploader,
-    UploaderRegistrationRequestType, UploaderRegistrationRequestTypeFilter,
-    CreateUploaderRegistrationRequest, UpdateUploaderRegistrationRequest,
-    UploaderSettingType, UploaderSettingTypeFilter,
-    CreateUploaderSetting, UpdateUploaderSetting
 )
 from .utils import (
     get_accessible_experiments,
@@ -244,17 +231,6 @@ class tardisQuery(graphene.ObjectType):
                 return ParameterNameModel.objects.all()
         return None
 
-    uploaders = DjangoFilterConnectionField(
-        UploaderType,
-        filterset_class=UploaderTypeFilter
-    )
-    def resolve_uploaders(self, info, **kwargs):
-        user = info.context.user
-        if user.is_authenticated:
-            if user.is_superuser:
-                return UploaderModel.objects.all()
-        return None
-
 
 class tardisMutation(graphene.ObjectType):
     verify_token = graphql_jwt.relay.Verify.Field()
@@ -322,11 +298,3 @@ class tardisMutation(graphene.ObjectType):
     create_datafileparameter = CreateDatafileParameter.Field()
     update_datafileparameter = UpdateDatafileParameter.Field()
 
-    create_uploader = CreateUploader.Field()
-    update_uploader = UpdateUploader.Field()
-
-    create_uploaderregistrationrequest = CreateUploaderRegistrationRequest.Field()
-    update_uploaderregistrationrequest = UpdateUploaderRegistrationRequest.Field()
-
-    create_uploadersetting = CreateUploaderSetting.Field()
-    update_uploadersetting = UpdateUploaderSetting.Field()
