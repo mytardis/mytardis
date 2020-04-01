@@ -71,7 +71,10 @@ class UserProfile(models.Model):
 def create_user_profile(sender, instance, created, **kwargs):
     if created:
         user = instance
-        for permissions in settings.DEFAULT_PERMISSIONS:
+        DEFAULT_PERMISSIONS = ['add_experiment', 'change_experiment',
+                               'add_dataset', 'change_dataset', 'add_datafile',
+                               'change_objectacl', 'change_group']
+        for permissions in DEFAULT_PERMISSIONS:
             user.user_permissions.add(Permission.objects.get(codename=permissions))
         user.save()
         UserProfile(user=user).save()

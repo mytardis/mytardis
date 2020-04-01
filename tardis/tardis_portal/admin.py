@@ -74,9 +74,12 @@ class ExperimentAdmin(admin.ModelAdmin):
 
 class DatasetAdmin(admin.ModelAdmin):
     search_fields = ['description', 'id']
+    inlines = [ObjectACLInline]
+
 
 class ProjectAdmin(admin.ModelAdmin):
     search_fields = ['name', 'id']
+    inlines = [ObjectACLInline]
 
 
 class StorageBoxAttributeInlineForm(forms.ModelForm):
@@ -161,7 +164,7 @@ class DatafileAdminForm(forms.ModelForm):
 class DatafileAdmin(admin.ModelAdmin):
     search_fields = ['filename', 'id']
     form = DatafileAdminForm
-    inlines = [DataFileObjectInline, ]
+    inlines = [DataFileObjectInline, ObjectACLInline]
 
 
 class ParameterNameInline(admin.TabularInline):
