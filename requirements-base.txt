@@ -1,4 +1,4 @@
-Django==2.2.11 # pyup: >=2.2,<3
+Django==2.2.12 # pyup: >=2.2,<3
 Wand==0.5.9
 amqp==2.5.2
 bleach==3.1.4
