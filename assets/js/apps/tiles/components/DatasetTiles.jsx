@@ -1,17 +1,21 @@
 import React, { Fragment, useEffect, useState } from 'react';
 
+import DatasetTile from './DatasetTile';
+import fetchDatasetsForExperiment from './utils/FetchData';
+
 
 const DatasetTiles = ({ experimentID }) => {
   const [data, setData] = useState([]);
   useEffect(() => {
-    const datasetData = fetchExperimentDataset(experimentID);
-    setData(datasetData);
+    fetchDatasetsForExperiment(experimentID).then(result => setData(result));
   }, [experimentID]);
   return (
     <Fragment>
-      {data.map(
-        dataset => <DatasetTile data={dataset} />,
-      )}
+      <ul className="datasets thumbnails">
+        {data.map(
+          dataset => <DatasetTile data={dataset} key={dataset.id} />,
+        )}
+      </ul>
     </Fragment>
   );
 };
