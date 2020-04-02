@@ -1,4 +1,4 @@
-Django==2.2.11 # pyup: >=2.2,<3
+Django==2.2.12 # pyup: >=2.2,<3
 Wand==0.5.9
 amqp==2.5.2
 bleach==3.1.4
@@ -24,7 +24,7 @@ pyjwt==1.7.1
 kombu==4.6.8
 lxml==4.5.0
 paramiko==2.7.1
-pillow==7.1.0
+pillow==7.1.1
 pyoai==2.5.0
 pystache==0.5.4
 python-dateutil==2.8.1
