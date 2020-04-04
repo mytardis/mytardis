@@ -33,4 +33,4 @@ git+https://github.com/mytardis/python-magic.git#egg=python-magic
 pytz==2019.3
 requests==2.23.0
 uritemplate==3.0.1
-django-graphql-jwt==0.3.0
+django-graphql-jwt==0.3.1
