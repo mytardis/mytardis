@@ -1,4 +1,9 @@
+<input type="hidden" id="experiment-id" value="{{ experiment.id }}">
 {% if experiments %}
+{% load render_bundle from webpack_loader %}
+<div id="datasets-pane">
+    {% render_bundle 'dataset_tiles' %}
+</div>
 <form id="other-experiment-selection" class="form-horizontal">{% csrf_token %}
   <fieldset>
     <div class="form-group">
