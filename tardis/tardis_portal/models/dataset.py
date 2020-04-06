@@ -58,10 +58,11 @@ class Dataset(models.Model):
                                    on_delete=models.CASCADE)
     sensitive = models.BooleanField(default=False)
     embargo_until = models.DateTimeField(null=True, blank=True)
-    objects = OracleSafeManager()
     objectacls = GenericRelation(ObjectACL)
+    objects = OracleSafeManager()
+    safe = DatasetManager()  # The acl-aware specific manager.
     tags = TaggableManager(blank=True)
-    
+
 
     class Meta:
         app_label = 'tardis_portal'
@@ -80,7 +81,7 @@ class Dataset(models.Model):
             if datetime.now() < self.embargo_until:
                 return True
         return False
-        
+
     @property
     def is_online(self):
         return all(df.is_online for df in self.datafile_set.all())

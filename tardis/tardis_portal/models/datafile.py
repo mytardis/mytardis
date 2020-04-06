@@ -74,8 +74,9 @@ class DataFile(models.Model):
     deleted = models.BooleanField(default=False)
     deleted_time = models.DateTimeField(blank=True, null=True)
     version = models.IntegerField(default=1)
-    objects = OracleSafeManager()
     objectacls = GenericRelation(ObjectACL)
+    objects = OracleSafeManager()
+    safe = ExperimentManager()  # The acl-aware specific manager.
 
     @property
     def file_object(self):
