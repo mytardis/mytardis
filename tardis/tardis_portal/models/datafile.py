@@ -25,7 +25,7 @@ from django.utils.encoding import python_2_unicode_compatible
 import magic
 
 from .. import tasks
-from ..managers import OracleSafeManager
+from ..managers import OracleSafeManager, DatafileManager
 from .access_control import ObjectACL
 from .dataset import Dataset
 from .storage import StorageBox, StorageBoxOption, StorageBoxAttribute

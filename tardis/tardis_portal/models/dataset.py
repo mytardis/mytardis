@@ -9,7 +9,7 @@ from django.db import models
 from django.utils import timezone
 from django.utils.encoding import python_2_unicode_compatible
 
-from ..managers import OracleSafeManager
+from ..managers import OracleSafeManager, DatasetManager
 from .storage import StorageBox
 
 from .access_control import ObjectACL
