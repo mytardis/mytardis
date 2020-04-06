@@ -76,7 +76,7 @@ class DataFile(models.Model):
     version = models.IntegerField(default=1)
     objectacls = GenericRelation(ObjectACL)
     objects = OracleSafeManager()
-    safe = ExperimentManager()  # The acl-aware specific manager.
+    safe = DatafileManager()  # The acl-aware specific manager.
 
     @property
     def file_object(self):
