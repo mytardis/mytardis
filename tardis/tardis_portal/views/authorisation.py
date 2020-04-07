@@ -301,11 +301,11 @@ def add_user_to_group(request, group_id, username):
     if isAdmin:
         groupadmin = GroupAdmin(user=user, group=group)
         groupadmin.save()
-    users = User.objects.filter(groups__id=group_id)
+    group_users = User.objects.filter(groups__id=group_id)
     group_admins = []
-    for user in users:
-        if GroupAdmin.objects.filter(user=user, group__id=group_id).exists():
-            group_admins.append(user)
+    for group_user in group_users:
+        if GroupAdmin.objects.filter(user=group_user, group__id=group_id).exists():
+            group_admins.append(group_user)
     c = {'user': user, 'group_id': group_id, 'group_admins': group_admins}
     return render_response_index(
         request,
