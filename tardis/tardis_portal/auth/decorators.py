@@ -88,7 +88,7 @@ def has_dataset_ownership(request, dataset_id):
         pk=dataset_id).exists()
 #MIKEACL: REFACTOR has_###_ownership() into generic
 def has_datafile_ownership(request, datafile_id):
-    return Datafile.safe.owned(request.user).filter(
+    return DataFile.safe.owned(request.user).filter(
         pk=datafile_id).exists()
 
 
@@ -110,7 +110,7 @@ def has_dataset_access(request, dataset_id):
 def has_datafile_access(request, datafile_id):
     try:
         datafile = Dataset.objects.get(id=datafile_id)
-    except Datafile.DoesNotExist:
+    except DataFile.DoesNotExist:
         return False
     return request.user.has_perm('tardis_acls.view_datafile', datafile)
 
@@ -152,7 +152,7 @@ def has_dataset_download_access(request, dataset_id):
 # TODO: check for datasets in publicly available experiments
 def has_datafile_download_access(request, datafile_id):
 
-    if Datafile.safe.owned_and_shared(request.user, downloadable=True) \
+    if DataFile.safe.owned_and_shared(request.user, downloadable=True) \
                       .filter(id=datafile_id) \
                       .exists():
 
