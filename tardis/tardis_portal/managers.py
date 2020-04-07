@@ -94,6 +94,7 @@ class ExperimentManager(OracleSafeManager):
                 if downloadable:
                     query |= Q(objectacls__pluginId=tgp.name,
                                objectacls__entityId=str(group),
+                               objectacls__content_type__model='experiment',
                                objectacls__canDownload=True) &\
                         (Q(objectacls__effectiveDate__lte=datetime.today())
                          | Q(objectacls__effectiveDate__isnull=True)) &\
@@ -102,6 +103,7 @@ class ExperimentManager(OracleSafeManager):
                 else:
                     query |= Q(objectacls__pluginId=tgp.name,
                                objectacls__entityId=str(group),
+                               objectacls__content_type__model='experiment',
                                objectacls__canRead=True) &\
                         (Q(objectacls__effectiveDate__lte=datetime.today())
                          | Q(objectacls__effectiveDate__isnull=True)) &\
@@ -114,6 +116,7 @@ class ExperimentManager(OracleSafeManager):
         if downloadable:
             query = Q(objectacls__pluginId=django_user,
                       objectacls__entityId=str(user.id),
+                      objectacls__content_type__model='experiment',
                       objectacls__canDownload=True,
                       objectacls__isOwner=False) &\
                 (Q(objectacls__effectiveDate__lte=datetime.today())
@@ -123,6 +126,7 @@ class ExperimentManager(OracleSafeManager):
         else:
             query = Q(objectacls__pluginId=django_user,
                       objectacls__entityId=str(user.id),
+                      objectacls__content_type__model='experiment',
                       objectacls__canRead=True,
                       objectacls__isOwner=False) &\
                 (Q(objectacls__effectiveDate__lte=datetime.today())
@@ -135,6 +139,7 @@ class ExperimentManager(OracleSafeManager):
             if downloadable:
                 query |= Q(objectacls__pluginId=name,
                            objectacls__entityId=str(group),
+                           objectacls__content_type__model='experiment',
                            objectacls__canDownload=True) &\
                     (Q(objectacls__effectiveDate__lte=datetime.today())
                      | Q(objectacls__effectiveDate__isnull=True)) &\
@@ -143,6 +148,7 @@ class ExperimentManager(OracleSafeManager):
             else:
                 query |= Q(objectacls__pluginId=name,
                            objectacls__entityId=str(group),
+                           objectacls__content_type__model='experiment',
                            objectacls__canRead=True) &\
                     (Q(objectacls__effectiveDate__lte=datetime.today())
                      | Q(objectacls__effectiveDate__isnull=True)) &\
@@ -197,6 +203,7 @@ class ExperimentManager(OracleSafeManager):
         # build the query to filter the ACL table
         query = Q(objectacls__pluginId=django_user,
                   objectacls__entityId=str(user_id or user.id),
+                  objectacls__content_type__model='experiment',
                   objectacls__isOwner=True) &\
                 (Q(objectacls__effectiveDate__lte=datetime.today())
              | Q(objectacls__effectiveDate__isnull=True)) &\
@@ -208,6 +215,7 @@ class ExperimentManager(OracleSafeManager):
         # build the query to filter the ACL table
         query = Q(objectacls__pluginId=django_group,
                   objectacls__entityId=str(group_id or group.id),
+                  objectacls__content_type__model='experiment',
                   objectacls__isOwner=True) &\
             (Q(objectacls__effectiveDate__lte=datetime.today())
              | Q(objectacls__effectiveDate__isnull=True)) &\
@@ -374,6 +382,7 @@ class DatasetManager(models.Manager):
         # build the query to filter the ACL table
         query = Q(objectacls__pluginId=django_user,
                   objectacls__entityId=str(user_id or user.id),
+                  objectacls__content_type__model='dataset',
                   objectacls__isOwner=True) &\
                 (Q(objectacls__effectiveDate__lte=datetime.today())
              | Q(objectacls__effectiveDate__isnull=True)) &\
@@ -386,6 +395,7 @@ class DatasetManager(models.Manager):
         # build the query to filter the ACL table
         query = Q(objectacls__pluginId=django_group,
                   objectacls__entityId=str(group_id or group.id),
+                  objectacls__content_type__model='dataset',
                   objectacls__isOwner=True) &\
             (Q(objectacls__effectiveDate__lte=datetime.today())
              | Q(objectacls__effectiveDate__isnull=True)) &\
@@ -409,6 +419,7 @@ class DatasetManager(models.Manager):
                 if downloadable:
                     query |= Q(objectacls__pluginId=tgp.name,
                                objectacls__entityId=str(group),
+                               objectacls__content_type__model='dataset',
                                objectacls__canDownload=True) &\
                         (Q(objectacls__effectiveDate__lte=datetime.today())
                          | Q(objectacls__effectiveDate__isnull=True)) &\
@@ -417,6 +428,7 @@ class DatasetManager(models.Manager):
                 else:
                     query |= Q(objectacls__pluginId=tgp.name,
                                objectacls__entityId=str(group),
+                               objectacls__content_type__model='dataset',
                                objectacls__canRead=True) &\
                         (Q(objectacls__effectiveDate__lte=datetime.today())
                          | Q(objectacls__effectiveDate__isnull=True)) &\
@@ -424,11 +436,12 @@ class DatasetManager(models.Manager):
                          | Q(objectacls__expiryDate__isnull=True))
             return query
 
-        # for which experiments does the user have read access
+        # for which datasets does the user have read access
         # based on USER permissions?
         if downloadable:
             query = Q(objectacls__pluginId=django_user,
                       objectacls__entityId=str(user.id),
+                      objectacls__content_type__model='dataset',
                       objectacls__canDownload=True,
                       objectacls__isOwner=False) &\
                 (Q(objectacls__effectiveDate__lte=datetime.today())
@@ -438,18 +451,20 @@ class DatasetManager(models.Manager):
         else:
             query = Q(objectacls__pluginId=django_user,
                       objectacls__entityId=str(user.id),
+                      objectacls__content_type__model='dataset',
                       objectacls__canRead=True,
                       objectacls__isOwner=False) &\
                 (Q(objectacls__effectiveDate__lte=datetime.today())
                  | Q(objectacls__effectiveDate__isnull=True)) &\
                 (Q(objectacls__expiryDate__gte=datetime.today())
                  | Q(objectacls__expiryDate__isnull=True))
-        # for which does experiments does the user have read access
+        # for which does datasets does the user have read access
         # based on GROUP permissions
         for name, group in user.userprofile.ext_groups:
             if downloadable:
                 query |= Q(objectacls__pluginId=name,
                            objectacls__entityId=str(group),
+                           objectacls__content_type__model='dataset',
                            objectacls__canDownload=True) &\
                     (Q(objectacls__effectiveDate__lte=datetime.today())
                      | Q(objectacls__effectiveDate__isnull=True)) &\
@@ -458,6 +473,7 @@ class DatasetManager(models.Manager):
             else:
                 query |= Q(objectacls__pluginId=name,
                            objectacls__entityId=str(group),
+                           objectacls__content_type__model='dataset',
                            objectacls__canRead=True) &\
                     (Q(objectacls__effectiveDate__lte=datetime.today())
                      | Q(objectacls__effectiveDate__isnull=True)) &\
@@ -501,6 +517,7 @@ class DatafileManager(models.Manager):
         # build the query to filter the ACL table
         query = Q(objectacls__pluginId=django_user,
                   objectacls__entityId=str(user_id or user.id),
+                  objectacls__content_type__model='datafile',
                   objectacls__isOwner=True) &\
                 (Q(objectacls__effectiveDate__lte=datetime.today())
              | Q(objectacls__effectiveDate__isnull=True)) &\
@@ -513,6 +530,7 @@ class DatafileManager(models.Manager):
         # build the query to filter the ACL table
         query = Q(objectacls__pluginId=django_group,
                   objectacls__entityId=str(group_id or group.id),
+                  objectacls__content_type__model='datafile',
                   objectacls__isOwner=True) &\
             (Q(objectacls__effectiveDate__lte=datetime.today())
              | Q(objectacls__effectiveDate__isnull=True)) &\
@@ -536,6 +554,7 @@ class DatafileManager(models.Manager):
                 if downloadable:
                     query |= Q(objectacls__pluginId=tgp.name,
                                objectacls__entityId=str(group),
+                               objectacls__content_type__model='datafile',
                                objectacls__canDownload=True) &\
                         (Q(objectacls__effectiveDate__lte=datetime.today())
                          | Q(objectacls__effectiveDate__isnull=True)) &\
@@ -544,6 +563,7 @@ class DatafileManager(models.Manager):
                 else:
                     query |= Q(objectacls__pluginId=tgp.name,
                                objectacls__entityId=str(group),
+                               objectacls__content_type__model='datafile',
                                objectacls__canRead=True) &\
                         (Q(objectacls__effectiveDate__lte=datetime.today())
                          | Q(objectacls__effectiveDate__isnull=True)) &\
@@ -551,11 +571,12 @@ class DatafileManager(models.Manager):
                          | Q(objectacls__expiryDate__isnull=True))
             return query
 
-        # for which experiments does the user have read access
+        # for which datafiles does the user have read access
         # based on USER permissions?
         if downloadable:
             query = Q(objectacls__pluginId=django_user,
                       objectacls__entityId=str(user.id),
+                      objectacls__content_type__model='datafile',
                       objectacls__canDownload=True,
                       objectacls__isOwner=False) &\
                 (Q(objectacls__effectiveDate__lte=datetime.today())
@@ -565,18 +586,20 @@ class DatafileManager(models.Manager):
         else:
             query = Q(objectacls__pluginId=django_user,
                       objectacls__entityId=str(user.id),
+                      objectacls__content_type__model='datafile',
                       objectacls__canRead=True,
                       objectacls__isOwner=False) &\
                 (Q(objectacls__effectiveDate__lte=datetime.today())
                  | Q(objectacls__effectiveDate__isnull=True)) &\
                 (Q(objectacls__expiryDate__gte=datetime.today())
                  | Q(objectacls__expiryDate__isnull=True))
-        # for which does experiments does the user have read access
+        # for which does datafiles does the user have read access
         # based on GROUP permissions
         for name, group in user.userprofile.ext_groups:
             if downloadable:
                 query |= Q(objectacls__pluginId=name,
                            objectacls__entityId=str(group),
+                           objectacls__content_type__model='datafile',
                            objectacls__canDownload=True) &\
                     (Q(objectacls__effectiveDate__lte=datetime.today())
                      | Q(objectacls__effectiveDate__isnull=True)) &\
@@ -585,6 +608,7 @@ class DatafileManager(models.Manager):
             else:
                 query |= Q(objectacls__pluginId=name,
                            objectacls__entityId=str(group),
+                           objectacls__content_type__model='datafile',
                            objectacls__canRead=True) &\
                     (Q(objectacls__effectiveDate__lte=datetime.today())
                      | Q(objectacls__effectiveDate__isnull=True)) &\
