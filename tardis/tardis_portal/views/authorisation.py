@@ -299,8 +299,12 @@ def add_user_to_group(request, group_id, username):
     if isAdmin:
         groupadmin = GroupAdmin(user=user, group=group)
         groupadmin.save()
-
-    c = {'user': user, 'group_id': group_id, 'isAdmin': isAdmin}
+    users = User.objects.filter(groups__id=group_id)
+    group_admins = []
+    for user in users:
+        if GroupAdmin.objects.filter(user=user, group__id=group_id).exists():
+            group_admins.append(user)
+    c = {'user': user, 'group_id': group_id, 'group_admins': group_admins}
     return render_response_index(
         request,
         'tardis_portal/ajax/add_user_to_group_result.html', c)
