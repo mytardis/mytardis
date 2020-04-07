@@ -328,6 +328,13 @@ class DatasetView(TemplateView):
         except Dataset.DoesNotExist:
             return return_response_not_found(request)
 
+        try:
+            dataset = Dataset.safe.get(request.user, dataset_id)
+        except PermissionDenied:
+            return return_response_error(request)
+        except Experiment.DoesNotExist:
+            return return_response_not_found(request)
+
         view_override = self.find_custom_view_override(request, dataset)
         if view_override is not None:
             return view_override

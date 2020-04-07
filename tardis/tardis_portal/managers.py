@@ -510,6 +510,23 @@ class DatasetManager(models.Manager):
             query |= self._query_owned_by_group(group)
         return super().get_queryset().filter(query).distinct()
 
+    def get(self, user, dataset_id):
+        """
+        Returns a dataset under the consideration of the ACL rules
+        Raises PermissionDenied if the user does not have access.
+
+        :param User user: a User instance
+        :param int dataset_id: the ID of the Dataset to be edited
+        :returns: Dataset
+        :rtype: Dataset
+        :raises PermissionDenied:
+        """
+        dataset = super().get(pk=dataset_id)
+
+        if user.has_perm('tardis_acls.view_dataset', dataset):
+            return dataset
+        raise PermissionDenied
+
 
 class DatafileManager(models.Manager):
 
