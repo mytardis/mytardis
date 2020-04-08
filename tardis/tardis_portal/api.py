@@ -1312,6 +1312,8 @@ class ReplicaResource(MyTardisModelResource):
 class ObjectACLResource(MyTardisModelResource):
     content_object = GenericForeignKeyField({
         Experiment: ExperimentResource,
+        Dataset: DatasetResource,
+        DataFile: DataFileResource
         # ...
     }, 'content_object')
 
@@ -1333,6 +1335,12 @@ class ObjectACLResource(MyTardisModelResource):
         if bundle.data['content_type'] == 'experiment':
             experiment = Experiment.objects.get(pk=bundle.data['object_id'])
             bundle.obj.content_type = experiment.get_ct()
+        elif bundle.data['content_type'] == 'dataset':
+            dataset = Dataset.objects.get(pk=bundle.data['object_id'])
+            bundle.obj.content_type = dataset.get_ct()
+        elif bundle.data['content_type'] == 'datafile':
+            datafile = DataFile.objects.get(pk=bundle.data['object_id'])
+            bundle.obj.content_type = datafile.get_ct()
         else:
             raise NotImplementedError(str(bundle.obj))
         return bundle
