@@ -1,4 +1,4 @@
-{% for ds in exp.datasets.all|dictsortreversed:"id"|slice:":1" %}
+{% for ds in datasets|dictsortreversed:"id"|slice:":1" %}
   {% if forloop.first %}
     <ul class="list-group borderless mt-2">
       <li class="list-group-item dataset-list-header small px-1 py-1">
