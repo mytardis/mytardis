@@ -32,7 +32,8 @@ from tardis.tardis_portal.views import (
     share,
     experiment_dataset_transfer,
     retrieve_licenses,
-    feedback
+    feedback,
+    get_experiment_list
 )
 
 json_urls = [
@@ -44,6 +45,7 @@ json_urls = [
     url(r'^experiment/(?P<experiment_id>\d+)/dataset/(?P<dataset_id>\d+)$',
         dataset_json,
         name='tardis.tardis_portal.views.dataset_json'),
+    url(r'^experiment_list/$', get_experiment_list,)
 ]
 
 ajax_urls = [
