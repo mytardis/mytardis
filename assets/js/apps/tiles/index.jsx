@@ -34,6 +34,19 @@ const DatasetTilesLists = ({ shareContainer }) => {
             .then(listData => setMainListData(listData));
         });
     }
+    // dropped from main to share list
+    if (result.destination.droppableId === 'share-list'
+    && result.source.droppableId === 'main-list') {
+      // get body data
+      const data = mainListData[result.source.index];
+      // update experiment dataset
+      shareDataset(JSON.stringify(data), experimentId, result.draggableId)
+        .then(() => {
+          // fetch data and update main list
+          fetchDatasetsForExperiment(experimentId)
+            .then(listData => setMainListData(listData));
+        });
+    }
   };
   useEffect(() => {
     fetchDatasetsForExperiment(experimentId).then(result => setMainListData(result));
