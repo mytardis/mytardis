@@ -21,6 +21,7 @@
 <input type="hidden" id="csrf-token" value="{{ csrf_token }}">
 {% render_bundle 'tardis_portal_view_experiment_init' %}
 {% render_bundle 'tardis_portal_view_experiment_share' %}
+
 {% endblock %}
 
 {% block content %}
@@ -99,13 +100,15 @@
       <div id="experiment-tab-description">
         {% include "tardis_portal/ajax/experiment_description.html" %}
       </div>
+      <div id="experiment-tab-transfer-datasets">
+      </div>
     </div>
   </div>
   <div id="datasets-pane" class="col-md-6">
-    {% render_bundle 'dataset_tiles' %}
     {% include "tardis_portal/ajax/experiment_datasets.html" %}
   </div>
 </div>
     {% render_bundle 'tardis_portal_view_experiment' %}
     {% render_bundle 'experiment_view_badges' %}
+        {% render_bundle 'dataset_tiles' %}
 {% endblock %}
