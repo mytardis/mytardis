@@ -8,10 +8,11 @@ from ..models.dataset import Dataset
 register = template.Library()
 
 
-@register.filter
-def dataset_tiles(experiment, include_thumbnails):
+@register.simple_tag
+def dataset_tiles(experiment_id, user, include_thumbnails):
     # only show 8 datasets for initial load
-    datasets = experiment.datasets.all().order_by('description')[:8]
+    datasets = Dataset.safe.all(user).filter(experiments__id=experiment_id
+                                             ).order_by('description')[:8]
 
     # Get data to template (used by JSON service too)
     # ?? doesn't seem to be used by JSON service at all
