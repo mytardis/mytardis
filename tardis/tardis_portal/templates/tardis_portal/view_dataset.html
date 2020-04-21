@@ -192,7 +192,7 @@
   {% endif %}
 
     <p class="float-right mb-1">
-    {{ dataset|dataset_experiments_badge}}&nbsp;
+    {% dataset_experiments_badge dataset request.user %}&nbsp;
     {{ dataset|dataset_datafiles_badge }}&nbsp;
     {{ dataset|dataset_size_badge }}
     </p>

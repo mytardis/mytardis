@@ -4,6 +4,7 @@ from django.template.defaultfilters import pluralize, filesizeformat
 from ..util import render_mustache
 from ..views import get_dataset_info
 from ..models.dataset import Dataset
+from ..models.experiment import Experiment
 
 register = template.Library()
 
@@ -55,12 +56,13 @@ def dataset_tiles(experiment_id, user, include_thumbnails):
     return render_mustache('tardis_portal/dataset_tiles', DatasetsInfo())
 
 
-@register.filter
-def dataset_experiments_badge(dataset):
+@register.simple_tag
+def dataset_experiments_badge(dataset, user):
     """
-    Displays an badge with the number of datasets for this experiment
+    Displays a badge with the number of experiments for this dataset
     """
-    count = dataset.experiments.all().count()
+    count = Experiment.safe.all(user).filter(dataset__id=dataset.id
+                                             ).count()
     return render_mustache('tardis_portal/badges/experiment_count', {
         'title': "In %d experiment%s" % (count, pluralize(count)),
         'count': count,
