@@ -1,9 +1,10 @@
-import React, {Fragment, useEffect, useState} from "react";
+import React, { useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
 
 import { DragDropContext, Droppable } from 'react-beautiful-dnd';
 import DatasetTiles from './components/DatasetTiles';
-import { fetchDatasetsForExperiment, shareDataset } from "./components/utils/FetchData";
+import { fetchDatasetsForExperiment, fetchExperimentList, shareDataset } from './components/utils/FetchData';
+import ExperimentListDropDown from './components/SelectExperiment';
 
 const content = document.getElementById('datasets-pane');
 const experimentId = document.getElementById('experiment-id').value;
@@ -48,9 +49,16 @@ const DatasetTilesLists = ({ shareContainer }) => {
         });
     }
   };
+  const onChange = (event) => {
+    event.preventDefault();
+    fetchDatasetsForExperiment(event.target.value).then(result => setShareListData(result));
+  };
   useEffect(() => {
     fetchDatasetsForExperiment(experimentId).then(result => setMainListData(result));
-    fetchDatasetsForExperiment(10390).then(result => setShareListData(result));
+    // load initial list
+    fetchExperimentList().then((expList) => {
+      fetchDatasetsForExperiment(expList[0].id).then(result => setShareListData(result));
+    });
   }, [experimentId]);
   return (
     <DragDropContext onDragEnd={onDragEnd}>
@@ -66,6 +74,7 @@ const DatasetTilesLists = ({ shareContainer }) => {
         <Droppable droppableId="share-list">
           {provided => (
             <div ref={provided.innerRef} {...provided.droppableProps}>
+              <ExperimentListDropDown onChange={onChange} />
               <DatasetTiles data={shareListData} />
               {provided.placeholder}
             </div>

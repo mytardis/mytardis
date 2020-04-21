@@ -19,4 +19,8 @@ const shareDataset = async (data, experimentID, datasetID) => {
     });
   return response.json();
 };
-export { fetchDatasetsForExperiment, shareDataset } ;
+const fetchExperimentList = async () => {
+  const response = await fetch('/ajax/json/experiment_list/');
+  return response.json();
+};
+export { fetchDatasetsForExperiment, shareDataset, fetchExperimentList };
