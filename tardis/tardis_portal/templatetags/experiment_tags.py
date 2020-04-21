@@ -4,6 +4,7 @@ from django.contrib.humanize.templatetags.humanize import naturalday
 
 from ..util import get_local_time
 from ..util import render_mustache, render_public_access_badge
+from ..models.dataset import Dataset
 
 register = template.Library()
 
@@ -21,12 +22,13 @@ def experiment_browse_item(experiment, **kwargs):
     }
 
 
-@register.filter
-def experiment_datasets_badge(experiment):
+@register.simple_tag
+def experiment_datasets_badge(experiment_id, user):
     """
     Displays an badge with the number of datasets for this experiment
     """
-    count = experiment.datasets.all().count()
+    count = Dataset.safe.all(user).filter(experiments__id=experiment_id
+                                                 ).count()
     return render_mustache('tardis_portal/badges/dataset_count', {
         'title': "%d dataset%s" % (count, pluralize(count)),
         'count': count,

@@ -78,7 +78,7 @@
     </small>
   </h1>
   <p style="text-align: right">
-    {{ experiment|experiment_datasets_badge}}&nbsp;
+    {% experiment_datasets_badge experiment.id request.user %}&nbsp;
     {{ experiment|experiment_datafiles_badge }}&nbsp;
     {{ experiment|experiment_size_badge }}&nbsp;
     {{ experiment|experiment_last_updated_badge }}&nbsp;
