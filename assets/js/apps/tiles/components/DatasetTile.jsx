@@ -4,7 +4,7 @@ import DatafileCountBadge from '../../badges/components/DatafileCountBadge';
 import DatasetSizeBadge from '../../badges/components/DatasetSizeBadge';
 
 // eslint-disable-next-line react/prop-types
-const DatasetTile = ({ data, index }) => {
+const DatasetTile = ({ data, listName, index }) => {
   const experimentData = {
     datafile_count: data.file_count,
   };
@@ -12,7 +12,7 @@ const DatasetTile = ({ data, index }) => {
     dataset_size: data.size,
   };
   return (
-    <Draggable draggableId={data.id.toString()} index={index}>
+    <Draggable draggableId={`${listName}_${data.id.toString()}`} index={index}>
       {provided => (
         <div
           ref={provided.innerRef}

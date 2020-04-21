@@ -1,4 +1,5 @@
-/* global Backbone, Mustache */
+/*
+/!* global Backbone, Mustache *!/
 
 import "sprintf-js";
 import {MyTardis} from "../backbone-models";
@@ -56,3 +57,4 @@ export function getDatasetsForExperiment(experimentId) {
     return datasetTiles;
 }
 
+*/

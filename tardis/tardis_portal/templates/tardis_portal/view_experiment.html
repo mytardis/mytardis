@@ -10,9 +10,6 @@
 
 {% block script %}
 
-{% mustachejs "tardis_portal/dataset_filter" %}
-{% mustachejs "tardis_portal/dataset_tiles" %}
-{% mustachejs "tardis_portal/dataset_tile" %}
 {% mustachejs "tardis_portal/badges/experiment_count" %}
 {% mustachejs "tardis_portal/badges/datafile_count" %}
 {% mustachejs "tardis_portal/badges/size" %}
@@ -105,7 +102,6 @@
     </div>
   </div>
   <div id="datasets-pane" class="col-md-6">
-    {% include "tardis_portal/ajax/experiment_datasets.html" %}
   </div>
 </div>
     {% render_bundle 'tardis_portal_view_experiment' %}
