@@ -61,7 +61,7 @@ def dataset_experiments_badge(dataset, user):
     """
     Displays a badge with the number of experiments for this dataset
     """
-    count = Experiment.safe.all(user).filter(dataset__id=dataset.id
+    count = Experiment.safe.all(user).filter(datasets__id=dataset.id
                                              ).count()
     return render_mustache('tardis_portal/badges/experiment_count', {
         'title': "In %d experiment%s" % (count, pluralize(count)),
