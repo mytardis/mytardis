@@ -13,7 +13,7 @@ const shareDataset = async (data, experimentID, datasetID) => {
       body: data,
       method: 'PUT',
       headers: {
-        'Accept': 'application/json',
+        Accept: 'application/json',
         'X-CSRFToken': Cookies.get('csrftoken'),
       },
     });

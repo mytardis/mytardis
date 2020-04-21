@@ -10,7 +10,7 @@ const content = document.getElementById('datasets-pane');
 const experimentId = document.getElementById('experiment-id').value;
 const shareContainer = document.getElementById('experiment-tab-transfer-datasets');
 
-const DatasetTilesLists = ({ shareContainer }) => {
+const DatasetTilesLists = () => {
   const [mainListData, setMainListData] = useState([]);
   const [shareListData, setShareListData] = useState([]);
   const [expListValue, setExpListValue] = useState();
@@ -41,11 +41,9 @@ const DatasetTilesLists = ({ shareContainer }) => {
     if (result.destination.droppableId === 'share-list'
     && result.source.droppableId === 'main-list') {
       // get body data
-      console.log(result);
-      console.log(expListValue);
       const data = mainListData[result.source.index];
       // update experiment dataset
-      const datasetId = result.draggableId.split('_')[1]
+      const datasetId = result.draggableId.split('_')[1];
       shareDataset(JSON.stringify(data), expListValue, datasetId)
         .then(() => {
           // fetch data and update share list

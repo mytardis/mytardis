@@ -1,9 +1,9 @@
-import React, { Fragment } from 'react';
+import React from 'react';
 import { Draggable } from 'react-beautiful-dnd';
+import PropTypes from 'prop-types';
 import DatafileCountBadge from '../../badges/components/DatafileCountBadge';
 import DatasetSizeBadge from '../../badges/components/DatasetSizeBadge';
 
-// eslint-disable-next-line react/prop-types
 const DatasetTile = ({ data, listName, index }) => {
   const experimentData = {
     datafile_count: data.file_count,
@@ -80,6 +80,11 @@ const DatasetTile = ({ data, listName, index }) => {
     </Draggable>
 
   );
+};
+DatasetTile.propTypes = {
+  data: PropTypes.object.isRequired,
+  listName: PropTypes.string.isRequired,
+  index: PropTypes.string.isRequired,
 };
 
 export default DatasetTile;

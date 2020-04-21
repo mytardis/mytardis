@@ -1,4 +1,5 @@
 import React, { Fragment, useEffect, useState } from 'react';
+import PropTypes from 'prop-types';
 import { fetchExperimentList } from './utils/FetchData';
 
 
@@ -30,11 +31,16 @@ const ExperimentListDropDown = ({ onChange, value }) => {
         </fieldset>
       </form>
       <p className="help-text">
-        <strong>Instructons:</strong> Using the above list, select an experiment to copy from,
+        <strong>Instructons:</strong>
+        {' '}
+        Using the above list, select an experiment to copy from,
         then drag datasets to the right to associate them with the current experiment.
       </p>
     </Fragment>
   );
 };
-
+ExperimentListDropDown.propTypes = {
+  onChange: PropTypes.func.isRequired,
+  value: PropTypes.string.isRequired,
+};
 export default ExperimentListDropDown;
