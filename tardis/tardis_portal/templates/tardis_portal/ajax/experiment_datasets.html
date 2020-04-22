@@ -17,7 +17,7 @@
 {% endcapture %}
 
 <h3 style="display: inline">
-  {{experiment.datasets.count}} Dataset{{experiment.datasets.count|pluralize}}
+  {% dataset_count experiment.id request.user %} Dataset{{{% dataset_count experiment.id request.user %}|pluralize}}
 </h3>
 {% if has_download_permissions or has_write_permissions %}
 
@@ -42,7 +42,7 @@
     {% dataset_tiles experiment.id request.user has_download_permissions %}
     </div>
 
-    {% if experiment.datasets.count|gt:4 %}
+    {% if {% dataset_count experiment.id request.user %}|gt:4 %}
     {{ action_bar }}
     {% endif %}
   </form>

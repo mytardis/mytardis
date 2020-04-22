@@ -57,6 +57,16 @@ def dataset_tiles(experiment_id, user, include_thumbnails):
 
 
 @register.simple_tag
+def dataset_count(experiment_id, user):
+    """
+    Count the number of Datasets in Experiment, obeying ACLs for user
+    """
+    count = Dataset.safe.all(user).filter(experiments__id=experiment_id).count()
+
+    return count
+
+
+@register.simple_tag
 def dataset_experiments_badge(dataset, user):
     """
     Displays a badge with the number of experiments for this dataset
