@@ -78,12 +78,13 @@ def experiment_size_badge(experiment):
 
 
 @register.inclusion_tag('tardis_portal/experiment_tags/experiment_badges.html')
-def experiment_badges(experiment, **kwargs):
+def experiment_badges(experiment, user, **kwargs):
     """
     Displays badges for an experiment for displaying in an experiment list view
     """
     return {
-        'experiment': experiment
+        'experiment': experiment,
+        'user': user
     }
 
 
