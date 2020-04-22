@@ -48,7 +48,7 @@ configure({ adapter: new Adapter() });
 
 
 let container = null;
-let shareContainer = null
+let shareContainer = null;
 let component = null;
 beforeEach(async () => {
   jest.spyOn(global, 'fetch').mockImplementation(() => Promise.resolve({
@@ -73,7 +73,7 @@ afterEach(() => {
 describe('render dataset tiles on page load', () => {
   it('should match snapshot', async () => {
     await act(async () => {
-      ReactDOM.render(<DatasetTilesLists experimentId={'1234'} shareContainer={shareContainer} />, container);
+      ReactDOM.render(<DatasetTilesLists experimentId="1234" shareContainer={shareContainer} />, container);
     });
     expect(container).toMatchSnapshot();
   });
