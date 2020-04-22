@@ -109,10 +109,11 @@ def has_dataset_access(request, dataset_id):
 #MIKEACL: REFACTOR has_###_access() into generic
 def has_datafile_access(request, datafile_id):
     try:
-        datafile = Dataset.objects.get(id=datafile_id)
+        datafile = DataFile.objects.get(id=datafile_id)
     except DataFile.DoesNotExist:
         return False
     return request.user.has_perm('tardis_acls.view_datafile', datafile)
+
 
 #MIKEACL: REFACTOR has_###_write() into generic (based on has_write_permissions)
 def has_experiment_write(request, experiment_id):
