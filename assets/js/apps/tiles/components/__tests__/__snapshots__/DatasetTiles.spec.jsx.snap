@@ -1,0 +1,223 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`render dataset tiles on page load should match snapshot 1`] = `
+<div>
+  <div
+    data-rbd-droppable-context-id="1"
+    data-rbd-droppable-id="main-list"
+  >
+    <ul
+      class="datasets thumbnails"
+    >
+      <div
+        aria-describedby="rbd-hidden-text-1-hidden-text-7"
+        data-rbd-drag-handle-context-id="1"
+        data-rbd-drag-handle-draggable-id="main-list_26"
+        data-rbd-draggable-context-id="1"
+        data-rbd-draggable-id="main-list_26"
+        draggable="false"
+        role="button"
+        tabindex="0"
+      >
+        <li
+          class="dataset card mb-2"
+        >
+          <div
+            class="card-body"
+          >
+            <div
+              class="float-left"
+              style="margin-right: 10px;"
+            >
+              <div
+                style="display: flex; text-align: center; font-size: 32px;"
+              >
+                <i
+                  class="fa fa-folder-open o-6"
+                />
+              </div>
+              <br />
+              <label
+                class="label label-info"
+                for="dataset-checkbox-26"
+                title="Mark dataset for download"
+              >
+                <i
+                  class="fa fa-download"
+                />
+                <input
+                  class="dataset_checkbox ml-2"
+                  id="dataset-checkbox-26"
+                  name="dataset"
+                  style="display: inline;"
+                  type="checkbox"
+                  value="26"
+                />
+              </label>
+            </div>
+            <div
+              class="float-left"
+              style="margin-right: 10px;"
+            />
+            <div
+              class="float-right"
+              style="text-align: right;"
+            >
+              <p>
+                <span
+                  class="badge badge-info"
+                  title="1 file"
+                >
+                  <i
+                    class="fa fa-file"
+                  />
+                   
+                  1
+                </span>
+              </p>
+              <p>
+                <span
+                  class="badge badge-info"
+                  title="Dataset size is"
+                >
+                  160.64 KB
+                </span>
+              </p>
+            </div>
+            <div
+              class="float-left ds-thumb"
+              style="margin-right: 10px;"
+            >
+              <canvas
+                style="width: 100px;"
+              />
+            </div>
+            <div
+              class="float-left"
+            >
+              <p
+                class="mb-2"
+              >
+                <a
+                  class="dataset-link"
+                  href="/dataset/26"
+                >
+                  My demo dataset 25062019
+                </a>
+              </p>
+              
+              <div
+                style="clear: both;"
+              />
+            </div>
+          </div>
+        </li>
+      </div>
+      <div
+        aria-describedby="rbd-hidden-text-1-hidden-text-7"
+        data-rbd-drag-handle-context-id="1"
+        data-rbd-drag-handle-draggable-id="main-list_30"
+        data-rbd-draggable-context-id="1"
+        data-rbd-draggable-id="main-list_30"
+        draggable="false"
+        role="button"
+        tabindex="0"
+      >
+        <li
+          class="dataset card mb-2"
+        >
+          <div
+            class="card-body"
+          >
+            <div
+              class="float-left"
+              style="margin-right: 10px;"
+            >
+              <div
+                style="display: flex; text-align: center; font-size: 32px;"
+              >
+                <i
+                  class="fa fa-folder-open o-6"
+                />
+              </div>
+              <br />
+              <label
+                class="label label-info"
+                for="dataset-checkbox-30"
+                title="Mark dataset for download"
+              >
+                <i
+                  class="fa fa-download"
+                />
+                <input
+                  class="dataset_checkbox ml-2"
+                  id="dataset-checkbox-30"
+                  name="dataset"
+                  style="display: inline;"
+                  type="checkbox"
+                  value="30"
+                />
+              </label>
+            </div>
+            <div
+              class="float-left"
+              style="margin-right: 10px;"
+            />
+            <div
+              class="float-right"
+              style="text-align: right;"
+            >
+              <p>
+                <span
+                  class="badge badge-info"
+                  title="1 file"
+                >
+                  <i
+                    class="fa fa-file"
+                  />
+                   
+                  1
+                </span>
+              </p>
+              <p>
+                <span
+                  class="badge badge-info"
+                  title="Dataset size is"
+                >
+                  342.35 KB
+                </span>
+              </p>
+            </div>
+            <div
+              class="float-left ds-thumb"
+              style="margin-right: 10px;"
+            >
+              <canvas
+                style="width: 100px;"
+              />
+            </div>
+            <div
+              class="float-left"
+            >
+              <p
+                class="mb-2"
+              >
+                <a
+                  class="dataset-link"
+                  href="/dataset/30"
+                >
+                  New Dataset
+                </a>
+              </p>
+              
+              <div
+                style="clear: both;"
+              />
+            </div>
+          </div>
+        </li>
+      </div>
+    </ul>
+  </div>
+</div>
+`;
