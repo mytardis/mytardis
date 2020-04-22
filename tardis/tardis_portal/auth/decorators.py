@@ -124,6 +124,10 @@ def has_dataset_write(request, dataset_id):
     if dataset.immutable:
         return False
     return request.user.has_perm('tardis_acls.change_dataset', dataset)
+#MIKEACL: REFACTOR has_###_write() into generic
+def has_datafile_write(request, datafile_id):
+    dataset = Datafile.objects.get(id=datafile_id)
+    return request.user.has_perm('tardis_acls.change_datafile', datafile)
 
 
 #MIKEACL: REFACTOR has_###_download_access() into generic
