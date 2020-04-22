@@ -227,7 +227,7 @@ def retrieve_datafile_list(
     params = {}
 
     dataset_results = \
-        DataFile.objects.filter(
+        DataFile.safe.all(request.user).filter(
             dataset__pk=dataset_id,
         ).order_by('filename')
 
