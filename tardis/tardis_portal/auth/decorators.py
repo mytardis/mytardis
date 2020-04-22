@@ -126,7 +126,7 @@ def has_dataset_write(request, dataset_id):
     return request.user.has_perm('tardis_acls.change_dataset', dataset)
 #MIKEACL: REFACTOR has_###_write() into generic
 def has_datafile_write(request, datafile_id):
-    datafile = Datafile.objects.get(id=datafile_id)
+    datafile = DataFile.objects.get(id=datafile_id)
     return request.user.has_perm('tardis_acls.change_datafile', datafile)
 
 
