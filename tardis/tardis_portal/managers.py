@@ -547,6 +547,23 @@ class DatasetManager(models.Manager):
 
 class DatafileManager(models.Manager):
 
+
+    def all(self, user):  # @ReservedAssignment
+        """
+        Returns all datafiles a user - either authenticated or
+        anonymous - is allowed to see and search
+
+        :param User user: a User instance
+        :returns: QuerySet of Datafiles
+        :rtype: QuerySet
+        """
+
+        query = self._query_owned_and_shared(user) #self._query_all_public() |\
+
+        return super().get_queryset().filter(
+            query).distinct()
+
+
     def _query_owned(self, user, user_id=None):
         # build the query to filter the ACL table
         query = Q(objectacls__pluginId=django_user,
