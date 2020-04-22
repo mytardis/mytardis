@@ -13,7 +13,7 @@ const DatasetTiles = ({ data, listName }) => (
   </Fragment>
 );
 DatasetTiles.propTypes = {
-  data: PropTypes.object.isRequired,
+  data: PropTypes.array.isRequired,
   listName: PropTypes.string.isRequired,
 };
 export default DatasetTiles;

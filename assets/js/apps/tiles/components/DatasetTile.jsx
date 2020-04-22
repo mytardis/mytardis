@@ -84,7 +84,7 @@ const DatasetTile = ({ data, listName, index }) => {
 DatasetTile.propTypes = {
   data: PropTypes.object.isRequired,
   listName: PropTypes.string.isRequired,
-  index: PropTypes.string.isRequired,
+  index: PropTypes.number.isRequired,
 };
 
 export default DatasetTile;
