@@ -1,4 +1,6 @@
 {% load pagination %}
+{% load datafile_tags %}
+
 
 <input type="hidden" id="datafile-count" value="{{datafile_count}}"/>
 
@@ -40,14 +42,15 @@
         {% endif %}
         <tbody>
         {% for datafile in datafiles.object_list %}
+            {% is_datafile_downloadable datafile.id request as had_df_download_permissions %}
             <tr class="datafile search_match_file">
                 <td>
-                    {% if has_download_permissions and datafile.verified %}
+                    {% if had_df_download_permissions and datafile.verified %}
                         <input type="checkbox" style="" class="datafile_checkbox" name="datafile" value="{{datafile.id}}" />
                     {% endif %}
                 </td>
                 <td>
-                    {% if has_download_permissions and datafile.get_view_url and datafile.verified and datafile.is_online %}
+                    {% if had_df_download_permissions and datafile.get_view_url and datafile.verified and datafile.is_online %}
                         <a class="filelink datafile_name"
                            href="{{ datafile.get_view_url }}"
                            title="View"
@@ -64,7 +67,7 @@
                     {% else %}
                         <span style="margin-right: 5px; color:red;">(unverified)</span>
                     {% endif %}
-                    {% if has_download_permissions and datafile.get_view_url %}
+                    {% if had_df_download_permissions and datafile.get_view_url %}
                         {% url 'tardis.tardis_portal.iiif.download_image' datafile_id=datafile.id region='full' size=',28' rotation=0 quality='native' format='jpg' as thumbnail %}
                         {% url 'tardis.tardis_portal.iiif.download_image' datafile_id=datafile.id region='full' size='full' rotation=0 quality='native' format='png' as image %}
                         {% if thumbnail and datafile.has_image %}
@@ -96,7 +99,7 @@
                 </td>
                 <td style="width: 130px;">
                     <div class="btn-group pull-right">
-                        {% if has_download_permissions and datafile.verified %}
+                        {% if had_df_download_permissions and datafile.verified %}
                             <a class="btn btn-outline-secondary btn-sm py-1 {% if datafile.is_online %}" title="Download"
                                {% else %} archived-file disabled"{% endif %}
                                href="{{ datafile.get_download_url }}">

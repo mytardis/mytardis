@@ -146,6 +146,7 @@ def has_dataset_download_access(request, dataset_id):
                       .exists():
 
         return True
+    return False
     #exp = Experiment.objects.get(id=experiment_id)
     #return Experiment.public_access_implies_distribution(exp.public_access)
 
@@ -158,6 +159,7 @@ def has_datafile_download_access(request, datafile_id):
                       .exists():
 
         return True
+    return False
     #exp = Experiment.objects.get(id=experiment_id)
     #return Experiment.public_access_implies_distribution(exp.public_access)
 
