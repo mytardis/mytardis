@@ -193,9 +193,12 @@ class Dataset(models.Model):
                                'quality': 'native',
                                'format': 'jpg'})
 
-    def get_size(self):
+    def get_size(self, user):
         from .datafile import DataFile
-        return DataFile.sum_sizes(self.datafile_set)
+
+        datafiles = DataFile.safe.all(user).filter(dataset__id=self.id)
+
+        return DataFile.sum_sizes(datafiles)
 
     def _has_any_perm(self, user_obj):
         if not hasattr(self, 'id'):

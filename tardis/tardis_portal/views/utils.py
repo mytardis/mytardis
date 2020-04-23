@@ -73,7 +73,7 @@ def get_dataset_info(dataset, include_thumbnail=False, exclude=None):  # too com
     obj['url'] = dataset.get_absolute_url()
 
     if exclude is None or 'size' not in exclude:
-        obj['size'] = dataset.get_size()
+        obj['size'] = dataset.get_size(request.user)
         obj['size_human_readable'] = filesizeformat(obj['size'])
 
     if (dataset.instrument
