@@ -7,8 +7,6 @@
 
 {% block script %}
 
-{% datafile_count dataset.id request.user as datafile_safecount %}
-
 <style type="text/css">
 .dropzone.in {
     background: blue;
@@ -302,6 +300,7 @@
   <div class="row">
     <div class="col-md-8">
       <h3 id="total-count" style="display: inline">
+      {% datafile_count dataset.id request.user as datafile_safecount %}
       {{datafile_safecount}} File{% if datafile_safecount != 1 %}s{%endif%}
       </h3>
     </div>
