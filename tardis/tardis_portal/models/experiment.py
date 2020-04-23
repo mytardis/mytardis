@@ -208,15 +208,15 @@ class Experiment(models.Model):
 
         return urls
 
-    def get_images(self):
+    def get_images(self, user):
         from .datafile import IMAGE_FILTER
-        return self.get_datafiles().order_by('-modification_time',
+        return self.get_datafiles(user).order_by('-modification_time',
                                              '-created_time') \
             .filter(IMAGE_FILTER)
 
-    def get_size(self):
+    def get_size(self, user):
         from .datafile import DataFile
-        return DataFile.sum_sizes(self.get_datafiles())
+        return DataFile.sum_sizes(self.get_datafiles(user))
 
     @classmethod
     def public_access_implies_distribution(cls, public_access_level):

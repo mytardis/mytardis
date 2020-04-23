@@ -65,12 +65,12 @@ def experiment_public_access_badge(experiment):
     return render_public_access_badge(experiment)
 
 
-@register.filter
-def experiment_size_badge(experiment):
+@register.simple_tag
+def experiment_size_badge(experiment, user):
     """
     Displays an badge with the total size of the files in this experiment
     """
-    size = filesizeformat(experiment.get_size())
+    size = filesizeformat(experiment.get_size(user))
     return render_mustache('tardis_portal/badges/size', {
         'title': "Experiment size is ~%s" % size,
         'label': size,
