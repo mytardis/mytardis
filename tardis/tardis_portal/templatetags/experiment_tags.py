@@ -35,7 +35,7 @@ def experiment_datasets_badge(experiment_id, user):
     })
 
 
-@register.filter
+@register.simple_tag
 def experiment_datafiles_badge(experiment, user):
     """
     Displays an badge with the number of datafiles for this experiment
