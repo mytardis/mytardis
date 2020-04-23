@@ -93,10 +93,23 @@ def dataset_experiments_badge(dataset, user):
 @register.filter
 def dataset_datafiles_badge(dataset=None, count=None):
     """
-    Displays an badge with the number of datafiles for this experiment
+    Displays an badge with the number of datafiles for this dataset
     """
     if count is None:
         count = dataset.datafile_set.count()
+    return render_mustache('tardis_portal/badges/datafile_count', {
+        'title': "%d file%s" % (count, pluralize(count)),
+        'count': count,
+    })
+
+
+@register.simple_tag
+def dataset_datafiles_badge_notile(dataset, user):
+    """
+    Displays an badge with the number of datafiles for this dataset
+    None tile mode
+    """
+    count = DataFile.safe.all(user).filter(dataset__id=dataset.id).count()
     return render_mustache('tardis_portal/badges/datafile_count', {
         'title': "%d file%s" % (count, pluralize(count)),
         'count': count,

@@ -193,7 +193,7 @@
 
     <p class="float-right mb-1">
     {% dataset_experiments_badge dataset request.user %}&nbsp;
-    {{ dataset|dataset_datafiles_badge }}&nbsp;
+    {% dataset_datafiles_badge_notile dataset request.user %}&nbsp;
     {{ dataset|dataset_size_badge }}
     </p>
     <p style="text-align:left; margin-top:10px;">
