@@ -32,7 +32,7 @@
   <div class="pull-right">
     {% experiment_datasets_badge experiment.id request.user %}
     &nbsp;
-    {{ experiment|experiment_datafiles_badge }}
+    {% experiment_datafiles_badge experiment request.user %}
     &nbsp;
     {{ experiment|experiment_last_updated_badge }}
   </div>

@@ -192,9 +192,9 @@ class Experiment(models.Model):
             'tardis.tardis_portal.views.create_token',
             kwargs={'experiment_id': self.id})
 
-    def get_datafiles(self):
+    def get_datafiles(self, user):
         from .datafile import DataFile
-        return DataFile.objects.filter(dataset__experiments=self)
+        return DataFile.safe.all(user).filter(dataset__experiments=self)
 
     def get_download_urls(self):
         urls = {}

@@ -36,11 +36,11 @@ def experiment_datasets_badge(experiment_id, user):
 
 
 @register.filter
-def experiment_datafiles_badge(experiment):
+def experiment_datafiles_badge(experiment, user):
     """
     Displays an badge with the number of datafiles for this experiment
     """
-    count = experiment.get_datafiles().count()
+    count = experiment.get_datafiles(user).count()
     return render_mustache('tardis_portal/badges/datafile_count', {
         'title': "%d file%s" % (count, pluralize(count)),
         'count': count,
