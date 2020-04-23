@@ -290,7 +290,7 @@ class Dataset(models.Model):
 
         return None
 
-    def get_dir_tuples(self, basedir=""):
+    def get_dir_tuples(self, user, basedir=""):
         """
         List the directories immediately inside basedir.
 
@@ -335,7 +335,7 @@ class Dataset(models.Model):
         dir_tuples = []
         if basedir:
             dir_tuples.append(('..', basedir))
-        dirs_query = DataFile.objects.filter(dataset=self)
+        dirs_query = DataFile.safe.all(user).filter(dataset=self)
         if basedir:
             dirs_query = dirs_query.filter(directory__startswith='%s/' % basedir)
         dir_paths = set(dirs_query.values_list('directory', flat=True))
@@ -354,7 +354,7 @@ class Dataset(models.Model):
 
         return sorted(dir_tuples, key=lambda x: x[0])
 
-    def get_dir_nodes(self, dir_tuples):
+    def get_dir_nodes(self, user, dir_tuples):
         """Return child node's subdirectories in format required for tree view
 
         Given a list of ('subdir', 'path/to/subdir') tuples for a dataset
@@ -428,7 +428,7 @@ class Dataset(models.Model):
             dir_name, dir_path = dir_tuple
             if dir_name == '..':
                 continue
-            subdir_tuples = self.get_dir_tuples(dir_path)
+            subdir_tuples = self.get_dir_tuples(user, basedir=dir_path)
             child_dict = {
                 'name': dir_name,
                 'path': dir_path,

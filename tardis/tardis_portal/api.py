@@ -888,10 +888,10 @@ class DatasetResource(MyTardisModelResource):
         dataset_id = kwargs['pk']
         dataset = Dataset.objects.get(id=dataset_id)
         # get dirs at root level
-        dir_tuples = dataset.get_dir_tuples("")
+        dir_tuples = dataset.get_dir_tuples(request.user, basedir="")
         # get files at root level
-        dfs = (DataFile.objects.filter(dataset=dataset, directory='') |
-               DataFile.objects.filter(dataset=dataset, directory__isnull=True)).distinct()
+        dfs = (DataFile.safe.all(request.user).filter(dataset=dataset, directory='') |
+               DataFile.safe.all(request.user).filter(dataset=dataset, directory__isnull=True)).distinct()
         child_list = []
         # append directories list
         if dir_tuples:
@@ -931,14 +931,14 @@ class DatasetResource(MyTardisModelResource):
         # but now that logic will be moved to the front-end component.
 
         # list dir under base_dir
-        child_dir_tuples = dataset.get_dir_tuples(base_dir)
+        child_dir_tuples = dataset.get_dir_tuples(request.user, basedir=base_dir)
         # list files under base_dir
-        dfs = DataFile.objects.filter(dataset=dataset, directory=base_dir)
+        dfs = DataFile.safe.all(request.user).filter(dataset=dataset, directory=base_dir)
         # walk the directory tree and append files and dirs
         # if there are directories append this to data
         child_list = []
         if child_dir_tuples:
-            child_list = dataset.get_dir_nodes(child_dir_tuples)
+            child_list = dataset.get_dir_nodes(request.user, child_dir_tuples)
 
         # if there are files append this
         if dfs:
