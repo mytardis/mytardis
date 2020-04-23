@@ -1,19 +1,21 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`render dataset tiles on page load should match snapshot 1`] = `
-<div>
+<div
+  id="main-list"
+>
   <div
-    data-rbd-droppable-context-id="1"
+    data-rbd-droppable-context-id="0"
     data-rbd-droppable-id="main-list"
   >
     <ul
       class="datasets thumbnails"
     >
       <div
-        aria-describedby="rbd-hidden-text-1-hidden-text-7"
-        data-rbd-drag-handle-context-id="1"
+        aria-describedby="rbd-hidden-text-0-hidden-text-0"
+        data-rbd-drag-handle-context-id="0"
         data-rbd-drag-handle-draggable-id="main-list_26"
-        data-rbd-draggable-context-id="1"
+        data-rbd-draggable-context-id="0"
         data-rbd-draggable-id="main-list_26"
         draggable="false"
         role="button"
@@ -114,10 +116,10 @@ exports[`render dataset tiles on page load should match snapshot 1`] = `
         </li>
       </div>
       <div
-        aria-describedby="rbd-hidden-text-1-hidden-text-7"
-        data-rbd-drag-handle-context-id="1"
+        aria-describedby="rbd-hidden-text-0-hidden-text-0"
+        data-rbd-drag-handle-context-id="0"
         data-rbd-drag-handle-draggable-id="main-list_30"
-        data-rbd-draggable-context-id="1"
+        data-rbd-draggable-context-id="0"
         data-rbd-draggable-id="main-list_30"
         draggable="false"
         role="button"

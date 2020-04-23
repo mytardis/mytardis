@@ -1,5 +1,4 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
 import { act } from '@testing-library/react';
 import { configure, mount } from 'enzyme';
 import Adapter from 'enzyme-adapter-react-16';
@@ -55,8 +54,10 @@ beforeEach(async () => {
     json: () => Promise.resolve(fakeData),
   }));
   container = document.createElement('div');
+  container.setAttribute('id', 'main-list');
   document.body.appendChild(container);
   shareContainer = document.createElement('div');
+  shareContainer.setAttribute('id', 'share-list');
   document.body.appendChild(shareContainer);
   await act(async () => {
     component = mount(<DatasetTilesLists experimentId="1234" shareContainer={shareContainer} />, { attachTo: container });
@@ -71,10 +72,7 @@ afterEach(() => {
   component.detach();
 });
 describe('render dataset tiles on page load', () => {
-  it('should match snapshot', async () => {
-    await act(async () => {
-      ReactDOM.render(<DatasetTilesLists experimentId="1234" shareContainer={shareContainer} />, container);
-    });
+  it('should match snapshot', () => {
     expect(container).toMatchSnapshot();
   });
 });
