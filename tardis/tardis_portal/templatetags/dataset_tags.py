@@ -121,7 +121,7 @@ def dataset_size_badge_notile(dataset, user):
     """
     Displays a badge with the total size of the files in this dataset
     """
-        size = filesizeformat(dataset.get_size(user))
+    size = filesizeformat(dataset.get_size(user))
     return render_mustache('tardis_portal/badges/size', {
         'title': "Dataset size is ~%s" % size,
         'label': size,
