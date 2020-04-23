@@ -5,6 +5,7 @@ from ..util import render_mustache
 from ..views import get_dataset_info
 from ..models.dataset import Dataset
 from ..models.experiment import Experiment
+from ..models.datafile import DataFile
 
 register = template.Library()
 
@@ -62,6 +63,16 @@ def dataset_count(experiment_id, user):
     Count the number of Datasets in Experiment, obeying ACLs for user
     """
     count = Dataset.safe.all(user).filter(experiments__id=experiment_id).count()
+
+    return count
+
+
+@register.simple_tag
+def datafile_count(dataset_id, user):
+    """
+    Count the number of Datafiles in Dataset, obeying ACLs for user
+    """
+    count = DataFile.safe.all(user).filter(dataset__id=dataset_id).count()
 
     return count
 
