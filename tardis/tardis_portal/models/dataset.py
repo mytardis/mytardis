@@ -133,9 +133,9 @@ class Dataset(models.Model):
         return path.join(str(self.get_first_experiment().id),
                          str(self.id))
 
-    def get_datafiles(self):
+    def get_datafiles(self, user):
         from .datafile import DataFile
-        return DataFile.objects.filter(dataset=self)
+        return DataFile.safe.all(user).filter(dataset=self)
 
     def get_absolute_url(self):
         """Return the absolute url to the current ``Dataset``"""

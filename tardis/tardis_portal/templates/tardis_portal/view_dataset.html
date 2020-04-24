@@ -329,7 +329,7 @@
                     {% else %}
                         {% for p in protocol %}
                             <a class="btn btn-outline-secondary btn-sm" href="{{p.1}}"
-                               title="Download Entire Dataset as {{p.0|upper}}">
+                               title="Download all available Datafiles in Dataset as {{p.0|upper}}">
                                 <i class="fa fa-download"></i>
                                 {{p.0|upper}}
                             </a>
@@ -343,7 +343,7 @@
                     </a>
                     <a class="btn btn-outline-secondary btn-sm"
                        href="{% url 'tardis_portal.dataset_checksums' dataset.id %}"
-                       title="Download MD5 checksums for all files in this Dataset">
+                       title="Download MD5 checksums for all available files in Dataset">
                       <i class="fa fa-download"></i>
                       MD5
                     </a>
