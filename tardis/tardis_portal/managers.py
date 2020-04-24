@@ -548,7 +548,7 @@ class DatasetManager(models.Manager):
 class DatafileManager(models.Manager):
 
 
-    def all(self, user):  # @ReservedAssignment
+    def all(self, user, downloadable=False):  # @ReservedAssignment
         """
         Returns all datafiles a user - either authenticated or
         anonymous - is allowed to see and search
@@ -558,7 +558,7 @@ class DatafileManager(models.Manager):
         :rtype: QuerySet
         """
 
-        query = self._query_owned_and_shared(user) #self._query_all_public() |\
+        query = self._query_owned_and_shared(user, downloadable) #self._query_all_public() |\
 
         return super().get_queryset().filter(
             query).distinct()
