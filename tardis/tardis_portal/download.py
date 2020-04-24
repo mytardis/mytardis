@@ -492,7 +492,7 @@ def streaming_download_experiment(request, experiment_id, comptype='tgz',
     df_ids = DataFileObject.objects.filter(
         datafile__dataset__experiments__id=experiment_id, verified=True) \
                 .values('datafile_id').distinct()
-    datafiles = DataFile.objects.filter(id__in=df_ids)
+    datafiles = DataFile.safe.all(request.user, downloadable=True).filter(id__in=df_ids)
     return _streaming_downloader(request, datafiles, rootdir, filename,
                                  comptype, organization)
 
