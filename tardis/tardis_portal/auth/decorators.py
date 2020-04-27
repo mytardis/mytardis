@@ -75,7 +75,7 @@ def get_accessible_datafiles_for_user(request):
     for item in queries:
         query |= item
 
-    return DataFile.objects.filter(query)
+    return DataFile.safe.all(request.user).filter(query)
 
 
 #MIKEACL: REFACTOR has_###_ownership() into generic

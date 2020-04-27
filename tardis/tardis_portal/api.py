@@ -367,27 +367,27 @@ class ACLAuthorization(Authorization):
                 has_dataset_write(bundle.request, dataset.id),
             ])
         if isinstance(bundle.obj, DatafileParameterSet):
-            dataset = Dataset.objects.get(
-                pk=bundle.obj.datafile.dataset.id)
+            datafile = DataFile.objects.get(
+                pk=bundle.obj.datafile.id)
             return all([
-                bundle.request.user.has_perm('tardis_portal.change_dataset'),
+                bundle.request.user.has_perm('tardis_portal.change_datafile'),
                 bundle.request.user.has_perm('tardis_portal.add_datafile'),
-                has_dataset_write(bundle.request, dataset.id),
+                has_datafile_write(bundle.request, datafile.id),
             ])
         if isinstance(bundle.obj, DatafileParameter):
-            dataset = Dataset.objects.get(
-                pk=bundle.obj.parameterset.datafile.dataset.id)
+            datafile = DataFile.objects.get(
+                pk=bundle.obj.parameterset.datafile.id)
             return all([
-                bundle.request.user.has_perm('tardis_portal.change_dataset'),
+                bundle.request.user.has_perm('tardis_portal.change_datafile'),
                 bundle.request.user.has_perm('tardis_portal.add_datafile'),
-                has_dataset_write(bundle.request, dataset.id),
+                has_datafile_write(bundle.request, datafile.id),
             ])
         if isinstance(bundle.obj, DataFileObject):
             return all([
-                bundle.request.user.has_perm('tardis_portal.change_dataset'),
+                bundle.request.user.has_perm('tardis_portal.change_datafile'),
                 bundle.request.user.has_perm('tardis_portal.add_datafile'),
-                has_dataset_write(bundle.request,
-                                  bundle.obj.datafile.dataset.id),
+                has_datafile_write(bundle.request,
+                                  bundle.obj.datafile.id),
             ])
         if isinstance(bundle.obj, ObjectACL):
             return bundle.request.user.has_perm('tardis_portal.add_objectacl')
