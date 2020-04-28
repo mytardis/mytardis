@@ -13,53 +13,55 @@
         </th>
     </tr>
     {% for parameter in parameters %}
-        {% if parameter.name.is_json %}
-            <tr>
-                <td class="parameter_name">{{ parameter.name.full_name }}</td>
-                <td class="parameter_value">
-            {% if parameter.name.units == 'fcs-table' %}
-                {% with table=parameter.get %}
-                    <table>
-                        <thead>
-                        <tr>
-                            {% for head in table.thead %}
-                                <th>{{ head.values.0 }}</th>
-                            {% endfor %}
-                        </tr>
-                        </thead>
-                        <tbody>
-                        {% for row in table.tbody %}
+        {% if not parameter.sensitive_metadata %}
+            {% if parameter.name.is_json %}
+                <tr>
+                    <td class="parameter_name">{{ parameter.name.full_name }}</td>
+                    <td class="parameter_value">
+                {% if parameter.name.units == 'fcs-table' %}
+                    {% with table=parameter.get %}
+                        <table>
+                            <thead>
                             <tr>
-                                {% for col in table.thead %}
-                                    <td>{{ row|get_item:col.keys.0 }}</td>
+                                {% for head in table.thead %}
+                                    <th>{{ head.values.0 }}</th>
                                 {% endfor %}
                             </tr>
-                        {% endfor %}
-                        </tbody>
-                    </table>
-                {% endwith %}
+                            </thead>
+                            <tbody>
+                            {% for row in table.tbody %}
+                                <tr>
+                                    {% for col in table.thead %}
+                                        <td>{{ row|get_item:col.keys.0 }}</td>
+                                    {% endfor %}
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    {% endwith %}
+                {% endif %}
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td class="parameter_name">{{ parameter.name.full_name }}</td>
+                    <td class="parameter_value">
+                        {% if parameter.name.isLongString %}
+                            {{ parameter.get|linebreaks }}
+                        {% elif parameter.name.isLink and parameter.link_url %}
+                            <a href="{{ parameter.link_url }}">
+                              {% if parameter.link_gfk %}
+                                {{ parameter.link_gfk }}
+                              {% elif parameter.link_url %}
+                                {{ parameter.link_url }}
+                              {% endif %}
+                            </a>
+                        {% else %}
+                            {{ parameter.get }}
+                        {% endif %}
+                    </td>
+                </tr>
             {% endif %}
-                </td>
-            </tr>
-        {% else %}
-            <tr>
-                <td class="parameter_name">{{ parameter.name.full_name }}</td>
-                <td class="parameter_value">
-                    {% if parameter.name.isLongString %}
-                        {{ parameter.get|linebreaks }}
-                    {% elif parameter.name.isLink and parameter.link_url %}
-                        <a href="{{ parameter.link_url }}">
-                          {% if parameter.link_gfk %}
-                            {{ parameter.link_gfk }}
-                          {% elif parameter.link_url %}
-                            {{ parameter.link_url }}
-                          {% endif %}
-                        </a>
-                    {% else %}
-                        {{ parameter.get }}
-                    {% endif %}
-                </td>
-            </tr>
         {% endif %}
     {% endfor %}
 </table>
