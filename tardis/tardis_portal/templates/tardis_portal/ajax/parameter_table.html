@@ -13,7 +13,7 @@
         </th>
     </tr>
     {% for parameter in parameters %}
-        {% if not parameter.sensitive_metadata %}
+        {% if not parameter.sensitive_metadata or downloadable %}
             {% if parameter.name.is_json %}
                 <tr>
                     <td class="parameter_name">{{ parameter.name.full_name }}</td>

@@ -49,7 +49,7 @@
     {% endif %}
   {% endcapture %}
   <div style="margin-top: 10px; margin-bottom: 10px;">
-    {% include "tardis_portal/ajax/parameter_table.html" with parameters=parameterset.datafileparameter_set.all%}
+    {% include "tardis_portal/ajax/parameter_table.html" with parameters=parameterset.datafileparameter_set.all downloadable=has_df_download_permissions %}
   </div>
 {% empty %}
     <br/>
