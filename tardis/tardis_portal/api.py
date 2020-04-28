@@ -43,6 +43,7 @@ from .auth.decorators import (
     get_accessible_datafiles_for_user,
     has_datafile_access,
     has_datafile_download_access,
+    has_datafile_write,
     has_dataset_access,
     has_dataset_write,
     has_delete_permissions,
