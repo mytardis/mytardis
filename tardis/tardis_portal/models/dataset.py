@@ -3,6 +3,7 @@ from os import path
 
 from datetime import datetime
 from django.conf import settings
+from django.contrib.contenttypes.fields import GenericRelation
 from django.urls import reverse
 from django.db import models
 from django.utils import timezone
@@ -11,6 +12,7 @@ from django.utils.encoding import python_2_unicode_compatible
 from ..managers import OracleSafeManager
 from .storage import StorageBox
 
+from .access_control import ObjectACL
 from .experiment import Experiment
 from .instrument import Instrument
 
@@ -57,6 +59,7 @@ class Dataset(models.Model):
     sensitive = models.BooleanField(default=False)
     embargo_until = models.DateTimeField(null=True, blank=True)
     objects = OracleSafeManager()
+    objectacls = GenericRelation(ObjectACL)
     tags = TaggableManager(blank=True)
     
 

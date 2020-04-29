@@ -57,13 +57,15 @@ class ExperimentDocument(Document):
 
     class Django:
         model = Experiment
-        related_models = [User, ObjectACL]
+        related_models = [User]#, ObjectACL] TODO Reactivate when ACLs finished
 
     def get_instances_from_related(self, related_instance):
         if isinstance(related_instance, User):
             return related_instance.experiment_set.all()
-        if isinstance(related_instance, ObjectACL):
-            return related_instance.content_object
+        # TODO reactivate when ACLs finished
+        # TODO change so updates only Experiment ACLs
+        #if isinstance(related_instance, ObjectACL):
+        #    return related_instance.content_object
         return None
 
 
