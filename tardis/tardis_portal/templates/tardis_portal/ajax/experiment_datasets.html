@@ -41,7 +41,7 @@
 
     <div id="datasets" style="word-break: break-all;">
     <p>Please wait... <img src="{% static 'images/ajax-loader.gif'%}" alt="loading" /></p>
-    {% dataset_tiles experiment.id request.user has_download_permissions %}
+    {% dataset_tiles experiment.id request has_download_permissions %}
     </div>
 
     {% if dataset_safecount|gt:4 %}
