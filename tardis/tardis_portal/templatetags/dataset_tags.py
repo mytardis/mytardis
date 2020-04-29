@@ -134,7 +134,7 @@ def dataset_size_badge(dataset=None, size=None):
     Displays an badge with the total size of the files in this experiment
     """
     if size is None:
-        size = 999 #filesizeformat(dataset.get_size())
+        size = filesizeformat(999) #filesizeformat(dataset.get_size())
     else:
         size = filesizeformat(size)
     return render_mustache('tardis_portal/badges/size', {
