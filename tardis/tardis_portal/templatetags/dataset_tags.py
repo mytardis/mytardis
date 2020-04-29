@@ -36,9 +36,9 @@ def dataset_tiles(experiment_id, request, include_thumbnails):
 
         def dataset_size_badge(self):
             if hasattr(self, 'size'):
-                return dataset_size_badge(size=self.size)
+                return dataset_size_badge(request, size=self.size)
             ds = Dataset.objects.get(id=self.id)
-            return dataset_size_badge(ds)
+            return dataset_size_badge(request, dataset=ds)
 
         def dataset_datafiles_badge(self):
             if hasattr(self, 'datafiles'):
@@ -129,12 +129,12 @@ def dataset_size_badge_notile(dataset, user):
 
 
 @register.filter
-def dataset_size_badge(dataset=None, size=None):
+def dataset_size_badge(request, dataset=None, size=None):
     """
     Displays an badge with the total size of the files in this experiment
     """
     if size is None:
-        size = filesizeformat(999) #filesizeformat(dataset.get_size())
+        size = filesizeformat(dataset.get_size(request.user))
     else:
         size = filesizeformat(size)
     return render_mustache('tardis_portal/badges/size', {
