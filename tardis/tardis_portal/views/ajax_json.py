@@ -109,7 +109,7 @@ def experiment_datasets_json(request, experiment_id):
         get_dataset_info(ds, request, include_thumbnail=has_download_permissions,
                          exclude=['datafiles'])
         for ds in Dataset.safe.all(request.user).filter(
-                        experiment__id=experiment_id).order_by(dataset_ordering)]
+                        experiments__id=experiment_id).order_by(dataset_ordering)]
 
     return HttpResponse(
         json.dumps(objects, cls=DjangoJSONEncoder, default=str),
