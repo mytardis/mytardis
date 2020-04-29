@@ -4,7 +4,6 @@ from django.utils.encoding import python_2_unicode_compatible
 
 from .facility import Facility
 
-
 @python_2_unicode_compatible
 class Instrument(models.Model):
     '''
