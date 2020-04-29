@@ -13,6 +13,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import redirect
 from django.template.defaultfilters import filesizeformat
 
+from ..models.datafile import DataFile
 logger = logging.getLogger(__name__)
 
 
@@ -64,7 +65,7 @@ def get_dataset_info(dataset, request, include_thumbnail=False, exclude=None):  
     if exclude is None or 'datafiles' not in exclude or 'file_count' \
        not in exclude:
         datafiles = list(
-            DataFile.safe.all(request.user).filter('dataset__id'=dataset.id).values_list('id', flat=True))
+            DataFile.safe.all(request.user).filter(dataset__id=dataset.id).values_list('id', flat=True))
         if exclude is None or 'datafiles' not in exclude:
             obj['datafiles'] = datafiles
         if exclude is None or 'file_count' not in exclude:
