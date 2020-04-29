@@ -11,14 +11,14 @@ register = template.Library()
 
 
 @register.simple_tag
-def dataset_tiles(experiment_id, user, include_thumbnails):
+def dataset_tiles(experiment_id, request, include_thumbnails):
     # only show 8 datasets for initial load
-    datasets = Dataset.safe.all(user).filter(experiments__id=experiment_id
+    datasets = Dataset.safe.all(request.user).filter(experiments__id=experiment_id
                                              ).order_by('description')[:8]
 
     # Get data to template (used by JSON service too)
     # ?? doesn't seem to be used by JSON service at all
-    data = (get_dataset_info(ds, bool(include_thumbnails),
+    data = (get_dataset_info(ds, request, bool(include_thumbnails),
                              exclude=['datasettype', 'size'])
             for ds in datasets)
 
