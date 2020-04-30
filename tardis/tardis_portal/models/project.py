@@ -11,6 +11,7 @@ from django.db import models
 from django.utils.safestring import SafeText
 from django.utils.encoding import python_2_unicode_compatible
 
+# from ..models import DataManagementPlan # Hook in place for future proofing
 from ..managers import OracleSafeManager#, ExperimentManager
 from .access_control import ObjectACL
 
@@ -62,6 +63,10 @@ class Project(models.Model):
     objects = OracleSafeManager()
     sensitive = models.BooleanField(default=False)
     embargo_until = models.DateTimeField(null=True, blank=True)
+    start_date = models.DateTimeField(default=datetime.utcnow())
+    end_date = models.DateTimeField(null=True, blank=True)
+    #data_management_plan = models.ManyToManyField(DataManagementPlan,
+    #                                              null=True, blank=True)  
 
     class Meta:
         app_label = 'tardis_portal'
