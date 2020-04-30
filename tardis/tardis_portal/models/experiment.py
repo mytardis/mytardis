@@ -69,8 +69,8 @@ class Experiment(models.Model):
                           null=True, blank=True)
     approved = models.BooleanField(default=False)
     title = models.CharField(max_length=400)
-    institution_name = models.CharField(max_length=400,
-                                        default=settings.DEFAULT_INSTITUTION)
+    #institution_name = models.CharField(max_length=400,
+    #                                    default=settings.DEFAULT_INSTITUTION)
     description = models.TextField(blank=True)
     internal_id = models.CharField(max_length=400, null=False, blank=False, unique=True, default=experiment_internal_id_default )
     project_id = models.CharField(max_length=400, null=False, blank=False)
