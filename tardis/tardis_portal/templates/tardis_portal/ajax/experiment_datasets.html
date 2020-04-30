@@ -3,6 +3,8 @@
 {% load static from staticfiles %}
 {% load dataset_tags %}
 
+{% dataset_count experiment.id request.user as dataset_safecount %}
+
 {% capture as action_bar %}
   {% if has_download_permissions or has_write_permissions %}
     {% if has_download_permissions %}
@@ -17,7 +19,7 @@
 {% endcapture %}
 
 <h3 style="display: inline">
-  {{experiment.datasets.count}} Dataset{{experiment.datasets.count|pluralize}}
+  {{dataset_safecount}} Dataset{{dataset_safecount|pluralize}}
 </h3>
 {% if has_download_permissions or has_write_permissions %}
 
@@ -39,10 +41,10 @@
 
     <div id="datasets" style="word-break: break-all;">
     <p>Please wait... <img src="{% static 'images/ajax-loader.gif'%}" alt="loading" /></p>
-    {{ experiment|dataset_tiles:has_download_permissions }}
+    {% dataset_tiles experiment.id request has_download_permissions %}
     </div>
 
-    {% if experiment.datasets.count|gt:4 %}
+    {% if dataset_safecount|gt:4 %}
     {{ action_bar }}
     {% endif %}
   </form>

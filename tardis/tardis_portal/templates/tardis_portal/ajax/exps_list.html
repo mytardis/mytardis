@@ -23,7 +23,7 @@
              href="{% url 'tardis_portal.view_experiment' exp.id %}">{{ exp.title }}</a>
         </div>
         <div class="col">
-          {% experiment_badges exp %}
+          {% experiment_badges exp request.user %}
         </div>
       </div>
       <div class="row">

@@ -92,7 +92,7 @@ def experiment_datasets(request, experiment_id):
 @never_cache
 @authz.experiment_access_required
 def experiment_latest_dataset(request, experiment_id):
-    context = dict(exp=Experiment.objects.get(id=experiment_id))
+    context = dict(datasets=Dataset.safe.all(request.user).filter(experiments__id=experiment_id))
     return render_response_index(
         request,
         'tardis_portal/ajax/experiment_latest_dataset.html',
@@ -102,7 +102,7 @@ def experiment_latest_dataset(request, experiment_id):
 @never_cache
 @authz.experiment_access_required
 def experiment_recent_datasets(request, experiment_id):
-    context = dict(exp=Experiment.objects.get(id=experiment_id))
+    context = dict(datasets=Dataset.safe.all(request.user).filter(experiments__id=experiment_id))
     return render_response_index(
         request,
         'tardis_portal/ajax/experiment_recent_datasets.html',
@@ -132,12 +132,15 @@ def experiment_dataset_transfer(request, experiment_id):
 def retrieve_dataset_metadata(request, dataset_id):
     dataset = Dataset.objects.get(pk=dataset_id)
     has_write_permissions = authz.has_dataset_write(request, dataset_id)
+    has_download_permissions = authz.has_dataset_download_access(request, dataset_id)
+
     parametersets = dataset.datasetparameterset_set.exclude(
         schema__hidden=True)
 
     c = {'dataset': dataset,
          'parametersets': parametersets,
-         'has_write_permissions': has_write_permissions}
+         'has_write_permissions': has_write_permissions,
+         'has_download_permissions': has_download_permissions}
     return render_response_index(
         request, 'tardis_portal/ajax/dataset_metadata.html', c)
 
@@ -148,12 +151,16 @@ def retrieve_experiment_metadata(request, experiment_id):
     experiment = Experiment.objects.get(pk=experiment_id)
     has_write_permissions = \
         authz.has_write_permissions(request, experiment_id)
+    has_download_permissions = \
+        authz.has_experiment_download_access(request, experiment_id)
+
     parametersets = experiment.experimentparameterset_set\
                               .exclude(schema__hidden=True)
 
     c = {'experiment': experiment,
          'parametersets': parametersets,
-         'has_write_permissions': has_write_permissions}
+         'has_write_permissions': has_write_permissions,
+         'has_download_permissions': has_download_permissions}
     return render_response_index(
         request, 'tardis_portal/ajax/experiment_metadata.html', c)
 
@@ -227,7 +234,7 @@ def retrieve_datafile_list(
     params = {}
 
     dataset_results = \
-        DataFile.objects.filter(
+        DataFile.safe.all(request.user).filter(
             dataset__pk=dataset_id,
         ).order_by('filename')
 

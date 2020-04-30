@@ -328,6 +328,13 @@ class DatasetView(TemplateView):
         except Dataset.DoesNotExist:
             return return_response_not_found(request)
 
+        try:
+            dataset = Dataset.safe.get(request.user, dataset_id)
+        except PermissionDenied:
+            return return_response_error(request)
+        except Dataset.DoesNotExist:
+            return return_response_not_found(request)
+
         view_override = self.find_custom_view_override(request, dataset)
         if view_override is not None:
             return view_override
@@ -985,14 +992,14 @@ def edit_dataset(request, dataset_id):
         request, 'tardis_portal/add_or_edit_dataset.html', c)
 
 
-def _get_dataset_checksums(dataset, type='md5'):
+def _get_dataset_checksums(request, dataset, type='md5'):
     valid_types = ['md5', 'sha512']
     if type not in valid_types:
         raise ValueError('Invalid checksum type (%s). Valid values are %s' %
                          (type, ', '.join(valid_types)))
     hash_attr = type+'sum'
     checksums = [(getattr(df, hash_attr), path.join(df.directory or '', df.filename))
-                 for df in dataset.get_datafiles()]
+                 for df in dataset.get_datafiles(request.user)]
     return checksums
 
 
@@ -1005,7 +1012,7 @@ def checksums_download(request, dataset_id, **kwargs):
     type = request.GET.get('type', 'md5')
     format = request.GET.get('format', 'text')
 
-    checksums = _get_dataset_checksums(dataset, type)
+    checksums = _get_dataset_checksums(request, dataset, type)
     if format == 'text':
         checksum_doc = ''.join(["%s  %s\n" % c for c in checksums])
         checksum_doc += '\n'

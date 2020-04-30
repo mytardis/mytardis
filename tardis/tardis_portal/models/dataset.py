@@ -9,7 +9,7 @@ from django.db import models
 from django.utils import timezone
 from django.utils.encoding import python_2_unicode_compatible
 
-from ..managers import OracleSafeManager
+from ..managers import OracleSafeManager, DatasetManager
 from .storage import StorageBox
 
 from .access_control import ObjectACL
@@ -58,10 +58,11 @@ class Dataset(models.Model):
                                    on_delete=models.CASCADE)
     sensitive = models.BooleanField(default=False)
     embargo_until = models.DateTimeField(null=True, blank=True)
-    objects = OracleSafeManager()
     objectacls = GenericRelation(ObjectACL)
+    objects = OracleSafeManager()
+    safe = DatasetManager()  # The acl-aware specific manager.
     tags = TaggableManager(blank=True)
-    
+
 
     class Meta:
         app_label = 'tardis_portal'
@@ -80,7 +81,7 @@ class Dataset(models.Model):
             if datetime.now() < self.embargo_until:
                 return True
         return False
-        
+
     @property
     def is_online(self):
         return all(df.is_online for df in self.datafile_set.all())
@@ -132,9 +133,9 @@ class Dataset(models.Model):
         return path.join(str(self.get_first_experiment().id),
                          str(self.id))
 
-    def get_datafiles(self):
+    def get_datafiles(self, user):
         from .datafile import DataFile
-        return DataFile.objects.filter(dataset=self)
+        return DataFile.safe.all(user, downloadable=True).filter(dataset=self)
 
     def get_absolute_url(self):
         """Return the absolute url to the current ``Dataset``"""
@@ -192,9 +193,12 @@ class Dataset(models.Model):
                                'quality': 'native',
                                'format': 'jpg'})
 
-    def get_size(self):
+    def get_size(self, user):
         from .datafile import DataFile
-        return DataFile.sum_sizes(self.datafile_set)
+
+        datafiles = DataFile.safe.all(user).filter(dataset__id=self.id)
+
+        return DataFile.sum_sizes(datafiles)
 
     def _has_any_perm(self, user_obj):
         if not hasattr(self, 'id'):
@@ -219,7 +223,74 @@ class Dataset(models.Model):
             file_objects__datafile__dataset=self).distinct()
         return boxes
 
-    def get_dir_tuples(self, basedir=""):
+    def get_ct(self):
+        return ContentType.objects.get_for_model(self)
+
+    def get_owners(self):
+        acls = ObjectACL.objects.filter(pluginId='django_user',
+                                        content_type=self.get_ct(),
+                                        object_id=self.id,
+                                        isOwner=True)
+        return [acl.get_related_object() for acl in acls]
+
+    def get_users(self):
+        acls = ObjectACL.objects.filter(pluginId='django_user',
+                                        content_type=self.get_ct(),
+                                        object_id=self.id,
+                                        canRead=True)
+        return [acl.get_related_object() for acl in acls]
+
+    def get_groups(self):
+        acls = ObjectACL.objects.filter(pluginId='django_group',
+                                        content_type=self.get_ct(),
+                                        object_id=self.id,
+                                        canRead=True)
+        return [acl.get_related_object() for acl in acls]
+
+
+    def _has_view_perm(self, user_obj):
+        '''
+        Called from the ACLAwareBackend class's has_perm method
+        in tardis/tardis_portal/auth/authorisation.py
+
+        Returning None means we won't override permissions here,
+        i.e. we'll leave it to ACLAwareBackend's has_perm method
+        to determine permissions from ObjectACLs
+        '''
+        if not hasattr(self, 'id'):
+            return False
+
+        return None
+
+    def _has_change_perm(self, user_obj):
+        '''
+        Called from the ACLAwareBackend class's has_perm method
+        in tardis/tardis_portal/auth/authorisation.py
+
+        Returning None means we won't override permissions here,
+        i.e. we'll leave it to ACLAwareBackend's has_perm method
+        to determine permissions from ObjectACLs
+        '''
+        if not hasattr(self, 'id'):
+            return False
+
+        return None
+
+    def _has_delete_perm(self, user_obj):
+        '''
+        Called from the ACLAwareBackend class's has_perm method
+        in tardis/tardis_portal/auth/authorisation.py
+
+        Returning None means we won't override permissions here,
+        i.e. we'll leave it to ACLAwareBackend's has_perm method
+        to determine permissions from ObjectACLs
+        '''
+        if not hasattr(self, 'id'):
+            return False
+
+        return None
+
+    def get_dir_tuples(self, user, basedir=""):
         """
         List the directories immediately inside basedir.
 
@@ -264,7 +335,7 @@ class Dataset(models.Model):
         dir_tuples = []
         if basedir:
             dir_tuples.append(('..', basedir))
-        dirs_query = DataFile.objects.filter(dataset=self)
+        dirs_query = DataFile.safe.all(user).filter(dataset=self)
         if basedir:
             dirs_query = dirs_query.filter(directory__startswith='%s/' % basedir)
         dir_paths = set(dirs_query.values_list('directory', flat=True))
@@ -283,7 +354,7 @@ class Dataset(models.Model):
 
         return sorted(dir_tuples, key=lambda x: x[0])
 
-    def get_dir_nodes(self, dir_tuples):
+    def get_dir_nodes(self, user, dir_tuples):
         """Return child node's subdirectories in format required for tree view
 
         Given a list of ('subdir', 'path/to/subdir') tuples for a dataset
@@ -357,7 +428,7 @@ class Dataset(models.Model):
             dir_name, dir_path = dir_tuple
             if dir_name == '..':
                 continue
-            subdir_tuples = self.get_dir_tuples(dir_path)
+            subdir_tuples = self.get_dir_tuples(user, basedir=dir_path)
             child_dict = {
                 'name': dir_name,
                 'path': dir_path,

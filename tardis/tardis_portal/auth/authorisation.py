@@ -82,7 +82,7 @@ class ACLAwareBackend(object):
                                   lambda *args, **kwargs: None)(user_obj)
         if isinstance(model_spec_perm, bool):
             return model_spec_perm
-        if model_spec_perm is not None:
+        '''if model_spec_perm is not None:
             # pass auth to a different object, if False try this ACL
             # works when returned object is parent.
             # makes it impossible to 'hide' child objects
@@ -92,7 +92,7 @@ class ACLAwareBackend(object):
                 new_ct = ContentType.objects.get_for_model(msp)
                 new_perm = '%s.%s_%s' % (perm_label, perm_action, new_ct)
                 if user_obj.has_perm(new_perm, msp):
-                    return True
+                    return True'''
 
         # get_acls
         obj_acls = ObjectACL.objects\
