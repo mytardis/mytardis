@@ -1,4 +1,4 @@
-{% for ds in exp.datasets.all|dictsortreversed:"id"|slice:":5" %}
+{% for ds in datasets|dictsortreversed:"id"|slice:":5" %}
   {% if forloop.first %}
     <ul class="list-group borderless mt-2">
     {% with total=exp.datasets.all|length %}
@@ -32,4 +32,3 @@
     </ul>
   {% endif %}
 {% endfor %}
-

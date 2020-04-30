@@ -62,6 +62,7 @@ def get_owned_experiments(request):
     return Experiment.safe.owned(request.user)
 
 
+#MIKEACL: Change according to datafile permissions
 def get_accessible_datafiles_for_user(request):
 
     experiments = get_accessible_experiments(request)
@@ -74,26 +75,62 @@ def get_accessible_datafiles_for_user(request):
     for item in queries:
         query |= item
 
-    return DataFile.objects.filter(query)
+    return DataFile.safe.all(request.user).filter(query)
 
 
+#MIKEACL: REFACTOR has_###_ownership() into generic
 def has_experiment_ownership(request, experiment_id):
     return Experiment.safe.owned(request.user).filter(
         pk=experiment_id).exists()
+#MIKEACL: REFACTOR has_###_ownership() into generic
+def has_dataset_ownership(request, dataset_id):
+    return Dataset.safe.owned(request.user).filter(
+        pk=dataset_id).exists()
+#MIKEACL: REFACTOR has_###_ownership() into generic
+def has_datafile_ownership(request, datafile_id):
+    return DataFile.safe.owned(request.user).filter(
+        pk=datafile_id).exists()
 
 
+#MIKEACL: REFACTOR has_###_access() into generic
 def has_experiment_access(request, experiment_id):
     try:
         experiment = Experiment.objects.get(id=experiment_id)
     except Experiment.DoesNotExist:
         return False
     return request.user.has_perm('tardis_acls.view_experiment', experiment)
+#MIKEACL: REFACTOR has_###_access() into generic
+def has_dataset_access(request, dataset_id):
+    try:
+        dataset = Dataset.objects.get(id=dataset_id)
+    except Dataset.DoesNotExist:
+        return False
+    return request.user.has_perm('tardis_acls.view_dataset', dataset)
+#MIKEACL: REFACTOR has_###_access() into generic
+def has_datafile_access(request, datafile_id):
+    try:
+        datafile = DataFile.objects.get(id=datafile_id)
+    except DataFile.DoesNotExist:
+        return False
+    return request.user.has_perm('tardis_acls.view_datafile', datafile)
 
 
+#MIKEACL: REFACTOR has_###_write() into generic (based on has_write_permissions)
 def has_experiment_write(request, experiment_id):
     return has_write_permissions(request, experiment_id)
+#MIKEACL: REFACTOR has_###_write() into generic
+def has_dataset_write(request, dataset_id):
+    dataset = Dataset.objects.get(id=dataset_id)
+    if dataset.immutable:
+        return False
+    return request.user.has_perm('tardis_acls.change_dataset', dataset)
+#MIKEACL: REFACTOR has_###_write() into generic
+def has_datafile_write(request, datafile_id):
+    datafile = DataFile.objects.get(id=datafile_id)
+    return request.user.has_perm('tardis_acls.change_datafile', datafile)
 
 
+#MIKEACL: REFACTOR has_###_download_access() into generic
 def has_experiment_download_access(request, experiment_id):
 
     if Experiment.safe.owned_and_shared(request.user, downloadable=True) \
@@ -104,47 +141,33 @@ def has_experiment_download_access(request, experiment_id):
     exp = Experiment.objects.get(id=experiment_id)
     return Experiment.public_access_implies_distribution(exp.public_access)
 
-
-def has_dataset_ownership(request, dataset_id):
-    dataset = Dataset.objects.get(id=dataset_id)
-    return any(has_experiment_ownership(request, experiment.id)
-               for experiment in dataset.experiments.all())
-
-
-def has_dataset_access(request, dataset_id):
-    dataset = Dataset.objects.get(id=dataset_id)
-
-    return any(has_experiment_access(request, experiment.id)
-               for experiment in dataset.experiments.all())
-
-
-def has_dataset_write(request, dataset_id):
-    dataset = Dataset.objects.get(id=dataset_id)
-    if dataset.immutable:
-        return False
-    return any(has_experiment_write(request, experiment.id)
-               for experiment in dataset.experiments.all())
-
-
+#MIKEACL: REFACTOR has_###_download_access() into generic
+# TODO: check for datasets in publicly available experiments
 def has_dataset_download_access(request, dataset_id):
-    dataset = Dataset.objects.get(id=dataset_id)
-    return any(has_experiment_download_access(request, experiment.id)
-               for experiment in dataset.experiments.all())
 
+    if Dataset.safe.owned_and_shared(request.user, downloadable=True) \
+                      .filter(id=dataset_id) \
+                      .exists():
 
-def has_datafile_access(request, datafile_id):
-    try:
-        dataset = Dataset.objects.get(datafile=datafile_id)
-    except Dataset.DoesNotExist:
-        return False
-    return has_dataset_access(request, dataset.id)
+        return True
+    return False
+    #exp = Experiment.objects.get(id=experiment_id)
+    #return Experiment.public_access_implies_distribution(exp.public_access)
 
-
+#MIKEACL: REFACTOR has_###_download_access() into generic
+# TODO: check for datasets in publicly available experiments
 def has_datafile_download_access(request, datafile_id):
-    dataset = Dataset.objects.get(datafile=datafile_id)
-    return has_dataset_download_access(request, dataset.id)
 
+    if DataFile.safe.owned_and_shared(request.user, downloadable=True) \
+                      .filter(id=datafile_id) \
+                      .exists():
 
+        return True
+    return False
+    #exp = Experiment.objects.get(id=experiment_id)
+    #return Experiment.public_access_implies_distribution(exp.public_access)
+
+#MIKEACL
 def has_read_or_owner_ACL(request, experiment_id):
     """
     Check whether the user has read access to the experiment -
@@ -200,11 +223,13 @@ def has_read_or_owner_ACL(request, experiment_id):
     return bool(acl)
 
 
+
+#MIKEACL: REFACTOR? - used widely
 def has_write_permissions(request, experiment_id):
     experiment = Experiment.objects.get(id=experiment_id)
     return request.user.has_perm('tardis_acls.change_experiment', experiment)
 
-
+#MIKEACL: REFACTOR? - used widely
 def has_delete_permissions(request, experiment_id):
     experiment = Experiment.safe.get(request.user, experiment_id)
     return request.user.has_perm('tardis_acls.delete_experiment', experiment)

@@ -36,7 +36,7 @@ def edit_dataset_par(request, parameterset_id):
 @login_required
 def edit_datafile_par(request, parameterset_id):
     parameterset = DatafileParameterSet.objects.get(id=parameterset_id)
-    if authz.has_dataset_write(request, parameterset.datafile.dataset.id):
+    if authz.has_datafile_write(request, parameterset.datafile.id):
         return edit_parameters(request, parameterset, otype="datafile")
     return return_response_error(request)
 
@@ -89,7 +89,7 @@ def edit_parameters(request, parameterset, otype):
 @login_required
 def add_datafile_par(request, datafile_id):
     parentObject = DataFile.objects.get(id=datafile_id)
-    if authz.has_dataset_write(request, parentObject.dataset.id):
+    if authz.has_datafile_write(request, parentObject.id):
         return add_par(request, parentObject,
                        otype="datafile", stype=Schema.DATAFILE)
     return return_response_error(request)

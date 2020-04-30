@@ -50,8 +50,8 @@
                   <div class="col">
                     <ul class="list-inline float-right list-unstyled">
                       <li class="list-inline-item m-0">{{ exp|experiment_last_updated_badge }}</li>
-                      <li class="list-inline-item m-0">{{ exp|experiment_datasets_badge }}</li>
-                      <li class="list-inline-item m-0">{{ exp|experiment_datafiles_badge }}</li>
+                      <li class="list-inline-item m-0">{% experiment_datasets_badge exp.id request.user %}</li>
+                      <li class="list-inline-item m-0">{% experiment_datafiles_badge exp request.user}</li>
                       <li class="list-inline-item m-0">{{ exp|experiment_public_access_badge }}</li>
                     </ul>
                   </div>

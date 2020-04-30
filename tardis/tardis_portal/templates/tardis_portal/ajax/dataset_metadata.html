@@ -25,7 +25,7 @@
    {% endif %}
   {% endcapture %}
     <div style="margin-top: 10px">
-        {% include "tardis_portal/ajax/parameter_table.html" with parameters=parameterset.datasetparameter_set.all %}
+        {% include "tardis_portal/ajax/parameter_table.html" with parameters=parameterset.datasetparameter_set.all downloadable=has_download_permissions %}
     </div>
 {% empty %}
     <div>

@@ -43,6 +43,7 @@ from .auth.decorators import (
     get_accessible_datafiles_for_user,
     has_datafile_access,
     has_datafile_download_access,
+    has_datafile_write,
     has_dataset_access,
     has_dataset_write,
     has_delete_permissions,
@@ -367,27 +368,27 @@ class ACLAuthorization(Authorization):
                 has_dataset_write(bundle.request, dataset.id),
             ])
         if isinstance(bundle.obj, DatafileParameterSet):
-            dataset = Dataset.objects.get(
-                pk=bundle.obj.datafile.dataset.id)
+            datafile = DataFile.objects.get(
+                pk=bundle.obj.datafile.id)
             return all([
-                bundle.request.user.has_perm('tardis_portal.change_dataset'),
+                bundle.request.user.has_perm('tardis_portal.change_datafile'),
                 bundle.request.user.has_perm('tardis_portal.add_datafile'),
-                has_dataset_write(bundle.request, dataset.id),
+                has_datafile_write(bundle.request, datafile.id),
             ])
         if isinstance(bundle.obj, DatafileParameter):
-            dataset = Dataset.objects.get(
-                pk=bundle.obj.parameterset.datafile.dataset.id)
+            datafile = DataFile.objects.get(
+                pk=bundle.obj.parameterset.datafile.id)
             return all([
-                bundle.request.user.has_perm('tardis_portal.change_dataset'),
+                bundle.request.user.has_perm('tardis_portal.change_datafile'),
                 bundle.request.user.has_perm('tardis_portal.add_datafile'),
-                has_dataset_write(bundle.request, dataset.id),
+                has_datafile_write(bundle.request, datafile.id),
             ])
         if isinstance(bundle.obj, DataFileObject):
             return all([
-                bundle.request.user.has_perm('tardis_portal.change_dataset'),
+                bundle.request.user.has_perm('tardis_portal.change_datafile'),
                 bundle.request.user.has_perm('tardis_portal.add_datafile'),
-                has_dataset_write(bundle.request,
-                                  bundle.obj.datafile.dataset.id),
+                has_datafile_write(bundle.request,
+                                  bundle.obj.datafile.id),
             ])
         if isinstance(bundle.obj, ObjectACL):
             return bundle.request.user.has_perm('tardis_portal.add_objectacl')
@@ -888,10 +889,10 @@ class DatasetResource(MyTardisModelResource):
         dataset_id = kwargs['pk']
         dataset = Dataset.objects.get(id=dataset_id)
         # get dirs at root level
-        dir_tuples = dataset.get_dir_tuples("")
+        dir_tuples = dataset.get_dir_tuples(request.user, basedir="")
         # get files at root level
-        dfs = (DataFile.objects.filter(dataset=dataset, directory='') |
-               DataFile.objects.filter(dataset=dataset, directory__isnull=True)).distinct()
+        dfs = (DataFile.safe.all(request.user).filter(dataset=dataset, directory='') |
+               DataFile.safe.all(request.user).filter(dataset=dataset, directory__isnull=True)).distinct()
         child_list = []
         # append directories list
         if dir_tuples:
@@ -931,14 +932,14 @@ class DatasetResource(MyTardisModelResource):
         # but now that logic will be moved to the front-end component.
 
         # list dir under base_dir
-        child_dir_tuples = dataset.get_dir_tuples(base_dir)
+        child_dir_tuples = dataset.get_dir_tuples(request.user, basedir=base_dir)
         # list files under base_dir
-        dfs = DataFile.objects.filter(dataset=dataset, directory=base_dir)
+        dfs = DataFile.safe.all(request.user).filter(dataset=dataset, directory=base_dir)
         # walk the directory tree and append files and dirs
         # if there are directories append this to data
         child_list = []
         if child_dir_tuples:
-            child_list = dataset.get_dir_nodes(child_dir_tuples)
+            child_list = dataset.get_dir_nodes(request.user, child_dir_tuples)
 
         # if there are files append this
         if dfs:
@@ -1312,6 +1313,8 @@ class ReplicaResource(MyTardisModelResource):
 class ObjectACLResource(MyTardisModelResource):
     content_object = GenericForeignKeyField({
         Experiment: ExperimentResource,
+        Dataset: DatasetResource,
+        DataFile: DataFileResource
         # ...
     }, 'content_object')
 
@@ -1333,6 +1336,12 @@ class ObjectACLResource(MyTardisModelResource):
         if bundle.data['content_type'] == 'experiment':
             experiment = Experiment.objects.get(pk=bundle.data['object_id'])
             bundle.obj.content_type = experiment.get_ct()
+        elif bundle.data['content_type'] == 'dataset':
+            dataset = Dataset.objects.get(pk=bundle.data['object_id'])
+            bundle.obj.content_type = dataset.get_ct()
+        elif bundle.data['content_type'] == 'datafile':
+            datafile = DataFile.objects.get(pk=bundle.data['object_id'])
+            bundle.obj.content_type = datafile.get_ct()
         else:
             raise NotImplementedError(str(bundle.obj))
         return bundle

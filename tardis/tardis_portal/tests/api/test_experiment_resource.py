@@ -103,7 +103,6 @@ class ExperimentResourceTest(MyTardisResourceTestCase):
             "created_time": "2013-05-29T13:00:26.626580",
             "description": "",
             "end_time": None,
-            "handle": None,
             "id": exp_id,
             "institution_name": "Monash University",
             "locked": False,
@@ -114,7 +113,7 @@ class ExperimentResourceTest(MyTardisResourceTestCase):
             "title": "test exp",
             "update_time": "2013-05-29T13:00:26.626609",
             "url": None
-        }
+        } # "handle": None,
         output = self.api_client.get('/api/v1/experiment/%d/' % exp_id,
                                      authentication=self.get_credentials())
         returned_data = json.loads(output.content.decode())

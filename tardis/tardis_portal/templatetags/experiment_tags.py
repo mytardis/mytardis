@@ -4,6 +4,7 @@ from django.contrib.humanize.templatetags.humanize import naturalday
 
 from ..util import get_local_time
 from ..util import render_mustache, render_public_access_badge
+from ..models.dataset import Dataset
 
 register = template.Library()
 
@@ -21,24 +22,25 @@ def experiment_browse_item(experiment, **kwargs):
     }
 
 
-@register.filter
-def experiment_datasets_badge(experiment):
+@register.simple_tag
+def experiment_datasets_badge(experiment_id, user):
     """
     Displays an badge with the number of datasets for this experiment
     """
-    count = experiment.datasets.all().count()
+    count = Dataset.safe.all(user).filter(experiments__id=experiment_id
+                                                 ).count()
     return render_mustache('tardis_portal/badges/dataset_count', {
         'title': "%d dataset%s" % (count, pluralize(count)),
         'count': count,
     })
 
 
-@register.filter
-def experiment_datafiles_badge(experiment):
+@register.simple_tag
+def experiment_datafiles_badge(experiment, user):
     """
     Displays an badge with the number of datafiles for this experiment
     """
-    count = experiment.get_datafiles().count()
+    count = experiment.get_datafiles(user).count()
     return render_mustache('tardis_portal/badges/datafile_count', {
         'title': "%d file%s" % (count, pluralize(count)),
         'count': count,
@@ -63,12 +65,12 @@ def experiment_public_access_badge(experiment):
     return render_public_access_badge(experiment)
 
 
-@register.filter
-def experiment_size_badge(experiment):
+@register.simple_tag
+def experiment_size_badge(experiment, user):
     """
     Displays an badge with the total size of the files in this experiment
     """
-    size = filesizeformat(experiment.get_size())
+    size = filesizeformat(experiment.get_size(user))
     return render_mustache('tardis_portal/badges/size', {
         'title': "Experiment size is ~%s" % size,
         'label': size,
@@ -76,12 +78,13 @@ def experiment_size_badge(experiment):
 
 
 @register.inclusion_tag('tardis_portal/experiment_tags/experiment_badges.html')
-def experiment_badges(experiment, **kwargs):
+def experiment_badges(experiment, user, **kwargs):
     """
     Displays badges for an experiment for displaying in an experiment list view
     """
     return {
-        'experiment': experiment
+        'experiment': experiment,
+        'user': user
     }
 
 
