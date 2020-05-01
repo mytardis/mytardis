@@ -11,7 +11,7 @@ from django.db import models
 from django.utils.safestring import SafeText
 from django.utils.encoding import python_2_unicode_compatible
 
-from ..models import Institution
+from .institution import Institution
 # from ..models import DataManagementPlan # Hook in place for future proofing
 from ..managers import OracleSafeManager#, ExperimentManager
 from .access_control import ObjectACL
