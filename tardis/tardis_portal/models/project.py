@@ -11,6 +11,8 @@ from django.db import models
 from django.utils.safestring import SafeText
 from django.utils.encoding import python_2_unicode_compatible
 
+from .institution import Institution
+# from ..models import DataManagementPlan # Hook in place for future proofing
 from ..managers import OracleSafeManager#, ExperimentManager
 from .access_control import ObjectACL
 
@@ -47,21 +49,22 @@ class Project(models.Model):
                                          null=False,
                                          default=PUBLIC_ACCESS_NONE)
     #TODO Remove null=True on rebuild database
-    owner = models.ManyToManyField(User,
-                                   null=True,
-                                   blank=True)
-    contact = models.ManyToManyField(User,
-                                     related_name='contacts',
-                                     null=True,
-                                     blank=True)
-    member = models.ManyToManyField(User,
-                                    related_name='members',
-                                    null=True,
-                                    blank=True)
+    lead_researcher = models.ForeignKey(User,
+                                        null=True,
+                                        blank=True,
+                                        on_delete=models.CASCADE)
     objectacls = GenericRelation(ObjectACL)
     objects = OracleSafeManager()
     sensitive = models.BooleanField(default=False)
     embargo_until = models.DateTimeField(null=True, blank=True)
+    start_date = models.DateTimeField(default=datetime.utcnow())
+    end_date = models.DateTimeField(null=True, blank=True)
+    url = models.URLField(max_length=255,
+                          null=True, blank=True)
+    institution = models.ManyToManyField(Institution,
+                                         related_name='institutions')
+    #data_management_plan = models.ManyToManyField(DataManagementPlan,
+    #                                              null=True, blank=True)  
 
     class Meta:
         app_label = 'tardis_portal'
@@ -81,4 +84,81 @@ class Project(models.Model):
                 return True
         return False
 
+    def get_ct(self):
+        return ContentType.objects.get_for_model(self)
 
+    def get_admins(self):
+        acls = ObjectACL.objects.filter(pluginId='django_user',
+                                        content_type=self.get_ct(),
+                                        object_id=self.id,
+                                        isOwner=True)
+        return [acl.get_related_object() for acl in acls]
+
+    def get_users(self):
+        acls = ObjectACL.objects.filter(pluginId='django_user',
+                                        content_type=self.get_ct(),
+                                        object_id=self.id,
+                                        canRead=True)
+        return [acl.get_related_object() for acl in acls]
+
+    def get_admin_group(self):
+        acls = ObjectACL.objects.filter(pluginId='django_group',
+                                        content_type=self.get_ct(),
+                                        object_id=self.id,
+                                        isOwner=True)
+        return [acl.get_related_object() for acl in acls]
+
+    def get_read_groups(self):
+        acls = ObjectACL.objects.filter(pluginId='django_group',
+                                        content_type=self.get_ct(),
+                                        object_id=self.id,
+                                        canRead=True)
+        return [acl.get_related_object() for acl in acls]
+
+    def _has_view_perm(self, user_obj):
+        '''
+        Called from the ACLAwareBackend class's has_perm method
+        in tardis/tardis_portal/auth/authorisation.py
+
+        Returning None means we won't override permissions here,
+        i.e. we'll leave it to ACLAwareBackend's has_perm method
+        to determine permissions from ObjectACLs
+        '''
+        if not hasattr(self, 'id'):
+            return False
+        # May be redundant - left in for the short term
+        if self.public_access >= self.PUBLIC_ACCESS_METADATA:
+            return True
+
+        return None
+
+    def _has_change_perm(self, user_obj):
+        '''
+        Called from the ACLAwareBackend class's has_perm method
+        in tardis/tardis_portal/auth/authorisation.py
+
+        Returning None means we won't override permissions here,
+        i.e. we'll leave it to ACLAwareBackend's has_perm method
+        to determine permissions from ObjectACLs
+        '''
+        if not hasattr(self, 'id'):
+            return False
+
+        if self.locked:
+            return False
+
+        return None
+
+    def _has_delete_perm(self, user_obj):
+        '''
+        Called from the ACLAwareBackend class's has_perm method
+        in tardis/tardis_portal/auth/authorisation.py
+
+        Returning None means we won't override permissions here,
+        i.e. we'll leave it to ACLAwareBackend's has_perm method
+        to determine permissions from ObjectACLs
+        '''
+        if not hasattr(self, 'id'):
+            return False
+
+        return None

@@ -56,6 +56,7 @@ from .storage import StorageBox
 from .storage import StorageBoxOption
 from .storage import StorageBoxAttribute
 from .project import Project
+from .institution import Institution
 
 from .jti import JTI
 

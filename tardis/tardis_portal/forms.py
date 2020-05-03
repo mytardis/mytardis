@@ -282,9 +282,7 @@ class ProjectForm(forms.ModelForm):
             'name',
             'raid',
             'description',
-            'owner',
-            'contact',
-            'member',
+            'lead_researcher',
             'sensitive',
             'embargo_until',
             ]
@@ -316,7 +314,6 @@ class ExperimentForm(forms.ModelForm):
     class Meta:
         model = models.Experiment
         fields = ('title',
-                  'institution_name',
                   'description',
                   'internal_id',
                   'project_id',
