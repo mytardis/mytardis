@@ -29,6 +29,7 @@ class Facility(models.Model):
         verbose_name_plural = 'Facilities'
         ordering = ('name',)
 
+    # pylint: disable=W0222
     def save(self, *args, **kwargs):
         self.modified_time = timezone.now()
         super().save(*args, **kwargs)
