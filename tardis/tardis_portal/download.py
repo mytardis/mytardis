@@ -306,7 +306,7 @@ class UncachedTarStream(TarFile):
         '''
         remainder_buf = None
         for num, fobj in enumerate(self.mapped_file_objs):
-            df, unused_name = fobj
+            df, dummy_name = fobj
             fileobj = df.file_object
             self._check('aw')
             tarinfo = self.tarinfos[num]
@@ -322,7 +322,7 @@ class UncachedTarStream(TarFile):
                     continue
                 # split into file read buffer sized chunks
                 blocks, remainder = divmod(tarinfo.size, self.buffersize)
-                for unused_b in range(blocks):
+                for dummy_b in range(blocks):
                     buf = fileobj.read(self.buffersize)
                     if len(buf) < self.buffersize:
                         raise IOError("end of file reached")
