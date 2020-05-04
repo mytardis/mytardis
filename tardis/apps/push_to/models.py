@@ -35,6 +35,7 @@ class KeyPair(models.Model):
     class Meta:
         abstract = True
 
+    # pylint: disable=W0222
     def save(self, *args, **kwargs):
 
         # Attempt to auto-complete the public key & key type if missing
