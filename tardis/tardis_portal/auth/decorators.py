@@ -167,6 +167,42 @@ def has_datafile_download_access(request, datafile_id):
     #exp = Experiment.objects.get(id=experiment_id)
     #return Experiment.public_access_implies_distribution(exp.public_access)
 
+
+#MIKEACL: REFACTOR has_###_sensitive_access() into generic
+def has_experiment_sensitive_access(request, experiment_id):
+
+    if Experiment.safe.owned_and_shared(request.user, viewsensitive=True) \
+                      .filter(id=experiment_id) \
+                      .exists():
+
+        return True
+    exp = Experiment.objects.get(id=experiment_id)
+    return Experiment.public_access_implies_distribution(exp.public_access)
+
+#MIKEACL: REFACTOR has_###_download_access() into generic
+def has_dataset_sensitive_access(request, dataset_id):
+
+    if Dataset.safe.owned_and_shared(request.user, viewsensitive=True) \
+                      .filter(id=dataset_id) \
+                      .exists():
+
+        return True
+    return False
+
+#MIKEACL: REFACTOR has_###_download_access() into generic
+def has_datafile_sensitive_access(request, datafile_id):
+
+    if DataFile.safe.owned_and_shared(request.user, viewsensitive=True) \
+                      .filter(id=datafile_id) \
+                      .exists():
+
+        return True
+    return False
+
+
+
+
+
 #MIKEACL
 def has_read_or_owner_ACL(request, experiment_id):
     """

@@ -68,18 +68,18 @@ class ExperimentManager(OracleSafeManager):
         return super().get_queryset().filter(
             query).distinct()
 
-    def owned_and_shared(self, user, downloadable=False):
+    def owned_and_shared(self, user, downloadable=False, viewsensitive=False):
         return super().get_queryset().filter(
-            self._query_owned_and_shared(user, downloadable)).distinct()
+            self._query_owned_and_shared(user, downloadable, viewsensitive)).distinct()
 
     def shared(self, user):
         return super().get_queryset().filter(
             self._query_shared(user)).distinct()
 
-    def _query_owned_and_shared(self, user, downloadable=False):
-        return self._query_shared(user, downloadable) | self._query_owned(user)
+    def _query_owned_and_shared(self, user, downloadable=False, viewsensitive=False):
+        return self._query_shared(user, downloadable, viewsensitive) | self._query_owned(user)
 
-    def _query_shared(self, user, downloadable=False):
+    def _query_shared(self, user, downloadable=False, viewsensitive=False):
         '''
         get all shared experiments, not owned ones
         '''
@@ -96,6 +96,15 @@ class ExperimentManager(OracleSafeManager):
                                objectacls__entityId=str(group),
                                objectacls__content_type__model='experiment',
                                objectacls__canDownload=True) &\
+                        (Q(objectacls__effectiveDate__lte=datetime.today())
+                         | Q(objectacls__effectiveDate__isnull=True)) &\
+                        (Q(objectacls__expiryDate__gte=datetime.today())
+                         | Q(objectacls__expiryDate__isnull=True))
+                elif viewsensitive:
+                    query |= Q(objectacls__pluginId=tgp.name,
+                               objectacls__entityId=str(group),
+                               objectacls__content_type__model='experiment',
+                               objectacls__canSensitive=True) &\
                         (Q(objectacls__effectiveDate__lte=datetime.today())
                          | Q(objectacls__effectiveDate__isnull=True)) &\
                         (Q(objectacls__expiryDate__gte=datetime.today())
@@ -123,6 +132,16 @@ class ExperimentManager(OracleSafeManager):
                  | Q(objectacls__effectiveDate__isnull=True)) &\
                 (Q(objectacls__expiryDate__gte=datetime.today())
                  | Q(objectacls__expiryDate__isnull=True))
+        elif viewsensitive:
+            query = Q(objectacls__pluginId=django_user,
+                      objectacls__entityId=str(user.id),
+                      objectacls__content_type__model='experiment',
+                      objectacls__canSensitive=True,
+                      objectacls__isOwner=False) &\
+                (Q(objectacls__effectiveDate__lte=datetime.today())
+                 | Q(objectacls__effectiveDate__isnull=True)) &\
+                (Q(objectacls__expiryDate__gte=datetime.today())
+                 | Q(objectacls__expiryDate__isnull=True))
         else:
             query = Q(objectacls__pluginId=django_user,
                       objectacls__entityId=str(user.id),
@@ -141,6 +160,15 @@ class ExperimentManager(OracleSafeManager):
                            objectacls__entityId=str(group),
                            objectacls__content_type__model='experiment',
                            objectacls__canDownload=True) &\
+                    (Q(objectacls__effectiveDate__lte=datetime.today())
+                     | Q(objectacls__effectiveDate__isnull=True)) &\
+                    (Q(objectacls__expiryDate__gte=datetime.today())
+                     | Q(objectacls__expiryDate__isnull=True))
+            elif viewsensitive:
+                query |= Q(objectacls__pluginId=name,
+                           objectacls__entityId=str(group),
+                           objectacls__content_type__model='experiment',
+                           objectacls__canSensitive=True) &\
                     (Q(objectacls__effectiveDate__lte=datetime.today())
                      | Q(objectacls__effectiveDate__isnull=True)) &\
                     (Q(objectacls__expiryDate__gte=datetime.today())
@@ -421,7 +449,7 @@ class DatasetManager(models.Manager):
         return query
 
     # ARE THE TOKENS EXP ONLY?
-    def _query_shared(self, user, downloadable=False):
+    def _query_shared(self, user, downloadable=False, viewsensitive=False):
         '''
         get all shared datasets, not owned ones
         '''
@@ -438,6 +466,15 @@ class DatasetManager(models.Manager):
                                objectacls__entityId=str(group),
                                objectacls__content_type__model='dataset',
                                objectacls__canDownload=True) &\
+                        (Q(objectacls__effectiveDate__lte=datetime.today())
+                         | Q(objectacls__effectiveDate__isnull=True)) &\
+                        (Q(objectacls__expiryDate__gte=datetime.today())
+                         | Q(objectacls__expiryDate__isnull=True))
+                elif viewsensitive:
+                    query |= Q(objectacls__pluginId=tgp.name,
+                               objectacls__entityId=str(group),
+                               objectacls__content_type__model='dataset',
+                               objectacls__canSensitive=True) &\
                         (Q(objectacls__effectiveDate__lte=datetime.today())
                          | Q(objectacls__effectiveDate__isnull=True)) &\
                         (Q(objectacls__expiryDate__gte=datetime.today())
@@ -465,6 +502,16 @@ class DatasetManager(models.Manager):
                  | Q(objectacls__effectiveDate__isnull=True)) &\
                 (Q(objectacls__expiryDate__gte=datetime.today())
                  | Q(objectacls__expiryDate__isnull=True))
+        elif viewsensitive:
+            query = Q(objectacls__pluginId=django_user,
+                      objectacls__entityId=str(user.id),
+                      objectacls__content_type__model='dataset',
+                      objectacls__canSensitive=True,
+                      objectacls__isOwner=False) &\
+                (Q(objectacls__effectiveDate__lte=datetime.today())
+                 | Q(objectacls__effectiveDate__isnull=True)) &\
+                (Q(objectacls__expiryDate__gte=datetime.today())
+                 | Q(objectacls__expiryDate__isnull=True))
         else:
             query = Q(objectacls__pluginId=django_user,
                       objectacls__entityId=str(user.id),
@@ -487,6 +534,15 @@ class DatasetManager(models.Manager):
                      | Q(objectacls__effectiveDate__isnull=True)) &\
                     (Q(objectacls__expiryDate__gte=datetime.today())
                      | Q(objectacls__expiryDate__isnull=True))
+            elif viewsensitive:
+                query |= Q(objectacls__pluginId=name,
+                           objectacls__entityId=str(group),
+                           objectacls__content_type__model='dataset',
+                           objectacls__canSensitive=True) &\
+                    (Q(objectacls__effectiveDate__lte=datetime.today())
+                     | Q(objectacls__effectiveDate__isnull=True)) &\
+                    (Q(objectacls__expiryDate__gte=datetime.today())
+                     | Q(objectacls__expiryDate__isnull=True))
             else:
                 query |= Q(objectacls__pluginId=name,
                            objectacls__entityId=str(group),
@@ -499,13 +555,13 @@ class DatasetManager(models.Manager):
         return query
 
 
-    def _query_owned_and_shared(self, user, downloadable=False):
-        return self._query_shared(user, downloadable) | self._query_owned(user)
+    def _query_owned_and_shared(self, user, downloadable=False, viewsensitive=False):
+        return self._query_shared(user, downloadable, viewsensitive) | self._query_owned(user)
 
 
-    def owned_and_shared(self, user, downloadable=False):
+    def owned_and_shared(self, user, downloadable=False, viewsensitive=False):
         return super().get_queryset().filter(
-            self._query_owned_and_shared(user, downloadable)).distinct()
+            self._query_owned_and_shared(user, downloadable, viewsensitive)).distinct()
 
 
     def owned(self, user):
@@ -548,7 +604,7 @@ class DatasetManager(models.Manager):
 class DatafileManager(models.Manager):
 
 
-    def all(self, user, downloadable=False):  # @ReservedAssignment
+    def all(self, user, downloadable=False, viewsensitive=False):  # @ReservedAssignment
         """
         Returns all datafiles a user - either authenticated or
         anonymous - is allowed to see and search
@@ -558,7 +614,7 @@ class DatafileManager(models.Manager):
         :rtype: QuerySet
         """
 
-        query = self._query_owned_and_shared(user, downloadable) #self._query_all_public() |\
+        query = self._query_owned_and_shared(user, downloadable, viewsensitive) #self._query_all_public() |\
 
         return super().get_queryset().filter(
             query).distinct()
@@ -590,7 +646,7 @@ class DatafileManager(models.Manager):
         return query
 
     # ARE THE TOKENS EXP ONLY?
-    def _query_shared(self, user, downloadable=False):
+    def _query_shared(self, user, downloadable=False, viewsensitive=False):
         '''
         get all shared datafiles, not owned ones
         '''
@@ -607,6 +663,15 @@ class DatafileManager(models.Manager):
                                objectacls__entityId=str(group),
                                objectacls__content_type__model='datafile',
                                objectacls__canDownload=True) &\
+                        (Q(objectacls__effectiveDate__lte=datetime.today())
+                         | Q(objectacls__effectiveDate__isnull=True)) &\
+                        (Q(objectacls__expiryDate__gte=datetime.today())
+                         | Q(objectacls__expiryDate__isnull=True))
+                elif viewsensitive:
+                    query |= Q(objectacls__pluginId=tgp.name,
+                               objectacls__entityId=str(group),
+                               objectacls__content_type__model='datafile',
+                               objectacls__canSensitive=True) &\
                         (Q(objectacls__effectiveDate__lte=datetime.today())
                          | Q(objectacls__effectiveDate__isnull=True)) &\
                         (Q(objectacls__expiryDate__gte=datetime.today())
@@ -634,6 +699,16 @@ class DatafileManager(models.Manager):
                  | Q(objectacls__effectiveDate__isnull=True)) &\
                 (Q(objectacls__expiryDate__gte=datetime.today())
                  | Q(objectacls__expiryDate__isnull=True))
+        elif viewsensitive:
+            query = Q(objectacls__pluginId=django_user,
+                      objectacls__entityId=str(user.id),
+                      objectacls__content_type__model='datafile',
+                      objectacls__canSensitive=True,
+                      objectacls__isOwner=False) &\
+                (Q(objectacls__effectiveDate__lte=datetime.today())
+                 | Q(objectacls__effectiveDate__isnull=True)) &\
+                (Q(objectacls__expiryDate__gte=datetime.today())
+                 | Q(objectacls__expiryDate__isnull=True))
         else:
             query = Q(objectacls__pluginId=django_user,
                       objectacls__entityId=str(user.id),
@@ -656,6 +731,15 @@ class DatafileManager(models.Manager):
                      | Q(objectacls__effectiveDate__isnull=True)) &\
                     (Q(objectacls__expiryDate__gte=datetime.today())
                      | Q(objectacls__expiryDate__isnull=True))
+            elif viewsensitive:
+                query |= Q(objectacls__pluginId=name,
+                           objectacls__entityId=str(group),
+                           objectacls__content_type__model='datafile',
+                           objectacls__canSensitive=True) &\
+                    (Q(objectacls__effectiveDate__lte=datetime.today())
+                     | Q(objectacls__effectiveDate__isnull=True)) &\
+                    (Q(objectacls__expiryDate__gte=datetime.today())
+                     | Q(objectacls__expiryDate__isnull=True))
             else:
                 query |= Q(objectacls__pluginId=name,
                            objectacls__entityId=str(group),
@@ -668,13 +752,13 @@ class DatafileManager(models.Manager):
         return query
 
 
-    def _query_owned_and_shared(self, user, downloadable=False):
-        return self._query_shared(user, downloadable) | self._query_owned(user)
+    def _query_owned_and_shared(self, user, downloadable=False, viewsensitive=False):
+        return self._query_shared(user, downloadable, viewsensitive) | self._query_owned(user)
 
 
-    def owned_and_shared(self, user, downloadable=False):
+    def owned_and_shared(self, user, downloadable=False, viewsensitive=False):
         return super().get_queryset().filter(
-            self._query_owned_and_shared(user, downloadable)).distinct()
+            self._query_owned_and_shared(user, downloadable, viewsensitive)).distinct()
 
 
     def owned(self, user):
