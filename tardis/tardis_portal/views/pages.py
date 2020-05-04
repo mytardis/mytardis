@@ -793,6 +793,7 @@ def create_experiment(request,
                             canDownload=True,
                             canWrite=True,
                             canDelete=True,
+                            canSensitive=True,
                             isOwner=True,
                             aclOwnershipType=ObjectACL.OWNER_OWNED)
             acl.save()
@@ -843,6 +844,7 @@ def create_project(request):
                             canDownload=True,
                             canWrite=True,
                             canDelete=True,
+                            canSensitive=True,
                             isOwner=True,
                             aclOwnershipType=ObjectACL.OWNER_OWNED)
             acl.save()
@@ -954,6 +956,7 @@ def add_dataset(request, experiment_id):
                             canDownload=True,
                             canWrite=True,
                             canDelete=True,
+                            canSensitive=True,
                             isOwner=True,
                             aclOwnershipType=ObjectACL.OWNER_OWNED)
             acl.save()

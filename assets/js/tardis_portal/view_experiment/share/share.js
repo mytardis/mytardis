@@ -123,6 +123,7 @@ const userSharingModalLoaded = function() {
         var canDownload = false;
         var canWrite = false;
         var isOwner = false;
+        var canSensitive = false;
         var canDelete = false;
         if (permissions === "read") {
             canRead = true;
@@ -141,12 +142,14 @@ const userSharingModalLoaded = function() {
             canDownload = true;
             canWrite = true;
             isOwner = true;
+            canSensitive = true;
             canDelete = true;
         }
 
         permissions = "/?authMethod=" + authMethod + "&canRead=" + canRead +
                       "&canDownload=" + canDownload +"&canWrite=" + canWrite +
-                      "&canDelete=" + canDelete + "&isOwner=" + isOwner;
+                      "&canDelete=" + canDelete + "&canSensitive=" + canSensitive +
+                      "&isOwner=" + isOwner;
         var action = "/experiment/control_panel/" + $("#experiment-id").val() +
             "/access_list/add/user/" + username + permissions;
 
@@ -317,6 +320,7 @@ const groupSharingModalLoaded = function() {
         var canDownload = false;
         var canWrite = false;
         var isOwner = false;
+        var canSensitive = false;
         var canDelete = false;
         if(permissions === "read") {
             canRead = true;
@@ -335,12 +339,13 @@ const groupSharingModalLoaded = function() {
             canDownload = true;
             canWrite = true;
             isOwner = true;
+            canSensitive = true;
             canDelete = true;
         }
 
         permissions = "/?canRead=" + canRead + "&canDownload=" + canDownload +
-                      "&canWrite=" + canWrite +"&canDelete=" + canDelete +
-                      "&isOwner=" + isOwner;
+                      "&canWrite=" + canWrite + "&canDelete=" + canDelete +
+                      "&canSensitive=" + canSensitive + "&isOwner=" + isOwner;
         action = action + permissions;
 
         $.ajax({

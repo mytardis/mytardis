@@ -185,7 +185,7 @@ class ObjectACLAdmin(admin.ModelAdmin):
     search_fields = ['content_type', 'object_id']
     list_display = [
         '__str__', 'pluginId', 'entityId', 'canRead',
-        'canDownload', 'canWrite', 'canDelete', 'isOwner'
+        'canDownload', 'canWrite', 'canDelete', 'canSensitive', 'isOwner'
     ]
 
 
