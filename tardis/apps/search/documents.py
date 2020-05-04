@@ -42,7 +42,7 @@ class ExperimentDocument(Document):
     start_time = fields.DateField()
     end_time = fields.DateField()
     update_time = fields.DateField()
-    institution_name = fields.StringField()
+    #institution_name = fields.StringField()
     created_by = fields.ObjectField(properties={
         'username': fields.StringField(
             fields={'raw': fields.KeywordField()},
