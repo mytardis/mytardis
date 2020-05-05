@@ -208,6 +208,9 @@ class FacilityAdmin(admin.ModelAdmin):
 class InstrumentAdmin(admin.ModelAdmin):
     search_fields = ['name']
 
+#class InstitutionAdmin(admin.ModelAdmin):
+#    search_fields
+
 
 admin.site.register(models.Facility, FacilityAdmin)
 admin.site.register(models.Instrument, InstrumentAdmin)
@@ -226,6 +229,9 @@ admin.site.register(models.UserProfile)
 admin.site.register(models.ExperimentParameter)
 admin.site.register(models.DatafileParameterSet)
 admin.site.register(models.DatasetParameterSet)
+admin.site.register(models.Project)
+admin.site.register(models.Institution)
+admin.site.register(models.ProjectParameterSet)
 admin.site.register(models.InstrumentParameterSet, InstrumentParameterSetAdmin)
 admin.site.register(models.Token)
 admin.site.register(models.ExperimentParameterSet, ExperimentParameterSetAdmin)
