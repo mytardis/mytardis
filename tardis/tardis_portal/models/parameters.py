@@ -70,9 +70,9 @@ class Schema(models.Model):
                                 max_length=255)
     name = models.CharField(blank=True, null=True, max_length=50)
     # WHY 'type', a reserved word? Someone please refactor and migrate db
-    type = models.IntegerField(  # @ReservedAssignment
-        choices=_SCHEMA_TYPES, default=EXPERIMENT)
-
+    schema_type = models.IntegerField(  # @ReservedAssignment
+        choices=_SCHEMA_TYPES,
+        default=EXPERIMENT)
     # subtype will be used for categorising the type of experiment, dataset
     # or datafile schemas. for example, the type of beamlines are usually used
     # further categorise the experiment, dataset, and datafile schemas. the
@@ -100,7 +100,6 @@ class Schema(models.Model):
 
         def __init__(self, msg):
             Exception.__init__(self, msg)
-
 
 @python_2_unicode_compatible
 class ParameterName(models.Model):
@@ -153,7 +152,7 @@ class ParameterName(models.Model):
     immutable = models.BooleanField(default=False)
     comparison_type = models.IntegerField(
         choices=__COMPARISON_CHOICES, default=EXACT_VALUE_COMPARISON)
-    is_searchable = models.BooleanField(default=False)
+    # is_searchable = models.BooleanField(default=False)
     # TODO: we'll need to rethink the way choices for drop down menus are
     #       represented in the DB. doing it this way is just a bit wasteful.
     choices = models.CharField(max_length=500, blank=True)
@@ -231,6 +230,9 @@ def _get_filename_parameter_as_image_element(parameter):
             viewname = 'tardis.tardis_portal.views.load_dataset_image'
         elif parset == 'ExperimentParameterSet':
             viewname = 'tardis.tardis_portal.views.load_experiment_image'
+        #TODO update project view to display images as and when required
+        #elif parset == 'ProjectParametrSet':
+        #    viewname = 'tardis.tardis_portal.views.load_project_image'
         if viewname is not None:
             value = "<a href='%s' target='_blank'>" \
                     "<img style='width: 300px;' src='%s' /></a>" % \
@@ -239,7 +241,6 @@ def _get_filename_parameter_as_image_element(parameter):
                   reverse(viewname=viewname,
                           args=[parameter.id]))
             return mark_safe(value)
-
     return None
 
 
@@ -285,7 +286,6 @@ def _get_parameter(parameter):
         return json.loads(parameter.string_value)
 
     return None
-
 
 @python_2_unicode_compatible
 class ParameterSet(models.Model, ParameterSetManagerMixin):
@@ -483,12 +483,27 @@ class DatafileParameter(Parameter):
         'DatafileParameterSet', on_delete=models.CASCADE)
     parameter_type = 'Datafile'
 
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        try:
+            from .hooks import publish_public_expt_rifcs
+            publish_public_expt_rifcs(self.parameterset.experiment)
+        except Exception:
+            logger.exception('')
+
 
 class DatasetParameter(Parameter):
     parameterset = models.ForeignKey(
         'DatasetParameterSet', on_delete=models.CASCADE)
     parameter_type = 'Dataset'
 
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        try:
+            from .hooks import publish_public_expt_rifcs
+            publish_public_expt_rifcs(self.parameterset.experiment)
+        except Exception:
+            logger.exception('')
 
 class ExperimentParameter(Parameter):
     parameterset = models.ForeignKey(
@@ -508,12 +523,18 @@ class ProjectParameter(Parameter):
         'ProjectParameterSet', on_delete=models.CASCADE)
     parameter_type = 'Project'
 
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        try:
+            from .hooks import publish_public_expt_rifcs
+            publish_public_expt_rifcs(self.parameterset.experiment)
+        except Exception:
+            logger.exception('')
 
 class InstrumentParameter(Parameter):
     parameterset = models.ForeignKey(
         'InstrumentParameterSet', on_delete=models.CASCADE)
     parameter_type = 'Instrument'
-
 
 class DatafileParameterSet(ParameterSet):
     datafile = models.ForeignKey(DataFile, on_delete=models.CASCADE)
@@ -522,7 +543,6 @@ class DatafileParameterSet(ParameterSet):
     def _get_label(self):
         return ('datafile.filename', 'Datafile')
 
-
 class DatasetParameterSet(ParameterSet):
     dataset = models.ForeignKey(Dataset, on_delete=models.CASCADE)
     parameter_class = DatasetParameter
@@ -530,14 +550,12 @@ class DatasetParameterSet(ParameterSet):
     def _get_label(self):
         return ('dataset.description', 'Dataset')
 
-
 class InstrumentParameterSet(ParameterSet):
     instrument = models.ForeignKey(Instrument, on_delete=models.CASCADE)
     parameter_class = InstrumentParameter
 
     def _get_label(self):
         return ('instrument.name', 'Instrument')
-
 
 class ExperimentParameterSet(ParameterSet):
     experiment = models.ForeignKey(Experiment, on_delete=models.CASCADE)
@@ -552,7 +570,6 @@ class ProjectParameterSet(ParameterSet):
 
     def _get_label(self):
         return('project.project_name', 'Project')
-
 
 @python_2_unicode_compatible
 class FreeTextSearchField(models.Model):

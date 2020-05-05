@@ -72,7 +72,7 @@ class Experiment(models.Model):
     #institution_name = models.CharField(max_length=400,
     #                                    default=settings.DEFAULT_INSTITUTION)
     description = models.TextField(blank=True)
-    internal_id = models.CharField(max_length=400, null=False, blank=False, unique=True, default=experiment_internal_id_default )
+    raid = models.CharField(max_length=400, null=False, blank=False, unique=True, default=experiment_internal_id_default)
     project_id = models.CharField(max_length=400, null=False, blank=False)
     project_model = models.ForeignKey(Project, on_delete=models.CASCADE, null=True)
     start_time = models.DateTimeField(null=True, blank=True)
@@ -92,7 +92,6 @@ class Experiment(models.Model):
     objectacls = GenericRelation(ObjectACL)
     objects = OracleSafeManager()
     safe = ExperimentManager()  # The acl-aware specific manager.
-    sensitive = models.BooleanField(default=False)
     embargo_until = models.DateTimeField(null=True, blank=True)
 
     class Meta:
@@ -313,8 +312,10 @@ class ExperimentAuthor(models.Model):
 
     experiment = models.ForeignKey(Experiment, on_delete=models.CASCADE)
     author = models.CharField(max_length=255)
-    institution = models.CharField(max_length=255,
-                                   blank=True, null=True)
+    institution = models.ForeignKey(Institution,
+                                    blank=True,
+                                    null=True,
+                                    on_delete=models.CASCADE)
     email = models.CharField(max_length=255,
                              blank=True, null=True)
     order = models.PositiveIntegerField()

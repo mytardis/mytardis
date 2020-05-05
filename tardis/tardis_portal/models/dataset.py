@@ -247,48 +247,12 @@ class Dataset(models.Model):
                                         canRead=True)
         return [acl.get_related_object() for acl in acls]
 
-
-    def _has_view_perm(self, user_obj):
-        '''
-        Called from the ACLAwareBackend class's has_perm method
-        in tardis/tardis_portal/auth/authorisation.py
-
-        Returning None means we won't override permissions here,
-        i.e. we'll leave it to ACLAwareBackend's has_perm method
-        to determine permissions from ObjectACLs
-        '''
-        if not hasattr(self, 'id'):
-            return False
-
-        return None
-
-    def _has_change_perm(self, user_obj):
-        '''
-        Called from the ACLAwareBackend class's has_perm method
-        in tardis/tardis_portal/auth/authorisation.py
-
-        Returning None means we won't override permissions here,
-        i.e. we'll leave it to ACLAwareBackend's has_perm method
-        to determine permissions from ObjectACLs
-        '''
-        if not hasattr(self, 'id'):
-            return False
-
-        return None
-
-    def _has_delete_perm(self, user_obj):
-        '''
-        Called from the ACLAwareBackend class's has_perm method
-        in tardis/tardis_portal/auth/authorisation.py
-
-        Returning None means we won't override permissions here,
-        i.e. we'll leave it to ACLAwareBackend's has_perm method
-        to determine permissions from ObjectACLs
-        '''
-        if not hasattr(self, 'id'):
-            return False
-
-        return None
+    def get_admins(self):
+        acls = ObjectACL.objects.filter(pluginId='django_group',
+                                        content_type=self.get_ct(),
+                                        object_id=self.id,
+                                        isOwner=True)
+        return [acl.get_related_object() for acl in acls]
 
     def get_dir_tuples(self, user, basedir=""):
         """
