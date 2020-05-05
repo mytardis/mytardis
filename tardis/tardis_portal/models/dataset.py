@@ -53,10 +53,10 @@ class Dataset(models.Model):
         app_label = 'tardis_portal'
         ordering = ['-id']
 
-    def save(self, force_insert=False, force_update=False, using=None,
-             update_fields=None):
+    # pylint: disable=W0222
+    def save(self, *args, **kwargs):
         self.modified_time = timezone.now()
-        super().save()
+        super().save(*args, **kwargs)
 
     @property
     def is_online(self):

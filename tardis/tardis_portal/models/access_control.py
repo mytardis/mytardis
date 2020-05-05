@@ -122,6 +122,7 @@ class UserAuthentication(models.Model):
     def __str__(self):
         return self.username + ' - ' + self.getAuthMethodDescription()
 
+    # pylint: disable=W0222
     def save(self, *args, **kwargs):
         # check if social auth is enabled
         if 'tardis.apps.social_auth' not in settings.INSTALLED_APPS:

@@ -303,6 +303,7 @@ class ParameterSet(models.Model, ParameterSetManagerMixin):
         if self.pk is not None:  # we have a ParameterSet that's manageable
             self._init_parameterset_accessors()
 
+    # pylint: disable=W0222
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
         self._init_parameterset_accessors()
@@ -480,6 +481,7 @@ class ExperimentParameter(Parameter):
         'ExperimentParameterSet', on_delete=models.CASCADE)
     parameter_type = 'Experiment'
 
+    # pylint: disable=W0222
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
         try:
