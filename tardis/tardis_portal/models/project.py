@@ -13,7 +13,7 @@ from django.utils.encoding import python_2_unicode_compatible
 
 from .institution import Institution
 # from ..models import DataManagementPlan # Hook in place for future proofing
-from ..managers import OracleSafeManager#, ExperimentManager
+from ..managers import OracleSafeManager, SafeManager
 from .access_control import ObjectACL
 
 from .license import License
@@ -48,14 +48,11 @@ class Project(models.Model):
         models.PositiveSmallIntegerField(choices=PUBLIC_ACCESS_CHOICES,
                                          null=False,
                                          default=PUBLIC_ACCESS_NONE)
-    #TODO Remove null=True on rebuild database
+    #TODO No project should have the ingestion service account as the lead_researcher
     lead_researcher = models.ForeignKey(User,
-                                        null=True,
-                                        blank=True,
                                         on_delete=models.CASCADE)
     objectacls = GenericRelation(ObjectACL)
     objects = OracleSafeManager()
-    sensitive = models.BooleanField(default=False)
     embargo_until = models.DateTimeField(null=True, blank=True)
     start_date = models.DateTimeField(default=datetime.utcnow())
     end_date = models.DateTimeField(null=True, blank=True)
@@ -63,6 +60,8 @@ class Project(models.Model):
                           null=True, blank=True)
     institution = models.ManyToManyField(Institution,
                                          related_name='institutions')
+    safe = SafeManager('project')
+    #TODO Integrate DMPs into the project.
     #data_management_plan = models.ManyToManyField(DataManagementPlan,
     #                                              null=True, blank=True)  
 
@@ -129,7 +128,6 @@ class Project(models.Model):
         # May be redundant - left in for the short term
         if self.public_access >= self.PUBLIC_ACCESS_METADATA:
             return True
-
         return None
 
     def _has_change_perm(self, user_obj):
@@ -143,10 +141,8 @@ class Project(models.Model):
         '''
         if not hasattr(self, 'id'):
             return False
-
         if self.locked:
             return False
-
         return None
 
     def _has_delete_perm(self, user_obj):
@@ -160,5 +156,4 @@ class Project(models.Model):
         '''
         if not hasattr(self, 'id'):
             return False
-
         return None
