@@ -277,6 +277,8 @@ class DatasetView(TemplateView):
                      schema__hidden=True),
              'has_download_permissions': authz.has_dataset_download_access(
                  request, dataset_id),
+             'has_sensitive_permissions': authz.has_dataset_sensitive_access(
+                 request, dataset_id),
              'has_write_permissions': authz.has_dataset_write(request,
                                                               dataset_id),
              'from_instrument': instrument_name,
@@ -793,6 +795,7 @@ def create_experiment(request,
                             canDownload=True,
                             canWrite=True,
                             canDelete=True,
+                            canSensitive=True,
                             isOwner=True,
                             aclOwnershipType=ObjectACL.OWNER_OWNED)
             acl.save()
@@ -843,6 +846,7 @@ def create_project(request):
                             canDownload=True,
                             canWrite=True,
                             canDelete=True,
+                            canSensitive=True,
                             isOwner=True,
                             aclOwnershipType=ObjectACL.OWNER_OWNED)
             acl.save()
@@ -954,6 +958,7 @@ def add_dataset(request, experiment_id):
                             canDownload=True,
                             canWrite=True,
                             canDelete=True,
+                            canSensitive=True,
                             isOwner=True,
                             aclOwnershipType=ObjectACL.OWNER_OWNED)
             acl.save()

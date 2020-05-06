@@ -75,6 +75,7 @@ def upload(request, dataset_id):
                             canDownload=True,
                             canWrite=True,
                             canDelete=True,
+                            canSensitive=True,
                             isOwner=True,
                             aclOwnershipType=ObjectACL.OWNER_OWNED)
             acl.save()

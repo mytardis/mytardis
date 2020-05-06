@@ -191,7 +191,9 @@ class AddUserPermissionsForm(forms.Form):
     delete = forms.BooleanField(label='', required=False,
                                 widget=forms.HiddenInput)
     delete.widget.attrs['class'] = 'canDelete'
-
+    sensitive = forms.BooleanField(label='Sensitive', required=False,
+                                widget=forms.HiddenInput)
+    sensitive.widget.attrs['class'] = 'canSensitive'
 
 class ManageGroupPermissionsForm(forms.Form):
 
@@ -286,7 +288,7 @@ class ProjectForm(forms.ModelForm):
             'sensitive',
             'embargo_until',
             ]
-        
+
 class ExperimentAuthor(forms.ModelForm):
 
     class Meta:

@@ -342,6 +342,7 @@ def add_experiment_access_user(request, experiment_id, username):
     canDownload = False
     canWrite = False
     canDelete = False
+    canSensitive = False
     isOwner = False
 
     if 'canRead' in request.GET:
@@ -359,6 +360,10 @@ def add_experiment_access_user(request, experiment_id, username):
     if 'canDelete' in request.GET:
         if request.GET['canDelete'] == 'true':
             canDelete = True
+
+    if 'canSensitive' in request.GET:
+        if request.GET['canSensitive'] == 'true':
+            canSensitive = True
 
     if 'isOwner' in request.GET:
         if request.GET['isOwner'] == 'true':
@@ -395,6 +400,7 @@ def add_experiment_access_user(request, experiment_id, username):
                         canDownload=canDownload,
                         canWrite=canWrite,
                         canDelete=canDelete,
+                        canSensitive=canSensitive,
                         isOwner=isOwner,
                         aclOwnershipType=ObjectACL.OWNER_OWNED)
 
@@ -539,6 +545,7 @@ def add_experiment_access_group(request, experiment_id, groupname):
     canDownload = request.GET.get('canDownload') == 'true'
     canWrite = request.GET.get('canWrite') == 'true'
     canDelete = request.GET.get('canDelete') == 'true'
+    canSensitive = request.GET.get('canSensitive') == 'true'
     isOwner = request.GET.get('isOwner') == 'true'
 
     try:
@@ -575,6 +582,7 @@ def add_experiment_access_group(request, experiment_id, groupname):
                     canDownload=canDownload,
                     canWrite=canWrite,
                     canDelete=canDelete,
+                    canSensitive=canSensitive,
                     isOwner=isOwner,
                     aclOwnershipType=ObjectACL.OWNER_OWNED)
     acl.save()
