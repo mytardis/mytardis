@@ -316,9 +316,8 @@ class ExperimentForm(forms.ModelForm):
         model = models.Experiment
         fields = ('title',
                   'description',
-                  'internal_id',
+                  'raid',
                   'project_id',
-                  'sensitive',
                   'embargo_until',)
 
     class FullExperiment(UserDict):

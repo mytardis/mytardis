@@ -98,8 +98,6 @@ class Experiment(models.Model):
     class Meta:
         app_label = 'tardis_portal'
 
-    def is_sensitive(self):
-        return self.is_sensitive
 
     def is_embargoed(self):
         if self.embargo_until:
