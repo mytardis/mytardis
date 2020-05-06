@@ -285,7 +285,6 @@ class ProjectForm(forms.ModelForm):
             'raid',
             'description',
             'lead_researcher',
-            'sensitive',
             'embargo_until',
             ]
 
