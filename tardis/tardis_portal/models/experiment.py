@@ -14,6 +14,7 @@ from django.utils.encoding import python_2_unicode_compatible
 from ..managers import OracleSafeManager, ExperimentManager
 from .access_control import ObjectACL
 from .project import Project
+from .institution import Institution
 
 from .license import License
 
