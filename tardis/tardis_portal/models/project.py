@@ -10,7 +10,7 @@ from django.urls import reverse
 from django.db import models
 from django.utils.safestring import SafeText
 from django.utils.encoding import python_2_unicode_compatible
-
+from django.utils.timezone import now as django_time_now
 from .institution import Institution
 # from ..models import DataManagementPlan # Hook in place for future proofing
 from ..managers import OracleSafeManager#, SafeManager
@@ -54,7 +54,7 @@ class Project(models.Model):
     objectacls = GenericRelation(ObjectACL)
     objects = OracleSafeManager()
     embargo_until = models.DateTimeField(null=True, blank=True)
-    start_date = models.DateTimeField(default=datetime.utcnow())
+    start_date = models.DateTimeField(default=django_time_now)
     end_date = models.DateTimeField(null=True, blank=True)
     url = models.URLField(max_length=255,
                           null=True, blank=True)
