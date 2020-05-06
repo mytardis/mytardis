@@ -8,9 +8,16 @@ logger = logging.getLogger(__name__)
 class Institution(models.Model):
     """An institution is a research institution such as a university."""
 
-    name = models.CharField(max_length=255, null=False, blank=False, default='The University of Auckland')
-    ror = models.CharField(max_length=100, null=True, blank=True, default='https://ror.org/03b94tp07')
-    manager_group = models.ForeignKey(Group, on_delete=models.CASCADE)
+    name = models.CharField(max_length=255,
+                            null=False,
+                            blank=False,
+                            default='The University of Auckland')
+    ror = models.CharField(max_length=100,
+                           null=True,
+                           blank=True,
+                           default='https://ror.org/03b94tp07')
+    manager_group = models.ForeignKey(Group,
+                                      on_delete=models.CASCADE)
     url = models.URLField(max_length=255,
                           null=True, blank=True,
                           default='https://auckland.ac.nz')
