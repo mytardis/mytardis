@@ -13,7 +13,7 @@ from django.utils.encoding import python_2_unicode_compatible
 
 from .institution import Institution
 # from ..models import DataManagementPlan # Hook in place for future proofing
-from ..managers import OracleSafeManager, SafeManager
+from ..managers import OracleSafeManager#, SafeManager
 from .access_control import ObjectACL
 
 from .license import License
@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 @python_2_unicode_compatible
 class Project(models.Model):
     """A project is a collection of :class: '~tardis.tardis_portal.experiment.Experiment'
-    records. A project can have multiple Experiments but an experiment has only one 
+    records. A project can have multiple Experiments but an experiment has only one
     Project.
     Inputs:
     =================================
@@ -60,10 +60,10 @@ class Project(models.Model):
                           null=True, blank=True)
     institution = models.ManyToManyField(Institution,
                                          related_name='institutions')
-    safe = SafeManager('project')
+    #safe = SafeManager('project')
     #TODO Integrate DMPs into the project.
     #data_management_plan = models.ManyToManyField(DataManagementPlan,
-    #                                              null=True, blank=True)  
+    #                                              null=True, blank=True)
 
     class Meta:
         app_label = 'tardis_portal'
