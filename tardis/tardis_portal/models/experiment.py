@@ -129,7 +129,7 @@ class Experiment(models.Model):
         """
         from .parameters import Schema
         return self.experimentparameterset_set.filter(
-            schema__type=Schema.EXPERIMENT)
+            schema__schema_type=Schema.EXPERIMENT)
 
     def getParametersforIndexing(self):
         """Returns the experiment parameters associated with this

@@ -214,7 +214,7 @@ class DataFile(models.Model):
         """
         from .parameters import Schema
         return self.datafileparameterset_set.filter(
-            schema__type=Schema.DATAFILE)
+            schema__schema_type=Schema.DATAFILE)
 
     def __str__(self):
         if self.sha512sum is not None and len(self.sha512sum) > 31:
