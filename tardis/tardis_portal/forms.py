@@ -191,7 +191,9 @@ class AddUserPermissionsForm(forms.Form):
     delete = forms.BooleanField(label='', required=False,
                                 widget=forms.HiddenInput)
     delete.widget.attrs['class'] = 'canDelete'
-
+    sensitive = forms.BooleanField(label='Sensitive', required=False,
+                                widget=forms.HiddenInput)
+    sensitive.widget.attrs['class'] = 'canSensitive'
 
 class ManageGroupPermissionsForm(forms.Form):
 
@@ -268,7 +270,6 @@ class DatasetForm(forms.ModelForm):
             'dataset_id',
             'directory',
             'instrument',
-            'sensitive',
             'embargo_until',
         ]
 
@@ -283,10 +284,9 @@ class ProjectForm(forms.ModelForm):
             'raid',
             'description',
             'lead_researcher',
-            'sensitive',
             'embargo_until',
             ]
-        
+
 class ExperimentAuthor(forms.ModelForm):
 
     class Meta:
@@ -315,9 +315,8 @@ class ExperimentForm(forms.ModelForm):
         model = models.Experiment
         fields = ('title',
                   'description',
-                  'internal_id',
+                  'raid',
                   'project_id',
-                  'sensitive',
                   'embargo_until',)
 
     class FullExperiment(UserDict):

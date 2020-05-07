@@ -21,3 +21,12 @@ def is_datafile_writable(datafile_id, request):
     has_write_permissions = authz.has_datafile_write(request, datafile_id)
 
     return has_write_permissions
+
+@register.simple_tag
+def view_sensitive_datafile(datafile_id, request):
+    """
+    Determines if sensitive Datafile metadata visible by User, respecting ACLs
+    """
+    has_sensitive_permissions = authz.has_datafile_sensitive_access(request, datafile_id)
+
+    return has_sensitive_permissions

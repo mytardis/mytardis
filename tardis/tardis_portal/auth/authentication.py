@@ -258,6 +258,7 @@ def merge_auth_method(request):
                 acl.canRead = acl.canRead or experimentACL.canRead
                 acl.canDownload = acl.canDownload or experimentACL.canDownload
                 acl.canWrite = acl.canWrite or experimentACL.canWrite
+                acl.canSensitive = acl.canSensitive or exper.canSensitive
                 acl.canDelete = acl.canDelete or acl.canDelete
                 acl.save()
                 experimentACL.delete()

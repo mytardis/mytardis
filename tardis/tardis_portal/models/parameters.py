@@ -483,27 +483,12 @@ class DatafileParameter(Parameter):
         'DatafileParameterSet', on_delete=models.CASCADE)
     parameter_type = 'Datafile'
 
-    def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)
-        try:
-            from .hooks import publish_public_expt_rifcs
-            publish_public_expt_rifcs(self.parameterset.experiment)
-        except Exception:
-            logger.exception('')
-
 
 class DatasetParameter(Parameter):
     parameterset = models.ForeignKey(
         'DatasetParameterSet', on_delete=models.CASCADE)
     parameter_type = 'Dataset'
 
-    def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)
-        try:
-            from .hooks import publish_public_expt_rifcs
-            publish_public_expt_rifcs(self.parameterset.experiment)
-        except Exception:
-            logger.exception('')
 
 class ExperimentParameter(Parameter):
     parameterset = models.ForeignKey(
@@ -523,13 +508,6 @@ class ProjectParameter(Parameter):
         'ProjectParameterSet', on_delete=models.CASCADE)
     parameter_type = 'Project'
 
-    def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)
-        try:
-            from .hooks import publish_public_expt_rifcs
-            publish_public_expt_rifcs(self.parameterset.experiment)
-        except Exception:
-            logger.exception('')
 
 class InstrumentParameter(Parameter):
     parameterset = models.ForeignKey(

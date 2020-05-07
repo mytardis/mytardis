@@ -132,7 +132,7 @@ def experiment_dataset_transfer(request, experiment_id):
 def retrieve_dataset_metadata(request, dataset_id):
     dataset = Dataset.objects.get(pk=dataset_id)
     has_write_permissions = authz.has_dataset_write(request, dataset_id)
-    has_download_permissions = authz.has_dataset_download_access(request, dataset_id)
+    has_sensitive_permissions = authz.has_dataset_sensitive_access(request, dataset_id)
 
     parametersets = dataset.datasetparameterset_set.exclude(
         schema__hidden=True)
@@ -140,7 +140,7 @@ def retrieve_dataset_metadata(request, dataset_id):
     c = {'dataset': dataset,
          'parametersets': parametersets,
          'has_write_permissions': has_write_permissions,
-         'has_download_permissions': has_download_permissions}
+         'has_sensitive_permissions': has_sensitive_permissions}
     return render_response_index(
         request, 'tardis_portal/ajax/dataset_metadata.html', c)
 
@@ -151,8 +151,8 @@ def retrieve_experiment_metadata(request, experiment_id):
     experiment = Experiment.objects.get(pk=experiment_id)
     has_write_permissions = \
         authz.has_write_permissions(request, experiment_id)
-    has_download_permissions = \
-        authz.has_experiment_download_access(request, experiment_id)
+    has_sensitive_permissions = \
+        authz.has_experiment_sensitive_access(request, experiment_id)
 
     parametersets = experiment.experimentparameterset_set\
                               .exclude(schema__hidden=True)
@@ -160,7 +160,7 @@ def retrieve_experiment_metadata(request, experiment_id):
     c = {'experiment': experiment,
          'parametersets': parametersets,
          'has_write_permissions': has_write_permissions,
-         'has_download_permissions': has_download_permissions}
+         'has_sensitive_permissions': has_sensitive_permissions}
     return render_response_index(
         request, 'tardis_portal/ajax/experiment_metadata.html', c)
 

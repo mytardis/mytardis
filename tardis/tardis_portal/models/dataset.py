@@ -56,7 +56,6 @@ class Dataset(models.Model):
     immutable = models.BooleanField(default=False)
     instrument = models.ForeignKey(Instrument, null=True, blank=True,
                                    on_delete=models.CASCADE)
-    sensitive = models.BooleanField(default=False)
     embargo_until = models.DateTimeField(null=True, blank=True)
     objectacls = GenericRelation(ObjectACL)
     objects = OracleSafeManager()
@@ -72,9 +71,6 @@ class Dataset(models.Model):
              update_fields=None):
         self.modified_time = timezone.now()
         super().save()
-
-    def is_sensitive(self):
-        return self.sensitive
 
     def is_embargoed(self):
         if self.embargo_until:
