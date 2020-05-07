@@ -14,6 +14,7 @@ from django.utils.encoding import python_2_unicode_compatible
 from ..managers import OracleSafeManager, ExperimentManager
 from .access_control import ObjectACL
 from .project import Project
+from .institution import Institution
 
 from .license import License
 
@@ -73,7 +74,6 @@ class Experiment(models.Model):
     #                                    default=settings.DEFAULT_INSTITUTION)
     description = models.TextField(blank=True)
     raid = models.CharField(max_length=400, null=False, blank=False, unique=True, default=experiment_internal_id_default)
-    project_id = models.CharField(max_length=400, null=False, blank=False)
     project_model = models.ForeignKey(Project, on_delete=models.CASCADE, null=True)
     start_time = models.DateTimeField(null=True, blank=True)
     end_time = models.DateTimeField(null=True, blank=True)
@@ -96,9 +96,6 @@ class Experiment(models.Model):
 
     class Meta:
         app_label = 'tardis_portal'
-
-    def is_sensitive(self):
-        return self.is_sensitive
 
     def is_embargoed(self):
         if self.embargo_until:

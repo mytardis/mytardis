@@ -54,13 +54,13 @@ class Project(models.Model):
     objectacls = GenericRelation(ObjectACL)
     objects = OracleSafeManager()
     embargo_until = models.DateTimeField(null=True, blank=True)
-    start_date = models.DateTimeField(default=datetime.utcnow())
+    start_date = models.DateTimeField(default=datetime.now)
     end_date = models.DateTimeField(null=True, blank=True)
     url = models.URLField(max_length=255,
                           null=True, blank=True)
     institution = models.ManyToManyField(Institution,
                                          related_name='institutions')
-    safe = SafeManager('project')
+    #safe = SafeManager('project')
     #TODO Integrate DMPs into the project.
     #data_management_plan = models.ManyToManyField(DataManagementPlan,
     #                                              null=True, blank=True)  
@@ -73,9 +73,6 @@ class Project(models.Model):
 
     def __str__(self):
         return self.name
-
-    def is_sensitive(self):
-        return self.is_sensitive
 
     def is_embargoed(self):
         if self.embargo_until:

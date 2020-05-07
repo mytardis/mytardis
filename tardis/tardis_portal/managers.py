@@ -951,7 +951,7 @@ class SafeManager(models.Manager):
             query |= self._query_owned_by_group(group)
         return super().get_queryset().filter(query).distinct()
 
-    def get(self, user, self.content_type, content_id):
+    def get(self, user, content_id):
         """
         Returns a dataset under the consideration of the ACL rules
         Raises PermissionDenied if the user does not have access.

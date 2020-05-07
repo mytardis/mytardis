@@ -52,6 +52,13 @@ class ExperimentParameterInline(admin.TabularInline):
 class ExperimentParameterSetAdmin(admin.ModelAdmin):
     inlines = [ExperimentParameterInline]
 
+class ProjectParameterInline(admin.TabularInline):
+    model = models.ProjectParameter
+    extra = 0
+
+class ProjectParameterSetAdmin(admin.ModelAdmin):
+    inlines = [ProjectParameterInline]
+
 
 class InstrumentParameterInline(admin.TabularInline):
     model = models.InstrumentParameter
@@ -229,9 +236,8 @@ admin.site.register(models.UserProfile)
 admin.site.register(models.ExperimentParameter)
 admin.site.register(models.DatafileParameterSet)
 admin.site.register(models.DatasetParameterSet)
-admin.site.register(models.Project)
 admin.site.register(models.Institution)
-admin.site.register(models.ProjectParameterSet)
+admin.site.register(models.ProjectParameterSet, ProjectParameterSetAdmin)
 admin.site.register(models.InstrumentParameterSet, InstrumentParameterSetAdmin)
 admin.site.register(models.Token)
 admin.site.register(models.ExperimentParameterSet, ExperimentParameterSetAdmin)

@@ -270,7 +270,6 @@ class DatasetForm(forms.ModelForm):
             'dataset_id',
             'directory',
             'instrument',
-            'sensitive',
             'embargo_until',
         ]
 
@@ -285,7 +284,6 @@ class ProjectForm(forms.ModelForm):
             'raid',
             'description',
             'lead_researcher',
-            'sensitive',
             'embargo_until',
             ]
 
@@ -317,9 +315,7 @@ class ExperimentForm(forms.ModelForm):
         model = models.Experiment
         fields = ('title',
                   'description',
-                  'internal_id',
-                  'project_id',
-                  'sensitive',
+                  'raid',
                   'embargo_until',)
 
     class FullExperiment(UserDict):
