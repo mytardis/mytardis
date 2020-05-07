@@ -97,6 +97,7 @@ class Experiment(models.Model):
     class Meta:
         app_label = 'tardis_portal'
 
+
     def is_embargoed(self):
         if self.embargo_until:
             if datetime.now() < self.embargo_until:
