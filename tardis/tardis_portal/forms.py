@@ -284,7 +284,54 @@ class ProjectForm(forms.ModelForm):
             'raid',
             'description',
             'lead_researcher',
+            'url',
+            'institution',
             'embargo_until',
+            'start_date',
+            'end_date',
+            ]
+
+class InstitutionForm(forms.ModelForm):
+
+    name = forms.CharField()
+
+    class Meta:
+        model = models.Institution
+        fields = [
+            'name',
+            'ror',
+            'manager_group',
+            'url',
+            ]
+
+class InstrumentForm(forms.ModelForm):
+
+    name = forms.CharField()
+
+    class Meta:
+        model = models.Instrument
+        fields = [
+            'name',
+            'instrument_id',
+            'created_time',
+            'modified_time',
+            'facility',
+            'description',
+            ]
+
+class FacilityForm(forms.ModelForm):
+
+    name = forms.CharField()
+
+    class Meta:
+        model = models.Facility
+        fields = [
+            'name',
+            'created_time',
+            'modified_time',
+            'url',
+            'manager_group',
+            'institution',
             ]
 
 class ExperimentAuthor(forms.ModelForm):
@@ -316,8 +363,11 @@ class ExperimentForm(forms.ModelForm):
         fields = ('title',
                   'description',
                   'raid',
-                  'project_id',
-                  'embargo_until',)
+                  'project_model',
+                  'embargo_until',
+                  'url',
+                  'start_time',
+                  'end_time',)
 
     class FullExperiment(UserDict):
         """
