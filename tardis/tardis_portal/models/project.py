@@ -74,9 +74,6 @@ class Project(models.Model):
     def __str__(self):
         return self.name
 
-    def is_sensitive(self):
-        return self.is_sensitive
-
     def is_embargoed(self):
         if self.embargo_until:
             if datetime.now() < self.embargo_until:

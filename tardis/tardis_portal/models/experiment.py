@@ -74,7 +74,6 @@ class Experiment(models.Model):
     #                                    default=settings.DEFAULT_INSTITUTION)
     description = models.TextField(blank=True)
     raid = models.CharField(max_length=400, null=False, blank=False, unique=True, default=experiment_internal_id_default)
-    project_id = models.CharField(max_length=400, null=False, blank=False)
     project_model = models.ForeignKey(Project, on_delete=models.CASCADE, null=True)
     start_time = models.DateTimeField(null=True, blank=True)
     end_time = models.DateTimeField(null=True, blank=True)

@@ -64,6 +64,6 @@ from .license import License
 from .parameters import (
     DatafileParameter, DatafileParameterSet, DatasetParameter,
     DatasetParameterSet, ExperimentParameter, ExperimentParameterSet,
-    InstrumentParameter, InstrumentParameterSet, ProjectParameterSet,
-    ProjectParameter, FreeTextSearchField, ParameterName, Schema)
+    InstrumentParameter, InstrumentParameterSet, FreeTextSearchField,
+    ParameterName, Schema, ProjectParameter, ProjectParameterSet)
 from .token import Token

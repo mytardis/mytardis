@@ -52,6 +52,13 @@ class ExperimentParameterInline(admin.TabularInline):
 class ExperimentParameterSetAdmin(admin.ModelAdmin):
     inlines = [ExperimentParameterInline]
 
+class ProjectParameterInline(admin.TabularInline):
+    model = models.ProjectParameter
+    extra = 0
+
+class ProjectParameterSetAdmin(admin.ModelAdmin):
+    inlines = [ProjectParameterInline]
+
 
 class InstrumentParameterInline(admin.TabularInline):
     model = models.InstrumentParameter

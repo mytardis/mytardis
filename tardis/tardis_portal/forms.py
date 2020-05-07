@@ -270,7 +270,6 @@ class DatasetForm(forms.ModelForm):
             'dataset_id',
             'directory',
             'instrument',
-            'sensitive',
             'embargo_until',
         ]
 
