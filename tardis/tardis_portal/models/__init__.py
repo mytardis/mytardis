@@ -65,5 +65,5 @@ from .parameters import (
     DatafileParameter, DatafileParameterSet, DatasetParameter,
     DatasetParameterSet, ExperimentParameter, ExperimentParameterSet,
     InstrumentParameter, InstrumentParameterSet, FreeTextSearchField,
-    ParameterName, Schema)
+    ParameterName, Schema, ProjectParameter, ProjectParameterSet)
 from .token import Token
