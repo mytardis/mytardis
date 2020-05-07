@@ -35,7 +35,7 @@ class Instrument(models.Model):
         '''
         from .parameters import Schema
         return self.instrumentparameterset_set.filter(
-            schema__type=Schema.INSTRUMENT)
+            schema__schema_type=Schema.INSTRUMENT)
 
     def _has_change_perm(self, user_obj):
         """
