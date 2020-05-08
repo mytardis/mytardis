@@ -19,7 +19,7 @@ class SchemaResourceTest(MyTardisResourceTestCase):
         super().setUp()
         self.test_schema = Schema.objects.create(
 	    namespace="http://schema.namespace",
-	    type=Schema.DATAFILE)
+	    schema_type=Schema.DATAFILE)
 
     def tearDown(self):
         self.test_schema.delete()
