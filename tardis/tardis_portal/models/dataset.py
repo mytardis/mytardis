@@ -47,6 +47,18 @@ class Dataset(models.Model):
     :attribute immutable: Whether this dataset is read-only
     """
 
+    PUBLIC_ACCESS_NONE = 1
+    PUBLIC_ACCESS_EMBARGO = 25
+    PUBLIC_ACCESS_METADATA = 50
+    PUBLIC_ACCESS_FULL = 100
+
+    PUBLIC_ACCESS_CHOICES = (
+        (PUBLIC_ACCESS_NONE, 'No public access (hidden)'),
+        (PUBLIC_ACCESS_EMBARGO, 'Ready to be released pending embargo expiry'),
+        (PUBLIC_ACCESS_METADATA, 'Public Metadata only (no data file access)'),
+        (PUBLIC_ACCESS_FULL, 'Public'),
+    )
+
     experiments = models.ManyToManyField(Experiment, related_name='datasets')
     description = models.TextField(blank=True)
     dataset_id = models.CharField(max_length=400, null=False, blank=False, unique=True, default=dataset_id_default )
@@ -61,7 +73,10 @@ class Dataset(models.Model):
     objects = OracleSafeManager()
     safe = DatasetManager()  # The acl-aware specific manager.
     tags = TaggableManager(blank=True)
-
+    public_access = \
+        models.PositiveSmallIntegerField(choices=PUBLIC_ACCESS_CHOICES,
+                                         null=False,
+                                         default=PUBLIC_ACCESS_NONE)
 
     class Meta:
         app_label = 'tardis_portal'
