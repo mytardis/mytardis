@@ -16,7 +16,7 @@ class DatafileSaveMetadataTestCase(TestCase):
         self.schema = Schema.objects.create(
             name="DataFile Schema 1",
             namespace="http://schema.namespace/datafile/1",
-            type=Schema.DATAFILE)
+            schema_type=Schema.DATAFILE)
         self.param1_name = ParameterName.objects.create(
             schema=self.schema,
             name='param1_name',
