@@ -789,6 +789,9 @@ class SchemaManager(models.Manager):
     def get_by_natural_key(self, namespace):
         return self.get(namespace=namespace)
 
+class ProjectManager(models.Manager):
+    pass
+
 #TODO: Write project/dataset/datafile managers to handle ACLs
 
 
