@@ -69,8 +69,7 @@ class Schema(models.Model):
     namespace = models.URLField(unique=True,
                                 max_length=255)
     name = models.CharField(blank=True, null=True, max_length=50)
-    # WHY 'type', a reserved word? Someone please refactor and migrate db
-    schema_type = models.IntegerField(  # @ReservedAssignment
+    schema_type = models.IntegerField(
         choices=_SCHEMA_TYPES,
         default=EXPERIMENT)
     # subtype will be used for categorising the type of experiment, dataset
@@ -92,7 +91,7 @@ class Schema(models.Model):
         return dict(self._SCHEMA_TYPES)[typeNum]
 
     def __str__(self):
-        return self._getSchemaTypeName(self.type) + (
+        return self._getSchemaTypeName(self.schema_type) + (
             self.subtype and ' for ' + self.subtype.upper() or ''
         ) + ': ' + self.namespace
 

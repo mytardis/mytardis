@@ -112,7 +112,7 @@ class Dataset(models.Model):
         """
         from .parameters import Schema
         return self.datasetparameterset_set.filter(
-            schema__type=Schema.DATASET)
+            schema__schema_type=Schema.DATASET)
 
     def getParametersforIndexing(self):
         """Returns the dataset parameters associated with this
