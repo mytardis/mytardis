@@ -614,6 +614,9 @@ def create_parameterset_edit_form(parameterset, request=None):
 
     for dfp in psm.parameters:
 
+        if dfp.sensitive_metadata:
+            continue
+
         x = 1
         form_id = dfp.name.name + "__" + str(x)
 
