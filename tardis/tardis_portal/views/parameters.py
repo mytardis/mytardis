@@ -21,7 +21,9 @@ logger = logging.getLogger(__name__)
 def edit_experiment_par(request, parameterset_id):
     parameterset = ExperimentParameterSet.objects.get(id=parameterset_id)
     if authz.has_write_permissions(request, parameterset.experiment.id):
-        return edit_parameters(request, parameterset, otype="experiment")
+        view_sensitive = authz.has_experiment_sensitive_access(request, parameterset.experiment.id)
+        return edit_parameters(request, parameterset, otype="experiment",
+                               view_sensitive=view_sensitive)
     return return_response_error(request)
 
 
@@ -29,7 +31,9 @@ def edit_experiment_par(request, parameterset_id):
 def edit_dataset_par(request, parameterset_id):
     parameterset = DatasetParameterSet.objects.get(id=parameterset_id)
     if authz.has_dataset_write(request, parameterset.dataset.id):
-        return edit_parameters(request, parameterset, otype="dataset")
+        view_sensitive = authz.has_dataset_sensitive_access(request, parameterset.dataset.id)
+        return edit_parameters(request, parameterset, otype="dataset",
+                               view_sensitive=view_sensitive)
     return return_response_error(request)
 
 
@@ -37,11 +41,13 @@ def edit_dataset_par(request, parameterset_id):
 def edit_datafile_par(request, parameterset_id):
     parameterset = DatafileParameterSet.objects.get(id=parameterset_id)
     if authz.has_datafile_write(request, parameterset.datafile.id):
-        return edit_parameters(request, parameterset, otype="datafile")
+        view_sensitive = authz.has_datafile_sensitive_access(request, parameterset.datafile.id)
+        return edit_parameters(request, parameterset, otype="datafile",
+                               view_sensitive=view_sensitive)
     return return_response_error(request)
 
 
-def edit_parameters(request, parameterset, otype):
+def edit_parameters(request, parameterset, otype, view_sensitive=False):
 
     parameternames = ParameterName.objects.filter(
         schema__namespace=parameterset.schema.namespace)
@@ -72,14 +78,15 @@ def edit_parameters(request, parameterset, otype):
 
         form = DynamicForm()
 
-    c = {
-        'schema': parameterset.schema,
+    c = {'parameterset': parameterset,
+        #'schema': parameterset.schema,
         'form': form,
-        'parameternames': parameternames,
+        #'parameternames': parameternames,
         'type': otype,
         'success': success,
-        'parameterset_id': parameterset.id,
+        #'parameterset_id': parameterset.id,
         'valid': valid,
+        'can_view_sensitive': view_sensitive,
     }
 
     return render_response_index(
