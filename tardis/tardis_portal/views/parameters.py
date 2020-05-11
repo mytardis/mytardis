@@ -58,7 +58,7 @@ def edit_parameters(request, parameterset, otype, view_sensitive=False):
         request = remove_csrf_token(request)
 
         class DynamicForm(create_parameterset_edit_form(
-                parameterset, request=request)):
+                parameterset, request, post=True)):
             pass
 
         form = DynamicForm(request.POST)
@@ -73,7 +73,7 @@ def edit_parameters(request, parameterset, otype, view_sensitive=False):
     else:
 
         class DynamicForm(create_parameterset_edit_form(
-                parameterset)):
+                parameterset, request, view_sensitive=view_sensitive)):
             pass
 
         form = DynamicForm()

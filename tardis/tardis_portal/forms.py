@@ -569,12 +569,12 @@ class StaticField(forms.Field):
         return
 
 
-def create_parameterset_edit_form(parameterset, request=None):
+def create_parameterset_edit_form(parameterset, request, post=False, view_sensitive=False):
 
     from .models import ParameterName
 
     # if POST data to save
-    if request:
+    if post:
         fields = OrderedDict()
 
         for key, value in sorted(request.POST.items()):
@@ -614,7 +614,7 @@ def create_parameterset_edit_form(parameterset, request=None):
 
     for dfp in psm.parameters:
 
-        if dfp.sensitive_metadata:
+        if dfp.sensitive_metadata or not view_sensitive:
             continue
 
         x = 1
