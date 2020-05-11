@@ -668,10 +668,10 @@ def save_parameter_edit_form(parameterset, request):
     for key, value in sorted(request.POST.items()):
             stripped_key = key.replace('_s47_', '/')
             stripped_key = stripped_key.rpartition('__')[0]
-        if value:
-            psm.set_param(stripped_key, value)
-        else:
-            psm.get_param(stripped_key).delete()
+            if value:
+                psm.set_param(stripped_key, value)
+            else:
+                psm.get_param(stripped_key).delete()
 
     psm = ParameterSetManager(parameterset=parameterset)
     if not psm.parameters.exists():
