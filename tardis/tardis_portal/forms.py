@@ -618,7 +618,7 @@ def create_parameterset_edit_form(parameterset, request, post=False, view_sensit
             if view_sensitive:
                 pass
             else:
-            continue
+                continue
 
         x = 1
         form_id = dfp.name.name + "__" + str(x)
