@@ -614,7 +614,10 @@ def create_parameterset_edit_form(parameterset, request, post=False, view_sensit
 
     for dfp in psm.parameters:
 
-        if dfp.sensitive_metadata or not view_sensitive:
+        if dfp.sensitive_metadata:
+            if view_sensitive:
+                pass
+            else:
             continue
 
         x = 1
