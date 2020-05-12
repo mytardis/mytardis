@@ -51,6 +51,9 @@ def edit_parameters(request, parameterset, otype, view_sensitive=False):
 
     parameternames = ParameterName.objects.filter(
         schema__namespace=parameterset.schema.namespace)
+    for parameter in parameterset:
+        parameternames.exclude(name=parameter.name.name)
+
     success = False
     valid = True
 
@@ -78,15 +81,15 @@ def edit_parameters(request, parameterset, otype, view_sensitive=False):
 
         form = DynamicForm()
 
-    c = {'parameterset': parameterset,
-        #'schema': parameterset.schema,
+    c = {
+        'schema': parameterset.schema,
         'form': form,
-        #'parameternames': parameternames,
+        'parameternames': parameternames,
         'type': otype,
         'success': success,
-        #'parameterset_id': parameterset.id,
+        'parameterset_id': parameterset.id,
         'valid': valid,
-        'can_view_sensitive': view_sensitive,
+        #'can_view_sensitive': view_sensitive,
     }
 
     return render_response_index(

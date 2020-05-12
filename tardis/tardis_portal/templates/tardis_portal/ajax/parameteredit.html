@@ -6,8 +6,8 @@
   Parameters saved successfully.
 
 {% else %}
-  <p><strong>Schema: </strong>{{parameterset.schema.name}}</p>
-  <form id="edit_metadata_form" action='/ajax/edit_{{type}}_parameters/{{parameterset.id}}/' method='post'>{% csrf_token %}
+  <p><strong>Schema: </strong>{{schema.name}}</p>
+  <form id="edit_metadata_form" action='/ajax/edit_{{type}}_parameters/{{parameterset_id}}/' method='post'>{% csrf_token %}
     {{ form.non_field_errors }}
       {% for field in form %}
         <div class="form-group">
@@ -20,12 +20,11 @@
 
     <div class="form-group row">
       <select id="parameternameselect" class="form-control form-control-sm ml-3 col-md-6">
-        {% for parameter in parameterset.parameters %}
-          {% if not parameter.sensitive_metadata or can_view_sensitive %}
-            {% if not parameter.name.immutable %}
-              <option value="{{parameter.name.name|parametername_form}}"
-                      {% if parameter.name.isLongString %} data-longstring="true" {% endif %}>
-                {{parameter.name.full_name}} {% if parameter.name.units %}({{parameter.name.units}}){% endif %}
+        {% for pn in parameternames %}
+            {% if not pn.immutable %}
+              <option value="{{pn.name|parametername_form}}"
+                      {% if pn.isLongString %} data-longstring="true" {% endif %}>
+                {{pn.full_name}} {% if pn.units %}({{pn.units}}){% endif %}
               </option>
             {% endif %}
           {% endif %}
