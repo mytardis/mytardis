@@ -439,7 +439,9 @@ class ProjectView(TemplateView):
         try:
             #if not authz.has_dataset_access(request, dataset_id):
             #    return return_response_error(request)
-            project = Project.objects.get(id=project_id)
+            project = Project.safe.get(id=project_id)
+        except PermissionDenied:
+            return return_response_error(request)
         except Project.DoesNotExist:
             return return_response_not_found(request)
 
