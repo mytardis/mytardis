@@ -324,13 +324,6 @@ class DatasetView(TemplateView):
             return return_response_error(request)
 
         try:
-            if not authz.has_dataset_access(request, dataset_id):
-                return return_response_error(request)
-            dataset = Dataset.objects.get(id=dataset_id)
-        except Dataset.DoesNotExist:
-            return return_response_not_found(request)
-
-        try:
             dataset = Dataset.safe.get(request.user, dataset_id)
         except PermissionDenied:
             return return_response_error(request)
