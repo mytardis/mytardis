@@ -51,7 +51,7 @@ def edit_parameters(request, parameterset, otype, view_sensitive=False):
 
     parameternames = ParameterName.objects.filter(
         schema__namespace=parameterset.schema.namespace)
-    for parameter in parameterset:
+    for parameter in parameterset.parameters:
         parameternames.exclude(name=parameter.name.name)
 
     success = False
