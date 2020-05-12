@@ -21,12 +21,11 @@
     <div class="form-group row">
       <select id="parameternameselect" class="form-control form-control-sm ml-3 col-md-6">
         {% for pn in parameternames %}
-            {% if not pn.immutable %}
-              <option value="{{pn.name|parametername_form}}"
-                      {% if pn.isLongString %} data-longstring="true" {% endif %}>
-                {{pn.full_name}} {% if pn.units %}({{pn.units}}){% endif %}
-              </option>
-            {% endif %}
+          {% if not pn.immutable %}
+            <option value="{{pn.name|parametername_form}}"
+                    {% if pn.isLongString %} data-longstring="true" {% endif %}>
+              {{pn.full_name}} {% if pn.units %}({{pn.units}}){% endif %}
+            </option>
           {% endif %}
         {% endfor %}
       </select>
