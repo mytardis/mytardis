@@ -52,9 +52,14 @@ class ExperimentParameterInline(admin.TabularInline):
 class ExperimentParameterSetAdmin(admin.ModelAdmin):
     inlines = [ExperimentParameterInline]
 
+
 class ProjectParameterInline(admin.TabularInline):
     model = models.ProjectParameter
     extra = 0
+    formfield_overrides = {
+        django.db.models.TextField: {'widget': TextInput},
+    }
+
 
 class ProjectParameterSetAdmin(admin.ModelAdmin):
     inlines = [ProjectParameterInline]
@@ -63,10 +68,37 @@ class ProjectParameterSetAdmin(admin.ModelAdmin):
 class InstrumentParameterInline(admin.TabularInline):
     model = models.InstrumentParameter
     extra = 0
+    formfield_overrides = {
+        django.db.models.TextField: {'widget': TextInput},
+    }
 
 
 class InstrumentParameterSetAdmin(admin.ModelAdmin):
     inlines = [InstrumentParameterInline]
+
+
+class DatasetParameterInline(admin.TabularInline):
+    model = models.DatasetParameter
+    extra = 0
+    formfield_overrides = {
+        django.db.models.TextField: {'widget': TextInput},
+    }
+
+
+class DatasetParameterSetAdmin(admin.ModelAdmin):
+    inlines = [DatasetParameterInline]
+
+
+class DatafileParameterInline(admin.TabularInline):
+    model = models.DatafileParameter
+    extra = 0
+    formfield_overrides = {
+        django.db.models.TextField: {'widget': TextInput},
+    }
+
+
+class DatafileParameterSetAdmin(admin.ModelAdmin):
+    inlines = [DatafileParameterInline]
 
 
 class ObjectACLInline(GenericTabularInline):
@@ -234,8 +266,8 @@ admin.site.register(models.InstrumentParameter)
 admin.site.register(models.ExperimentAuthor)
 admin.site.register(models.UserProfile)
 admin.site.register(models.ExperimentParameter)
-admin.site.register(models.DatafileParameterSet)
-admin.site.register(models.DatasetParameterSet)
+admin.site.register(models.DatafileParameterSet, DatafileParameterSetAdmin)
+admin.site.register(models.DatasetParameterSet, DatasetParameterSetAdmin)
 admin.site.register(models.Institution)
 admin.site.register(models.ProjectParameterSet)
 admin.site.register(models.ProjectParameter)
