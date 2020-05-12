@@ -790,7 +790,6 @@ class SchemaManager(models.Manager):
         return self.get(namespace=namespace)
 
 
-
 class ProjectManager(models.Manager):
 
 
