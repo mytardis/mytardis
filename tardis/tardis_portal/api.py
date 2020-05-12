@@ -47,6 +47,9 @@ from .auth.decorators import (
     has_dataset_access,
     has_dataset_write,
     has_delete_permissions,
+    has_project_access,
+    has_project_write,
+    has_experiment_access,
     has_experiment_access,
     has_write_permissions)
 from .auth.localdb_auth import django_user
@@ -63,6 +66,8 @@ from .models.parameters import (
     ExperimentParameter,
     ExperimentParameterSet,
     ParameterName,
+    ProjectParameter,
+    ProjectParameterSet,
     Schema)
 from .models.storage import StorageBox, StorageBoxOption, StorageBoxAttribute
 from .models.facility import Facility, facilities_managed_by
@@ -149,6 +154,10 @@ class ACLAuthorization(Authorization):
         if bundle.request.user.is_authenticated and \
            bundle.request.user.is_superuser:
             return object_list
+        # Experiments - this should be refactored but not sure how at the mo
+        # perhaps with a class->dict key->decorator function
+        #
+        # CHRIS - added for Project and refactored Dataset to account for new ACLs
         if isinstance(bundle.obj, Experiment):
             experiments = Experiment.safe.all(bundle.request.user)
             return experiments.filter(id__in=obj_ids)
@@ -166,17 +175,33 @@ class ACLAuthorization(Authorization):
                 parameterset__experiment__in=experiments,
                 id__in=obj_ids
             )
+        if isinstance(bundle.obj, Project):
+            projects = Project.safe.all(bundle.request.user)
+            return projects.filter(id__in=obj_ids)
+        if isinstance(bundle.obj, ProjectParameterSet):
+            projects = Project.safe.all(bundle.request.user)
+            return ProjectParameterSet.objects.filter(
+                project__in=projects, id__in=obj_ids)
+        if isinstance(bundle.obj, ProjectParameter):
+            projects = Project.safe.all(bundle.request.user)
+            return ProjectParameter.objects.filter(
+                parameterset__project__in=projects,
+                id__in=obj_ids
+            )
         if isinstance(bundle.obj, Dataset):
-            dataset_ids = [ds.id for ds in object_list
-                           if has_dataset_access(bundle.request, ds.id)]
-            return Dataset.objects.filter(id__in=dataset_ids)
+            datasets = Dataset.safe.all(bundle.request.user)
+            return datasets.filter(id__in=obj_ids)
         if isinstance(bundle.obj, DatasetParameterSet):
-            return [dps for dps in object_list
-                    if has_dataset_access(bundle.request, dps.dataset.id)]
+            datasets = Dataset.safe.all(bundle.request.user)
+            return DatasetParameterSet.objects.filter(
+                dataset__in=datasets, id__in=obj_ids)
         if isinstance(bundle.obj, DatasetParameter):
-            return [dp for dp in object_list
-                    if has_dataset_access(bundle.request,
-                                          dp.parameterset.dataset.id)]
+            projects = Dataset.safe.all(bundle.request.user)
+            return DatasetParameter.objects.filter(
+                parameterset__dataset__in=datasets,
+                id__in=obj_ids
+            )
+        #########################################
         if isinstance(bundle.obj, DataFile):
             all_files = get_accessible_datafiles_for_user(bundle.request)
             return all_files.filter(id__in=obj_ids)
@@ -213,6 +238,12 @@ class ACLAuthorization(Authorization):
             if facilities_managed_by(bundle.request.user).count() > 0:
                 return object_list
             return bundle.request.user.groups.filter(id__in=obj_ids)
+        # CHRIS - added for Institution model
+        # All shoould be public for authenticated users
+        if isinstance(bundle.obj, Institution):
+            if bundle.request.user.is_authenticated:
+                return object_list
+        ##############################
         if isinstance(bundle.obj, Facility):
             facilities = facilities_managed_by(bundle.request.user)
             return [facility for facility in object_list
@@ -251,6 +282,16 @@ class ACLAuthorization(Authorization):
         if isinstance(bundle.obj, ExperimentParameter):
             return has_experiment_access(
                 bundle.request, bundle.obj.parameterset.experiment.id)
+        #CHRIS - Added for Project
+        if isinstance(bundle.obj, Project):
+            return has_project_access(bundle.request, bundle.obj.id)
+        if isinstance(bundle.obj, ProjectParameterSet):
+            return has_project_access(
+                bundle.request, bundle.obj.project.id)
+        if isinstance(bundle.obj, ProjectParameter):
+            return has_project_access(
+                bundle.request, bundle.obj.parameterset.project.id)
+        ###############################
         if isinstance(bundle.obj, Dataset):
             return has_dataset_access(bundle.request, bundle.obj.id)
         if isinstance(bundle.obj, DatasetParameterSet):
@@ -286,6 +327,10 @@ class ACLAuthorization(Authorization):
             return bundle.request.user.is_authenticated
         if isinstance(bundle.obj, Group):
             return bundle.obj in bundle.request.user.groups.all()
+        #CHRIS - Added for institutions
+        if isinstance(bundle.obj, Institution):
+            return bundle.request.user.is_authenticated
+        ##########################
         if isinstance(bundle.obj, Facility):
             return bundle.obj in facilities_managed_by(bundle.request.user)
         if isinstance(bundle.obj, Instrument):
@@ -324,6 +369,30 @@ class ACLAuthorization(Authorization):
                 'tardis_portal.change_experiment') and \
                 has_write_permissions(bundle.request,
                                       bundle.obj.parameterset.experiment.id)
+        #CHRIS - add stuff for Project Model
+        if isinstance(bundle.obj, Experiment):
+            return bundle.request.user.has_perm('tardis_portal.add_experiment')
+        if isinstance(bundle.obj, ExperimentAuthor):
+            return bundle.request.user.has_perm('tardis_portal.add_experiment')
+        if isinstance(bundle.obj, ExperimentParameterSet):
+            if not bundle.request.user.has_perm(
+                    'tardis_portal.change_experiment'):
+                return False
+            experiment_uri = bundle.data.get('experiment', None)
+            if experiment_uri is not None:
+                experiment = ExperimentResource.get_via_uri(
+                    ExperimentResource(), experiment_uri, bundle.request)
+                return has_write_permissions(bundle.request, experiment.id)
+            if getattr(bundle.obj.experiment, 'id', False):
+                return has_write_permissions(bundle.request,
+                                             bundle.obj.experiment.id)
+            return False
+        if isinstance(bundle.obj, ExperimentParameter):
+            return bundle.request.user.has_perm(
+                'tardis_portal.change_experiment') and \
+                has_write_permissions(bundle.request,
+                                      bundle.obj.parameterset.experiment.id)
+        ####################################
         if isinstance(bundle.obj, Dataset):
             if not bundle.request.user.has_perm(
                     'tardis_portal.change_dataset'):
@@ -358,6 +427,7 @@ class ACLAuthorization(Authorization):
                 'tardis_portal.change_dataset') and \
                 has_dataset_write(bundle.request,
                                   bundle.obj.parameterset.dataset.id)
+        
         if isinstance(bundle.obj, DataFile):
             dataset = DatasetResource.get_via_uri(DatasetResource(),
                                                   bundle.data['dataset'],
@@ -390,12 +460,17 @@ class ACLAuthorization(Authorization):
                 has_datafile_write(bundle.request,
                                   bundle.obj.datafile.id),
             ])
+        
         if isinstance(bundle.obj, ObjectACL):
             return bundle.request.user.has_perm('tardis_portal.add_objectacl')
         if isinstance(bundle.obj, Group):
             return bundle.request.user.has_perm('tardis_portal.add_group')
         if isinstance(bundle.obj, Facility):
             return bundle.request.user.has_perm('tardis_portal.add_facility')
+        #CHRIS - Add check for institutions
+        if isinstance(bundle.obj, Institution):
+            return bundle.request.user.has_perm('tardis_portal.add_insitution')
+        #############3
         if isinstance(bundle.obj, Instrument):
             facilities = facilities_managed_by(bundle.request.user)
             return all([
@@ -441,6 +516,8 @@ class ACLAuthorization(Authorization):
     def delete_list(self, object_list, bundle):
         raise Unauthorized("Sorry, no deletes.")
 
+    # CHRIS - This should probably be refactored for more fine-grained control
+    # or to push up to Project
     def delete_detail(self, object_list, bundle):
         if isinstance(bundle.obj, Experiment):
             return bundle.request.user.has_perm(
@@ -590,7 +667,7 @@ class UserProfileResource(MyTardisModelResource):
 
     def dehydrate(self, bundle):
         authuser = bundle.request.user
-        authenticated = authuser.is_authenticated
+        authenticated = authuser.is_authenticated # should this be here?
 
         if authenticated:
             return bundle
