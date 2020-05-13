@@ -76,6 +76,7 @@ from .models.parameters import (
 from .models.storage import StorageBox, StorageBoxOption, StorageBoxAttribute
 from .models.facility import Facility, facilities_managed_by
 from .models.instrument import Instrument
+from .models.institution import Institution
 
 
 class PrettyJSONSerializer(Serializer):
@@ -688,10 +689,6 @@ class UserResource(ModelResource):
             pass
         permissions = bundle.data['permissions']
         auth_method = bundle.data['auth_method']
-        # Clean up the bundle on the off chance it causes issues with
-        # obj_create
-        del(bundle.data['permissions'])
-        del(bundle.data['auth_method'])
         bundle.obj = User.objects.create_user(username, email, bundle.data['password'])
         bundle.obj.first_name = bundle.data['first_name']
         if 'last_name' in bundle.data.keys():
@@ -700,6 +697,9 @@ class UserResource(ModelResource):
             bundle.obj.user_permissions.add(Permission.objects.get(codename=permission))
         bundle.obj.save() # create the user - this should also trigger the UserProfile
         userprofile = bundle.obj.userprofile
+        if 'orcid' in bundle.data.keys():
+            userprofile.orcid = bundle.data['orcid']
+            userprofile.save()
         user_auth = UserAuthentication(userProfile = userprofile,
                                        username = username,
                                        authenticationMethod = auth_method)
@@ -800,9 +800,32 @@ class UserAuthenticationResource(MyTardisModelResource):
         return bundle
 ######################################'''
 
+# CHRIS - refactored to account for the new model
+class InstitutionResource(MyTardisModelResource):
+    manager_group = fields.ForeignKey(GroupResource, 'manager_group',
+                                      null=True, full=True)
+
+    class Meta(MyTardisModelResource.Meta):
+        object_calss = Instituition
+        queryset = Institution.objects.all()
+        filtering = {
+            'id': ('exact', ),
+            'manager_group': ALL_WITH_RELATIONS,
+            'name': ('exact', ),
+            'url': ('exact', ),
+            'ror': ('exact', ),
+        }
+        ordering = [
+            'id',
+            'name'
+        ]
+        always_return_data = True
+
 class FacilityResource(MyTardisModelResource):
     manager_group = fields.ForeignKey(GroupResource, 'manager_group',
                                       null=True, full=True)
+    instituion = fields.ForeignKey(InstitutionResource, 'institution',
+                                   null=True, full=True)
 
     class Meta(MyTardisModelResource.Meta):
         object_class = Facility
@@ -811,12 +834,15 @@ class FacilityResource(MyTardisModelResource):
             'id': ('exact', ),
             'manager_group': ALL_WITH_RELATIONS,
             'name': ('exact', ),
+            'url': ('exact', ),
+            'institution': ALL_WITH_RELATIONS,
         }
         ordering = [
             'id',
             'name'
         ]
         always_return_data = True
+###########################################
 
 class ProjectResource(ModelResource):
     class Meta:
