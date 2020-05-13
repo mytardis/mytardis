@@ -14,6 +14,7 @@ from django.conf.urls import url
 from django.contrib.auth.models import AnonymousUser
 from django.contrib.auth.models import User
 from django.contrib.auth.models import Group
+from django.contrib.auth.models import Permission
 from django.contrib.auth.hashers import make_password
 from django.db import IntegrityError, transaction
 from django.http import HttpResponse, HttpResponseForbidden, \
@@ -51,7 +52,10 @@ from .auth.decorators import (
     has_project_write,
     has_experiment_access,
     has_experiment_access,
-    has_write_permissions)
+    has_experiment_write,
+    has_experiment_sensitive_access,
+    has_project_sensitive_access,
+    has_dataset_sensitive_access)
 from .auth.localdb_auth import django_user
 from .models.access_control import ObjectACL, UserProfile, UserAuthentication
 from .models.datafile import DataFile, DataFileObject, compute_checksums
@@ -234,6 +238,24 @@ class ACLAuthorization(Authorization):
                     (user == bundle.request.user or
                      user.experiment_set.filter(public_access__gt=1)
                      .count() > 0)]
+        # CHRIS - added for UserProfile and UserAuthentication
+        if bundle.request.user.is_authenticated and \
+                isinstance(bundle.obj, UserProfile):
+            if facilities_managed_by(bundle.request.user):
+                return object_list
+            return [user for user in object_list if
+                    (user == bundle.request.user or
+                     user.experiment_set.filter(public_access__gt=1)
+                     .count() > 0)]
+        if bundle.request.user.is_authenticated and \
+                isinstance(bundle.obj, UserAuthentication):
+            if facilities_managed_by(bundle.request.user):
+                return object_list
+            return [user for user in object_list if
+                    (user == bundle.request.user or
+                     user.experiment_set.filter(public_access__gt=1)
+                     .count() > 0)]
+        ################################
         if isinstance(bundle.obj, Group):
             if facilities_managed_by(bundle.request.user).count() > 0:
                 return object_list
@@ -314,6 +336,22 @@ class ACLAuthorization(Authorization):
             public_user = bundle.obj.experiment_set.filter(
                 public_access__gt=1).count() > 0
             return public_user or authenticated
+        # CHRIS - Reproduced User for UserProfile and UserAuthentication
+        if isinstance(bundle.obj, UserProfile):
+            # allow all authenticated users to read public user info
+            # the dehydrate function also adds/removes some information
+            authenticated = bundle.request.user.is_authenticated
+            public_user = bundle.obj.experiment_set.filter(
+                public_access__gt=1).count() > 0
+            return public_user or authenticated
+        if isinstance(bundle.obj, UserAuthentication):
+            # allow all authenticated users to read public user info
+            # the dehydrate function also adds/removes some information
+            authenticated = bundle.request.user.is_authenticated
+            public_user = bundle.obj.experiment_set.filter(
+                public_access__gt=1).count() > 0
+            return public_user or authenticated
+        ##################################
         if isinstance(bundle.obj, Schema):
             return True
         if isinstance(bundle.obj, ParameterName):
@@ -356,42 +394,42 @@ class ACLAuthorization(Authorization):
                     'tardis_portal.change_experiment'):
                 return False
             experiment_uri = bundle.data.get('experiment', None)
+            #CHRIS - Refactored to change has_write_permissions to has_experiment_write
             if experiment_uri is not None:
                 experiment = ExperimentResource.get_via_uri(
                     ExperimentResource(), experiment_uri, bundle.request)
-                return has_write_permissions(bundle.request, experiment.id)
+                return has_experiment_write(bundle.request, experiment.id)
             if getattr(bundle.obj.experiment, 'id', False):
-                return has_write_permissions(bundle.request,
-                                             bundle.obj.experiment.id)
+                return has_experiment_write(bundle.request,
+                                            bundle.obj.experiment.id)
             return False
         if isinstance(bundle.obj, ExperimentParameter):
             return bundle.request.user.has_perm(
                 'tardis_portal.change_experiment') and \
-                has_write_permissions(bundle.request,
-                                      bundle.obj.parameterset.experiment.id)
+                has_experiment_write(bundle.request,
+                                     bundle.obj.parameterset.experiment.id)
+        #######################################################
         #CHRIS - add stuff for Project Model
-        if isinstance(bundle.obj, Experiment):
-            return bundle.request.user.has_perm('tardis_portal.add_experiment')
-        if isinstance(bundle.obj, ExperimentAuthor):
-            return bundle.request.user.has_perm('tardis_portal.add_experiment')
-        if isinstance(bundle.obj, ExperimentParameterSet):
+        if isinstance(bundle.obj, Project):
+            return bundle.request.user.has_perm('tardis_portal.add_project')
+        if isinstance(bundle.obj, ProjectParameterSet):
             if not bundle.request.user.has_perm(
-                    'tardis_portal.change_experiment'):
+                    'tardis_portal.change_project'):
                 return False
-            experiment_uri = bundle.data.get('experiment', None)
-            if experiment_uri is not None:
-                experiment = ExperimentResource.get_via_uri(
-                    ExperimentResource(), experiment_uri, bundle.request)
-                return has_write_permissions(bundle.request, experiment.id)
-            if getattr(bundle.obj.experiment, 'id', False):
-                return has_write_permissions(bundle.request,
-                                             bundle.obj.experiment.id)
+            project_uri = bundle.data.get('project', None)
+            if project_uri is not None:
+                project = ProjectResource.get_via_uri(
+                    ProjectResource(), project_uri, bundle.request)
+                return has_project_write(bundle.request, project.id)
+            if getattr(bundle.obj.project, 'id', False):
+                return has_project_write(bundle.request,
+                                         bundle.obj.project.id)
             return False
-        if isinstance(bundle.obj, ExperimentParameter):
+        if isinstance(bundle.obj, ProjectParameter):
             return bundle.request.user.has_perm(
-                'tardis_portal.change_experiment') and \
-                has_write_permissions(bundle.request,
-                                      bundle.obj.parameterset.experiment.id)
+                'tardis_portal.change_project') and \
+                has_project_write(bundle.request,
+                                  bundle.obj.parameterset.project.id)
         ####################################
         if isinstance(bundle.obj, Dataset):
             if not bundle.request.user.has_perm(
@@ -470,28 +508,30 @@ class ACLAuthorization(Authorization):
         #CHRIS - Add check for institutions
         if isinstance(bundle.obj, Institution):
             return bundle.request.user.has_perm('tardis_portal.add_insitution')
-        #############3
+        #############
         if isinstance(bundle.obj, Instrument):
             facilities = facilities_managed_by(bundle.request.user)
             return all([
                 bundle.request.user.has_perm('tardis_portal.add_instrument'),
                 bundle.obj.facility in facilities
 		])
+        # CHRIS - Add for User
         if isinstance(bundle.obj, User):
             return all([
                 bundle.request.user.has_perm('tardis_portal.add_userprofile'),
                 bundle.request.user.has_perm('tardis_portal.add_userauthentication')
                 ])
-        if isinstance(bundle.obj, UserProfile):
-            return all([
-                bundle.request.user.has_perm('tardis_portal.add_userprofile'),
-                bundle.request.user.has_perm('tardis_portal.add_userauthentication')
-                ])
-        if isinstance(bundle.obj, UserAuthentication):
-            return all([
-                bundle.request.user.has_perm('tardis_portal.add_userprofile'),
-                bundle.request.user.has_perm('tardis_portal.add_userauthentication')
-                ])
+        #if isinstance(bundle.obj, UserProfile):
+        #    return all([
+        #        bundle.request.user.has_perm('tardis_portal.add_userprofile'),
+        #        bundle.request.user.has_perm('tardis_portal.add_userauthentication')
+        #        ])
+        #if isinstance(bundle.obj, UserAuthentication):
+        #    return all([
+        #        bundle.request.user.has_perm('tardis_portal.add_userprofile'),
+        #        bundle.request.user.has_perm('tardis_portal.add_userauthentication')
+        #        ])
+        ################################
         raise NotImplementedError(type(bundle.obj))
 
     def update_list(self, object_list, bundle):
@@ -547,8 +587,13 @@ class UserResource(ModelResource):
         authentication = default_authentication
         authorization = ACLAuthorization()
         queryset = User.objects.all()
-        allowed_methods = ['get','post','put']
-        fields = ['username', 'first_name', 'last_name', 'email']
+        allowed_methods = ['get',
+                           'post',
+                           'put']
+        fields = ['username',
+                  'first_name',
+                  'last_name',
+                  'email']
         serializer = default_serializer
         filtering = {
             'username': ('exact', ),
@@ -601,12 +646,14 @@ class UserResource(ModelResource):
 
         return bundle
 
+    # CHRIS - open user to API - generate random password which no one knows
+    # since all authentication will be handled through LDAP
     def hydrate(self, bundle):
-        authuser = bundle.request.user
-        authenticated = authuser.is_authenticated
         required_fields = ['username',
                            'first_name',
-                           'email']
+                           'email',
+                           'permissions',
+                           'auth_method']
         for field in required_fields:
             if field not in bundle.data:
                 raise KeyError
@@ -639,9 +686,27 @@ class UserResource(ModelResource):
                         .format(missing_key=missing_key))
         except User.DoesNotExist:
             pass
-        bundle = super(UserResource, self).obj_create(bundle, **kwargs)
+        permissions = bundle.data['permissions']
+        auth_method = bundle.data['auth_method']
+        # Clean up the bundle on the off chance it causes issues with
+        # obj_create
+        del(bundle.data['permissions'])
+        del(bundle.data['auth_method'])
+        bundle.obj = User.objects.create_user(username, email, bundle.data['password'])
+        bundle.obj.first_name = bundle.data['first_name']
+        if 'last_name' in bundle.data.keys():
+            bundle.obj.last_name = bundle.data['last_name']
+        for permission in permissions:
+            bundle.obj.user_permissions.add(Permission.objects.get(codename=permission))
+        bundle.obj.save() # create the user - this should also trigger the UserProfile
+        userprofile = bundle.obj.userprofile
+        user_auth = UserAuthentication(userProfile = userprofile,
+                                       username = username,
+                                       authenticationMethod = auth_method)
+        user_auth.save()
         return bundle
-
+    ############################################################
+    
 class MyTardisModelResource(ModelResource):
 
     class Meta:
@@ -650,6 +715,9 @@ class MyTardisModelResource(ModelResource):
         serializer = default_serializer
         object_class = None
 
+'''# CHRIS - expose user profile to the API - allow addition of ORCIDs
+# Used to link user with user profile for user authentication
+# creation.
 class UserProfileResource(MyTardisModelResource):
     user = fields.OneToOneField(UserResource, 'user')
 
@@ -657,7 +725,8 @@ class UserProfileResource(MyTardisModelResource):
         authentication = default_authentication
         authorization = ACLAuthorization()
         queryset = UserProfile.objects.all()
-        fields = ['user']
+        fields = ['user',
+                  'orcid']
         serializer = default_serializer
         filtering = {
             'user': ('exact', ),
@@ -667,11 +736,24 @@ class UserProfileResource(MyTardisModelResource):
 
     def dehydrate(self, bundle):
         authuser = bundle.request.user
-        authenticated = authuser.is_authenticated # should this be here?
-
-        if authenticated:
+        authenticated = authuser.is_authenticated
+        if authenticated and \
+                (same_user or facilities_managed_by(authuser).count() > 0):
             return bundle
 
+    def hydrate(self, bundle):
+        required_fields = ['user']
+        return bundle
+
+    def obj_create(self,
+                   bundle,
+                   **kwargs):
+        bundle = super().obj_create(bundle,
+                                    **kwargs)
+        return bundle
+        
+#####################################
+# CHRIS - expose user authentication to API
 class UserAuthenticationResource(MyTardisModelResource):
     userProfile = fields.ForeignKey(UserProfileResource, attribute='userProfile',
                                     null=True, blank=True, full=True)
@@ -680,33 +762,43 @@ class UserAuthenticationResource(MyTardisModelResource):
         authentication = default_authentication
         authorization = ACLAuthorization()
         queryset = UserAuthentication.objects.all()
-        fields = ['user_id', 'userProfile', 'authenticationMethod','username']
+        fields = ['user_id',
+                  'userProfile',
+                  'authenticationMethod',
+                  'username']
         serializer = default_serializer
         filtering = {
             'user_id': ('exact', ),
         }
         always_return_data = True
 
-    def hydrate(self, bundle):
+    def dehydrate(self, bundle):
         authuser = bundle.request.user
         authenticated = authuser.is_authenticated
-        required_fields = ['user_id', 'userProfile','username']
-        '''#username = bundle.data['username']
+        if authenticated and \
+                (same_user or facilities_managed_by(authuser).count() > 0):
+            return bundle
+
+    def hydrate(self, bundle):
+        required_fields = ['user_id',
+                           'userProfile',
+                           'username']
+        #username = bundle.data['username']
         user_id = bundle.data['user_id']
         try:
             userProfile = UserProfile.objects.filter(user_id=user_id)
         except User.DoesNotExist:
             raise
-        bundle.data['userProfile'] = userProfile'''
+        bundle.data['userProfile'] = userProfile
         return bundle
 
     def obj_create(self,
                    bundle,
                    **kwargs):
-
         bundle.data['authenticationMethod'] = settings.LDAP_METHOD
-        bundle = super(UserAuthenticationResource, self).obj_create(bundle, **kwargs)
+        bundle = super().obj_create(bundle, **kwargs)
         return bundle
+######################################'''
 
 class FacilityResource(MyTardisModelResource):
     manager_group = fields.ForeignKey(GroupResource, 'manager_group',
@@ -850,6 +942,7 @@ class ExperimentResource(MyTardisModelResource):
         bundle.data['created_by'] = user
         bundle = super().obj_create(bundle, **kwargs)
         return bundle
+    
 class ExperimentAuthorResource(MyTardisModelResource):
     '''API for ExperimentAuthors
     '''
