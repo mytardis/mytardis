@@ -363,7 +363,7 @@ class ExperimentForm(forms.ModelForm):
         fields = ('title',
                   'description',
                   'raid',
-                  'project_model',
+                  'project',
                   'embargo_until',
                   'url',
                   'start_time',

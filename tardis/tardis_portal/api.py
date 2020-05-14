@@ -14,6 +14,7 @@ from django.conf.urls import url
 from django.contrib.auth.models import AnonymousUser
 from django.contrib.auth.models import User
 from django.contrib.auth.models import Group
+from django.contrib.auth.models import Permission
 from django.contrib.auth.hashers import make_password
 from django.db import IntegrityError, transaction
 from django.http import HttpResponse, HttpResponseForbidden, \
@@ -47,8 +48,14 @@ from .auth.decorators import (
     has_dataset_access,
     has_dataset_write,
     has_delete_permissions,
+    has_project_access,
+    has_project_write,
     has_experiment_access,
-    has_write_permissions)
+    has_experiment_access,
+    has_experiment_write,
+    has_experiment_sensitive_access,
+    has_project_sensitive_access,
+    has_dataset_sensitive_access)
 from .auth.localdb_auth import django_user
 from .models.access_control import ObjectACL, UserProfile, UserAuthentication
 from .models.datafile import DataFile, DataFileObject, compute_checksums
@@ -63,10 +70,13 @@ from .models.parameters import (
     ExperimentParameter,
     ExperimentParameterSet,
     ParameterName,
+    ProjectParameter,
+    ProjectParameterSet,
     Schema)
 from .models.storage import StorageBox, StorageBoxOption, StorageBoxAttribute
 from .models.facility import Facility, facilities_managed_by
 from .models.instrument import Instrument
+from .models.institution import Institution
 
 
 class PrettyJSONSerializer(Serializer):
@@ -149,6 +159,10 @@ class ACLAuthorization(Authorization):
         if bundle.request.user.is_authenticated and \
            bundle.request.user.is_superuser:
             return object_list
+        # Experiments - this should be refactored but not sure how at the mo
+        # perhaps with a class->dict key->decorator function
+        #
+        # CHRIS - added for Project and refactored Dataset to account for new ACLs
         if isinstance(bundle.obj, Experiment):
             experiments = Experiment.safe.all(bundle.request.user)
             return experiments.filter(id__in=obj_ids)
@@ -166,17 +180,33 @@ class ACLAuthorization(Authorization):
                 parameterset__experiment__in=experiments,
                 id__in=obj_ids
             )
+        if isinstance(bundle.obj, Project):
+            projects = Project.safe.all(bundle.request.user)
+            return projects.filter(id__in=obj_ids)
+        if isinstance(bundle.obj, ProjectParameterSet):
+            projects = Project.safe.all(bundle.request.user)
+            return ProjectParameterSet.objects.filter(
+                project__in=projects, id__in=obj_ids)
+        if isinstance(bundle.obj, ProjectParameter):
+            projects = Project.safe.all(bundle.request.user)
+            return ProjectParameter.objects.filter(
+                parameterset__project__in=projects,
+                id__in=obj_ids
+            )
         if isinstance(bundle.obj, Dataset):
-            dataset_ids = [ds.id for ds in object_list
-                           if has_dataset_access(bundle.request, ds.id)]
-            return Dataset.objects.filter(id__in=dataset_ids)
+            datasets = Dataset.safe.all(bundle.request.user)
+            return datasets.filter(id__in=obj_ids)
         if isinstance(bundle.obj, DatasetParameterSet):
-            return [dps for dps in object_list
-                    if has_dataset_access(bundle.request, dps.dataset.id)]
+            datasets = Dataset.safe.all(bundle.request.user)
+            return DatasetParameterSet.objects.filter(
+                dataset__in=datasets, id__in=obj_ids)
         if isinstance(bundle.obj, DatasetParameter):
-            return [dp for dp in object_list
-                    if has_dataset_access(bundle.request,
-                                          dp.parameterset.dataset.id)]
+            projects = Dataset.safe.all(bundle.request.user)
+            return DatasetParameter.objects.filter(
+                parameterset__dataset__in=datasets,
+                id__in=obj_ids
+            )
+        #########################################
         if isinstance(bundle.obj, DataFile):
             all_files = get_accessible_datafiles_for_user(bundle.request)
             return all_files.filter(id__in=obj_ids)
@@ -209,10 +239,34 @@ class ACLAuthorization(Authorization):
                     (user == bundle.request.user or
                      user.experiment_set.filter(public_access__gt=1)
                      .count() > 0)]
+        # CHRIS - added for UserProfile and UserAuthentication
+        if bundle.request.user.is_authenticated and \
+                isinstance(bundle.obj, UserProfile):
+            if facilities_managed_by(bundle.request.user):
+                return object_list
+            return [user for user in object_list if
+                    (user == bundle.request.user or
+                     user.experiment_set.filter(public_access__gt=1)
+                     .count() > 0)]
+        if bundle.request.user.is_authenticated and \
+                isinstance(bundle.obj, UserAuthentication):
+            if facilities_managed_by(bundle.request.user):
+                return object_list
+            return [user for user in object_list if
+                    (user == bundle.request.user or
+                     user.experiment_set.filter(public_access__gt=1)
+                     .count() > 0)]
+        ################################
         if isinstance(bundle.obj, Group):
             if facilities_managed_by(bundle.request.user).count() > 0:
                 return object_list
             return bundle.request.user.groups.filter(id__in=obj_ids)
+        # CHRIS - added for Institution model
+        # All shoould be public for authenticated users
+        if isinstance(bundle.obj, Institution):
+            if bundle.request.user.is_authenticated:
+                return object_list
+        ##############################
         if isinstance(bundle.obj, Facility):
             facilities = facilities_managed_by(bundle.request.user)
             return [facility for facility in object_list
@@ -251,6 +305,16 @@ class ACLAuthorization(Authorization):
         if isinstance(bundle.obj, ExperimentParameter):
             return has_experiment_access(
                 bundle.request, bundle.obj.parameterset.experiment.id)
+        #CHRIS - Added for Project
+        if isinstance(bundle.obj, Project):
+            return has_project_access(bundle.request, bundle.obj.id)
+        if isinstance(bundle.obj, ProjectParameterSet):
+            return has_project_access(
+                bundle.request, bundle.obj.project.id)
+        if isinstance(bundle.obj, ProjectParameter):
+            return has_project_access(
+                bundle.request, bundle.obj.parameterset.project.id)
+        ###############################
         if isinstance(bundle.obj, Dataset):
             return has_dataset_access(bundle.request, bundle.obj.id)
         if isinstance(bundle.obj, DatasetParameterSet):
@@ -273,6 +337,22 @@ class ACLAuthorization(Authorization):
             public_user = bundle.obj.experiment_set.filter(
                 public_access__gt=1).count() > 0
             return public_user or authenticated
+        # CHRIS - Reproduced User for UserProfile and UserAuthentication
+        if isinstance(bundle.obj, UserProfile):
+            # allow all authenticated users to read public user info
+            # the dehydrate function also adds/removes some information
+            authenticated = bundle.request.user.is_authenticated
+            public_user = bundle.obj.experiment_set.filter(
+                public_access__gt=1).count() > 0
+            return public_user or authenticated
+        if isinstance(bundle.obj, UserAuthentication):
+            # allow all authenticated users to read public user info
+            # the dehydrate function also adds/removes some information
+            authenticated = bundle.request.user.is_authenticated
+            public_user = bundle.obj.experiment_set.filter(
+                public_access__gt=1).count() > 0
+            return public_user or authenticated
+        ##################################
         if isinstance(bundle.obj, Schema):
             return True
         if isinstance(bundle.obj, ParameterName):
@@ -286,6 +366,10 @@ class ACLAuthorization(Authorization):
             return bundle.request.user.is_authenticated
         if isinstance(bundle.obj, Group):
             return bundle.obj in bundle.request.user.groups.all()
+        #CHRIS - Added for institutions
+        if isinstance(bundle.obj, Institution):
+            return bundle.request.user.is_authenticated
+        ##########################
         if isinstance(bundle.obj, Facility):
             return bundle.obj in facilities_managed_by(bundle.request.user)
         if isinstance(bundle.obj, Instrument):
@@ -311,19 +395,43 @@ class ACLAuthorization(Authorization):
                     'tardis_portal.change_experiment'):
                 return False
             experiment_uri = bundle.data.get('experiment', None)
+            #CHRIS - Refactored to change has_write_permissions to has_experiment_write
             if experiment_uri is not None:
                 experiment = ExperimentResource.get_via_uri(
                     ExperimentResource(), experiment_uri, bundle.request)
-                return has_write_permissions(bundle.request, experiment.id)
+                return has_experiment_write(bundle.request, experiment.id)
             if getattr(bundle.obj.experiment, 'id', False):
-                return has_write_permissions(bundle.request,
-                                             bundle.obj.experiment.id)
+                return has_experiment_write(bundle.request,
+                                            bundle.obj.experiment.id)
             return False
         if isinstance(bundle.obj, ExperimentParameter):
             return bundle.request.user.has_perm(
                 'tardis_portal.change_experiment') and \
-                has_write_permissions(bundle.request,
-                                      bundle.obj.parameterset.experiment.id)
+                has_experiment_write(bundle.request,
+                                     bundle.obj.parameterset.experiment.id)
+        #######################################################
+        #CHRIS - add stuff for Project Model
+        if isinstance(bundle.obj, Project):
+            return bundle.request.user.has_perm('tardis_portal.add_project')
+        if isinstance(bundle.obj, ProjectParameterSet):
+            if not bundle.request.user.has_perm(
+                    'tardis_portal.change_project'):
+                return False
+            project_uri = bundle.data.get('project', None)
+            if project_uri is not None:
+                project = ProjectResource.get_via_uri(
+                    ProjectResource(), project_uri, bundle.request)
+                return has_project_write(bundle.request, project.id)
+            if getattr(bundle.obj.project, 'id', False):
+                return has_project_write(bundle.request,
+                                         bundle.obj.project.id)
+            return False
+        if isinstance(bundle.obj, ProjectParameter):
+            return bundle.request.user.has_perm(
+                'tardis_portal.change_project') and \
+                has_project_write(bundle.request,
+                                  bundle.obj.parameterset.project.id)
+        ####################################
         if isinstance(bundle.obj, Dataset):
             if not bundle.request.user.has_perm(
                     'tardis_portal.change_dataset'):
@@ -358,6 +466,7 @@ class ACLAuthorization(Authorization):
                 'tardis_portal.change_dataset') and \
                 has_dataset_write(bundle.request,
                                   bundle.obj.parameterset.dataset.id)
+        
         if isinstance(bundle.obj, DataFile):
             dataset = DatasetResource.get_via_uri(DatasetResource(),
                                                   bundle.data['dataset'],
@@ -390,33 +499,40 @@ class ACLAuthorization(Authorization):
                 has_datafile_write(bundle.request,
                                   bundle.obj.datafile.id),
             ])
+        
         if isinstance(bundle.obj, ObjectACL):
             return bundle.request.user.has_perm('tardis_portal.add_objectacl')
         if isinstance(bundle.obj, Group):
             return bundle.request.user.has_perm('tardis_portal.add_group')
         if isinstance(bundle.obj, Facility):
             return bundle.request.user.has_perm('tardis_portal.add_facility')
+        #CHRIS - Add check for institutions
+        if isinstance(bundle.obj, Institution):
+            return bundle.request.user.has_perm('tardis_portal.add_insitution')
+        #############
         if isinstance(bundle.obj, Instrument):
             facilities = facilities_managed_by(bundle.request.user)
             return all([
                 bundle.request.user.has_perm('tardis_portal.add_instrument'),
                 bundle.obj.facility in facilities
 		])
+        # CHRIS - Add for User
         if isinstance(bundle.obj, User):
             return all([
                 bundle.request.user.has_perm('tardis_portal.add_userprofile'),
                 bundle.request.user.has_perm('tardis_portal.add_userauthentication')
                 ])
-        if isinstance(bundle.obj, UserProfile):
-            return all([
-                bundle.request.user.has_perm('tardis_portal.add_userprofile'),
-                bundle.request.user.has_perm('tardis_portal.add_userauthentication')
-                ])
-        if isinstance(bundle.obj, UserAuthentication):
-            return all([
-                bundle.request.user.has_perm('tardis_portal.add_userprofile'),
-                bundle.request.user.has_perm('tardis_portal.add_userauthentication')
-                ])
+        #if isinstance(bundle.obj, UserProfile):
+        #    return all([
+        #        bundle.request.user.has_perm('tardis_portal.add_userprofile'),
+        #        bundle.request.user.has_perm('tardis_portal.add_userauthentication')
+        #        ])
+        #if isinstance(bundle.obj, UserAuthentication):
+        #    return all([
+        #        bundle.request.user.has_perm('tardis_portal.add_userprofile'),
+        #        bundle.request.user.has_perm('tardis_portal.add_userauthentication')
+        #        ])
+        ################################
         raise NotImplementedError(type(bundle.obj))
 
     def update_list(self, object_list, bundle):
@@ -441,6 +557,8 @@ class ACLAuthorization(Authorization):
     def delete_list(self, object_list, bundle):
         raise Unauthorized("Sorry, no deletes.")
 
+    # CHRIS - This should probably be refactored for more fine-grained control
+    # or to push up to Project
     def delete_detail(self, object_list, bundle):
         if isinstance(bundle.obj, Experiment):
             return bundle.request.user.has_perm(
@@ -460,7 +578,6 @@ class GroupResource(ModelResource):
             'name': ('exact',),
         }
 
-
 class UserResource(ModelResource):
     groups = fields.ManyToManyField(GroupResource, 'groups',
                                     null=True, full=True)
@@ -470,10 +587,17 @@ class UserResource(ModelResource):
         authentication = default_authentication
         authorization = ACLAuthorization()
         queryset = User.objects.all()
-        allowed_methods = ['get','post','put']
-        fields = ['username', 'first_name', 'last_name', 'email']
+        allowed_methods = ['get',
+                           'post',
+                           'put']
+        fields = ['id',
+                  'username',
+                  'first_name',
+                  'last_name',
+                  'email']
         serializer = default_serializer
         filtering = {
+            'id': ('exact', ),
             'username': ('exact', ),
             'email': ('iexact', ),
         }
@@ -524,12 +648,14 @@ class UserResource(ModelResource):
 
         return bundle
 
+    # CHRIS - open user to API - generate random password which no one knows
+    # since all authentication will be handled through LDAP
     def hydrate(self, bundle):
-        authuser = bundle.request.user
-        authenticated = authuser.is_authenticated
         required_fields = ['username',
                            'first_name',
-                           'email']
+                           'email',
+                           'permissions',
+                           'auth_method']
         for field in required_fields:
             if field not in bundle.data:
                 raise KeyError
@@ -562,9 +688,26 @@ class UserResource(ModelResource):
                         .format(missing_key=missing_key))
         except User.DoesNotExist:
             pass
-        bundle = super(UserResource, self).obj_create(bundle, **kwargs)
+        permissions = bundle.data['permissions']
+        auth_method = bundle.data['auth_method']
+        bundle.obj = User.objects.create_user(username, email, bundle.data['password'])
+        bundle.obj.first_name = bundle.data['first_name']
+        if 'last_name' in bundle.data.keys():
+            bundle.obj.last_name = bundle.data['last_name']
+        for permission in permissions:
+            bundle.obj.user_permissions.add(Permission.objects.get(codename=permission))
+        bundle.obj.save() # create the user - this should also trigger the UserProfile
+        userprofile = bundle.obj.userprofile
+        if 'orcid' in bundle.data.keys():
+            userprofile.orcid = bundle.data['orcid']
+            userprofile.save()
+        user_auth = UserAuthentication(userProfile = userprofile,
+                                       username = username,
+                                       authenticationMethod = auth_method)
+        user_auth.save()
         return bundle
-
+    ############################################################
+    
 class MyTardisModelResource(ModelResource):
 
     class Meta:
@@ -573,6 +716,9 @@ class MyTardisModelResource(ModelResource):
         serializer = default_serializer
         object_class = None
 
+'''# CHRIS - expose user profile to the API - allow addition of ORCIDs
+# Used to link user with user profile for user authentication
+# creation.
 class UserProfileResource(MyTardisModelResource):
     user = fields.OneToOneField(UserResource, 'user')
 
@@ -580,7 +726,8 @@ class UserProfileResource(MyTardisModelResource):
         authentication = default_authentication
         authorization = ACLAuthorization()
         queryset = UserProfile.objects.all()
-        fields = ['user']
+        fields = ['user',
+                  'orcid']
         serializer = default_serializer
         filtering = {
             'user': ('exact', ),
@@ -591,10 +738,23 @@ class UserProfileResource(MyTardisModelResource):
     def dehydrate(self, bundle):
         authuser = bundle.request.user
         authenticated = authuser.is_authenticated
-
-        if authenticated:
+        if authenticated and \
+                (same_user or facilities_managed_by(authuser).count() > 0):
             return bundle
 
+    def hydrate(self, bundle):
+        required_fields = ['user']
+        return bundle
+
+    def obj_create(self,
+                   bundle,
+                   **kwargs):
+        bundle = super().obj_create(bundle,
+                                    **kwargs)
+        return bundle
+        
+#####################################
+# CHRIS - expose user authentication to API
 class UserAuthenticationResource(MyTardisModelResource):
     userProfile = fields.ForeignKey(UserProfileResource, attribute='userProfile',
                                     null=True, blank=True, full=True)
@@ -603,37 +763,70 @@ class UserAuthenticationResource(MyTardisModelResource):
         authentication = default_authentication
         authorization = ACLAuthorization()
         queryset = UserAuthentication.objects.all()
-        fields = ['user_id', 'userProfile', 'authenticationMethod','username']
+        fields = ['user_id',
+                  'userProfile',
+                  'authenticationMethod',
+                  'username']
         serializer = default_serializer
         filtering = {
             'user_id': ('exact', ),
         }
         always_return_data = True
 
-    def hydrate(self, bundle):
+    def dehydrate(self, bundle):
         authuser = bundle.request.user
         authenticated = authuser.is_authenticated
-        required_fields = ['user_id', 'userProfile','username']
-        '''#username = bundle.data['username']
+        if authenticated and \
+                (same_user or facilities_managed_by(authuser).count() > 0):
+            return bundle
+
+    def hydrate(self, bundle):
+        required_fields = ['user_id',
+                           'userProfile',
+                           'username']
+        #username = bundle.data['username']
         user_id = bundle.data['user_id']
         try:
             userProfile = UserProfile.objects.filter(user_id=user_id)
         except User.DoesNotExist:
             raise
-        bundle.data['userProfile'] = userProfile'''
+        bundle.data['userProfile'] = userProfile
         return bundle
 
     def obj_create(self,
                    bundle,
                    **kwargs):
-
         bundle.data['authenticationMethod'] = settings.LDAP_METHOD
-        bundle = super(UserAuthenticationResource, self).obj_create(bundle, **kwargs)
+        bundle = super().obj_create(bundle, **kwargs)
         return bundle
+######################################'''
+
+# CHRIS - refactored to account for the new model
+class InstitutionResource(MyTardisModelResource):
+    manager_group = fields.ForeignKey(GroupResource, 'manager_group',
+                                      null=True, full=True)
+
+    class Meta(MyTardisModelResource.Meta):
+        object_class = Institution
+        queryset = Institution.objects.all()
+        filtering = {
+            'id': ('exact', ),
+            'manager_group': ALL_WITH_RELATIONS,
+            'name': ('exact', ),
+            'url': ('exact', ),
+            'ror': ('exact', ),
+        }
+        ordering = [
+            'id',
+            'name'
+        ]
+        always_return_data = True
 
 class FacilityResource(MyTardisModelResource):
     manager_group = fields.ForeignKey(GroupResource, 'manager_group',
                                       null=True, full=True)
+    institution = fields.ForeignKey(InstitutionResource, 'institution',
+                                   null=True, full=True)
 
     class Meta(MyTardisModelResource.Meta):
         object_class = Facility
@@ -642,30 +835,82 @@ class FacilityResource(MyTardisModelResource):
             'id': ('exact', ),
             'manager_group': ALL_WITH_RELATIONS,
             'name': ('exact', ),
+            'url': ('exact', ),
+            'institution': ALL_WITH_RELATIONS,
         }
         ordering = [
             'id',
             'name'
         ]
         always_return_data = True
+###########################################
 
-class ProjectResource(ModelResource):
-    class Meta:
-        authentication = default_authentication
-        authorization = ACLAuthorization()
+# CHRIS - ProjectResource
+class ProjectResource(MyTardisModelResource):
+    '''API for Experiments
+    also creates a default ACL and allows ExperimentParameterSets to be read
+    and written.
+
+    TODO: catch duplicate schema submissions for parameter sets
+    '''
+    created_by = fields.ForeignKey(UserResource, 'created_by')
+    parameter_sets = fields.ToManyField(
+        'tardis.tardis_portal.api.ProjectParameterSetResource',
+        'projectparameterset_set',
+        related_name='project',
+        full=True, null=True)
+    institution = fields.ToManyField(InstitutionResource, 'institution',
+                                    null=True, full=True)
+
+    class Meta(MyTardisModelResource.Meta):
         object_class = Project
         queryset = Project.objects.all()
         filtering = {
-            'id': ('exact'),
-            'name': ('exact'),
-            'raid': ('exact'),
-            }
+            'id': ('exact', ),
+            'name': ('exact',),
+            'raid': ('exact',),
+            'url': ('exact',),
+            'institution': ALL_WITH_RELATIONS,
+        }
         ordering = [
             'id',
             'name',
-            ]
+            'url',
+            'start_date',
+            'end_date'
+        ]
         always_return_data = True
 
+    def dehydrate(self, bundle):
+        project = bundle.obj
+        admins = project.get_admins()
+        bundle.data['admins'] = [admin.id for admin in admins]
+        return bundle
+
+    def hydrate_m2m(self, bundle):
+        '''
+        create ACL before any related objects are created in order to use
+        ACL permissions for those objects.
+        '''
+        if getattr(bundle.obj, 'id', False):
+            project = bundle.obj
+            # TODO: unify this with the view function's ACL creation,
+            # maybe through an ACL toolbox.
+            acl = ObjectACL(content_type=project.get_ct(),
+                            object_id=project.id,
+                            pluginId=django_user,
+                            entityId=str(bundle.request.user.id),
+                            canRead=True,
+                            canDownload=True,
+                            canWrite=True,
+                            canDelete=True,
+                            canSensitive=True,
+                            isOwner=True,
+                            aclOwnershipType=ObjectACL.OWNER_OWNED)
+            acl.save()
+        return super().hydrate_m2m(bundle)
+    
+################################################
 
 class InstrumentResource(MyTardisModelResource):
     facility = fields.ForeignKey(FacilityResource, 'facility',
@@ -701,6 +946,10 @@ class ExperimentResource(MyTardisModelResource):
         'experimentparameterset_set',
         related_name='experiment',
         full=True, null=True)
+    project = fields.ForeignKey(ProjectResource,
+                                'project',
+                                full=True,
+                                null=True)
 
     class Meta(MyTardisModelResource.Meta):
         object_class = Experiment
@@ -708,14 +957,14 @@ class ExperimentResource(MyTardisModelResource):
         filtering = {
             'id': ('exact', ),
             'title': ('exact',),
-            'internal_id': ('exact',),
-            'project_id': ('exact',),
+            'raid': ('exact',),
+            'project': ALL_WITH_RELATIONS,
         }
         ordering = [
             'id',
             'title',
-            'internal_id',
-            'project_id',
+            'id',
+            'project',
             'created_time',
             'update_time'
         ]
@@ -745,6 +994,14 @@ class ExperimentResource(MyTardisModelResource):
         ACL permissions for those objects.
         '''
         if getattr(bundle.obj, 'id', False):
+            for project_uri in bundle.data.get('project', []):
+                try:
+                    project = ProjectResource.get_via_uri(
+                        ProjectResource(), project_uri, bundle.request)
+                    bundle.obj.project.add(project)
+                except NotFound:
+                    pass # This probably should raise an error
+        if getattr(bundle.obj, 'id', False):
             experiment = bundle.obj
             # TODO: unify this with the view function's ACL creation,
             # maybe through an ACL toolbox.
@@ -760,7 +1017,6 @@ class ExperimentResource(MyTardisModelResource):
                             isOwner=True,
                             aclOwnershipType=ObjectACL.OWNER_OWNED)
             acl.save()
-
         return super().hydrate_m2m(bundle)
 
     def obj_create(self, bundle, **kwargs):
@@ -773,6 +1029,7 @@ class ExperimentResource(MyTardisModelResource):
         bundle.data['created_by'] = user
         bundle = super().obj_create(bundle, **kwargs)
         return bundle
+    
 class ExperimentAuthorResource(MyTardisModelResource):
     '''API for ExperimentAuthors
     '''
@@ -799,6 +1056,7 @@ class ExperimentAuthorResource(MyTardisModelResource):
         ]
         always_return_data = True
 
+# CHRIS - Dataset needs ACLs created
 
 class DatasetResource(MyTardisModelResource):
     experiments = fields.ToManyField(
@@ -878,7 +1136,23 @@ class DatasetResource(MyTardisModelResource):
                         ExperimentResource(), exp_uri, bundle.request)
                     bundle.obj.experiments.add(exp)
                 except NotFound:
-                    pass
+                    pass # This probably should raise an error
+        if getattr(bundle.obj, 'id', False):
+            experiment = bundle.obj
+            # TODO: unify this with the view function's ACL creation,
+            # maybe through an ACL toolbox.
+            acl = ObjectACL(content_type=experiment.get_ct(),
+                            object_id=experiment.id,
+                            pluginId=django_user,
+                            entityId=str(bundle.request.user.id),
+                            canRead=True,
+                            canDownload=True,
+                            canWrite=True,
+                            canDelete=True,
+                            canSensitive=True,
+                            isOwner=True,
+                            aclOwnershipType=ObjectACL.OWNER_OWNED)
+            acl.save()
         return super().hydrate_m2m(bundle)
 
     def get_root_dir_nodes(self, request, **kwargs):
@@ -991,6 +1265,7 @@ class DataFileResource(MyTardisModelResource):
         object_class = DataFile
         queryset = DataFile.objects.all()
         filtering = {
+            'id': ('exact', ),
             'directory': ('exact', 'startswith'),
             'dataset': ALL_WITH_RELATIONS,
             'filename': ('exact', ),
@@ -1369,6 +1644,27 @@ class ExperimentParameterResource(ParameterResource):
     class Meta(ParameterResource.Meta):
         object_class = ExperimentParameter
         queryset = ExperimentParameter.objects.all()
+
+class ProjectParameterSetResource(ParameterSetResource):
+    '''API for ExperimentParameterSets
+    '''
+    project = fields.ForeignKey(ProjectResource, 'project')
+    parameters = fields.ToManyField(
+        'tardis.tardis_portal.api.ProjectParameterResource',
+        'projectparameter_set',
+        related_name='parameterset', full=True, null=True)
+
+    class Meta(ParameterSetResource.Meta):
+        object_class = ProjectParameterSet
+        queryset = ProjectParameterSet.objects.all()
+
+class ProjectParameterResource(ParameterResource):
+    parameterset = fields.ForeignKey(ProjectParameterSetResource,
+                                     'parameterset')
+
+    class Meta(ParameterResource.Meta):
+        object_class = ProjectParameter
+        queryset = ProjectParameter.objects.all()
 
 
 class DatasetParameterSetResource(ParameterSetResource):
