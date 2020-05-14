@@ -148,6 +148,8 @@ class UserAuthentication(models.Model):
             user_profile = self.userProfile
             user = user_profile.user
             # add user permissions
+            user.user_permissions.add(Permission.objects.get(codename='add_project'))
+            user.user_permissions.add(Permission.objects.get(codename='change_project'))
             user.user_permissions.add(Permission.objects.get(codename='add_experiment'))
             user.user_permissions.add(Permission.objects.get(codename='change_experiment'))
             user.user_permissions.add(Permission.objects.get(codename='change_group'))

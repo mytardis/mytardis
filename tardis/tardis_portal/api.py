@@ -844,23 +844,70 @@ class FacilityResource(MyTardisModelResource):
         always_return_data = True
 ###########################################
 
-class ProjectResource(ModelResource):
-    class Meta:
-        authentication = default_authentication
-        authorization = ACLAuthorization()
-        object_class = Project
-        queryset = Project.objects.all()
+# CHRIS - ProjectResource
+class ProjectResource(MyTardisModelResource):
+    '''API for Experiments
+    also creates a default ACL and allows ExperimentParameterSets to be read
+    and written.
+
+    TODO: catch duplicate schema submissions for parameter sets
+    '''
+    created_by = fields.ForeignKey(UserResource, 'created_by')
+    parameter_sets = fields.ToManyField(
+        'tardis.tardis_portal.api.ProjectParameterSetResource',
+        'projectparameterset_set',
+        related_name='project',
+        full=True, null=True)
+
+    class Meta(MyTardisModelResource.Meta):
+        object_class = Experiment
+        queryset = Experiment.objects.all()
         filtering = {
-            'id': ('exact'),
-            'name': ('exact'),
-            'raid': ('exact'),
-            }
+            'id': ('exact', ),
+            'name': ('exact',),
+            'raid': ('exact',),
+            'url': ('exact',),
+            'institution': ALL_WITH_RELATIONS,
+        }
         ordering = [
             'id',
             'name',
-            ]
+            'url',
+            'start_date',
+            'end_date'
+        ]
         always_return_data = True
 
+    def dehydrate(self, bundle):
+        project = bundle.obj
+        admins = project.get_admins()
+        bundle.data['admins'] = [admin.id for admin in admins]
+        return bundle
+
+    def hydrate_m2m(self, bundle):
+        '''
+        create ACL before any related objects are created in order to use
+        ACL permissions for those objects.
+        '''
+        if getattr(bundle.obj, 'id', False):
+            project = bundle.obj
+            # TODO: unify this with the view function's ACL creation,
+            # maybe through an ACL toolbox.
+            acl = ObjectACL(content_type=project.get_ct(),
+                            object_id=project.id,
+                            pluginId=django_user,
+                            entityId=str(bundle.request.user.id),
+                            canRead=True,
+                            canDownload=True,
+                            canWrite=True,
+                            canDelete=True,
+                            canSensitive=True,
+                            isOwner=True,
+                            aclOwnershipType=ObjectACL.OWNER_OWNED)
+            acl.save()
+        return super().hydrate_m2m(bundle)
+    
+################################################
 
 class InstrumentResource(MyTardisModelResource):
     facility = fields.ForeignKey(FacilityResource, 'facility',
@@ -903,14 +950,14 @@ class ExperimentResource(MyTardisModelResource):
         filtering = {
             'id': ('exact', ),
             'title': ('exact',),
-            'internal_id': ('exact',),
-            'project_id': ('exact',),
+            'raid': ('exact',),
+            'project': ALL_WITH_RELATIONS,
         }
         ordering = [
             'id',
             'title',
-            'internal_id',
-            'project_id',
+            'id',
+            'project',
             'created_time',
             'update_time'
         ]
@@ -940,6 +987,14 @@ class ExperimentResource(MyTardisModelResource):
         ACL permissions for those objects.
         '''
         if getattr(bundle.obj, 'id', False):
+            for project_uri in bundle.data.get('project', []):
+                try:
+                    project = ProjectResource.get_via_uri(
+                        ProjectResource(), project_uri, bundle.request)
+                    bundle.obj.project.add(project)
+                except NotFound:
+                    pass # This probably should raise an error
+        if getattr(bundle.obj, 'id', False):
             experiment = bundle.obj
             # TODO: unify this with the view function's ACL creation,
             # maybe through an ACL toolbox.
@@ -955,7 +1010,6 @@ class ExperimentResource(MyTardisModelResource):
                             isOwner=True,
                             aclOwnershipType=ObjectACL.OWNER_OWNED)
             acl.save()
-
         return super().hydrate_m2m(bundle)
 
     def obj_create(self, bundle, **kwargs):
@@ -995,6 +1049,7 @@ class ExperimentAuthorResource(MyTardisModelResource):
         ]
         always_return_data = True
 
+# CHRIS - Dataset needs ACLs created
 
 class DatasetResource(MyTardisModelResource):
     experiments = fields.ToManyField(
@@ -1074,7 +1129,23 @@ class DatasetResource(MyTardisModelResource):
                         ExperimentResource(), exp_uri, bundle.request)
                     bundle.obj.experiments.add(exp)
                 except NotFound:
-                    pass
+                    pass # This probably should raise an error
+        if getattr(bundle.obj, 'id', False):
+            experiment = bundle.obj
+            # TODO: unify this with the view function's ACL creation,
+            # maybe through an ACL toolbox.
+            acl = ObjectACL(content_type=experiment.get_ct(),
+                            object_id=experiment.id,
+                            pluginId=django_user,
+                            entityId=str(bundle.request.user.id),
+                            canRead=True,
+                            canDownload=True,
+                            canWrite=True,
+                            canDelete=True,
+                            canSensitive=True,
+                            isOwner=True,
+                            aclOwnershipType=ObjectACL.OWNER_OWNED)
+            acl.save()
         return super().hydrate_m2m(bundle)
 
     def get_root_dir_nodes(self, request, **kwargs):

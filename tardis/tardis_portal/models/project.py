@@ -73,6 +73,35 @@ class Project(models.Model):
     def save(self, *args, **kwargs):
         super(Project, self).save(*args, **kwargs)
 
+    def getParameterSets(self):
+        """Return the experiment parametersets associated with this
+        experiment.
+
+        """
+        from .parameters import Schema
+        return self.projectparameterset_set.filter(
+            schema__schema_type=Schema.PROJECT)
+
+    def getParametersforIndexing(self):
+        """Returns the experiment parameters associated with this
+        experiment, formatted for elasticsearch.
+
+        """
+        from .parameters import ProjectParameter, ParameterName
+        paramset = self.getParameterSets()
+
+        param_glob = ProjectParameter.objects.filter(
+            parameterset__in=paramset).all().values_list('name','datetime_value','string_value','numerical_value')
+        param_list = []
+        for sublist in param_glob:
+            full_name = ParameterName.objects.get(id=sublist[0]).full_name
+            string2append = (full_name+'=')
+            for value in sublist[1:]:
+                if value is not None:
+                    string2append+=str(value)
+            param_list.append(string2append.replace(" ","%20"))
+        return  " ".join(param_list)
+
     def __str__(self):
         return self.name
 
