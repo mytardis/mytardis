@@ -77,7 +77,6 @@ def get_accessible_datafiles_for_user(request):
 
     return DataFile.safe.all(request.user).filter(query)
 
-
 #MIKEACL: REFACTOR has_###_ownership() into generic
 def has_experiment_ownership(request, experiment_id):
     return Experiment.safe.owned(request.user).filter(
@@ -92,6 +91,13 @@ def has_datafile_ownership(request, datafile_id):
         pk=datafile_id).exists()
 
 
+#MIKEACL: REFACTOR has_###_access() into generic
+def has_project_access(request, project_id):
+    try:
+        project = Project.objects.get(id=project_id)
+    except Project.DoesNotExist:
+        return False
+    return request.user.has_perm('tardis_acls.view_project', project)
 #MIKEACL: REFACTOR has_###_access() into generic
 def has_experiment_access(request, experiment_id):
     try:
@@ -114,7 +120,10 @@ def has_datafile_access(request, datafile_id):
         return False
     return request.user.has_perm('tardis_acls.view_datafile', datafile)
 
-
+#CHRISACL
+def has_project_write(request, project_id):
+    project = Project.objects.get(id=project_id)
+    return request.user.has_perm('tardis_acls.change_project', project)
 #MIKEACL: REFACTOR has_###_write() into generic (based on has_write_permissions)
 def has_experiment_write(request, experiment_id):
     return has_write_permissions(request, experiment_id)
@@ -167,6 +176,18 @@ def has_datafile_download_access(request, datafile_id):
     #exp = Experiment.objects.get(id=experiment_id)
     #return Experiment.public_access_implies_distribution(exp.public_access)
 
+#MIKEACL: REFACTOR has_###_sensitive_access() into generic
+def has_project_sensitive_access(request, project_id):
+
+    if Project.safe.owned_and_shared(request.user, viewsensitive=True) \
+                      .filter(id=project_id) \
+                      .exists():
+
+        return True
+    #REFACTOR TO LIKE EXP
+    #exp = Project.objects.get(id=project_id)
+    #return Experiment.public_access_implies_distribution(exp.public_access)
+    return False
 
 #MIKEACL: REFACTOR has_###_sensitive_access() into generic
 def has_experiment_sensitive_access(request, experiment_id):

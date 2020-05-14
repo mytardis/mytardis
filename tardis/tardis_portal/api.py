@@ -578,7 +578,6 @@ class GroupResource(ModelResource):
             'name': ('exact',),
         }
 
-
 class UserResource(ModelResource):
     groups = fields.ManyToManyField(GroupResource, 'groups',
                                     null=True, full=True)
@@ -591,12 +590,14 @@ class UserResource(ModelResource):
         allowed_methods = ['get',
                            'post',
                            'put']
-        fields = ['username',
+        fields = ['id',
+                  'username',
                   'first_name',
                   'last_name',
                   'email']
         serializer = default_serializer
         filtering = {
+            'id': ('exact', ),
             'username': ('exact', ),
             'email': ('iexact', ),
         }
@@ -806,7 +807,7 @@ class InstitutionResource(MyTardisModelResource):
                                       null=True, full=True)
 
     class Meta(MyTardisModelResource.Meta):
-        object_calss = Instituition
+        object_class = Institution
         queryset = Institution.objects.all()
         filtering = {
             'id': ('exact', ),
@@ -824,7 +825,7 @@ class InstitutionResource(MyTardisModelResource):
 class FacilityResource(MyTardisModelResource):
     manager_group = fields.ForeignKey(GroupResource, 'manager_group',
                                       null=True, full=True)
-    instituion = fields.ForeignKey(InstitutionResource, 'institution',
+    institution = fields.ForeignKey(InstitutionResource, 'institution',
                                    null=True, full=True)
 
     class Meta(MyTardisModelResource.Meta):
@@ -858,10 +859,12 @@ class ProjectResource(MyTardisModelResource):
         'projectparameterset_set',
         related_name='project',
         full=True, null=True)
+    institution = fields.ToManyField(InstitutionResource, 'institution',
+                                    null=True, full=True)
 
     class Meta(MyTardisModelResource.Meta):
-        object_class = Experiment
-        queryset = Experiment.objects.all()
+        object_class = Project
+        queryset = Project.objects.all()
         filtering = {
             'id': ('exact', ),
             'name': ('exact',),
@@ -943,6 +946,10 @@ class ExperimentResource(MyTardisModelResource):
         'experimentparameterset_set',
         related_name='experiment',
         full=True, null=True)
+    project = fields.ForeignKey(ProjectResource,
+                                'project',
+                                full=True,
+                                null=True)
 
     class Meta(MyTardisModelResource.Meta):
         object_class = Experiment
@@ -1258,6 +1265,7 @@ class DataFileResource(MyTardisModelResource):
         object_class = DataFile
         queryset = DataFile.objects.all()
         filtering = {
+            'id': ('exact', ),
             'directory': ('exact', 'startswith'),
             'dataset': ALL_WITH_RELATIONS,
             'filename': ('exact', ),
@@ -1636,6 +1644,27 @@ class ExperimentParameterResource(ParameterResource):
     class Meta(ParameterResource.Meta):
         object_class = ExperimentParameter
         queryset = ExperimentParameter.objects.all()
+
+class ProjectParameterSetResource(ParameterSetResource):
+    '''API for ExperimentParameterSets
+    '''
+    project = fields.ForeignKey(ProjectResource, 'project')
+    parameters = fields.ToManyField(
+        'tardis.tardis_portal.api.ProjectParameterResource',
+        'projectparameter_set',
+        related_name='parameterset', full=True, null=True)
+
+    class Meta(ParameterSetResource.Meta):
+        object_class = ProjectParameterSet
+        queryset = ProjectParameterSet.objects.all()
+
+class ProjectParameterResource(ParameterResource):
+    parameterset = fields.ForeignKey(ProjectParameterSetResource,
+                                     'parameterset')
+
+    class Meta(ParameterResource.Meta):
+        object_class = ProjectParameter
+        queryset = ProjectParameter.objects.all()
 
 
 class DatasetParameterSetResource(ParameterSetResource):
