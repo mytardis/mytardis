@@ -24,24 +24,25 @@ from tardis.tardis_portal.api import (
     ExperimentAuthorResource,
     FacilityResource,
     GroupResource,
+    InstitutionResource,
     InstrumentResource,
-    LocationResource,
     ObjectACLResource,
     ParameterNameResource,
+    ProjectResource,
+    ProjectParameterResource,
+    ProjectParameterSetResource,
     ReplicaResource,
     SchemaResource,
     StorageBoxAttributeResource,
     StorageBoxOptionResource,
     StorageBoxResource,
     UserResource,
-    UserAuthenticationResource,
-    UserProfileResource,
-    ProjectResource,
 )
 
 logger = logging.getLogger(__name__)
 
 v1_api = Api(api_name='v1')
+v1_api.register(InstitutionResource())
 v1_api.register(DatasetParameterSetResource())
 v1_api.register(DatasetParameterResource())
 v1_api.register(DatasetResource())
@@ -52,7 +53,7 @@ v1_api.register(ExperimentParameterResource())
 v1_api.register(ExperimentParameterSetResource())
 v1_api.register(ExperimentResource())
 v1_api.register(ExperimentAuthorResource())
-v1_api.register(LocationResource())
+#v1_api.register(LocationResource())
 v1_api.register(ParameterNameResource())
 v1_api.register(ProjectResource())
 v1_api.register(ReplicaResource())
@@ -61,8 +62,8 @@ v1_api.register(StorageBoxResource())
 v1_api.register(StorageBoxOptionResource())
 v1_api.register(StorageBoxAttributeResource())
 v1_api.register(UserResource())
-v1_api.register(UserAuthenticationResource())
-v1_api.register(UserProfileResource())
+v1_api.register(ProjectParameterResource())
+v1_api.register(ProjectParameterSetResource())
 v1_api.register(GroupResource())
 v1_api.register(ObjectACLResource())
 v1_api.register(FacilityResource())
