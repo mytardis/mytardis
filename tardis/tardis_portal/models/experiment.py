@@ -139,7 +139,8 @@ class Experiment(models.Model):
         """
         from .parameters import ExperimentParameter, ParameterName
         paramset = self.getParameterSets()
-
+        param_type_options = {1 : 'datetime_value', 2 : 'string_value',
+                              3 : 'numerical_value'}
         param_glob = ExperimentParameter.objects.filter(
             parameterset__in=paramset).all().values_list('name','datetime_value','string_value','numerical_value')
         param_list = []
@@ -147,11 +148,11 @@ class Experiment(models.Model):
             full_name = ParameterName.objects.get(id=sublist[0]).full_name
             #string2append = (full_name+'=')
             param_dict = {}
-            for value in sublist[1:]:
+            for idx, value in enumerate(sublist[1:]):
                 if value is not None:
-                    param_dict['full_name'] = full_name
+                    param_dict['full_name'] = str(full_name)
                     param_dict['value'] = str(value)
-                    param_dict['type'] = 'string_value'
+                    param_dict['type'] = param_type_options[idx+1]
             param_list.append(param_dict)
         return param_list
 

@@ -53,7 +53,10 @@ class ExperimentDocument(Document):
         'entityId': fields.StringField()
     }
     )
-    parameters = fields.ObjectField(attr='getParametersforIndexing')
+    parameters = fields.ObjectField(attr='getParametersforIndexing', dynamic=True)
+
+    def prepare_parameters(self, instance):
+        return list(instance.getParametersforIndexing())
 
     class Django:
         model = Experiment
