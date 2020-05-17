@@ -37,7 +37,7 @@ class ExperimentDocument(Document):
         fields={'raw': fields.KeywordField()},
         analyzer=analyzer
     )
-    public_access = fields.IntegerField()
+    #public_access = fields.IntegerField()
     created_time = fields.DateField()
     start_time = fields.DateField()
     end_time = fields.DateField()
@@ -87,17 +87,15 @@ class DatasetDocument(Document):
     experiments = fields.NestedField(properties={
         'id': fields.IntegerField(),
         'title': fields.TextField(
-            fields={'raw': fields.KeywordField()
-                    }
+            fields={'raw': fields.KeywordField()}
         ),
-        'objectacls': fields.ObjectField(properties={
+    }
+    )
+    objectacls = fields.ObjectField(properties={
             'pluginId': fields.StringField(),
             'entityId': fields.StringField()
         }
-        ),
-        'public_access': fields.IntegerField()
-    }
-    )
+        )
     instrument = fields.ObjectField(properties={
         'id': fields.IntegerField(),
         'name': fields.TextField(
@@ -142,16 +140,16 @@ class DataFileDocument(Document):
         'id': fields.IntegerField(),
         'experiments': fields.NestedField(properties={
             'id': fields.IntegerField(),
-            'objectacls': fields.ObjectField(properties={
-                'pluginId': fields.StringField(),
-                'entityId': fields.StringField()
-            }
-            ),
-            'public_access': fields.IntegerField()
         }
         ),
     }
     )
+    objectacls = fields.ObjectField(properties={
+            'pluginId': fields.StringField(),
+            'entityId': fields.StringField()
+        }
+        )
+
 
     parameters = fields.ObjectField(attr='getParametersforIndexing', dynamic=True)
 
