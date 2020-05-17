@@ -108,7 +108,11 @@ class DatasetDocument(Document):
     created_time = fields.DateField()
     modified_time = fields.DateField()
     tags = fields.StringField(attr='tags_for_indexing')
-    paramtags = fields.TextField(attr='getParametersforIndexing')
+
+    parameters = fields.ObjectField(attr='getParametersforIndexing', dynamic=True)
+
+    def prepare_parameters(self, instance):
+        return list(instance.getParametersforIndexing())
 
     class Django:
         model = Dataset
@@ -148,7 +152,11 @@ class DataFileDocument(Document):
         ),
     }
     )
-    paramtags = fields.TextField(attr='getParametersforIndexing')
+
+    parameters = fields.ObjectField(attr='getParametersforIndexing', dynamic=True)
+
+    def prepare_parameters(self, instance):
+        return list(instance.getParametersforIndexing())
 
     class Django:
         model = DataFile
