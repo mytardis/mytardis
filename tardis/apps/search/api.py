@@ -116,9 +116,19 @@ class SearchAppResource(Resource):
         result_dict = {k: [] for k in ["experiments", "datasets", "datafiles"]}
         for item in results:
             for hit in item.hits.hits:
+                # TODO refactor once decorators/managers refactored
+                if [hit["_index"] == "experiment":
+                    if not has_experiment_access(request, [hit["_source"]["id"])
+                        continue
+                if [hit["_index"] == "dataset":
+                    if not has_dataset_access(request, [hit["_source"]["id"])
+                        continue
+                if [hit["_index"] == "datafile":
+                    if not has_datafile_access(request, [hit["_source"]["id"])
+                        continue
                 safe_hit = hit.copy()
                 safe_hit["_source"].pop("objectacls")
-                result_dict[hit["_index"]+'s'].append(safe_hit)
+                result_dict[hit["_index"]+"s"].append(safe_hit)
 
         return [SearchObject(id=1, hits=result_dict)]
 
