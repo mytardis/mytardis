@@ -73,7 +73,7 @@ class SearchAppResource(Resource):
     def get_object_list(self, request):
         logging.warn("Testing search app")
         user = request.user
-        query_text = request.GET.get('query', None)      
+        query_text = request.GET.get('query', None)
         if not user.is_authenticated:
             result_dict = simple_search_public_data(query_text)
             return [SearchObject(id=1, hits=result_dict)]
@@ -116,14 +116,7 @@ class SearchAppResource(Resource):
         result_dict = {k: [] for k in ["experiments", "datasets", "datafiles"]}
         for item in results:
             for hit in item.hits.hits:
-                if hit["_index"] == "dataset":
-                    result_dict["datasets"].append(hit)
-
-                elif hit["_index"] == "experiments":
-                    result_dict["experiments"].append(hit)
-
-                elif hit["_index"] == "datafile":
-                    result_dict["datafiles"].append(hit)
+                    result_dict[hit["_index"]+'s'].append(hit)
 
         return [SearchObject(id=1, hits=result_dict)]
 
@@ -155,14 +148,7 @@ def simple_search_public_data(query_text):
     results = ms.execute()
     for item in results:
         for hit in item.hits.hits:
-            if hit["_index"] == "dataset":
-                result_dict["datasets"].append(hit)
-
-            elif hit["_index"] == "experiments":
-                result_dict["experiments"].append(hit)
-
-            elif hit["_index"] == "datafile":
-                result_dict["datafiles"].append(hit)
+            result_dict[hit["_index"]+'s'].append(hit)
     return result_dict
 
 
@@ -281,14 +267,7 @@ class AdvanceSearchAppResource(Resource):
         result_dict = {k: [] for k in ["experiments", "datasets", "datafiles"]}
         for item in result:
             for hit in item.hits.hits:
-                if hit["_index"] == "dataset":
-                    result_dict["datasets"].append(hit)
-
-                elif hit["_index"] == "experiments":
-                    result_dict["experiments"].append(hit)
-
-                elif hit["_index"] == "datafile":
-                    result_dict["datafiles"].append(hit)
+                    result_dict[hit["_index"]+'s'].append(hit)
 
         if bundle.request.method == 'POST':
             bundle.obj = SearchObject(id=1, hits=result_dict)
