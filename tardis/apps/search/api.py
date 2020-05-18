@@ -116,7 +116,9 @@ class SearchAppResource(Resource):
         result_dict = {k: [] for k in ["experiments", "datasets", "datafiles"]}
         for item in results:
             for hit in item.hits.hits:
-                    result_dict[hit["_index"]+'s'].append(hit)
+                safe_hit = hit.copy()
+                safe_hit["_source"].pop("objectacls")
+                result_dict[hit["_index"]+'s'].append(safe_hit)
 
         return [SearchObject(id=1, hits=result_dict)]
 
@@ -148,7 +150,10 @@ def simple_search_public_data(query_text):
     results = ms.execute()
     for item in results:
         for hit in item.hits.hits:
-            result_dict[hit["_index"]+'s'].append(hit)
+            safe_hit = hit.copy()
+            safe_hit["_source"].pop("objectacls")
+            result_dict[hit["_index"]+'s'].append(safe_hit)
+
     return result_dict
 
 
@@ -267,7 +272,9 @@ class AdvanceSearchAppResource(Resource):
         result_dict = {k: [] for k in ["experiments", "datasets", "datafiles"]}
         for item in result:
             for hit in item.hits.hits:
-                    result_dict[hit["_index"]+'s'].append(hit)
+                safe_hit = hit.copy()
+                safe_hit["_source"].pop("objectacls")
+                result_dict[hit["_index"]+'s'].append(safe_hit)
 
         if bundle.request.method == 'POST':
             bundle.obj = SearchObject(id=1, hits=result_dict)
