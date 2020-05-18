@@ -17,8 +17,8 @@ from django_elasticsearch_dsl.search import Search
 from elasticsearch_dsl import MultiSearch, Q
 
 from tardis.tardis_portal.api import default_authentication
-from tardis.tardis_portal.models import Instrument, ExperimentParameter, DatasetParameter,
-                                        DatafileParameter
+from tardis.tardis_portal.models import (Instrument, ExperimentParameter,
+                                        DatasetParameter, DatafileParameter)
 
 import logging
 
