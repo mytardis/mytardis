@@ -17,6 +17,7 @@ from django_elasticsearch_dsl.search import Search
 from elasticsearch_dsl import MultiSearch, Q
 
 from tardis.tardis_portal.api import default_authentication
+from tardis.tardis_portal.auth import decorators as authz
 from tardis.tardis_portal.models import (Instrument, ExperimentParameter,
                                         DatasetParameter, DatafileParameter)
 
@@ -121,25 +122,25 @@ class SearchAppResource(Resource):
                 download_bool = False
                 sensitive_bool = False
                 if hit["_index"] == "experiment":
-                    if not has_experiment_access(request, hit["_source"]["id"]):
+                    if not authz.has_experiment_access(request, hit["_source"]["id"]):
                         continue
-                    if has_experiment_download_access(request, hit["_source"]["id"]):
+                    if authz.has_experiment_download_access(request, hit["_source"]["id"]):
                         download_bool = True
-                    if has_experiment_sensitive_access(request, hit["_source"]["id"]):
+                    if authz.has_experiment_sensitive_access(request, hit["_source"]["id"]):
                         sensitive_bool = True
                 if hit["_index"] == "dataset":
-                    if not has_dataset_access(request, hit["_source"]["id"]):
+                    if not authz.has_dataset_access(request, hit["_source"]["id"]):
                         continue
-                    if has_dataset_download_access(request, hit["_source"]["id"]):
+                    if authz.has_dataset_download_access(request, hit["_source"]["id"]):
                         download_bool = True
-                    if has_dataset_sensitive_access(request, hit["_source"]["id"]):
+                    if authz.has_dataset_sensitive_access(request, hit["_source"]["id"]):
                         sensitive_bool = True
                 if hit["_index"] == "datafile":
-                    if not has_datafile_access(request, hit["_source"]["id"]):
+                    if not authz.has_datafile_access(request, hit["_source"]["id"]):
                         continue
-                    if has_datafile_download_access(request, hit["_source"]["id"]):
+                    if authz.has_datafile_download_access(request, hit["_source"]["id"]):
                         download_bool = True
-                    if has_datafile_sensitive_access(request, hit["_source"]["id"]):
+                    if authz.has_datafile_sensitive_access(request, hit["_source"]["id"]):
                         sensitive_bool = True
                 safe_hit = hit.copy()
                 safe_hit["_source"].pop("objectacls")
