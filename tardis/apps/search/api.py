@@ -17,7 +17,8 @@ from django_elasticsearch_dsl.search import Search
 from elasticsearch_dsl import MultiSearch, Q
 
 from tardis.tardis_portal.api import default_authentication
-from tardis.tardis_portal.models import Instrument
+from tardis.tardis_portal.models import Instrument, ExperimentParameter, DatasetParameter,
+                                        DatafileParameter
 
 import logging
 
@@ -117,17 +118,40 @@ class SearchAppResource(Resource):
         for item in results:
             for hit in item.hits.hits:
                 # TODO refactor once decorators/managers refactored
-                if [hit["_index"] == "experiment":
-                    if not has_experiment_access(request, [hit["_source"]["id"])
+                download_bool = False
+                sensitive_bool = False
+                if hit["_index"] == "experiment":
+                    if not has_experiment_access(request, hit["_source"]["id"]):
                         continue
-                if [hit["_index"] == "dataset":
-                    if not has_dataset_access(request, [hit["_source"]["id"])
+                    if has_experiment_download_access(request, hit["_source"]["id"]):
+                        download_bool = True
+                    if has_experiment_sensitive_access(request, hit["_source"]["id"]):
+                        sensitive_bool = True
+                if hit["_index"] == "dataset":
+                    if not has_dataset_access(request, hit["_source"]["id"]):
                         continue
-                if [hit["_index"] == "datafile":
-                    if not has_datafile_access(request, [hit["_source"]["id"])
+                    if has_dataset_download_access(request, hit["_source"]["id"]):
+                        download_bool = True
+                    if has_dataset_sensitive_access(request, hit["_source"]["id"]):
+                        sensitive_bool = True
+                if hit["_index"] == "datafile":
+                    if not has_datafile_access(request, [hit["_source"]["id"]):
                         continue
+                    if has_datafile_download_access(request, hit["_source"]["id"]):
+                        download_bool = True
+                    if has_datafile_sensitive_access(request, hit["_source"]["id"]):
+                        sensitive_bool = True
                 safe_hit = hit.copy()
                 safe_hit["_source"].pop("objectacls")
+                safe_hit["_source"]["downloadable"] = download_bool
+
+                if not sensitive_bool:
+                    for idx, param in hit["_source"]["parameters"]:
+                        is_sensitive = ExperimentParameter.objects.get(name__name=param["full_name"],
+                                                        parameterset__experiment__id=hit["_source"]["id"])
+                        if is_sensitive.sensitive_metadata:
+                            safe_hit["_source"]["parameters"].pop(idx)
+
                 result_dict[hit["_index"]+"s"].append(safe_hit)
 
         return [SearchObject(id=1, hits=result_dict)]
