@@ -135,7 +135,7 @@ class SearchAppResource(Resource):
                     if has_dataset_sensitive_access(request, hit["_source"]["id"]):
                         sensitive_bool = True
                 if hit["_index"] == "datafile":
-                    if not has_datafile_access(request, [hit["_source"]["id"]):
+                    if not has_datafile_access(request, hit["_source"]["id"]):
                         continue
                     if has_datafile_download_access(request, hit["_source"]["id"]):
                         download_bool = True
