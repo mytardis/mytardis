@@ -147,7 +147,7 @@ class SearchAppResource(Resource):
                 safe_hit["_source"]["downloadable"] = download_bool
 
                 if not sensitive_bool:
-                    for idx, param in hit["_source"]["parameters"]:
+                    for idx, param in enumerate(hit["_source"]["parameters"]):
                         is_sensitive = ExperimentParameter.objects.get(name__name=param["full_name"],
                                                         parameterset__experiment__id=hit["_source"]["id"])
                         if is_sensitive.sensitive_metadata:
