@@ -148,8 +148,15 @@ class SearchAppResource(Resource):
 
                 if not sensitive_bool:
                     for idx, param in enumerate(hit["_source"]["parameters"]):
-                        is_sensitive = ExperimentParameter.objects.get(name__name=param["full_name"],
+                        if hit["_index"] == "experiment":
+                            is_sensitive = ExperimentParameter.objects.get(name__name=param["full_name"],
                                                         parameterset__experiment__id=hit["_source"]["id"])
+                        if hit["_index"] == "dataset":
+                            is_sensitive = DatasetParameter.objects.get(name__name=param["full_name"],
+                                                        parameterset__dataset__id=hit["_source"]["id"])
+                        if hit["_index"] == "datafile":
+                            is_sensitive = DatafileParameter.objects.get(name__name=param["full_name"],
+                                                        parameterset__datafile__id=hit["_source"]["id"])
                         if is_sensitive.sensitive_metadata:
                             safe_hit["_source"]["parameters"].pop(idx)
 
