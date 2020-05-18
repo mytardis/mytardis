@@ -82,8 +82,7 @@ class SearchAppResource(Resource):
         ms = MultiSearch(index=index_list)
 
         query_exp = Q("match", title=query_text)
-        query_exp_oacl = Q("term", objectacls__entityId=user.id) | \
-            Q("term", public_access=100)
+        query_exp_oacl = Q("term", objectacls__entityId=user.id) #| \Q("term", public_access=100)
         for group in groups:
             query_exp_oacl = query_exp_oacl | \
                                  Q("term", objectacls__entityId=group.id)
@@ -94,24 +93,25 @@ class SearchAppResource(Resource):
 
         query_dataset = Q("match", description=query_text)
         query_dataset = query_dataset | Q("match", tags=query_text)
-        query_dataset_oacl = Q("term", **{'experiment.objectacls.entityId': user.id}) | \
-            Q("term", **{'experiment.public_access': 100})
+        query_dataset_oacl = Q("term", objectacls__entityId=user.id) #| \Q("term", **{'experiment.public_access': 100})
         for group in groups:
             query_dataset_oacl = query_dataset_oacl | \
-                                 Q("term", **{'experiment.objectacls.entityId': group.id})
+                                 Q("term", objectacls__entityId=group.id)
+        query_dataset = query_dataset & query_dataset_oacl
         ms = ms.add(Search(index='dataset')
-                    .extra(size=MAX_SEARCH_RESULTS, min_score=MIN_CUTOFF_SCORE).query(query_dataset)
-                    .query('nested', path='experiment', query=query_dataset_oacl))
+                    .extra(size=MAX_SEARCH_RESULTS, min_score=MIN_CUTOFF_SCORE)
+                    .query(query_dataset))
 
         query_datafile = Q("match", filename=query_text)
-        query_datafile_oacl = Q("term", **{'dataset.experiment.objectacls.entityId': user.id}) | \
-            Q("term", **{'dataset.experiment.public_access': 100})
+        query_datafile_oacl = Q("term", objectacls__entityId=user.id)
         for group in groups:
             query_datafile_oacl = query_datafile_oacl | \
-                                 Q("term", **{'dataset.experiment.objectacls.entityId': group.id})
+                                  Q("term", objectacls__entityId=group.id)
+        query_datafile = query_datafile & query_datafile_oacl
         ms = ms.add(Search(index='datafile')
-                    .extra(size=MAX_SEARCH_RESULTS, min_score=MIN_CUTOFF_SCORE).query(query_datafile)
-                    .query('nested', path='dataset.experiment', query=query_datafile_oacl))
+                    .extra(size=MAX_SEARCH_RESULTS, min_score=MIN_CUTOFF_SCORE)
+                    .query(query_datafile))
+
         results = ms.execute()
         result_dict = {k: [] for k in ["experiments", "datasets", "datafiles"]}
         for item in results:
