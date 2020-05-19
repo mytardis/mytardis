@@ -121,18 +121,22 @@ class Dataset(models.Model):
         """
         from .parameters import DatasetParameter, ParameterName
         paramset = self.getParameterSets()
-
+        param_type_options = {1 : 'datetime_value', 2 : 'string_value',
+                              3 : 'numerical_value'}
         param_glob = DatasetParameter.objects.filter(
             parameterset__in=paramset).all().values_list('name','datetime_value','string_value','numerical_value')
         param_list = []
         for sublist in param_glob:
             full_name = ParameterName.objects.get(id=sublist[0]).full_name
-            string2append = (full_name+'=')
-            for value in sublist[1:]:
+            #string2append = (full_name+'=')
+            param_dict = {}
+            for idx, value in enumerate(sublist[1:]):
                 if value is not None:
-                    string2append+=str(value)
-            param_list.append(string2append.replace(" ","%20"))
-        return  " ".join(param_list)
+                    param_dict['full_name'] = str(full_name)
+                    param_dict['value'] = str(value)
+                    param_dict['type'] = param_type_options[idx+1]
+            param_list.append(param_dict)
+        return param_list
 
     def __str__(self):
         return self.description
