@@ -15,11 +15,13 @@ from tastypie.resources import Resource, Bundle
 from tastypie.serializers import Serializer
 from django_elasticsearch_dsl.search import Search
 from elasticsearch_dsl import MultiSearch, Q
+from django.template.defaultfilters import filesizeformat
 
 from tardis.tardis_portal.api import default_authentication
 from tardis.tardis_portal.auth import decorators as authz
-from tardis.tardis_portal.models import (Instrument, ExperimentParameter,
-                                        DatasetParameter, DatafileParameter)
+from tardis.tardis_portal.models import (Experiment, Dataset, DataFile,
+                                         Instrument, ExperimentParameter,
+                                         DatasetParameter, DatafileParameter)
 
 import logging
 
@@ -121,6 +123,7 @@ class SearchAppResource(Resource):
                 # TODO refactor once decorators/managers refactored
                 download_bool = False
                 sensitive_bool = False
+                size = 0
                 if hit["_index"] == "experiment":
                     if not authz.has_experiment_access(request, hit["_source"]["id"]):
                         continue
@@ -128,6 +131,7 @@ class SearchAppResource(Resource):
                         download_bool = True
                     if authz.has_experiment_sensitive_access(request, hit["_source"]["id"]):
                         sensitive_bool = True
+                    size = Experiment.objects.get(id= hit["_source"]["id"]).get_size(request.user)
                 if hit["_index"] == "dataset":
                     if not authz.has_dataset_access(request, hit["_source"]["id"]):
                         continue
@@ -135,6 +139,7 @@ class SearchAppResource(Resource):
                         download_bool = True
                     if authz.has_dataset_sensitive_access(request, hit["_source"]["id"]):
                         sensitive_bool = True
+                    size = Dataset.objects.get(id= hit["_source"]["id"]).get_size(request.user)
                 if hit["_index"] == "datafile":
                     if not authz.has_datafile_access(request, hit["_source"]["id"]):
                         continue
@@ -142,9 +147,11 @@ class SearchAppResource(Resource):
                         download_bool = True
                     if authz.has_datafile_sensitive_access(request, hit["_source"]["id"]):
                         sensitive_bool = True
+                    size = DataFile.objects.get(id= hit["_source"]["id"]).get_size(request.user)
                 safe_hit = hit.copy()
                 safe_hit["_source"].pop("objectacls")
                 safe_hit["_source"]["downloadable"] = download_bool
+                safe_hit["_source"]["size"] = filesizeformat(size)
 
                 if not sensitive_bool:
                     for idx, param in enumerate(hit["_source"]["parameters"]):
