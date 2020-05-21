@@ -144,7 +144,7 @@ def send_admin_email(**kwargs):
             % (user.username, user.id, site, authentication.id))
 
         try:
-            mail.mail_admins(subject, message,
+            mail.mail_managers(subject, message,
                              connection=get_connection(fail_silently=True))
 
         except Exception as e:
