@@ -218,7 +218,7 @@ export var MyTardis = (function() {
                 Mustache.TEMPLATES["tardis_portal/dataset_tiles"],
                 {
                     datasets: _(this.visibleTiles).map(function(v) {
-                        return "<i class=\"dataset-tile-placeholder\" data-dsid=\"" + v + "\"/>";
+                        return "<i class=\"dataset-tile-placeholder\" data-dsid=\"" + v + "\"></i>";
                     })
                 },
                 Mustache.TEMPLATES
@@ -227,7 +227,6 @@ export var MyTardis = (function() {
             _.each(newContents.find(".dataset-tile-placeholder"), function(v) {
 
                 var view = this.tiles[parseInt($(v).attr("data-dsid"), 10)];
-
                 $(v).parent().replaceWith(view.el);
             }, this);
             // Add filter control if necessary
