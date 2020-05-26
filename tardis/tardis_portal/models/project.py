@@ -13,7 +13,7 @@ from django.utils.encoding import python_2_unicode_compatible
 from django.utils.timezone import now as django_time_now
 from .institution import Institution
 # from ..models import DataManagementPlan # Hook in place for future proofing
-from ..managers import OracleSafeManager, ProjectManager
+from ..managers import OracleSafeManager, SafeManager
 
 from .access_control import ObjectACL
 
@@ -61,7 +61,7 @@ class Project(models.Model):
                           null=True, blank=True)
     institution = models.ManyToManyField(Institution,
                                          related_name='institutions')
-    safe = ProjectManager()
+    safe = SafeManager()
 
     #TODO Integrate DMPs into the project.
     #data_management_plan = models.ManyToManyField(DataManagementPlan,
