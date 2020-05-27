@@ -49,6 +49,7 @@ export function ResultTabs({counts, selectedLevel, onChange}) {
 
 ResultTabs.propTypes = {
     counts: PropTypes.shape({
+        projects: PropTypes.number,
         experiment:PropTypes.number,
         dataset: PropTypes.number,
         datafile: PropTypes.number
@@ -75,7 +76,7 @@ export function ResultRow({result,onSelect,isSelected}){
                     <span aria-label="This item cannot be downloaded."><FiLock /></span>
                 }
             </td>
-            <td><a href="{url}">{resultName}</a></td>
+            <td><a href={result.url}>{resultName}</a></td>
             <td>
                 {result.accessRights != "viewOnly" && 
                     <span style={{paddingRight:"1em"}}>{result.safeFileSize}</span>

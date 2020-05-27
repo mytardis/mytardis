@@ -29,17 +29,32 @@ function getResultsFromResponse(response){
     // add a type attribute to them.
     const hits = response.objects[0].hits,
         expResults = hits["experiments"].map( 
-            exp => (Object.assign(exp._source,{
-                type: 'experiment'
-            }))),
+            exp => {
+                const source = exp._source;
+                Object.assign(source,{
+                    type: 'experiment',
+                    url:`/experiment/view/${source.id}/`
+                });
+                return source;
+            }),
         dsResults = hits["datasets"].map(
-            ds => (Object.assign(ds._source,{
-                type: 'dataset'
-            }))),
+            ds => {
+                const source = ds._source;
+                Object.assign(source,{
+                    type: 'dataset',
+                    url:`/dataset/view/${source.id}/`
+                });
+                return source;
+            }),
         dfResults = hits["datafiles"].map(
-            df => (Object.assign(df._source, {
-                type: 'datafile'
-            })));
+            df => {
+                const source = df._source;
+                Object.assign(source,{
+                    type: 'datafile',
+                    url:`/datafile/view/${source.id}/`
+                });
+                return source;
+            });
     return {
         experiment: expResults,
         dataset: dsResults,
