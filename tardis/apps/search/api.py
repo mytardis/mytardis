@@ -82,8 +82,18 @@ class SearchAppResource(Resource):
             result_dict = simple_search_public_data(query_text)
             return [SearchObject(id=1, hits=result_dict)]
         groups = user.groups.all()
-        index_list = ['experiment', 'dataset', 'datafile']
+        index_list = ['project', 'experiment', 'dataset', 'datafile']
         ms = MultiSearch(index=index_list)
+
+        query_project = Q("match", name=query_text)
+        query_project_oacl = Q("term", objectacls__entityId=user.id) #| \Q("term", public_access=100)
+        for group in groups:
+            query_project_oacl = query_project_oacl | \
+                                 Q("term", objectacls__entityId=group.id)
+        query_project = query_project & query_project_oacl
+        ms = ms.add(Search(index='project')
+                    .extra(size=MAX_SEARCH_RESULTS, min_score=MIN_CUTOFF_SCORE)
+                    .query(query_project))
 
         query_exp = Q("match", title=query_text)
         query_exp_oacl = Q("term", objectacls__entityId=user.id) #| \Q("term", public_access=100)
@@ -117,13 +127,21 @@ class SearchAppResource(Resource):
                     .query(query_datafile))
 
         results = ms.execute()
-        result_dict = {k: [] for k in ["experiments", "datasets", "datafiles"]}
+        result_dict = {k: [] for k in ["projects", "experiments", "datasets", "datafiles"]}
         for item in results:
             for hit in item.hits.hits:
                 # TODO refactor once decorators/managers refactored
                 download_bool = False
                 sensitive_bool = False
                 size = 0
+                if hit["_index"] == "project":
+                    if not authz.has_project_access(request, hit["_source"]["id"]):
+                        continue
+                    if authz.has_project_download_access(request, hit["_source"]["id"]):
+                        download_bool = True
+                    if authz.has_project_sensitive_access(request, hit["_source"]["id"]):
+                        sensitive_bool = True
+                    size = Project.objects.get(id= hit["_source"]["id"]).get_size(request.user)
                 if hit["_index"] == "experiment":
                     if not authz.has_experiment_access(request, hit["_source"]["id"]):
                         continue
@@ -155,6 +173,9 @@ class SearchAppResource(Resource):
 
                 if not sensitive_bool:
                     for idx, param in enumerate(hit["_source"]["parameters"]):
+                        if hit["_index"] == "project":
+                            is_sensitive = ProjectParameter.objects.get(name__full_name=param["full_name"],
+                                                        parameterset__project__id=hit["_source"]["id"])
                         if hit["_index"] == "experiment":
                             is_sensitive = ExperimentParameter.objects.get(name__full_name=param["full_name"],
                                                         parameterset__experiment__id=hit["_source"]["id"])

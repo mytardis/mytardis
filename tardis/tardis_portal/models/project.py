@@ -186,3 +186,11 @@ class Project(models.Model):
         if not hasattr(self, 'id'):
             return False
         return None
+
+    def get_datafiles(self, user):
+        from .datafile import DataFile
+        return DataFile.safe.all(user).filter(dataset__experiments__project=self)
+
+    def get_size(self, user):
+        from .datafile import DataFile
+        return DataFile.sum_sizes(self.get_datafiles(user))
