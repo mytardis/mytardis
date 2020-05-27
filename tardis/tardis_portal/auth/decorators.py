@@ -140,6 +140,16 @@ def has_datafile_write(request, datafile_id):
 
 
 #MIKEACL: REFACTOR has_###_download_access() into generic
+def has_project_download_access(request, project_id):
+
+    if Project.safe.owned_and_shared(request.user, downloadable=True) \
+                      .filter(id=project_id) \
+                      .exists():
+
+        return True
+    return False
+
+#MIKEACL: REFACTOR has_###_download_access() into generic
 def has_experiment_download_access(request, experiment_id):
 
     if Experiment.safe.owned_and_shared(request.user, downloadable=True) \
