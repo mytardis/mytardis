@@ -24,38 +24,33 @@ export function PureSearchPage(){
     )
 }
 
-function getResultsFromResponse(response){
+const getResultFromHit = (hit,hitType) => {
+        const source = hit._source;
+        Object.assign(source,{
+            type: hitType,
+            url:`/${hitType}/view/${source.id}/`
+        });
+        return source;
+}
+
+const getResultsFromResponse = (response) => {
     // Grab the "_source" object out of each hit and also
     // add a type attribute to them.
     const hits = response.objects[0].hits,
-        expResults = hits["experiments"].map( 
-            exp => {
-                const source = exp._source;
-                Object.assign(source,{
-                    type: 'experiment',
-                    url:`/experiment/view/${source.id}/`
-                });
-                return source;
-            }),
-        dsResults = hits["datasets"].map(
-            ds => {
-                const source = ds._source;
-                Object.assign(source,{
-                    type: 'dataset',
-                    url:`/dataset/view/${source.id}/`
-                });
-                return source;
-            }),
-        dfResults = hits["datafiles"].map(
-            df => {
-                const source = df._source;
-                Object.assign(source,{
-                    type: 'datafile',
-                    url:`/datafile/view/${source.id}/`
-                });
-                return source;
-            });
+        projectResults = hits["projects"].map((hit) => (
+            getResultFromHit(hit,"project")
+        )),
+        expResults = hits["experiments"].map((hit) => (
+            getResultFromHit(hit,"experiment")
+        )),
+        dsResults = hits["datasets"].map((hit) => (
+            getResultFromHit(hit,"dataset")
+        )),
+        dfResults = hits["datafiles"].map((hit) => (
+            getResultFromHit(hit,"datafile")
+        ));
     return {
+        project: projectResults,
         experiment: expResults,
         dataset: dsResults,
         datafile: dfResults
