@@ -12,7 +12,7 @@ from django.utils.safestring import SafeText
 from django.utils.encoding import python_2_unicode_compatible
 from django_elasticsearch_dsl import fields
 
-from ..managers import OracleSafeManager, ExperimentManager
+from ..managers import OracleSafeManager, SafeManager
 from .access_control import ObjectACL
 from .project import Project
 from .institution import Institution
@@ -92,7 +92,7 @@ class Experiment(models.Model):
                                 on_delete=models.CASCADE)
     objectacls = GenericRelation(ObjectACL)
     objects = OracleSafeManager()
-    safe = ExperimentManager()  # The acl-aware specific manager.
+    safe = SafeManager()  # The acl-aware specific manager.
     embargo_until = models.DateTimeField(null=True, blank=True)
 
     class Meta:

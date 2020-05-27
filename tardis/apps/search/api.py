@@ -15,11 +15,13 @@ from tastypie.resources import Resource, Bundle
 from tastypie.serializers import Serializer
 from django_elasticsearch_dsl.search import Search
 from elasticsearch_dsl import MultiSearch, Q
+from django.template.defaultfilters import filesizeformat
 
 from tardis.tardis_portal.api import default_authentication
 from tardis.tardis_portal.auth import decorators as authz
-from tardis.tardis_portal.models import (Instrument, ExperimentParameter,
-                                        DatasetParameter, DatafileParameter)
+from tardis.tardis_portal.models import (Project, Experiment, Dataset, DataFile,
+                                         Instrument, ExperimentParameter,
+                                         DatasetParameter, DatafileParameter)
 
 import logging
 
@@ -80,8 +82,18 @@ class SearchAppResource(Resource):
             result_dict = simple_search_public_data(query_text)
             return [SearchObject(id=1, hits=result_dict)]
         groups = user.groups.all()
-        index_list = ['experiment', 'dataset', 'datafile']
+        index_list = ['project', 'experiment', 'dataset', 'datafile']
         ms = MultiSearch(index=index_list)
+
+        query_project = Q("match", name=query_text)
+        query_project_oacl = Q("term", objectacls__entityId=user.id) #| \Q("term", public_access=100)
+        for group in groups:
+            query_project_oacl = query_project_oacl | \
+                                 Q("term", objectacls__entityId=group.id)
+        query_project = query_project & query_project_oacl
+        ms = ms.add(Search(index='project')
+                    .extra(size=MAX_SEARCH_RESULTS, min_score=MIN_CUTOFF_SCORE)
+                    .query(query_project))
 
         query_exp = Q("match", title=query_text)
         query_exp_oacl = Q("term", objectacls__entityId=user.id) #| \Q("term", public_access=100)
@@ -115,12 +127,21 @@ class SearchAppResource(Resource):
                     .query(query_datafile))
 
         results = ms.execute()
-        result_dict = {k: [] for k in ["experiments", "datasets", "datafiles"]}
+        result_dict = {k: [] for k in ["projects", "experiments", "datasets", "datafiles"]}
         for item in results:
             for hit in item.hits.hits:
                 # TODO refactor once decorators/managers refactored
                 download_bool = False
                 sensitive_bool = False
+                size = 0
+                if hit["_index"] == "project":
+                    if not authz.has_project_access(request, hit["_source"]["id"]):
+                        continue
+                    if authz.has_project_download_access(request, hit["_source"]["id"]):
+                        download_bool = True
+                    if authz.has_project_sensitive_access(request, hit["_source"]["id"]):
+                        sensitive_bool = True
+                    size = Project.objects.get(id= hit["_source"]["id"]).get_size(request.user)
                 if hit["_index"] == "experiment":
                     if not authz.has_experiment_access(request, hit["_source"]["id"]):
                         continue
@@ -128,6 +149,7 @@ class SearchAppResource(Resource):
                         download_bool = True
                     if authz.has_experiment_sensitive_access(request, hit["_source"]["id"]):
                         sensitive_bool = True
+                    size = Experiment.objects.get(id= hit["_source"]["id"]).get_size(request.user)
                 if hit["_index"] == "dataset":
                     if not authz.has_dataset_access(request, hit["_source"]["id"]):
                         continue
@@ -135,6 +157,7 @@ class SearchAppResource(Resource):
                         download_bool = True
                     if authz.has_dataset_sensitive_access(request, hit["_source"]["id"]):
                         sensitive_bool = True
+                    size = Dataset.objects.get(id= hit["_source"]["id"]).get_size(request.user)
                 if hit["_index"] == "datafile":
                     if not authz.has_datafile_access(request, hit["_source"]["id"]):
                         continue
@@ -142,12 +165,17 @@ class SearchAppResource(Resource):
                         download_bool = True
                     if authz.has_datafile_sensitive_access(request, hit["_source"]["id"]):
                         sensitive_bool = True
+                    size = DataFile.objects.get(id= hit["_source"]["id"]).get_size(request.user)
                 safe_hit = hit.copy()
                 safe_hit["_source"].pop("objectacls")
                 safe_hit["_source"]["downloadable"] = download_bool
+                safe_hit["_source"]["size"] = filesizeformat(size)
 
                 if not sensitive_bool:
                     for idx, param in enumerate(hit["_source"]["parameters"]):
+                        if hit["_index"] == "project":
+                            is_sensitive = ProjectParameter.objects.get(name__full_name=param["full_name"],
+                                                        parameterset__project__id=hit["_source"]["id"])
                         if hit["_index"] == "experiment":
                             is_sensitive = ExperimentParameter.objects.get(name__full_name=param["full_name"],
                                                         parameterset__experiment__id=hit["_source"]["id"])

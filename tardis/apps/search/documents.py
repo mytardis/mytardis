@@ -5,7 +5,7 @@ from elasticsearch_dsl import analysis, analyzer
 from django_elasticsearch_dsl import Document, fields
 from django_elasticsearch_dsl.registries import registry
 
-from tardis.tardis_portal.models import Dataset, Experiment, \
+from tardis.tardis_portal.models import Project, Dataset, Experiment, \
     DataFile, Instrument, ObjectACL
 
 
@@ -19,6 +19,60 @@ analyzer = analyzer(
     tokenizer=trigram,
     filter='lowercase',
 )
+
+
+
+@registry.register_document
+class ProjectDocument(Document):
+    class Index:
+        name = 'project'
+        settings = {'number_of_shards': 1,
+                    'number_of_replicas': 0}
+
+    id = fields.IntegerField()
+    name = fields.TextField(
+        fields={'raw': fields.KeywordField()},
+        analyzer=analyzer
+    )
+    description = fields.TextField(
+        fields={'raw': fields.KeywordField()},
+        analyzer=analyzer
+    )
+    #public_access = fields.IntegerField()
+    start_date = fields.DateField()
+    end_date = fields.DateField()
+    institution = fields.ObjectField(properties={
+        'name': fields.StringField(
+            fields={'raw': fields.KeywordField()},
+        )
+    })
+    lead_researcher = fields.ObjectField(properties={
+        'username': fields.StringField(
+            fields={'raw': fields.KeywordField()},
+        )
+    })
+    objectacls = fields.ObjectField(properties={
+        'pluginId': fields.StringField(),
+        'entityId': fields.StringField()
+    }
+    )
+    parameters = fields.ObjectField(attr='getParametersforIndexing', dynamic=True)
+
+    def prepare_parameters(self, instance):
+        return list(instance.getParametersforIndexing())
+
+    class Django:
+        model = Project
+        related_models = [User]#, ObjectACL] TODO Reactivate when ACLs finished
+
+    def get_instances_from_related(self, related_instance):
+        if isinstance(related_instance, User):
+            return related_instance.project_set.all()
+        # TODO reactivate when ACLs finished
+        # TODO change so updates only Experiment ACLs
+        #if isinstance(related_instance, ObjectACL):
+        #    return related_instance.content_object
+        return None
 
 
 @registry.register_document
