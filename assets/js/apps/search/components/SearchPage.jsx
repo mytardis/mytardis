@@ -24,11 +24,11 @@ export function PureSearchPage(){
     )
 }
 
-const getResultFromHit = (hit,hitType) => {
+const getResultFromHit = (hit,hitType,urlPrefix) => {
         const source = hit._source;
         Object.assign(source,{
             type: hitType,
-            url:`/${hitType}/view/${source.id}/`
+            url:`${urlPrefix}/${source.id}`
         });
         return source;
 }
@@ -38,16 +38,16 @@ const getResultsFromResponse = (response) => {
     // add a type attribute to them.
     const hits = response.objects[0].hits,
         projectResults = hits["projects"].map((hit) => (
-            getResultFromHit(hit,"project")
+            getResultFromHit(hit,"project","/project/view")
         )),
         expResults = hits["experiments"].map((hit) => (
-            getResultFromHit(hit,"experiment")
+            getResultFromHit(hit,"experiment","/experiment/view")
         )),
         dsResults = hits["datasets"].map((hit) => (
-            getResultFromHit(hit,"dataset")
+            getResultFromHit(hit,"dataset","/dataset")
         )),
         dfResults = hits["datafiles"].map((hit) => (
-            getResultFromHit(hit,"datafile")
+            getResultFromHit(hit,"datafile","/datafile/view")
         ));
     return {
         project: projectResults,
