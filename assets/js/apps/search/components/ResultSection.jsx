@@ -13,7 +13,7 @@ export function ResultTabs({counts, selectedLevel, onChange}) {
             experiment: null,
             dataset: null,
             datafile: null,
-            projects: null
+            project: null
         }
     }
 
@@ -49,7 +49,7 @@ export function ResultTabs({counts, selectedLevel, onChange}) {
 
 ResultTabs.propTypes = {
     counts: PropTypes.shape({
-        projects: PropTypes.number,
+        project: PropTypes.number,
         experiment:PropTypes.number,
         dataset: PropTypes.number,
         datafile: PropTypes.number
@@ -171,7 +171,7 @@ export function PureResultSection({resultSets, selected,
         }
     }
     const counts = {
-        project: resultSets.experiment.length,
+        project: resultSets.project.length,
         experiment: resultSets.experiment.length,
         dataset: resultSets.dataset.length,
         datafile: resultSets.datafile.length
