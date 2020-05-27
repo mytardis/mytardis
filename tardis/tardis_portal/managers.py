@@ -33,10 +33,21 @@ class OracleSafeManager(models.Manager):
         return super().get_queryset()
 
 
-class ExperimentManager(OracleSafeManager):
+class ParameterNameManager(models.Manager):
+    def get_by_natural_key(self, namespace, name):
+        return self.get(schema__namespace=namespace, name=name)
+
+
+class SchemaManager(models.Manager):
+    def get_by_natural_key(self, namespace):
+        return self.get(namespace=namespace)
+
+
+class SafeManager(models.Manager):
+
     """
-    Implements a custom manager for the Experiment model which checks
-    the authorisation rules for the requesting user first
+    Implements a custom manager for the Project/Experiment/Dataset/DataFile
+    models which checks the authorisation rules for the requesting user first
 
     To make this work, the request must be passed to all class
     functions. The username and the group memberships are then
@@ -44,44 +55,53 @@ class ExperimentManager(OracleSafeManager):
 
     The :py:mod:`tardis.tardis_portal.auth.AuthService` is responsible for
     filling the request.groups object.
-
     """
 
     def all(self, user):  # @ReservedAssignment
         """
-        Returns all experiments a user - either authenticated or
+        Returns all proj/exp/set/files a user - either authenticated or
         anonymous - is allowed to see and search
 
         :param User user: a User instance
-        :returns: QuerySet of Experiments
+        :returns: QuerySet of objects
         :rtype: QuerySet
         """
 
-        query = self._query_all_public() |\
-            self._query_owned_and_shared(user)
+        query = self._query_owned_and_shared(user) #self._query_all_public() |\
 
         return super().get_queryset().filter(
             query).distinct()
 
-    def public(self):
-        query = self._query_all_public()
-        return super().get_queryset().filter(
-            query).distinct()
 
-    def owned_and_shared(self, user, downloadable=False, viewsensitive=False):
-        return super().get_queryset().filter(
-            self._query_owned_and_shared(user, downloadable, viewsensitive)).distinct()
+    def _query_owned(self, user, user_id=None):
+        # build the query to filter the ACL table
+        query = Q(objectacls__pluginId=django_user,
+                  objectacls__entityId=str(user_id or user.id),
+                  objectacls__content_type__model=self.model.get_ct(self.model),
+                  objectacls__isOwner=True) &\
+                (Q(objectacls__effectiveDate__lte=datetime.today())
+             | Q(objectacls__effectiveDate__isnull=True)) &\
+            (Q(objectacls__expiryDate__gte=datetime.today())
+             | Q(objectacls__expiryDate__isnull=True))
+        return query
 
-    def shared(self, user):
-        return super().get_queryset().filter(
-            self._query_shared(user)).distinct()
 
-    def _query_owned_and_shared(self, user, downloadable=False, viewsensitive=False):
-        return self._query_shared(user, downloadable, viewsensitive) | self._query_owned(user)
+    def _query_owned_by_group(self, group, group_id=None):
+        # build the query to filter the ACL table
+        query = Q(objectacls__pluginId=django_group,
+                  objectacls__entityId=str(group_id or group.id),
+                  objectacls__content_type__model=self.model.get_ct(self.model),
+                  objectacls__isOwner=True) &\
+            (Q(objectacls__effectiveDate__lte=datetime.today())
+             | Q(objectacls__effectiveDate__isnull=True)) &\
+            (Q(objectacls__expiryDate__gte=datetime.today())
+             | Q(objectacls__expiryDate__isnull=True))
+        return query
 
+    # ARE THE TOKENS EXP ONLY?
     def _query_shared(self, user, downloadable=False, viewsensitive=False):
         '''
-        get all shared experiments, not owned ones
+        get all shared proj/exp/set/files, not owned ones
         '''
         # if the user is not authenticated, only tokens apply
         # this is almost duplicate code of end of has_perm in authorisation.py
@@ -94,7 +114,7 @@ class ExperimentManager(OracleSafeManager):
                 if downloadable:
                     query |= Q(objectacls__pluginId=tgp.name,
                                objectacls__entityId=str(group),
-                               objectacls__content_type__model='experiment',
+                               objectacls__content_type__model=self.model.get_ct(self.model),
                                objectacls__canDownload=True) &\
                         (Q(objectacls__effectiveDate__lte=datetime.today())
                          | Q(objectacls__effectiveDate__isnull=True)) &\
@@ -103,7 +123,7 @@ class ExperimentManager(OracleSafeManager):
                 elif viewsensitive:
                     query |= Q(objectacls__pluginId=tgp.name,
                                objectacls__entityId=str(group),
-                               objectacls__content_type__model='experiment',
+                               objectacls__content_type__model=self.model.get_ct(self.model),
                                objectacls__canSensitive=True) &\
                         (Q(objectacls__effectiveDate__lte=datetime.today())
                          | Q(objectacls__effectiveDate__isnull=True)) &\
@@ -112,7 +132,7 @@ class ExperimentManager(OracleSafeManager):
                 else:
                     query |= Q(objectacls__pluginId=tgp.name,
                                objectacls__entityId=str(group),
-                               objectacls__content_type__model='experiment',
+                               objectacls__content_type__model=self.model.get_ct(self.model),
                                objectacls__canRead=True) &\
                         (Q(objectacls__effectiveDate__lte=datetime.today())
                          | Q(objectacls__effectiveDate__isnull=True)) &\
@@ -120,12 +140,12 @@ class ExperimentManager(OracleSafeManager):
                          | Q(objectacls__expiryDate__isnull=True))
             return query
 
-        # for which experiments does the user have read access
+        # for which proj/exp/set/files does the user have read access
         # based on USER permissions?
         if downloadable:
             query = Q(objectacls__pluginId=django_user,
                       objectacls__entityId=str(user.id),
-                      objectacls__content_type__model='experiment',
+                      objectacls__content_type__model=self.model.get_ct(self.model),
                       objectacls__canDownload=True,
                       objectacls__isOwner=False) &\
                 (Q(objectacls__effectiveDate__lte=datetime.today())
@@ -135,7 +155,7 @@ class ExperimentManager(OracleSafeManager):
         elif viewsensitive:
             query = Q(objectacls__pluginId=django_user,
                       objectacls__entityId=str(user.id),
-                      objectacls__content_type__model='experiment',
+                      objectacls__content_type__model=self.model.get_ct(self.model),
                       objectacls__canSensitive=True,
                       objectacls__isOwner=False) &\
                 (Q(objectacls__effectiveDate__lte=datetime.today())
@@ -145,20 +165,20 @@ class ExperimentManager(OracleSafeManager):
         else:
             query = Q(objectacls__pluginId=django_user,
                       objectacls__entityId=str(user.id),
-                      objectacls__content_type__model='experiment',
+                      objectacls__content_type__model=self.model.get_ct(self.model),
                       objectacls__canRead=True,
                       objectacls__isOwner=False) &\
                 (Q(objectacls__effectiveDate__lte=datetime.today())
                  | Q(objectacls__effectiveDate__isnull=True)) &\
                 (Q(objectacls__expiryDate__gte=datetime.today())
                  | Q(objectacls__expiryDate__isnull=True))
-        # for which does experiments does the user have read access
+        # for which does proj/exp/set/files does the user have read access
         # based on GROUP permissions
         for name, group in user.userprofile.ext_groups:
             if downloadable:
                 query |= Q(objectacls__pluginId=name,
                            objectacls__entityId=str(group),
-                           objectacls__content_type__model='experiment',
+                           objectacls__content_type__model=self.model.get_ct(self.model),
                            objectacls__canDownload=True) &\
                     (Q(objectacls__effectiveDate__lte=datetime.today())
                      | Q(objectacls__effectiveDate__isnull=True)) &\
@@ -167,7 +187,7 @@ class ExperimentManager(OracleSafeManager):
             elif viewsensitive:
                 query |= Q(objectacls__pluginId=name,
                            objectacls__entityId=str(group),
-                           objectacls__content_type__model='experiment',
+                           objectacls__content_type__model=self.model.get_ct(self.model),
                            objectacls__canSensitive=True) &\
                     (Q(objectacls__effectiveDate__lte=datetime.today())
                      | Q(objectacls__effectiveDate__isnull=True)) &\
@@ -176,7 +196,7 @@ class ExperimentManager(OracleSafeManager):
             else:
                 query |= Q(objectacls__pluginId=name,
                            objectacls__entityId=str(group),
-                           objectacls__content_type__model='experiment',
+                           objectacls__content_type__model=self.model.get_ct(self.model),
                            objectacls__canRead=True) &\
                     (Q(objectacls__effectiveDate__lte=datetime.today())
                      | Q(objectacls__effectiveDate__isnull=True)) &\
@@ -184,35 +204,23 @@ class ExperimentManager(OracleSafeManager):
                      | Q(objectacls__expiryDate__isnull=True))
         return query
 
-    def _query_all_public(self):
-        from .models import Experiment
-        return ~Q(public_access=Experiment.PUBLIC_ACCESS_NONE) &\
-               ~Q(public_access=Experiment.PUBLIC_ACCESS_EMBARGO)
 
-    def get(self, user, experiment_id):
-        """
-        Returns an experiment under the consideration of the ACL rules
-        Raises PermissionDenied if the user does not have access.
+    def _query_owned_and_shared(self, user, downloadable=False, viewsensitive=False):
+        return self._query_shared(user, downloadable, viewsensitive) | self._query_owned(user)
 
-        :param User user: a User instance
-        :param int experiment_id: the ID of the experiment to be edited
-        :returns: Experiment
-        :rtype: Experiment
-        :raises PermissionDenied:
-        """
-        experiment = super().get(pk=experiment_id)
 
-        if user.has_perm('tardis_acls.view_experiment', experiment):
-            return experiment
-        raise PermissionDenied
+    def owned_and_shared(self, user, downloadable=False, viewsensitive=False):
+        return super().get_queryset().filter(
+            self._query_owned_and_shared(user, downloadable, viewsensitive)).distinct()
+
 
     def owned(self, user):
         """
-        Return all experiments which are owned by a particular user, including
+        Return all proj/exp/set/files which are owned by a particular user, including
         those shared with a group of which the user is a member.
 
         :param User user: a User instance
-        :returns: QuerySet of Experiments owned by user
+        :returns: QuerySet of proj/exp/set/files owned by user
         :rtype: QuerySet
         """
 
@@ -225,160 +233,165 @@ class ExperimentManager(OracleSafeManager):
             query |= self._query_owned_by_group(group)
         return super().get_queryset().filter(query).distinct()
 
-        # return self.owned_by_user(user)
 
-    def _query_owned(self, user, user_id=None):
-        # build the query to filter the ACL table
-        query = Q(objectacls__pluginId=django_user,
-                  objectacls__entityId=str(user_id or user.id),
-                  objectacls__content_type__model='experiment',
-                  objectacls__isOwner=True) &\
-                (Q(objectacls__effectiveDate__lte=datetime.today())
-             | Q(objectacls__effectiveDate__isnull=True)) &\
-            (Q(objectacls__expiryDate__gte=datetime.today())
-             | Q(objectacls__expiryDate__isnull=True))
-        return query
+    def shared(self, user):
+        return super().get_queryset().filter(
+            self._query_shared(user)).distinct()
 
-    def _query_owned_by_group(self, group, group_id=None):
-        # build the query to filter the ACL table
-        query = Q(objectacls__pluginId=django_group,
-                  objectacls__entityId=str(group_id or group.id),
-                  objectacls__content_type__model='experiment',
-                  objectacls__isOwner=True) &\
-            (Q(objectacls__effectiveDate__lte=datetime.today())
-             | Q(objectacls__effectiveDate__isnull=True)) &\
-            (Q(objectacls__expiryDate__gte=datetime.today())
-             | Q(objectacls__expiryDate__isnull=True))
-        return query
+
+    def get(self, user, obj_id):
+        """
+        Returns a proj/exp/set/file under the consideration of the ACL rules
+        Raises PermissionDenied if the user does not have access.
+
+        :param User user: a User instance
+        :param int obj_id: the ID of the proj/exp/set/file to be edited
+        :returns: proj/exp/set/file
+        :rtype: proj/exp/set/file
+        :raises PermissionDenied:
+        """
+        obj = super().get(pk=obj_id)
+
+        if user.has_perm('tardis_acls.view_'+self.model.get_ct(self.model).model, obj):
+            return obj
+        raise PermissionDenied
+
 
     def owned_by_user(self, user):
         """
-        Return all experiments which are owned by a particular user id
+        Return all proj/exp/set/files which are owned by a particular user id
 
         :param User user: a User Object
-        :return: QuerySet of Experiments owned by user
+        :return: QuerySet of proj/exp/set/files owned by user
         :rtype: QuerySet
         """
         query = self._query_owned(user)
         return super().get_queryset().filter(query)
 
+
     def owned_by_group(self, group):
         """
-        Return all experiments that are owned by a particular group
+        Return all proj/exp/set/files that are owned by a particular group
         """
         query = self._query_owned_by_group(group)
         return super().get_queryset().filter(query)
 
+
     def owned_by_user_id(self, userId):
         """
-        Return all experiments which are owned by a particular user id
+        Return all proj/exp/set/files which are owned by a particular user id
 
         :param int userId: a User ID
-        :returns: QuerySet of Experiments owned by user id
+        :returns: QuerySet of proj/exp/set/files owned by user id
         :rtype: QuerySet
         """
         query = self._query_owned(user=None, user_id=userId)
         return super().get_queryset().filter(query)
 
-    def user_acls(self, experiment_id):
-        """
-        Returns a list of ACL rules associated with this experiment.
 
-        :param experiment_id: the ID of the experiment
+    def user_acls(self, obj_id):
+        """
+        Returns a list of ACL rules associated with this proj/exp/set/file.
+
+        :param experiment_id: the ID of the proj/exp/set/file
         :type experiment_id: string
         :returns: QuerySet of ACLs
         :rtype: QuerySet
         """
-        experiment = super().get(pk=experiment_id)
+        obj = super().get(pk=obj_id)
 
         return ObjectACL.objects.filter(
             pluginId=django_user,
-            content_type=experiment.get_ct(),
-            object_id=experiment_id,
+            content_type=self.model.get_ct(self.model),
+            object_id=obj_id,
             aclOwnershipType=ObjectACL.OWNER_OWNED)
 
-    def users(self, experiment_id):
+
+    def users(self, obj_id):
         """
         Returns a list of users who have ACL rules associated with this
-        experiment.
+        proj/exp/set/file.
 
-        :param int experiment_id: the ID of the experiment
-        :returns: QuerySet of Users with experiment access
+        :param int obj_id: the ID of the proj/exp/set/file
+        :returns: QuerySet of Users with proj/exp/set/file access
         :rtype: QuerySet
         """
-        acl = self.user_acls(experiment_id)
+        acl = self.user_acls(obj_id)
         return User.objects.filter(pk__in=[int(a.entityId) for a in acl])
 
-    def user_owned_groups(self, experiment_id):
+
+    def user_owned_groups(self, obj_id):
         """
         returns a list of user owned-groups which have ACL rules
-        associated with this experiment
+        associated with this proj/exp/set/file
 
-        :param int experiment_id: the ID of the experiment to be edited
+        :param int obj_id: the ID of the proj/exp/set/file to be edited
         :returns: QuerySet of non system Groups
         :rtype: QuerySet
         """
 
         acl = ObjectACL.objects.filter(
             pluginId='django_group',
-            content_type__model='experiment',
-            object_id=experiment_id,
+            content_type__model=self.model.get_ct(self.model),
+            object_id=obj_id,
             aclOwnershipType=ObjectACL.OWNER_OWNED)
 
         return Group.objects.filter(pk__in=[str(a.entityId) for a in acl])
 
-    def group_acls_user_owned(self, experiment_id):
-        """
-        Returns a list of ACL rules associated with this experiment.
 
-        :param int experiment_id: the ID of the experiment
+    def group_acls_user_owned(self, obj_id):
+        """
+        Returns a list of ACL rules associated with this proj/exp/set/file.
+
+        :param int obj_id: the ID of the proj/exp/set/file
         :returns: QuerySet of ACLs
         :rtype: QuerySet
         """
         return ObjectACL.objects.filter(
             pluginId='django_group',
-            content_type__model='experiment',
-            object_id=experiment_id,
+            content_type__model=self.model.get_ct(self.model),
+            object_id=obj_id,
             aclOwnershipType=ObjectACL.OWNER_OWNED)
 
-    def group_acls_system_owned(self, experiment_id):
+    def group_acls_system_owned(self, obj_id):
         """
-        Returns a list of ACL rules associated with this experiment.
+        Returns a list of ACL rules associated with this proj/exp/set/file.
 
-        :param int experiment_id: the ID of the experiment
-        :returns: QuerySet of system-owned ACLs for experiment
+        :param int obj_id: the ID of the proj/exp/set/file
+        :returns: QuerySet of system-owned ACLs for proj/exp/set/file
         :rtype: QuerySet
         """
         return ObjectACL.objects.filter(
             pluginId='django_group',
-            content_type__model='experiment',
-            object_id=experiment_id,
+            content_type__model=self.model.get_ct(self.model),
+            object_id=obj_id,
             aclOwnershipType=ObjectACL.SYSTEM_OWNED)
 
-    def system_owned_groups(self, experiment_id):
+
+    def system_owned_groups(self, obj_id):
         """
         returns a list of sytem-owned groups which have ACL rules
-        associated with this experiment
+        associated with this proj/exp/set/file
 
-        :param experiment_id: the ID of the experiment to be edited
-        :type experiment_id: string
-        :returns: system owned groups for experiment
+        :param obj_id: the ID of the proj/exp/set/file to be edited
+        :type obj_id: string
+        :returns: system owned groups for proj/exp/set/file
         :rtype: QuerySet
         """
-        from .models import ObjectACL
         acl = ObjectACL.objects.filter(
             pluginId='django_group',
-            content_type__model='experiment',
-            object_id=experiment_id,
+            content_type__model=self.model.get_ct(self.model),
+            object_id=obj_id,
             aclOwnershipType=ObjectACL.SYSTEM_OWNED)
 
         return Group.objects.filter(pk__in=[str(a.entityId) for a in acl])
 
-    def external_users(self, experiment_id):
+
+    def external_users(self, obj_id):
         """
         returns a list of groups which have external ACL rules
 
-        :param int experiment_id: the ID of the experiment to be edited
+        :param int obj_id: the ID of the proj/exp/set/file to be edited
         :returns: list of groups with external ACLs
         :rtype: list
         """
@@ -386,8 +399,8 @@ class ExperimentManager(OracleSafeManager):
         from .models import ObjectACL
         acl = ObjectACL.objects.exclude(pluginId=django_user)
         acl = acl.exclude(pluginId='django_group')
-        acl = acl.filter(content_type__model='experiment',
-                         object_id=experiment_id)
+        acl = acl.filter(content_type__model=self.model.get_ct(self.model),
+                         object_id=obj_id)
 
         if not acl:
             return None
@@ -404,754 +417,15 @@ class ExperimentManager(OracleSafeManager):
         return result
 
 
-class DatasetManager(models.Manager):
-
-
-    def all(self, user):  # @ReservedAssignment
-        """
-        Returns all datasets a user - either authenticated or
-        anonymous - is allowed to see and search
-
-        :param User user: a User instance
-        :returns: QuerySet of Datasets
-        :rtype: QuerySet
-        """
-
-        query = self._query_owned_and_shared(user) #self._query_all_public() |\
-
+    # Experiment only so far
+    def public(self):
+        query = self._query_all_public()
         return super().get_queryset().filter(
             query).distinct()
 
 
-    def _query_owned(self, user, user_id=None):
-        # build the query to filter the ACL table
-        query = Q(objectacls__pluginId=django_user,
-                  objectacls__entityId=str(user_id or user.id),
-                  objectacls__content_type__model='dataset',
-                  objectacls__isOwner=True) &\
-                (Q(objectacls__effectiveDate__lte=datetime.today())
-             | Q(objectacls__effectiveDate__isnull=True)) &\
-            (Q(objectacls__expiryDate__gte=datetime.today())
-             | Q(objectacls__expiryDate__isnull=True))
-        return query
-
-
-    def _query_owned_by_group(self, group, group_id=None):
-        # build the query to filter the ACL table
-        query = Q(objectacls__pluginId=django_group,
-                  objectacls__entityId=str(group_id or group.id),
-                  objectacls__content_type__model='dataset',
-                  objectacls__isOwner=True) &\
-            (Q(objectacls__effectiveDate__lte=datetime.today())
-             | Q(objectacls__effectiveDate__isnull=True)) &\
-            (Q(objectacls__expiryDate__gte=datetime.today())
-             | Q(objectacls__expiryDate__isnull=True))
-        return query
-
-    # ARE THE TOKENS EXP ONLY?
-    def _query_shared(self, user, downloadable=False, viewsensitive=False):
-        '''
-        get all shared datasets, not owned ones
-        '''
-        # if the user is not authenticated, only tokens apply
-        # this is almost duplicate code of end of has_perm in authorisation.py
-        # should be refactored, but cannot think of good way atm
-        if not user.is_authenticated:
-            from .auth.token_auth import TokenGroupProvider
-            query = Q(id=None)
-            tgp = TokenGroupProvider()
-            for group in tgp.getGroups(user):
-                if downloadable:
-                    query |= Q(objectacls__pluginId=tgp.name,
-                               objectacls__entityId=str(group),
-                               objectacls__content_type__model='dataset',
-                               objectacls__canDownload=True) &\
-                        (Q(objectacls__effectiveDate__lte=datetime.today())
-                         | Q(objectacls__effectiveDate__isnull=True)) &\
-                        (Q(objectacls__expiryDate__gte=datetime.today())
-                         | Q(objectacls__expiryDate__isnull=True))
-                elif viewsensitive:
-                    query |= Q(objectacls__pluginId=tgp.name,
-                               objectacls__entityId=str(group),
-                               objectacls__content_type__model='dataset',
-                               objectacls__canSensitive=True) &\
-                        (Q(objectacls__effectiveDate__lte=datetime.today())
-                         | Q(objectacls__effectiveDate__isnull=True)) &\
-                        (Q(objectacls__expiryDate__gte=datetime.today())
-                         | Q(objectacls__expiryDate__isnull=True))
-                else:
-                    query |= Q(objectacls__pluginId=tgp.name,
-                               objectacls__entityId=str(group),
-                               objectacls__content_type__model='dataset',
-                               objectacls__canRead=True) &\
-                        (Q(objectacls__effectiveDate__lte=datetime.today())
-                         | Q(objectacls__effectiveDate__isnull=True)) &\
-                        (Q(objectacls__expiryDate__gte=datetime.today())
-                         | Q(objectacls__expiryDate__isnull=True))
-            return query
-
-        # for which datasets does the user have read access
-        # based on USER permissions?
-        if downloadable:
-            query = Q(objectacls__pluginId=django_user,
-                      objectacls__entityId=str(user.id),
-                      objectacls__content_type__model='dataset',
-                      objectacls__canDownload=True,
-                      objectacls__isOwner=False) &\
-                (Q(objectacls__effectiveDate__lte=datetime.today())
-                 | Q(objectacls__effectiveDate__isnull=True)) &\
-                (Q(objectacls__expiryDate__gte=datetime.today())
-                 | Q(objectacls__expiryDate__isnull=True))
-        elif viewsensitive:
-            query = Q(objectacls__pluginId=django_user,
-                      objectacls__entityId=str(user.id),
-                      objectacls__content_type__model='dataset',
-                      objectacls__canSensitive=True,
-                      objectacls__isOwner=False) &\
-                (Q(objectacls__effectiveDate__lte=datetime.today())
-                 | Q(objectacls__effectiveDate__isnull=True)) &\
-                (Q(objectacls__expiryDate__gte=datetime.today())
-                 | Q(objectacls__expiryDate__isnull=True))
-        else:
-            query = Q(objectacls__pluginId=django_user,
-                      objectacls__entityId=str(user.id),
-                      objectacls__content_type__model='dataset',
-                      objectacls__canRead=True,
-                      objectacls__isOwner=False) &\
-                (Q(objectacls__effectiveDate__lte=datetime.today())
-                 | Q(objectacls__effectiveDate__isnull=True)) &\
-                (Q(objectacls__expiryDate__gte=datetime.today())
-                 | Q(objectacls__expiryDate__isnull=True))
-        # for which does datasets does the user have read access
-        # based on GROUP permissions
-        for name, group in user.userprofile.ext_groups:
-            if downloadable:
-                query |= Q(objectacls__pluginId=name,
-                           objectacls__entityId=str(group),
-                           objectacls__content_type__model='dataset',
-                           objectacls__canDownload=True) &\
-                    (Q(objectacls__effectiveDate__lte=datetime.today())
-                     | Q(objectacls__effectiveDate__isnull=True)) &\
-                    (Q(objectacls__expiryDate__gte=datetime.today())
-                     | Q(objectacls__expiryDate__isnull=True))
-            elif viewsensitive:
-                query |= Q(objectacls__pluginId=name,
-                           objectacls__entityId=str(group),
-                           objectacls__content_type__model='dataset',
-                           objectacls__canSensitive=True) &\
-                    (Q(objectacls__effectiveDate__lte=datetime.today())
-                     | Q(objectacls__effectiveDate__isnull=True)) &\
-                    (Q(objectacls__expiryDate__gte=datetime.today())
-                     | Q(objectacls__expiryDate__isnull=True))
-            else:
-                query |= Q(objectacls__pluginId=name,
-                           objectacls__entityId=str(group),
-                           objectacls__content_type__model='dataset',
-                           objectacls__canRead=True) &\
-                    (Q(objectacls__effectiveDate__lte=datetime.today())
-                     | Q(objectacls__effectiveDate__isnull=True)) &\
-                    (Q(objectacls__expiryDate__gte=datetime.today())
-                     | Q(objectacls__expiryDate__isnull=True))
-        return query
-
-
-    def _query_owned_and_shared(self, user, downloadable=False, viewsensitive=False):
-        return self._query_shared(user, downloadable, viewsensitive) | self._query_owned(user)
-
-
-    def owned_and_shared(self, user, downloadable=False, viewsensitive=False):
-        return super().get_queryset().filter(
-            self._query_owned_and_shared(user, downloadable, viewsensitive)).distinct()
-
-
-    def owned(self, user):
-        """
-        Return all datasets which are owned by a particular user, including
-        those shared with a group of which the user is a member.
-
-        :param User user: a User instance
-        :returns: QuerySet of datasets owned by user
-        :rtype: QuerySet
-        """
-
-        # the user must be authenticated
-        if not user.is_authenticated:
-            return super().get_queryset().none()
-
-        query = self._query_owned(user)
-        for group in user.groups.all():
-            query |= self._query_owned_by_group(group)
-        return super().get_queryset().filter(query).distinct()
-
-    def get(self, user, dataset_id):
-        """
-        Returns a dataset under the consideration of the ACL rules
-        Raises PermissionDenied if the user does not have access.
-
-        :param User user: a User instance
-        :param int dataset_id: the ID of the Dataset to be edited
-        :returns: Dataset
-        :rtype: Dataset
-        :raises PermissionDenied:
-        """
-        dataset = super().get(pk=dataset_id)
-
-        if user.has_perm('tardis_acls.view_dataset', dataset):
-            return dataset
-        raise PermissionDenied
-
-
-class DatafileManager(models.Manager):
-
-
-    def all(self, user, downloadable=False, viewsensitive=False):  # @ReservedAssignment
-        """
-        Returns all datafiles a user - either authenticated or
-        anonymous - is allowed to see and search
-
-        :param User user: a User instance
-        :returns: QuerySet of Datafiles
-        :rtype: QuerySet
-        """
-
-        query = self._query_owned_and_shared(user, downloadable, viewsensitive) #self._query_all_public() |\
-
-        return super().get_queryset().filter(
-            query).distinct()
-
-
-    def _query_owned(self, user, user_id=None):
-        # build the query to filter the ACL table
-        query = Q(objectacls__pluginId=django_user,
-                  objectacls__entityId=str(user_id or user.id),
-                  objectacls__content_type__model='datafile',
-                  objectacls__isOwner=True) &\
-                (Q(objectacls__effectiveDate__lte=datetime.today())
-             | Q(objectacls__effectiveDate__isnull=True)) &\
-            (Q(objectacls__expiryDate__gte=datetime.today())
-             | Q(objectacls__expiryDate__isnull=True))
-        return query
-
-
-    def _query_owned_by_group(self, group, group_id=None):
-        # build the query to filter the ACL table
-        query = Q(objectacls__pluginId=django_group,
-                  objectacls__entityId=str(group_id or group.id),
-                  objectacls__content_type__model='datafile',
-                  objectacls__isOwner=True) &\
-            (Q(objectacls__effectiveDate__lte=datetime.today())
-             | Q(objectacls__effectiveDate__isnull=True)) &\
-            (Q(objectacls__expiryDate__gte=datetime.today())
-             | Q(objectacls__expiryDate__isnull=True))
-        return query
-
-    # ARE THE TOKENS EXP ONLY?
-    def _query_shared(self, user, downloadable=False, viewsensitive=False):
-        '''
-        get all shared datafiles, not owned ones
-        '''
-        # if the user is not authenticated, only tokens apply
-        # this is almost duplicate code of end of has_perm in authorisation.py
-        # should be refactored, but cannot think of good way atm
-        if not user.is_authenticated:
-            from .auth.token_auth import TokenGroupProvider
-            query = Q(id=None)
-            tgp = TokenGroupProvider()
-            for group in tgp.getGroups(user):
-                if downloadable:
-                    query |= Q(objectacls__pluginId=tgp.name,
-                               objectacls__entityId=str(group),
-                               objectacls__content_type__model='datafile',
-                               objectacls__canDownload=True) &\
-                        (Q(objectacls__effectiveDate__lte=datetime.today())
-                         | Q(objectacls__effectiveDate__isnull=True)) &\
-                        (Q(objectacls__expiryDate__gte=datetime.today())
-                         | Q(objectacls__expiryDate__isnull=True))
-                elif viewsensitive:
-                    query |= Q(objectacls__pluginId=tgp.name,
-                               objectacls__entityId=str(group),
-                               objectacls__content_type__model='datafile',
-                               objectacls__canSensitive=True) &\
-                        (Q(objectacls__effectiveDate__lte=datetime.today())
-                         | Q(objectacls__effectiveDate__isnull=True)) &\
-                        (Q(objectacls__expiryDate__gte=datetime.today())
-                         | Q(objectacls__expiryDate__isnull=True))
-                else:
-                    query |= Q(objectacls__pluginId=tgp.name,
-                               objectacls__entityId=str(group),
-                               objectacls__content_type__model='datafile',
-                               objectacls__canRead=True) &\
-                        (Q(objectacls__effectiveDate__lte=datetime.today())
-                         | Q(objectacls__effectiveDate__isnull=True)) &\
-                        (Q(objectacls__expiryDate__gte=datetime.today())
-                         | Q(objectacls__expiryDate__isnull=True))
-            return query
-
-        # for which datafiles does the user have read access
-        # based on USER permissions?
-        if downloadable:
-            query = Q(objectacls__pluginId=django_user,
-                      objectacls__entityId=str(user.id),
-                      objectacls__content_type__model='datafile',
-                      objectacls__canDownload=True,
-                      objectacls__isOwner=False) &\
-                (Q(objectacls__effectiveDate__lte=datetime.today())
-                 | Q(objectacls__effectiveDate__isnull=True)) &\
-                (Q(objectacls__expiryDate__gte=datetime.today())
-                 | Q(objectacls__expiryDate__isnull=True))
-        elif viewsensitive:
-            query = Q(objectacls__pluginId=django_user,
-                      objectacls__entityId=str(user.id),
-                      objectacls__content_type__model='datafile',
-                      objectacls__canSensitive=True,
-                      objectacls__isOwner=False) &\
-                (Q(objectacls__effectiveDate__lte=datetime.today())
-                 | Q(objectacls__effectiveDate__isnull=True)) &\
-                (Q(objectacls__expiryDate__gte=datetime.today())
-                 | Q(objectacls__expiryDate__isnull=True))
-        else:
-            query = Q(objectacls__pluginId=django_user,
-                      objectacls__entityId=str(user.id),
-                      objectacls__content_type__model='datafile',
-                      objectacls__canRead=True,
-                      objectacls__isOwner=False) &\
-                (Q(objectacls__effectiveDate__lte=datetime.today())
-                 | Q(objectacls__effectiveDate__isnull=True)) &\
-                (Q(objectacls__expiryDate__gte=datetime.today())
-                 | Q(objectacls__expiryDate__isnull=True))
-        # for which does datafiles does the user have read access
-        # based on GROUP permissions
-        for name, group in user.userprofile.ext_groups:
-            if downloadable:
-                query |= Q(objectacls__pluginId=name,
-                           objectacls__entityId=str(group),
-                           objectacls__content_type__model='datafile',
-                           objectacls__canDownload=True) &\
-                    (Q(objectacls__effectiveDate__lte=datetime.today())
-                     | Q(objectacls__effectiveDate__isnull=True)) &\
-                    (Q(objectacls__expiryDate__gte=datetime.today())
-                     | Q(objectacls__expiryDate__isnull=True))
-            elif viewsensitive:
-                query |= Q(objectacls__pluginId=name,
-                           objectacls__entityId=str(group),
-                           objectacls__content_type__model='datafile',
-                           objectacls__canSensitive=True) &\
-                    (Q(objectacls__effectiveDate__lte=datetime.today())
-                     | Q(objectacls__effectiveDate__isnull=True)) &\
-                    (Q(objectacls__expiryDate__gte=datetime.today())
-                     | Q(objectacls__expiryDate__isnull=True))
-            else:
-                query |= Q(objectacls__pluginId=name,
-                           objectacls__entityId=str(group),
-                           objectacls__content_type__model='datafile',
-                           objectacls__canRead=True) &\
-                    (Q(objectacls__effectiveDate__lte=datetime.today())
-                     | Q(objectacls__effectiveDate__isnull=True)) &\
-                    (Q(objectacls__expiryDate__gte=datetime.today())
-                     | Q(objectacls__expiryDate__isnull=True))
-        return query
-
-
-    def _query_owned_and_shared(self, user, downloadable=False, viewsensitive=False):
-        return self._query_shared(user, downloadable, viewsensitive) | self._query_owned(user)
-
-
-    def owned_and_shared(self, user, downloadable=False, viewsensitive=False):
-        return super().get_queryset().filter(
-            self._query_owned_and_shared(user, downloadable, viewsensitive)).distinct()
-
-
-    def owned(self, user):
-        """
-        Return all datafiles which are owned by a particular user, including
-        those shared with a group of which the user is a member.
-
-        :param User user: a User instance
-        :returns: QuerySet of datafiles owned by user
-        :rtype: QuerySet
-        """
-
-        # the user must be authenticated
-        if not user.is_authenticated:
-            return super().get_queryset().none()
-
-        query = self._query_owned(user)
-        for group in user.groups.all():
-            query |= self._query_owned_by_group(group)
-        return super().get_queryset().filter(query).distinct()
-
-class ParameterNameManager(models.Manager):
-    def get_by_natural_key(self, namespace, name):
-        return self.get(schema__namespace=namespace, name=name)
-
-
-class SchemaManager(models.Manager):
-    def get_by_natural_key(self, namespace):
-        return self.get(namespace=namespace)
-
-
-class ProjectManager(models.Manager):
-
-
-    def get(self, user, project_id):
-        """
-        Returns an experiment under the consideration of the ACL rules
-        Raises PermissionDenied if the user does not have access.
-
-        :param User user: a User instance
-        :param int experiment_id: the ID of the experiment to be edited
-        :returns: Experiment
-        :rtype: Experiment
-        :raises PermissionDenied:
-        """
-        project = super().get(pk=project_id)
-
-        if user.has_perm('tardis_acls.view_project', project):
-            return project
-        raise PermissionDenied
-
-
-    def _query_owned(self, user, user_id=None):
-        # build the query to filter the ACL table
-        query = Q(objectacls__pluginId=django_user,
-                  objectacls__entityId=str(user_id or user.id),
-                  objectacls__content_type__model='project',
-                  objectacls__isOwner=True) &\
-                (Q(objectacls__effectiveDate__lte=datetime.today())
-             | Q(objectacls__effectiveDate__isnull=True)) &\
-            (Q(objectacls__expiryDate__gte=datetime.today())
-             | Q(objectacls__expiryDate__isnull=True))
-        return query
-
-
-    def _query_owned_by_group(self, group, group_id=None):
-        # build the query to filter the ACL table
-        query = Q(objectacls__pluginId=django_group,
-                  objectacls__entityId=str(group_id or group.id),
-                  objectacls__content_type__model='project',
-                  objectacls__isOwner=True) &\
-            (Q(objectacls__effectiveDate__lte=datetime.today())
-             | Q(objectacls__effectiveDate__isnull=True)) &\
-            (Q(objectacls__expiryDate__gte=datetime.today())
-             | Q(objectacls__expiryDate__isnull=True))
-        return query
-
-    # ARE THE TOKENS EXP ONLY?
-    def _query_shared(self, user, downloadable=False, viewsensitive=False):
-        '''
-        get all shared datafiles, not owned ones
-        '''
-        # if the user is not authenticated, only tokens apply
-        # this is almost duplicate code of end of has_perm in authorisation.py
-        # should be refactored, but cannot think of good way atm
-        if not user.is_authenticated:
-            from .auth.token_auth import TokenGroupProvider
-            query = Q(id=None)
-            tgp = TokenGroupProvider()
-            for group in tgp.getGroups(user):
-                if downloadable:
-                    query |= Q(objectacls__pluginId=tgp.name,
-                               objectacls__entityId=str(group),
-                               objectacls__content_type__model='project',
-                               objectacls__canDownload=True) &\
-                        (Q(objectacls__effectiveDate__lte=datetime.today())
-                         | Q(objectacls__effectiveDate__isnull=True)) &\
-                        (Q(objectacls__expiryDate__gte=datetime.today())
-                         | Q(objectacls__expiryDate__isnull=True))
-                elif viewsensitive:
-                    query |= Q(objectacls__pluginId=tgp.name,
-                               objectacls__entityId=str(group),
-                               objectacls__content_type__model='project',
-                               objectacls__canSensitive=True) &\
-                        (Q(objectacls__effectiveDate__lte=datetime.today())
-                         | Q(objectacls__effectiveDate__isnull=True)) &\
-                        (Q(objectacls__expiryDate__gte=datetime.today())
-                         | Q(objectacls__expiryDate__isnull=True))
-                else:
-                    query |= Q(objectacls__pluginId=tgp.name,
-                               objectacls__entityId=str(group),
-                               objectacls__content_type__model='project',
-                               objectacls__canRead=True) &\
-                        (Q(objectacls__effectiveDate__lte=datetime.today())
-                         | Q(objectacls__effectiveDate__isnull=True)) &\
-                        (Q(objectacls__expiryDate__gte=datetime.today())
-                         | Q(objectacls__expiryDate__isnull=True))
-            return query
-
-        # for which datafiles does the user have read access
-        # based on USER permissions?
-        if downloadable:
-            query = Q(objectacls__pluginId=django_user,
-                      objectacls__entityId=str(user.id),
-                      objectacls__content_type__model='project',
-                      objectacls__canDownload=True,
-                      objectacls__isOwner=False) &\
-                (Q(objectacls__effectiveDate__lte=datetime.today())
-                 | Q(objectacls__effectiveDate__isnull=True)) &\
-                (Q(objectacls__expiryDate__gte=datetime.today())
-                 | Q(objectacls__expiryDate__isnull=True))
-        elif viewsensitive:
-            query = Q(objectacls__pluginId=django_user,
-                      objectacls__entityId=str(user.id),
-                      objectacls__content_type__model='project',
-                      objectacls__canSensitive=True,
-                      objectacls__isOwner=False) &\
-                (Q(objectacls__effectiveDate__lte=datetime.today())
-                 | Q(objectacls__effectiveDate__isnull=True)) &\
-                (Q(objectacls__expiryDate__gte=datetime.today())
-                 | Q(objectacls__expiryDate__isnull=True))
-        else:
-            query = Q(objectacls__pluginId=django_user,
-                      objectacls__entityId=str(user.id),
-                      objectacls__content_type__model='project',
-                      objectacls__canRead=True,
-                      objectacls__isOwner=False) &\
-                (Q(objectacls__effectiveDate__lte=datetime.today())
-                 | Q(objectacls__effectiveDate__isnull=True)) &\
-                (Q(objectacls__expiryDate__gte=datetime.today())
-                 | Q(objectacls__expiryDate__isnull=True))
-        # for which does datafiles does the user have read access
-        # based on GROUP permissions
-        for name, group in user.userprofile.ext_groups:
-            if downloadable:
-                query |= Q(objectacls__pluginId=name,
-                           objectacls__entityId=str(group),
-                           objectacls__content_type__model='project',
-                           objectacls__canDownload=True) &\
-                    (Q(objectacls__effectiveDate__lte=datetime.today())
-                     | Q(objectacls__effectiveDate__isnull=True)) &\
-                    (Q(objectacls__expiryDate__gte=datetime.today())
-                     | Q(objectacls__expiryDate__isnull=True))
-            elif viewsensitive:
-                query |= Q(objectacls__pluginId=name,
-                           objectacls__entityId=str(group),
-                           objectacls__content_type__model='project',
-                           objectacls__canSensitive=True) &\
-                    (Q(objectacls__effectiveDate__lte=datetime.today())
-                     | Q(objectacls__effectiveDate__isnull=True)) &\
-                    (Q(objectacls__expiryDate__gte=datetime.today())
-                     | Q(objectacls__expiryDate__isnull=True))
-            else:
-                query |= Q(objectacls__pluginId=name,
-                           objectacls__entityId=str(group),
-                           objectacls__content_type__model='project',
-                           objectacls__canRead=True) &\
-                    (Q(objectacls__effectiveDate__lte=datetime.today())
-                     | Q(objectacls__effectiveDate__isnull=True)) &\
-                    (Q(objectacls__expiryDate__gte=datetime.today())
-                     | Q(objectacls__expiryDate__isnull=True))
-        return query
-
-
-    def _query_owned_and_shared(self, user, downloadable=False, viewsensitive=False):
-        return self._query_shared(user, downloadable, viewsensitive) | self._query_owned(user)
-
-
-    def owned_and_shared(self, user, downloadable=False, viewsensitive=False):
-        return super().get_queryset().filter(
-            self._query_owned_and_shared(user, downloadable, viewsensitive)).distinct()
-
-
-    def owned(self, user):
-        """
-        Return all datafiles which are owned by a particular user, including
-        those shared with a group of which the user is a member.
-
-        :param User user: a User instance
-        :returns: QuerySet of datafiles owned by user
-        :rtype: QuerySet
-        """
-
-        # the user must be authenticated
-        if not user.is_authenticated:
-            return super().get_queryset().none()
-
-        query = self._query_owned(user)
-        for group in user.groups.all():
-            query |= self._query_owned_by_group(group)
-        return super().get_queryset().filter(query).distinct()
-
-
-#TODO: Write project/dataset/datafile managers to handle ACLs
-
-
-# class SafeManager(models.Manager):
-#
-#     def __init__(self,
-#                  content_type=None):
-#         self.content_type = None
-#
-#     def all(self, user):  # @ReservedAssignment
-#         """
-#         Returns all objects of content_type a user - either authenticated or
-#         anonymous - is allowed to see and search
-#
-#         :param User user: a User instance
-#         :returns: QuerySet of Datasets
-#         :rtype: QuerySet
-#         """
-#
-#         query = self._query_owned_and_shared(user) #self._query_all_public() |\
-#
-#         return super().get_queryset().filter(
-#             query).distinct()
-#
-#
-#     def _query_owned(self, user, user_id=None):
-#         # build the query to filter the ACL table
-#         if not self.content_type:
-#             return None
-#         query = Q(objectacls__pluginId=django_user,
-#                   objectacls__entityId=str(user_id or user.id),
-#                   objectacls__content_type__model=self.content_type,
-#                   objectacls__isOwner=True) &\
-#                 (Q(objectacls__effectiveDate__lte=datetime.today())
-#              | Q(objectacls__effectiveDate__isnull=True)) &\
-#             (Q(objectacls__expiryDate__gte=datetime.today())
-#              | Q(objectacls__expiryDate__isnull=True))
-#         return query
-#
-#
-#     def _query_owned_by_group(self, group, group_id=None):
-#         # build the query to filter the ACL table
-#         if not self.content_type:
-#             return None
-#         query = Q(objectacls__pluginId=django_group,
-#                   objectacls__entityId=str(group_id or group.id),
-#                   objectacls__content_type__model=self.content_type,
-#                   objectacls__isOwner=True) &\
-#             (Q(objectacls__effectiveDate__lte=datetime.today())
-#              | Q(objectacls__effectiveDate__isnull=True)) &\
-#             (Q(objectacls__expiryDate__gte=datetime.today())
-#              | Q(objectacls__expiryDate__isnull=True))
-#         return query
-#
-#     # ARE THE TOKENS EXP ONLY?
-#     def _query_shared(self, user, downloadable=False):
-#         '''
-#         get all shared datasets, not owned ones
-#         '''
-#         # if the user is not authenticated, only tokens apply
-#         # this is almost duplicate code of end of has_perm in authorisation.py
-#         # should be refactored, but cannot think of good way atm
-#         if not self.content_type:
-#             return None
-#         if not user.is_authenticated:
-#             from .auth.token_auth import TokenGroupProvider
-#             query = Q(id=None)
-#             tgp = TokenGroupProvider()
-#             for group in tgp.getGroups(user):
-#                 if downloadable:
-#                     query |= Q(objectacls__pluginId=tgp.name,
-#                                objectacls__entityId=str(group),
-#                                objectacls__content_type__model=self.content_type,
-#                                objectacls__canDownload=True) &\
-#                         (Q(objectacls__effectiveDate__lte=datetime.today())
-#                          | Q(objectacls__effectiveDate__isnull=True)) &\
-#                         (Q(objectacls__expiryDate__gte=datetime.today())
-#                          | Q(objectacls__expiryDate__isnull=True))
-#                 else:
-#                     query |= Q(objectacls__pluginId=tgp.name,
-#                                objectacls__entityId=str(group),
-#                                objectacls__content_type__model=self.content_type,
-#                                objectacls__canRead=True) &\
-#                         (Q(objectacls__effectiveDate__lte=datetime.today())
-#                          | Q(objectacls__effectiveDate__isnull=True)) &\
-#                         (Q(objectacls__expiryDate__gte=datetime.today())
-#                          | Q(objectacls__expiryDate__isnull=True))
-#             return query
-#
-#         # for which datasets does the user have read access
-#         # based on USER permissions?
-#         if downloadable:
-#             query = Q(objectacls__pluginId=django_user,
-#                       objectacls__entityId=str(user.id),
-#                       objectacls__content_type__model=self.content_type,
-#                       objectacls__canDownload=True,
-#                       objectacls__isOwner=False) &\
-#                 (Q(objectacls__effectiveDate__lte=datetime.today())
-#                  | Q(objectacls__effectiveDate__isnull=True)) &\
-#                 (Q(objectacls__expiryDate__gte=datetime.today())
-#                  | Q(objectacls__expiryDate__isnull=True))
-#         else:
-#             query = Q(objectacls__pluginId=django_user,
-#                       objectacls__entityId=str(user.id),
-#                       objectacls__content_type__model=self.content_type,
-#                       objectacls__canRead=True,
-#                       objectacls__isOwner=False) &\
-#                 (Q(objectacls__effectiveDate__lte=datetime.today())
-#                  | Q(objectacls__effectiveDate__isnull=True)) &\
-#                 (Q(objectacls__expiryDate__gte=datetime.today())
-#                  | Q(objectacls__expiryDate__isnull=True))
-#         # for which does datasets does the user have read access
-#         # based on GROUP permissions
-#         for name, group in user.userprofile.ext_groups:
-#             if downloadable:
-#                 query |= Q(objectacls__pluginId=name,
-#                            objectacls__entityId=str(group),
-#                            objectacls__content_type__model=self.content_type,
-#                            objectacls__canDownload=True) &\
-#                     (Q(objectacls__effectiveDate__lte=datetime.today())
-#                      | Q(objectacls__effectiveDate__isnull=True)) &\
-#                     (Q(objectacls__expiryDate__gte=datetime.today())
-#                      | Q(objectacls__expiryDate__isnull=True))
-#             else:
-#                 query |= Q(objectacls__pluginId=name,
-#                            objectacls__entityId=str(group),
-#                            objectacls__content_type__model=self.content_type,
-#                            objectacls__canRead=True) &\
-#                     (Q(objectacls__effectiveDate__lte=datetime.today())
-#                      | Q(objectacls__effectiveDate__isnull=True)) &\
-#                     (Q(objectacls__expiryDate__gte=datetime.today())
-#                      | Q(objectacls__expiryDate__isnull=True))
-#         return query
-#
-#
-#     def _query_owned_and_shared(self, user, downloadable=False):
-#         return self._query_shared(user, downloadable) | self._query_owned(user)
-#
-#
-#     def owned_and_shared(self, user, downloadable=False):
-#         return super().get_queryset().filter(
-#             self._query_owned_and_shared(user, downloadable)).distinct()
-#
-#
-#     def owned(self, user):
-#         """
-#         Return all datasets which are owned by a particular user, including
-#         those shared with a group of which the user is a member.
-#
-#         :param User user: a User instance
-#         :returns: QuerySet of datasets owned by user
-#         :rtype: QuerySet
-#         """
-#
-#         # the user must be authenticated
-#         if not user.is_authenticated:
-#             return super().get_queryset().none()
-#
-#         query = self._query_owned(user)
-#         for group in user.groups.all():
-#             query |= self._query_owned_by_group(group)
-#         return super().get_queryset().filter(query).distinct()
-#
-#     def get(self, user, self.content_type, content_id):
-#         """
-#         Returns a dataset under the consideration of the ACL rules
-#         Raises PermissionDenied if the user does not have access.
-#
-#         :param User user: a User instance
-#         :param int dataset_id: the ID of the Dataset to be edited
-#         :returns: Dataset
-#         :rtype: Dataset
-#         :raises PermissionDenied:
-#         """
-#         if not self.content_type:
-#             raise PermissionDenied
-#         content = super().get(pk=content_id)
-#
-#         perm_string = 'tardis_acls.view_' + self.content_type
-#
-#         if user.has_perm(perm_string, content):
-#             return content
-#         raise PermissionDenied
+    # Experiment only so far
+    def _query_all_public(self):
+        from .models import Experiment
+        return ~Q(public_access=Experiment.PUBLIC_ACCESS_NONE) &\
+               ~Q(public_access=Experiment.PUBLIC_ACCESS_EMBARGO)

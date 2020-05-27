@@ -4,12 +4,13 @@ from os import path
 from datetime import datetime
 from django.conf import settings
 from django.contrib.contenttypes.fields import GenericRelation
+from django.contrib.contenttypes.models import ContentType
 from django.urls import reverse
 from django.db import models
 from django.utils import timezone
 from django.utils.encoding import python_2_unicode_compatible
 
-from ..managers import OracleSafeManager, DatasetManager
+from ..managers import OracleSafeManager, SafeManager
 from .storage import StorageBox
 
 from .access_control import ObjectACL
@@ -71,7 +72,7 @@ class Dataset(models.Model):
     embargo_until = models.DateTimeField(null=True, blank=True)
     objectacls = GenericRelation(ObjectACL)
     objects = OracleSafeManager()
-    safe = DatasetManager()  # The acl-aware specific manager.
+    safe = SafeManager()  # The acl-aware specific manager.
     tags = TaggableManager(blank=True)
     public_access = \
         models.PositiveSmallIntegerField(choices=PUBLIC_ACCESS_CHOICES,
