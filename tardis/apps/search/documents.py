@@ -5,7 +5,7 @@ from elasticsearch_dsl import analysis, analyzer
 from django_elasticsearch_dsl import Document, fields
 from django_elasticsearch_dsl.registries import registry
 
-from tardis.tardis_portal.models import Dataset, Experiment, \
+from tardis.tardis_portal.models import Project, Dataset, Experiment, \
     DataFile, Instrument, ObjectACL
 
 
