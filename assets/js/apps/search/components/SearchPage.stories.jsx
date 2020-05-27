@@ -22,15 +22,29 @@ export const dsResultsData = [
 ]
 
 export const dfResultsData = [
-    Object.assign({},dsResultsData[0],{
+    {
+        id: "1",
+        url: "",
         type:"datafile",
         filename:"DF1",
         safeFileSize: "6MB",
         accessRights:"viewOnly"
-    })
+    }
+]
+
+export const projectResultsData = [
+    {
+        id: "1",
+        url: "",
+        type:"project",
+        name:"Understanding genetic drivers in acute megakaryoblastic leukaemia",
+        safeFileSize: "79GB",
+        accessRights:"viewOnly"
+    }
 ]
 
 export const searchResultsData = {
+    project: projectResultsData,
     experiment: experimentListData,
     dataset: dsResultsData,
     datafile: dfResultsData

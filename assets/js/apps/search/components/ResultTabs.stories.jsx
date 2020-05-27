@@ -10,8 +10,9 @@ export default {
 };
 
 export const countsData = {
-    selectedLevel: "experiment",
+    selectedLevel: "project",
     counts: {
+        project: 4,
         experiment: 14,
         dataset: 5,
         datafile: 80

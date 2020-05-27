@@ -12,7 +12,8 @@ export function ResultTabs({counts, selectedLevel, onChange}) {
         counts = {
             experiment: null,
             dataset: null,
-            datafile: null
+            datafile: null,
+            projects: null
         }
     }
 
@@ -38,9 +39,10 @@ export function ResultTabs({counts, selectedLevel, onChange}) {
 
     return (
         <Nav variant="tabs" activeKey={selectedLevel}>
-            {renderTab("experiment","Experiment",counts.experiment,selectedLevel)}
-            {renderTab("dataset","Dataset",counts.dataset,selectedLevel)}
-            {renderTab("datafile","Datafile",counts.datafile,selectedLevel)} 
+            {renderTab("project","Projects",counts.datafile,selectedLevel)}
+            {renderTab("experiment","Experiments",counts.experiment,selectedLevel)}
+            {renderTab("dataset","Datasets",counts.dataset,selectedLevel)}
+            {renderTab("datafile","Datafiles",counts.datafile,selectedLevel)}
         </Nav>
     )
 }
@@ -57,6 +59,7 @@ ResultTabs.propTypes = {
 
 
 const NameColumn = {
+    "project":"name",
     "experiment":"title",
     "dataset":"description",
     "datafile":"filename"
@@ -160,12 +163,14 @@ export function PureResultSection({resultSets, selected,
                                    onSelect, isLoading, error}){
     if (!resultSets){
         resultSets = {
+            project: [],
             experiment: [],
             dataset: [],
             datafile: []
         }
     }
     const counts = {
+        project: resultSets.experiment.length,
         experiment: resultSets.experiment.length,
         dataset: resultSets.dataset.length,
         datafile: resultSets.datafile.length
