@@ -36,7 +36,7 @@ from django.http import HttpResponseRedirect
 from django.db.models import Q
 from django.conf import settings
 
-from ..models import Experiment, Dataset, DataFile, GroupAdmin
+from ..models import Project, Experiment, Dataset, DataFile, GroupAdmin
 from ..shortcuts import return_response_error
 
 
