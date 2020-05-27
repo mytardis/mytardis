@@ -19,7 +19,7 @@ from django.template.defaultfilters import filesizeformat
 
 from tardis.tardis_portal.api import default_authentication
 from tardis.tardis_portal.auth import decorators as authz
-from tardis.tardis_portal.models import (Experiment, Dataset, DataFile,
+from tardis.tardis_portal.models import (Project, Experiment, Dataset, DataFile,
                                          Instrument, ExperimentParameter,
                                          DatasetParameter, DatafileParameter)
 
