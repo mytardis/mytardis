@@ -10,7 +10,7 @@ export default {
 };
 
 export const countsData = {
-    selectedLevel: "project",
+    selectedType: "project",
     counts: {
         project: 4,
         experiment: 14,

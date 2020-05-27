@@ -6,7 +6,7 @@ import Nav from 'react-bootstrap/Nav';
 import Badge from 'react-bootstrap/Badge';
 import SearchInfoContext from './SearchInfoContext';
 
-export function ResultTabs({counts, selectedLevel, onChange}) {
+export function ResultTabs({counts, selectedType, onChange}) {
 
     if (!counts) {
         counts = {
@@ -18,13 +18,13 @@ export function ResultTabs({counts, selectedLevel, onChange}) {
     }
 
     const handleNavClicked = (key) => {
-        if (key !== selectedLevel){
+        if (key !== selectedType){
             onChange(key);
         }
     }
 
     const renderTab = (key,label) => {
-        // const badgeVariant = selectedLevel === key ? "primary":"secondary";
+        // const badgeVariant = selectedType === key ? "primary":"secondary";
         const badgeVariant = "secondary";
         return (
         <Nav.Item role="tab">
@@ -38,11 +38,11 @@ export function ResultTabs({counts, selectedLevel, onChange}) {
     }
 
     return (
-        <Nav variant="tabs" activeKey={selectedLevel}>
-            {renderTab("project","Projects",counts.datafile,selectedLevel)}
-            {renderTab("experiment","Experiments",counts.experiment,selectedLevel)}
-            {renderTab("dataset","Datasets",counts.dataset,selectedLevel)}
-            {renderTab("datafile","Datafiles",counts.datafile,selectedLevel)}
+        <Nav variant="tabs" activeKey={selectedType}>
+            {renderTab("project","Projects",counts.datafile,selectedType)}
+            {renderTab("experiment","Experiments",counts.experiment,selectedType)}
+            {renderTab("dataset","Datasets",counts.dataset,selectedType)}
+            {renderTab("datafile","Datafiles",counts.datafile,selectedType)}
         </Nav>
     )
 }
@@ -54,7 +54,7 @@ ResultTabs.propTypes = {
         dataset: PropTypes.number,
         datafile: PropTypes.number
     }),
-    selectedLevel: PropTypes.string.isRequired,
+    selectedType: PropTypes.string.isRequired,
     onChange: PropTypes.func.isRequired
 }
 
@@ -162,26 +162,27 @@ export function ResultList(props) {
 
 export function PureResultSection({resultSets, selected,
                                    onSelect, isLoading, error}){
-    if (!resultSets){
-        resultSets = {
-            project: [],
-            experiment: [],
-            dataset: [],
-            datafile: []
+    let counts;
+    if (!resultSets) {
+        resultSets = {};
+        counts = {
+            project: null,
+            experiment: null,
+            dataset: null,
+            datafile: null
+        }
+    } else {
+        counts = {};
+        for (let key in resultSets) {
+            counts[key] = resultSets[key].length;
         }
     }
-    const counts = {
-        project: resultSets.project.length,
-        experiment: resultSets.experiment.length,
-        dataset: resultSets.dataset.length,
-        datafile: resultSets.datafile.length
-    };        
 
     const currentResultSet = resultSets[selected],
           currentCount = counts[selected];
     return (
         <>
-            <ResultTabs counts={counts} selectedLevel={selected} onChange={onSelect} />
+            <ResultTabs counts={counts} selectedType={selected} onChange={onSelect} />
             <div role="tabpanel">
                 {(!isLoading && !error) ?
                     <p>Showing {currentCount} results</p>
@@ -194,14 +195,14 @@ export function PureResultSection({resultSets, selected,
 }
 
 export default function ResultSection() {
-    const [selectedLevel, onSelect ] = useState('experiment'),
+    const [selectedType, onSelect ] = useState('experiment'),
         searchInfo = useContext(SearchInfoContext);
     return (
         <PureResultSection
             resultSets={searchInfo.results}
             error={searchInfo.error}
             isLoading={searchInfo.isLoading}
-            selected={selectedLevel}
+            selected={selectedType}
             onSelect={onSelect}
         />
     )
