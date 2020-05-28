@@ -74,25 +74,25 @@ def get_accessible_datafiles_for_user(request):
 
 
 def has_ownership(request, obj_id, ct_type):
-    if ct_type = 'project':
+    if ct_type == 'project':
         return Project.safe.owned(request.user).filter(pk=obj_id).exists()
-    if ct_type = 'experiment':
+    if ct_type == 'experiment':
         return Experiment.safe.owned(request.user).filter(pk=obj_id).exists()
-    if ct_type = 'dataset':
+    if ct_type == 'dataset':
         return Dataset.safe.owned(request.user).filter(pk=obj_id).exists()
-    if ct_type = 'datafile':
+    if ct_type == 'datafile':
         return DataFile.safe.owned(request.user).filter(pk=obj_id).exists()
 
 
 def has_access(request, obj_id, ct_type):
     try:
-        if ct_type = 'project':
+        if ct_type == 'project':
             obj = Project.objects.get(id=obj_id)
-        if ct_type = 'experiment':
+        if ct_type == 'experiment':
             obj = Experiment.objects.get(id=obj_id)
-        if ct_type = 'dataset':
+        if ct_type == 'dataset':
             obj = Dataset.objects.get(id=obj_id)
-        if ct_type = 'datafile':
+        if ct_type == 'datafile':
             obj = DataFile.objects.get(id=obj_id)
     except (Project.DoesNotExist, Experiment.DoesNotExist,
             Dataset.DoesNotExist, DataFile.DoesNotExist):
@@ -101,57 +101,57 @@ def has_access(request, obj_id, ct_type):
 
 
 def has_write(request, obj_id, ct_type):
-    if ct_type = 'project':
+    if ct_type == 'project':
         obj = Project.objects.get(id=obj_id)
         if obj.locked:
             return False
-    if ct_type = 'experiment':
+    if ct_type == 'experiment':
         obj = Experiment.objects.get(id=obj_id)
         if obj.locked:
             return False
-    if ct_type = 'dataset':
+    if ct_type == 'dataset':
         obj = Dataset.objects.get(id=obj_id)
         if obj.immutable:
             return False
-    if ct_type = 'datafile':
+    if ct_type == 'datafile':
         obj = DataFile.objects.get(id=obj_id)
     return request.user.has_perm('tardis_acls.change_'+ct_type, obj)
 
 
 def has_download_access(request, obj_id, ct_type):
-    if ct_type = 'project':
+    if ct_type == 'project':
         return Project.safe.owned_and_shared(request.user, downloadable=True
                                              ).filter(id=obj_id).exists()
-    if ct_type = 'experiment': # Retain public functionality for now
+    if ct_type == 'experiment': # Retain public functionality for now
         if Experiment.safe.owned_and_shared(request.user, downloadable=True
                                                 ).filter(id=obj_id).exists():
             return True
         else:
             exp = Experiment.objects.get(id=obj_id)
             return Experiment.public_access_implies_distribution(exp.public_access)
-    if ct_type = 'dataset':
+    if ct_type == 'dataset':
         return Dataset.safe.owned_and_shared(request.user, downloadable=True
                                              ).filter(id=obj_id).exists()
-    if ct_type = 'datafile':
+    if ct_type == 'datafile':
         return DataFile.safe.owned_and_shared(request.user, downloadable=True
                                               ).filter(id=obj_id).exists()
 
 
 def has_sensitive_access(request, obj_id, ct_type):
-    if ct_type = 'project':
+    if ct_type == 'project':
         return Project.safe.owned_and_shared(request.user, viewsensitive=True
                                              ).filter(id=obj_id).exists()
-    if ct_type = 'experiment': # Retain public functionality for now
+    if ct_type == 'experiment': # Retain public functionality for now
         if Experiment.safe.owned_and_shared(request.user, viewsensitive=True
                                              ).filter(id=obj_id).exists():
             return True
         else:
             exp = Experiment.objects.get(id=obj_id)
             return Experiment.public_access_implies_distribution(exp.public_access)
-    if ct_type = 'dataset':
+    if ct_type == 'dataset':
         return Dataset.safe.owned_and_shared(request.user, viewsensitive=True
                                              ).filter(id=obj_id).exists()
-    if ct_type = 'datafile':
+    if ct_type == 'datafile':
         return DataFile.safe.owned_and_shared(request.user, viewsensitive=True
                                              ).filter(id=obj_id).exists()
 
@@ -173,13 +173,13 @@ def has_read_or_owner_ACL(request, obj_id, ct_type):
     from datetime import datetime
     from .localdb_auth import django_user
 
-    if ct_type = 'project':
+    if ct_type == 'project':
         experiment = project.safe.get(request.user, obj_id)
-    if ct_type = 'experiment':
+    if ct_type == 'experiment':
         experiment = Experiment.safe.get(request.user, obj_id)
-    if ct_type = 'dataset':
+    if ct_type == 'dataset':
         experiment = Dataset.safe.get(request.user, obj_id)
-    if ct_type = 'datafile':
+    if ct_type == 'datafile':
         experiment = Datafile.safe.get(request.user, obj_id)
 
     # does the user own this proj/exp/set/file
