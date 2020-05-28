@@ -8,7 +8,7 @@ from django.shortcuts import redirect
 from tastypie.utils import trailing_slash
 
 import tardis.tardis_portal.api
-from tardis.tardis_portal.auth.decorators import has_datafile_download_access
+from tardis.tardis_portal.auth.decorators import has_download_access
 from tardis.tardis_portal.models.datafile import DataFileObject
 
 from .utils import generate_presigned_url
@@ -40,8 +40,8 @@ class ReplicaAppResource(tardis.tardis_portal.api.ReplicaResource):
         self.throttle_check(request)
 
         dfo = DataFileObject.objects.get(id=kwargs['pk'])
-        if not has_datafile_download_access(
-                request=request, datafile_id=dfo.datafile.id):
+        if not has_download_access(
+                request=request, datafile_id=dfo.datafile.id, "datafile"):
             return HttpResponseForbidden()
 
         self.authorized_read_detail(

@@ -135,35 +135,35 @@ class SearchAppResource(Resource):
                 sensitive_bool = False
                 size = 0
                 if hit["_index"] == "project":
-                    if not authz.has_project_access(request, hit["_source"]["id"]):
+                    if not authz.has_access(request, hit["_source"]["id"], "project"):
                         continue
-                    if authz.has_project_download_access(request, hit["_source"]["id"]):
+                    if authz.has_download_access(request, hit["_source"]["id"], "project"):
                         download_bool = True
-                    if authz.has_project_sensitive_access(request, hit["_source"]["id"]):
+                    if authz.has_sensitive_access(request, hit["_source"]["id"], "project"):
                         sensitive_bool = True
                     size = Project.objects.get(id= hit["_source"]["id"]).get_size(request.user)
                 if hit["_index"] == "experiment":
-                    if not authz.has_experiment_access(request, hit["_source"]["id"]):
+                    if not authz.has_access(request, hit["_source"]["id"], "experiment"):
                         continue
-                    if authz.has_experiment_download_access(request, hit["_source"]["id"]):
+                    if authz.has_download_access(request, hit["_source"]["id"], "experiment"):
                         download_bool = True
-                    if authz.has_experiment_sensitive_access(request, hit["_source"]["id"]):
+                    if authz.has_sensitive_access(request, hit["_source"]["id"], "experiment"):
                         sensitive_bool = True
                     size = Experiment.objects.get(id= hit["_source"]["id"]).get_size(request.user)
                 if hit["_index"] == "dataset":
-                    if not authz.has_dataset_access(request, hit["_source"]["id"]):
+                    if not authz.has_access(request, hit["_source"]["id"], "dataset"):
                         continue
-                    if authz.has_dataset_download_access(request, hit["_source"]["id"]):
+                    if authz.has_download_access(request, hit["_source"]["id"], "dataset"):
                         download_bool = True
-                    if authz.has_dataset_sensitive_access(request, hit["_source"]["id"]):
+                    if authz.has_sensitive_access(request, hit["_source"]["id"], "dataset"):
                         sensitive_bool = True
                     size = Dataset.objects.get(id= hit["_source"]["id"]).get_size(request.user)
                 if hit["_index"] == "datafile":
-                    if not authz.has_datafile_access(request, hit["_source"]["id"]):
+                    if not authz.has_access(request, hit["_source"]["id"], "datafile"):
                         continue
-                    if authz.has_datafile_download_access(request, hit["_source"]["id"]):
+                    if authz.has_download_access(request, hit["_source"]["id"], "datafile"):
                         download_bool = True
-                    if authz.has_datafile_sensitive_access(request, hit["_source"]["id"]):
+                    if authz.has_sensitive_access(request, hit["_source"]["id"], "datafile"):
                         sensitive_bool = True
                     size = DataFile.objects.get(id= hit["_source"]["id"]).get_size(request.user)
                 safe_hit = hit.copy()

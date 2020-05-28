@@ -62,13 +62,13 @@ def experiment_description(request, experiment_id):
     c['size'] = DataFile.sum_sizes(c['datafiles'])
 
     c['has_download_permissions'] = \
-        authz.has_experiment_download_access(request, experiment_id)
+        authz.has_download_access(request, experiment_id, "experiment")
 
     c['has_write_permissions'] = \
-        authz.has_write_permissions(request, experiment_id)
+        authz.has_write(request, experiment_id, "experiment")
 
     if request.user.is_authenticated:
-        c['is_owner'] = authz.has_experiment_ownership(request, experiment_id)
+        c['is_owner'] = authz.has_ownership(request, experiment_id, 'experiment')
 
     _add_protocols_and_organizations(request, experiment, c)
 
@@ -131,8 +131,8 @@ def experiment_dataset_transfer(request, experiment_id):
 @authz.dataset_access_required
 def retrieve_dataset_metadata(request, dataset_id):
     dataset = Dataset.objects.get(pk=dataset_id)
-    has_write_permissions = authz.has_dataset_write(request, dataset_id)
-    has_sensitive_permissions = authz.has_dataset_sensitive_access(request, dataset_id)
+    has_write_permissions = authz.has_write(request, dataset_id, "dataset")
+    has_sensitive_permissions = authz.has_sensitive_access(request, dataset_id, "dataset")
 
     parametersets = dataset.datasetparameterset_set.exclude(
         schema__hidden=True)
@@ -150,9 +150,9 @@ def retrieve_dataset_metadata(request, dataset_id):
 def retrieve_experiment_metadata(request, experiment_id):
     experiment = Experiment.objects.get(pk=experiment_id)
     has_write_permissions = \
-        authz.has_write_permissions(request, experiment_id)
+        authz.has_write(request, experiment_id, "experiment")
     has_sensitive_permissions = \
-        authz.has_experiment_sensitive_access(request, experiment_id)
+        authz.has_sensitive_access(request, experiment_id, "experiment")
 
     parametersets = experiment.experimentparameterset_set\
                               .exclude(schema__hidden=True)
@@ -213,13 +213,13 @@ def retrieve_parameters(request, datafile_id):
 
     datafile = DataFile.objects.get(id=datafile_id)
     dataset_id = datafile.dataset.id
-    has_write_permissions = authz.has_dataset_write(request, dataset_id)
+    has_write_permissions = authz.has_write(request, dataset_id, "dataset")
 
     c = {'parametersets': parametersets,
          'datafile': datafile,
          'has_write_permissions': has_write_permissions,
          'has_download_permissions':
-         authz.has_dataset_download_access(request, dataset_id)}
+         authz.has_download_access(request, dataset_id, "dataset")}
 
     return render_response_index(
         request, 'tardis_portal/ajax/parameters.html', c)
@@ -266,13 +266,13 @@ def retrieve_datafile_list(
         dataset = paginator.page(paginator.num_pages)
 
     is_owner = False
-    has_download_permissions = authz.has_dataset_download_access(request,
-                                                                 dataset_id)
+    has_download_permissions = authz.has_download_access(request, dataset_id,
+                                                         "dataset")
     has_write_permissions = False
 
     if request.user.is_authenticated:
-        is_owner = authz.has_dataset_ownership(request, dataset_id)
-        has_write_permissions = authz.has_dataset_write(request, dataset_id)
+        is_owner = authz.has_ownership(request, dataset_id, 'dataset')
+        has_write_permissions = authz.has_write(request, dataset_id, "dataset")
 
     immutable = Dataset.objects.get(id=dataset_id).immutable
 
@@ -302,7 +302,7 @@ def experiment_public_access_badge(request, experiment_id):
     except Experiment.DoesNotExist:
         return HttpResponse('')
 
-    if authz.has_experiment_access(request, experiment_id):
+    if authz.has_access(request, experiment_id, "experiment"):
         return HttpResponse(render_public_access_badge(experiment))
     return HttpResponse('')
 
