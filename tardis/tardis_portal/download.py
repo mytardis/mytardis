@@ -61,8 +61,8 @@ def _create_download_response(request, datafile_id, disposition='attachment'):  
     except DataFile.DoesNotExist:
         return return_response_not_found(request)
     # Check users has access to datafile
-    if not has_download_access(request=request, datafile_id=datafile.id,
-                               "datafile"):
+    if not has_download_access(request=request, obj_id=datafile.id,
+                               ct_type="datafile"):
         return return_response_error(request)
     # Send an image that can be seen in the browser
     if disposition == 'inline' and datafile.is_image():
@@ -541,14 +541,14 @@ def streaming_download_datafiles(request):  # too complex # noqa
             def get_dataset_datafiles(dsid):
                 for datafile in DataFile.objects.filter(dataset=dsid):
                     if has_download_access(request=request,
-                                           datafile_id=datafile.id, "datafile"):
+                                           obj_id=datafile.id, ct_type="datafile"):
                         yield datafile
 
             # Generator to produce datafile from datafile id
             def get_datafile(dfid):
                 datafile = DataFile.objects.get(pk=dfid)
                 if has_download_access(request=request,
-                                       datafile_id=datafile.id, "datafile"):
+                                       obj_id=datafile.id, ct_type="datafile"):
                     yield datafile
 
             # Take chained generators and turn them into a set of datafiles
@@ -577,7 +577,7 @@ def streaming_download_datafiles(request):  # too complex # noqa
                 url__endswith=raw_path,
                 dataset__experiment__id=experiment_id)[0]
             if has_download_access(request=request,
-                                   datafile_id=datafile.id, "datafile"):
+                                   obj_id=datafile.id, ct_type="datafile"):
                 df_set = set([datafile])
     else:
         message = "No datasets or datafiles were selected for download"

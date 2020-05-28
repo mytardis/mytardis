@@ -41,7 +41,7 @@ class ReplicaAppResource(tardis.tardis_portal.api.ReplicaResource):
 
         dfo = DataFileObject.objects.get(id=kwargs['pk'])
         if not has_download_access(
-                request=request, datafile_id=dfo.datafile.id, "datafile"):
+                request=request, obj_id=dfo.datafile.id, ct_type="datafile"):
             return HttpResponseForbidden()
 
         self.authorized_read_detail(

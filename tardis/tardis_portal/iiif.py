@@ -106,7 +106,7 @@ def compute_etag(request, datafile_id, *args, **kwargs):
     except DataFile.DoesNotExist:
         return None
     if not has_download_access(request=request,
-                               datafile_id=datafile.id, "datafile"):
+                               obj_id=datafile.id, ct_type="datafile"):
         return None
     # OK, we can compute the Etag without giving anything away now
     # Calculating SHA-512 sums is now optional, so use MD5 sums
@@ -130,7 +130,7 @@ def download_image(request, datafile_id, region, size, rotation,
     if not is_public:
         # Check users has access to datafile
         if not has_download_access(request=request,
-                                   datafile_id=datafile.id, "datafile"):
+                                   obj_id=datafile.id, ct_type="datafile"):
             return HttpResponse('')
 
     buf = BytesIO()
@@ -203,7 +203,7 @@ def download_info(request, datafile_id, format):  # @ReservedAssignment
         return HttpResponseNotFound()
     # Check users has access to datafile
     if not has_download_access(request=request,
-                               datafile_id=datafile.id, "datafile"):
+                               obj_id=datafile.id, ct_type="datafile"):
         return HttpResponseNotFound()
 
     file_obj = datafile.get_file()
