@@ -174,24 +174,24 @@ def has_read_or_owner_ACL(request, obj_id, ct_type):
     from .localdb_auth import django_user
 
     if ct_type == 'project':
-        experiment = project.safe.get(request.user, obj_id)
+        obj = project.safe.get(request.user, obj_id)
     if ct_type == 'experiment':
-        experiment = Experiment.safe.get(request.user, obj_id)
+        obj = Experiment.safe.get(request.user, obj_id)
     if ct_type == 'dataset':
-        experiment = Dataset.safe.get(request.user, obj_id)
+        obj = Dataset.safe.get(request.user, obj_id)
     if ct_type == 'datafile':
-        experiment = Datafile.safe.get(request.user, obj_id)
+        obj = Datafile.safe.get(request.user, obj_id)
 
-    # does the user own this proj/exp/set/file
-    query = Q(content_type=ct_type,
-              object_id=obj_id,
+    # does the user own this experiment
+    query = Q(content_type=obj.get_ct(),
+              object_id=obj.id,
               pluginId=django_user,
               entityId=str(request.user.id),
               isOwner=True)
 
     # check if there is a user based authorisation role
-    query |= Q(content_type=ct_type,
-               object_id=obj_id,
+    query |= Q(content_type=obj.get_ct(),
+               object_id=obj.id,
                pluginId=django_user,
                entityId=str(request.user.id),
                canRead=True)\
@@ -204,8 +204,8 @@ def has_read_or_owner_ACL(request, obj_id, ct_type):
     for name, group in request.user.userprofile.ext_groups:
         query |= Q(pluginId=name,
                    entityId=str(group),
-                   content_type=ct_type,
-                   object_id=obj_id,
+                   content_type=obj.get_ct(),
+                   object_id=obj.id,
                    canRead=True)\
                    & (Q(effectiveDate__lte=datetime.today())
                       | Q(effectiveDate__isnull=True))\
