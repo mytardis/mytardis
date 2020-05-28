@@ -1278,7 +1278,7 @@ class DataFileResource(MyTardisModelResource):
         self.throttle_check(request)
 
         if not has_download_access(
-                request=request, datafile_id=kwargs['pk'], "datafile"):
+                request=request, obj_id=kwargs['pk'], ct_type="datafile"):
             return HttpResponseForbidden()
 
         file_record = self._meta.queryset.get(pk=kwargs['pk'])
