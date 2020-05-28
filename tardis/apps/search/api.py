@@ -134,37 +134,21 @@ class SearchAppResource(Resource):
                 download_bool = False
                 sensitive_bool = False
                 size = 0
+
+                if not authz.has_access(request, hit["_source"]["id"], hit["_index"]):
+                    continue
+                if authz.has_download_access(request, hit["_source"]["id"], hit["_index"]):
+                    download_bool = True
+                if authz.has_sensitive_access(request, hit["_source"]["id"], hit["_index"]):
+                    sensitive_bool = True
+
                 if hit["_index"] == "project":
-                    if not authz.has_access(request, hit["_source"]["id"], "project"):
-                        continue
-                    if authz.has_download_access(request, hit["_source"]["id"], "project"):
-                        download_bool = True
-                    if authz.has_sensitive_access(request, hit["_source"]["id"], "project"):
-                        sensitive_bool = True
                     size = Project.objects.get(id= hit["_source"]["id"]).get_size(request.user)
                 if hit["_index"] == "experiment":
-                    if not authz.has_access(request, hit["_source"]["id"], "experiment"):
-                        continue
-                    if authz.has_download_access(request, hit["_source"]["id"], "experiment"):
-                        download_bool = True
-                    if authz.has_sensitive_access(request, hit["_source"]["id"], "experiment"):
-                        sensitive_bool = True
                     size = Experiment.objects.get(id= hit["_source"]["id"]).get_size(request.user)
                 if hit["_index"] == "dataset":
-                    if not authz.has_access(request, hit["_source"]["id"], "dataset"):
-                        continue
-                    if authz.has_download_access(request, hit["_source"]["id"], "dataset"):
-                        download_bool = True
-                    if authz.has_sensitive_access(request, hit["_source"]["id"], "dataset"):
-                        sensitive_bool = True
                     size = Dataset.objects.get(id= hit["_source"]["id"]).get_size(request.user)
                 if hit["_index"] == "datafile":
-                    if not authz.has_access(request, hit["_source"]["id"], "datafile"):
-                        continue
-                    if authz.has_download_access(request, hit["_source"]["id"], "datafile"):
-                        download_bool = True
-                    if authz.has_sensitive_access(request, hit["_source"]["id"], "datafile"):
-                        sensitive_bool = True
                     size = DataFile.objects.get(id= hit["_source"]["id"]).get_size(request.user)
                 safe_hit = hit.copy()
                 safe_hit["_source"].pop("objectacls")
