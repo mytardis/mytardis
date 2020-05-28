@@ -61,7 +61,6 @@ def get_owned_experiments(request):
     return Experiment.safe.owned(request.user)
 
 
-#MIKEACL: Change according to datafile permissions
 def get_accessible_datafiles_for_user(request):
     experiments = get_accessible_experiments(request)
     if experiments.count() == 0:
