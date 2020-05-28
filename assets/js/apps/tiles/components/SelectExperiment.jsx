@@ -33,6 +33,6 @@ const ExperimentListDropDown = ({ onChange, experimentListData }) => (
 );
 ExperimentListDropDown.propTypes = {
   onChange: PropTypes.func.isRequired,
-  experimentListData: PropTypes.object.isRequired,
+  experimentListData: PropTypes.array.isRequired,
 };
 export default ExperimentListDropDown;

@@ -1,6 +1,7 @@
 import React, { Fragment, useState } from 'react';
 import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
+import { css } from '@emotion/core';
 import { fetchDatasetData } from './utils/FetchData';
 import Spinner from './utils/Spinner';
 import DatasetSizeBadge from './DatasetSizeBadge';
@@ -11,7 +12,12 @@ import DatasetDatafileCountBadge from './DatasetDatafileCountBadge';
 const DatasetViewPageBadges = ({ datasetID }) => {
   const [datasetData, setDatasetData] = useState('');
   const [isLoading, setIsLoading] = useState(true);
-
+  const spinnerCss = css`
+    margin: auto;
+    width: 20%;
+    float: right;
+    color: 9B9B9B;
+  `;
   React.useEffect(() => {
     fetchDatasetData(datasetID).then((data) => {
       setDatasetData(data);
@@ -20,7 +26,7 @@ const DatasetViewPageBadges = ({ datasetID }) => {
   }, []);
 
   return (
-    isLoading ? <Spinner />
+    isLoading ? <Spinner override={spinnerCss} />
       : (
         <Fragment>
           <span className="mr-2">

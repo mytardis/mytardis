@@ -2,6 +2,7 @@ import React, { Fragment, useState } from 'react';
 import ReactDOM from 'react-dom';
 
 import PropTypes from 'prop-types';
+import { css } from '@emotion/core';
 import ExperimentLastUpdatedBadge from './ExperimentLastUpdateBadge';
 import PublicAccessBadge from './PublicAccessBadge';
 import DatasetCountBadge from './DatasetCountBadge';
@@ -13,6 +14,12 @@ import Spinner from './utils/Spinner';
 const IndexPageBadges = ({ experimentID }) => {
   const [expData, setExpData] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  const spinnerCss = css`
+    margin: auto;
+    width: 20%;
+    float: right;
+    color: 9B9B9B;
+  `;
   React.useEffect(() => {
     fetchExperimentData(experimentID).then((data) => {
       setExpData(data);
@@ -20,7 +27,7 @@ const IndexPageBadges = ({ experimentID }) => {
     });
   }, []);
   return (
-    isLoading ? <Spinner />
+    isLoading ? <Spinner override={spinnerCss} />
       : (
         <Fragment>
           <ul className="list-inline float-right list-unstyled">

@@ -26,7 +26,7 @@ const DatafileCountBadge = ({ experimentData }) => {
 };
 
 DatafileCountBadge.propTypes = {
-  experimentData: PropTypes.string.isRequired,
+  experimentData: PropTypes.object.isRequired,
 };
 
 export default DatafileCountBadge;

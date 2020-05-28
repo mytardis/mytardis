@@ -24,7 +24,7 @@ const DatasetSizeBadge = ({ datasetData }) => {
 };
 
 DatasetSizeBadge.propTypes = {
-  datasetData: PropTypes.string.isRequired,
+  datasetData: PropTypes.object.isRequired,
 };
 
 export default DatasetSizeBadge;

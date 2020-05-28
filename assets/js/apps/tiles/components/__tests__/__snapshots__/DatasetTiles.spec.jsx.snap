@@ -7,6 +7,83 @@ exports[`render dataset tiles on page load should match snapshot 1`] = `
   <div
     id="datasets-pane"
   >
+    <h3
+      style="display: inline;"
+    >
+      2
+       
+      Datasets
+    </h3>
+    <a
+      class="add-dataset btn btn-primary btn-sm pull-right"
+      href="/experiment/1234/add-dataset"
+      id="add-dataset"
+    >
+      <i
+        class="fa fa-plus"
+      />
+      Add New
+    </a>
+    <br />
+    <form
+      action="/download/datafiles/"
+      method="POST"
+    >
+      <input
+        name="csrfmiddlewaretoken"
+        type="hidden"
+        value=""
+      />
+      <input
+        name="expid"
+        type="hidden"
+        value="82"
+      />
+      <input
+        name="comptype"
+        type="hidden"
+        value="tar"
+      />
+      <input
+        name="organization"
+        type="hidden"
+        value="deep-storage"
+      />
+      <button
+        class="btn btn-outline-secondary btn-sm download-selected"
+        type="submit"
+        value="submit"
+      >
+        <i
+          class="fa fa-download"
+        />
+        Download Selected
+      </button>
+    </form>
+    <p>
+      <div
+        class="form-horizontal"
+      >
+        <div
+          class="form-group"
+          style="margin: 0px; padding: 10px 0px 5px 10px; border: 1px solid #dddddd;"
+        >
+          <div
+            class="col-md-12"
+            style="margin-left: 0px; margin-bottom: 10px;"
+          >
+            <input
+              autocomplete="off"
+              class="input-xlarge"
+              id="dataset-filter-text-{{cid}}"
+              placeholder="Just start typing to filter datasets based on descriptions"
+              style="width: 95%;"
+              type="text"
+            />
+          </div>
+        </div>
+      </div>
+    </p>
     <div
       data-rbd-droppable-context-id="0"
       data-rbd-droppable-id="main-list"

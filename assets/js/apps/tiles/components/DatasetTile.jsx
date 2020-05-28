@@ -4,12 +4,17 @@ import PropTypes from 'prop-types';
 import DatafileCountBadge from '../../badges/components/DatafileCountBadge';
 import DatasetSizeBadge from '../../badges/components/DatasetSizeBadge';
 
-const DatasetTile = ({ data, listName, index }) => {
+const DatasetTile = ({
+  data, listName, index, onDownloadSelect,
+}) => {
   const experimentData = {
     datafile_count: data.file_count,
   };
   const datasetData = {
     dataset_size: data.size,
+  };
+  const onCheckBoxSelect = (id, event) => {
+    onDownloadSelect(id, event);
   };
   return (
     <Draggable draggableId={`${listName}_${data.id.toString()}`} index={index}>
@@ -36,6 +41,7 @@ const DatasetTile = ({ data, listName, index }) => {
                     id={`dataset-checkbox-${data.id}`}
                     name="dataset"
                     type="checkbox"
+                    onChange={e => onCheckBoxSelect(data.id, e)}
                     className="dataset_checkbox ml-2"
                     style={{ display: 'inline' }}
                     value={data.id}
@@ -85,6 +91,7 @@ DatasetTile.propTypes = {
   data: PropTypes.object.isRequired,
   listName: PropTypes.string.isRequired,
   index: PropTypes.number.isRequired,
+  onDownloadSelect: PropTypes.func.isRequired,
 };
 
 export default DatasetTile;

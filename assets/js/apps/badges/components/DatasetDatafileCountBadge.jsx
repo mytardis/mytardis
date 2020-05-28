@@ -25,7 +25,7 @@ const DatasetDatafileCountBadge = ({ datasetData }) => {
 };
 
 DatasetDatafileCountBadge.propTypes = {
-  datasetData: PropTypes.string.isRequired,
+  datasetData: PropTypes.object.isRequired,
 };
 
 export default DatasetDatafileCountBadge;
