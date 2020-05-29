@@ -72,6 +72,59 @@ def get_accessible_datafiles_for_user(request):
     return DataFile.safe.all(request.user).filter(query)
 
 
+def get_nested_size(request, obj_id, ct_type):
+    if ct_type == "project":
+        size = Project.objects.get(id=obj_id).get_size(request.user)
+    if ct_type == "experiment":
+        size = Experiment.objects.get(id=obj_id).get_size(request.user)
+    if ct_type == "dataset":
+        size = Dataset.objects.get(id=obj_id).get_size(request.user)
+    if ct_type == "datafile":
+        size = DataFile.objects.get(id=obj_id).get_size(request.user)
+    return size
+
+
+def get_nested_count(request, obj_id, ct_type):
+    if ct_type == "project":
+        count = {
+                 "experiments" : Experiment.safe.all(request.user).filter(
+                                                project__id=obj_id).count(),
+                 "datasets" : Dataset.safe.all(request.user).filter(
+                                      experiments__id=obj_id).count(),
+                 "datafiles" : DataFile.safe.all(request.user).filter(
+                                            dataset__id=obj_id).count()
+                 }
+    if ct_type == "experiment":
+        count = {
+                 "datasets" : Dataset.safe.all(request.user).filter(
+                                      experiments__id=obj_id).count(),
+                 "datafiles" : DataFile.safe.all(request.user).filter(
+                                            dataset__id=obj_id).count()
+                 }
+    if ct_type == "dataset":
+        count = {
+                 "datafiles" : DataFile.safe.all(request.user).filter(
+                                            dataset__id=obj_id).count()
+                 }
+    return count
+
+
+def get_obj_parameter(param_full_name, obj_id, ct_type):
+    if ct_type == "project":
+        param = ProjectParameter.objects.get(name__full_name=param_full_name,
+                                             parameterset__project__id=obj_id)
+    if ct_type == "experiment":
+        param = ExperimentParameter.objects.get(name__full_name=param_full_name,
+                                            parameterset__experiment__id=obj_id)
+    if ct_type == "dataset":
+        param = DatasetParameter.objects.get(name__full_name=param_full_name,
+                                             parameterset__dataset__id=obj_id)
+    if ct_type == "datafile":
+        param = DatafileParameter.objects.get(name__full_name=param_full_name,
+                                              parameterset__datafile__id=obj_id)
+    return param
+
+
 def has_ownership(request, obj_id, ct_type):
     if ct_type == 'project':
         return Project.safe.owned(request.user).filter(pk=obj_id).exists()

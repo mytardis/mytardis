@@ -131,44 +131,33 @@ class SearchAppResource(Resource):
         for item in results:
             for hit in item.hits.hits:
                 # TODO refactor once decorators/managers refactored
-                download_bool = False
+                download_state = 0 #(triple flag; 0=None, 1=Some, 2=All)
                 sensitive_bool = False
                 size = 0
 
                 if not authz.has_access(request, hit["_source"]["id"], hit["_index"]):
                     continue
-                if authz.has_download_access(request, hit["_source"]["id"], hit["_index"]):
-                    download_bool = True
+                #if authz.has_download_access(request, hit["_source"]["id"], hit["_index"]):
+                    #download_bool = True
                 if authz.has_sensitive_access(request, hit["_source"]["id"], hit["_index"]):
                     sensitive_bool = True
 
-                if hit["_index"] == "project":
-                    size = Project.objects.get(id= hit["_source"]["id"]).get_size(request.user)
-                if hit["_index"] == "experiment":
-                    size = Experiment.objects.get(id= hit["_source"]["id"]).get_size(request.user)
-                if hit["_index"] == "dataset":
-                    size = Dataset.objects.get(id= hit["_source"]["id"]).get_size(request.user)
-                if hit["_index"] == "datafile":
-                    size = DataFile.objects.get(id= hit["_source"]["id"]).get_size(request.user)
+                size = authz.get_nested_size(request, hit["_source"]["id"], hit["_index"])
+
                 safe_hit = hit.copy()
                 safe_hit["_source"].pop("objectacls")
-                safe_hit["_source"]["downloadable"] = download_bool
+                safe_hit["_source"]["download_state"] = download_state
                 safe_hit["_source"]["size"] = filesizeformat(size)
+
+                if hit["_source"]["id"] != 'datafile':
+                    count = authz.get_nested_count(request, hit["_source"]["id"], hit["_index"])
+                    safe_hit["_source"]["counts"] = count
 
                 if not sensitive_bool:
                     for idx, param in enumerate(hit["_source"]["parameters"]):
-                        if hit["_index"] == "project":
-                            is_sensitive = ProjectParameter.objects.get(name__full_name=param["full_name"],
-                                                        parameterset__project__id=hit["_source"]["id"])
-                        if hit["_index"] == "experiment":
-                            is_sensitive = ExperimentParameter.objects.get(name__full_name=param["full_name"],
-                                                        parameterset__experiment__id=hit["_source"]["id"])
-                        if hit["_index"] == "dataset":
-                            is_sensitive = DatasetParameter.objects.get(name__full_name=param["full_name"],
-                                                        parameterset__dataset__id=hit["_source"]["id"])
-                        if hit["_index"] == "datafile":
-                            is_sensitive = DatafileParameter.objects.get(name__full_name=param["full_name"],
-                                                        parameterset__datafile__id=hit["_source"]["id"])
+                        is_sensitive = get_obj_parameter(param["full_name"],
+                                                         hit["_source"]["id"],
+                                                         hit["_index"])
                         if is_sensitive.sensitive_metadata:
                             safe_hit["_source"]["parameters"].pop(idx)
 
@@ -209,127 +198,3 @@ def simple_search_public_data(query_text):
             result_dict[hit["_index"]+'s'].append(safe_hit)
 
     return result_dict
-
-
-class AdvanceSearchAppResource(Resource):
-    hits = fields.ApiField(attribute='hits', null=True)
-
-    class Meta:
-        resource_name = 'advance-search'
-        list_allowed_methods = ['post']
-        serializer = default_serializer
-        authentication = default_authentication
-        object_class = SearchObject
-        always_return_data = True
-
-    def detail_uri_kwargs(self, bundle_or_obj):
-        kwargs = {}
-        if isinstance(bundle_or_obj, Bundle):
-            kwargs['pk'] = bundle_or_obj.obj.id
-        else:
-            kwargs['pk'] = bundle_or_obj['id']
-
-        return kwargs
-
-    def get_object_list(self, request):
-        return request
-
-    def obj_get_list(self, bundle, **kwargs):
-        return self.get_object_list(bundle.request)
-
-    def obj_create(self, bundle, **kwargs):
-        user = bundle.request.user
-        groups = user.groups.all()
-
-        # if anonymous user search public data only
-        query_text = bundle.data.get("text", None)
-        type_tag = bundle.data.get("TypeTag", [])
-        index_list = []
-        for type in type_tag:
-            if type == 'Experiment':
-                index_list.append('experiment')
-            elif type == 'Dataset':
-                index_list.append('dataset')
-            elif type == 'Datafile':
-                index_list.append('datafile')
-        end_date = bundle.data.get("EndDate", None)
-        start_date = bundle.data.get("StartDate", None)
-        if end_date is not None:
-            end_date_utc = datetime.datetime.strptime(end_date, "%Y-%m-%dT%H:%M:%S.%fZ") \
-                .replace(tzinfo=pytz.timezone('UTC'))
-            end_date = end_date_utc.astimezone(LOCAL_TZ).date()
-        else:
-            # set end date to today's date
-            end_date = datetime.datetime.today().replace(tzinfo=pytz.timezone('UTC'))
-        if start_date:
-            start_date_utc = datetime.datetime.strptime(start_date, "%Y-%m-%dT%H:%M:%S.%fZ") \
-                .replace(tzinfo=pytz.timezone('UTC'))
-            start_date = start_date_utc.astimezone(LOCAL_TZ).date()
-        instrument_list = bundle.data.get("InstrumentList", None)
-        instrument_list_id = []
-        if instrument_list:
-            for ins in instrument_list:
-                instrument_list_id.append(Instrument.objects.get(name__exact=ins).id)
-        # query for experiment model
-        ms = MultiSearch(index=index_list)
-        if 'experiment' in index_list:
-            query_exp = Q("match", title=query_text)
-            if user.is_authenticated:
-                query_exp_oacl = Q("term", objectacls__entityId=user.id) | \
-                                 Q("term", public_access=100)
-                for group in groups:
-                    query_exp_oacl = query_exp_oacl | \
-                                     Q("term", objectacls__entityId=group.id)
-            else:
-                query_exp_oacl = Q("term", public_access=100)
-            if start_date is not None:
-                query_exp = query_exp & Q("range", created_time={'gte': start_date, 'lte': end_date})
-            query_exp = query_exp & query_exp_oacl
-            ms = ms.add(Search(index='experiment')
-                        .extra(size=MAX_SEARCH_RESULTS, min_score=MIN_CUTOFF_SCORE)
-                        .query(query_exp))
-        if 'dataset' in index_list:
-            query_dataset = Q("match", description=query_text)
-            query_dataset = query_dataset | Q("match", tags=query_text)
-            if user.is_authenticated:
-                query_dataset_oacl = Q("term", **{'experiment.objectacls.entityId': user.id}) | \
-                                     Q("term", **{'experiment.public_access': 100})
-                for group in groups:
-                    query_dataset_oacl = query_dataset_oacl | \
-                                         Q("term", **{'experiment.objectacls.entityId': group.id})
-            else:
-                query_dataset_oacl = Q("term", **{'experiment.public_access': 100})
-            if start_date is not None:
-                query_dataset = query_dataset & Q("range", created_time={'gte': start_date, 'lte': end_date})
-            if instrument_list:
-                query_dataset = query_dataset & Q("terms", **{'instrument.id': instrument_list_id})
-            # add instrument query
-            ms = ms.add(Search(index='dataset')
-                        .extra(size=MAX_SEARCH_RESULTS, min_score=MIN_CUTOFF_SCORE).query(query_dataset)
-                        .query('nested', path='experiment', query=query_dataset_oacl))
-        if 'datafile' in index_list:
-            query_datafile = Q("match", filename=query_text)
-            if user.is_authenticated:
-                query_datafile_oacl = Q("term", **{'dataset.experiment.objectacls.entityId': user.id}) | \
-                                      Q("term", **{'dataset.experiment.public_access': 100})
-                for group in groups:
-                    query_datafile_oacl = query_datafile_oacl | \
-                                          Q("term", **{'dataset.experiment.objectacls.entityId': group.id})
-            else:
-                query_datafile_oacl = Q("term", **{'dataset.experiment.public_access': 100})
-            if start_date is not None:
-                query_datafile = query_datafile & Q("range", created_time={'gte': start_date, 'lte': end_date})
-            ms = ms.add(Search(index='datafile')
-                        .extra(size=MAX_SEARCH_RESULTS, min_score=MIN_CUTOFF_SCORE).query(query_datafile)
-                        .query('nested', path='dataset.experiment', query=query_datafile_oacl))
-        result = ms.execute()
-        result_dict = {k: [] for k in ["experiments", "datasets", "datafiles"]}
-        for item in result:
-            for hit in item.hits.hits:
-                safe_hit = hit.copy()
-                safe_hit["_source"].pop("objectacls")
-                result_dict[hit["_index"]+'s'].append(safe_hit)
-
-        if bundle.request.method == 'POST':
-            bundle.obj = SearchObject(id=1, hits=result_dict)
-        return bundle
