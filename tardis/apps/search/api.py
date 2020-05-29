@@ -130,11 +130,9 @@ class SearchAppResource(Resource):
         result_dict = {k: [] for k in ["projects", "experiments", "datasets", "datafiles"]}
         for item in results:
             for hit in item.hits.hits:
-                # TODO refactor once decorators/managers refactored
-                download_state = 0 #(triple flag; 0=None, 1=Some, 2=All)
+
                 sensitive_bool = False
                 size = 0
-
                 if not authz.has_access(request, hit["_source"]["id"], hit["_index"]):
                     continue
 
@@ -147,7 +145,7 @@ class SearchAppResource(Resource):
                 safe_hit["_source"].pop("objectacls")
                 safe_hit["_source"]["size"] = filesizeformat(size)
 
-                if hit["_source"]["id"] != 'datafile':
+                if hit["_index"] != 'datafile':
                     safe_hit["_source"]["counts"] = authz.get_nested_count(request,
                                                         hit["_source"]["id"], hit["_index"])
 
