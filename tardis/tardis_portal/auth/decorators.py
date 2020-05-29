@@ -109,6 +109,24 @@ def get_nested_count(request, obj_id, ct_type):
     return count
 
 
+def get_nested_has_download(request, obj_id, ct_type):
+    if ct_type == "project":
+        dfs = DataFile.safe.all(request.user).filter(dataset__experiment__project__id=obj_id)
+    if ct_type == "experiment":
+        dfs = DataFile.safe.all(request.user).filter(dataset__experiment__id=obj_id)
+    if ct_type == "dataset":
+        dfs = DataFile.safe.all(request.user).filter(dataset__id=obj_id)
+
+    if dfs.count():
+        dl_perms = [has_download_access(request, df.id,'datafile') for df in dfs]
+        if all(dl_perms):
+            return 2
+        if any(dl_perms):
+            return 1
+    return 0
+
+
+
 def get_obj_parameter(param_full_name, obj_id, ct_type):
     if ct_type == "project":
         param = ProjectParameter.objects.get(name__full_name=param_full_name,

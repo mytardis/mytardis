@@ -137,8 +137,7 @@ class SearchAppResource(Resource):
 
                 if not authz.has_access(request, hit["_source"]["id"], hit["_index"]):
                     continue
-                #if authz.has_download_access(request, hit["_source"]["id"], hit["_index"]):
-                    #download_bool = True
+
                 if authz.has_sensitive_access(request, hit["_source"]["id"], hit["_index"]):
                     sensitive_bool = True
 
@@ -146,12 +145,18 @@ class SearchAppResource(Resource):
 
                 safe_hit = hit.copy()
                 safe_hit["_source"].pop("objectacls")
-                safe_hit["_source"]["download_state"] = download_state
                 safe_hit["_source"]["size"] = filesizeformat(size)
 
                 if hit["_source"]["id"] != 'datafile':
-                    count = authz.get_nested_count(request, hit["_source"]["id"], hit["_index"])
-                    safe_hit["_source"]["counts"] = count
+                    safe_hit["_source"]["counts"] = authz.get_nested_count(request,
+                                                        hit["_source"]["id"], hit["_index"])
+
+                    safe_hit["_source"]["download"] = authz.get_nested_count(request,
+                                                        hit["_source"]["id"], hit["_index"])
+
+                else:
+                    safe_hit["_source"]["download"] = authz.has_download_access(request,
+                                                        hit["_source"]["id"], hit["_index"])
 
                 if not sensitive_bool:
                     for idx, param in enumerate(hit["_source"]["parameters"]):
