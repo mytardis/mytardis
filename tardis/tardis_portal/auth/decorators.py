@@ -90,16 +90,16 @@ def get_nested_count(request, obj_id, ct_type):
                  "experiments" : Experiment.safe.all(request.user).filter(
                                                 project__id=obj_id).count(),
                  "datasets" : Dataset.safe.all(request.user).filter(
-                                      experiments__id=obj_id).count(),
+                                      experiments__project__id=obj_id).count(),
                  "datafiles" : DataFile.safe.all(request.user).filter(
-                                            dataset__id=obj_id).count()
+                             dataset__experiments__project__id=obj_id).count()
                  }
     if ct_type == "experiment":
         count = {
                  "datasets" : Dataset.safe.all(request.user).filter(
                                       experiments__id=obj_id).count(),
                  "datafiles" : DataFile.safe.all(request.user).filter(
-                                            dataset__id=obj_id).count()
+                                    dataset__experiments__id=obj_id).count()
                  }
     if ct_type == "dataset":
         count = {
