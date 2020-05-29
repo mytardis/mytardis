@@ -151,7 +151,7 @@ class SearchAppResource(Resource):
                     safe_hit["_source"]["counts"] = authz.get_nested_count(request,
                                                         hit["_source"]["id"], hit["_index"])
 
-                    safe_hit["_source"]["download"] = authz.has_download_access(request,
+                    safe_hit["_source"]["download"] = authz.get_nested_has_download(request,
                                                         hit["_source"]["id"], hit["_index"])
 
                 else:
