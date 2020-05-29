@@ -111,9 +111,9 @@ def get_nested_count(request, obj_id, ct_type):
 
 def get_nested_has_download(request, obj_id, ct_type):
     if ct_type == "project":
-        dfs = DataFile.safe.all(request.user).filter(dataset__experiment__project__id=obj_id)
+        dfs = DataFile.safe.all(request.user).filter(dataset__experiments__project__id=obj_id)
     if ct_type == "experiment":
-        dfs = DataFile.safe.all(request.user).filter(dataset__experiment__id=obj_id)
+        dfs = DataFile.safe.all(request.user).filter(dataset__experiments__id=obj_id)
     if ct_type == "dataset":
         dfs = DataFile.safe.all(request.user).filter(dataset__id=obj_id)
 
