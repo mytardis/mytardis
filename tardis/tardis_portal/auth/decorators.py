@@ -244,13 +244,13 @@ def has_read_or_owner_ACL(request, obj_id, ct_type):
     from .localdb_auth import django_user
 
     if ct_type == 'project':
-        obj = project.safe.get(request.user, obj_id)
+        obj = Project.safe.get(request.user, obj_id)
     if ct_type == 'experiment':
         obj = Experiment.safe.get(request.user, obj_id)
     if ct_type == 'dataset':
         obj = Dataset.safe.get(request.user, obj_id)
     if ct_type == 'datafile':
-        obj = Datafile.safe.get(request.user, obj_id)
+        obj = DataFile.safe.get(request.user, obj_id)
 
     # does the user own this experiment
     query = Q(content_type=obj.get_ct(),
