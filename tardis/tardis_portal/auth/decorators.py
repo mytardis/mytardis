@@ -80,7 +80,7 @@ def get_nested_size(request, obj_id, ct_type):
     if ct_type == "dataset":
         size = Dataset.objects.get(id=obj_id).get_size(request.user)
     if ct_type == "datafile":
-        size = DataFile.objects.get(id=obj_id).get_size(request.user)
+        size = DataFile.objects.get(id=obj_id).get_size()
     return size
 
 
