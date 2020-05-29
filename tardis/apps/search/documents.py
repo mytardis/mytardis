@@ -184,6 +184,7 @@ class DataFileDocument(Document):
         name = 'datafile'
         settings = {'number_of_shards': 1,
                     'number_of_replicas': 0}
+    id = fields.IntegerField()
     filename = fields.TextField(
         fields={'raw': fields.KeywordField()},
         analyzer=analyzer
