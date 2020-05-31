@@ -23,4 +23,14 @@ const fetchExperimentList = async () => {
   const response = await fetch('/ajax/json/experiment_list/');
   return response.json();
 };
-export { fetchDatasetsForExperiment, shareDataset, fetchExperimentList };
+
+const fetchExperimentPermissions = async (experimentID) => {
+  const response = await fetch(`/ajax/json/experiment/${experimentID}/get_experiment_permissions`);
+  return response.json();
+};
+export {
+  fetchDatasetsForExperiment,
+  shareDataset,
+  fetchExperimentList,
+  fetchExperimentPermissions,
+};

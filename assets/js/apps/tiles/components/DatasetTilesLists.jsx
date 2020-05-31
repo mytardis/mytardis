@@ -4,7 +4,12 @@ import { DragDropContext, Droppable } from 'react-beautiful-dnd';
 import PropTypes from 'prop-types';
 import { css } from '@emotion/core';
 import Cookies from 'js-cookie';
-import { fetchDatasetsForExperiment, fetchExperimentList, shareDataset } from './utils/FetchData';
+import {
+  fetchDatasetsForExperiment,
+  fetchExperimentList,
+  fetchExperimentPermissions,
+  shareDataset,
+} from './utils/FetchData';
 import DatasetTiles from './DatasetTiles';
 import ExperimentListDropDown from './SelectExperiment';
 import DatasetPaneTopPanel from './DatasetPaneTopPanel';
@@ -16,6 +21,7 @@ const DatasetTilesLists = ({ shareContainer, experimentId }) => {
   const [expListData, setExpListData] = useState();
   const [expListValue, setExpListValue] = useState();
   const [selectedDatasetIds, setSelectedDatasetIds] = useState([]);
+  const [experimentPermissions, setExperimentPermissions] = useState({});
   const csrfToken = Cookies.get('csrftoken');
   const spinnerCss = css`
     float: right;
@@ -78,6 +84,8 @@ const DatasetTilesLists = ({ shareContainer, experimentId }) => {
       setExpListData(expList);
       fetchDatasetsForExperiment(expList[0].id).then(result => setShareListData(result));
     });
+    // load permissions
+    fetchExperimentPermissions(experimentId).then(result => setExperimentPermissions(result));
   }, [experimentId]);
   return (
     <Fragment>
@@ -90,6 +98,7 @@ const DatasetTilesLists = ({ shareContainer, experimentId }) => {
               experimentID={experimentId}
               selectedDatasets={selectedDatasetIds}
               csrfToken={csrfToken}
+              experimentPermissions={experimentPermissions}
             />
             <DragDropContext onDragEnd={onDragEnd}>
               <Droppable droppableId="main-list">

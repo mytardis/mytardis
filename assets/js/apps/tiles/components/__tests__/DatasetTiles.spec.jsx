@@ -50,6 +50,12 @@ const fakeExpList = [
     title: 'My Test Exp 2',
   }];
 
+const fakeExpPermissions = {
+  download_permissions: true,
+  write_permissions: true,
+  is_publication: false,
+};
+
 global.fetch = require('jest-fetch-mock');
 
 configure({ adapter: new Adapter() });
@@ -66,6 +72,9 @@ beforeEach(async () => {
     }
     if (request.url.endsWith('/experiment_list/')) {
       return Promise.resolve(JSON.stringify(fakeExpList));
+    }
+    if (request.url.endsWith('/get_experiment_permissions')) {
+      return Promise.resolve(JSON.stringify(fakeExpPermissions));
     }
     return {
       status: 404,

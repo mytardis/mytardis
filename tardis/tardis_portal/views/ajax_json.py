@@ -133,3 +133,21 @@ def get_experiment_list(request):
     experiments = Experiment.safe.owned(request.user)
     objects = [{'id': experiment[0], 'title': experiment[1]} for experiment in experiments.values_list('id', 'title')]
     return JsonResponse(objects, safe=False)
+
+
+@never_cache
+@authz.experiment_access_required
+def get_experiment_permissions(request, experiment_id):
+    try:
+        experiment = Experiment.safe.get(request.user, experiment_id)
+    except Experiment.DoesNotExist:
+        return return_response_not_found(request)
+    has_download_permissions = \
+        authz.has_experiment_download_access(request, experiment_id)
+    has_write_permissions = \
+        authz.has_write_permissions(request, experiment_id)
+    experiment_is_publication = \
+        experiment.is_publication()
+    objects = {'download_permissions': has_download_permissions, 'write_permissions': has_write_permissions,
+               'is_publication': experiment_is_publication}
+    return JsonResponse(objects, safe=False)
