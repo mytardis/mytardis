@@ -756,6 +756,10 @@ class DatasetResource(MyTardisModelResource):
 
         dataset_id = kwargs['pk']
         dataset = Dataset.objects.get(id=dataset_id)
+        if not has_dataset_access(
+                request=request, dataset_id=dataset_id):
+            return HttpResponseForbidden()
+
         # get dirs at root level
         dir_tuples = dataset.get_dir_tuples("")
         # get files at root level
@@ -789,6 +793,10 @@ class DatasetResource(MyTardisModelResource):
         self.is_authenticated(request)
 
         dataset_id = kwargs['pk']
+        if not has_dataset_access(
+                request=request, dataset_id=dataset_id):
+            return HttpResponseForbidden()
+
         base_dir = request.GET.get('dir_path', None)
         dataset = Dataset.objects.get(id=dataset_id)
         if not base_dir:
@@ -828,6 +836,10 @@ class DatasetResource(MyTardisModelResource):
         self.method_check(request, allowed=['get'])
         self.is_authenticated(request)
         dataset_id = kwargs['pk']
+        if not has_dataset_access(
+                request=request, dataset_id=dataset_id):
+            return HttpResponseForbidden()
+
         dir_path = request.GET.get('dir_path', None)
         if not dir_path:
             return HttpResponse('Please specify folder path')
