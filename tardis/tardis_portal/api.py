@@ -1581,7 +1581,8 @@ class ObjectACLResource(MyTardisModelResource):
     content_object = GenericForeignKeyField({
         Experiment: ExperimentResource,
         Dataset: DatasetResource,
-        DataFile: DataFileResource
+        DataFile: DataFileResource,
+        Project: ProjectResource
         # ...
     }, 'content_object')
 
@@ -1600,6 +1601,9 @@ class ObjectACLResource(MyTardisModelResource):
 
     def hydrate(self, bundle):
         # Fill in the content type.
+        if bundle.data['content_type'] == 'project':
+            project = Project.objects.get(pk=bundle.data['object_id'])
+            bundle.obj.content_type = project.get_ct()
         if bundle.data['content_type'] == 'experiment':
             experiment = Experiment.objects.get(pk=bundle.data['object_id'])
             bundle.obj.content_type = experiment.get_ct()
