@@ -158,7 +158,7 @@ class SearchAppResource(Resource):
 
                 if not sensitive_bool:
                     for idx, param in enumerate(hit["_source"]["parameters"]):
-                        is_sensitive = get_obj_parameter(param["full_name"],
+                        is_sensitive = authz.get_obj_parameter(param["full_name"],
                                                          hit["_source"]["id"],
                                                          hit["_index"])
                         if is_sensitive.sensitive_metadata:
