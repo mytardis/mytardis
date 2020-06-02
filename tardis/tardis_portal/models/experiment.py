@@ -87,6 +87,7 @@ class Experiment(models.Model):
     class Meta:
         app_label = 'tardis_portal'
 
+    # pylint: disable=W0222
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
         from .hooks import publish_public_expt_rifcs
@@ -274,6 +275,7 @@ class ExperimentAuthor(models.Model):
         blank=True, null=True,
         help_text="URL identifier for the author")
 
+    # pylint: disable=W0222
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
         try:
