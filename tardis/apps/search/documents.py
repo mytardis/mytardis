@@ -114,7 +114,7 @@ class ExperimentDocument(Document):
 
     class Django:
         model = Experiment
-        related_models = [User], ObjectACL]
+        related_models = [User, ObjectACL]
 
     def get_instances_from_related(self, related_instance):
         if isinstance(related_instance, User):
