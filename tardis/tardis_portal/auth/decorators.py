@@ -122,10 +122,10 @@ def get_nested_has_download(request, obj_id, ct_type):
     if dfs.count():
         dl_perms = [has_download_access(request, df.id,'datafile') for df in dfs]
         if all(dl_perms):
-            return 2
+            return "full"
         if any(dl_perms):
-            return 1
-    return 0
+            return "partial"
+    return "none"
 
 
 
