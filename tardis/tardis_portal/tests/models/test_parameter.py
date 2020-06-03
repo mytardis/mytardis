@@ -44,17 +44,17 @@ class ParameterTestCase(ModelTestCase):
 
         df_schema = Schema(
             namespace='http://www.cern.ch/felzmann/schema1.xml',
-            type=Schema.DATAFILE)
+            schema_type=Schema.DATAFILE)
         df_schema.save()
 
         ds_schema = Schema(
             namespace='http://www.cern.ch/felzmann/schema2.xml',
-            type=Schema.DATASET)
+            schema_type=Schema.DATASET)
         ds_schema.save()
 
         exp_schema = Schema(
             namespace='http://www.cern.ch/felzmann/schema3.xml',
-            type=Schema.EXPERIMENT)
+            schema_type=Schema.EXPERIMENT)
         exp_schema.save()
 
         df_parname = ParameterName(

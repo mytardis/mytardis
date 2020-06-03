@@ -23,6 +23,7 @@ class InstrumentTestCase(ModelTestCase):
         group.save()
 
         institution = Institution(name="Test Institution")
+        institution.save()
 
         facility = Facility(name="Test Facility",
                             manager_group=group,

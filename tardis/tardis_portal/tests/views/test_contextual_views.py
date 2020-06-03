@@ -52,7 +52,7 @@ class ContextualViewTest(TestCase):
 
         self.testschema = Schema(namespace="http://test.com/test/schema",
                                  name="Test View",
-                                 type=Schema.DATAFILE,
+                                 schema_type=Schema.DATAFILE,
                                  hidden=True)
         self.testschema.save()
         self.dfps = DatafileParameterSet(datafile=self.datafile,

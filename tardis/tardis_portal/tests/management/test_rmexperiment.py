@@ -100,27 +100,29 @@ class RmExperimentTestCase(TestCase):
 
     def testList(self):
         (exp1_, exp2_) = _create_test_data()
+        user_ = _create_test_user()
         self.assertEqual(DataFile.objects.all().count(), 6)
-        self.assertEqual(len(exp1_.get_datafiles()), 3)
-        self.assertEqual(len(exp2_.get_datafiles()), 5)
+        self.assertEqual(len(exp1_.get_datafiles(user_)), 3)
+        self.assertEqual(len(exp2_.get_datafiles(user_)), 5)
 
         # Check that --list doesn't remove anything
         call_command('rmexperiment', exp1_.pk, list=True)
         self.assertEqual(DataFile.objects.all().count(), 6)
-        self.assertEqual(len(exp1_.get_datafiles()), 3)
-        self.assertEqual(len(exp2_.get_datafiles()), 5)
+        self.assertEqual(len(exp1_.get_datafiles(user_)), 3)
+        self.assertEqual(len(exp2_.get_datafiles(user_)), 5)
 
     def testRemove(self):
         (exp1_, exp2_) = _create_test_data()
+        user_ = _create_test_user()
         self.assertEqual(DataFile.objects.all().count(), 6)
-        self.assertEqual(len(exp1_.get_datafiles()), 3)
-        self.assertEqual(len(exp2_.get_datafiles()), 5)
+        self.assertEqual(len(exp1_.get_datafiles(user_)), 3)
+        self.assertEqual(len(exp2_.get_datafiles(user_)), 5)
 
         # Remove first experiment and check that the shared dataset hasn't
         # been removed
         call_command('rmexperiment', exp1_.pk, confirmed=True)
         self.assertEqual(DataFile.objects.all().count(), 5)
-        self.assertEqual(len(exp2_.get_datafiles()), 5)
+        self.assertEqual(len(exp2_.get_datafiles(user_)), 5)
 
         #Remove second experiment
         call_command('rmexperiment', exp2_.pk, confirmed=True)
