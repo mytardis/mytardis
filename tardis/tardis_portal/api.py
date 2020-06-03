@@ -466,7 +466,7 @@ class ACLAuthorization(Authorization):
                 'tardis_portal.change_dataset') and \
                 has_dataset_write(bundle.request,
                                   bundle.obj.parameterset.dataset.id)
-        
+
         if isinstance(bundle.obj, DataFile):
             dataset = DatasetResource.get_via_uri(DatasetResource(),
                                                   bundle.data['dataset'],
@@ -499,7 +499,7 @@ class ACLAuthorization(Authorization):
                 has_datafile_write(bundle.request,
                                   bundle.obj.datafile.id),
             ])
-        
+
         if isinstance(bundle.obj, ObjectACL):
             return bundle.request.user.has_perm('tardis_portal.add_objectacl')
         if isinstance(bundle.obj, Group):
@@ -707,7 +707,7 @@ class UserResource(ModelResource):
         user_auth.save()
         return bundle
     ############################################################
-    
+
 class MyTardisModelResource(ModelResource):
 
     class Meta:
@@ -752,7 +752,7 @@ class UserProfileResource(MyTardisModelResource):
         bundle = super().obj_create(bundle,
                                     **kwargs)
         return bundle
-        
+
 #####################################
 # CHRIS - expose user authentication to API
 class UserAuthenticationResource(MyTardisModelResource):
@@ -847,13 +847,13 @@ class FacilityResource(MyTardisModelResource):
 
 # CHRIS - ProjectResource
 class ProjectResource(MyTardisModelResource):
-    '''API for Experiments
-    also creates a default ACL and allows ExperimentParameterSets to be read
+    '''API for Projects
+    also creates a default ACL and allows ProjectParameterSets to be read
     and written.
 
     TODO: catch duplicate schema submissions for parameter sets
     '''
-    created_by = fields.ForeignKey(UserResource, 'created_by')
+    created_by = fields.ForeignKey(UserResource, 'lead_researcher')
     parameter_sets = fields.ToManyField(
         'tardis.tardis_portal.api.ProjectParameterSetResource',
         'projectparameterset_set',
@@ -909,7 +909,7 @@ class ProjectResource(MyTardisModelResource):
                             aclOwnershipType=ObjectACL.OWNER_OWNED)
             acl.save()
         return super().hydrate_m2m(bundle)
-    
+
 ################################################
 
 class InstrumentResource(MyTardisModelResource):
@@ -1029,7 +1029,7 @@ class ExperimentResource(MyTardisModelResource):
         bundle.data['created_by'] = user
         bundle = super().obj_create(bundle, **kwargs)
         return bundle
-    
+
 class ExperimentAuthorResource(MyTardisModelResource):
     '''API for ExperimentAuthors
     '''

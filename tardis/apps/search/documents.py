@@ -24,7 +24,7 @@ analyzer = analyzer(
 @registry.register_document
 class ExperimentDocument(Document):
     class Index:
-        name = 'experiments'
+        name = 'experiment'
         settings = {'number_of_shards': 1,
                     'number_of_replicas': 0}
 
@@ -37,7 +37,7 @@ class ExperimentDocument(Document):
         fields={'raw': fields.KeywordField()},
         analyzer=analyzer
     )
-    public_access = fields.IntegerField()
+    #public_access = fields.IntegerField()
     created_time = fields.DateField()
     start_time = fields.DateField()
     end_time = fields.DateField()
@@ -53,7 +53,10 @@ class ExperimentDocument(Document):
         'entityId': fields.StringField()
     }
     )
-    paramtags = fields.TextField(attr='getParametersforIndexing')
+    parameters = fields.ObjectField(attr='getParametersforIndexing', dynamic=True)
+
+    def prepare_parameters(self, instance):
+        return list(instance.getParametersforIndexing())
 
     class Django:
         model = Experiment
@@ -84,17 +87,15 @@ class DatasetDocument(Document):
     experiments = fields.NestedField(properties={
         'id': fields.IntegerField(),
         'title': fields.TextField(
-            fields={'raw': fields.KeywordField()
-                    }
+            fields={'raw': fields.KeywordField()}
         ),
-        'objectacls': fields.ObjectField(properties={
+    }
+    )
+    objectacls = fields.ObjectField(properties={
             'pluginId': fields.StringField(),
             'entityId': fields.StringField()
         }
-        ),
-        'public_access': fields.IntegerField()
-    }
-    )
+        )
     instrument = fields.ObjectField(properties={
         'id': fields.IntegerField(),
         'name': fields.TextField(
@@ -105,7 +106,11 @@ class DatasetDocument(Document):
     created_time = fields.DateField()
     modified_time = fields.DateField()
     tags = fields.StringField(attr='tags_for_indexing')
-    paramtags = fields.TextField(attr='getParametersforIndexing')
+
+    parameters = fields.ObjectField(attr='getParametersforIndexing', dynamic=True)
+
+    def prepare_parameters(self, instance):
+        return list(instance.getParametersforIndexing())
 
     class Django:
         model = Dataset
@@ -135,17 +140,21 @@ class DataFileDocument(Document):
         'id': fields.IntegerField(),
         'experiments': fields.NestedField(properties={
             'id': fields.IntegerField(),
-            'objectacls': fields.ObjectField(properties={
-                'pluginId': fields.StringField(),
-                'entityId': fields.StringField()
-            }
-            ),
-            'public_access': fields.IntegerField()
         }
         ),
     }
     )
-    paramtags = fields.TextField(attr='getParametersforIndexing')
+    objectacls = fields.ObjectField(properties={
+            'pluginId': fields.StringField(),
+            'entityId': fields.StringField()
+        }
+        )
+
+
+    parameters = fields.ObjectField(attr='getParametersforIndexing', dynamic=True)
+
+    def prepare_parameters(self, instance):
+        return list(instance.getParametersforIndexing())
 
     class Django:
         model = DataFile
