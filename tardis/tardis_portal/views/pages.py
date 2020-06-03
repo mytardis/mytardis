@@ -342,6 +342,23 @@ class DatasetView(TemplateView):
 
         return render_response_index(request, template_name, c)
 
+#=========================
+# project view - react
+#=========================
+
+# class ProjectViewReact(TemplateView):
+#     template_name = 'tardis_portal/project_react_stub.html'
+def react_project(req):
+    return HttpResponse("<div id='project-app'></div>")
+
+class ReactProject(TemplateView):
+    template_name = 'tardis_portal/react_project_details.html'
+    
+    # def get(self, request, *args, **kwargs):
+    #     return render_response_index(request, template_name, c)
+
+
+
 #=================================
 #Project View
 #=================================
