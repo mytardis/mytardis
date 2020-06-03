@@ -29,8 +29,7 @@ class ContextualViewTest(TestCase):
         pwd = 'secret'  # nosec
         email = ''
         self.user = User.objects.create_user(user, email, pwd)
-        self.exp = Experiment(title='test exp1',
-                              institution_name='monash', created_by=self.user)
+        self.exp = Experiment(title='test exp1', created_by=self.user)
         self.exp.save()
         self.acl = ObjectACL(
             pluginId=django_user,

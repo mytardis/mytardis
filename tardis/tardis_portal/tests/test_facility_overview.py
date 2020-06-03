@@ -30,12 +30,12 @@ class FacilityOverviewTestCase(TestCase):
         self.user = User.objects.create_user(username, email, pwd)
 
         self.exp = Experiment(
-            title='test exp1', institution_name='monash',
+            title='test exp1',
             created_by=self.user)
 
         self.exp.save()
         self.exp2 = Experiment(
-            title='test exp2', institution_name='monash',
+            title='test exp2',
             created_by=self.user)
         self.exp2.save()
 

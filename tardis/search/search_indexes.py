@@ -57,7 +57,7 @@ class ExperimentIndex(indexes.SearchIndex, indexes.Indexable):
     experiment_start_time = indexes.DateTimeField(model_attr='start_time', default=None)
     experiment_end_time = indexes.DateTimeField(model_attr='end_time', default=None)
     experiment_update_time = indexes.DateTimeField(model_attr='update_time', default=None)
-    experiment_institution_name = indexes.CharField(model_attr='institution_name', default=None)
+    #experiment_institution_name = indexes.CharField(model_attr='institution_name', default=None)
     experiment_creator = indexes.CharField()
     experiment_author = indexes.MultiValueField()
 

@@ -31,7 +31,6 @@ class ParametersTestCase(TestCase):
         self.user = User.objects.create_user(user, email, pwd)
 
         self.exp = Experiment(title='test exp1',
-                              institution_name='monash',
                               created_by=self.user)
         self.exp.save()
 

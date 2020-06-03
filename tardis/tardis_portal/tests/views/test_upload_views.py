@@ -34,8 +34,7 @@ class UploadTestCase(TestCase):
 
         self.test_dir = mkdtemp()
 
-        self.exp = Experiment(title='test exp1',
-                              institution_name='monash', created_by=self.user)
+        self.exp = Experiment(title='test exp1', created_by=self.user)
         self.exp.save()
 
         acl = ObjectACL(

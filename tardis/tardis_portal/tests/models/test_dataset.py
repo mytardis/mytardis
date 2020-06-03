@@ -18,12 +18,10 @@ class DatasetTestCase(ModelTestCase):
 
     def test_dataset(self):
         exp = Experiment(title='test exp1',
-                         institution_name='monash',
                          created_by=self.user)
 
         exp.save()
         exp2 = Experiment(title='test exp2',
-                          institution_name='monash',
                           created_by=self.user)
         exp2.save()
 

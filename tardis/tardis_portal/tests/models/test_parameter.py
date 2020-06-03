@@ -25,7 +25,6 @@ class ParameterTestCase(ModelTestCase):
     def test_parameter(self):
         exp = Experiment(
             title='test exp1',
-            institution_name='Australian Synchrotron',
             approved=True,
             created_by=self.user,
             public_access=Experiment.PUBLIC_ACCESS_NONE,

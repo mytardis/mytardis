@@ -77,7 +77,6 @@ class ParameterSetManagerTestCase(TestCase):
         self.test_dir = mkdtemp()
 
         self.exp = Experiment(title='test exp1',
-                              institution_name='monash',
                               created_by=self.user)
         self.exp.save()
 
@@ -99,7 +98,7 @@ class ParameterSetManagerTestCase(TestCase):
 
         self.schema = Schema(
             namespace="http://localhost/psmtest/df/",
-            name="Parameter Set Manager", type=Schema.DATAFILE)
+            name="Parameter Set Manager", schema_type=Schema.DATAFILE)
         self.schema.save()
 
         self.parametername1 = ParameterName(
@@ -367,7 +366,7 @@ class EditParameterSetTestCase(TestCase):
 
         self.schema = Schema(
             namespace="http://localhost/psmtest/df/",
-            name="Parameter Set Manager", type=Schema.DATAFILE)
+            name="Parameter Set Manager", schema_type=Schema.DATAFILE)
         self.schema.save()
 
         self.parametername1 = ParameterName(
@@ -390,7 +389,7 @@ class EditParameterSetTestCase(TestCase):
         self.parametername3.save()
 
         self.experiment = Experiment(
-            title='test exp1', institution_name='monash', created_by=self.user)
+            title='test exp1', created_by=self.user)
         self.experiment.save()
 
         self.dataset = Dataset(description='test dataset1')
