@@ -3,7 +3,7 @@
         "pk": null,
         "model": "tardis_portal.schema",
         "fields": {
-            "type": 1,
+            "schema_type": 1,
             "namespace": "http://ands.org.au/standards/rif-cs/registryObjects#relatedInfo",
             "name": "Related Info",
             "subtype": "related-info-experiment",
