@@ -48,7 +48,7 @@ from django.utils import timezone
 from django.contrib.contenttypes.models import ContentType
 import pytz
 
-from ...auth.localdb_auth import django_user
+from ..auth.localdb_auth import django_user
 from ..models.experiment import Experiment
 from ..models.dataset import Dataset
 from ..models.datafile import DataFile, DataFileObject

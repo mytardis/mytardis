@@ -20,7 +20,7 @@ from django.test.client import Client
 from django.conf import settings
 from django.contrib.auth.models import User
 
-from ...auth.localdb_auth import django_user
+from ..auth.localdb_auth import django_user
 from ..models.experiment import Experiment
 from ..models.dataset import Dataset
 from ..models.datafile import DataFile, DataFileObject
