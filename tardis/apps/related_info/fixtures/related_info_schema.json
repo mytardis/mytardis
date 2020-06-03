@@ -17,7 +17,6 @@
         "fields": {
             "name": "type",
             "data_type": 2,
-            "is_searchable": false,
             "choices": "publication,website",
             "comparison_type": 1,
             "full_name": "Type",
@@ -35,7 +34,6 @@
         "fields": {
             "name": "identifier",
             "data_type": 3,
-            "is_searchable": false,
             "choices": "",
             "comparison_type": 1,
             "full_name": "Identifier",
@@ -53,7 +51,6 @@
         "fields": {
             "name": "title",
             "data_type": 2,
-            "is_searchable": false,
             "choices": "",
             "comparison_type": 1,
             "full_name": "Title",
@@ -71,7 +68,6 @@
         "fields": {
             "name": "notes",
             "data_type": 7,
-            "is_searchable": false,
             "choices": "",
             "comparison_type": 1,
             "full_name": "Notes",
