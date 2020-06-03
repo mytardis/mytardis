@@ -9,7 +9,7 @@ test_dataset.py
 from django.contrib.auth.models import Group
 
 from tardis.tardis_portal.models import (
-    Dataset, DataFile, Experiment, Facility, Instrument)
+    Dataset, DataFile, Experiment, Facility, Instrument, Institution)
 
 from . import ModelTestCase
 
@@ -65,14 +65,14 @@ class DatasetTestCase(ModelTestCase):
         basedir = ''
         dir_tuples = dataset.get_dir_tuples(self.user, basedir)
         self.assertEqual(dir_tuples, [])
-        self.assertEqual(dataset.get_dir_nodes(dir_tuples), [])
+        self.assertEqual(dataset.get_dir_nodes(self.user, dir_tuples), [])
 
         DataFile.objects.create(
             dataset=dataset, filename='filename1', size=0, md5sum='bogus')
         basedir = ''
         dir_tuples = dataset.get_dir_tuples(self.user, basedir)
         self.assertEqual(dir_tuples, [])
-        self.assertEqual(dataset.get_dir_nodes(dir_tuples), [])
+        self.assertEqual(dataset.get_dir_nodes(self.user, dir_tuples), [])
 
         DataFile.objects.create(
             dataset=dataset, filename='filename2', size=0, md5sum='bogus',
@@ -80,7 +80,7 @@ class DatasetTestCase(ModelTestCase):
         basedir = ''
         dir_tuples = dataset.get_dir_tuples(self.user, basedir)
         self.assertEqual(dir_tuples, [])
-        self.assertEqual(dataset.get_dir_nodes(dir_tuples), [])
+        self.assertEqual(dataset.get_dir_nodes(self.user, dir_tuples), [])
 
         DataFile.objects.create(
             dataset=dataset, filename='filename3', size=0, md5sum='bogus',
@@ -88,7 +88,7 @@ class DatasetTestCase(ModelTestCase):
         basedir = ''
         dir_tuples = dataset.get_dir_tuples(self.user, basedir)
         self.assertEqual(dir_tuples, [])
-        self.assertEqual(dataset.get_dir_nodes(dir_tuples), [])
+        self.assertEqual(dataset.get_dir_nodes(self.user, dir_tuples), [])
 
         DataFile.objects.create(
             dataset=dataset, filename='filename4', size=0, md5sum='bogus',
@@ -97,7 +97,7 @@ class DatasetTestCase(ModelTestCase):
         dir_tuples = dataset.get_dir_tuples(self.user, basedir)
         self.assertEqual(dir_tuples, [('dir1', 'dir1')])
         self.assertEqual(
-            dataset.get_dir_nodes(dir_tuples),
+            dataset.get_dir_nodes(self.user, dir_tuples),
             [
                 {
                     'name': 'dir1',
@@ -115,7 +115,7 @@ class DatasetTestCase(ModelTestCase):
             dir_tuples,
             [('..', 'dir1'), ('subdir1', 'dir1/subdir1')])
         self.assertEqual(
-            dataset.get_dir_nodes(dir_tuples),
+            dataset.get_dir_nodes(self.user, dir_tuples),
             [
                 {
                     'name': 'subdir1',
@@ -126,7 +126,7 @@ class DatasetTestCase(ModelTestCase):
         basedir = 'dir1/subdir1'
         dir_tuples = dataset.get_dir_tuples(self.user, basedir)
         self.assertEqual(dir_tuples, [('..', 'dir1/subdir1')])
-        self.assertEqual(dataset.get_dir_nodes(dir_tuples), [])
+        self.assertEqual(dataset.get_dir_nodes(self.user, dir_tuples), [])
 
         DataFile.objects.create(
             dataset=dataset, filename='filename6', size=0, md5sum='bogus',
@@ -137,7 +137,7 @@ class DatasetTestCase(ModelTestCase):
             dir_tuples,
             [('dir1', 'dir1'), ('dir2', 'dir2')])
         self.assertEqual(
-            dataset.get_dir_nodes(dir_tuples),
+            dataset.get_dir_nodes(self.user, dir_tuples),
             [
                 {
                     'name': 'dir1',

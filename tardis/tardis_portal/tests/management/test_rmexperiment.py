@@ -84,7 +84,7 @@ def _create_test_data():
     ds3_.save()
     exp1_.save()
     exp2_.save()
-    return (exp1_, exp2_)
+    return (exp1_, exp2_, user_)
 
 _counter = 1
 
@@ -99,8 +99,7 @@ def _next_id():
 class RmExperimentTestCase(TestCase):
 
     def testList(self):
-        (exp1_, exp2_) = _create_test_data()
-        user_ = _create_test_user()
+        (exp1_, exp2_, user_) = _create_test_data()
         self.assertEqual(DataFile.objects.all().count(), 6)
         self.assertEqual(len(exp1_.get_datafiles(user_)), 3)
         self.assertEqual(len(exp2_.get_datafiles(user_)), 5)
@@ -113,7 +112,6 @@ class RmExperimentTestCase(TestCase):
 
     def testRemove(self):
         (exp1_, exp2_) = _create_test_data()
-        user_ = _create_test_user()
         self.assertEqual(DataFile.objects.all().count(), 6)
         self.assertEqual(len(exp1_.get_datafiles(user_)), 3)
         self.assertEqual(len(exp2_.get_datafiles(user_)), 5)

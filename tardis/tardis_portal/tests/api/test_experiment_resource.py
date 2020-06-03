@@ -22,7 +22,7 @@ class ExperimentResourceTest(MyTardisResourceTestCase):
         super().setUp()
         df_schema_name = "http://experi-mental.com/"
         self.test_schema = Schema(namespace=df_schema_name,
-                                  type=Schema.EXPERIMENT)
+                                  schema_type=Schema.EXPERIMENT)
         self.test_schema.save()
         self.test_parname1 = ParameterName(schema=self.test_schema,
                                            name="expparameter1",

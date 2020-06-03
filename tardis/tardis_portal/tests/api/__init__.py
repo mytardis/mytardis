@@ -15,7 +15,7 @@ from ...models.access_control import ObjectACL
 from ...models.experiment import Experiment
 from ...models.facility import Facility
 from ...models.instrument import Instrument
-
+from ...models.institution import Institution
 
 class MyTardisResourceTestCase(ResourceTestCaseMixin, TransactionTestCase):
     '''
@@ -53,8 +53,12 @@ class MyTardisResourceTestCase(ResourceTestCaseMixin, TransactionTestCase):
         self.testgroup = Group(name="Test Group")
         self.testgroup.save()
         self.testgroup.user_set.add(self.user)
-        self.testfacility = Facility(name="Test Facility",
+        self.testinstitution = Institution(name="Test Institution",
                                      manager_group=self.testgroup)
+        self.testinstitution.save()
+        self.testfacility = Facility(name="Test Facility",
+                                     manager_group=self.testgroup,
+                                     institution=institution)
         self.testfacility.save()
         self.testinstrument = Instrument(name="Test Instrument",
                                          facility=self.testfacility)

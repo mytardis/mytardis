@@ -43,8 +43,8 @@ class UploadTestCase(TestCase):
             content_object=self.exp,
             canRead=True,
             canDownload=True,
-            CanWrite=True,
-            CanSensitive=True,
+            canWrite=True,
+            canSensitive=True,
             isOwner=True,
             aclOwnershipType=ObjectACL.OWNER_OWNED,
         )
@@ -62,8 +62,8 @@ class UploadTestCase(TestCase):
             content_object=self.dataset,
             canRead=True,
             canDownload=True,
-            CanWrite=True,
-            CanSensitive=True,
+            canWrite=True,
+            canSensitive=True,
             isOwner=True,
             aclOwnershipType=ObjectACL.OWNER_OWNED,
         )

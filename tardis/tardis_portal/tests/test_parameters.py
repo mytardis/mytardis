@@ -44,7 +44,7 @@ class ParametersTestCase(TestCase):
 
         self.schema = Schema(
             namespace="http://test.namespace/exp/1",
-            name="Text Exp Schema", type=Schema.EXPERIMENT)
+            name="Text Exp Schema", schema_type=Schema.EXPERIMENT)
         self.schema.save()
 
         # Define some parameter names, one for each date type:

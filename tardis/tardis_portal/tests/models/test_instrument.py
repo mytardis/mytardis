@@ -22,7 +22,8 @@ class InstrumentTestCase(ModelTestCase):
         group = Group(name="Test Manager Group")
         group.save()
 
-        institution = Institution(name="Test Institution")
+        institution = Institution(name="Test Institution",
+                                  manager_group=group)
         institution.save()
 
         facility = Facility(name="Test Facility",
@@ -39,7 +40,7 @@ class InstrumentTestCase(ModelTestCase):
 
         schema = Schema(
             namespace='test instrument schema namespace',
-            type=Schema.INSTRUMENT)
+            schema_type=Schema.INSTRUMENT)
         schema.save()
 
         parname = ParameterName(
