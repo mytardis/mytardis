@@ -66,6 +66,19 @@ class DownloadTestCase(TestCase):
             public_access=Experiment.PUBLIC_ACCESS_FULL)
         self.experiment1.save()
 
+        acl = ObjectACL(
+            pluginId=django_user,
+            entityId=str(self.user.id),
+            content_object=self.experiment1,
+            canRead=True,
+            canDownload=True,
+            canWrite=True,
+            canSensitive=True,
+            isOwner=True,
+            aclOwnershipType=ObjectACL.OWNER_OWNED,
+        )
+        acl.save()
+
         # create a non-public experiment
         self.experiment2 = Experiment(
             title='Experiment 2',
@@ -73,17 +86,56 @@ class DownloadTestCase(TestCase):
             public_access=Experiment.PUBLIC_ACCESS_NONE)
         self.experiment2.save()
 
+        acl = ObjectACL(
+            pluginId=django_user,
+            entityId=str(self.user.id),
+            content_object=self.experiment2,
+            canRead=True,
+            canDownload=True,
+            canWrite=True,
+            canSensitive=True,
+            isOwner=True,
+            aclOwnershipType=ObjectACL.OWNER_OWNED,
+        )
+        acl.save()
+
         # dataset1 belongs to experiment1
         self.dataset1 = Dataset(description='dangerous;name')
         self.dataset1.save()
         self.dataset1.experiments.add(self.experiment1)
         self.dataset1.save()
 
+        acl = ObjectACL(
+            pluginId=django_user,
+            entityId=str(self.user.id),
+            content_object=self.dataset1,
+            canRead=True,
+            canDownload=True,
+            canWrite=True,
+            canSensitive=True,
+            isOwner=True,
+            aclOwnershipType=ObjectACL.OWNER_OWNED,
+        )
+        acl.save()
+
         # dataset2 belongs to experiment2
         self.dataset2 = Dataset(description='terrible\nname')
         self.dataset2.save()
         self.dataset2.experiments.add(self.experiment2)
         self.dataset2.save()
+
+        acl = ObjectACL(
+            pluginId=django_user,
+            entityId=str(self.user.id),
+            content_object=self.dataset2,
+            canRead=True,
+            canDownload=True,
+            canWrite=True,
+            canSensitive=True,
+            isOwner=True,
+            aclOwnershipType=ObjectACL.OWNER_OWNED,
+        )
+        acl.save()
 
         # absolute path first
         filename1 = 'testfile.txt'
@@ -122,6 +174,20 @@ class DownloadTestCase(TestCase):
                             size=size if size is not None else filesize,
                             sha512sum=(checksum if checksum else sha512sum))
         datafile.save()
+
+        acl = ObjectACL(
+            pluginId=django_user,
+            entityId=str(self.user.id),
+            content_object=datafile,
+            canRead=True,
+            canDownload=True,
+            canWrite=True,
+            canSensitive=True,
+            isOwner=True,
+            aclOwnershipType=ObjectACL.OWNER_OWNED,
+        )
+        acl.save()
+
         dfo = DataFileObject(
             datafile=datafile,
             storage_box=datafile.get_default_storage_box())

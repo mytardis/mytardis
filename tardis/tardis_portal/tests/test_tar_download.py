@@ -28,9 +28,37 @@ class TarDownloadTestCase(TestCase):
                               public_access=Experiment.PUBLIC_ACCESS_FULL)
         self.exp.save()
 
+        acl = ObjectACL(
+            pluginId=django_user,
+            entityId=str(self.testuser.id),
+            content_object=self.exp,
+            canRead=True,
+            canDownload=True,
+            canWrite=True,
+            canSensitive=True,
+            isOwner=True,
+            aclOwnershipType=ObjectACL.OWNER_OWNED,
+        )
+        acl.save()
+
         # create test dataset
         self.ds = self.exp.datasets.create(
             description="testing tar download dataset")
+        self.ds.save()
+
+        acl = ObjectACL(
+            pluginId=django_user,
+            entityId=str(self.testuser.id),
+            content_object=self.ds,
+            canRead=True,
+            canDownload=True,
+            canWrite=True,
+            canSensitive=True,
+            isOwner=True,
+            aclOwnershipType=ObjectACL.OWNER_OWNED,
+        )
+        acl.save()
+
 
         datafile_content = b"\n".join([b'some data %d' % i
                                        for i in range(1000)])
