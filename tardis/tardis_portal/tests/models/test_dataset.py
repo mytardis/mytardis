@@ -29,7 +29,7 @@ class DatasetTestCase(ModelTestCase):
         group.save()
         group.user_set.add(self.user)
 
-        institution = Institution(name="Test Institution")
+        institution = Institution(name="Test Institution", manager_group=group)
         institution.save()
 
         facility = Facility(name="Test Facility",

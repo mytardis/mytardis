@@ -58,7 +58,7 @@ class MyTardisResourceTestCase(ResourceTestCaseMixin, TransactionTestCase):
         self.testinstitution.save()
         self.testfacility = Facility(name="Test Facility",
                                      manager_group=self.testgroup,
-                                     institution=institution)
+                                     institution=self.testinstitution)
         self.testfacility.save()
         self.testinstrument = Instrument(name="Test Instrument",
                                          facility=self.testfacility)

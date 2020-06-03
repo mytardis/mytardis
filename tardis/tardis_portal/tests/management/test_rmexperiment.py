@@ -111,7 +111,7 @@ class RmExperimentTestCase(TestCase):
         self.assertEqual(len(exp2_.get_datafiles(user_)), 5)
 
     def testRemove(self):
-        (exp1_, exp2_) = _create_test_data()
+        (exp1_, exp2_, user_) = _create_test_data()
         self.assertEqual(DataFile.objects.all().count(), 6)
         self.assertEqual(len(exp1_.get_datafiles(user_)), 3)
         self.assertEqual(len(exp2_.get_datafiles(user_)), 5)

@@ -47,7 +47,7 @@ class FacilityOverviewTestCase(TestCase):
         self.institution.save()
         self.facility = Facility(
             name="Test Facility", manager_group=self.group,
-            institution=institution)
+            institution=self.institution)
         self.facility.save()
         self.instrument = Instrument(
             name="Test Instrument", facility=self.facility)
