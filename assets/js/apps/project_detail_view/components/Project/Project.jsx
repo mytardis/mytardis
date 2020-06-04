@@ -6,7 +6,7 @@ const experimentList = (projectId) => {
   let experiments = [];
   for (let i = 0; i < 20; i++) {
     experiments.push({
-        id: i,
+      id: i,
       name: "project__" + projectId + "_experiment__" + i,
       description: "This is the description for experiment #" + i,
     });
@@ -23,12 +23,29 @@ async function getExperimentList(projectId) {
   return data.objects;
 }
 
-async function fetchProject(projectId) {
-  let response = await fetch(
-    `http://130.216.218.45:80/api/v1/project/?id=${projectId}`
-  );
-  let data = await response.json();
-  return data;
+// async function fetchProject(projectId) {
+// let response = await fetch(
+//   `yapi/v1/project/?id=${projectId}`
+// );
+// let data = await response.json();
+// console.log(data);
+// return data;
+// }
+
+const fetchProject = (projectId) => {
+  fetch(`http://localhost:8000/api/v1/project/?id=${projectId}`, {
+    method: 'get',
+    headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json'
+    }
+  }).then(response => {
+    if (!response.ok) {
+      throw new Error("An error on the server occurred.")
+    }
+    console.log(response)
+    return response.json()
+  })
 }
 
 const mockProjectData = () => {
@@ -67,6 +84,9 @@ const mockProjectData = () => {
 
 const Project = ({ projectId }) => {
   let projectData = mockProjectData().objects.project[0];
+
+  console.log("Fetching project data.");
+  projectData = fetchProject(projectId);
   console.log(projectData);
 
   return (

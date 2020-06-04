@@ -2,7 +2,7 @@ from django.conf.urls import url
 
 from tardis.tardis_portal.views import (
     ProjectView,
-    ReactProject
+    ProjectDetails
     )
 
 from tardis.tardis_portal.views import (
@@ -14,12 +14,8 @@ from tardis.tardis_portal.views import (
 #TODO point these to alterntive pages when they are developed
 
 project_urls = [
-    # warrick test
-    # maps to /project/react/
-    url(r'^react/$', ReactProject.as_view(),
+    url(r'^details/(?P<project_id>\d+)$', ProjectDetails.as_view(),
         name='tardis_portal.views.react_project'),
-    # url(r'^react/(?P<project_id>\d+)/$', react_project,
-    #     name='tardis_portal.views.react_project'),
 
     url(r'^(?P<project_id>\d+)/$', ProjectView.as_view(),
         name='tardis_portal.views.create_project'),

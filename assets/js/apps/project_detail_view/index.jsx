@@ -11,10 +11,10 @@ const { href } = window.location;
 console.log(href);
 
 const projectId = href.substring(href.lastIndexOf("/") + 1);
-console.log(projectId);
 
 // fetch the project?
 async function fetchProject(id) {
+  let projectUrl = `http://130.216.218.45:80/api/v1/project/?id=${projectId}`;
   let response = await fetch(
     `http://130.216.218.45:80/api/v1/project/?id=${projectId}`
   );
