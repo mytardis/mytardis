@@ -12,7 +12,9 @@ from django.contrib.auth.models import User
 from django.urls import reverse
 from django.test import Client, TestCase
 
+from ..auth.localdb_auth import django_user
 from ..models.experiment import Experiment
+from ..models.access_control import ObjectACL
 
 
 class TarDownloadTestCase(TestCase):
