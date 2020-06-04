@@ -58,15 +58,6 @@ class Project extends Component {
     })
   }
 
-  // async function fetchProject(projectId) {
-  // let response = await fetch(
-  //   `http://localhost:8000/api/v1/project/?id=${projectId}`
-  // );
-  // let data = await response.json();
-  // console.log(data);
-  // return data;
-  // }
-
   render() {
     // const { projectData } = this.state;
     // console.log("props " + this.props.projectId);
