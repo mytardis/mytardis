@@ -642,7 +642,7 @@ def create_token(request, experiment_id):
 @require_POST
 def token_delete(request, token_id):
     token = Token.objects.get(id=token_id)
-    if authz.has_experiment_ownership(request, token.experiment_id):
+    if authz.has_ownership(request, token.experiment_id, 'experiment'):
         token.delete()
         return HttpResponse('{"success": true}', content_type='application/json')
     return HttpResponse('{"success": false}', content_type='application/json')
@@ -658,11 +658,11 @@ def share(request, experiment_id):
     c = {}
 
     c['has_write_permissions'] = \
-        authz.has_write_permissions(request, experiment_id)
+        authz.has_write(request, experiment_id, "experiment")
     c['has_download_permissions'] = \
-        authz.has_experiment_download_access(request, experiment_id)
+        authz.has_download_access(request, experiment_id, "experiment")
     if user.is_authenticated:
-        c['is_owner'] = authz.has_experiment_ownership(request, experiment_id)
+        c['is_owner'] = authz.has_ownership(request, experiment_id, 'experiment')
         c['is_superuser'] = user.is_superuser
 
     domain = Site.objects.get_current().domain

@@ -38,11 +38,9 @@ class IndexExperimentTestCase(TestCase):
 
     def test_create_index(self):
         self.exp1 = Experiment(title='test exp1',
-                               institution_name='monash',
                                description='Test Description',
                                created_by=self.user)
         self.exp2 = Experiment(title='test exp2',
-                               institution_name='monash',
                                description='Test Description',
                                created_by=self.user)
         self.exp1.save()

@@ -48,6 +48,7 @@ from django.utils import timezone
 from django.contrib.contenttypes.models import ContentType
 import pytz
 
+from ..auth.localdb_auth import django_user
 from ..models.experiment import Experiment
 from ..models.dataset import Dataset
 from ..models.datafile import DataFile, DataFileObject
@@ -77,19 +78,57 @@ class ParameterSetManagerTestCase(TestCase):
         self.test_dir = mkdtemp()
 
         self.exp = Experiment(title='test exp1',
-                              institution_name='monash',
                               created_by=self.user)
         self.exp.save()
+
+        acl = ObjectACL(
+            pluginId=django_user,
+            entityId=str(self.user.id),
+            content_object=self.exp,
+            canRead=True,
+            canDownload=True,
+            canWrite=True,
+            canSensitive=True,
+            isOwner=True,
+            aclOwnershipType=ObjectACL.OWNER_OWNED,
+        )
+        acl.save()
 
         self.dataset = Dataset(description="dataset description...")
         self.dataset.save()
         self.dataset.experiments.add(self.exp)
         self.dataset.save()
 
+        acl = ObjectACL(
+            pluginId=django_user,
+            entityId=str(self.user.id),
+            content_object=self.dataset,
+            canRead=True,
+            canDownload=True,
+            canWrite=True,
+            canSensitive=True,
+            isOwner=True,
+            aclOwnershipType=ObjectACL.OWNER_OWNED,
+        )
+        acl.save()
+
         self.datafile = DataFile(dataset=self.dataset,
                                  filename="testfile.txt",
                                  size="42", md5sum='bogus')
         self.datafile.save()
+
+        acl = ObjectACL(
+            pluginId=django_user,
+            entityId=str(self.user.id),
+            content_object=self.datafile,
+            canRead=True,
+            canDownload=True,
+            canWrite=True,
+            canSensitive=True,
+            isOwner=True,
+            aclOwnershipType=ObjectACL.OWNER_OWNED,
+        )
+        acl.save()
 
         self.dfo = DataFileObject(
             datafile=self.datafile,
@@ -99,7 +138,7 @@ class ParameterSetManagerTestCase(TestCase):
 
         self.schema = Schema(
             namespace="http://localhost/psmtest/df/",
-            name="Parameter Set Manager", type=Schema.DATAFILE)
+            name="Parameter Set Manager", schema_type=Schema.DATAFILE)
         self.schema.save()
 
         self.parametername1 = ParameterName(
@@ -367,7 +406,7 @@ class EditParameterSetTestCase(TestCase):
 
         self.schema = Schema(
             namespace="http://localhost/psmtest/df/",
-            name="Parameter Set Manager", type=Schema.DATAFILE)
+            name="Parameter Set Manager", schema_type=Schema.DATAFILE)
         self.schema.save()
 
         self.parametername1 = ParameterName(
@@ -390,22 +429,39 @@ class EditParameterSetTestCase(TestCase):
         self.parametername3.save()
 
         self.experiment = Experiment(
-            title='test exp1', institution_name='monash', created_by=self.user)
+            title='test exp1', created_by=self.user)
         self.experiment.save()
+
+        acl = ObjectACL(
+            pluginId=django_user,
+            entityId=str(self.user.id),
+            content_object=self.experiment,
+            canRead=True,
+            canDownload=True,
+            canWrite=True,
+            canSensitive=True,
+            isOwner=True,
+            aclOwnershipType=ObjectACL.OWNER_OWNED,
+        )
+        acl.save()
 
         self.dataset = Dataset(description='test dataset1')
         self.dataset.save()
         self.dataset.experiments.add(self.experiment)
         self.dataset.save()
 
-        self.acl = ObjectACL(
-            pluginId='django_user',
+        acl = ObjectACL(
+            pluginId=django_user,
             entityId=str(self.user.id),
-            content_object=self.experiment,
+            content_object=self.dataset,
             canRead=True,
+            canDownload=True,
+            canWrite=True,
+            canSensitive=True,
             isOwner=True,
-            aclOwnershipType=ObjectACL.OWNER_OWNED)
-        self.acl.save()
+            aclOwnershipType=ObjectACL.OWNER_OWNED,
+        )
+        acl.save()
 
         self.experimentparameterset = ExperimentParameterSet(
             schema=self.schema, experiment=self.experiment)
@@ -431,6 +487,19 @@ class EditParameterSetTestCase(TestCase):
                                  filename="testfile.txt",
                                  size="42", md5sum='bogus')
         self.datafile.save()
+
+        acl = ObjectACL(
+            pluginId=django_user,
+            entityId=str(self.user.id),
+            content_object=self.datafile,
+            canRead=True,
+            canDownload=True,
+            canWrite=True,
+            canSensitive=True,
+            isOwner=True,
+            aclOwnershipType=ObjectACL.OWNER_OWNED,
+        )
+        acl.save()
 
         self.datafileparameterset = DatafileParameterSet(
             schema=self.schema, datafile=self.datafile)

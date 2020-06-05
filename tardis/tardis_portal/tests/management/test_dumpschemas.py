@@ -12,11 +12,11 @@ class DumpSchemasTestCase(TestCase):
     def setUp(self):
         self.schema1 = Schema(
             namespace='http://www.example.com/schema1.xml',
-            type=Schema.DATAFILE)
+            schema_type=Schema.DATAFILE)
         self.schema1.save()
         self.schema2 = Schema(
             namespace='http://www.example.com/schema2.xml',
-            type=Schema.DATAFILE)
+            schema_type=Schema.DATAFILE)
         self.schema2.save()
 
     def testDumpSchemas(self):

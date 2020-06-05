@@ -59,7 +59,6 @@ class ExperimentTestCase(TestCase):
         # Create client and go to account management URL
         data = {'title': 'The Elements',
                 'authors': 'Tom Lehrer, Arthur Sullivan',
-                'institution_name': 'The University of California',
                 'description':
                 "There's antimony, arsenic, aluminum, selenium," +
                 "And hydrogen and oxygen and nitrogen and rhenium..."
@@ -76,7 +75,7 @@ class ExperimentTestCase(TestCase):
         experiment_id = resolve(urlparse(created_url).path)\
             .kwargs['experiment_id']
         experiment = Experiment.objects.get(id=experiment_id)
-        for attr in ('title', 'description', 'institution_name'):
+        for attr in ('title', 'description'):
             self.assertEqual(getattr(experiment, attr), data[attr])
 
         # Check authors were created properly
@@ -109,7 +108,6 @@ class ExperimentTestCase(TestCase):
             'authors': (
                 'W. S. Gilbert(http://en.wikipedia.org/wiki/'
                 'W._S._Gilbert), Arthur Sullivan (arthur@sullivansite.net)'),
-            'institution_name': 'Savoy Theatre',
             'description':
                 "I am the very model of a modern Major-General," +
                 "I've information vegetable, animal, and mineral,"
@@ -126,7 +124,7 @@ class ExperimentTestCase(TestCase):
         experiment_id = resolve(urlparse(created_url).path)\
             .kwargs['experiment_id']
         experiment = Experiment.objects.get(id=experiment_id)
-        for attr in ('title', 'description', 'institution_name'):
+        for attr in ('title', 'description'):
             self.assertEqual(getattr(experiment, attr), data[attr])
 
         # Check authors were created properly
@@ -146,7 +144,6 @@ class ExperimentTestCase(TestCase):
         # Create test experiment and make user the owner of it
         def create_experiment(i):
             experiment = Experiment(title='Text Experiment #%d' % i,
-                                    institution_name='Test Uni',
                                     created_by=user)
             experiment.save()
             acl = ObjectACL(
