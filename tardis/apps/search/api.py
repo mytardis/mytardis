@@ -53,6 +53,60 @@ class SearchObject(object):
         self.id = id
 
 
+class SchemasObject(object):
+    def __init__(self, schemas=None, id=None):
+        self.schemas = schemas
+        self.id = id
+
+
+class SchemasAppResource(Resource):
+    """Tastypie resource for schemas"""
+    schemas = fields.ApiField(attribute='schemas', null=True)
+
+    class Meta:
+        resource_name = 'get-schemas'
+        list_allowed_methods = ['get']
+        serializer = default_serializer
+        authentication = default_authentication
+        object_class = SchemasObject
+        always_return_data = True
+
+    def detail_uri_kwargs(self, bundle_or_obj):
+        kwargs = {}
+        if isinstance(bundle_or_obj, Bundle):
+            kwargs['pk'] = bundle_or_obj.obj.id
+        else:
+            kwargs['pk'] = bundle_or_obj['id']
+
+        return kwargs
+
+    def get_object_list(self, request):
+        logging.warn("Testing search app: get schemas")
+        if not request.user.is_authenticated:
+            result_dict = {
+                           "projects" : None,
+                           "experiments" : None,
+                           "datasets" : None,
+                           "datafiles" : None
+                           }
+            return [SchemasObject(id=1, schemas=result_dict)]
+        result_dict = {
+                       "projects" : Project.safe.all(request.user
+                                    ).prefetch_related('projectparameterset_set__schema').distinct(),
+                       "experiments" : Experiment.safe.all(request.user
+                                       ).prefetch_related('experimentparameterset_set__schema').distinct(),
+                       "datasets" : Dataset.safe.all(request.user
+                                       ).prefetch_related('datasetparameterset_set__schema').distinct(),
+                       "datafiles" : DataFile.safe.all(request.user
+                                       ).prefetch_related('datafileparameterset_set__schema').distinct()
+                       }
+        return [SchemasObject(id=1, schemas=result_dict)]
+
+
+    def obj_get_list(self, bundle, **kwargs):
+        return self.get_object_list(bundle.request)
+
+
 class SearchAppResource(Resource):
     """Tastypie resource for simple-search"""
     hits = fields.ApiField(attribute='hits', null=True)
