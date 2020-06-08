@@ -76,13 +76,16 @@ def get_accessible_datafiles_for_user(request):
 
 def get_nested_size(request, obj_id, ct_type):
     if ct_type == "project":
-        size = Project.objects.get(id=obj_id).get_size(request.user)
+        size = Project.safe.get(id=obj_id).get_size(request.user, downloadable=True)
     if ct_type == "experiment":
-        size = Experiment.objects.get(id=obj_id).get_size(request.user)
+        size = Experiment.safe.get(id=obj_id).get_size(request.user, downloadable=True)
     if ct_type == "dataset":
-        size = Dataset.objects.get(id=obj_id).get_size(request.user)
+        size = Dataset.safe.get(id=obj_id).get_size(request.user, downloadable=True)
     if ct_type == "datafile":
-        size = DataFile.objects.get(id=obj_id).get_size()
+        if has_download_access(request, obj_id, "datafile"):
+            size = DataFile.safe.get(id=obj_id).get_size()
+        else:
+            size = 0
     return size
 
 
