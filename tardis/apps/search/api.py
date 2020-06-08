@@ -21,7 +21,8 @@ from tardis.tardis_portal.api import default_authentication
 from tardis.tardis_portal.auth import decorators as authz
 from tardis.tardis_portal.models import (Project, Experiment, Dataset, DataFile,
                                          Instrument, ExperimentParameter,
-                                         DatasetParameter, DatafileParameter)
+                                         DatasetParameter, DatafileParameter,
+                                         Schema, ParameterName)
 
 import logging
 
@@ -51,6 +52,88 @@ class SearchObject(object):
     def __init__(self, hits=None, id=None):
         self.hits = hits
         self.id = id
+
+
+class SchemasObject(object):
+    def __init__(self, schemas=None, id=None):
+        self.schemas = schemas
+        self.id = id
+
+
+class SchemasAppResource(Resource):
+    """Tastypie resource for schemas"""
+    schemas = fields.ApiField(attribute='schemas', null=True)
+
+    class Meta:
+        resource_name = 'get-schemas'
+        list_allowed_methods = ['get']
+        serializer = default_serializer
+        authentication = default_authentication
+        object_class = SchemasObject
+        always_return_data = True
+
+    def detail_uri_kwargs(self, bundle_or_obj):
+        kwargs = {}
+        if isinstance(bundle_or_obj, Bundle):
+            kwargs['pk'] = bundle_or_obj.obj.id
+        else:
+            kwargs['pk'] = bundle_or_obj['id']
+
+        return kwargs
+
+    def get_object_list(self, request):
+        logging.warn("Testing search app: get schemas")
+        if not request.user.is_authenticated:
+            result_dict = {
+                           "projects" : None,
+                           "experiments" : None,
+                           "datasets" : None,
+                           "datafiles" : None
+                           }
+            return [SchemasObject(id=1, schemas=result_dict)]
+        result_dict = {
+                       "projects" : list(set(list(Project.safe.all(request.user
+                                    ).prefetch_related('projectparameterset'
+                                    ).values_list("projectparameterset__schema__id", flat=True)))),
+                       "experiments" : list(set(list(Experiment.safe.all(request.user
+                                       ).prefetch_related('projectparameterset'
+                                       ).values_list("experimentparameterset__schema__id", flat=True)))),
+                       "datasets" : list(set(list(Dataset.safe.all(request.user
+                                       ).prefetch_related('projectparameterset'
+                                       ).values_list("datasetparameterset__schema__id", flat=True)))),
+                       "datafiles" : list(set(list(DataFile.safe.all(request.user
+                                       ).prefetch_related('projectparameterset'
+                                       ).values_list("datafileparameterset__schema__id", flat=True))))
+                       }
+        safe_dict = {}
+        for key in result_dict:
+            safe_dict[key] = []
+            for value in result_dict[key]:
+                if value is not None:
+                    schema_dict = {
+                                   "schema_name" : Schema.objects.get(id=value).name,
+                                   "parameters":[]
+                                   }
+                    param_names = ParameterName.objects.filter(schema__id=value)
+                    for param in param_names:
+                        type_dict = {1:"NUMERIC",
+                                     2:"STRING",
+                                     3:"URL",
+                                     4:"LINK",
+                                     5:"FILENAME",
+                                     6:"DATETIME",
+                                     7:"LONGSTRING",
+                                     8:"JSON"}
+                        param_dict = {"full_name": param.full_name,
+                                      "data_type": type_dict[param.data_type]}
+                        schema_dict["parameters"].append(param_dict)
+                    safe_dict[key].append(schema_dict)
+
+        return [SearchObject(id=1, hits=safe_dict)]
+
+
+    def obj_get_list(self, bundle, **kwargs):
+        return self.get_object_list(bundle.request)
 
 
 class SearchAppResource(Resource):
