@@ -17,7 +17,7 @@ from ..models.dataset import Dataset
 from ..models.experiment import Experiment
 from ..models.facility import Facility
 from ..models.instrument import Instrument
-
+from ..models.institution import Institution
 from ..views.facilities import facility_overview_datafile_list
 from ..views.facilities import facility_overview_experiments
 
@@ -30,20 +30,24 @@ class FacilityOverviewTestCase(TestCase):
         self.user = User.objects.create_user(username, email, pwd)
 
         self.exp = Experiment(
-            title='test exp1', institution_name='monash',
+            title='test exp1',
             created_by=self.user)
 
         self.exp.save()
         self.exp2 = Experiment(
-            title='test exp2', institution_name='monash',
+            title='test exp2',
             created_by=self.user)
         self.exp2.save()
 
         self.group = Group(name="Test Manager Group")
         self.group.save()
         self.group.user_set.add(self.user)
+        self.institution = Institution(
+            name="Test Institution", manager_group=self.group)
+        self.institution.save()
         self.facility = Facility(
-            name="Test Facility", manager_group=self.group)
+            name="Test Facility", manager_group=self.group,
+            institution=self.institution)
         self.facility.save()
         self.instrument = Instrument(
             name="Test Instrument", facility=self.facility)

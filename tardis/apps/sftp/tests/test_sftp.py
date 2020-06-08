@@ -41,7 +41,7 @@ class SFTPTest(TestCase):
         self.user = User.objects.create_user(
             self.username, email, self.password)
         self.exp = Experiment(
-            title='test exp1', institution_name='monash', created_by=self.user)
+            title='test exp1', created_by=self.user)
         self.exp.save()
 
         self.acl = ObjectACL(

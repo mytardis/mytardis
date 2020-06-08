@@ -37,8 +37,6 @@ class Experiment(models.Model):
     :attribute approved: An optional field indicating whether the collection is approved
     :attribute title: The title of the experiment.
     :attribute description: The description of the experiment.
-    :attribute institution_name: The name of the institution who created
-       the experiment.
     :attribute internal_id: Identifier generated at the instrument, for this experiment
     :attribute project_id: UoA project ID (e.g. RAID)
     :attribute start_time: **Undocumented**
