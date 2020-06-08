@@ -64,7 +64,7 @@ def get_owned_experiments(request):
 
 def get_accessible_datafiles_for_user(request):
     experiments = get_accessible_experiments(request)
-    experiment_ids = [id for id in experiments.values_list('id', flat=True)]
+    experiment_ids = list(experiments.values_list('id', flat=True))
 
     if len(experiment_ids) == 0:
         return DataFile.objects.none()
