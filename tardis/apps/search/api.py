@@ -149,15 +149,15 @@ class SearchAppResource(Resource):
                     safe_hit["_source"]["counts"] = authz.get_nested_count(request,
                                                         hit["_source"]["id"], hit["_index"])
 
-                    safe_hit["_source"]["accessRights"] = authz.get_nested_has_download(request,
+                    safe_hit["_source"]["userDownloadRights"] = authz.get_nested_has_download(request,
                                                         hit["_source"]["id"], hit["_index"])
 
                 else:
                     if authz.has_download_access(request, hit["_source"]["id"],
                                                  hit["_index"]):
-                        safe_hit["_source"]["accessRights"] = "full"
+                        safe_hit["_source"]["userDownloadRights"] = "full"
                     else:
-                        safe_hit["_source"]["accessRights"] = "none"
+                        safe_hit["_source"]["userDownloadRights"] = "none"
 
                 if not sensitive_bool:
                     for idx, param in enumerate(hit["_source"]["parameters"]):

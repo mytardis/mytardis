@@ -16,8 +16,8 @@ export const dsResultsData = [
         type:"dataset",
         description: "ABC1",
         url: "",
-        safeFileSize: "11GB",
-        accessRights: "all"
+        size: "11GB",
+        userDownloadRights: "full"
     }
 ]
 
@@ -27,8 +27,8 @@ export const dfResultsData = [
         url: "",
         type:"datafile",
         filename:"DF1",
-        safeFileSize: "6MB",
-        accessRights:"viewOnly"
+        size: "6MB",
+        userDownloadRights:"partial"
     }
 ]
 
@@ -38,8 +38,8 @@ export const projectResultsData = [
         url: "",
         type:"project",
         name:"Understanding genetic drivers in acute megakaryoblastic leukaemia",
-        safeFileSize: "79GB",
-        accessRights:"viewOnly"
+        size: "79GB",
+        userDownloadRights:"partial"
     }
 ]
 
