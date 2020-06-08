@@ -149,9 +149,9 @@ class ACLAuthorization(Authorization):
     '''
     def read_list(self, object_list, bundle):  # noqa # too complex
         obj_ids = [obj.id for obj in object_list]
-        if bundle.request.user.is_authenticated and \
-           bundle.request.user.is_superuser:
-            return object_list
+        # if bundle.request.user.is_authenticated and \
+        #    bundle.request.user.is_superuser:
+        #     return object_list
         if isinstance(bundle.obj, Experiment):
             experiments = Experiment.safe.all(bundle.request.user)
             return experiments.filter(id__in=obj_ids)
