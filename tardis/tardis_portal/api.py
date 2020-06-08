@@ -176,8 +176,8 @@ class ACLAuthorization(Authorization):
                     if has_dataset_access(bundle.request,
                                           dp.parameterset.dataset.id)]
         if isinstance(bundle.obj, DataFile):
-            return [df for df in object_list
-                    if has_datafile_access(bundle.request, df.id)]
+            all_files = get_accessible_datafiles_for_user(bundle.request)
+            return all_files.filter(id__in=obj_ids)
         if isinstance(bundle.obj, DatafileParameterSet):
             datafiles = get_accessible_datafiles_for_user(bundle.request)
             return DatafileParameterSet.objects.filter(
