@@ -1,9 +1,10 @@
 import { createSlice } from '@reduxjs/toolkit';
+import Cookies from 'js-cookie';
 
 const getResultFromHit = (hit,hitType,urlPrefix) => {
     const source = hit._source;
     source.type = hitType;
-    store.url = `${urlPrefix}/${source.id}`;
+    source.url = `${urlPrefix}/${source.id}`;
     return source;
 }
 
@@ -11,23 +12,24 @@ const getResultsFromResponse = (response) => {
 // Grab the "_source" object out of each hit and also
 // add a type attribute to them.
 const hits = response.objects[0].hits,
-    projectResults = hits["projects"].map((hit) => (
+    projectResults = hits["projects"].forEach((hit) => {
         getResultFromHit(hit,"project","/project/view")
-    )),
-    expResults = hits["experiments"].map((hit) => (
+    }),
+    expResults = hits["experiments"].forEach((hit) => {
         getResultFromHit(hit,"experiment","/experiment/view")
-    )),
-    dsResults = hits["datasets"].map((hit) => (
+    }),
+    dsResults = hits["datasets"].forEach((hit) => {
         getResultFromHit(hit,"dataset","/dataset")
-    )),
-    dfResults = hits["datafiles"].map((hit) => (
+    }),
+    dfResults = hits["datafiles"].forEach((hit) => {
         getResultFromHit(hit,"datafile","/datafile/view")
-    ));
+    });
 return {
-    project: projectResults,
-    experiment: expResults,
-    dataset: dsResults,
-    datafile: dfResults
+    // To ensure we don't return undefined values, we return empty arrays if that's the case.
+    project: projectResults || [],
+    experiment: expResults || [],
+    dataset: dsResults || [],
+    datafile: dfResults || []
 }
 }
 
@@ -62,13 +64,13 @@ const search = createSlice({
         },
         getResultsFailure: (state, action) => {
             state.isLoading = false;
-            state.error = action.payload;
+            state.error = action.payload.toString();
             state.results = null;
         }
     }
 })
 
-const fetchResults = (text) => (
+const fetchResults = (searchTerm) => (
     fetch(`/api/v1/search_simple-search/?query=${searchTerm}`,{
         method: 'get',
         headers: {
@@ -85,15 +87,15 @@ const fetchResults = (text) => (
 );
 
 export const updateTextSearch = (searchTerm) => {
-    return (dispatch) => {
+    return (dispatch, getState) => {
+        const state = getState();
+        console.log("State is ",state);
         dispatch(getResultsStart(searchTerm));
-            let results = [];
-            try {
-                results = fetchResults(searchTerm);
-            } catch(e) {
-                dispatch(getResultsFailure(e));
-            }
+        fetchResults(searchTerm).then((results) => {
             dispatch(getResultsSuccess(results));
+        }).catch((e) => {
+                dispatch(getResultsFailure(e));
+        });
     }
 }
 
