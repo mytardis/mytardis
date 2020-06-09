@@ -1002,6 +1002,7 @@ class ProjectResource(MyTardisModelResource):
                                 canSensitive=True,
                                 isOwner=True,
                                 aclOwnershipType=ObjectACL.OWNER_OWNED)
+                acl.save()
         if 'member_groups' in bundle.data.keys():
             # Each member group is defined by a tuple
             # (group_name, sensitive[T/F], download[T/F])
@@ -1024,6 +1025,7 @@ class ProjectResource(MyTardisModelResource):
                                 canSensitive=sensitive_flg,
                                 isOwner=False,
                                 aclOwnershipType=ObjectACL.OWNER_OWNED)
+                acl.save()
         return super().hydrate_m2m(bundle)
 
 ################################################
@@ -1161,6 +1163,7 @@ class ExperimentResource(MyTardisModelResource):
                                 canSensitive=True,
                                 isOwner=True,
                                 aclOwnershipType=ObjectACL.OWNER_OWNED)
+                acl.save()
             if 'member_group' in bundle.data.keys():
                 member_groups = bundle.data['member_groups']
             else:
@@ -1192,6 +1195,7 @@ class ExperimentResource(MyTardisModelResource):
                                 canSensitive=sensitive_flg,
                                 isOwner=False,
                                 aclOwnershipType=ObjectACL.OWNER_OWNED)
+                acl.save()
         return super().hydrate_m2m(bundle)
 
     def obj_create(self, bundle, **kwargs):
@@ -1356,6 +1360,7 @@ class DatasetResource(MyTardisModelResource):
                                 canSensitive=True,
                                 isOwner=True,
                                 aclOwnershipType=ObjectACL.OWNER_OWNED)
+                acl.save()
             if 'member_group' in bundle.data.keys():
                 member_groups = bundle.data['member_groups']
             else:
@@ -1387,6 +1392,7 @@ class DatasetResource(MyTardisModelResource):
                                 canSensitive=sensitive_flg,
                                 isOwner=False,
                                 aclOwnershipType=ObjectACL.OWNER_OWNED)
+                acl.save()
         return super().hydrate_m2m(bundle)
 
     def get_root_dir_nodes(self, request, **kwargs):
@@ -1587,6 +1593,87 @@ class DataFileResource(MyTardisModelResource):
         return HttpResponse()
 
     def hydrate(self, bundle):
+        if getattr(bundle.obj, 'id', False):
+            try:
+                dataset = DatasetResource.get_via_uri(
+                    DatasetResource(), bundle.data['dataset'], bundle.request)
+            except NotFound:
+                raise  # This probably should raise an error
+        if getattr(bundle.obj, 'id', False):
+            datafile = bundle.obj
+            project_lead = dataset.get_owners()
+            # TODO: unify this with the view function's ACL creation,
+            # maybe through an ACL toolbox.
+            for owner in project_lead:
+                acl = ObjectACL(content_type=datafile.get_ct(),
+                                object_id=datafile.id,
+                                pluginId=django_user,
+                                entityId=str(owner.id),
+                                canRead=True,
+                                canDownload=True,
+                                canWrite=True,
+                                canDelete=True,
+                                canSensitive=True,
+                                isOwner=True,
+                                aclOwnershipType=ObjectACL.OWNER_OWNED)
+                acl.save()
+            if 'admin_group' in bundle.data.keys():
+                admin_groups = bundle.data['admin_groups']
+            else:
+                admin_groups = dataset.get_admins()
+            for grp in admin_groups:
+                if isinstance(grp, ObjectACL):
+                    group_id = grp.object_id
+                else:
+                    group, created = Group.objects.get_or_create(name=grp)
+                    if created:
+                        group.permissions.set(admin_perms)
+                    group_id = group.id
+                acl = ObjectACL(content_type=datafile.get_ct(),
+                                object_id=datafile.id,
+                                pluginId=django_group,
+                                entityId=str(group_id),
+                                canRead=True,
+                                canDownload=True,
+                                canWrite=True,
+                                canDelete=True,
+                                canSensitive=True,
+                                isOwner=True,
+                                aclOwnershipType=ObjectACL.OWNER_OWNED)
+                acl.save()
+            if 'member_group' in bundle.data.keys():
+                member_groups = bundle.data['member_groups']
+            else:
+                member_groups = dataset.get_groups()
+            # Each member group is defined by a tuple
+            # (group_name, sensitive[T/F], download[T/F])
+            # unpack for ACLs
+            for grp in member_groups:
+                if isinstance(grp, ObjectACL):
+                    group_id = grp.object_id
+                    senstive_flg = grp.canSensitive
+                    download_flg = grp.canDownload
+                else:
+                    grp_name = grp[0]
+                    sensitive_flg = grp[1]
+                    download_flg = grp[2]
+                    group, created = Group.objects.get_or_create(name=grp_name)
+                    if created:
+                        group.permissions.set(member_perms)
+                    group_id = group.id
+                acl = ObjectACL(content_type=datafile.get_ct(),
+                                object_id=datafile.id,
+                                pluginId=django_group,
+                                entityId=str(group_id),
+                                canRead=True,
+                                canDownload=download_flg,
+                                canWrite=True,
+                                canDelete=False,
+                                canSensitive=sensitive_flg,
+                                isOwner=False,
+                                aclOwnershipType=ObjectACL.OWNER_OWNED)
+                acl.save()
+
         if 'attached_file' in bundle.data:
             # have POSTed file
             newfile = bundle.data['attached_file'][0]
