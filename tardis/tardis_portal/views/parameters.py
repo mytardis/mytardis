@@ -20,8 +20,8 @@ logger = logging.getLogger(__name__)
 @login_required
 def edit_experiment_par(request, parameterset_id):
     parameterset = ExperimentParameterSet.objects.get(id=parameterset_id)
-    if authz.has_write_permissions(request, parameterset.experiment.id):
-        view_sensitive = authz.has_experiment_sensitive_access(request, parameterset.experiment.id)
+    if authz.has_write(request, parameterset.experiment.id, "experiment"):
+        view_sensitive = authz.has_sensitive_access(request, parameterset.experiment.id, "experiment")
         return edit_parameters(request, parameterset, otype="experiment",
                                view_sensitive=view_sensitive)
     return return_response_error(request)
@@ -30,8 +30,8 @@ def edit_experiment_par(request, parameterset_id):
 @login_required
 def edit_dataset_par(request, parameterset_id):
     parameterset = DatasetParameterSet.objects.get(id=parameterset_id)
-    if authz.has_dataset_write(request, parameterset.dataset.id):
-        view_sensitive = authz.has_dataset_sensitive_access(request, parameterset.dataset.id)
+    if authz.has_write(request, parameterset.dataset.id, "dataset"):
+        view_sensitive = authz.has_sensitive_access(request, parameterset.dataset.id, "dataset")
         return edit_parameters(request, parameterset, otype="dataset",
                                view_sensitive=view_sensitive)
     return return_response_error(request)
@@ -40,8 +40,8 @@ def edit_dataset_par(request, parameterset_id):
 @login_required
 def edit_datafile_par(request, parameterset_id):
     parameterset = DatafileParameterSet.objects.get(id=parameterset_id)
-    if authz.has_datafile_write(request, parameterset.datafile.id):
-        view_sensitive = authz.has_datafile_sensitive_access(request, parameterset.datafile.id)
+    if authz.has_write(request, parameterset.datafile.id, "datafile"):
+        view_sensitive = authz.has_sensitive_access(request, parameterset.datafile.id, "datafile")
         return edit_parameters(request, parameterset, otype="datafile",
                                view_sensitive=view_sensitive)
     return return_response_error(request)
@@ -99,7 +99,7 @@ def edit_parameters(request, parameterset, otype, view_sensitive=False):
 @login_required
 def add_datafile_par(request, datafile_id):
     parentObject = DataFile.objects.get(id=datafile_id)
-    if authz.has_datafile_write(request, parentObject.id):
+    if authz.has_write(request, parentObject.id, "datafile"):
         return add_par(request, parentObject,
                        otype="datafile", stype=Schema.DATAFILE)
     return return_response_error(request)
@@ -108,7 +108,7 @@ def add_datafile_par(request, datafile_id):
 @login_required
 def add_dataset_par(request, dataset_id):
     parentObject = Dataset.objects.get(id=dataset_id)
-    if authz.has_dataset_write(request, parentObject.id):
+    if authz.has_write(request, parentObject.id, "dataset"):
         return add_par(request, parentObject, otype="dataset",
                        stype=Schema.DATASET)
     return return_response_error(request)
@@ -117,7 +117,7 @@ def add_dataset_par(request, dataset_id):
 @login_required
 def add_experiment_par(request, experiment_id):
     parentObject = Experiment.objects.get(id=experiment_id)
-    if authz.has_write_permissions(request, parentObject.id):
+    if authz.has_write(request, parentObject.id, "experiment"):
         return add_par(request, parentObject, otype="experiment",
                        stype=Schema.EXPERIMENT)
     return return_response_error(request)
