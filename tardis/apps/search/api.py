@@ -243,12 +243,13 @@ class SearchAppResource(Resource):
                         safe_hit["_source"]["userDownloadRights"] = "none"
 
                 if not sensitive_bool:
-                    for idx, param in enumerate(hit["_source"]["parameters"]):
-                        is_sensitive = authz.get_obj_parameter(param["full_name"],
-                                                         hit["_source"]["id"],
-                                                         hit["_index"])
-                        if is_sensitive.sensitive_metadata:
-                            safe_hit["_source"]["parameters"].pop(idx)
+                    for idxx, schema in enumerate(hit["_source"]["schemas"]:
+                        for idx, param in enumerate(schema["parameters"]):
+                            is_sensitive = authz.get_obj_parameter(param["full_name"],
+                                                             hit["_source"]["id"],
+                                                             hit["_index"])
+                            if is_sensitive.sensitive_metadata:
+                                safe_hit["_source"]["schemas"][idxx]["parameters"].pop(idx)
 
                 result_dict[hit["_index"]+"s"].append(safe_hit)
 
