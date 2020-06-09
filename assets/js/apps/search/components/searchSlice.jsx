@@ -12,24 +12,23 @@ const getResultsFromResponse = (response) => {
 // Grab the "_source" object out of each hit and also
 // add a type attribute to them.
 const hits = response.objects[0].hits,
-    projectResults = hits["projects"].forEach((hit) => {
-        getResultFromHit(hit,"project","/project/view")
+    projectResults = hits["projects"].map((hit) => {
+        return getResultFromHit(hit,"project","/project/view")
     }),
-    expResults = hits["experiments"].forEach((hit) => {
-        getResultFromHit(hit,"experiment","/experiment/view")
+    expResults = hits["experiments"].map((hit) => {
+        return getResultFromHit(hit,"experiment","/experiment/view")
     }),
-    dsResults = hits["datasets"].forEach((hit) => {
-        getResultFromHit(hit,"dataset","/dataset")
+    dsResults = hits["datasets"].map((hit) => {
+        return getResultFromHit(hit,"dataset","/dataset")
     }),
-    dfResults = hits["datafiles"].forEach((hit) => {
-        getResultFromHit(hit,"datafile","/datafile/view")
+    dfResults = hits["datafiles"].map((hit) => {
+        return getResultFromHit(hit,"datafile","/datafile/view")
     });
 return {
-    // To ensure we don't return undefined values, we return empty arrays if that's the case.
-    project: projectResults || [],
-    experiment: expResults || [],
-    dataset: dsResults || [],
-    datafile: dfResults || []
+    project: projectResults,
+    experiment: expResults,
+    dataset: dsResults,
+    datafile: dfResults
 }
 }
 
