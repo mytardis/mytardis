@@ -59,6 +59,7 @@ class Project(models.Model):
     embargo_until = models.DateTimeField(null=True, blank=True)
     start_date = models.DateTimeField(default=django_time_now)
     end_date = models.DateTimeField(null=True, blank=True)
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE)
     url = models.URLField(max_length=255,
                           null=True, blank=True)
     institution = models.ManyToManyField(Institution,

@@ -916,7 +916,7 @@ class ProjectResource(MyTardisModelResource):
 
     TODO: catch duplicate schema submissions for parameter sets
     '''
-    created_by = fields.ForeignKey(UserResource, 'lead_researcher')
+    created_by = fields.ForeignKey(UserResource, 'created_by')
     parameter_sets = fields.ToManyField(
         'tardis.tardis_portal.api.ProjectParameterSetResource',
         'projectparameterset_set',
@@ -924,6 +924,7 @@ class ProjectResource(MyTardisModelResource):
         full=True, null=True)
     institution = fields.ToManyField(InstitutionResource, 'institution',
                                      null=True, full=True)
+    lead_researcher = fields.ForeignKey(UserResource, 'lead_researcher')
 
     class Meta(MyTardisModelResource.Meta):
         object_class = Project
