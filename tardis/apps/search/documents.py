@@ -57,10 +57,10 @@ class ProjectDocument(Document):
         'entityId': fields.StringField()
     }
     )
-    parameters = fields.ObjectField(attr='getParametersforIndexing', dynamic=True)
+    schemas = fields.ObjectField(attr='getSchemasforIndexing', dynamic=True)
 
-    def prepare_parameters(self, instance):
-        return list(instance.getParametersforIndexing())
+    def prepare_schemas(self, instance):
+        return list(instance.getSchemasforIndexing())
 
     class Django:
         model = Project
@@ -107,10 +107,10 @@ class ExperimentDocument(Document):
         'entityId': fields.StringField()
     }
     )
-    parameters = fields.ObjectField(attr='getParametersforIndexing', dynamic=True)
+    schemas = fields.ObjectField(attr='getSchemasforIndexing', dynamic=True)
 
-    def prepare_parameters(self, instance):
-        return list(instance.getParametersforIndexing())
+    def prepare_schemas(self, instance):
+        return list(instance.getSchemasforIndexing())
 
     class Django:
         model = Experiment
@@ -160,10 +160,10 @@ class DatasetDocument(Document):
     modified_time = fields.DateField()
     tags = fields.StringField(attr='tags_for_indexing')
 
-    parameters = fields.ObjectField(attr='getParametersforIndexing', dynamic=True)
+    schemas = fields.ObjectField(attr='getSchemasforIndexing', dynamic=True)
 
-    def prepare_parameters(self, instance):
-        return list(instance.getParametersforIndexing())
+    def prepare_schemas(self, instance):
+        return list(instance.getSchemasforIndexing())
 
     class Django:
         model = Dataset
@@ -208,10 +208,10 @@ class DataFileDocument(Document):
         )
 
 
-    parameters = fields.ObjectField(attr='getParametersforIndexing', dynamic=True)
+    schemas = fields.ObjectField(attr='getSchemasforIndexing', dynamic=True)
 
-    def prepare_parameters(self, instance):
-        return list(instance.getParametersforIndexing())
+    def prepare_schemas(self, instance):
+        return list(instance.getSchemasforIndexing())
 
     class Django:
         model = DataFile
