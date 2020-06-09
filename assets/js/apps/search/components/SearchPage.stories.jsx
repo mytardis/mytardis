@@ -1,14 +1,25 @@
 import React from 'react'
 import { PureSearchPage } from './SearchPage'
-import SearchInfoContext from './SearchInfoContext'
 import { experimentListData } from './ResultList.stories'
 import { action } from '@storybook/addon-actions'
+import { Provider } from 'react-redux';
 
 export default {
     component: PureSearchPage,
     title: 'Search page',
     excludeStories: /.*Data$/
 };
+
+// Mock redux store for this story.
+const makeStore = (state) => {
+    return {
+        getState: () => {
+        return {search: state};
+        },
+        subscribe: () => 0,
+        dispatch: action('dispatch'),
+    };
+}
 
 export const dsResultsData = [
     {
@@ -55,7 +66,6 @@ export const searchInfoData = {
     isLoading: false,
     error:null,
     results: searchResultsData,
-    updateSearch: action("update search requested")
 }
 
 export const errorData = Object.assign({},searchInfoData,{
@@ -69,19 +79,19 @@ export const loadingData = Object.assign({},searchInfoData,{
 });
 
 export const Default = () => (
-    <SearchInfoContext.Provider value={searchInfoData}>
+    <Provider store={makeStore(searchInfoData)}>
         <PureSearchPage />
-    </SearchInfoContext.Provider>
+    </Provider>
 );
 
 export const Error = () => (
-    <SearchInfoContext.Provider value={errorData}>
+    <Provider store={makeStore(errorData)}>
         <PureSearchPage />
-    </SearchInfoContext.Provider>
+    </Provider>
 );
 
 export const Loading = () => (
-    <SearchInfoContext.Provider value={loadingData}>
+    <Provider store={makeStore(loadingData)}>
         <PureSearchPage />
-    </SearchInfoContext.Provider>
+    </Provider>
 );
