@@ -21,8 +21,10 @@ from taggit.managers import TaggableManager
 
 logger = logging.getLogger(__name__)
 
+
 def dataset_id_default():
     return datetime.now().strftime('DTST-%Y-%M-%d-%H-%M-%S.%f')
+
 
 @python_2_unicode_compatible
 class Dataset(models.Model):
@@ -62,9 +64,11 @@ class Dataset(models.Model):
 
     experiments = models.ManyToManyField(Experiment, related_name='datasets')
     description = models.TextField(blank=True)
-    dataset_id = models.CharField(max_length=400, null=False, blank=False, unique=True, default=dataset_id_default )
+    dataset_id = models.CharField(
+        max_length=400, null=False, blank=False, unique=True, default=dataset_id_default)
     directory = models.CharField(blank=True, null=True, max_length=255)
-    created_time = models.DateTimeField(null=True, blank=True, default=timezone.now)
+    created_time = models.DateTimeField(
+        null=True, blank=True, default=timezone.now)
     modified_time = models.DateTimeField(null=True, blank=True)
     immutable = models.BooleanField(default=False)
     instrument = models.ForeignKey(Instrument, null=True, blank=True,
@@ -122,10 +126,10 @@ class Dataset(models.Model):
         """
         from .parameters import DatasetParameter, ParameterName
         paramset = self.getParameterSets()
-        param_type_options = {1 : 'datetime_value', 2 : 'string_value',
-                              3 : 'numerical_value'}
+        param_type_options = {1: 'datetime_value', 2: 'string_value',
+                              3: 'numerical_value'}
         param_glob = DatasetParameter.objects.filter(
-            parameterset__in=paramset).all().values_list('name','datetime_value','string_value','numerical_value')
+            parameterset__in=paramset).all().values_list('name', 'datetime_value', 'string_value', 'numerical_value')
         param_list = []
         for sublist in param_glob:
             full_name = ParameterName.objects.get(id=sublist[0]).full_name
@@ -317,7 +321,8 @@ class Dataset(models.Model):
             dir_tuples.append(('..', basedir))
         dirs_query = DataFile.safe.all(user).filter(dataset=self)
         if basedir:
-            dirs_query = dirs_query.filter(directory__startswith='%s/' % basedir)
+            dirs_query = dirs_query.filter(
+                directory__startswith='%s/' % basedir)
         dir_paths = set(dirs_query.values_list('directory', flat=True))
         for dir_path in dir_paths:
             if not dir_path:

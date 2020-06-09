@@ -51,7 +51,7 @@ class Project(models.Model):
         models.PositiveSmallIntegerField(choices=PUBLIC_ACCESS_CHOICES,
                                          null=False,
                                          default=PUBLIC_ACCESS_NONE)
-    #TODO No project should have the ingestion service account as the lead_researcher
+    # TODO No project should have the ingestion service account as the lead_researcher
     lead_researcher = models.ForeignKey(User,
                                         on_delete=models.CASCADE)
     objectacls = GenericRelation(ObjectACL)
@@ -65,8 +65,8 @@ class Project(models.Model):
                                          related_name='institutions')
     safe = SafeManager()
 
-    #TODO Integrate DMPs into the project.
-    #data_management_plan = models.ManyToManyField(DataManagementPlan,
+    # TODO Integrate DMPs into the project.
+    # data_management_plan = models.ManyToManyField(DataManagementPlan,
     #                                              null=True, blank=True)
 
     class Meta:
@@ -91,10 +91,10 @@ class Project(models.Model):
         """
         from .parameters import ProjectParameter, ParameterName
         paramset = self.getParameterSets()
-        param_type_options = {1 : 'datetime_value', 2 : 'string_value',
-                              3 : 'numerical_value'}
+        param_type_options = {1: 'datetime_value', 2: 'string_value',
+                              3: 'numerical_value'}
         param_glob = ProjectParameter.objects.filter(
-            parameterset__in=paramset).all().values_list('name','datetime_value','string_value','numerical_value')
+            parameterset__in=paramset).all().values_list('name', 'datetime_value', 'string_value', 'numerical_value')
         param_list = []
         for sublist in param_glob:
             full_name = ParameterName.objects.get(id=sublist[0]).full_name
@@ -117,7 +117,7 @@ class Project(models.Model):
     def get_ct(self):
         return ContentType.objects.get_for_model(self)
 
-    def get_admins(self):
+    def get_owners(self):
         acls = ObjectACL.objects.filter(pluginId='django_user',
                                         content_type=self.get_ct(),
                                         object_id=self.id,
@@ -131,14 +131,14 @@ class Project(models.Model):
                                         canRead=True)
         return [acl.get_related_object() for acl in acls]
 
-    def get_admin_groups(self):
+    def get_admins(self):
         acls = ObjectACL.objects.filter(pluginId='django_group',
                                         content_type=self.get_ct(),
                                         object_id=self.id,
                                         isOwner=True)
         return [acl.get_related_object() for acl in acls]
 
-    def get_read_groups(self):
+    def get_groups(self):
         acls = ObjectACL.objects.filter(pluginId='django_group',
                                         content_type=self.get_ct(),
                                         object_id=self.id,

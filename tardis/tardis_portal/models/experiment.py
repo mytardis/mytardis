@@ -21,8 +21,10 @@ from .license import License
 
 logger = logging.getLogger(__name__)
 
+
 def experiment_internal_id_default():
     return datetime.now().strftime('WUI-%Y-%M-%d-%H-%M-%S.%f')
+
 
 @python_2_unicode_compatible
 class Experiment(models.Model):
@@ -71,10 +73,11 @@ class Experiment(models.Model):
                           null=True, blank=True)
     approved = models.BooleanField(default=False)
     title = models.CharField(max_length=400)
-    #institution_name = models.CharField(max_length=400,
+    # institution_name = models.CharField(max_length=400,
     #                                    default=settings.DEFAULT_INSTITUTION)
     description = models.TextField(blank=True)
-    raid = models.CharField(max_length=400, null=False, blank=False, unique=True, default=experiment_internal_id_default)
+    raid = models.CharField(max_length=400, null=False, blank=False,
+                            unique=True, default=experiment_internal_id_default)
     project = models.ForeignKey(Project, on_delete=models.CASCADE, null=True)
     start_time = models.DateTimeField(null=True, blank=True)
     end_time = models.DateTimeField(null=True, blank=True)
@@ -97,7 +100,6 @@ class Experiment(models.Model):
 
     class Meta:
         app_label = 'tardis_portal'
-
 
     def is_embargoed(self):
         if self.embargo_until:
@@ -258,6 +260,13 @@ class Experiment(models.Model):
                                         content_type=self.get_ct(),
                                         object_id=self.id,
                                         canRead=True)
+        return [acl.get_related_object() for acl in acls]
+
+    def get_admins(self):
+        acls = ObjectACL.objects.filter(pluginId='django_group',
+                                        content_type=self.get_ct(),
+                                        object_id=self.id,
+                                        isOwner=True)
         return [acl.get_related_object() for acl in acls]
 
 
