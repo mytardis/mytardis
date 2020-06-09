@@ -1310,7 +1310,8 @@ class DatasetResource(MyTardisModelResource):
         # but now that logic will be moved to the front-end component.
 
         # list dir under base_dir
-        child_dir_tuples = dataset.get_dir_tuples(request.user, basedir=base_dir)
+        child_dir_tuples = dataset.get_dir_tuples(
+            request.user, basedir=base_dir)
         # list files under base_dir
         dfs = DataFile.safe.all(request.user).filter(dataset=dataset, directory=base_dir)
         # walk the directory tree and append files and dirs
@@ -1706,7 +1707,7 @@ class ObjectACLResource(MyTardisModelResource):
         filtering = {
             'pluginId': ('exact', ),
             'entityId': ('exact', ),
-            'content_object': ('exact', ),
+            'content_object': ALL_WITH_RELATIONS,
         }
         ordering = [
             'id'
