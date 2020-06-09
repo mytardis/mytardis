@@ -14,7 +14,7 @@ from tardis.tardis_portal.views import (
 #TODO point these to alterntive pages when they are developed
 
 project_urls = [
-    url(r'^details/(?P<project_id>\d+)$', ProjectDetails.as_view(),
+    url(r'^view/(?P<project_id>\d+)$', ProjectDetails.as_view(),
         name='tardis_portal.views.react_project'),
 
     url(r'^(?P<project_id>\d+)/$', ProjectView.as_view(),
