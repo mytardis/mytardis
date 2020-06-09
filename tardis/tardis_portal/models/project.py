@@ -53,13 +53,15 @@ class Project(models.Model):
                                          default=PUBLIC_ACCESS_NONE)
     # TODO No project should have the ingestion service account as the lead_researcher
     lead_researcher = models.ForeignKey(User,
+                                        related_name='lead_researcher',
                                         on_delete=models.CASCADE)
     objectacls = GenericRelation(ObjectACL)
     objects = OracleSafeManager()
     embargo_until = models.DateTimeField(null=True, blank=True)
     start_date = models.DateTimeField(default=django_time_now)
     end_date = models.DateTimeField(null=True, blank=True)
-    created_by = models.ForeignKey(User, on_delete=models.CASCADE)
+    created_by = models.ForeignKey(User,
+                                   on_delete=models.CASCADE)
     url = models.URLField(max_length=255,
                           null=True, blank=True)
     institution = models.ManyToManyField(Institution,
