@@ -934,7 +934,6 @@ class ProjectResource(MyTardisModelResource):
             'raid': ('exact',),
             'url': ('exact',),
             'institution': ALL_WITH_RELATIONS,
-            'objectacls': ALL_WITH_RELATIONS,
         }
         ordering = [
             'id',
@@ -1219,7 +1218,7 @@ class DatasetResource(MyTardisModelResource):
         auth_bundle.obj = DataFile()
         self.authorized_read_list(
             datafiles, auth_bundle
-            )
+        )
         del kwargs['pk']
         del kwargs['file_path']
         kwargs['dataset__id'] = dataset_id
@@ -1240,7 +1239,7 @@ class DatasetResource(MyTardisModelResource):
                         ExperimentResource(), exp_uri, bundle.request)
                     bundle.obj.experiments.add(exp)
                 except NotFound:
-                    pass # This probably should raise an error
+                    pass  # This probably should raise an error
         if getattr(bundle.obj, 'id', False):
             experiment = bundle.obj
             # TODO: unify this with the view function's ACL creation,
