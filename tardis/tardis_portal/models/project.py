@@ -21,6 +21,7 @@ from .license import License
 
 logger = logging.getLogger(__name__)
 
+
 @python_2_unicode_compatible
 class Project(models.Model):
     """A project is a collection of :class: '~tardis.tardis_portal.experiment.Experiment'
@@ -42,7 +43,8 @@ class Project(models.Model):
         (PUBLIC_ACCESS_FULL, 'Public'),
     )
     name = models.CharField(max_length=255, null=False, blank=False)
-    raid = models.CharField(max_length=255, null=False, blank=False, unique=True)
+    raid = models.CharField(max_length=255, null=False,
+                            blank=False, unique=True)
     description = models.TextField()
     locked = models.BooleanField(default=False)
     public_access = \
@@ -129,7 +131,7 @@ class Project(models.Model):
                                         canRead=True)
         return [acl.get_related_object() for acl in acls]
 
-    def get_admin_group(self):
+    def get_admin_groups(self):
         acls = ObjectACL.objects.filter(pluginId='django_group',
                                         content_type=self.get_ct(),
                                         object_id=self.id,

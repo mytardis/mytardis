@@ -946,8 +946,10 @@ class ProjectResource(MyTardisModelResource):
 
     def dehydrate(self, bundle):
         project = bundle.obj
-        admins = project.get_admins()
-        bundle.data['admins'] = [admin.id for admin in admins]
+        admins = project.get_admin_groups()
+        bundle.data['admin_acls'] = [acl.id for acl in admins]
+        members = project.get_read_groups()
+        bundle.data['member_acls'] = [acl.id for acl in members]
         return bundle
 
     def hydrate_m2m(self, bundle):
@@ -1313,7 +1315,8 @@ class DatasetResource(MyTardisModelResource):
         child_dir_tuples = dataset.get_dir_tuples(
             request.user, basedir=base_dir)
         # list files under base_dir
-        dfs = DataFile.safe.all(request.user).filter(dataset=dataset, directory=base_dir)
+        dfs = DataFile.safe.all(request.user).filter(
+            dataset=dataset, directory=base_dir)
         # walk the directory tree and append files and dirs
         # if there are directories append this to data
         child_list = []
@@ -1707,7 +1710,6 @@ class ObjectACLResource(MyTardisModelResource):
         filtering = {
             'pluginId': ('exact', ),
             'entityId': ('exact', ),
-            'content_object': ALL_WITH_RELATIONS,
         }
         ordering = [
             'id'
