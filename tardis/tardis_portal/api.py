@@ -70,6 +70,63 @@ from .models.facility import Facility, facilities_managed_by
 from .models.instrument import Instrument
 from .models.institution import Institution
 
+add_group_perm = Permission.objects.get(codename='add_group')
+change_group_perm = Permission.objects.get(codename='change_group')
+del_group_perm = Permission.objects.get(codename='delete_group')
+view_group_perm = Permission.objects.get(codename='view_group')
+add_project_perm = Permission.objects.get(codename='add_group')
+change_project_perm = Permission.objects.get(codename='change_group')
+del_project_perm = Permission.objects.get(codename='delete_group')
+view_project_perm = Permission.objects.get(codename='view_group')
+add_experiment_perm = Permission.objects.get(codename='add_group')
+change_experiment_perm = Permission.objects.get(codename='change_group')
+del_experiment_perm = Permission.objects.get(codename='delete_group')
+view_experiment_perm = Permission.objects.get(codename='view_group')
+add_dataset_perm = Permission.objects.get(codename='add_group')
+change_dataset_perm = Permission.objects.get(codename='change_group')
+del_dataset_perm = Permission.objects.get(codename='delete_group')
+view_dataset_perm = Permission.objects.get(codename='view_group')
+add_datafile_perm = Permission.objects.get(codename='add_group')
+change_datafile_perm = Permission.objects.get(codename='change_group')
+del_datafile_perm = Permission.objects.get(codename='delete_group')
+view_datafile_perm = Permission.objects.get(codename='view_group')
+add_acl_perm = Permission.objects.get(codename='add_group')
+change_acl_perm = Permission.objects.get(codename='change_group')
+view_acl_perm = Permission.objects.get(codename='view_group')
+
+admin_perms = [add_group_perm,
+               change_group_perm,
+               del_group_perm,
+               view_group_perm,
+               add_project_perm,
+               change_project_perm,
+               del_project_perm,
+               view_project_perm,
+               add_experiment_perm,
+               change_experiment_perm,
+               del_experiment_perm,
+               view_experiment_perm,
+               add_dataset_perm,
+               change_dataset_perm,
+               del_dataset_perm,
+               view_dataset_perm,
+               add_datafile_perm,
+               change_datafile_perm,
+               del_datafile_perm,
+               view_datafile_perm,
+               add_acl_perm,
+               change_acl_perm,
+               view_acl_perm]
+
+member_perms = [change_project_perm,
+                view_project_perm,
+                change_experiment_perm,
+                view_experiment_perm,
+                change_dataset_perm,
+                view_dataset_perm,
+                change_datafile_perm,
+                view_datafile_perm]
+
 
 class PrettyJSONSerializer(Serializer):
     json_indent = 2
@@ -80,6 +137,7 @@ class PrettyJSONSerializer(Serializer):
         return json.dumps(data, cls=json.JSONEncoder,
                           sort_keys=True, ensure_ascii=False,
                           indent=self.json_indent) + "\n"
+
 
 if settings.DEBUG:
     default_serializer = PrettyJSONSerializer()
@@ -92,6 +150,7 @@ class MyTardisAuthentication(object):
     custom tastypie authentication that works with both anonymous use and
     a number of available auth mechanisms.
     '''
+
     def is_authenticated(self, request, **kwargs):  # noqa # too complex
         '''
         handles backends explicitly so that it can return False when
@@ -140,12 +199,14 @@ class MyTardisAuthentication(object):
         except AttributeError:
             return 'nouser'
 
+
 default_authentication = MyTardisAuthentication()
 
 
 class ACLAuthorization(Authorization):
     '''Authorisation class for Tastypie.
     '''
+
     def read_list(self, object_list, bundle):  # noqa # too complex
         obj_ids = [obj.id for obj in object_list]
         if bundle.request.user.is_authenticated and \
@@ -297,7 +358,7 @@ class ACLAuthorization(Authorization):
         if isinstance(bundle.obj, ExperimentParameter):
             return has_access(
                 bundle.request, bundle.obj.parameterset.experiment.id, "experiment")
-        #CHRIS - Added for Project
+        # CHRIS - Added for Project
         if isinstance(bundle.obj, Project):
             return has_access(bundle.request, bundle.obj.id, "project")
         if isinstance(bundle.obj, ProjectParameterSet):
@@ -358,7 +419,7 @@ class ACLAuthorization(Authorization):
             return bundle.request.user.is_authenticated
         if isinstance(bundle.obj, Group):
             return bundle.obj in bundle.request.user.groups.all()
-        #CHRIS - Added for institutions
+        # CHRIS - Added for institutions
         if isinstance(bundle.obj, Institution):
             return bundle.request.user.is_authenticated
         ##########################
@@ -401,7 +462,7 @@ class ACLAuthorization(Authorization):
                 has_write(bundle.request,
                           bundle.obj.parameterset.experiment.id, "experiment")
         #######################################################
-        #CHRIS - add stuff for Project Model
+        # CHRIS - add stuff for Project Model
         if isinstance(bundle.obj, Project):
             return bundle.request.user.has_perm('tardis_portal.add_project')
         if isinstance(bundle.obj, ProjectParameterSet):
@@ -497,7 +558,7 @@ class ACLAuthorization(Authorization):
             return bundle.request.user.has_perm('tardis_portal.add_group')
         if isinstance(bundle.obj, Facility):
             return bundle.request.user.has_perm('tardis_portal.add_facility')
-        #CHRIS - Add check for institutions
+        # CHRIS - Add check for institutions
         if isinstance(bundle.obj, Institution):
             return bundle.request.user.has_perm('tardis_portal.add_insitution')
         #############
@@ -506,19 +567,20 @@ class ACLAuthorization(Authorization):
             return all([
                 bundle.request.user.has_perm('tardis_portal.add_instrument'),
                 bundle.obj.facility in facilities
-		])
+            ])
         # CHRIS - Add for User
         if isinstance(bundle.obj, User):
             return all([
                 bundle.request.user.has_perm('tardis_portal.add_userprofile'),
-                bundle.request.user.has_perm('tardis_portal.add_userauthentication')
-                ])
-        #if isinstance(bundle.obj, UserProfile):
+                bundle.request.user.has_perm(
+                    'tardis_portal.add_userauthentication')
+            ])
+        # if isinstance(bundle.obj, UserProfile):
         #    return all([
         #        bundle.request.user.has_perm('tardis_portal.add_userprofile'),
         #        bundle.request.user.has_perm('tardis_portal.add_userauthentication')
         #        ])
-        #if isinstance(bundle.obj, UserAuthentication):
+        # if isinstance(bundle.obj, UserAuthentication):
         #    return all([
         #        bundle.request.user.has_perm('tardis_portal.add_userprofile'),
         #        bundle.request.user.has_perm('tardis_portal.add_userauthentication')
@@ -568,6 +630,7 @@ class GroupResource(ModelResource):
             'id': ('exact',),
             'name': ('exact',),
         }
+
 
 class UserResource(ModelResource):
     groups = fields.ManyToManyField(GroupResource, 'groups',
@@ -658,7 +721,7 @@ class UserResource(ModelResource):
         random.seed()
         characters = 'abcdefghijklmnopqrstuvwxyzABCDFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*()?'
         passlen = 16
-        password = "".join(random.sample(characters,passlen))
+        password = "".join(random.sample(characters, passlen))
         return password
 
     def obj_create(self,
@@ -681,23 +744,26 @@ class UserResource(ModelResource):
             pass
         permissions = bundle.data['permissions']
         auth_method = bundle.data['auth_method']
-        bundle.obj = User.objects.create_user(username, email, bundle.data['password'])
+        bundle.obj = User.objects.create_user(
+            username, email, bundle.data['password'])
         bundle.obj.first_name = bundle.data['first_name']
         if 'last_name' in bundle.data.keys():
             bundle.obj.last_name = bundle.data['last_name']
         for permission in permissions:
-            bundle.obj.user_permissions.add(Permission.objects.get(codename=permission))
-        bundle.obj.save() # create the user - this should also trigger the UserProfile
+            bundle.obj.user_permissions.add(
+                Permission.objects.get(codename=permission))
+        bundle.obj.save()  # create the user - this should also trigger the UserProfile
         userprofile = bundle.obj.userprofile
         if 'orcid' in bundle.data.keys():
             userprofile.orcid = bundle.data['orcid']
             userprofile.save()
-        user_auth = UserAuthentication(userProfile = userprofile,
-                                       username = username,
-                                       authenticationMethod = auth_method)
+        user_auth = UserAuthentication(userProfile=userprofile,
+                                       username=username,
+                                       authenticationMethod=auth_method)
         user_auth.save()
         return bundle
     ############################################################
+
 
 class MyTardisModelResource(ModelResource):
 
@@ -706,6 +772,7 @@ class MyTardisModelResource(ModelResource):
         authorization = ACLAuthorization()
         serializer = default_serializer
         object_class = None
+
 
 '''# CHRIS - expose user profile to the API - allow addition of ORCIDs
 # Used to link user with user profile for user authentication
@@ -793,6 +860,8 @@ class UserAuthenticationResource(MyTardisModelResource):
 ######################################'''
 
 # CHRIS - refactored to account for the new model
+
+
 class InstitutionResource(MyTardisModelResource):
     manager_group = fields.ForeignKey(GroupResource, 'manager_group',
                                       null=True, full=True)
@@ -813,11 +882,12 @@ class InstitutionResource(MyTardisModelResource):
         ]
         always_return_data = True
 
+
 class FacilityResource(MyTardisModelResource):
     manager_group = fields.ForeignKey(GroupResource, 'manager_group',
                                       null=True, full=True)
     institution = fields.ForeignKey(InstitutionResource, 'institution',
-                                   null=True, full=True)
+                                    null=True, full=True)
 
     class Meta(MyTardisModelResource.Meta):
         object_class = Facility
@@ -837,6 +907,8 @@ class FacilityResource(MyTardisModelResource):
 ###########################################
 
 # CHRIS - ProjectResource
+
+
 class ProjectResource(MyTardisModelResource):
     '''API for Projects
     also creates a default ACL and allows ProjectParameterSets to be read
@@ -851,7 +923,7 @@ class ProjectResource(MyTardisModelResource):
         related_name='project',
         full=True, null=True)
     institution = fields.ToManyField(InstitutionResource, 'institution',
-                                    null=True, full=True)
+                                     null=True, full=True)
 
     class Meta(MyTardisModelResource.Meta):
         object_class = Project
@@ -862,6 +934,7 @@ class ProjectResource(MyTardisModelResource):
             'raid': ('exact',),
             'url': ('exact',),
             'institution': ALL_WITH_RELATIONS,
+            'objectacls': ALL_WITH_RELATIONS,
         }
         ordering = [
             'id',
@@ -885,12 +958,13 @@ class ProjectResource(MyTardisModelResource):
         '''
         if getattr(bundle.obj, 'id', False):
             project = bundle.obj
+            project_lead = project.lead_researcher
             # TODO: unify this with the view function's ACL creation,
             # maybe through an ACL toolbox.
             acl = ObjectACL(content_type=project.get_ct(),
                             object_id=project.id,
                             pluginId=django_user,
-                            entityId=str(bundle.request.user.id),
+                            entityId=str(project_lead.id),
                             canRead=True,
                             canDownload=True,
                             canWrite=True,
@@ -899,9 +973,46 @@ class ProjectResource(MyTardisModelResource):
                             isOwner=True,
                             aclOwnershipType=ObjectACL.OWNER_OWNED)
             acl.save()
+        if 'admin_group' in bundle.data.keys():
+            for grp in bundle.data['admin_group']:
+                group, _ = Group.objects.get_or_create(name=grp)
+                group.permissions.set(admin_perms)
+                acl = ObjectACL(content_type=project.get_ct(),
+                                object_id=project.id,
+                                pluginId=django_group,
+                                entityId=str(group.id),
+                                canRead=True,
+                                canDownload=True,
+                                canWrite=True,
+                                canDelete=True,
+                                canSensitive=True,
+                                isOwner=True,
+                                aclOwnershipType=ObjectACL.OWNER_OWNED)
+        if 'member_group' in bundle.data.keys():
+            # Each member group is defined by a tuple
+            # (group_name, sensitive[T/F], download[T/F])
+            # unpack for ACLs
+            for grp in bundle.data['admin_group']:
+                grp_name = grp[0]
+                sensitive_flg = grp[1]
+                download_flg = grp[2]
+                group, _ = Group.objects.get_or_create(name=grp_name)
+                group.permissions.set(member_perms)
+                acl = ObjectACL(content_type=project.get_ct(),
+                                object_id=project.id,
+                                pluginId=django_group,
+                                entityId=str(group.id),
+                                canRead=True,
+                                canDownload=download_flg,
+                                canWrite=True,
+                                canDelete=False,
+                                canSensitive=sensitive_flg,
+                                isOwner=False,
+                                aclOwnershipType=ObjectACL.OWNER_OWNED)
         return super().hydrate_m2m(bundle)
 
 ################################################
+
 
 class InstrumentResource(MyTardisModelResource):
     facility = fields.ForeignKey(FacilityResource, 'facility',
@@ -991,7 +1102,7 @@ class ExperimentResource(MyTardisModelResource):
                         ProjectResource(), project_uri, bundle.request)
                     bundle.obj.project.add(project)
                 except NotFound:
-                    pass # This probably should raise an error
+                    pass  # This probably should raise an error
         if getattr(bundle.obj, 'id', False):
             experiment = bundle.obj
             # TODO: unify this with the view function's ACL creation,
@@ -1021,6 +1132,7 @@ class ExperimentResource(MyTardisModelResource):
         bundle = super().obj_create(bundle, **kwargs)
         return bundle
 
+
 class ExperimentAuthorResource(MyTardisModelResource):
     '''API for ExperimentAuthors
     '''
@@ -1048,6 +1160,7 @@ class ExperimentAuthorResource(MyTardisModelResource):
         always_return_data = True
 
 # CHRIS - Dataset needs ACLs created
+
 
 class DatasetResource(MyTardisModelResource):
     experiments = fields.ToManyField(
@@ -1594,6 +1707,7 @@ class ObjectACLResource(MyTardisModelResource):
         filtering = {
             'pluginId': ('exact', ),
             'entityId': ('exact', ),
+            'content_object': ('exact', ),
         }
         ordering = [
             'id'
