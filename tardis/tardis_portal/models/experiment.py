@@ -136,7 +136,7 @@ class Experiment(models.Model):
 
         """
         from .parameters import ExperimentParameter, ParameterName
-        paramsets = self.getParameterSets()
+        paramsets = list(self.getParameterSets())
         schema_list = []
         for paramset in paramsets:
             schema_dict = {

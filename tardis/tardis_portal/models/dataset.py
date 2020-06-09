@@ -121,7 +121,7 @@ class Dataset(models.Model):
 
         """
         from .parameters import DatasetParameter, ParameterName
-        paramsets = self.getParameterSets()
+        paramsets = list(self.getParameterSets())
         schema_list = []
         for paramset in paramsets:
             schema_dict = {

@@ -88,7 +88,7 @@ class Project(models.Model):
 
         """
         from .parameters import ProjectParameter, ParameterName
-        paramsets = self.getParameterSets()
+        paramsets = list(self.getParameterSets())
         schema_list = []
         for paramset in paramsets:
             schema_dict = {
