@@ -209,10 +209,10 @@ class Dataset(models.Model):
                                'quality': 'native',
                                'format': 'jpg'})
 
-    def get_size(self, user):
+    def get_size(self, user, downloadable=False):
         from .datafile import DataFile
 
-        datafiles = DataFile.safe.all(user).filter(dataset__id=self.id)
+        datafiles = DataFile.safe.all(user, downloadable=downloadable).filter(dataset__id=self.id)
 
         return DataFile.sum_sizes(datafiles)
 

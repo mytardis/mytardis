@@ -8,7 +8,7 @@ test_instrument.py
 """
 from django.contrib.auth.models import Group
 
-from tardis.tardis_portal.models import Facility, Instrument
+from tardis.tardis_portal.models import Facility, Instrument, Institution
 
 from tardis.tardis_portal.models import (
     Schema, ParameterName, InstrumentParameterSet)
@@ -21,8 +21,14 @@ class InstrumentTestCase(ModelTestCase):
     def test_instrument(self):
         group = Group(name="Test Manager Group")
         group.save()
+
+        institution = Institution(name="Test Institution",
+                                  manager_group=group)
+        institution.save()
+
         facility = Facility(name="Test Facility",
-                            manager_group=group)
+                            manager_group=group,
+                            institution=institution)
         facility.save()
         self.assertEqual(str(facility), "Test Facility")
         instrument = Instrument(name="Test Instrument",
@@ -34,7 +40,7 @@ class InstrumentTestCase(ModelTestCase):
 
         schema = Schema(
             namespace='test instrument schema namespace',
-            type=Schema.INSTRUMENT)
+            schema_type=Schema.INSTRUMENT)
         schema.save()
 
         parname = ParameterName(

@@ -175,7 +175,6 @@ class RightsTestCase(TestCase):
 
         # Create test experiment and make user the owner of it
         experiment = Experiment(title='Text Experiment',
-                                institution_name='Test Uni',
                                 created_by=user)
         experiment.save()
         acl = ObjectACL(

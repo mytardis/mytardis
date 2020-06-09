@@ -22,7 +22,7 @@ class ExperimentResourceTest(MyTardisResourceTestCase):
         super().setUp()
         df_schema_name = "http://experi-mental.com/"
         self.test_schema = Schema(namespace=df_schema_name,
-                                  type=Schema.EXPERIMENT)
+                                  schema_type=Schema.EXPERIMENT)
         self.test_schema.save()
         self.test_parname1 = ParameterName(schema=self.test_schema,
                                            name="expparameter1",
@@ -38,7 +38,6 @@ class ExperimentResourceTest(MyTardisResourceTestCase):
         parm_id = ParameterName.objects.first().id
         post_data = {
             "description": "test description",
-            "institution_name": "Monash University",
             "parameter_sets": [
                 {
                     "schema": "http://experi-mental.com/",
@@ -104,7 +103,6 @@ class ExperimentResourceTest(MyTardisResourceTestCase):
             "description": "",
             "end_time": None,
             "id": exp_id,
-            "institution_name": "Monash University",
             "locked": False,
             "parameter_sets": [],
             "public_access": 1,

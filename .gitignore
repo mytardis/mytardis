@@ -7,8 +7,11 @@ __pycache__/
 *.pyc
 *.sqlite
 *.wsgi
+*~
+.#*
 .idea/
 .installed.cfg
+db.sqlite3
 .noseids
 .project
 .pydevproject
@@ -52,3 +55,4 @@ tardis/apps/*
 
 
 tardis/tardis_portal/.#ParameterSetManager.py
+
