@@ -48,7 +48,7 @@ from .auth.decorators import (
     has_delete_permissions,
     has_sensitive_access
 )
-from .auth.localdb_auth import django_user
+from .auth.localdb_auth import django_user, django_group
 from .models.access_control import ObjectACL, UserProfile, UserAuthentication
 from .models.datafile import DataFile, DataFileObject, compute_checksums
 from .models.dataset import Dataset
