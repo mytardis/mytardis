@@ -948,9 +948,9 @@ class ProjectResource(MyTardisModelResource):
     def dehydrate(self, bundle):
         project = bundle.obj
         admins = project.get_admins()
-        bundle.data['admin_acls'] = [acl.id for acl in admins]
+        bundle.data['admin_groups'] = [acl.id for acl in admins]
         members = project.get_groups()
-        bundle.data['member_acls'] = [acl.id for acl in members]
+        bundle.data['member_groups'] = [acl.id for acl in members]
         return bundle
 
     def hydrate_m2m(self, bundle):
@@ -1107,9 +1107,9 @@ class ExperimentResource(MyTardisModelResource):
         owners = exp.get_owners()
         bundle.data['owner_ids'] = [o.id for o in owners]
         admins = exp.get_admins()
-        bundle.data['admin_acls'] = [grp.id for grp in admins]
+        bundle.data['admin_groups'] = [grp.id for grp in admins]
         members = exp.get_groups()
-        bundle.data['member_acls'] = [grp.id for grp in members]
+        bundle.data['member_groups'] = [grp.id for grp in members]
         return bundle
 
     def hydrate_m2m(self, bundle):
@@ -1263,6 +1263,14 @@ class DatasetResource(MyTardisModelResource):
         ]
         always_return_data = True
 
+    def dehydrate(self, bundle):
+        dataset = bundle.obj
+        admins = dataset.get_admins()
+        bundle.data['admin_groups'] = [acl.id for acl in admins]
+        members = dataset.get_groups()
+        bundle.data['member_groups'] = [acl.id for acl in members]
+        return bundle
+
     def prepend_urls(self):
         return [
             url(r'^(?P<resource_name>%s)/(?P<pk>\w[\w/-]*)/files/'
@@ -1309,12 +1317,11 @@ class DatasetResource(MyTardisModelResource):
                     exp = ExperimentResource.get_via_uri(
                         ExperimentResource(), exp_uri, bundle.request)
                     bundle.obj.experiments.add(exp)
+                    project_lead = exp.get_owners()  # There should only be one expt
                 except NotFound:
                     pass  # This probably should raise an error
         if getattr(bundle.obj, 'id', False):
-            experiment = bundle.obj.experiments[0]  # There should only be one
             dataset = bundle.obj
-            project_lead = experiment.get_owners()
             # TODO: unify this with the view function's ACL creation,
             # maybe through an ACL toolbox.
             for owner in project_lead:
@@ -1504,6 +1511,14 @@ class DataFileResource(MyTardisModelResource):
             'modification_time'
         ]
         resource_name = 'dataset_file'
+
+    def dehydrate(self, bundle):
+        datafile = bundle.obj
+        admins = datafile.get_admins()
+        bundle.data['admin_groups'] = [acl.id for acl in admins]
+        members = datafile.get_groups()
+        bundle.data['member_groups'] = [acl.id for acl in members]
+        return bundle
 
     def download_file(self, request, **kwargs):
         '''
