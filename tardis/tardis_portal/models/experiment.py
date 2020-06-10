@@ -10,8 +10,9 @@ from django.urls import reverse
 from django.db import models
 from django.utils.safestring import SafeText
 from django.utils.encoding import python_2_unicode_compatible
+from django_elasticsearch_dsl import fields
 
-from ..managers import OracleSafeManager, ExperimentManager
+from ..managers import OracleSafeManager, SafeManager
 from .access_control import ObjectACL
 from .project import Project
 from .institution import Institution
@@ -20,8 +21,10 @@ from .license import License
 
 logger = logging.getLogger(__name__)
 
+
 def experiment_internal_id_default():
     return datetime.now().strftime('WUI-%Y-%M-%d-%H-%M-%S.%f')
+
 
 @python_2_unicode_compatible
 class Experiment(models.Model):
@@ -70,10 +73,11 @@ class Experiment(models.Model):
                           null=True, blank=True)
     approved = models.BooleanField(default=False)
     title = models.CharField(max_length=400)
-    #institution_name = models.CharField(max_length=400,
+    # institution_name = models.CharField(max_length=400,
     #                                    default=settings.DEFAULT_INSTITUTION)
     description = models.TextField(blank=True)
-    raid = models.CharField(max_length=400, null=False, blank=False, unique=True, default=experiment_internal_id_default)
+    raid = models.CharField(max_length=400, null=False, blank=False,
+                            unique=True, default=experiment_internal_id_default)
     project = models.ForeignKey(Project, on_delete=models.CASCADE, null=True)
     start_time = models.DateTimeField(null=True, blank=True)
     end_time = models.DateTimeField(null=True, blank=True)
@@ -91,12 +95,11 @@ class Experiment(models.Model):
                                 on_delete=models.CASCADE)
     objectacls = GenericRelation(ObjectACL)
     objects = OracleSafeManager()
-    safe = ExperimentManager()  # The acl-aware specific manager.
+    safe = SafeManager()  # The acl-aware specific manager.
     embargo_until = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         app_label = 'tardis_portal'
-
 
     def is_embargoed(self):
         if self.embargo_until:
@@ -138,19 +141,22 @@ class Experiment(models.Model):
         """
         from .parameters import ExperimentParameter, ParameterName
         paramset = self.getParameterSets()
-
+        param_type_options = {1: 'datetime_value', 2: 'string_value',
+                              3: 'numerical_value'}
         param_glob = ExperimentParameter.objects.filter(
-            parameterset__in=paramset).all().values_list('name','datetime_value','string_value','numerical_value')
+            parameterset__in=paramset).all().values_list('name', 'datetime_value', 'string_value', 'numerical_value')
         param_list = []
         for sublist in param_glob:
             full_name = ParameterName.objects.get(id=sublist[0]).full_name
-            string2append = (full_name+'=')
-            for value in sublist[1:]:
+            #string2append = (full_name+'=')
+            param_dict = {}
+            for idx, value in enumerate(sublist[1:]):
                 if value is not None:
-                    string2append+=str(value)
-            param_list.append(string2append.replace(" ","%20"))
-        return  " ".join(param_list)
-
+                    param_dict['full_name'] = str(full_name)
+                    param_dict['value'] = str(value)
+                    param_dict['type'] = param_type_options[idx+1]
+            param_list.append(param_dict)
+        return param_list
 
     def __str__(self):
         return self.title
@@ -208,7 +214,7 @@ class Experiment(models.Model):
     def get_images(self, user):
         from .datafile import IMAGE_FILTER
         return self.get_datafiles(user).order_by('-modification_time',
-                                             '-created_time') \
+                                                 '-created_time') \
             .filter(IMAGE_FILTER)
 
     def get_size(self, user):
@@ -255,6 +261,28 @@ class Experiment(models.Model):
                                         canRead=True)
         return [acl.get_related_object() for acl in acls]
 
+    def get_groups_and_perms(self):
+        acls = ObjectACL.objects.filter(pluginId='django_group',
+                                        content_type=self.get_ct(),
+                                        object_id=self.id,
+                                        canRead=True)
+        ret_list = []
+        for acl in acls:
+            if not acl.isOwner:
+                group = acl.get_related_object()
+                sensitive_flg = acl.canSensitive
+                download_flg = acl.canDownload
+                ret_list.append([group,
+                                 sensitive_flg,
+                                 download_flg])
+        return ret_list
+
+    def get_admins(self):
+        acls = ObjectACL.objects.filter(pluginId='django_group',
+                                        content_type=self.get_ct(),
+                                        object_id=self.id,
+                                        isOwner=True)
+        return [acl.get_related_object() for acl in acls]
 
     def _has_view_perm(self, user_obj):
         '''

@@ -13,13 +13,14 @@ from django.utils.encoding import python_2_unicode_compatible
 from django.utils.timezone import now as django_time_now
 from .institution import Institution
 # from ..models import DataManagementPlan # Hook in place for future proofing
-from ..managers import OracleSafeManager, ProjectManager
+from ..managers import OracleSafeManager, SafeManager
 
 from .access_control import ObjectACL
 
 from .license import License
 
 logger = logging.getLogger(__name__)
+
 
 @python_2_unicode_compatible
 class Project(models.Model):
@@ -42,29 +43,33 @@ class Project(models.Model):
         (PUBLIC_ACCESS_FULL, 'Public'),
     )
     name = models.CharField(max_length=255, null=False, blank=False)
-    raid = models.CharField(max_length=255, null=False, blank=False, unique=True)
+    raid = models.CharField(max_length=255, null=False,
+                            blank=False, unique=True)
     description = models.TextField()
     locked = models.BooleanField(default=False)
     public_access = \
         models.PositiveSmallIntegerField(choices=PUBLIC_ACCESS_CHOICES,
                                          null=False,
                                          default=PUBLIC_ACCESS_NONE)
-    #TODO No project should have the ingestion service account as the lead_researcher
+    # TODO No project should have the ingestion service account as the lead_researcher
     lead_researcher = models.ForeignKey(User,
+                                        related_name='lead_researcher',
                                         on_delete=models.CASCADE)
     objectacls = GenericRelation(ObjectACL)
     objects = OracleSafeManager()
     embargo_until = models.DateTimeField(null=True, blank=True)
     start_date = models.DateTimeField(default=django_time_now)
     end_date = models.DateTimeField(null=True, blank=True)
+    created_by = models.ForeignKey(User,
+                                   on_delete=models.CASCADE)
     url = models.URLField(max_length=255,
                           null=True, blank=True)
     institution = models.ManyToManyField(Institution,
                                          related_name='institutions')
-    safe = ProjectManager()
+    safe = SafeManager()
 
-    #TODO Integrate DMPs into the project.
-    #data_management_plan = models.ManyToManyField(DataManagementPlan,
+    # TODO Integrate DMPs into the project.
+    # data_management_plan = models.ManyToManyField(DataManagementPlan,
     #                                              null=True, blank=True)
 
     class Meta:
@@ -74,8 +79,8 @@ class Project(models.Model):
         super(Project, self).save(*args, **kwargs)
 
     def getParameterSets(self):
-        """Return the experiment parametersets associated with this
-        experiment.
+        """Return the project parametersets associated with this
+        project.
 
         """
         from .parameters import Schema
@@ -83,27 +88,28 @@ class Project(models.Model):
             schema__schema_type=Schema.PROJECT)
 
     def getParametersforIndexing(self):
-        """Returns the experiment parameters associated with this
-        experiment, formatted for elasticsearch.
+        """Returns the project parameters associated with this
+        project, formatted for elasticsearch.
 
         """
         from .parameters import ProjectParameter, ParameterName
         paramset = self.getParameterSets()
-
+        param_type_options = {1: 'datetime_value', 2: 'string_value',
+                              3: 'numerical_value'}
         param_glob = ProjectParameter.objects.filter(
-            parameterset__in=paramset).all().values_list('name','datetime_value','string_value','numerical_value')
+            parameterset__in=paramset).all().values_list('name', 'datetime_value', 'string_value', 'numerical_value')
         param_list = []
         for sublist in param_glob:
             full_name = ParameterName.objects.get(id=sublist[0]).full_name
-            string2append = (full_name+'=')
-            for value in sublist[1:]:
+            #string2append = (full_name+'=')
+            param_dict = {}
+            for idx, value in enumerate(sublist[1:]):
                 if value is not None:
-                    string2append+=str(value)
-            param_list.append(string2append.replace(" ","%20"))
-        return  " ".join(param_list)
-
-    def __str__(self):
-        return self.name
+                    param_dict['full_name'] = str(full_name)
+                    param_dict['value'] = str(value)
+                    param_dict['type'] = param_type_options[idx+1]
+            param_list.append(param_dict)
+        return param_list
 
     def is_embargoed(self):
         if self.embargo_until:
@@ -114,7 +120,7 @@ class Project(models.Model):
     def get_ct(self):
         return ContentType.objects.get_for_model(self)
 
-    def get_admins(self):
+    def get_owners(self):
         acls = ObjectACL.objects.filter(pluginId='django_user',
                                         content_type=self.get_ct(),
                                         object_id=self.id,
@@ -128,19 +134,35 @@ class Project(models.Model):
                                         canRead=True)
         return [acl.get_related_object() for acl in acls]
 
-    def get_admin_group(self):
+    def get_admins(self):
         acls = ObjectACL.objects.filter(pluginId='django_group',
                                         content_type=self.get_ct(),
                                         object_id=self.id,
                                         isOwner=True)
         return [acl.get_related_object() for acl in acls]
 
-    def get_read_groups(self):
+    def get_groups(self):
         acls = ObjectACL.objects.filter(pluginId='django_group',
                                         content_type=self.get_ct(),
                                         object_id=self.id,
                                         canRead=True)
         return [acl.get_related_object() for acl in acls]
+
+    def get_groups_and_perms(self):
+        acls = ObjectACL.objects.filter(pluginId='django_group',
+                                        content_type=self.get_ct(),
+                                        object_id=self.id,
+                                        canRead=True)
+        ret_list = []
+        for acl in acls:
+            if not acl.isOwner:
+                group = acl.get_related_object()
+                sensitive_flg = acl.canSensitive
+                download_flg = acl.canDownload
+                ret_list.append([group,
+                                 sensitive_flg,
+                                 download_flg])
+        return ret_list
 
     def _has_view_perm(self, user_obj):
         '''
@@ -185,3 +207,11 @@ class Project(models.Model):
         if not hasattr(self, 'id'):
             return False
         return None
+
+    def get_datafiles(self, user):
+        from .datafile import DataFile
+        return DataFile.safe.all(user).filter(dataset__experiments__project=self)
+
+    def get_size(self, user):
+        from .datafile import DataFile
+        return DataFile.sum_sizes(self.get_datafiles(user))
