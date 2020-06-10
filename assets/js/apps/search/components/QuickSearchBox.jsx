@@ -5,7 +5,8 @@ import FormControl from 'react-bootstrap/FormControl';
 import Form from 'react-bootstrap/Form';
 import PropTypes from 'prop-types';
 import { useDispatch } from 'react-redux';
-import { updateTextSearch } from './searchSlice'
+import { updateTextSearch } from './searchSlice';
+import "./QuickSearchBox.css";
 
 export function PureQuickSearchBox({searchTerm,onChange,onSubmit}) {
     const handleChange = (e) => {
@@ -19,12 +20,8 @@ export function PureQuickSearchBox({searchTerm,onChange,onSubmit}) {
 
     return (
         <Form onSubmit={handleSubmit}>
-        <InputGroup>
-            <FormControl onChange={handleChange} value={searchTerm} aria-label="Quick find search input" placeholder="Find by title or description"></FormControl>
-            <InputGroup.Append>
-                <Button type="submit" aria-label="Quick find search button" variant={searchTerm ? "secondary" :"outline-secondary"} disabled={!searchTerm}>Search</Button>
-            </InputGroup.Append>
-        </InputGroup>
+            <FormControl className="quick-search-box__input" onChange={handleChange} value={searchTerm} aria-label="Quick find search input" placeholder="Find by title or description"></FormControl>
+            <Button type="submit" aria-label="Quick find search button" variant="primary">Search</Button>
         </Form>
     )
 }
