@@ -249,11 +249,8 @@ class SearchAppResource(Resource):
                             is_sensitive = authz.get_obj_parameter(param["pn_id"],
                                               hit["_source"]["id"], hit["_index"])
 
-                            safe_hit["_source"]["schemas"][idxx]["parameters"].pop(idx)
-                            if not is_sensitive.sensitive_metadata:
-                                pn_full_name = ParameterName.objects.get(id=param["pn_id"]).full_name
-                                safe_hit["_source"]["schemas"][idxx]["parameters"][idx]["full_name"]=pn_full_name
-
+                            if is_sensitive.sensitive_metadata:
+                                safe_hit["_source"]["schemas"][idxx]["parameters"].pop(idx)
 
                 result_dict[hit["_index"]+"s"].append(safe_hit)
 
