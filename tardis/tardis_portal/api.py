@@ -1322,7 +1322,9 @@ class DatasetResource(MyTardisModelResource):
         if getattr(bundle.obj, 'id', False):
             dataset = bundle.obj
             # There should only be one expt
-            experiment = bundle.obj.experiments.all()[0]
+            experiment_uri = bundle.data['experiments'][0]
+            experiment = ExperimentResource.get_via_uri(
+                ExperimentResource(), experiment_uri, bundle.request)
             project_lead = experiment.get_owners()
             # TODO: unify this with the view function's ACL creation,
             # maybe through an ACL toolbox.
