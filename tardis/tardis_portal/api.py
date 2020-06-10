@@ -1146,13 +1146,10 @@ class ExperimentResource(MyTardisModelResource):
             else:
                 admin_groups = project.get_admins()
             for grp in admin_groups:
-                if isinstance(grp, ObjectACL):
-                    group_id = grp.object_id
-                else:
-                    group, created = Group.objects.get_or_create(name=grp)
-                    if created:
-                        group.permissions.set(admin_perms)
-                    group_id = group.id
+                group, created = Group.objects.get_or_create(name=grp)
+                if created:
+                    group.permissions.set(admin_perms)
+                group_id = group.id
                 acl = ObjectACL(content_type=experiment.get_ct(),
                                 object_id=experiment.id,
                                 pluginId=django_group,
@@ -1168,23 +1165,18 @@ class ExperimentResource(MyTardisModelResource):
             if 'member_group' in bundle.data.keys():
                 member_groups = bundle.data['member_groups']
             else:
-                member_groups = project.get_groups()
+                member_groups = project.get_groups_and_perms()
             # Each member group is defined by a tuple
             # (group_name, sensitive[T/F], download[T/F])
             # unpack for ACLs
             for grp in member_groups:
-                if isinstance(grp, ObjectACL):
-                    group_id = grp.object_id
-                    senstive_flg = grp.canSensitive
-                    download_flg = grp.canDownload
-                else:
-                    grp_name = grp[0]
-                    sensitive_flg = grp[1]
-                    download_flg = grp[2]
-                    group, created = Group.objects.get_or_create(name=grp_name)
-                    if created:
-                        group.permissions.set(member_perms)
-                    group_id = group.id
+                grp_name = grp[0]
+                sensitive_flg = grp[1]
+                download_flg = grp[2]
+                group, created = Group.objects.get_or_create(name=grp_name)
+                if created:
+                    group.permissions.set(member_perms)
+                group_id = group.id
                 acl = ObjectACL(content_type=experiment.get_ct(),
                                 object_id=experiment.id,
                                 pluginId=django_group,
@@ -1343,13 +1335,10 @@ class DatasetResource(MyTardisModelResource):
             else:
                 admin_groups = experiment.get_admins()
             for grp in admin_groups:
-                if isinstance(grp, ObjectACL):
-                    group_id = grp.object_id
-                else:
-                    group, created = Group.objects.get_or_create(name=grp)
-                    if created:
-                        group.permissions.set(admin_perms)
-                    group_id = group.id
+                group, created = Group.objects.get_or_create(name=grp)
+                if created:
+                    group.permissions.set(admin_perms)
+                group_id = group.id
                 acl = ObjectACL(content_type=dataset.get_ct(),
                                 object_id=dataset.id,
                                 pluginId=django_group,
@@ -1365,23 +1354,18 @@ class DatasetResource(MyTardisModelResource):
             if 'member_group' in bundle.data.keys():
                 member_groups = bundle.data['member_groups']
             else:
-                member_groups = experiment.get_groups()
+                member_groups = experiment.get_groups_and_perms()
             # Each member group is defined by a tuple
             # (group_name, sensitive[T/F], download[T/F])
             # unpack for ACLs
             for grp in member_groups:
-                if isinstance(grp, ObjectACL):
-                    group_id = grp.object_id
-                    senstive_flg = grp.canSensitive
-                    download_flg = grp.canDownload
-                else:
-                    grp_name = grp[0]
-                    sensitive_flg = grp[1]
-                    download_flg = grp[2]
-                    group, created = Group.objects.get_or_create(name=grp_name)
-                    if created:
-                        group.permissions.set(member_perms)
-                    group_id = group.id
+                grp_name = grp[0]
+                sensitive_flg = grp[1]
+                download_flg = grp[2]
+                group, created = Group.objects.get_or_create(name=grp_name)
+                if created:
+                    group.permissions.set(member_perms)
+                group_id = group.id
                 acl = ObjectACL(content_type=dataset.get_ct(),
                                 object_id=dataset.id,
                                 pluginId=django_group,
@@ -1623,13 +1607,10 @@ class DataFileResource(MyTardisModelResource):
             else:
                 admin_groups = dataset.get_admins()
             for grp in admin_groups:
-                if isinstance(grp, ObjectACL):
-                    group_id = grp.object_id
-                else:
-                    group, created = Group.objects.get_or_create(name=grp)
-                    if created:
-                        group.permissions.set(admin_perms)
-                    group_id = group.id
+                group, created = Group.objects.get_or_create(name=grp)
+                if created:
+                    group.permissions.set(admin_perms)
+                group_id = group.id
                 acl = ObjectACL(content_type=datafile.get_ct(),
                                 object_id=datafile.id,
                                 pluginId=django_group,
@@ -1645,23 +1626,18 @@ class DataFileResource(MyTardisModelResource):
             if 'member_group' in bundle.data.keys():
                 member_groups = bundle.data['member_groups']
             else:
-                member_groups = dataset.get_groups()
+                member_groups = dataset.get_groups_and_perms()
             # Each member group is defined by a tuple
             # (group_name, sensitive[T/F], download[T/F])
             # unpack for ACLs
             for grp in member_groups:
-                if isinstance(grp, ObjectACL):
-                    group_id = grp.object_id
-                    senstive_flg = grp.canSensitive
-                    download_flg = grp.canDownload
-                else:
-                    grp_name = grp[0]
-                    sensitive_flg = grp[1]
-                    download_flg = grp[2]
-                    group, created = Group.objects.get_or_create(name=grp_name)
-                    if created:
-                        group.permissions.set(member_perms)
-                    group_id = group.id
+                grp_name = grp[0]
+                sensitive_flg = grp[1]
+                download_flg = grp[2]
+                group, created = Group.objects.get_or_create(name=grp_name)
+                if created:
+                    group.permissions.set(member_perms)
+                group_id = group.id
                 acl = ObjectACL(content_type=datafile.get_ct(),
                                 object_id=datafile.id,
                                 pluginId=django_group,

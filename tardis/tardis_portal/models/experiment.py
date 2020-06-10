@@ -141,10 +141,10 @@ class Experiment(models.Model):
         """
         from .parameters import ExperimentParameter, ParameterName
         paramset = self.getParameterSets()
-        param_type_options = {1 : 'datetime_value', 2 : 'string_value',
-                              3 : 'numerical_value'}
+        param_type_options = {1: 'datetime_value', 2: 'string_value',
+                              3: 'numerical_value'}
         param_glob = ExperimentParameter.objects.filter(
-            parameterset__in=paramset).all().values_list('name','datetime_value','string_value','numerical_value')
+            parameterset__in=paramset).all().values_list('name', 'datetime_value', 'string_value', 'numerical_value')
         param_list = []
         for sublist in param_glob:
             full_name = ParameterName.objects.get(id=sublist[0]).full_name
@@ -157,7 +157,6 @@ class Experiment(models.Model):
                     param_dict['type'] = param_type_options[idx+1]
             param_list.append(param_dict)
         return param_list
-
 
     def __str__(self):
         return self.title
@@ -215,7 +214,7 @@ class Experiment(models.Model):
     def get_images(self, user):
         from .datafile import IMAGE_FILTER
         return self.get_datafiles(user).order_by('-modification_time',
-                                             '-created_time') \
+                                                 '-created_time') \
             .filter(IMAGE_FILTER)
 
     def get_size(self, user):
@@ -262,13 +261,27 @@ class Experiment(models.Model):
                                         canRead=True)
         return [acl.get_related_object() for acl in acls]
 
+    def get_groups_and_perms(self):
+        acls = ObjectACL.objects.filter(pluginId='django_group',
+                                        content_type=self.get_ct(),
+                                        object_id=self.id,
+                                        canRead=True)
+        ret_list = []
+        for acl in acls:
+            group = acl.get_related_object()
+            sensitive_flg = acl.canSensitive
+            download_flg = acl.canDownload
+            ret_list.append([group,
+                             sensitive_flg,
+                             download_flg])
+        return ret_list
+
     def get_admins(self):
         acls = ObjectACL.objects.filter(pluginId='django_group',
                                         content_type=self.get_ct(),
                                         object_id=self.id,
                                         isOwner=True)
         return [acl.get_related_object() for acl in acls]
-
 
     def _has_view_perm(self, user_obj):
         '''

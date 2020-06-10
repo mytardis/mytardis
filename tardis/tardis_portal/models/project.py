@@ -148,6 +148,21 @@ class Project(models.Model):
                                         canRead=True)
         return [acl.get_related_object() for acl in acls]
 
+    def get_groups_and_perms(self):
+        acls = ObjectACL.objects.filter(pluginId='django_group',
+                                        content_type=self.get_ct(),
+                                        object_id=self.id,
+                                        canRead=True)
+        ret_list = []
+        for acl in acls:
+            group = acl.get_related_object()
+            sensitive_flg = acl.canSensitive
+            download_flg = acl.canDownload
+            ret_list.append([group,
+                             sensitive_flg,
+                             download_flg])
+        return ret_list
+
     def _has_view_perm(self, user_obj):
         '''
         Called from the ACLAwareBackend class's has_perm method
