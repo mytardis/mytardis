@@ -1106,10 +1106,10 @@ class ExperimentResource(MyTardisModelResource):
             }
         owners = exp.get_owners()
         bundle.data['owner_ids'] = [o.id for o in owners]
-        admins = exp.get_admin_groups()
-        bundle.data['admin_acls'] = [acl.id for acl in admins]
+        admins = exp.get_admins()
+        bundle.data['admin_acls'] = [grp.id for grp in admins]
         members = exp.get_groups()
-        bundle.data['member_acls'] = [acl.id for acl in members]
+        bundle.data['member_acls'] = [grp.id for grp in members]
         return bundle
 
     def hydrate_m2m(self, bundle):
