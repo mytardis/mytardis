@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import "./ExperimentList.css";
+import { Alert, Spinner } from "react-bootstrap";
 
 export default function ExperimentList(props) {
   let [experimentsData, setExperimentsData] = useState(null);
@@ -27,11 +28,20 @@ export default function ExperimentList(props) {
 
   if (experimentsData == null) {
     return (
-      <h1>Loading...</h1>
+      <div>
+        <Spinner animation="border" role="status" />
+        <span className="sr-only">Loading...</span>
+      </div>
     )
   }
-
   const experiments = experimentsData.objects;
+  if (experiments.length == 0) {
+    return (
+      <Alert variant="primary">
+        No experiments found for this project.
+      </Alert>
+    )
+  }
   return (
     <table className="experiment__table">
       <tbody>
