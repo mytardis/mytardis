@@ -110,7 +110,7 @@ class SchemasAppResource(Resource):
             safe_dict[key] = []
             for value in result_dict[key]:
                 if value is not None:
-                    schema_dict = {
+                    schema_dict = {"id" : value,
                                    "schema_name" : Schema.objects.get(id=value).name,
                                    "parameters":[]
                                    }
@@ -124,7 +124,8 @@ class SchemasAppResource(Resource):
                                      6:"DATETIME",
                                      7:"LONGSTRING",
                                      8:"JSON"}
-                        param_dict = {"full_name": param.full_name,
+                        param_dict = {"id" : param.id,
+                                      "full_name": param.full_name,
                                       "data_type": type_dict[param.data_type]}
                         schema_dict["parameters"].append(param_dict)
                     safe_dict[key].append(schema_dict)
@@ -245,11 +246,14 @@ class SearchAppResource(Resource):
                 if not sensitive_bool:
                     for idxx, schema in enumerate(hit["_source"]["schemas"]):
                         for idx, param in enumerate(schema["parameters"]):
-                            is_sensitive = authz.get_obj_parameter(param["full_name"],
-                                                             hit["_source"]["id"],
-                                                             hit["_index"])
-                            if is_sensitive.sensitive_metadata:
-                                safe_hit["_source"]["schemas"][idxx]["parameters"].pop(idx)
+                            is_sensitive = authz.get_obj_parameter(param["pn_id"],
+                                                                   hit["_index"])
+
+                            safe_hit["_source"]["schemas"][idxx]["parameters"].pop(idx)
+                            if not is_sensitive.sensitive_metadata:
+                                pn_full_name = ParameterName.objects.get(id=param["pn_id"]).full_name
+                                safe_hit["_source"]["schemas"][idxx]["parameters"]["full_name"]=pn_full_name
+
 
                 result_dict[hit["_index"]+"s"].append(safe_hit)
 

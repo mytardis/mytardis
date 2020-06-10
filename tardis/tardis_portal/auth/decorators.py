@@ -132,19 +132,15 @@ def get_nested_has_download(request, obj_id, ct_type):
 
 
 
-def get_obj_parameter(param_full_name, obj_id, ct_type):
+def get_obj_parameter(pn_id, ct_type):
     if ct_type == "project":
-        param = ProjectParameter.objects.get(name__full_name=param_full_name,
-                                             parameterset__project__id=obj_id)
+        param = ProjectParameter.objects.get(name__id=pn_id)
     if ct_type == "experiment":
-        param = ExperimentParameter.objects.get(name__full_name=param_full_name,
-                                            parameterset__experiment__id=obj_id)
+        param = ExperimentParameter.objects.get(name__id=pn_id)
     if ct_type == "dataset":
-        param = DatasetParameter.objects.get(name__full_name=param_full_name,
-                                             parameterset__dataset__id=obj_id)
+        param = DatasetParameter.objects.get(name__id=pn_id)
     if ct_type == "datafile":
-        param = DatafileParameter.objects.get(name__full_name=param_full_name,
-                                              parameterset__datafile__id=obj_id)
+        param = DatafileParameter.objects.get(name__id=pn_id)
     return param
 
 

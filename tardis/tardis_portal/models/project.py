@@ -100,12 +100,12 @@ class Project(models.Model):
             param_glob = ProjectParameter.objects.filter(
                 parameterset=paramset).all().values_list('name','datetime_value','string_value','numerical_value')
             for sublist in param_glob:
-                full_name = ParameterName.objects.get(id=sublist[0]).full_name
+                PN_id = ParameterName.objects.get(id=sublist[0]).id
                 #string2append = (full_name+'=')
                 param_dict = {}
                 for idx, value in enumerate(sublist[1:]):
                     if value is not None:
-                        param_dict['full_name'] = str(full_name)
+                        param_dict['pn_id'] = str(PN_id)
                         param_dict['value'] = str(value)
                         param_dict['data_type'] = param_type_options[idx+1]
                 schema_dict["parameters"].append(param_dict)
