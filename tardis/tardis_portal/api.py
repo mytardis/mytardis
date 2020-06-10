@@ -1141,7 +1141,7 @@ class ExperimentResource(MyTardisModelResource):
                                 isOwner=True,
                                 aclOwnershipType=ObjectACL.OWNER_OWNED)
                 acl.save()
-            if 'admin_group' in bundle.data.keys():
+            if 'admin_groups' in bundle.data.keys():
                 admin_groups = bundle.data['admin_groups']
             else:
                 admin_groups = project.get_admins()
