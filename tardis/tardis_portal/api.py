@@ -1162,7 +1162,7 @@ class ExperimentResource(MyTardisModelResource):
                                 isOwner=True,
                                 aclOwnershipType=ObjectACL.OWNER_OWNED)
                 acl.save()
-            if 'member_group' in bundle.data.keys():
+            if 'member_groups' in bundle.data.keys():
                 member_groups = bundle.data['member_groups']
             else:
                 member_groups = project.get_groups_and_perms()
@@ -1330,7 +1330,7 @@ class DatasetResource(MyTardisModelResource):
                                 isOwner=True,
                                 aclOwnershipType=ObjectACL.OWNER_OWNED)
                 acl.save()
-            if 'admin_group' in bundle.data.keys():
+            if 'admin_groups' in bundle.data.keys():
                 admin_groups = bundle.data['admin_groups']
             else:
                 admin_groups = experiment.get_admins()
@@ -1351,7 +1351,7 @@ class DatasetResource(MyTardisModelResource):
                                 isOwner=True,
                                 aclOwnershipType=ObjectACL.OWNER_OWNED)
                 acl.save()
-            if 'member_group' in bundle.data.keys():
+            if 'member_groups' in bundle.data.keys():
                 member_groups = bundle.data['member_groups']
             else:
                 member_groups = experiment.get_groups_and_perms()
@@ -1602,7 +1602,7 @@ class DataFileResource(MyTardisModelResource):
                                 isOwner=True,
                                 aclOwnershipType=ObjectACL.OWNER_OWNED)
                 acl.save()
-            if 'admin_group' in bundle.data.keys():
+            if 'admin_groups' in bundle.data.keys():
                 admin_groups = bundle.data['admin_groups']
             else:
                 admin_groups = dataset.get_admins()
@@ -1623,7 +1623,7 @@ class DataFileResource(MyTardisModelResource):
                                 isOwner=True,
                                 aclOwnershipType=ObjectACL.OWNER_OWNED)
                 acl.save()
-            if 'member_group' in bundle.data.keys():
+            if 'member_groups' in bundle.data.keys():
                 member_groups = bundle.data['member_groups']
             else:
                 member_groups = dataset.get_groups_and_perms()
