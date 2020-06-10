@@ -39,8 +39,6 @@ class Experiment(models.Model):
     :attribute approved: An optional field indicating whether the collection is approved
     :attribute title: The title of the experiment.
     :attribute description: The description of the experiment.
-    :attribute institution_name: The name of the institution who created
-       the experiment.
     :attribute internal_id: Identifier generated at the instrument, for this experiment
     :attribute project_id: UoA project ID (e.g. RAID)
     :attribute start_time: **Undocumented**
@@ -134,29 +132,35 @@ class Experiment(models.Model):
         return self.experimentparameterset_set.filter(
             schema__schema_type=Schema.EXPERIMENT)
 
-    def getParametersforIndexing(self):
+    def getSchemasforIndexing(self):
         """Returns the experiment parameters associated with this
         experiment, formatted for elasticsearch.
 
         """
         from .parameters import ExperimentParameter, ParameterName
-        paramset = self.getParameterSets()
-        param_type_options = {1: 'datetime_value', 2: 'string_value',
-                              3: 'numerical_value'}
-        param_glob = ExperimentParameter.objects.filter(
-            parameterset__in=paramset).all().values_list('name', 'datetime_value', 'string_value', 'numerical_value')
-        param_list = []
-        for sublist in param_glob:
-            full_name = ParameterName.objects.get(id=sublist[0]).full_name
-            #string2append = (full_name+'=')
-            param_dict = {}
-            for idx, value in enumerate(sublist[1:]):
-                if value is not None:
-                    param_dict['full_name'] = str(full_name)
-                    param_dict['value'] = str(value)
-                    param_dict['type'] = param_type_options[idx+1]
-            param_list.append(param_dict)
-        return param_list
+        paramsets = list(self.getParameterSets())
+        schema_list = []
+        for paramset in paramsets:
+            schema_dict = {
+                           "schema_name" : paramset.schema.name,
+                           "parameters":[]
+                           }
+            param_type_options = {1 : 'DATETIME', 2 : 'STRING',
+                                  3 : 'NUMERIC'}
+            param_glob = ExperimentParameter.objects.filter(
+                parameterset=paramset).all().values_list('name','datetime_value','string_value','numerical_value')
+            for sublist in param_glob:
+                full_name = ParameterName.objects.get(id=sublist[0]).full_name
+                #string2append = (full_name+'=')
+                param_dict = {}
+                for idx, value in enumerate(sublist[1:]):
+                    if value is not None:
+                        param_dict['full_name'] = str(full_name)
+                        param_dict['value'] = str(value)
+                        param_dict['data_type'] = param_type_options[idx+1]
+                schema_dict["parameters"].append(param_dict)
+            schema_list.append(schema_dict)
+        return schema_list
 
     def __str__(self):
         return self.title
@@ -195,9 +199,9 @@ class Experiment(models.Model):
             'tardis.tardis_portal.views.create_token',
             kwargs={'experiment_id': self.id})
 
-    def get_datafiles(self, user):
+    def get_datafiles(self, user, downloadable=False):
         from .datafile import DataFile
-        return DataFile.safe.all(user).filter(dataset__experiments=self)
+        return DataFile.safe.all(user, downloadable=downloadable).filter(dataset__experiments=self)
 
     def get_download_urls(self):
         urls = {}
@@ -217,9 +221,9 @@ class Experiment(models.Model):
                                                  '-created_time') \
             .filter(IMAGE_FILTER)
 
-    def get_size(self, user):
+    def get_size(self, user, downloadable=False):
         from .datafile import DataFile
-        return DataFile.sum_sizes(self.get_datafiles(user))
+        return DataFile.sum_sizes(self.get_datafiles(user, downloadable=downloadable))
 
     @classmethod
     def public_access_implies_distribution(cls, public_access_level):

@@ -55,8 +55,9 @@ def global_contexts(request):
     return {'site_title': site_title,
             'sponsored_by': sponsored_by,
             'site_styles': site_styles,
-            'version': version, }
-
+            'version': version,
+            'subtitle': False,
+            'error': False,}
 
 def google_analytics(request):
     """

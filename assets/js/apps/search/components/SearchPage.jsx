@@ -24,23 +24,33 @@ export function PureSearchPage(){
     )
 }
 
-function getResultsFromResponse(response){
+const getResultFromHit = (hit,hitType,urlPrefix) => {
+        const source = hit._source;
+        Object.assign(source,{
+            type: hitType,
+            url:`${urlPrefix}/${source.id}`
+        });
+        return source;
+}
+
+const getResultsFromResponse = (response) => {
     // Grab the "_source" object out of each hit and also
     // add a type attribute to them.
     const hits = response.objects[0].hits,
-        expResults = hits["experiments"].map( 
-            exp => (Object.assign(exp._source,{
-                type: 'experiment'
-            }))),
-        dsResults = hits["datasets"].map(
-            ds => (Object.assign(ds._source,{
-                type: 'dataset'
-            }))),
-        dfResults = hits["datafiles"].map(
-            df => (Object.assign(df._source, {
-                type: 'datafile'
-            })));
+        projectResults = hits["projects"].map((hit) => (
+            getResultFromHit(hit,"project","/project/view")
+        )),
+        expResults = hits["experiments"].map((hit) => (
+            getResultFromHit(hit,"experiment","/experiment/view")
+        )),
+        dsResults = hits["datasets"].map((hit) => (
+            getResultFromHit(hit,"dataset","/dataset")
+        )),
+        dfResults = hits["datafiles"].map((hit) => (
+            getResultFromHit(hit,"datafile","/datafile/view")
+        ));
     return {
+        project: projectResults,
         experiment: expResults,
         dataset: dsResults,
         datafile: dfResults

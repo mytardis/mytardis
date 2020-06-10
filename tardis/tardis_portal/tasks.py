@@ -244,7 +244,7 @@ def df_save_metadata(df_id, name, schema, metadata):
             return Schema.objects.get(namespace__exact=schema)
         except Schema.DoesNotExist:
             new_schema = Schema(namespace=schema, name=name,
-                                type=Schema.DATAFILE)
+                                schema_type=Schema.DATAFILE)
             new_schema.save()
             return new_schema
 

@@ -21,7 +21,8 @@ from tardis.tardis_portal.api import default_authentication
 from tardis.tardis_portal.auth import decorators as authz
 from tardis.tardis_portal.models import (Project, Experiment, Dataset, DataFile,
                                          Instrument, ExperimentParameter,
-                                         DatasetParameter, DatafileParameter)
+                                         DatasetParameter, DatafileParameter,
+                                         Schema, ParameterName)
 
 import logging
 
@@ -51,6 +52,88 @@ class SearchObject(object):
     def __init__(self, hits=None, id=None):
         self.hits = hits
         self.id = id
+
+
+class SchemasObject(object):
+    def __init__(self, schemas=None, id=None):
+        self.schemas = schemas
+        self.id = id
+
+
+class SchemasAppResource(Resource):
+    """Tastypie resource for schemas"""
+    schemas = fields.ApiField(attribute='schemas', null=True)
+
+    class Meta:
+        resource_name = 'get-schemas'
+        list_allowed_methods = ['get']
+        serializer = default_serializer
+        authentication = default_authentication
+        object_class = SchemasObject
+        always_return_data = True
+
+    def detail_uri_kwargs(self, bundle_or_obj):
+        kwargs = {}
+        if isinstance(bundle_or_obj, Bundle):
+            kwargs['pk'] = bundle_or_obj.obj.id
+        else:
+            kwargs['pk'] = bundle_or_obj['id']
+
+        return kwargs
+
+    def get_object_list(self, request):
+        logging.warn("Testing search app: get schemas")
+        if not request.user.is_authenticated:
+            result_dict = {
+                           "projects" : None,
+                           "experiments" : None,
+                           "datasets" : None,
+                           "datafiles" : None
+                           }
+            return [SchemasObject(id=1, schemas=result_dict)]
+        result_dict = {
+                       "projects" : list(set(list(Project.safe.all(request.user
+                                    ).prefetch_related('projectparameterset'
+                                    ).values_list("projectparameterset__schema__id", flat=True)))),
+                       "experiments" : list(set(list(Experiment.safe.all(request.user
+                                       ).prefetch_related('projectparameterset'
+                                       ).values_list("experimentparameterset__schema__id", flat=True)))),
+                       "datasets" : list(set(list(Dataset.safe.all(request.user
+                                       ).prefetch_related('projectparameterset'
+                                       ).values_list("datasetparameterset__schema__id", flat=True)))),
+                       "datafiles" : list(set(list(DataFile.safe.all(request.user
+                                       ).prefetch_related('projectparameterset'
+                                       ).values_list("datafileparameterset__schema__id", flat=True))))
+                       }
+        safe_dict = {}
+        for key in result_dict:
+            safe_dict[key] = []
+            for value in result_dict[key]:
+                if value is not None:
+                    schema_dict = {
+                                   "schema_name" : Schema.objects.get(id=value).name,
+                                   "parameters":[]
+                                   }
+                    param_names = ParameterName.objects.filter(schema__id=value)
+                    for param in param_names:
+                        type_dict = {1:"NUMERIC",
+                                     2:"STRING",
+                                     3:"URL",
+                                     4:"LINK",
+                                     5:"FILENAME",
+                                     6:"DATETIME",
+                                     7:"LONGSTRING",
+                                     8:"JSON"}
+                        param_dict = {"full_name": param.full_name,
+                                      "data_type": type_dict[param.data_type]}
+                        schema_dict["parameters"].append(param_dict)
+                    safe_dict[key].append(schema_dict)
+
+        return [SchemasObject(id=1, schemas=safe_dict)]
+
+
+    def obj_get_list(self, bundle, **kwargs):
+        return self.get_object_list(bundle.request)
 
 
 class SearchAppResource(Resource):
@@ -149,23 +232,24 @@ class SearchAppResource(Resource):
                     safe_hit["_source"]["counts"] = authz.get_nested_count(request,
                                                         hit["_source"]["id"], hit["_index"])
 
-                    safe_hit["_source"]["accessRights"] = authz.get_nested_has_download(request,
+                    safe_hit["_source"]["userDownloadRights"] = authz.get_nested_has_download(request,
                                                         hit["_source"]["id"], hit["_index"])
 
                 else:
                     if authz.has_download_access(request, hit["_source"]["id"],
                                                  hit["_index"]):
-                        safe_hit["_source"]["accessRights"] = "full"
+                        safe_hit["_source"]["userDownloadRights"] = "full"
                     else:
-                        safe_hit["_source"]["accessRights"] = "none"
+                        safe_hit["_source"]["userDownloadRights"] = "none"
 
                 if not sensitive_bool:
-                    for idx, param in enumerate(hit["_source"]["parameters"]):
-                        is_sensitive = authz.get_obj_parameter(param["full_name"],
-                                                         hit["_source"]["id"],
-                                                         hit["_index"])
-                        if is_sensitive.sensitive_metadata:
-                            safe_hit["_source"]["parameters"].pop(idx)
+                    for idxx, schema in enumerate(hit["_source"]["schemas"]):
+                        for idx, param in enumerate(schema["parameters"]):
+                            is_sensitive = authz.get_obj_parameter(param["full_name"],
+                                                             hit["_source"]["id"],
+                                                             hit["_index"])
+                            if is_sensitive.sensitive_metadata:
+                                safe_hit["_source"]["schemas"][idxx]["parameters"].pop(idx)
 
                 result_dict[hit["_index"]+"s"].append(safe_hit)
 

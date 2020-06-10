@@ -57,7 +57,7 @@ class SafeManager(models.Manager):
     filling the request.groups object.
     """
 
-    def all(self, user):  # @ReservedAssignment
+    def all(self, user, downloadable=False, viewsensitive=False):  # @ReservedAssignment
         """
         Returns all proj/exp/set/files a user - either authenticated or
         anonymous - is allowed to see and search
@@ -67,7 +67,7 @@ class SafeManager(models.Manager):
         :rtype: QuerySet
         """
 
-        query = self._query_owned_and_shared(user) #self._query_all_public() |\
+        query = self._query_owned_and_shared(user, downloadable, viewsensitive) #self._query_all_public() |\
 
         return super().get_queryset().filter(
             query).distinct()

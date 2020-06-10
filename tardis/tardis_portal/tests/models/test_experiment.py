@@ -18,12 +18,10 @@ class ExperimentTestCase(ModelTestCase):
 
     def test_experiment(self):
         exp = Experiment(title='test exp1',
-                         institution_name='monash',
                          created_by=self.user)
         exp.save()
         self.assertEqual(exp.title, 'test exp1')
         self.assertEqual(exp.url, None)
-        self.assertEqual(exp.institution_name, 'monash')
         self.assertEqual(exp.approved, False)
         #self.assertEqual(exp.handle, None)
         self.assertEqual(exp.created_by, self.user)

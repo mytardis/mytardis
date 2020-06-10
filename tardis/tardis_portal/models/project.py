@@ -87,29 +87,35 @@ class Project(models.Model):
         return self.projectparameterset_set.filter(
             schema__schema_type=Schema.PROJECT)
 
-    def getParametersforIndexing(self):
-        """Returns the project parameters associated with this
-        project, formatted for elasticsearch.
+    def getSchemasforIndexing(self):
+        """Returns the experiment parameters associated with this
+        experiment, formatted for elasticsearch.
 
         """
         from .parameters import ProjectParameter, ParameterName
-        paramset = self.getParameterSets()
-        param_type_options = {1: 'datetime_value', 2: 'string_value',
-                              3: 'numerical_value'}
-        param_glob = ProjectParameter.objects.filter(
-            parameterset__in=paramset).all().values_list('name', 'datetime_value', 'string_value', 'numerical_value')
-        param_list = []
-        for sublist in param_glob:
-            full_name = ParameterName.objects.get(id=sublist[0]).full_name
-            #string2append = (full_name+'=')
-            param_dict = {}
-            for idx, value in enumerate(sublist[1:]):
-                if value is not None:
-                    param_dict['full_name'] = str(full_name)
-                    param_dict['value'] = str(value)
-                    param_dict['type'] = param_type_options[idx+1]
-            param_list.append(param_dict)
-        return param_list
+        paramsets = list(self.getParameterSets())
+        schema_list = []
+        for paramset in paramsets:
+            schema_dict = {
+                           "schema_name" : paramset.schema.name,
+                           "parameters":[]
+                           }
+            param_type_options = {1 : 'DATETIME', 2 : 'STRING',
+                                  3 : 'NUMERIC'}
+            param_glob = ProjectParameter.objects.filter(
+                parameterset=paramset).all().values_list('name','datetime_value','string_value','numerical_value')
+            for sublist in param_glob:
+                full_name = ParameterName.objects.get(id=sublist[0]).full_name
+                #string2append = (full_name+'=')
+                param_dict = {}
+                for idx, value in enumerate(sublist[1:]):
+                    if value is not None:
+                        param_dict['full_name'] = str(full_name)
+                        param_dict['value'] = str(value)
+                        param_dict['data_type'] = param_type_options[idx+1]
+                schema_dict["parameters"].append(param_dict)
+            schema_list.append(schema_dict)
+        return schema_list
 
     def is_embargoed(self):
         if self.embargo_until:
@@ -208,10 +214,10 @@ class Project(models.Model):
             return False
         return None
 
-    def get_datafiles(self, user):
+    def get_datafiles(self, user, downloadable=False):
         from .datafile import DataFile
-        return DataFile.safe.all(user).filter(dataset__experiments__project=self)
+        return DataFile.safe.all(user, downloadable=downloadable).filter(dataset__experiments__project=self)
 
-    def get_size(self, user):
+    def get_size(self, user, downloadable=False):
         from .datafile import DataFile
-        return DataFile.sum_sizes(self.get_datafiles(user))
+        return DataFile.sum_sizes(self.get_datafiles(user, downloadable=downloadable))
