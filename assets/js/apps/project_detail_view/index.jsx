@@ -1,7 +1,7 @@
 import React, { Suspense, Fragment } from "react";
 import ReactDOM from "react-dom";
 import "./index.css";
-import ProjectPage from "./components/Project/ProjectPage";
+import ProjectPage from "./components/ProjectPage/ProjectPage";
 import * as serviceWorker from "./serviceWorker";
 
 
