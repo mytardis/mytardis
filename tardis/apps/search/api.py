@@ -252,7 +252,7 @@ class SearchAppResource(Resource):
                             safe_hit["_source"]["schemas"][idxx]["parameters"].pop(idx)
                             if not is_sensitive.sensitive_metadata:
                                 pn_full_name = ParameterName.objects.get(id=param["pn_id"]).full_name
-                                safe_hit["_source"]["schemas"][idxx]["parameters"]["full_name"]=pn_full_name
+                                safe_hit["_source"]["schemas"][idxx]["parameters"][idx]["full_name"]=pn_full_name
 
 
                 result_dict[hit["_index"]+"s"].append(safe_hit)
