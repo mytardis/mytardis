@@ -129,7 +129,7 @@ class SchemasAppResource(Resource):
                         schema_dict["parameters"].append(param_dict)
                     safe_dict[key].append(schema_dict)
 
-        return [SchemasObject(id=1, hits=safe_dict)]
+        return [SchemasObject(id=1, schemas=safe_dict)]
 
 
     def obj_get_list(self, bundle, **kwargs):
