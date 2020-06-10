@@ -1321,8 +1321,9 @@ class DatasetResource(MyTardisModelResource):
                     pass  # This probably should raise an error
         if getattr(bundle.obj, 'id', False):
             dataset = bundle.obj
-            for exp in bundle.obj.experiments.all():
-                project_lead = exp.get_owners()  # There should only be one expt
+            # There should only be one expt
+            experiment = bundle.obj.experiments.all()[0]
+            project_lead = experiment.get_owners()
             # TODO: unify this with the view function's ACL creation,
             # maybe through an ACL toolbox.
             for owner in project_lead:
