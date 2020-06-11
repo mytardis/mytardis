@@ -45,6 +45,14 @@ class ViewTemplateContextsTest(TestCase):
         self.acl.save()
         self.dataset = Dataset(description='dataset description...')
         self.dataset.save()
+        self.acl = ObjectACL(
+            pluginId=django_user,
+            entityId=str(self.user.id),
+            content_object=self.dataset,
+            canRead=True,
+            isOwner=True,
+            aclOwnershipType=ObjectACL.OWNER_OWNED,
+        )
         self.dataset.experiments.add(self.exp)
         self.dataset.save()
 
@@ -52,7 +60,14 @@ class ViewTemplateContextsTest(TestCase):
                                  size=42, filename="foo",
                                  md5sum="junk")
         self.datafile.save()
-
+        self.acl = ObjectACL(
+            pluginId=django_user,
+            entityId=str(self.user.id),
+            content_object=self.datafile,
+            canRead=True,
+            isOwner=True,
+            aclOwnershipType=ObjectACL.OWNER_OWNED,
+        )
     def tearDown(self):
         self.user.delete()
         self.exp.delete()
