@@ -128,13 +128,19 @@ const userSharingModalLoaded = function() {
         if (permissions === "read") {
             canRead = true;
         }
-        if (permissions === "download") {
+        else if (permissions === "download") {
             canRead = true;
             canDownload = true;
+        }
+        else if(permissions === "sensitive") {
+            canRead = true;
+            canDownload = true;
+            canSensitive = true;
         }
         else if (permissions === "edit") {
             canRead = true;
             canDownload = true;
+            canSensitive = true;
             canWrite = true;
         }
         else if (permissions === "owner") {
@@ -325,13 +331,19 @@ const groupSharingModalLoaded = function() {
         if(permissions === "read") {
             canRead = true;
         }
-        if(permissions === "download") {
+        else if(permissions === "download") {
             canRead = true;
             canDownload = true;
+        }
+        else if(permissions === "sensitive") {
+            canRead = true;
+            canDownload = true;
+            canSensitive = true;
         }
         else if(permissions === "edit") {
             canRead = true;
             canDownload = true;
+            canSensitive = true;
             canWrite = true;
         }
         else if(permissions === "owner") {
