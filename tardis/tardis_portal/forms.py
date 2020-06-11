@@ -184,15 +184,15 @@ class AddUserPermissionsForm(forms.Form):
     read = forms.BooleanField(
         label='Read access', required=False, initial=True)
     read.widget.attrs['class'] = 'canRead'
-    download = forms.BooleanField(label='Download access', required=False)
+    #download = forms.BooleanField(label='Download access', required=False)
     download.widget.attrs['class'] = 'canDownload'
     write = forms.BooleanField(label='Edit access', required=False)
     write.widget.attrs['class'] = 'canWrite'
     delete = forms.BooleanField(label='', required=False,
                                 widget=forms.HiddenInput)
     delete.widget.attrs['class'] = 'canDelete'
-    sensitive = forms.BooleanField(label='Sensitive', required=False,
-                                widget=forms.HiddenInput)
+    #sensitive = forms.BooleanField(label='Sensitive', required=False,
+    #                            widget=forms.HiddenInput)
     sensitive.widget.attrs['class'] = 'canSensitive'
 
 class ManageGroupPermissionsForm(forms.Form):
