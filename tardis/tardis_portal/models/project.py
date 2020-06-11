@@ -21,6 +21,7 @@ from .license import License
 
 logger = logging.getLogger(__name__)
 
+
 @python_2_unicode_compatible
 class Project(models.Model):
     """A project is a collection of :class: '~tardis.tardis_portal.experiment.Experiment'
@@ -42,29 +43,33 @@ class Project(models.Model):
         (PUBLIC_ACCESS_FULL, 'Public'),
     )
     name = models.CharField(max_length=255, null=False, blank=False)
-    raid = models.CharField(max_length=255, null=False, blank=False, unique=True)
+    raid = models.CharField(max_length=255, null=False,
+                            blank=False, unique=True)
     description = models.TextField()
     locked = models.BooleanField(default=False)
     public_access = \
         models.PositiveSmallIntegerField(choices=PUBLIC_ACCESS_CHOICES,
                                          null=False,
                                          default=PUBLIC_ACCESS_NONE)
-    #TODO No project should have the ingestion service account as the lead_researcher
+    # TODO No project should have the ingestion service account as the lead_researcher
     lead_researcher = models.ForeignKey(User,
+                                        related_name='lead_researcher',
                                         on_delete=models.CASCADE)
     objectacls = GenericRelation(ObjectACL)
     objects = OracleSafeManager()
     embargo_until = models.DateTimeField(null=True, blank=True)
     start_date = models.DateTimeField(default=django_time_now)
     end_date = models.DateTimeField(null=True, blank=True)
+    created_by = models.ForeignKey(User,
+                                   on_delete=models.CASCADE)
     url = models.URLField(max_length=255,
                           null=True, blank=True)
     institution = models.ManyToManyField(Institution,
                                          related_name='institutions')
     safe = SafeManager()
 
-    #TODO Integrate DMPs into the project.
-    #data_management_plan = models.ManyToManyField(DataManagementPlan,
+    # TODO Integrate DMPs into the project.
+    # data_management_plan = models.ManyToManyField(DataManagementPlan,
     #                                              null=True, blank=True)
 
     class Meta:
@@ -121,7 +126,7 @@ class Project(models.Model):
     def get_ct(self):
         return ContentType.objects.get_for_model(self)
 
-    def get_admins(self):
+    def get_owners(self):
         acls = ObjectACL.objects.filter(pluginId='django_user',
                                         content_type=self.get_ct(),
                                         object_id=self.id,
@@ -135,19 +140,35 @@ class Project(models.Model):
                                         canRead=True)
         return [acl.get_related_object() for acl in acls]
 
-    def get_admin_group(self):
+    def get_admins(self):
         acls = ObjectACL.objects.filter(pluginId='django_group',
                                         content_type=self.get_ct(),
                                         object_id=self.id,
                                         isOwner=True)
         return [acl.get_related_object() for acl in acls]
 
-    def get_read_groups(self):
+    def get_groups(self):
         acls = ObjectACL.objects.filter(pluginId='django_group',
                                         content_type=self.get_ct(),
                                         object_id=self.id,
                                         canRead=True)
         return [acl.get_related_object() for acl in acls]
+
+    def get_groups_and_perms(self):
+        acls = ObjectACL.objects.filter(pluginId='django_group',
+                                        content_type=self.get_ct(),
+                                        object_id=self.id,
+                                        canRead=True)
+        ret_list = []
+        for acl in acls:
+            if not acl.isOwner:
+                group = acl.get_related_object()
+                sensitive_flg = acl.canSensitive
+                download_flg = acl.canDownload
+                ret_list.append([group,
+                                 sensitive_flg,
+                                 download_flg])
+        return ret_list
 
     def _has_view_perm(self, user_obj):
         '''
