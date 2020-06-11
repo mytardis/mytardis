@@ -66,6 +66,8 @@ class MyTardisResourceTestCase(ResourceTestCaseMixin, TransactionTestCase):
         self.testinstrument.save()
         self.testproject = Project(name="test project", raid='test raid')
         self.testproject.created_by = self.user
+        self.testproject.lead_researcher = self.user
+
         self.testproject.save()
         testacl = ObjectACL(
             content_type=self.testproject.get_ct(),
