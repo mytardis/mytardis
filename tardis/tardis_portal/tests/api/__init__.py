@@ -12,6 +12,7 @@ from tastypie.test import ResourceTestCaseMixin
 from ...auth.authservice import AuthService
 from ...auth.localdb_auth import django_user
 from ...models.access_control import ObjectACL
+from ...models.project import Project
 from ...models.experiment import Experiment
 from ...models.facility import Facility
 from ...models.instrument import Instrument
@@ -63,7 +64,8 @@ class MyTardisResourceTestCase(ResourceTestCaseMixin, TransactionTestCase):
         self.testinstrument = Instrument(name="Test Instrument",
                                          facility=self.testfacility)
         self.testinstrument.save()
-        self.testexp = Experiment(title="test exp")
+        self.testproject = Project(name="test project", raid='test raid')
+        self.testexp = Experiment(title="test exp", project=self.testproject)
         self.testexp.approved = True
         self.testexp.created_by = self.user
         self.testexp.locked = False
