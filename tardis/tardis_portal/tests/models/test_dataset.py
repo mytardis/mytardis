@@ -8,7 +8,7 @@ test_dataset.py
 """
 from django.contrib.auth.models import Group
 
-from tardis.tardis_portal.models import (
+from tardis.tardis_portal.models import (ObjectACL,
     Dataset, DataFile, Experiment, Facility, Instrument, Institution)
 
 from . import ModelTestCase
