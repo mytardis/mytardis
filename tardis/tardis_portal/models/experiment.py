@@ -21,8 +21,10 @@ from .license import License
 
 logger = logging.getLogger(__name__)
 
+
 def experiment_internal_id_default():
     return datetime.now().strftime('WUI-%Y-%M-%d-%H-%M-%S.%f')
+
 
 @python_2_unicode_compatible
 class Experiment(models.Model):
@@ -69,10 +71,11 @@ class Experiment(models.Model):
                           null=True, blank=True)
     approved = models.BooleanField(default=False)
     title = models.CharField(max_length=400)
-    #institution_name = models.CharField(max_length=400,
+    # institution_name = models.CharField(max_length=400,
     #                                    default=settings.DEFAULT_INSTITUTION)
     description = models.TextField(blank=True)
-    raid = models.CharField(max_length=400, null=False, blank=False, unique=True, default=experiment_internal_id_default)
+    raid = models.CharField(max_length=400, null=False, blank=False,
+                            unique=True, default=experiment_internal_id_default)
     project = models.ForeignKey(Project, on_delete=models.CASCADE, null=True)
     start_time = models.DateTimeField(null=True, blank=True)
     end_time = models.DateTimeField(null=True, blank=True)
@@ -95,7 +98,6 @@ class Experiment(models.Model):
 
     class Meta:
         app_label = 'tardis_portal'
-
 
     def is_embargoed(self):
         if self.embargo_until:
@@ -160,7 +162,6 @@ class Experiment(models.Model):
             schema_list.append(schema_dict)
         return schema_list
 
-
     def __str__(self):
         return self.title
 
@@ -217,7 +218,7 @@ class Experiment(models.Model):
     def get_images(self, user):
         from .datafile import IMAGE_FILTER
         return self.get_datafiles(user).order_by('-modification_time',
-                                             '-created_time') \
+                                                 '-created_time') \
             .filter(IMAGE_FILTER)
 
     def get_size(self, user, downloadable=False):
@@ -264,6 +265,28 @@ class Experiment(models.Model):
                                         canRead=True)
         return [acl.get_related_object() for acl in acls]
 
+    def get_groups_and_perms(self):
+        acls = ObjectACL.objects.filter(pluginId='django_group',
+                                        content_type=self.get_ct(),
+                                        object_id=self.id,
+                                        canRead=True)
+        ret_list = []
+        for acl in acls:
+            if not acl.isOwner:
+                group = acl.get_related_object()
+                sensitive_flg = acl.canSensitive
+                download_flg = acl.canDownload
+                ret_list.append([group,
+                                 sensitive_flg,
+                                 download_flg])
+        return ret_list
+
+    def get_admins(self):
+        acls = ObjectACL.objects.filter(pluginId='django_group',
+                                        content_type=self.get_ct(),
+                                        object_id=self.id,
+                                        isOwner=True)
+        return [acl.get_related_object() for acl in acls]
 
     def _has_view_perm(self, user_obj):
         '''
