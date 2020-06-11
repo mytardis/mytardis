@@ -91,7 +91,7 @@ class Project(models.Model):
         paramsets = list(self.getParameterSets())
         schema_list = []
         for paramset in paramsets:
-            schema_dict = {
+            schema_dict = {"id":paramset.schema.id,
                            "schema_name" : paramset.schema.name,
                            "parameters":[]
                            }
