@@ -104,7 +104,6 @@ class DatasetTestCase(ModelTestCase):
 
         DataFile.objects.create(
             dataset=dataset, filename='filename1', size=0, md5sum='bogus')
-        DataFile.save()
         basedir = ''
         dir_tuples = dataset.get_dir_tuples(self.user, basedir)
         self.assertEqual(dir_tuples, [])
