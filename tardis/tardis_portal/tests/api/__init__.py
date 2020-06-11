@@ -65,6 +65,18 @@ class MyTardisResourceTestCase(ResourceTestCaseMixin, TransactionTestCase):
                                          facility=self.testfacility)
         self.testinstrument.save()
         self.testproject = Project(name="test project", raid='test raid')
+        self.testproject.save()
+        testacl = ObjectACL(
+            content_type=self.testproject.get_ct(),
+            object_id=self.testproject.id,
+            pluginId=django_user,
+            entityId=str(self.user.id),
+            canRead=True,
+            canWrite=True,
+            canDelete=True,
+            isOwner=True,
+            aclOwnershipType=ObjectACL.OWNER_OWNED)
+        testacl.save()
         self.testexp = Experiment(title="test exp", project=self.testproject)
         self.testexp.approved = True
         self.testexp.created_by = self.user
