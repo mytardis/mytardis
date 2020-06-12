@@ -40,13 +40,22 @@ def _create_datafile():
               isOwner=True,
               canRead=True,
               canWrite=True,
+              canDownload=True,
               canDelete=True,
               aclOwnershipType=ObjectACL.OWNER_OWNED).save()
     dataset = Dataset()
     dataset.save()
     dataset.experiments.add(experiment)
     dataset.save()
-
+    ObjectACL(content_object=dataset,
+              pluginId='django_user',
+              entityId=str(user.id),
+              isOwner=True,
+              canRead=True,
+              canWrite=True,
+              canDownload=True,
+              canDelete=True,
+              aclOwnershipType=ObjectACL.OWNER_OWNED).save()
     # Create new Datafile
     tempfile = TemporaryUploadedFile('iiif_stored_file', None, None, None)
     with Image(filename='magick:rose') as img:
@@ -68,6 +77,15 @@ def _create_datafile():
     if compute_sha512:
         datafile.sha512sum = checksums['sha512sum']
     datafile.save()
+    ObjectACL(content_object=datafile,
+              pluginId='django_user',
+              entityId=str(user.id),
+              isOwner=True,
+              canRead=True,
+              canWrite=True,
+              canDownload=True,
+              canDelete=True,
+              aclOwnershipType=ObjectACL.OWNER_OWNED).save()
     datafile.file_object = tempfile
     return datafile
 
