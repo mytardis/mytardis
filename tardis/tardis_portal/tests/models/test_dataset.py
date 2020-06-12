@@ -102,33 +102,69 @@ class DatasetTestCase(ModelTestCase):
         self.assertEqual(dir_tuples, [])
         self.assertEqual(dataset.get_dir_nodes(self.user, dir_tuples), [])
 
-        DataFile.objects.create(
+        datafile = DataFile.objects.create(
             dataset=dataset, filename='filename1', size=0, md5sum='bogus')
         basedir = ''
+        acl = ObjectACL(content_object=datafile,
+                        pluginId='django_user',
+                        entityId=str(self.user.id),
+                        isOwner=True,
+                        canRead=True,
+                        canWrite=True,
+                        canDelete=True,
+                        aclOwnershipType=ObjectACL.OWNER_OWNED)
+        acl.save()
         dir_tuples = dataset.get_dir_tuples(self.user, basedir)
         self.assertEqual(dir_tuples, [])
         self.assertEqual(dataset.get_dir_nodes(self.user, dir_tuples), [])
 
-        DataFile.objects.create(
+        datafile = DataFile.objects.create(
             dataset=dataset, filename='filename2', size=0, md5sum='bogus',
             directory=None)
         basedir = ''
+        acl = ObjectACL(content_object=datafile,
+                        pluginId='django_user',
+                        entityId=str(self.user.id),
+                        isOwner=True,
+                        canRead=True,
+                        canWrite=True,
+                        canDelete=True,
+                        aclOwnershipType=ObjectACL.OWNER_OWNED)
+        acl.save()
         dir_tuples = dataset.get_dir_tuples(self.user, basedir)
         self.assertEqual(dir_tuples, [])
         self.assertEqual(dataset.get_dir_nodes(self.user, dir_tuples), [])
 
-        DataFile.objects.create(
+        datafile = DataFile.objects.create(
             dataset=dataset, filename='filename3', size=0, md5sum='bogus',
             directory='')
         basedir = ''
+        acl = ObjectACL(content_object=datafile,
+                        pluginId='django_user',
+                        entityId=str(self.user.id),
+                        isOwner=True,
+                        canRead=True,
+                        canWrite=True,
+                        canDelete=True,
+                        aclOwnershipType=ObjectACL.OWNER_OWNED)
+        acl.save()
         dir_tuples = dataset.get_dir_tuples(self.user, basedir)
         self.assertEqual(dir_tuples, [])
         self.assertEqual(dataset.get_dir_nodes(self.user, dir_tuples), [])
 
-        DataFile.objects.create(
+        datafile = DataFile.objects.create(
             dataset=dataset, filename='filename4', size=0, md5sum='bogus',
             directory='dir1')
         basedir = ''
+        acl = ObjectACL(content_object=datafile,
+                        pluginId='django_user',
+                        entityId=str(self.user.id),
+                        isOwner=True,
+                        canRead=True,
+                        canWrite=True,
+                        canDelete=True,
+                        aclOwnershipType=ObjectACL.OWNER_OWNED)
+        acl.save()
         dir_tuples = dataset.get_dir_tuples(self.user, basedir)
         self.assertEqual(dir_tuples, [('dir1', 'dir1')])
         self.assertEqual(
@@ -141,10 +177,19 @@ class DatasetTestCase(ModelTestCase):
                 }
             ])
 
-        DataFile.objects.create(
+        datafile = DataFile.objects.create(
             dataset=dataset, filename='filename5', size=0, md5sum='bogus',
             directory='dir1/subdir1')
         basedir = 'dir1'
+        acl = ObjectACL(content_object=datafile,
+                        pluginId='django_user',
+                        entityId=str(self.user.id),
+                        isOwner=True,
+                        canRead=True,
+                        canWrite=True,
+                        canDelete=True,
+                        aclOwnershipType=ObjectACL.OWNER_OWNED)
+        acl.save()
         dir_tuples = dataset.get_dir_tuples(self.user, basedir)
         self.assertEqual(
             dir_tuples,
@@ -163,10 +208,19 @@ class DatasetTestCase(ModelTestCase):
         self.assertEqual(dir_tuples, [('..', 'dir1/subdir1')])
         self.assertEqual(dataset.get_dir_nodes(self.user, dir_tuples), [])
 
-        DataFile.objects.create(
+        datafile = DataFile.objects.create(
             dataset=dataset, filename='filename6', size=0, md5sum='bogus',
             directory='dir2/subdir2')
         basedir = ''
+        acl = ObjectACL(content_object=datafile,
+                        pluginId='django_user',
+                        entityId=str(self.user.id),
+                        isOwner=True,
+                        canRead=True,
+                        canWrite=True,
+                        canDelete=True,
+                        aclOwnershipType=ObjectACL.OWNER_OWNED)
+        acl.save()
         dir_tuples = dataset.get_dir_tuples(self.user, basedir)
         self.assertEqual(
             dir_tuples,
