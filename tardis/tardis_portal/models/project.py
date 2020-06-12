@@ -96,14 +96,14 @@ class Project(models.Model):
         paramsets = list(self.getParameterSets())
         schema_list = []
         for paramset in paramsets:
-            schema_dict = {"id":paramset.schema.id,
-                           "schema_name" : paramset.schema.name,
-                           "parameters":[]
+            schema_dict = {"id": paramset.schema.id,
+                           "schema_name": paramset.schema.name,
+                           "parameters": []
                            }
-            param_type_options = {1 : 'DATETIME', 2 : 'STRING',
-                                  3 : 'NUMERIC'}
+            param_type_options = {1: 'DATETIME', 2: 'STRING',
+                                  3: 'NUMERIC'}
             param_glob = ProjectParameter.objects.filter(
-                parameterset=paramset).all().values_list('name','datetime_value','string_value','numerical_value')
+                parameterset=paramset).all().values_list('name', 'datetime_value', 'string_value', 'numerical_value')
             for sublist in param_glob:
                 PN_id = ParameterName.objects.get(id=sublist[0]).id
                 #string2append = (full_name+'=')
@@ -137,8 +137,25 @@ class Project(models.Model):
         acls = ObjectACL.objects.filter(pluginId='django_user',
                                         content_type=self.get_ct(),
                                         object_id=self.id,
-                                        canRead=True)
+                                        canRead=True,
+                                        isOwner=False)
         return [acl.get_related_object() for acl in acls]
+
+    def get_users_and_perms(self):
+        acls = ObjectACL.objects.filter(pluginId='django_user',
+                                        content_type=self.get_ct(),
+                                        object_id=self.id,
+                                        canRead=True,
+                                        isOwner=False)
+        ret_list = []
+        for acl in acls:
+            user = acl.get_related_object()
+            sensitive_flg = acl.canSensitive
+            download_flg = acl.canDownload
+            ret_list.append([user,
+                             sensitive_flg,
+                             download_flg])
+        return ret_list
 
     def get_admins(self):
         acls = ObjectACL.objects.filter(pluginId='django_group',
