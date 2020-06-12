@@ -111,6 +111,7 @@ class Level0TestCase(TestCase):
 
     def testCanGetInfoAsXML(self):
         client = Client()
+        client.login(username='testuser', password='pwd')
         kwargs = {'datafile_id': self.datafile.id,
                   'format': 'xml'}
         response = client.get(
@@ -131,6 +132,8 @@ class Level0TestCase(TestCase):
 
     def testCanGetInfoAsJSON(self):
         client = Client()
+        client.login(username='testuser', password='pwd')
+
         kwargs = {'datafile_id': self.datafile.id,
                   'format': 'json'}
         response = client.get(
@@ -147,6 +150,8 @@ class Level0TestCase(TestCase):
 
     def testCanGetOriginalImage(self):
         client = Client()
+        client.login(username='testuser', password='pwd')
+
         kwargs = {'datafile_id': self.datafile.id,
                   'region': 'full',
                   'size': 'full',
@@ -174,6 +179,8 @@ class Level1TestCase(TestCase):
 
     def testCanGetJpegFormat(self):
         client = Client()
+        client.login(username='testuser', password='pwd')
+
         kwargs = {'datafile_id': self.datafile.id,
                   'region': 'full',
                   'size': 'full',
@@ -193,6 +200,8 @@ class Level1TestCase(TestCase):
 
     def testHandleRegions(self):
         client = Client()
+        client.login(username='testuser', password='pwd')
+
         # Inside box
         kwargs = {'datafile_id': self.datafile.id,
                   'region': '15,10,25,20',
@@ -226,6 +235,7 @@ class Level1TestCase(TestCase):
 
     def testHandleSizing(self):
         client = Client()
+        client.login(username='testuser', password='pwd')
 
         def get_with_size(sizearg):
             kwargs = {'datafile_id': self.datafile.id,
@@ -256,6 +266,7 @@ class Level1TestCase(TestCase):
 
     def testHandleRotation(self):
         client = Client()
+        client.login(username='testuser', password='pwd')
 
         def get_with_rotation(rotation):
             kwargs = {'datafile_id': self.datafile.id,
@@ -291,6 +302,8 @@ class Level2TestCase(TestCase):
 
     def testCanGetRequiredFormats(self):
         client = Client()
+        client.login(username='testuser', password='pwd')
+
         # not testing jp2, as this does not work on all platforms
         for ext, format in [('jpg', 'JPEG'), ('png', 'PNG')]:
             kwargs = {'datafile_id': self.datafile.id,
@@ -312,6 +325,7 @@ class Level2TestCase(TestCase):
 
     def testHandleSizing(self):
         client = Client()
+        client.login(username='testuser', password='pwd')
 
         def get_with_size(sizearg):
             kwargs = {'datafile_id': self.datafile.id,
@@ -360,6 +374,8 @@ class ExtraTestCases(TestCase):
 
     def testInfoHasEtags(self):
         client = Client()
+        client.login(username='testuser', password='pwd')
+
         for format_ in ('json', 'xml'):
             kwargs = {'datafile_id': self.datafile.id,
                       'format': format_}
@@ -372,6 +388,8 @@ class ExtraTestCases(TestCase):
 
     def testImageHasEtags(self):
         client = Client()
+        client.login(username='testuser', password='pwd')
+
         kwargs = {'datafile_id': self.datafile.id,
                   'region': 'full',
                   'size': 'full',
@@ -386,6 +404,8 @@ class ExtraTestCases(TestCase):
 
     def testImageCacheControl(self):
         client = Client()
+        client.login(username='testuser', password='pwd')
+
         kwargs = {'datafile_id': self.datafile.id,
                   'region': 'full',
                   'size': 'full',
