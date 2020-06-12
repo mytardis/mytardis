@@ -270,6 +270,8 @@ def retrieve_datafile_list(
     immutable = Dataset.objects.get(id=dataset_id).immutable
 
     query_string = '/ajax/datafile_list/%s/?page={page}' % dataset_id
+    if len(params):
+        query_string += '&' + urlencode(params)
 
     c = {
         'datafiles': dataset,
