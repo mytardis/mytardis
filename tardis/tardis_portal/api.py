@@ -951,6 +951,10 @@ class ProjectResource(MyTardisModelResource):
         bundle.data['admin_groups'] = [acl.id for acl in admins]
         members = project.get_groups()
         bundle.data['member_groups'] = [acl.id for acl in members]
+        members = project.get_users()
+        bundle.data['members'] = [acl.id for acl in members]
+        admins = project.get_owners()
+        bundle.data['admins'] = [acl.id for acl in admins]
         return bundle
 
     def hydrate_m2m(self, bundle):
@@ -1142,7 +1146,9 @@ class ExperimentResource(MyTardisModelResource):
                 'allows_distribution': lic.allows_distribution,
             }
         owners = exp.get_owners()
-        bundle.data['owner_ids'] = [o.id for o in owners]
+        bundle.data['admins'] = [o.id for o in owners]
+        members = exp.get_users()
+        bundle.data['members'] = [acl.id for acl in members]
         admins = exp.get_admins()
         bundle.data['admin_groups'] = [grp.id for grp in admins]
         members = exp.get_groups()
@@ -1352,6 +1358,10 @@ class DatasetResource(MyTardisModelResource):
         bundle.data['admin_groups'] = [acl.id for acl in admins]
         members = dataset.get_groups()
         bundle.data['member_groups'] = [acl.id for acl in members]
+        members = dataset.get_users()
+        bundle.data['members'] = [acl.id for acl in members]
+        admins = dataset.get_owners()
+        bundle.data['admins'] = [acl.id for acl in admins]
         return bundle
 
     def prepend_urls(self):
@@ -1651,6 +1661,10 @@ class DataFileResource(MyTardisModelResource):
         bundle.data['admin_groups'] = [acl.id for acl in admins]
         members = datafile.get_groups()
         bundle.data['member_groups'] = [acl.id for acl in members]
+        members = datafile.get_users()
+        bundle.data['members'] = [acl.id for acl in members]
+        admins = datafile.get_owners()
+        bundle.data['admins'] = [acl.id for acl in admins]
         return bundle
 
     def download_file(self, request, **kwargs):
