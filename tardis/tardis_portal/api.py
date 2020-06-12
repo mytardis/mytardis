@@ -1204,7 +1204,7 @@ class ExperimentResource(MyTardisModelResource):
             else:
                 admins = project.get_owners()
             for admin in admins:
-                user = User.objects.get(username=adm, in)
+                user = User.objects.get(username=admin)
                 user_id = user.id
                 acl = ObjectACL(content_type=experiment.get_ct(),
                                 object_id=experiment.id,
@@ -1450,7 +1450,7 @@ class DatasetResource(MyTardisModelResource):
             else:
                 admins = experiment.get_owners()
             for admin in admins:
-                user = User.objects.get(username=adm, in)
+                user = User.objects.get(username=admin)
                 user_id = user.id
                 acl = ObjectACL(content_type=dataset.get_ct(),
                                 object_id=dataset.id,
@@ -1831,7 +1831,6 @@ class DataFileResource(MyTardisModelResource):
                 sensitive_flg = grp[1]
                 download_flg = grp[2]
                 user = User.objects.get(username=grp_name)
-                user_id = user.id
                 acl = ObjectACL(content_type=datafile.get_ct(),
                                 object_id=datafile.id,
                                 pluginId=django_user,
