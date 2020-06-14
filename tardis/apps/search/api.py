@@ -167,48 +167,19 @@ class SearchAppResource(Resource):
             return [SearchObject(id=1, hits=result_dict)]
         groups = user.groups.all()
         index_list = ['project', 'experiment', 'dataset', 'datafile']
+        match_list = ['name','title','description','filename']
         ms = MultiSearch(index=index_list)
+        for idx, obj in enumerate(index_list):
+            query_obj = Q({"match": {match_list[idx]:query_text}})
+            query_obj_oacl = Q("term", objectacls__entityId=user.id) #| \Q("term", public_access=100)
+            for group in groups:
+                query_obj_oacl = query_obj_oacl | \
+                                     Q("term", objectacls__entityId=group.id)
+            query_obj = query_obj & query_obj_oacl
+            ms = ms.add(Search(index=obj)
+                        .extra(size=MAX_SEARCH_RESULTS, min_score=MIN_CUTOFF_SCORE)
+                        .query(query_obj))
 
-        query_project = Q({"match": {"name":query_text}})
-        query_project_oacl = Q("term", objectacls__entityId=user.id) #| \Q("term", public_access=100)
-        for group in groups:
-            query_project_oacl = query_project_oacl | \
-                                 Q("term", objectacls__entityId=group.id)
-        query_project = query_project & query_project_oacl
-        ms = ms.add(Search(index='project')
-                    .extra(size=MAX_SEARCH_RESULTS, min_score=MIN_CUTOFF_SCORE)
-                    .query(query_project))
-
-        query_exp =Q({"match": {"title":query_text}})
-        query_exp_oacl = Q("term", objectacls__entityId=user.id) #| \Q("term", public_access=100)
-        for group in groups:
-            query_exp_oacl = query_exp_oacl | \
-                                 Q("term", objectacls__entityId=group.id)
-        query_exp = query_exp & query_exp_oacl
-        ms = ms.add(Search(index='experiment')
-                    .extra(size=MAX_SEARCH_RESULTS, min_score=MIN_CUTOFF_SCORE)
-                    .query(query_exp))
-
-        query_dataset = Q({"match": {"description":query_text}})
-        query_dataset = query_dataset | Q("match", tags=query_text)
-        query_dataset_oacl = Q("term", objectacls__entityId=user.id) #| \Q("term", **{'experiment.public_access': 100})
-        for group in groups:
-            query_dataset_oacl = query_dataset_oacl | \
-                                 Q("term", objectacls__entityId=group.id)
-        query_dataset = query_dataset & query_dataset_oacl
-        ms = ms.add(Search(index='dataset')
-                    .extra(size=MAX_SEARCH_RESULTS, min_score=MIN_CUTOFF_SCORE)
-                    .query(query_dataset))
-
-        query_datafile = Q({"match": {"filename":query_text}})
-        query_datafile_oacl = Q("term", objectacls__entityId=user.id)
-        for group in groups:
-            query_datafile_oacl = query_datafile_oacl | \
-                                  Q("term", objectacls__entityId=group.id)
-        query_datafile = query_datafile & query_datafile_oacl
-        ms = ms.add(Search(index='datafile')
-                    .extra(size=MAX_SEARCH_RESULTS, min_score=MIN_CUTOFF_SCORE)
-                    .query(query_datafile))
 
         results = ms.execute()
         result_dict = {k: [] for k in ["projects", "experiments", "datasets", "datafiles"]}
