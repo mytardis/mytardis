@@ -169,7 +169,7 @@ class SearchAppResource(Resource):
         index_list = ['project', 'experiment', 'dataset', 'datafile']
         ms = MultiSearch(index=index_list)
 
-        query_project = Q("match", name=query_text)
+        query_project = Q({"match": {"name":query_text}})
         query_project_oacl = Q("term", objectacls__entityId=user.id) #| \Q("term", public_access=100)
         for group in groups:
             query_project_oacl = query_project_oacl | \
@@ -179,7 +179,7 @@ class SearchAppResource(Resource):
                     .extra(size=MAX_SEARCH_RESULTS, min_score=MIN_CUTOFF_SCORE)
                     .query(query_project))
 
-        query_exp = Q("match", title=query_text)
+        query_exp =Q({"match": {"title":query_text}})
         query_exp_oacl = Q("term", objectacls__entityId=user.id) #| \Q("term", public_access=100)
         for group in groups:
             query_exp_oacl = query_exp_oacl | \
@@ -189,7 +189,7 @@ class SearchAppResource(Resource):
                     .extra(size=MAX_SEARCH_RESULTS, min_score=MIN_CUTOFF_SCORE)
                     .query(query_exp))
 
-        query_dataset = Q("match", description=query_text)
+        query_dataset = Q({"match": {"description":query_text}})
         query_dataset = query_dataset | Q("match", tags=query_text)
         query_dataset_oacl = Q("term", objectacls__entityId=user.id) #| \Q("term", **{'experiment.public_access': 100})
         for group in groups:
@@ -200,7 +200,7 @@ class SearchAppResource(Resource):
                     .extra(size=MAX_SEARCH_RESULTS, min_score=MIN_CUTOFF_SCORE)
                     .query(query_dataset))
 
-        query_datafile = Q("match", filename=query_text)
+        query_datafile = Q({"match": {"filename":query_text}})
         query_datafile_oacl = Q("term", objectacls__entityId=user.id)
         for group in groups:
             query_datafile_oacl = query_datafile_oacl | \
