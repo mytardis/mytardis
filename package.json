@@ -7,7 +7,7 @@
     "url": "git+https://github.com/mytardis/mytardis.git"
   },
   "dependencies": {
-    "@babel/core": "^7.6.3",
+    "@babel/core": "^7.10.2",
     "@babel/plugin-proposal-class-properties": "^7.10.1",
     "@babel/preset-env": "^7.10.2",
     "@babel/preset-react": "^7.10.1",
@@ -35,8 +35,8 @@
     "jquery-ui": "^1.12.1",
     "jquery-ui-dist": "^1.12.1",
     "js-cookie": "^2.2.1",
-    "less": "^3.11.2",
-    "less-loader": "^6.1.0",
+    "less": "^3.11.3",
+    "less-loader": "^6.1.1",
     "mini-css-extract-plugin": "^0.9.0",
     "minimatch": "^3.0.2",
     "moment": "^2.26.0",
@@ -69,7 +69,7 @@
     "eslint-config-airbnb": "^17.1.1",
     "eslint-config-angular": "^0.5.0",
     "eslint-plugin-angular": "^4.0.1",
-    "eslint-plugin-import": "^2.18.2",
+    "eslint-plugin-import": "^2.21.2",
     "eslint-plugin-jsx-a11y": "^6.2.3",
     "eslint-plugin-react": "^7.20.0",
     "grunt": "^1.0.4",
