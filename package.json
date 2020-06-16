@@ -52,7 +52,7 @@
     "regenerator-runtime": "^0.13.3",
     "sprintf-js": "^1.1.2",
     "style-loader": "^1.2.1",
-    "terser-webpack-plugin": "^2.3.6",
+    "terser-webpack-plugin": "^3.0.4",
     "underscore": "^1.10.2",
     "underscore.string": "^3.3.5",
     "url-loader": "^4.1.0",
