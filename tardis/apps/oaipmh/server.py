@@ -152,6 +152,7 @@ class ProxyingServer(IOAI):
                 return list_
         return frozenset(reduce(appendIdents, self.providers, []))
 
+    # pylint: disable=W0222
     def listMetadataFormats(self, **kwargs):
         """
         List metadata formats from all providers in a single set.

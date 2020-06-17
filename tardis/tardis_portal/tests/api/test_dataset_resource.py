@@ -20,6 +20,9 @@ from . import MyTardisResourceTestCase
 class DatasetResourceTest(MyTardisResourceTestCase):
     def setUp(self):
         super().setUp()
+        self.exp = Experiment(
+            title='test exp', institution_name='monash', created_by=self.user)
+        self.exp.save()
         self.extra_instrument = Instrument()
         self.extra_instrument = Instrument(name="Extra Instrument",
                                            facility=self.testfacility)
@@ -113,7 +116,9 @@ class DatasetResourceTest(MyTardisResourceTestCase):
         self.assertEqual(returned_data['meta']['total_count'], 0)
 
     def test_get_root_dir_nodes(self):
-        dataset = Dataset.objects.create(description='test dataset')
+        dataset = Dataset.objects.create(description='test dataset', )
+        dataset.experiments.add(self.testexp)
+        dataset.save()
         uri = '/api/v1/dataset/%d/root-dir-nodes/' % dataset.id
         response = self.api_client.get(
             uri, authentication=self.get_credentials())
@@ -155,6 +160,8 @@ class DatasetResourceTest(MyTardisResourceTestCase):
 
     def test_get_child_dir_nodes(self):
         dataset = Dataset.objects.create(description='test dataset')
+        dataset.experiments.add(self.testexp)
+        dataset.save()
         uri = '/api/v1/dataset/%d/child-dir-nodes/?dir_path=subdir' % dataset.id
         response = self.api_client.get(
             uri, authentication=self.get_credentials())
@@ -275,6 +282,8 @@ class DatasetResourceTest(MyTardisResourceTestCase):
 
     def test_get_child_dir_nodes_no_files_in_root_dir(self):
         dataset = Dataset.objects.create(description='test dataset')
+        dataset.experiments.add(self.testexp)
+        dataset.save()
         encoded_subdir1 = quote("subdir#1")
         uri = '/api/v1/dataset/%d/child-dir-nodes/?dir_path=%s' % (dataset.id, encoded_subdir1)
 
