@@ -18,6 +18,14 @@ export const textFilterData = {
     },
 }
 
+export const emptyTextFilterData = Object.assign({},textFilterData, {
+    value: ""
+});
+
 export const Default = () => (
     <TextFilter {...textFilterData} />
+)
+
+export const Empty = () => (
+    <TextFilter {...emptyTextFilterData} />
 )
