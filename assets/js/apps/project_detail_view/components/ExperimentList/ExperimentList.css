@@ -13,3 +13,12 @@ tr:hover {background-color: rgb(235, 235, 235);}
     font-weight: 600;
     display: block;
 }
+
+.table__header {
+    font-weight: 600;
+    margin-bottom: 0.2rem;
+}
+
+.table__container {
+    margin-top: 3.5rem;
+}

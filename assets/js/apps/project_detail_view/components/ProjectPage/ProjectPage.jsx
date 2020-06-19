@@ -65,7 +65,6 @@ export default function ProjectPage(props) {
       <h2 className="project__label">Project</h2>
       <h1 className="project__name">{projectName}</h1>
       <div className="project__description">{projectDescription}</div>
-      <h3 className="table__header">Experiments in this project</h3>
       <ExperimentList projectId={props.projectId} />
     </div>
   );

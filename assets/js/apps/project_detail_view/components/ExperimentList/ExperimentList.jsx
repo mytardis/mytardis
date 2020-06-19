@@ -43,22 +43,25 @@ export default function ExperimentList(props) {
     )
   }
   return (
-    <table className="experiment__table">
-      <tbody>
-        {experiments.map((experiment, index) => {
-          console.log(experiment)
-          let experimentLink = `/experiment/view/${experiment.id}`;
-          return (
-            <tr key={index}>
-              <td>
-                <a className="experiment__link" href={experimentLink}>
-                  {experiment.title}
-                </a>
-              </td>
-            </tr>
-          )
-        })}
-      </tbody>
-    </table>
+    <div className="table__container">
+      <h3 className="table__header">Experiments in this project</h3>
+      <table className="experiment__table">
+        <tbody>
+          {experiments.map((experiment, index) => {
+            console.log(experiment)
+            let experimentLink = `/experiment/view/${experiment.id}`;
+            return (
+              <tr key={index}>
+                <td>
+                  <a className="experiment__link" href={experimentLink}>
+                    {experiment.title}
+                  </a>
+                </td>
+              </tr>
+            )
+          })}
+        </tbody>
+      </table>
+    </div>
   );
 };

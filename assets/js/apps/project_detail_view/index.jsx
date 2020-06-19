@@ -14,7 +14,7 @@ const projectId = href.substring(href.lastIndexOf("/") + 1);
 
 ReactDOM.render(
   <div>
-  <ProjectPage projectId={projectId} />,
+  <ProjectPage projectId={projectId} />
   </div>,
   mountPoint
 );
