@@ -133,8 +133,25 @@ class Project(models.Model):
         acls = ObjectACL.objects.filter(pluginId='django_user',
                                         content_type=self.get_ct(),
                                         object_id=self.id,
-                                        canRead=True)
+                                        canRead=True,
+                                        isOwner=False)
         return [acl.get_related_object() for acl in acls]
+
+    def get_users_and_perms(self):
+        acls = ObjectACL.objects.filter(pluginId='django_user',
+                                        content_type=self.get_ct(),
+                                        object_id=self.id,
+                                        canRead=True,
+                                        isOwner=False)
+        ret_list = []
+        for acl in acls:
+            user = acl.get_related_object()
+            sensitive_flg = acl.canSensitive
+            download_flg = acl.canDownload
+            ret_list.append([user,
+                             sensitive_flg,
+                             download_flg])
+        return ret_list
 
     def get_admins(self):
         acls = ObjectACL.objects.filter(pluginId='django_group',
