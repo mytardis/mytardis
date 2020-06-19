@@ -168,62 +168,93 @@ class SearchAppResource(Resource):
         groups = user.groups.all()
         index_list = ['project', 'experiment', 'dataset', 'datafile']
         match_list = ['name','title','description','filename']
+
         ms = MultiSearch(index=index_list)
+        ms_sens = MultiSearch(index=index_list)
+
         for idx, obj in enumerate(index_list):
+
+            # Search on title/keywords + on non-sensitive metadata
             query_obj = Q({"match": {match_list[idx]:query_text}})
+            query_obj_meta = Q({"nested" : { "path":"parameters",
+                "query": Q({"bool": {"must":[
+                Q({"match": {"parameters.value":query_text}}), Q({"match": {"parameters.sensitive":"False"}})]}})}})
+            query_obj = query_obj | query_obj_meta
+            # Search on sensitive metadata only
+            query_obj_sens = Q({"nested" : { "path":"parameters",
+                "query": Q({"bool": {"must":[
+                Q({"match": {"parameters.value":query_text}}), Q({"match": {"parameters.sensitive":"True"}})]}})}})
+            # add user/group criteria to searchers
             query_obj_oacl = Q("term", objectacls__entityId=user.id) #| \Q("term", public_access=100)
             for group in groups:
                 query_obj_oacl = query_obj_oacl | \
                                      Q("term", objectacls__entityId=group.id)
             query_obj = query_obj & query_obj_oacl
+            query_obj_sens = query_obj_sens & query_obj_oacl
+
             ms = ms.add(Search(index=obj)
                         .extra(size=MAX_SEARCH_RESULTS, min_score=MIN_CUTOFF_SCORE)
                         .query(query_obj))
 
+            ms_sens = ms_sens.add(Search(index=obj)
+                             .extra(size=MAX_SEARCH_RESULTS, min_score=MIN_CUTOFF_SCORE)
+                             .query(query_obj_sens))
 
         results = ms.execute()
+        results_sens = ms_sens.execute()
+
+
         result_dict = {k: [] for k in ["projects", "experiments", "datasets", "datafiles"]}
-        for item in results:
-            for hit in item.hits.hits:
 
-                sensitive_bool = False
-                size = 0
-                if not authz.has_access(request, hit["_source"]["id"], hit["_index"]):
-                    continue
+        def clean_response(request, results, result_dict, sensitive=False):
+            for item in results:
+                for hit in item.hits.hits:
 
-                if authz.has_sensitive_access(request, hit["_source"]["id"], hit["_index"]):
-                    sensitive_bool = True
+                    if sensitive:
+                        if not authz.has_sensitive_access(request, hit["_source"]["id"], hit["_index"]):
+                            continue
 
-                size = authz.get_nested_size(request, hit["_source"]["id"], hit["_index"])
+                    sensitive_bool = False
+                    size = 0
+                    if not authz.has_access(request, hit["_source"]["id"], hit["_index"]):
+                        continue
 
-                safe_hit = hit.copy()
-                safe_hit["_source"].pop("objectacls")
-                safe_hit["_source"]["size"] = filesizeformat(size)
+                    if authz.has_sensitive_access(request, hit["_source"]["id"], hit["_index"]):
+                        sensitive_bool = True
 
-                if hit["_index"] != 'datafile':
-                    safe_hit["_source"]["counts"] = authz.get_nested_count(request,
-                                                        hit["_source"]["id"], hit["_index"])
+                    size = authz.get_nested_size(request, hit["_source"]["id"], hit["_index"])
 
-                    safe_hit["_source"]["userDownloadRights"] = authz.get_nested_has_download(request,
-                                                        hit["_source"]["id"], hit["_index"])
+                    safe_hit = hit.copy()
+                    safe_hit["_source"].pop("objectacls")
+                    safe_hit["_source"]["size"] = filesizeformat(size)
 
-                else:
-                    if authz.has_download_access(request, hit["_source"]["id"],
-                                                 hit["_index"]):
-                        safe_hit["_source"]["userDownloadRights"] = "full"
+                    if hit["_index"] != 'datafile':
+                        safe_hit["_source"]["counts"] = authz.get_nested_count(request,
+                                                            hit["_source"]["id"], hit["_index"])
+
+                        safe_hit["_source"]["userDownloadRights"] = authz.get_nested_has_download(request,
+                                                            hit["_source"]["id"], hit["_index"])
+
                     else:
-                        safe_hit["_source"]["userDownloadRights"] = "none"
+                        if authz.has_download_access(request, hit["_source"]["id"],
+                                                     hit["_index"]):
+                            safe_hit["_source"]["userDownloadRights"] = "full"
+                        else:
+                            safe_hit["_source"]["userDownloadRights"] = "none"
 
-                if not sensitive_bool:
-                    for idxx, schema in enumerate(hit["_source"]["schemas"]):
-                        for idx, param in enumerate(schema["parameters"]):
-                            is_sensitive = authz.get_obj_parameter(param["pn_id"],
+                    if not sensitive_bool:
+                        for idxx, parameter in enumerate(hit["_source"]["parameters"]):
+                            is_sensitive = authz.get_obj_parameter(parameter["pn_id"],
                                               hit["_source"]["id"], hit["_index"])
 
                             if is_sensitive.sensitive_metadata:
-                                safe_hit["_source"]["schemas"][idxx]["parameters"].pop(idx)
+                                safe_hit["_source"]["parameters"].pop(idxx)
 
-                result_dict[hit["_index"]+"s"].append(safe_hit)
+                    result_dict[hit["_index"]+"s"].append(safe_hit)
+
+
+        clean_response(request, results, result_dict)
+        clean_response(request, results_sens, result_dict, sensitive=True)
 
         return [SearchObject(id=1, hits=result_dict)]
 
