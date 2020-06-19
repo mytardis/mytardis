@@ -57,10 +57,15 @@ class ProjectDocument(Document):
         'entityId': fields.StringField()
     }
     )
-    schemas = fields.ObjectField(attr='getSchemasforIndexing', dynamic=True)
+    parameters = fields.NestedField(attr='getParametersforIndexing', properties={
+        'pn_id': fields.StringField(),
+        'value': fields.StringField(),
+        'data_type': fields.StringField(),
+        'sensitive': fields.StringField()
+    })
 
-    def prepare_schemas(self, instance):
-        return list(instance.getSchemasforIndexing())
+    def prepare_parameters(self, instance):
+        return list(instance.getParametersforIndexing())
 
     class Django:
         model = Project
@@ -107,10 +112,15 @@ class ExperimentDocument(Document):
         'entityId': fields.StringField()
     }
     )
-    schemas = fields.ObjectField(attr='getSchemasforIndexing', dynamic=True)
+    parameters = fields.NestedField(attr='getParametersforIndexing', properties={
+        'pn_id': fields.StringField(),
+        'value': fields.StringField(),
+        'data_type': fields.StringField(),
+        'sensitive': fields.StringField()
+    })
 
-    def prepare_schemas(self, instance):
-        return list(instance.getSchemasforIndexing())
+    def prepare_parameters(self, instance):
+        return list(instance.getParametersforIndexing())
 
     class Django:
         model = Experiment
@@ -160,10 +170,15 @@ class DatasetDocument(Document):
     modified_time = fields.DateField()
     tags = fields.StringField(attr='tags_for_indexing')
 
-    schemas = fields.ObjectField(attr='getSchemasforIndexing', dynamic=True)
+    parameters = fields.NestedField(attr='getParametersforIndexing', properties={
+        'pn_id': fields.StringField(),
+        'value': fields.StringField(),
+        'data_type': fields.StringField(),
+        'sensitive': fields.StringField()
+    })
 
-    def prepare_schemas(self, instance):
-        return list(instance.getSchemasforIndexing())
+    def prepare_parameters(self, instance):
+        return list(instance.getParametersforIndexing())
 
     class Django:
         model = Dataset
@@ -208,10 +223,15 @@ class DataFileDocument(Document):
         )
 
 
-    schemas = fields.ObjectField(attr='getSchemasforIndexing', dynamic=True)
+    parameters = fields.NestedField(attr='getParametersforIndexing', properties={
+        'pn_id': fields.StringField(),
+        'value': fields.StringField(),
+        'data_type': fields.StringField(),
+        'sensitive': fields.StringField()
+    })
 
-    def prepare_schemas(self, instance):
-        return list(instance.getSchemasforIndexing())
+    def prepare_parameters(self, instance):
+        return list(instance.getParametersforIndexing())
 
     class Django:
         model = DataFile
