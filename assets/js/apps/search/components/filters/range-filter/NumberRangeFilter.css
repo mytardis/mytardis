@@ -1,0 +1,12 @@
+.num-range-filter__rangefields {
+    display: flex;
+    justify-content: space-between;
+}
+
+.num-range-filter__field {
+    flex: 1 0 auto;
+}
+
+.num-range-filter__field:first-of-type {
+    margin-right:1em;
+}
