@@ -4,7 +4,7 @@
 }
 
 .date-range-filter__field {
-    flex: 1 0 auto;
+    flex: 1 0 150px;
 }
 
 .date-range-filter__field:first-of-type {

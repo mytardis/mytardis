@@ -30,10 +30,14 @@ const toSubmitValue = localValue => {
     }
     const submitValue = {};
     if (!isNone(localValue.start)) {
-        submitValue.start = localValue.start.toISOString();
+        if (typeof localValue.start == "object"){
+            submitValue.start = localValue.start.toISOString();
+        }
     }
     if (!isNone(localValue.end)) {
-        submitValue.end = localValue.end.toISOString();
+        if (typeof localValue.end == "object"){
+            submitValue.end = localValue.end.toISOString();
+        }
     }
     return submitValue;
 }
@@ -69,18 +73,32 @@ const DateRangeFilter = ({value,options,onValueChange}) => {
     }
     const [localValue, setLocalValue] = useState(toLocalValue(value));
  
-    const handleValueChange = (type,e) => {
+    const handleValueChange = (type,valueFromForm) => {
         // Copy the value object, then assign new value into either "start" or "end".
-        const valueFromForm = e;
         const newValue = Object.assign({},localValue);
         newValue[type] = valueFromForm;
+        // React Datetime returns a string if the user enters invalid information.
+        if (typeof newValue.min == "object" && typeof newValue.max == "object") {
+            if (type === "start"){
+                if (!newValue["end"] || valueFromForm.isAfter(newValue['end'])) {
+                    // If we are setting start date and there is no end date OR end date is earlier
+                    //than start date, we auto-fill end date to be same as start date
+                    newValue["end"] = valueFromForm;
+                }
+            } else if (type === "end") {
+                if (!newValue["start"] || valueFromForm.isBefore(newValue['start'])) {
+                    // If setting end date and there's no start date OR if new end date is before the start date,
+                    // we auto-fill start date to be same as end date.
+                    newValue["start"] = valueFromForm;
+                }
+            }
+        }
         setLocalValue(newValue);
     };
 
     // We should disable the filter button if there's nothing in the filter box.
     // But we should be able to clear a field if there's a value on the filter.
     const canChangeValue =  !isValueEmpty(localValue) || !isValueEmpty(value);
-    console.log(localValue, value, canChangeValue);
 
     const isValidEndDate = (current) => {
         if (!localValue.start) {
@@ -120,7 +138,7 @@ const DateRangeFilter = ({value,options,onValueChange}) => {
                             closeOnSelect={true}
                             dateFormat="L"
                             timeFormat={false}
-                            isValidDate={isValidEndDate}
+                            // isValidDate={isValidEndDate}
                         />
                     </Form.Group>
                 </div>
@@ -139,8 +157,8 @@ const DateRangeFilter = ({value,options,onValueChange}) => {
 
 DateRangeFilter.propTypes = {
     value: PropTypes.shape({
-        start: PropTypes.Object,
-        end: PropTypes.Object
+        start: PropTypes.string,
+        end: PropTypes.string
     }),
     options: PropTypes.object,
     onValueChange: PropTypes.func.isRequired
