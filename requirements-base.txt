@@ -1,9 +1,9 @@
-Django==2.2.12 # pyup: >=2.2,<3
+Django==2.2.13 # pyup: >=2.2,<3
 Wand==0.6.1
-amqp==2.5.2
+amqp==2.6.0
 bleach==3.1.5
-boto3==1.13.15
-celery==4.4.2
+boto3==1.14.7
+celery==4.4.5
 django-extensions==2.2.9
 django-elasticsearch-dsl==7.1.1
 git+https://github.com/mytardis/django-form-utils.git@django-1.11-upgrade#egg=django-form-utils
@@ -16,12 +16,12 @@ django-webpack-loader==0.7.0
 django-widget-tweaks==1.4.8
 django-storages==1.9.1
 gunicorn==20.0.4
-gevent==20.5.0
+gevent==20.6.2
 html2text==2020.1.16
 html5lib==1.0.1
 isodate==0.6.0
 pyjwt==1.7.1
-kombu==4.6.8
+kombu==4.6.10
 lxml==4.5.1
 paramiko==2.7.1
 pillow==7.1.2
@@ -31,6 +31,6 @@ python-dateutil==2.8.1
 # python-magic
 git+https://github.com/mytardis/python-magic.git#egg=python-magic
 pytz==2020.1
-requests==2.23.0
+requests==2.24.0
 uritemplate==3.0.1
 django-graphql-jwt==0.3.1
