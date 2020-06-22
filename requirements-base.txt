@@ -2,7 +2,7 @@ Django==2.2.13 # pyup: >=2.2,<3
 Wand==0.6.1
 amqp==2.6.0
 bleach==3.1.5
-boto3==1.14.5
+boto3==1.14.7
 celery==4.4.5
 django-extensions==2.2.9
 django-elasticsearch-dsl==7.1.1
@@ -31,6 +31,6 @@ python-dateutil==2.8.1
 # python-magic
 git+https://github.com/mytardis/python-magic.git#egg=python-magic
 pytz==2020.1
-requests==2.23.0
+requests==2.24.0
 uritemplate==3.0.1
 django-graphql-jwt==0.3.1
