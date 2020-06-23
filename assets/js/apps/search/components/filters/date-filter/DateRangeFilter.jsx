@@ -73,24 +73,22 @@ const DateRangeFilter = ({value,options,onValueChange}) => {
     }
     const [localValue, setLocalValue] = useState(toLocalValue(value));
  
-    const handleValueChange = (type,valueFromForm) => {
+    const handleValueChange = (type, valueFromForm) => {
         // Copy the value object, then assign new value into either "start" or "end".
-        const newValue = Object.assign({},localValue);
+        const newValue = Object.assign({}, localValue);
         newValue[type] = valueFromForm;
         // React Datetime returns a string if the user enters invalid information.
-        if (typeof newValue.min == "object" && typeof newValue.max == "object") {
-            if (type === "start"){
-                if (!newValue["end"] || valueFromForm.isAfter(newValue['end'])) {
+        if (type === "start" && typeof newValue.start == "object") {
+            if (!newValue.end || newValue.start.isAfter(newValue.end)) {
                     // If we are setting start date and there is no end date OR end date is earlier
                     //than start date, we auto-fill end date to be same as start date
-                    newValue["end"] = valueFromForm;
+                newValue.end = newValue.start;
                 }
-            } else if (type === "end") {
-                if (!newValue["start"] || valueFromForm.isBefore(newValue['start'])) {
+        } else if (type === "end" && typeof newValue.end == "object") {
+            if (!newValue.start || newValue.end.isBefore(newValue.start)) {
                     // If setting end date and there's no start date OR if new end date is before the start date,
                     // we auto-fill start date to be same as end date.
-                    newValue["start"] = valueFromForm;
-                }
+                newValue.start = newValue.end;
             }
         }
         setLocalValue(newValue);
