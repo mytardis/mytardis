@@ -18,7 +18,7 @@ const isValueEmpty = (value) => {
     if (isNone(value)) {
         return true;
     }
-    const {start, end} = value;
+    const { start, end } = value;
     // A number range filter value is empty if both values are null values.
     return isNone(start) && isNone(end);
 };
@@ -30,12 +30,12 @@ const toSubmitValue = localValue => {
     }
     const submitValue = {};
     if (!isNone(localValue.start)) {
-        if (typeof localValue.start == "object"){
+        if (typeof localValue.start == "object") {
             submitValue.start = localValue.start.toISOString();
         }
     }
     if (!isNone(localValue.end)) {
-        if (typeof localValue.end == "object"){
+        if (typeof localValue.end == "object") {
             submitValue.end = localValue.end.toISOString();
         }
     }
@@ -61,18 +61,18 @@ const toLocalValue = submitValue => {
     return localValue;
 }
 
-const DateRangeFilter = ({value,options,onValueChange}) => {
+const DateRangeFilter = ({ value, options, onValueChange }) => {
     if (!options) {
         options = {};
-    } 
-    if (!options.name){
+    }
+    if (!options.name) {
         options.name = "Missing filter name";
     }
     if (!options.hint) {
         options.hint = "";
     }
     const [localValue, setLocalValue] = useState(toLocalValue(value));
- 
+
     const handleValueChange = (type, valueFromForm) => {
         // Copy the value object, then assign new value into either "start" or "end".
         const newValue = Object.assign({}, localValue);
@@ -80,14 +80,14 @@ const DateRangeFilter = ({value,options,onValueChange}) => {
         // React Datetime returns a string if the user enters invalid information.
         if (type === "start" && typeof newValue.start == "object") {
             if (!newValue.end || newValue.start.isAfter(newValue.end)) {
-                    // If we are setting start date and there is no end date OR end date is earlier
-                    //than start date, we auto-fill end date to be same as start date
+                // If we are setting start date and there is no end date OR end date is earlier
+                //than start date, we auto-fill end date to be same as start date
                 newValue.end = newValue.start;
-                }
+            }
         } else if (type === "end" && typeof newValue.end == "object") {
             if (!newValue.start || newValue.end.isBefore(newValue.start)) {
-                    // If setting end date and there's no start date OR if new end date is before the start date,
-                    // we auto-fill start date to be same as end date.
+                // If setting end date and there's no start date OR if new end date is before the start date,
+                // we auto-fill start date to be same as end date.
                 newValue.start = newValue.end;
             }
         }
@@ -96,7 +96,7 @@ const DateRangeFilter = ({value,options,onValueChange}) => {
 
     // We should disable the filter button if there's nothing in the filter box.
     // But we should be able to clear a field if there's a value on the filter.
-    const canChangeValue =  !isValueEmpty(localValue) || !isValueEmpty(value);
+    const canChangeValue = !isValueEmpty(localValue) || !isValueEmpty(value);
 
     const isValidEndDate = (current) => {
         if (!localValue.start) {
@@ -115,36 +115,36 @@ const DateRangeFilter = ({value,options,onValueChange}) => {
 
     return (
         <Form className="date-range-filter" onSubmit={handleSubmit}>
-                <div className="date-range-filter__rangefields">
-                    <Form.Group className="date-range-filter__field">
-                        <Form.Label>Start date</Form.Label>
-                        <Datetime 
-                            value={localValue.start}
-                            onChange={handleValueChange.bind(this,"start")} 
-                            inputProps={{placeholder: options.hintStart}}
-                            closeOnSelect={true}
-                            dateFormat="L"
-                            timeFormat={false}
-                        />
-                    </Form.Group>
-                    <Form.Group className="date-range-filter__field">
-                        <Form.Label>End date</Form.Label>
-                        <Datetime
-                            value={localValue.end} 
-                            onChange={handleValueChange.bind(this,"end")} 
-                            inputProps={{placeholder: options.hintEnd}} 
-                            closeOnSelect={true}
-                            dateFormat="L"
-                            timeFormat={false}
-                            // isValidDate={isValidEndDate}
-                        />
-                    </Form.Group>
-                </div>
-            <Button 
-                type="submit" 
-                className="date-range-filter__button" 
-                aria-label="Filter results" 
-                variant={canChangeValue ? "secondary" :"outline-secondary"} 
+            <div className="date-range-filter__rangefields">
+                <Form.Group className="date-range-filter__field">
+                    <Form.Label>Start date</Form.Label>
+                    <Datetime
+                        value={localValue.start}
+                        onChange={handleValueChange.bind(this, "start")}
+                        inputProps={{ placeholder: options.hintStart }}
+                        closeOnSelect={true}
+                        dateFormat="L"
+                        timeFormat={false}
+                    />
+                </Form.Group>
+                <Form.Group className="date-range-filter__field">
+                    <Form.Label>End date</Form.Label>
+                    <Datetime
+                        value={localValue.end}
+                        onChange={handleValueChange.bind(this, "end")}
+                        inputProps={{ placeholder: options.hintEnd }}
+                        closeOnSelect={true}
+                        dateFormat="L"
+                        timeFormat={false}
+                    // isValidDate={isValidEndDate}
+                    />
+                </Form.Group>
+            </div>
+            <Button
+                type="submit"
+                className="date-range-filter__button"
+                aria-label="Filter results"
+                variant={canChangeValue ? "secondary" : "outline-secondary"}
                 disabled={!canChangeValue}
             >
                 Filter
