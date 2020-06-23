@@ -90,6 +90,7 @@ class UserInterfaceTestCase(TestCase):
                         entityId=str(user.id),
                         content_object=experiment,
                         canRead=True,
+                        canDownload=True,
                         canWrite=True,
                         canDelete=True,
                         isOwner=True)
@@ -98,7 +99,15 @@ class UserInterfaceTestCase(TestCase):
         dataset.save()
         dataset.experiments.add(experiment)
         dataset.save()
-
+        acl = ObjectACL(pluginId=django_user,
+                        entityId=str(user.id),
+                        content_object=dataset,
+                        canRead=True,
+                        canDownload=True,
+                        canWrite=True,
+                        canDelete=True,
+                        isOwner=True)
+        acl.save()
         # Test everything works
         c = Client()
         c.login(username=user, password=pwd)
