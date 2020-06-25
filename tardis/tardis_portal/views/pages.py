@@ -341,6 +341,10 @@ class DatasetView(TemplateView):
 
         return render_response_index(request, template_name, c)
 
+
+class ProjectDetails(TemplateView):
+    template_name = 'tardis_portal/project_details.html'
+
 #=================================
 #Project View
 #=================================
