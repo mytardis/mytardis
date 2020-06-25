@@ -184,16 +184,18 @@ class AddUserPermissionsForm(forms.Form):
     read = forms.BooleanField(
         label='Read access', required=False, initial=True)
     read.widget.attrs['class'] = 'canRead'
-    download = forms.BooleanField(label='Download access', required=False)
-    download.widget.attrs['class'] = 'canDownload'
+    #download = forms.BooleanField(label='Download access', required=False)
+    #download.widget.attrs['class'] = 'canDownload'
     write = forms.BooleanField(label='Edit access', required=False)
     write.widget.attrs['class'] = 'canWrite'
     delete = forms.BooleanField(label='', required=False,
                                 widget=forms.HiddenInput)
     delete.widget.attrs['class'] = 'canDelete'
-    sensitive = forms.BooleanField(label='Sensitive', required=False,
-                                widget=forms.HiddenInput)
-    sensitive.widget.attrs['class'] = 'canSensitive'
+    #sensitive = forms.BooleanField(label='Sensitive', required=False,
+    #                            widget=forms.HiddenInput)
+    #sensitive.widget.attrs['class'] = 'canSensitive'
+
+
 
 class ManageGroupPermissionsForm(forms.Form):
 
@@ -273,6 +275,7 @@ class DatasetForm(forms.ModelForm):
             'embargo_until',
         ]
 
+
 class ProjectForm(forms.ModelForm):
 
     name = forms.CharField()
@@ -280,6 +283,7 @@ class ProjectForm(forms.ModelForm):
     class Meta:
         model = models.Project
         fields = [
+            'created_by',
             'name',
             'raid',
             'description',
@@ -289,7 +293,8 @@ class ProjectForm(forms.ModelForm):
             'embargo_until',
             'start_date',
             'end_date',
-            ]
+        ]
+
 
 class InstitutionForm(forms.ModelForm):
 
@@ -302,7 +307,8 @@ class InstitutionForm(forms.ModelForm):
             'ror',
             'manager_group',
             'url',
-            ]
+        ]
+
 
 class InstrumentForm(forms.ModelForm):
 
@@ -317,7 +323,8 @@ class InstrumentForm(forms.ModelForm):
             'modified_time',
             'facility',
             'description',
-            ]
+        ]
+
 
 class FacilityForm(forms.ModelForm):
 
@@ -332,7 +339,8 @@ class FacilityForm(forms.ModelForm):
             'url',
             'manager_group',
             'institution',
-            ]
+        ]
+
 
 class ExperimentAuthor(forms.ModelForm):
 
@@ -663,15 +671,15 @@ def create_parameterset_edit_form(parameterset, request, post=False, view_sensit
 def save_parameter_edit_form(parameterset, request):
 
     psm = ParameterSetManager(parameterset=parameterset)
-    #psm.delete_all_params()
+    # psm.delete_all_params()
 
     for key, value in sorted(request.POST.items()):
-            stripped_key = key.replace('_s47_', '/')
-            stripped_key = stripped_key.rpartition('__')[0]
-            if value:
-                psm.set_param(stripped_key, value)
-            else:
-                psm.get_param(stripped_key).delete()
+        stripped_key = key.replace('_s47_', '/')
+        stripped_key = stripped_key.rpartition('__')[0]
+        if value:
+            psm.set_param(stripped_key, value)
+        else:
+            psm.get_param(stripped_key).delete()
 
     psm = ParameterSetManager(parameterset=parameterset)
     if not psm.parameters.exists():
@@ -710,7 +718,8 @@ def create_parameter_add_form(schema, parentObject, request=None):
                                            initial=value,
                                            )
                 elif parameter_name.isLongString():
-                    fields[key] = forms.CharField(widget=forms.Textarea, label=parameter_name.full_name + units, max_length=255, required=False, initial=value)
+                    fields[key] = forms.CharField(
+                        widget=forms.Textarea, label=parameter_name.full_name + units, max_length=255, required=False, initial=value)
                 elif parameter_name.isDateTime():
                     fields[key] = forms.DateTimeField(label=parameter_name.full_name + units,
                                                       required=False,
@@ -748,10 +757,11 @@ def create_parameter_add_form(schema, parentObject, request=None):
 
         if dfp.isNumeric():
             fields[form_id] = \
-            forms.DecimalField(label=dfp.full_name + units,
-            required=False)
+                forms.DecimalField(label=dfp.full_name + units,
+                                   required=False)
         elif dfp.isLongString():
-            fields[form_id] = forms.CharField(label=dfp.full_name + units, widget=forms.Textarea, required=False, max_length=255)
+            fields[form_id] = forms.CharField(
+                label=dfp.full_name + units, widget=forms.Textarea, required=False, max_length=255)
         else:
             fields[form_id] = \
             forms.CharField(label=dfp.full_name + units,

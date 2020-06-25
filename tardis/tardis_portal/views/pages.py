@@ -24,8 +24,7 @@ from django.views.generic.base import TemplateView, View
 
 from ..auth import decorators as authz
 from ..auth.decorators import (
-    has_experiment_write,
-    has_dataset_write
+    has_write
 )
 from ..auth.localdb_auth import django_user
 from ..forms import ExperimentForm, DatasetForm, ProjectForm
@@ -275,12 +274,12 @@ class DatasetView(TemplateView):
              'datafiles': get_datafiles_page(),
              'parametersets': dataset.getParameterSets().exclude(
                      schema__hidden=True),
-             'has_download_permissions': authz.has_dataset_download_access(
-                 request, dataset_id),
-             'has_sensitive_permissions': authz.has_dataset_sensitive_access(
-                 request, dataset_id),
-             'has_write_permissions': authz.has_dataset_write(request,
-                                                              dataset_id),
+             'has_download_permissions': authz.has_download_access(
+                 request, dataset_id, "dataset"),
+             'has_sensitive_permissions': authz.has_sensitive_access(
+                 request, dataset_id, "dataset"),
+             'has_write_permissions': authz.has_write(request,
+                                                      dataset_id, "dataset"),
              'from_instrument': instrument_name,
              'from_facility': facility_name,
              'from_experiment': get_experiment_referer(request, dataset_id),
@@ -441,8 +440,6 @@ class ProjectView(TemplateView):
             return return_response_error(request)
 
         try:
-            #if not authz.has_dataset_access(request, dataset_id):
-            #    return return_response_error(request)
             project = Project.safe.get(request.user, project_id)
         except PermissionDenied:
             return return_response_error(request)
@@ -598,14 +595,14 @@ class ExperimentView(TemplateView):
 
         c['experiment'] = experiment
         c['has_write_permissions'] = \
-            authz.has_write_permissions(request, experiment.id)
+            authz.has_write(request, experiment.id, "experiment")
         c['has_download_permissions'] = \
-            authz.has_experiment_download_access(request, experiment.id)
+            authz.has_download_access(request, experiment.id, "experiment")
         if request.user.is_authenticated:
             c['is_owner'] = \
-                authz.has_experiment_ownership(request, experiment.id)
+                authz.has_ownership(request, experiment.id, "experiment")
             c['has_read_or_owner_ACL'] = \
-                authz.has_read_or_owner_ACL(request, experiment.id)
+                authz.has_read_or_owner_ACL(request, experiment.id, "experiment")
 
         # Enables UI elements for the push_to app
         c['push_to_enabled'] = 'tardis.apps.push_to' in settings.INSTALLED_APPS
@@ -861,8 +858,7 @@ def create_project(request):
 
 @login_required
 def edit_project(request, project_id):
-    #if not has_dataset_write(request, dataset_id):
-    #    return HttpResponseForbidden()
+
     project = Project.objects.get(id=project_id)
 
     # Process form or prepopulate it
@@ -933,7 +929,7 @@ def edit_experiment(request, experiment_id,
 
 @login_required
 def add_dataset(request, experiment_id):
-    if not has_experiment_write(request, experiment_id):
+    if not has_write(request, experiment_id, "experiment"):
         return HttpResponseForbidden()
 
     # Process form or prepopulate it
@@ -974,7 +970,7 @@ def add_dataset(request, experiment_id):
 
 @login_required
 def edit_dataset(request, dataset_id):
-    if not has_dataset_write(request, dataset_id):
+    if not has_write(request, dataset_id, "dataset"):
         return HttpResponseForbidden()
     dataset = Dataset.objects.get(id=dataset_id)
 

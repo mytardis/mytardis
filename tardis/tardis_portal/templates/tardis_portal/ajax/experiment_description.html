@@ -17,11 +17,11 @@
   {% endblock handle %}
 
   {% block institution %}
-  {% if experiment.institution_name %}
+  {% if experiment.project.institution %}
   <dl class="row">
     <dt class="col-sm-3">Institution</dt>
     <dd class="col-sm-9" property="dc:publisher">
-      {{experiment.institution_name}}
+      {{experiment.project.institution}}
     </dd>
   </dl>
   {% endif %}

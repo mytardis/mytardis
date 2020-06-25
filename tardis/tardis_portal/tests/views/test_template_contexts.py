@@ -32,15 +32,17 @@ class ViewTemplateContextsTest(TestCase):
         pwd = 'secret'  # nosec
         email = ''
         self.user = User.objects.create_user(user, email, pwd)
-        self.exp = Experiment(title='test exp1',
-                              institution_name='monash', created_by=self.user)
+        self.exp = Experiment(title='test exp1', created_by=self.user)
         self.exp.save()
         self.acl = ObjectACL(
             pluginId=django_user,
             entityId=str(self.user.id),
             content_object=self.exp,
-            canRead=True,
             isOwner=True,
+            canRead=True,
+            canDownload=True,
+            canWrite=True,
+            canDelete=True,
             aclOwnershipType=ObjectACL.OWNER_OWNED,
         )
         self.acl.save()
@@ -48,18 +50,37 @@ class ViewTemplateContextsTest(TestCase):
         self.dataset.save()
         self.dataset.experiments.add(self.exp)
         self.dataset.save()
-
+        self.acl = ObjectACL(
+            pluginId=django_user,
+            entityId=str(self.user.id),
+            content_object=self.dataset,
+            isOwner=True,
+            canRead=True,
+            canDownload=True,
+            canWrite=True,
+            canDelete=True,
+            aclOwnershipType=ObjectACL.OWNER_OWNED,
+        )
         self.datafile = DataFile(dataset=self.dataset,
                                  size=42, filename="foo",
                                  md5sum="junk")
         self.datafile.save()
-
+        self.acl = ObjectACL(
+            pluginId=django_user,
+            entityId=str(self.user.id),
+            content_object=self.datafile,
+            isOwner=True,
+            canRead=True,
+            canDownload=True,
+            canWrite=True,
+            canDelete=True,
+            aclOwnershipType=ObjectACL.OWNER_OWNED,
+        )
     def tearDown(self):
         self.user.delete()
         self.exp.delete()
         self.dataset.delete()
         self.datafile.delete()
-        self.acl.delete()
 
     @patch('webpack_loader.loader.WebpackLoader.get_bundle')
     def test_experiment_view(self, mock_webpack_get_bundle):

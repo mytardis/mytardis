@@ -40,7 +40,6 @@ class OpenIDMigrationTestCase(TestCase):
         user_auth.save()
         # add experiments
         experiment = Experiment(title='Text Experiment',
-                                institution_name='Test Uni',
                                 created_by=self.user_old)
         experiment.save()
         acl = ObjectACL(

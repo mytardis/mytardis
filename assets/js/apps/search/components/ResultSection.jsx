@@ -72,19 +72,19 @@ export function ResultRow({result,onSelect,isSelected}){
     return (
         <tr onClick={onSelect}>
             <td>
-                {result.accessRights == "viewOnly" &&
+                {result.userDownloadRights == "none" &&
                     <span aria-label="This item cannot be downloaded."><FiLock /></span>
                 }
             </td>
             <td><a target="_blank" href={result.url}>{resultName}</a></td>
             <td>
-                {result.accessRights != "viewOnly" && 
-                    <span style={{paddingRight:"1em"}}>{result.safeFileSize}</span>
+                {result.userDownloadRights != "none" && 
+                    <span style={{paddingRight:"1em"}}>{result.size}</span>
                 }
-                {result.accessRights == "some" &&
+                {result.userDownloadRights == "partial" &&
                     <span aria-label="Some files in this item cannot be downloaded."><FiPieChart /></span> 
                 }
-                {result.accessRights == "viewOnly" &&
+                {result.userDownloadRights == "none" &&
                     <span aria-label="Not applicable">&mdash;</span>
                 }
             </td>

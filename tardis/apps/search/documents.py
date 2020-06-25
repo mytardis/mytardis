@@ -6,7 +6,8 @@ from django_elasticsearch_dsl import Document, fields
 from django_elasticsearch_dsl.registries import registry
 
 from tardis.tardis_portal.models import Project, Dataset, Experiment, \
-    DataFile, Instrument, ObjectACL
+    DataFile, Instrument, ObjectACL, ExperimentParameter, ProjectParameter, \
+    DatasetParameter, DatafileParameter
 
 
 logger = logging.getLogger(__name__)
@@ -56,22 +57,26 @@ class ProjectDocument(Document):
         'entityId': fields.StringField()
     }
     )
-    parameters = fields.ObjectField(attr='getParametersforIndexing', dynamic=True)
+    parameters = fields.NestedField(attr='getParametersforIndexing', properties={
+        'pn_id': fields.StringField(),
+        'value': fields.StringField(),
+        'data_type': fields.StringField(),
+        'sensitive': fields.StringField()
+    })
 
     def prepare_parameters(self, instance):
         return list(instance.getParametersforIndexing())
 
     class Django:
         model = Project
-        related_models = [User]#, ObjectACL] TODO Reactivate when ACLs finished
+        related_models = [User, ObjectACL]
 
     def get_instances_from_related(self, related_instance):
         if isinstance(related_instance, User):
             return related_instance.project_set.all()
-        # TODO reactivate when ACLs finished
-        # TODO change so updates only Experiment ACLs
-        #if isinstance(related_instance, ObjectACL):
-        #    return related_instance.content_object
+        if isinstance(related_instance, ObjectACL):
+            if related_instance.content_type == 'project':
+                return related_instance.content_object
         return None
 
 
@@ -107,22 +112,26 @@ class ExperimentDocument(Document):
         'entityId': fields.StringField()
     }
     )
-    parameters = fields.ObjectField(attr='getParametersforIndexing', dynamic=True)
+    parameters = fields.NestedField(attr='getParametersforIndexing', properties={
+        'pn_id': fields.StringField(),
+        'value': fields.StringField(),
+        'data_type': fields.StringField(),
+        'sensitive': fields.StringField()
+    })
 
     def prepare_parameters(self, instance):
         return list(instance.getParametersforIndexing())
 
     class Django:
         model = Experiment
-        related_models = [User]#, ObjectACL] TODO Reactivate when ACLs finished
+        related_models = [User, ObjectACL]
 
     def get_instances_from_related(self, related_instance):
         if isinstance(related_instance, User):
             return related_instance.experiment_set.all()
-        # TODO reactivate when ACLs finished
-        # TODO change so updates only Experiment ACLs
-        #if isinstance(related_instance, ObjectACL):
-        #    return related_instance.content_object
+        if isinstance(related_instance, ObjectACL):
+            if related_instance.content_type == 'experiment':
+                return related_instance.content_object
         return None
 
 
@@ -161,20 +170,28 @@ class DatasetDocument(Document):
     modified_time = fields.DateField()
     tags = fields.StringField(attr='tags_for_indexing')
 
-    parameters = fields.ObjectField(attr='getParametersforIndexing', dynamic=True)
+    parameters = fields.NestedField(attr='getParametersforIndexing', properties={
+        'pn_id': fields.StringField(),
+        'value': fields.StringField(),
+        'data_type': fields.StringField(),
+        'sensitive': fields.StringField()
+    })
 
     def prepare_parameters(self, instance):
         return list(instance.getParametersforIndexing())
 
     class Django:
         model = Dataset
-        related_models = [Experiment, Instrument]
+        related_models = [Experiment, Instrument, ObjectACL]
 
     def get_instances_from_related(self, related_instance):
         if isinstance(related_instance, Experiment):
             return related_instance.datasets.all()
         if isinstance(related_instance, Instrument):
             return related_instance.dataset_set.all()
+        if isinstance(related_instance, ObjectACL):
+            if related_instance.content_type == 'dataset':
+                return related_instance.content_object
         return None
 
 
@@ -184,6 +201,7 @@ class DataFileDocument(Document):
         name = 'datafile'
         settings = {'number_of_shards': 1,
                     'number_of_replicas': 0}
+    id = fields.IntegerField()
     filename = fields.TextField(
         fields={'raw': fields.KeywordField()},
         analyzer=analyzer
@@ -205,14 +223,19 @@ class DataFileDocument(Document):
         )
 
 
-    parameters = fields.ObjectField(attr='getParametersforIndexing', dynamic=True)
+    parameters = fields.NestedField(attr='getParametersforIndexing', properties={
+        'pn_id': fields.StringField(),
+        'value': fields.StringField(),
+        'data_type': fields.StringField(),
+        'sensitive': fields.StringField()
+    })
 
     def prepare_parameters(self, instance):
         return list(instance.getParametersforIndexing())
 
     class Django:
         model = DataFile
-        related_models = [Dataset, Experiment]
+        related_models = [Dataset, Experiment, ObjectACL]
         queryset_pagination = 100000
 
     def get_instances_from_related(self, related_instance):
@@ -220,4 +243,7 @@ class DataFileDocument(Document):
             return related_instance.datafile_set.all()
         if isinstance(related_instance, Experiment):
             return DataFile.objects.filter(dataset__experiments=related_instance)
+        if isinstance(related_instance, ObjectACL):
+            if related_instance.content_type == 'datafile':
+                return related_instance.content_object
         return None

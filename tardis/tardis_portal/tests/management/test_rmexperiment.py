@@ -54,13 +54,35 @@ def _create_test_experiment(user, license_):
     return experiment
 
 
-def _create_test_dataset(nosDatafiles):
+def _create_test_dataset(nosDatafiles, user_):
     ds_ = Dataset(description='happy snaps of plumage')
     ds_.save()
+
+    acl = ObjectACL(content_object=ds_,
+                    pluginId='django_user',
+                    entityId=str(user_.id),
+                    isOwner=True,
+                    canRead=True,
+                    canWrite=True,
+                    canDelete=True,
+                    aclOwnershipType=ObjectACL.OWNER_OWNED)
+    acl.save()
+
     for i in range(0, nosDatafiles):
         df_ = DataFile(dataset=ds_, filename='file_%d' % i, size='21',
                        sha512sum='bogus')
         df_.save()
+
+        acl = ObjectACL(content_object=df_,
+                        pluginId='django_user',
+                        entityId=str(user_.id),
+                        isOwner=True,
+                        canRead=True,
+                        canWrite=True,
+                        canDelete=True,
+                        aclOwnershipType=ObjectACL.OWNER_OWNED)
+        acl.save()
+
     ds_.save()
     return ds_
 
@@ -72,9 +94,9 @@ def _create_test_data():
     license_ = _create_license()
     exp1_ = _create_test_experiment(user_, license_)
     exp2_ = _create_test_experiment(user_, license_)
-    ds1_ = _create_test_dataset(1)
-    ds2_ = _create_test_dataset(2)
-    ds3_ = _create_test_dataset(3)
+    ds1_ = _create_test_dataset(1, user_)
+    ds2_ = _create_test_dataset(2, user_)
+    ds3_ = _create_test_dataset(3, user_)
     ds1_.experiments.add(exp1_)
     ds2_.experiments.add(exp1_)
     ds2_.experiments.add(exp2_)
@@ -84,7 +106,7 @@ def _create_test_data():
     ds3_.save()
     exp1_.save()
     exp2_.save()
-    return (exp1_, exp2_)
+    return (exp1_, exp2_, user_)
 
 _counter = 1
 
@@ -99,28 +121,28 @@ def _next_id():
 class RmExperimentTestCase(TestCase):
 
     def testList(self):
-        (exp1_, exp2_) = _create_test_data()
+        (exp1_, exp2_, user_) = _create_test_data()
         self.assertEqual(DataFile.objects.all().count(), 6)
-        self.assertEqual(len(exp1_.get_datafiles()), 3)
-        self.assertEqual(len(exp2_.get_datafiles()), 5)
+        self.assertEqual(len(exp1_.get_datafiles(user_)), 3)
+        self.assertEqual(len(exp2_.get_datafiles(user_)), 5)
 
         # Check that --list doesn't remove anything
         call_command('rmexperiment', exp1_.pk, list=True)
         self.assertEqual(DataFile.objects.all().count(), 6)
-        self.assertEqual(len(exp1_.get_datafiles()), 3)
-        self.assertEqual(len(exp2_.get_datafiles()), 5)
+        self.assertEqual(len(exp1_.get_datafiles(user_)), 3)
+        self.assertEqual(len(exp2_.get_datafiles(user_)), 5)
 
     def testRemove(self):
-        (exp1_, exp2_) = _create_test_data()
+        (exp1_, exp2_, user_) = _create_test_data()
         self.assertEqual(DataFile.objects.all().count(), 6)
-        self.assertEqual(len(exp1_.get_datafiles()), 3)
-        self.assertEqual(len(exp2_.get_datafiles()), 5)
+        self.assertEqual(len(exp1_.get_datafiles(user_)), 3)
+        self.assertEqual(len(exp2_.get_datafiles(user_)), 5)
 
         # Remove first experiment and check that the shared dataset hasn't
         # been removed
         call_command('rmexperiment', exp1_.pk, confirmed=True)
         self.assertEqual(DataFile.objects.all().count(), 5)
-        self.assertEqual(len(exp2_.get_datafiles()), 5)
+        self.assertEqual(len(exp2_.get_datafiles(user_)), 5)
 
         #Remove second experiment
         call_command('rmexperiment', exp2_.pk, confirmed=True)

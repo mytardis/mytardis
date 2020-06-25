@@ -36,7 +36,9 @@ from django.http import HttpResponseRedirect
 from django.db.models import Q
 from django.conf import settings
 
-from ..models import Project, Experiment, Dataset, DataFile, GroupAdmin
+from ..models import Project, Experiment, Dataset, DataFile, GroupAdmin, \
+                     ProjectParameter, ExperimentParameter, DatasetParameter, \
+                     DatafileParameter
 from ..shortcuts import return_response_error
 
 
@@ -51,7 +53,6 @@ def get_accessible_experiments_for_dataset(request, dataset_id):
 
 def get_shared_experiments(request):
     experiments = Experiment.safe.owned_and_shared(request.user)
-
     # exclude owned experiments
     owned = get_owned_experiments(request)
     experiments = experiments.exclude(id__in=[o.id for o in owned])
@@ -62,188 +63,183 @@ def get_owned_experiments(request):
     return Experiment.safe.owned(request.user)
 
 
-#MIKEACL: Change according to datafile permissions
 def get_accessible_datafiles_for_user(request):
-
     experiments = get_accessible_experiments(request)
     if experiments.count() == 0:
         return DataFile.objects.none()
-
     queries = [Q(dataset__experiments__id=e.id) for e in experiments]
-
     query = queries.pop()
     for item in queries:
         query |= item
-
     return DataFile.safe.all(request.user).filter(query)
 
-#MIKEACL: REFACTOR has_###_ownership() into generic
-def has_experiment_ownership(request, experiment_id):
-    return Experiment.safe.owned(request.user).filter(
-        pk=experiment_id).exists()
-#MIKEACL: REFACTOR has_###_ownership() into generic
-def has_dataset_ownership(request, dataset_id):
-    return Dataset.safe.owned(request.user).filter(
-        pk=dataset_id).exists()
-#MIKEACL: REFACTOR has_###_ownership() into generic
-def has_datafile_ownership(request, datafile_id):
-    return DataFile.safe.owned(request.user).filter(
-        pk=datafile_id).exists()
+
+def get_nested_size(request, obj_id, ct_type):
+    if ct_type == "project":
+        size = Project.objects.get(id=obj_id).get_size(request.user, downloadable=True)
+    if ct_type == "experiment":
+        size = Experiment.objects.get(id=obj_id).get_size(request.user, downloadable=True)
+    if ct_type == "dataset":
+        size = Dataset.objects.get(id=obj_id).get_size(request.user, downloadable=True)
+    if ct_type == "datafile":
+        if has_download_access(request, obj_id, "datafile"):
+            size = DataFile.objects.get(id=obj_id).get_size()
+        else:
+            size = 0
+    return size
 
 
-#MIKEACL: REFACTOR has_###_access() into generic
-def has_project_access(request, project_id):
+def get_nested_count(request, obj_id, ct_type):
+    if ct_type == "project":
+        count = {
+                 "experiments" : Experiment.safe.all(request.user).filter(
+                                                project__id=obj_id).count(),
+                 "datasets" : Dataset.safe.all(request.user).filter(
+                                      experiments__project__id=obj_id).count(),
+                 "datafiles" : DataFile.safe.all(request.user).filter(
+                             dataset__experiments__project__id=obj_id).count()
+                 }
+    if ct_type == "experiment":
+        count = {
+                 "datasets" : Dataset.safe.all(request.user).filter(
+                                      experiments__id=obj_id).count(),
+                 "datafiles" : DataFile.safe.all(request.user).filter(
+                                    dataset__experiments__id=obj_id).count()
+                 }
+    if ct_type == "dataset":
+        count = {
+                 "datafiles" : DataFile.safe.all(request.user).filter(
+                                            dataset__id=obj_id).count()
+                 }
+    return count
+
+
+def get_nested_has_download(request, obj_id, ct_type):
+    if ct_type == "project":
+        dfs = DataFile.safe.all(request.user).filter(dataset__experiments__project__id=obj_id)
+    if ct_type == "experiment":
+        dfs = DataFile.safe.all(request.user).filter(dataset__experiments__id=obj_id)
+    if ct_type == "dataset":
+        dfs = DataFile.safe.all(request.user).filter(dataset__id=obj_id)
+
+    if dfs.count():
+        dl_perms = [has_download_access(request, df.id,'datafile') for df in dfs]
+        if all(dl_perms):
+            return "full"
+        if any(dl_perms):
+            return "partial"
+    return "none"
+
+
+
+def get_obj_parameter(pn_id, obj_id, ct_type):
+    if ct_type == "project":
+        param = ProjectParameter.objects.get(name__id=pn_id,
+                                             parameterset__project__id=obj_id)
+    if ct_type == "experiment":
+        param = ExperimentParameter.objects.get(name__id=pn_id,
+                                             parameterset__experiment__id=obj_id)
+    if ct_type == "dataset":
+        param = DatasetParameter.objects.get(name__id=pn_id,
+                                             parameterset__dataset__id=obj_id)
+    if ct_type == "datafile":
+        param = DatafileParameter.objects.get(name__id=pn_id,
+                                             parameterset__datafile__id=obj_id)
+    return param
+
+
+def has_ownership(request, obj_id, ct_type):
+    if ct_type == 'project':
+        return Project.safe.owned(request.user).filter(pk=obj_id).exists()
+    if ct_type == 'experiment':
+        return Experiment.safe.owned(request.user).filter(pk=obj_id).exists()
+    if ct_type == 'dataset':
+        return Dataset.safe.owned(request.user).filter(pk=obj_id).exists()
+    if ct_type == 'datafile':
+        return DataFile.safe.owned(request.user).filter(pk=obj_id).exists()
+
+
+def has_access(request, obj_id, ct_type):
     try:
-        project = Project.objects.get(id=project_id)
-    except Project.DoesNotExist:
+        if ct_type == 'project':
+            obj = Project.objects.get(id=obj_id)
+        if ct_type == 'experiment':
+            obj = Experiment.objects.get(id=obj_id)
+        if ct_type == 'dataset':
+            obj = Dataset.objects.get(id=obj_id)
+        if ct_type == 'datafile':
+            obj = DataFile.objects.get(id=obj_id)
+    except (Project.DoesNotExist, Experiment.DoesNotExist,
+            Dataset.DoesNotExist, DataFile.DoesNotExist):
         return False
-    return request.user.has_perm('tardis_acls.view_project', project)
-#MIKEACL: REFACTOR has_###_access() into generic
-def has_experiment_access(request, experiment_id):
-    try:
-        experiment = Experiment.objects.get(id=experiment_id)
-    except Experiment.DoesNotExist:
-        return False
-    return request.user.has_perm('tardis_acls.view_experiment', experiment)
-#MIKEACL: REFACTOR has_###_access() into generic
-def has_dataset_access(request, dataset_id):
-    try:
-        dataset = Dataset.objects.get(id=dataset_id)
-    except Dataset.DoesNotExist:
-        return False
-    return request.user.has_perm('tardis_acls.view_dataset', dataset)
-#MIKEACL: REFACTOR has_###_access() into generic
-def has_datafile_access(request, datafile_id):
-    try:
-        datafile = DataFile.objects.get(id=datafile_id)
-    except DataFile.DoesNotExist:
-        return False
-    return request.user.has_perm('tardis_acls.view_datafile', datafile)
-
-#CHRISACL
-def has_project_write(request, project_id):
-    project = Project.objects.get(id=project_id)
-    return request.user.has_perm('tardis_acls.change_project', project)
-#MIKEACL: REFACTOR has_###_write() into generic (based on has_write_permissions)
-def has_experiment_write(request, experiment_id):
-    return has_write_permissions(request, experiment_id)
-#MIKEACL: REFACTOR has_###_write() into generic
-def has_dataset_write(request, dataset_id):
-    dataset = Dataset.objects.get(id=dataset_id)
-    if dataset.immutable:
-        return False
-    return request.user.has_perm('tardis_acls.change_dataset', dataset)
-#MIKEACL: REFACTOR has_###_write() into generic
-def has_datafile_write(request, datafile_id):
-    datafile = DataFile.objects.get(id=datafile_id)
-    return request.user.has_perm('tardis_acls.change_datafile', datafile)
+    return request.user.has_perm('tardis_acls.view_'+ct_type, obj)
 
 
-#MIKEACL: REFACTOR has_###_download_access() into generic
-def has_project_download_access(request, project_id):
-
-    if Project.safe.owned_and_shared(request.user, downloadable=True) \
-                      .filter(id=project_id) \
-                      .exists():
-
-        return True
-    return False
-
-#MIKEACL: REFACTOR has_###_download_access() into generic
-def has_experiment_download_access(request, experiment_id):
-
-    if Experiment.safe.owned_and_shared(request.user, downloadable=True) \
-                      .filter(id=experiment_id) \
-                      .exists():
-
-        return True
-    exp = Experiment.objects.get(id=experiment_id)
-    return Experiment.public_access_implies_distribution(exp.public_access)
-
-#MIKEACL: REFACTOR has_###_download_access() into generic
-# TODO: check for datasets in publicly available experiments
-def has_dataset_download_access(request, dataset_id):
-
-    if Dataset.safe.owned_and_shared(request.user, downloadable=True) \
-                      .filter(id=dataset_id) \
-                      .exists():
-
-        return True
-    return False
-    #exp = Experiment.objects.get(id=experiment_id)
-    #return Experiment.public_access_implies_distribution(exp.public_access)
-
-#MIKEACL: REFACTOR has_###_download_access() into generic
-# TODO: check for datasets in publicly available experiments
-def has_datafile_download_access(request, datafile_id):
-
-    if DataFile.safe.owned_and_shared(request.user, downloadable=True) \
-                      .filter(id=datafile_id) \
-                      .exists():
-
-        return True
-    return False
-    #exp = Experiment.objects.get(id=experiment_id)
-    #return Experiment.public_access_implies_distribution(exp.public_access)
-
-#MIKEACL: REFACTOR has_###_sensitive_access() into generic
-def has_project_sensitive_access(request, project_id):
-
-    if Project.safe.owned_and_shared(request.user, viewsensitive=True) \
-                      .filter(id=project_id) \
-                      .exists():
-
-        return True
-    #REFACTOR TO LIKE EXP
-    #exp = Project.objects.get(id=project_id)
-    #return Experiment.public_access_implies_distribution(exp.public_access)
-    return False
-
-#MIKEACL: REFACTOR has_###_sensitive_access() into generic
-def has_experiment_sensitive_access(request, experiment_id):
-
-    if Experiment.safe.owned_and_shared(request.user, viewsensitive=True) \
-                      .filter(id=experiment_id) \
-                      .exists():
-
-        return True
-    exp = Experiment.objects.get(id=experiment_id)
-    return Experiment.public_access_implies_distribution(exp.public_access)
-
-#MIKEACL: REFACTOR has_###_download_access() into generic
-def has_dataset_sensitive_access(request, dataset_id):
-
-    if Dataset.safe.owned_and_shared(request.user, viewsensitive=True) \
-                      .filter(id=dataset_id) \
-                      .exists():
-
-        return True
-    return False
-
-#MIKEACL: REFACTOR has_###_download_access() into generic
-def has_datafile_sensitive_access(request, datafile_id):
-
-    if DataFile.safe.owned_and_shared(request.user, viewsensitive=True) \
-                      .filter(id=datafile_id) \
-                      .exists():
-
-        return True
-    return False
+def has_write(request, obj_id, ct_type):
+    if ct_type == 'project':
+        obj = Project.objects.get(id=obj_id)
+        if obj.locked:
+            return False
+    if ct_type == 'experiment':
+        obj = Experiment.objects.get(id=obj_id)
+        if obj.locked:
+            return False
+    if ct_type == 'dataset':
+        obj = Dataset.objects.get(id=obj_id)
+        if obj.immutable:
+            return False
+    if ct_type == 'datafile':
+        obj = DataFile.objects.get(id=obj_id)
+    return request.user.has_perm('tardis_acls.change_'+ct_type, obj)
 
 
+def has_download_access(request, obj_id, ct_type):
+    if ct_type == 'project':
+        return Project.safe.owned_and_shared(request.user, downloadable=True
+                                             ).filter(id=obj_id).exists()
+    if ct_type == 'experiment': # Retain public functionality for now
+        if Experiment.safe.owned_and_shared(request.user, downloadable=True
+                                                ).filter(id=obj_id).exists():
+            return True
+        else:
+            exp = Experiment.objects.get(id=obj_id)
+            return Experiment.public_access_implies_distribution(exp.public_access)
+    if ct_type == 'dataset':
+        return Dataset.safe.owned_and_shared(request.user, downloadable=True
+                                             ).filter(id=obj_id).exists()
+    if ct_type == 'datafile':
+        return DataFile.safe.owned_and_shared(request.user, downloadable=True
+                                              ).filter(id=obj_id).exists()
 
 
+def has_sensitive_access(request, obj_id, ct_type):
+    if ct_type == 'project':
+        return Project.safe.owned_and_shared(request.user, viewsensitive=True
+                                             ).filter(id=obj_id).exists()
+    if ct_type == 'experiment': # Retain public functionality for now
+        if Experiment.safe.owned_and_shared(request.user, viewsensitive=True
+                                             ).filter(id=obj_id).exists():
+            return True
+        else:
+            exp = Experiment.objects.get(id=obj_id)
+            return Experiment.public_access_implies_distribution(exp.public_access)
+    if ct_type == 'dataset':
+        return Dataset.safe.owned_and_shared(request.user, viewsensitive=True
+                                             ).filter(id=obj_id).exists()
+    if ct_type == 'datafile':
+        return DataFile.safe.owned_and_shared(request.user, viewsensitive=True
+                                             ).filter(id=obj_id).exists()
 
-#MIKEACL
-def has_read_or_owner_ACL(request, experiment_id):
+
+def has_read_or_owner_ACL(request, obj_id, ct_type):
     """
-    Check whether the user has read access to the experiment -
+    Check whether the user has read access to the proj/exp/set/file -
     this means either
     they have been granted read access, or that they are the owner.
 
     NOTE:
-    This does not check whether the experiment is public or not, which means
-    even when the experiment is public, this method does not automatically
+    This does not check whether the proj/exp/set/file is public or not, which means
+    even when the proj/exp/set/file is public, this method does not automatically
     returns true.
 
     As such, this method should NOT be used to check whether the user has
@@ -252,18 +248,25 @@ def has_read_or_owner_ACL(request, experiment_id):
     from datetime import datetime
     from .localdb_auth import django_user
 
-    experiment = Experiment.safe.get(request.user, experiment_id)
+    if ct_type == 'project':
+        obj = Project.safe.get(request.user, obj_id)
+    if ct_type == 'experiment':
+        obj = Experiment.safe.get(request.user, obj_id)
+    if ct_type == 'dataset':
+        obj = Dataset.safe.get(request.user, obj_id)
+    if ct_type == 'datafile':
+        obj = DataFile.safe.get(request.user, obj_id)
 
     # does the user own this experiment
-    query = Q(content_type=experiment.get_ct(),
-              object_id=experiment.id,
+    query = Q(content_type=obj.get_ct(),
+              object_id=obj.id,
               pluginId=django_user,
               entityId=str(request.user.id),
               isOwner=True)
 
     # check if there is a user based authorisation role
-    query |= Q(content_type=experiment.get_ct(),
-               object_id=experiment.id,
+    query |= Q(content_type=obj.get_ct(),
+               object_id=obj.id,
                pluginId=django_user,
                entityId=str(request.user.id),
                canRead=True)\
@@ -276,8 +279,8 @@ def has_read_or_owner_ACL(request, experiment_id):
     for name, group in request.user.userprofile.ext_groups:
         query |= Q(pluginId=name,
                    entityId=str(group),
-                   content_type=experiment.get_ct(),
-                   object_id=experiment.id,
+                   content_type=obj.get_ct(),
+                   object_id=obj.id,
                    canRead=True)\
                    & (Q(effectiveDate__lte=datetime.today())
                       | Q(effectiveDate__isnull=True))\
@@ -290,13 +293,7 @@ def has_read_or_owner_ACL(request, experiment_id):
     return bool(acl)
 
 
-
-#MIKEACL: REFACTOR? - used widely
-def has_write_permissions(request, experiment_id):
-    experiment = Experiment.objects.get(id=experiment_id)
-    return request.user.has_perm('tardis_acls.change_experiment', experiment)
-
-#MIKEACL: REFACTOR? - used widely
+#MIKEACL: REFACTOR for future proj/set/file delete options?
 def has_delete_permissions(request, experiment_id):
     experiment = Experiment.safe.get(request.user, experiment_id)
     return request.user.has_perm('tardis_acls.delete_experiment', experiment)
@@ -352,8 +349,8 @@ def experiment_ownership_required(f):
         user = request.user
         if not user.is_authenticated:
             return HttpResponseRedirect('/login?next=%s' % request.path)
-        if not (has_experiment_ownership(request, kwargs['experiment_id']) or
-                user.is_superuser):
+        if not (has_ownership(request, kwargs['experiment_id'], 'experiment')
+                or user.is_superuser):
             return return_response_error(request)
         return f(request, *args, **kwargs)
 
@@ -375,7 +372,7 @@ def experiment_access_required(f):
         if not isinstance(request, HttpRequest):
             request = args[1]
 
-        if not has_experiment_access(request, kwargs['experiment_id']):
+        if not has_access(request, kwargs['experiment_id'], "experiment"):
             return return_response_error(request)
         return f(*args, **kwargs)
 
@@ -387,8 +384,8 @@ def experiment_access_required(f):
 def experiment_download_required(f):
 
     def wrap(request, *args, **kwargs):
-        if not has_experiment_download_access(
-                request, kwargs['experiment_id']):
+        if not has_download_access(
+                request, kwargs['experiment_id'], "experiment"):
             return return_response_error(request)
         return f(request, *args, **kwargs)
 
@@ -400,7 +397,7 @@ def experiment_download_required(f):
 def dataset_download_required(f):
 
     def wrap(request, *args, **kwargs):
-        if not has_dataset_download_access(request, kwargs['dataset_id']):
+        if not has_download_access(request, kwargs['dataset_id'], "dataset"):
             return return_response_error(request)
         return f(request, *args, **kwargs)
 
@@ -422,7 +419,7 @@ def dataset_access_required(f):
         if not isinstance(request, HttpRequest):
             request = args[1]
 
-        if not has_dataset_access(request, kwargs['dataset_id']):
+        if not has_access(request, kwargs['dataset_id'], "dataset"):
             return return_response_error(request)
         return f(*args, **kwargs)
 
@@ -435,7 +432,7 @@ def datafile_access_required(f):
 
     def wrap(request, *args, **kwargs):
 
-        if not has_datafile_access(request, kwargs['datafile_id']):
+        if not has_access(request, kwargs['datafile_id'], "datafile"):
             return return_response_error(request)
         return f(request, *args, **kwargs)
 
@@ -448,7 +445,7 @@ def write_permissions_required(f):
 
     def wrap(request, *args, **kwargs):
 
-        if not has_write_permissions(request, kwargs['experiment_id']):
+        if not has_write(request, kwargs['experiment_id'], "experiment"):
             return return_response_error(request)
         return f(request, *args, **kwargs)
 
@@ -460,7 +457,7 @@ def write_permissions_required(f):
 def dataset_write_permissions_required(f):
     def wrap(request, *args, **kwargs):
         dataset_id = kwargs['dataset_id']
-        if not has_dataset_write(request, dataset_id):
+        if not has_write(request, dataset_id, "dataset"):
             if request.is_ajax():
                 return HttpResponse("")
             return return_response_error(request)

@@ -21,8 +21,10 @@ from taggit.managers import TaggableManager
 
 logger = logging.getLogger(__name__)
 
+
 def dataset_id_default():
     return datetime.now().strftime('DTST-%Y-%M-%d-%H-%M-%S.%f')
+
 
 @python_2_unicode_compatible
 class Dataset(models.Model):
@@ -62,9 +64,11 @@ class Dataset(models.Model):
 
     experiments = models.ManyToManyField(Experiment, related_name='datasets')
     description = models.TextField(blank=True)
-    dataset_id = models.CharField(max_length=400, null=False, blank=False, unique=True, default=dataset_id_default )
+    dataset_id = models.CharField(
+        max_length=400, null=False, blank=False, unique=True, default=dataset_id_default)
     directory = models.CharField(blank=True, null=True, max_length=255)
-    created_time = models.DateTimeField(null=True, blank=True, default=timezone.now)
+    created_time = models.DateTimeField(
+        null=True, blank=True, default=timezone.now)
     modified_time = models.DateTimeField(null=True, blank=True)
     immutable = models.BooleanField(default=False)
     instrument = models.ForeignKey(Instrument, null=True, blank=True,
@@ -116,28 +120,30 @@ class Dataset(models.Model):
             schema__schema_type=Schema.DATASET)
 
     def getParametersforIndexing(self):
-        """Returns the dataset parameters associated with this
-        dataset, formatted for elasticsearch.
+        """Returns the experiment parameters associated with this
+        experiment, formatted for elasticsearch.
 
         """
         from .parameters import DatasetParameter, ParameterName
-        paramset = self.getParameterSets()
-        param_type_options = {1 : 'datetime_value', 2 : 'string_value',
-                              3 : 'numerical_value'}
-        param_glob = DatasetParameter.objects.filter(
-            parameterset__in=paramset).all().values_list('name','datetime_value','string_value','numerical_value')
-        param_list = []
-        for sublist in param_glob:
-            full_name = ParameterName.objects.get(id=sublist[0]).full_name
-            #string2append = (full_name+'=')
-            param_dict = {}
-            for idx, value in enumerate(sublist[1:]):
-                if value is not None:
-                    param_dict['full_name'] = str(full_name)
-                    param_dict['value'] = str(value)
-                    param_dict['type'] = param_type_options[idx+1]
-            param_list.append(param_dict)
-        return param_list
+        paramsets = list(self.getParameterSets())
+        parameter_list = []
+        for paramset in paramsets:
+            param_type_options = {1 : 'DATETIME', 2 : 'STRING',
+                                  3 : 'NUMERIC'}
+            param_glob = DatasetParameter.objects.filter(
+                parameterset=paramset).all().values_list('name','datetime_value',
+                'string_value','numerical_value','sensitive_metadata')
+            for sublist in param_glob:
+                PN_id = ParameterName.objects.get(id=sublist[0]).id
+                param_dict = {}
+                for idx, value in enumerate(sublist[1:-1]):
+                    if value is not None:
+                        param_dict['pn_id'] = str(PN_id)
+                        param_dict['value'] = str(value)
+                        param_dict['data_type'] = param_type_options[idx+1]
+                        param_dict['sensitive'] = str(sublist[-1])
+                parameter_list.append(param_dict)
+        return parameter_list
 
     def __str__(self):
         return self.description
@@ -209,10 +215,11 @@ class Dataset(models.Model):
                                'quality': 'native',
                                'format': 'jpg'})
 
-    def get_size(self, user):
+    def get_size(self, user, downloadable=False):
         from .datafile import DataFile
 
-        datafiles = DataFile.safe.all(user).filter(dataset__id=self.id)
+        datafiles = DataFile.safe.all(
+            user, downloadable=downloadable).filter(dataset__id=self.id)
 
         return DataFile.sum_sizes(datafiles)
 
@@ -253,8 +260,25 @@ class Dataset(models.Model):
         acls = ObjectACL.objects.filter(pluginId='django_user',
                                         content_type=self.get_ct(),
                                         object_id=self.id,
-                                        canRead=True)
+                                        canRead=True,
+                                        isOwner=False)
         return [acl.get_related_object() for acl in acls]
+
+    def get_users_and_perms(self):
+        acls = ObjectACL.objects.filter(pluginId='django_user',
+                                        content_type=self.get_ct(),
+                                        object_id=self.id,
+                                        canRead=True,
+                                        isOwner=False)
+        ret_list = []
+        for acl in acls:
+            user = acl.get_related_object()
+            sensitive_flg = acl.canSensitive
+            download_flg = acl.canDownload
+            ret_list.append([user,
+                             sensitive_flg,
+                             download_flg])
+        return ret_list
 
     def get_groups(self):
         acls = ObjectACL.objects.filter(pluginId='django_group',
@@ -262,6 +286,22 @@ class Dataset(models.Model):
                                         object_id=self.id,
                                         canRead=True)
         return [acl.get_related_object() for acl in acls]
+
+    def get_groups_and_perms(self):
+        acls = ObjectACL.objects.filter(pluginId='django_group',
+                                        content_type=self.get_ct(),
+                                        object_id=self.id,
+                                        canRead=True)
+        ret_list = []
+        for acl in acls:
+            if not acl.isOwner:
+                group = acl.get_related_object()
+                sensitive_flg = acl.canSensitive
+                download_flg = acl.canDownload
+                ret_list.append([group,
+                                 sensitive_flg,
+                                 download_flg])
+        return ret_list
 
     def get_admins(self):
         acls = ObjectACL.objects.filter(pluginId='django_group',
@@ -317,7 +357,8 @@ class Dataset(models.Model):
             dir_tuples.append(('..', basedir))
         dirs_query = DataFile.safe.all(user).filter(dataset=self)
         if basedir:
-            dirs_query = dirs_query.filter(directory__startswith='%s/' % basedir)
+            dirs_query = dirs_query.filter(
+                directory__startswith='%s/' % basedir)
         dir_paths = set(dirs_query.values_list('directory', flat=True))
         for dir_path in dir_paths:
             if not dir_path:

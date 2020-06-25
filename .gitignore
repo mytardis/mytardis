@@ -7,8 +7,11 @@ __pycache__/
 *.pyc
 *.sqlite
 *.wsgi
+*~
+.#*
 .idea/
 .installed.cfg
+db.sqlite3
 .noseids
 .project
 .pydevproject

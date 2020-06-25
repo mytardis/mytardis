@@ -226,28 +226,30 @@ class DataFile(models.Model):
                                self.filename, self.mimetype)
 
     def getParametersforIndexing(self):
-        """Returns the datafile parameters associated with this
-        datafile, formatted for elasticsearch.
+        """Returns the experiment parameters associated with this
+        experiment, formatted for elasticsearch.
 
         """
         from .parameters import DatafileParameter, ParameterName
-        paramset = self.getParameterSets()
-        param_type_options = {1 : 'datetime_value', 2 : 'string_value',
-                              3 : 'numerical_value'}
-        param_glob = DatafileParameter.objects.filter(
-            parameterset__in=paramset).all().values_list('name','datetime_value','string_value','numerical_value')
-        param_list = []
-        for sublist in param_glob:
-            full_name = ParameterName.objects.get(id=sublist[0]).full_name
-            #string2append = (full_name+'=')
-            param_dict = {}
-            for idx, value in enumerate(sublist[1:]):
-                if value is not None:
-                    param_dict['full_name'] = str(full_name)
-                    param_dict['value'] = str(value)
-                    param_dict['type'] = param_type_options[idx+1]
-            param_list.append(param_dict)
-        return param_list
+        paramsets = list(self.getParameterSets())
+        parameter_list = []
+        for paramset in paramsets:
+            param_type_options = {1 : 'DATETIME', 2 : 'STRING',
+                                  3 : 'NUMERIC'}
+            param_glob = DatafileParameter.objects.filter(
+                parameterset=paramset).all().values_list('name','datetime_value',
+                'string_value','numerical_value','sensitive_metadata')
+            for sublist in param_glob:
+                PN_id = ParameterName.objects.get(id=sublist[0]).id
+                param_dict = {}
+                for idx, value in enumerate(sublist[1:-1]):
+                    if value is not None:
+                        param_dict['pn_id'] = str(PN_id)
+                        param_dict['value'] = str(value)
+                        param_dict['data_type'] = param_type_options[idx+1]
+                        param_dict['sensitive'] = str(sublist[-1])
+                parameter_list.append(param_dict)
+        return parameter_list
 
     def get_mimetype(self):
         if self.mimetype:
@@ -465,7 +467,7 @@ class DataFile(models.Model):
                     if reverify or not obj.verified])
 
     def get_ct(self):
-        return ContentType.objects.get_for_model(self)
+        return 'datafile'#ContentType.objects.get_for_model(self)
 
     def get_owners(self):
         acls = ObjectACL.objects.filter(pluginId='django_user',
