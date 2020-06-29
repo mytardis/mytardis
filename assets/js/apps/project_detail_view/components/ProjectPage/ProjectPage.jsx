@@ -55,7 +55,6 @@ export default function ProjectPage(props) {
         </ul>
       </Alert>
     )
-
   }
 
   let projectName = projectData.objects[0].name;
