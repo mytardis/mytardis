@@ -4,18 +4,23 @@ import './TabSticker.css'
 
 export default function TabSticker(props) {
     let backgroundColor = "#fafafa";
+    const ORANGE = "#f7db8d";
+    const BLUE = "#abe2ff";
+    const PINK = "#ffcce8";
+    const GREEN = "#70ffae";
+
     switch (props.initials) {
         case "P":
-            backgroundColor = "#f7db8d";
+            backgroundColor = ORANGE;
             break;
         case "E":
-            backgroundColor = "#abe2ff";
+            backgroundColor = BLUE;
             break;
         case "DS":
-            backgroundColor = "#ffcce8";
+            backgroundColor = PINK;
             break;
         case "DF":
-            backgroundColor = "#70ffae";
+            backgroundColor = GREEN;
     }
 
     return (
