@@ -48,5 +48,5 @@ services:
     image:
       rabbitmq:3
     environment:
-      RABBITMQ_DEFAULT_USER=user
-      RABBITMQ_DEFAULT_PASS=password
+      RABBITMQ_DEFAULT_USER: user
+      RABBITMQ_DEFAULT_PASS: password
