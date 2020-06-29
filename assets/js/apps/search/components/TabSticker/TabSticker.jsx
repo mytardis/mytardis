@@ -23,6 +23,9 @@ export default function TabSticker(props) {
             backgroundColor = GREEN;
     }
 
+    // TODO: add stickers that inherit from this base component
+    // TODO: add size property support to change size.
+
     return (
         <div 
             className="tab-sticker"

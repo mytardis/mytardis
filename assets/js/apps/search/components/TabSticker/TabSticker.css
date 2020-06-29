@@ -11,4 +11,5 @@
 .content {
     display: flex;
     font-weight: bolder;
+    user-select: none;
 }
