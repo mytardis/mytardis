@@ -1,7 +1,7 @@
 .tab-sticker {
     border-radius: 50%;
-    width: 30px;
-    height: 30px;
+    width:  1.5em;
+    height: 1.5em;
     background-color: pink;
     display: flex;
     align-items: center;
