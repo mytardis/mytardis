@@ -7,6 +7,15 @@ export default {
   title: 'Tab Sticker',
 };
 
-export const Default = () => (
+export const Project = () => (
+  <TabSticker initials="P" />
+)
+export const Experiment = () => (
   <TabSticker initials="E" />
+)
+export const DataSet = () => (
+  <TabSticker initials="DS" />
+)
+export const Datafile = () => (
+  <TabSticker initials="DF" />
 )
