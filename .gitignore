@@ -56,3 +56,6 @@ tardis/apps/*
 
 tardis/tardis_portal/.#ParameterSetManager.py
 
+
+db.sqlite3
+.vscode/**

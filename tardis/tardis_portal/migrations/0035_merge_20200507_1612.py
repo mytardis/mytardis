@@ -7,7 +7,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('tardis_portal', '0034_auto_20200507_1435'),
-        ('tardis_portal', '0028_auto_20200504_1549'),
+        ('tardis_portal', '0028_auto_20200507_1408'),
     ]
 
     operations = [
