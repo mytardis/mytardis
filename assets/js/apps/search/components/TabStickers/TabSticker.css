@@ -1,0 +1,15 @@
+.tab-sticker {
+    border-radius: 50%;
+    width:  1.5em;
+    height: 1.5em;
+    background-color: pink;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.content {
+    display: flex;
+    font-weight: bolder;
+    user-select: none;
+}
