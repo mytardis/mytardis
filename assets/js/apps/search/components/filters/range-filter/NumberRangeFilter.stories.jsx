@@ -10,10 +10,13 @@ export default {
 };
 
 export const numRangeFilterData = {
-    value: {
-        min: 2,
-        max: 10
-    },
+    value: [{
+        op: ">=",
+        content: 2
+    }, {
+        op: "<=",
+        content: 10
+    }],
     onValueChange: action("Value changed"),
     options: {
         name: "CID Energy",

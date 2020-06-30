@@ -23,28 +23,34 @@ const toSubmitValue = localValue => {
     if (!localValue) {
         return {};
     }
-    const submitValue = Object.assign({},localValue);
-    if (isNone(localValue.min)) {
-        submitValue.min = null;
-    }
-    if (isNone(localValue.max)) {
-        submitValue.max = null;
+    const submitValue = [];
+    if (!isNone(localValue.min)) {
+        submitValue.push({op:">=",content:localValue.min})
+    } 
+    if (!isNone(localValue.max)) {
+        submitValue.push({op:"<=",content:localValue.max});
     }
     return submitValue;
 }
 
 const toLocalValue = submitValue => {
     // Replace null value with empty string to represent null parameter value.
-    if (!submitValue) {
+    if (!submitValue || !Array.isArray(submitValue)) {
         return {};
     }
-    const localValue = Object.assign({},submitValue);
-    if (isNone(submitValue.min)) {
-        localValue.min = "";
-    }
-    if (isNone(submitValue.max)) {
-        localValue.max = "";
-    }
+    const localValue = {};
+    // Iterate over the filter values to get the min and max values.
+    submitValue.forEach(filter => {
+        if (!filter || !typeof filter === "object" || isNone(filter.op) || isNone(filter.content)) {
+            return;
+        }
+        if (filter.op === ">=") {
+            localValue.min = filter.content;
+        }
+        if (filter.op === "<=") {
+            localValue.max = filter.content;
+        }
+    });
     return localValue;
 }
 
@@ -70,7 +76,7 @@ const NumberRangeFilter = ({value,options,onValueChange}) => {
 
     // We should disable the filter button if there's nothing in the filter box.
     // But we should be able to clear a field if there's a value on the filter.
-    const canChangeValue =  !isValueEmpty(localValue) || !isValueEmpty(value);
+    const canChangeValue =  !isValueEmpty(localValue) || !isValueEmpty(toLocalValue(value));
     console.log(localValue, value, canChangeValue);
 
     const handleSubmit = (e) => {
