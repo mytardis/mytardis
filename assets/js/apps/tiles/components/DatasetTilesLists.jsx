@@ -22,6 +22,7 @@ const DatasetTilesLists = ({ shareContainer, experimentId }) => {
   const [expListValue, setExpListValue] = useState();
   const [selectedDatasetIds, setSelectedDatasetIds] = useState([]);
   const [experimentPermissions, setExperimentPermissions] = useState({});
+  const [mainListDataLoading, setMainListDataLoading] = useState(true);
   const csrfToken = Cookies.get('csrftoken');
   const spinnerCss = css`
     float: right;
@@ -77,7 +78,8 @@ const DatasetTilesLists = ({ shareContainer, experimentId }) => {
     fetchDatasetsForExperiment(event.target.value).then(result => setShareListData(result));
   };
   useEffect(() => {
-    fetchDatasetsForExperiment(experimentId).then(result => setMainListData(result));
+    fetchDatasetsForExperiment(experimentId).then(result => setMainListData(result))
+      .then(() => setMainListDataLoading(false));
     // load initial list
     fetchExperimentList().then((expList) => {
       // TODO
@@ -89,7 +91,7 @@ const DatasetTilesLists = ({ shareContainer, experimentId }) => {
   }, [experimentId]);
   return (
     <Fragment>
-      {mainListData.length === 0
+      {mainListDataLoading
         ? <Spinner override={spinnerCss} />
         : (
           <Fragment>
