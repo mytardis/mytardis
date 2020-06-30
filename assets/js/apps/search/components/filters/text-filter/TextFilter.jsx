@@ -27,7 +27,7 @@ const TextFilter = ({value,options,onValueChange}) => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        onValueChange(localValue);
+        onValueChange({op:"contains",content:localValue});
     };
     return (
         <Form onSubmit={handleSubmit}>

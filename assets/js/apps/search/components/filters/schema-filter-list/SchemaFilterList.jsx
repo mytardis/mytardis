@@ -4,8 +4,48 @@ import Accordion from 'react-bootstrap/Accordion';
 import Form from 'react-bootstrap/Form';
 import Card from 'react-bootstrap/Card';
 import TextFilter from "../text-filter/TextFilter";
+import './SchemaFilterList.css';
 
-const FilterList = ({ filters, activeFilters   }) => {
+// A hook for converting a hashmap of values into a list.
+const useAsList = (jsObject = {}) => (
+    useMemo(() => (
+        Object.keys(jsObject)
+              .map(key => jsObject[key]))
+    ,[jsObject])
+);
+
+const handleParameterChange = (schemaId,parameterId) => (value) => {
+    console.log(schemaId,parameterId,value);
+}
+
+const SingleSchemaFilterList = ({schema}) => {
+    const parameters  = schema.parameters,
+          schemaId = schema.id,
+          paramsAsList = useAsList(parameters);
+    return (<>
+        {paramsAsList.map(
+                param => {
+                    const { value, full_name } = param,
+                          parameterId = param.id;
+                    let ApplicableFilter;
+                    switch (param.data_type) {
+                        case "STRING":
+                            ApplicableFilter = TextFilter;
+                        default:
+                            console.log("Filter not yet implemented");
+                            break;
+                    }
+                    return (
+                            <div className="single-schema-list__filter">
+                                <h5 className="single-schema-list__filter-label">{full_name}</h5>
+                                <ApplicableFilter value={value} onValueChange={handleParameterChange(schemaId, parameterId)} />
+                                <hr />
+                            </div>
+                    );
+                }
+        )}
+    </>);
+    
     
     /*
     const filtersComponents = filters.map((filter) => {
@@ -24,10 +64,7 @@ const FilterList = ({ filters, activeFilters   }) => {
 
 const SchemaFilterList = ({ value, options, onValueChange }) => {
     // Generate a list of schemas based on the objects
-    const schemasAsList = useMemo(() => (
-        Object.keys(options.schemas)
-              .map(id => options.schemas[id])
-    ),[options.schemas]);
+    const schemasAsList = useAsList(options.schemas);
     const handleSchemaToggle = (schemaId,e) => {
         if (value.includes(schemaId)) {
             if (value.length == 1) {
@@ -67,8 +104,8 @@ const SchemaFilterList = ({ value, options, onValueChange }) => {
                 }
             </Form.Group>
             <Accordion>
-                {schemasAsList.map(({ id, schema_name, parameters }) => {
-                    console.log(value);
+                {schemasAsList.map((schema) => {
+                    const { id, schema_name } = schema;
                     if (!value.includes(id)) {
                         // If schema is not selected, don't show filters for the schema.
                         return null;
@@ -76,11 +113,11 @@ const SchemaFilterList = ({ value, options, onValueChange }) => {
                     return (
                         <Card key={schema_name}>
                             <Accordion.Toggle as={Card.Header} eventKey={schema_name}>
-                                {/* <FilterList filters  */}
                                 {schema_name}
                             </Accordion.Toggle>
                             <Accordion.Collapse eventKey={schema_name}>
                                 <Card.Body>
+                                    <SingleSchemaFilterList schema={schema} />
                                 </Card.Body>
                             </Accordion.Collapse>
                         </Card>

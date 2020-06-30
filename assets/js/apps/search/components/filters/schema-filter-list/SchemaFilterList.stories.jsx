@@ -18,44 +18,50 @@ export const schemaData = {
     options: {
       schemas: {
         "1":{
-            "parameters": [
-              {
+            "parameters": {
+              "14":{
+                "id":"14",
                 "data_type": "STRING",
                 "name":"param1",
                 "full_name": "Parameter 1"
               },
-              {
+              "21":{
+                "id":"21",
                 "data_type": "STRING",
                 "name":"param2",
                 "full_name": "Parameter 2"
               },
-              {
+              "25":{
+                "id":"25",
                 "data_type": "STRING",
                 "name":"sensitive_param",
                 "full_name": "Sensitive Parameter"
               }
-            ],
+          },
             "schema_name": "Raw data",
             "id":"1"
           },
         "2":{
-            "parameters": [
-              {
+            "parameters": {
+              "31":{
+                "id":"31",
                 "data_type": "STRING",
                 "name":"param1",
                 "full_name": "Another parameter 1"
               },
-              {
+              "8":{
+                "id":"8",
                 "data_type": "STRING",
                 "name":"param2",
                 "full_name": "Another parameter 2"
               },
-              {
+              "38":{
+                "id":"38",
                 "data_type": "STRING",
                 "name":"sensitive_param",
                 "full_name": "Sensitive Parameter"
               }
-            ],
+            },
             "schema_name": "Biopipeline Output",
             "id":"2"
         }
