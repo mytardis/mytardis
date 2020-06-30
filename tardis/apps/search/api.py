@@ -107,12 +107,13 @@ class SchemasAppResource(Resource):
                        }
         safe_dict = {}
         for key in result_dict:
-            safe_dict[key] = []
+            safe_dict[key] = {}
             for value in result_dict[key]:
                 if value is not None:
-                    schema_dict = {"id" : value,
+                    schema_id = str(value)
+                    schema_dict = {
                                    "schema_name" : Schema.objects.get(id=value).name,
-                                   "parameters":[]
+                                   "parameters": {}
                                    }
                     param_names = ParameterName.objects.filter(schema__id=value)
                     for param in param_names:
@@ -124,11 +125,11 @@ class SchemasAppResource(Resource):
                                      6:"DATETIME",
                                      7:"LONGSTRING",
                                      8:"JSON"}
-                        param_dict = {"id" : param.id,
-                                      "full_name": param.full_name,
+                        param_id = str(param.id)
+                        param_dict = {"full_name": param.full_name,
                                       "data_type": type_dict[param.data_type]}
-                        schema_dict["parameters"].append(param_dict)
-                    safe_dict[key].append(schema_dict)
+                        schema_dict["parameters"][param_id] = param_dict
+                    safe_dict[key][schema_id] = schema_dict
 
         return [SchemasObject(id=1, schemas=safe_dict)]
 
