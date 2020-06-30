@@ -29,7 +29,7 @@ export default function TabSticker(props) {
     return (
         <div 
             className="tab-sticker"
-            style={{'background-color': backgroundColor}}
+            style={{backgroundColor: backgroundColor}}
         >
             <div className="content">
                 {props.initials}
