@@ -1,0 +1,24 @@
+tr, td {
+    border: 1px solid black;
+    padding: 1rem;
+}
+
+/* tr:nth-child(even){background-color: #d6d6d6;} */
+
+tr:hover {background-color: rgb(235, 235, 235);}
+
+.experiment__link {
+    text-decoration: none;
+    color: #0275D8;
+    font-weight: 600;
+    display: block;
+}
+
+.table__header {
+    font-weight: 600;
+    margin-bottom: 0.2rem;
+}
+
+.table__container {
+    margin-top: 3.5rem;
+}

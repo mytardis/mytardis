@@ -107,12 +107,13 @@ class SchemasAppResource(Resource):
                        }
         safe_dict = {}
         for key in result_dict:
-            safe_dict[key] = []
+            safe_dict[key] = {}
             for value in result_dict[key]:
                 if value is not None:
-                    schema_dict = {"id" : value,
+                    schema_id = str(value)
+                    schema_dict = {
                                    "schema_name" : Schema.objects.get(id=value).name,
-                                   "parameters":[]
+                                   "parameters": {}
                                    }
                     param_names = ParameterName.objects.filter(schema__id=value)
                     for param in param_names:
@@ -124,11 +125,11 @@ class SchemasAppResource(Resource):
                                      6:"DATETIME",
                                      7:"LONGSTRING",
                                      8:"JSON"}
-                        param_dict = {"id" : param.id,
-                                      "full_name": param.full_name,
+                        param_id = str(param.id)
+                        param_dict = {"full_name": param.full_name,
                                       "data_type": type_dict[param.data_type]}
-                        schema_dict["parameters"].append(param_dict)
-                    safe_dict[key].append(schema_dict)
+                        schema_dict["parameters"][param_id] = param_dict
+                    safe_dict[key][schema_id] = schema_dict
 
         return [SchemasObject(id=1, schemas=safe_dict)]
 
@@ -174,35 +175,40 @@ class SearchAppResource(Resource):
 
         for idx, obj in enumerate(index_list):
 
-            # Search on title/keywords + on non-sensitive metadata
-            query_obj = Q({"match": {match_list[idx]:query_text}})
-            query_obj_meta = Q({"nested" : { "path":"parameters",
-                "query": Q({"bool": {"must":[
-                Q({"match": {"parameters.value":query_text}}), Q({"match": {"parameters.sensitive":"False"}})]}})}})
-            query_obj = query_obj | query_obj_meta
-            # Search on sensitive metadata only
-            query_obj_sens = Q({"nested" : { "path":"parameters",
-                "query": Q({"bool": {"must":[
-                Q({"match": {"parameters.value":query_text}}), Q({"match": {"parameters.sensitive":"True"}})]}})}})
             # add user/group criteria to searchers
-            query_obj_oacl = Q("term", objectacls__entityId=user.id) #| \Q("term", public_access=100)
+            query_obj = Q("term", objectacls__entityId=user.id) #| \Q("term", public_access=100)
             for group in groups:
-                query_obj_oacl = query_obj_oacl | \
-                                     Q("term", objectacls__entityId=group.id)
-            query_obj = query_obj & query_obj_oacl
-            query_obj_sens = query_obj_sens & query_obj_oacl
+                query_obj = query_obj | Q("term", objectacls__entityId=group.id)
+
+
+            if query_text is not None:
+                # Search on title/keywords + on non-sensitive metadata
+                query_obj_text = Q({"match": {match_list[idx]:query_text}})
+                query_obj_text_meta = Q({"nested" : { "path":"parameters",
+                    "query": Q({"bool": {"must":[
+                    Q({"match": {"parameters.value":query_text}}), Q({"match": {"parameters.sensitive":"False"}})]}})}})
+                query_obj_text = query_obj_text | query_obj_text_meta
+                # Search on sensitive metadata only
+                query_obj_text_sens = Q({"nested" : { "path":"parameters",
+                    "query": Q({"bool": {"must":[
+                    Q({"match": {"parameters.value":query_text}}), Q({"match": {"parameters.sensitive":"True"}})]}})}})
+
+
+                query_obj = query_obj & query_obj_text
+                query_obj_sens = query_obj & query_obj_text_sens
 
             ms = ms.add(Search(index=obj)
                         .extra(size=MAX_SEARCH_RESULTS, min_score=MIN_CUTOFF_SCORE)
                         .query(query_obj))
 
-            ms_sens = ms_sens.add(Search(index=obj)
-                             .extra(size=MAX_SEARCH_RESULTS, min_score=MIN_CUTOFF_SCORE)
-                             .query(query_obj_sens))
+            if query_text is not None:
+                ms_sens = ms_sens.add(Search(index=obj)
+                                 .extra(size=MAX_SEARCH_RESULTS, min_score=MIN_CUTOFF_SCORE)
+                                 .query(query_obj_sens))
 
         results = ms.execute()
-        results_sens = ms_sens.execute()
-
+        if query_text is not None:
+            results_sens = ms_sens.execute()
 
         result_dict = {k: [] for k in ["projects", "experiments", "datasets", "datafiles"]}
 
@@ -254,7 +260,8 @@ class SearchAppResource(Resource):
 
 
         clean_response(request, results, result_dict)
-        clean_response(request, results_sens, result_dict, sensitive=True)
+        if query_text is not None:
+            clean_response(request, results_sens, result_dict, sensitive=True)
 
         return [SearchObject(id=1, hits=result_dict)]
 
