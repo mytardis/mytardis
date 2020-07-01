@@ -4,7 +4,7 @@ import { action } from '@storybook/addon-actions';
 
 export default {
   component: TextFilter,
-  title: 'Text filter',
+  title: 'Filters/Text filter',
   decorators: [story => <div style={{ padding: '3rem' }}>{story()}</div>],
   excludeStories: /.*Data$/,
 };

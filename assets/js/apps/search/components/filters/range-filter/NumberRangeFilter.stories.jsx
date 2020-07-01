@@ -4,7 +4,7 @@ import { action } from '@storybook/addon-actions';
 
 export default {
   component: NumberRangeFilter,
-  title: 'Number range filter',
+  title: 'Filters/Number range filter',
   decorators: [story => <div style={{ padding: '3rem' }}>{story()}</div>],
   excludeStories: /.*Data$/,
 };

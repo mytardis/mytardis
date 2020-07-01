@@ -4,7 +4,7 @@ import { action } from '@storybook/addon-actions';
 
 export default {
   component: DateRangeFilter,
-  title: 'Date range filter',
+  title: 'Filters/Date range filter',
   decorators: [story => <div style={{ padding: '3rem' }}>{story()}</div>],
   excludeStories: /.*Data$/,
 };

@@ -6,7 +6,7 @@ import { Provider } from "react-redux";
 
 export default {
   component: TypeSchemaList,
-  title: 'Type schema list',
+  title: 'Filters/Type schema list',
   decorators: [story => <div style={{ padding: '3rem', width:'400px' }}>{story()}</div>],
   excludeStories: /.*Data$/,
 };
