@@ -112,6 +112,8 @@ class SchemasAppResource(Resource):
                 if value is not None:
                     schema_id = str(value)
                     schema_dict = {
+                                   "id" : schema_id,
+                                   "type" : key,
                                    "schema_name" : Schema.objects.get(id=value).name,
                                    "parameters": {}
                                    }
@@ -126,8 +128,11 @@ class SchemasAppResource(Resource):
                                      7:"LONGSTRING",
                                      8:"JSON"}
                         param_id = str(param.id)
-                        param_dict = {"full_name": param.full_name,
-                                      "data_type": type_dict[param.data_type]}
+                        param_dict = {
+                                      "id" : param_id,
+                                      "full_name": param.full_name,
+                                      "data_type": type_dict[param.data_type]
+                                      }
                         schema_dict["parameters"][param_id] = param_dict
                     safe_dict[key][schema_id] = schema_dict
 
