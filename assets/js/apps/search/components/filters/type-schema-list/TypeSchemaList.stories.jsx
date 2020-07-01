@@ -14,10 +14,10 @@ export default {
 const mockStore = makeMockStore();
 
 export const schemaData = {
-    value: [
-      "1",
-      "2"
-    ],
+    value: {
+      op:"is",
+      content:["1","2"]
+    },
     onValueChange: action('active schema changed'),
     options: {
       schemas: {
@@ -76,7 +76,10 @@ export const schemaData = {
 }
 
 export const onlyOneSchemaSelectedData = Object.assign({},schemaData,{
-  value: ["1"]
+  value: {
+    op:"is",
+    content:["1"]
+  }
 });
 
 export const Default = () => (

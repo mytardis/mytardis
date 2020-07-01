@@ -72,25 +72,45 @@ const SchemaFilterList = (props) => {
 
 }
 
-const TypeSchemaList = ({ value, options, onValueChange }) => {
+const TypeSchemaList = ({ value: filterValue, options, onValueChange }) => {
     // Generate a list of schemas based on the objects
+    const toLocalValue = (filterValue) => {
+        if (!filterValue || typeof filterValue !== "object") {
+            return [];
+        }
+        const schemas = filterValue.content;
+        if (!Array.isArray(schemas)) {
+            return [];
+        }
+        return schemas;
+    }
+    
+    const toSubmitValue = (localValue) => {
+        return {
+            content: localValue,
+            op: "is"
+        }
+    }
+
     const schemasAsList = useAsList(options.schemas);
+    const activeSchemas = toLocalValue(filterValue);
+
     const handleSchemaToggle = (schemaId,e) => {
-        if (value.includes(schemaId)) {
-            if (value.length == 1) {
+        if (activeSchemas.includes(schemaId)) {
+            if (activeSchemas.length == 1) {
                 // Prevent switching off all schemas.
                 return;
             }
-            const newValue = value.filter(schema => schema !== schemaId);
-            onValueChange(newValue);
+            const newValue = activeSchemas.filter(schema => schema !== schemaId);
+            onValueChange(toSubmitValue(newValue));
         } else {
-            const newValue = value.concat(schemaId);
-            onValueChange(newValue);
+            const newValue = activeSchemas.concat(schemaId);
+            onValueChange(toSubmitValue(newValue));
         }
     }
 
     const getCheckValue = (id) => {
-        return value.includes(id);
+        return activeSchemas.includes(id);
     }
     
     return (
@@ -116,7 +136,7 @@ const TypeSchemaList = ({ value, options, onValueChange }) => {
             <Accordion>
                 {schemasAsList.map((schema) => {
                     const { id, schema_name } = schema;
-                    if (!value.includes(id)) {
+                    if (!activeSchemas.includes(id)) {
                         // If schema is not selected, don't show filters for the schema.
                         return null;
                     }
@@ -139,7 +159,7 @@ const TypeSchemaList = ({ value, options, onValueChange }) => {
 };
 
 TypeSchemaList.propTypes = {
-    value: PropTypes.arrayOf(PropTypes.string).isRequired,
+    value: PropTypes.object.isRequired,
     options: PropTypes.shape({
         schemas: PropTypes.object
     }),
