@@ -1,13 +1,17 @@
 import React from 'react'
-import SchemaFilterList from './SchemaFilterList';
+import TypeSchemaList from './SchemaFilterList';
 import { action } from '@storybook/addon-actions';
+import makeMockStore from "../../../util/makeMockStore";
+import { Provider } from "react-redux";
 
 export default {
-  component: SchemaFilterList,
-  title: 'Schema filter list',
+  component: TypeSchemaList,
+  title: 'Type schema list',
   decorators: [story => <div style={{ padding: '3rem', width:'400px' }}>{story()}</div>],
   excludeStories: /.*Data$/,
 };
+
+const mockStore = makeMockStore();
 
 export const schemaData = {
     value: [
@@ -39,7 +43,8 @@ export const schemaData = {
               }
           },
             "schema_name": "Raw data",
-            "id":"1"
+            "id":"1",
+            "type":"datafiles"
           },
         "2":{
             "parameters": {
@@ -63,7 +68,8 @@ export const schemaData = {
               }
             },
             "schema_name": "Biopipeline Output",
-            "id":"2"
+            "id":"2",
+            "type":"datafiles"
         }
       }
     }
@@ -74,9 +80,13 @@ export const onlyOneSchemaSelectedData = Object.assign({},schemaData,{
 });
 
 export const Default = () => (
-    <SchemaFilterList {...schemaData} />
+  <Provider store={mockStore}>
+    <TypeSchemaList {...schemaData} />
+  </Provider>
 );
 
 export const OnlyOneSelected = () => (
-  <SchemaFilterList {...onlyOneSchemaSelectedData} />
+  <Provider store={mockStore}>
+    <TypeSchemaList {...onlyOneSchemaSelectedData} />
+  </Provider>
 );

@@ -1,9 +1,11 @@
-import React, { useState, useMemo } from 'react'
+import React, { useState, useMemo } from 'react';
+import { useDispatch } from 'react-redux'
 import PropTypes from "prop-types";
 import Accordion from 'react-bootstrap/Accordion';
 import Form from 'react-bootstrap/Form';
 import Card from 'react-bootstrap/Card';
 import TextFilter from "../text-filter/TextFilter";
+import { updateSchemaParameterFilter } from '../../searchSlice'
 import './SchemaFilterList.css';
 
 // A hook for converting a hashmap of values into a list.
@@ -14,31 +16,29 @@ const useAsList = (jsObject = {}) => (
     ,[jsObject])
 );
 
-const handleParameterChange = (schemaId,parameterId) => (value) => {
-    console.log(schemaId,parameterId,value);
+const mapTypeToFilter = (type) => {
+    switch (type) {
+        case "STRING":
+            return TextFilter;
+        default:
+            console.log("Filter not yet implemented");
+            return null;
+    }
 }
 
-const SingleSchemaFilterList = ({schema}) => {
-    const parameters  = schema.parameters,
-          schemaId = schema.id,
-          paramsAsList = useAsList(parameters);
+const PureSchemaFilterList = ({value: schema, onValueChange}) => {
+    const { id: schemaId, type: schemaType, parameters } = schema,
+            paramsAsList = useAsList(parameters);
+
     return (<>
         {paramsAsList.map(
                 param => {
-                    const { value, full_name } = param,
-                          parameterId = param.id;
-                    let ApplicableFilter;
-                    switch (param.data_type) {
-                        case "STRING":
-                            ApplicableFilter = TextFilter;
-                        default:
-                            console.log("Filter not yet implemented");
-                            break;
-                    }
+                    const { value, full_name, id: parameterId } = param,
+                          ApplicableFilter = mapTypeToFilter(param.data_type);
                     return (
                             <div className="single-schema-list__filter">
                                 <h5 className="single-schema-list__filter-label">{full_name}</h5>
-                                <ApplicableFilter value={value} onValueChange={handleParameterChange(schemaId, parameterId)} />
+                                <ApplicableFilter value={value} onValueChange={onValueChange.bind(this, schemaType, schemaId, parameterId)} />
                                 <hr />
                             </div>
                     );
@@ -46,23 +46,33 @@ const SingleSchemaFilterList = ({schema}) => {
         )}
     </>);
     
-    
-    /*
-    const filtersComponents = filters.map((filter) => {
-        switch (filter.data_type) {
-            case "STRING":
-                return (<TextFilter value={})
-        }
-    })
-    return (
-        <div>
-            {}
-        </div>
-    )
-    */
 }
 
-const SchemaFilterList = ({ value, options, onValueChange }) => {
+PureSchemaFilterList.propTypes = {
+    value: PropTypes.object.isRequired,
+    onValueChange: PropTypes.func.isRequired
+}
+
+const SchemaFilterList = (props) => {
+    const dispatch = useDispatch();
+    const handleValueChange = (schemaType, schemaId, parameterId, filterValues) => {
+        if (!Array.isArray(filterValues)){
+            filterValues = [filterValues];
+        }
+        const changedValues = filterValues.map((value) => (
+            Object.assign(value,{
+                kind: "schemaParameter",
+                target: [schemaId, parameterId]
+            })
+        ));
+        dispatch(updateSchemaParameterFilter(changedValues));
+    };
+    return <PureSchemaFilterList {...props} onValueChange={handleValueChange} />
+    // const handleValueChange = (schemaId,parameterId,)
+
+}
+
+const TypeSchemaList = ({ value, options, onValueChange }) => {
     // Generate a list of schemas based on the objects
     const schemasAsList = useAsList(options.schemas);
     const handleSchemaToggle = (schemaId,e) => {
@@ -112,12 +122,12 @@ const SchemaFilterList = ({ value, options, onValueChange }) => {
                     }
                     return (
                         <Card key={schema_name}>
-                            <Accordion.Toggle as={Card.Header} eventKey={schema_name}>
+                            <Accordion.Toggle as={Card.Header} eventKey={id}>
                                 {schema_name}
                             </Accordion.Toggle>
-                            <Accordion.Collapse eventKey={schema_name}>
+                            <Accordion.Collapse eventKey={id}>
                                 <Card.Body>
-                                    <SingleSchemaFilterList schema={schema} />
+                                    <SchemaFilterList value={schema} />
                                 </Card.Body>
                             </Accordion.Collapse>
                         </Card>
@@ -128,7 +138,7 @@ const SchemaFilterList = ({ value, options, onValueChange }) => {
     );
 };
 
-SchemaFilterList.propTypes = {
+TypeSchemaList.propTypes = {
     value: PropTypes.arrayOf(PropTypes.string).isRequired,
     options: PropTypes.shape({
         schemas: PropTypes.object
@@ -136,4 +146,4 @@ SchemaFilterList.propTypes = {
     onValueChange: PropTypes.func.isRequired
 };
 
-export default SchemaFilterList;
+export default TypeSchemaList;
