@@ -1,5 +1,5 @@
 import React from 'react'
-import TypeSchemaList from './SchemaFilterList';
+import TypeSchemaList from './TypeSchemaList';
 import { action } from '@storybook/addon-actions';
 import makeMockStore from "../../../util/makeMockStore";
 import { Provider } from "react-redux";

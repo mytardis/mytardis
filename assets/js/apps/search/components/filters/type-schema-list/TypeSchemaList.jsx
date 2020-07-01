@@ -6,7 +6,7 @@ import Form from 'react-bootstrap/Form';
 import Card from 'react-bootstrap/Card';
 import TextFilter from "../text-filter/TextFilter";
 import { updateSchemaParameterFilter } from '../../searchSlice'
-import './SchemaFilterList.css';
+import './TypeSchemaList.css';
 
 // A hook for converting a hashmap of values into a list.
 const useAsList = (jsObject = {}) => (
