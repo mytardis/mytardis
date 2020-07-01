@@ -3,6 +3,7 @@ import { PureSearchPage } from './SearchPage'
 import { experimentListData } from './ResultList.stories'
 import { action } from '@storybook/addon-actions'
 import { Provider } from 'react-redux';
+import makeMockStore from "../util/makeMockStore";
 
 export default {
     component: PureSearchPage,
@@ -11,15 +12,9 @@ export default {
 };
 
 // Mock redux store for this story.
-const makeStore = (state) => {
-    return {
-        getState: () => {
-        return {search: state};
-        },
-        subscribe: () => 0,
-        dispatch: action('dispatch'),
-    };
-}
+const makeSearchStore = (searchState) => (
+    makeMockStore({search: searchState})
+)
 
 export const dsResultsData = [
     {
@@ -79,19 +74,19 @@ export const loadingData = Object.assign({},searchInfoData,{
 });
 
 export const Default = () => (
-    <Provider store={makeStore(searchInfoData)}>
+    <Provider store={makeSearchStore(searchInfoData)}>
         <PureSearchPage />
     </Provider>
 );
 
 export const Error = () => (
-    <Provider store={makeStore(errorData)}>
+    <Provider store={makeSearchStore(errorData)}>
         <PureSearchPage />
     </Provider>
 );
 
 export const Loading = () => (
-    <Provider store={makeStore(loadingData)}>
+    <Provider store={makeSearchStore(loadingData)}>
         <PureSearchPage />
     </Provider>
 );
