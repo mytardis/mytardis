@@ -1,12 +1,12 @@
 import React from 'react'
 import { action } from '@storybook/addon-actions';
 import makeMockStore from "../../../util/makeMockStore";
-import FiltersSection from './FiltersSection';
+import PureFiltersSection from './FiltersSection';
 import { schemaData } from '../type-schema-list/TypeSchemaList.stories';
 import { Provider } from "react-redux";
 
 export default {
-  component: FiltersSection,
+  component: PureFiltersSection,
   title: 'Filters/Filters section',
   decorators: [story => <div style={{ padding: '3rem', width: "400px" }}>{story()}</div>],
   excludeStories: /.*Data$/,
@@ -14,7 +14,7 @@ export default {
 
 const store = makeMockStore({});
 
-const filtersData = {
+export const filtersData = {
   typeAttributes:{
     projects: {
       schema: {op:"is",content:["1"]}
@@ -39,6 +39,6 @@ const filtersData = {
 
 export const Default = () => (
   <Provider store={store}>
-    <FiltersSection filters={filtersData} />
+    <PureFiltersSection filters={filtersData} />
   </Provider>
 );
