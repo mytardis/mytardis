@@ -1,8 +1,8 @@
 import React from 'react'
 import { PureSearchPage } from './SearchPage'
 import { experimentListData } from './ResultList.stories'
-import { action } from '@storybook/addon-actions'
 import { Provider } from 'react-redux';
+import { filtersData } from "./filters/filters-section/FiltersSection.stories";
 import makeMockStore from "../util/makeMockStore";
 
 export default {
@@ -61,16 +61,17 @@ export const searchInfoData = {
     isLoading: false,
     error:null,
     results: searchResultsData,
+    filters: filtersData
 }
 
 export const errorData = Object.assign({},searchInfoData,{
     error: "An error occurred",
-    results: null,
+    results: null
 });
 
 export const loadingData = Object.assign({},searchInfoData,{
     isLoading: true,
-    results: null,
+    results: null
 });
 
 export const Default = () => (

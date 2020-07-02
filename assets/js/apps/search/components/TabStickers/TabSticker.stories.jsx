@@ -1,5 +1,5 @@
 import React from 'react'
-import { TabSticker, ExperimentTabSticker, ProjectTabSticker, DatafileTabSticker, DatasetTabSticker } from './TabSticker';
+import TabSticker, { ExperimentTabSticker, ProjectTabSticker, DatafileTabSticker, DatasetTabSticker } from './TabSticker';
 
 export default {
   component: TabSticker,

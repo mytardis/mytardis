@@ -1,7 +1,6 @@
 import React from 'react'
-import { action } from '@storybook/addon-actions';
 import makeMockStore from "../../../util/makeMockStore";
-import PureFiltersSection from './FiltersSection';
+import { PureFiltersSection } from './FiltersSection';
 import { schemaData } from '../type-schema-list/TypeSchemaList.stories';
 import { Provider } from "react-redux";
 

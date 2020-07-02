@@ -1,7 +1,10 @@
 import React from 'react'
 import FilterSidebar from './FilterSidebar';
-import { Provider } from 'react-redux'
-import {action} from '@storybook/addon-actions'
+import { Provider } from 'react-redux';
+import {action} from '@storybook/addon-actions';
+import { filtersData } from "./filters/filters-section/FiltersSection.stories";
+import makeMockStore from "../util/makeMockStore";
+
 export default {
   component: FilterSidebar,
   title: 'Filter sidebar',
@@ -10,13 +13,13 @@ export default {
 };
 
 // Mock redux store for this story.
-const store = {
-  getState: () => {
-    return {};
-  },
-  subscribe: () => 0,
-  dispatch: action('dispatch'),
-};
+const store = makeMockStore(
+  {
+    search: {
+      filters: filtersData
+    }
+  }
+)
 
 export const Default = () => (
   <FilterSidebar />
