@@ -1,18 +1,29 @@
 import React from 'react';
 import Tabs from "react-bootstrap/Tabs";
 import Tab from 'react-bootstrap/Tab';
+import { OBJECT_TYPE_STICKERS } from '../../TabStickers/TabSticker'
+import TypeSchemaList from '../type-schema-list/TypeSchemaList';
+import { useSelector } from "react-redux";
 
-export default function FiltersSection() {
+
+const objectTypes = ["projects","experiments","datasets","datafiles"];
+
+export default function FiltersSection({filters}) {
     return (
       <Tabs defaultActiveKey="projects" id="filters-section">
-        <Tab eventKey="projects" title="Projects">
-        </Tab>
-        <Tab eventKey="experiments" title="Experiments">
-        </Tab>
-        <Tab eventKey="datasets" title="Datasets">
-        </Tab>
-        <Tab eventKey="datafiles" title="Datafiles">
-        </Tab>      
+        {
+          objectTypes.map(type => {
+            console.log(options, activeSchemas);
+            const Sticker = OBJECT_TYPE_STICKERS[type],
+                options = {schemas: filters.schemaParameters[type]},
+                activeSchemas = filters.typeAttributes[type].schema;
+            return (
+              <Tab eventKey={type} title={<Sticker />}>
+                <TypeSchemaList value={activeSchemas} options={options} />
+              </Tab>
+            );
+          })
+        }
       </Tabs>
     )
 }

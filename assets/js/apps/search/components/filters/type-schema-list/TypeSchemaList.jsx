@@ -17,12 +17,10 @@ const useAsList = (jsObject = {}) => (
 );
 
 const mapTypeToFilter = (type) => {
+    // TODO handle specific fields with particular filters.
     switch (type) {
-        case "STRING":
-            return TextFilter;
         default:
-            console.log("Filter not yet implemented");
-            return null;
+            return TextFilter;
     }
 }
 
@@ -51,7 +49,7 @@ const PureSchemaFilterList = ({value: schema, onValueChange}) => {
 PureSchemaFilterList.propTypes = {
     value: PropTypes.object.isRequired,
     onValueChange: PropTypes.func.isRequired
-}
+}   
 
 const SchemaFilterList = (props) => {
     const dispatch = useDispatch();
