@@ -9,7 +9,11 @@
     justify-content: center;
 }
 
-.content {
+.tab-stick--content, .tab-stick--content:link, .tab-stick--content:active, .tab-stick--content:hover {
+    color: black;
+}
+
+.tab-stick--content {
     display: flex;
     font-weight: bolder;
     user-select: none;
