@@ -37,7 +37,6 @@ const initialState = {
     isLoading: false,
     error:null,
     results:null,
-    filters: {},
     activeFilters: []
 };
 
@@ -45,11 +44,6 @@ const search = createSlice({
     name: 'search',
     initialState,
     reducers: {
-        updateSchemaParameterFilter: function(state, { payload }){
-            console.log(payload);
-            // const {schemaType, schemaId, parameterId, value } = payload;
-            return state;
-        },
         getResultsSuccess: {
             reducer: function (state, { payload }){
                 state.results = payload;
@@ -94,7 +88,6 @@ const fetchResults = (searchTerm) => (
 
 export const updateTextSearch = (searchTerm) => {
     return (dispatch, getState) => {
-        const state = getState();
         dispatch(getResultsStart(searchTerm));
         fetchResults(searchTerm).then((results) => {
             dispatch(getResultsSuccess(results));
@@ -104,31 +97,9 @@ export const updateTextSearch = (searchTerm) => {
     }
 }
 
-const fetchFilterList = async () => {
-    const response = await fetch(`/api/v1/search_get-schemas/`, {
-        method: "get",
-        headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-            'X-CSRFToken': Cookies.get('csrftoken')
-        }
-    });
-    if (!response.ok) {
-        throw new Error("An error on the server occurred.")
-    }
-    return await response.json();
-};
-
-export const getFilterList = () => {
-    return async (dispatch, getState) => {
-
-    }
-}
-
 
 
 export const {
-    updateSchemaParameterFilter,
     getResultsStart,
     getResultsSuccess,
     getResultsFailure

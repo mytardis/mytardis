@@ -5,7 +5,7 @@ import Accordion from 'react-bootstrap/Accordion';
 import Form from 'react-bootstrap/Form';
 import Card from 'react-bootstrap/Card';
 import TextFilter from "../text-filter/TextFilter";
-import { updateSchemaParameterFilter } from '../../searchSlice'
+import { updateFilter } from '../../filterSlice';
 import './TypeSchemaList.css';
 
 // A hook for converting a hashmap of values into a list.
@@ -63,7 +63,7 @@ const SchemaFilterList = (props) => {
                 target: [schemaId, parameterId]
             })
         ));
-        dispatch(updateSchemaParameterFilter(changedValues));
+        dispatch(updateFilter(changedValues));
     };
     return <PureSchemaFilterList {...props} onValueChange={handleValueChange} />
     // const handleValueChange = (schemaId,parameterId,)
