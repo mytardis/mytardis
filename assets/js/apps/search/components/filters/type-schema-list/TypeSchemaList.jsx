@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { useDispatch } from 'react-redux'
 import PropTypes from "prop-types";
 import Accordion from 'react-bootstrap/Accordion';
@@ -157,7 +157,7 @@ const TypeSchemaList = ({ value: filterValue, options, onValueChange }) => {
 };
 
 TypeSchemaList.propTypes = {
-    value: PropTypes.object.isRequired,
+    value: PropTypes.object,
     options: PropTypes.shape({
         schemas: PropTypes.object
     }),

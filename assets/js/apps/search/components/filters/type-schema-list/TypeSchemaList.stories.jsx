@@ -4,14 +4,17 @@ import { action } from '@storybook/addon-actions';
 import makeMockStore from "../../../util/makeMockStore";
 import { Provider } from "react-redux";
 
+const mockStore = makeMockStore();
+
 export default {
   component: TypeSchemaList,
   title: 'Filters/Type schema list',
-  decorators: [story => <div style={{ padding: '3rem', width:'400px' }}>{story()}</div>],
+  decorators: [story =>   
+    <Provider store={mockStore}>
+      <div style={{ padding: '3rem', width:'400px' }}>{story()}</div>
+    </Provider>],
   excludeStories: /.*Data$/,
 };
-
-const mockStore = makeMockStore();
 
 export const schemaData = {
   "1":{
@@ -84,14 +87,21 @@ const onlyOneSchemaSelectedProps = Object.assign({},defaultProps,{
   }
 });
 
+const noValueProps = Object.assign({}, defaultProps, {
+  value: null,
+  options: {
+    schemas: null
+  }
+})
+
 export const Default = () => (
-  <Provider store={mockStore}>
     <TypeSchemaList {...defaultProps} />
-  </Provider>
 );
 
 export const OnlyOneSelected = () => (
-  <Provider store={mockStore}>
     <TypeSchemaList {...onlyOneSchemaSelectedProps} />
-  </Provider>
 );
+
+export const NoSchemas = () => {
+    <TypeSchemaList {...noValueProps} />
+}

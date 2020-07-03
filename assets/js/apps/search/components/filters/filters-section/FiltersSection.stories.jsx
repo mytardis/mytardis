@@ -7,7 +7,7 @@ import { Provider } from "react-redux";
 export default {
   component: PureFiltersSection,
   title: 'Filters/Filters section',
-  decorators: [story => <div style={{ padding: '3rem', width: "400px" }}>{story()}</div>],
+  decorators: [story => <Provider store={store}><div style={{ padding: '3rem', width: "400px" }}>{story()}</div>  </Provider>],
   excludeStories: /.*Data$/,
 };
 
@@ -36,8 +36,22 @@ export const filtersData = {
   }
 }
 
+export const noFiltersData = null;
+
 export const Default = () => (
-  <Provider store={store}>
-    <PureFiltersSection filters={filtersData} />
-  </Provider>
+    <PureFiltersSection filtersByKind={filtersData} isLoading={false} error={null} />
+);
+
+export const NoFilters = () => (
+  <PureFiltersSection filtersByKind={noFiltersData} isLoading={false} error={null} />
+);
+
+export const Loading = () => (
+  <PureFiltersSection filtersByKind={noFiltersData} isLoading={true} error={null} />
+);
+
+const error = {message:"Error loading filter data"};
+
+export const Error = () => (
+  <PureFiltersSection filtersByKind={noFiltersData} isLoading={false} error={error} />
 );
