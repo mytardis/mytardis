@@ -87,6 +87,10 @@ const onlyOneSchemaSelectedProps = Object.assign({},defaultProps,{
   }
 });
 
+const noSchemaSelectedProps = Object.assign({}, defaultProps, {
+  value: null
+})
+
 const noValueProps = Object.assign({}, defaultProps, {
   value: null,
   options: {
@@ -102,6 +106,10 @@ export const OnlyOneSelected = () => (
     <TypeSchemaList {...onlyOneSchemaSelectedProps} />
 );
 
-export const NoSchemas = () => {
+export const NoSchemaSelected = () => (
+  <TypeSchemaList {...noSchemaSelectedProps} />
+);
+
+export const NoSchemas = () => (
     <TypeSchemaList {...noValueProps} />
-}
+)

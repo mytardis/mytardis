@@ -1,9 +1,27 @@
 import { createSlice } from '@reduxjs/toolkit';
 import Cookies from "js-cookie";
 
+const typeAttributes = {
+    projects: {
+        schema: null
+    },
+    experiments: {
+        schema: null
+    },
+    datasets: {
+        schema: null
+    },
+    datafiles: {
+        schema: null
+    }
+};
+
 const initialState = {
-    filtersByKind: null,
-    isLoading: false,
+    filtersByKind: {
+        typeAttributes: typeAttributes,
+        schemaParameters: null
+    },
+    isLoading: true,
     error: null
 }
 
@@ -13,18 +31,15 @@ const filters = createSlice({
     reducers: {
         getFiltersStart: (state, {payload}) => {
             state.isLoading = true;
-            state.filtersByKind = null;
             state.error = null;
         },
         getFiltersSuccess: (state, {payload}) => {
-            state.filtersByKind = {
-                typeAttributes: {},
-                schemaParameters:payload
-            };
+            state.filtersByKind.schemaParameters = payload;
             state.isLoading = false;
             state.error = null;
         },
         getFiltersFailure: (state, {payload}) => {
+            console.log("Error",payload);
             state.isLoading = false;
             state.error = payload;
             state.filtersByKind = null;

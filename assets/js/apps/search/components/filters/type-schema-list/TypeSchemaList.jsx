@@ -12,7 +12,7 @@ import './TypeSchemaList.css';
 const useAsList = (jsObject = {}) => (
     useMemo(() => (
         Object.keys(jsObject)
-              .map(key => jsObject[key]))
+               .map(key => jsObject[key]))
     ,[jsObject])
 );
 
@@ -72,9 +72,14 @@ const SchemaFilterList = (props) => {
 
 const TypeSchemaList = ({ value: filterValue, options, onValueChange }) => {
     // Generate a list of schemas based on the objects
+    const schemas = options.schemas || {};
+    const schemasAsList = useAsList(schemas);
     const toLocalValue = (filterValue) => {
-        if (!filterValue || typeof filterValue !== "object") {
-            return [];
+        if (!filterValue || typeof filterValue !== "object" || !Array.isArray(filterValue.content)) {
+            // If there is no filter, it means there is no filter
+            // on which schemas to show, which means we need to show
+            // all schemas.
+            return schemasAsList.map((schema) => schema.id);
         }
         const schemas = filterValue.content;
         if (!Array.isArray(schemas)) {
@@ -84,13 +89,17 @@ const TypeSchemaList = ({ value: filterValue, options, onValueChange }) => {
     }
     
     const toSubmitValue = (localValue) => {
+        if (localValue.length === schemasAsList.length) {
+            // If the local value has as many values as the schema,
+            // that means we need to show all schemas, i.e. no filter.
+            return null;
+        }
         return {
             content: localValue,
             op: "is"
         }
     }
 
-    const schemasAsList = useAsList(options.schemas);
     const activeSchemas = toLocalValue(filterValue);
 
     const handleSchemaToggle = (schemaId,e) => {
@@ -114,7 +123,11 @@ const TypeSchemaList = ({ value: filterValue, options, onValueChange }) => {
     return (
         <div>
             <Form.Group>
-                <Form.Label>Show me</Form.Label>
+                {
+                    schemasAsList.length !== 0 ?
+                        <Form.Label>Show me</Form.Label> :
+                        null
+                }
                 {
                     
                     schemasAsList.map(
