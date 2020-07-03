@@ -5,7 +5,7 @@ import { action } from '@storybook/addon-actions';
 export default {
   component: NumberRangeFilter,
   title: 'Filters/Number range filter',
-  decorators: [story => <div style={{ padding: '3rem' }}>{story()}</div>],
+  decorators: [story => <div style={{ padding: '3rem', width:"300px" }}>{story()}</div>],
   excludeStories: /.*Data$/,
 };
 

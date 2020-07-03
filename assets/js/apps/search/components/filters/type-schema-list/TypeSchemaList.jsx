@@ -5,6 +5,8 @@ import Accordion from 'react-bootstrap/Accordion';
 import Form from 'react-bootstrap/Form';
 import Card from 'react-bootstrap/Card';
 import TextFilter from "../text-filter/TextFilter";
+import NumberRangeFilter from '../range-filter/NumberRangeFilter';
+import DateRangeFilter from '../date-filter/DateRangeFilter';
 import { updateFilter } from '../../filterSlice';
 import './TypeSchemaList.css';
 
@@ -19,6 +21,12 @@ const useAsList = (jsObject = {}) => (
 const mapTypeToFilter = (type) => {
     // TODO handle specific fields with particular filters.
     switch (type) {
+        case "STRING":
+            return TextFilter;
+        case "NUMERIC":
+            return NumberRangeFilter;
+        case "DATETIME":
+            return DateRangeFilter;
         default:
             return TextFilter;
     }

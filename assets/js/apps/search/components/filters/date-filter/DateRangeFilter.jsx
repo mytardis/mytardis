@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
 import PropTypes from 'prop-types';
-import './DateRangeFilter.css';
 import Datetime from 'react-datetime';
 import moment from 'moment';
 
@@ -115,7 +114,6 @@ const DateRangeFilter = ({ value, options, onValueChange }) => {
 
     return (
         <Form className="date-range-filter" onSubmit={handleSubmit}>
-            <div className="date-range-filter__rangefields">
                 <Form.Group className="date-range-filter__field">
                     <Form.Label>Start date</Form.Label>
                     <Datetime
@@ -136,10 +134,8 @@ const DateRangeFilter = ({ value, options, onValueChange }) => {
                         closeOnSelect={true}
                         dateFormat="L"
                         timeFormat={false}
-                    // isValidDate={isValidEndDate}
                     />
                 </Form.Group>
-            </div>
             <Button
                 type="submit"
                 className="date-range-filter__button"

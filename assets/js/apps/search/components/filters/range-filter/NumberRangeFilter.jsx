@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
 import PropTypes from 'prop-types';
-import './NumberRangeFilter.css';
 
 const isNone = (value) => {
     // We need empty string to represent an empty field for text fields
@@ -85,7 +84,6 @@ const NumberRangeFilter = ({value,options,onValueChange}) => {
     };
     return (
         <Form className="num-range-filter" onSubmit={handleSubmit}>
-                <div className="num-range-filter__rangefields">
                     <Form.Group className="num-range-filter__field">
                         <Form.Label>Min</Form.Label>
                         <Form.Control  
@@ -106,7 +104,6 @@ const NumberRangeFilter = ({value,options,onValueChange}) => {
                         >
                         </Form.Control>
                     </Form.Group>
-                </div>
             <Button 
                 type="submit" 
                 className="num-range-filter__button" 
