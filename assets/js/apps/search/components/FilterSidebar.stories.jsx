@@ -16,7 +16,9 @@ export default {
 const store = makeMockStore(
   {
     search: {
-      filters: filtersData
+    },
+    filters: {
+      filtersByKind: filtersData
     }
   }
 )

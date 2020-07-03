@@ -1,4 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit';
+import Cookies from "js-cookie";
 
 const initialState = {
     filtersByKind: null,
@@ -36,33 +37,36 @@ const filters = createSlice({
     }
 })
 
-const fetchFilterList = async () => {
-    const response = await fetch(`/api/v1/search_get-schemas/`, {
+const fetchFilterList = () => {
+    return fetch(`/api/v1/search_get-schemas/`, {
         method: "get",
         headers: {
             'Accept': 'application/json',
             'Content-Type': 'application/json',
             'X-CSRFToken': Cookies.get('csrftoken')
         }
-    });
-    if (!response.ok) {
-        throw new Error("An error on the server occurred.")
-    }
-    return await response.json();
+    }).then(response => {
+        if (!response.ok) {
+            throw new Error("An error on the server occurred.")
+        }
+        return response.json();
+    }).then(responseJSON => (responseJSON.objects[0].schemas));
 };
 
 export const {
     getFiltersStart,
     getFiltersSuccess,
-    getFiltersFailure
+    getFiltersFailure,
+    updateFilter
 } = filters.actions;
 
-export const initialiseFilters = async (dispatch) => {
+export const initialiseFilters = () => (dispatch) => {
     dispatch(getFiltersStart());
-    try {
-        const filters = await fetchFilterList();
-        dispatch(getFiltersSuccess(filters));
-    } catch (e) {
+    fetchFilterList().then(filters => {
+        dispatch(getFiltersSuccess(filters));        
+    }).catch((e) => {
         dispatch(getFiltersFailure(e))
-    }
+    });
 }
+
+export default filters.reducer;

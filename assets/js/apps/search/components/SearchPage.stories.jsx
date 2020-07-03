@@ -12,8 +12,8 @@ export default {
 };
 
 // Mock redux store for this story.
-const makeSearchStore = (searchState) => (
-    makeMockStore({search: searchState})
+const makeSearchStore = (searchState, filtersState) => (
+    makeMockStore({search: searchState, filters: filtersState})
 )
 
 export const dsResultsData = [
@@ -61,7 +61,10 @@ export const searchInfoData = {
     isLoading: false,
     error:null,
     results: searchResultsData,
-    filters: filtersData
+}
+
+export const filtersSliceData = {
+    filtersByKind: filtersData
 }
 
 export const errorData = Object.assign({},searchInfoData,{
@@ -75,19 +78,19 @@ export const loadingData = Object.assign({},searchInfoData,{
 });
 
 export const Default = () => (
-    <Provider store={makeSearchStore(searchInfoData)}>
+    <Provider store={makeSearchStore(searchInfoData, filtersSliceData)}>
         <PureSearchPage />
     </Provider>
 );
 
 export const Error = () => (
-    <Provider store={makeSearchStore(errorData)}>
+    <Provider store={makeSearchStore(errorData, filtersSliceData)}>
         <PureSearchPage />
     </Provider>
 );
 
 export const Loading = () => (
-    <Provider store={makeSearchStore(loadingData)}>
+    <Provider store={makeSearchStore(loadingData, filtersSliceData)}>
         <PureSearchPage />
     </Provider>
 );
