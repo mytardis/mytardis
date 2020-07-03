@@ -42,7 +42,7 @@ const PureSchemaFilterList = ({value: schema, onValueChange}) => {
                     const { value, full_name, id: parameterId } = param,
                           ApplicableFilter = mapTypeToFilter(param.data_type);
                     return (
-                            <div className="single-schema-list__filter">
+                            <div key={parameterId} className="single-schema-list__filter">
                                 <h5 className="single-schema-list__filter-label">{full_name}</h5>
                                 <ApplicableFilter value={value} onValueChange={onValueChange.bind(this, schemaType, schemaId, parameterId)} />
                                 <hr />
