@@ -168,7 +168,8 @@ class SearchAppResource(Resource):
         logging.warn("Testing search app")
         user = request.user
 
-        query = request.POST.get('data', None)
+        query = request.GET.get('data', None)
+        #query = request.POST.get('data', None)
         query_text = query.get('query', None)
 
         filters = query.get('filters', None)
