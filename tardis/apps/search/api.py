@@ -168,11 +168,10 @@ class SearchAppResource(Resource):
         logging.warn("Testing search app")
         user = request.user
 
-        query = request.GET.get('data', None)
         #query = request.POST.get('data', None)
-        query_text = query.get('query', None)
+        query_text = request.GET.get('query', None)
 
-        filters = query.get('filters', None)
+        filters = request.GET.get('filters', None)
 
         if not user.is_authenticated:
             result_dict = simple_search_public_data(query_text)
