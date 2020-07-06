@@ -149,7 +149,7 @@ class SearchAppResource(Resource):
 
     class Meta:
         resource_name = 'simple-search'
-        list_allowed_methods = ['get']
+        list_allowed_methods = ['get', 'post']
         serializer = default_serializer
         authentication = default_authentication
         object_class = SearchObject
@@ -167,7 +167,12 @@ class SearchAppResource(Resource):
     def get_object_list(self, request):
         logging.warn("Testing search app")
         user = request.user
-        query_text = request.GET.get('query', None)
+
+        query = request.POST.get('data', None)
+        query_text = query.get('query', None)
+
+        filters = query.get('filters', None)
+
         if not user.is_authenticated:
             result_dict = simple_search_public_data(query_text)
             return [SearchObject(id=1, hits=result_dict)]
@@ -201,6 +206,48 @@ class SearchAppResource(Resource):
 
                 query_obj = query_obj & query_obj_text
                 query_obj_sens = query_obj & query_obj_text_sens
+
+
+            if filters is not None:
+                #filter_op = filters['op']     This isn't used for now
+                filterlist = filters["content"]
+                for filter in filterlist:
+
+                    # Expand this with more logic
+                    operator_dict = {"is":"term", "contains":"match"}
+
+                    # hack pass to ignore non-added logic
+                    if operator_dict.get(filter['op'], None) is None:
+                        continue
+
+                    oper = operator_dict[filter['op']]
+
+                    if filter["kind"] == "schemaParameter":
+                        schema_id, param_id = filter["target"][0], filter["target"][1]
+
+                        # check single option first
+                        if isinstance(filter["content"], list):
+
+                            Qdict = {"should" : []}
+
+                            for option in (filter["content"]:
+                                Qdict["should"].append(
+                                                Q({"nested" : { "path":"parameters",
+                                                    "query": Q({"bool": {"must":[
+                                                    Q({"match": {"parameters.pn_id":str(param_id)}}),
+                                                     Q({"match": {"parameters.value":option}})]}})}})  )
+
+                            query_obj_filt = Q({"bool" : Qdict})
+
+                        else:
+                            query_obj_filt = Q({"nested" : { "path":"parameters",
+                                                "query": Q({"bool": {"must":[
+                                                Q({"match": {"parameters.pn_id":str(param_id)}}),
+                                                 Q({"match": {"parameters.value":filter["content"]}})]}})}})
+
+
+                        query_obj = query_obj & query_obj_filt
+
 
             ms = ms.add(Search(index=obj)
                         .extra(size=MAX_SEARCH_RESULTS, min_score=MIN_CUTOFF_SCORE)
