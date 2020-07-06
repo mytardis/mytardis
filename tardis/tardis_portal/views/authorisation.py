@@ -225,7 +225,7 @@ def retrieve_group_userlist_readonly(request, group_id):
 
     from ..forms import ManageGroupPermissionsForm
     users = User.objects.filter(groups__id=group_id)
-group_admins = []
+    group_admins = []
     for user in users:
         if GroupAdmin.objects.filter(user=user, group__id=group_id).exists():
             group_admins.append(user)
