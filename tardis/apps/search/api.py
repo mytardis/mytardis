@@ -230,7 +230,7 @@ class SearchAppResource(Resource):
 
                             Qdict = {"should" : []}
 
-                            for option in (filter["content"]:
+                            for option in filter["content"]:
                                 Qdict["should"].append(
                                                 Q({"nested" : { "path":"parameters",
                                                     "query": Q({"bool": {"must":[
