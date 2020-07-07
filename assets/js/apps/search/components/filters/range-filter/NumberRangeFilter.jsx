@@ -29,6 +29,9 @@ const toSubmitValue = localValue => {
     if (!isNone(localValue.max)) {
         submitValue.push({op:"<=",content:localValue.max});
     }
+    if (submitValue.length === 0){
+        return null;
+    }
     return submitValue;
 }
 
@@ -118,10 +121,7 @@ const NumberRangeFilter = ({value,options,onValueChange}) => {
 }
 
 NumberRangeFilter.propTypes = {
-    value: PropTypes.shape({
-        min: PropTypes.number,
-        max: PropTypes.number
-    }),
+    value: PropTypes.array,
     options: PropTypes.object,
     onValueChange: PropTypes.func.isRequired
 }
