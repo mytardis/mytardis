@@ -8,7 +8,8 @@ import json
 
 from django.contrib.auth.models import User
 
-from ...models.experiment import Experiment, ExperimentAuthor, Project
+from ...models.experiment import Experiment, ExperimentAuthor
+from ...models.project import Project
 from ...models.parameters import (ExperimentParameter,
                                   ExperimentParameterSet,
                                   ParameterName,
@@ -36,7 +37,10 @@ class ExperimentResourceTest(MyTardisResourceTestCase):
     def test_post_experiment(self):
         schema_id = Schema.objects.first().id
         parm_id = ParameterName.objects.first().id
+        project_id = Project.objects.first().id
+
         post_data = {
+            "project" : "/api/v1/project/%d/" % project_id,
             "description": "test description",
             "parameter_sets": [
                 {
