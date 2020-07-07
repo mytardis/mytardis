@@ -28,7 +28,7 @@ def groups_view(request):
 
 # special urls for auth test cases
 urlpatterns += [
-    url(r'^test/groups/$', groups_view),
+    url(r'^test/group/$', groups_view),
     url(r'^test/experiment/view/(?P<experiment_id>\d+)/$',
         ExperimentView.as_view()),
     url(r'^test/download/datafile/(?P<datafile_id>\d+)/$',
