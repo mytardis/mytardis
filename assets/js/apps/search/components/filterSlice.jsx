@@ -1,28 +1,68 @@
 import { createSlice } from '@reduxjs/toolkit';
 import Cookies from "js-cookie";
 
-const typeAttributes = {
+const initialTypeAttributes = {
     projects: {
-        schema: null
+        attributes: {
+            schema: null
+        }
     },
     experiments: {
-        schema: null
+        attributes: {
+            schema: null
+        }
     },
     datasets: {
-        schema: null
+        attributes: {
+            schema: null
+        }
     },
     datafiles: {
-        schema: null
+        attributes: {
+            schema: null
+        }
     }
 };
 
+
+
 const initialState = {
-    filtersByKind: {
-        typeAttributes: typeAttributes,
-        schemaParameters: null
+    types: {
+        byId: initialTypeAttributes,
+        allIds: ['projects','experiments','datasets','datafiles']
+    },
+    typeSchemas: null,
+    schemas:{
+        byId: null,
+        allIds: []
     },
     isLoading: true,
     error: null
+}
+
+const mapSchemasById = (schemasByType) => {
+    // Generate a hashmap of schemas by their id, so we can look up
+    // schemas by id.
+    const schemasById = {},
+            allIds = [];
+    for (let type in schemasByType) {
+        for (let schemaId in schemasByType[type]){
+            schemasById[schemaId] = schemasByType[type][schemaId];
+            allIds.push(schemaId);
+        }
+    }
+    return {byId: schemasById,allIds: allIds};
+}
+
+const mapSchemaIdToType = (schemasByType) => {
+    const typeSchemas = {};
+    for (let type in schemasByType) {
+        typeSchemas[type] = [];
+        for (let schemaId in schemasByType[type]) {
+            typeSchemas[type].push(schemaId);
+        }
+    }
+    return typeSchemas;
 }
 
 const filters = createSlice({
@@ -34,7 +74,8 @@ const filters = createSlice({
             state.error = null;
         },
         getFiltersSuccess: (state, {payload}) => {
-            state.filtersByKind.schemaParameters = payload;
+            state.schemas = mapSchemasById(payload);
+            state.typeSchemas = mapSchemaIdToType(payload);
             state.isLoading = false;
             state.error = null;
         },
@@ -42,11 +83,23 @@ const filters = createSlice({
             console.log("Error",payload);
             state.isLoading = false;
             state.error = payload;
-            state.filtersByKind = null;
         },
         updateFilter: (state, {payload}) => {
             console.log(payload);
-            // const {schemaType, schemaId, parameterId, value } = payload;
+            payload.forEach( filterValue => {
+                switch (filterValue.kind) {
+                    case "typeAttribute":
+                        break;
+                    case "schemaParameter":
+                        const [schemaId, paramId] = filterValue.target;
+                        state.schemasById[schemaId]
+                            .parameters[paramId]
+                            .value = filterValue;
+                        break;
+                    default:
+                        break;
+                }
+            })
             return state;
         }
     }

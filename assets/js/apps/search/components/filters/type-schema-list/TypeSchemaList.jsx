@@ -14,7 +14,7 @@ import './TypeSchemaList.css';
 const useAsList = (jsObject = {}) => (
     useMemo(() => (
         Object.keys(jsObject)
-               .map(key => jsObject[key]))
+                .map(key => jsObject[key]))
     ,[jsObject])
 );
 
@@ -40,11 +40,19 @@ const PureSchemaFilterList = ({value: schema, onValueChange}) => {
         {paramsAsList.map(
                 param => {
                     const { value, full_name, id: parameterId } = param,
-                          ApplicableFilter = mapTypeToFilter(param.data_type);
+                        ApplicableFilter = mapTypeToFilter(param.data_type);
                     return (
                             <div key={parameterId} className="single-schema-list__filter">
                                 <h5 className="single-schema-list__filter-label">{full_name}</h5>
-                                <ApplicableFilter value={value} onValueChange={onValueChange.bind(this, schemaType, schemaId, parameterId)} />
+                                <ApplicableFilter 
+                                    value={value} 
+                                    onValueChange={
+                                        onValueChange.bind(
+                                            this, 
+                                            schemaType, 
+                                            schemaId, 
+                                            parameterId)
+                                    } />
                                 <hr />
                             </div>
                     );
@@ -66,28 +74,28 @@ const SchemaFilterList = (props) => {
             filterValues = [filterValues];
         }
         const changedValues = filterValues.map((value) => (
-            Object.assign(value,{
-                kind: "schemaParameter",
-                target: [schemaId, parameterId]
-            })
+            {
+                field: {
+                    kind: "schemaParameter",
+                    target: [schemaId, parameterId]
+                },
+                value:value
+            }
         ));
         dispatch(updateFilter(changedValues));
     };
     return <PureSchemaFilterList {...props} onValueChange={handleValueChange} />
-    // const handleValueChange = (schemaId,parameterId,)
 
 }
 
 const TypeSchemaList = ({ value: filterValue, options, onValueChange }) => {
-    // Generate a list of schemas based on the objects
-    const schemas = options.schemas || {};
-    const schemasAsList = useAsList(schemas);
+    const {allIds : schemasAsList, byId : schemas } = options.schemas || {byId: {}, allIds: []};
     const toLocalValue = (filterValue) => {
         if (!filterValue || typeof filterValue !== "object" || !Array.isArray(filterValue.content)) {
             // If there is no filter, it means there is no filter
             // on which schemas to show, which means we need to show
             // all schemas.
-            return schemasAsList.map((schema) => schema.id);
+            return schemasAsList;
         }
         const schemas = filterValue.content;
         if (!Array.isArray(schemas)) {
@@ -139,30 +147,33 @@ const TypeSchemaList = ({ value: filterValue, options, onValueChange }) => {
                 {
                     
                     schemasAsList.map(
-                        ({schema_name,id}) => (
-                            <Form.Check 
+                        (id) => {
+                            // Look up the name from schema hashmap
+                            const {schema_name} = schemas[id];
+                            return <Form.Check 
                                 key={id}
                                 id={"schemaCheck-"+id}
                                 type="checkbox" 
                                 label={schema_name} 
                                 checked={getCheckValue(id)} 
                                 onChange={handleSchemaToggle.bind(this,id)} 
-                            />
-                        )
+                            />;
+                        }
                     )
                 }
             </Form.Group>
             <Accordion>
-                {schemasAsList.map((schema) => {
-                    const { id, schema_name } = schema;
+                {schemasAsList.map((id) => {
+                    const schema = schemas[id],
+                        name = schema.schema_name;
                     if (!activeSchemas.includes(id)) {
                         // If schema is not selected, don't show filters for the schema.
                         return null;
                     }
                     return (
-                        <Card key={schema_name}>
+                        <Card key={name}>
                             <Accordion.Toggle as={Card.Header} eventKey={id}>
-                                {schema_name}
+                                {name}
                             </Accordion.Toggle>
                             <Accordion.Collapse eventKey={id}>
                                 <Card.Body>
@@ -180,7 +191,10 @@ const TypeSchemaList = ({ value: filterValue, options, onValueChange }) => {
 TypeSchemaList.propTypes = {
     value: PropTypes.object,
     options: PropTypes.shape({
-        schemas: PropTypes.object
+        schemas: PropTypes.shape({
+            allIds: PropTypes.array,
+            byId: PropTypes.object
+        })
     }),
     onValueChange: PropTypes.func.isRequired
 };

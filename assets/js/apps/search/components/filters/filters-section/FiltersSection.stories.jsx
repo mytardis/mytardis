@@ -1,8 +1,9 @@
 import React from 'react'
 import makeMockStore from "../../../util/makeMockStore";
 import { PureFiltersSection } from './FiltersSection';
-import { schemaData } from '../type-schema-list/TypeSchemaList.stories';
+import { schemaData,allSchemaIdsData } from '../type-schema-list/TypeSchemaList.stories';
 import { Provider } from "react-redux";
+import { error } from 'jquery';
 
 export default {
   component: PureFiltersSection,
@@ -14,44 +15,69 @@ export default {
 const store = makeMockStore({});
 
 export const filtersData = {
-  typeAttributes:{
-    projects: {
-      schema: {op:"is",content:["1"]}
+  types: {
+    byId: {
+        projects: {
+          attributes: {
+          schema: {op:"is",content:["1"]}
+        }
+      },
+      experiments: {
+        attributes: {
+          schema: {op:"is",content:["2"]}
+        }
+      },
+      datasets: {
+        attributes: {
+          schema: {op:"is",content:["1"]}
+        }
+      },
+      datafiles: {
+        attributes: {
+          schema: {op:"is",content:["1","2"]}
+        }
+      }
     },
-    experiments: {
-      schema: {op:"is",content:["2"]}
-    },
-    datasets: {
-      schema: {op:"is",content:["1"]}
-    },
-    datafiles: {
-      schema: {op:"is",content:["1","2"]}
-    }
+    allIds: ["projects","experiments","datasets","datafiles"]
   },
-  schemaParameters:{
-    projects: schemaData,
-    experiments: schemaData,
-    datasets: schemaData,
-    datafiles: schemaData
-  }
-}
+  schemas: {
+    byId: schemaData,
+    allIds: allSchemaIdsData
+  },
+  typeSchemas: {
+      projects: allSchemaIdsData,
+      experiments: allSchemaIdsData,
+      datasets: allSchemaIdsData,
+      datafiles: allSchemaIdsData
+  },
+  isLoading: false,
+  error: null
+};
 
-export const noFiltersData = null;
+export const noFiltersData = Object.assign({},filtersData, {
+  typeSchemas: null
+})
+
+export const loadingData = Object.assign({},filtersData, {
+  isLoading: true
+})
+
+export const errorData = Object.assign({},filtersData, {
+  error: "Error loading filter data"
+})
 
 export const Default = () => (
-    <PureFiltersSection filtersByKind={filtersData} isLoading={false} error={null} />
+    <PureFiltersSection {...filtersData} />
 );
 
 export const NoFilters = () => (
-  <PureFiltersSection filtersByKind={noFiltersData} isLoading={false} error={null} />
+  <PureFiltersSection {...noFiltersData} />
 );
 
 export const Loading = () => (
-  <PureFiltersSection filtersByKind={noFiltersData} isLoading={true} error={null} />
+  <PureFiltersSection {...loadingData} />
 );
 
-const error = {message:"Error loading filter data"};
-
 export const Error = () => (
-  <PureFiltersSection filtersByKind={noFiltersData} isLoading={false} error={error} />
+  <PureFiltersSection {...errorData} />
 );

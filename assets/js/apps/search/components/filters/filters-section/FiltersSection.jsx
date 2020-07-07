@@ -7,21 +7,14 @@ import { initialiseFilters } from '../../filterSlice';
 import { useSelector, useDispatch } from "react-redux";
 import PropTypes from "prop-types";
 
-
-const objectTypes = ["projects", "experiments", "datasets", "datafiles"];
-
-function FilterTab({}) {
-
-}
-
-export function PureFiltersSection({ filtersByKind, isLoading, error }) {
+export function PureFiltersSection({ types, schemas, typeSchemas, isLoading, error }) {
   if (isLoading) {
     return <p>Loading filters...</p>
   }
   if (error) {
     return <p>An error occurred while loading filters.</p>
   }
-  if (!filtersByKind || !typeof filtersByKind == "object") {
+  if (!typeSchemas || !typeof typeSchemas == "object") {
     return null;
   }
   return (
@@ -29,13 +22,21 @@ export function PureFiltersSection({ filtersByKind, isLoading, error }) {
       <h3>Filters</h3>
       <Tabs defaultActiveKey="projects" id="filters-section">
         {
-          objectTypes.map(type => {
+          types.allIds.map(type => {
             const Sticker = OBJECT_TYPE_STICKERS[type],
-                  schemaFiltersOptions = { schemas: filtersByKind.schemaParameters[type] },
-                  activeSchemas = filtersByKind.typeAttributes[type].schema;
+                  schemaFiltersOptions = { 
+                    schemas: 
+                      {
+                        allIds: typeSchemas[type],
+                        byId: schemas.byId
+                      }
+                  },
+                  activeSchemas = types.byId[type].attributes.schema;
             return (
               <Tab eventKey={type} title={<Sticker />}>
-                <TypeSchemaList value={activeSchemas} options={schemaFiltersOptions} />
+                <TypeSchemaList
+                  value={activeSchemas}
+                  options={schemaFiltersOptions} />
               </Tab>
             );
           })
@@ -46,7 +47,15 @@ export function PureFiltersSection({ filtersByKind, isLoading, error }) {
 }
 
 PureFiltersSection.propTypes = {
-  filtersByKind: PropTypes.object,
+  types: PropTypes.shape({
+    byId: PropTypes.object.isRequired,
+    allIds: PropTypes.array.isRequired
+  }),
+  schemas: PropTypes.shape({
+    byId: PropTypes.object.isRequired,
+    allIds: PropTypes.array.isRequired
+  }),
+  typeSchemas: PropTypes.object,
   isLoading: PropTypes.bool.isRequired,
   error: PropTypes.object
 }

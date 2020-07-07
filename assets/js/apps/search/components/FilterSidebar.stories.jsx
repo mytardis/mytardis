@@ -17,9 +17,7 @@ const store = makeMockStore(
   {
     search: {
     },
-    filters: {
-      filtersByKind: filtersData
-    }
+    filters: filtersData
   }
 )
 

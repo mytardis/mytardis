@@ -16,6 +16,8 @@ export default {
   excludeStories: /.*Data$/,
 };
 
+export const allSchemaIdsData = ["1","2"];
+
 export const schemaData = {
   "1":{
       "parameters": {
@@ -76,7 +78,10 @@ const defaultProps = {
     },
     onValueChange: action('active schema changed'),
     options: {
-      schemas: schemaData
+      schemas: {
+        allIds: allSchemaIdsData,
+        byId: schemaData
+      }
     }
 }
 
