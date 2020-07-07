@@ -8,6 +8,7 @@ import TextFilter from "../text-filter/TextFilter";
 import NumberRangeFilter from '../range-filter/NumberRangeFilter';
 import DateRangeFilter from '../date-filter/DateRangeFilter';
 import { updateFilter, removeFilter } from '../../filterSlice';
+import { runSearch } from "../../searchSlice";
 import './TypeSchemaList.css';
 
 // A hook for converting a hashmap of values into a list.
@@ -82,6 +83,7 @@ const SchemaFilterList = (props) => {
         } else {
             dispatch(updateFilter(changedValues));
         }
+        dispatch(runSearch());
     };
     return <PureSchemaFilterList {...props} onValueChange={handleValueChange} />
 

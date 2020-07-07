@@ -1,11 +1,11 @@
-import React, { useState, useContext} from 'react';
+import React, { useState } from 'react';
 import Button from 'react-bootstrap/Button';
 import InputGroup from 'react-bootstrap/InputGroup';
 import FormControl from 'react-bootstrap/FormControl';
 import Form from 'react-bootstrap/Form';
 import PropTypes from 'prop-types';
 import { useDispatch } from 'react-redux';
-import { updateTextSearch } from './searchSlice';
+import { runSearch, updateSearchTerm } from './searchSlice';
 import "./QuickSearchBox.css";
 
 export function PureQuickSearchBox({searchTerm,onChange,onSubmit}) {
@@ -39,7 +39,10 @@ const QuickSearchBox = () => {
         <PureQuickSearchBox
             searchTerm={searchTerm}
             onChange={onTermChange}
-            onSubmit={() => {dispatch(updateTextSearch(searchTerm))}}
+            onSubmit={() => {
+                dispatch(updateSearchTerm(searchTerm));
+                dispatch(runSearch());
+            }}
         />
             
     )
