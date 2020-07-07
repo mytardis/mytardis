@@ -40,7 +40,7 @@ const PureSchemaFilterList = ({value: schema, onValueChange}) => {
     return (<>
         {paramsAsList.map(
                 param => {
-                    const { value, full_name, id: parameterId } = param,
+                    const { value, data_type: parameterType, full_name, id: parameterId } = param,
                         ApplicableFilter = mapTypeToFilter(param.data_type);
                     return (
                             <div key={parameterId} className="single-schema-list__filter">
@@ -50,7 +50,7 @@ const PureSchemaFilterList = ({value: schema, onValueChange}) => {
                                     onValueChange={
                                         onValueChange.bind(
                                             this, 
-                                            schemaType, 
+                                            parameterType, 
                                             schemaId, 
                                             parameterId)
                                     } />
@@ -70,11 +70,12 @@ PureSchemaFilterList.propTypes = {
 
 const SchemaFilterList = (props) => {
     const dispatch = useDispatch();
-    const handleValueChange = (schemaType, schemaId, parameterId, filterValues) => {
+    const handleValueChange = (parameterType, schemaId, parameterId, filterValues) => {
         const changedValues = {
             field: {
                 kind: "schemaParameter",
-                target: [schemaId, parameterId]
+                target: [schemaId, parameterId],
+                type: parameterType
             },
             value:filterValues
         }
