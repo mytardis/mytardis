@@ -29,13 +29,34 @@ export default function TabSticker(props) {
     return (
         <div 
             className="tab-sticker"
-            style={{'background-color': backgroundColor}}
+            style={{backgroundColor: backgroundColor}}
         >
-            <div className="content">
+            <div className="tab-stick--content">
                 {props.initials}
             </div>
         </div>
     )
 }
 
+export const ProjectTabSticker = () => {
+    return (<TabSticker initials="P"></TabSticker>);
+};
 
+export const ExperimentTabSticker = () => {
+    return (<TabSticker initials="E"></TabSticker>);
+};
+
+export const DatasetTabSticker = () => {
+    return (<TabSticker initials="DS"></TabSticker>);
+};
+
+export const DatafileTabSticker = () => {
+    return (<TabSticker initials="DF"></TabSticker>);
+};
+
+export const OBJECT_TYPE_STICKERS = {
+    "projects": ProjectTabSticker,
+    "experiments": ExperimentTabSticker,
+    "datasets": DatasetTabSticker,
+    "datafiles": DatafileTabSticker
+}

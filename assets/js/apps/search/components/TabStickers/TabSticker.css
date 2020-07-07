@@ -2,13 +2,18 @@
     border-radius: 50%;
     width:  1.5em;
     height: 1.5em;
+    padding: 1em;
     background-color: pink;
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
-.content {
+.tab-stick--content, .tab-stick--content:link, .tab-stick--content:active, .tab-stick--content:hover {
+    color: black;
+}
+
+.tab-stick--content {
     display: flex;
     font-weight: bolder;
     user-select: none;
