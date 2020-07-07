@@ -8,6 +8,7 @@ from tardis.apps import sftp
 
 from ...urls.accounts import accounts_urls
 from ...urls.download import download_urls
+from ...urls.group import group_urls
 from .. import download
 from ..views.pages import ExperimentView
 from ..views import load_datafile_image
@@ -28,7 +29,7 @@ def groups_view(request):
 
 # special urls for auth test cases
 urlpatterns += [
-    url(r'^test/group/$', groups_view),
+    url(r'^test/groups/$', groups_view),
     url(r'^test/experiment/view/(?P<experiment_id>\d+)/$',
         ExperimentView.as_view()),
     url(r'^test/download/datafile/(?P<datafile_id>\d+)/$',
@@ -49,6 +50,7 @@ urlpatterns += [
     # Needed for user_menu context processor:
     url(r'^accounts/', include(accounts_urls)),
     url(r'^download/', include(download_urls)),
+    url(r'^groups/', include(group_urls)),
     url(r'^apps/sftp/', include(sftp.urls)),
     url(r'^logout/$', LogoutView.as_view(), {'next_page': '/'},
         name='logout'),
