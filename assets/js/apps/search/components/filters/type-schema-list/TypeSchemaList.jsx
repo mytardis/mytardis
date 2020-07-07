@@ -7,7 +7,7 @@ import Card from 'react-bootstrap/Card';
 import TextFilter from "../text-filter/TextFilter";
 import NumberRangeFilter from '../range-filter/NumberRangeFilter';
 import DateRangeFilter from '../date-filter/DateRangeFilter';
-import { updateFilter } from '../../filterSlice';
+import { updateFilter, removeFilter } from '../../filterSlice';
 import './TypeSchemaList.css';
 
 // A hook for converting a hashmap of values into a list.
@@ -70,19 +70,18 @@ PureSchemaFilterList.propTypes = {
 const SchemaFilterList = (props) => {
     const dispatch = useDispatch();
     const handleValueChange = (schemaType, schemaId, parameterId, filterValues) => {
-        if (!Array.isArray(filterValues)){
-            filterValues = [filterValues];
+        const changedValues = {
+            field: {
+                kind: "schemaParameter",
+                target: [schemaId, parameterId]
+            },
+            value:filterValues
         }
-        const changedValues = filterValues.map((value) => (
-            {
-                field: {
-                    kind: "schemaParameter",
-                    target: [schemaId, parameterId]
-                },
-                value:value
-            }
-        ));
-        dispatch(updateFilter(changedValues));
+        if (filterValues === null){
+            dispatch(removeFilter(changedValues));
+        } else {
+            dispatch(updateFilter(changedValues));
+        }
     };
     return <PureSchemaFilterList {...props} onValueChange={handleValueChange} />
 

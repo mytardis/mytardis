@@ -27,7 +27,11 @@ const TextFilter = ({value,options,onValueChange}) => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        onValueChange({op:"contains",content:localValue});
+        if (localValue === "") {
+            onValueChange(null);
+        } else {
+            onValueChange({op:"contains",content:localValue});
+        }
     };
     return (
         <Form onSubmit={handleSubmit}>
@@ -42,7 +46,7 @@ const TextFilter = ({value,options,onValueChange}) => {
 }
 
 TextFilter.propTypes = {
-    value: PropTypes.string.isRequired,
+    value: PropTypes.string,
     options: PropTypes.object,
     onValueChange: PropTypes.func.isRequired
 }
