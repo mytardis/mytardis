@@ -149,7 +149,7 @@ class SearchAppResource(Resource):
 
     class Meta:
         resource_name = 'simple-search'
-        list_allowed_methods = ['get', 'post']
+        list_allowed_methods = ['post']
         serializer = default_serializer
         authentication = default_authentication
         object_class = SearchObject
@@ -164,14 +164,28 @@ class SearchAppResource(Resource):
 
         return kwargs
 
+
     def get_object_list(self, request):
+        return request
+
+
+    def obj_get_list(self, bundle, **kwargs):
+        return self.get_object_list(bundle.request)
+
+
+    def obj_create(self, bundle, **kwargs):
+        bundle = self.dehydrate(bundle)
+        return bundle
+
+
+    def dehydrate(self, bundle):
         logging.warn("Testing search app")
-        user = request.user
+        user = bundle.request.user
 
         #query = request.POST.get('data', None)
-        query_text = request.GET.get('query', None)
+        query_text = bundle.data.get('query', None)
 
-        filters = request.GET.get('filters', None)
+        filters = bundle.data.get('filters', None)
 
         if not user.is_authenticated:
             result_dict = simple_search_public_data(query_text)
@@ -311,15 +325,12 @@ class SearchAppResource(Resource):
                     result_dict[hit["_index"]+"s"].append(safe_hit)
 
 
-        clean_response(request, results, result_dict)
+        clean_response(bundle.request, results, result_dict)
         if query_text is not None:
-            clean_response(request, results_sens, result_dict, sensitive=True)
+            clean_response(bundle.request, results_sens, result_dict, sensitive=True)
 
-        return [SearchObject(id=1, hits=result_dict)]
-
-    def obj_get_list(self, bundle, **kwargs):
-        return self.get_object_list(bundle.request)
-
+        bundle.obj = SearchObject(id=1, hits=result_dict)
+        return bundle
 
 def simple_search_public_data(query_text):
     result_dict = {k: [] for k in ["experiments", "datasets", "datafiles"]}
