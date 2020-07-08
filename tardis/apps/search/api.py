@@ -219,8 +219,8 @@ class SearchAppResource(Resource):
                         Q({"match": {"parameters.value":query_text}}), Q({"match": {"parameters.sensitive":"True"}})]}})}})
                     query_obj_sens_meta = query_obj_text | query_obj_sens_meta
 
-                    query_obj = query_obj & query_obj_text_meta
                     query_obj_sens = query_obj & query_obj_sens_meta
+                    query_obj = query_obj & query_obj_text_meta
 
 
             if filters is not None:
