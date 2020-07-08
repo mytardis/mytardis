@@ -325,11 +325,8 @@ class SearchAppResource(Resource):
                             if is_sensitive.sensitive_metadata:
                                 safe_hit["_source"]["parameters"].pop(idxx)
 
-                    if not sensitive:
+                    if safe_hit not in result_dict[hit["_index"]+"s"]:
                         result_dict[hit["_index"]+"s"].append(safe_hit)
-                    else:
-                        if safe_hit not in result_dict[hit["_index"]+"s"]:
-                            result_dict[hit["_index"]+"s"].append(safe_hit)
 
 
         clean_response(bundle.request, results, result_dict)
