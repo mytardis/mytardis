@@ -206,16 +206,17 @@ class SearchAppResource(Resource):
 
 
             if query_text is not None:
-                # Search on title/keywords + on non-sensitive metadata
-                query_obj_text = Q({"match": {match_list[idx]:query_text}})
-                query_obj_text_meta = Q({"nested" : { "path":"parameters",
-                    "query": Q({"bool": {"must":[
-                    Q({"match": {"parameters.value":query_text}}), Q({"match": {"parameters.sensitive":"False"}})]}})}})
-                query_obj_text = query_obj_text | query_obj_text_meta
-                # Search on sensitive metadata only
-                query_obj_text_sens = Q({"nested" : { "path":"parameters",
-                    "query": Q({"bool": {"must":[
-                    Q({"match": {"parameters.value":query_text}}), Q({"match": {"parameters.sensitive":"True"}})]}})}})
+                if query_text is not "":
+                    # Search on title/keywords + on non-sensitive metadata
+                    query_obj_text = Q({"match": {match_list[idx]:query_text}})
+                    query_obj_text_meta = Q({"nested" : { "path":"parameters",
+                        "query": Q({"bool": {"must":[
+                        Q({"match": {"parameters.value":query_text}}), Q({"match": {"parameters.sensitive":"False"}})]}})}})
+                    query_obj_text = query_obj_text | query_obj_text_meta
+                    # Search on sensitive metadata only
+                    query_obj_text_sens = Q({"nested" : { "path":"parameters",
+                        "query": Q({"bool": {"must":[
+                        Q({"match": {"parameters.value":query_text}}), Q({"match": {"parameters.sensitive":"True"}})]}})}})
 
 
                 query_obj = query_obj & query_obj_text
