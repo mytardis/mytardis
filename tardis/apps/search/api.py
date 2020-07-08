@@ -212,14 +212,15 @@ class SearchAppResource(Resource):
                     query_obj_text_meta = Q({"nested" : { "path":"parameters",
                         "query": Q({"bool": {"must":[
                         Q({"match": {"parameters.value":query_text}}), Q({"match": {"parameters.sensitive":"False"}})]}})}})
-                    query_obj_text = query_obj_text | query_obj_text_meta
+                    query_obj_text_meta = query_obj_text | query_obj_text_meta
                     # Search on sensitive metadata only
-                    query_obj_text_sens = Q({"nested" : { "path":"parameters",
+                    query_obj_sens_meta = Q({"nested" : { "path":"parameters",
                         "query": Q({"bool": {"must":[
                         Q({"match": {"parameters.value":query_text}}), Q({"match": {"parameters.sensitive":"True"}})]}})}})
+                    query_obj_sens_meta = query_obj_text | query_obj_sens_meta
 
-                    query_obj = query_obj & query_obj_text
-                    query_obj_sens = query_obj & query_obj_text_sens
+                    query_obj = query_obj & query_obj_text_meta
+                    query_obj_sens = query_obj & query_obj_sens_meta
 
 
             if filters is not None:
