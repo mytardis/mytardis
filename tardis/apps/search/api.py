@@ -279,7 +279,7 @@ class SearchAppResource(Resource):
             if query_text is not "":
                 results_sens = ms_sens.execute()
 
-        result_dict = {k: [] for k in ["projects", "experiments", "datasets", "datafiles"]}
+        result_dict = {k: set() for k in ["projects", "experiments", "datasets", "datafiles"]}
 
         def clean_response(request, results, result_dict, sensitive=False):
             for item in results:
@@ -325,7 +325,7 @@ class SearchAppResource(Resource):
                             if is_sensitive.sensitive_metadata:
                                 safe_hit["_source"]["parameters"].pop(idxx)
 
-                    result_dict[hit["_index"]+"s"].append(safe_hit)
+                    result_dict[hit["_index"]+"s"].add(safe_hit)
 
 
         clean_response(bundle.request, results, result_dict)
