@@ -268,13 +268,15 @@ class SearchAppResource(Resource):
                         .query(query_obj))
 
             if query_text is not None:
-                ms_sens = ms_sens.add(Search(index=obj)
-                                 .extra(size=MAX_SEARCH_RESULTS, min_score=MIN_CUTOFF_SCORE)
-                                 .query(query_obj_sens))
+                if query_text is not "":
+                    ms_sens = ms_sens.add(Search(index=obj)
+                                     .extra(size=MAX_SEARCH_RESULTS, min_score=MIN_CUTOFF_SCORE)
+                                     .query(query_obj_sens))
 
         results = ms.execute()
         if query_text is not None:
-            results_sens = ms_sens.execute()
+            if query_text is not "":
+                results_sens = ms_sens.execute()
 
         result_dict = {k: [] for k in ["projects", "experiments", "datasets", "datafiles"]}
 
@@ -327,7 +329,8 @@ class SearchAppResource(Resource):
 
         clean_response(bundle.request, results, result_dict)
         if query_text is not None:
-            clean_response(bundle.request, results_sens, result_dict, sensitive=True)
+            if query_text is not "":
+                clean_response(bundle.request, results_sens, result_dict, sensitive=True)
 
         bundle.obj = SearchObject(id=1, hits=result_dict)
         return bundle
