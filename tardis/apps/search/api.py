@@ -238,33 +238,37 @@ class SearchAppResource(Resource):
                     oper = operator_dict[filter['op']]
 
                     if filter["kind"] == "schemaParameter":
+
                         schema_id, param_id = filter["target"][0], filter["target"][1]
+                        num_2_type = {1:'experiment', 2:'dataset', 3:'datafile', 11:'project'}
+                        # check filter is applied to correct object type
+                        if num_2_type[Schema.objects.get(id=schema_id).schema_type] == obj:
+                            # check if filter query is list of options, or single value
+                            # (elasticsearch can actually handle delimiters in a single string...)
+                            if isinstance(filter["content"], list):
 
-                        # check single option first
-                        if isinstance(filter["content"], list):
+                                Qdict = {"should" : []}
 
-                            Qdict = {"should" : []}
+                                for option in filter["content"]:
+                                    Qdict["should"].append(
+                                                    Q({"nested" : { "path":"parameters",
+                                                        "query": Q({"bool": {"must":[
+                                                        Q({"match": {"parameters.pn_id":str(param_id)}}),
+                                                         Q({"match": {"parameters.value":option}})]}})}})  )
 
-                            for option in filter["content"]:
-                                Qdict["should"].append(
-                                                Q({"nested" : { "path":"parameters",
+                                query_obj_filt = Q({"bool" : Qdict})
+
+                            else:
+                                query_obj_filt = Q({"nested" : { "path":"parameters",
                                                     "query": Q({"bool": {"must":[
                                                     Q({"match": {"parameters.pn_id":str(param_id)}}),
-                                                     Q({"match": {"parameters.value":option}})]}})}})  )
-
-                            query_obj_filt = Q({"bool" : Qdict})
-
-                        else:
-                            query_obj_filt = Q({"nested" : { "path":"parameters",
-                                                "query": Q({"bool": {"must":[
-                                                Q({"match": {"parameters.pn_id":str(param_id)}}),
-                                                 Q({"match": {"parameters.value":filter["content"]}})]}})}})
+                                                     Q({"match": {"parameters.value":filter["content"]}})]}})}})
 
 
-                        query_obj = query_obj & query_obj_filt
-                        if query_text is not None:
-                            if query_text is not "":
-                                query_obj_sens = query_obj_sens & query_obj_filt
+                            query_obj = query_obj & query_obj_filt
+                            if query_text is not None:
+                                if query_text is not "":
+                                    query_obj_sens = query_obj_sens & query_obj_filt
 
 
             ms = ms.add(Search(index=obj)
@@ -329,7 +333,7 @@ class SearchAppResource(Resource):
                                 safe_hit["_source"]["parameters"].pop(idxx)
 
                     # non-identical scores requires more complex comparison than just 'is in'
-                    if safe_hit["_source"]['id'] not in [obj["_source"]['id'] for obj in result_dict[hit["_index"]+"s"]]:
+                    if safe_hit["_source"]['id'] not in [objj["_source"]['id'] for objj in result_dict[hit["_index"]+"s"]]:
                         result_dict[hit["_index"]+"s"].append(safe_hit)
 
 
