@@ -262,6 +262,9 @@ class SearchAppResource(Resource):
 
 
                         query_obj = query_obj & query_obj_filt
+                        if query_text is not None:
+                            if query_text is not "":
+                                query_obj_sens = query_obj_sens & query_obj_filt
 
 
             ms = ms.add(Search(index=obj)
