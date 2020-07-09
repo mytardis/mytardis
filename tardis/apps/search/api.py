@@ -325,7 +325,8 @@ class SearchAppResource(Resource):
                             if is_sensitive.sensitive_metadata:
                                 safe_hit["_source"]["parameters"].pop(idxx)
 
-                    if safe_hit not in result_dict[hit["_index"]+"s"]:
+                    # non-identical scores requires more complex comparison than just 'is in'
+                    if safe_hit["_source"]['id'] not in [obj["_source"]['id'] for obj in result_dict[hit["_index"]+"s"]]:
                         result_dict[hit["_index"]+"s"].append(safe_hit)
 
 
