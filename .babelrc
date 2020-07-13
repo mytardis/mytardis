@@ -1,4 +1,11 @@
 {
-  "presets": ["@babel/preset-env", "@babel/preset-react"],
+  "presets": [["@babel/preset-env",{
+    // Add polyfill for functions which are
+    // not supported by all browsers.
+    "useBuiltIns": "usage",
+    "targets": "defaults",
+    "corejs":3,
+    "bugfixes": true
+  }], "@babel/preset-react"],
   "plugins": ["@babel/plugin-proposal-class-properties"]
 }
