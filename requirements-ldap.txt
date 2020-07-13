@@ -1,1 +1,1 @@
-python-ldap==3.3.0
+python-ldap==3.3.1
