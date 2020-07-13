@@ -5,7 +5,7 @@ import DatafileCountBadge from '../../badges/components/DatafileCountBadge';
 import DatasetSizeBadge from '../../badges/components/DatasetSizeBadge';
 
 const DatasetTile = ({
-  data, listName, index, onDownloadSelect,
+  data, listName, index, onDownloadSelect, showDownloadCheckbox,
 }) => {
   const experimentData = {
     datafile_count: data.file_count,
@@ -31,22 +31,25 @@ const DatasetTile = ({
                   <i className="fa fa-folder-open o-6" />
                 </div>
                 <br />
-                <label
-                  className="label label-info"
-                  htmlFor={`dataset-checkbox-${data.id}`}
-                  title="Mark dataset for download"
-                >
-                  <i className="fa fa-download" />
-                  <input
-                    id={`dataset-checkbox-${data.id}`}
-                    name="dataset"
-                    type="checkbox"
-                    onChange={e => onCheckBoxSelect(data.id, e)}
-                    className="dataset_checkbox ml-2"
-                    style={{ display: 'inline' }}
-                    value={data.id}
-                  />
-                </label>
+                {showDownloadCheckbox
+                  ? (
+                    <label
+                      className="label label-info"
+                      htmlFor={`dataset-checkbox-${data.id}`}
+                      title="Mark dataset for download"
+                    >
+                      <i className="fa fa-download" />
+                      <input
+                        id={`dataset-checkbox-${data.id}`}
+                        name="dataset"
+                        type="checkbox"
+                        onChange={e => onCheckBoxSelect(data.id, e)}
+                        className="dataset_checkbox ml-2"
+                        style={{ display: 'inline' }}
+                        value={data.id}
+                      />
+                    </label>
+                  ) : ''}
               </div>
               <div className="float-left" style={{ marginRight: '10px' }} />
               <div className="float-right" style={{ textAlign: 'right' }}>
@@ -87,11 +90,15 @@ const DatasetTile = ({
 
   );
 };
+DatasetTile.defaultProps = {
+  showDownloadCheckbox: () => {},
+};
 DatasetTile.propTypes = {
   data: PropTypes.object.isRequired,
   listName: PropTypes.string.isRequired,
   index: PropTypes.number.isRequired,
   onDownloadSelect: PropTypes.func.isRequired,
+  showDownloadCheckbox: PropTypes.bool,
 };
 
 export default DatasetTile;
