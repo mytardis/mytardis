@@ -1,5 +1,6 @@
-/* eslint no-underscore-dangle: 0 */
-/* global _, s, Backbone, Mustache, isLoggedIn, sprintf */
+/*
+/!* eslint no-underscore-dangle: 0 *!/
+/!* global _, s, Backbone, Mustache, isLoggedIn, sprintf *!/
 Backbone.$ = window.$;
 require("jquery-ui");
 require("mustache");
@@ -324,3 +325,4 @@ export var MyTardis = (function() {
 
     return module;
 }());
+*/
