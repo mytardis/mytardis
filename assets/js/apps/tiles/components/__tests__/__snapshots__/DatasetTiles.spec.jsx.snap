@@ -385,23 +385,7 @@ exports[`render dataset tiles on page load should match snapshot 1`] = `
                   />
                 </div>
                 <br />
-                <label
-                  class="label label-info"
-                  for="dataset-checkbox-26"
-                  title="Mark dataset for download"
-                >
-                  <i
-                    class="fa fa-download"
-                  />
-                  <input
-                    class="dataset_checkbox ml-2"
-                    id="dataset-checkbox-26"
-                    name="dataset"
-                    style="display: inline;"
-                    type="checkbox"
-                    value="26"
-                  />
-                </label>
+                
               </div>
               <div
                 class="float-left"
@@ -489,23 +473,7 @@ exports[`render dataset tiles on page load should match snapshot 1`] = `
                   />
                 </div>
                 <br />
-                <label
-                  class="label label-info"
-                  for="dataset-checkbox-30"
-                  title="Mark dataset for download"
-                >
-                  <i
-                    class="fa fa-download"
-                  />
-                  <input
-                    class="dataset_checkbox ml-2"
-                    id="dataset-checkbox-30"
-                    name="dataset"
-                    style="display: inline;"
-                    type="checkbox"
-                    value="30"
-                  />
-                </label>
+                
               </div>
               <div
                 class="float-left"

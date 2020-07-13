@@ -8,38 +8,42 @@ const DatasetTiles = ({ data, listName, onDownloadSelect }) => {
   };
   return (
     <Fragment>
-      {listName === 'share-list' ? (
-        <ul className="datasets thumbnails">
-          {data.map(
-            (dataset, index) => (
-              <DatasetTile
-                data={dataset}
-                key={data.id}
-                index={index}
-                listName={listName}
-                onDownloadSelect={onCheckboxSelected}
-                showDownloadCheckbox={false}
-              />
-            ),
-          )}
-        </ul>
-      ) : (
-        <ul>
-          {data.map(
-            (dataset, index) => (
-              <DatasetTile
-                data={dataset}
-                key={data.id}
-                index={index}
-                listName={listName}
-                onDownloadSelect={onCheckboxSelected}
-                showDownloadCheckbox
-              />
-            ),
-          )}
-        </ul>
-      )
-       }
+      {listName === 'share-list'
+        ? (
+          <ul className="datasets thumbnails">
+            {data.map(
+              (dataset, index) => (
+                <DatasetTile
+                  data={dataset}
+                  key={data.id}
+                  index={index}
+                  listName={listName}
+                  showDownloadCheckbox={false}
+                />
+              ),
+            )}
+          </ul>
+        )
+        : (
+          <ul className="datasets thumbnails">
+            {data.map(
+              (dataset, index) => (
+                <DatasetTile
+                  data={dataset}
+                  key={data.id}
+                  index={index}
+                  listName={listName}
+                  onDownloadSelect={onCheckboxSelected}
+                  showDownloadCheckbox
+                />
+              ),
+            )}
+          </ul>
+        )
+
+
+      }
+
     </Fragment>
   );
 };
