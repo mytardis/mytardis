@@ -1,4 +1,5 @@
 {% load static from staticfiles %}
+{% load render_bundle from webpack_loader %}
 {% load experiment_tags %}
 {% block script %}
 {% endblock %}
@@ -78,8 +79,7 @@
         <p>
             <dl>
               <dt>Current Public Access Settings</dt>
-              <dd style="padding-top: 5px;">
-                {{ experiment|experiment_public_access_badge }}
+              <dd style="padding-top: 5px;" class="public-badge" id="badge-{{ experiment.id }}">
               </dd>
             </dl>
             <dl>
@@ -168,5 +168,5 @@
     {% endif %}
     </div>
 </div>
-
+{% render_bundle 'public_access_badge' %}
 {% endblock %}

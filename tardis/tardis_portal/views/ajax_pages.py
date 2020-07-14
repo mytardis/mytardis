@@ -18,7 +18,6 @@ from ..models import Experiment, DataFile, Dataset, Schema, \
     DatafileParameterSet, UserProfile
 from ..shortcuts import return_response_error, \
     return_response_not_found, render_response_index
-from ..util import render_public_access_badge
 from ..views.pages import ExperimentView
 from ..views.utils import _add_protocols_and_organizations
 
@@ -289,17 +288,6 @@ def retrieve_datafile_list(
     }
     _add_protocols_and_organizations(request, None, c)
     return render_response_index(request, template_name, c)
-
-
-def experiment_public_access_badge(request, experiment_id):
-    try:
-        experiment = Experiment.objects.get(id=experiment_id)
-    except Experiment.DoesNotExist:
-        return HttpResponse('')
-
-    if authz.has_experiment_access(request, experiment_id):
-        return HttpResponse(render_public_access_badge(experiment))
-    return HttpResponse('')
 
 
 @authz.experiment_ownership_required
