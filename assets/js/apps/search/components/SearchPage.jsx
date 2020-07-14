@@ -11,10 +11,10 @@ export const PureSearchPage = () => {
             <Container fluid="xl" className="search-page">
                 <h1>Search</h1>
                 <Row className="search-screen">
-                    <Col md={4}>
+                    <Col as="aside" className="filter-column" md={4}>
                         <FilterSidebar />
                     </Col>
-                    <Col md={8}>
+                    <Col as="main" className="result-column" md={8}>
                         <ResultSection />
                     </Col>
                 </Row>

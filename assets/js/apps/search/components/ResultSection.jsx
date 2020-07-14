@@ -180,9 +180,9 @@ export function PureResultSection({resultSets, selected,
     }
 
     const currentResultSet = resultSets[selected],
-          currentCount = counts[selected];
+        currentCount = counts[selected];
     return (
-        <main>
+        <>
             <ResultTabs counts={counts} selectedType={selected} onChange={onSelect} />
             <div role="tabpanel">
                 {(!isLoading && !error) ?
@@ -191,7 +191,7 @@ export function PureResultSection({resultSets, selected,
                 }
                 <ResultList results={currentResultSet} isLoading={isLoading} error={error} />
             </div>
-        </main>
+        </>
     )
 }
 
