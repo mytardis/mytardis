@@ -10,9 +10,6 @@
 
 {% block script %}
 
-{% mustachejs "tardis_portal/badges/experiment_count" %}
-{% mustachejs "tardis_portal/badges/datafile_count" %}
-{% mustachejs "tardis_portal/badges/size" %}
 
 <input type="hidden" id="experiment-id" value="{{ experiment.id }}">
 <input type="hidden" id="csrf-token" value="{{ csrf_token }}">
