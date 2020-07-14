@@ -3,29 +3,6 @@ from django import template
 register = template.Library()
 
 
-@register.inclusion_tag('tardis_portal/experiment_tags/experiment_browse_item.html')
-def experiment_browse_item(experiment, **kwargs):
-    """
-    Displays an experiment for a browsing view.
-    """
-    show_images = kwargs.get('can_download') or \
-        experiment.public_access == experiment.PUBLIC_ACCESS_FULL
-    return {
-        'experiment': experiment,
-        'show_images': show_images
-    }
-
-
-@register.inclusion_tag('tardis_portal/experiment_tags/experiment_badges.html')
-def experiment_badges(experiment, **kwargs):
-    """
-    Displays badges for an experiment for displaying in an experiment list view
-    """
-    return {
-        'experiment': experiment
-    }
-
-
 @register.inclusion_tag('tardis_portal/experiment_tags/experiment_authors.html')
 def experiment_authors(experiment, **kwargs):
     """
