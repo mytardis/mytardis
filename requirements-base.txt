@@ -1,5 +1,5 @@
 Django==2.2.14 # pyup: >=2.2,<3
-Wand==0.6.1
+Wand==0.6.2
 amqp==2.6.0
 bleach==3.1.5
 boto3==1.14.12
@@ -22,7 +22,7 @@ html5lib==1.1
 isodate==0.6.0
 pyjwt==1.7.1
 kombu==4.6.11
-lxml==4.5.1
+lxml==4.5.2
 paramiko==2.7.1
 pillow==7.1.2
 pyoai==2.5.0
