@@ -4,6 +4,7 @@ import Button from 'react-bootstrap/Button';
 import PropTypes from 'prop-types';
 import Datetime from 'react-datetime';
 import moment from 'moment';
+import { nanoid } from 'nanoid';
 
 // React Datetime requires CSS to work.
 import 'react-datetime/css/react-datetime.css';
@@ -112,25 +113,29 @@ const DateRangeFilter = ({ value, options, onValueChange }) => {
         onValueChange(value);
     };
 
+    // Give the input boxes ids so labels can be tied back to the field.
+    const startFieldId = "start-"+nanoid(),
+        endFieldId = "end-"+nanoid();
+
     return (
         <Form className="date-range-filter" onSubmit={handleSubmit}>
                 <Form.Group className="date-range-filter__field">
-                    <Form.Label>Start date</Form.Label>
+                    <Form.Label htmlFor={startFieldId}>Start date</Form.Label>
                     <Datetime
                         value={localValue.start}
                         onChange={handleValueChange.bind(this, "start")}
-                        inputProps={{ placeholder: options.hintStart }}
+                        inputProps={{ placeholder: options.hintStart, id: startFieldId }}
                         closeOnSelect={true}
                         dateFormat="L"
                         timeFormat={false}
                     />
                 </Form.Group>
                 <Form.Group className="date-range-filter__field">
-                    <Form.Label>End date</Form.Label>
+                    <Form.Label htmlFor={endFieldId}>End date</Form.Label>
                     <Datetime
                         value={localValue.end}
                         onChange={handleValueChange.bind(this, "end")}
-                        inputProps={{ placeholder: options.hintEnd }}
+                        inputProps={{ placeholder: options.hintEnd, id: endFieldId }}
                         closeOnSelect={true}
                         dateFormat="L"
                         timeFormat={false}
