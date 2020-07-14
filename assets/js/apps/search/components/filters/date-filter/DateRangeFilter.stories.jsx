@@ -30,6 +30,12 @@ export const Default = () => (
     <DateRangeFilter {...dateRangeFilterData} />
 )
 
-export const Empty = () => (
-    <DateRangeFilter {...emptyDateRangeFilterData} />
-)
+export const Empty = (onValueChangeFn) => {
+    let props = emptyDateRangeFilterData;
+    if (onValueChangeFn) {
+        props = Object.assign({},emptyDateRangeFilterData, {
+            onValueChange: onValueChangeFn
+        })
+    }
+    return <DateRangeFilter {...props} />
+}
