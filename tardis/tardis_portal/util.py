@@ -2,7 +2,6 @@ import os
 
 from urllib.parse import quote
 
-import pystache
 import pytz
 
 from django.conf import settings

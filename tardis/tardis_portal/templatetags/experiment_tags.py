@@ -1,8 +1,4 @@
 from django import template
-from django.template.defaultfilters import pluralize, filesizeformat
-from django.contrib.humanize.templatetags.humanize import naturalday
-
-from ..util import get_local_time
 
 register = template.Library()
 
