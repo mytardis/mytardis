@@ -10,10 +10,16 @@ export default {
 };
 
 export const dateRangeFilterData = {
-    value: {
-        start: "2020-01-05",
-        end: "2020-05-28"
-    },
+    value: [
+        {
+            op:">=",
+            content: "2020-01-05"
+        },
+        {
+            op: "<=",
+            content: "2020-05-28"
+        }
+    ],
     onValueChange: action("Value changed"),
     options: {
         name: "CID Energy",
@@ -26,15 +32,21 @@ export const emptyDateRangeFilterData = Object.assign({},dateRangeFilterData, {
     value: null
 });
 
-export const Default = () => (
-    <DateRangeFilter {...dateRangeFilterData} />
-)
+export const Default = (storyMetadata,onValueChange) => {
+    let props = dateRangeFilterData;
+    if (onValueChange) {
+        props = Object.assign({}, dateRangeFilterData, {
+            onValueChange
+        })
+    }
+    return <DateRangeFilter {...props} />
+}
 
-export const Empty = (onValueChangeFn) => {
+export const Empty = (storyMetadata,onValueChange) => {
     let props = emptyDateRangeFilterData;
-    if (onValueChangeFn) {
+    if (onValueChange) {
         props = Object.assign({},emptyDateRangeFilterData, {
-            onValueChange: onValueChangeFn
+            onValueChange
         })
     }
     return <DateRangeFilter {...props} />

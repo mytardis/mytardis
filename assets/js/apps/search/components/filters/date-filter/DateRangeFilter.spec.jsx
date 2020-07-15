@@ -29,18 +29,40 @@ it('should change start date when end date becomes a date before it', async () =
 
 it('should callback with right value after submitting', async () => {
     const mockHandleChangeFn = jest.fn();
-    render(Empty(mockHandleChangeFn));
+    render(Empty(null,mockHandleChangeFn));
     const [startDateEl, endDateEl,filterButton] = getDateFields(screen);
     fireEvent.change(startDateEl, {target: {value: "01/05/2020"}});
     fireEvent.change(endDateEl, {target: {value: "01/07/2020"}});
     fireEvent.click(filterButton);
     await waitFor(
-        () => expect(mockHandleChangeFn).toBeCalledWith(
-            [
-                {op:">=",content:new Date("01/05/2020")},
-                {op:"<=",content: new Date("01/07/2020")}
-            ]
-        )
+        () => {
+            expect(mockHandleChangeFn).toHaveBeenCalledTimes(1);
+            expect(mockHandleChangeFn).toBeCalledWith(
+                [
+                    {op:">=",content:new Date("01/05/2020").toISOString()},
+                    {op:"<=",content: new Date("01/07/2020").toISOString()}
+                ]
+            );
+        }
     );
-
 });
+
+it('should callback with null after clearing a filter', async () => {
+    const mockHandleChangeFn = jest.fn();
+    render(Default(null,mockHandleChangeFn));
+    const [startDateEl, endDateEl,filterButton] = getDateFields(screen);
+    // Clear the dates
+    fireEvent.change(startDateEl, {target: {value: ""}});
+    fireEvent.change(endDateEl, {target: {value: ""}});
+    // Filter button should still be clickable to clear the field.
+    expect(filterButton.disabled).toBeFalsy();
+    fireEvent.click(filterButton);
+    await waitFor(
+        () => {
+            expect(mockHandleChangeFn).toHaveBeenCalledTimes(1);
+            expect(mockHandleChangeFn).toBeCalledWith(null);
+    });
+});
+
+
+// TODO Add test to check null is returned to clear a field
