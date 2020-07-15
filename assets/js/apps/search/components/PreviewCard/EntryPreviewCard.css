@@ -18,3 +18,10 @@
 .preview-card__button--right {
     display: block;
 }
+
+
+/* parameter table stuff below */
+
+.preview-card__parameter-table {
+    margin: 2rem 0rem;
+}
