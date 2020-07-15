@@ -22,7 +22,7 @@ export const dateRangeFilterData = {
     ],
     onValueChange: action("Value changed"),
     options: {
-        name: "CID Energy",
+        name: "cidEnergy",
         hintStart: "Start date",
         hintEnd: "End date"
     },

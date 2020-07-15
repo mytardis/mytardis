@@ -4,7 +4,6 @@ import Button from 'react-bootstrap/Button';
 import PropTypes from 'prop-types';
 import Datetime from 'react-datetime';
 import moment from 'moment';
-import { nanoid } from 'nanoid';
 
 // React Datetime requires CSS to work.
 import 'react-datetime/css/react-datetime.css';
@@ -73,7 +72,7 @@ const DateRangeFilter = ({ value, options, onValueChange }) => {
         options = {};
     }
     if (!options.name) {
-        options.name = "Missing filter name";
+        options.name = "missingFilterName";
     }
     if (!options.hint) {
         options.hint = "";
@@ -121,8 +120,8 @@ const DateRangeFilter = ({ value, options, onValueChange }) => {
     };
 
     // Give the input boxes ids so labels can be tied back to the field.
-    const startFieldId = "start-"+nanoid(),
-        endFieldId = "end-"+nanoid();
+    const startFieldId = "start-"+options.name,
+        endFieldId = "end-"+options.name;
 
     return (
         <Form className="date-range-filter" onSubmit={handleSubmit}>
@@ -163,7 +162,9 @@ const DateRangeFilter = ({ value, options, onValueChange }) => {
 
 DateRangeFilter.propTypes = {
     value: PropTypes.array,
-    options: PropTypes.object,
+    options: PropTypes.shape({
+        name: PropTypes.string.isRequired
+    }).isRequired,
     onValueChange: PropTypes.func.isRequired
 }
 
