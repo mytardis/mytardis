@@ -1,0 +1,16 @@
+.preview-card__body {
+    background-color: bisque;
+    padding: 1.5rem;
+}
+
+.preview-card__button-wrapper--right {
+    text-align: right;
+}
+
+.preview-card__inline-block-wrapper {
+    display: inline-block;
+}
+
+.preview-card__button--right {
+    display: block;
+}
