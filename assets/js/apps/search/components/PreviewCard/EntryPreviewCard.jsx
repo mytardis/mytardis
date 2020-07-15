@@ -83,7 +83,7 @@ export default function EntryPreviewCard(props) {
             </div>
             <div className="preview-card__button-wrapper--right">
                 <div className="preview-card__inline-block-wrapper">
-                    <Button className="preview-card__button--right" href="view/project/{{data.id}}" variant="link">View details</Button>
+                    <Button className="preview-card__button--right" href={`view/project/${data.id}`} variant="link">View details</Button>
                 </div>
             </div>
         </div>
