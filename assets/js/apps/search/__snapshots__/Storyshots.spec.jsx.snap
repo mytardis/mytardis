@@ -1051,6 +1051,225 @@ exports[`Storyshots Filter sidebar Default 1`] = `
 </div>
 `;
 
+exports[`Storyshots Filters/Category filter Check All By Default 1`] = `
+<div
+  style={
+    Object {
+      "padding": "3rem",
+      "width": "300px",
+    }
+  }
+>
+  <div
+    className="form-group"
+  >
+    <div
+      className="form-check"
+    >
+      <input
+        checked={true}
+        className="form-check-input"
+        disabled={false}
+        id="category-check-1DNseq"
+        onChange={[Function]}
+        type="checkbox"
+      />
+      <label
+        className="form-check-label"
+        htmlFor="category-check-1DNseq"
+        title=""
+      >
+        DNseq
+      </label>
+    </div>
+    <div
+      className="form-check"
+    >
+      <input
+        checked={true}
+        className="form-check-input"
+        disabled={false}
+        id="category-check-2RNseq"
+        onChange={[Function]}
+        type="checkbox"
+      />
+      <label
+        className="form-check-label"
+        htmlFor="category-check-2RNseq"
+        title=""
+      >
+        RNseq
+      </label>
+    </div>
+    <div
+      className="form-check"
+    >
+      <input
+        checked={true}
+        className="form-check-input"
+        disabled={false}
+        id="category-check-3Methylation"
+        onChange={[Function]}
+        type="checkbox"
+      />
+      <label
+        className="form-check-label"
+        htmlFor="category-check-3Methylation"
+        title=""
+      >
+        Methylation
+      </label>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`Storyshots Filters/Category filter Default 1`] = `
+<div
+  style={
+    Object {
+      "padding": "3rem",
+      "width": "300px",
+    }
+  }
+>
+  <div
+    className="form-group"
+  >
+    <div
+      className="form-check"
+    >
+      <input
+        checked={true}
+        className="form-check-input"
+        disabled={false}
+        id="category-check-1DNseq"
+        onChange={[Function]}
+        type="checkbox"
+      />
+      <label
+        className="form-check-label"
+        htmlFor="category-check-1DNseq"
+        title=""
+      >
+        DNseq
+      </label>
+    </div>
+    <div
+      className="form-check"
+    >
+      <input
+        checked={false}
+        className="form-check-input"
+        disabled={false}
+        id="category-check-2RNseq"
+        onChange={[Function]}
+        type="checkbox"
+      />
+      <label
+        className="form-check-label"
+        htmlFor="category-check-2RNseq"
+        title=""
+      >
+        RNseq
+      </label>
+    </div>
+    <div
+      className="form-check"
+    >
+      <input
+        checked={false}
+        className="form-check-input"
+        disabled={false}
+        id="category-check-3Methylation"
+        onChange={[Function]}
+        type="checkbox"
+      />
+      <label
+        className="form-check-label"
+        htmlFor="category-check-3Methylation"
+        title=""
+      >
+        Methylation
+      </label>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`Storyshots Filters/Category filter None Selected 1`] = `
+<div
+  style={
+    Object {
+      "padding": "3rem",
+      "width": "300px",
+    }
+  }
+>
+  <div
+    className="form-group"
+  >
+    <div
+      className="form-check"
+    >
+      <input
+        checked={false}
+        className="form-check-input"
+        disabled={false}
+        id="category-check-1DNseq"
+        onChange={[Function]}
+        type="checkbox"
+      />
+      <label
+        className="form-check-label"
+        htmlFor="category-check-1DNseq"
+        title=""
+      >
+        DNseq
+      </label>
+    </div>
+    <div
+      className="form-check"
+    >
+      <input
+        checked={false}
+        className="form-check-input"
+        disabled={false}
+        id="category-check-2RNseq"
+        onChange={[Function]}
+        type="checkbox"
+      />
+      <label
+        className="form-check-label"
+        htmlFor="category-check-2RNseq"
+        title=""
+      >
+        RNseq
+      </label>
+    </div>
+    <div
+      className="form-check"
+    >
+      <input
+        checked={false}
+        className="form-check-input"
+        disabled={false}
+        id="category-check-3Methylation"
+        onChange={[Function]}
+        type="checkbox"
+      />
+      <label
+        className="form-check-label"
+        htmlFor="category-check-3Methylation"
+        title=""
+      >
+        Methylation
+      </label>
+    </div>
+  </div>
+</div>
+`;
+
 exports[`Storyshots Filters/Date range filter Default 1`] = `
 <div
   style={
