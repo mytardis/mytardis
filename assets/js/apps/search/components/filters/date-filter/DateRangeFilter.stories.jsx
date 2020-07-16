@@ -7,6 +7,11 @@ export default {
   title: 'Filters/Date range filter',
   decorators: [story => <div style={{ padding: '3rem', width:"300px"  }}>{story()}</div>],
   excludeStories: /.*Data$/,
+  parameters: {
+    // Disabled snapshot testing as the datetime picker has a special class
+    // for which day is today - which changes daily and invalidates the test.
+    storyshots: { disable: true },
+  }
 };
 
 export const dateRangeFilterData = {
