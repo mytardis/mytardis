@@ -42,18 +42,14 @@ export const checkAllByDefaultCategoryData = Object.assign({},categoryData, {
     }
 });
 
-// const useStatefulProps = (props) => {
-//     const [categories, changeCategories] = useState(props.value);
-//     return Object.assign({},props,{
-//         value: categories,
-//         onValueChange: changeCategories
-//     });
-// }
 
-export const Default = () => (
-    // const [categoryValue, changeValue] = 
-    <CategoryFilter {...categoryData} />);
+const StatefulCategoryFilter = (props) => {
+    const [categories, changeCategories] = useState(props.value);
+    return <CategoryFilter {...props} value={categories} onValueChange={changeCategories} />
+}
 
-export const NoneSelected = () => (<CategoryFilter {...noneSelectedCategoryData} />);
+export const Default = () => (<StatefulCategoryFilter {...categoryData} />);
 
-export const CheckAllByDefault = () => (<CategoryFilter {...checkAllByDefaultCategoryData} />);
+export const NoneSelected = () => (<StatefulCategoryFilter {...noneSelectedCategoryData} />);
+
+export const CheckAllByDefault = () => (<StatefulCategoryFilter {...checkAllByDefaultCategoryData} />);

@@ -22,7 +22,16 @@ const CategoryFilter = ({value, onValueChange, options}) => {
         if (!currValue) {
             currValue = [];
         }
-        if (currValue.some(val => val.content === id)) {
+        if (currValue.length === 0 && checkAllByDefault){
+            // When checkAllByDefault is enabled and there is
+            // no current value, the user sees all of the options
+            // as checked, so the expected behaviour should be to
+            // uncheck the selected option, while keeping the others
+            // checekd.
+            newValue = categories.allIds.filter(arrayId => arrayId !== id).map(id => ({op:"is",content:id}));
+
+        } else if (currValue.some(val => val.content === id)) {
+            // If the option is already checked, we remove it from value.
             if (currValue.length == 1 && checkAllByDefault) {
                 // Prevent switching off all schemas.
                 return;
@@ -31,7 +40,8 @@ const CategoryFilter = ({value, onValueChange, options}) => {
             if (newValue.length == 0) {
                 newValue = null;
             }
-        } else {
+        }  else {
+            // In other cases, we assume we want to add the option to be selected.
             newValue = currValue.concat({op: "is", content: id});
             if (newValue.length === categories.allIds.length && checkAllByDefault) {
                 // If all categories are selected, then we remove this filter.
