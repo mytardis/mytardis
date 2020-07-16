@@ -159,14 +159,14 @@ exports[`Storyshots Filter sidebar Default 1`] = `
           role="tabpanel"
         >
           <div>
+            <h4
+              className="type-schema-list__title"
+            >
+              Show me
+            </h4>
             <div
               className="form-group"
             >
-              <label
-                className="form-label"
-              >
-                Show me
-              </label>
               <div
                 className="form-check"
               >
@@ -174,13 +174,13 @@ exports[`Storyshots Filter sidebar Default 1`] = `
                   checked={true}
                   className="form-check-input"
                   disabled={false}
-                  id="schemaCheck-1"
+                  id="category-check-1Raw data"
                   onChange={[Function]}
                   type="checkbox"
                 />
                 <label
                   className="form-check-label"
-                  htmlFor="schemaCheck-1"
+                  htmlFor="category-check-1Raw data"
                   title=""
                 >
                   Raw data
@@ -193,13 +193,13 @@ exports[`Storyshots Filter sidebar Default 1`] = `
                   checked={false}
                   className="form-check-input"
                   disabled={false}
-                  id="schemaCheck-2"
+                  id="category-check-2Biopipeline Output"
                   onChange={[Function]}
                   type="checkbox"
                 />
                 <label
                   className="form-check-label"
-                  htmlFor="schemaCheck-2"
+                  htmlFor="category-check-2Biopipeline Output"
                   title=""
                 >
                   Biopipeline Output
@@ -350,14 +350,14 @@ exports[`Storyshots Filter sidebar Default 1`] = `
           role="tabpanel"
         >
           <div>
+            <h4
+              className="type-schema-list__title"
+            >
+              Show me
+            </h4>
             <div
               className="form-group"
             >
-              <label
-                className="form-label"
-              >
-                Show me
-              </label>
               <div
                 className="form-check"
               >
@@ -365,13 +365,13 @@ exports[`Storyshots Filter sidebar Default 1`] = `
                   checked={false}
                   className="form-check-input"
                   disabled={false}
-                  id="schemaCheck-1"
+                  id="category-check-1Raw data"
                   onChange={[Function]}
                   type="checkbox"
                 />
                 <label
                   className="form-check-label"
-                  htmlFor="schemaCheck-1"
+                  htmlFor="category-check-1Raw data"
                   title=""
                 >
                   Raw data
@@ -384,13 +384,13 @@ exports[`Storyshots Filter sidebar Default 1`] = `
                   checked={true}
                   className="form-check-input"
                   disabled={false}
-                  id="schemaCheck-2"
+                  id="category-check-2Biopipeline Output"
                   onChange={[Function]}
                   type="checkbox"
                 />
                 <label
                   className="form-check-label"
-                  htmlFor="schemaCheck-2"
+                  htmlFor="category-check-2Biopipeline Output"
                   title=""
                 >
                   Biopipeline Output
@@ -541,14 +541,14 @@ exports[`Storyshots Filter sidebar Default 1`] = `
           role="tabpanel"
         >
           <div>
+            <h4
+              className="type-schema-list__title"
+            >
+              Show me
+            </h4>
             <div
               className="form-group"
             >
-              <label
-                className="form-label"
-              >
-                Show me
-              </label>
               <div
                 className="form-check"
               >
@@ -556,13 +556,13 @@ exports[`Storyshots Filter sidebar Default 1`] = `
                   checked={true}
                   className="form-check-input"
                   disabled={false}
-                  id="schemaCheck-1"
+                  id="category-check-1Raw data"
                   onChange={[Function]}
                   type="checkbox"
                 />
                 <label
                   className="form-check-label"
-                  htmlFor="schemaCheck-1"
+                  htmlFor="category-check-1Raw data"
                   title=""
                 >
                   Raw data
@@ -575,13 +575,13 @@ exports[`Storyshots Filter sidebar Default 1`] = `
                   checked={false}
                   className="form-check-input"
                   disabled={false}
-                  id="schemaCheck-2"
+                  id="category-check-2Biopipeline Output"
                   onChange={[Function]}
                   type="checkbox"
                 />
                 <label
                   className="form-check-label"
-                  htmlFor="schemaCheck-2"
+                  htmlFor="category-check-2Biopipeline Output"
                   title=""
                 >
                   Biopipeline Output
@@ -732,14 +732,14 @@ exports[`Storyshots Filter sidebar Default 1`] = `
           role="tabpanel"
         >
           <div>
+            <h4
+              className="type-schema-list__title"
+            >
+              Show me
+            </h4>
             <div
               className="form-group"
             >
-              <label
-                className="form-label"
-              >
-                Show me
-              </label>
               <div
                 className="form-check"
               >
@@ -747,13 +747,13 @@ exports[`Storyshots Filter sidebar Default 1`] = `
                   checked={true}
                   className="form-check-input"
                   disabled={false}
-                  id="schemaCheck-1"
+                  id="category-check-1Raw data"
                   onChange={[Function]}
                   type="checkbox"
                 />
                 <label
                   className="form-check-label"
-                  htmlFor="schemaCheck-1"
+                  htmlFor="category-check-1Raw data"
                   title=""
                 >
                   Raw data
@@ -766,13 +766,13 @@ exports[`Storyshots Filter sidebar Default 1`] = `
                   checked={true}
                   className="form-check-input"
                   disabled={false}
-                  id="schemaCheck-2"
+                  id="category-check-2Biopipeline Output"
                   onChange={[Function]}
                   type="checkbox"
                 />
                 <label
                   className="form-check-label"
-                  htmlFor="schemaCheck-2"
+                  htmlFor="category-check-2Biopipeline Output"
                   title=""
                 >
                   Biopipeline Output
@@ -1408,14 +1408,14 @@ Array [
           role="tabpanel"
         >
           <div>
+            <h4
+              className="type-schema-list__title"
+            >
+              Show me
+            </h4>
             <div
               className="form-group"
             >
-              <label
-                className="form-label"
-              >
-                Show me
-              </label>
               <div
                 className="form-check"
               >
@@ -1423,13 +1423,13 @@ Array [
                   checked={true}
                   className="form-check-input"
                   disabled={false}
-                  id="schemaCheck-1"
+                  id="category-check-1Raw data"
                   onChange={[Function]}
                   type="checkbox"
                 />
                 <label
                   className="form-check-label"
-                  htmlFor="schemaCheck-1"
+                  htmlFor="category-check-1Raw data"
                   title=""
                 >
                   Raw data
@@ -1442,13 +1442,13 @@ Array [
                   checked={false}
                   className="form-check-input"
                   disabled={false}
-                  id="schemaCheck-2"
+                  id="category-check-2Biopipeline Output"
                   onChange={[Function]}
                   type="checkbox"
                 />
                 <label
                   className="form-check-label"
-                  htmlFor="schemaCheck-2"
+                  htmlFor="category-check-2Biopipeline Output"
                   title=""
                 >
                   Biopipeline Output
@@ -1599,14 +1599,14 @@ Array [
           role="tabpanel"
         >
           <div>
+            <h4
+              className="type-schema-list__title"
+            >
+              Show me
+            </h4>
             <div
               className="form-group"
             >
-              <label
-                className="form-label"
-              >
-                Show me
-              </label>
               <div
                 className="form-check"
               >
@@ -1614,13 +1614,13 @@ Array [
                   checked={false}
                   className="form-check-input"
                   disabled={false}
-                  id="schemaCheck-1"
+                  id="category-check-1Raw data"
                   onChange={[Function]}
                   type="checkbox"
                 />
                 <label
                   className="form-check-label"
-                  htmlFor="schemaCheck-1"
+                  htmlFor="category-check-1Raw data"
                   title=""
                 >
                   Raw data
@@ -1633,13 +1633,13 @@ Array [
                   checked={true}
                   className="form-check-input"
                   disabled={false}
-                  id="schemaCheck-2"
+                  id="category-check-2Biopipeline Output"
                   onChange={[Function]}
                   type="checkbox"
                 />
                 <label
                   className="form-check-label"
-                  htmlFor="schemaCheck-2"
+                  htmlFor="category-check-2Biopipeline Output"
                   title=""
                 >
                   Biopipeline Output
@@ -1790,14 +1790,14 @@ Array [
           role="tabpanel"
         >
           <div>
+            <h4
+              className="type-schema-list__title"
+            >
+              Show me
+            </h4>
             <div
               className="form-group"
             >
-              <label
-                className="form-label"
-              >
-                Show me
-              </label>
               <div
                 className="form-check"
               >
@@ -1805,13 +1805,13 @@ Array [
                   checked={true}
                   className="form-check-input"
                   disabled={false}
-                  id="schemaCheck-1"
+                  id="category-check-1Raw data"
                   onChange={[Function]}
                   type="checkbox"
                 />
                 <label
                   className="form-check-label"
-                  htmlFor="schemaCheck-1"
+                  htmlFor="category-check-1Raw data"
                   title=""
                 >
                   Raw data
@@ -1824,13 +1824,13 @@ Array [
                   checked={false}
                   className="form-check-input"
                   disabled={false}
-                  id="schemaCheck-2"
+                  id="category-check-2Biopipeline Output"
                   onChange={[Function]}
                   type="checkbox"
                 />
                 <label
                   className="form-check-label"
-                  htmlFor="schemaCheck-2"
+                  htmlFor="category-check-2Biopipeline Output"
                   title=""
                 >
                   Biopipeline Output
@@ -1981,14 +1981,14 @@ Array [
           role="tabpanel"
         >
           <div>
+            <h4
+              className="type-schema-list__title"
+            >
+              Show me
+            </h4>
             <div
               className="form-group"
             >
-              <label
-                className="form-label"
-              >
-                Show me
-              </label>
               <div
                 className="form-check"
               >
@@ -1996,13 +1996,13 @@ Array [
                   checked={true}
                   className="form-check-input"
                   disabled={false}
-                  id="schemaCheck-1"
+                  id="category-check-1Raw data"
                   onChange={[Function]}
                   type="checkbox"
                 />
                 <label
                   className="form-check-label"
-                  htmlFor="schemaCheck-1"
+                  htmlFor="category-check-1Raw data"
                   title=""
                 >
                   Raw data
@@ -2015,13 +2015,13 @@ Array [
                   checked={true}
                   className="form-check-input"
                   disabled={false}
-                  id="schemaCheck-2"
+                  id="category-check-2Biopipeline Output"
                   onChange={[Function]}
                   type="checkbox"
                 />
                 <label
                   className="form-check-label"
-                  htmlFor="schemaCheck-2"
+                  htmlFor="category-check-2Biopipeline Output"
                   title=""
                 >
                   Biopipeline Output
@@ -2551,14 +2551,14 @@ exports[`Storyshots Filters/Type schema list Default 1`] = `
   }
 >
   <div>
+    <h4
+      className="type-schema-list__title"
+    >
+      Show me
+    </h4>
     <div
       className="form-group"
     >
-      <label
-        className="form-label"
-      >
-        Show me
-      </label>
       <div
         className="form-check"
       >
@@ -2566,13 +2566,13 @@ exports[`Storyshots Filters/Type schema list Default 1`] = `
           checked={true}
           className="form-check-input"
           disabled={false}
-          id="schemaCheck-1"
+          id="category-check-1Raw data"
           onChange={[Function]}
           type="checkbox"
         />
         <label
           className="form-check-label"
-          htmlFor="schemaCheck-1"
+          htmlFor="category-check-1Raw data"
           title=""
         >
           Raw data
@@ -2585,13 +2585,13 @@ exports[`Storyshots Filters/Type schema list Default 1`] = `
           checked={true}
           className="form-check-input"
           disabled={false}
-          id="schemaCheck-2"
+          id="category-check-2Biopipeline Output"
           onChange={[Function]}
           type="checkbox"
         />
         <label
           className="form-check-label"
-          htmlFor="schemaCheck-2"
+          htmlFor="category-check-2Biopipeline Output"
           title=""
         >
           Biopipeline Output
@@ -2876,14 +2876,14 @@ exports[`Storyshots Filters/Type schema list No Schema Selected 1`] = `
   }
 >
   <div>
+    <h4
+      className="type-schema-list__title"
+    >
+      Show me
+    </h4>
     <div
       className="form-group"
     >
-      <label
-        className="form-label"
-      >
-        Show me
-      </label>
       <div
         className="form-check"
       >
@@ -2891,13 +2891,13 @@ exports[`Storyshots Filters/Type schema list No Schema Selected 1`] = `
           checked={true}
           className="form-check-input"
           disabled={false}
-          id="schemaCheck-1"
+          id="category-check-1Raw data"
           onChange={[Function]}
           type="checkbox"
         />
         <label
           className="form-check-label"
-          htmlFor="schemaCheck-1"
+          htmlFor="category-check-1Raw data"
           title=""
         >
           Raw data
@@ -2910,13 +2910,13 @@ exports[`Storyshots Filters/Type schema list No Schema Selected 1`] = `
           checked={true}
           className="form-check-input"
           disabled={false}
-          id="schemaCheck-2"
+          id="category-check-2Biopipeline Output"
           onChange={[Function]}
           type="checkbox"
         />
         <label
           className="form-check-label"
-          htmlFor="schemaCheck-2"
+          htmlFor="category-check-2Biopipeline Output"
           title=""
         >
           Biopipeline Output
@@ -3221,14 +3221,14 @@ exports[`Storyshots Filters/Type schema list Only One Selected 1`] = `
   }
 >
   <div>
+    <h4
+      className="type-schema-list__title"
+    >
+      Show me
+    </h4>
     <div
       className="form-group"
     >
-      <label
-        className="form-label"
-      >
-        Show me
-      </label>
       <div
         className="form-check"
       >
@@ -3236,13 +3236,13 @@ exports[`Storyshots Filters/Type schema list Only One Selected 1`] = `
           checked={true}
           className="form-check-input"
           disabled={false}
-          id="schemaCheck-1"
+          id="category-check-1Raw data"
           onChange={[Function]}
           type="checkbox"
         />
         <label
           className="form-check-label"
-          htmlFor="schemaCheck-1"
+          htmlFor="category-check-1Raw data"
           title=""
         >
           Raw data
@@ -3255,13 +3255,13 @@ exports[`Storyshots Filters/Type schema list Only One Selected 1`] = `
           checked={false}
           className="form-check-input"
           disabled={false}
-          id="schemaCheck-2"
+          id="category-check-2Biopipeline Output"
           onChange={[Function]}
           type="checkbox"
         />
         <label
           className="form-check-label"
-          htmlFor="schemaCheck-2"
+          htmlFor="category-check-2Biopipeline Output"
           title=""
         >
           Biopipeline Output
@@ -4238,14 +4238,14 @@ exports[`Storyshots Search page Default 1`] = `
               role="tabpanel"
             >
               <div>
+                <h4
+                  className="type-schema-list__title"
+                >
+                  Show me
+                </h4>
                 <div
                   className="form-group"
                 >
-                  <label
-                    className="form-label"
-                  >
-                    Show me
-                  </label>
                   <div
                     className="form-check"
                   >
@@ -4253,13 +4253,13 @@ exports[`Storyshots Search page Default 1`] = `
                       checked={true}
                       className="form-check-input"
                       disabled={false}
-                      id="schemaCheck-1"
+                      id="category-check-1Raw data"
                       onChange={[Function]}
                       type="checkbox"
                     />
                     <label
                       className="form-check-label"
-                      htmlFor="schemaCheck-1"
+                      htmlFor="category-check-1Raw data"
                       title=""
                     >
                       Raw data
@@ -4272,13 +4272,13 @@ exports[`Storyshots Search page Default 1`] = `
                       checked={false}
                       className="form-check-input"
                       disabled={false}
-                      id="schemaCheck-2"
+                      id="category-check-2Biopipeline Output"
                       onChange={[Function]}
                       type="checkbox"
                     />
                     <label
                       className="form-check-label"
-                      htmlFor="schemaCheck-2"
+                      htmlFor="category-check-2Biopipeline Output"
                       title=""
                     >
                       Biopipeline Output
@@ -4429,14 +4429,14 @@ exports[`Storyshots Search page Default 1`] = `
               role="tabpanel"
             >
               <div>
+                <h4
+                  className="type-schema-list__title"
+                >
+                  Show me
+                </h4>
                 <div
                   className="form-group"
                 >
-                  <label
-                    className="form-label"
-                  >
-                    Show me
-                  </label>
                   <div
                     className="form-check"
                   >
@@ -4444,13 +4444,13 @@ exports[`Storyshots Search page Default 1`] = `
                       checked={false}
                       className="form-check-input"
                       disabled={false}
-                      id="schemaCheck-1"
+                      id="category-check-1Raw data"
                       onChange={[Function]}
                       type="checkbox"
                     />
                     <label
                       className="form-check-label"
-                      htmlFor="schemaCheck-1"
+                      htmlFor="category-check-1Raw data"
                       title=""
                     >
                       Raw data
@@ -4463,13 +4463,13 @@ exports[`Storyshots Search page Default 1`] = `
                       checked={true}
                       className="form-check-input"
                       disabled={false}
-                      id="schemaCheck-2"
+                      id="category-check-2Biopipeline Output"
                       onChange={[Function]}
                       type="checkbox"
                     />
                     <label
                       className="form-check-label"
-                      htmlFor="schemaCheck-2"
+                      htmlFor="category-check-2Biopipeline Output"
                       title=""
                     >
                       Biopipeline Output
@@ -4620,14 +4620,14 @@ exports[`Storyshots Search page Default 1`] = `
               role="tabpanel"
             >
               <div>
+                <h4
+                  className="type-schema-list__title"
+                >
+                  Show me
+                </h4>
                 <div
                   className="form-group"
                 >
-                  <label
-                    className="form-label"
-                  >
-                    Show me
-                  </label>
                   <div
                     className="form-check"
                   >
@@ -4635,13 +4635,13 @@ exports[`Storyshots Search page Default 1`] = `
                       checked={true}
                       className="form-check-input"
                       disabled={false}
-                      id="schemaCheck-1"
+                      id="category-check-1Raw data"
                       onChange={[Function]}
                       type="checkbox"
                     />
                     <label
                       className="form-check-label"
-                      htmlFor="schemaCheck-1"
+                      htmlFor="category-check-1Raw data"
                       title=""
                     >
                       Raw data
@@ -4654,13 +4654,13 @@ exports[`Storyshots Search page Default 1`] = `
                       checked={false}
                       className="form-check-input"
                       disabled={false}
-                      id="schemaCheck-2"
+                      id="category-check-2Biopipeline Output"
                       onChange={[Function]}
                       type="checkbox"
                     />
                     <label
                       className="form-check-label"
-                      htmlFor="schemaCheck-2"
+                      htmlFor="category-check-2Biopipeline Output"
                       title=""
                     >
                       Biopipeline Output
@@ -4811,14 +4811,14 @@ exports[`Storyshots Search page Default 1`] = `
               role="tabpanel"
             >
               <div>
+                <h4
+                  className="type-schema-list__title"
+                >
+                  Show me
+                </h4>
                 <div
                   className="form-group"
                 >
-                  <label
-                    className="form-label"
-                  >
-                    Show me
-                  </label>
                   <div
                     className="form-check"
                   >
@@ -4826,13 +4826,13 @@ exports[`Storyshots Search page Default 1`] = `
                       checked={true}
                       className="form-check-input"
                       disabled={false}
-                      id="schemaCheck-1"
+                      id="category-check-1Raw data"
                       onChange={[Function]}
                       type="checkbox"
                     />
                     <label
                       className="form-check-label"
-                      htmlFor="schemaCheck-1"
+                      htmlFor="category-check-1Raw data"
                       title=""
                     >
                       Raw data
@@ -4845,13 +4845,13 @@ exports[`Storyshots Search page Default 1`] = `
                       checked={true}
                       className="form-check-input"
                       disabled={false}
-                      id="schemaCheck-2"
+                      id="category-check-2Biopipeline Output"
                       onChange={[Function]}
                       type="checkbox"
                     />
                     <label
                       className="form-check-label"
-                      htmlFor="schemaCheck-2"
+                      htmlFor="category-check-2Biopipeline Output"
                       title=""
                     >
                       Biopipeline Output
@@ -5547,14 +5547,14 @@ exports[`Storyshots Search page Error 1`] = `
               role="tabpanel"
             >
               <div>
+                <h4
+                  className="type-schema-list__title"
+                >
+                  Show me
+                </h4>
                 <div
                   className="form-group"
                 >
-                  <label
-                    className="form-label"
-                  >
-                    Show me
-                  </label>
                   <div
                     className="form-check"
                   >
@@ -5562,13 +5562,13 @@ exports[`Storyshots Search page Error 1`] = `
                       checked={true}
                       className="form-check-input"
                       disabled={false}
-                      id="schemaCheck-1"
+                      id="category-check-1Raw data"
                       onChange={[Function]}
                       type="checkbox"
                     />
                     <label
                       className="form-check-label"
-                      htmlFor="schemaCheck-1"
+                      htmlFor="category-check-1Raw data"
                       title=""
                     >
                       Raw data
@@ -5581,13 +5581,13 @@ exports[`Storyshots Search page Error 1`] = `
                       checked={false}
                       className="form-check-input"
                       disabled={false}
-                      id="schemaCheck-2"
+                      id="category-check-2Biopipeline Output"
                       onChange={[Function]}
                       type="checkbox"
                     />
                     <label
                       className="form-check-label"
-                      htmlFor="schemaCheck-2"
+                      htmlFor="category-check-2Biopipeline Output"
                       title=""
                     >
                       Biopipeline Output
@@ -5738,14 +5738,14 @@ exports[`Storyshots Search page Error 1`] = `
               role="tabpanel"
             >
               <div>
+                <h4
+                  className="type-schema-list__title"
+                >
+                  Show me
+                </h4>
                 <div
                   className="form-group"
                 >
-                  <label
-                    className="form-label"
-                  >
-                    Show me
-                  </label>
                   <div
                     className="form-check"
                   >
@@ -5753,13 +5753,13 @@ exports[`Storyshots Search page Error 1`] = `
                       checked={false}
                       className="form-check-input"
                       disabled={false}
-                      id="schemaCheck-1"
+                      id="category-check-1Raw data"
                       onChange={[Function]}
                       type="checkbox"
                     />
                     <label
                       className="form-check-label"
-                      htmlFor="schemaCheck-1"
+                      htmlFor="category-check-1Raw data"
                       title=""
                     >
                       Raw data
@@ -5772,13 +5772,13 @@ exports[`Storyshots Search page Error 1`] = `
                       checked={true}
                       className="form-check-input"
                       disabled={false}
-                      id="schemaCheck-2"
+                      id="category-check-2Biopipeline Output"
                       onChange={[Function]}
                       type="checkbox"
                     />
                     <label
                       className="form-check-label"
-                      htmlFor="schemaCheck-2"
+                      htmlFor="category-check-2Biopipeline Output"
                       title=""
                     >
                       Biopipeline Output
@@ -5929,14 +5929,14 @@ exports[`Storyshots Search page Error 1`] = `
               role="tabpanel"
             >
               <div>
+                <h4
+                  className="type-schema-list__title"
+                >
+                  Show me
+                </h4>
                 <div
                   className="form-group"
                 >
-                  <label
-                    className="form-label"
-                  >
-                    Show me
-                  </label>
                   <div
                     className="form-check"
                   >
@@ -5944,13 +5944,13 @@ exports[`Storyshots Search page Error 1`] = `
                       checked={true}
                       className="form-check-input"
                       disabled={false}
-                      id="schemaCheck-1"
+                      id="category-check-1Raw data"
                       onChange={[Function]}
                       type="checkbox"
                     />
                     <label
                       className="form-check-label"
-                      htmlFor="schemaCheck-1"
+                      htmlFor="category-check-1Raw data"
                       title=""
                     >
                       Raw data
@@ -5963,13 +5963,13 @@ exports[`Storyshots Search page Error 1`] = `
                       checked={false}
                       className="form-check-input"
                       disabled={false}
-                      id="schemaCheck-2"
+                      id="category-check-2Biopipeline Output"
                       onChange={[Function]}
                       type="checkbox"
                     />
                     <label
                       className="form-check-label"
-                      htmlFor="schemaCheck-2"
+                      htmlFor="category-check-2Biopipeline Output"
                       title=""
                     >
                       Biopipeline Output
@@ -6120,14 +6120,14 @@ exports[`Storyshots Search page Error 1`] = `
               role="tabpanel"
             >
               <div>
+                <h4
+                  className="type-schema-list__title"
+                >
+                  Show me
+                </h4>
                 <div
                   className="form-group"
                 >
-                  <label
-                    className="form-label"
-                  >
-                    Show me
-                  </label>
                   <div
                     className="form-check"
                   >
@@ -6135,13 +6135,13 @@ exports[`Storyshots Search page Error 1`] = `
                       checked={true}
                       className="form-check-input"
                       disabled={false}
-                      id="schemaCheck-1"
+                      id="category-check-1Raw data"
                       onChange={[Function]}
                       type="checkbox"
                     />
                     <label
                       className="form-check-label"
-                      htmlFor="schemaCheck-1"
+                      htmlFor="category-check-1Raw data"
                       title=""
                     >
                       Raw data
@@ -6154,13 +6154,13 @@ exports[`Storyshots Search page Error 1`] = `
                       checked={true}
                       className="form-check-input"
                       disabled={false}
-                      id="schemaCheck-2"
+                      id="category-check-2Biopipeline Output"
                       onChange={[Function]}
                       type="checkbox"
                     />
                     <label
                       className="form-check-label"
-                      htmlFor="schemaCheck-2"
+                      htmlFor="category-check-2Biopipeline Output"
                       title=""
                     >
                       Biopipeline Output
@@ -6685,14 +6685,14 @@ exports[`Storyshots Search page Loading 1`] = `
               role="tabpanel"
             >
               <div>
+                <h4
+                  className="type-schema-list__title"
+                >
+                  Show me
+                </h4>
                 <div
                   className="form-group"
                 >
-                  <label
-                    className="form-label"
-                  >
-                    Show me
-                  </label>
                   <div
                     className="form-check"
                   >
@@ -6700,13 +6700,13 @@ exports[`Storyshots Search page Loading 1`] = `
                       checked={true}
                       className="form-check-input"
                       disabled={false}
-                      id="schemaCheck-1"
+                      id="category-check-1Raw data"
                       onChange={[Function]}
                       type="checkbox"
                     />
                     <label
                       className="form-check-label"
-                      htmlFor="schemaCheck-1"
+                      htmlFor="category-check-1Raw data"
                       title=""
                     >
                       Raw data
@@ -6719,13 +6719,13 @@ exports[`Storyshots Search page Loading 1`] = `
                       checked={false}
                       className="form-check-input"
                       disabled={false}
-                      id="schemaCheck-2"
+                      id="category-check-2Biopipeline Output"
                       onChange={[Function]}
                       type="checkbox"
                     />
                     <label
                       className="form-check-label"
-                      htmlFor="schemaCheck-2"
+                      htmlFor="category-check-2Biopipeline Output"
                       title=""
                     >
                       Biopipeline Output
@@ -6876,14 +6876,14 @@ exports[`Storyshots Search page Loading 1`] = `
               role="tabpanel"
             >
               <div>
+                <h4
+                  className="type-schema-list__title"
+                >
+                  Show me
+                </h4>
                 <div
                   className="form-group"
                 >
-                  <label
-                    className="form-label"
-                  >
-                    Show me
-                  </label>
                   <div
                     className="form-check"
                   >
@@ -6891,13 +6891,13 @@ exports[`Storyshots Search page Loading 1`] = `
                       checked={false}
                       className="form-check-input"
                       disabled={false}
-                      id="schemaCheck-1"
+                      id="category-check-1Raw data"
                       onChange={[Function]}
                       type="checkbox"
                     />
                     <label
                       className="form-check-label"
-                      htmlFor="schemaCheck-1"
+                      htmlFor="category-check-1Raw data"
                       title=""
                     >
                       Raw data
@@ -6910,13 +6910,13 @@ exports[`Storyshots Search page Loading 1`] = `
                       checked={true}
                       className="form-check-input"
                       disabled={false}
-                      id="schemaCheck-2"
+                      id="category-check-2Biopipeline Output"
                       onChange={[Function]}
                       type="checkbox"
                     />
                     <label
                       className="form-check-label"
-                      htmlFor="schemaCheck-2"
+                      htmlFor="category-check-2Biopipeline Output"
                       title=""
                     >
                       Biopipeline Output
@@ -7067,14 +7067,14 @@ exports[`Storyshots Search page Loading 1`] = `
               role="tabpanel"
             >
               <div>
+                <h4
+                  className="type-schema-list__title"
+                >
+                  Show me
+                </h4>
                 <div
                   className="form-group"
                 >
-                  <label
-                    className="form-label"
-                  >
-                    Show me
-                  </label>
                   <div
                     className="form-check"
                   >
@@ -7082,13 +7082,13 @@ exports[`Storyshots Search page Loading 1`] = `
                       checked={true}
                       className="form-check-input"
                       disabled={false}
-                      id="schemaCheck-1"
+                      id="category-check-1Raw data"
                       onChange={[Function]}
                       type="checkbox"
                     />
                     <label
                       className="form-check-label"
-                      htmlFor="schemaCheck-1"
+                      htmlFor="category-check-1Raw data"
                       title=""
                     >
                       Raw data
@@ -7101,13 +7101,13 @@ exports[`Storyshots Search page Loading 1`] = `
                       checked={false}
                       className="form-check-input"
                       disabled={false}
-                      id="schemaCheck-2"
+                      id="category-check-2Biopipeline Output"
                       onChange={[Function]}
                       type="checkbox"
                     />
                     <label
                       className="form-check-label"
-                      htmlFor="schemaCheck-2"
+                      htmlFor="category-check-2Biopipeline Output"
                       title=""
                     >
                       Biopipeline Output
@@ -7258,14 +7258,14 @@ exports[`Storyshots Search page Loading 1`] = `
               role="tabpanel"
             >
               <div>
+                <h4
+                  className="type-schema-list__title"
+                >
+                  Show me
+                </h4>
                 <div
                   className="form-group"
                 >
-                  <label
-                    className="form-label"
-                  >
-                    Show me
-                  </label>
                   <div
                     className="form-check"
                   >
@@ -7273,13 +7273,13 @@ exports[`Storyshots Search page Loading 1`] = `
                       checked={true}
                       className="form-check-input"
                       disabled={false}
-                      id="schemaCheck-1"
+                      id="category-check-1Raw data"
                       onChange={[Function]}
                       type="checkbox"
                     />
                     <label
                       className="form-check-label"
-                      htmlFor="schemaCheck-1"
+                      htmlFor="category-check-1Raw data"
                       title=""
                     >
                       Raw data
@@ -7292,13 +7292,13 @@ exports[`Storyshots Search page Loading 1`] = `
                       checked={true}
                       className="form-check-input"
                       disabled={false}
-                      id="schemaCheck-2"
+                      id="category-check-2Biopipeline Output"
                       onChange={[Function]}
                       type="checkbox"
                     />
                     <label
                       className="form-check-label"
-                      htmlFor="schemaCheck-2"
+                      htmlFor="category-check-2Biopipeline Output"
                       title=""
                     >
                       Biopipeline Output

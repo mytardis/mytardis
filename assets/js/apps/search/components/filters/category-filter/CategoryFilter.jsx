@@ -2,6 +2,8 @@ import React, { useState, useCallback } from 'react'
 import PropTypes from 'prop-types';
 import Form from "react-bootstrap/Form";
 
+const makeIsFilterValue = (content) => ({op:"is",content});
+
 const CategoryFilter = ({value, onValueChange, options}) => {
     const { categories, checkAllByDefault = false } = options;
 
@@ -14,39 +16,37 @@ const CategoryFilter = ({value, onValueChange, options}) => {
             return checkAllByDefault;
         }
         // Otherwise, check if ID is one of the filter vlaues.
-        return value.some(val => val.content === id);
+        return value.content.some(val => val === id);
     },[value, checkAllByDefault]);
 
     const handleChecked = useCallback((id) => {
         let currValue = value, newValue;
         if (!currValue) {
-            currValue = [];
+            currValue = makeIsFilterValue([]);
         }
-        if (currValue.length === 0 && checkAllByDefault){
+        if (currValue.content.length === 0 && checkAllByDefault){
             // When checkAllByDefault is enabled and there is
             // no current value, the user sees all of the options
             // as checked, so the expected behaviour should be to
             // uncheck the selected option, while keeping the others
             // checekd.
-            newValue = categories.allIds.filter(arrayId => arrayId !== id).map(id => ({op:"is",content:id}));
+            newValue = makeIsFilterValue(categories.allIds.filter(arrayId => arrayId !== id));
 
-        } else if (currValue.some(val => val.content === id)) {
+        } else if (currValue.content.some(val => val === id)) {
             // If the option is already checked, we remove it from value.
-            if (currValue.length == 1 && checkAllByDefault) {
+            if (currValue.content.length == 1 && checkAllByDefault) {
                 // Prevent switching off all schemas.
                 return;
             }
-            newValue = currValue.filter(val => val.content !== id);
-            if (newValue.length == 0) {
-                newValue = null;
-            }
+            newValue = makeIsFilterValue(currValue.content.filter(val => val !== id));
         }  else {
             // In other cases, we assume we want to add the option to be selected.
-            newValue = currValue.concat({op: "is", content: id});
-            if (newValue.length === categories.allIds.length && checkAllByDefault) {
-                // If all categories are selected, then we remove this filter.
-                newValue = null;
-            }
+            newValue = makeIsFilterValue(currValue.content.concat(id));
+
+        }
+        if (newValue.content.length === 0 || (newValue.content.length === categories.allIds.length && checkAllByDefault)){
+            // If all categories are selected, then we remove this filter.
+            newValue = null;
         }
         onValueChange(newValue);
     },[value, checkAllByDefault, categories.allIds]);
@@ -74,7 +74,7 @@ const CategoryFilter = ({value, onValueChange, options}) => {
 }
 
 CategoryFilter.propTypes = {
-    value: PropTypes.array,
+    value: PropTypes.object,
     onValueChange: PropTypes.func.isRequired,
     options: PropTypes.shape({
         categories: PropTypes.shape({

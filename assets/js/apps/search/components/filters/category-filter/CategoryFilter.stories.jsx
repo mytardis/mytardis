@@ -10,7 +10,7 @@ export default {
 };
 
 export const categoryData = {
-    value: [{op:"is",content:"1"}],
+    value: {op:"is",content:["1"]},
     onValueChange: action('category checked changed'),
     options: {
         categories: {
