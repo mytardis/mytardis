@@ -1271,1023 +1271,318 @@ exports[`Storyshots Filters/Category filter None Selected 1`] = `
 `;
 
 exports[`Storyshots Filters/Filters section Default 1`] = `
-Array [
-  <div
-    style={
-      Object {
-        "padding": "3rem",
-        "width": "400px",
-      }
+<div
+  style={
+    Object {
+      "padding": "3rem",
+      "width": "400px",
     }
-  >
-    <section>
-      <h3>
-        Filters
-      </h3>
-      <nav
-        className="nav nav-tabs"
+  }
+>
+  <section>
+    <h3>
+      Filters
+    </h3>
+    <nav
+      className="nav nav-tabs"
+      onKeyDown={[Function]}
+      role="tablist"
+    >
+      <a
+        aria-controls="filters-section-tabpane-projects"
+        aria-selected={true}
+        className="nav-item nav-link active"
+        data-rb-event-key="projects"
+        href="#"
+        id="filters-section-tab-projects"
+        onClick={[Function]}
         onKeyDown={[Function]}
-        role="tablist"
+        role="tab"
       >
-        <a
-          aria-controls="filters-section-tabpane-projects"
-          aria-selected={true}
-          className="nav-item nav-link active"
-          data-rb-event-key="projects"
-          href="#"
-          id="filters-section-tab-projects"
-          onClick={[Function]}
-          onKeyDown={[Function]}
-          role="tab"
+        <div
+          className="tab-sticker"
+          style={
+            Object {
+              "backgroundColor": "#f7db8d",
+            }
+          }
         >
           <div
-            className="tab-sticker"
-            style={
-              Object {
-                "backgroundColor": "#f7db8d",
-              }
-            }
+            className="tab-stick--content"
           >
-            <div
-              className="tab-stick--content"
-            >
-              P
-            </div>
+            P
           </div>
-        </a>
-        <a
-          aria-controls="filters-section-tabpane-experiments"
-          aria-selected={false}
-          className="nav-item nav-link"
-          data-rb-event-key="experiments"
-          href="#"
-          id="filters-section-tab-experiments"
-          onClick={[Function]}
-          onKeyDown={[Function]}
-          role="tab"
-          tabIndex={-1}
+        </div>
+      </a>
+      <a
+        aria-controls="filters-section-tabpane-experiments"
+        aria-selected={false}
+        className="nav-item nav-link"
+        data-rb-event-key="experiments"
+        href="#"
+        id="filters-section-tab-experiments"
+        onClick={[Function]}
+        onKeyDown={[Function]}
+        role="tab"
+        tabIndex={-1}
+      >
+        <div
+          className="tab-sticker"
+          style={
+            Object {
+              "backgroundColor": "#abe2ff",
+            }
+          }
         >
           <div
-            className="tab-sticker"
-            style={
-              Object {
-                "backgroundColor": "#abe2ff",
-              }
-            }
+            className="tab-stick--content"
           >
-            <div
-              className="tab-stick--content"
-            >
-              E
-            </div>
+            E
           </div>
-        </a>
-        <a
-          aria-controls="filters-section-tabpane-datasets"
-          aria-selected={false}
-          className="nav-item nav-link"
-          data-rb-event-key="datasets"
-          href="#"
-          id="filters-section-tab-datasets"
-          onClick={[Function]}
-          onKeyDown={[Function]}
-          role="tab"
-          tabIndex={-1}
+        </div>
+      </a>
+      <a
+        aria-controls="filters-section-tabpane-datasets"
+        aria-selected={false}
+        className="nav-item nav-link"
+        data-rb-event-key="datasets"
+        href="#"
+        id="filters-section-tab-datasets"
+        onClick={[Function]}
+        onKeyDown={[Function]}
+        role="tab"
+        tabIndex={-1}
+      >
+        <div
+          className="tab-sticker"
+          style={
+            Object {
+              "backgroundColor": "#ffcce8",
+            }
+          }
         >
           <div
-            className="tab-sticker"
-            style={
-              Object {
-                "backgroundColor": "#ffcce8",
-              }
-            }
+            className="tab-stick--content"
           >
-            <div
-              className="tab-stick--content"
-            >
-              DS
-            </div>
+            DS
           </div>
-        </a>
-        <a
-          aria-controls="filters-section-tabpane-datafiles"
-          aria-selected={false}
-          className="nav-item nav-link"
-          data-rb-event-key="datafiles"
-          href="#"
-          id="filters-section-tab-datafiles"
-          onClick={[Function]}
-          onKeyDown={[Function]}
-          role="tab"
-          tabIndex={-1}
+        </div>
+      </a>
+      <a
+        aria-controls="filters-section-tabpane-datafiles"
+        aria-selected={false}
+        className="nav-item nav-link"
+        data-rb-event-key="datafiles"
+        href="#"
+        id="filters-section-tab-datafiles"
+        onClick={[Function]}
+        onKeyDown={[Function]}
+        role="tab"
+        tabIndex={-1}
+      >
+        <div
+          className="tab-sticker"
+          style={
+            Object {
+              "backgroundColor": "#70ffae",
+            }
+          }
         >
           <div
-            className="tab-sticker"
-            style={
-              Object {
-                "backgroundColor": "#70ffae",
-              }
-            }
+            className="tab-stick--content"
           >
-            <div
-              className="tab-stick--content"
-            >
-              DF
-            </div>
+            DF
           </div>
-        </a>
-      </nav>
+        </div>
+      </a>
+    </nav>
+    <div
+      className="tab-content"
+    >
       <div
-        className="tab-content"
+        aria-hidden={false}
+        aria-labelledby="filters-section-tab-projects"
+        className="fade tab-pane active show"
+        id="filters-section-tabpane-projects"
+        role="tabpanel"
       >
-        <div
-          aria-hidden={false}
-          aria-labelledby="filters-section-tab-projects"
-          className="fade tab-pane active show"
-          id="filters-section-tabpane-projects"
-          role="tabpanel"
-        >
-          <div>
-            <h4
-              className="type-schema-list__title"
-            >
-              Show me
-            </h4>
+        <div>
+          <h4
+            className="type-schema-list__title"
+          >
+            Show me
+          </h4>
+          <div
+            className="form-group"
+          >
             <div
-              className="form-group"
+              className="form-check"
             >
-              <div
-                className="form-check"
+              <input
+                checked={true}
+                className="form-check-input"
+                disabled={false}
+                id="category-check-1Raw data"
+                onChange={[Function]}
+                type="checkbox"
+              />
+              <label
+                className="form-check-label"
+                htmlFor="category-check-1Raw data"
+                title=""
               >
-                <input
-                  checked={true}
-                  className="form-check-input"
-                  disabled={false}
-                  id="category-check-1Raw data"
-                  onChange={[Function]}
-                  type="checkbox"
-                />
-                <label
-                  className="form-check-label"
-                  htmlFor="category-check-1Raw data"
-                  title=""
-                >
-                  Raw data
-                </label>
-              </div>
-              <div
-                className="form-check"
-              >
-                <input
-                  checked={false}
-                  className="form-check-input"
-                  disabled={false}
-                  id="category-check-2Biopipeline Output"
-                  onChange={[Function]}
-                  type="checkbox"
-                />
-                <label
-                  className="form-check-label"
-                  htmlFor="category-check-2Biopipeline Output"
-                  title=""
-                >
-                  Biopipeline Output
-                </label>
-              </div>
+                Raw data
+              </label>
             </div>
             <div
-              className="accordion"
+              className="form-check"
             >
-              <div
-                className="card"
+              <input
+                checked={false}
+                className="form-check-input"
+                disabled={false}
+                id="category-check-2Biopipeline Output"
+                onChange={[Function]}
+                type="checkbox"
+              />
+              <label
+                className="form-check-label"
+                htmlFor="category-check-2Biopipeline Output"
+                title=""
               >
-                <div
-                  className="card-header"
-                  onClick={[Function]}
-                >
-                  Raw data
-                </div>
-                <div
-                  aria-expanded={null}
-                  className="collapse"
-                >
-                  <div
-                    className="card-body"
-                  >
-                    <div
-                      className="single-schema-list__filter"
-                    >
-                      <h5
-                        className="single-schema-list__filter-label"
-                      >
-                        Parameter 1
-                      </h5>
-                      <form
-                        className=""
-                        onSubmit={[Function]}
-                      >
-                        <div
-                          className="input-group"
-                        >
-                          <input
-                            aria-label="Filter input"
-                            className="form-control"
-                            onChange={[Function]}
-                            placeholder=""
-                          />
-                          <div
-                            className="input-group-append"
-                          >
-                            <button
-                              aria-label="Filter results"
-                              className="btn btn-outline-secondary"
-                              disabled={true}
-                              type="submit"
-                            >
-                              Filter
-                            </button>
-                          </div>
-                        </div>
-                      </form>
-                      <hr />
-                    </div>
-                    <div
-                      className="single-schema-list__filter"
-                    >
-                      <h5
-                        className="single-schema-list__filter-label"
-                      >
-                        Parameter 2
-                      </h5>
-                      <form
-                        className=""
-                        onSubmit={[Function]}
-                      >
-                        <div
-                          className="input-group"
-                        >
-                          <input
-                            aria-label="Filter input"
-                            className="form-control"
-                            onChange={[Function]}
-                            placeholder=""
-                          />
-                          <div
-                            className="input-group-append"
-                          >
-                            <button
-                              aria-label="Filter results"
-                              className="btn btn-outline-secondary"
-                              disabled={true}
-                              type="submit"
-                            >
-                              Filter
-                            </button>
-                          </div>
-                        </div>
-                      </form>
-                      <hr />
-                    </div>
-                    <div
-                      className="single-schema-list__filter"
-                    >
-                      <h5
-                        className="single-schema-list__filter-label"
-                      >
-                        Sensitive Parameter
-                      </h5>
-                      <form
-                        className=""
-                        onSubmit={[Function]}
-                      >
-                        <div
-                          className="input-group"
-                        >
-                          <input
-                            aria-label="Filter input"
-                            className="form-control"
-                            onChange={[Function]}
-                            placeholder=""
-                          />
-                          <div
-                            className="input-group-append"
-                          >
-                            <button
-                              aria-label="Filter results"
-                              className="btn btn-outline-secondary"
-                              disabled={true}
-                              type="submit"
-                            >
-                              Filter
-                            </button>
-                          </div>
-                        </div>
-                      </form>
-                      <hr />
-                    </div>
-                  </div>
-                </div>
-              </div>
+                Biopipeline Output
+              </label>
             </div>
           </div>
-        </div>
-        <div
-          aria-hidden={true}
-          aria-labelledby="filters-section-tab-experiments"
-          className="fade tab-pane"
-          id="filters-section-tabpane-experiments"
-          role="tabpanel"
-        >
-          <div>
-            <h4
-              className="type-schema-list__title"
-            >
-              Show me
-            </h4>
+          <div
+            className="accordion"
+          >
             <div
-              className="form-group"
+              className="card"
             >
               <div
-                className="form-check"
+                className="card-header"
+                onClick={[Function]}
               >
-                <input
-                  checked={false}
-                  className="form-check-input"
-                  disabled={false}
-                  id="category-check-1Raw data"
-                  onChange={[Function]}
-                  type="checkbox"
-                />
-                <label
-                  className="form-check-label"
-                  htmlFor="category-check-1Raw data"
-                  title=""
-                >
-                  Raw data
-                </label>
+                Raw data
               </div>
               <div
-                className="form-check"
-              >
-                <input
-                  checked={true}
-                  className="form-check-input"
-                  disabled={false}
-                  id="category-check-2Biopipeline Output"
-                  onChange={[Function]}
-                  type="checkbox"
-                />
-                <label
-                  className="form-check-label"
-                  htmlFor="category-check-2Biopipeline Output"
-                  title=""
-                >
-                  Biopipeline Output
-                </label>
-              </div>
-            </div>
-            <div
-              className="accordion"
-            >
-              <div
-                className="card"
+                aria-expanded={null}
+                className="collapse"
               >
                 <div
-                  className="card-header"
-                  onClick={[Function]}
-                >
-                  Biopipeline Output
-                </div>
-                <div
-                  aria-expanded={null}
-                  className="collapse"
+                  className="card-body"
                 >
                   <div
-                    className="card-body"
+                    className="single-schema-list__filter"
                   >
-                    <div
-                      className="single-schema-list__filter"
+                    <h5
+                      className="single-schema-list__filter-label"
                     >
-                      <h5
-                        className="single-schema-list__filter-label"
-                      >
-                        Another parameter 2
-                      </h5>
-                      <form
-                        className=""
-                        onSubmit={[Function]}
-                      >
-                        <div
-                          className="input-group"
-                        >
-                          <input
-                            aria-label="Filter input"
-                            className="form-control"
-                            onChange={[Function]}
-                            placeholder=""
-                          />
-                          <div
-                            className="input-group-append"
-                          >
-                            <button
-                              aria-label="Filter results"
-                              className="btn btn-outline-secondary"
-                              disabled={true}
-                              type="submit"
-                            >
-                              Filter
-                            </button>
-                          </div>
-                        </div>
-                      </form>
-                      <hr />
-                    </div>
-                    <div
-                      className="single-schema-list__filter"
+                      Parameter 1
+                    </h5>
+                    <form
+                      className=""
+                      onSubmit={[Function]}
                     >
-                      <h5
-                        className="single-schema-list__filter-label"
+                      <div
+                        className="input-group"
                       >
-                        Another parameter 1
-                      </h5>
-                      <form
-                        className=""
-                        onSubmit={[Function]}
-                      >
+                        <input
+                          aria-label="Filter input"
+                          className="form-control"
+                          onChange={[Function]}
+                          placeholder=""
+                        />
                         <div
-                          className="input-group"
+                          className="input-group-append"
                         >
-                          <input
-                            aria-label="Filter input"
-                            className="form-control"
-                            onChange={[Function]}
-                            placeholder=""
-                          />
-                          <div
-                            className="input-group-append"
+                          <button
+                            aria-label="Filter results"
+                            className="btn btn-outline-secondary"
+                            disabled={true}
+                            type="submit"
                           >
-                            <button
-                              aria-label="Filter results"
-                              className="btn btn-outline-secondary"
-                              disabled={true}
-                              type="submit"
-                            >
-                              Filter
-                            </button>
-                          </div>
+                            Filter
+                          </button>
                         </div>
-                      </form>
-                      <hr />
-                    </div>
-                    <div
-                      className="single-schema-list__filter"
-                    >
-                      <h5
-                        className="single-schema-list__filter-label"
-                      >
-                        Sensitive Parameter
-                      </h5>
-                      <form
-                        className=""
-                        onSubmit={[Function]}
-                      >
-                        <div
-                          className="input-group"
-                        >
-                          <input
-                            aria-label="Filter input"
-                            className="form-control"
-                            onChange={[Function]}
-                            placeholder=""
-                          />
-                          <div
-                            className="input-group-append"
-                          >
-                            <button
-                              aria-label="Filter results"
-                              className="btn btn-outline-secondary"
-                              disabled={true}
-                              type="submit"
-                            >
-                              Filter
-                            </button>
-                          </div>
-                        </div>
-                      </form>
-                      <hr />
-                    </div>
+                      </div>
+                    </form>
+                    <hr />
                   </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div
-          aria-hidden={true}
-          aria-labelledby="filters-section-tab-datasets"
-          className="fade tab-pane"
-          id="filters-section-tabpane-datasets"
-          role="tabpanel"
-        >
-          <div>
-            <h4
-              className="type-schema-list__title"
-            >
-              Show me
-            </h4>
-            <div
-              className="form-group"
-            >
-              <div
-                className="form-check"
-              >
-                <input
-                  checked={true}
-                  className="form-check-input"
-                  disabled={false}
-                  id="category-check-1Raw data"
-                  onChange={[Function]}
-                  type="checkbox"
-                />
-                <label
-                  className="form-check-label"
-                  htmlFor="category-check-1Raw data"
-                  title=""
-                >
-                  Raw data
-                </label>
-              </div>
-              <div
-                className="form-check"
-              >
-                <input
-                  checked={false}
-                  className="form-check-input"
-                  disabled={false}
-                  id="category-check-2Biopipeline Output"
-                  onChange={[Function]}
-                  type="checkbox"
-                />
-                <label
-                  className="form-check-label"
-                  htmlFor="category-check-2Biopipeline Output"
-                  title=""
-                >
-                  Biopipeline Output
-                </label>
-              </div>
-            </div>
-            <div
-              className="accordion"
-            >
-              <div
-                className="card"
-              >
-                <div
-                  className="card-header"
-                  onClick={[Function]}
-                >
-                  Raw data
-                </div>
-                <div
-                  aria-expanded={null}
-                  className="collapse"
-                >
                   <div
-                    className="card-body"
+                    className="single-schema-list__filter"
                   >
-                    <div
-                      className="single-schema-list__filter"
+                    <h5
+                      className="single-schema-list__filter-label"
                     >
-                      <h5
-                        className="single-schema-list__filter-label"
-                      >
-                        Parameter 1
-                      </h5>
-                      <form
-                        className=""
-                        onSubmit={[Function]}
-                      >
-                        <div
-                          className="input-group"
-                        >
-                          <input
-                            aria-label="Filter input"
-                            className="form-control"
-                            onChange={[Function]}
-                            placeholder=""
-                          />
-                          <div
-                            className="input-group-append"
-                          >
-                            <button
-                              aria-label="Filter results"
-                              className="btn btn-outline-secondary"
-                              disabled={true}
-                              type="submit"
-                            >
-                              Filter
-                            </button>
-                          </div>
-                        </div>
-                      </form>
-                      <hr />
-                    </div>
-                    <div
-                      className="single-schema-list__filter"
+                      Parameter 2
+                    </h5>
+                    <form
+                      className=""
+                      onSubmit={[Function]}
                     >
-                      <h5
-                        className="single-schema-list__filter-label"
+                      <div
+                        className="input-group"
                       >
-                        Parameter 2
-                      </h5>
-                      <form
-                        className=""
-                        onSubmit={[Function]}
-                      >
+                        <input
+                          aria-label="Filter input"
+                          className="form-control"
+                          onChange={[Function]}
+                          placeholder=""
+                        />
                         <div
-                          className="input-group"
+                          className="input-group-append"
                         >
-                          <input
-                            aria-label="Filter input"
-                            className="form-control"
-                            onChange={[Function]}
-                            placeholder=""
-                          />
-                          <div
-                            className="input-group-append"
+                          <button
+                            aria-label="Filter results"
+                            className="btn btn-outline-secondary"
+                            disabled={true}
+                            type="submit"
                           >
-                            <button
-                              aria-label="Filter results"
-                              className="btn btn-outline-secondary"
-                              disabled={true}
-                              type="submit"
-                            >
-                              Filter
-                            </button>
-                          </div>
+                            Filter
+                          </button>
                         </div>
-                      </form>
-                      <hr />
-                    </div>
-                    <div
-                      className="single-schema-list__filter"
-                    >
-                      <h5
-                        className="single-schema-list__filter-label"
-                      >
-                        Sensitive Parameter
-                      </h5>
-                      <form
-                        className=""
-                        onSubmit={[Function]}
-                      >
-                        <div
-                          className="input-group"
-                        >
-                          <input
-                            aria-label="Filter input"
-                            className="form-control"
-                            onChange={[Function]}
-                            placeholder=""
-                          />
-                          <div
-                            className="input-group-append"
-                          >
-                            <button
-                              aria-label="Filter results"
-                              className="btn btn-outline-secondary"
-                              disabled={true}
-                              type="submit"
-                            >
-                              Filter
-                            </button>
-                          </div>
-                        </div>
-                      </form>
-                      <hr />
-                    </div>
+                      </div>
+                    </form>
+                    <hr />
                   </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div
-          aria-hidden={true}
-          aria-labelledby="filters-section-tab-datafiles"
-          className="fade tab-pane"
-          id="filters-section-tabpane-datafiles"
-          role="tabpanel"
-        >
-          <div>
-            <h4
-              className="type-schema-list__title"
-            >
-              Show me
-            </h4>
-            <div
-              className="form-group"
-            >
-              <div
-                className="form-check"
-              >
-                <input
-                  checked={true}
-                  className="form-check-input"
-                  disabled={false}
-                  id="category-check-1Raw data"
-                  onChange={[Function]}
-                  type="checkbox"
-                />
-                <label
-                  className="form-check-label"
-                  htmlFor="category-check-1Raw data"
-                  title=""
-                >
-                  Raw data
-                </label>
-              </div>
-              <div
-                className="form-check"
-              >
-                <input
-                  checked={true}
-                  className="form-check-input"
-                  disabled={false}
-                  id="category-check-2Biopipeline Output"
-                  onChange={[Function]}
-                  type="checkbox"
-                />
-                <label
-                  className="form-check-label"
-                  htmlFor="category-check-2Biopipeline Output"
-                  title=""
-                >
-                  Biopipeline Output
-                </label>
-              </div>
-            </div>
-            <div
-              className="accordion"
-            >
-              <div
-                className="card"
-              >
-                <div
-                  className="card-header"
-                  onClick={[Function]}
-                >
-                  Raw data
-                </div>
-                <div
-                  aria-expanded={null}
-                  className="collapse"
-                >
                   <div
-                    className="card-body"
+                    className="single-schema-list__filter"
                   >
-                    <div
-                      className="single-schema-list__filter"
+                    <h5
+                      className="single-schema-list__filter-label"
                     >
-                      <h5
-                        className="single-schema-list__filter-label"
-                      >
-                        Parameter 1
-                      </h5>
-                      <form
-                        className=""
-                        onSubmit={[Function]}
-                      >
-                        <div
-                          className="input-group"
-                        >
-                          <input
-                            aria-label="Filter input"
-                            className="form-control"
-                            onChange={[Function]}
-                            placeholder=""
-                          />
-                          <div
-                            className="input-group-append"
-                          >
-                            <button
-                              aria-label="Filter results"
-                              className="btn btn-outline-secondary"
-                              disabled={true}
-                              type="submit"
-                            >
-                              Filter
-                            </button>
-                          </div>
-                        </div>
-                      </form>
-                      <hr />
-                    </div>
-                    <div
-                      className="single-schema-list__filter"
+                      Sensitive Parameter
+                    </h5>
+                    <form
+                      className=""
+                      onSubmit={[Function]}
                     >
-                      <h5
-                        className="single-schema-list__filter-label"
+                      <div
+                        className="input-group"
                       >
-                        Parameter 2
-                      </h5>
-                      <form
-                        className=""
-                        onSubmit={[Function]}
-                      >
+                        <input
+                          aria-label="Filter input"
+                          className="form-control"
+                          onChange={[Function]}
+                          placeholder=""
+                        />
                         <div
-                          className="input-group"
+                          className="input-group-append"
                         >
-                          <input
-                            aria-label="Filter input"
-                            className="form-control"
-                            onChange={[Function]}
-                            placeholder=""
-                          />
-                          <div
-                            className="input-group-append"
+                          <button
+                            aria-label="Filter results"
+                            className="btn btn-outline-secondary"
+                            disabled={true}
+                            type="submit"
                           >
-                            <button
-                              aria-label="Filter results"
-                              className="btn btn-outline-secondary"
-                              disabled={true}
-                              type="submit"
-                            >
-                              Filter
-                            </button>
-                          </div>
+                            Filter
+                          </button>
                         </div>
-                      </form>
-                      <hr />
-                    </div>
-                    <div
-                      className="single-schema-list__filter"
-                    >
-                      <h5
-                        className="single-schema-list__filter-label"
-                      >
-                        Sensitive Parameter
-                      </h5>
-                      <form
-                        className=""
-                        onSubmit={[Function]}
-                      >
-                        <div
-                          className="input-group"
-                        >
-                          <input
-                            aria-label="Filter input"
-                            className="form-control"
-                            onChange={[Function]}
-                            placeholder=""
-                          />
-                          <div
-                            className="input-group-append"
-                          >
-                            <button
-                              aria-label="Filter results"
-                              className="btn btn-outline-secondary"
-                              disabled={true}
-                              type="submit"
-                            >
-                              Filter
-                            </button>
-                          </div>
-                        </div>
-                      </form>
-                      <hr />
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div
-                className="card"
-              >
-                <div
-                  className="card-header"
-                  onClick={[Function]}
-                >
-                  Biopipeline Output
-                </div>
-                <div
-                  aria-expanded={null}
-                  className="collapse"
-                >
-                  <div
-                    className="card-body"
-                  >
-                    <div
-                      className="single-schema-list__filter"
-                    >
-                      <h5
-                        className="single-schema-list__filter-label"
-                      >
-                        Another parameter 2
-                      </h5>
-                      <form
-                        className=""
-                        onSubmit={[Function]}
-                      >
-                        <div
-                          className="input-group"
-                        >
-                          <input
-                            aria-label="Filter input"
-                            className="form-control"
-                            onChange={[Function]}
-                            placeholder=""
-                          />
-                          <div
-                            className="input-group-append"
-                          >
-                            <button
-                              aria-label="Filter results"
-                              className="btn btn-outline-secondary"
-                              disabled={true}
-                              type="submit"
-                            >
-                              Filter
-                            </button>
-                          </div>
-                        </div>
-                      </form>
-                      <hr />
-                    </div>
-                    <div
-                      className="single-schema-list__filter"
-                    >
-                      <h5
-                        className="single-schema-list__filter-label"
-                      >
-                        Another parameter 1
-                      </h5>
-                      <form
-                        className=""
-                        onSubmit={[Function]}
-                      >
-                        <div
-                          className="input-group"
-                        >
-                          <input
-                            aria-label="Filter input"
-                            className="form-control"
-                            onChange={[Function]}
-                            placeholder=""
-                          />
-                          <div
-                            className="input-group-append"
-                          >
-                            <button
-                              aria-label="Filter results"
-                              className="btn btn-outline-secondary"
-                              disabled={true}
-                              type="submit"
-                            >
-                              Filter
-                            </button>
-                          </div>
-                        </div>
-                      </form>
-                      <hr />
-                    </div>
-                    <div
-                      className="single-schema-list__filter"
-                    >
-                      <h5
-                        className="single-schema-list__filter-label"
-                      >
-                        Sensitive Parameter
-                      </h5>
-                      <form
-                        className=""
-                        onSubmit={[Function]}
-                      >
-                        <div
-                          className="input-group"
-                        >
-                          <input
-                            aria-label="Filter input"
-                            className="form-control"
-                            onChange={[Function]}
-                            placeholder=""
-                          />
-                          <div
-                            className="input-group-append"
-                          >
-                            <button
-                              aria-label="Filter results"
-                              className="btn btn-outline-secondary"
-                              disabled={true}
-                              type="submit"
-                            >
-                              Filter
-                            </button>
-                          </div>
-                        </div>
-                      </form>
-                      <hr />
-                    </div>
+                      </div>
+                    </form>
+                    <hr />
                   </div>
                 </div>
               </div>
@@ -2295,60 +1590,753 @@ Array [
           </div>
         </div>
       </div>
-    </section>
-  </div>,
-  "  ",
-]
+      <div
+        aria-hidden={true}
+        aria-labelledby="filters-section-tab-experiments"
+        className="fade tab-pane"
+        id="filters-section-tabpane-experiments"
+        role="tabpanel"
+      >
+        <div>
+          <h4
+            className="type-schema-list__title"
+          >
+            Show me
+          </h4>
+          <div
+            className="form-group"
+          >
+            <div
+              className="form-check"
+            >
+              <input
+                checked={false}
+                className="form-check-input"
+                disabled={false}
+                id="category-check-1Raw data"
+                onChange={[Function]}
+                type="checkbox"
+              />
+              <label
+                className="form-check-label"
+                htmlFor="category-check-1Raw data"
+                title=""
+              >
+                Raw data
+              </label>
+            </div>
+            <div
+              className="form-check"
+            >
+              <input
+                checked={true}
+                className="form-check-input"
+                disabled={false}
+                id="category-check-2Biopipeline Output"
+                onChange={[Function]}
+                type="checkbox"
+              />
+              <label
+                className="form-check-label"
+                htmlFor="category-check-2Biopipeline Output"
+                title=""
+              >
+                Biopipeline Output
+              </label>
+            </div>
+          </div>
+          <div
+            className="accordion"
+          >
+            <div
+              className="card"
+            >
+              <div
+                className="card-header"
+                onClick={[Function]}
+              >
+                Biopipeline Output
+              </div>
+              <div
+                aria-expanded={null}
+                className="collapse"
+              >
+                <div
+                  className="card-body"
+                >
+                  <div
+                    className="single-schema-list__filter"
+                  >
+                    <h5
+                      className="single-schema-list__filter-label"
+                    >
+                      Another parameter 2
+                    </h5>
+                    <form
+                      className=""
+                      onSubmit={[Function]}
+                    >
+                      <div
+                        className="input-group"
+                      >
+                        <input
+                          aria-label="Filter input"
+                          className="form-control"
+                          onChange={[Function]}
+                          placeholder=""
+                        />
+                        <div
+                          className="input-group-append"
+                        >
+                          <button
+                            aria-label="Filter results"
+                            className="btn btn-outline-secondary"
+                            disabled={true}
+                            type="submit"
+                          >
+                            Filter
+                          </button>
+                        </div>
+                      </div>
+                    </form>
+                    <hr />
+                  </div>
+                  <div
+                    className="single-schema-list__filter"
+                  >
+                    <h5
+                      className="single-schema-list__filter-label"
+                    >
+                      Another parameter 1
+                    </h5>
+                    <form
+                      className=""
+                      onSubmit={[Function]}
+                    >
+                      <div
+                        className="input-group"
+                      >
+                        <input
+                          aria-label="Filter input"
+                          className="form-control"
+                          onChange={[Function]}
+                          placeholder=""
+                        />
+                        <div
+                          className="input-group-append"
+                        >
+                          <button
+                            aria-label="Filter results"
+                            className="btn btn-outline-secondary"
+                            disabled={true}
+                            type="submit"
+                          >
+                            Filter
+                          </button>
+                        </div>
+                      </div>
+                    </form>
+                    <hr />
+                  </div>
+                  <div
+                    className="single-schema-list__filter"
+                  >
+                    <h5
+                      className="single-schema-list__filter-label"
+                    >
+                      Sensitive Parameter
+                    </h5>
+                    <form
+                      className=""
+                      onSubmit={[Function]}
+                    >
+                      <div
+                        className="input-group"
+                      >
+                        <input
+                          aria-label="Filter input"
+                          className="form-control"
+                          onChange={[Function]}
+                          placeholder=""
+                        />
+                        <div
+                          className="input-group-append"
+                        >
+                          <button
+                            aria-label="Filter results"
+                            className="btn btn-outline-secondary"
+                            disabled={true}
+                            type="submit"
+                          >
+                            Filter
+                          </button>
+                        </div>
+                      </div>
+                    </form>
+                    <hr />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div
+        aria-hidden={true}
+        aria-labelledby="filters-section-tab-datasets"
+        className="fade tab-pane"
+        id="filters-section-tabpane-datasets"
+        role="tabpanel"
+      >
+        <div>
+          <h4
+            className="type-schema-list__title"
+          >
+            Show me
+          </h4>
+          <div
+            className="form-group"
+          >
+            <div
+              className="form-check"
+            >
+              <input
+                checked={true}
+                className="form-check-input"
+                disabled={false}
+                id="category-check-1Raw data"
+                onChange={[Function]}
+                type="checkbox"
+              />
+              <label
+                className="form-check-label"
+                htmlFor="category-check-1Raw data"
+                title=""
+              >
+                Raw data
+              </label>
+            </div>
+            <div
+              className="form-check"
+            >
+              <input
+                checked={false}
+                className="form-check-input"
+                disabled={false}
+                id="category-check-2Biopipeline Output"
+                onChange={[Function]}
+                type="checkbox"
+              />
+              <label
+                className="form-check-label"
+                htmlFor="category-check-2Biopipeline Output"
+                title=""
+              >
+                Biopipeline Output
+              </label>
+            </div>
+          </div>
+          <div
+            className="accordion"
+          >
+            <div
+              className="card"
+            >
+              <div
+                className="card-header"
+                onClick={[Function]}
+              >
+                Raw data
+              </div>
+              <div
+                aria-expanded={null}
+                className="collapse"
+              >
+                <div
+                  className="card-body"
+                >
+                  <div
+                    className="single-schema-list__filter"
+                  >
+                    <h5
+                      className="single-schema-list__filter-label"
+                    >
+                      Parameter 1
+                    </h5>
+                    <form
+                      className=""
+                      onSubmit={[Function]}
+                    >
+                      <div
+                        className="input-group"
+                      >
+                        <input
+                          aria-label="Filter input"
+                          className="form-control"
+                          onChange={[Function]}
+                          placeholder=""
+                        />
+                        <div
+                          className="input-group-append"
+                        >
+                          <button
+                            aria-label="Filter results"
+                            className="btn btn-outline-secondary"
+                            disabled={true}
+                            type="submit"
+                          >
+                            Filter
+                          </button>
+                        </div>
+                      </div>
+                    </form>
+                    <hr />
+                  </div>
+                  <div
+                    className="single-schema-list__filter"
+                  >
+                    <h5
+                      className="single-schema-list__filter-label"
+                    >
+                      Parameter 2
+                    </h5>
+                    <form
+                      className=""
+                      onSubmit={[Function]}
+                    >
+                      <div
+                        className="input-group"
+                      >
+                        <input
+                          aria-label="Filter input"
+                          className="form-control"
+                          onChange={[Function]}
+                          placeholder=""
+                        />
+                        <div
+                          className="input-group-append"
+                        >
+                          <button
+                            aria-label="Filter results"
+                            className="btn btn-outline-secondary"
+                            disabled={true}
+                            type="submit"
+                          >
+                            Filter
+                          </button>
+                        </div>
+                      </div>
+                    </form>
+                    <hr />
+                  </div>
+                  <div
+                    className="single-schema-list__filter"
+                  >
+                    <h5
+                      className="single-schema-list__filter-label"
+                    >
+                      Sensitive Parameter
+                    </h5>
+                    <form
+                      className=""
+                      onSubmit={[Function]}
+                    >
+                      <div
+                        className="input-group"
+                      >
+                        <input
+                          aria-label="Filter input"
+                          className="form-control"
+                          onChange={[Function]}
+                          placeholder=""
+                        />
+                        <div
+                          className="input-group-append"
+                        >
+                          <button
+                            aria-label="Filter results"
+                            className="btn btn-outline-secondary"
+                            disabled={true}
+                            type="submit"
+                          >
+                            Filter
+                          </button>
+                        </div>
+                      </div>
+                    </form>
+                    <hr />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div
+        aria-hidden={true}
+        aria-labelledby="filters-section-tab-datafiles"
+        className="fade tab-pane"
+        id="filters-section-tabpane-datafiles"
+        role="tabpanel"
+      >
+        <div>
+          <h4
+            className="type-schema-list__title"
+          >
+            Show me
+          </h4>
+          <div
+            className="form-group"
+          >
+            <div
+              className="form-check"
+            >
+              <input
+                checked={true}
+                className="form-check-input"
+                disabled={false}
+                id="category-check-1Raw data"
+                onChange={[Function]}
+                type="checkbox"
+              />
+              <label
+                className="form-check-label"
+                htmlFor="category-check-1Raw data"
+                title=""
+              >
+                Raw data
+              </label>
+            </div>
+            <div
+              className="form-check"
+            >
+              <input
+                checked={true}
+                className="form-check-input"
+                disabled={false}
+                id="category-check-2Biopipeline Output"
+                onChange={[Function]}
+                type="checkbox"
+              />
+              <label
+                className="form-check-label"
+                htmlFor="category-check-2Biopipeline Output"
+                title=""
+              >
+                Biopipeline Output
+              </label>
+            </div>
+          </div>
+          <div
+            className="accordion"
+          >
+            <div
+              className="card"
+            >
+              <div
+                className="card-header"
+                onClick={[Function]}
+              >
+                Raw data
+              </div>
+              <div
+                aria-expanded={null}
+                className="collapse"
+              >
+                <div
+                  className="card-body"
+                >
+                  <div
+                    className="single-schema-list__filter"
+                  >
+                    <h5
+                      className="single-schema-list__filter-label"
+                    >
+                      Parameter 1
+                    </h5>
+                    <form
+                      className=""
+                      onSubmit={[Function]}
+                    >
+                      <div
+                        className="input-group"
+                      >
+                        <input
+                          aria-label="Filter input"
+                          className="form-control"
+                          onChange={[Function]}
+                          placeholder=""
+                        />
+                        <div
+                          className="input-group-append"
+                        >
+                          <button
+                            aria-label="Filter results"
+                            className="btn btn-outline-secondary"
+                            disabled={true}
+                            type="submit"
+                          >
+                            Filter
+                          </button>
+                        </div>
+                      </div>
+                    </form>
+                    <hr />
+                  </div>
+                  <div
+                    className="single-schema-list__filter"
+                  >
+                    <h5
+                      className="single-schema-list__filter-label"
+                    >
+                      Parameter 2
+                    </h5>
+                    <form
+                      className=""
+                      onSubmit={[Function]}
+                    >
+                      <div
+                        className="input-group"
+                      >
+                        <input
+                          aria-label="Filter input"
+                          className="form-control"
+                          onChange={[Function]}
+                          placeholder=""
+                        />
+                        <div
+                          className="input-group-append"
+                        >
+                          <button
+                            aria-label="Filter results"
+                            className="btn btn-outline-secondary"
+                            disabled={true}
+                            type="submit"
+                          >
+                            Filter
+                          </button>
+                        </div>
+                      </div>
+                    </form>
+                    <hr />
+                  </div>
+                  <div
+                    className="single-schema-list__filter"
+                  >
+                    <h5
+                      className="single-schema-list__filter-label"
+                    >
+                      Sensitive Parameter
+                    </h5>
+                    <form
+                      className=""
+                      onSubmit={[Function]}
+                    >
+                      <div
+                        className="input-group"
+                      >
+                        <input
+                          aria-label="Filter input"
+                          className="form-control"
+                          onChange={[Function]}
+                          placeholder=""
+                        />
+                        <div
+                          className="input-group-append"
+                        >
+                          <button
+                            aria-label="Filter results"
+                            className="btn btn-outline-secondary"
+                            disabled={true}
+                            type="submit"
+                          >
+                            Filter
+                          </button>
+                        </div>
+                      </div>
+                    </form>
+                    <hr />
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div
+              className="card"
+            >
+              <div
+                className="card-header"
+                onClick={[Function]}
+              >
+                Biopipeline Output
+              </div>
+              <div
+                aria-expanded={null}
+                className="collapse"
+              >
+                <div
+                  className="card-body"
+                >
+                  <div
+                    className="single-schema-list__filter"
+                  >
+                    <h5
+                      className="single-schema-list__filter-label"
+                    >
+                      Another parameter 2
+                    </h5>
+                    <form
+                      className=""
+                      onSubmit={[Function]}
+                    >
+                      <div
+                        className="input-group"
+                      >
+                        <input
+                          aria-label="Filter input"
+                          className="form-control"
+                          onChange={[Function]}
+                          placeholder=""
+                        />
+                        <div
+                          className="input-group-append"
+                        >
+                          <button
+                            aria-label="Filter results"
+                            className="btn btn-outline-secondary"
+                            disabled={true}
+                            type="submit"
+                          >
+                            Filter
+                          </button>
+                        </div>
+                      </div>
+                    </form>
+                    <hr />
+                  </div>
+                  <div
+                    className="single-schema-list__filter"
+                  >
+                    <h5
+                      className="single-schema-list__filter-label"
+                    >
+                      Another parameter 1
+                    </h5>
+                    <form
+                      className=""
+                      onSubmit={[Function]}
+                    >
+                      <div
+                        className="input-group"
+                      >
+                        <input
+                          aria-label="Filter input"
+                          className="form-control"
+                          onChange={[Function]}
+                          placeholder=""
+                        />
+                        <div
+                          className="input-group-append"
+                        >
+                          <button
+                            aria-label="Filter results"
+                            className="btn btn-outline-secondary"
+                            disabled={true}
+                            type="submit"
+                          >
+                            Filter
+                          </button>
+                        </div>
+                      </div>
+                    </form>
+                    <hr />
+                  </div>
+                  <div
+                    className="single-schema-list__filter"
+                  >
+                    <h5
+                      className="single-schema-list__filter-label"
+                    >
+                      Sensitive Parameter
+                    </h5>
+                    <form
+                      className=""
+                      onSubmit={[Function]}
+                    >
+                      <div
+                        className="input-group"
+                      >
+                        <input
+                          aria-label="Filter input"
+                          className="form-control"
+                          onChange={[Function]}
+                          placeholder=""
+                        />
+                        <div
+                          className="input-group-append"
+                        >
+                          <button
+                            aria-label="Filter results"
+                            className="btn btn-outline-secondary"
+                            disabled={true}
+                            type="submit"
+                          >
+                            Filter
+                          </button>
+                        </div>
+                      </div>
+                    </form>
+                    <hr />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
 `;
 
 exports[`Storyshots Filters/Filters section Error 1`] = `
-Array [
-  <div
-    style={
-      Object {
-        "padding": "3rem",
-        "width": "400px",
-      }
+<div
+  style={
+    Object {
+      "padding": "3rem",
+      "width": "400px",
     }
-  >
-    <p>
-      An error occurred while loading filters.
-    </p>
-  </div>,
-  "  ",
-]
+  }
+>
+  <p>
+    An error occurred while loading filters.
+  </p>
+</div>
 `;
 
 exports[`Storyshots Filters/Filters section Loading 1`] = `
-Array [
-  <div
-    style={
-      Object {
-        "padding": "3rem",
-        "width": "400px",
-      }
+<div
+  style={
+    Object {
+      "padding": "3rem",
+      "width": "400px",
     }
-  >
-    <p>
-      Loading filters...
-    </p>
-  </div>,
-  "  ",
-]
+  }
+>
+  <p>
+    Loading filters...
+  </p>
+</div>
 `;
 
 exports[`Storyshots Filters/Filters section No Filters 1`] = `
-Array [
-  <div
-    style={
-      Object {
-        "padding": "3rem",
-        "width": "400px",
-      }
+<div
+  style={
+    Object {
+      "padding": "3rem",
+      "width": "400px",
     }
-  />,
-  "  ",
-]
+  }
+/>
 `;
 
 exports[`Storyshots Filters/Number range filter Default 1`] = `

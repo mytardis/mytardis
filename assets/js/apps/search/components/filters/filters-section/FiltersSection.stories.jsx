@@ -8,33 +8,40 @@ import { error } from 'jquery';
 export default {
   component: PureFiltersSection,
   title: 'Filters/Filters section',
-  decorators: [story => <Provider store={store}><div style={{ padding: '3rem', width: "400px" }}>{story()}</div>  </Provider>],
+  decorators: [story => <div style={{ padding: '3rem', width: "400px" }}>{story()}</div>],
   excludeStories: /.*Data$/,
 };
 
-const store = makeMockStore({});
 
 export const filtersData = {
   types: {
     byId: {
         projects: {
           attributes: {
-          schema: {op:"is",content:["1"]}
+          schema: {
+            value:{op:"is",content:["1"]}
+          }
         }
       },
       experiments: {
         attributes: {
-          schema: {op:"is",content:["2"]}
+          schema: {
+            value:{op:"is",content:["2"]}
+          }
         }
       },
       datasets: {
         attributes: {
-          schema: {op:"is",content:["1"]}
+          schema: {
+            value: {op:"is",content:["1"]}
+          }
         }
       },
       datafiles: {
         attributes: {
-          schema: {op:"is",content:["1","2"]}
+          schema: {
+            value:{op:"is",content:["1","2"]}
+          }
         }
       }
     },
@@ -54,6 +61,9 @@ export const filtersData = {
   error: null
 };
 
+const makeMockStoreWithFilterSlice = (filterSlice) => (makeMockStore({filters:filterSlice}));
+
+
 export const noFiltersData = Object.assign({},filtersData, {
   typeSchemas: null
 })
@@ -66,18 +76,22 @@ export const errorData = Object.assign({},filtersData, {
   error: "Error loading filter data"
 })
 
-export const Default = () => (
-    <PureFiltersSection {...filtersData} />
-);
+export const Default = () => {
+    const store = makeMockStoreWithFilterSlice(filtersData);
+    return <Provider store={store}><PureFiltersSection {...filtersData} /></Provider>
+};
 
-export const NoFilters = () => (
-  <PureFiltersSection {...noFiltersData} />
-);
+export const NoFilters = () => {
+  const store = makeMockStoreWithFilterSlice(noFiltersData);
+  return <Provider store={store}><PureFiltersSection {...noFiltersData} /></Provider>
+};
 
-export const Loading = () => (
-  <PureFiltersSection {...loadingData} />
-);
+export const Loading = () => {
+  const store = makeMockStoreWithFilterSlice(loadingData);
+  return <Provider store={store}><PureFiltersSection {...loadingData} /></Provider>
+};
 
-export const Error = () => (
-  <PureFiltersSection {...errorData} />
-);
+export const Error = () => {
+  const store = makeMockStoreWithFilterSlice(errorData);
+  return <Provider store={store}><PureFiltersSection {...errorData} /></Provider>
+};
