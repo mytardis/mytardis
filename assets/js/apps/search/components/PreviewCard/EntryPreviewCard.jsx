@@ -3,10 +3,8 @@ import React from 'react';
 import './EntryPreviewCard.css'
 
 export default function EntryPreviewCard(props) {
-
-
-    
-    let data = props.data;
+    // let data = props.data;
+    let { data, type } = props;
 
     /**
      * Simply cuts of the time portion of the date
@@ -49,9 +47,27 @@ export default function EntryPreviewCard(props) {
     // get actual parameter field name rather than parameter id.start_date
     // make variant for datafile preview.start_date
     // make variant for dataset preview.
+
+    /**
+     * Gets the 'name' for the result type. fields differ depending on type.
+     * @param {*} data 
+     * @param {*} type project, dataset or datafile
+     */
+    const getPreviewName = (data, type) => {
+        if (type === "project") {
+            return data.name;
+        }
+        if (type === "dataset" || type == "experiment") {
+            return data.title;
+        }
+        if (type === "datafile") {
+            return data.filename;
+        }
+    }
+
     return (
         <div className="preview-card__body">
-            <h1>{data.name}</h1>
+            <h1>{getPreviewName(data, type)}</h1>
             <div className="preview-card__access-status">
                 {determineAccess(data.userDownloadRights)}
             </div>
@@ -135,45 +151,6 @@ export default function EntryPreviewCard(props) {
     //   "start_date": "2020-05-07T21:34:44+00:00",
     //   "userDownloadRights": "partial"
     // }
-
-
-    // experiment ====
-    // {
-    //     "counts":{
-    //        "datafiles":2,
-    //        "datasets":1
-    //     },
-    //     "created_by":{
-    //        "username":"mlav736"
-    //     },
-    //     "created_time":"2020-05-07T22:56:36.596706+00:00",
-    //     "description":"here we go again",
-    //     "end_time":null,
-    //     "id":4,
-    //     "parameters":[
-    //        {
-    //           "data_type":"STRING",
-    //           "pn_id":"1",
-    //           "sensitive":"False",
-    //           "value":"kiwi"
-    //        },
-    //        {
-    //           "data_type":"STRING",
-    //           "pn_id":"3",
-    //           "sensitive":"True",
-    //           "value":"forbidden fruit"
-    //        }
-    //     ],
-    //     "project":{
-    //        "id":1
-    //     },
-    //     "size":"460.3 KB",
-    //     "start_time":null,
-    //     "title":"Test_ACLs",
-    //     "update_time":"2020-06-09T02:09:56.872730+00:00",
-    //     "userDownloadRights":"partial"
-    //  }
-
 
     // dataset ===
     // {

@@ -9,7 +9,7 @@ export default {
   // excludeStories: /.*Data$/,
 };
 
-const data = {
+const projectData = {
   "counts": {
     "datafiles": 2,
     "datasets": 1,
@@ -58,6 +58,47 @@ const data = {
   "userDownloadRights": "partial"
 }
 
+const experimentData = {
+  "counts": {
+    "datafiles": 2,
+    "datasets": 1
+  },
+  "created_by": {
+    "username": "mlav736"
+  },
+  "created_time": "2020-05-07T22:56:36.596706+00:00",
+  "description": "here we go again",
+  "end_time": null,
+  "id": 4,
+  "parameters": [
+    {
+      "data_type": "STRING",
+      "pn_id": "1",
+      "sensitive": "False",
+      "value": "kiwi"
+    },
+    {
+      "data_type": "STRING",
+      "pn_id": "3",
+      "sensitive": "True",
+      "value": "forbidden fruit"
+    }
+  ],
+  "project": {
+    "id": 1
+  },
+  "size": "460.3 KB",
+  "start_time": null,
+  "title": "Test_ACLs",
+  "update_time": "2020-06-09T02:09:56.872730+00:00",
+  "userDownloadRights": "partial"
+}
+
 export const Default = () => (
-  <EntryPreviewCard data={data} />
+  <EntryPreviewCard type="project" data={projectData} />
+);
+
+
+export const Experiment = () => (
+  <EntryPreviewCard type="experiment" data={experimentData} />
 );
