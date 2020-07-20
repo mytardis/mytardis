@@ -1,6 +1,5 @@
 import React, { Fragment } from 'react';
 import ReactDOM from 'react-dom';
-import Cookies from 'js-cookie';
 import LicenseModal from './modal';
 
 const content = document.getElementsByClassName('choose-rights')[0];

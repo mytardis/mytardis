@@ -1,5 +1,4 @@
 /* licenses.js */
-/* global _, Mustache */
 
 export var selectLicenseOption = function(value) {
     var selectedOption = $(`.license-option input[value="${value}"]`)
@@ -7,32 +6,6 @@ export var selectLicenseOption = function(value) {
     selectedOption.find(".use-button").attr("disabled", true);
     selectedOption.find(".use-button").text("Selected");
 };
-
-/*export var populateLicenseOptions = function(publicAccess, markSameLicense) {
-    $.ajax({
-        url: "/ajax/license/list?public_access=" + publicAccess,
-        dataType: "json",
-        success: function(licenses) {
-            $("#license-options").empty();
-            _(licenses).each(function(license) {
-                $("#license-options").append(
-                    Mustache.to_html(
-                        Mustache.TEMPLATES["tardis_portal/license_selector"],
-                        license, Mustache.TEMPLATES)
-                );
-                if (markSameLicense) {
-                    // setTimeout(..., 0) gives the browser a chance to complete
-                    // the append before trying to select the option.
-                    setTimeout(function() {
-                        // A Django form is supplied by the view method, which
-                        // includes some hidden inputs, including #id_license:
-                        selectLicenseOption($("#id_license").val());
-                    }, 0);
-                }
-            });
-        }
-    });
-};*/
 
 $(document).on("click", "#license-options .use-button", function(evt) {
     // Get the selected ID from hidden input

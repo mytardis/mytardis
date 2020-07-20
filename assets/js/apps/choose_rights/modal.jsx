@@ -25,9 +25,6 @@ const LicenseModal = ({ experimentId }) => {
   const handleSubmit = (event) => {
     event.preventDefault();
     /* action="/ajax/experiment/84/rights" */
-    console.log(selectedAccessTypeId);
-    console.log(selectedLicenseId);
-    console.log(modalData.legal_text);
     fetch(`/ajax/experiment/${experimentId}/rights`, {
       method: 'post',
       headers: {
@@ -57,7 +54,6 @@ const LicenseModal = ({ experimentId }) => {
     );
   };
   const handleLicenseChange = (event) => {
-    console.log(event.target.value);
     setSelectedLicenseId(event.target.value);
   };
 
