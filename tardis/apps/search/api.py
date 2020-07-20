@@ -182,7 +182,6 @@ class SearchAppResource(Resource):
         logging.warn("Testing search app")
         user = bundle.request.user
 
-        #query = request.POST.get('data', None)
         query_text = bundle.data.get('query', None)
 
         filters = bundle.data.get('filters', None)
@@ -208,16 +207,30 @@ class SearchAppResource(Resource):
 
             if query_text is not None:
                 if query_text is not "":
+
                     # Search on title/keywords + on non-sensitive metadata
                     query_obj_text = Q({"match": {match_list[idx]:query_text}})
-                    query_obj_text_meta = Q({"nested" : { "path":"parameters",
-                        "query": Q({"bool": {"must":[
-                        Q({"match": {"parameters.value":query_text}}), Q({"match": {"parameters.sensitive":"False"}})]}})}})
+                    query_obj_text_meta = Q(
+                        {"nested" : {
+                            "path":"parameters", "query": Q(
+                                {"bool": {"must":[
+                                    Q({"match": {"parameters.value":query_text}}),
+                                    Q({"match": {"parameters.sensitive":"False"}})
+                                ]}}
+                            )
+                        }})
                     query_obj_text_meta = query_obj_text | query_obj_text_meta
+
                     # Search on sensitive metadata only
-                    query_obj_sens_meta = Q({"nested" : { "path":"parameters",
-                        "query": Q({"bool": {"must":[
-                        Q({"match": {"parameters.value":query_text}}), Q({"match": {"parameters.sensitive":"True"}})]}})}})
+                    query_obj_sens_meta = Q(
+                        {"nested" : {
+                            "path":"parameters", "query": Q(
+                                {"bool": {"must":[
+                                    Q({"match": {"parameters.value":query_text}}),
+                                    Q({"match": {"parameters.sensitive":"True"}})
+                                ]}}
+                            )
+                        }})
                     query_obj_sens_meta = query_obj_text | query_obj_sens_meta
 
                     query_obj_sens = query_obj & query_obj_sens_meta
@@ -243,8 +256,10 @@ class SearchAppResource(Resource):
 
                         schema_id, param_id = filter["target"][0], filter["target"][1]
                         num_2_type = {1:'experiment', 2:'dataset', 3:'datafile', 11:'project'}
+
                         # check filter is applied to correct object type
                         if num_2_type[Schema.objects.get(id=schema_id).schema_type] == obj:
+
                             # check if filter query is list of options, or single value
                             # (elasticsearch can actually handle delimiters in a single string...)
                             if isinstance(filter["content"], list):
@@ -252,19 +267,31 @@ class SearchAppResource(Resource):
                                 Qdict = {"should" : []}
 
                                 for option in filter["content"]:
-                                    Qdict["should"].append(
-                                                    Q({"nested" : { "path":"parameters",
-                                                        "query": Q({"bool": {"must":[
-                                                        Q({"match": {"parameters.pn_id":str(param_id)}}),
-                                                         Q({"match": {"parameters.value":option}})]}})}})  )
+
+                                    qry = Q(
+                                        {"nested" : {
+                                            "path":"parameters", "query": Q(
+                                                {"bool": {"must":[
+                                                    Q({"match": {"parameters.pn_id":str(param_id)}}),
+                                                    Q({"match": {"parameters.value":option}})
+                                                ]}}
+                                            )
+                                        }})
+
+                                    Qdict["should"].append(qry)
 
                                 query_obj_filt = Q({"bool" : Qdict})
 
                             else:
-                                query_obj_filt = Q({"nested" : { "path":"parameters",
-                                                    "query": Q({"bool": {"must":[
-                                                    Q({"match": {"parameters.pn_id":str(param_id)}}),
-                                                     Q({"match": {"parameters.value":filter["content"]}})]}})}})
+                                query_obj_filt = Q(
+                                    {"nested" : {
+                                        "path":"parameters", "query": Q(
+                                            {"bool": {"must":[
+                                                Q({"match": {"parameters.pn_id":str(param_id)}}),
+                                                Q({"match": {"parameters.value":filter["content"]}})
+                                            ]}}
+                                        )
+                                    }})
 
 
                             query_obj = query_obj & query_obj_filt
@@ -294,24 +321,36 @@ class SearchAppResource(Resource):
             for item in results:
                 for hit in item.hits.hits:
 
+                    # Prevents search hits based purely upon sensitive metadata matches,
+                    # for users/groups who do not have sensitive permission
                     if sensitive:
                         if not authz.has_sensitive_access(request, hit["_source"]["id"], hit["_index"]):
                             continue
 
+                    # Default sensitive permission and size of object
                     sensitive_bool = False
                     size = 0
+
+                    # Skip hit if hit_obj not accessible (elasticsearch checks for ACL entry for user/group,
+                    # not whether the entry gives or prevents access)
                     if not authz.has_access(request, hit["_source"]["id"], hit["_index"]):
                         continue
 
+                    # If user/group has sensitive permission, update flag
                     if authz.has_sensitive_access(request, hit["_source"]["id"], hit["_index"]):
                         sensitive_bool = True
 
+                    # Get total/nested size of object, respecting ACL access to child objects
                     size = authz.get_nested_size(request, hit["_source"]["id"], hit["_index"])
 
+                    # Must work on copy of current iterable
                     safe_hit = hit.copy()
+
+                    # Remove ACLs and add size to repsonse
                     safe_hit["_source"].pop("objectacls")
                     safe_hit["_source"]["size"] = filesizeformat(size)
 
+                    # Get count of all nested objects and download status
                     if hit["_index"] != 'datafile':
                         safe_hit["_source"]["counts"] = authz.get_nested_count(request,
                                                             hit["_source"]["id"], hit["_index"])
@@ -326,6 +365,7 @@ class SearchAppResource(Resource):
                         else:
                             safe_hit["_source"]["userDownloadRights"] = "none"
 
+                    # if no sensitive access, remove sensitive metadata from response
                     if not sensitive_bool:
                         for idxx, parameter in enumerate(hit["_source"]["parameters"]):
                             is_sensitive = authz.get_obj_parameter(parameter["pn_id"],
@@ -334,7 +374,9 @@ class SearchAppResource(Resource):
                             if is_sensitive.sensitive_metadata:
                                 safe_hit["_source"]["parameters"].pop(idxx)
 
-                    # non-identical scores requires more complex comparison than just 'is in'
+                    # Append hit to final results if not already in results.
+                    # Due to non-identical scores in hits for non-sensitive vs sensitive search,
+                    # we require a more complex comparison than just 'is in' as hits are not identical
                     if safe_hit["_source"]['id'] not in [objj["_source"]['id'] for objj in result_dict[hit["_index"]+"s"]]:
                         result_dict[hit["_index"]+"s"].append(safe_hit)
 
@@ -361,9 +403,12 @@ class SearchAppResource(Resource):
         if filter_level:
             filter_parent_child(result_dict)
 
+        # add search results to bundle, and return bundle
         bundle.obj = SearchObject(id=1, hits=result_dict)
         return bundle
 
+
+# WARNING: This is busted
 def simple_search_public_data(query_text):
     result_dict = {k: [] for k in ["experiments", "datasets", "datafiles"]}
     index_list = ['experiment', 'dataset', 'datafile']
