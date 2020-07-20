@@ -19,7 +19,7 @@ def before_all(context):
     capabilities['loggingPrefs'] = {'browser': 'SEVERE'}
 
     context.browser = webdriver.Chrome(
-        executable_path="c:/chromedriver.exe",
+        executable_path="/usr/local/bin/chromedriver",
         chrome_options=chrome_options,
         desired_capabilities=capabilities)
     context.browser.set_page_load_timeout(10)
