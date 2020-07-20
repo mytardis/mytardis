@@ -16,8 +16,6 @@ require("../js/tardis_portal/backbone-models");
 require("expose-loader?MyTardis!./tardis_portal/backbone-models");
 require("backbone-forms/distribution/backbone-forms");
 require("backbone-forms/distribution/templates/bootstrap3");
-//require("mustache");
-//require("expose-loader?Mustache!mustache");
 require("sprintf-js/dist/sprintf.min");
 require("expose-loader?sprintf!sprintf-js/dist/sprintf.min");
 require("clipboard");

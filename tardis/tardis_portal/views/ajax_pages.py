@@ -2,12 +2,15 @@
 views that return HTML that is injected into pages
 """
 import logging
+import json
 
 from urllib.parse import urlencode
 
 from django.conf import settings
 from django.core.exceptions import PermissionDenied
 from django.core.paginator import Paginator, EmptyPage, InvalidPage
+from django.forms import model_to_dict
+from django.http import JsonResponse
 from django.urls import reverse
 from django.views.decorators.cache import never_cache
 from django.contrib.auth.decorators import login_required
@@ -315,7 +318,8 @@ def choose_rights(request, experiment_id):
 
     # Process form or prepopulate it
     if request.method == 'POST':
-        form = RightsForm(request.POST)
+        data = json.loads(request.body)
+        form = RightsForm(data)
         if form.is_valid():
             experiment.public_access = form.cleaned_data['public_access']
             experiment.license = form.cleaned_data['license']
@@ -326,9 +330,10 @@ def choose_rights(request, experiment_id):
                            'legal_text': getattr(settings, 'LEGAL_TEXT',
                                                  'No Legal Agreement Specified')})
 
-    c = {'form': form, 'experiment': experiment}
-    return render_response_index(
-        request, 'tardis_portal/ajax/choose_rights.html', c)
+    c = {'form': form.data, 'experiment': model_to_dict(experiment)}
+    return JsonResponse(form.data, safe=False)
+    #return render_response_index(
+    #    request, 'tardis_portal/ajax/choose_rights.html', c)
 
 
 @never_cache

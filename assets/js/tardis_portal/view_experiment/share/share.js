@@ -8,7 +8,7 @@ import { addPublicAccessEvents } from "./public_access_events.js";
 
 var loadingHTML = "<img src=\"/static/images/ajax-loader.gif\"/><br />";
 
-export function addChangePublicAccessEventHandlers() {
+/* export function addChangePublicAccessEventHandlers() {
     $(".public_access_link").unbind("click");
     $(".public_access_link").bind("click", function(evt) {
         var modal = $("#modal-public-access");
@@ -37,7 +37,7 @@ export function addChangePublicAccessEventHandlers() {
     $("#modal-public-access").bind("hidden.bs.modal", function() {
         loadExpTabPane("sharing");
     });
-}
+}*/
 
 // beginswith, endswith
 String.prototype.beginsWith = function(t, i) {

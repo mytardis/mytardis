@@ -12,24 +12,7 @@
 {% mustachejs "tardis_portal/ajax_error" %}
 
 <!-- public access modal !-->
-<div class="modal" id="modal-public-access" role="dialog" tabindex="-1">
-  <div class="modal-dialog modal-lg" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h1 class="title">Public Access</h1>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
-        </button>
-      </div>
 
-      <div class="loading-placeholder" style="display: none">
-        <p>Please wait... <img src="{% static 'images/ajax-loader.gif'%}" alt="loading" /></p>
-      </div>
-
-      <div class="modal-body"></div>
-    </div>  <!-- class="modal-content" -->
-  </div>  <!-- class="modal-dialog" -->
-</div>
 
 <!-- sharing user modal !-->
 <div class="modal" id="modal-share" role="dialog" tabindex="-1">
@@ -109,10 +92,7 @@
             </dl>
         </p>
         {% if is_owner or is_superuser %}
-        <a class="public_access_link btn btn-outline-secondary btn-sm" title="Change">
-          <i class="fa fa-cog"></i>
-          Change Public Access
-        </a>
+        <div class="choose-rights" id="choose-rights-{{ experiment.id }}" ></div>
         {% endif %}
     </div>
     <hr/>
@@ -169,4 +149,5 @@
     </div>
 </div>
 {% render_bundle 'public_access_badge' %}
+{% render_bundle 'choose_rights' %}
 {% endblock %}

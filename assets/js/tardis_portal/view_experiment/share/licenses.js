@@ -8,7 +8,7 @@ export var selectLicenseOption = function(value) {
     selectedOption.find(".use-button").text("Selected");
 };
 
-export var populateLicenseOptions = function(publicAccess, markSameLicense) {
+/*export var populateLicenseOptions = function(publicAccess, markSameLicense) {
     $.ajax({
         url: "/ajax/license/list?public_access=" + publicAccess,
         dataType: "json",
@@ -32,7 +32,7 @@ export var populateLicenseOptions = function(publicAccess, markSameLicense) {
             });
         }
     });
-};
+};*/
 
 $(document).on("click", "#license-options .use-button", function(evt) {
     // Get the selected ID from hidden input
