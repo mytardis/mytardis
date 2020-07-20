@@ -193,6 +193,7 @@ class SearchAppResource(Resource):
         groups = user.groups.all()
         index_list = ['project', 'experiment', 'dataset', 'datafile']
         match_list = ['name','title','description','filename']
+        filter_level = False
 
         ms = MultiSearch(index=index_list)
         ms_sens = MultiSearch(index=index_list)
@@ -224,6 +225,7 @@ class SearchAppResource(Resource):
 
 
             if filters is not None:
+                filter_level = True
                 #filter_op = filters['op']     This isn't used for now
                 filterlist = filters["content"]
                 for filter in filterlist:
@@ -337,10 +339,27 @@ class SearchAppResource(Resource):
                         result_dict[hit["_index"]+"s"].append(safe_hit)
 
 
+        def filter_parent_child(result_dict):
+            parent_child = {"experiment":"project", "datafile":"dataset"}
+            for objs in ["experiments", "datasets", "datafiles"]:
+                for obj in list(result_dict[objs]):
+                    if obj["_index"] != 'dataset':
+                        if obj["_source"][parent_child[obj["_index"]]]["id"] not in [objj["_source"]['id'] \
+                                for objj in result_dict[parent_child[obj["_index"]]+"s"]]:
+                            result_dict[objs].pop(obj)
+                    else:
+                        exp_ids = [parent['id'] for parent in obj["_source"]["experiments"]
+                        if any(item in exp_ids for item in [objj["_source"]['id'] for objj in result_dict["experiments"]]):
+                            result_dict[objs].pop(obj)
+
+
         clean_response(bundle.request, results, result_dict)
         if query_text is not None:
             if query_text is not "":
                 clean_response(bundle.request, results_sens, result_dict, sensitive=True)
+
+        if filter_level:
+            filter_parent_child(result_dict)
 
         bundle.obj = SearchObject(id=1, hits=result_dict)
         return bundle
