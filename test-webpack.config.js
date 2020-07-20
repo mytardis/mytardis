@@ -35,7 +35,8 @@ module.exports = {
         public_access_badge: "./assets/js/apps/badges/components/ShareTabBadge.jsx",
         experiment_view_badges: "./assets/js/apps/badges/components/ExperimentViewPageBadges.jsx",
         dataset_view_badges: "./assets/js/apps/badges/components/DatasetViewPageBadges.jsx",
-        dataset_tiles: "./assets/js/apps/tiles/index.jsx"
+        dataset_tiles: "./assets/js/apps/tiles/index.jsx",
+        choose_rights: "./assets/js/apps/choose_rights/index.jsx"
     },
     output: {
         path: path.resolve("./assets/bundles/"),

@@ -115,11 +115,11 @@ def exp_sharing_tab_content_is_shown(context):
 
 
 @when("they click the Change Public Access link")
-def they_click_the_change_public_access_link(context):
+def they_click_the_change_public_access_button(context):
     """
     :type context: behave.runner.Context
     """
-    public_access_link = context.browser.find_element_by_css_selector("a.public_access_link")
+    public_access_link = context.browser.find_element_by_css_selector("button.public_access_link")
     public_access_link.click()
 
 
