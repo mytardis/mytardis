@@ -348,7 +348,7 @@ class SearchAppResource(Resource):
                                 for objj in result_dict[parent_child[obj["_index"]]+"s"]]:
                             result_dict[objs].pop(obj)
                     else:
-                        exp_ids = [parent['id'] for parent in obj["_source"]["experiments"]
+                        exp_ids = [parent['id'] for parent in obj["_source"]["experiments"]]
                         if any(item in exp_ids for item in [objj["_source"]['id'] for objj in result_dict["experiments"]]):
                             result_dict[objs].pop(obj)
 
