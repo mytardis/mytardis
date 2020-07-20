@@ -192,7 +192,7 @@ class SearchAppResource(Resource):
         groups = user.groups.all()
         index_list = ['project', 'experiment', 'dataset', 'datafile']
         match_list = ['name','title','description','filename']
-        filter_level = False
+        filter_level = 0
 
         ms = MultiSearch(index=index_list)
         ms_sens = MultiSearch(index=index_list)
@@ -238,7 +238,7 @@ class SearchAppResource(Resource):
 
 
             if filters is not None:
-                filter_level = True
+                #filter_level = True
                 #filter_op = filters['op']     This isn't used for now
                 filterlist = filters["content"]
                 for filter in filterlist:
@@ -252,14 +252,17 @@ class SearchAppResource(Resource):
 
                     oper = operator_dict[filter['op']]
 
+                    # Only filter type for now
                     if filter["kind"] == "schemaParameter":
 
                         schema_id, param_id = filter["target"][0], filter["target"][1]
                         num_2_type = {1:'experiment', 2:'dataset', 3:'datafile', 11:'project'}
+                        hierarchy = {'project':4, 'experiment':3, 'dataset':2, 'datafile':1}
 
                         # check filter is applied to correct object type
                         if num_2_type[Schema.objects.get(id=schema_id).schema_type] == obj:
-
+                            if filter_level > hierarchy[obj]:
+                                filter_level = hierarchy[obj]
                             # check if filter query is list of options, or single value
                             # (elasticsearch can actually handle delimiters in a single string...)
                             if isinstance(filter["content"], list):
@@ -381,18 +384,24 @@ class SearchAppResource(Resource):
                         result_dict[hit["_index"]+"s"].append(safe_hit)
 
 
-        def filter_parent_child(result_dict):
+        def filter_parent_child(result_dict, filter_level):
+
+            # Define parent_type for experiment/datafile (N/A for project, hardcoded for dataset)
             parent_child = {"experiment":"project", "datafile":"dataset"}
+
+            # Define hierarchy of types for filter levels
+            hierarchy = {'experiments':3, 'datasets':2, 'datafiles':1}
             for objs in ["experiments", "datasets", "datafiles"]:
-                for obj_idx, obj in reversed(list(enumerate(result_dict[objs]))):
-                    if obj["_index"] != 'dataset':
-                        if obj["_source"][parent_child[obj["_index"]]]["id"] not in [objj["_source"]['id'] \
-                                for objj in result_dict[parent_child[obj["_index"]]+"s"]]:
-                            result_dict[objs].pop(obj_idx)
-                    else:
-                        exp_ids = [parent['id'] for parent in obj["_source"]["experiments"]]
-                        if not any(item in exp_ids for item in [objj["_source"]['id'] for objj in result_dict["experiments"]]):
-                            result_dict[objs].pop(obj_idx)
+                if hierarchy[objs] < filter_level:
+                    for obj_idx, obj in reversed(list(enumerate(result_dict[objs]))):
+                        if obj["_index"] != 'dataset':
+                            if obj["_source"][parent_child[obj["_index"]]]["id"] not in [objj["_source"]['id'] \
+                                    for objj in result_dict[parent_child[obj["_index"]]+"s"]]:
+                                result_dict[objs].pop(obj_idx)
+                        else:
+                            exp_ids = [parent['id'] for parent in obj["_source"]["experiments"]]
+                            if not any(item in exp_ids for item in [objj["_source"]['id'] for objj in result_dict["experiments"]]):
+                                result_dict[objs].pop(obj_idx)
 
 
         clean_response(bundle.request, results, result_dict)
@@ -401,7 +410,7 @@ class SearchAppResource(Resource):
                 clean_response(bundle.request, results_sens, result_dict, sensitive=True)
 
         if filter_level:
-            filter_parent_child(result_dict)
+            filter_parent_child(result_dict, filter_level)
 
         # add search results to bundle, and return bundle
         bundle.obj = SearchObject(id=1, hits=result_dict)
