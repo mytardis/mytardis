@@ -342,7 +342,7 @@ class SearchAppResource(Resource):
         def filter_parent_child(result_dict):
             parent_child = {"experiment":"project", "datafile":"dataset"}
             for objs in ["experiments", "datasets", "datafiles"]:
-                for obj_idx, obj in reversed(enumerate(list(result_dict[objs]))):
+                for obj_idx, obj in reversed(list(enumerate(result_dict[objs]))):
                     if obj["_index"] != 'dataset':
                         if obj["_source"][parent_child[obj["_index"]]]["id"] not in [objj["_source"]['id'] \
                                 for objj in result_dict[parent_child[obj["_index"]]+"s"]]:
