@@ -342,15 +342,15 @@ class SearchAppResource(Resource):
         def filter_parent_child(result_dict):
             parent_child = {"experiment":"project", "datafile":"dataset"}
             for objs in ["experiments", "datasets", "datafiles"]:
-                for obj in list(result_dict[objs]):
+                for obj_idx, obj in enumerate(list(result_dict[objs])):
                     if obj["_index"] != 'dataset':
                         if obj["_source"][parent_child[obj["_index"]]]["id"] not in [objj["_source"]['id'] \
                                 for objj in result_dict[parent_child[obj["_index"]]+"s"]]:
-                            result_dict[objs].pop(obj)
+                            result_dict[objs].pop(obj_idx)
                     else:
                         exp_ids = [parent['id'] for parent in obj["_source"]["experiments"]]
                         if any(item in exp_ids for item in [objj["_source"]['id'] for objj in result_dict["experiments"]]):
-                            result_dict[objs].pop(obj)
+                            result_dict[objs].pop(obj_idx)
 
 
         clean_response(bundle.request, results, result_dict)
