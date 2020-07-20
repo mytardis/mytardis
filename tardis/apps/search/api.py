@@ -261,7 +261,7 @@ class SearchAppResource(Resource):
 
                         # check filter is applied to correct object type
                         if num_2_type[Schema.objects.get(id=schema_id).schema_type] == obj:
-                            if filter_level > hierarchy[obj]:
+                            if filter_level < hierarchy[obj]:
                                 filter_level = hierarchy[obj]
                             # check if filter query is list of options, or single value
                             # (elasticsearch can actually handle delimiters in a single string...)
@@ -390,7 +390,7 @@ class SearchAppResource(Resource):
             parent_child = {"experiment":"project", "datafile":"dataset"}
 
             # Define hierarchy of types for filter levels
-            hierarchy = {'experiments':3, 'datasets':2, 'datafiles':1}
+            hierarchy = {"experiments":3, "datasets":2, "datafiles":1}
             for objs in ["experiments", "datasets", "datafiles"]:
                 if hierarchy[objs] < filter_level:
                     for obj_idx, obj in reversed(list(enumerate(result_dict[objs]))):
