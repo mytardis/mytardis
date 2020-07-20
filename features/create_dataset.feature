@@ -16,11 +16,11 @@ Feature: Create a Dataset
     Then the experiment sharing tab content is shown
     When they click the Change Public Access link
     Then they see the Change Public Access form
-    #When they click the Add New dataset button
-    #Then they see the dataset creation form
-    #When they fill in the Add Dataset form and click Save
-    #Then a new dataset is created
-    #When they open the My Data url
-    #Then they see the newly created experiment
-    #When they open the experiment url
-    #Then they see the newly created dataset
+    When they click the Add New dataset button
+    Then they see the dataset creation form
+    When they fill in the Add Dataset form and click Save
+    Then a new dataset is created
+    When they open the My Data url
+    Then they see the newly created experiment
+    When they open the experiment url
+    Then they see the newly created dataset
