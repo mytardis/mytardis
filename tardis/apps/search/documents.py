@@ -55,14 +55,26 @@ class ProjectDocument(Document):
         'entityId': fields.StringField()
     })
     parameters = fields.NestedField(attr='getParametersforIndexing', properties={
-        'pn_id': fields.StringField(),
-        'value': fields.StringField(),
-        'data_type': fields.StringField(),
-        'sensitive': fields.StringField()
+        'string' : fields.NestedField(properties = {
+            'pn_id': fields.IntegerField(),
+            'value': fields.StringField(),
+            'sensitive': fields.BooleanField()
+        }),
+        'numerical' : fields.NestedField(properties = {
+            'pn_id': fields.IntegerField(),
+            'value': fields.FloatField(),
+            'sensitive': fields.BooleanField()
+        }),
+        'datetime' : fields.NestedField(properties = {
+            'pn_id': fields.IntegerField(),
+            # temporary
+            'value': fields.StringField(),
+            'sensitive': fields.BooleanField()
+        })
     })
 
     def prepare_parameters(self, instance):
-        return list(instance.getParametersforIndexing())
+        return dict(instance.getParametersforIndexing())
 
     class Django:
         model = Project
