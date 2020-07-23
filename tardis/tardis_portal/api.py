@@ -1029,6 +1029,14 @@ class ProjectResource(MyTardisModelResource):
                 acl.save()
         return super().hydrate_m2m(bundle)
 
+    def obj_create(self, bundle, **kwargs):
+        '''Currently not tested for failed db transactions as sqlite does not
+        enforce limits.
+        '''
+        user = bundle.request.user
+        bundle.data['created_by'] = user
+        bundle = super().obj_create(bundle, **kwargs)
+        return bundle
 ################################################
 
 
@@ -1181,6 +1189,32 @@ class ExperimentResource(MyTardisModelResource):
                                 object_id=experiment.id,
                                 pluginId=django_group,
                                 entityId=str(group_id),
+                                canRead=True,
+                                canDownload=download_flg,
+                                canWrite=True,
+                                canDelete=False,
+                                canSensitive=sensitive_flg,
+                                isOwner=False,
+                                aclOwnershipType=ObjectACL.OWNER_OWNED)
+                acl.save()
+            if 'members' in bundle.data.keys():
+                # error checking needs to be done externally for this to
+                # function as desired.
+                members = bundle.data['members']
+            else:
+                members = project.get_users_and_perms()
+                # Each member group is defined by a tuple
+                # (group_name, sensitive[T/F], download[T/F])
+                # unpack for ACLs
+            for grp in members:
+                grp_name = grp[0]
+                sensitive_flg = grp[1]
+                download_flg = grp[2]
+                user = User.objects.get(username=grp_name)
+                acl = ObjectACL(content_type=experiment.get_ct(),
+                                object_id=experiment.id,
+                                pluginId=django_user,
+                                entityId=str(user.id),
                                 canRead=True,
                                 canDownload=download_flg,
                                 canWrite=True,
