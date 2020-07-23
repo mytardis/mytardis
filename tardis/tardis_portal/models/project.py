@@ -107,7 +107,11 @@ class Project(models.Model):
                 for idx, value in enumerate(sublist[1:-1]):
                     if value is not None:
                         param_dict['pn_id'] = str(PN_id)
-                        param_dict['sensitive'] = str(sublist[-1])
+                        if sublist[-1]:
+                            param_dict['sensitive'] = True
+                        else:
+                            param_dict['sensitive'] = False
+
                         type_idx = idx+1
 
                         if type_idx == 1:
