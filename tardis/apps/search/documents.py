@@ -67,8 +67,7 @@ class ProjectDocument(Document):
         }),
         'datetime' : fields.NestedField(properties = {
             'pn_id': fields.IntegerField(),
-            # temporary
-            'value': fields.StringField(),
+            'value': fields.DateField(),
             'sensitive': fields.BooleanField()
         })
     })
@@ -134,8 +133,7 @@ class ExperimentDocument(Document):
         }),
         'datetime' : fields.NestedField(properties = {
             'pn_id': fields.IntegerField(),
-            # temporary
-            'value': fields.StringField(),
+            'value': fields.DateField(),
             'sensitive': fields.BooleanField()
         })
     })
@@ -200,8 +198,7 @@ class DatasetDocument(Document):
         }),
         'datetime' : fields.NestedField(properties = {
             'pn_id': fields.IntegerField(),
-            # temporary
-            'value': fields.StringField(),
+            'value': fields.DateField(),
             'sensitive': fields.BooleanField()
         })
     })
@@ -263,8 +260,7 @@ class DataFileDocument(Document):
         }),
         'datetime' : fields.NestedField(properties = {
             'pn_id': fields.IntegerField(),
-            # temporary
-            'value': fields.StringField(),
+            'value': fields.DateField(),
             'sensitive': fields.BooleanField()
         })
     })
