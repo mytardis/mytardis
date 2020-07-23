@@ -1060,7 +1060,8 @@ class ProjectResource(MyTardisModelResource):
                                     aclOwnershipType=ObjectACL.OWNER_OWNED)
                     acl.save()
                 bundle.data.pop('member')
-
+        logger.debug('Updated bundle')
+        logger.debug(bundle.data)
         return super().hydrate_m2m(bundle)
 
     def obj_create(self, bundle, **kwargs):
@@ -1069,7 +1070,18 @@ class ProjectResource(MyTardisModelResource):
         '''
         user = bundle.request.user
         bundle.data['created_by'] = user
+        admins = bundle.data.pop('admins')
+        admin_groups = bundle.data.pop('admin_groups')
+        members = bundle.data.pop('members')
+        member_groups = bundle.data.pop('member_groups')
+        project_lead = user = User.objects.get(
+            username=bundle.data['lead_researcher'])
+        bundle.data['lead_researcher'] = project_lead
         bundle = super().obj_create(bundle, **kwargs)
+        bundle.data['admins'] = admins
+        bundle.data['admin_groups'] = admin_groups
+        bundle.data['members'] = members
+        bundle.data['member_groups'] = member_groups
         return bundle
 ################################################
 
