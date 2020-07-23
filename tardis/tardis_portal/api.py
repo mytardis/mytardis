@@ -987,38 +987,64 @@ class ProjectResource(MyTardisModelResource):
                             isOwner=True,
                             aclOwnershipType=ObjectACL.OWNER_OWNED)
             acl.save()
-        if 'admin_groups' in bundle.data.keys():
-            for grp in bundle.data['admin_groups']:
-                group, created = Group.objects.get_or_create(name=grp)
-                if created:
-                    group.permissions.set(admin_perms)
-                acl = ObjectACL(content_type=project.get_ct(),
-                                object_id=project.id,
-                                pluginId=django_group,
-                                entityId=str(group.id),
-                                canRead=True,
-                                canDownload=True,
-                                canWrite=True,
-                                canDelete=True,
-                                canSensitive=True,
-                                isOwner=True,
-                                aclOwnershipType=ObjectACL.OWNER_OWNED)
-                acl.save()
-        if 'member_groups' in bundle.data.keys():
-            # Each member group is defined by a tuple
-            # (group_name, sensitive[T/F], download[T/F])
-            # unpack for ACLs
-            for grp in bundle.data['member_groups']:
+            if 'admin_groups' in bundle.data.keys():
+                for grp in bundle.data['admin_groups']:
+                    group, created = Group.objects.get_or_create(name=grp)
+                    if created:
+                        group.permissions.set(admin_perms)
+                    acl = ObjectACL(content_type=project.get_ct(),
+                                    object_id=project.id,
+                                    pluginId=django_group,
+                                    entityId=str(group.id),
+                                    canRead=True,
+                                    canDownload=True,
+                                    canWrite=True,
+                                    canDelete=True,
+                                    canSensitive=True,
+                                    isOwner=True,
+                                    aclOwnershipType=ObjectACL.OWNER_OWNED)
+                    acl.save()
+            if 'member_groups' in bundle.data.keys():
+                # Each member group is defined by a tuple
+                # (group_name, sensitive[T/F], download[T/F])
+                # unpack for ACLs
+                for grp in bundle.data['member_groups']:
+                    grp_name = grp[0]
+                    sensitive_flg = grp[1]
+                    download_flg = grp[2]
+                    group, created = Group.objects.get_or_create(name=grp_name)
+                    if created:
+                        group.permissions.set(member_perms)
+                    acl = ObjectACL(content_type=project.get_ct(),
+                                    object_id=project.id,
+                                    pluginId=django_group,
+                                    entityId=str(group.id),
+                                    canRead=True,
+                                    canDownload=download_flg,
+                                    canWrite=True,
+                                    canDelete=False,
+                                    canSensitive=sensitive_flg,
+                                    isOwner=False,
+                                    aclOwnershipType=ObjectACL.OWNER_OWNED)
+                    acl.save()
+            if 'members' in bundle.data.keys():
+                # error checking needs to be done externally for this to
+                # function as desired.
+                members = bundle.data['members']
+            else:
+                members = project.get_users_and_perms()
+                # Each member group is defined by a tuple
+                # (group_name, sensitive[T/F], download[T/F])
+                # unpack for ACLs
+            for grp in members:
                 grp_name = grp[0]
                 sensitive_flg = grp[1]
                 download_flg = grp[2]
-                group, created = Group.objects.get_or_create(name=grp_name)
-                if created:
-                    group.permissions.set(member_perms)
+                user = User.objects.get(username=grp_name)
                 acl = ObjectACL(content_type=project.get_ct(),
                                 object_id=project.id,
-                                pluginId=django_group,
-                                entityId=str(group.id),
+                                pluginId=django_user,
+                                entityId=str(user.id),
                                 canRead=True,
                                 canDownload=download_flg,
                                 canWrite=True,
@@ -1027,6 +1053,7 @@ class ProjectResource(MyTardisModelResource):
                                 isOwner=False,
                                 aclOwnershipType=ObjectACL.OWNER_OWNED)
                 acl.save()
+
         return super().hydrate_m2m(bundle)
 
     def obj_create(self, bundle, **kwargs):
@@ -1149,80 +1176,80 @@ class ExperimentResource(MyTardisModelResource):
                                 isOwner=True,
                                 aclOwnershipType=ObjectACL.OWNER_OWNED)
                 acl.save()
-            if 'admin_groups' in bundle.data.keys():
-                admin_groups = bundle.data['admin_groups']
-            else:
-                admin_groups = project.get_admins()
-            for grp in admin_groups:
-                group, created = Group.objects.get_or_create(name=grp)
-                if created:
-                    group.permissions.set(admin_perms)
-                group_id = group.id
-                acl = ObjectACL(content_type=experiment.get_ct(),
-                                object_id=experiment.id,
-                                pluginId=django_group,
-                                entityId=str(group_id),
-                                canRead=True,
-                                canDownload=True,
-                                canWrite=True,
-                                canDelete=True,
-                                canSensitive=True,
-                                isOwner=True,
-                                aclOwnershipType=ObjectACL.OWNER_OWNED)
-                acl.save()
-            if 'member_groups' in bundle.data.keys():
-                member_groups = bundle.data['member_groups']
-            else:
-                member_groups = project.get_groups_and_perms()
-            # Each member group is defined by a tuple
-            # (group_name, sensitive[T/F], download[T/F])
-            # unpack for ACLs
-            for grp in member_groups:
-                grp_name = grp[0]
-                sensitive_flg = grp[1]
-                download_flg = grp[2]
-                group, created = Group.objects.get_or_create(name=grp_name)
-                if created:
-                    group.permissions.set(member_perms)
-                group_id = group.id
-                acl = ObjectACL(content_type=experiment.get_ct(),
-                                object_id=experiment.id,
-                                pluginId=django_group,
-                                entityId=str(group_id),
-                                canRead=True,
-                                canDownload=download_flg,
-                                canWrite=True,
-                                canDelete=False,
-                                canSensitive=sensitive_flg,
-                                isOwner=False,
-                                aclOwnershipType=ObjectACL.OWNER_OWNED)
-                acl.save()
-            if 'members' in bundle.data.keys():
-                # error checking needs to be done externally for this to
-                # function as desired.
-                members = bundle.data['members']
-            else:
-                members = project.get_users_and_perms()
-                # Each member group is defined by a tuple
-                # (group_name, sensitive[T/F], download[T/F])
-                # unpack for ACLs
-            for grp in members:
-                grp_name = grp[0]
-                sensitive_flg = grp[1]
-                download_flg = grp[2]
-                user = User.objects.get(username=grp_name)
-                acl = ObjectACL(content_type=experiment.get_ct(),
-                                object_id=experiment.id,
-                                pluginId=django_user,
-                                entityId=str(user.id),
-                                canRead=True,
-                                canDownload=download_flg,
-                                canWrite=True,
-                                canDelete=False,
-                                canSensitive=sensitive_flg,
-                                isOwner=False,
-                                aclOwnershipType=ObjectACL.OWNER_OWNED)
-                acl.save()
+                if 'admin_groups' in bundle.data.keys():
+                    admin_groups = bundle.data['admin_groups']
+                else:
+                    admin_groups = project.get_admins()
+                for grp in admin_groups:
+                    group, created = Group.objects.get_or_create(name=grp)
+                    if created:
+                        group.permissions.set(admin_perms)
+                    group_id = group.id
+                    acl = ObjectACL(content_type=experiment.get_ct(),
+                                    object_id=experiment.id,
+                                    pluginId=django_group,
+                                    entityId=str(group_id),
+                                    canRead=True,
+                                    canDownload=True,
+                                    canWrite=True,
+                                    canDelete=True,
+                                    canSensitive=True,
+                                    isOwner=True,
+                                    aclOwnershipType=ObjectACL.OWNER_OWNED)
+                    acl.save()
+                if 'member_groups' in bundle.data.keys():
+                    member_groups = bundle.data['member_groups']
+                else:
+                    member_groups = project.get_groups_and_perms()
+                    # Each member group is defined by a tuple
+                    # (group_name, sensitive[T/F], download[T/F])
+                    # unpack for ACLs
+                for grp in member_groups:
+                    grp_name = grp[0]
+                    sensitive_flg = grp[1]
+                    download_flg = grp[2]
+                    group, created = Group.objects.get_or_create(name=grp_name)
+                    if created:
+                        group.permissions.set(member_perms)
+                    group_id = group.id
+                    acl = ObjectACL(content_type=experiment.get_ct(),
+                                    object_id=experiment.id,
+                                    pluginId=django_group,
+                                    entityId=str(group_id),
+                                    canRead=True,
+                                    canDownload=download_flg,
+                                    canWrite=True,
+                                    canDelete=False,
+                                    canSensitive=sensitive_flg,
+                                    isOwner=False,
+                                    aclOwnershipType=ObjectACL.OWNER_OWNED)
+                    acl.save()
+                if 'members' in bundle.data.keys():
+                    # error checking needs to be done externally for this to
+                    # function as desired.
+                    members = bundle.data['members']
+                else:
+                    members = project.get_users_and_perms()
+                    # Each member group is defined by a tuple
+                    # (group_name, sensitive[T/F], download[T/F])
+                    # unpack for ACLs
+                for grp in members:
+                    grp_name = grp[0]
+                    sensitive_flg = grp[1]
+                    download_flg = grp[2]
+                    user = User.objects.get(username=grp_name)
+                    acl = ObjectACL(content_type=experiment.get_ct(),
+                                    object_id=experiment.id,
+                                    pluginId=django_user,
+                                    entityId=str(user.id),
+                                    canRead=True,
+                                    canDownload=download_flg,
+                                    canWrite=True,
+                                    canDelete=False,
+                                    canSensitive=sensitive_flg,
+                                    isOwner=False,
+                                    aclOwnershipType=ObjectACL.OWNER_OWNED)
+                    acl.save()
         return super().hydrate_m2m(bundle)
 
     def obj_create(self, bundle, **kwargs):
