@@ -375,8 +375,8 @@ class SearchAppResource(Resource):
                                 is_sensitive = authz.get_obj_parameter(parameter["pn_id"],
                                                   hit["_source"]["id"], hit["_index"])
 
-                            if is_sensitive.sensitive_metadata:
-                                safe_hit["_source"]["parameters"][par_type].pop(idxx)
+                                if is_sensitive.sensitive_metadata:
+                                    safe_hit["_source"]["parameters"][par_type].pop(idxx)
 
                     # Append hit to final results if not already in results.
                     # Due to non-identical scores in hits for non-sensitive vs sensitive search,
