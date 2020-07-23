@@ -212,10 +212,10 @@ class SearchAppResource(Resource):
                     query_obj_text = Q({"match": {match_list[idx]:query_text}})
                     query_obj_text_meta = Q(
                         {"nested" : {
-                            "path":"parameters", "query": Q(
+                            "path":"parameters.string", "query": Q(
                                 {"bool": {"must":[
-                                    Q({"match": {"parameters.value":query_text}}),
-                                    Q({"match": {"parameters.sensitive":"False"}})
+                                    Q({"match": {"parameters.string.value":query_text}}),
+                                    Q({"term": {"parameters.string.sensitive":False}})
                                 ]}}
                             )
                         }})
@@ -224,10 +224,10 @@ class SearchAppResource(Resource):
                     # Search on sensitive metadata only
                     query_obj_sens_meta = Q(
                         {"nested" : {
-                            "path":"parameters", "query": Q(
+                            "path":"parameters.string", "query": Q(
                                 {"bool": {"must":[
-                                    Q({"match": {"parameters.value":query_text}}),
-                                    Q({"match": {"parameters.sensitive":"True"}})
+                                    Q({"match": {"parameters.string.value":query_text}}),
+                                    Q({"term": {"parameters.string.sensitive":True}})
                                 ]}}
                             )
                         }})
@@ -370,12 +370,13 @@ class SearchAppResource(Resource):
 
                     # if no sensitive access, remove sensitive metadata from response
                     if not sensitive_bool:
-                        for idxx, parameter in enumerate(hit["_source"]["parameters"]):
-                            is_sensitive = authz.get_obj_parameter(parameter["pn_id"],
-                                              hit["_source"]["id"], hit["_index"])
+                        for par_type in ["string", "numerical", "datetime"]:
+                            for idxx, parameter in enumerate(hit["_source"]["parameters"][par_type]):
+                                is_sensitive = authz.get_obj_parameter(parameter["pn_id"],
+                                                  hit["_source"]["id"], hit["_index"])
 
                             if is_sensitive.sensitive_metadata:
-                                safe_hit["_source"]["parameters"].pop(idxx)
+                                safe_hit["_source"]["parameters"][par_type].pop(idxx)
 
                     # Append hit to final results if not already in results.
                     # Due to non-identical scores in hits for non-sensitive vs sensitive search,
