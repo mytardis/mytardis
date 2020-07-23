@@ -115,7 +115,7 @@ class Project(models.Model):
                         type_idx = idx+1
 
                         if type_idx == 1:
-                            param_dict['value'] = str(value)
+                            param_dict['value'] = value
                         elif type_idx == 2:
                             param_dict['value'] = str(value)
                         elif type_idx == 3:
