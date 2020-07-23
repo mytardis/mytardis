@@ -70,6 +70,10 @@ from .models.facility import Facility, facilities_managed_by
 from .models.instrument import Instrument
 from .models.institution import Institution
 
+import logging
+
+logger = logging.getLogger('__name__')
+
 add_group_perm = Permission.objects.get(codename='add_group')
 change_group_perm = Permission.objects.get(codename='change_group')
 del_group_perm = Permission.objects.get(codename='delete_group')
@@ -1070,6 +1074,8 @@ class ProjectResource(MyTardisModelResource):
         '''
         user = bundle.request.user
         bundle.data['created_by'] = user
+        logger.debug('Pre processed bundle')
+        logger.debug(bundle.data)
         admins = bundle.data.pop('admins')
         admin_groups = bundle.data.pop('admin_groups')
         members = bundle.data.pop('members')
@@ -1077,11 +1083,15 @@ class ProjectResource(MyTardisModelResource):
         project_lead = user = User.objects.get(
             username=bundle.data['lead_researcher'])
         bundle.data['lead_researcher'] = project_lead
+        logger.debug('Scrubbed bundle')
+        logger.debug(bundle.data)
         bundle = super().obj_create(bundle, **kwargs)
         bundle.data['admins'] = admins
         bundle.data['admin_groups'] = admin_groups
         bundle.data['members'] = members
         bundle.data['member_groups'] = member_groups
+        logger.debug('Bundle returned for ACLs')
+        logger.debug(bundle.data)
         return bundle
 ################################################
 
