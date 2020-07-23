@@ -105,7 +105,7 @@ class Project(models.Model):
                 param_dict = {}
                 type_idx = 0
                 for idx, value in enumerate(sublist[1:-1]):
-                    if value is not in [None, ""]:
+                    if value not in [None, ""]:
                         param_dict['pn_id'] = str(PN_id)
                         if sublist[-1]:
                             param_dict['sensitive'] = True
