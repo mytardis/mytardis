@@ -118,13 +118,9 @@ admin_perms = [add_group_perm,
                change_acl_perm,
                view_acl_perm]
 
-member_perms = [change_project_perm,
-                view_project_perm,
-                change_experiment_perm,
+member_perms = [view_project_perm,
                 view_experiment_perm,
-                change_dataset_perm,
                 view_dataset_perm,
-                change_datafile_perm,
                 view_datafile_perm]
 
 
@@ -1004,6 +1000,7 @@ class ProjectResource(MyTardisModelResource):
                                     isOwner=True,
                                     aclOwnershipType=ObjectACL.OWNER_OWNED)
                     acl.save()
+                bundle.data.pop('admin_groups')
             if 'member_groups' in bundle.data.keys():
                 # Each member group is defined by a tuple
                 # (group_name, sensitive[T/F], download[T/F])
@@ -1027,32 +1024,42 @@ class ProjectResource(MyTardisModelResource):
                                     isOwner=False,
                                     aclOwnershipType=ObjectACL.OWNER_OWNED)
                     acl.save()
+                bundle.data.pop('member_groups')
+            if 'admins' in bundle.data.keys():
+                for admin in bundle.data['admins']:
+                    user = User.objects.get(username=admin)
+                    acl = ObjectACL(content_type=project.get_ct(),
+                                    object_id=project.id,
+                                    pluginId=django_user,
+                                    entityId=str(user.id),
+                                    canRead=True,
+                                    canDownload=True,
+                                    canWrite=True,
+                                    canDelete=True,
+                                    canSensitive=True,
+                                    isOwner=True,
+                                    aclOwnershipType=ObjectACL.OWNER_OWNED)
+                    acl.save()
+                bundle.data.pop('admins')
             if 'members' in bundle.data.keys():
-                # error checking needs to be done externally for this to
-                # function as desired.
-                members = bundle.data['members']
-            else:
-                members = project.get_users_and_perms()
-                # Each member group is defined by a tuple
-                # (group_name, sensitive[T/F], download[T/F])
-                # unpack for ACLs
-            for grp in members:
-                grp_name = grp[0]
-                sensitive_flg = grp[1]
-                download_flg = grp[2]
-                user = User.objects.get(username=grp_name)
-                acl = ObjectACL(content_type=project.get_ct(),
-                                object_id=project.id,
-                                pluginId=django_user,
-                                entityId=str(user.id),
-                                canRead=True,
-                                canDownload=download_flg,
-                                canWrite=True,
-                                canDelete=False,
-                                canSensitive=sensitive_flg,
-                                isOwner=False,
-                                aclOwnershipType=ObjectACL.OWNER_OWNED)
-                acl.save()
+                for member in bundle.data['members']:
+                    member_name = member[0]
+                    sensitive_flg = member[1]
+                    download_flg = member[2]
+                    user = User.objects.get(username=member_name)
+                    acl = ObjectACL(content_type=project.get_ct(),
+                                    object_id=project.id,
+                                    pluginId=django_user,
+                                    entityId=str(user.id),
+                                    canRead=True,
+                                    canDownload=download_flg,
+                                    canWrite=True,
+                                    canDelete=False,
+                                    canSensitive=sensitive_flg,
+                                    isOwner=False,
+                                    aclOwnershipType=ObjectACL.OWNER_OWNED)
+                    acl.save()
+                bundle.data.pop('member')
 
         return super().hydrate_m2m(bundle)
 
