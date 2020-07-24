@@ -48,8 +48,6 @@ class ViewTemplateContextsTest(TestCase):
         self.acl.save()
         self.dataset = Dataset(description='dataset description...')
         self.dataset.save()
-        self.dataset.experiments.add(self.exp)
-        self.dataset.save()
         self.acl = ObjectACL(
             pluginId=django_user,
             entityId=str(self.user.id),
@@ -61,6 +59,9 @@ class ViewTemplateContextsTest(TestCase):
             canDelete=True,
             aclOwnershipType=ObjectACL.OWNER_OWNED,
         )
+        self.dataset.experiments.add(self.exp)
+        self.dataset.save()
+
         self.datafile = DataFile(dataset=self.dataset,
                                  size=42, filename="foo",
                                  md5sum="junk")

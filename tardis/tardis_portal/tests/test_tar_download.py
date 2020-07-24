@@ -84,7 +84,8 @@ class TarDownloadTestCase(TestCase):
 
         # mock client
         self.client = Client()
-
+        self.login = self.client.login(username="testuser", password="secret")
+        self.assertTrue(self.login)
 
     def tearDown(self):
         # delete created objects and files
@@ -93,8 +94,7 @@ class TarDownloadTestCase(TestCase):
         self.exp.delete()
 
     def test_tar_experiment_download(self):
-        login = self.client.login(username="testuser", password="secret")
-        self.assertTrue(login)
+
 
         self.assertTrue(all(df.verified for df in self.dfs))
         response = self.client.get(reverse(
