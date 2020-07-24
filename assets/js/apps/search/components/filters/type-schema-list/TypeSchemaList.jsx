@@ -9,6 +9,7 @@ import NumberRangeFilter from '../range-filter/NumberRangeFilter';
 import DateRangeFilter from '../date-filter/DateRangeFilter';
 import { updateFilter, removeFilter } from '../../filterSlice';
 import { runSearch } from "../../searchSlice";
+import CategoryFilter from '../category-filter/CategoryFilter';
 import './TypeSchemaList.css';
 
 // A hook for converting a hashmap of values into a list.
@@ -20,7 +21,6 @@ const useAsList = (jsObject = {}) => (
 );
 
 const mapTypeToFilter = (type) => {
-    // TODO handle specific fields with particular filters.
     switch (type) {
         case "STRING":
             return TextFilter;
@@ -90,80 +90,42 @@ const SchemaFilterList = (props) => {
 
 }
 
-const TypeSchemaList = ({ value: filterValue, options, onValueChange }) => {
+const TypeSchemaList = ({ value: schemaValue, options, onValueChange }) => {
     const {allIds : schemasAsList, byId : schemas } = options.schemas || {byId: {}, allIds: []};
-    const toLocalValue = (filterValue) => {
-        if (!filterValue || typeof filterValue !== "object" || !Array.isArray(filterValue.content)) {
-            // If there is no filter, it means there is no filter
-            // on which schemas to show, which means we need to show
-            // all schemas.
-            return schemasAsList;
-        }
-        const schemas = filterValue.content;
-        if (!Array.isArray(schemas)) {
-            return [];
-        }
-        return schemas;
-    }
-    
-    const toSubmitValue = (localValue) => {
-        if (localValue.length === schemasAsList.length) {
-            // If the local value has as many values as the schema,
-            // that means we need to show all schemas, i.e. no filter.
-            return null;
-        }
-        return {
-            content: localValue,
-            op: "is"
-        }
+    let activeSchemas;
+    if (!schemaValue) {
+        // If there is no filter on what schemas to show, we show all of them.
+        activeSchemas = schemasAsList;
+    } else {
+        activeSchemas = schemaValue.content;
     }
 
-    const activeSchemas = toLocalValue(filterValue);
-
-    const handleSchemaToggle = (schemaId,e) => {
-        if (activeSchemas.includes(schemaId)) {
-            if (activeSchemas.length == 1) {
-                // Prevent switching off all schemas.
-                return;
-            }
-            const newValue = activeSchemas.filter(schema => schema !== schemaId);
-            onValueChange(toSubmitValue(newValue));
-        } else {
-            const newValue = activeSchemas.concat(schemaId);
-            onValueChange(toSubmitValue(newValue));
+    const schemaList = useMemo(() => (
+        // Return the schema list in format expected by CategoryFilter
+        {
+            allIds: schemasAsList,
+            byId: schemasAsList.reduce((acc,schemaId) => {
+                acc[schemaId] = {
+                    label: schemas[schemaId].schema_name
+                };
+                return acc;
+            },{})
         }
-    }
+    ),[schemasAsList, schemas]);
 
-    const getCheckValue = (id) => {
-        return activeSchemas.includes(id);
-    }
-    
+
     return (
         <div>
-            <Form.Group>
                 {
                     schemasAsList.length !== 0 ?
-                        <Form.Label>Show me</Form.Label> :
+                        <h4 className="type-schema-list__title">Show me</h4> :
                         null
                 }
-                {
-                    
-                    schemasAsList.map(
-                        (id) => {
-                            // Look up the name from schema hashmap
-                            const {schema_name} = schemas[id];
-                            return <Form.Check 
-                                key={id}
-                                id={"schemaCheck-"+id}
-                                type="checkbox" 
-                                label={schema_name} 
-                                checked={getCheckValue(id)} 
-                                onChange={handleSchemaToggle.bind(this,id)} 
-                            />;
-                        }
-                    )
-                }
-            </Form.Group>
+
+                <CategoryFilter value={schemaValue} onValueChange={onValueChange} options={{
+                    checkAllByDefault: true,
+                    categories: schemaList
+                }} />
             <Accordion>
                 {schemasAsList.map((id) => {
                     const schema = schemas[id],

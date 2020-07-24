@@ -63,10 +63,6 @@ export const searchInfoData = {
     results: searchResultsData,
 }
 
-export const filtersSliceData = {
-    filtersByKind: filtersData
-}
-
 export const errorData = Object.assign({},searchInfoData,{
     error: "An error occurred",
     results: null
@@ -78,19 +74,19 @@ export const loadingData = Object.assign({},searchInfoData,{
 });
 
 export const Default = () => (
-    <Provider store={makeSearchStore(searchInfoData, filtersSliceData)}>
+    <Provider store={makeSearchStore(searchInfoData, filtersData)}>
         <PureSearchPage />
     </Provider>
 );
 
 export const Error = () => (
-    <Provider store={makeSearchStore(errorData, filtersSliceData)}>
+    <Provider store={makeSearchStore(errorData, filtersData)}>
         <PureSearchPage />
     </Provider>
 );
 
 export const Loading = () => (
-    <Provider store={makeSearchStore(loadingData, filtersSliceData)}>
+    <Provider store={makeSearchStore(loadingData, filtersData)}>
         <PureSearchPage />
     </Provider>
 );

@@ -5,9 +5,9 @@ import './FilterSidebar.css';
 
 export default function FilterSidebar() {
     return (
-        <aside className="filter-sidebar">
+        <div className="filter-sidebar">
             <QuickSearchBox  />
             <FiltersSection />
-        </aside>
+        </div>
     )
 }

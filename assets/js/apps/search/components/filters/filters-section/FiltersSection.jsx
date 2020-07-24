@@ -6,6 +6,7 @@ import TypeSchemaList from '../type-schema-list/TypeSchemaList';
 import { initialiseFilters } from '../../filterSlice';
 import { useSelector, useDispatch } from "react-redux";
 import PropTypes from "prop-types";
+import useFilterState from "../useFilterState";
 
 export function PureFiltersSection({ types, schemas, typeSchemas, isLoading, error }) {
   if (isLoading) {
@@ -17,6 +18,7 @@ export function PureFiltersSection({ types, schemas, typeSchemas, isLoading, err
   if (!typeSchemas || !typeof typeSchemas == "object") {
     return null;
   }
+
   return (
     <section>
       <h3>Filters</h3>
@@ -31,12 +33,19 @@ export function PureFiltersSection({ types, schemas, typeSchemas, isLoading, err
                         byId: schemas.byId
                       }
                   },
-                  activeSchemas = types.byId[type].attributes.schema;
+                  [ activeSchemas, setActiveSchemas ] = useFilterState(
+                    {
+                      kind:"typeAttribute",
+                      target:[type,"schema"],
+                      type:"STRING"
+                    }
+                  );
             return (
               <Tab eventKey={type} title={<Sticker />}>
                 <TypeSchemaList
                   value={activeSchemas}
-                  options={schemaFiltersOptions} />
+                  options={schemaFiltersOptions}
+                  onValueChange={setActiveSchemas} />
               </Tab>
             );
           })

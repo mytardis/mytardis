@@ -1,9 +1,3 @@
-.filter-sidebar {
-    max-width:350px;
-    border: 1px solid lightgray;
-    padding: 30px;
-}
-
 .filter-sidebar > * {
     padding-bottom:30px;
 }

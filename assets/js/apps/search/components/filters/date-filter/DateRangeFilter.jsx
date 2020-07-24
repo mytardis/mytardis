@@ -25,37 +25,44 @@ const isValueEmpty = (value) => {
 const toSubmitValue = localValue => {
     // Replace empty string value with null to represent null parameter value.
     if (!localValue) {
-        return {};
+        return null;
     }
-    const submitValue = {};
+    const submitValue = [];
     if (!isNone(localValue.start)) {
         if (typeof localValue.start == "object") {
-            submitValue.start = localValue.start.toISOString();
+            submitValue.push({
+                op: ">=",
+                content: localValue.start.toISOString()
+            });
         }
     }
     if (!isNone(localValue.end)) {
         if (typeof localValue.end == "object") {
-            submitValue.end = localValue.end.toISOString();
+            submitValue.push({
+                op: "<=",
+                content:localValue.end.toISOString()
+            })
         }
+    }
+    if (submitValue.length == 0) {
+        // Return a null to represent no filter value.
+        return null;
     }
     return submitValue;
 }
 
 const toLocalValue = submitValue => {
-    // Replace null value with empty string to represent null parameter value.
     if (!submitValue) {
         return {};
     }
-    const localValue = {};
-    if (isNone(submitValue.start)) {
-        localValue.start = null;
-    } else {
-        localValue.start = moment(submitValue.start);
+    const localValue = {start: null, end: null};
+    const startValue = submitValue.filter(value => value.op === ">=");
+    const endValue = submitValue.filter(value => value.op === "<=");
+    if (startValue.length > 0) {
+        localValue.start = moment(startValue[0].content);
     }
-    if (isNone(submitValue.end)) {
-        localValue.end = null;
-    } else {
-        localValue.end = moment(submitValue.end);
+    if (endValue.length > 0) {
+        localValue.end = moment(endValue[0].content);
     }
     return localValue;
 }
@@ -65,7 +72,7 @@ const DateRangeFilter = ({ value, options, onValueChange }) => {
         options = {};
     }
     if (!options.name) {
-        options.name = "Missing filter name";
+        options.name = "missingFilterName";
     }
     if (!options.hint) {
         options.hint = "";
@@ -95,7 +102,7 @@ const DateRangeFilter = ({ value, options, onValueChange }) => {
 
     // We should disable the filter button if there's nothing in the filter box.
     // But we should be able to clear a field if there's a value on the filter.
-    const canChangeValue = !isValueEmpty(localValue) || !isValueEmpty(value);
+    const canChangeValue = !isValueEmpty(localValue) || !isNone(value);
 
     const isValidEndDate = (current) => {
         if (!localValue.start) {
@@ -112,25 +119,29 @@ const DateRangeFilter = ({ value, options, onValueChange }) => {
         onValueChange(value);
     };
 
+    // Give the input boxes ids so labels can be tied back to the field.
+    const startFieldId = "start-"+options.name,
+        endFieldId = "end-"+options.name;
+
     return (
         <Form className="date-range-filter" onSubmit={handleSubmit}>
                 <Form.Group className="date-range-filter__field">
-                    <Form.Label>Start date</Form.Label>
+                    <Form.Label htmlFor={startFieldId}>Start date</Form.Label>
                     <Datetime
                         value={localValue.start}
                         onChange={handleValueChange.bind(this, "start")}
-                        inputProps={{ placeholder: options.hintStart }}
+                        inputProps={{ placeholder: options.hintStart, id: startFieldId }}
                         closeOnSelect={true}
                         dateFormat="L"
                         timeFormat={false}
                     />
                 </Form.Group>
                 <Form.Group className="date-range-filter__field">
-                    <Form.Label>End date</Form.Label>
+                    <Form.Label htmlFor={endFieldId}>End date</Form.Label>
                     <Datetime
                         value={localValue.end}
                         onChange={handleValueChange.bind(this, "end")}
-                        inputProps={{ placeholder: options.hintEnd }}
+                        inputProps={{ placeholder: options.hintEnd, id: endFieldId }}
                         closeOnSelect={true}
                         dateFormat="L"
                         timeFormat={false}
@@ -150,11 +161,10 @@ const DateRangeFilter = ({ value, options, onValueChange }) => {
 }
 
 DateRangeFilter.propTypes = {
-    value: PropTypes.shape({
-        start: PropTypes.string,
-        end: PropTypes.string
-    }),
-    options: PropTypes.object,
+    value: PropTypes.array,
+    options: PropTypes.shape({
+        name: PropTypes.string.isRequired
+    }).isRequired,
     onValueChange: PropTypes.func.isRequired
 }
 
