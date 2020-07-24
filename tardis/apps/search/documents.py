@@ -30,7 +30,7 @@ class ProjectDocument(Document):
         settings = {'number_of_shards': 1,
                     'number_of_replicas': 0}
 
-    id = fields.IntegerField()
+    id = fields.KeywordField()
     name = fields.TextField(
         fields={'raw': fields.KeywordField()},
         analyzer=analyzer)
@@ -56,17 +56,17 @@ class ProjectDocument(Document):
     })
     parameters = fields.NestedField(attr='getParametersforIndexing', properties={
         'string' : fields.NestedField(properties = {
-            'pn_id': fields.IntegerField(),
+            'pn_id': fields.KeywordField(),
             'value': fields.StringField(),
             'sensitive': fields.BooleanField()
         }),
         'numerical' : fields.NestedField(properties = {
-            'pn_id': fields.IntegerField(),
+            'pn_id': fields.KeywordField(),
             'value': fields.FloatField(),
             'sensitive': fields.BooleanField()
         }),
         'datetime' : fields.NestedField(properties = {
-            'pn_id': fields.IntegerField(),
+            'pn_id': fields.KeywordField(),
             'value': fields.DateField(),
             'sensitive': fields.BooleanField()
         })
@@ -95,7 +95,7 @@ class ExperimentDocument(Document):
         settings = {'number_of_shards': 1,
                     'number_of_replicas': 0}
 
-    id = fields.IntegerField()
+    id = fields.KeywordField()
     title = fields.TextField(
         fields={'raw': fields.KeywordField()},
         analyzer=analyzer)
@@ -114,7 +114,7 @@ class ExperimentDocument(Document):
         )
     })
     project = fields.NestedField(properties={
-        'id': fields.IntegerField()
+        'id': fields.KeywordField()
     })
     objectacls = fields.ObjectField(properties={
         'pluginId': fields.StringField(),
@@ -122,17 +122,17 @@ class ExperimentDocument(Document):
     })
     parameters = fields.NestedField(attr='getParametersforIndexing', properties={
         'string' : fields.NestedField(properties = {
-            'pn_id': fields.IntegerField(),
+            'pn_id': fields.KeywordField(),
             'value': fields.StringField(),
             'sensitive': fields.BooleanField()
         }),
         'numerical' : fields.NestedField(properties = {
-            'pn_id': fields.IntegerField(),
+            'pn_id': fields.KeywordField(),
             'value': fields.FloatField(),
             'sensitive': fields.BooleanField()
         }),
         'datetime' : fields.NestedField(properties = {
-            'pn_id': fields.IntegerField(),
+            'pn_id': fields.KeywordField(),
             'value': fields.DateField(),
             'sensitive': fields.BooleanField()
         })
@@ -161,14 +161,14 @@ class DatasetDocument(Document):
         settings = {'number_of_shards': 1,
                     'number_of_replicas': 0}
 
-    id = fields.IntegerField()
+    id = fields.KeywordField()
     description = fields.TextField(
         fields={'raw': fields.KeywordField()},
         analyzer=analyzer)
     experiments = fields.NestedField(properties={
-        'id': fields.IntegerField(),
+        'id': fields.KeywordField(),
         'project': fields.NestedField(properties={
-            'id': fields.IntegerField()
+            'id': fields.KeywordField()
         })
     })
     objectacls = fields.ObjectField(properties={
@@ -176,7 +176,7 @@ class DatasetDocument(Document):
             'entityId': fields.StringField()
         })
     instrument = fields.ObjectField(properties={
-        'id': fields.IntegerField(),
+        'id': fields.KeywordField(),
         'name': fields.TextField(
             fields={'raw': fields.KeywordField()},
         )}
@@ -187,17 +187,17 @@ class DatasetDocument(Document):
 
     parameters = fields.NestedField(attr='getParametersforIndexing', properties={
         'string' : fields.NestedField(properties = {
-            'pn_id': fields.IntegerField(),
+            'pn_id': fields.KeywordField(),
             'value': fields.StringField(),
             'sensitive': fields.BooleanField()
         }),
         'numerical' : fields.NestedField(properties = {
-            'pn_id': fields.IntegerField(),
+            'pn_id': fields.KeywordField(),
             'value': fields.FloatField(),
             'sensitive': fields.BooleanField()
         }),
         'datetime' : fields.NestedField(properties = {
-            'pn_id': fields.IntegerField(),
+            'pn_id': fields.KeywordField(),
             'value': fields.DateField(),
             'sensitive': fields.BooleanField()
         })
@@ -227,18 +227,18 @@ class DataFileDocument(Document):
         name = 'datafile'
         settings = {'number_of_shards': 1,
                     'number_of_replicas': 0}
-    id = fields.IntegerField()
+    id = fields.KeywordField()
     filename = fields.TextField(
         fields={'raw': fields.KeywordField()},
         analyzer=analyzer)
     created_time = fields.DateField()
     modification_time = fields.DateField()
     dataset = fields.NestedField(properties={
-        'id': fields.IntegerField(),
+        'id': fields.KeywordField(),
         'experiments': fields.NestedField(properties={
-            'id': fields.IntegerField(),
+            'id': fields.KeywordField(),
             'project':fields.NestedField(properties={
-                'id': fields.IntegerField()
+                'id': fields.KeywordField()
             }),
         }),
     })
@@ -249,17 +249,17 @@ class DataFileDocument(Document):
 
     parameters = fields.NestedField(attr='getParametersforIndexing', properties={
         'string' : fields.NestedField(properties = {
-            'pn_id': fields.IntegerField(),
+            'pn_id': fields.KeywordField(),
             'value': fields.StringField(),
             'sensitive': fields.BooleanField()
         }),
         'numerical' : fields.NestedField(properties = {
-            'pn_id': fields.IntegerField(),
+            'pn_id': fields.KeywordField(),
             'value': fields.FloatField(),
             'sensitive': fields.BooleanField()
         }),
         'datetime' : fields.NestedField(properties = {
-            'pn_id': fields.IntegerField(),
+            'pn_id': fields.KeywordField(),
             'value': fields.DateField(),
             'sensitive': fields.BooleanField()
         })
