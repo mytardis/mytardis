@@ -958,6 +958,7 @@ class ProjectResource(MyTardisModelResource):
         create ACL before any related objects are created in order to use
         ACL permissions for those objects.
         '''
+        logger.debug('Fresh bundle')
         if getattr(bundle.obj, 'id', False):
             project = bundle.obj
             project_lead = project.lead_researcher
