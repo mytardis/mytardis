@@ -318,7 +318,7 @@ class SearchAppResource(Resource):
                                         "path":"parameters.datetime", "query": Q(
                                             {"bool": {"must":[
                                                 Q({"match": {"parameters.datetime.pn_id":str(param_id)}}),
-                                                Q({"range": {"parameters.datetime.value": {oper:formatted_date}}})
+                                                Q({"range": {"parameters.datetime.value": {oper:filter["content"]}}})
                                             ]}}
                                         )
                                     }})
