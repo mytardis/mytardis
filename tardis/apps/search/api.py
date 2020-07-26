@@ -276,10 +276,10 @@ class SearchAppResource(Resource):
 
                                         qry = Q(
                                             {"nested" : {
-                                                "path":"parameters", "query": Q(
+                                                "path":"parameters.string", "query": Q(
                                                     {"bool": {"must":[
-                                                        Q({"match": {"parameters.pn_id":str(param_id)}}),
-                                                        Q({oper: {"parameters.value":option}})
+                                                        Q({"match": {"parameters.string.pn_id":str(param_id)}}),
+                                                        Q({oper: {"parameters.string.value":option}})
                                                     ]}}
                                                 )
                                             }})
@@ -291,10 +291,10 @@ class SearchAppResource(Resource):
                                 else:
                                     query_obj_filt = Q(
                                         {"nested" : {
-                                            "path":"parameters", "query": Q(
+                                            "path":"parameters.string", "query": Q(
                                                 {"bool": {"must":[
-                                                    Q({"match": {"parameters.pn_id":str(param_id)}}),
-                                                    Q({oper: {"parameters.value":filter["content"]}})
+                                                    Q({"match": {"parameters.string.pn_id":str(param_id)}}),
+                                                    Q({oper: {"parameters.string.value":filter["content"]}})
                                                 ]}}
                                             )
                                         }})
@@ -303,10 +303,10 @@ class SearchAppResource(Resource):
 
                                 query_obj_filt = Q(
                                     {"nested" : {
-                                        "path":"parameters", "query": Q(
+                                        "path":"parameters.numerical", "query": Q(
                                             {"bool": {"must":[
-                                                Q({"match": {"parameters.pn_id":str(param_id)}}),
-                                                Q({"range": {"parameters.value": {oper:filter["content"]}}})
+                                                Q({"match": {"parameters.numerical.pn_id":str(param_id)}}),
+                                                Q({"range": {"parameters.numerical.value": {oper:filter["content"]}}})
                                             ]}}
                                         )
                                     }})
