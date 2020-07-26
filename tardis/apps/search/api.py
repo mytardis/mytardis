@@ -241,14 +241,17 @@ class SearchAppResource(Resource):
                 #filter_level = True
                 #filter_op = filters['op']     This isn't used for now
                 filterlist = filters["content"]
+                operator_dict = {"is":"term", "contains":"match", ">=":"gte", "<=" : "lte"}
+                num_2_type = {1:'experiment', 2:'dataset', 3:'datafile', 11:'project'}
+                hierarchy = {'project':4, 'experiment':3, 'dataset':2, 'datafile':1}
+
                 for filter in filterlist:
 
                     # Expand this with more logic
-                    operator_dict = {"is":"term", "contains":"match"}
 
                     # hack pass to ignore non-added logic
-                    if operator_dict.get(filter['op'], None) is None:
-                        continue
+                    #if operator_dict.get(filter['op'], None) is None:
+                    #    continue
 
                     oper = operator_dict[filter['op']]
 
@@ -256,46 +259,57 @@ class SearchAppResource(Resource):
                     if filter["kind"] == "schemaParameter":
 
                         schema_id, param_id = filter["target"][0], filter["target"][1]
-                        num_2_type = {1:'experiment', 2:'dataset', 3:'datafile', 11:'project'}
-                        hierarchy = {'project':4, 'experiment':3, 'dataset':2, 'datafile':1}
 
                         # check filter is applied to correct object type
                         if num_2_type[Schema.objects.get(id=schema_id).schema_type] == obj:
                             if filter_level < hierarchy[obj]:
                                 filter_level = hierarchy[obj]
-                            # check if filter query is list of options, or single value
-                            # (elasticsearch can actually handle delimiters in a single string...)
-                            if isinstance(filter["content"], list):
 
-                                Qdict = {"should" : []}
+                            if filter["type"] == "STRING":
+                                # check if filter query is list of options, or single value
+                                # (elasticsearch can actually handle delimiters in a single string...)
+                                if isinstance(filter["content"], list):
 
-                                for option in filter["content"]:
+                                    Qdict = {"should" : []}
 
-                                    qry = Q(
+                                    for option in filter["content"]:
+
+                                        qry = Q(
+                                            {"nested" : {
+                                                "path":"parameters", "query": Q(
+                                                    {"bool": {"must":[
+                                                        Q({"match": {"parameters.pn_id":str(param_id)}}),
+                                                        Q({oper: {"parameters.value":option}})
+                                                    ]}}
+                                                )
+                                            }})
+
+                                        Qdict["should"].append(qry)
+
+                                    query_obj_filt = Q({"bool" : Qdict})
+
+                                else:
+                                    query_obj_filt = Q(
                                         {"nested" : {
                                             "path":"parameters", "query": Q(
                                                 {"bool": {"must":[
                                                     Q({"match": {"parameters.pn_id":str(param_id)}}),
-                                                    Q({"match": {"parameters.value":option}})
+                                                    Q({oper: {"parameters.value":filter["content"]}})
                                                 ]}}
                                             )
                                         }})
 
-                                    Qdict["should"].append(qry)
+                            elif filter["type"] == "NUMERIC":
 
-                                query_obj_filt = Q({"bool" : Qdict})
-
-                            else:
                                 query_obj_filt = Q(
                                     {"nested" : {
                                         "path":"parameters", "query": Q(
                                             {"bool": {"must":[
                                                 Q({"match": {"parameters.pn_id":str(param_id)}}),
-                                                Q({"match": {"parameters.value":filter["content"]}})
+                                                Q({"range": {"parameters.value": {oper:filter["content"]}}})
                                             ]}}
                                         )
                                     }})
-
 
                             query_obj = query_obj & query_obj_filt
                             if query_text is not None:
