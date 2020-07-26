@@ -988,7 +988,7 @@ class ProjectResource(MyTardisModelResource):
                             isOwner=True,
                             aclOwnershipType=ObjectACL.OWNER_OWNED)
             acl.save()
-            '''if 'admin_groups' in bundle.data.keys():
+            if 'admin_groups' in bundle.data.keys():
                 for grp in bundle.data['admin_groups']:
                     group, created = Group.objects.get_or_create(name=grp)
                     if created:
@@ -1064,9 +1064,7 @@ class ProjectResource(MyTardisModelResource):
                                     isOwner=False,
                                     aclOwnershipType=ObjectACL.OWNER_OWNED)
                     acl.save()
-                bundle.data.pop('member')'''
-        logger.debug('Updated bundle')
-        logger.debug(bundle.data)
+                bundle.data.pop('member')
         return super().hydrate_m2m(bundle)
 
     def obj_create(self, bundle, **kwargs):
