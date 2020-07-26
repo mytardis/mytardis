@@ -311,6 +311,18 @@ class SearchAppResource(Resource):
                                         )
                                     }})
 
+                            elif filter["type"] == "DATETIME":
+
+                                query_obj_filt = Q(
+                                    {"nested" : {
+                                        "path":"parameters.datetime", "query": Q(
+                                            {"bool": {"must":[
+                                                Q({"match": {"parameters.datetime.pn_id":str(param_id)}}),
+                                                Q({"range": {"parameters.datetime.value": {oper:formatted_date}}})
+                                            ]}}
+                                        )
+                                    }})
+
                             query_obj = query_obj & query_obj_filt
                             if query_text is not None:
                                 if query_text is not "":
