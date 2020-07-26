@@ -958,7 +958,8 @@ class ProjectResource(MyTardisModelResource):
         create ACL before any related objects are created in order to use
         ACL permissions for those objects.
         '''
-        logger.debug('Fresh bundle')
+        logger.error('Fresh bundle')
+        logger.error(bundle.data)
         if getattr(bundle.obj, 'id', False):
             project = bundle.obj
             project_lead = project.lead_researcher
@@ -989,6 +990,7 @@ class ProjectResource(MyTardisModelResource):
                             aclOwnershipType=ObjectACL.OWNER_OWNED)
             acl.save()
             if 'admin_groups' in bundle.data.keys():
+                logger.error('Attempting to build admin groups')
                 for grp in bundle.data['admin_groups']:
                     group, created = Group.objects.get_or_create(name=grp)
                     if created:
@@ -1073,24 +1075,22 @@ class ProjectResource(MyTardisModelResource):
         '''
         user = bundle.request.user
         bundle.data['created_by'] = user
-        logger.debug('Pre processed bundle')
-        logger.debug(bundle.data)
-        admins = bundle.data.pop('admins')
+        logger.error('Pre processed bundle')
+        logger.error(bundle.data)
+        ''' admins = bundle.data.pop('admins')
         admin_groups = bundle.data.pop('admin_groups')
         members = bundle.data.pop('members')
-        member_groups = bundle.data.pop('member_groups')
+        member_groups = bundle.data.pop('member_groups')'''
         project_lead = User.objects.get(
             username=bundle.data['lead_researcher'])
         bundle.data['lead_researcher'] = project_lead
-        logger.debug('Scrubbed bundle')
-        logger.debug(bundle.data)
         bundle = super().obj_create(bundle, **kwargs)
-        bundle.data['admins'] = admins
+        '''bundle.data['admins'] = admins
         bundle.data['admin_groups'] = admin_groups
         bundle.data['members'] = members
         bundle.data['member_groups'] = member_groups
-        logger.debug('Bundle returned for ACLs')
-        logger.debug(bundle.data)
+        logger.error('Bundle returned for ACLs')
+        logger.error(bundle.data)'''
         return bundle
 ################################################
 
