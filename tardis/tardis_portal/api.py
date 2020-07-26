@@ -1081,7 +1081,7 @@ class ProjectResource(MyTardisModelResource):
         admin_groups = bundle.data.pop('admin_groups')
         members = bundle.data.pop('members')
         member_groups = bundle.data.pop('member_groups')
-        project_lead = user = User.objects.get(
+        project_lead = User.objects.get(
             username=bundle.data['lead_researcher'])
         bundle.data['lead_researcher'] = project_lead
         logger.debug('Scrubbed bundle')
