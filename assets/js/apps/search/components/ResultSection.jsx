@@ -119,7 +119,7 @@ export function PureResultList({results,selectedItem, onItemSelect, error, isLoa
     }
 
     return (
-        <Table responsive striped hover bordered>
+        <Table responsive hover>
             <thead>
                 <tr>
                     <th></th>
