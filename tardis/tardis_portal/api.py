@@ -168,7 +168,7 @@ def get_user_from_upi(upi):
             return details
 
 
-def gen_random_password(self):
+def gen_random_password():
     import random
     random.seed()
     characters = 'abcdefghijklmnopqrstuvwxyzABCDFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*()?'
