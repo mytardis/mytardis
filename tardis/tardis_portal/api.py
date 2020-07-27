@@ -165,6 +165,7 @@ def get_user_from_upi(upi):
                        'first_name': first_name,
                        'last_name': last_name,
                        'email': email}
+            logger.error(details)
             return details
 
 
