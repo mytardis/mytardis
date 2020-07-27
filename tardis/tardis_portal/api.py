@@ -132,20 +132,16 @@ member_perms = [view_project_perm,
 def get_user_from_upi(upi):
     server = ldap3.Server(settings.LDAP_URL)
     search_filter = f'({settings.LDAP_USER_LOGIN_ATTR}={upi})'
-    logger.error(search_filter)
     with ldap3.Connection(server,
                           auto_bind=True,
                           user=settings.LDAP_ADMIN_USER,
                           password=settings.LDAP_ADMIN_PASSWORD) as connection:
-        logger.error(settings.LDAP_USER_BASE)
         connection.search(settings.LDAP_USER_BASE,
                           search_filter,
                           attributes=['*'])
-        logger.error(connection.response)
         if len(connection.entries) > 1:
             error_message = f'More than one person with {search_action}: {value} has been found in the LDAP'
             if logger:
-                logger.error(error_message)
             raise Exception(error_message)
         elif len(connection.entries) == 0:
             error_message = f'No one with {search_action}: {value} has been found in the LDAP'
@@ -154,19 +150,9 @@ def get_user_from_upi(upi):
             return None
         else:
             person = connection.entries[0]
-            logger.error(person)
-            ldap_dict = settings.LDAP_USER_ATTR_MAP
             first_name_key = 'givenName'
             last_name_key = 'sn'
             email_key = 'mail'
-            for key in ldap_dict.keys():
-                test_value = ldap_dict[key]
-                if test_value == "first_name":
-                    first_name_key = key
-                elif test_value == "last_name":
-                    last_name_key = key
-                elif test_value == "email":
-                    email_key = key
             username = person[settings.LDAP_USER_LOGIN_ATTR].value
             first_name = person[settings.LDAP_USER_ATTR_MAP[first_name_key]].value
             last_name = person[settings.LDAP_USER_ATTR_MAP[last_name_key]].value
