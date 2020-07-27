@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 import { FiPieChart, FiLock } from 'react-icons/fi';
 import Nav from 'react-bootstrap/Nav';
 import Badge from 'react-bootstrap/Badge';
-import SearchInfoContext from './SearchInfoContext';
+import { useSelector } from "react-redux";
 
 export function ResultTabs({counts, selectedType, onChange}) {
 
@@ -163,6 +163,7 @@ export function ResultList(props) {
 export function PureResultSection({resultSets, selected,
                                    onSelect, isLoading, error}){
     let counts;
+    console.log(resultSets);
     if (!resultSets) {
         resultSets = {};
         counts = {
@@ -179,7 +180,7 @@ export function PureResultSection({resultSets, selected,
     }
 
     const currentResultSet = resultSets[selected],
-          currentCount = counts[selected];
+        currentCount = counts[selected];
     return (
         <>
             <ResultTabs counts={counts} selectedType={selected} onChange={onSelect} />
@@ -196,7 +197,9 @@ export function PureResultSection({resultSets, selected,
 
 export default function ResultSection() {
     const [selectedType, onSelect ] = useState('experiment'),
-        searchInfo = useContext(SearchInfoContext);
+        searchInfo = useSelector(
+            (state) => state.search
+        );
     return (
         <PureResultSection
             resultSets={searchInfo.results}

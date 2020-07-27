@@ -5,3 +5,15 @@
 .search-screen {
     margin-top:1em;
 }
+
+.filter-column, .result-column {
+    max-height: 1000px;
+    max-height: 70vh;
+    overflow-y: auto;
+}
+
+.filter-column {
+    max-width:350px;
+    border: 1px solid lightgray;
+    padding: 30px;
+}
