@@ -1128,7 +1128,7 @@ class ProjectResource(MyTardisModelResource):
                             user.user_permissions.add(permission)
                         user.save()
                         authentication = UserAuthentication(userProfile=user.userprofile,
-                                                            username=username,
+                                                            username=new_user['username'],
                                                             authenticationMethod=settings.LDAP_METHOD)
                         authentication.save()
                     user = User.objects.get(username=member_name)
@@ -1144,7 +1144,7 @@ class ProjectResource(MyTardisModelResource):
                                     isOwner=False,
                                     aclOwnershipType=ObjectACL.OWNER_OWNED)
                     acl.save()
-                bundle.data.pop('member')
+                bundle.data.pop('members')
         return super().hydrate_m2m(bundle)
 
     def obj_create(self, bundle, **kwargs):
