@@ -49,7 +49,6 @@ class ObjectACLTestCase(TestCase):
         # user1 will own experiment1
         self.experiment1 = Experiment(
             title='Experiment1',
-            institution_name='Australian Synchrotron',
             approved=True,
             public_access=Experiment.PUBLIC_ACCESS_NONE,
             created_by=self.user1,
@@ -59,7 +58,6 @@ class ObjectACLTestCase(TestCase):
         # user2 will own experiment2
         self.experiment2 = Experiment(
             title='Experiment2',
-            institution_name='Australian Synchrotron',
             approved=True,
             public_access=Experiment.PUBLIC_ACCESS_NONE,
             created_by=self.user2,
@@ -69,7 +67,6 @@ class ObjectACLTestCase(TestCase):
         # experiment3 is public & locked
         self.experiment3 = Experiment(
             title='Experiment3',
-            institution_name='Australian Synchrotron',
             approved=True,
             locked=True,
             public_access=Experiment.PUBLIC_ACCESS_FULL,
@@ -80,7 +77,6 @@ class ObjectACLTestCase(TestCase):
         # experiment4 will be accessible based on location information
         self.experiment4 = Experiment(
             title='Experiment4',
-            institution_name='Australian Synchrotron',
             approved=True,
             public_access=Experiment.PUBLIC_ACCESS_NONE,
             created_by=self.user1,

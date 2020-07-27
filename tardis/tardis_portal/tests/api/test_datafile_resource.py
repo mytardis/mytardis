@@ -36,7 +36,7 @@ class DataFileResourceTest(MyTardisResourceTestCase):
         self.testds.experiments.add(self.testexp)
         df_schema_name = "http://datafileshop.com/"
         self.test_schema = Schema(namespace=df_schema_name,
-                                  type=Schema.DATAFILE)
+                                  schema_type=Schema.DATAFILE)
         self.test_schema.save()
         self.test_parname1 = ParameterName(schema=self.test_schema,
                                            name="fileparameter1",

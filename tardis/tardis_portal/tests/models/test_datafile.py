@@ -50,7 +50,6 @@ class DataFileTestCase(ModelTestCase):
             return datafile
 
         exp = Experiment(title='test exp1',
-                         institution_name='monash',
                          approved=True,
                          created_by=self.user,
                          public_access=Experiment.PUBLIC_ACCESS_NONE)

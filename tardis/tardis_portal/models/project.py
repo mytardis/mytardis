@@ -208,10 +208,10 @@ class Project(models.Model):
             return False
         return None
 
-    def get_datafiles(self, user):
+    def get_datafiles(self, user, downloadable=False):
         from .datafile import DataFile
-        return DataFile.safe.all(user).filter(dataset__experiments__project=self)
+        return DataFile.safe.all(user, downloadable=downloadable).filter(dataset__experiments__project=self)
 
-    def get_size(self, user):
+    def get_size(self, user, downloadable=False):
         from .datafile import DataFile
-        return DataFile.sum_sizes(self.get_datafiles(user))
+        return DataFile.sum_sizes(self.get_datafiles(user, downloadable=downloadable))

@@ -34,8 +34,7 @@ class UploadTestCase(TestCase):
 
         self.test_dir = mkdtemp()
 
-        self.exp = Experiment(title='test exp1',
-                              institution_name='monash', created_by=self.user)
+        self.exp = Experiment(title='test exp1', created_by=self.user)
         self.exp.save()
 
         acl = ObjectACL(
@@ -43,6 +42,9 @@ class UploadTestCase(TestCase):
             entityId=str(self.user.id),
             content_object=self.exp,
             canRead=True,
+            canDownload=True,
+            canWrite=True,
+            canSensitive=True,
             isOwner=True,
             aclOwnershipType=ObjectACL.OWNER_OWNED,
         )
@@ -53,6 +55,19 @@ class UploadTestCase(TestCase):
         self.dataset.save()
         self.dataset.experiments.add(self.exp)
         self.dataset.save()
+
+        acl = ObjectACL(
+            pluginId=django_user,
+            entityId=str(self.user.id),
+            content_object=self.dataset,
+            canRead=True,
+            canDownload=True,
+            canWrite=True,
+            canSensitive=True,
+            isOwner=True,
+            aclOwnershipType=ObjectACL.OWNER_OWNED,
+        )
+        acl.save()
 
         path_parts = [
             settings.FILE_STORE_PATH,

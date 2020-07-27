@@ -39,8 +39,6 @@ class Experiment(models.Model):
     :attribute approved: An optional field indicating whether the collection is approved
     :attribute title: The title of the experiment.
     :attribute description: The description of the experiment.
-    :attribute institution_name: The name of the institution who created
-       the experiment.
     :attribute internal_id: Identifier generated at the instrument, for this experiment
     :attribute project_id: UoA project ID (e.g. RAID)
     :attribute start_time: **Undocumented**
@@ -195,9 +193,9 @@ class Experiment(models.Model):
             'tardis.tardis_portal.views.create_token',
             kwargs={'experiment_id': self.id})
 
-    def get_datafiles(self, user):
+    def get_datafiles(self, user, downloadable=False):
         from .datafile import DataFile
-        return DataFile.safe.all(user).filter(dataset__experiments=self)
+        return DataFile.safe.all(user, downloadable=downloadable).filter(dataset__experiments=self)
 
     def get_download_urls(self):
         urls = {}
@@ -217,9 +215,9 @@ class Experiment(models.Model):
                                                  '-created_time') \
             .filter(IMAGE_FILTER)
 
-    def get_size(self, user):
+    def get_size(self, user, downloadable=False):
         from .datafile import DataFile
-        return DataFile.sum_sizes(self.get_datafiles(user))
+        return DataFile.sum_sizes(self.get_datafiles(user, downloadable=downloadable))
 
     @classmethod
     def public_access_implies_distribution(cls, public_access_level):

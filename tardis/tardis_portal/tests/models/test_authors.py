@@ -15,7 +15,6 @@ class AuthorTestCase(ModelTestCase):
 
     def test_authors(self):
         exp = Experiment(title='test exp2',
-                         institution_name='monash',
                          created_by=self.user,
                          )
         exp.save()
@@ -25,7 +24,6 @@ class AuthorTestCase(ModelTestCase):
                          order=0).save()
 
         exp = Experiment(title='test exp1',
-                         institution_name='monash',
                          created_by=self.user,
                          )
         exp.save()
