@@ -8,17 +8,17 @@ import ResultSection from './ResultSection'
 
 export const PureSearchPage = () => {
     return (
-            <Container fluid="xl" className="search-page">
+            <div className="search-page">
                 <h1>Search</h1>
-                <Row className="search-screen">
-                    <Col as="aside" className="filter-column" md={4}>
+                <div className="search-screen">
+                    <aside className="filter-column" md={4}>
                         <FilterSidebar />
-                    </Col>
-                    <Col as="main" className="result-column" md={8}>
+                    </aside>
+                    <main className="result-column" md={8}>
                         <ResultSection />
-                    </Col>
-                </Row>
-            </Container>
+                    </main>
+                </div>
+            </div>
     )
 }
 

@@ -1,19 +1,27 @@
 .search-page {
     padding-top: 50px;
+    width:100%;
 }
 
 .search-screen {
     margin-top:1em;
+    display: flex;
 }
 
 .filter-column, .result-column {
     max-height: 1000px;
     max-height: 70vh;
     overflow-y: auto;
+    justify-items: space-between;
 }
 
 .filter-column {
-    max-width:350px;
+    flex: 0 0 350px;
     border: 1px solid lightgray;
     padding: 30px;
+}
+
+.result-column {
+    flex: 1 0 600px;
+    margin-left: 20px;
 }
