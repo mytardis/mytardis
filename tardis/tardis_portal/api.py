@@ -132,6 +132,7 @@ member_perms = [view_project_perm,
 def get_user_from_upi(upi):
     server = ldap3.Server(settings.LDAP_URL)
     search_filter = f'({settings.LDAP_USER_LOGIN_ATTR}={upi})'
+    logger.error(search_filter)
     with ldap3.Connection(server,
                           auto_bind=True,
                           user=settings.LDAP_ADMIN_USER,
@@ -151,6 +152,7 @@ def get_user_from_upi(upi):
             return None
         else:
             person = connection.entries[0]
+            logger.error(person)
             ldap_dict = settings.LDAP_USER_ATTR_MAP
             first_name_key = 'givenName'
             last_name_key = 'sn'
