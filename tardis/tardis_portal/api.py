@@ -951,6 +951,10 @@ class ProjectResource(MyTardisModelResource):
         bundle.data['admin_groups'] = [acl.id for acl in admins]
         members = project.get_groups()
         bundle.data['member_groups'] = [acl.id for acl in members]
+        members = project.get_users()
+        bundle.data['members'] = [acl.id for acl in members]
+        admins = project.get_owners()
+        bundle.data['admins'] = [acl.id for acl in admins]
         return bundle
 
     def hydrate_m2m(self, bundle):
@@ -1168,7 +1172,9 @@ class ExperimentResource(MyTardisModelResource):
                 'allows_distribution': lic.allows_distribution,
             }
         owners = exp.get_owners()
-        bundle.data['owner_ids'] = [o.id for o in owners]
+        bundle.data['admins'] = [o.id for o in owners]
+        members = exp.get_users()
+        bundle.data['members'] = [acl.id for acl in members]
         admins = exp.get_admins()
         bundle.data['admin_groups'] = [grp.id for grp in admins]
         members = exp.get_groups()
@@ -1358,6 +1364,10 @@ class DatasetResource(MyTardisModelResource):
         bundle.data['admin_groups'] = [acl.id for acl in admins]
         members = dataset.get_groups()
         bundle.data['member_groups'] = [acl.id for acl in members]
+        members = dataset.get_users()
+        bundle.data['members'] = [acl.id for acl in members]
+        admins = dataset.get_owners()
+        bundle.data['admins'] = [acl.id for acl in admins]
         return bundle
 
     def prepend_urls(self):
@@ -1451,6 +1461,25 @@ class DatasetResource(MyTardisModelResource):
                                 isOwner=True,
                                 aclOwnershipType=ObjectACL.OWNER_OWNED)
                 acl.save()
+            if 'admins' in bundle.data.keys():
+                admins = bundle.data['admins']
+            else:
+                admins = experiment.get_owners()
+            for admin in admins:
+                user = User.objects.get(username=admin)
+                user_id = user.id
+                acl = ObjectACL(content_type=dataset.get_ct(),
+                                object_id=dataset.id,
+                                pluginId=django_user,
+                                entityId=str(user.id),
+                                canRead=True,
+                                canDownload=True,
+                                canWrite=True,
+                                canDelete=True,
+                                canSensitive=True,
+                                isOwner=True,
+                                aclOwnershipType=ObjectACL.OWNER_OWNED)
+                acl.save()
             if 'member_groups' in bundle.data.keys():
                 member_groups = bundle.data['member_groups']
             else:
@@ -1470,6 +1499,33 @@ class DatasetResource(MyTardisModelResource):
                                 object_id=dataset.id,
                                 pluginId=django_group,
                                 entityId=str(group_id),
+                                canRead=True,
+                                canDownload=download_flg,
+                                canWrite=True,
+                                canDelete=False,
+                                canSensitive=sensitive_flg,
+                                isOwner=False,
+                                aclOwnershipType=ObjectACL.OWNER_OWNED)
+                acl.save()
+            if 'members' in bundle.data.keys():
+                # error checking needs to be done externally for this to
+                # function as desired.
+                members = bundle.data['members']
+            else:
+                members = experiment.get_users_and_perms()
+            # Each member group is defined by a tuple
+            # (group_name, sensitive[T/F], download[T/F])
+            # unpack for ACLs
+            for grp in members:
+                grp_name = grp[0]
+                sensitive_flg = grp[1]
+                download_flg = grp[2]
+                user = User.objects.get(username=grp_name)
+                user_id = user.id
+                acl = ObjectACL(content_type=dataset.get_ct(),
+                                object_id=dataset.id,
+                                pluginId=django_user,
+                                entityId=str(user.id),
                                 canRead=True,
                                 canDownload=download_flg,
                                 canWrite=True,
@@ -1611,6 +1667,10 @@ class DataFileResource(MyTardisModelResource):
         bundle.data['admin_groups'] = [acl.id for acl in admins]
         members = datafile.get_groups()
         bundle.data['member_groups'] = [acl.id for acl in members]
+        members = datafile.get_users()
+        bundle.data['members'] = [acl.id for acl in members]
+        admins = datafile.get_owners()
+        bundle.data['admins'] = [acl.id for acl in admins]
         return bundle
 
     def download_file(self, request, **kwargs):
@@ -1731,6 +1791,25 @@ class DataFileResource(MyTardisModelResource):
                                 isOwner=True,
                                 aclOwnershipType=ObjectACL.OWNER_OWNED)
                 acl.save()
+            if 'admins' in bundle.data.keys():
+                admins = bundle.data['admins']
+            else:
+                admins = dataset.get_owners()
+            for admin in admins:
+                user = User.objects.get(username=admin)
+                user_id = user.id
+                acl = ObjectACL(content_type=datafile.get_ct(),
+                                object_id=datafile.id,
+                                pluginId=django_user,
+                                entityId=str(user.id),
+                                canRead=True,
+                                canDownload=True,
+                                canWrite=True,
+                                canDelete=True,
+                                canSensitive=True,
+                                isOwner=True,
+                                aclOwnershipType=ObjectACL.OWNER_OWNED)
+                acl.save()
             if 'member_groups' in bundle.data.keys():
                 member_groups = bundle.data['member_groups']
             else:
@@ -1758,7 +1837,32 @@ class DataFileResource(MyTardisModelResource):
                                 isOwner=False,
                                 aclOwnershipType=ObjectACL.OWNER_OWNED)
                 acl.save()
-
+            if 'members' in bundle.data.keys():
+                # error checking needs to be done externally for this to
+                # function as desired.
+                members = bundle.data['members']
+            else:
+                members = dataset.get_users_and_perms()
+            # Each member group is defined by a tuple
+            # (group_name, sensitive[T/F], download[T/F])
+            # unpack for ACLs
+            for grp in members:
+                grp_name = grp[0]
+                sensitive_flg = grp[1]
+                download_flg = grp[2]
+                user = User.objects.get(username=grp_name)
+                acl = ObjectACL(content_type=datafile.get_ct(),
+                                object_id=datafile.id,
+                                pluginId=django_user,
+                                entityId=str(user.id),
+                                canRead=True,
+                                canDownload=download_flg,
+                                canWrite=True,
+                                canDelete=False,
+                                canSensitive=sensitive_flg,
+                                isOwner=False,
+                                aclOwnershipType=ObjectACL.OWNER_OWNED)
+                acl.save()
         if 'attached_file' in bundle.data:
             # have POSTed file
             newfile = bundle.data['attached_file'][0]

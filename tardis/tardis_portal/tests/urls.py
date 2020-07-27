@@ -8,6 +8,7 @@ from tardis.apps import sftp
 
 from ...urls.accounts import accounts_urls
 from ...urls.download import download_urls
+from ...urls.group import group_urls
 from .. import download
 from ..views.pages import ExperimentView
 from ..views import load_datafile_image
@@ -49,6 +50,7 @@ urlpatterns += [
     # Needed for user_menu context processor:
     url(r'^accounts/', include(accounts_urls)),
     url(r'^download/', include(download_urls)),
+    url(r'^groups/', include(group_urls)),
     url(r'^apps/sftp/', include(sftp.urls)),
     url(r'^logout/$', LogoutView.as_view(), {'next_page': '/'},
         name='logout'),

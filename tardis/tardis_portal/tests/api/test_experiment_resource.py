@@ -9,6 +9,7 @@ import json
 from django.contrib.auth.models import User
 
 from ...models.experiment import Experiment, ExperimentAuthor
+from ...models.project import Project
 from ...models.parameters import (ExperimentParameter,
                                   ExperimentParameterSet,
                                   ParameterName,
@@ -36,7 +37,10 @@ class ExperimentResourceTest(MyTardisResourceTestCase):
     def test_post_experiment(self):
         schema_id = Schema.objects.first().id
         parm_id = ParameterName.objects.first().id
+        project_id = Project.objects.first().id
+
         post_data = {
+            "project" : "/api/v1/project/%d/" % project_id,
             "description": "test description",
             "parameter_sets": [
                 {
@@ -96,6 +100,8 @@ class ExperimentResourceTest(MyTardisResourceTestCase):
     def test_get_experiment(self):
         exp_id = Experiment.objects.first().id
         user_id = User.objects.first().id
+        project_id = Project.objects.first().id
+
         expected_output = {
             "approved": True,
             "created_by": "/api/v1/user/%d/" % user_id,
@@ -110,7 +116,8 @@ class ExperimentResourceTest(MyTardisResourceTestCase):
             "start_time": None,
             "title": "test exp",
             "update_time": "2013-05-29T13:00:26.626609",
-            "url": None
+            "url": None,
+            "project": "/api/v1/project/%d/" % project_id
         } # "handle": None,
         output = self.api_client.get('/api/v1/experiment/%d/' % exp_id,
                                      authentication=self.get_credentials())

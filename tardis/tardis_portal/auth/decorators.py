@@ -132,19 +132,19 @@ def get_nested_has_download(request, obj_id, ct_type):
 
 
 
-def get_obj_parameter(param_full_name, obj_id, ct_type):
+def get_obj_parameter(pn_id, obj_id, ct_type):
     if ct_type == "project":
-        param = ProjectParameter.objects.get(name__full_name=param_full_name,
+        param = ProjectParameter.objects.get(name__id=pn_id,
                                              parameterset__project__id=obj_id)
     if ct_type == "experiment":
-        param = ExperimentParameter.objects.get(name__full_name=param_full_name,
-                                            parameterset__experiment__id=obj_id)
+        param = ExperimentParameter.objects.get(name__id=pn_id,
+                                             parameterset__experiment__id=obj_id)
     if ct_type == "dataset":
-        param = DatasetParameter.objects.get(name__full_name=param_full_name,
+        param = DatasetParameter.objects.get(name__id=pn_id,
                                              parameterset__dataset__id=obj_id)
     if ct_type == "datafile":
-        param = DatafileParameter.objects.get(name__full_name=param_full_name,
-                                              parameterset__datafile__id=obj_id)
+        param = DatafileParameter.objects.get(name__id=pn_id,
+                                             parameterset__datafile__id=obj_id)
     return param
 
 
@@ -301,9 +301,13 @@ def has_delete_permissions(request, experiment_id):
 
 @login_required
 def is_group_admin(request, group_id):
-    return GroupAdmin.objects.filter(user=request.user,
-                                     group__id=group_id).exists()
 
+    user_check = GroupAdmin.objects.filter(user=request.user, group__id=group_id).exists()
+
+    group_check = any([GroupAdmin.objects.filter(admin_groups=group,
+            group__id=group_id).exists() for group in request.user.groups.all()])
+
+    return any([user_check, group_check])
 
 def group_ownership_required(f):
     """

@@ -3,7 +3,7 @@
         "pk": null,
         "model": "tardis_portal.schema",
         "fields": {
-            "type": 2,
+            "schema_type": 2,
             "namespace": "http://www.jeol.com/#jeol-sem-schema",
             "name": "JEOL SEM",
             "immutable": true,

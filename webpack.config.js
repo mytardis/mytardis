@@ -32,7 +32,8 @@ module.exports = {
         related_info_index_ro: "./assets/js/apps/related_info/index_ro.js",
         lib: glob.sync("./assets/js/lib/**/*.js"),
         search_app : "./assets/js/apps/search/index.jsx",
-        tree_view : "./assets/js/apps/tree_view/index.jsx"
+        tree_view : "./assets/js/apps/tree_view/index.jsx",
+        project_app : "./assets/js/apps/project_detail_view/index.jsx"
     },
     output: {
         path: path.resolve("./assets/bundles/"),
@@ -81,7 +82,13 @@ module.exports = {
         ),
         new MiniCssExtractPlugin({
             filename: "[name]-[hash].styles.css",
-        })
+        }),
+        new webpack.ProvidePlugin({
+            // Add polyfill for chunks that use the
+            // fetch AJAX function.
+            "fetch": ["whatwg-fetch","fetch"]
+        }),
+
     ],
     module: {
         rules: [

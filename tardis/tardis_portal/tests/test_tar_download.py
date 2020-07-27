@@ -21,7 +21,7 @@ class TarDownloadTestCase(TestCase):
 
     def setUp(self):
         # create user
-        self.testuser = User(username='testuser')
+        self.testuser = User(username='testuser', password="secret")
         self.testuser.save()
 
         # create test experiment
@@ -84,6 +84,8 @@ class TarDownloadTestCase(TestCase):
 
         # mock client
         self.client = Client()
+        self.login = self.client.login(username="testuser", password="secret")
+        self.assertTrue(self.login)
 
     def tearDown(self):
         # delete created objects and files
@@ -92,6 +94,8 @@ class TarDownloadTestCase(TestCase):
         self.exp.delete()
 
     def test_tar_experiment_download(self):
+
+
         self.assertTrue(all(df.verified for df in self.dfs))
         response = self.client.get(reverse(
             'tardis.tardis_portal.download.streaming_download_experiment',
