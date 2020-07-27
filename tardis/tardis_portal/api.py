@@ -155,10 +155,10 @@ def get_user_from_upi(upi):
             last_name_key = 'sn'
             email_key = 'mail'
             username = person[settings.LDAP_USER_LOGIN_ATTR].value
-            first_name = person[settings.LDAP_USER_ATTR_MAP[first_name_key]].value
-            last_name = person[settings.LDAP_USER_ATTR_MAP[last_name_key]].value
+            first_name = person[first_name_key].value
+            last_name = person[last_name_key].value
             try:
-                email = person[settings.LDAP_USER_ATTR_MAP[email_key]].value
+                email = person[email_key].value
             except KeyError:
                 email = ''
             details = {'username': username,
