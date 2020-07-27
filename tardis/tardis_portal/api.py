@@ -1095,7 +1095,7 @@ class ProjectResource(MyTardisModelResource):
                             user.user_permissions.add(permission)
                         user.save()
                         authentication = UserAuthentication(userProfile=user.userprofile,
-                                                            username=username,
+                                                            username=new_user['username'],
                                                             authenticationMethod=settings.LDAP_METHOD)
                         authentication.save()
                     user = User.objects.get(username=admin)
