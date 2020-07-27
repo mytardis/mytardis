@@ -767,7 +767,7 @@ class UserResource(ModelResource):
                            'first_name',
                            'email',
                            'permissions',
-                           get                           'auth_method']
+                           'auth_method']
         for field in required_fields:
             if field not in bundle.data:
                 raise KeyError
