@@ -301,9 +301,13 @@ def has_delete_permissions(request, experiment_id):
 
 @login_required
 def is_group_admin(request, group_id):
-    return GroupAdmin.objects.filter(user=request.user,
-                                     group__id=group_id).exists()
 
+    user_check = GroupAdmin.objects.filter(user=request.user, group__id=group_id).exists()
+
+    group_check = any([GroupAdmin.objects.filter(admin_groups=group,
+            group__id=group_id).exists() for group in request.user.groups.all()])
+
+    return any([user_check, group_check])
 
 def group_ownership_required(f):
     """

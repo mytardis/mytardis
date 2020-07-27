@@ -143,9 +143,11 @@ class ExperimentDocument(Document):
 
     class Django:
         model = Experiment
-        related_models = [User, ObjectACL]
+        related_models = [Project, User, ObjectACL]
 
     def get_instances_from_related(self, related_instance):
+        if isinstance(related_instance, Project):
+            return related_instance.experiment_set.all()
         if isinstance(related_instance, User):
             return related_instance.experiment_set.all()
         if isinstance(related_instance, ObjectACL):
@@ -208,9 +210,11 @@ class DatasetDocument(Document):
 
     class Django:
         model = Dataset
-        related_models = [Experiment, Instrument, ObjectACL]
+        related_models = [Project, Experiment, Instrument, ObjectACL]
 
     def get_instances_from_related(self, related_instance):
+        if isinstance(related_instance, Project):
+            return Dataset.objects.filter(experiments__project=related_instance)
         if isinstance(related_instance, Experiment):
             return related_instance.datasets.all()
         if isinstance(related_instance, Instrument):
@@ -270,7 +274,7 @@ class DataFileDocument(Document):
 
     class Django:
         model = DataFile
-        related_models = [Dataset, Experiment, ObjectACL]
+        related_models = [Dataset, Experiment, Project, ObjectACL]
         queryset_pagination = 100000
 
     def get_instances_from_related(self, related_instance):
@@ -278,6 +282,8 @@ class DataFileDocument(Document):
             return related_instance.datafile_set.all()
         if isinstance(related_instance, Experiment):
             return DataFile.objects.filter(dataset__experiments=related_instance)
+        if isinstance(related_instance, Project):
+            return DataFile.objects.filter(dataset__experiments__project=related_instance)
         if isinstance(related_instance, ObjectACL):
             if related_instance.content_type == 'datafile':
                 return related_instance.content_object
