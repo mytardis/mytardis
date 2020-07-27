@@ -11,7 +11,7 @@ const getResultFromHit = (hit,hitType,urlPrefix) => {
 const getResultsFromResponse = (response) => {
 // Grab the "_source" object out of each hit and also
 // add a type attribute to them.
-const hits = response.objects[0].hits,
+const hits = response.hits,
     projectResults = hits["projects"].map((hit) => {
         return getResultFromHit(hit,"project","/project/view")
     }),
