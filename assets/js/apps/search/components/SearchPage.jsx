@@ -1,12 +1,16 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import './SearchPage.css'
-import Container from 'react-bootstrap/Container'
-import Row from 'react-bootstrap/Row'
-import Col from 'react-bootstrap/Col'
+import { runSearch } from "./searchSlice";
+import { useDispatch } from "react-redux";
 import FilterSidebar from './FilterSidebar'
 import ResultSection from './ResultSection'
 
-export const PureSearchPage = () => {
+export const SearchPage = () => {
+    const dispatch = useDispatch();
+    useEffect(() => {
+        // Run a search to get initial results.
+        dispatch(runSearch());
+    },[dispatch]);
     return (
             <div className="search-page">
                 <h1>Search</h1>
@@ -22,4 +26,4 @@ export const PureSearchPage = () => {
     )
 }
 
-export default PureSearchPage;
+export default SearchPage;
