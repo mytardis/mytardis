@@ -94,7 +94,9 @@ class GroupAdmin(models.Model):
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     group = models.ForeignKey(Group, on_delete=models.CASCADE)
-    admin_groups = models.ManyToManyField(Group, related_name='admin_groups')
+    admin_groups = models.ManyToManyField(Group, related_name='admin_groups',
+                                          null=True,
+                                          blank=True)
 
     class Meta:
         app_label = 'tardis_portal'
