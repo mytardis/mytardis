@@ -129,7 +129,7 @@ member_perms = [view_project_perm,
                 view_datafile_perm]
 
 
-def get_user_from_ldap(upi):
+def get_user_from_upi(upi):
     server = ldap3.Server(settings.LDAP_URL)
     search_filter = f'({settings.LDAP_USER_LOGIN_ATTR}={upi})'
     with ldap3.Connection(server,
