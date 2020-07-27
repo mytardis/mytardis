@@ -304,7 +304,7 @@ def is_group_admin(request, group_id):
 
     user_check = GroupAdmin.objects.filter(user=request.user, group__id=group_id).exists()
 
-    group_check = any([GroupAdmin.objects.filter(admin_groups=group,
+    group_check = any([GroupAdmin.objects.filter(admin_groups__id=group.id,
             group__id=group_id).exists() for group in request.user.groups.all()])
 
     return any([user_check, group_check])
