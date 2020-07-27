@@ -141,7 +141,7 @@ def get_user_from_upi(upi):
         connection.search(settings.LDAP_USER_BASE,
                           search_filter,
                           attributes=['*'])
-        logger.error(connection.entries)
+        logger.error(connection)
         if len(connection.entries) > 1:
             error_message = f'More than one person with {search_action}: {value} has been found in the LDAP'
             if logger:
