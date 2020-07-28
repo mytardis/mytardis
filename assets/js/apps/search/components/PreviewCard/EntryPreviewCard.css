@@ -27,8 +27,13 @@
 }
 
 .preview-card__header {
-    display: inline-flex;
+    display: flex;
     flex-direction: row;
     align-items: center;
+}
 
+.preview-card__header > div, h1 {
+    display: flex;
+    align-items: center;
+    margin: 0 0.2em;
 }

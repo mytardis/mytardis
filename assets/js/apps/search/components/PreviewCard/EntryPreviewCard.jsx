@@ -143,7 +143,9 @@ export default function EntryPreviewCard(props) {
     return (
         <div className="preview-card__body">
             <div className="preview-card__header">
-                {getTabSticker(type)}
+                <div >
+                    {getTabSticker(type)}
+                </div>
                 <h1>
                     {getName(data, type)}
                 </h1>
