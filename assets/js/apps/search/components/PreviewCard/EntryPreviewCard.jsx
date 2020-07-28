@@ -1,6 +1,5 @@
 //todo:
 // add reference to url field.
-// react icons
 // ^ ref resultssection.jsx
 // moment js for date.
 // just size - remove df count
@@ -151,12 +150,16 @@ export default function EntryPreviewCard(props) {
         switch (type) {
             case 'project':
                 summary = `Contains ${data.counts.datafiles} datafiles from ${data.counts.datasets} datasets.`;
+                break;
             case 'experiment':
                 summary = `Contains ${data.counts.datafiles} datafiles from ${data.counts.datasets} datasets.`;
+                break;
             case 'dataset':
                 summary = `Contains ${data.counts.datafiles} datafiles.`;
+                break;
             default:
                 summary = null;
+                break;
         }
         if (summary) {
             return (
