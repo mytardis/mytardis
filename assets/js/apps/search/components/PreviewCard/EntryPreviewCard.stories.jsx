@@ -9,7 +9,7 @@ export default {
   // excludeStories: /.*Data$/,
 };
 
-const projectData = {
+const project = {
   "counts": {
     "datafiles": 2,
     "datasets": 1,
@@ -58,7 +58,7 @@ const projectData = {
   "userDownloadRights": "partial"
 }
 
-const experimentData = {
+const experiment = {
   "counts": {
     "datafiles": 2,
     "datasets": 1
@@ -94,11 +94,87 @@ const experimentData = {
   "userDownloadRights": "partial"
 }
 
-export const Default = () => (
-  <EntryPreviewCard type="project" data={projectData} />
+const dataSet = {
+  "counts":{
+     "datafiles":2
+  },
+  "created_time":"2020-05-07T23:00:05+00:00",
+  "description":"Some ACL-testing dataset",
+  "experiments":[
+     {
+        "id":4,
+        "project":{
+           "id":1
+        }
+     }
+  ],
+  "id":1,
+  "instrument":{
+     "id":1,
+     "name":"Mikes_ACL_Machine"
+  },
+  "modified_time":"2020-06-09T02:10:18.426980+00:00",
+  "parameters":[
+     {
+        "data_type":"STRING",
+        "pn_id":"4",
+        "sensitive":"False",
+        "value":"My Name"
+     },
+     {
+        "data_type":"STRING",
+        "pn_id":"5",
+        "sensitive":"False",
+        "value":"is"
+     }
+  ],
+  "size":"460.3 KB",
+  "tags":"bricks safe as",
+  "userDownloadRights":"partial"
+}
+
+
+const dataFile = {
+  "created_time":null,
+  "dataset":{
+     "experiments":[
+        {
+           "id":4,
+           "project":{
+              "id":1
+           }
+        }
+     ],
+     "id":1
+  },
+  "filename":"Mikes_test_datafile_1",
+  "id":1,
+  "modification_time":null,
+  "parameters":[
+     {
+        "data_type":"STRING",
+        "pn_id":"12",
+        "sensitive":"False",
+        "value":"My name is"
+     }
+  ],
+  "size":"460.3 KB",
+  "userDownloadRights":"full"
+}
+
+export const Project = () => (
+  <EntryPreviewCard type="project" data={project} />
 );
 
 
 export const Experiment = () => (
-  <EntryPreviewCard type="experiment" data={experimentData} />
+  <EntryPreviewCard type="experiment" data={experiment} />
+);
+
+export const DataSet = () => (
+  <EntryPreviewCard type="dataset" data={dataSet} />
+);
+
+export const DataFile = () => (
+  <EntryPreviewCard type="datafile" data={dataFile} />
 );
