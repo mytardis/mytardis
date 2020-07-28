@@ -119,7 +119,6 @@ class Project(models.Model):
                         elif type_idx == 2:
                             param_dict['value'] = str(value)
                         elif type_idx == 3:
-                            #temporary
                             param_dict['value'] = float(value)
                 parameter_groups[param_type[type_idx]].append(param_dict)
         return parameter_groups

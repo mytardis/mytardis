@@ -296,9 +296,7 @@ class DataFileDocument(Document):
         if isinstance(related_instance, DatafileParameter):
             return related_instance.parameterset.datafile
         if isinstance(related_instance, Schema):
-            return DataFile.objects.prefetch_related('datafileparameterset'
-                        ).filter(datafileparameterset__schema=related_instance)
+            return DataFile.objects.filter(datafileparameterset__schema=related_instance)
         if isinstance(related_instance, ParameterName):
-            return DataFile.objects.prefetch_related('datafileparameterset'
-                        ).filter(datafileparameterset__schema__parametername=related_instance)
+            return DataFile.objects.filter(datafileparameterset__schema__parametername=related_instance)
         return None
