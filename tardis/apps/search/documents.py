@@ -6,8 +6,10 @@ from django_elasticsearch_dsl import Document, fields
 from django_elasticsearch_dsl.registries import registry
 
 from tardis.tardis_portal.models import Project, Dataset, Experiment, \
-    DataFile, Instrument, ObjectACL, ExperimentParameter, ProjectParameter, \
-    DatasetParameter, DatafileParameter
+    DataFile, Instrument, ObjectACL, ParameterName, Schema, ProjectParameter, \
+    ExperimentParameter, DatasetParameter, DatafileParameter, \
+    ProjectParameterSet, ExperimentParameterSet, DatasetParameterSet, \
+    DatafileParameterSet
 
 
 logger = logging.getLogger(__name__)
@@ -274,7 +276,9 @@ class DataFileDocument(Document):
 
     class Django:
         model = DataFile
-        related_models = [Dataset, Experiment, Project, ObjectACL]
+        related_models = [Dataset, Experiment, Project, ObjectACL,
+                          Schema, ParameterName, DatafileParameter,
+                          DatasetParameterSet]
         queryset_pagination = 100000
 
     def get_instances_from_related(self, related_instance):
@@ -287,4 +291,14 @@ class DataFileDocument(Document):
         if isinstance(related_instance, ObjectACL):
             if related_instance.content_type == 'datafile':
                 return related_instance.content_object
+        if isinstance(related_instance, DatasetParameterSet):
+            return related_instance.datafile
+        if isinstance(related_instance, DatafileParameter):
+            return related_instance.parameterset.datafile
+        if isinstance(related_instance, Schema):
+            return DataFile.objects.prefetch_related('datafileparameterset'
+                        ).filter(datafileparameterset__schema=related_instance)
+        if isinstance(related_instance, ParameterName):
+            return DataFile.objects.prefetch_related('datafileparameterset'
+                        ).filter(datafileparameterset__schema__parametername=related_instance)
         return None
