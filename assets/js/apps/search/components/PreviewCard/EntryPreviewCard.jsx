@@ -14,7 +14,7 @@ import {
     ExperimentTabSticker,
     DatasetTabSticker,
     DatafileTabSticker
-} from '../TabStickers/TabStickers'
+} from '../TabStickers/TabSticker'
 
 export default function EntryPreviewCard(props) {
     let { data, type } = props;
