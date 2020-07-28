@@ -1,5 +1,4 @@
 //todo:
-// add lock icon based on accessibility
 // add reference to url field.
 // react icons
 // ^ ref resultssection.jsx
@@ -100,30 +99,12 @@ export default function EntryPreviewCard(props) {
      * @param {*} data the json response
      * @param {*} type type of expected json response
      */
-    const getCountSizeSummary = (data, type) => {
+    const getDataSize = (data, type) => {
         switch (type) {
             case 'datafile':
                 return `${data.size}.`
             default:
                 return `${data.counts.datafiles} datafiles, ${data.size}.`
-        }
-    }
-
-    /**
-     * 
-     * @param {*} data project/exp/datafile/dataset json response data
-     * @param {*} type project/exp/datafile/dataset
-     */
-    const getDeepCountSummary = (data, type) => {
-        switch (type) {
-            case 'project':
-                return `Contains ${data.counts.datafiles} datafiles from ${data.counts.datasets} datasets.`;
-            case 'experiment':
-                return `Contains ${data.counts.datafiles} datafiles from ${data.counts.datasets} datasets.`;
-            case 'dataset':
-                return `Contains ${data.counts.datafiles} datafiles.`;
-            case 'datafile':
-                return ``;
         }
     }
 
@@ -140,7 +121,8 @@ export default function EntryPreviewCard(props) {
         }
     }
 
-    const DataTypeAccess = (data) => {
+    const DataTypeAccess = (props) => {
+        let { data } = props;
         if (data.userDownloadRights === "Unavailable") {
             return (
                 <div className="preview-card__access-status">
@@ -158,6 +140,34 @@ export default function EntryPreviewCard(props) {
         }
     }
 
+    /**
+     * 
+     * @param {*} data project/exp/datafile/dataset json response data
+     * @param {*} type project/exp/datafile/dataset
+     */
+    const DeepCountSummary = (props) => {
+        let{data, type} = props;
+        let summary;
+        switch (type) {
+            case 'project':
+                summary = `Contains ${data.counts.datafiles} datafiles from ${data.counts.datasets} datasets.`;
+            case 'experiment':
+                summary = `Contains ${data.counts.datafiles} datafiles from ${data.counts.datasets} datasets.`;
+            case 'dataset':
+                summary = `Contains ${data.counts.datafiles} datafiles.`;
+            default:
+                summary = null;
+        }
+        if (summary) {
+            return (
+            <div className="preview-card__count-detail">
+                {summary}
+            </div>
+            )
+        }
+        return null;
+    }
+
     return (
         <div className="preview-card__body">
             <div className="preview-card__header">
@@ -168,13 +178,11 @@ export default function EntryPreviewCard(props) {
                     {getName(data, type)}
                 </h1>
             </div>
-            <DataTypeAccess></DataTypeAccess>
+            <DataTypeAccess data={data}></DataTypeAccess>
             <div className="preview-card__count-detail">
-                {getCountSizeSummary(data, type)}
+                {getDataSize(data, type)}
             </div>
-            <div className="preview-card__count-detail">
-                {getDeepCountSummary(data, type)}
-            </div>
+            <DeepCountSummary data={data} type={type}></DeepCountSummary>
             <div className="preview-card__date-added">
                 Added on: {getDateAdded(data, type)}
             </div>
@@ -191,7 +199,7 @@ export default function EntryPreviewCard(props) {
             </Table>
             <div className="preview-card__button-wrapper--right">
                 <div className="preview-card__inline-block-wrapper">
-                    <Button className="preview-card__button--right" href={`view/project/${data.id}`} variant="link">View details</Button>
+                    <Button className="preview-card__button--right" href={data.url} variant="link">View details</Button>
                 </div>
             </div>
         </div>

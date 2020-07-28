@@ -7,6 +7,10 @@
     border-radius: 3px;
 }
 
+.preview-card__body > * {
+    padding: 0.2em 0em;
+}
+
 .preview-card__button-wrapper--right {
     text-align: right;
 }
