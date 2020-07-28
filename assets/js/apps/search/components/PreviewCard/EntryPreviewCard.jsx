@@ -11,7 +11,7 @@ export default function EntryPreviewCard(props) {
      * @param {*} date 
      */
     const formatDate = (date) => {
-        return data.start_date.split('T')[0];
+        return date.split('T')[0];
     }
 
     /**
@@ -20,7 +20,49 @@ export default function EntryPreviewCard(props) {
      */
     const determineAccess = (access) => {
         return access === "partial" ? "Unavailable" : "Available";
+    }
 
+
+    /**
+     * Gets the 'name' for the result type. fields differ depending on type.
+     * @param {*} data 
+     * @param {*} type project, dataset or datafile
+     */
+    const getName = (data, type) => {
+        switch(type) {
+            case 'project':
+                return data.name;
+            case 'experiment':
+                return data.title;
+            case 'dataset':
+                return `${data.description} #${data.id}`
+            case 'datafile':
+                return data.filename;
+        }
+    }
+
+    /**
+     * 
+     * @param {*} data the json reponse data.
+     * @param {*} type project/exp/df/ds
+     */
+    const getDateAdded = (data, type) => {
+        let date;
+        switch(type) {
+            case 'project':
+                date = data.start_date;
+                break;
+            case 'experiment':
+                date = data.created_time;
+                break;
+            case 'dataset':
+                date = data.created_time;
+                break;
+            case 'datafile':
+                date = data.created_time;
+                break;
+        }
+        return (!!date ? formatDate(date) : 'Unknown');
     }
 
     /**
@@ -28,13 +70,13 @@ export default function EntryPreviewCard(props) {
      * @param {Object} parameters The parameter section of the response data.
      */
     const previewParameterTable = (parameters) => {
-        return parameters.map((param) => {
+        return parameters.map((param, idx) => {
             if (param.sensitive !== "False") {
                 return;
             }
             return (
-                <tr className="parameter-table__row">
-                    <td className="">{param.pn_id}</td>
+                <tr key={`preview-card__param-entry-${idx}`} className="parameter-table__row">
+                    <td>{param.pn_id}</td>
                     <td>{param.value}</td>
                 </tr>
             );
@@ -49,36 +91,48 @@ export default function EntryPreviewCard(props) {
     // make variant for dataset preview.
 
     /**
-     * Gets the 'name' for the result type. fields differ depending on type.
-     * @param {*} data 
-     * @param {*} type project, dataset or datafile
+     * returns the datafile count and size informational text.
+     * @param {*} data the json response
+     * @param {*} type type of expected json response
      */
-    const getPreviewName = (data, type) => {
-        if (type === "project") {
-            return data.name;
+    const getCountSizeSummary = (data, type) => {
+        switch(type) {
+            case 'datafile':
+                return `${data.size}.`
+                break;
+            default:
+                return `${data.counts.datafiles} datafiles, ${data.size}.`
+                break;
         }
-        if (type === "dataset" || type == "experiment") {
-            return data.title;
-        }
-        if (type === "datafile") {
-            return data.filename;
+    }
+
+    const getDeepCountSummary = (data, type) => {
+        switch(type) {
+            case 'project':
+                return `Contains ${data.counts.datafiles} datafiles from ${data.counts.datasets} datasets.`;
+            case 'experiment':
+                return `Contains ${data.counts.datafiles} datafiles from ${data.counts.datasets} datasets.`;
+            case 'dataset':
+                return `Contains ${data.counts.datafiles} datafiles.`;
+            case 'datafile':
+                return ``;
         }
     }
 
     return (
         <div className="preview-card__body">
-            <h1>{getPreviewName(data, type)}</h1>
+            <h1>{getName(data, type)}</h1>
             <div className="preview-card__access-status">
-                {determineAccess(data.userDownloadRights)}
+                {`User access: ${determineAccess(data.userDownloadRights)}`}
             </div>
             <div className="preview-card__count-detail">
-                {`${data.counts.datafiles} datafiles, ${data.size}.`}
+                {getCountSizeSummary(data, type)}
             </div>
             <div className="preview-card__count-detail">
-                {`Contains ${data.counts.datafiles} datafiles from ${data.counts.datasets} datasets.`}
+                {getDeepCountSummary(data, type)}
             </div>
             <div className="preview-card__date-added">
-                Added on: {formatDate(data.date)}
+                Added on: {getDateAdded(data, type)}
             </div>
             <Table striped bordered hover size="sm" className="preview-card__parameter-table">
                 <thead>
@@ -99,124 +153,3 @@ export default function EntryPreviewCard(props) {
         </div>
     );
 }
-
-// EXAMPLE JSONS FOR REFe
-
-    // PROJECT ========
-    // const data = {
-    // counts": {
-    //     "datafiles": 2,
-    //     "datasets": 1,
-    //     "experiments": 1
-    //   },
-    //   "description": "If you can see this and are not called Mike(or Noel) then the permissions have gone wrong",
-    //   "end_date": null,
-    //   "id": 1,
-    //   "institution": [
-    //     {
-    //       "name": "Mikes ACL Institution"
-    //     }
-    //   ],
-    //   "lead_researcher": {
-    //     "username": "mlav736"
-    //   },
-    //   "name": "Mikes_ACL_Project",
-    //   "parameters": [
-    //     {
-    //       "data_type": "STRING",
-    //       "pn_id": "18",
-    //       "sensitive": "False",
-    //       "value": ""
-    //     },
-    //     {
-    //       "data_type": "NUMERIC",
-    //       "pn_id": "19",
-    //       "sensitive": "False",
-    //       "value": "7.0"
-    //     },
-    //     {
-    //       "data_type": "STRING",
-    //       "pn_id": "15",
-    //       "sensitive": "False",
-    //       "value": "Kiwi"
-    //     },
-    //     {
-    //       "data_type": "STRING",
-    //       "pn_id": "16",
-    //       "sensitive": "False",
-    //       "value": "Orange"
-    //     }
-    //   ],
-    //   "size": "460.3 KB",
-    //   "start_date": "2020-05-07T21:34:44+00:00",
-    //   "userDownloadRights": "partial"
-    // }
-
-    // dataset ===
-    // {
-    //     "counts":{
-    //        "datafiles":2
-    //     },
-    //     "created_time":"2020-05-07T23:00:05+00:00",
-    //     "description":"Some ACL-testing dataset",
-    //     "experiments":[
-    //        {
-    //           "id":4,
-    //           "project":{
-    //              "id":1
-    //           }
-    //        }
-    //     ],
-    //     "id":1,
-    //     "instrument":{
-    //        "id":1,
-    //        "name":"Mikes_ACL_Machine"
-    //     },
-    //     "modified_time":"2020-06-09T02:10:18.426980+00:00",
-    //     "parameters":[
-    //        {
-    //           "data_type":"STRING",
-    //           "pn_id":"4",
-    //           "sensitive":"False",
-    //           "value":"My Name"
-    //        },
-    //        {
-    //           "data_type":"STRING",
-    //           "pn_id":"5",
-    //           "sensitive":"False",
-    //           "value":"is"
-    //        }
-    //     ],
-    //     "size":"460.3 KB",
-    //     "tags":"bricks safe as",
-    //     "userDownloadRights":"partial"
-    //  }
-
-    // datafile =======
-    // {
-    //     "created_time":null,
-    //     "dataset":{
-    //        "experiments":[
-    //           {
-    //              "id":4,
-    //              "project":{
-    //                 "id":1
-    //              }
-    //           }
-    //        ],
-    //        "id":1
-    //     },
-    //     "filename":"Mikes_test_datafile_1",
-    //     "id":1,
-    //     "modification_time":null,
-    //     "parameters":[
-    //        {
-    //           "data_type":"STRING",
-    //           "pn_id":"12",
-    //           "sensitive":"False",
-    //           "value":"My name is"
-    //        }
-    //     ],
-    //     "size":"460.3 KB",
-    //     "userDownloadRights":"full"
-    //  }
