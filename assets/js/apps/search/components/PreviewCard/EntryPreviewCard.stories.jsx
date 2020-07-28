@@ -133,7 +133,6 @@ const dataSet = {
   "userDownloadRights":"partial"
 }
 
-
 const dataFile = {
   "created_time":null,
   "dataset":{
@@ -165,7 +164,6 @@ const dataFile = {
 export const Project = () => (
   <EntryPreviewCard type="project" data={project} />
 );
-
 
 export const Experiment = () => (
   <EntryPreviewCard type="experiment" data={experiment} />

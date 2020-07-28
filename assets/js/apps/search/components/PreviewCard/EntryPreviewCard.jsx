@@ -1,10 +1,20 @@
 //todo:
 // add lock icon based on accessibility
 // add tabsticker based on preview type (project/df/ds)
-
+// add reference to url field.
+// react icons
+// ^ ref resultssection.jsx
+// moment js for date.
+// just size - remove df count
 import { Button, Table } from 'react-bootstrap';
 import React from 'react';
 import './EntryPreviewCard.css'
+import {
+    ProjectTabSticker,
+    ExperimentTabSticker,
+    DatasetTabSticker,
+    DatafileTabSticker
+} from '../TabStickers/TabStickers'
 
 export default function EntryPreviewCard(props) {
     let { data, type } = props;
@@ -31,7 +41,7 @@ export default function EntryPreviewCard(props) {
      * @param {*} type project, dataset or datafile
      */
     const getName = (data, type) => {
-        switch(type) {
+        switch (type) {
             case 'project':
                 return data.name;
             case 'experiment':
@@ -50,7 +60,7 @@ export default function EntryPreviewCard(props) {
      */
     const getDateAdded = (data, type) => {
         let date;
-        switch(type) {
+        switch (type) {
             case 'project':
                 date = data.start_date;
                 break;
@@ -91,7 +101,7 @@ export default function EntryPreviewCard(props) {
      * @param {*} type type of expected json response
      */
     const getCountSizeSummary = (data, type) => {
-        switch(type) {
+        switch (type) {
             case 'datafile':
                 return `${data.size}.`
             default:
@@ -105,7 +115,7 @@ export default function EntryPreviewCard(props) {
      * @param {*} type project/exp/datafile/dataset
      */
     const getDeepCountSummary = (data, type) => {
-        switch(type) {
+        switch (type) {
             case 'project':
                 return `Contains ${data.counts.datafiles} datafiles from ${data.counts.datasets} datasets.`;
             case 'experiment':
@@ -117,9 +127,27 @@ export default function EntryPreviewCard(props) {
         }
     }
 
+    const getTabSticker = (type) => {
+        switch (type) {
+            case 'project':
+                return <ProjectTabSticker></ProjectTabSticker>;
+            case 'experiment':
+                return <ExperimentTabSticker></ExperimentTabSticker>;
+            case 'dataset':
+                return <DatasetTabSticker></DatasetTabSticker>;
+            case 'datafile':
+                return <DatafileTabSticker></DatafileTabSticker>;
+        }
+    }
+
     return (
         <div className="preview-card__body">
-            <h1>{getName(data, type)}</h1>
+            <div className="preview-card__header">
+                {getTabSticker(type)}
+                <h1>
+                    {getName(data, type)}
+                </h1>
+            </div>
             <div className="preview-card__access-status">
                 {`User access: ${determineAccess(data.userDownloadRights)}`}
             </div>

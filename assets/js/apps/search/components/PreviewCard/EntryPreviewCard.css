@@ -25,3 +25,9 @@
 .preview-card__parameter-table {
     margin: 2rem 0rem;
 }
+
+.preview-card__header {
+    display: inline-flex;
+    flex-direction: row;
+    align-items: center;
+}
