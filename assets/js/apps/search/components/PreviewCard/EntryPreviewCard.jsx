@@ -85,7 +85,6 @@ export default function EntryPreviewCard(props) {
         });
     }
 
-
     /**
      * returns the datafile count and size informational text.
      * @param {*} data the json response
@@ -100,6 +99,11 @@ export default function EntryPreviewCard(props) {
         }
     }
 
+    /**
+     * 
+     * @param {*} data project/exp/datafile/dataset json response data
+     * @param {*} type project/exp/datafile/dataset
+     */
     const getDeepCountSummary = (data, type) => {
         switch(type) {
             case 'project':
