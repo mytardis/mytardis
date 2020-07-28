@@ -1,9 +1,12 @@
+//todo:
+// add lock icon based on accessibility
+// add tabsticker based on preview type (project/df/ds)
+
 import { Button, Table } from 'react-bootstrap';
 import React from 'react';
 import './EntryPreviewCard.css'
 
 export default function EntryPreviewCard(props) {
-    // let data = props.data;
     let { data, type } = props;
 
     /**
@@ -21,7 +24,6 @@ export default function EntryPreviewCard(props) {
     const determineAccess = (access) => {
         return access === "partial" ? "Unavailable" : "Available";
     }
-
 
     /**
      * Gets the 'name' for the result type. fields differ depending on type.
@@ -83,12 +85,6 @@ export default function EntryPreviewCard(props) {
         });
     }
 
-    //todo:
-    // add lock icon based on accessibility
-    // add tabsticker based on preview type (project/df/ds)
-    // get actual parameter field name rather than parameter id.start_date
-    // make variant for datafile preview.start_date
-    // make variant for dataset preview.
 
     /**
      * returns the datafile count and size informational text.
@@ -99,10 +95,8 @@ export default function EntryPreviewCard(props) {
         switch(type) {
             case 'datafile':
                 return `${data.size}.`
-                break;
             default:
                 return `${data.counts.datafiles} datafiles, ${data.size}.`
-                break;
         }
     }
 
