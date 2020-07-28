@@ -1,6 +1,5 @@
 //todo:
 // add lock icon based on accessibility
-// add tabsticker based on preview type (project/df/ds)
 // add reference to url field.
 // react icons
 // ^ ref resultssection.jsx
@@ -9,6 +8,7 @@
 import { Button, Table } from 'react-bootstrap';
 import React from 'react';
 import './EntryPreviewCard.css'
+import { FiUnlock, FiLock } from 'react-icons/fi'
 import {
     ProjectTabSticker,
     ExperimentTabSticker,
@@ -140,6 +140,24 @@ export default function EntryPreviewCard(props) {
         }
     }
 
+    const DataTypeAccess = (data) => {
+        if (data.userDownloadRights === "Unavailable") {
+            return (
+                <div className="preview-card__access-status">
+                    <span aria-label="This item cannot be downloaded."><FiLock /></span>
+                    {`${determineAccess(data.userDownloadRights)}`}
+                </div>
+            )
+        } else {
+            return (
+                <div className="preview-card__access-status">
+                    <span aria-label="This item can be downloaded."><FiUnlock /></span>
+                    {`${determineAccess(data.userDownloadRights)}`}
+                </div>
+            )
+        }
+    }
+
     return (
         <div className="preview-card__body">
             <div className="preview-card__header">
@@ -150,9 +168,7 @@ export default function EntryPreviewCard(props) {
                     {getName(data, type)}
                 </h1>
             </div>
-            <div className="preview-card__access-status">
-                {`User access: ${determineAccess(data.userDownloadRights)}`}
-            </div>
+            <DataTypeAccess></DataTypeAccess>
             <div className="preview-card__count-detail">
                 {getCountSizeSummary(data, type)}
             </div>

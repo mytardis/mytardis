@@ -19,7 +19,6 @@
     display: block;
 }
 
-
 /* parameter table stuff below */
 
 .preview-card__parameter-table {
@@ -33,6 +32,17 @@
 }
 
 .preview-card__header > div, h1 {
+    display: flex;
+    align-items: center;
+    margin: 0 0.2em;
+}
+
+.preview-card__access-status {
+    display: flex;
+    align-items: center;
+}
+
+.preview-card__access-status > * {
     display: flex;
     align-items: center;
     margin: 0 0.2em;
