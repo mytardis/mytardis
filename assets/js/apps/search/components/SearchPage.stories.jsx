@@ -1,14 +1,20 @@
 import React from 'react'
 import { PureSearchPage } from './SearchPage'
-import SearchInfoContext from './SearchInfoContext'
 import { experimentListData } from './ResultList.stories'
-import { action } from '@storybook/addon-actions'
+import { Provider } from 'react-redux';
+import { filtersData } from "./filters/filters-section/FiltersSection.stories";
+import makeMockStore from "../util/makeMockStore";
 
 export default {
     component: PureSearchPage,
     title: 'Search page',
     excludeStories: /.*Data$/
 };
+
+// Mock redux store for this story.
+const makeSearchStore = (searchState, filtersState) => (
+    makeMockStore({search: searchState, filters: filtersState})
+)
 
 export const dsResultsData = [
     {
@@ -55,33 +61,32 @@ export const searchInfoData = {
     isLoading: false,
     error:null,
     results: searchResultsData,
-    updateSearch: action("update search requested")
 }
 
 export const errorData = Object.assign({},searchInfoData,{
     error: "An error occurred",
-    results: null,
+    results: null
 });
 
 export const loadingData = Object.assign({},searchInfoData,{
     isLoading: true,
-    results: null,
+    results: null
 });
 
 export const Default = () => (
-    <SearchInfoContext.Provider value={searchInfoData}>
+    <Provider store={makeSearchStore(searchInfoData, filtersData)}>
         <PureSearchPage />
-    </SearchInfoContext.Provider>
+    </Provider>
 );
 
 export const Error = () => (
-    <SearchInfoContext.Provider value={errorData}>
+    <Provider store={makeSearchStore(errorData, filtersData)}>
         <PureSearchPage />
-    </SearchInfoContext.Provider>
+    </Provider>
 );
 
 export const Loading = () => (
-    <SearchInfoContext.Provider value={loadingData}>
+    <Provider store={makeSearchStore(loadingData, filtersData)}>
         <PureSearchPage />
-    </SearchInfoContext.Provider>
+    </Provider>
 );

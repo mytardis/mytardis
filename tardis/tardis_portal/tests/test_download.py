@@ -207,7 +207,8 @@ class DownloadTestCase(TestCase):
     @patch('webpack_loader.loader.WebpackLoader.get_bundle')
     def testView(self, mock_webpack_get_bundle):
         client = Client()
-
+        login = client.login(username="DownloadTestUser", password="secret")
+        self.assertTrue(login)
         # check view of file1
         response = client.get('/datafile/view/%i/' % self.datafile1.id)
 

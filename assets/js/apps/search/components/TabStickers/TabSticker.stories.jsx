@@ -1,10 +1,5 @@
 import React from 'react'
-import TabSticker from './TabSticker';
-import ExperimentTabSticker from './ExperimentTabSticker';
-import ProjectTabSticker from './ProjectTabSticker';
-import DatafileTabSticker from './DatafileTabSticker';
-import DatasetTabSticker from './DatasetTabSticker';
-import { action } from '@storybook/addon-actions';
+import TabSticker, { ExperimentTabSticker, ProjectTabSticker, DatafileTabSticker, DatasetTabSticker } from './TabSticker';
 
 export default {
   component: TabSticker,

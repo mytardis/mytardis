@@ -30,15 +30,13 @@ class ProjectDocument(Document):
         settings = {'number_of_shards': 1,
                     'number_of_replicas': 0}
 
-    id = fields.IntegerField()
+    id = fields.KeywordField()
     name = fields.TextField(
         fields={'raw': fields.KeywordField()},
-        analyzer=analyzer
-    )
+        analyzer=analyzer)
     description = fields.TextField(
         fields={'raw': fields.KeywordField()},
-        analyzer=analyzer
-    )
+        analyzer=analyzer)
     #public_access = fields.IntegerField()
     start_date = fields.DateField()
     end_date = fields.DateField()
@@ -55,17 +53,27 @@ class ProjectDocument(Document):
     objectacls = fields.ObjectField(properties={
         'pluginId': fields.StringField(),
         'entityId': fields.StringField()
-    }
-    )
+    })
     parameters = fields.NestedField(attr='getParametersforIndexing', properties={
-        'pn_id': fields.StringField(),
-        'value': fields.StringField(),
-        'data_type': fields.StringField(),
-        'sensitive': fields.StringField()
+        'string' : fields.NestedField(properties = {
+            'pn_id': fields.KeywordField(),
+            'value': fields.StringField(),
+            'sensitive': fields.BooleanField()
+        }),
+        'numerical' : fields.NestedField(properties = {
+            'pn_id': fields.KeywordField(),
+            'value': fields.FloatField(),
+            'sensitive': fields.BooleanField()
+        }),
+        'datetime' : fields.NestedField(properties = {
+            'pn_id': fields.KeywordField(),
+            'value': fields.DateField(),
+            'sensitive': fields.BooleanField()
+        })
     })
 
     def prepare_parameters(self, instance):
-        return list(instance.getParametersforIndexing())
+        return dict(instance.getParametersforIndexing())
 
     class Django:
         model = Project
@@ -87,15 +95,13 @@ class ExperimentDocument(Document):
         settings = {'number_of_shards': 1,
                     'number_of_replicas': 0}
 
-    id = fields.IntegerField()
+    id = fields.KeywordField()
     title = fields.TextField(
         fields={'raw': fields.KeywordField()},
-        analyzer=analyzer
-    )
+        analyzer=analyzer)
     description = fields.TextField(
         fields={'raw': fields.KeywordField()},
-        analyzer=analyzer
-    )
+        analyzer=analyzer)
     #public_access = fields.IntegerField()
     created_time = fields.DateField()
     start_time = fields.DateField()
@@ -107,26 +113,41 @@ class ExperimentDocument(Document):
             fields={'raw': fields.KeywordField()},
         )
     })
+    project = fields.NestedField(properties={
+        'id': fields.KeywordField()
+    })
     objectacls = fields.ObjectField(properties={
         'pluginId': fields.StringField(),
         'entityId': fields.StringField()
-    }
-    )
+    })
     parameters = fields.NestedField(attr='getParametersforIndexing', properties={
-        'pn_id': fields.StringField(),
-        'value': fields.StringField(),
-        'data_type': fields.StringField(),
-        'sensitive': fields.StringField()
+        'string' : fields.NestedField(properties = {
+            'pn_id': fields.KeywordField(),
+            'value': fields.StringField(),
+            'sensitive': fields.BooleanField()
+        }),
+        'numerical' : fields.NestedField(properties = {
+            'pn_id': fields.KeywordField(),
+            'value': fields.FloatField(),
+            'sensitive': fields.BooleanField()
+        }),
+        'datetime' : fields.NestedField(properties = {
+            'pn_id': fields.KeywordField(),
+            'value': fields.DateField(),
+            'sensitive': fields.BooleanField()
+        })
     })
 
     def prepare_parameters(self, instance):
-        return list(instance.getParametersforIndexing())
+        return dict(instance.getParametersforIndexing())
 
     class Django:
         model = Experiment
-        related_models = [User, ObjectACL]
+        related_models = [Project, User, ObjectACL]
 
     def get_instances_from_related(self, related_instance):
+        if isinstance(related_instance, Project):
+            return related_instance.experiment_set.all()
         if isinstance(related_instance, User):
             return related_instance.experiment_set.all()
         if isinstance(related_instance, ObjectACL):
@@ -142,49 +163,58 @@ class DatasetDocument(Document):
         settings = {'number_of_shards': 1,
                     'number_of_replicas': 0}
 
-    id = fields.IntegerField()
+    id = fields.KeywordField()
     description = fields.TextField(
         fields={'raw': fields.KeywordField()},
-        analyzer=analyzer
-    )
+        analyzer=analyzer)
     experiments = fields.NestedField(properties={
-        'id': fields.IntegerField(),
-        'title': fields.TextField(
-            fields={'raw': fields.KeywordField()}
-        ),
-    }
-    )
+        'id': fields.KeywordField(),
+        'project': fields.NestedField(properties={
+            'id': fields.KeywordField()
+        })
+    })
     objectacls = fields.ObjectField(properties={
             'pluginId': fields.StringField(),
             'entityId': fields.StringField()
-        }
-        )
+        })
     instrument = fields.ObjectField(properties={
-        'id': fields.IntegerField(),
+        'id': fields.KeywordField(),
         'name': fields.TextField(
             fields={'raw': fields.KeywordField()},
-        )
-    }
+        )}
     )
     created_time = fields.DateField()
     modified_time = fields.DateField()
     tags = fields.StringField(attr='tags_for_indexing')
 
     parameters = fields.NestedField(attr='getParametersforIndexing', properties={
-        'pn_id': fields.StringField(),
-        'value': fields.StringField(),
-        'data_type': fields.StringField(),
-        'sensitive': fields.StringField()
+        'string' : fields.NestedField(properties = {
+            'pn_id': fields.KeywordField(),
+            'value': fields.StringField(),
+            'sensitive': fields.BooleanField()
+        }),
+        'numerical' : fields.NestedField(properties = {
+            'pn_id': fields.KeywordField(),
+            'value': fields.FloatField(),
+            'sensitive': fields.BooleanField()
+        }),
+        'datetime' : fields.NestedField(properties = {
+            'pn_id': fields.KeywordField(),
+            'value': fields.DateField(),
+            'sensitive': fields.BooleanField()
+        })
     })
 
     def prepare_parameters(self, instance):
-        return list(instance.getParametersforIndexing())
+        return dict(instance.getParametersforIndexing())
 
     class Django:
         model = Dataset
-        related_models = [Experiment, Instrument, ObjectACL]
+        related_models = [Project, Experiment, Instrument, ObjectACL]
 
     def get_instances_from_related(self, related_instance):
+        if isinstance(related_instance, Project):
+            return Dataset.objects.filter(experiments__project=related_instance)
         if isinstance(related_instance, Experiment):
             return related_instance.datasets.all()
         if isinstance(related_instance, Instrument):
@@ -201,41 +231,50 @@ class DataFileDocument(Document):
         name = 'datafile'
         settings = {'number_of_shards': 1,
                     'number_of_replicas': 0}
-    id = fields.IntegerField()
+    id = fields.KeywordField()
     filename = fields.TextField(
         fields={'raw': fields.KeywordField()},
-        analyzer=analyzer
-    )
+        analyzer=analyzer)
     created_time = fields.DateField()
     modification_time = fields.DateField()
     dataset = fields.NestedField(properties={
-        'id': fields.IntegerField(),
+        'id': fields.KeywordField(),
         'experiments': fields.NestedField(properties={
-            'id': fields.IntegerField(),
-        }
-        ),
-    }
-    )
+            'id': fields.KeywordField(),
+            'project':fields.NestedField(properties={
+                'id': fields.KeywordField()
+            }),
+        }),
+    })
     objectacls = fields.ObjectField(properties={
             'pluginId': fields.StringField(),
             'entityId': fields.StringField()
-        }
-        )
-
+        })
 
     parameters = fields.NestedField(attr='getParametersforIndexing', properties={
-        'pn_id': fields.StringField(),
-        'value': fields.StringField(),
-        'data_type': fields.StringField(),
-        'sensitive': fields.StringField()
+        'string' : fields.NestedField(properties = {
+            'pn_id': fields.KeywordField(),
+            'value': fields.StringField(),
+            'sensitive': fields.BooleanField()
+        }),
+        'numerical' : fields.NestedField(properties = {
+            'pn_id': fields.KeywordField(),
+            'value': fields.FloatField(),
+            'sensitive': fields.BooleanField()
+        }),
+        'datetime' : fields.NestedField(properties = {
+            'pn_id': fields.KeywordField(),
+            'value': fields.DateField(),
+            'sensitive': fields.BooleanField()
+        })
     })
 
     def prepare_parameters(self, instance):
-        return list(instance.getParametersforIndexing())
+        return dict(instance.getParametersforIndexing())
 
     class Django:
         model = DataFile
-        related_models = [Dataset, Experiment, ObjectACL]
+        related_models = [Dataset, Experiment, Project, ObjectACL]
         queryset_pagination = 100000
 
     def get_instances_from_related(self, related_instance):
@@ -243,6 +282,8 @@ class DataFileDocument(Document):
             return related_instance.datafile_set.all()
         if isinstance(related_instance, Experiment):
             return DataFile.objects.filter(dataset__experiments=related_instance)
+        if isinstance(related_instance, Project):
+            return DataFile.objects.filter(dataset__experiments__project=related_instance)
         if isinstance(related_instance, ObjectACL):
             if related_instance.content_type == 'datafile':
                 return related_instance.content_object
