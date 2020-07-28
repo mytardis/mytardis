@@ -1,8 +1,6 @@
 //todo:
-// add reference to url field.
-// ^ ref resultssection.jsx
+// add reference to url field. - done
 // moment js for date.
-// just size - remove df count
 import { Button, Table } from 'react-bootstrap';
 import React from 'react';
 import './EntryPreviewCard.css'
@@ -187,7 +185,7 @@ export default function EntryPreviewCard(props) {
             </div>
             <DeepCountSummary data={data} type={type}></DeepCountSummary>
             <div className="preview-card__date-added">
-                Added on: {getDateAdded(data, type)}
+                Added on {getDateAdded(data, type)}
             </div>
             <Table striped bordered hover size="sm" className="preview-card__parameter-table">
                 <thead>
