@@ -194,7 +194,7 @@ PureResultList.propTypes = {
 export function ResultList(props) {
     const [selected, onSelect] = useState(null)
     return (
-        <div className="result-container">
+        <div className="result-section__container">
             <PureResultList
                 selectedItem={selected}
                 onItemSelect={onSelect}
