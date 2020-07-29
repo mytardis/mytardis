@@ -6,7 +6,8 @@ import Tooltip from 'react-bootstrap/Tooltip';
 import OverlayTrigger from "react-bootstrap/OverlayTrigger";
 import Nav from 'react-bootstrap/Nav';
 import Badge from 'react-bootstrap/Badge';
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
+import { updateSelectedResult, updateSelectedType } from "./searchSlice";
 import './ResultSection.css';
 import EntryPreviewCard from './PreviewCard/EntryPreviewCard';
 
@@ -192,71 +193,17 @@ PureResultList.propTypes = {
 }
 
 export function ResultList(props) {
-    const [selected, onSelect] = useState(null)
     return (
         <div className="result-section__container">
             <PureResultList
-                selectedItem={selected}
-                onItemSelect={onSelect}
                 {...props}
             />
-            <EntryPreviewCard
-                type="project"
-                data={{
-                    "counts": {
-                        "datafiles": 2,
-                        "datasets": 1,
-                        "experiments": 1
-                    },
-                    "description": "If you can see this and are not called Mike(or Noel) then the permissions have gone wrong",
-                    "end_date": null,
-                    "id": 1,
-                    "institution": [
-                        {
-                            "name": "Mikes ACL Institution"
-                        }
-                    ],
-                    "lead_researcher": {
-                        "username": "mlav736"
-                    },
-                    "name": "Mikes_ACL_Project",
-                    "parameters": [
-                        {
-                            "data_type": "STRING",
-                            "pn_id": "18",
-                            "sensitive": "False",
-                            "value": ""
-                        },
-                        {
-                            "data_type": "NUMERIC",
-                            "pn_id": "19",
-                            "sensitive": "False",
-                            "value": "7.0"
-                        },
-                        {
-                            "data_type": "STRING",
-                            "pn_id": "15",
-                            "sensitive": "False",
-                            "value": "Kiwi"
-                        },
-                        {
-                            "data_type": "STRING",
-                            "pn_id": "16",
-                            "sensitive": "False",
-                            "value": "Orange"
-                        }
-                    ],
-                    "size": "460.3 KB",
-                    "start_date": "2020-05-07T21:34:44+00:00",
-                    "userDownloadRights": "partial"
-                }}
-            ></EntryPreviewCard>
         </div >
     )
 }
 
-export function PureResultSection({ resultSets, selected,
-    onSelect, isLoading, error }) {
+export function PureResultSection({ resultSets, selectedType,
+    onSelectType, selectedResult, onSelectResult, isLoading, error }) {
     let counts;
     if (!resultSets) {
         resultSets = {};
@@ -273,25 +220,47 @@ export function PureResultSection({ resultSets, selected,
         }
     }
 
-    const currentResultSet = resultSets[selected],
-        currentCount = counts[selected];
+    const selectedEntry = useSelector((state) => {
+        if (state.search.results === null) {
+            return {};
+        }
+        const selectedType = state.search.selectedType,
+            selectedResult = state.search.selectedResult;
+        
+        return state.search.results[selectedType].filter(result => result.id === selectedResult)[0];
+    })
+
+    const currentResultSet = resultSets[selectedType],
+        currentCount = counts[selectedType];
     return (
         <>
-            <ResultTabs counts={counts} selectedType={selected} onChange={onSelect} />
+            <ResultTabs counts={counts} selectedType={selectedType} onChange={onSelectType} />
             <div role="tabpanel" className="result-section--tabpanel">
                 {(!isLoading && !error) &&
                     <p className="result-section--count-summary">
                         <span>Showing {currentCount} {currentCount > 1 ? "results" : "result"}.</span>
                     </p>
                 }
-                <ResultList results={currentResultSet} isLoading={isLoading} error={error} />
+                <ResultList results={currentResultSet} selectedItem={selectedResult} onItemSelect={onSelectResult} isLoading={isLoading} error={error} />
+                <EntryPreviewCard
+                    type={selectedEntry.type}
+                    data={selectedEntry} 
+                />
             </div>
         </>
     )
 }
 
 export default function ResultSection() {
-    const [selectedType, onSelect] = useState('experiment'),
+    const selectedType = useSelector(state => state.search.selectedType),
+        selectedResult = useSelector(state => state.search.selectedResult),
+        dispatch = useDispatch(),
+        onSelectType = (type) => {
+            dispatch(updateSelectedType(type));
+        },
+        onSelectResult = (selectedResult) => {
+            dispatch(updateSelectedResult(selectedResult));
+        },
         searchInfo = useSelector(
             (state) => state.search
         );
@@ -300,8 +269,10 @@ export default function ResultSection() {
             resultSets={searchInfo.results}
             error={searchInfo.error}
             isLoading={searchInfo.isLoading}
-            selected={selectedType}
-            onSelect={onSelect}
+            selectedType={selectedType}
+            onSelectType={onSelectType}
+            selectedResult={selectedResult}
+            onSelectResult={onSelectResult}
         />
     )
 }
