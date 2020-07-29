@@ -79,13 +79,6 @@ const findFilter = (filterList, fieldToFind) => {
     ));
 }
 
-const setFilterValue = (state, target, value) => {
-    const [schemaId, paramId] = target;
-    state.schemas.byId[schemaId]
-        .parameters[paramId]
-        .value = value;
-}
-
 const filters = createSlice({
     name: 'filters',
     initialState,
@@ -108,42 +101,50 @@ const filters = createSlice({
         updateFilter: (state, { payload }) => {
             console.log(payload);
             const { field, value } = payload;
+            let selector;
             switch (field.kind) {
                 case "typeAttribute":
+                    selector = typeAttributeSelector(field.target, true);
+                    selector(state).value = value;
                     break;
                 case "schemaParameter":
-                    setFilterValue(state, field.target, value);
-                    const activeIndex = findFilter(
-                        state.activeFilters, field
-                    );
-                    if (activeIndex === -1) {
-                        state.activeFilters.push(field);
-                    }
+                    selector = schemaParameterSelector(field.target, true);
+                    selector(state).value = value;
                     break;
                 default:
                     break;
+            }
+            const activeIndex = findFilter(
+                state.activeFilters, field
+            );
+            if (activeIndex === -1) {
+                state.activeFilters.push(field);
             }
         },
         removeFilter: (state, { payload }) => {
             console.log(payload);
             const { field, value } = payload;
+            let selector;
             switch (field.kind) {
                 case "typeAttribute":
+                    selector = typeAttributeSelector(field.target, true)
+                    selector(state).value = null;
                     break;
                 case "schemaParameter":
-                    setFilterValue(state, field.target, null);
-                    const activeIndex = findFilter(
-                        state.activeFilters, field
-                    );
-                    if (activeIndex === -1) {
-                        return;
-                    } else {
-                        // Remove from active filters list
-                        state.activeFilters.splice(activeIndex, 1);
-                    }
+                    selector = schemaParameterSelector(field.target, true)
+                    selector(state).value = null;
                     break;
                 default:
                     break;
+            }
+            const activeIndex = findFilter(
+                state.activeFilters, field
+            );
+            if (activeIndex === -1) {
+                return;
+            } else {
+                // Remove from active filters list
+                state.activeFilters.splice(activeIndex, 1);
             }
         }
     }
@@ -164,6 +165,33 @@ const fetchFilterList = () => {
         return response.json();
     }).then(responseJSON => (responseJSON.objects[0].schemas));
 };
+
+
+// Selectors for different kinds of filter targets.
+export const typeAttributeSelector = (target,isFromFiltersSliceRoot) => {
+    const [typeId, attributeId] = target;
+    return (state) => {
+        const root = isFromFiltersSliceRoot ? state : state.filters;
+        return root.types
+            .byId[typeId]
+            .attributes[attributeId];
+    }
+};
+
+export const schemaParameterSelector = (target,isFromFiltersSliceRoot) => {
+    const [schemaId, paramId] = target;
+    return (state) => {
+        const root = isFromFiltersSliceRoot ? state : state.filters;
+        return root.schemas
+            .byId[schemaId]
+            .parameters[paramId];
+    }
+};
+
+export const SELECTORS_BY_KIND = {
+    schemaParameter: schemaParameterSelector,
+    typeAttribute: typeAttributeSelector
+}
 
 export const {
     getFiltersStart,

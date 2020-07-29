@@ -1,12 +1,12 @@
 import React from 'react'
-import { PureSearchPage } from './SearchPage'
+import { SearchPage } from './SearchPage'
 import { experimentListData } from './ResultList.stories'
 import { Provider } from 'react-redux';
 import { filtersData } from "./filters/filters-section/FiltersSection.stories";
 import makeMockStore from "../util/makeMockStore";
 
 export default {
-    component: PureSearchPage,
+    component: SearchPage,
     title: 'Search page',
     excludeStories: /.*Data$/
 };

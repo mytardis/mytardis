@@ -1,14 +1,11 @@
 import React, { useMemo } from 'react';
-import { useDispatch } from 'react-redux'
 import PropTypes from "prop-types";
 import Accordion from 'react-bootstrap/Accordion';
-import Form from 'react-bootstrap/Form';
 import Card from 'react-bootstrap/Card';
 import TextFilter from "../text-filter/TextFilter";
 import NumberRangeFilter from '../range-filter/NumberRangeFilter';
 import DateRangeFilter from '../date-filter/DateRangeFilter';
-import { updateFilter, removeFilter } from '../../filterSlice';
-import { runSearch } from "../../searchSlice";
+import useSetFilterState from "../useSetFilterValue";
 import CategoryFilter from '../category-filter/CategoryFilter';
 import './TypeSchemaList.css';
 
@@ -33,7 +30,7 @@ const mapTypeToFilter = (type) => {
     }
 }
 
-const PureSchemaFilterList = ({value: schema, onValueChange}) => {
+const SchemaFilterList = ({ schema }) => {
     const { id: schemaId, type: schemaType, parameters } = schema,
             paramsAsList = useAsList(parameters);
 
@@ -41,19 +38,19 @@ const PureSchemaFilterList = ({value: schema, onValueChange}) => {
         {paramsAsList.map(
                 param => {
                     const { value, data_type: parameterType, full_name, id: parameterId } = param,
-                        ApplicableFilter = mapTypeToFilter(param.data_type);
+                            setParamValue = useSetFilterState({
+                                kind: "schemaParameter",
+                                target: [schemaId, parameterId],
+                                type: parameterType
+                            }),
+                            ApplicableFilter = mapTypeToFilter(param.data_type);
+                    console.log("Value ",value);
                     return (
                             <div key={parameterId} className="single-schema-list__filter">
                                 <h5 className="single-schema-list__filter-label">{full_name}</h5>
                                 <ApplicableFilter 
-                                    value={value} 
-                                    onValueChange={
-                                        onValueChange.bind(
-                                            this, 
-                                            parameterType, 
-                                            schemaId, 
-                                            parameterId)
-                                    } />
+                                    value={value}
+                                    onValueChange={setParamValue} />
                                 <hr />
                             </div>
                     );
@@ -63,31 +60,8 @@ const PureSchemaFilterList = ({value: schema, onValueChange}) => {
     
 }
 
-PureSchemaFilterList.propTypes = {
-    value: PropTypes.object.isRequired,
-    onValueChange: PropTypes.func.isRequired
-}   
-
-const SchemaFilterList = (props) => {
-    const dispatch = useDispatch();
-    const handleValueChange = (parameterType, schemaId, parameterId, filterValues) => {
-        const changedValues = {
-            field: {
-                kind: "schemaParameter",
-                target: [schemaId, parameterId],
-                type: parameterType
-            },
-            value:filterValues
-        }
-        if (filterValues === null){
-            dispatch(removeFilter(changedValues));
-        } else {
-            dispatch(updateFilter(changedValues));
-        }
-        dispatch(runSearch());
-    };
-    return <PureSchemaFilterList {...props} onValueChange={handleValueChange} />
-
+SchemaFilterList.propTypes = {
+    schema: PropTypes.object.isRequired 
 }
 
 const TypeSchemaList = ({ value: schemaValue, options, onValueChange }) => {
@@ -112,7 +86,6 @@ const TypeSchemaList = ({ value: schemaValue, options, onValueChange }) => {
             },{})
         }
     ),[schemasAsList, schemas]);
-
 
     return (
         <div>
@@ -141,7 +114,7 @@ const TypeSchemaList = ({ value: schemaValue, options, onValueChange }) => {
                             </Accordion.Toggle>
                             <Accordion.Collapse eventKey={id}>
                                 <Card.Body>
-                                    <SchemaFilterList value={schema} />
+                                    <SchemaFilterList schema={schema} />
                                 </Card.Body>
                             </Accordion.Collapse>
                         </Card>
