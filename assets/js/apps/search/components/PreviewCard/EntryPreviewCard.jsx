@@ -2,15 +2,15 @@
 import { Button, Table } from 'react-bootstrap';
 import React from 'react';
 import './EntryPreviewCard.css'
-import { FiUnlock, FiLock } from 'react-icons/fi'
+import { FiUnlock, FiLock, FiX } from 'react-icons/fi';
 import {
     ProjectTabSticker,
     ExperimentTabSticker,
     DatasetTabSticker,
     DatafileTabSticker
-} from '../TabStickers/TabSticker'
+} from '../TabStickers/TabSticker';
 
-export default function EntryPreviewCard(props) {
+export const EntryPreviewCard = (props) => {
     let { data, type } = props;
 
     /**
@@ -141,7 +141,7 @@ export default function EntryPreviewCard(props) {
      * @param {*} type project/exp/datafile/dataset
      */
     const DeepCountSummary = (props) => {
-        let{data, type} = props;
+        let { data, type } = props;
         let summary;
         switch (type) {
             case 'project':
@@ -159,9 +159,9 @@ export default function EntryPreviewCard(props) {
         }
         if (summary) {
             return (
-            <div className="preview-card__count-detail">
-                {summary}
-            </div>
+                <div className="preview-card__count-detail">
+                    {summary}
+                </div>
             )
         }
         return null;
@@ -169,13 +169,18 @@ export default function EntryPreviewCard(props) {
 
     return (
         <div className="preview-card__body">
+            <span className="preview-card__close" aria-label="Close preview panel">
+                <button onClick={props.onClick}>
+                    <FiX />
+                </button>
+            </span>
             <div className="preview-card__header">
                 <div >
                     {getTabSticker(type)}
                 </div>
-                <h1>
+                <h3>
                     {getName(data, type)}
-                </h1>
+                </h3>
             </div>
             <DataTypeAccess data={data}></DataTypeAccess>
             <div className="preview-card__count-detail">
@@ -198,7 +203,7 @@ export default function EntryPreviewCard(props) {
             </Table>
             <div className="preview-card__button-wrapper--right">
                 <div className="preview-card__inline-block-wrapper">
-                    <Button className="preview-card__button--right" href={data.url} variant="link">View details</Button>
+                    <Button variant="primary" className="preview-card__button--right" href={data.url}>View details</Button>
                 </div>
             </div>
         </div>
