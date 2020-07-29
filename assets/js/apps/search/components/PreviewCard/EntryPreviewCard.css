@@ -1,3 +1,19 @@
+.preview-card__close {
+    position: absolute;
+    right: 5%;
+    top: 5%;
+}
+
+.preview-card__close button {
+    background: none;
+	color: inherit;
+	border: none;
+	padding: 0;
+	font: inherit;
+	cursor: pointer;
+	outline: inherit;
+}
+
 .preview-card__body {
     background-color: #fafafa;
     padding: 1.5rem;
@@ -35,7 +51,7 @@
     align-items: center;
 }
 
-.preview-card__header > div, h1 {
+.preview-card__header > * {
     display: flex;
     align-items: center;
     margin: 0 0.2em;
