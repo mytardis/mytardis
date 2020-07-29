@@ -176,3 +176,7 @@ export const DataSet = () => (
 export const DataFile = () => (
   <EntryPreviewCard type="datafile" data={dataFile} />
 );
+
+export const NoPreviewData = () => (
+  <EntryPreviewCard type="datafile" data={null} />
+);

@@ -12,8 +12,8 @@ import {
     DatafileTabSticker
 } from '../TabStickers/TabSticker';
 
-export default function EntryPreviewCard (props) {
-    let { data, type } = props;
+export default function EntryPreviewCard(props) {
+    let { data, type, onClick } = props;
 
     /**
      * Simply cuts of the time portion of the date
@@ -169,10 +169,40 @@ export default function EntryPreviewCard (props) {
         return null;
     }
 
+    const ParameterTable = (props) => {
+        let { parameters } = props;
+        if (parameters.length > 0) {
+            return (
+                <Table striped bordered hover size="sm" className="preview-card__parameter-table">
+                <thead>
+                    <tr>
+                        <th>Parameter</th>
+                        <th>Value</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {previewParameterTable(data.parameters)}
+                </tbody>
+            </Table>
+            )
+        } else {
+            return null;
+        }
+    }
+
+    console.log('dataaa', data);
+    if (data === null) {
+        return (
+            <div className="preview-card__body">
+                Please select a row to view the details.
+            </div>
+        )
+    }
+
     return (
         <div className="preview-card__body">
             <span className="preview-card__close" aria-label="Close preview panel">
-                <button onClick={props.onClick}>
+                <button onClick={onClick}>
                     <FiX />
                 </button>
             </span>
@@ -192,17 +222,7 @@ export default function EntryPreviewCard (props) {
             <div className="preview-card__date-added">
                 Added on {getDateAdded(data, type)}
             </div>
-            <Table striped bordered hover size="sm" className="preview-card__parameter-table">
-                <thead>
-                    <tr>
-                        <th>Parameter</th>
-                        <th>Value</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {previewParameterTable(data.parameters)}
-                </tbody>
-            </Table>
+            <ParameterTable parameters={data.parameters} />
             <div className="preview-card__button-wrapper--right">
                 <div className="preview-card__inline-block-wrapper">
                     <Button variant="primary" className="preview-card__button--right" href={data.url}>View details</Button>
@@ -227,6 +247,3 @@ export default function EntryPreviewCard (props) {
 
 // in resultsection.jsx
 // redux useSelector(fn which takes state obj.)
-
-
-

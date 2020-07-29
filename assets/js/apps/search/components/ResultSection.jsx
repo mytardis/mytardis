@@ -220,15 +220,14 @@ export function PureResultSection({ resultSets, selectedType,
         }
     }
 
-    const selectedEntry = useSelector((state) => {
-        if (state.search.results === null) {
-            return {};
-        }
-        const selectedType = state.search.selectedType,
-            selectedResult = state.search.selectedResult;
-        
-        return state.search.results[selectedType].filter(result => result.id === selectedResult)[0];
-    })
+    // const selectedEntry = useSelector((state) => {
+    // if (state.search.results === null) {
+    //     return {};
+    // }
+    // const selectedType = state.search.selectedType,
+    //     selectedResult = state.search.selectedResult;
+    // return state.search.results[selectedType].filter(result => result.id === selectedResult)[0];
+    // });
 
     const currentResultSet = resultSets[selectedType],
         currentCount = counts[selectedType];
@@ -242,10 +241,10 @@ export function PureResultSection({ resultSets, selectedType,
                     </p>
                 }
                 <ResultList results={currentResultSet} selectedItem={selectedResult} onItemSelect={onSelectResult} isLoading={isLoading} error={error} />
-                <EntryPreviewCard
+                {/* <EntryPreviewCard
                     type={selectedEntry.type}
-                    data={selectedEntry} 
-                />
+                    data={selectedEntry}
+                /> */}
             </div>
         </>
     )
