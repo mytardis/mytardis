@@ -190,7 +190,6 @@ export default function EntryPreviewCard(props) {
         }
     }
 
-    console.log('dataaa', data);
     if (data === null) {
         return (
             <div className="preview-card__body">
