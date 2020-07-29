@@ -1,5 +1,3 @@
-//todo:
-// add reference to url field. - done
 // moment js for date.
 import { Button, Table } from 'react-bootstrap';
 import React from 'react';
