@@ -15,7 +15,8 @@ const TextFilter = ({value,options,onValueChange}) => {
     if (!options.hint) {
         options.hint = "";
     }
-    const [localValue, setLocalValue] = useState(value);
+    const initialState = value ? value.content : null;
+    const [localValue, setLocalValue] = useState( initialState );
     const handleValueChange = (e) => {
         setLocalValue(e.target.value);
     };

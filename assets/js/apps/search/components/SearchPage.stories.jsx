@@ -75,18 +75,18 @@ export const loadingData = Object.assign({},searchInfoData,{
 
 export const Default = () => (
     <Provider store={makeSearchStore(searchInfoData, filtersData)}>
-        <PureSearchPage />
+        <SearchPage />
     </Provider>
 );
 
 export const Error = () => (
     <Provider store={makeSearchStore(errorData, filtersData)}>
-        <PureSearchPage />
+        <SearchPage />
     </Provider>
 );
 
 export const Loading = () => (
     <Provider store={makeSearchStore(loadingData, filtersData)}>
-        <PureSearchPage />
+        <SearchPage />
     </Provider>
 );

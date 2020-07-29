@@ -10,7 +10,7 @@ export default {
 };
 
 export const textFilterData = {
-    value: "text",
+    value: {op: "contains", content:"text"},
     onValueChange: action("Value changed"),
     options: {
         name: "Name",
@@ -19,7 +19,7 @@ export const textFilterData = {
 }
 
 export const emptyTextFilterData = Object.assign({},textFilterData, {
-    value: ""
+    value: null
 });
 
 export const Default = () => (

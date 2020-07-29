@@ -44,7 +44,6 @@ const SchemaFilterList = ({ schema }) => {
                                 type: parameterType
                             }),
                             ApplicableFilter = mapTypeToFilter(param.data_type);
-                    console.log("Value ",value);
                     return (
                             <div key={parameterId} className="single-schema-list__filter">
                                 <h5 className="single-schema-list__filter-label">{full_name}</h5>
