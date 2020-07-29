@@ -1,5 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit';
 import Cookies from 'js-cookie';
+import { typeAttributeSelector, schemaParameterSelector } from "./filterSlice";
 
 const getResultFromHit = (hit,hitType,urlPrefix) => {
     const source = hit._source;
@@ -99,25 +100,25 @@ const fetchSearchResults = (searchTerm,filters) => {
 const buildFilterQuery = (filters) => {
     const allFilters = filters.activeFilters.map(filterFieldInfo => {
         const { kind, target } = filterFieldInfo;
+        let selector, filterValue;
         switch (kind) {
             case "typeAttribute":
-                //TODO Implement type attribute
-                return [];
+                selector = typeAttributeSelector(target,true);
+                filterValue = selector(filters).value;
+                break;                
             case "schemaParameter":
-                const [schemaId, paramId] = target;
-                let filterValue = filters.schemas
-                    .byId[schemaId]
-                    .parameters[paramId]
-                    .value;
-                if (!Array.isArray(filterValue)) {
-                    filterValue = [filterValue];
-                }
-                return filterValue.map(value => (
-                    Object.assign({},filterFieldInfo,value)
-                ));
+                selector = schemaParameterSelector(target,true);
+                filterValue = selector(filters).value;
+                break;
             default:
-                return [];
+                break;
         }
+        if (!Array.isArray(filterValue)) {
+            filterValue = [filterValue];
+        }
+        return filterValue.map(value => (
+            Object.assign({},filterFieldInfo,value)
+        ));
     // "Flatten" the array so filters with multiple values are in same array.
     }).reduce((acc, val) => acc.concat(val), []);
     if (allFilters.length === 0) {
