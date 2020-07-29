@@ -24,3 +24,16 @@
 .result-section--count-summary {
     padding: 1em 0; 
 }
+
+.result-section__container {
+    display: flex;
+    flex-direction: row;
+}
+
+.result-section__preview-card {
+    display: flex;
+}
+
+.result-section__result-list {
+    display: flex;
+}

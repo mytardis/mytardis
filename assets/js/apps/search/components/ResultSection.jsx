@@ -8,8 +8,7 @@ import Nav from 'react-bootstrap/Nav';
 import Badge from 'react-bootstrap/Badge';
 import { useSelector } from "react-redux";
 import './ResultSection.css';
-
-import { EntryPreviewCard } from './PreviewCard/EntryPreviewCard';
+import EntryPreviewCard from './PreviewCard/EntryPreviewCard';
 
 export function ResultTabs({ counts, selectedType, onChange }) {
 
@@ -195,7 +194,7 @@ PureResultList.propTypes = {
 export function ResultList(props) {
     const [selected, onSelect] = useState(null)
     return (
-        <div>
+        <div className="result-container">
             <PureResultList
                 selectedItem={selected}
                 onItemSelect={onSelect}
