@@ -12,7 +12,7 @@ import {
     DatafileTabSticker
 } from '../TabStickers/TabSticker';
 
-export default function EntryPreviewCard(props) {
+export const EntryPreviewCard = (props) => {
     let { data, type } = props;
 
     /**

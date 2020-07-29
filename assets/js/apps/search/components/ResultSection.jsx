@@ -9,7 +9,9 @@ import Badge from 'react-bootstrap/Badge';
 import { useSelector } from "react-redux";
 import './ResultSection.css';
 
-export function ResultTabs({counts, selectedType, onChange}) {
+import { EntryPreviewCard } from './PreviewCard/EntryPreviewCard';
+
+export function ResultTabs({ counts, selectedType, onChange }) {
 
     if (!counts) {
         counts = {
@@ -193,11 +195,64 @@ PureResultList.propTypes = {
 export function ResultList(props) {
     const [selected, onSelect] = useState(null)
     return (
-        <PureResultList
-            selectedItem={selected}
-            onItemSelect={onSelect}
-            {...props}
-        />
+        <div>
+            <PureResultList
+                selectedItem={selected}
+                onItemSelect={onSelect}
+                {...props}
+            />
+            <EntryPreviewCard
+                type="project"
+                data={{
+                    "counts": {
+                        "datafiles": 2,
+                        "datasets": 1,
+                        "experiments": 1
+                    },
+                    "description": "If you can see this and are not called Mike(or Noel) then the permissions have gone wrong",
+                    "end_date": null,
+                    "id": 1,
+                    "institution": [
+                        {
+                            "name": "Mikes ACL Institution"
+                        }
+                    ],
+                    "lead_researcher": {
+                        "username": "mlav736"
+                    },
+                    "name": "Mikes_ACL_Project",
+                    "parameters": [
+                        {
+                            "data_type": "STRING",
+                            "pn_id": "18",
+                            "sensitive": "False",
+                            "value": ""
+                        },
+                        {
+                            "data_type": "NUMERIC",
+                            "pn_id": "19",
+                            "sensitive": "False",
+                            "value": "7.0"
+                        },
+                        {
+                            "data_type": "STRING",
+                            "pn_id": "15",
+                            "sensitive": "False",
+                            "value": "Kiwi"
+                        },
+                        {
+                            "data_type": "STRING",
+                            "pn_id": "16",
+                            "sensitive": "False",
+                            "value": "Orange"
+                        }
+                    ],
+                    "size": "460.3 KB",
+                    "start_date": "2020-05-07T21:34:44+00:00",
+                    "userDownloadRights": "partial"
+                }}
+            ></EntryPreviewCard>
+        </div >
     )
 }
 
@@ -237,7 +292,7 @@ export function PureResultSection({ resultSets, selected,
 }
 
 export default function ResultSection() {
-    const [selectedType, onSelect ] = useState('experiment'),
+    const [selectedType, onSelect] = useState('experiment'),
         searchInfo = useSelector(
             (state) => state.search
         );
