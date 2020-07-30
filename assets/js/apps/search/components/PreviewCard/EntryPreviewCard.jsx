@@ -121,17 +121,17 @@ export default function EntryPreviewCard(props) {
 
     const DataTypeAccess = (props) => {
         let { data } = props;
-        if (data.userDownloadRights === "Unavailable") {
+        if (data.userDownloadRights === "full") {
             return (
                 <div className="preview-card__access-status">
-                    <span aria-label="This item cannot be downloaded."><FiLock /></span>
+                    <span aria-label="This item can be downloaded."><FiUnlock /></span>
                     {`${determineAccess(data.userDownloadRights)}`}
                 </div>
             )
         } else {
             return (
                 <div className="preview-card__access-status">
-                    <span aria-label="This item can be downloaded."><FiUnlock /></span>
+                    <span aria-label="This item cannot be downloaded."><FiLock /></span>
                     {`${determineAccess(data.userDownloadRights)}`}
                 </div>
             )

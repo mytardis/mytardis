@@ -9,7 +9,6 @@ export default {
     // padding: '3rem',
     border: '2px solid black'
   }}>{story()}</div>],
-  // excludeStories: /.*Data$/,
 };
 
 const project = {
