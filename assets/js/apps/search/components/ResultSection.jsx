@@ -220,60 +220,55 @@ export function PureResultSection({ resultSets, selectedType,
         }
     }
 
-    const selectedEntry = useSelector((state) => {
-        const selectedType = state.search.selectedType,
-            selectedResult = state.search.selectedResult;
-
-        if (state.search.results === null || !selectedResult) {
-            return null;
+        let selectedEntry = null;
+        if (resultSets && selectedResult) {
+            selectedEntry = resultSets[selectedType].filter(result => result.id === selectedResult)[0];
         }
-        return state.search.results[selectedType].filter(result => result.id === selectedResult)[0];
-    });
 
-    const currentResultSet = resultSets[selectedType],
-        currentCount = counts[selectedType];
-    return (
-        <>
-            <ResultTabs counts={counts} selectedType={selectedType} onChange={onSelectType} />
-            <div role="tabpanel" className="result-section--tabpanel">
-                {(!isLoading && !error) &&
-                    <p className="result-section--count-summary">
-                        <span>Showing {currentCount} {currentCount > 1 ? "results" : "result"}.</span>
-                    </p>
-                }
-                <div className="tabpanel__container--horizontal">
-                    <ResultList results={currentResultSet} selectedItem={selectedResult} onItemSelect={onSelectResult} isLoading={isLoading} error={error} />
-                    <EntryPreviewCard
-                        data={selectedEntry}
-                    />
+        const currentResultSet = resultSets[selectedType],
+            currentCount = counts[selectedType];
+        return (
+            <>
+                <ResultTabs counts={counts} selectedType={selectedType} onChange={onSelectType} />
+                <div role="tabpanel" className="result-section--tabpanel">
+                    {(!isLoading && !error) &&
+                        <p className="result-section--count-summary">
+                            <span>Showing {currentCount} {currentCount > 1 ? "results" : "result"}.</span>
+                        </p>
+                    }
+                    <div className="tabpanel__container--horizontal">
+                        <ResultList results={currentResultSet} selectedItem={selectedResult} onItemSelect={onSelectResult} isLoading={isLoading} error={error} />
+                        <EntryPreviewCard
+                            data={selectedEntry}
+                        />
+                    </div>
                 </div>
-            </div>
-        </>
-    )
-}
+            </>
+        )
+    }
 
-export default function ResultSection() {
-    const selectedType = useSelector(state => state.search.selectedType),
-        selectedResult = useSelector(state => state.search.selectedResult),
-        dispatch = useDispatch(),
-        onSelectType = (type) => {
-            dispatch(updateSelectedType(type));
-        },
-        onSelectResult = (selectedResult) => {
-            dispatch(updateSelectedResult(selectedResult));
-        },
-        searchInfo = useSelector(
-            (state) => state.search
-        );
-    return (
-        <PureResultSection
-            resultSets={searchInfo.results}
-            error={searchInfo.error}
-            isLoading={searchInfo.isLoading}
-            selectedType={selectedType}
-            onSelectType={onSelectType}
-            selectedResult={selectedResult}
-            onSelectResult={onSelectResult}
-        />
-    )
-}
+    export default function ResultSection() {
+        const selectedType = useSelector(state => state.search.selectedType),
+            selectedResult = useSelector(state => state.search.selectedResult),
+            dispatch = useDispatch(),
+            onSelectType = (type) => {
+                dispatch(updateSelectedType(type));
+            },
+            onSelectResult = (selectedResult) => {
+                dispatch(updateSelectedResult(selectedResult));
+            },
+            searchInfo = useSelector(
+                (state) => state.search
+            );
+        return (
+            <PureResultSection
+                resultSets={searchInfo.results}
+                error={searchInfo.error}
+                isLoading={searchInfo.isLoading}
+                selectedType={selectedType}
+                onSelectType={onSelectType}
+                selectedResult={selectedResult}
+                onSelectResult={onSelectResult}
+            />
+        )
+    }
