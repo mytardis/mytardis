@@ -24,6 +24,9 @@
     border-color: #A6A3A3;
     /* border-radius: 3px; */
     width: 300px;
+
+    max-height: 400px;
+    overflow-y: auto;
 }
 
 .preview-card__body > * {
@@ -39,7 +42,7 @@
 }
 
 .preview-card__button--right {
-    padding-top: 0.5em;
+    margin-top: 2em;
     display: block;
 }
 

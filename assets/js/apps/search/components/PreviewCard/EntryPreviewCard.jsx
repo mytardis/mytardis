@@ -1,6 +1,7 @@
 import { Button, Table } from 'react-bootstrap';
 import React from 'react';
 import './EntryPreviewCard.css'
+import moment from 'moment';
 import { FiUnlock, FiLock, FiX, FiPieChart } from 'react-icons/fi';
 import {
     ProjectTabSticker,
@@ -21,7 +22,7 @@ export default function EntryPreviewCard(props) {
      * @param {*} date 
      */
     const formatDate = (date) => {
-        return date.split('T')[0];
+        return moment(date).format("do MMM YYYY");
     }
 
     /**
