@@ -201,9 +201,9 @@ export default function EntryPreviewCard(props) {
     return (
         <div className="preview-card__body">
             <span className="preview-card__close" aria-label="Close preview panel">
-                <button onClick={onClick}>
+                {/* <button onClick={onClick}>
                     <FiX />
-                </button>
+                </button> */}
             </span>
             <div className="preview-card__header">
                 <div >
