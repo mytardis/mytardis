@@ -220,10 +220,7 @@ export function PureResultSection({ resultSets, selectedType,
         }
     }
 
-        let selectedEntry = null;
-        if (resultSets && selectedResult) {
-            selectedEntry = resultSets[selectedType].filter(result => result.id === selectedResult)[0];
-        }
+        let selectedEntry = getSelectedEntry(resultSets, selectedResult, selectedType);
 
         const currentResultSet = resultSets[selectedType],
             currentCount = counts[selectedType];
@@ -246,6 +243,21 @@ export function PureResultSection({ resultSets, selectedType,
             </>
         )
     }
+
+
+/**
+ * Returns the data of the selected row. Returns null if it cannot get find the selected result.
+ * @param {*} resultSets 
+ * @param {*} selectedResult 
+ * @param {*} selectedType 
+ */
+function getSelectedEntry(resultSets, selectedResult, selectedType) {
+    let selectedEntry = null;
+    if (resultSets && selectedResult) {
+        selectedEntry = resultSets[selectedType].filter(result => result.id === selectedResult)[0];
+    }
+    return selectedEntry;
+}
 
     export default function ResultSection() {
         const selectedType = useSelector(state => state.search.selectedType),
