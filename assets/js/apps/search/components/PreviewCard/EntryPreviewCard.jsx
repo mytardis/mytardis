@@ -239,19 +239,3 @@ export default function EntryPreviewCard(props) {
         </div>
     );
 }
-
-// creating selected id state.
-// to get right thing combination of type + id
-// create default state
-// new tab/new result/new selected result
-
-// in searchSlice - slice of state tree in redux 
-// install redux dev extension
-// write reducer for the search slice. theres an action. can view  the actions and their state changes.
-
-
-// resultStart reducer - reset selectedResultId
-// searchslice.jsx -> then export them
-
-// in resultsection.jsx
-// redux useSelector(fn which takes state obj.)
