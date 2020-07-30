@@ -1,6 +1,3 @@
-// moment js for date.
-// fix unlock icon
-// update to get type from data prop.
 import { Button, Table } from 'react-bootstrap';
 import React from 'react';
 import './EntryPreviewCard.css'
@@ -16,7 +13,7 @@ export default function EntryPreviewCard(props) {
     let { data, onClick } = props;
     let type;
     if (data) {
-        let type = data.type;
+        type = data.type;
     }
 
     /**
@@ -201,7 +198,6 @@ export default function EntryPreviewCard(props) {
             </div>
         )
     }
-
     return (
         <div className="preview-card__body">
             <span className="preview-card__close" aria-label="Close preview panel">

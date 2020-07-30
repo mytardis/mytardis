@@ -10,6 +10,8 @@ export default {
 };
 
 const project = {
+  "type": "project",
+  "url": "idk/",
   "counts": {
     "datafiles": 2,
     "datasets": 1,
@@ -59,6 +61,7 @@ const project = {
 }
 
 const experiment = {
+  "url": "idk/",
   "counts": {
     "datafiles": 2,
     "datasets": 1
@@ -91,10 +94,13 @@ const experiment = {
   "start_time": null,
   "title": "Test_ACLs",
   "update_time": "2020-06-09T02:09:56.872730+00:00",
+  "type": "experiment",
   "userDownloadRights": "partial"
 }
 
+
 const dataSet = {
+  "url": "idk/",
   "counts":{
      "datafiles":2
   },
@@ -130,10 +136,13 @@ const dataSet = {
   ],
   "size":"460.3 KB",
   "tags":"bricks safe as",
+  "type": "dataset",
   "userDownloadRights":"partial"
 }
 
 const dataFile = {
+  "url": "idk/",
+  "type": "datafile",
   "created_time":null,
   "dataset":{
      "experiments":[
