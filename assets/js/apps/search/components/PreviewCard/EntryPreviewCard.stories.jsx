@@ -5,7 +5,10 @@ import EntryPreviewCard from './EntryPreviewCard';
 export default {
   component: EntryPreviewCard,
   title: 'EntryPreviewCard',
-  // decorators: [story => <div style={{ padding: '3rem' }}>{story()}</div>],
+  decorators: [story => <div style={{ 
+    // padding: '3rem',
+    border: '2px solid black'
+  }}>{story()}</div>],
   // excludeStories: /.*Data$/,
 };
 
