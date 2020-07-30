@@ -104,7 +104,7 @@ export default function EntryPreviewCard(props) {
         }
     }
 
-    const formatAccessText= (s) => {
+    const formatAccessText = (s) => {
         if (s === 'none') {
             s = "No";
         }
@@ -147,12 +147,20 @@ export default function EntryPreviewCard(props) {
     const FileCountSummary = (props) => {
         let { data, type } = props;
         let summary;
-        let datafilePlural = data.counts.datafiles == 1 ? 'datafile' : 'datafiles';
-        let datasetPlural = data.counts.datasets == 1 ? 'dataset' : 'dataset';
+        let datafilePlural;
+        let datasetPlural;
+        if (data.counts) {
+            if (data.counts.datafiles) {
+                datafilePlural = data.counts.datafiles == 1 ? 'datafile' : 'datafiles';
+            }
+            if (data.counts.datasets) {
+                datasetPlural = data.counts.datasets == 1 ? 'dataset' : 'dataset';
+            }
+        }
         switch (type) {
             case 'project':
                 if (data.counts.datafiles == 1)
-                summary = `Contains ${data.counts.datafiles} ${datafilePlural} from ${data.counts.datasets} ${dsPlurality}.`;
+                    summary = `Contains ${data.counts.datafiles} ${datafilePlural} from ${data.counts.datasets} ${datasetPlural}.`;
                 break;
             case 'experiment':
                 summary = `Contains ${data.counts.datafiles} ${datafilePlural} from ${data.counts.datasets} ${datasetPlural}.`;
@@ -179,16 +187,16 @@ export default function EntryPreviewCard(props) {
         if (parameters.length > 0) {
             return (
                 <Table striped bordered hover size="sm" className="preview-card__parameter-table">
-                <thead>
-                    <tr>
-                        <th>Parameter</th>
-                        <th>Value</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {previewParameterTable(data.parameters)}
-                </tbody>
-            </Table>
+                    <thead>
+                        <tr>
+                            <th>Parameter</th>
+                            <th>Value</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {previewParameterTable(data.parameters)}
+                    </tbody>
+                </Table>
             )
         } else {
             return null;
