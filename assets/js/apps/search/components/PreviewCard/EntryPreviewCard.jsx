@@ -22,7 +22,7 @@ export default function EntryPreviewCard(props) {
      * @param {*} date 
      */
     const formatDate = (date) => {
-        return moment(date).format("do MMMM YYYY");
+        return `${moment(date).format("do MMMM YYYY")}.`;
     }
 
     /**
@@ -73,9 +73,6 @@ export default function EntryPreviewCard(props) {
      */
     const previewParameterTable = (parameters) => {
         return parameters.map((param, idx) => {
-            if (param.sensitive !== "False") {
-                return;
-            }
             return (
                 <tr key={`preview-card__param-entry-${idx}`} className="parameter-table__row">
                     <td>{param.pn_id}</td>
@@ -90,13 +87,8 @@ export default function EntryPreviewCard(props) {
      * @param {*} data the json response
      * @param {*} type type of expected json response
      */
-    const getDataSize = (data, type) => {
-        switch (type) {
-            case 'datafile':
-                return `${data.size}.`
-            default:
-                return `${data.counts.datafiles} datafiles, ${data.size}.`
-        }
+    const getDataSize = (data) => {
+        return `${data.size}.`;
     }
 
     const getTabSticker = (type) => {
@@ -152,18 +144,21 @@ export default function EntryPreviewCard(props) {
      * @param {*} data project/exp/datafile/dataset json response data
      * @param {*} type project/exp/datafile/dataset
      */
-    const DeepCountSummary = (props) => {
+    const FileCountSummary = (props) => {
         let { data, type } = props;
         let summary;
+        let dfPlurality = data.counts.datafiles == 1 ? 'datafile' : 'datafiles';
+        let dsPlurailty = data.counts.datasets == 1 ? 'dataset' : 'dataset';
         switch (type) {
             case 'project':
-                summary = `Contains ${data.counts.datafiles} datafiles from ${data.counts.datasets} datasets.`;
+                if (data.counts.datafiles == 1)
+                summary = `Contains ${data.counts.datafiles} ${dfPlurality} from ${data.counts.datasets} ${dsPlurality}.`;
                 break;
             case 'experiment':
-                summary = `Contains ${data.counts.datafiles} datafiles from ${data.counts.datasets} datasets.`;
+                summary = `Contains ${data.counts.datafiles} ${dfPlurality} from ${data.counts.datasets} ${dsPlurailty}.`;
                 break;
             case 'dataset':
-                summary = `Contains ${data.counts.datafiles} datafiles.`;
+                summary = `Contains ${data.counts.datafiles} ${dfPlurality}.`;
                 break;
             default:
                 summary = null;
@@ -226,7 +221,7 @@ export default function EntryPreviewCard(props) {
             <div className="preview-card__count-detail">
                 {getDataSize(data, type)}
             </div>
-            <DeepCountSummary data={data} type={type}></DeepCountSummary>
+            <FileCountSummary data={data} type={type}></FileCountSummary>
             <div className="preview-card__date-added">
                 Added on {getDateAdded(data, type)}
             </div>
