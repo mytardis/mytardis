@@ -22,7 +22,7 @@ export default function EntryPreviewCard(props) {
      * @param {*} date 
      */
     const formatDate = (date) => {
-        return moment(date).format("do MMM YYYY");
+        return moment(date).format("do MMMM YYYY");
     }
 
     /**
