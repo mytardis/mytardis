@@ -147,18 +147,18 @@ export default function EntryPreviewCard(props) {
     const FileCountSummary = (props) => {
         let { data, type } = props;
         let summary;
-        let dfPlurality = data.counts.datafiles == 1 ? 'datafile' : 'datafiles';
-        let dsPlurailty = data.counts.datasets == 1 ? 'dataset' : 'dataset';
+        let datafilePlural = data.counts.datafiles == 1 ? 'datafile' : 'datafiles';
+        let datasetPlural = data.counts.datasets == 1 ? 'dataset' : 'dataset';
         switch (type) {
             case 'project':
                 if (data.counts.datafiles == 1)
-                summary = `Contains ${data.counts.datafiles} ${dfPlurality} from ${data.counts.datasets} ${dsPlurality}.`;
+                summary = `Contains ${data.counts.datafiles} ${datafilePlural} from ${data.counts.datasets} ${dsPlurality}.`;
                 break;
             case 'experiment':
-                summary = `Contains ${data.counts.datafiles} ${dfPlurality} from ${data.counts.datasets} ${dsPlurailty}.`;
+                summary = `Contains ${data.counts.datafiles} ${datafilePlural} from ${data.counts.datasets} ${datasetPlural}.`;
                 break;
             case 'dataset':
-                summary = `Contains ${data.counts.datafiles} ${dfPlurality}.`;
+                summary = `Contains ${data.counts.datafiles} ${datafilePlural}.`;
                 break;
             default:
                 summary = null;
