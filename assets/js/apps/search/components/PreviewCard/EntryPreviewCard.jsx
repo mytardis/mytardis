@@ -13,7 +13,11 @@ import {
 } from '../TabStickers/TabSticker';
 
 export default function EntryPreviewCard(props) {
-    let { data, type, onClick } = props;
+    let { data, onClick } = props;
+    let type;
+    if (data) {
+        let type = data.type;
+    }
 
     /**
      * Simply cuts of the time portion of the date
