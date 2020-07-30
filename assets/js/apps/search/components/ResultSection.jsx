@@ -221,13 +221,13 @@ export function PureResultSection({ resultSets, selectedType,
     }
 
     const selectedEntry = useSelector((state) => {
-    const selectedType = state.search.selectedType,
-        selectedResult = state.search.selectedResult;
+        const selectedType = state.search.selectedType,
+            selectedResult = state.search.selectedResult;
 
-    if (state.search.results === null || !selectedResult) {
-        return null;
-    }
-    return state.search.results[selectedType].filter(result => result.id === selectedResult)[0];
+        if (state.search.results === null || !selectedResult) {
+            return null;
+        }
+        return state.search.results[selectedType].filter(result => result.id === selectedResult)[0];
     });
 
     const currentResultSet = resultSets[selectedType],
@@ -241,10 +241,12 @@ export function PureResultSection({ resultSets, selectedType,
                         <span>Showing {currentCount} {currentCount > 1 ? "results" : "result"}.</span>
                     </p>
                 }
-                <ResultList results={currentResultSet} selectedItem={selectedResult} onItemSelect={onSelectResult} isLoading={isLoading} error={error} />
-                <EntryPreviewCard
-                    data={selectedEntry}
-                />
+                <div className="tabpanel__container--horizontal">
+                    <ResultList results={currentResultSet} selectedItem={selectedResult} onItemSelect={onSelectResult} isLoading={isLoading} error={error} />
+                    <EntryPreviewCard
+                        data={selectedEntry}
+                    />
+                </div>
             </div>
         </>
     )
