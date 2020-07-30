@@ -1,7 +1,7 @@
 import { Button, Table } from 'react-bootstrap';
 import React from 'react';
 import './EntryPreviewCard.css'
-import { FiUnlock, FiLock, FiX } from 'react-icons/fi';
+import { FiUnlock, FiLock, FiX, FiPieChart } from 'react-icons/fi';
 import {
     ProjectTabSticker,
     ExperimentTabSticker,
@@ -22,14 +22,6 @@ export default function EntryPreviewCard(props) {
      */
     const formatDate = (date) => {
         return date.split('T')[0];
-    }
-
-    /**
-     * Simply rewords raw json field name
-     * @param {*} access 
-     */
-    const determineAccess = (access) => {
-        return access === "partial" ? "Unavailable" : "Available";
     }
 
     /**
@@ -119,22 +111,38 @@ export default function EntryPreviewCard(props) {
         }
     }
 
+    const formatAccessText= (s) => {
+        if (s === 'none') {
+            s = "No";
+        }
+        return s.charAt(0).toUpperCase() + s.slice(1);
+    }
+
     const DataTypeAccess = (props) => {
         let { data } = props;
-        if (data.userDownloadRights === "full") {
-            return (
-                <div className="preview-card__access-status">
-                    <span aria-label="This item can be downloaded."><FiUnlock /></span>
-                    {`${determineAccess(data.userDownloadRights)}`}
-                </div>
-            )
-        } else {
-            return (
-                <div className="preview-card__access-status">
-                    <span aria-label="This item cannot be downloaded."><FiLock /></span>
-                    {`${determineAccess(data.userDownloadRights)}`}
-                </div>
-            )
+        let accessText = `${formatAccessText(data.userDownloadRights)} access`
+        switch (data.userDownloadRights) {
+            case "full":
+                return (
+                    <div className="preview-card__access-status">
+                        <span aria-label="This item can be downloaded."><FiUnlock /></span>
+                        {accessText}
+                    </div>
+                )
+            case "partial":
+                return (
+                    <div className="preview-card__access-status">
+                        <span aria-label="This item can be downloaded."><FiPieChart /></span>
+                        {accessText}
+                    </div>
+                )
+            default:
+                return (
+                    <div className="preview-card__access-status">
+                        <span aria-label="This item can be downloaded."><FiLock /></span>
+                        {accessText}
+                    </div>
+                )
         }
     }
 
@@ -209,9 +217,9 @@ export default function EntryPreviewCard(props) {
                 <div >
                     {getTabSticker(type)}
                 </div>
-                <h3>
+                <h5>
                     {getName(data, type)}
-                </h3>
+                </h5>
             </div>
             <DataTypeAccess data={data}></DataTypeAccess>
             <div className="preview-card__count-detail">
