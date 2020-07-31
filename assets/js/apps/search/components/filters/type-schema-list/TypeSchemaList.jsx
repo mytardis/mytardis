@@ -5,9 +5,11 @@ import Card from 'react-bootstrap/Card';
 import TextFilter from "../text-filter/TextFilter";
 import NumberRangeFilter from '../range-filter/NumberRangeFilter';
 import DateRangeFilter from '../date-filter/DateRangeFilter';
-import useSetFilterState from "../useSetFilterValue";
+import { updateSchemaParameter } from "../filterSlice";
+import { useDispatch } from "react-redux";
 import CategoryFilter from '../category-filter/CategoryFilter';
 import './TypeSchemaList.css';
+import { runSearch } from '../../searchSlice';
 
 // A hook for converting a hashmap of values into a list.
 const useAsList = (jsObject = {}) => (
@@ -32,17 +34,21 @@ const mapTypeToFilter = (type) => {
 
 const SchemaFilterList = ({ schema }) => {
     const { id: schemaId, type: schemaType, parameters } = schema,
-            paramsAsList = useAsList(parameters);
+            paramsAsList = useAsList(parameters),
+            dispatch = useDispatch();
 
     return (<>
         {paramsAsList.map(
                 param => {
                     const { value, data_type: parameterType, full_name, id: parameterId } = param,
-                            setParamValue = useSetFilterState({
-                                kind: "schemaParameter",
-                                target: [schemaId, parameterId],
-                                type: parameterType
-                            }),
+                            setParamValue = (value) => {
+                                dispatch(updateSchemaParameter({
+                                    schemaId,
+                                    parameterId,
+                                    value
+                                }));
+                                dispatch(runSearch());
+                            },
                             ApplicableFilter = mapTypeToFilter(param.data_type);
                     return (
                             <div key={parameterId} className="single-schema-list__filter">

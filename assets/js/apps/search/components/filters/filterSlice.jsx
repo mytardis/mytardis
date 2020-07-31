@@ -101,6 +101,19 @@ const removeFromActiveFilters = (state, fieldInfo) => {
     state.activeFilters.splice(activeIndex, 1);
 }
 
+// Selectors for different kinds of fields 
+export const typeAttrSelector = (filterSlice, typeId, attributeId) => {
+    return filterSlice.types
+        .byId[typeId]
+        .attributes[attributeId];
+}
+
+export const schemaParamSelector = (filterSlice, schemaId, paramId) => {
+    return filterSlice.schemas
+        .byId[schemaId]
+        .parameters[paramId];
+};
+
 const filters = createSlice({
     name: 'filters',
     initialState,
@@ -122,13 +135,11 @@ const filters = createSlice({
         },
         updateTypeAttribute: (state, {payload}) => {
             const { typeId, attributeId, value } = payload;
-            const attribute = state.types
-                .byId[typeId]
-                .attributes[attributeId];
+            const attribute = typeAttrSelector(state, typeId, attributeId);
             const fieldInfo = {
                 kind: "typeAttribute",
                 target: [typeId,attributeId],
-                type: attribute.dataType
+                type: attribute.data_type
             };
             attribute.value = value;
             if (value === null) {
@@ -138,9 +149,45 @@ const filters = createSlice({
                 addToActiveFilters(state,fieldInfo);
             }
         },
+        updateSchemaParameter: (state, {payload}) => {
+            const { schemaId, parameterId, value } = payload;
+            const parameter = schemaParamSelector(state, schemaId, parameterId);
+            const fieldInfo = {
+                kind: "schemaParameter",
+                target: [schemaId, parameterId],
+                type: parameter.data_type
+            };
+            parameter.value = value;
+            if (value === null) {
+                removeFromActiveFilters(state, fieldInfo);
+            } else {
+                addToActiveFilters(state, fieldInfo);
+            }
+        },
 
         updateActiveSchemas: (state, {payload}) => {
-            // TODO Implement
+            const { typeId, value } = payload;
+            const activeSchemas = typeAttrSelector(state, typeId, "schema");
+            const fieldInfo = {
+                kind: "typeAttribute",
+                target: [typeId,"schema"],
+                type: "STRING"
+            };
+            // Get the current active schema value. If null, then all schemas apply.
+            const currActiveSchemas = attribute.value ? attribute.value.content : state.typeSchemas[typeId];
+            // Same for new active schema value.
+            const newActiveSchemas = value ? attribute.value.content : state.typeSchemas[typeId];
+            // Find the schemas that will no longer be active.
+            const diffSchemas = currActiveSchemas.filter(schema => (newActiveSchemas.includes(schema)));
+            // Then, find the filters on parameters that belong to the schema if any.
+            // They need to be removed too.
+            const parameters = state.activeFilters.filter(
+                filter => (
+                    filter.kind === "schemaParameter" && 
+                    diffSchemas.includes(filter.target[0])
+                )
+            );
+            
         },
 
         updateFilter: (state, { payload }) => {
@@ -149,12 +196,8 @@ const filters = createSlice({
             let selector;
             switch (field.kind) {
                 case "typeAttribute":
-                    selector = typeAttributeSelector(field.target, true);
-                    selector(state).value = value;
-                    break;
-                case "schemaParameter":
-                    selector = schemaParameterSelector(field.target, true);
-                    selector(state).value = value;
+                    const attribute = typeAttrSelector(state, field.target[0], field.target[1]);
+                    attribute.value = value;
                     break;
                 default:
                     break;
@@ -172,12 +215,8 @@ const filters = createSlice({
             let selector;
             switch (field.kind) {
                 case "typeAttribute":
-                    selector = typeAttributeSelector(field.target, true)
-                    selector(state).value = null;
-                    break;
-                case "schemaParameter":
-                    selector = schemaParameterSelector(field.target, true)
-                    selector(state).value = null;
+                    const attribute = typeAttrSelector(state, field.target[0], field.target[1]);
+                    attribute.value = null;
                     break;
                 default:
                     break;
@@ -211,40 +250,14 @@ const fetchFilterList = () => {
     }).then(responseJSON => (responseJSON.objects[0].schemas));
 };
 
-
-// Selectors for different kinds of filter targets.
-export const typeAttributeSelector = (target,isFromFiltersSliceRoot) => {
-    const [typeId, attributeId] = target;
-    return (state) => {
-        const root = isFromFiltersSliceRoot ? state : state.filters;
-        return root.types
-            .byId[typeId]
-            .attributes[attributeId];
-    }
-};
-
-export const schemaParameterSelector = (target,isFromFiltersSliceRoot) => {
-    const [schemaId, paramId] = target;
-    return (state) => {
-        const root = isFromFiltersSliceRoot ? state : state.filters;
-        return root.schemas
-            .byId[schemaId]
-            .parameters[paramId];
-    }
-};
-
-export const SELECTORS_BY_KIND = {
-    schemaParameter: schemaParameterSelector,
-    typeAttribute: typeAttributeSelector
-}
-
 export const {
     getFiltersStart,
     getFiltersSuccess,
     getFiltersFailure,
     updateFilter,
     removeFilter,
-    updateTypeAttribute
+    updateTypeAttribute,
+    updateSchemaParameter
 } = filters.actions;
 
 export const initialiseFilters = () => (dispatch) => {

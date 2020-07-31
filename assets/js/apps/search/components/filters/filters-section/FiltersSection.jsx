@@ -3,7 +3,7 @@ import Tabs from "react-bootstrap/Tabs";
 import Tab from 'react-bootstrap/Tab';
 import { OBJECT_TYPE_STICKERS } from '../../TabStickers/TabSticker'
 import TypeSchemaList from '../type-schema-list/TypeSchemaList';
-import { initialiseFilters, typeAttributeSelector } from '../filterSlice';
+import { initialiseFilters, typeAttrSelector } from '../filterSlice';
 import { useSelector, useDispatch } from "react-redux";
 import PropTypes from "prop-types";
 import useSetFilterValue from "../useSetFilterValue";
@@ -38,8 +38,9 @@ export function PureFiltersSection({ types, schemas, typeSchemas, isLoading, err
                     target:[type,"schema"],
                     type:"STRING"
                   },
-                  selector = typeAttributeSelector(fieldInfo.target),
-                  activeSchemas = useSelector(selector).value,
+                  activeSchemas = useSelector((state) => (
+                    typeAttrSelector(state.filters,type,"schema").value
+                  )),
                   setActiveSchemas = useSetFilterValue(fieldInfo);
             return (
               <Tab eventKey={type} title={<Sticker />}>

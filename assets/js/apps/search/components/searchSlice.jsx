@@ -1,6 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit';
 import Cookies from 'js-cookie';
-import { typeAttributeSelector, schemaParameterSelector } from "./filters/filterSlice";
+import { typeAttrSelector, schemaParamSelector } from "./filters/filterSlice";
 
 const getResultFromHit = (hit,hitType,urlPrefix) => {
     const source = hit._source;
@@ -100,15 +100,13 @@ const fetchSearchResults = (searchTerm,filters) => {
 const buildFilterQuery = (filters) => {
     const allFilters = filters.activeFilters.map(filterFieldInfo => {
         const { kind, target } = filterFieldInfo;
-        let selector, filterValue;
+        let filterValue;
         switch (kind) {
             case "typeAttribute":
-                selector = typeAttributeSelector(target,true);
-                filterValue = selector(filters).value;
+                filterValue = typeAttrSelector(filters,target[0],target[1]).value;
                 break;                
             case "schemaParameter":
-                selector = schemaParameterSelector(target,true);
-                filterValue = selector(filters).value;
+                filterValue = schemaParamSelector(filters,target[0],target[1]).value;
                 break;
             default:
                 break;
