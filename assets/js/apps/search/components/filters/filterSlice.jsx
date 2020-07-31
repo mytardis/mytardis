@@ -5,6 +5,8 @@ const initialTypeAttributes = {
     projects: {
         attributes: {
             schema: {
+                
+            }
         }
     },
     experiments: {
@@ -79,6 +81,26 @@ const findFilter = (filterList, fieldToFind) => {
     ));
 }
 
+const addToActiveFilters = (state,fieldInfo) => {
+    const activeIndex = findFilter(
+        state.activeFilters, fieldInfo
+    );
+    if (activeIndex === -1) {
+        state.activeFilters.push(fieldInfo);
+    }
+}
+
+const removeFromActiveFilters = (state, fieldInfo) => {
+    const activeIndex = findFilter(
+        state.activeFilters, fieldInfo
+    );
+    if (activeIndex === -1) {
+        return;
+    }
+    // Remove from active filters list
+    state.activeFilters.splice(activeIndex, 1);
+}
+
 const filters = createSlice({
     name: 'filters',
     initialState,
@@ -98,6 +120,29 @@ const filters = createSlice({
             state.isLoading = false;
             state.error = payload;
         },
+        updateTypeAttribute: (state, {payload}) => {
+            const { typeId, attributeId, value } = payload;
+            const attribute = state.types
+                .byId[typeId]
+                .attributes[attributeId];
+            const fieldInfo = {
+                kind: "typeAttribute",
+                target: [typeId,attributeId],
+                type: attribute.dataType
+            };
+            attribute.value = value;
+            if (value === null) {
+                // If the new value is null, remove it from activeFilter list.
+                removeFromActiveFilters(state,fieldInfo);
+            } else {
+                addToActiveFilters(state,fieldInfo);
+            }
+        },
+
+        updateActiveSchemas: (state, {payload}) => {
+            // TODO Implement
+        },
+
         updateFilter: (state, { payload }) => {
             console.log(payload);
             const { field, value } = payload;
@@ -198,7 +243,8 @@ export const {
     getFiltersSuccess,
     getFiltersFailure,
     updateFilter,
-    removeFilter
+    removeFilter,
+    updateTypeAttribute
 } = filters.actions;
 
 export const initialiseFilters = () => (dispatch) => {
