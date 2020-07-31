@@ -1,5 +1,5 @@
 import {  useDispatch, batch } from "react-redux";
-import { updateFilter, removeFilter } from "../filterSlice";
+import { updateFilter, removeFilter } from "./filterSlice";
 import { runSearch } from "../searchSlice";
 
 const useSetFilterValue = (fieldInfo) => {

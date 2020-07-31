@@ -3,7 +3,7 @@ import Tabs from "react-bootstrap/Tabs";
 import Tab from 'react-bootstrap/Tab';
 import { OBJECT_TYPE_STICKERS } from '../../TabStickers/TabSticker'
 import TypeSchemaList from '../type-schema-list/TypeSchemaList';
-import { initialiseFilters, typeAttributeSelector } from '../../filterSlice';
+import { initialiseFilters, typeAttributeSelector } from '../filterSlice';
 import { useSelector, useDispatch } from "react-redux";
 import PropTypes from "prop-types";
 import useSetFilterValue from "../useSetFilterValue";

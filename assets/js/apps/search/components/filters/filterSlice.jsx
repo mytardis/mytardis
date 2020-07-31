@@ -4,7 +4,7 @@ import Cookies from "js-cookie";
 const initialTypeAttributes = {
     projects: {
         attributes: {
-            schema: {}
+            schema: {
         }
     },
     experiments: {

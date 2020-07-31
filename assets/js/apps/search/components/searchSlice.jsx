@@ -1,6 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit';
 import Cookies from 'js-cookie';
-import { typeAttributeSelector, schemaParameterSelector } from "./filterSlice";
+import { typeAttributeSelector, schemaParameterSelector } from "./filters/filterSlice";
 
 const getResultFromHit = (hit,hitType,urlPrefix) => {
     const source = hit._source;
