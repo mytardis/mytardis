@@ -114,6 +114,22 @@ export const schemaParamSelector = (filterSlice, schemaId, paramId) => {
         .parameters[paramId];
 };
 
+const updateSchemaParameterReducer = (state, {payload}) => {
+    const { schemaId, parameterId, value } = payload;
+    const parameter = schemaParamSelector(state, schemaId, parameterId);
+    const fieldInfo = {
+        kind: "schemaParameter",
+        target: [schemaId, parameterId],
+        type: parameter.data_type
+    };
+    parameter.value = value;
+    if (value === null) {
+        removeFromActiveFilters(state, fieldInfo);
+    } else {
+        addToActiveFilters(state, fieldInfo);
+    }
+}
+
 const filters = createSlice({
     name: 'filters',
     initialState,
@@ -149,21 +165,7 @@ const filters = createSlice({
                 addToActiveFilters(state,fieldInfo);
             }
         },
-        updateSchemaParameter: (state, {payload}) => {
-            const { schemaId, parameterId, value } = payload;
-            const parameter = schemaParamSelector(state, schemaId, parameterId);
-            const fieldInfo = {
-                kind: "schemaParameter",
-                target: [schemaId, parameterId],
-                type: parameter.data_type
-            };
-            parameter.value = value;
-            if (value === null) {
-                removeFromActiveFilters(state, fieldInfo);
-            } else {
-                addToActiveFilters(state, fieldInfo);
-            }
-        },
+        updateSchemaParameter: updateSchemaParameterReducer,
 
         updateActiveSchemas: (state, {payload}) => {
             const { typeId, value } = payload;
@@ -174,65 +176,40 @@ const filters = createSlice({
                 type: "STRING"
             };
             // Get the current active schema value. If null, then all schemas apply.
-            const currActiveSchemas = attribute.value ? attribute.value.content : state.typeSchemas[typeId];
+            const currActiveSchemas = activeSchemas.value ? activeSchemas.value.content : state.typeSchemas[typeId];
             // Same for new active schema value.
-            const newActiveSchemas = value ? attribute.value.content : state.typeSchemas[typeId];
+            const newActiveSchemas = value ? value.content : state.typeSchemas[typeId];
             // Find the schemas that will no longer be active.
-            const diffSchemas = currActiveSchemas.filter(schema => (newActiveSchemas.includes(schema)));
+            const diffSchemas = currActiveSchemas.filter(schema => (!newActiveSchemas.includes(schema)));
             // Then, find the filters on parameters that belong to the schema if any.
             // They need to be removed too.
-            const parameters = state.activeFilters.filter(
+            const parametersToRemove = state.activeFilters.filter(
                 filter => (
                     filter.kind === "schemaParameter" && 
                     diffSchemas.includes(filter.target[0])
                 )
             );
             
-        },
-
-        updateFilter: (state, { payload }) => {
-            console.log(payload);
-            const { field, value } = payload;
-            let selector;
-            switch (field.kind) {
-                case "typeAttribute":
-                    const attribute = typeAttrSelector(state, field.target[0], field.target[1]);
-                    attribute.value = value;
-                    break;
-                default:
-                    break;
-            }
-            const activeIndex = findFilter(
-                state.activeFilters, field
-            );
-            if (activeIndex === -1) {
-                state.activeFilters.push(field);
-            }
-        },
-        removeFilter: (state, { payload }) => {
-            console.log(payload);
-            const { field, value } = payload;
-            let selector;
-            switch (field.kind) {
-                case "typeAttribute":
-                    const attribute = typeAttrSelector(state, field.target[0], field.target[1]);
-                    attribute.value = null;
-                    break;
-                default:
-                    break;
-            }
-            const activeIndex = findFilter(
-                state.activeFilters, field
-            );
-            if (activeIndex === -1) {
-                return;
+            // Now, update the active schemas field
+            activeSchemas.value = value;
+            if (value === null) {
+                // If the new value is null, remove it from activeFilter list.
+                removeFromActiveFilters(state,fieldInfo);
             } else {
-                // Remove from active filters list
-                state.activeFilters.splice(activeIndex, 1);
+                addToActiveFilters(state,fieldInfo);
             }
-        }
+
+            // Finally, remove all the schema parameters which belong to schemas that are no longer active.
+            parametersToRemove.forEach((paramToRemove) => {
+                updateSchemaParameterReducer(state,{payload: {
+                    schemaId: paramToRemove.target[0],
+                    parameterId: paramToRemove.target[1],
+                    value: null
+                }});
+            });
+        }      
     }
-})
+});
 
 const fetchFilterList = () => {
     return fetch(`/api/v1/search_get-schemas/`, {
@@ -254,10 +231,9 @@ export const {
     getFiltersStart,
     getFiltersSuccess,
     getFiltersFailure,
-    updateFilter,
-    removeFilter,
     updateTypeAttribute,
-    updateSchemaParameter
+    updateSchemaParameter,
+    updateActiveSchemas
 } = filters.actions;
 
 export const initialiseFilters = () => (dispatch) => {

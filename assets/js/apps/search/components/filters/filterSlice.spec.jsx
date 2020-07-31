@@ -1,4 +1,9 @@
-import reducer, { updateTypeAttribute, updateSchemaParameter, schemaParamSelector } from "./filterSlice";
+import reducer, { 
+    updateTypeAttribute,
+    updateSchemaParameter,
+    schemaParamSelector,
+    updateActiveSchemas
+} from "./filterSlice";
 import { createNextState } from "@reduxjs/toolkit";
 
 const mockStoreState = {
@@ -11,7 +16,12 @@ const mockStoreState = {
             },
             experiments: {
                 attributes: {
-                    schema: {},
+                    schema: {
+                        value: {
+                            op: "is",
+                            content: ["1"]
+                        }
+                    },
                     createdDate: {
                         data_type: "DATETIME",
                         id: "createdDate",
@@ -51,7 +61,8 @@ const mockStoreState = {
             '14'
         ],
         experiments: [
-            '1'
+            '1',
+            '4'
         ],
     },
     schemas: {
@@ -114,6 +125,23 @@ const mockStoreState = {
                 schema_name: 'Schema_ACL_dataset',
                 type: 'datasets'
             },
+            '4': {
+                id: '4',
+                parameters: {
+                    '12': {
+                        data_type: 'STRING',
+                        full_name: 'Parameter 1',
+                        id: '12'
+                    },
+                    '13': {
+                        data_type: 'NUMERIC',
+                        full_name: 'Numerical Parameter',
+                        id: '13'
+                    }
+                },
+                schema_name: 'Schema_ACL_datafile2',
+                type: 'datafiles'
+            },
             '14': {
                 id: '14',
                 parameters: {
@@ -135,6 +163,7 @@ const mockStoreState = {
         allIds: [
             '2',
             '1',
+            '4',
             '14'
         ]
     },
@@ -142,9 +171,13 @@ const mockStoreState = {
         kind: 'typeAttribute',
         target: ['datasets', 'createdDate'],
         type: 'STRING'
-    },{
+    }, {
         kind: 'schemaParameter',
-        target: ['2','4'],
+        target: ['2', '4'],
+        type: 'STRING'
+    }, {
+        kind: 'typeAttribute',
+        target: ['experiments','schema'],
         type: 'STRING'
     }],
     isLoading: false,
@@ -210,20 +243,20 @@ describe('Schema parameter reducer', () => {
     it('can add filter value for schema parameters', () => {
         const schema = "1",
             parameter = "2",
-            newValue = {op:'contains', content: 'Blue'},
+            newValue = { op: 'contains', content: 'Blue' },
             expectedNewState = createNextState(mockStoreState, draft => {
                 draft.activeFilters.push({
                     kind: "schemaParameter",
-                    target: [schema,parameter],
+                    target: [schema, parameter],
                     type: "STRING"
                 });
                 draft.schemas.byId[schema].parameters[parameter].value = newValue;
             });
-            expect(reducer(mockStoreState, updateSchemaParameter({
-                schemaId: schema,
-                parameterId: parameter,
-                value: newValue
-            }))).toEqual(expectedNewState);
+        expect(reducer(mockStoreState, updateSchemaParameter({
+            schemaId: schema,
+            parameterId: parameter,
+            value: newValue
+        }))).toEqual(expectedNewState);
     });
 
     it('can remove filter value for schema parameters', () => {
@@ -238,32 +271,100 @@ describe('Schema parameter reducer', () => {
                 );
                 draft.schemas.byId[schema].parameters[parameter].value = newValue;
             });
-            expect(reducer(mockStoreState, updateSchemaParameter({
-                schemaId: schema,
-                parameterId: parameter,
-                value: newValue
-            }))).toEqual(expectedNewState);
+        expect(reducer(mockStoreState, updateSchemaParameter({
+            schemaId: schema,
+            parameterId: parameter,
+            value: newValue
+        }))).toEqual(expectedNewState);
     });
 
     it('can update filter value for schema parameters', () => {
         const schema = "2",
             parameter = "4",
-            newValue = {op:'contains', content: 'RNSeq'},
+            newValue = { op: 'contains', content: 'RNSeq' },
             expectedNewState = createNextState(mockStoreState, draft => {
                 draft.schemas.byId[schema].parameters[parameter].value = newValue;
             });
-            expect(reducer(mockStoreState, updateSchemaParameter({
-                schemaId: schema,
-                parameterId: parameter,
-                value: newValue
-            }))).toEqual(expectedNewState);
+        expect(reducer(mockStoreState, updateSchemaParameter({
+            schemaId: schema,
+            parameterId: parameter,
+            value: newValue
+        }))).toEqual(expectedNewState);
     });
 
 });
 
+describe('Active schema reducer', () => {
+    it('can add active schema', () => {
+        const typeId = "datasets",
+            value = {op: "is",content:["2"]},
+            expectedNewState = createNextState(mockStoreState, draft => {
+                draft.types.byId[typeId].attributes.schema.value = value;
+                draft.activeFilters.push({
+                    kind: "typeAttribute",
+                    target: [typeId, "schema"],
+                    type: "STRING"
+                });
+        });
+        expect(reducer(mockStoreState, updateActiveSchemas({
+            typeId,
+            value
+        }))).toEqual(expectedNewState);
+    });
+
+    it('can remove active schema', () => {
+        const typeId = "experiments",
+            value = null,
+            expectedNewState = createNextState(mockStoreState, draft => {
+                draft.types.byId[typeId].attributes.schema.value = value;
+                draft.activeFilters = draft.activeFilters.filter( filter => (
+                    !(
+                        filter.kind === "typeAttribute" &&
+                        filter.target[0] === typeId &&
+                        filter.target[1] === "schema"
+                    )
+                ));
+            });
+            expect(reducer(mockStoreState, updateActiveSchemas({
+                typeId,
+                value
+            }))).toEqual(expectedNewState);    
+    });
+
+    it('can update active schema along with associated parameters', () => {
+        const typeId = "datasets",
+            value = {op: "is",content:["14"]},
+            expectedNewState = createNextState(mockStoreState, draft => {
+                draft.types.byId[typeId].attributes.schema.value = value;
+                draft.activeFilters.push({
+                    kind: "typeAttribute",
+                    target: [typeId, "schema"],
+                    type: "STRING"
+                });
+                // The parameter associated with the schema ID "2" should now be removed
+                // Because schema ID "2" is also a dataset schema.
+                // By setting the active schema to only 14, this implicitly removes schema
+                // ID "2". 
+                draft.activeFilters = draft.activeFilters.filter( filter => 
+                    (!(
+                        filter.kind === "schemaParameter" &&
+                        filter.target[0] === "2" &&
+                        filter.target[1] === "4"
+                    ))
+                );
+                draft.schemas.byId["2"].parameters["4"].value = null;
+        });
+        expect(reducer(mockStoreState, updateActiveSchemas({
+            typeId,
+            value
+        }))).toEqual(expectedNewState);
+    });
+
+})
+
 describe('Schema parameter selector', () => {
     it('can fetch a schema parameter', () => {
-        const parameter = schemaParamSelector(mockStoreState,"1","2");
+        const parameter = schemaParamSelector(mockStoreState, "1", "2");
         expect(parameter.full_name).toEqual('Parameter 2');
         expect(parameter.data_type).toEqual('STRING');
     })

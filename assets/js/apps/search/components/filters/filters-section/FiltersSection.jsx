@@ -1,14 +1,16 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useCallback } from 'react';
 import Tabs from "react-bootstrap/Tabs";
 import Tab from 'react-bootstrap/Tab';
 import { OBJECT_TYPE_STICKERS } from '../../TabStickers/TabSticker'
 import TypeSchemaList from '../type-schema-list/TypeSchemaList';
-import { initialiseFilters, typeAttrSelector } from '../filterSlice';
-import { useSelector, useDispatch } from "react-redux";
+import { runSearch } from '../../searchSlice';
+import { initialiseFilters, typeAttrSelector, updateActiveSchemas } from '../filterSlice';
+import { useSelector, useDispatch, batch } from "react-redux";
 import PropTypes from "prop-types";
-import useSetFilterValue from "../useSetFilterValue";
 
 export function PureFiltersSection({ types, schemas, typeSchemas, isLoading, error }) {
+  const dispatch = useDispatch();
+
   if (isLoading) {
     return <p>Loading filters...</p>
   }
@@ -19,6 +21,7 @@ export function PureFiltersSection({ types, schemas, typeSchemas, isLoading, err
     return null;
   }
 
+
   return (
     <section>
       <h3>Filters</h3>
@@ -26,28 +29,35 @@ export function PureFiltersSection({ types, schemas, typeSchemas, isLoading, err
         {
           types.allIds.map(type => {
             const Sticker = OBJECT_TYPE_STICKERS[type],
-                  schemaFiltersOptions = { 
-                    schemas: 
-                      {
-                        allIds: typeSchemas[type],
-                        byId: schemas.byId
-                      }
-                  },
-                  fieldInfo = {
-                    kind:"typeAttribute",
-                    target:[type,"schema"],
-                    type:"STRING"
-                  },
-                  activeSchemas = useSelector((state) => (
-                    typeAttrSelector(state.filters,type,"schema").value
-                  )),
-                  setActiveSchemas = useSetFilterValue(fieldInfo);
+              schemaFiltersOptions = {
+                schemas:
+                {
+                  allIds: typeSchemas[type],
+                  byId: schemas.byId
+                }
+              },
+              fieldInfo = {
+                kind: "typeAttribute",
+                target: [type, "schema"],
+                type: "STRING"
+              },
+              onActiveSchemaChange = useCallback(
+                (value) => {
+                  batch(() => {
+                    dispatch(updateActiveSchemas({typeId: type ,value}));
+                    dispatch(runSearch());
+                  });
+                }, [dispatch]),
+              activeSchemas = useSelector((state) => (
+                typeAttrSelector(state.filters, type, "schema").value
+              ));
             return (
               <Tab eventKey={type} title={<Sticker />}>
                 <TypeSchemaList
                   value={activeSchemas}
                   options={schemaFiltersOptions}
-                  onValueChange={setActiveSchemas} />
+                  onValueChange={onActiveSchemaChange}
+                />
               </Tab>
             );
           })
