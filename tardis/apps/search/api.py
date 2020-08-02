@@ -96,13 +96,13 @@ class SchemasAppResource(Resource):
                                     ).prefetch_related('projectparameterset'
                                     ).values_list("projectparameterset__schema__id", flat=True)))),
                        "experiments" : list(set(list(Experiment.safe.all(request.user
-                                       ).prefetch_related('projectparameterset'
+                                       ).prefetch_related('experimentparameterset'
                                        ).values_list("experimentparameterset__schema__id", flat=True)))),
                        "datasets" : list(set(list(Dataset.safe.all(request.user
-                                       ).prefetch_related('projectparameterset'
+                                       ).prefetch_related('datasetparameterset'
                                        ).values_list("datasetparameterset__schema__id", flat=True)))),
                        "datafiles" : list(set(list(DataFile.safe.all(request.user
-                                       ).prefetch_related('projectparameterset'
+                                       ).prefetch_related('datafileparameterset'
                                        ).values_list("datafileparameterset__schema__id", flat=True))))
                        }
         safe_dict = {}
