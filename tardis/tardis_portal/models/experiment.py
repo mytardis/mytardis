@@ -76,7 +76,7 @@ class Experiment(models.Model):
     description = models.TextField(blank=True)
     raid = models.CharField(max_length=400, null=False, blank=False,
                             unique=True, default=experiment_internal_id_default)
-    project = models.ForeignKey(Project, on_delete=models.CASCADE, null=True)
+    project = models.ManyToManyField(Project, related_name='experiments')
     start_time = models.DateTimeField(null=True, blank=True)
     end_time = models.DateTimeField(null=True, blank=True)
     created_time = models.DateTimeField(auto_now_add=True)
@@ -139,7 +139,7 @@ class Experiment(models.Model):
         """
         from .parameters import ExperimentParameter, ParameterName
         paramsets = list(self.getParameterSets())
-        parameter_groups = {"string": [], "numerical" : [], "datetime" : []}
+        parameter_groups = {"string": [], "numerical": [], "datetime": []}
         for paramset in paramsets:
             param_type = {1 : 'datetime', 2 : 'string', 3 : 'numerical'}
             param_glob = ExperimentParameter.objects.filter(
