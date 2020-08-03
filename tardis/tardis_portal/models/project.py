@@ -128,6 +128,9 @@ class Project(models.Model):
                 return True
         return False
 
+    def __str__(self):
+        return self.name
+
     def get_ct(self):
         return ContentType.objects.get_for_model(self)
 
