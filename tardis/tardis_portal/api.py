@@ -1193,7 +1193,7 @@ class ProjectResource(MyTardisModelResource):
             for group in project_groups:
                 logger.error(f'Creating group admin for {group}')
                 group_admin, _ = GroupAdmin.objects.get_or_create(user=bundle.request.user,
-                                                                  group=group.id)
+                                                                  group=group)
                 for admin in project_admin_groups:
                     group_admin.admin_groups.add(admin.id)
                 logger.error(group_admin)
