@@ -1504,6 +1504,13 @@ class ExperimentResource(MyTardisModelResource):
                     groups__name=project_see_all_group_name)
                 for user in see_all_users:
                     user.groups.add(see_all_group)
+        for group in experiment_groups:
+            logger.error(f'Creating group admin for {group}')
+            group_admin, _ = GroupAdmin.objects.get_or_create(user=bundle.request.user,
+                                                              group=group)
+            for admin in experiment_admin_groups:
+                group_admin.admin_groups.add(admin.id)
+            logger.error(group_admin)
         return super().hydrate_m2m(bundle)
 
     def obj_create(self, bundle, **kwargs):
