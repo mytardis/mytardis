@@ -507,6 +507,21 @@ class DataFile(models.Model):
                                         isOwner=True)
         return [acl.get_related_object() for acl in acls]
 
+
+    def to_search(self):
+        from tardis.apps.search.documents import DataFileDocument as DatafileDoc
+        metadata = {"id":self.id,
+                    "filename":self.filename,
+                    "created_time":self.created_time,
+                    "modification_time":self.modification_time,
+                    "dataset":self.dataset,
+                    "objectacls":self.objectacls,
+                    "parameters":self.getParametersforIndexing()
+                    }
+        return DatafileDoc(meta=metadata)
+
+
+
 @python_2_unicode_compatible
 class DataFileObject(models.Model):
     """The physical copy (or copies) of a

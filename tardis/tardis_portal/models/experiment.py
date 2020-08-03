@@ -359,6 +359,22 @@ class Experiment(models.Model):
 
         return None
 
+    def to_search(self):
+        from tardis.apps.search.documents import ExperimentDocument as ExpDoc
+        metadata = {"id":self.id,
+                    "title":self.title,
+                    "description":self.description,
+                    "created_time":self.created_time,
+                    "start_date":self.start_time,
+                    "end_time":self.end_time,
+                    "update_time":self.update_time,
+                    "created_by":self.created_by,
+                    "project":self.project,
+                    "objectacls":self.objectacls,
+                    "parameters":self.getParametersforIndexing()
+                    }
+        return ExpDoc(meta=metadata)
+
 
 @python_2_unicode_compatible
 class ExperimentAuthor(models.Model):

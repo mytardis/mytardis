@@ -14,10 +14,9 @@ from django.utils.timezone import now as django_time_now
 from .institution import Institution
 # from ..models import DataManagementPlan # Hook in place for future proofing
 from ..managers import OracleSafeManager, SafeManager
-
 from .access_control import ObjectACL
-
 from .license import License
+
 
 logger = logging.getLogger(__name__)
 
@@ -244,3 +243,17 @@ class Project(models.Model):
     def get_size(self, user, downloadable=False):
         from .datafile import DataFile
         return DataFile.sum_sizes(self.get_datafiles(user, downloadable=downloadable))
+
+    def to_search(self):
+        from tardis.apps.search.documents import ProjectDocument as ProjectDoc
+        metadata = {"id":self.id,
+                    "name":self.name,
+                    "description":self.description,
+                    "start_date":self.start_date,
+                    "end_date":self.end_date,
+                    "institution":self.institution,
+                    "lead_researcher":self.lead_researcher,
+                    "objectacls":self.objectacls,
+                    "parameters":self.getParametersforIndexing()
+                    }
+        return ProjectDoc(meta=metadata)

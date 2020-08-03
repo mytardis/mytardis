@@ -1,6 +1,7 @@
 import logging
 
 from django.contrib.auth.models import User
+from django.db.models.signals import post_save
 from elasticsearch_dsl import analysis, analyzer
 from django_elasticsearch_dsl import Document, fields
 from django_elasticsearch_dsl.registries import registry
@@ -326,3 +327,20 @@ class DataFileDocument(Document):
         if isinstance(related_instance, ParameterName):
             return DataFile.objects.filter(datafileparameterset__schema__parametername=related_instance)
         return None
+
+
+def update_search(instance, **kwargs):
+    if isinstance(instance, Project):
+        instance.to_search().save()
+    if isinstance(instance, Experiment):
+        instance.to_search().save()
+    if isinstance(instance, Dataset):
+        instance.to_search().save()
+    if isinstance(instance, DataFile):
+        instance.to_search().save()
+
+post_save.connect(update_search, sender=Project)
+post_save.connect(update_search, sender=Experiment)
+post_save.connect(update_search, sender=Dataset)
+post_save.connect(update_search, sender=DataFile)
+#post_save.connect(update_search, sender=ObjectACL)
