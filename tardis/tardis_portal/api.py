@@ -49,7 +49,7 @@ from .auth.decorators import (
     has_sensitive_access
 )
 from .auth.localdb_auth import django_user, django_group
-from .models.access_control import ObjectACL, UserProfile, UserAuthentication
+from .models.access_control import ObjectACL, UserProfile, UserAuthentication, GroupAdmin
 from .models.datafile import DataFile, DataFileObject, compute_checksums
 from .models.dataset import Dataset
 from .models.experiment import Experiment, ExperimentAuthor
