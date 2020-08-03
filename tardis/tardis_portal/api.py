@@ -1311,10 +1311,16 @@ class ExperimentResource(MyTardisModelResource):
         if getattr(bundle.obj, 'id', False):
             experiment = bundle.obj
             project_raid = project.raid
+            project_admin_group_name = f'Project-{project_raid}_admin'.replace(
+                '/', '-')
             project_read_group_name = f'Project-{project_raid}_read'.replace(
                 '/', '-')
             project_read_group = Group.objects.get_or_create(
                 name=project_read_group_name)
+            project_download_group_name = f'Project-{project_raid}_download'.replace(
+                '/', '-')
+            project_see_all_group_name = f'Project-{project_raid}_see_all'.replace(
+                '/', '-')
             admin_group_name = f'Experiment-{bundle.data["raid"]}_admin'.replace(
                 '/', '-')
             read_group_name = f'Experiment-{bundle.data["raid"]}_read'.replace(
@@ -1379,14 +1385,16 @@ class ExperimentResource(MyTardisModelResource):
                 admin_groups = bundle.data.pop('admin_groups')
             else:
                 admin_groups = project.get_admins()
-            for grp in admin_groups:
-                group, created = Group.objects.get_or_create(name=grp)
-                if created:
-                    group.permissions.set(admin_perms)
-                create_group_acl(experiment.get_ct(),
-                                 experiment.id,
-                                 group.id,
-                                 admin=True)
+            if admin_groups != []:
+                for grp in admin_groups:
+                    if grp != project_admin_group_name:
+                        group, created = Group.objects.get_or_create(name=grp)
+                        if created:
+                            group.permissions.set(admin_perms)
+                            create_group_acl(experiment.get_ct(),
+                                             experiment.id,
+                                             group.id,
+                                             admin=True)
             if 'member_groups' in bundle.data.keys():
                 member_groups = bundle.data.pop('member_groups')
             else:
@@ -1394,74 +1402,108 @@ class ExperimentResource(MyTardisModelResource):
                 # Each member group is defined by a tuple
                 # (group_name, sensitive[T/F], download[T/F])
                 # unpack for ACLs
-            for grp in member_groups:
-                grp_name = grp[0]
-                sensitive_flg = grp[1]
-                download_flg = grp[2]
-                group, created = Group.objects.get_or_create(name=grp_name)
-                if created:
-                    group.permissions.set(member_perms)
-                create_group_acl(experiment.get_ct(),
-                                 experiment.id,
-                                 group.id,
-                                 write=True,
-                                 download=download_flg,
-                                 sensitive=sensitive_flg,
-                                 admin=False)
+            if member_groups != []:
+                for grp in member_groups:
+                    if grp[0] == project_read_group_name or \
+                       grp[0] == project_download_group_name or \
+                       grp[0] == project_see_all_group_name:
+                        continue
+                    grp_name = grp[0]
+                    sensitive_flg = grp[1]
+                    download_flg = grp[2]
+                    group, created = Group.objects.get_or_create(name=grp_name)
+                    if created:
+                        group.permissions.set(member_perms)
+                    create_group_acl(experiment.get_ct(),
+                                     experiment.id,
+                                     group.id,
+                                     write=True,
+                                     download=download_flg,
+                                     sensitive=sensitive_flg,
+                                     admin=False)
             if 'admins' in bundle.data.keys():
-                for admin in bundle.data['admins']:
-                    if not User.objects.filter(username=admin).exists():
-                        new_user = get_user_from_upi(admin)
-                        user = User.objects.create(username=new_user['username'],
-                                                   first_name=new_user['first_name'],
-                                                   last_name=new_user['last_name'],
-                                                   email=new_user['email'])
-                        user.set_password(gen_random_password())
-                        for permission in admin_perms:
-                            user.user_permissions.add(permission)
-                        user.save()
-                        authentication = UserAuthentication(userProfile=user.userprofile,
-                                                            username=new_user['username'],
-                                                            authenticationMethod=settings.LDAP_METHOD)
-                        authentication.save()
-                    user = User.objects.get(username=admin)
-                    user.groups.add(admin_group)
-                    user.groups.add(project_read_group)
+                if bundle.data['admins'] != []:
+                    for admin in bundle.data['admins']:
+                        if not User.objects.filter(username=admin).exists():
+                            new_user = get_user_from_upi(admin)
+                            user = User.objects.create(username=new_user['username'],
+                                                       first_name=new_user['first_name'],
+                                                       last_name=new_user['last_name'],
+                                                       email=new_user['email'])
+                            user.set_password(gen_random_password())
+                            for permission in admin_perms:
+                                user.user_permissions.add(permission)
+                            user.save()
+                            authentication = UserAuthentication(userProfile=user.userprofile,
+                                                                username=new_user['username'],
+                                                                authenticationMethod=settings.LDAP_METHOD)
+                            authentication.save()
+                        user = User.objects.get(username=admin)
+                        user.groups.add(admin_group)
+                        user.groups.add(project_read_group)
                 bundle.data.pop('admins')
+            else:
+                # Cascade the admin from the project level
+                project_admins = User.objects.filter(
+                    groups__name=project_admin_group_name)
+                for user in project_admins:
+                    add_flg = True
+                    if 'members' in bundle.data.keys():
+                        for member in bundle.data['members']:
+                            if user.username == member[0]:
+                                # Don't add this user to the admin group since they have implicitly
+                                # been downgraded
+                                add_flg = False
+                    if add_flg:
+                        user.groups.add(admin_group)
             if 'members' in bundle.data.keys():
                 # error checking needs to be done externally for this to
                 # function as desired.
-                members = bundle.data['members']
-                for member in members:
-                    member_name = grp[0]
-                    sensitive_flg = grp[1]
-                    download_flg = grp[2]
-                    if not User.objects.filter(username=member_name).exists():
-                        new_user = get_user_from_upi(member_name)
-                        if not new_user:
-                            logger.error('No one found for upi: {member}')
-                        user = User.objects.create(username=new_user['username'],
-                                                   first_name=new_user['first_name'],
-                                                   last_name=new_user['last_name'],
-                                                   email=new_user['email'])
-                        user.set_password(gen_random_password())
-                        for permission in member_perms:
-                            user.user_permissions.add(permission)
-                        user.save()
-                        authentication = UserAuthentication(userProfile=user.userprofile,
-                                                            username=new_user['username'],
-                                                            authenticationMethod=settings.LDAP_METHOD)
-                        authentication.save()
-                    user = User.objects.get(username=member_name)
-                    user.groups.add(read_group)
-                    # Need to ensure that the user can
-                    user.groups.add(project_read_group)
-                    # traverse the data heirarchy if they are newly created
-                    if sensitive_flg:
-                        user.groups.add(see_all_group)
-                    if download_flg:
-                        user.groups.add(download_group)
+                if bundle.data['members'] != []:
+                    members = bundle.data['members']
+                    for member in members:
+                        member_name = grp[0]
+                        sensitive_flg = grp[1]
+                        download_flg = grp[2]
+                        if not User.objects.filter(username=member_name).exists():
+                            new_user = get_user_from_upi(member_name)
+                            if not new_user:
+                                logger.error('No one found for upi: {member}')
+                            user = User.objects.create(username=new_user['username'],
+                                                       first_name=new_user['first_name'],
+                                                       last_name=new_user['last_name'],
+                                                       email=new_user['email'])
+                            user.set_password(gen_random_password())
+                            for permission in member_perms:
+                                user.user_permissions.add(permission)
+                            user.save()
+                            authentication = UserAuthentication(userProfile=user.userprofile,
+                                                                username=new_user['username'],
+                                                                authenticationMethod=settings.LDAP_METHOD)
+                            authentication.save()
+                        user = User.objects.get(username=member_name)
+                        user.groups.add(read_group)
+                        # Need to ensure that the user can
+                        user.groups.add(project_read_group)
+                        # traverse the data heirarchy if they are newly created
+                        if sensitive_flg:
+                            user.groups.add(see_all_group)
+                        if download_flg:
+                            user.groups.add(download_group)
                 bundle.data.pop('members')
+            else:
+                read_users = User.objects.filter(
+                    groups__name=project_read_group_name)
+                for user in read_users:
+                    user.groups.add(read_group)
+                download_users = User.objects.filter(
+                    groups__name=project_download_group_name)
+                for user in download_users:
+                    user.groups.add(download_group)
+                see_all_users = User.objects.filter(
+                    groups__name=project_see_all_group_name)
+                for user in see_all_users:
+                    user.groups.add(see_all_group)
         return super().hydrate_m2m(bundle)
 
     def obj_create(self, bundle, **kwargs):
