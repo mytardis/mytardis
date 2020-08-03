@@ -1389,6 +1389,7 @@ class ExperimentResource(MyTardisModelResource):
                 for grp in admin_groups:
                     if grp != project_admin_group_name:
                         group, created = Group.objects.get_or_create(name=grp)
+                        experiment_admin_groups.append(group)
                         if created:
                             group.permissions.set(admin_perms)
                             create_group_acl(experiment.get_ct(),
@@ -1408,6 +1409,7 @@ class ExperimentResource(MyTardisModelResource):
                        grp[0] == project_download_group_name or \
                        grp[0] == project_see_all_group_name:
                         continue
+                    experiment_groups.append(grp)
                     grp_name = grp[0]
                     sensitive_flg = grp[1]
                     download_flg = grp[2]
