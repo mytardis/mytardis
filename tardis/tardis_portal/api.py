@@ -1191,9 +1191,11 @@ class ProjectResource(MyTardisModelResource):
                             user.groups.add(download_group)
                 bundle.data.pop('members')
         for group in project_groups:
+            logger.error(f'Creating group admin for {group}')
             group_admin, _ = GroupAdmin.objects.get_or_create(user=bundle.request.user.id,
                                                               group=group.id,
                                                               admin_groups=project_admin_groups)
+            logger.error(group_admin)
         return super().hydrate_m2m(bundle)
 
     def obj_create(self, bundle, **kwargs):
