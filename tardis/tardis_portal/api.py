@@ -178,6 +178,34 @@ def gen_random_password():
     return password
 
 
+def create_group_acl(content_type,
+                     object_id,
+                     group_id,
+                     write=False,
+                     download=False,
+                     sensitive=False,
+                     owner=False,
+                     admin=False):
+    if admin:
+        download = True
+        sensitive = True
+        owner = True
+        write = True
+    acl = ObjectACL(content_type=content_type,
+                    object_id=object_id,
+                    pluginId=django_group,
+                    entityId=str(group_id),
+                    canRead=True,
+                    canDownload=download,
+                    canWrite=write,
+                    canDelete=False,
+                    canSensitive=sensitive,
+                    isOwner=owner,
+                    aclOwnershipType=ObjectACL.OWNER_OWNED)
+    acl.save()
+    return True
+
+
 class PrettyJSONSerializer(Serializer):
     json_indent = 2
 
@@ -1008,10 +1036,54 @@ class ProjectResource(MyTardisModelResource):
         create ACL before any related objects are created in order to use
         ACL permissions for those objects.
         '''
-        logger.error('Fresh bundle')
-        logger.error(bundle.data)
+        project_groups = []
+        project_admin_groups = []
         if getattr(bundle.obj, 'id', False):
             project = bundle.obj
+            admin_group_name = f'Project-{bundle.data["raid"]}_admin'.replace(
+                '/', '-')
+            read_group_name = f'Project-{bundle.data["raid"]}_read'.replace(
+                '/', '-')
+            download_group_name = f'Project-{bundle.data["raid"]}_download'.replace(
+                '/', '-')
+            see_all_group_name = f'Project-{bundle.data["raid"]}_see_all'.replace(
+                '/', '-')
+            admin_group, created = Group.objects.get_or_create(
+                name=admin_group_name)
+            project_admin_groups.append(admin_group)
+            project_groups.append(admin_group)
+            if created:
+                admin_group.permissions.set(admin_perms)
+            read_group, created = Group.objects.get_or_create(
+                name=read_group_name)
+            project_groups.append(read_group)
+            if created:
+                read_group.permissions.set(member_perms)
+            download_group, created = Group.objects.get_or_create(
+                name=download_group_name)
+            project_groups.append(download_group)
+            if created:
+                download_group.permissions.set(member_perms)
+            see_all_group, created = Group.objects.get_or_create(
+                name=see_all_group_name)
+            project_groups.append(see_all_group)
+            if created:
+                see_all_group.permissions.set(member_perms)
+            create_group_acl(project.get_ct(),
+                             project.id,
+                             admin_group.id,
+                             admin=True)
+            create_group_acl(project.get_ct(),
+                             project.id,
+                             read_group.id)
+            create_group_acl(project.get_ct(),
+                             project.id,
+                             download_group.id,
+                             download=True)
+            create_group_acl(project.get_ct(),
+                             project.id,
+                             see_all_group.id,
+                             sensitive=True)
             project_lead = project.lead_researcher
             # TODO: unify this with the view function's ACL creation,
             # maybe through an ACL toolbox.
@@ -1040,23 +1112,16 @@ class ProjectResource(MyTardisModelResource):
                             aclOwnershipType=ObjectACL.OWNER_OWNED)
             acl.save()
             if 'admin_groups' in bundle.data.keys():
-                logger.error('Attempting to build admin groups')
                 for grp in bundle.data['admin_groups']:
                     group, created = Group.objects.get_or_create(name=grp)
+                    project_admin_groups.append(group)
+                    project_groups.append(group)
                     if created:
                         group.permissions.set(admin_perms)
-                    acl = ObjectACL(content_type=project.get_ct(),
-                                    object_id=project.id,
-                                    pluginId=django_group,
-                                    entityId=str(group.id),
-                                    canRead=True,
-                                    canDownload=True,
-                                    canWrite=True,
-                                    canDelete=True,
-                                    canSensitive=True,
-                                    isOwner=True,
-                                    aclOwnershipType=ObjectACL.OWNER_OWNED)
-                    acl.save()
+                    create_group_acl(project.get_ct(),
+                                     project.id,
+                                     group.id,
+                                     admin=True)
                 bundle.data.pop('admin_groups')
             if 'member_groups' in bundle.data.keys():
                 # Each member group is defined by a tuple
@@ -1067,20 +1132,16 @@ class ProjectResource(MyTardisModelResource):
                     sensitive_flg = grp[1]
                     download_flg = grp[2]
                     group, created = Group.objects.get_or_create(name=grp_name)
+                    project_groups.append(group)
                     if created:
                         group.permissions.set(member_perms)
-                    acl = ObjectACL(content_type=project.get_ct(),
-                                    object_id=project.id,
-                                    pluginId=django_group,
-                                    entityId=str(group.id),
-                                    canRead=True,
-                                    canDownload=download_flg,
-                                    canWrite=True,
-                                    canDelete=False,
-                                    canSensitive=sensitive_flg,
-                                    isOwner=False,
-                                    aclOwnershipType=ObjectACL.OWNER_OWNED)
-                    acl.save()
+                    create_group_acl(project.get_ct(),
+                                     project.id,
+                                     group.id,
+                                     write=True,
+                                     download=download_flg,
+                                     sensitive=sensitive_flg,
+                                     admin=True)
                 bundle.data.pop('member_groups')
             if 'admins' in bundle.data.keys():
                 for admin in bundle.data['admins']:
@@ -1099,26 +1160,15 @@ class ProjectResource(MyTardisModelResource):
                                                             authenticationMethod=settings.LDAP_METHOD)
                         authentication.save()
                     user = User.objects.get(username=admin)
-                    acl = ObjectACL(content_type=project.get_ct(),
-                                    object_id=project.id,
-                                    pluginId=django_user,
-                                    entityId=str(user.id),
-                                    canRead=True,
-                                    canDownload=True,
-                                    canWrite=True,
-                                    canDelete=True,
-                                    canSensitive=True,
-                                    isOwner=True,
-                                    aclOwnershipType=ObjectACL.OWNER_OWNED)
-                    acl.save()
+                    user.groups.add(admin_group)
                 bundle.data.pop('admins')
             if 'members' in bundle.data.keys():
                 for member in bundle.data['members']:
                     member_name = member[0]
                     sensitive_flg = member[1]
                     download_flg = member[2]
-                    if not User.objects.filter(username=admin).exists():
-                        new_user = get_user_from_upi(admin)
+                    if not User.objects.filter(username=member).exists():
+                        new_user = get_user_from_upi(member)
                         user = User.objects.create(username=new_user['username'],
                                                    first_name=new_user['first_name'],
                                                    last_name=new_user['last_name'],
@@ -1132,19 +1182,16 @@ class ProjectResource(MyTardisModelResource):
                                                             authenticationMethod=settings.LDAP_METHOD)
                         authentication.save()
                     user = User.objects.get(username=member_name)
-                    acl = ObjectACL(content_type=project.get_ct(),
-                                    object_id=project.id,
-                                    pluginId=django_user,
-                                    entityId=str(user.id),
-                                    canRead=True,
-                                    canDownload=download_flg,
-                                    canWrite=True,
-                                    canDelete=False,
-                                    canSensitive=sensitive_flg,
-                                    isOwner=False,
-                                    aclOwnershipType=ObjectACL.OWNER_OWNED)
-                    acl.save()
+                    user.groups.add(read_group)
+                    if sensitive_flg:
+                        user.groups.add(see_all_group)
+                    if download_flg:
+                        user.groups.add(download_group)
                 bundle.data.pop('members')
+        for group in project_groups:
+            group_admin, _ = GroupAdmin.objects.get_or_create(user=bundle.request.user.id,
+                                                              group=group.id,
+                                                              admin_groups=project_admin_groups)
         return super().hydrate_m2m(bundle)
 
     def obj_create(self, bundle, **kwargs):
