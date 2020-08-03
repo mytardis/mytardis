@@ -1159,8 +1159,8 @@ class ProjectResource(MyTardisModelResource):
                                                             username=new_user['username'],
                                                             authenticationMethod=settings.LDAP_METHOD)
                         authentication.save()
-                    user = User.objects.get(username=admin)
-                    user.groups.add(admin_group)
+                        user = User.objects.get(username=admin)
+                        user.groups.add(admin_group)
                 bundle.data.pop('admins')
             if 'members' in bundle.data.keys():
                 for member in bundle.data['members']:
@@ -1183,12 +1183,12 @@ class ProjectResource(MyTardisModelResource):
                                                             username=new_user['username'],
                                                             authenticationMethod=settings.LDAP_METHOD)
                         authentication.save()
-                    user = User.objects.get(username=member_name)
-                    user.groups.add(read_group)
-                    if sensitive_flg:
-                        user.groups.add(see_all_group)
-                    if download_flg:
-                        user.groups.add(download_group)
+                        user = User.objects.get(username=member_name)
+                        user.groups.add(read_group)
+                        if sensitive_flg:
+                            user.groups.add(see_all_group)
+                        if download_flg:
+                            user.groups.add(download_group)
                 bundle.data.pop('members')
         for group in project_groups:
             group_admin, _ = GroupAdmin.objects.get_or_create(user=bundle.request.user.id,
