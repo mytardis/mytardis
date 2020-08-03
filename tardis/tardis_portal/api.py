@@ -1141,7 +1141,7 @@ class ProjectResource(MyTardisModelResource):
                                      write=True,
                                      download=download_flg,
                                      sensitive=sensitive_flg,
-                                     admin=True)
+                                     admin=False)
                 bundle.data.pop('member_groups')
             if 'admins' in bundle.data.keys():
                 for admin in bundle.data['admins']:
@@ -1306,8 +1306,59 @@ class ExperimentResource(MyTardisModelResource):
                     ProjectResource(), bundle.data['project'], bundle.request)
             except NotFound:
                 raise  # This probably should raise an error
+        experiment_groups = []
+        experiment_admin_groups = []
         if getattr(bundle.obj, 'id', False):
             experiment = bundle.obj
+            project_raid = project.raid
+            project_read_group_name = f'Project-{project_raid}_read'.replace(
+                '/', '-')
+            project_read_group = Group.objects.get_or_create(
+                name=project_read_group_name)
+            admin_group_name = f'Experiment-{bundle.data["raid"]}_admin'.replace(
+                '/', '-')
+            read_group_name = f'Experiment-{bundle.data["raid"]}_read'.replace(
+                '/', '-')
+            download_group_name = f'Experiment-{bundle.data["raid"]}_download'.replace(
+                '/', '-')
+            see_all_group_name = f'Experiment-{bundle.data["raid"]}_see_all'.replace(
+                '/', '-')
+            admin_group, created = Group.objects.get_or_create(
+                name=admin_group_name)
+            experiment_admin_groups.append(admin_group)
+            experiment_groups.append(admin_group)
+            if created:
+                admin_group.permissions.set(admin_perms)
+            read_group, created = Group.objects.get_or_create(
+                name=read_group_name)
+            experiment_groups.append(read_group)
+            if created:
+                read_group.permissions.set(member_perms)
+            download_group, created = Group.objects.get_or_create(
+                name=download_group_name)
+            experiment_groups.append(download_group)
+            if created:
+                download_group.permissions.set(member_perms)
+            see_all_group, created = Group.objects.get_or_create(
+                name=see_all_group_name)
+            experiment_groups.append(see_all_group)
+            if created:
+                see_all_group.permissions.set(member_perms)
+            create_group_acl(experiment.get_ct(),
+                             experiment.id,
+                             admin_group.id,
+                             admin=True)
+            create_group_acl(experiment.get_ct(),
+                             project.id,
+                             read_group.id)
+            create_group_acl(experiment.get_ct(),
+                             project.id,
+                             download_group.id,
+                             download=True)
+            create_group_acl(experiment.get_ct(),
+                             project.id,
+                             see_all_group.id,
+                             sensitive=True)
             project_lead = project.get_owners()
             # TODO: unify this with the view function's ACL creation,
             # maybe through an ACL toolbox.
@@ -1324,80 +1375,93 @@ class ExperimentResource(MyTardisModelResource):
                                 isOwner=True,
                                 aclOwnershipType=ObjectACL.OWNER_OWNED)
                 acl.save()
-                if 'admin_groups' in bundle.data.keys():
-                    admin_groups = bundle.data['admin_groups']
-                else:
-                    admin_groups = project.get_admins()
-                for grp in admin_groups:
-                    group, created = Group.objects.get_or_create(name=grp)
-                    if created:
-                        group.permissions.set(admin_perms)
-                    group_id = group.id
-                    acl = ObjectACL(content_type=experiment.get_ct(),
-                                    object_id=experiment.id,
-                                    pluginId=django_group,
-                                    entityId=str(group_id),
-                                    canRead=True,
-                                    canDownload=True,
-                                    canWrite=True,
-                                    canDelete=True,
-                                    canSensitive=True,
-                                    isOwner=True,
-                                    aclOwnershipType=ObjectACL.OWNER_OWNED)
-                    acl.save()
-                if 'member_groups' in bundle.data.keys():
-                    member_groups = bundle.data['member_groups']
-                else:
-                    member_groups = project.get_groups_and_perms()
-                    # Each member group is defined by a tuple
-                    # (group_name, sensitive[T/F], download[T/F])
-                    # unpack for ACLs
-                for grp in member_groups:
-                    grp_name = grp[0]
+            if 'admin_groups' in bundle.data.keys():
+                admin_groups = bundle.data.pop('admin_groups')
+            else:
+                admin_groups = project.get_admins()
+            for grp in admin_groups:
+                group, created = Group.objects.get_or_create(name=grp)
+                if created:
+                    group.permissions.set(admin_perms)
+                create_group_acl(experiment.get_ct(),
+                                 experiment.id,
+                                 group.id,
+                                 admin=True)
+            if 'member_groups' in bundle.data.keys():
+                member_groups = bundle.data.pop('member_groups')
+            else:
+                member_groups = project.get_groups_and_perms()
+                # Each member group is defined by a tuple
+                # (group_name, sensitive[T/F], download[T/F])
+                # unpack for ACLs
+            for grp in member_groups:
+                grp_name = grp[0]
+                sensitive_flg = grp[1]
+                download_flg = grp[2]
+                group, created = Group.objects.get_or_create(name=grp_name)
+                if created:
+                    group.permissions.set(member_perms)
+                create_group_acl(experiment.get_ct(),
+                                 experiment.id,
+                                 group.id,
+                                 write=True,
+                                 download=download_flg,
+                                 sensitive=sensitive_flg,
+                                 admin=False)
+            if 'admins' in bundle.data.keys():
+                for admin in bundle.data['admins']:
+                    if not User.objects.filter(username=admin).exists():
+                        new_user = get_user_from_upi(admin)
+                        user = User.objects.create(username=new_user['username'],
+                                                   first_name=new_user['first_name'],
+                                                   last_name=new_user['last_name'],
+                                                   email=new_user['email'])
+                        user.set_password(gen_random_password())
+                        for permission in admin_perms:
+                            user.user_permissions.add(permission)
+                        user.save()
+                        authentication = UserAuthentication(userProfile=user.userprofile,
+                                                            username=new_user['username'],
+                                                            authenticationMethod=settings.LDAP_METHOD)
+                        authentication.save()
+                    user = User.objects.get(username=admin)
+                    user.groups.add(admin_group)
+                    user.groups.add(project_read_group)
+                bundle.data.pop('admins')
+            if 'members' in bundle.data.keys():
+                # error checking needs to be done externally for this to
+                # function as desired.
+                members = bundle.data['members']
+                for member in members:
+                    member_name = grp[0]
                     sensitive_flg = grp[1]
                     download_flg = grp[2]
-                    group, created = Group.objects.get_or_create(name=grp_name)
-                    if created:
-                        group.permissions.set(member_perms)
-                    group_id = group.id
-                    acl = ObjectACL(content_type=experiment.get_ct(),
-                                    object_id=experiment.id,
-                                    pluginId=django_group,
-                                    entityId=str(group_id),
-                                    canRead=True,
-                                    canDownload=download_flg,
-                                    canWrite=True,
-                                    canDelete=False,
-                                    canSensitive=sensitive_flg,
-                                    isOwner=False,
-                                    aclOwnershipType=ObjectACL.OWNER_OWNED)
-                    acl.save()
-                if 'members' in bundle.data.keys():
-                    # error checking needs to be done externally for this to
-                    # function as desired.
-                    members = bundle.data['members']
-                else:
-                    members = project.get_users_and_perms()
-                    # Each member group is defined by a tuple
-                    # (group_name, sensitive[T/F], download[T/F])
-                    # unpack for ACLs
-                for grp in members:
-                    grp_name = grp[0]
-                    sensitive_flg = grp[1]
-                    download_flg = grp[2]
-                    user = User.objects.get(username=grp_name)
-                    acl = ObjectACL(content_type=experiment.get_ct(),
-                                    object_id=experiment.id,
-                                    pluginId=django_user,
-                                    entityId=str(user.id),
-                                    canRead=True,
-                                    canDownload=download_flg,
-                                    canWrite=True,
-                                    canDelete=False,
-                                    canSensitive=sensitive_flg,
-                                    isOwner=False,
-                                    aclOwnershipType=ObjectACL.OWNER_OWNED)
-                    acl.save()
+                    if not User.objects.filter(username=member_name).exists():
+                        new_user = get_user_from_upi(member_name)
+                        if not new_user:
+                            logger.error('No one found for upi: {member}')
+                        user = User.objects.create(username=new_user['username'],
+                                                   first_name=new_user['first_name'],
+                                                   last_name=new_user['last_name'],
+                                                   email=new_user['email'])
+                        user.set_password(gen_random_password())
+                        for permission in member_perms:
+                            user.user_permissions.add(permission)
+                        user.save()
+                        authentication = UserAuthentication(userProfile=user.userprofile,
+                                                            username=new_user['username'],
+                                                            authenticationMethod=settings.LDAP_METHOD)
+                        authentication.save()
+                    user = User.objects.get(username=member_name)
+                    user.groups.add(read_group)
+                    # Need to ensure that the user can
+                    user.groups.add(project_read_group)
+                    # traverse the data heirarchy if they are newly created
+                    if sensitive_flg:
+                        user.groups.add(see_all_group)
+                    if download_flg:
+                        user.groups.add(download_group)
+                bundle.data.pop('members')
         return super().hydrate_m2m(bundle)
 
     def obj_create(self, bundle, **kwargs):
