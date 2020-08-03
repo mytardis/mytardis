@@ -1168,7 +1168,7 @@ class ProjectResource(MyTardisModelResource):
                     sensitive_flg = member[1]
                     download_flg = member[2]
                     if not User.objects.filter(username=member).exists():
-                        new_user = get_user_from_upi(member)
+                        new_user = get_user_from_upi(member_name)
                         if not new_user:
                             logger.error('No one found for upi: {member}')
                         user = User.objects.create(username=new_user['username'],
