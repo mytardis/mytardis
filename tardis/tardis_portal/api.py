@@ -1336,7 +1336,6 @@ class ExperimentResource(MyTardisModelResource):
                                        project.id,
                                        django_user,
                                        user.id)
-                bundle.data.pop('admins')
                 bundle.data.pop('members')
             else:
                 project_members = project.get_users_and_perms()
