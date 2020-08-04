@@ -1306,7 +1306,8 @@ class ExperimentResource(MyTardisModelResource):
                         if not User.objects.filter(username=member_name).exists():
                             new_user = get_user_from_upi(member_name)
                             if not new_user:
-                                logger.error('No one found for upi: {member}')
+                                logger.error(
+                                    f'No one found for upi: {member_name}')
                             user = User.objects.create(username=new_user['username'],
                                                        first_name=new_user['first_name'],
                                                        last_name=new_user['last_name'],
