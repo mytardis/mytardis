@@ -1182,19 +1182,18 @@ class ExperimentResource(MyTardisModelResource):
             project_lead = project.lead_researcher
             # TODO: unify this with the view function's ACL creation,
             # maybe through an ACL toolbox.
-            for owner in project_lead:
-                acl = ObjectACL(content_type=experiment.get_ct(),
-                                object_id=experiment.id,
-                                pluginId=django_user,
-                                entityId=str(owner.id),
-                                canRead=True,
-                                canDownload=True,
-                                canWrite=True,
-                                canDelete=True,
-                                canSensitive=True,
-                                isOwner=True,
-                                aclOwnershipType=ObjectACL.OWNER_OWNED)
-                acl.save()
+            acl = ObjectACL(content_type=experiment.get_ct(),
+                            object_id=experiment.id,
+                            pluginId=django_user,
+                            entityId=str(project_lead.id),
+                            canRead=True,
+                            canDownload=True,
+                            canWrite=True,
+                            canDelete=True,
+                            canSensitive=True,
+                            isOwner=True,
+                            aclOwnershipType=ObjectACL.OWNER_OWNED)
+            acl.save()
             if 'admin_groups' in bundle.data.keys():
                 admin_groups = bundle.data.pop('admin_groups')
             else:
