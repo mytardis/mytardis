@@ -1293,6 +1293,7 @@ class ExperimentResource(MyTardisModelResource):
                         create_acl(experiment.get_ct(),
                                    experiment.id,
                                    django_user,
+                                   user.id,
                                    admin=True)
                         # No need to check traverse since they have admin rights in parent
             if 'members' in bundle.data.keys():
