@@ -1247,6 +1247,7 @@ class ExperimentResource(MyTardisModelResource):
             if 'admins' in bundle.data.keys():
                 if bundle.data['admins'] != []:
                     for admin in bundle.data['admins']:
+                        logger.error(admin)
                         if not User.objects.filter(username=admin).exists():
                             new_user = get_user_from_upi(admin)
                             user = User.objects.create(username=new_user['username'],
