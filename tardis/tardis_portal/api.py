@@ -1302,9 +1302,9 @@ class ExperimentResource(MyTardisModelResource):
                     members = bundle.data['members']
                     for member in members:
                         logger.error(member)
-                        member_name = grp[0]
-                        sensitive_flg = grp[1]
-                        download_flg = grp[2]
+                        member_name = member[0]
+                        sensitive_flg = member[1]
+                        download_flg = member[2]
                         if not User.objects.filter(username=member_name).exists():
                             new_user = get_user_from_upi(member_name)
                             if not new_user:
