@@ -1179,7 +1179,7 @@ class ExperimentResource(MyTardisModelResource):
         experiment_admin_users = []
         if getattr(bundle.obj, 'id', False):
             experiment = bundle.obj
-            project_lead = project.get_owners()
+            project_lead = project.lead_researcher
             # TODO: unify this with the view function's ACL creation,
             # maybe through an ACL toolbox.
             for owner in project_lead:
@@ -1210,7 +1210,7 @@ class ExperimentResource(MyTardisModelResource):
                                    django_group,
                                    group.id,
                                    admin=True)
-                    if group not in project.safe.groups(project.id):
+                    if group not in Project.safe.groups(project.id):
                         create_acl(project.get_ct(),
                                    project.id,
                                    django_group,
@@ -1240,7 +1240,7 @@ class ExperimentResource(MyTardisModelResource):
                                download=download_flg,
                                sensitive=sensitive_flg,
                                admin=False)
-                    if group not in project.safe.groups(project.id):
+                    if group not in Project.safe.groups(project.id):
                         create_acl(project.get_ct(),
                                    project.id,
                                    django_group,
@@ -1269,7 +1269,7 @@ class ExperimentResource(MyTardisModelResource):
                                    django_user,
                                    user.id,
                                    admin=True)
-                        if user not in project.safe.users(project.id):
+                        if user not in Project.safe.users(project.id):
                             create_acl(project.get_ct(),
                                        project.id,
                                        django_user,
@@ -1329,7 +1329,7 @@ class ExperimentResource(MyTardisModelResource):
                                    download=download_flg,
                                    sensitive=sensitive_flg,
                                    admin=False)
-                        if user not in project.safe.users(project.id):
+                        if user not in Project.safe.users(project.id):
                             create_acl(project.get_ct(),
                                        project.id,
                                        django_user,
