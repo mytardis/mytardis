@@ -178,14 +178,15 @@ def gen_random_password():
     return password
 
 
-def create_group_acl(content_type,
-                     object_id,
-                     group_id,
-                     write=False,
-                     download=False,
-                     sensitive=False,
-                     owner=False,
-                     admin=False):
+def create_acl(content_type,
+               object_id,
+               plugin_id,
+               entity_id,
+               write=False,
+               download=False,
+               sensitive=False,
+               owner=False,
+               admin=False):
     if admin:
         download = True
         sensitive = True
@@ -193,7 +194,7 @@ def create_group_acl(content_type,
         write = True
     acl = ObjectACL(content_type=content_type,
                     object_id=object_id,
-                    pluginId=django_group,
+                    pluginId=plugin_id,
                     entityId=str(group_id),
                     canRead=True,
                     canDownload=download,
@@ -851,92 +852,6 @@ class MyTardisModelResource(ModelResource):
         serializer = default_serializer
         object_class = None
 
-
-'''# CHRIS - expose user profile to the API - allow addition of ORCIDs
-# Used to link user with user profile for user authentication
-# creation.
-class UserProfileResource(MyTardisModelResource):
-    user = fields.OneToOneField(UserResource, 'user')
-
-    class Meta:
-        authentication = default_authentication
-        authorization = ACLAuthorization()
-        queryset = UserProfile.objects.all()
-        fields = ['user',
-                  'orcid']
-        serializer = default_serializer
-        filtering = {
-            'user': ('exact', ),
-        }
-        allowed_methods = ['get']
-        always_return_data = True
-
-    def dehydrate(self, bundle):
-        authuser = bundle.request.user
-        authenticated = authuser.is_authenticated
-        if authenticated and \
-                (same_user or facilities_managed_by(authuser).count() > 0):
-            return bundle
-
-    def hydrate(self, bundle):
-        required_fields = ['user']
-        return bundle
-
-    def obj_create(self,
-                   bundle,
-                   **kwargs):
-        bundle = super().obj_create(bundle,
-                                    **kwargs)
-        return bundle
-
-#####################################
-# CHRIS - expose user authentication to API
-class UserAuthenticationResource(MyTardisModelResource):
-    userProfile = fields.ForeignKey(UserProfileResource, attribute='userProfile',
-                                    null=True, blank=True, full=True)
-
-    class Meta:
-        authentication = default_authentication
-        authorization = ACLAuthorization()
-        queryset = UserAuthentication.objects.all()
-        fields = ['user_id',
-                  'userProfile',
-                  'authenticationMethod',
-                  'username']
-        serializer = default_serializer
-        filtering = {
-            'user_id': ('exact', ),
-        }
-        always_return_data = True
-
-    def dehydrate(self, bundle):
-        authuser = bundle.request.user
-        authenticated = authuser.is_authenticated
-        if authenticated and \
-                (same_user or facilities_managed_by(authuser).count() > 0):
-            return bundle
-
-    def hydrate(self, bundle):
-        required_fields = ['user_id',
-                           'userProfile',
-                           'username']
-        #username = bundle.data['username']
-        user_id = bundle.data['user_id']
-        try:
-            userProfile = UserProfile.objects.filter(user_id=user_id)
-        except User.DoesNotExist:
-            raise
-        bundle.data['userProfile'] = userProfile
-        return bundle
-
-    def obj_create(self,
-                   bundle,
-                   **kwargs):
-        bundle.data['authenticationMethod'] = settings.LDAP_METHOD
-        bundle = super().obj_create(bundle, **kwargs)
-        return bundle
-######################################'''
-
 # CHRIS - refactored to account for the new model
 
 
@@ -1038,79 +953,22 @@ class ProjectResource(MyTardisModelResource):
         '''
         project_groups = []
         project_admin_groups = []
+        project_admin_users = []
         if getattr(bundle.obj, 'id', False):
             project = bundle.obj
-            admin_group_name = f'Project-{bundle.data["raid"]}_admin'.replace(
-                '/', '-')
-            read_group_name = f'Project-{bundle.data["raid"]}_read'.replace(
-                '/', '-')
-            download_group_name = f'Project-{bundle.data["raid"]}_download'.replace(
-                '/', '-')
-            see_all_group_name = f'Project-{bundle.data["raid"]}_see_all'.replace(
-                '/', '-')
-            admin_group, created = Group.objects.get_or_create(
-                name=admin_group_name)
-            project_admin_groups.append(admin_group)
-            project_groups.append(admin_group)
-            if created:
-                admin_group.permissions.set(admin_perms)
-            read_group, created = Group.objects.get_or_create(
-                name=read_group_name)
-            project_groups.append(read_group)
-            if created:
-                read_group.permissions.set(member_perms)
-            download_group, created = Group.objects.get_or_create(
-                name=download_group_name)
-            project_groups.append(download_group)
-            if created:
-                download_group.permissions.set(member_perms)
-            see_all_group, created = Group.objects.get_or_create(
-                name=see_all_group_name)
-            project_groups.append(see_all_group)
-            if created:
-                see_all_group.permissions.set(member_perms)
-            create_group_acl(project.get_ct(),
-                             project.id,
-                             admin_group.id,
-                             admin=True)
-            create_group_acl(project.get_ct(),
-                             project.id,
-                             read_group.id)
-            create_group_acl(project.get_ct(),
-                             project.id,
-                             download_group.id,
-                             download=True)
-            create_group_acl(project.get_ct(),
-                             project.id,
-                             see_all_group.id,
-                             sensitive=True)
             project_lead = project.lead_researcher
             # TODO: unify this with the view function's ACL creation,
             # maybe through an ACL toolbox.
-            acl = ObjectACL(content_type=project.get_ct(),
-                            object_id=project.id,
-                            pluginId=django_user,
-                            entityId=str(bundle.request.user.id),
-                            canRead=True,
-                            canDownload=True,
-                            canWrite=True,
-                            canDelete=True,
-                            canSensitive=True,
-                            isOwner=True,
-                            aclOwnershipType=ObjectACL.OWNER_OWNED)
-            acl.save()
-            acl = ObjectACL(content_type=project.get_ct(),
-                            object_id=project.id,
-                            pluginId=django_user,
-                            entityId=str(project_lead.id),
-                            canRead=True,
-                            canDownload=True,
-                            canWrite=True,
-                            canDelete=True,
-                            canSensitive=True,
-                            isOwner=True,
-                            aclOwnershipType=ObjectACL.OWNER_OWNED)
-            acl.save()
+            create_acl(project.get_ct(),
+                       project.id,
+                       django_user,
+                       str(bundle.request.user.id),
+                       admin=True)
+            create_acl(project.get_ct(),
+                       project.id,
+                       django_user,
+                       str(project_lead.id),
+                       admin=True)
             if 'admin_groups' in bundle.data.keys():
                 for grp in bundle.data['admin_groups']:
                     group, created = Group.objects.get_or_create(name=grp)
@@ -1118,10 +976,11 @@ class ProjectResource(MyTardisModelResource):
                     project_groups.append(group)
                     if created:
                         group.permissions.set(admin_perms)
-                    create_group_acl(project.get_ct(),
-                                     project.id,
-                                     group.id,
-                                     admin=True)
+                    create_acl(project.get_ct(),
+                               project.id,
+                               django_group,
+                               group.id,
+                               admin=True)
                 bundle.data.pop('admin_groups')
             if 'member_groups' in bundle.data.keys():
                 # Each member group is defined by a tuple
@@ -1135,13 +994,14 @@ class ProjectResource(MyTardisModelResource):
                     project_groups.append(group)
                     if created:
                         group.permissions.set(member_perms)
-                    create_group_acl(project.get_ct(),
-                                     project.id,
-                                     group.id,
-                                     write=True,
-                                     download=download_flg,
-                                     sensitive=sensitive_flg,
-                                     admin=False)
+                    create_acl(project.get_ct(),
+                               project.id,
+                               django_group,
+                               group.id,
+                               write=True,
+                               download=download_flg,
+                               sensitive=sensitive_flg,
+                               admin=False)
                 bundle.data.pop('member_groups')
             if 'admins' in bundle.data.keys():
                 for admin in bundle.data['admins']:
@@ -1159,8 +1019,13 @@ class ProjectResource(MyTardisModelResource):
                                                             username=new_user['username'],
                                                             authenticationMethod=settings.LDAP_METHOD)
                         authentication.save()
-                        user = User.objects.get(username=admin)
-                        user.groups.add(admin_group)
+                    user = User.objects.get(username=admin)
+                    project_admin_users.append(user)
+                    create_acl(project.get_ct(),
+                               project.id,
+                               django_user,
+                               user.id,
+                               admin=True)
                 bundle.data.pop('admins')
             if 'members' in bundle.data.keys():
                 for member in bundle.data['members']:
@@ -1184,19 +1049,22 @@ class ProjectResource(MyTardisModelResource):
                                                             authenticationMethod=settings.LDAP_METHOD)
                         authentication.save()
                     user = User.objects.get(username=member_name)
-                    user.groups.add(read_group)
-                    if sensitive_flg:
-                        user.groups.add(see_all_group)
-                    if download_flg:
-                        user.groups.add(download_group)
+                    create_acl(project.get_ct(),
+                               project.id,
+                               django_user,
+                               user.id,
+                               write=True,
+                               download=download_flg,
+                               sensitive=sensitive_flg,
+                               admin=False)
                 bundle.data.pop('members')
             for group in project_groups:
-                logger.error(f'Creating group admin for {group}')
                 group_admin, _ = GroupAdmin.objects.get_or_create(user=bundle.request.user,
                                                                   group=group)
                 for admin in project_admin_groups:
                     group_admin.admin_groups.add(admin.id)
-                logger.error(group_admin)
+                for admin in project_admin_users:
+                    group_admin.admin_users.add(admin.id)
         return super().hydrate_m2m(bundle)
 
     def obj_create(self, bundle, **kwargs):
@@ -1308,63 +1176,9 @@ class ExperimentResource(MyTardisModelResource):
                 raise  # This probably should raise an error
         experiment_groups = []
         experiment_admin_groups = []
+        experiment_admin_users = []
         if getattr(bundle.obj, 'id', False):
             experiment = bundle.obj
-            project_raid = project.raid
-            project_admin_group_name = f'Project-{project_raid}_admin'.replace(
-                '/', '-')
-            project_read_group_name = f'Project-{project_raid}_read'.replace(
-                '/', '-')
-            project_read_group = Group.objects.get_or_create(
-                name=project_read_group_name)
-            project_download_group_name = f'Project-{project_raid}_download'.replace(
-                '/', '-')
-            project_see_all_group_name = f'Project-{project_raid}_see_all'.replace(
-                '/', '-')
-            admin_group_name = f'Experiment-{bundle.data["raid"]}_admin'.replace(
-                '/', '-')
-            read_group_name = f'Experiment-{bundle.data["raid"]}_read'.replace(
-                '/', '-')
-            download_group_name = f'Experiment-{bundle.data["raid"]}_download'.replace(
-                '/', '-')
-            see_all_group_name = f'Experiment-{bundle.data["raid"]}_see_all'.replace(
-                '/', '-')
-            admin_group, created = Group.objects.get_or_create(
-                name=admin_group_name)
-            experiment_admin_groups.append(admin_group)
-            experiment_groups.append(admin_group)
-            if created:
-                admin_group.permissions.set(admin_perms)
-            read_group, created = Group.objects.get_or_create(
-                name=read_group_name)
-            experiment_groups.append(read_group)
-            if created:
-                read_group.permissions.set(member_perms)
-            download_group, created = Group.objects.get_or_create(
-                name=download_group_name)
-            experiment_groups.append(download_group)
-            if created:
-                download_group.permissions.set(member_perms)
-            see_all_group, created = Group.objects.get_or_create(
-                name=see_all_group_name)
-            experiment_groups.append(see_all_group)
-            if created:
-                see_all_group.permissions.set(member_perms)
-            create_group_acl(experiment.get_ct(),
-                             experiment.id,
-                             admin_group.id,
-                             admin=True)
-            create_group_acl(experiment.get_ct(),
-                             project.id,
-                             read_group.id)
-            create_group_acl(experiment.get_ct(),
-                             project.id,
-                             download_group.id,
-                             download=True)
-            create_group_acl(experiment.get_ct(),
-                             project.id,
-                             see_all_group.id,
-                             sensitive=True)
             project_lead = project.get_owners()
             # TODO: unify this with the view function's ACL creation,
             # maybe through an ACL toolbox.
@@ -1387,15 +1201,20 @@ class ExperimentResource(MyTardisModelResource):
                 admin_groups = project.get_admins()
             if admin_groups != []:
                 for grp in admin_groups:
-                    if grp != project_admin_group_name:
-                        group, created = Group.objects.get_or_create(name=grp)
-                        experiment_admin_groups.append(group)
-                        if created:
-                            group.permissions.set(admin_perms)
-                            create_group_acl(experiment.get_ct(),
-                                             experiment.id,
-                                             group.id,
-                                             admin=True)
+                    group, created = Group.objects.get_or_create(name=grp)
+                    experiment_admin_groups.append(group)
+                    if created:
+                        group.permissions.set(admin_perms)
+                        create_acl(experiment.get_ct(),
+                                   experiment.id,
+                                   django_group,
+                                   group.id,
+                                   admin=True)
+                    if group not in project.safe.groups(project.id):
+                        create_acl(project.get_ct(),
+                                   project.id,
+                                   django_group,
+                                   group.id)
             if 'member_groups' in bundle.data.keys():
                 member_groups = bundle.data.pop('member_groups')
             else:
@@ -1403,12 +1222,9 @@ class ExperimentResource(MyTardisModelResource):
                 # Each member group is defined by a tuple
                 # (group_name, sensitive[T/F], download[T/F])
                 # unpack for ACLs
+                logger.error(f'Groups to append: {member_groups}')
             if member_groups != []:
                 for grp in member_groups:
-                    if grp[0] == project_read_group_name or \
-                       grp[0] == project_download_group_name or \
-                       grp[0] == project_see_all_group_name:
-                        continue
                     grp_name = grp[0]
                     sensitive_flg = grp[1]
                     download_flg = grp[2]
@@ -1416,13 +1232,19 @@ class ExperimentResource(MyTardisModelResource):
                     experiment_groups.append(group)
                     if created:
                         group.permissions.set(member_perms)
-                    create_group_acl(experiment.get_ct(),
-                                     experiment.id,
-                                     group.id,
-                                     write=True,
-                                     download=download_flg,
-                                     sensitive=sensitive_flg,
-                                     admin=False)
+                    create_acl(experiment.get_ct(),
+                               experiment.id,
+                               django_group,
+                               group.id,
+                               write=True,
+                               download=download_flg,
+                               sensitive=sensitive_flg,
+                               admin=False)
+                    if group not in project.safe.groups(project.id):
+                        create_acl(project.get_ct(),
+                                   project.id,
+                                   django_group,
+                                   group.id)
             if 'admins' in bundle.data.keys():
                 if bundle.data['admins'] != []:
                     for admin in bundle.data['admins']:
@@ -1441,14 +1263,25 @@ class ExperimentResource(MyTardisModelResource):
                                                                 authenticationMethod=settings.LDAP_METHOD)
                             authentication.save()
                         user = User.objects.get(username=admin)
-                        user.groups.add(admin_group)
-                        user.groups.add(project_read_group)
+                        experiment_admin_users.append(user)
+                        create_acl(experiment.get_ct(),
+                                   experiment.id,
+                                   django_user,
+                                   user.id,
+                                   admin=True)
+                        if user not in project.safe.users(project.id):
+                            create_acl(project.get_ct(),
+                                       project.id,
+                                       django_user,
+                                       user.id)
                 bundle.data.pop('admins')
             else:
                 # Cascade the admin from the project level
-                project_admins = User.objects.filter(
-                    groups__name=project_admin_group_name)
+                project_admins = project.get_owners()
                 for user in project_admins:
+                    if user.username == project.lead_researcher:
+                        # Lead researchers get all perms
+                        continue
                     add_flg = True
                     if 'members' in bundle.data.keys():
                         for member in bundle.data['members']:
@@ -1457,7 +1290,11 @@ class ExperimentResource(MyTardisModelResource):
                                 # been downgraded
                                 add_flg = False
                     if add_flg:
-                        user.groups.add(admin_group)
+                        create_acl(experiment.get_ct(),
+                                   experiment.id,
+                                   django_user,
+                                   admin=True)
+                        # No need to check traverse since they have admin rights in parent
             if 'members' in bundle.data.keys():
                 # error checking needs to be done externally for this to
                 # function as desired.
@@ -1484,34 +1321,44 @@ class ExperimentResource(MyTardisModelResource):
                                                                 authenticationMethod=settings.LDAP_METHOD)
                             authentication.save()
                         user = User.objects.get(username=member_name)
-                        user.groups.add(read_group)
-                        # Need to ensure that the user can
-                        user.groups.add(project_read_group)
-                        # traverse the data heirarchy if they are newly created
-                        if sensitive_flg:
-                            user.groups.add(see_all_group)
-                        if download_flg:
-                            user.groups.add(download_group)
+                        create_acl(experiment.get_ct(),
+                                   experiment.id,
+                                   django_user,
+                                   user.id,
+                                   write=True,
+                                   download=download_flg,
+                                   sensitive=sensitive_flg,
+                                   admin=False)
+                        if user not in project.safe.users(project.id):
+                            create_acl(project.get_ct(),
+                                       project.id,
+                                       django_user,
+                                       user.id)
+                bundle.data.pop('admins')
                 bundle.data.pop('members')
             else:
-                read_users = User.objects.filter(
-                    groups__name=project_read_group_name)
-                for user in read_users:
-                    user.groups.add(read_group)
-                download_users = User.objects.filter(
-                    groups__name=project_download_group_name)
-                for user in download_users:
-                    user.groups.add(download_group)
-                see_all_users = User.objects.filter(
-                    groups__name=project_see_all_group_name)
-                for user in see_all_users:
-                    user.groups.add(see_all_group)
+                project_members = project.get_users_and_perms()
+                for user_tuple in project_members:
+                    user, sensitive, download = user_tuple
+                    if user.username == project.lead_researcher:
+                        # Lead researchers get all perms
+                        continue
+                    create_acl(experiment.get_ct(),
+                               experiment.id,
+                               django_user,
+                               user.id,
+                               write=True,
+                               download=download,
+                               sensitive=sensitive,
+                               admin=False)
         for group in experiment_groups:
             logger.error(f'Creating group admin for {group}')
             group_admin, _ = GroupAdmin.objects.get_or_create(user=bundle.request.user,
                                                               group=group)
             for admin in experiment_admin_groups:
                 group_admin.admin_groups.add(admin.id)
+            for admin in experiment_admin_users:
+                group_admin.admin_users.add(admin.id)
             logger.error(group_admin)
         return super().hydrate_m2m(bundle)
 
