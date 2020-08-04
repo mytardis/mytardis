@@ -1301,6 +1301,7 @@ class ExperimentResource(MyTardisModelResource):
                 if bundle.data['members'] != []:
                     members = bundle.data['members']
                     for member in members:
+                        logger.error(member)
                         member_name = grp[0]
                         sensitive_flg = grp[1]
                         download_flg = grp[2]
