@@ -3,7 +3,6 @@ import makeMockStore from "../../../util/makeMockStore";
 import { PureFiltersSection } from './FiltersSection';
 import { schemaData,allSchemaIdsData } from '../type-schema-list/TypeSchemaList.stories';
 import { Provider } from "react-redux";
-import { error } from 'jquery';
 
 export default {
   component: PureFiltersSection,

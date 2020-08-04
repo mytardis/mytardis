@@ -1,6 +1,7 @@
 import logging
 
 from django.contrib.auth.models import User
+from django.db.models.signals import post_save
 from elasticsearch_dsl import analysis, analyzer
 from django_elasticsearch_dsl import Document, fields
 from django_elasticsearch_dsl.registries import registry
@@ -86,7 +87,8 @@ class ProjectDocument(Document):
         if isinstance(related_instance, User):
             return related_instance.project_set.all()
         if isinstance(related_instance, ObjectACL):
-            if related_instance.content_type == 'project':
+            # This is a nasty hack to make sure the content type is correct - CHANGE THIS
+            if related_instance.content_object.get_ct() == Project.objects.first().get_ct():
                 return related_instance.content_object
         if isinstance(related_instance, ProjectParameterSet):
             return related_instance.project
@@ -162,7 +164,8 @@ class ExperimentDocument(Document):
         if isinstance(related_instance, User):
             return related_instance.experiment_set.all()
         if isinstance(related_instance, ObjectACL):
-            if related_instance.content_type == 'experiment':
+            # This is a nasty hack to make sure the content type is correct - CHANGE THIS
+            if related_instance.content_object.get_ct() == Experiment.objects.first().get_ct():
                 return related_instance.content_object
         if isinstance(related_instance, ExperimentParameterSet):
             return related_instance.experiment
@@ -240,7 +243,8 @@ class DatasetDocument(Document):
         if isinstance(related_instance, Instrument):
             return related_instance.dataset_set.all()
         if isinstance(related_instance, ObjectACL):
-            if related_instance.content_type == 'dataset':
+            # This is a nasty hack to make sure the content type is correct - CHANGE THIS
+            if related_instance.content_object.get_ct() == Dataset.objects.first().get_ct():
                 return related_instance.content_object
         if isinstance(related_instance, DatasetParameterSet):
             return related_instance.dataset
@@ -315,7 +319,8 @@ class DataFileDocument(Document):
         if isinstance(related_instance, Project):
             return DataFile.objects.filter(dataset__experiments__project=related_instance)
         if isinstance(related_instance, ObjectACL):
-            if related_instance.content_type == 'datafile':
+            # This is a nasty hack to make sure the content type is correct - CHANGE THIS
+            if related_instance.content_object.get_ct() == DataFile.objects.first().get_ct():
                 return related_instance.content_object
         if isinstance(related_instance, DatafileParameterSet):
             return related_instance.datafile
@@ -326,3 +331,19 @@ class DataFileDocument(Document):
         if isinstance(related_instance, ParameterName):
             return DataFile.objects.filter(datafileparameterset__schema__parametername=related_instance)
         return None
+
+
+def update_search(instance, **kwargs):
+    if isinstance(instance, Project):
+        instance.to_search().save()
+    if isinstance(instance, Experiment):
+        instance.to_search().save()
+    if isinstance(instance, Dataset):
+        instance.to_search().save()
+    if isinstance(instance, DataFile):
+        instance.to_search().save()
+
+post_save.connect(update_search, sender=Project)
+post_save.connect(update_search, sender=Experiment)
+post_save.connect(update_search, sender=Dataset)
+post_save.connect(update_search, sender=DataFile)

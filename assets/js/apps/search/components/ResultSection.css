@@ -1,0 +1,26 @@
+.result-row--download-col {
+    width: 100px;
+}
+
+.result-section--msg {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 300px;
+}
+
+.result-section--error-msg {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+.result-section--tabpanel {
+    border-left: 1px solid #dee2e6;
+    border-right: 1px solid #dee2e6;
+    border-bottom: 1px solid #dee2e6;
+    padding: 1em;
+    padding-bottom: 2em;
+}
+
+.result-section--count-summary {
+    padding: 1em 0; 
+}

@@ -467,3 +467,18 @@ class Dataset(models.Model):
             }
             dir_list.append(child_dict)
         return dir_list
+
+    def to_search(self):
+        from tardis.apps.search.documents import DatasetDocument as DatasetDoc
+        metadata = {"id":self.id,
+                    "description":self.description,
+                    "created_time":self.created_time,
+                    "experiments":self.experiments,
+                    "objectacls":self.objectacls,
+                    "instrument":self.instrument,
+                    "modified_time":self.modified_time,
+                    "created_time":self.created_time,
+                    "tags":self.tags_for_indexing,
+                    "parameters":self.getParametersforIndexing()
+                    }
+        return DatasetDoc(meta=metadata)
