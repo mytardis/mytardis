@@ -119,7 +119,8 @@ def get_nested_count(request, obj_id, ct_type):
 
 def get_nested_has_download(request, obj_id, ct_type):
     if ct_type == "project":
-        dfs = DataFile.safe.all(request.user).filter(dataset__experiments__project__id=obj_id)
+        dfs = DataFile.safe.all(request.user).filter(
+            dataset__experiments__project__id=obj_id)
     if ct_type == "experiment":
         dfs = DataFile.safe.all(request.user).filter(dataset__experiments__id=obj_id)
     if ct_type == "dataset":
@@ -306,7 +307,7 @@ def has_delete_permissions(request, experiment_id):
 def is_group_admin(request, group_id):
     user_check = GroupAdmin.objects.filter(user=request.user,
                                            group__id=group_id).exists()
-    admin_user_check = GroupAdmin.objects.filter(admin_users=request.user,
+    admin_user_check = GroupAdmin.objects.filter(admin_users__id=request.user.id,
                                                 group__id=group_id).exists()
     admin_group_check = any([GroupAdmin.objects.filter(admin_groups__id=group.id,
             group__id=group_id).exists() for group in request.user.groups.all()])
