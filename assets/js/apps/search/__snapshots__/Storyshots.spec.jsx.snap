@@ -3468,7 +3468,7 @@ exports[`Storyshots Result list All Access 1`] = `
     className="table-responsive"
   >
     <table
-      className="table table-striped table-bordered table-hover"
+      className="table table-hover"
     >
       <thead>
         <tr>
@@ -3524,7 +3524,7 @@ exports[`Storyshots Result list Default 1`] = `
     className="table-responsive"
   >
     <table
-      className="table table-striped table-bordered table-hover"
+      className="table table-hover"
     >
       <thead>
         <tr>
@@ -3726,7 +3726,7 @@ exports[`Storyshots Result list Some Access 1`] = `
     className="table-responsive"
   >
     <table
-      className="table table-striped table-bordered table-hover"
+      className="table table-hover"
     >
       <thead>
         <tr>
@@ -3809,7 +3809,7 @@ exports[`Storyshots Result list View Only Access 1`] = `
     className="table-responsive"
   >
     <table
-      className="table table-striped table-bordered table-hover"
+      className="table table-hover"
     >
       <thead>
         <tr>
@@ -4064,16 +4064,17 @@ exports[`Storyshots Result tabs Empty Counts 1`] = `
 
 exports[`Storyshots Search page Default 1`] = `
 <div
-  className="search-page container-xl"
+  className="search-page"
 >
   <h1>
     Search
   </h1>
   <div
-    className="search-screen row"
+    className="search-screen"
   >
     <aside
-      className="filter-column col-md-4"
+      className="filter-column"
+      md={4}
     >
       <div
         className="filter-sidebar"
@@ -5117,7 +5118,8 @@ exports[`Storyshots Search page Default 1`] = `
       </div>
     </aside>
     <main
-      className="result-column col-md-8"
+      className="result-column"
+      md={8}
     >
       <div
         className="nav nav-tabs"
@@ -5220,7 +5222,7 @@ exports[`Storyshots Search page Default 1`] = `
           className="table-responsive"
         >
           <table
-            className="table table-striped table-bordered table-hover"
+            className="table table-hover"
           >
             <thead>
               <tr>
@@ -5373,16 +5375,17 @@ exports[`Storyshots Search page Default 1`] = `
 
 exports[`Storyshots Search page Error 1`] = `
 <div
-  className="search-page container-xl"
+  className="search-page"
 >
   <h1>
     Search
   </h1>
   <div
-    className="search-screen row"
+    className="search-screen"
   >
     <aside
-      className="filter-column col-md-4"
+      className="filter-column"
+      md={4}
     >
       <div
         className="filter-sidebar"
@@ -6426,7 +6429,8 @@ exports[`Storyshots Search page Error 1`] = `
       </div>
     </aside>
     <main
-      className="result-column col-md-8"
+      className="result-column"
+      md={8}
     >
       <div
         className="nav nav-tabs"
@@ -6511,16 +6515,17 @@ exports[`Storyshots Search page Error 1`] = `
 
 exports[`Storyshots Search page Loading 1`] = `
 <div
-  className="search-page container-xl"
+  className="search-page"
 >
   <h1>
     Search
   </h1>
   <div
-    className="search-screen row"
+    className="search-screen"
   >
     <aside
-      className="filter-column col-md-4"
+      className="filter-column"
+      md={4}
     >
       <div
         className="filter-sidebar"
@@ -7564,7 +7569,8 @@ exports[`Storyshots Search page Loading 1`] = `
       </div>
     </aside>
     <main
-      className="result-column col-md-8"
+      className="result-column"
+      md={8}
     >
       <div
         className="nav nav-tabs"

@@ -90,27 +90,61 @@ def get_nested_size(request, obj_id, ct_type):
 
 
 def get_nested_count(request, obj_id, ct_type):
+
     if ct_type == "project":
-        count = {
-                 "experiments" : Experiment.safe.all(request.user).filter(
-                                                project__id=obj_id).count(),
-                 "datasets" : Dataset.safe.all(request.user).filter(
-                                      experiments__project__id=obj_id).count(),
-                 "datafiles" : DataFile.safe.all(request.user).filter(
-                             dataset__experiments__project__id=obj_id).count()
-                 }
+        obj = Project.objects.get(id=obj_id)
+
+        experiments = [id for id in obj.experiment_set.all().values_list('id', flat=True)]
+
+        for idx, df in enumerate(experiments):
+            if not has_access(request, df, "experiment"):
+                experiments.pop(idx)
+
+        datasets = [id for exp in experiments for id in Experiment.objects.get(
+                     id=exp).datasets.all().values_list('id', flat=True)]
+
+        for idx, df in enumerate(datasets):
+            if not has_access(request, df, "dataset"):
+                datasets.pop(idx)
+
+        datafiles = [id for set in datasets for id in Dataset.objects.get(
+                     id=set).datafile_set.all().values_list('id', flat=True)]
+
+        for idx, df in enumerate(datafiles):
+            if not has_access(request, df, "datafile"):
+                datafiles.pop(idx)
+
+        count = {"experiments" :experiments, "datasets" :datasets, "datafiles" : datafiles}
+
     if ct_type == "experiment":
-        count = {
-                 "datasets" : Dataset.safe.all(request.user).filter(
-                                      experiments__id=obj_id).count(),
-                 "datafiles" : DataFile.safe.all(request.user).filter(
-                                    dataset__experiments__id=obj_id).count()
-                 }
+        obj = Experiment.objects.get(id=obj_id)
+
+        datasets = [id for id in obj.datasets.all().values_list('id', flat=True)]
+
+        for idx, df in enumerate(datasets):
+            if not has_access(request, df, "dataset"):
+                datasets.pop(idx)
+
+        datafiles = [id for set in datasets for id in Dataset.objects.get(
+                     id=set).datafile_set.all().values_list('id', flat=True)]
+
+        for idx, df in enumerate(datafiles):
+            if not has_access(request, df, "datafile"):
+                datafiles.pop(idx)
+
+        count = {"datasets" : len(datasets), "datafiles" :len(datafiles)}
+
     if ct_type == "dataset":
-        count = {
-                 "datafiles" : DataFile.safe.all(request.user).filter(
-                                            dataset__id=obj_id).count()
-                 }
+        obj = Dataset.objects.get(id=obj_id)
+
+        datafiles = [id for id in obj.datafile_set.all().values_list('id', flat=True)]
+
+        for idx, df in enumerate(datafiles):
+            if not has_access(request, df, "datafile"):
+                datafiles.pop(idx)
+
+        count = {"datafiles" : len(datafiles)}
+
     return count
 
 
@@ -195,40 +229,26 @@ def has_write(request, obj_id, ct_type):
 
 def has_download_access(request, obj_id, ct_type):
     if ct_type == 'project':
-        return Project.safe.owned_and_shared(request.user, downloadable=True
-                                             ).filter(id=obj_id).exists()
-    if ct_type == 'experiment': # Retain public functionality for now
-        if Experiment.safe.owned_and_shared(request.user, downloadable=True
-                                                ).filter(id=obj_id).exists():
-            return True
-        else:
-            exp = Experiment.objects.get(id=obj_id)
-            return Experiment.public_access_implies_distribution(exp.public_access)
+        obj = Project.objects.get(id=obj_id)
+    if ct_type == 'experiment':
+        obj = Experiment.objects.get(id=obj_id)
     if ct_type == 'dataset':
-        return Dataset.safe.owned_and_shared(request.user, downloadable=True
-                                             ).filter(id=obj_id).exists()
+        obj = Dataset.objects.get(id=obj_id)
     if ct_type == 'datafile':
-        return DataFile.safe.owned_and_shared(request.user, downloadable=True
-                                              ).filter(id=obj_id).exists()
+        obj = DataFile.objects.get(id=obj_id)
+    return request.user.has_perm('tardis_acls.download_'+ct_type, obj)
 
 
 def has_sensitive_access(request, obj_id, ct_type):
     if ct_type == 'project':
-        return Project.safe.owned_and_shared(request.user, viewsensitive=True
-                                             ).filter(id=obj_id).exists()
-    if ct_type == 'experiment': # Retain public functionality for now
-        if Experiment.safe.owned_and_shared(request.user, viewsensitive=True
-                                             ).filter(id=obj_id).exists():
-            return True
-        else:
-            exp = Experiment.objects.get(id=obj_id)
-            return Experiment.public_access_implies_distribution(exp.public_access)
+        obj = Project.objects.get(id=obj_id)
+    if ct_type == 'experiment':
+        obj = Experiment.objects.get(id=obj_id)
     if ct_type == 'dataset':
-        return Dataset.safe.owned_and_shared(request.user, viewsensitive=True
-                                             ).filter(id=obj_id).exists()
+        obj = Dataset.objects.get(id=obj_id)
     if ct_type == 'datafile':
-        return DataFile.safe.owned_and_shared(request.user, viewsensitive=True
-                                             ).filter(id=obj_id).exists()
+        obj = DataFile.objects.get(id=obj_id)
+    return request.user.has_perm('tardis_acls.sensitive_'+ct_type, obj)
 
 
 def has_read_or_owner_ACL(request, obj_id, ct_type):

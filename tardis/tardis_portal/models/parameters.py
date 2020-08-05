@@ -546,7 +546,7 @@ class ProjectParameterSet(ParameterSet):
     parameter_class = ProjectParameter
 
     def _get_label(self):
-        return('project.project_name', 'Project')
+        return('project.name', 'Project')
 
 @python_2_unicode_compatible
 class FreeTextSearchField(models.Model):
