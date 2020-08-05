@@ -1,25 +1,29 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import './SearchPage.css'
-import Container from 'react-bootstrap/Container'
-import Row from 'react-bootstrap/Row'
-import Col from 'react-bootstrap/Col'
+import { runSearch } from "./searchSlice";
+import { useDispatch } from "react-redux";
 import FilterSidebar from './FilterSidebar'
 import ResultSection from './ResultSection'
 
-export const PureSearchPage = () => {
+export const SearchPage = () => {
+    const dispatch = useDispatch();
+    useEffect(() => {
+        // Run a search to get initial results.
+        dispatch(runSearch());
+    },[dispatch]);
     return (
-            <Container fluid="xl" className="search-page">
+            <div className="search-page">
                 <h1>Search</h1>
-                <Row className="search-screen">
-                    <Col as="aside" className="filter-column" md={4}>
+                <div className="search-screen">
+                    <aside className="filter-column" md={4}>
                         <FilterSidebar />
-                    </Col>
-                    <Col as="main" className="result-column" md={8}>
+                    </aside>
+                    <main className="result-column" md={8}>
                         <ResultSection />
-                    </Col>
-                </Row>
-            </Container>
+                    </main>
+                </div>
+            </div>
     )
 }
 
-export default PureSearchPage;
+export default SearchPage;

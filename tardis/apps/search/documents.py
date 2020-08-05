@@ -1,13 +1,16 @@
 import logging
 
 from django.contrib.auth.models import User
+from django.db.models.signals import post_save
 from elasticsearch_dsl import analysis, analyzer
 from django_elasticsearch_dsl import Document, fields
 from django_elasticsearch_dsl.registries import registry
 
 from tardis.tardis_portal.models import Project, Dataset, Experiment, \
-    DataFile, Instrument, ObjectACL, ExperimentParameter, ProjectParameter, \
-    DatasetParameter, DatafileParameter
+    DataFile, Instrument, ObjectACL, ParameterName, Schema, ProjectParameter, \
+    ExperimentParameter, DatasetParameter, DatafileParameter, \
+    ProjectParameterSet, ExperimentParameterSet, DatasetParameterSet, \
+    DatafileParameterSet
 
 
 logger = logging.getLogger(__name__)
@@ -77,14 +80,24 @@ class ProjectDocument(Document):
 
     class Django:
         model = Project
-        related_models = [User, ObjectACL]
+        related_models = [User, ObjectACL, Schema, ParameterName,
+                          ProjectParameter, ProjectParameterSet]
 
     def get_instances_from_related(self, related_instance):
         if isinstance(related_instance, User):
             return related_instance.project_set.all()
         if isinstance(related_instance, ObjectACL):
-            if related_instance.content_type == 'project':
+            # This is a nasty hack to make sure the content type is correct - CHANGE THIS
+            if related_instance.content_object.get_ct() == Project.objects.first().get_ct():
                 return related_instance.content_object
+        if isinstance(related_instance, ProjectParameterSet):
+            return related_instance.project
+        if isinstance(related_instance, ProjectParameter):
+            return related_instance.parameterset.project
+        if isinstance(related_instance, Schema):
+            return Project.objects.filter(projectparameterset__schema=related_instance)
+        if isinstance(related_instance, ParameterName):
+            return Project.objects.filter(projectparameterset__schema__parametername=related_instance)
         return None
 
 
@@ -143,16 +156,25 @@ class ExperimentDocument(Document):
 
     class Django:
         model = Experiment
-        related_models = [Project, User, ObjectACL]
-
+        related_models = [Project, User, ObjectACL, Schema, ParameterName,
+                          ExperimentParameter, ExperimentParameterSet]
     def get_instances_from_related(self, related_instance):
         if isinstance(related_instance, Project):
             return related_instance.experiment_set.all()
         if isinstance(related_instance, User):
             return related_instance.experiment_set.all()
         if isinstance(related_instance, ObjectACL):
-            if related_instance.content_type == 'experiment':
+            # This is a nasty hack to make sure the content type is correct - CHANGE THIS
+            if related_instance.content_object.get_ct() == Experiment.objects.first().get_ct():
                 return related_instance.content_object
+        if isinstance(related_instance, ExperimentParameterSet):
+            return related_instance.experiment
+        if isinstance(related_instance, ExperimentParameter):
+            return related_instance.parameterset.experiment
+        if isinstance(related_instance, Schema):
+            return Experiment.objects.filter(experimentparameterset__schema=related_instance)
+        if isinstance(related_instance, ParameterName):
+            return Experiment.objects.filter(experimentparameterset__schema__parametername=related_instance)
         return None
 
 
@@ -210,8 +232,9 @@ class DatasetDocument(Document):
 
     class Django:
         model = Dataset
-        related_models = [Project, Experiment, Instrument, ObjectACL]
-
+        related_models = [Project, Experiment, Instrument, ObjectACL,
+                          Schema, ParameterName, DatasetParameter,
+                          DatasetParameterSet]
     def get_instances_from_related(self, related_instance):
         if isinstance(related_instance, Project):
             return Dataset.objects.filter(experiments__project=related_instance)
@@ -220,8 +243,17 @@ class DatasetDocument(Document):
         if isinstance(related_instance, Instrument):
             return related_instance.dataset_set.all()
         if isinstance(related_instance, ObjectACL):
-            if related_instance.content_type == 'dataset':
+            # This is a nasty hack to make sure the content type is correct - CHANGE THIS
+            if related_instance.content_object.get_ct() == Dataset.objects.first().get_ct():
                 return related_instance.content_object
+        if isinstance(related_instance, DatasetParameterSet):
+            return related_instance.dataset
+        if isinstance(related_instance, DatasetParameter):
+            return related_instance.parameterset.dataset
+        if isinstance(related_instance, Schema):
+            return Dataset.objects.filter(datasetparameterset__schema=related_instance)
+        if isinstance(related_instance, ParameterName):
+            return Dataset.objects.filter(datasetparameterset__schema__parametername=related_instance)
         return None
 
 
@@ -274,7 +306,9 @@ class DataFileDocument(Document):
 
     class Django:
         model = DataFile
-        related_models = [Dataset, Experiment, Project, ObjectACL]
+        related_models = [Dataset, Experiment, Project, ObjectACL,
+                          Schema, ParameterName, DatafileParameter,
+                          DatafileParameterSet]
         queryset_pagination = 100000
 
     def get_instances_from_related(self, related_instance):
@@ -285,6 +319,31 @@ class DataFileDocument(Document):
         if isinstance(related_instance, Project):
             return DataFile.objects.filter(dataset__experiments__project=related_instance)
         if isinstance(related_instance, ObjectACL):
-            if related_instance.content_type == 'datafile':
+            # This is a nasty hack to make sure the content type is correct - CHANGE THIS
+            if related_instance.content_object.get_ct() == DataFile.objects.first().get_ct():
                 return related_instance.content_object
+        if isinstance(related_instance, DatafileParameterSet):
+            return related_instance.datafile
+        if isinstance(related_instance, DatafileParameter):
+            return related_instance.parameterset.datafile
+        if isinstance(related_instance, Schema):
+            return DataFile.objects.filter(datafileparameterset__schema=related_instance)
+        if isinstance(related_instance, ParameterName):
+            return DataFile.objects.filter(datafileparameterset__schema__parametername=related_instance)
         return None
+
+
+def update_search(instance, **kwargs):
+    if isinstance(instance, Project):
+        instance.to_search().save()
+    if isinstance(instance, Experiment):
+        instance.to_search().save()
+    if isinstance(instance, Dataset):
+        instance.to_search().save()
+    if isinstance(instance, DataFile):
+        instance.to_search().save()
+
+post_save.connect(update_search, sender=Project)
+post_save.connect(update_search, sender=Experiment)
+post_save.connect(update_search, sender=Dataset)
+post_save.connect(update_search, sender=DataFile)

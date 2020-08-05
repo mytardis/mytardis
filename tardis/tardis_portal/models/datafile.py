@@ -257,7 +257,6 @@ class DataFile(models.Model):
                         elif type_idx == 2:
                             param_dict['value'] = str(value)
                         elif type_idx == 3:
-                            #temporary
                             param_dict['value'] = float(value)
                 parameter_groups[param_type[type_idx]].append(param_dict)
         return parameter_groups
@@ -507,6 +506,21 @@ class DataFile(models.Model):
                                         object_id=self.id,
                                         isOwner=True)
         return [acl.get_related_object() for acl in acls]
+
+
+    def to_search(self):
+        from tardis.apps.search.documents import DataFileDocument as DatafileDoc
+        metadata = {"id":self.id,
+                    "filename":self.filename,
+                    "created_time":self.created_time,
+                    "modification_time":self.modification_time,
+                    "dataset":self.dataset,
+                    "objectacls":self.objectacls,
+                    "parameters":self.getParametersforIndexing()
+                    }
+        return DatafileDoc(meta=metadata)
+
+
 
 @python_2_unicode_compatible
 class DataFileObject(models.Model):
