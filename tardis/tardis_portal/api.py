@@ -1504,7 +1504,7 @@ class DatasetResource(MyTardisModelResource):
                 logger.error(
                     f'Unable to locate parent experiment for {bundle.data["description"]}')
                 raise
-            project = experiment__project
+            project = experiment.project
             project_lead = project.lead_researcher
             dataset_admin_groups = []
             dataset_groups = []
