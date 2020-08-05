@@ -7,6 +7,7 @@ import json
 import logging
 from operator import itemgetter
 from urllib.parse import urlencode, urlparse, parse_qs
+import ldap3
 
 from django.conf import settings
 from django.contrib.auth.decorators import login_required, permission_required
@@ -18,6 +19,7 @@ from django.db.models import Q
 from django.http import HttpResponse, JsonResponse
 from django.views.decorators.cache import never_cache
 from django.views.decorators.http import require_POST
+from django.contrib.auth.models import Permission
 
 from ..auth import decorators as authz
 from ..auth.localdb_auth import auth_key as localdb_auth_key, \
@@ -261,6 +263,55 @@ def manage_groups(request):
         request, 'tardis_portal/manage_group_members.html', c)
 
 
+def gen_random_password():
+    import random
+    random.seed()
+    characters = 'abcdefghijklmnopqrstuvwxyzABCDFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*()?'
+    passlen = 16
+    password = "".join(random.sample(characters, passlen))
+    return password
+
+
+def get_user_from_upi(upi):
+    server = ldap3.Server(settings.LDAP_URL)
+    search_filter = f'({settings.LDAP_USER_LOGIN_ATTR}={upi})'
+    with ldap3.Connection(server,
+                          auto_bind=True,
+                          user=settings.LDAP_ADMIN_USER,
+                          password=settings.LDAP_ADMIN_PASSWORD) as connection:
+        connection.search(settings.LDAP_USER_BASE,
+                          search_filter,
+                          attributes=['*'])
+        if len(connection.entries) > 1:
+            error_message = f'More than one person with {settings.LDAP_USER_LOGIN_ATTR}: {upi} has been found in the LDAP'
+            if logger:
+                logger.error(error_message)
+            raise Exception(error_message)
+        elif len(connection.entries) == 0:
+            error_message = f'No one with {settings.LDAP_USER_LOGIN_ATTR}: {upi} has been found in the LDAP'
+            if logger:
+                logger.warning(error_message)
+            return None
+        else:
+            person = connection.entries[0]
+            first_name_key = 'givenName'
+            last_name_key = 'sn'
+            email_key = 'mail'
+            username = person[settings.LDAP_USER_LOGIN_ATTR].value
+            first_name = person[first_name_key].value
+            last_name = person[last_name_key].value
+            try:
+                email = person[email_key].value
+            except KeyError:
+                email = ''
+            details = {'username': username,
+                       'first_name': first_name,
+                       'last_name': last_name,
+                       'email': email}
+            logger.error(details)
+            return details
+
+
 @never_cache  # too complex # noqa
 @authz.group_ownership_required
 def add_user_to_group(request, group_id, username):
@@ -277,12 +328,35 @@ def add_user_to_group(request, group_id, username):
     try:
         user = User.objects.get(username=username)
     except User.DoesNotExist:
-        return JsonResponse(
-            dict(
-                message='User %s does not exist.' % username,
-                field='id_adduser-%s' % group_id
-            ),
-            status=400)
+        try:
+            new_user = get_user_from_upi(username)
+            user = User.objects.create(username=new_user['username'],
+                                       first_name=new_user['first_name'],
+                                       last_name=new_user['last_name'],
+                                       email=new_user['email'])
+            user.set_password(gen_random_password())
+            view_project_perm = Permission.objects.get(codename='view_project')
+            view_experiment_perm = Permission.objects.get(
+                codename='view_experiment')
+            view_dataset_perm = Permission.objects.get(codename='view_dataset')
+            view_datafile_perm = Permission.objects.get(
+                codename='view_datafile')
+            member_perms = [view_project_perm,
+                            view_experiment_perm,
+                            view_dataset_perm,
+                            view_datafile_perm]
+            user.save()
+            authentication = UserAuthentication(userProfile=user.userprofile,
+                                                username=new_user['username'],
+                                                authenticationMethod=settings.LDAP_METHOD)
+            authentication.save()
+        except Exception as error:
+            return JsonResponse(
+                dict(
+                    message='User %s does not exist.' % username,
+                    field='id_adduser-%s' % group_id
+                ),
+                status=400)
 
     try:
         group = Group.objects.get(pk=group_id)
@@ -681,7 +755,8 @@ def share(request, experiment_id):
     c['has_download_permissions'] = \
         authz.has_download_access(request, experiment_id, "experiment")
     if user.is_authenticated:
-        c['is_owner'] = authz.has_ownership(request, experiment_id, 'experiment')
+        c['is_owner'] = authz.has_ownership(
+            request, experiment_id, 'experiment')
         c['is_superuser'] = user.is_superuser
 
     domain = Site.objects.get_current().domain
