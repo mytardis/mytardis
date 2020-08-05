@@ -354,55 +354,58 @@ class SearchAppResource(Resource):
                     # for users/groups who do not have sensitive permission
                     if sensitive:
                         if not authz.has_sensitive_access(request, hit["_source"]["id"], hit["_index"]):
-                            continue
+                           continue
 
                     # Default sensitive permission and size of object
-                    sensitive_bool = False
+                    #sensitive_bool = False
                     size = 0
 
                     # Skip hit if hit_obj not accessible (elasticsearch checks for ACL entry for user/group,
                     # not whether the entry gives or prevents access)
-                    if not authz.has_access(request, hit["_source"]["id"], hit["_index"]):
-                        continue
+                    #if not authz.has_access(request, hit["_source"]["id"], hit["_index"]):
+                    #   continue
 
                     # If user/group has sensitive permission, update flag
-                    if authz.has_sensitive_access(request, hit["_source"]["id"], hit["_index"]):
-                        sensitive_bool = True
+                    #if authz.has_sensitive_access(request, hit["_source"]["id"], hit["_index"]):
+                    #    sensitive_bool = True
 
                     # Get total/nested size of object, respecting ACL access to child objects
-                    size = authz.get_nested_size(request, hit["_source"]["id"], hit["_index"])
+                    ### size = authz.get_nested_size(request, hit["_source"]["id"], hit["_index"])
 
                     # Must work on copy of current iterable
                     safe_hit = hit.copy()
 
                     # Remove ACLs and add size to repsonse
                     safe_hit["_source"].pop("objectacls")
+                    safe_hit["_source"].pop("parameters")
+                    safe_hit.pop("_score")
+
                     safe_hit["_source"]["size"] = filesizeformat(size)
 
                     # Get count of all nested objects and download status
                     if hit["_index"] != 'datafile':
-                        safe_hit["_source"]["counts"] = authz.get_nested_count(request,
-                                                            hit["_source"]["id"], hit["_index"])
+                        safe_hit["_source"]["counts"] = 0# authz.get_nested_count(request,
+                    ###                                       hit["_source"]["id"], hit["_index"])
 
-                        safe_hit["_source"]["userDownloadRights"] = authz.get_nested_has_download(request,
-                                                            hit["_source"]["id"], hit["_index"])
+                        safe_hit["_source"]["userDownloadRights"] = 'none'#authz.get_nested_has_download(request,
+                                                            #hit["_source"]["id"], hit["_index"])
 
                     else:
-                        if authz.has_download_access(request, hit["_source"]["id"],
-                                                     hit["_index"]):
-                            safe_hit["_source"]["userDownloadRights"] = "full"
-                        else:
-                            safe_hit["_source"]["userDownloadRights"] = "none"
+                        #if authz.has_download_access(request, hit["_source"]["id"],
+                                                     #hit["_index"]):
+                        safe_hit["_source"]["userDownloadRights"] = "none"
+                        #else:
+                        #    safe_hit["_source"]["userDownloadRights"] = "none"
 
                     # if no sensitive access, remove sensitive metadata from response
-                    if not sensitive_bool:
-                        for par_type in ["string", "numerical", "datetime"]:
-                            for idxx, parameter in enumerate(hit["_source"]["parameters"][par_type]):
-                                is_sensitive = authz.get_obj_parameter(parameter["pn_id"],
-                                                  hit["_source"]["id"], hit["_index"])
-
-                                if is_sensitive.sensitive_metadata:
-                                    safe_hit["_source"]["parameters"][par_type].pop(idxx)
+                    #if not sensitive_bool:
+                    #    for par_type in ["string", "numerical", "datetime"]:
+                    #        for idxx, parameter in enumerate(hit["_source"]["parameters"][par_type]):
+                    #            is_sensitive = authz.get_obj_parameter(parameter["pn_id"],
+                    #                              hit["_source"]["id"], hit["_index"])
+                    #
+                    #            if is_sensitive.sensitive_metadata:
+                    #                safe_hit["_source"]["parameters"][par_type].pop(idxx)
 
                     # Append hit to final results if not already in results.
                     # Due to non-identical scores in hits for non-sensitive vs sensitive search,
