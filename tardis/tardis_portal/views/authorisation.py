@@ -240,10 +240,11 @@ def retrieve_group_userlist_readonly(request, group_id):
 def retrieve_group_list_by_user(request):
 
     groups = Group.objects.filter(groupadmin__user=request.user)
-    groups = groups | Group.objects.filter(
-        groupadmin__admin_users__id=request.user.id)
+    groups = Group.objects.filter(
+        groupadmin__admin_users__id=request.user.id).union(groups)
     for group in request.user.groups.all():
-        groups = groups | Group.objects.filter(groupadmin__admin_groups__id=group.id)
+        groups = Group.objects.filter(
+            groupadmin__admin_groups__id=group.id).union(groups)
 
     c = {'groups': groups}
     return render_response_index(
