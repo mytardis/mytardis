@@ -1202,6 +1202,7 @@ class ExperimentResource(MyTardisModelResource):
                 for grp in admin_groups:
                     group, created = Group.objects.get_or_create(name=grp)
                     experiment_admin_groups.append(group)
+                    experiment_groups.append(group)
                     if created:
                         group.permissions.set(admin_perms)
                         create_acl(experiment.get_ct(),
@@ -1495,73 +1496,222 @@ class DatasetResource(MyTardisModelResource):
         if getattr(bundle.obj, 'id', False):
             dataset = bundle.obj
             # There should only be one expt
-            experiment_uri = bundle.data['experiments'][0]
-            experiment = ExperimentResource.get_via_uri(
-                ExperimentResource(), experiment_uri, bundle.request)
-            project_lead = experiment.get_owners()
+            try:
+                experiment_uri = bundle.data['experiments'][0]
+                experiment = ExperimentResource.get_via_uri(
+                    ExperimentResource(), experiment_uri, bundle.request)
+            except NotFound:
+                logger.error(
+                    f'Unable to locate parent experiment for {bundle.data["description"]}')
+                raise
+            project = experiment__project
+            project_lead = project.lead_researcher
+            dataset_admin_groups = []
+            dataset_groups = []
+            dataset_admin_users = []
             # TODO: unify this with the view function's ACL creation,
             # maybe through an ACL toolbox.
-            for owner in project_lead:
-                acl = ObjectACL(content_type=dataset.get_ct(),
-                                object_id=dataset.id,
-                                pluginId=django_user,
-                                entityId=str(owner.id),
-                                canRead=True,
-                                canDownload=True,
-                                canWrite=True,
-                                canDelete=True,
-                                canSensitive=True,
-                                isOwner=True,
-                                aclOwnershipType=ObjectACL.OWNER_OWNED)
-                acl.save()
+            acl = ObjectACL(content_type=dataset.get_ct(),
+                            object_id=dataset.id,
+                            pluginId=django_user,
+                            entityId=str(project_lead.id),
+                            canRead=True,
+                            canDownload=True,
+                            canWrite=True,
+                            canDelete=True,
+                            canSensitive=True,
+                            isOwner=True,
+                            aclOwnershipType=ObjectACL.OWNER_OWNED)
+            acl.save()
             if 'admin_groups' in bundle.data.keys():
-                admin_groups = bundle.data['admin_groups']
+                admin_groups = bundle.data.pop('admin_groups')
             else:
                 admin_groups = experiment.get_admins()
-            for grp in admin_groups:
-                group, created = Group.objects.get_or_create(name=grp)
-                if created:
-                    group.permissions.set(admin_perms)
-                group_id = group.id
-                acl = ObjectACL(content_type=dataset.get_ct(),
-                                object_id=dataset.id,
-                                pluginId=django_group,
-                                entityId=str(group_id),
-                                canRead=True,
-                                canDownload=True,
-                                canWrite=True,
-                                canDelete=True,
-                                canSensitive=True,
-                                isOwner=True,
-                                aclOwnershipType=ObjectACL.OWNER_OWNED)
-                acl.save()
+            if admin_groups != []:
+                for grp in admin_groups:
+                    group, created = Group.objects.get_or_create(name=grp)
+                    dataset_admin_groups.append(group)
+                    dataset_groups.append(group)
+                    if created:
+                        group.permissions.set(admin_perms)
+                        create_acl(dataset.get_ct(),
+                                   dataset.id,
+                                   django_group,
+                                   group.id,
+                                   admin=True)
+                    if group not in Project.safe.groups(project.id):
+                        create_acl(project.get_ct(),
+                                   project.id,
+                                   django_group,
+                                   group.id)
+                    if group not in Experiment.safe.groups(experiment.id):
+                        create_acl(experiment.get_ct(),
+                                   experiment.id,
+                                   django_group,
+                                   group.id)
             if 'member_groups' in bundle.data.keys():
-                member_groups = bundle.data['member_groups']
+                member_groups = bundle.data.pop('member_groups')
             else:
-                member_groups = experiment.get_groups_and_perms()
-            # Each member group is defined by a tuple
-            # (group_name, sensitive[T/F], download[T/F])
-            # unpack for ACLs
-            for grp in member_groups:
-                grp_name = grp[0]
-                sensitive_flg = grp[1]
-                download_flg = grp[2]
-                group, created = Group.objects.get_or_create(name=grp_name)
-                if created:
-                    group.permissions.set(member_perms)
-                group_id = group.id
-                acl = ObjectACL(content_type=dataset.get_ct(),
-                                object_id=dataset.id,
-                                pluginId=django_group,
-                                entityId=str(group_id),
-                                canRead=True,
-                                canDownload=download_flg,
-                                canWrite=True,
-                                canDelete=False,
-                                canSensitive=sensitive_flg,
-                                isOwner=False,
-                                aclOwnershipType=ObjectACL.OWNER_OWNED)
-                acl.save()
+                member_groups = project.get_groups_and_perms()
+                # Each member group is defined by a tuple
+                # (group_name, sensitive[T/F], download[T/F])
+                # unpack for ACLs
+                logger.error(f'Groups to append: {member_groups}')
+            if member_groups != []:
+                for grp in member_groups:
+                    grp_name = grp[0]
+                    sensitive_flg = grp[1]
+                    download_flg = grp[2]
+                    group, created = Group.objects.get_or_create(name=grp_name)
+                    dataset_groups.append(group)
+                    if created:
+                        group.permissions.set(member_perms)
+                    create_acl(dataset.get_ct(),
+                               dataset.id,
+                               django_group,
+                               group.id,
+                               write=True,
+                               download=download_flg,
+                               sensitive=sensitive_flg,
+                               admin=False)
+                    if group not in Project.safe.groups(project.id):
+                        create_acl(project.get_ct(),
+                                   project.id,
+                                   django_group,
+                                   group.id)
+                    if group not in Experiment.safe.groups(experiment.id):
+                        create_acl(experiment.get_ct(),
+                                   experiment.id,
+                                   django_group,
+                                   group.id)
+            if 'admins' in bundle.data.keys():
+                if bundle.data['admins'] != []:
+                    for admin in bundle.data['admins']:
+                        logger.error(admin)
+                        if not User.objects.filter(username=admin).exists():
+                            new_user = get_user_from_upi(admin)
+                            user = User.objects.create(username=new_user['username'],
+                                                       first_name=new_user['first_name'],
+                                                       last_name=new_user['last_name'],
+                                                       email=new_user['email'])
+                            user.set_password(gen_random_password())
+                            for permission in admin_perms:
+                                user.user_permissions.add(permission)
+                            user.save()
+                            authentication = UserAuthentication(userProfile=user.userprofile,
+                                                                username=new_user['username'],
+                                                                authenticationMethod=settings.LDAP_METHOD)
+                            authentication.save()
+                        user = User.objects.get(username=admin)
+                        dataset_admin_users.append(user)
+                        create_acl(experiment.get_ct(),
+                                   experiment.id,
+                                   django_user,
+                                   user.id,
+                                   admin=True)
+                        if user not in Project.safe.users(project.id):
+                            create_acl(project.get_ct(),
+                                       project.id,
+                                       django_user,
+                                       user.id)
+                        if user not in Experiment.safe.users(experiment.id):
+                            create_acl(experiment.get_ct(),
+                                       experiment.id,
+                                       django_user,
+                                       user.id)
+                bundle.data.pop('admins')
+            else:
+                # Cascade the admin from the project level
+                experiment_admins = experiment.get_owners()
+                for user in experiment_admins:
+                    if user.username == project.lead_researcher:
+                        # Lead researchers get all perms
+                        continue
+                    add_flg = True
+                    if 'members' in bundle.data.keys():
+                        for member in bundle.data['members']:
+                            if user.username == member[0]:
+                                # Don't add this user to the admin group since they have implicitly
+                                # been downgraded
+                                add_flg = False
+                    if add_flg:
+                        create_acl(dataset.get_ct(),
+                                   dataset.id,
+                                   django_user,
+                                   user.id,
+                                   admin=True)
+                        # No need to check traverse since they have admin rights in parent
+            if 'members' in bundle.data.keys():
+                # error checking needs to be done externally for this to
+                # function as desired.
+                if bundle.data['members'] != []:
+                    members = bundle.data['members']
+                    for member in members:
+                        logger.error(member)
+                        member_name = member[0]
+                        sensitive_flg = member[1]
+                        download_flg = member[2]
+                        if not User.objects.filter(username=member_name).exists():
+                            new_user = get_user_from_upi(member_name)
+                            if not new_user:
+                                logger.error(
+                                    f'No one found for upi: {member_name}')
+                            user = User.objects.create(username=new_user['username'],
+                                                       first_name=new_user['first_name'],
+                                                       last_name=new_user['last_name'],
+                                                       email=new_user['email'])
+                            user.set_password(gen_random_password())
+                            for permission in member_perms:
+                                user.user_permissions.add(permission)
+                            user.save()
+                            authentication = UserAuthentication(userProfile=user.userprofile,
+                                                                username=new_user['username'],
+                                                                authenticationMethod=settings.LDAP_METHOD)
+                            authentication.save()
+                        user = User.objects.get(username=member_name)
+                        create_acl(dataset.get_ct(),
+                                   dataset.id,
+                                   django_user,
+                                   user.id,
+                                   write=True,
+                                   download=download_flg,
+                                   sensitive=sensitive_flg,
+                                   admin=False)
+                        if user not in Project.safe.users(project.id):
+                            create_acl(project.get_ct(),
+                                       project.id,
+                                       django_user,
+                                       user.id)
+                        if user not in Experiment.safe.users(project.id):
+                            create_acl(experiment.get_ct(),
+                                       experiment.id,
+                                       django_user,
+                                       user.id)
+                bundle.data.pop('members')
+            else:
+                experiment_members = experiment.get_users_and_perms()
+                for user_tuple in experiment_members:
+                    user, sensitive, download = user_tuple
+                    if user.username == project.lead_researcher:
+                        # Lead researchers get all perms
+                        continue
+                    create_acl(dataset.get_ct(),
+                               dataset.id,
+                               django_user,
+                               user.id,
+                               write=True,
+                               download=download,
+                               sensitive=sensitive,
+                               admin=False)
+        for group in dataset_groups:
+            logger.error(f'Creating group admin for {group}')
+            group_admin, _ = GroupAdmin.objects.get_or_create(user=bundle.request.user,
+                                                              group=group)
+            for admin in dataset_admin_groups:
+                group_admin.admin_groups.add(admin.id)
+            for admin in dataset_admin_users:
+                group_admin.admin_users.add(admin.id)
+            logger.error(group_admin)
         return super().hydrate_m2m(bundle)
 
     def get_root_dir_nodes(self, request, **kwargs):
