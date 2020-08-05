@@ -95,9 +95,6 @@ add_datafile_perm = Permission.objects.get(codename='add_datafile')
 change_datafile_perm = Permission.objects.get(codename='change_datafile')
 del_datafile_perm = Permission.objects.get(codename='delete_datafile')
 view_datafile_perm = Permission.objects.get(codename='view_datafile')
-add_acl_perm = Permission.objects.get(codename='add_acl')
-change_acl_perm = Permission.objects.get(codename='change_acl')
-view_acl_perm = Permission.objects.get(codename='view_acl')
 
 admin_perms = [add_group_perm,
                change_group_perm,
@@ -118,10 +115,7 @@ admin_perms = [add_group_perm,
                add_datafile_perm,
                change_datafile_perm,
                del_datafile_perm,
-               view_datafile_perm,
-               add_acl_perm,
-               change_acl_perm,
-               view_acl_perm]
+               view_datafile_perm]
 
 member_perms = [view_project_perm,
                 view_experiment_perm,
