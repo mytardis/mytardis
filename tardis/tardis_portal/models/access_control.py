@@ -286,5 +286,13 @@ def create_user_api_key(sender, **kwargs):
     create_api_key(User, **kwargs)
 
 
+def delete_if_all_false(instance, **kwargs):
+    if not any([instance.canRead, instance.canDownload, instance.canWrite,
+                instance.canDelete, instance.canSensitive, instance.isOwner]):
+        instance.delete()
+
 if getattr(settings, 'AUTOGENERATE_API_KEY', False):
     post_save.connect(create_user_api_key, sender=User, weak=False)
+
+
+post_save.connect(delete_if_all_false, sender=ObjectACL)
