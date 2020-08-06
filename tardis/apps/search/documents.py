@@ -72,6 +72,9 @@ class ProjectDocument(Document):
             'pn_id': fields.KeywordField(),
             'value': fields.DateField(),
             'sensitive': fields.BooleanField()
+        }),
+        'schemas' : fields.NestedField(properties = {
+            'schema_id': fields.KeywordField()
         })
     })
 
@@ -148,6 +151,9 @@ class ExperimentDocument(Document):
             'pn_id': fields.KeywordField(),
             'value': fields.DateField(),
             'sensitive': fields.BooleanField()
+        }),
+        'schemas' : fields.NestedField(properties = {
+            'schema_id': fields.KeywordField()
         })
     })
 
@@ -224,6 +230,9 @@ class DatasetDocument(Document):
             'pn_id': fields.KeywordField(),
             'value': fields.DateField(),
             'sensitive': fields.BooleanField()
+        }),
+        'schemas' : fields.NestedField(properties = {
+            'schema_id': fields.KeywordField()
         })
     })
 
@@ -298,6 +307,9 @@ class DataFileDocument(Document):
             'pn_id': fields.KeywordField(),
             'value': fields.DateField(),
             'sensitive': fields.BooleanField()
+        }),
+        'schemas' : fields.NestedField(properties = {
+            'schema_id': fields.KeywordField()
         })
     })
 

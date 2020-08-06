@@ -93,12 +93,14 @@ class Project(models.Model):
         """
         from .parameters import ProjectParameter, ParameterName
         paramsets = list(self.getParameterSets())
-        parameter_groups = {"string": [], "numerical" : [], "datetime" : []}
+        parameter_groups = {"string": [], "numerical" : [], "datetime" : [],
+                            "schemas": []}
         for paramset in paramsets:
             param_type = {1 : 'datetime', 2 : 'string', 3 : 'numerical'}
             param_glob = ProjectParameter.objects.filter(
                 parameterset=paramset).all().values_list('name','datetime_value',
                 'string_value','numerical_value','sensitive_metadata')
+            parameter_groups['schemas'].append({'schema_id' : paramset.schema_id})
             for sublist in param_glob:
                 PN_id = ParameterName.objects.get(id=sublist[0]).id
                 param_dict = {}

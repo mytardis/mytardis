@@ -289,6 +289,36 @@ class SearchAppResource(Resource):
                                     }})
                             query_obj = query_obj & query_obj_filt
 
+                    if filter["kind"] == "typeAttribute":
+                        target_objtype, target_fieldtype = filter["target"][0], filter["target"][1]
+                        if target_objtype == obj+"s":
+                            if filter_level < hierarchy[obj]:
+                                filter_level = hierarchy[obj]
+                            if target_fieldtype == "schema":
+                                # check if filter query is list of options, or single value
+                                if isinstance(filter["content"], list):
+                                    Qdict = {"should" : []}
+                                    for option in filter["content"]:
+                                        qry = Q(
+                                            {"nested" : {
+                                                "path":"parameters.schemas", "query": Q(
+                                                        {oper: {"parameters.schemas.schema_id":option}}
+                                                )
+                                            }})
+                                        Qdict["should"].append(qry)
+                                    query_obj_filt = Q({"bool" : Qdict})
+                                else:
+                                    query_obj_filt = Q(
+                                        {"nested" : {
+                                            "path":"parameters.schemas", "query": Q(
+                                                    {oper: {"parameters.schemas.schema_id":filter["content"]}}
+                                            )
+                                        }})
+
+
+                                query_obj = query_obj & query_obj_filt
+
+
             ms = ms.add(Search(index=obj)
                         .extra(size=MAX_SEARCH_RESULTS, min_score=MIN_CUTOFF_SCORE)
                         .query(query_obj))
