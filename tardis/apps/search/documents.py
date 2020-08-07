@@ -320,7 +320,7 @@ class DataFileDocument(Document):
             return DataFile.objects.filter(dataset__experiments__project=related_instance)
         if isinstance(related_instance, ObjectACL):
             # This is a nasty hack to make sure the content type is correct - CHANGE THIS
-            if related_instance.content_object.get_ct() == DataFile.objects.first().get_ct():
+            if related_instance.content_object.get_ct() == 'datafile':
                 return related_instance.content_object
         if isinstance(related_instance, DatafileParameterSet):
             return related_instance.datafile
