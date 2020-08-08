@@ -3,7 +3,6 @@
 import { userAutocompleteHandler } from "../../main";
 
 import { loadExpTabPane } from "../experiment-tabs.js";
-
 var loadingHTML = "<img src=\"/static/images/ajax-loader.gif\"/><br />";
 
 // beginswith, endswith

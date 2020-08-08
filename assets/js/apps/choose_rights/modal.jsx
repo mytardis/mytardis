@@ -8,17 +8,24 @@ const csrfToken = Cookies.get('csrftoken');
 const LicenseModal = ({ experimentId }) => {
   const [modalData, setModalData] = useState([]);
   const [selectedAccessTypeId, setSelectedAccessTypeId] = useState(0);
-  const [selectedLicenseId, setSelectedLicenseId] = useState();
+  const [currentAccessTypeId, setCurrentAccessTypeId] = useState(null);
+  const [selectedLicenseId, setSelectedLicenseId] = useState(null);
   const [showMessage, setShowMessage] = useState(false);
   const [isrightsUpdated, setIsrightsUpdated] = useState(false);
+  const [showLegalSection, setShowLegalSection] = useState(false);
+  const [showButtons, setShowButtons] = useState(false);
   useEffect(() => {
     fetchModalData(experimentId).then((result) => {
       setModalData(result);
       setSelectedAccessTypeId(result.public_access);
+      setCurrentAccessTypeId(result.public_access);
+      setSelectedLicenseId(result.license);
     });
   }, [experimentId]);
 
   const handleChange = (event) => {
+    setShowLegalSection(false);
+    setShowButtons(false);
     setShowMessage(false);
     setSelectedAccessTypeId(event.target.value);
   };
@@ -54,6 +61,18 @@ const LicenseModal = ({ experimentId }) => {
     );
   };
   const handleLicenseChange = (event) => {
+    if (selectedLicenseId !== event.target.value) {
+      // display legal text
+      setShowLegalSection(true);
+      // display submit buttons
+      setShowButtons(true);
+    }
+    // from private to public
+    if (!selectedLicenseId && event.target.value) {
+      setShowLegalSection(true);
+      // display submit buttons
+      setShowButtons(true);
+    }
     setSelectedLicenseId(event.target.value);
   };
 
@@ -127,10 +146,12 @@ const LicenseModal = ({ experimentId }) => {
                     selectedAccessTypeId={selectedAccessTypeId}
                     currentLicense={modalData.license}
                     onLicenseChange={handleLicenseChange}
+                    selectedLicense={selectedLicenseId || modalData.license}
+                    currentAccessTypeId={currentAccessTypeId}
                   />
                 </div>
                 <div id="selected-license-text" />
-                <div id="legal-section" style={{ display: 'None' }}>
+                <div id="legal" style={{ display: !showLegalSection ? 'None' : 'block' }}>
                   {/* eslint-disable-next-line react/button-has-type */}
                   <button className="btn-secondary" id="reselect-license">Reselect License</button>
                   <br />
@@ -149,7 +170,7 @@ const LicenseModal = ({ experimentId }) => {
                     </label>
                   </div>
                 </div>
-                <div id="confirm-license-btn-group" className="form-group text-right" style={{ display: 'None' }}>
+                <div id="confirm-license-btn-group" className="form-group text-right" style={{ display: showButtons ? 'block' : 'None' }}>
                   <button
                     type="button"
                     className="cancel-button btn btn-outline-secondary mr-1"
