@@ -8,17 +8,16 @@ const csrfToken = Cookies.get('csrftoken');
 const LicenseModal = ({ experimentId }) => {
   const [modalData, setModalData] = useState([]);
   const [selectedAccessTypeId, setSelectedAccessTypeId] = useState(0);
-  const [currentAccessTypeId, setCurrentAccessTypeId] = useState(null);
   const [selectedLicenseId, setSelectedLicenseId] = useState(null);
   const [showMessage, setShowMessage] = useState(false);
   const [isrightsUpdated, setIsrightsUpdated] = useState(false);
+  const [showSelectedLicense, setShowSelectedLicense] = useState(false);
   const [showLegalSection, setShowLegalSection] = useState(false);
   const [showButtons, setShowButtons] = useState(false);
   useEffect(() => {
     fetchModalData(experimentId).then((result) => {
       setModalData(result);
       setSelectedAccessTypeId(result.public_access);
-      setCurrentAccessTypeId(result.public_access);
       setSelectedLicenseId(result.license);
     });
   }, [experimentId]);
@@ -27,7 +26,12 @@ const LicenseModal = ({ experimentId }) => {
     setShowLegalSection(false);
     setShowButtons(false);
     setShowMessage(false);
+    setShowSelectedLicense(false);
     setSelectedAccessTypeId(event.target.value);
+  };
+  const handleReselectChange = (event) => {
+    event.preventDefault();
+    setShowSelectedLicense(false);
   };
   const handleSubmit = (event) => {
     event.preventDefault();
@@ -41,9 +45,9 @@ const LicenseModal = ({ experimentId }) => {
       },
       body: JSON.stringify({
         csrfmiddlewaretoken: Cookies.get('csrftoken'),
-        license: selectedLicenseId,
+        license: selectedLicenseId.toString(),
         legal_text: modalData.legal_text,
-        public_access: selectedAccessTypeId,
+        public_access: selectedAccessTypeId.toString(),
       }),
     }).then(
       (response) => {
@@ -61,19 +65,21 @@ const LicenseModal = ({ experimentId }) => {
     );
   };
   const handleLicenseChange = (event) => {
-    if (selectedLicenseId !== event.target.value) {
+    // if selected license is not null
+    if (event.target.value === '') {
+      setShowLegalSection(true);
+      // display submit buttons
+      setShowButtons(true);
+      setShowSelectedLicense(true);
+      setSelectedLicenseId('');
+    } else {
       // display legal text
       setShowLegalSection(true);
       // display submit buttons
       setShowButtons(true);
+      setShowSelectedLicense(true);
+      setSelectedLicenseId(Number(event.target.value));
     }
-    // from private to public
-    if (!selectedLicenseId && event.target.value) {
-      setShowLegalSection(true);
-      // display submit buttons
-      setShowButtons(true);
-    }
-    setSelectedLicenseId(event.target.value);
   };
 
   return (
@@ -144,18 +150,14 @@ const LicenseModal = ({ experimentId }) => {
                 <div id="license-options">
                   <LicenseSelector
                     selectedAccessTypeId={selectedAccessTypeId}
-                    currentLicense={modalData.license}
                     onLicenseChange={handleLicenseChange}
-                    selectedLicense={selectedLicenseId || modalData.license}
-                    currentAccessTypeId={currentAccessTypeId}
+                    selectedLicense={selectedLicenseId}
+                    showSelectedLicense={showSelectedLicense}
+                    handleReselectChange={handleReselectChange}
                   />
                 </div>
                 <div id="selected-license-text" />
                 <div id="legal" style={{ display: !showLegalSection ? 'None' : 'block' }}>
-                  {/* eslint-disable-next-line react/button-has-type */}
-                  <button className="btn-secondary" id="reselect-license">Reselect License</button>
-                  <br />
-                  <br />
                   <h3>Step 3: Accept The Legal Agreement:</h3>
                   <pre
                     id="publishing-legal-text"
