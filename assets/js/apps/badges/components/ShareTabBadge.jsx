@@ -1,5 +1,4 @@
 import React, { Fragment, useState } from 'react';
-import ReactDOM from 'react-dom';
 
 import PropTypes from 'prop-types';
 import { css } from '@emotion/core';
@@ -7,7 +6,7 @@ import PublicAccessBadge from './PublicAccessBadge';
 import { fetchExperimentData } from './utils/FetchData';
 import Spinner from './utils/Spinner';
 
-const ShareTabBadge = ({ experimentID }) => {
+const ShareTabBadge = ({ experimentID, licenseUpdatedCount }) => {
   const [expData, setExpData] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const spinnerCss = css`
@@ -21,7 +20,7 @@ const ShareTabBadge = ({ experimentID }) => {
       setExpData(data);
       setIsLoading(false);
     });
-  }, []);
+  }, [experimentID, licenseUpdatedCount]);
   return (
     isLoading ? <Spinner override={spinnerCss} />
       : (
@@ -34,14 +33,6 @@ const ShareTabBadge = ({ experimentID }) => {
 
 ShareTabBadge.propTypes = {
   experimentID: PropTypes.string.isRequired,
+  licenseUpdatedCount: PropTypes.number.isRequired,
 };
-
-const elem = document.querySelector('.public-badge');
-let experimentID = null;
-if (elem) {
-  [, experimentID] = elem.id.split('-');
-  ReactDOM.render(
-    <ShareTabBadge experimentID={experimentID} />, elem,
-  );
-}
 export default ShareTabBadge;

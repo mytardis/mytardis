@@ -1,15 +1,18 @@
 import React, { Fragment, useEffect, useState } from 'react';
 import Cookies from 'js-cookie';
 import PropTypes from 'prop-types';
+import ReactDOM from 'react-dom';
 import { fetchModalData } from './FetchData';
 import LicenseSelector from './LicenseSelector';
+import ShareTabBadge from '../badges/components/ShareTabBadge';
 
 const csrfToken = Cookies.get('csrftoken');
-const LicenseModal = ({ experimentId }) => {
+const LicenseModal = ({ experimentId, badgeContainer }) => {
   const [modalData, setModalData] = useState([]);
   const [selectedAccessTypeId, setSelectedAccessTypeId] = useState(0);
   const [selectedLicenseId, setSelectedLicenseId] = useState(null);
   const [showMessage, setShowMessage] = useState(false);
+  const [licenseUpdatedCount, setLicenseUpdatedCount] = useState(0);
   const [isrightsUpdated, setIsrightsUpdated] = useState(false);
   const [showSelectedLicense, setShowSelectedLicense] = useState(false);
   const [showLegalSection, setShowLegalSection] = useState(false);
@@ -61,6 +64,7 @@ const LicenseModal = ({ experimentId }) => {
       () => {
         setIsrightsUpdated(true);
         setShowMessage(true);
+        setLicenseUpdatedCount(licenseUpdatedCount + 1);
       },
     );
   };
@@ -84,6 +88,22 @@ const LicenseModal = ({ experimentId }) => {
 
   return (
     <Fragment>
+      {ReactDOM.createPortal(
+        <Fragment>
+          <ShareTabBadge licenseUpdatedCount={licenseUpdatedCount} experimentID={experimentId} />
+        </Fragment>, badgeContainer,
+      )
+      }
+      <button
+        className="public_access_button btn btn-outline-secondary btn-sm"
+        data-toggle="modal"
+        data-target="#modal-public-access"
+        title="Change"
+        type="submit"
+      >
+        <i className="fa fa-cog mr-1" />
+        Change Public Access
+      </button>
       <div className="modal" id="modal-public-access" role="dialog" tabIndex="-1">
         <div className="modal-dialog modal-lg" role="document">
           <div className="modal-content">
@@ -197,5 +217,6 @@ const LicenseModal = ({ experimentId }) => {
 
 LicenseModal.propTypes = {
   experimentId: PropTypes.number.isRequired,
+  badgeContainer: PropTypes.object.isRequired,
 };
 export default LicenseModal;
