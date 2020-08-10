@@ -1947,6 +1947,10 @@ class DataFileResource(MyTardisModelResource):
             project_lead = project.lead_researcher
             logger.error('Lead Researcher')
             logger.error(project_lead)
+            logger.error(project_lead.id)
+            logger.error('Content Type')
+            logger.error(datafile.get_ct())
+            logger.error(datafile.id)
             datafile_admin_groups = []
             datafile_groups = []
             datafile_admin_users = []
