@@ -2318,6 +2318,7 @@ class ParameterSetResource(MyTardisModelResource):
             schema = SchemaResource.get_via_uri(SchemaResource(),
                                                 bundle.data['schema'],
                                                 bundle.request)
+            logger.error(schema)
         except NotFound:
             schema = Schema.objects.get(namespace=bundle.data['schema'])
         bundle.obj.schema = schema
