@@ -1927,7 +1927,7 @@ class DataFileResource(MyTardisModelResource):
             except NotFound:
                 logger.error("Can't find dataset")
                 raise  # This probably should raise an error
-        if getattr(bundle.obj, 'id', False):
+        if not bundle.obj.id:
             logger.error('In the acl part')
             datafile = bundle.obj
             try:
