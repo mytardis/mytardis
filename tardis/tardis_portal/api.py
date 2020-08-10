@@ -1835,8 +1835,8 @@ class DataFileResource(MyTardisModelResource):
 
     def dehydrate(self, bundle):
         datafile = bundle.obj
-        admins = datafile.get_admins()
-        logger.error(admins)
+        #admins = datafile.get_admins()
+        #logger.error(admins)
         bundle.data['admin_groups'] = [acl.id for acl in admins]
         members = datafile.get_groups()
         logger.error(members)
