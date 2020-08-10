@@ -25,7 +25,6 @@ analyzer = analyzer(
 )
 
 
-
 @registry.register_document
 class ProjectDocument(Document):
     class Index:
@@ -276,6 +275,7 @@ class DataFileDocument(Document):
     filename = fields.TextField(
         fields={'raw': fields.KeywordField()},
         analyzer=analyzer)
+    file_extension = fields.KeywordField(attr='filename')
     created_time = fields.DateField()
     modification_time = fields.DateField()
     dataset = fields.NestedField(properties={
@@ -312,6 +312,20 @@ class DataFileDocument(Document):
             'schema_id': fields.KeywordField()
         })
     })
+
+
+    def prepare_file_extension(self, instance):
+        """
+        Retrieve file extensions from filename - File extension taken as entire
+        string after first full stop.
+
+        i.e. 'filename.tar.gz' has an extension of 'tar.gz'
+        """
+        try:
+            extension = instance.filename.split('.',1)[1]
+        except(IndexError):
+            extension = ''
+        return extension
 
     def prepare_parameters(self, instance):
         return dict(instance.getParametersforIndexing())
