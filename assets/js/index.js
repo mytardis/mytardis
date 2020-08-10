@@ -10,8 +10,6 @@ require("underscore/underscore-min");
 require("expose-loader?_!underscore/underscore-min");
 require("underscore.string/dist/underscore.string");
 require("expose-loader?s!underscore.string/dist/underscore.string");
-require("backbone-forms/distribution/backbone-forms");
-require("backbone-forms/distribution/templates/bootstrap3");
 require("sprintf-js/dist/sprintf.min");
 require("expose-loader?sprintf!sprintf-js/dist/sprintf.min");
 require("clipboard");
