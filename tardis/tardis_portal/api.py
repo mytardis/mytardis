@@ -1918,6 +1918,7 @@ class DataFileResource(MyTardisModelResource):
     def hydrate(self, bundle):
         logger.error('Hydrating datafile')
         logger.error(bundle.data)
+        logger.error(bundle.obj.id)
         if getattr(bundle.obj, 'id', False):
             try:
                 dataset = DatasetResource.get_via_uri(
