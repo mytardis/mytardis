@@ -113,14 +113,6 @@ module.exports = {
                     publicPath: "/bundles/"
                 }
             },
-            {test: /backbone.js/, loader: "imports-loader?define=>false"},
-            {
-                test: /\.(gif|png|jpe?g)$/i,
-                loader: "url-loader",
-                options: {
-                    name: "[name].[ext]",
-                }
-            },
             {
                 test: /\.less$/,
                 use: [
@@ -138,7 +130,6 @@ module.exports = {
         alias: {
             "jquery": __dirname + "/node_modules/jquery",
             "main": __dirname + "/assets/js/tardis_portal/main",
-            "backbonemodels": __dirname + "/assets/js/tardis_portal/backbone-models",
             "experimentabs": __dirname + "/assets/js/tardis_portal/view_experiment/experiment-tabs",
             "experimentshare": __dirname + "/assets/js/tardis_portal/view_experiment/share",
         },
