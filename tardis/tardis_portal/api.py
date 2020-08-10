@@ -1925,7 +1925,7 @@ class DataFileResource(MyTardisModelResource):
             except NotFound:
                 raise  # This probably should raise an error
         if getattr(bundle.obj, 'id', False):
-
+            logger.error('In the acl part')
             datafile = bundle.obj
             try:
                 dataset_uri = bundle.data['dataset']
@@ -1935,6 +1935,7 @@ class DataFileResource(MyTardisModelResource):
                 logger.error(
                     f'Unable to locate parent dataset for {bundle.data["filename"]}')
                 raise
+            logger.error(dataset)
             experiment = dataset.experiments[0]
             logger.error('Experiment')
             logger.error(experiment)
