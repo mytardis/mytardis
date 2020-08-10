@@ -1916,6 +1916,8 @@ class DataFileResource(MyTardisModelResource):
         return HttpResponse()
 
     def hydrate(self, bundle):
+        logger.error('Hydrating datafile')
+        logger.error(bundle.data)
         if getattr(bundle.obj, 'id', False):
             try:
                 dataset = DatasetResource.get_via_uri(
@@ -1923,8 +1925,7 @@ class DataFileResource(MyTardisModelResource):
             except NotFound:
                 raise  # This probably should raise an error
         if getattr(bundle.obj, 'id', False):
-            logger.error('Hydrating datafile')
-            logger.error(bundle.data)
+
             datafile = bundle.obj
             try:
                 dataset_uri = bundle.data['dataset']
@@ -2194,6 +2195,7 @@ class DataFileResource(MyTardisModelResource):
         Creates a new DataFile object from the provided bundle.data dict.
         If a duplicate key error occurs, responds with HTTP Error 409: CONFLICT
         '''
+        logger.error('Building datafile in obj_create')
         try:
             retval = super().obj_create(bundle, **kwargs)
         except IntegrityError as err:
