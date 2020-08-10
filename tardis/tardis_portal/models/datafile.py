@@ -501,11 +501,15 @@ class DataFile(models.Model):
         return [acl.get_related_object() for acl in acls]
 
     def get_admins(self):
+        logger.error(self.id)
+        logger.error(self.get_ct())
         acls = ObjectACL.objects.filter(pluginId='django_group',
                                         content_type=self.get_ct(),
                                         object_id=self.id,
                                         isOwner=True)
+        logger.error(acls)
         return [acl.get_related_object() for acl in acls]
+
 
 
     def to_search(self):
