@@ -1837,7 +1837,7 @@ class DataFileResource(MyTardisModelResource):
         datafile = bundle.obj
         #admins = datafile.get_admins()
         #logger.error(admins)
-        bundle.data['admin_groups'] = [acl.id for acl in admins]
+        #bundle.data['admin_groups'] = [acl.id for acl in admins]
         members = datafile.get_groups()
         logger.error(members)
         bundle.data['member_groups'] = [acl.id for acl in members]
