@@ -1942,8 +1942,8 @@ class DataFileResource(MyTardisModelResource):
             datafile_admin_users = []
             # TODO: unify this with the view function's ACL creation,
             # maybe through an ACL toolbox.
-            acl = ObjectACL(content_type=dataset.get_ct(),
-                            object_id=dataset.id,
+            acl = ObjectACL(content_type=datafile.get_ct(),
+                            object_id=datafile.id,
                             pluginId=django_user,
                             entityId=str(project_lead.id),
                             canRead=True,
