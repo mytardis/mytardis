@@ -2208,7 +2208,6 @@ class DataFileResource(MyTardisModelResource):
                 raise NotImplementedError
             dfo = DataFileObject(
                 datafile=bundle.obj,
-                logger.error(datafile)
                 storage_box=sbox)
             dfo.create_set_uri()
             dfo.save()
