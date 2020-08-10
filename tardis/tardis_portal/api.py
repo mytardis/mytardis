@@ -1920,8 +1920,8 @@ class DataFileResource(MyTardisModelResource):
         logger.error('Hydrating datafile')
         logger.error(bundle.data)
         logger.error(bundle.obj)
-        #if getattr(bundle.obj, 'id', False):
-        if not bundle.obj.id:
+        if getattr(bundle.obj, 'id', False):
+        #if not bundle.obj.id:
             logger.error('In the pre acl part')
             try:
                 dataset = DatasetResource.get_via_uri(
@@ -1929,8 +1929,8 @@ class DataFileResource(MyTardisModelResource):
             except NotFound:
                 logger.error("Can't find dataset")
                 raise  # This probably should raise an error
-        #if getattr(bundle.obj, 'id', False):
-        if not bundle.obj.id:
+        if getattr(bundle.obj, 'id', False):
+        #if not bundle.obj.id:
             logger.error('In the acl part')
             datafile = bundle.obj
             try:
@@ -2202,7 +2202,7 @@ class DataFileResource(MyTardisModelResource):
                 bundle.data['replicas'] = [{'file_object': newfile}]
 
             del(bundle.data['attached_file'])
-        return bundle
+        return super.hydrate(bundle)
 
     @transaction.atomic
     def obj_create(self, bundle, **kwargs):
