@@ -56,37 +56,8 @@
 <div class="sharing-sections">
     <div class="sharing-section public-access">
     <h3>Public Access</h3>
-        <p>
-            <dl>
-              <dt>Current Public Access Settings</dt>
-              <dd style="padding-top: 5px;" class="public-badge" id="badge-{{ experiment.id }}">
-              </dd>
-            </dl>
-            <dl>
-              <dt>Current License</dt>
-              <dd>
-                {% if experiment.license_id %}
-                  <div class="row">
-                    <div class="col-md-6">
-                      This experiment data is licensed under
-                      <a rel="license"
-                         property="dc:license"
-                         href="{{ experiment.license.url }}">
-                        {{ experiment.license.name }}</a>.
-                    </div>
-                    {% if experiment.license.image_url != None %}
-                    <div class="col-md-6">
-                      <img src="{{ experiment.license.image_url }}"/>
-                    </div>
-                    {% endif %}
-                  </div>
-                {% else %}
-                  <abbr title="All rights reserved">
-                    Unspecified
-                  </abbr>
-                {% endif %}
-              </dd>
-            </dl>
+        <p class="public-content">
+            <!-- rendered via react component see choose_rights/index.jsx-->
         </p>
         {% if is_owner or is_superuser %}
         <div class="choose-rights" id="choose-rights-{{ experiment.id }}" ></div>

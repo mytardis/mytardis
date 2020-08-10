@@ -26,7 +26,7 @@ const PublicAccessBadge = ({ experimentData }) => {
       setTitle(' Only descriptions are public, not data');
       setvariantType('success');
     }
-  }, []);
+  }, [experimentData]);
 
   return (
     <Fragment>
