@@ -1920,10 +1920,12 @@ class DataFileResource(MyTardisModelResource):
         logger.error(bundle.data)
         logger.error(bundle.obj.id)
         if getattr(bundle.obj, 'id', False):
+            logger.error('In the pre acl part')
             try:
                 dataset = DatasetResource.get_via_uri(
                     DatasetResource(), bundle.data['dataset'], bundle.request)
             except NotFound:
+                logger.error("Can't find dataset")
                 raise  # This probably should raise an error
         if getattr(bundle.obj, 'id', False):
             logger.error('In the acl part')
