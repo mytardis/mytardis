@@ -1836,12 +1836,12 @@ class DataFileResource(MyTardisModelResource):
 
     def dehydrate(self, bundle):
         datafile = bundle.obj
-        #admins = datafile.get_admins()
-        #logger.error(admins)
-        #bundle.data['admin_groups'] = [acl.id for acl in admins]
-        #members = datafile.get_groups()
-        #logger.error(members)
-        #bundle.data['member_groups'] = [acl.id for acl in members]
+        admins = datafile.get_admins()
+        logger.error(admins)
+        bundle.data['admin_groups'] = [acl.id for acl in admins]
+        members = datafile.get_groups()
+        logger.error(members)
+        bundle.data['member_groups'] = [acl.id for acl in members]
         return bundle
 
     def download_file(self, request, **kwargs):
@@ -1919,9 +1919,9 @@ class DataFileResource(MyTardisModelResource):
     def hydrate(self, bundle):
         logger.error('Hydrating datafile')
         logger.error(bundle.data)
-        logger.error(bundle.obj.id)
-        if getattr(bundle.obj, 'id', False):
-        #if not bundle.obj.id:
+        logger.error(bundle.obj)
+        #if getattr(bundle.obj, 'id', False):
+        if not bundle.obj.id:
             logger.error('In the pre acl part')
             try:
                 dataset = DatasetResource.get_via_uri(
@@ -1929,8 +1929,8 @@ class DataFileResource(MyTardisModelResource):
             except NotFound:
                 logger.error("Can't find dataset")
                 raise  # This probably should raise an error
-        if getattr(bundle.obj, 'id', False):
-        #if not bundle.obj.id:
+        #if getattr(bundle.obj, 'id', False):
+        if not bundle.obj.id:
             logger.error('In the acl part')
             datafile = bundle.obj
             try:
