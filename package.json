@@ -16,7 +16,6 @@
     "angular": "1.8.0",
     "angular-resource": "1.8.0",
     "babel-loader": "^8.0.6",
-    "backbone": "^0.9.2",
     "backbone-forms": "^0.14.1",
     "blueimp-file-upload": "^9.31.0",
     "bootstrap": "^4.5.0",
