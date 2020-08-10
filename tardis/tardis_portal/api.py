@@ -2202,7 +2202,7 @@ class DataFileResource(MyTardisModelResource):
                 bundle.data['replicas'] = [{'file_object': newfile}]
 
             del(bundle.data['attached_file'])
-        return super.hydrate(bundle)
+        return super().hydrate(bundle)
 
     @transaction.atomic
     def obj_create(self, bundle, **kwargs):
