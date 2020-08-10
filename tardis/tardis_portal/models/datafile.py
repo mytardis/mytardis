@@ -477,7 +477,7 @@ class DataFile(models.Model):
                     if reverify or not obj.verified])
 
     def get_ct(self):
-        return 'datafile'#ContentType.objects.get_for_model(self)
+        return ContentType.objects.get_for_model(self)
 
     def get_owners(self):
         acls = ObjectACL.objects.filter(pluginId='django_user',
