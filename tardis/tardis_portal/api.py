@@ -1838,9 +1838,9 @@ class DataFileResource(MyTardisModelResource):
         #admins = datafile.get_admins()
         #logger.error(admins)
         #bundle.data['admin_groups'] = [acl.id for acl in admins]
-        members = datafile.get_groups()
-        logger.error(members)
-        bundle.data['member_groups'] = [acl.id for acl in members]
+        #members = datafile.get_groups()
+        #logger.error(members)
+        #bundle.data['member_groups'] = [acl.id for acl in members]
         return bundle
 
     def download_file(self, request, **kwargs):
