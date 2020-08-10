@@ -1939,7 +1939,7 @@ class DataFileResource(MyTardisModelResource):
                     f'Unable to locate parent dataset for {bundle.data["filename"]}')
                 raise
             logger.error(dataset)
-            experiment = dataset.experiments[0]
+            experiment = dataset.experiments.all()[0]
             logger.error('Experiment')
             logger.error(experiment)
             project = experiment.project
