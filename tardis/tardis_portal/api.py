@@ -2148,15 +2148,15 @@ class DataFileResource(MyTardisModelResource):
                                download=download,
                                sensitive=sensitive,
                                admin=False)
-        for group in datafile_groups:
-            logger.error(f'Creating group admin for {group}')
-            group_admin, _ = GroupAdmin.objects.get_or_create(user=bundle.request.user,
+            for group in datafile_groups:
+                logger.error(f'Creating group admin for {group}')
+                group_admin, _ = GroupAdmin.objects.get_or_create(user=bundle.request.user,
                                                               group=group)
-            for admin in datafile_admin_groups:
-                group_admin.admin_groups.add(admin.id)
-            for admin in datafile_admin_users:
-                group_admin.admin_users.add(admin.id)
-            logger.error(group_admin)
+                for admin in datafile_admin_groups:
+                    group_admin.admin_groups.add(admin.id)
+                for admin in datafile_admin_users:
+                    group_admin.admin_users.add(admin.id)
+                logger.error(group_admin)
 
         if 'attached_file' in bundle.data:
             # have POSTed file
