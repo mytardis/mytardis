@@ -115,6 +115,13 @@ module.exports = {
                     publicPath: "/bundles/"
                 }
             },
+          {
+                test: /\.(gif|png|jpe?g)$/i,
+                loader: "url-loader",
+                options: {
+                    name: "[name].[ext]",
+                }
+            },
             {
                 test: /\.less$/,
                 use: [
