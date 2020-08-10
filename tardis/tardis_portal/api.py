@@ -1919,7 +1919,7 @@ class DataFileResource(MyTardisModelResource):
         logger.error('Hydrating datafile')
         logger.error(bundle.data)
         logger.error(bundle.obj.id)
-        if getattr(bundle.obj, 'id', False):
+        if not bundle.obj.id:
             logger.error('In the pre acl part')
             try:
                 dataset = DatasetResource.get_via_uri(
