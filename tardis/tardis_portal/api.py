@@ -1919,7 +1919,8 @@ class DataFileResource(MyTardisModelResource):
         logger.error('Hydrating datafile')
         logger.error(bundle.data)
         logger.error(bundle.obj.id)
-        if not bundle.obj.id:
+        if getattr(bundle.obj, 'id', False):
+        #if not bundle.obj.id:
             logger.error('In the pre acl part')
             try:
                 dataset = DatasetResource.get_via_uri(
@@ -1944,6 +1945,8 @@ class DataFileResource(MyTardisModelResource):
             logger.error(experiment)
             project = experiment.project
             project_lead = project.lead_researcher
+            logger.error('Lead Researcher')
+            logger.error(project_lead)
             datafile_admin_groups = []
             datafile_groups = []
             datafile_admin_users = []
