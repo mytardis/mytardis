@@ -1832,6 +1832,7 @@ class DataFileResource(MyTardisModelResource):
             'modification_time'
         ]
         resource_name = 'dataset_file'
+        always_return_data = True
 
     def dehydrate(self, bundle):
         datafile = bundle.obj
