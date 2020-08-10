@@ -1836,8 +1836,10 @@ class DataFileResource(MyTardisModelResource):
     def dehydrate(self, bundle):
         datafile = bundle.obj
         admins = datafile.get_admins()
+        logger.error(admins)
         bundle.data['admin_groups'] = [acl.id for acl in admins]
         members = datafile.get_groups()
+        logger.error(members)
         bundle.data['member_groups'] = [acl.id for acl in members]
         return bundle
 
@@ -1921,6 +1923,8 @@ class DataFileResource(MyTardisModelResource):
             except NotFound:
                 raise  # This probably should raise an error
         if getattr(bundle.obj, 'id', False):
+            logger.error('Hydrating datafile')
+            logger.error(bundle.data)
             datafile = bundle.obj
             try:
                 dataset_uri = bundle.data['dataset']
@@ -2204,6 +2208,7 @@ class DataFileResource(MyTardisModelResource):
                 raise NotImplementedError
             dfo = DataFileObject(
                 datafile=bundle.obj,
+                logger.error(datafile)
                 storage_box=sbox)
             dfo.create_set_uri()
             dfo.save()
