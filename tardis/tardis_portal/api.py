@@ -2085,7 +2085,27 @@ class DataFileResource(MyTardisModelResource):
                                dataset.id,
                                django_group,
                                group.id)
-        if admins != []:
+        if not admins:
+            # Cascade the admin from the project level
+            dataset_admins = dataset.get_owners()
+            for user in dataset_admins:
+                if user.username == project.lead_researcher:
+                    # Lead researchers get all perms
+                    continue
+                add_flg = True
+                for member in members:
+                    if user.username == member[0]:
+                        # Don't add this user to the admin group since they have implicitly
+                        # been downgraded
+                        add_flg = False
+                if add_flg:
+                    create_acl(datafile.get_ct(),
+                            datafile.id,
+                            django_user,
+                            user.id,
+                            admin=True)
+                # No need to check traverse since they have admin rights in parent
+        elif admins != []:
             for admin in admins:
                 if not User.objects.filter(username=admin).exists():
                     new_user = get_user_from_upi(admin)
@@ -2123,30 +2143,25 @@ class DataFileResource(MyTardisModelResource):
                                dataset.id,
                                django_user,
                                user.id)
-        if not admins:
-            # Cascade the admin from the project level
-            dataset_admins = dataset.get_owners()
-            for user in dataset_admins:
-                if user.username == project.lead_researcher:
-                    # Lead researchers get all perms
-                    continue
-                add_flg = True
-                for member in members:
-                    if user.username == member[0]:
-                        # Don't add this user to the admin group since they have implicitly
-                        # been downgraded
-                        add_flg = False
-                if add_flg:
-                    create_acl(datafile.get_ct(),
-                            datafile.id,
-                            django_user,
-                            user.id,
-                            admin=True)
-                # No need to check traverse since they have admin rights in parent
 
         # error checking needs to be done externally for this to
         # function as desired.
-        if members != []:
+        if not members:
+            dataset_members = dataset.get_users_and_perms()
+            for user_tuple in dataset_members:
+                user, sensitive, download = user_tuple
+                if user.username == project.lead_researcher:
+                    # Lead researchers get all perms
+                    continue
+                create_acl(datafile.get_ct(),
+                           datafile.id,
+                           django_user,
+                           user.id,
+                           write=True,
+                           download=download,
+                           sensitive=sensitive,
+                           admin=False)
+        elif members != []:
             members = bundle.data['members']
             for member in members:
                 member_name = member[0]
@@ -2193,21 +2208,7 @@ class DataFileResource(MyTardisModelResource):
                                dataset.id,
                                django_user,
                                user.id)
-        if not members:
-            dataset_members = dataset.get_users_and_perms()
-            for user_tuple in dataset_members:
-                user, sensitive, download = user_tuple
-                if user.username == project.lead_researcher:
-                    # Lead researchers get all perms
-                    continue
-                create_acl(datafile.get_ct(),
-                           datafile.id,
-                           django_user,
-                           user.id,
-                           write=True,
-                           download=download,
-                           sensitive=sensitive,
-                           admin=False)
+
         for group in datafile_groups:
             logger.error(f'Creating group admin for {group}')
             group_admin, _ = GroupAdmin.objects.get_or_create(user=bundle.request.user,
