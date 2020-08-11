@@ -1954,7 +1954,7 @@ class DataFileResource(MyTardisModelResource):
             retval = super().obj_create(bundle, **kwargs)
             logger.error('Returned value')
             logger.error(retval)
-            logger.error(retval.id)
+            logger.error(retval.obj.id)
 
         except IntegrityError as err:
             if "duplicate key" in str(err):
