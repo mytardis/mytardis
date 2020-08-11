@@ -30,7 +30,11 @@ const TextFilter = ({value,options,onValueChange}) => {
         if (localValue === "") {
             onValueChange(null);
         } else {
-            onValueChange({op:"contains",content:localValue});
+            if (options.isExact) {
+                onValueChange({op: "is", content: [localValue]});
+            } else {
+                onValueChange({op:"contains",content:localValue});
+            }
         }
     };
     return (

@@ -162,6 +162,14 @@
                         "id": "filename",
                         "full_name": "File name"
                     },
+                    "file_extension": {
+                        "data_type": "STRING",
+                        "id": "file_extension",
+                        "full_name": "File extension",
+                        "options": {
+                            "isExact": true
+                        }
+                    },
                     "created_time": {
                         "data_type": "DATETIME",
                         "id": "created_date",
@@ -180,6 +188,7 @@
                 },
                 "allIds": [
                     "filename",
+                    "file_extension",
                     "created_time",
                     "dataset",
                     "schema"
