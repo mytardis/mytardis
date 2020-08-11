@@ -75,7 +75,8 @@ def create_user_profile(sender, instance, created, **kwargs):
                                'add_dataset', 'change_dataset', 'add_datafile',
                                'change_objectacl', 'change_group']
         for permissions in DEFAULT_PERMISSIONS:
-            user.user_permissions.add(Permission.objects.get(codename=permissions))
+            user.user_permissions.add(
+                Permission.objects.get(codename=permissions))
         user.save()
         UserProfile(user=user).save()
 
@@ -93,6 +94,8 @@ class GroupAdmin(models.Model):
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     group = models.ForeignKey(Group, on_delete=models.CASCADE)
+    admin_groups = models.ManyToManyField(Group, related_name='admin_groups')
+    admin_users = models.ManyToManyField(User, related_name='admin_users')
 
     class Meta:
         app_label = 'tardis_portal'
@@ -148,23 +151,31 @@ class UserAuthentication(models.Model):
             user_profile = self.userProfile
             user = user_profile.user
             # add user permissions
-            user.user_permissions.add(Permission.objects.get(codename='add_project'))
-            user.user_permissions.add(Permission.objects.get(codename='change_project'))
-            user.user_permissions.add(Permission.objects.get(codename='add_experiment'))
-            user.user_permissions.add(Permission.objects.get(codename='change_experiment'))
-            user.user_permissions.add(Permission.objects.get(codename='change_group'))
+            user.user_permissions.add(
+                Permission.objects.get(codename='add_project'))
+            user.user_permissions.add(
+                Permission.objects.get(codename='change_project'))
+            user.user_permissions.add(
+                Permission.objects.get(codename='add_experiment'))
+            user.user_permissions.add(
+                Permission.objects.get(codename='change_experiment'))
+            user.user_permissions.add(
+                Permission.objects.get(codename='change_group'))
             is_openidusermigration_enabled = 'tardis.apps.openid_migration' in settings.INSTALLED_APPS
             if is_openidusermigration_enabled:
-                user.user_permissions.add(Permission.objects.get(codename='add_openidusermigration'))
-            user.user_permissions.add(Permission.objects.get(codename='change_objectacl'))
-            user.user_permissions.add(Permission.objects.get(codename='add_datafile'))
-            user.user_permissions.add(Permission.objects.get(codename='change_dataset'))
+                user.user_permissions.add(Permission.objects.get(
+                    codename='add_openidusermigration'))
+            user.user_permissions.add(
+                Permission.objects.get(codename='change_objectacl'))
+            user.user_permissions.add(
+                Permission.objects.get(codename='add_datafile'))
+            user.user_permissions.add(
+                Permission.objects.get(codename='change_dataset'))
             # send email to user
             from tardis.apps.social_auth.auth.social_auth import send_account_approved_email
             send_account_approved_email(user.id, self.authenticationMethod)
 
         super().save(*args, **kwargs)
-
 
 
 # this is currently unused, but is the state I would like to reach, ie.

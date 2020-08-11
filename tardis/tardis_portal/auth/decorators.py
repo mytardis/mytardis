@@ -37,8 +37,8 @@ from django.db.models import Q
 from django.conf import settings
 
 from ..models import Project, Experiment, Dataset, DataFile, GroupAdmin, \
-                     ProjectParameter, ExperimentParameter, DatasetParameter, \
-                     DatafileParameter
+    ProjectParameter, ExperimentParameter, DatasetParameter, \
+    DatafileParameter
 from ..shortcuts import return_response_error
 
 
@@ -76,11 +76,14 @@ def get_accessible_datafiles_for_user(request):
 
 def get_nested_size(request, obj_id, ct_type):
     if ct_type == "project":
-        size = Project.objects.get(id=obj_id).get_size(request.user, downloadable=True)
+        size = Project.objects.get(id=obj_id).get_size(
+            request.user, downloadable=True)
     if ct_type == "experiment":
-        size = Experiment.objects.get(id=obj_id).get_size(request.user, downloadable=True)
+        size = Experiment.objects.get(id=obj_id).get_size(
+            request.user, downloadable=True)
     if ct_type == "dataset":
-        size = Dataset.objects.get(id=obj_id).get_size(request.user, downloadable=True)
+        size = Dataset.objects.get(id=obj_id).get_size(
+            request.user, downloadable=True)
     if ct_type == "datafile":
         if has_download_access(request, obj_id, "datafile"):
             size = DataFile.objects.get(id=obj_id).get_size()
@@ -150,7 +153,8 @@ def get_nested_count(request, obj_id, ct_type):
 
 def get_nested_has_download(request, obj_id, ct_type):
     if ct_type == "project":
-        dfs = DataFile.safe.all(request.user).filter(dataset__experiments__project__id=obj_id)
+        dfs = DataFile.safe.all(request.user).filter(
+            dataset__experiments__project__id=obj_id)
     if ct_type == "experiment":
         dfs = DataFile.safe.all(request.user).filter(dataset__experiments__id=obj_id)
     if ct_type == "dataset":
@@ -321,13 +325,13 @@ def has_delete_permissions(request, experiment_id):
 
 @login_required
 def is_group_admin(request, group_id):
-
-    user_check = GroupAdmin.objects.filter(user=request.user, group__id=group_id).exists()
-
-    group_check = any([GroupAdmin.objects.filter(admin_groups__id=group.id,
+    user_check = GroupAdmin.objects.filter(user=request.user,
+                                           group__id=group_id).exists()
+    admin_user_check = GroupAdmin.objects.filter(admin_users__id=request.user.id,
+                                                group__id=group_id).exists()
+    admin_group_check = any([GroupAdmin.objects.filter(admin_groups__id=group.id,
             group__id=group_id).exists() for group in request.user.groups.all()])
-
-    return any([user_check, group_check])
+    return any([user_check, admin_user_check, admin_group_check])
 
 def group_ownership_required(f):
     """
