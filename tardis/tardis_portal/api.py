@@ -2093,17 +2093,18 @@ class DataFileResource(MyTardisModelResource):
                     # Lead researchers get all perms
                     continue
                 add_flg = True
-                for member in members:
-                    if user.username == member[0]:
-                        # Don't add this user to the admin group since they have implicitly
-                        # been downgraded
-                        add_flg = False
-                if add_flg:
-                    create_acl(datafile.get_ct(),
-                            datafile.id,
-                            django_user,
-                            user.id,
-                            admin=True)
+                if members:
+                    for member in members:
+                        if user.username == member[0]:
+                            # Don't add this user to the admin group since they have implicitly
+                            # been downgraded
+                            add_flg = False
+                        if add_flg:
+                            create_acl(datafile.get_ct(),
+                                datafile.id,
+                                django_user,
+                                user.id,
+                                admin=True)
                 # No need to check traverse since they have admin rights in parent
         elif admins != []:
             for admin in admins:
