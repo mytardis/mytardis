@@ -24,6 +24,7 @@ class OracleSafeManager(models.Manager):
     containing TextFields fail when Oracle is being used as the
     backend.
     """
+
     def get_queryset(self):
         from django.db import connection
         if connection.settings_dict['ENGINE'] == 'django.db.backends.oracle':
@@ -67,11 +68,11 @@ class SafeManager(models.Manager):
         :rtype: QuerySet
         """
 
-        query = self._query_owned_and_shared(user, downloadable, viewsensitive) #self._query_all_public() |\
+        query = self._query_owned_and_shared(
+            user, downloadable, viewsensitive)  # self._query_all_public() |\
 
         return super().get_queryset().filter(
             query).distinct()
-
 
     def _query_owned(self, user, user_id=None):
         # build the query to filter the ACL table
@@ -79,12 +80,11 @@ class SafeManager(models.Manager):
                   objectacls__entityId=str(user_id or user.id),
                   objectacls__content_type__model=self.model.get_ct(self.model).model.replace(' ',''),
                   objectacls__isOwner=True) &\
-                (Q(objectacls__effectiveDate__lte=datetime.today())
+            (Q(objectacls__effectiveDate__lte=datetime.today())
              | Q(objectacls__effectiveDate__isnull=True)) &\
             (Q(objectacls__expiryDate__gte=datetime.today())
              | Q(objectacls__expiryDate__isnull=True))
         return query
-
 
     def _query_owned_by_group(self, group, group_id=None):
         # build the query to filter the ACL table
@@ -319,6 +319,34 @@ class SafeManager(models.Manager):
         acl = self.user_acls(obj_id)
         return User.objects.filter(pk__in=[int(a.entityId) for a in acl])
 
+    def group_acls(self, obj_id):
+        """
+        Returns a list of ACL rules associated with this proj/exp/set/file.
+
+        :param experiment_id: the ID of the proj/exp/set/file
+        :type experiment_id: string
+        :returns: QuerySet of ACLs
+        :rtype: QuerySet
+        """
+        obj = super().get(pk=obj_id)
+
+        return ObjectACL.objects.filter(
+            pluginId=django_group,
+            content_type=self.model.get_ct(self.model),
+            object_id=obj_id,
+            aclOwnershipType=ObjectACL.OWNER_OWNED)
+
+    def groups(self, obj_id):
+        """
+        Returns a list of users who have ACL rules associated with this
+        proj/exp/set/file.
+
+        :param int obj_id: the ID of the proj/exp/set/file
+        :returns: QuerySet of Users with proj/exp/set/file access
+        :rtype: QuerySet
+        """
+        acl = self.group_acls(obj_id)
+        return Group.objects.filter(pk__in=[int(a.entityId) for a in acl])
 
     def user_owned_groups(self, obj_id):
         """
