@@ -35,7 +35,7 @@
                         "data_type": "STRING",
                         "id": "lead_researcher",
                         "full_name": "Lead researcher",
-                        "target": ["lead_researcher","fullname"]
+                        "nested_target": ["fullname"]
                     },
                     "schema": {
                         "data_type": "STRING",
@@ -88,7 +88,7 @@
                         "data_type": "STRING",
                         "id": "project",
                         "full_name": "Part of project",
-                        "target": ["project","name"]
+                        "nested_target": ["name"]
                     },
                     "schema": {
                         "data_type": "STRING",
@@ -118,7 +118,7 @@
                         "data_type": "STRING",
                         "id": "experiments",
                         "full_name": "Part of experiment",
-                        "target": ["experiments","name"]
+                        "nested_target": ["name"]
                     },
                     "instrument": {
                         "data_type": "STRING",
@@ -176,7 +176,7 @@
                         "data_type": "STRING",
                         "id": "dataset",
                         "full_name": "Part of dataset",
-                        "target": ["dataset","name"]
+                        "nested_target": ["name"]
                     },
                     "schema": {
                         "data_type": "STRING",

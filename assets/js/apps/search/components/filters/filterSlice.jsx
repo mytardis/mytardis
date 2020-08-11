@@ -98,8 +98,7 @@ const updateSchemaParameterReducer = (state, {payload}) => {
     const parameter = schemaParamSelector(state, schemaId, parameterId);
     const fieldInfo = {
         kind: "schemaParameter",
-        target: [schemaId, parameterId],
-        type: parameter.data_type
+        target: [schemaId, parameterId]
     };
     parameter.value = value;
     if (value === null) {
@@ -131,19 +130,15 @@ const filters = createSlice({
         updateTypeAttribute: (state, {payload}) => {
             const { typeId, attributeId, value } = payload;
             const attribute = typeAttrSelector(state, typeId, attributeId);
-            let target;
-            if (attribute.target) {
-                // If there is a target field on the attribute, we use that instead.
+            let target = [typeId, attributeId];
+            if (attribute.nested_target) {
+                // If there is a nested target field on the attribute, we add that to the end.
                 // This is useful if we need to query a nested field.
-                target = [typeId].concat(attribute.target);
-            } else {
-                // Otherwise, the target field would just be the type and attribute id.
-                target = [typeId, attributeId];
+                target = target.concat(attribute.nested_target);
             }
             const fieldInfo = {
                 kind: "typeAttribute",
-                target: target,
-                type: attribute.data_type
+                target: target
             };
             attribute.value = value;
             if (value === null) {
@@ -160,8 +155,7 @@ const filters = createSlice({
             const activeSchemas = typeAttrSelector(state, typeId, "schema");
             const fieldInfo = {
                 kind: "typeAttribute",
-                target: [typeId,"schema"],
-                type: "STRING"
+                target: [typeId,"schema"]
             };
             // Get the current active schema value. If null, then all schemas apply.
             const currActiveSchemas = activeSchemas.value ? activeSchemas.value.content : state.typeSchemas[typeId];

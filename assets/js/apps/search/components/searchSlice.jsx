@@ -100,22 +100,21 @@ const fetchSearchResults = (searchTerm,filters) => {
 const buildFilterQuery = (filters) => {
     const allFilters = filters.activeFilters.map(filterFieldInfo => {
         const { kind, target } = filterFieldInfo;
-        let filterValue;
+        let filter;
         switch (kind) {
             case "typeAttribute":
-                filterValue = typeAttrSelector(filters,target[0],target[1]).value;
+                filter = typeAttrSelector(filters,target[0],target[1]);
                 break;                
             case "schemaParameter":
-                filterValue = schemaParamSelector(filters,target[0],target[1]).value;
+                filter = schemaParamSelector(filters,target[0],target[1]);
                 break;
             default:
                 break;
         }
-        if (!Array.isArray(filterValue)) {
-            filterValue = [filterValue];
-        }
+        const filterValue = Array.isArray(filter.value) ? filter.value : [filter.value],
+            filterType = {type: filter.data_type};
         return filterValue.map(value => (
-            Object.assign({},filterFieldInfo,value)
+            Object.assign({},filterFieldInfo, filterType, value)
         ));
     // "Flatten" the array so filters with multiple values are in same array.
     }).reduce((acc, val) => acc.concat(val), []);
