@@ -18,8 +18,8 @@
                         "id": "start_date",
                         "full_name": "Start date",
                         "options": {
-                            "showEnd": false,
-                            "labels": false
+                            "hideEnd": true,
+                            "hideLabels": true
                         }
                     },
                     "end_date": {
@@ -27,14 +27,9 @@
                         "id": "end_date",
                         "full_name": "End date",
                         "options": {
-                            "showStart": false,
-                            "labels": false
+                            "hideStart": true,
+                            "hideLabels": true
                         }
-                    },
-                    "institution": {
-                        "data_type": "STRING",
-                        "id": "institution",
-                        "full_name": "Institution"
                     },
                     "lead_researcher": {
                         "data_type": "STRING",
@@ -52,7 +47,6 @@
                     "description",
                     "start_date",
                     "end_date",
-                    "institution",
                     "lead_researcher",
                     "schema"
                 ]
@@ -71,20 +65,23 @@
                         "id": "description",
                         "full_name": "Description"
                     },
-                    "created_date": {
-                        "data_type": "DATETIME",
-                        "id": "created_date",
-                        "full_name": "Created date"
-                    },
                     "start_date": {
                         "data_type": "DATETIME",
                         "id": "start_date",
-                        "full_name": "Start date"
+                        "full_name": "Start date",
+                        "options": {
+                            "hideEnd": true,
+                            "hideLabels": true
+                        }
                     },
                     "end_date": {
                         "data_type": "DATETIME",
                         "id": "end_date",
-                        "full_name": "End date"
+                        "full_name": "End date",
+                        "options": {
+                            "hideStart": true,
+                            "hideLabels": true
+                        }
                     },
                     "created_by": {
                         "data_type": "STRING",
@@ -105,7 +102,6 @@
                 "allIds": [
                     "title",
                     "description",
-                    "created_date",
                     "start_date",
                     "end_date",
                     "created_by",

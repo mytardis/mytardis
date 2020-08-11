@@ -57,9 +57,8 @@ const toLocalValue = submitValue => {
 }
 
 const NumberRangeFilter = ({value,options,onValueChange}) => {
-    if (!options) {
-        options = {};
-    } 
+    // Make a copy of the options first.
+    options = Object.assign({},options);
     if (!options.name){
         options.name = "Missing filter name";
     }

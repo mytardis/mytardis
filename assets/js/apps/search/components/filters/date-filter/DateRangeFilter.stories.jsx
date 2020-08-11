@@ -37,6 +37,24 @@ export const emptyDateRangeFilterData = Object.assign({},dateRangeFilterData, {
     value: null
 });
 
+export const onlyShowStartFilterData = Object.assign({}, dateRangeFilterData, {
+    options: Object.assign({}, dateRangeFilterData.options, {
+        hideEnd: true
+    })
+});
+
+export const onlyShowEndFilterData = Object.assign({}, dateRangeFilterData, {
+    options: Object.assign({}, dateRangeFilterData.options, {
+        hideStart: true
+    })
+});
+
+export const noLabelsFilterData = Object.assign({}, dateRangeFilterData, {
+    options: Object.assign({}, dateRangeFilterData.options, {
+        hideLabels: true
+    })
+});
+
 export const Default = (storyMetadata,onValueChange) => {
     let props = dateRangeFilterData;
     if (onValueChange) {
@@ -56,3 +74,15 @@ export const Empty = (storyMetadata,onValueChange) => {
     }
     return <DateRangeFilter {...props} />
 }
+
+export const OnlyShowStart = () => (
+    <DateRangeFilter {...onlyShowStartFilterData} />
+)
+
+export const OnlyShowEnd = () => (
+    <DateRangeFilter {...onlyShowEndFilterData} />
+)
+
+export const NoLabels = () => (
+    <DateRangeFilter {...noLabelsFilterData} />
+)

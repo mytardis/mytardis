@@ -68,15 +68,18 @@ const toLocalValue = submitValue => {
 }
 
 const DateRangeFilter = ({ value, options, onValueChange }) => {
-    if (!options) {
-        options = {};
-    }
+    // Make a copy of the options first.
+    options = Object.assign({},options);
     if (!options.name) {
         options.name = "missingFilterName";
     }
-    if (!options.hint) {
-        options.hint = "";
+    if (!options.hintStart) {
+        options.hintStart = "DD/MM/YYYY";
     }
+    if (!options.hintEnd) {
+        options.hintEnd = "DD/MM/YYYY";
+    }
+
     const [localValue, setLocalValue] = useState(toLocalValue(value));
 
     const handleValueChange = (type, valueFromForm) => {
@@ -125,8 +128,9 @@ const DateRangeFilter = ({ value, options, onValueChange }) => {
 
     return (
         <Form className="date-range-filter" onSubmit={handleSubmit}>
+            {options.hideStart ? null :
                 <Form.Group className="date-range-filter__field">
-                    <Form.Label htmlFor={startFieldId}>Start date</Form.Label>
+                    <Form.Label htmlFor={startFieldId} srOnly={options.hideLabels}>Start</Form.Label>
                     <Datetime
                         value={localValue.start}
                         onChange={handleValueChange.bind(this, "start")}
@@ -136,8 +140,10 @@ const DateRangeFilter = ({ value, options, onValueChange }) => {
                         timeFormat={false}
                     />
                 </Form.Group>
+            }
+            {options.hideEnd ? null : 
                 <Form.Group className="date-range-filter__field">
-                    <Form.Label htmlFor={endFieldId}>End date</Form.Label>
+                    <Form.Label htmlFor={endFieldId} srOnly={options.hideLabels}>End</Form.Label>
                     <Datetime
                         value={localValue.end}
                         onChange={handleValueChange.bind(this, "end")}
@@ -147,6 +153,7 @@ const DateRangeFilter = ({ value, options, onValueChange }) => {
                         timeFormat={false}
                     />
                 </Form.Group>
+            }
             <Button
                 type="submit"
                 className="date-range-filter__button"

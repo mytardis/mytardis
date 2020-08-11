@@ -5,10 +5,9 @@ import FormControl from 'react-bootstrap/FormControl';
 import Button from 'react-bootstrap/Button';
 import PropTypes from 'prop-types';
 
-const TextFilter = ({value,options,onValueChange}) => {
-    if (!options) {
-        options = {};
-    } 
+const TextFilter = ({value,options,onValueChange}) => { 
+    // Make a copy of the options first.
+    options = Object.assign({},options);
     if (!options.name){
         options.name = "Missing filter name";
     }

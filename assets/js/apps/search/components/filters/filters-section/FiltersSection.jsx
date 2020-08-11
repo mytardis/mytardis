@@ -27,7 +27,7 @@ function TypeAttributeFilter({typeId, attributeId}) {
   return (
     <section>
       <h5>{attribute.full_name}</h5>
-      <ApplicableFilter value={attribute.value} onValueChange={setFilterValue} />
+      <ApplicableFilter value={attribute.value} onValueChange={setFilterValue} options={attribute.options} />
     </section>
   )
 }
