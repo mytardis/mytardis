@@ -2,14 +2,12 @@ import React, { useMemo } from 'react';
 import PropTypes from "prop-types";
 import Accordion from 'react-bootstrap/Accordion';
 import Card from 'react-bootstrap/Card';
-import TextFilter from "../text-filter/TextFilter";
-import NumberRangeFilter from '../range-filter/NumberRangeFilter';
-import DateRangeFilter from '../date-filter/DateRangeFilter';
 import { updateSchemaParameter } from "../filterSlice";
 import { useDispatch } from "react-redux";
 import CategoryFilter from '../category-filter/CategoryFilter';
 import './TypeSchemaList.css';
 import { runSearch } from '../../searchSlice';
+import { mapTypeToFilter } from "../index";
 
 // A hook for converting a hashmap of values into a list.
 const useAsList = (jsObject = {}) => (
@@ -18,19 +16,6 @@ const useAsList = (jsObject = {}) => (
                 .map(key => jsObject[key]))
     ,[jsObject])
 );
-
-const mapTypeToFilter = (type) => {
-    switch (type) {
-        case "STRING":
-            return TextFilter;
-        case "NUMERIC":
-            return NumberRangeFilter;
-        case "DATETIME":
-            return DateRangeFilter;
-        default:
-            return TextFilter;
-    }
-}
 
 const SchemaFilterList = ({ schema }) => {
     const { id: schemaId, type: schemaType, parameters } = schema,
