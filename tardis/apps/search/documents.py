@@ -25,7 +25,6 @@ analyzer = analyzer(
 )
 
 
-
 @registry.register_document
 class ProjectDocument(Document):
     class Index:
@@ -90,8 +89,7 @@ class ProjectDocument(Document):
         if isinstance(related_instance, User):
             return related_instance.project_set.all()
         if isinstance(related_instance, ObjectACL):
-            # This is a nasty hack to make sure the content type is correct - CHANGE THIS
-            if related_instance.content_object.get_ct() == Project.objects.first().get_ct():
+            if related_instance.content_object.get_ct().model == "project":
                 return related_instance.content_object
         if isinstance(related_instance, ProjectParameterSet):
             return related_instance.project
@@ -170,8 +168,7 @@ class ExperimentDocument(Document):
         if isinstance(related_instance, User):
             return related_instance.experiment_set.all()
         if isinstance(related_instance, ObjectACL):
-            # This is a nasty hack to make sure the content type is correct - CHANGE THIS
-            if related_instance.content_object.get_ct() == Experiment.objects.first().get_ct():
+            if related_instance.content_object.get_ct().model == "experiment":
                 return related_instance.content_object
         if isinstance(related_instance, ExperimentParameterSet):
             return related_instance.experiment
@@ -252,8 +249,7 @@ class DatasetDocument(Document):
         if isinstance(related_instance, Instrument):
             return related_instance.dataset_set.all()
         if isinstance(related_instance, ObjectACL):
-            # This is a nasty hack to make sure the content type is correct - CHANGE THIS
-            if related_instance.content_object.get_ct() == Dataset.objects.first().get_ct():
+            if related_instance.content_object.get_ct().model == "dataset":
                 return related_instance.content_object
         if isinstance(related_instance, DatasetParameterSet):
             return related_instance.dataset
@@ -276,6 +272,7 @@ class DataFileDocument(Document):
     filename = fields.TextField(
         fields={'raw': fields.KeywordField()},
         analyzer=analyzer)
+    file_extension = fields.KeywordField(attr='filename')
     created_time = fields.DateField()
     modification_time = fields.DateField()
     dataset = fields.NestedField(properties={
@@ -313,6 +310,20 @@ class DataFileDocument(Document):
         })
     })
 
+
+    def prepare_file_extension(self, instance):
+        """
+        Retrieve file extensions from filename - File extension taken as entire
+        string after first full stop.
+
+        i.e. 'filename.tar.gz' has an extension of 'tar.gz'
+        """
+        try:
+            extension = instance.filename.split('.',1)[1]
+        except(IndexError):
+            extension = ''
+        return extension
+
     def prepare_parameters(self, instance):
         return dict(instance.getParametersforIndexing())
 
@@ -331,8 +342,7 @@ class DataFileDocument(Document):
         if isinstance(related_instance, Project):
             return DataFile.objects.filter(dataset__experiments__project=related_instance)
         if isinstance(related_instance, ObjectACL):
-            # This is a nasty hack to make sure the content type is correct - CHANGE THIS
-            if related_instance.content_object.get_ct() == 'datafile':
+            if related_instance.content_object.get_ct().model == 'data file':
                 return related_instance.content_object
         if isinstance(related_instance, DatafileParameterSet):
             return related_instance.datafile
