@@ -34,7 +34,8 @@
                     "lead_researcher": {
                         "data_type": "STRING",
                         "id": "lead_researcher",
-                        "full_name": "Lead researcher"
+                        "full_name": "Lead researcher",
+                        "target": ["lead_researcher","fullname"]
                     },
                     "schema": {
                         "data_type": "STRING",
@@ -83,15 +84,11 @@
                             "hideLabels": true
                         }
                     },
-                    "created_by": {
-                        "data_type": "STRING",
-                        "id": "created_by",
-                        "full_name": "Created by"
-                    },
                     "project": {
                         "data_type": "STRING",
                         "id": "project",
-                        "full_name": "Part of project"
+                        "full_name": "Part of project",
+                        "target": ["project","name"]
                     },
                     "schema": {
                         "data_type": "STRING",
@@ -104,7 +101,6 @@
                     "description",
                     "start_date",
                     "end_date",
-                    "created_by",
                     "project",
                     "schema"
                 ]
@@ -121,7 +117,8 @@
                     "experiments": {
                         "data_type": "STRING",
                         "id": "experiments",
-                        "full_name": "Part of experiment"
+                        "full_name": "Part of experiment",
+                        "target": ["experiments","name"]
                     },
                     "instrument": {
                         "data_type": "STRING",
@@ -131,7 +128,7 @@
                     "created_date": {
                         "data_type": "DATETIME",
                         "id": "created_date",
-                        "full_name": "Created date"
+                        "full_name": "Ingestion date"
                     },
                     "tags": {
                         "data_type": "STRING",
@@ -173,12 +170,13 @@
                     "created_time": {
                         "data_type": "DATETIME",
                         "id": "created_date",
-                        "full_name": "Created date"
+                        "full_name": "Ingestion date"
                     },
                     "dataset": {
                         "data_type": "STRING",
                         "id": "dataset",
-                        "full_name": "Part of dataset"
+                        "full_name": "Part of dataset",
+                        "target": ["dataset","name"]
                     },
                     "schema": {
                         "data_type": "STRING",

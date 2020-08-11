@@ -131,9 +131,18 @@ const filters = createSlice({
         updateTypeAttribute: (state, {payload}) => {
             const { typeId, attributeId, value } = payload;
             const attribute = typeAttrSelector(state, typeId, attributeId);
+            let target;
+            if (attribute.target) {
+                // If there is a target field on the attribute, we use that instead.
+                // This is useful if we need to query a nested field.
+                target = [typeId].concat(attribute.target);
+            } else {
+                // Otherwise, the target field would just be the type and attribute id.
+                target = [typeId, attributeId];
+            }
             const fieldInfo = {
                 kind: "typeAttribute",
-                target: [typeId,attributeId],
+                target: target,
                 type: attribute.data_type
             };
             attribute.value = value;
