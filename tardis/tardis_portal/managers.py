@@ -77,7 +77,7 @@ class SafeManager(models.Manager):
         # build the query to filter the ACL table
         query = Q(objectacls__pluginId=django_user,
                   objectacls__entityId=str(user_id or user.id),
-                  objectacls__content_type__model=self.model.get_ct(self.model),
+                  objectacls__content_type__model=self.model.get_ct(self.model).model.replace(' ',''),
                   objectacls__isOwner=True) &\
                 (Q(objectacls__effectiveDate__lte=datetime.today())
              | Q(objectacls__effectiveDate__isnull=True)) &\
@@ -90,7 +90,7 @@ class SafeManager(models.Manager):
         # build the query to filter the ACL table
         query = Q(objectacls__pluginId=django_group,
                   objectacls__entityId=str(group_id or group.id),
-                  objectacls__content_type__model=self.model.get_ct(self.model),
+                  objectacls__content_type__model=self.model.get_ct(self.model).model.replace(' ',''),
                   objectacls__isOwner=True) &\
             (Q(objectacls__effectiveDate__lte=datetime.today())
              | Q(objectacls__effectiveDate__isnull=True)) &\
@@ -114,7 +114,7 @@ class SafeManager(models.Manager):
                 if downloadable:
                     query |= Q(objectacls__pluginId=tgp.name,
                                objectacls__entityId=str(group),
-                               objectacls__content_type__model=self.model.get_ct(self.model),
+                               objectacls__content_type__model=self.model.get_ct(self.model).model.replace(' ',''),
                                objectacls__canDownload=True) &\
                         (Q(objectacls__effectiveDate__lte=datetime.today())
                          | Q(objectacls__effectiveDate__isnull=True)) &\
@@ -123,7 +123,7 @@ class SafeManager(models.Manager):
                 elif viewsensitive:
                     query |= Q(objectacls__pluginId=tgp.name,
                                objectacls__entityId=str(group),
-                               objectacls__content_type__model=self.model.get_ct(self.model),
+                               objectacls__content_type__model=self.model.get_ct(self.model).model.replace(' ',''),
                                objectacls__canSensitive=True) &\
                         (Q(objectacls__effectiveDate__lte=datetime.today())
                          | Q(objectacls__effectiveDate__isnull=True)) &\
@@ -132,7 +132,7 @@ class SafeManager(models.Manager):
                 else:
                     query |= Q(objectacls__pluginId=tgp.name,
                                objectacls__entityId=str(group),
-                               objectacls__content_type__model=self.model.get_ct(self.model),
+                               objectacls__content_type__model=self.model.get_ct(self.model).model.replace(' ',''),
                                objectacls__canRead=True) &\
                         (Q(objectacls__effectiveDate__lte=datetime.today())
                          | Q(objectacls__effectiveDate__isnull=True)) &\
@@ -145,7 +145,7 @@ class SafeManager(models.Manager):
         if downloadable:
             query = Q(objectacls__pluginId=django_user,
                       objectacls__entityId=str(user.id),
-                      objectacls__content_type__model=self.model.get_ct(self.model),
+                      objectacls__content_type__model=self.model.get_ct(self.model).model.replace(' ',''),
                       objectacls__canDownload=True,
                       objectacls__isOwner=False) &\
                 (Q(objectacls__effectiveDate__lte=datetime.today())
@@ -155,7 +155,7 @@ class SafeManager(models.Manager):
         elif viewsensitive:
             query = Q(objectacls__pluginId=django_user,
                       objectacls__entityId=str(user.id),
-                      objectacls__content_type__model=self.model.get_ct(self.model),
+                      objectacls__content_type__model=self.model.get_ct(self.model).model.replace(' ',''),
                       objectacls__canSensitive=True,
                       objectacls__isOwner=False) &\
                 (Q(objectacls__effectiveDate__lte=datetime.today())
@@ -165,7 +165,7 @@ class SafeManager(models.Manager):
         else:
             query = Q(objectacls__pluginId=django_user,
                       objectacls__entityId=str(user.id),
-                      objectacls__content_type__model=self.model.get_ct(self.model),
+                      objectacls__content_type__model=self.model.get_ct(self.model).model.replace(' ',''),
                       objectacls__canRead=True,
                       objectacls__isOwner=False) &\
                 (Q(objectacls__effectiveDate__lte=datetime.today())
@@ -178,7 +178,7 @@ class SafeManager(models.Manager):
             if downloadable:
                 query |= Q(objectacls__pluginId=name,
                            objectacls__entityId=str(group),
-                           objectacls__content_type__model=self.model.get_ct(self.model),
+                           objectacls__content_type__model=self.model.get_ct(self.model).model.replace(' ',''),
                            objectacls__canDownload=True) &\
                     (Q(objectacls__effectiveDate__lte=datetime.today())
                      | Q(objectacls__effectiveDate__isnull=True)) &\
@@ -187,7 +187,7 @@ class SafeManager(models.Manager):
             elif viewsensitive:
                 query |= Q(objectacls__pluginId=name,
                            objectacls__entityId=str(group),
-                           objectacls__content_type__model=self.model.get_ct(self.model),
+                           objectacls__content_type__model=self.model.get_ct(self.model).model.replace(' ',''),
                            objectacls__canSensitive=True) &\
                     (Q(objectacls__effectiveDate__lte=datetime.today())
                      | Q(objectacls__effectiveDate__isnull=True)) &\
@@ -196,7 +196,7 @@ class SafeManager(models.Manager):
             else:
                 query |= Q(objectacls__pluginId=name,
                            objectacls__entityId=str(group),
-                           objectacls__content_type__model=self.model.get_ct(self.model),
+                           objectacls__content_type__model=self.model.get_ct(self.model).model.replace(' ',''),
                            objectacls__canRead=True) &\
                     (Q(objectacls__effectiveDate__lte=datetime.today())
                      | Q(objectacls__effectiveDate__isnull=True)) &\
@@ -252,7 +252,7 @@ class SafeManager(models.Manager):
         """
         obj = super().get(pk=obj_id)
 
-        if user.has_perm('tardis_acls.view_'+self.model.get_ct(self.model).model, obj):
+        if user.has_perm('tardis_acls.view_'+self.model.get_ct(self.model).model.replace(' ',''), obj):
             return obj
         raise PermissionDenied
 
@@ -302,7 +302,7 @@ class SafeManager(models.Manager):
 
         return ObjectACL.objects.filter(
             pluginId=django_user,
-            content_type=self.model.get_ct(self.model),
+            content_type=self.model.get_ct(self.model).model.replace(' ',''),
             object_id=obj_id,
             aclOwnershipType=ObjectACL.OWNER_OWNED)
 
@@ -332,7 +332,7 @@ class SafeManager(models.Manager):
 
         acl = ObjectACL.objects.filter(
             pluginId='django_group',
-            content_type__model=self.model.get_ct(self.model),
+            content_type__model=self.model.get_ct(self.model).model.replace(' ',''),
             object_id=obj_id,
             aclOwnershipType=ObjectACL.OWNER_OWNED)
 
@@ -349,7 +349,7 @@ class SafeManager(models.Manager):
         """
         return ObjectACL.objects.filter(
             pluginId='django_group',
-            content_type__model=self.model.get_ct(self.model),
+            content_type__model=self.model.get_ct(self.model).model.replace(' ',''),
             object_id=obj_id,
             aclOwnershipType=ObjectACL.OWNER_OWNED)
 
@@ -363,7 +363,7 @@ class SafeManager(models.Manager):
         """
         return ObjectACL.objects.filter(
             pluginId='django_group',
-            content_type__model=self.model.get_ct(self.model),
+            content_type__model=self.model.get_ct(self.model).model.replace(' ',''),
             object_id=obj_id,
             aclOwnershipType=ObjectACL.SYSTEM_OWNED)
 
@@ -380,7 +380,7 @@ class SafeManager(models.Manager):
         """
         acl = ObjectACL.objects.filter(
             pluginId='django_group',
-            content_type__model=self.model.get_ct(self.model),
+            content_type__model=self.model.get_ct(self.model).model.replace(' ',''),
             object_id=obj_id,
             aclOwnershipType=ObjectACL.SYSTEM_OWNED)
 
@@ -399,7 +399,7 @@ class SafeManager(models.Manager):
         from .models import ObjectACL
         acl = ObjectACL.objects.exclude(pluginId=django_user)
         acl = acl.exclude(pluginId='django_group')
-        acl = acl.filter(content_type__model=self.model.get_ct(self.model),
+        acl = acl.filter(content_type__model=self.model.get_ct(self.model).model.replace(' ',''),
                          object_id=obj_id)
 
         if not acl:

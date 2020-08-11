@@ -316,7 +316,7 @@ class DataFileDocument(Document):
         if isinstance(related_instance, Project):
             return DataFile.objects.filter(dataset__experiments__project=related_instance)
         if isinstance(related_instance, ObjectACL):
-            if related_instance.content_object.get_ct() == 'datafile':
+            if related_instance.content_object.get_ct().model == 'data file':
                 return related_instance.content_object
         if isinstance(related_instance, DatafileParameterSet):
             return related_instance.datafile
