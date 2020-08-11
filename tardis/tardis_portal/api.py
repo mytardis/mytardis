@@ -2137,11 +2137,11 @@ class DataFileResource(MyTardisModelResource):
                         # been downgraded
                         add_flg = False
                 if add_flg:
-                create_acl(datafile.get_ct(),
-                           datafile.id,
-                           django_user,
-                           user.id,
-                           admin=True)
+                    create_acl(datafile.get_ct(),
+                            datafile.id,
+                            django_user,
+                            user.id,
+                            admin=True)
                 # No need to check traverse since they have admin rights in parent
 
         # error checking needs to be done externally for this to
