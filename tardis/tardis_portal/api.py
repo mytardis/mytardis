@@ -1952,8 +1952,10 @@ class DataFileResource(MyTardisModelResource):
         logger.error('Building datafile in obj_create')
         try:
             retval = super().obj_create(bundle, **kwargs)
+            logger.error('Returned value')
             logger.error(retval)
-        
+            logger.error(retval.id)
+
         except IntegrityError as err:
             if "duplicate key" in str(err):
                 raise ImmediateHttpResponse(HttpResponse(status=409))
