@@ -47,10 +47,11 @@ class ProjectDocument(Document):
             fields={'raw': fields.KeywordField()},
         )
     })
-    lead_researcher = fields.ObjectField(properties={
+    lead_researcher = fields.NestedField(properties={
         'username': fields.StringField(
-            fields={'raw': fields.KeywordField()},
-        )
+            fields={'raw': fields.KeywordField()}),
+        'fullname': fields.StringField(
+            fields={'raw': fields.KeywordField()})
     })
     objectacls = fields.ObjectField(properties={
         'pluginId': fields.StringField(),
@@ -79,6 +80,12 @@ class ProjectDocument(Document):
 
     def prepare_parameters(self, instance):
         return dict(instance.getParametersforIndexing())
+
+    def prepare_lead_researcher(self, instance):
+        username = instance.lead_researcher.username
+        fullname = " ".join([instance.lead_researcher.first_name,
+                             instance.lead_researcher.last_name])
+        return dict({"username":username, "fullname":fullname})
 
     class Django:
         model = Project
@@ -128,7 +135,10 @@ class ExperimentDocument(Document):
         )
     })
     project = fields.NestedField(properties={
-        'id': fields.KeywordField()
+        'id': fields.KeywordField(),
+        'name': fields.StringField(
+            fields={'raw': fields.KeywordField()}
+        )
     })
     objectacls = fields.ObjectField(properties={
         'pluginId': fields.StringField(),

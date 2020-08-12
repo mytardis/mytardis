@@ -315,8 +315,57 @@ class SearchAppResource(Resource):
                                             )
                                         }})
 
+                                query_obj = query_obj & query_obj_filt
+
+                            # Fields that are intrinsic to the object (Proj,exp,set,file)
+                            if target_fieldtype in ['name', 'description', 'title',
+                                                    'tags', 'filename', 'file_extension',
+                                                    'created_date', 'created_time']:
+
+                                if filter["type"] == "STRING":
+
+                                    if isinstance(filter["content"], list):
+                                        Qdict = {"should" : []}
+                                        for option in filter["content"]:
+                                            qry = Q({oper: {target_fieldtype:option}})
+                                            Qdict["should"].append(qry)
+                                        query_obj_filt = Q({"bool" : Qdict})
+                                    else:
+                                        query_obj_filt = Q({oper: {target_fieldtype:filter["content"]}})
+
+                                elif filter["type"] == "DATETIME":
+                                        query_obj_filt = Q({"range": {target_fieldtype: {oper:filter["content"]}}})
 
                                 query_obj = query_obj & query_obj_filt
+
+
+                            # Fields that are intrinsic to related objects (instruments, users, etc)
+                            if target_fieldtype in ['lead_researcher', 'project', 'instrument']:#,
+                                                    #'experiments', 'dataset']:
+                                nested_fieldtype = filter["target"][2]
+
+                                if isinstance(filter["content"], list):
+                                    Qdict = {"should" : []}
+                                    for option in filter["content"]:
+                                        qry = Q(
+                                            {"nested" : {
+                                                "path":target_fieldtype, "query": Q(
+                                                        {oper: {".".join([target_fieldtype,nested_fieldtype]):option}}
+                                                )
+                                            }})
+                                        Qdict["should"].append(qry)
+                                    query_obj_filt = Q({"bool" : Qdict})
+                                else:
+                                    query_obj_filt = Q(
+                                        {"nested" : {
+                                            "path":target_fieldtype, "query": Q(
+                                                    {oper: {".".join([target_fieldtype,nested_fieldtype]):filter["content"]}}
+                                            )
+                                        }})
+
+                                query_obj = query_obj & query_obj_filt
+
+
 
 
             ms = ms.add(Search(index=obj)
