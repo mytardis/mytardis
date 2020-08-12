@@ -82,6 +82,9 @@ const NumberRangeFilter = ({value,options,onValueChange}) => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
+        if (!canChangeValue) {
+            return;
+        }
         onValueChange(toSubmitValue(localValue));
     };
     return (
@@ -111,7 +114,6 @@ const NumberRangeFilter = ({value,options,onValueChange}) => {
                 className="num-range-filter__button" 
                 aria-label="Filter results" 
                 variant={canChangeValue ? "secondary" :"outline-secondary"} 
-                disabled={!canChangeValue}
             >
                 Filter
             </Button>

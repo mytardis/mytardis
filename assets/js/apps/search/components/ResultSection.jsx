@@ -73,24 +73,24 @@ export function ResultRow({ result, onSelect, isSelected }) {
     const type = result.type,
         resultName = result[NameColumn[type]];
     return (
-        <tr onClick={onSelect}>
+        <tr onClick={onSelect} onKeyUp={onSelect} tabindex="0" role="button">
             <td className="result-row--download-col">
                 {result.userDownloadRights == "none" &&
                     <OverlayTrigger overlay={
                         <Tooltip id="tooltip-no-download">
                             You can't download this item.
-                        </Tooltip>
+                            </Tooltip>
                     }>
-                        <span aria-label="This item cannot be downloaded."><FiLock /></span>
+                        <span><FiLock title="This item cannot be downloaded." /></span>
                     </OverlayTrigger>
                 }
                 {result.userDownloadRights == "partial" &&
                     <OverlayTrigger overlay={
                         <Tooltip id="tooltip-partial-download">
                             You can't download some files in this item.
-                        </Tooltip>
+                            </Tooltip>
                     }>
-                        <span aria-label="Some files in this item cannot be downloaded."><FiPieChart /></span>
+                        <span><FiPieChart title="Some files cannot be downloaded." /></span>
                     </OverlayTrigger>
                 }
             </td>

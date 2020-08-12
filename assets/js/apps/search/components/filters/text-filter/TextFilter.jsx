@@ -27,6 +27,9 @@ const TextFilter = ({value,options,onValueChange}) => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
+        if (!canChangeValue) {
+            return;
+        }
         if (localValue === "") {
             onValueChange(null);
         } else {
@@ -42,7 +45,7 @@ const TextFilter = ({value,options,onValueChange}) => {
             <InputGroup>
                 <FormControl onChange={handleValueChange} value={localValue} aria-label="Filter input" placeholder={options.hint}></FormControl>
                 <InputGroup.Append>
-                    <Button type="submit" aria-label="Filter results" variant={canChangeValue ? "secondary" :"outline-secondary"} disabled={!canChangeValue}>Filter</Button>
+                    <Button type="submit" aria-label="Filter results" variant={canChangeValue ? "secondary" :"outline-secondary"}>Filter</Button>
                 </InputGroup.Append>
             </InputGroup>
         </Form>

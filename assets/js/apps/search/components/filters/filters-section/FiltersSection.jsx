@@ -26,7 +26,7 @@ function TypeAttributeFilter({typeId, attributeId}) {
   const ApplicableFilter = mapTypeToFilter(attribute.data_type);
   return (
     <section>
-      <h5>{attribute.full_name}</h5>
+      <h3 className="h5">{attribute.full_name}</h3>
       <ApplicableFilter value={attribute.value} onValueChange={setFilterValue} options={attribute.options} />
     </section>
   )
@@ -57,7 +57,7 @@ export function PureFiltersSection({ types, schemas, typeSchemas, isLoading, err
 
   return (
     <section>
-      <h3>Filters</h3>
+      <h2 className="h3">Filters</h2>
       <Tabs defaultActiveKey="projects" id="filters-section">
         {
           types.allIds.map(type => {

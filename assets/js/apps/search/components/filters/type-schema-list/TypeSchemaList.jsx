@@ -5,7 +5,6 @@ import Card from 'react-bootstrap/Card';
 import { updateSchemaParameter } from "../filterSlice";
 import { useDispatch } from "react-redux";
 import CategoryFilter from '../category-filter/CategoryFilter';
-import './TypeSchemaList.css';
 import { runSearch } from '../../searchSlice';
 import { mapTypeToFilter } from "../index";
 
@@ -36,13 +35,13 @@ const SchemaFilterList = ({ schema }) => {
                             },
                             ApplicableFilter = mapTypeToFilter(param.data_type);
                     return (
-                            <div key={parameterId} className="single-schema-list__filter">
+                            <section key={parameterId} className="single-schema-list__filter">
                                 <h5 className="single-schema-list__filter-label">{full_name}</h5>
                                 <ApplicableFilter 
                                     value={value}
                                     onValueChange={setParamValue} />
                                 <hr />
-                            </div>
+                            </section>
                     );
                 }
         )}
@@ -83,7 +82,7 @@ const TypeSchemaList = ({ value: schemaValue, options, onValueChange }) => {
 
     return (
         <section>
-            <h5>Schemas</h5>
+            <h3 className="h5">Schemas</h3>
             <CategoryFilter value={schemaValue} onValueChange={onValueChange} options={{
                 checkAllByDefault: true,
                 categories: schemaList

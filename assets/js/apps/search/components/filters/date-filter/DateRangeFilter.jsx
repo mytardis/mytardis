@@ -118,6 +118,9 @@ const DateRangeFilter = ({ value, options, onValueChange }) => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
+        if (!canChangeValue) {
+            return;
+        }
         const value = toSubmitValue(localValue);
         onValueChange(value);
     };
@@ -159,7 +162,6 @@ const DateRangeFilter = ({ value, options, onValueChange }) => {
                 className="date-range-filter__button"
                 aria-label="Filter results"
                 variant={canChangeValue ? "secondary" : "outline-secondary"}
-                disabled={!canChangeValue}
             >
                 Filter
             </Button>
