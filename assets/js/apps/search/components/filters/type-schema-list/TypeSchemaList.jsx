@@ -77,18 +77,17 @@ const TypeSchemaList = ({ value: schemaValue, options, onValueChange }) => {
         }
     ),[schemasAsList, schemas]);
 
-    return (
-        <div>
-                {
-                    schemasAsList.length !== 0 ?
-                        <h4 className="type-schema-list__title">Show me</h4> :
-                        null
-                }
+    if (schemasAsList.length === 0) {
+        return null;
+    }
 
-                <CategoryFilter value={schemaValue} onValueChange={onValueChange} options={{
-                    checkAllByDefault: true,
-                    categories: schemaList
-                }} />
+    return (
+        <section>
+            <h5>Schemas</h5>
+            <CategoryFilter value={schemaValue} onValueChange={onValueChange} options={{
+                checkAllByDefault: true,
+                categories: schemaList
+            }} />
             <Accordion>
                 {schemasAsList.map((id) => {
                     const schema = schemas[id],
@@ -111,7 +110,7 @@ const TypeSchemaList = ({ value: schemaValue, options, onValueChange }) => {
                     );
                 })}
             </Accordion>
-        </div>
+        </section>
     );
 };
 
