@@ -22,6 +22,12 @@
                             "hideLabels": true
                         }
                     },
+                    "institution": {
+                        "data_type": "STRING",
+                        "id": "institution",
+                        "full_name": "Institution",
+                        "nested_target": ["name"]
+                    },
                     "end_date": {
                         "data_type": "DATETIME",
                         "id": "end_date",
@@ -46,6 +52,7 @@
                 "allIds": [
                     "name",
                     "description",
+                    "institution",
                     "start_date",
                     "end_date",
                     "lead_researcher",
@@ -88,7 +95,7 @@
                         "data_type": "STRING",
                         "id": "project",
                         "full_name": "Part of project",
-                        "nested_target": ["name"]
+                        "nested_target": ["title"]
                     },
                     "schema": {
                         "data_type": "STRING",
@@ -114,26 +121,27 @@
                         "id": "description",
                         "full_name": "Description"
                     },
-                    "experiments": {
-                        "data_type": "STRING",
-                        "id": "experiments",
-                        "full_name": "Part of experiment",
-                        "nested_target": ["name"]
-                    },
                     "instrument": {
                         "data_type": "STRING",
                         "id": "instrument",
-                        "full_name": "Instrument"
+                        "full_name": "Instrument",
+                        "nested_target": ["name"]
                     },
-                    "created_date": {
+                    "created_time": {
                         "data_type": "DATETIME",
-                        "id": "created_date",
+                        "id": "created_time",
                         "full_name": "Ingestion date"
                     },
                     "tags": {
                         "data_type": "STRING",
                         "id": "tags",
                         "full_name": "Has tag"
+                    },
+                    "experiments": {
+                        "data_type": "STRING",
+                        "id": "experiments",
+                        "full_name": "Part of experiment",
+                        "nested_target": ["description"]
                     },
                     "schema": {
                         "data_type": "STRING",
@@ -143,10 +151,10 @@
                 },
                 "allIds": [
                     "description",
-                    "experiments",
                     "instrument",
-                    "created_date",
+                    "created_time",
                     "tags",
+                    "experiments",
                     "schema"
                 ]
             }
