@@ -1,6 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit';
 import Cookies from 'js-cookie';
-import { typeAttrSelector, schemaParamSelector } from "./filters/filterSlice";
+import { typeAttrSelector, schemaParamSelector, initialiseFilters } from "./filters/filterSlice";
 
 const getResultFromHit = (hit,hitType,urlPrefix) => {
     const source = hit._source;
@@ -141,6 +141,32 @@ export const runSearch = () => {
                 dispatch(getResultsFailure(e));
             });
 
+    }
+}
+
+const parseQuery = (searchString) => {
+    if (searchString[0] === "?") {
+        searchString = searchString.substring(1);
+    }
+    const parts = searchString.split('&');
+    let queryPart = null;
+    for (const partIdx in parts) {
+        if (parts[partIdx].indexOf('q=') === 0) {
+            queryPart = parts[partIdx].substring(2);
+            break;
+        }
+    }
+    return queryPart;
+}
+
+export const initialiseSearch = () => {
+    return (dispatch, getState) => {
+        const query = parseQuery(window.location.search);
+        if (!!query) {
+            dispatch(updateSearchTerm(query));
+        }
+        dispatch(initialiseFilters());
+        dispatch(runSearch());
     }
 }
 
