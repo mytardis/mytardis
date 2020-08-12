@@ -1,6 +1,5 @@
 import React, { Fragment, useState } from 'react';
-import ReactDOM, { createPortal } from 'react-dom';
-
+import { createPortal } from 'react-dom';
 import PropTypes from 'prop-types';
 import { css } from '@emotion/core';
 import ExperimentLastUpdatedBadge from './ExperimentLastUpdateBadge';
