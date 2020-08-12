@@ -98,9 +98,11 @@ const TypeSchemaList = ({ value: schemaValue, options, onValueChange }) => {
                     }
                     return (
                         <Card key={name}>
-                            <Accordion.Toggle as={Card.Header} eventKey={id}>
-                                {name}
-                            </Accordion.Toggle>
+                            <Card.Header>
+                                <Accordion.Toggle as="button" className="btn btn-link" eventKey={id}>
+                                    {name} filters
+                                </Accordion.Toggle>
+                            </Card.Header>
                             <Accordion.Collapse eventKey={id}>
                                 <Card.Body>
                                     <SchemaFilterList schema={schema} />
