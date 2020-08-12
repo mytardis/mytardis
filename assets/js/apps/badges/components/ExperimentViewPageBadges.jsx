@@ -1,5 +1,5 @@
 import React, { Fragment, useState } from 'react';
-import ReactDOM from 'react-dom';
+import ReactDOM, { createPortal } from 'react-dom';
 
 import PropTypes from 'prop-types';
 import { css } from '@emotion/core';
@@ -12,7 +12,7 @@ import Spinner from './utils/Spinner';
 import ExperimentSizeBadge from './ExperimentSizeBadge';
 
 
-const ExperimentViewPageBadges = ({ experimentID }) => {
+const ExperimentViewPageBadges = ({ experimentID, container, licenseUpdatedCount }) => {
   const [expData, setExpData] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const spinnerCss = css`
@@ -26,47 +26,46 @@ const ExperimentViewPageBadges = ({ experimentID }) => {
       setExpData(data);
       setIsLoading(false);
     });
-  }, []);
+  }, [experimentID, licenseUpdatedCount]);
 
   return (
-    isLoading ? (
-      <Fragment>
-        <Spinner override={spinnerCss} />
-      </Fragment>
-    )
-      : (
-        <Fragment>
-          <span className="mr-2">
-            <DatasetCountBadge experimentData={expData} />
-          </span>
-          <span className="mr-2">
-            <DatafileCountBadge experimentData={expData} />
-          </span>
-          <span className="mr-2">
-            <ExperimentSizeBadge experimentData={expData} />
-          </span>
-          <span className="mr-2">
-            <ExperimentLastUpdatedBadge experimentData={expData} />
-          </span>
-          <span className="mr-2">
-            <PublicAccessBadge experimentData={expData} />
-          </span>
-        </Fragment>
+    <Fragment>
+      {createPortal(
+        isLoading ? (
+          <Fragment>
+            <Spinner override={spinnerCss} />
+          </Fragment>
+        )
+          : (
+            <Fragment>
+              <span className="mr-2">
+                <DatasetCountBadge experimentData={expData} />
+              </span>
+              <span className="mr-2">
+                <DatafileCountBadge experimentData={expData} />
+              </span>
+              <span className="mr-2">
+                <ExperimentSizeBadge experimentData={expData} />
+              </span>
+              <span className="mr-2">
+                <ExperimentLastUpdatedBadge experimentData={expData} />
+              </span>
+              <span className="mr-2">
+                <PublicAccessBadge experimentData={expData} />
+              </span>
+            </Fragment>
+          ), container,
       )
+    }
+    </Fragment>
   );
 };
 
 ExperimentViewPageBadges.propTypes = {
   experimentID: PropTypes.string.isRequired,
+  licenseUpdatedCount: PropTypes.number.isRequired,
+  container: PropTypes.object.isRequired,
 };
 
-const elem = document.querySelector('.badges');
-let experimentID = null;
-if (elem) {
-  [, experimentID] = elem.id.split('-');
-  ReactDOM.render(
-    <ExperimentViewPageBadges experimentID={experimentID} />, elem,
-  );
-}
 
 export default ExperimentViewPageBadges;
