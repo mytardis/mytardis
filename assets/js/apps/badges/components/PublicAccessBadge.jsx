@@ -43,7 +43,7 @@ const PublicAccessBadge = ({ experimentData }) => {
 };
 
 PublicAccessBadge.propTypes = {
-  experimentData: PropTypes.string.isRequired,
+  experimentData: PropTypes.object.isRequired,
 };
 
 export default PublicAccessBadge;

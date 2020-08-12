@@ -33,6 +33,6 @@ const ExperimentLastUpdatedBadge = ({ experimentData }) => {
 };
 
 ExperimentLastUpdatedBadge.propTypes = {
-  experimentData: PropTypes.string.isRequired,
+  experimentData: PropTypes.object.isRequired,
 };
 export default ExperimentLastUpdatedBadge;

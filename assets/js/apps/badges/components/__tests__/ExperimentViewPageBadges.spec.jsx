@@ -31,7 +31,11 @@ afterEach(() => {
 describe('renders badges on experiment view page', () => {
   it('should render all badges', async () => {
     await act(async () => {
-      ReactDOM.render(<ExperimentViewPageBadges experimentID="123" />, container);
+      ReactDOM.render(<ExperimentViewPageBadges
+        experimentID="123"
+        container={container}
+        licenseUpdatedCount={0}
+      />, container);
     });
     expect(container).toMatchSnapshot();
     expect(container.querySelectorAll('span').length)
@@ -39,28 +43,44 @@ describe('renders badges on experiment view page', () => {
   });
   it('should render dataset count badge', async () => {
     await act(async () => {
-      ReactDOM.render(<ExperimentViewPageBadges experimentID="123" />, container);
+      ReactDOM.render(<ExperimentViewPageBadges
+        experimentID="123"
+        container={container}
+        licenseUpdatedCount={0}
+      />, container);
     });
     expect(container.querySelectorAll('span')[0].textContent.trim())
       .toEqual('1');
   });
   it('should render datafile count badge', async () => {
     await act(async () => {
-      ReactDOM.render(<ExperimentViewPageBadges experimentID="123" />, container);
+      ReactDOM.render(<ExperimentViewPageBadges
+        experimentID="123"
+        container={container}
+        licenseUpdatedCount={0}
+      />, container);
     });
     expect(container.querySelectorAll('span')[2].textContent.trim())
       .toEqual('100');
   });
   it('should render last updated badge', async () => {
     await act(async () => {
-      ReactDOM.render(<ExperimentViewPageBadges experimentID="123" />, container);
+      ReactDOM.render(<ExperimentViewPageBadges
+        experimentID="123"
+        container={container}
+        licenseUpdatedCount={0}
+      />, container);
     });
     expect(container.querySelectorAll('span')[6].textContent.trim())
       .toEqual('13th January 2020');
   });
   it('should render public access badge', async () => {
     await act(async () => {
-      ReactDOM.render(<ExperimentViewPageBadges experimentID="123" />, container);
+      ReactDOM.render(<ExperimentViewPageBadges
+        experimentID="123"
+        container={container}
+        licenseUpdatedCount={0}
+      />, container);
     });
     expect(container.querySelectorAll('span')[8].textContent.trim())
       .toEqual('Private');

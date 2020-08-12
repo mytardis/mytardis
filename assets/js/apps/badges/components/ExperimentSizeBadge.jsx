@@ -23,7 +23,7 @@ const ExperimentSizeBadge = ({ experimentData }) => {
 };
 
 ExperimentSizeBadge.propTypes = {
-  experimentData: PropTypes.string.isRequired,
+  experimentData: PropTypes.object.isRequired,
 };
 
 export default ExperimentSizeBadge;
