@@ -24,3 +24,8 @@
 .result-section--count-summary {
     padding: 1em 0; 
 }
+
+.result-section--row:focus {
+    color: #212529;
+    background-color: rgba(0, 0, 0, 0.075);
+}

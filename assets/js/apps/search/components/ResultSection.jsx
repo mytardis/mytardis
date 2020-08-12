@@ -73,7 +73,7 @@ export function ResultRow({ result, onSelect, isSelected }) {
     const type = result.type,
         resultName = result[NameColumn[type]];
     return (
-        <tr onClick={onSelect} onKeyUp={onSelect} tabindex="0" role="button">
+        <tr className="result-section--row" onClick={onSelect} onKeyUp={onSelect} tabindex="0" role="button">
             <td className="result-row--download-col">
                 {result.userDownloadRights == "none" &&
                     <OverlayTrigger overlay={
