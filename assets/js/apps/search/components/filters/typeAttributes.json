@@ -95,7 +95,7 @@
                         "data_type": "STRING",
                         "id": "project",
                         "full_name": "Part of project",
-                        "nested_target": ["title"]
+                        "nested_target": ["name"]
                     },
                     "schema": {
                         "data_type": "STRING",
@@ -141,7 +141,7 @@
                         "data_type": "STRING",
                         "id": "experiments",
                         "full_name": "Part of experiment",
-                        "nested_target": ["description"]
+                        "nested_target": ["title"]
                     },
                     "schema": {
                         "data_type": "STRING",
@@ -184,7 +184,7 @@
                         "data_type": "STRING",
                         "id": "dataset",
                         "full_name": "Part of dataset",
-                        "nested_target": ["name"]
+                        "nested_target": ["description"]
                     },
                     "schema": {
                         "data_type": "STRING",
