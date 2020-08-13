@@ -172,7 +172,6 @@ const updateActiveSchemasReducer = (state, {payload}) => {
 }
 
 const resetFiltersReducer = (state) => {
-    console.log("In reset",state.activeFilters.length);
     const activeFilters = Array.from(state.activeFilters);
     activeFilters.forEach(({ kind, target }) => {
         switch (kind) {
@@ -221,10 +220,10 @@ const filters = createSlice({
             state.isLoading = false;
             state.error = null;
         },
-        getFiltersFailure: (state, { payload }) => {
-            console.log("Error", payload);
+        getFiltersFailure: (state, { payload:error }) => {
+            console.error("Error", error);
             state.isLoading = false;
-            state.error = payload.message;
+            state.error = error.toString();
         },
         updateTypeAttribute: updateTypeAttributeReducer,
         updateSchemaParameter: updateSchemaParameterReducer,

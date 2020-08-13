@@ -65,9 +65,9 @@ const search = createSlice({
             state.isLoading = true;
             state.error = null;
         },
-        getResultsFailure: (state, action) => {
+        getResultsFailure: (state, {payload:error}) => {
             state.isLoading = false;
-            state.error = action.payload.toString();
+            state.error = error.toString();
             state.results = null;
         }
     }
@@ -153,6 +153,14 @@ const parseQuery = (searchString) => {
     }
 }
 
+
+const updateWithQuery = (queryBody) => {
+    return (dispatch) => {
+        dispatch(updateSearchTerm(queryBody.query));
+        dispatch(updateFiltersByQuery(queryBody.filters));
+    }
+}
+
 export const runSearch = () => {
     return (dispatch, getState) => {
         const state = getState();
@@ -162,12 +170,6 @@ export const runSearch = () => {
     }
 }
 
-const updateWithQuery = (queryBody) => {
-    return (dispatch) => {
-        dispatch(updateSearchTerm(queryBody.query));
-        dispatch(updateFiltersByQuery(queryBody.filters));
-    }
-}
 
 export const restoreSearchFromHistory = (restoredState) => {
     return (dispatch) => {

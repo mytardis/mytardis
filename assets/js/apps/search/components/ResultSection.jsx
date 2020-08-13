@@ -123,7 +123,7 @@ export function PureResultList({ results, selectedItem, onItemSelect, error, isL
         return (
             // If there was an error during the search
             <div className="result-section--msg result-section--error-msg">
-                <p>An error occurred. Please refresh the page and try searching again.</p>
+                <p>An error occurred. Please try another query, or refresh the page and try searching again.</p>
             </div>
         );
     }
