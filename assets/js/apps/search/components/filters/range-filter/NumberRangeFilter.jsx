@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
 import PropTypes from 'prop-types';
@@ -37,8 +37,12 @@ const toSubmitValue = localValue => {
 
 const toLocalValue = submitValue => {
     // Replace null value with empty string to represent null parameter value.
-    if (!submitValue || !Array.isArray(submitValue)) {
+    if (!submitValue) {
         return {};
+    }
+    if (!Array.isArray(submitValue)) {
+        // Wrap value in array if not already in array.
+        submitValue = [submitValue];
     }
     const localValue = {};
     // Iterate over the filter values to get the min and max values.
@@ -66,7 +70,9 @@ const NumberRangeFilter = ({value,options,onValueChange}) => {
         options.hint = "";
     }
     const [localValue, setLocalValue] = useState(toLocalValue(value));
- 
+    useEffect(() => {
+        setLocalValue(toLocalValue(value));
+    }, [value]);
     const handleValueChange = (type,e) => {
         // Copy the value object, then assign new value into either "min" or "max".
         const valueFromForm = e.target.value;

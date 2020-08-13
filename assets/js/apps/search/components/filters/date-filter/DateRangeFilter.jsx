@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
 import PropTypes from 'prop-types';
@@ -55,6 +55,9 @@ const toLocalValue = submitValue => {
     if (!submitValue) {
         return {};
     }
+    if (!Array.isArray(submitValue)) {
+        submitValue = [submitValue];
+    }
     const localValue = {start: null, end: null};
     const startValue = submitValue.filter(value => value.op === ">=");
     const endValue = submitValue.filter(value => value.op === "<=");
@@ -74,13 +77,20 @@ const DateRangeFilter = ({ value, options, onValueChange }) => {
         options.name = "missingFilterName";
     }
     if (!options.hintStart) {
-        options.hintStart = "DD/MM/YYYY";
+        options.hintStart = "MM/DD/YYYY";
     }
     if (!options.hintEnd) {
-        options.hintEnd = "DD/MM/YYYY";
+        options.hintEnd = "MM/DD/YYYY";
     }
 
     const [localValue, setLocalValue] = useState(toLocalValue(value));
+
+    useEffect(() => {
+        // Update the filter when there is a new value,
+        // for when the filter value is externally updated
+        // e.g. from URL.
+        setLocalValue(toLocalValue(value));
+    },[value]);
 
     const handleValueChange = (type, valueFromForm) => {
         // Copy the value object, then assign new value into either "start" or "end".

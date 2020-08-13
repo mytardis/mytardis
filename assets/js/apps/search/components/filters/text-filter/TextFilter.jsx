@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Form from 'react-bootstrap/Form';
 import InputGroup from 'react-bootstrap/InputGroup';
 import FormControl from 'react-bootstrap/FormControl';
@@ -16,6 +16,9 @@ const TextFilter = ({value,options,onValueChange}) => {
     }
     const initialState = value ? value.content : null;
     const [localValue, setLocalValue] = useState( initialState );
+    useEffect(() => {
+        setLocalValue(value ? value.content : "");
+    },[value])
     const handleValueChange = (e) => {
         setLocalValue(e.target.value);
     };

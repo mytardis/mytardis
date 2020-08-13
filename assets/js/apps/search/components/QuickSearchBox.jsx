@@ -40,7 +40,11 @@ const QuickSearchBox = () => {
         // Update the search term in the quick search box
         // when the term is externally updated (e.g. when 
         // the address contains a search term.)
-        onTermChange(searchTerm);
+        if (!searchTerm) {
+            onTermChange("");
+        } else {
+            onTermChange(searchTerm);
+        }
     }, [searchTerm])
     return (
         <PureQuickSearchBox
