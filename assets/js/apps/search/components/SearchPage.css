@@ -2,6 +2,7 @@
     padding-top: 50px;
     width:100%;
     min-height: 90vh;
+    background-color: #FAFCFF;
 }
 
 .search-screen {
@@ -20,6 +21,7 @@
     flex: 0 0 350px;
     border: 1px solid lightgray;
     padding: 30px;
+    background-color: white;
 }
 
 .result-column {
