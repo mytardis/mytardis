@@ -165,8 +165,8 @@ export const runSearch = () => {
     return (dispatch, getState) => {
         const state = getState();
         const queryBody = buildQueryBody(state);
-        window.history.pushState(queryBody,"",getDisplayQueryString(queryBody));
         dispatch(runSearchWithQuery(queryBody));
+        window.history.pushState(queryBody,"",getDisplayQueryString(queryBody));
     }
 }
 
