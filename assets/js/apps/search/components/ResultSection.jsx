@@ -34,7 +34,7 @@ export function ResultTabs({counts, selectedType, onChange}) {
                 <Nav.Link onSelect={handleNavClicked.bind(this, key)} eventKey={key}>
                     {label} {counts[key] !== null &&
                         <Badge variant={badgeVariant}>
-                            {counts[key]}
+                            {counts[key]} <span className="sr-only">{counts[key] > 1 ? "results" : "result"}</span>
                         </Badge>}</Nav.Link>
             </Nav.Item>
         );
