@@ -42,7 +42,7 @@ class ProjectDocument(Document):
     #public_access = fields.IntegerField()
     start_date = fields.DateField()
     end_date = fields.DateField()
-    institution = fields.ObjectField(properties={
+    institution = fields.NestedField(properties={
         'name': fields.StringField(
             fields={'raw': fields.KeywordField()},
         )
@@ -54,8 +54,8 @@ class ProjectDocument(Document):
             fields={'raw': fields.KeywordField()})
     })
     objectacls = fields.ObjectField(properties={
-        'pluginId': fields.StringField(),
-        'entityId': fields.StringField()
+        'pluginId': fields.KeywordField(),
+        'entityId': fields.KeywordField()
     })
     parameters = fields.NestedField(attr='getParametersforIndexing', properties={
         'string' : fields.NestedField(properties = {
@@ -136,13 +136,12 @@ class ExperimentDocument(Document):
     })
     project = fields.NestedField(properties={
         'id': fields.KeywordField(),
-        'name': fields.StringField(
-            fields={'raw': fields.KeywordField()}
-        )
-    })
+        'name' : fields.TextField(fields={'raw': fields.KeywordField()},
+                                  analyzer=analyzer)
+        })
     objectacls = fields.ObjectField(properties={
-        'pluginId': fields.StringField(),
-        'entityId': fields.StringField()
+        'pluginId': fields.KeywordField(),
+        'entityId': fields.KeywordField()
     })
     parameters = fields.NestedField(attr='getParametersforIndexing', properties={
         'string' : fields.NestedField(properties = {
@@ -204,17 +203,20 @@ class DatasetDocument(Document):
         analyzer=analyzer)
     experiments = fields.NestedField(properties={
         'id': fields.KeywordField(),
+        'title': fields.StringField(
+            fields={'raw': fields.KeywordField()}
+        ),
         'project': fields.NestedField(properties={
             'id': fields.KeywordField()
         })
     })
     objectacls = fields.ObjectField(properties={
-            'pluginId': fields.StringField(),
-            'entityId': fields.StringField()
+            'pluginId': fields.KeywordField(),
+            'entityId': fields.KeywordField()
         })
-    instrument = fields.ObjectField(properties={
+    instrument = fields.NestedField(properties={
         'id': fields.KeywordField(),
-        'name': fields.TextField(
+        'name': fields.StringField(
             fields={'raw': fields.KeywordField()},
         )}
     )
@@ -287,6 +289,9 @@ class DataFileDocument(Document):
     modification_time = fields.DateField()
     dataset = fields.NestedField(properties={
         'id': fields.KeywordField(),
+        'description': fields.StringField(
+            fields={'raw': fields.KeywordField()}
+        ),
         'experiments': fields.NestedField(properties={
             'id': fields.KeywordField(),
             'project':fields.NestedField(properties={
@@ -295,8 +300,8 @@ class DataFileDocument(Document):
         }),
     })
     objectacls = fields.ObjectField(properties={
-            'pluginId': fields.StringField(),
-            'entityId': fields.StringField()
+            'pluginId': fields.KeywordField(),
+            'entityId': fields.KeywordField()
         })
 
     parameters = fields.NestedField(attr='getParametersforIndexing', properties={

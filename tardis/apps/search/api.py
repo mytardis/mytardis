@@ -320,7 +320,7 @@ class SearchAppResource(Resource):
                             # Fields that are intrinsic to the object (Proj,exp,set,file)
                             if target_fieldtype in ['name', 'description', 'title',
                                                     'tags', 'filename', 'file_extension',
-                                                    'created_date', 'created_time']:
+                                                    'created_time', 'start_date', 'end_date']:
 
                                 if filter["type"] == "STRING":
 
@@ -340,8 +340,8 @@ class SearchAppResource(Resource):
 
 
                             # Fields that are intrinsic to related objects (instruments, users, etc)
-                            if target_fieldtype in ['lead_researcher', 'project', 'instrument']:#,
-                                                    #'experiments', 'dataset']:
+                            if target_fieldtype in ['lead_researcher', 'project', 'instrument',
+                                                    'institution', 'experiments', 'dataset']:
                                 nested_fieldtype = filter["target"][2]
 
                                 if isinstance(filter["content"], list):
@@ -363,7 +363,34 @@ class SearchAppResource(Resource):
                                             )
                                         }})
 
+                                if target_fieldtype == 'lead_researcher':
+                                    Qdict_lr = {"should" : [query_obj_filt]}
+
+                                    if isinstance(filter["content"], list):
+                                        Qdict = {"should" : []}
+                                        for option in filter["content"]:
+                                            qry = Q(
+                                                {"nested" : {
+                                                    "path":target_fieldtype, "query": Q(
+                                                            {'term': {".".join([target_fieldtype,'username']):option}}
+                                                    )
+                                                }})
+                                            Qdict["should"].append(qry)
+                                        query_obj_filt = Q({"bool" : Qdict})
+                                    else:
+                                        query_obj_filt = Q(
+                                            {"nested" : {
+                                                "path":target_fieldtype, "query": Q(
+                                                        {'term': {".".join([target_fieldtype,'username']):filter["content"]}}
+                                                )
+                                            }})
+                                    Qdict_lr["should"].append(query_obj_filt)
+                                    query_obj_filt = Q({"bool" : Qdict_lr})
+
+
                                 query_obj = query_obj & query_obj_filt
+
+
 
 
 
@@ -397,7 +424,7 @@ class SearchAppResource(Resource):
 
                     # Remove ACLs and add size to repsonse
                     safe_hit["_source"].pop("objectacls")
-                    safe_hit["_source"].pop("parameters")
+                    #safe_hit["_source"].pop("parameters")
                     safe_hit.pop("_score")
 
                     safe_hit["_source"]["size"] = filesizeformat(size)
