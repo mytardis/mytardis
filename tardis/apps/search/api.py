@@ -424,7 +424,7 @@ class SearchAppResource(Resource):
 
                     # Remove ACLs and add size to repsonse
                     safe_hit["_source"].pop("objectacls")
-                    safe_hit["_source"].pop("parameters")
+                    #safe_hit["_source"].pop("parameters")
                     safe_hit.pop("_score")
 
                     safe_hit["_source"]["size"] = filesizeformat(size)
