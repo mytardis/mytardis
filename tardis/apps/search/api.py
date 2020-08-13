@@ -96,13 +96,13 @@ class SchemasAppResource(Resource):
                                     ).prefetch_related('projectparameterset'
                                     ).values_list("projectparameterset__schema__id", flat=True)))),
                        "experiments" : list(set(list(Experiment.safe.all(request.user
-                                       ).prefetch_related('projectparameterset'
+                                       ).prefetch_related('experimentparameterset'
                                        ).values_list("experimentparameterset__schema__id", flat=True)))),
                        "datasets" : list(set(list(Dataset.safe.all(request.user
-                                       ).prefetch_related('projectparameterset'
+                                       ).prefetch_related('datasetparameterset'
                                        ).values_list("datasetparameterset__schema__id", flat=True)))),
                        "datafiles" : list(set(list(DataFile.safe.all(request.user
-                                       ).prefetch_related('projectparameterset'
+                                       ).prefetch_related('datafileparameterset'
                                        ).values_list("datafileparameterset__schema__id", flat=True))))
                        }
         safe_dict = {}
@@ -195,7 +195,6 @@ class SearchAppResource(Resource):
         filter_level = 0
 
         ms = MultiSearch(index=index_list)
-        ms_sens = MultiSearch(index=index_list)
 
         for idx, obj in enumerate(index_list):
 
@@ -221,19 +220,6 @@ class SearchAppResource(Resource):
                         }})
                     query_obj_text_meta = query_obj_text | query_obj_text_meta
 
-                    # Search on sensitive metadata only
-                    query_obj_sens_meta = Q(
-                        {"nested" : {
-                            "path":"parameters.string", "query": Q(
-                                {"bool": {"must":[
-                                    Q({"match": {"parameters.string.value":query_text}}),
-                                    Q({"term": {"parameters.string.sensitive":True}})
-                                ]}}
-                            )
-                        }})
-                    query_obj_sens_meta = query_obj_text | query_obj_sens_meta
-
-                    query_obj_sens = query_obj & query_obj_sens_meta
                     query_obj = query_obj & query_obj_text_meta
 
 
@@ -246,34 +232,20 @@ class SearchAppResource(Resource):
                 hierarchy = {'project':4, 'experiment':3, 'dataset':2, 'datafile':1}
 
                 for filter in filterlist:
-
-                    # Expand this with more logic
-
-                    # hack pass to ignore non-added logic
-                    #if operator_dict.get(filter['op'], None) is None:
-                    #    continue
-
                     oper = operator_dict[filter['op']]
 
-                    # Only filter type for now
                     if filter["kind"] == "schemaParameter":
-
                         schema_id, param_id = filter["target"][0], filter["target"][1]
-
                         # check filter is applied to correct object type
                         if num_2_type[Schema.objects.get(id=schema_id).schema_type] == obj:
                             if filter_level < hierarchy[obj]:
                                 filter_level = hierarchy[obj]
-
                             if filter["type"] == "STRING":
                                 # check if filter query is list of options, or single value
                                 # (elasticsearch can actually handle delimiters in a single string...)
                                 if isinstance(filter["content"], list):
-
                                     Qdict = {"should" : []}
-
                                     for option in filter["content"]:
-
                                         qry = Q(
                                             {"nested" : {
                                                 "path":"parameters.string", "query": Q(
@@ -283,11 +255,8 @@ class SearchAppResource(Resource):
                                                     ]}}
                                                 )
                                             }})
-
                                         Qdict["should"].append(qry)
-
                                     query_obj_filt = Q({"bool" : Qdict})
-
                                 else:
                                     query_obj_filt = Q(
                                         {"nested" : {
@@ -298,9 +267,7 @@ class SearchAppResource(Resource):
                                                 ]}}
                                             )
                                         }})
-
                             elif filter["type"] == "NUMERIC":
-
                                 query_obj_filt = Q(
                                     {"nested" : {
                                         "path":"parameters.numerical", "query": Q(
@@ -310,9 +277,7 @@ class SearchAppResource(Resource):
                                             ]}}
                                         )
                                     }})
-
                             elif filter["type"] == "DATETIME":
-
                                 query_obj_filt = Q(
                                     {"nested" : {
                                         "path":"parameters.datetime", "query": Q(
@@ -322,27 +287,120 @@ class SearchAppResource(Resource):
                                             ]}}
                                         )
                                     }})
-
                             query_obj = query_obj & query_obj_filt
-                            if query_text is not None:
-                                if query_text is not "":
-                                    query_obj_sens = query_obj_sens & query_obj_filt
+
+                    if filter["kind"] == "typeAttribute":
+                        target_objtype, target_fieldtype = filter["target"][0], filter["target"][1]
+                        if target_objtype == obj+"s":
+                            if filter_level < hierarchy[obj]:
+                                filter_level = hierarchy[obj]
+                            if target_fieldtype == "schema":
+                                # check if filter query is list of options, or single value
+                                if isinstance(filter["content"], list):
+                                    Qdict = {"should" : []}
+                                    for option in filter["content"]:
+                                        qry = Q(
+                                            {"nested" : {
+                                                "path":"parameters.schemas", "query": Q(
+                                                        {oper: {"parameters.schemas.schema_id":option}}
+                                                )
+                                            }})
+                                        Qdict["should"].append(qry)
+                                    query_obj_filt = Q({"bool" : Qdict})
+                                else:
+                                    query_obj_filt = Q(
+                                        {"nested" : {
+                                            "path":"parameters.schemas", "query": Q(
+                                                    {oper: {"parameters.schemas.schema_id":filter["content"]}}
+                                            )
+                                        }})
+
+                                query_obj = query_obj & query_obj_filt
+
+                            # Fields that are intrinsic to the object (Proj,exp,set,file)
+                            if target_fieldtype in ['name', 'description', 'title',
+                                                    'tags', 'filename', 'file_extension',
+                                                    'created_time', 'start_date', 'end_date']:
+
+                                if filter["type"] == "STRING":
+
+                                    if isinstance(filter["content"], list):
+                                        Qdict = {"should" : []}
+                                        for option in filter["content"]:
+                                            qry = Q({oper: {target_fieldtype:option}})
+                                            Qdict["should"].append(qry)
+                                        query_obj_filt = Q({"bool" : Qdict})
+                                    else:
+                                        query_obj_filt = Q({oper: {target_fieldtype:filter["content"]}})
+
+                                elif filter["type"] == "DATETIME":
+                                        query_obj_filt = Q({"range": {target_fieldtype: {oper:filter["content"]}}})
+
+                                query_obj = query_obj & query_obj_filt
+
+
+                            # Fields that are intrinsic to related objects (instruments, users, etc)
+                            if target_fieldtype in ['lead_researcher', 'project', 'instrument',
+                                                    'institution', 'experiments', 'dataset']:
+                                nested_fieldtype = filter["target"][2]
+
+                                if isinstance(filter["content"], list):
+                                    Qdict = {"should" : []}
+                                    for option in filter["content"]:
+                                        qry = Q(
+                                            {"nested" : {
+                                                "path":target_fieldtype, "query": Q(
+                                                        {oper: {".".join([target_fieldtype,nested_fieldtype]):option}}
+                                                )
+                                            }})
+                                        Qdict["should"].append(qry)
+                                    query_obj_filt = Q({"bool" : Qdict})
+                                else:
+                                    query_obj_filt = Q(
+                                        {"nested" : {
+                                            "path":target_fieldtype, "query": Q(
+                                                    {oper: {".".join([target_fieldtype,nested_fieldtype]):filter["content"]}}
+                                            )
+                                        }})
+
+                                if target_fieldtype == 'lead_researcher':
+                                    Qdict_lr = {"should" : [query_obj_filt]}
+
+                                    if isinstance(filter["content"], list):
+                                        Qdict = {"should" : []}
+                                        for option in filter["content"]:
+                                            qry = Q(
+                                                {"nested" : {
+                                                    "path":target_fieldtype, "query": Q(
+                                                            {'term': {".".join([target_fieldtype,'username']):option}}
+                                                    )
+                                                }})
+                                            Qdict["should"].append(qry)
+                                        query_obj_filt = Q({"bool" : Qdict})
+                                    else:
+                                        query_obj_filt = Q(
+                                            {"nested" : {
+                                                "path":target_fieldtype, "query": Q(
+                                                        {'term': {".".join([target_fieldtype,'username']):filter["content"]}}
+                                                )
+                                            }})
+                                    Qdict_lr["should"].append(query_obj_filt)
+                                    query_obj_filt = Q({"bool" : Qdict_lr})
+
+
+                                query_obj = query_obj & query_obj_filt
+
+
+
+
 
 
             ms = ms.add(Search(index=obj)
                         .extra(size=MAX_SEARCH_RESULTS, min_score=MIN_CUTOFF_SCORE)
                         .query(query_obj))
 
-            if query_text is not None:
-                if query_text is not "":
-                    ms_sens = ms_sens.add(Search(index=obj)
-                                     .extra(size=MAX_SEARCH_RESULTS, min_score=MIN_CUTOFF_SCORE)
-                                     .query(query_obj_sens))
 
         results = ms.execute()
-        if query_text is not None:
-            if query_text is not "":
-                results_sens = ms_sens.execute()
 
         result_dict = {k: [] for k in ["projects", "experiments", "datasets", "datafiles"]}
 
@@ -350,59 +408,51 @@ class SearchAppResource(Resource):
             for item in results:
                 for hit in item.hits.hits:
 
-                    # Prevents search hits based purely upon sensitive metadata matches,
-                    # for users/groups who do not have sensitive permission
-                    if sensitive:
-                        if not authz.has_sensitive_access(request, hit["_source"]["id"], hit["_index"]):
-                            continue
-
                     # Default sensitive permission and size of object
-                    sensitive_bool = False
+                    #sensitive_bool = False
                     size = 0
 
-                    # Skip hit if hit_obj not accessible (elasticsearch checks for ACL entry for user/group,
-                    # not whether the entry gives or prevents access)
-                    if not authz.has_access(request, hit["_source"]["id"], hit["_index"]):
-                        continue
-
                     # If user/group has sensitive permission, update flag
-                    if authz.has_sensitive_access(request, hit["_source"]["id"], hit["_index"]):
-                        sensitive_bool = True
+                    #if authz.has_sensitive_access(request, hit["_source"]["id"], hit["_index"]):
+                    #    sensitive_bool = True
 
                     # Get total/nested size of object, respecting ACL access to child objects
-                    size = authz.get_nested_size(request, hit["_source"]["id"], hit["_index"])
+                    ### size = authz.get_nested_size(request, hit["_source"]["id"], hit["_index"])
 
                     # Must work on copy of current iterable
                     safe_hit = hit.copy()
 
                     # Remove ACLs and add size to repsonse
                     safe_hit["_source"].pop("objectacls")
+                    #safe_hit["_source"].pop("parameters")
+                    safe_hit.pop("_score")
+
                     safe_hit["_source"]["size"] = filesizeformat(size)
 
                     # Get count of all nested objects and download status
                     if hit["_index"] != 'datafile':
-                        safe_hit["_source"]["counts"] = authz.get_nested_count(request,
-                                                            hit["_source"]["id"], hit["_index"])
+                        safe_hit["_source"]["counts"] = 0# authz.get_nested_count(request,
+                    ###                                       hit["_source"]["id"], hit["_index"])
 
-                        safe_hit["_source"]["userDownloadRights"] = authz.get_nested_has_download(request,
-                                                            hit["_source"]["id"], hit["_index"])
+                        safe_hit["_source"]["userDownloadRights"] = 'none'#authz.get_nested_has_download(request,
+                                                            #hit["_source"]["id"], hit["_index"])
 
                     else:
-                        if authz.has_download_access(request, hit["_source"]["id"],
-                                                     hit["_index"]):
-                            safe_hit["_source"]["userDownloadRights"] = "full"
-                        else:
-                            safe_hit["_source"]["userDownloadRights"] = "none"
+                        #if authz.has_download_access(request, hit["_source"]["id"],
+                                                     #hit["_index"]):
+                        safe_hit["_source"]["userDownloadRights"] = "none"
+                        #else:
+                        #    safe_hit["_source"]["userDownloadRights"] = "none"
 
                     # if no sensitive access, remove sensitive metadata from response
-                    if not sensitive_bool:
-                        for par_type in ["string", "numerical", "datetime"]:
-                            for idxx, parameter in enumerate(hit["_source"]["parameters"][par_type]):
-                                is_sensitive = authz.get_obj_parameter(parameter["pn_id"],
-                                                  hit["_source"]["id"], hit["_index"])
-
-                                if is_sensitive.sensitive_metadata:
-                                    safe_hit["_source"]["parameters"][par_type].pop(idxx)
+                    #if not sensitive_bool:
+                    #    for par_type in ["string", "numerical", "datetime"]:
+                    #        for idxx, parameter in enumerate(hit["_source"]["parameters"][par_type]):
+                    #            is_sensitive = authz.get_obj_parameter(parameter["pn_id"],
+                    #                              hit["_source"]["id"], hit["_index"])
+                    #
+                    #            if is_sensitive.sensitive_metadata:
+                    #                safe_hit["_source"]["parameters"][par_type].pop(idxx)
 
                     # Append hit to final results if not already in results.
                     # Due to non-identical scores in hits for non-sensitive vs sensitive search,
@@ -432,9 +482,6 @@ class SearchAppResource(Resource):
 
 
         clean_response(bundle.request, results, result_dict)
-        if query_text is not None:
-            if query_text is not "":
-                clean_response(bundle.request, results_sens, result_dict, sensitive=True)
 
         if filter_level:
             filter_parent_child(result_dict, filter_level)

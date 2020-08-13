@@ -100,6 +100,7 @@ class Schema(models.Model):
         def __init__(self, msg):
             Exception.__init__(self, msg)
 
+
 @python_2_unicode_compatible
 class ParameterName(models.Model):
 
@@ -141,7 +142,7 @@ class ParameterName(models.Model):
         (DATETIME, 'DATETIME'),
         (LONGSTRING, 'LONGSTRING'),
         (JSON, 'JSON'),
-        )
+    )
 
     schema = models.ForeignKey(Schema, on_delete=models.CASCADE)
     name = models.CharField(max_length=60)
@@ -229,8 +230,8 @@ def _get_filename_parameter_as_image_element(parameter):
             viewname = 'tardis.tardis_portal.views.load_dataset_image'
         elif parset == 'ExperimentParameterSet':
             viewname = 'tardis.tardis_portal.views.load_experiment_image'
-        #TODO update project view to display images as and when required
-        #elif parset == 'ProjectParametrSet':
+        # TODO update project view to display images as and when required
+        # elif parset == 'ProjectParametrSet':
         #    viewname = 'tardis.tardis_portal.views.load_project_image'
         if viewname is not None:
             value = "<a href='%s' target='_blank'>" \
@@ -546,7 +547,7 @@ class ProjectParameterSet(ParameterSet):
     parameter_class = ProjectParameter
 
     def _get_label(self):
-        return('project.project_name', 'Project')
+        return('project.name', 'Project')
 
 @python_2_unicode_compatible
 class FreeTextSearchField(models.Model):

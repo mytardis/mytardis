@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
 import PropTypes from 'prop-types';
@@ -55,6 +55,9 @@ const toLocalValue = submitValue => {
     if (!submitValue) {
         return {};
     }
+    if (!Array.isArray(submitValue)) {
+        submitValue = [submitValue];
+    }
     const localValue = {start: null, end: null};
     const startValue = submitValue.filter(value => value.op === ">=");
     const endValue = submitValue.filter(value => value.op === "<=");
@@ -68,16 +71,26 @@ const toLocalValue = submitValue => {
 }
 
 const DateRangeFilter = ({ value, options, onValueChange }) => {
-    if (!options) {
-        options = {};
-    }
+    // Make a copy of the options first.
+    options = Object.assign({},options);
     if (!options.name) {
         options.name = "missingFilterName";
     }
-    if (!options.hint) {
-        options.hint = "";
+    if (!options.hintStart) {
+        options.hintStart = "MM/DD/YYYY";
     }
+    if (!options.hintEnd) {
+        options.hintEnd = "MM/DD/YYYY";
+    }
+
     const [localValue, setLocalValue] = useState(toLocalValue(value));
+
+    useEffect(() => {
+        // Update the filter when there is a new value,
+        // for when the filter value is externally updated
+        // e.g. from URL.
+        setLocalValue(toLocalValue(value));
+    },[value]);
 
     const handleValueChange = (type, valueFromForm) => {
         // Copy the value object, then assign new value into either "start" or "end".
@@ -85,13 +98,13 @@ const DateRangeFilter = ({ value, options, onValueChange }) => {
         newValue[type] = valueFromForm;
         // React Datetime returns a string if the user enters invalid information.
         if (type === "start" && typeof newValue.start == "object") {
-            if (!newValue.end || newValue.start.isAfter(newValue.end)) {
+            if (!options.hideEnd && (!newValue.end || newValue.start.isAfter(newValue.end))) {
                 // If we are setting start date and there is no end date OR end date is earlier
                 //than start date, we auto-fill end date to be same as start date
                 newValue.end = newValue.start;
             }
         } else if (type === "end" && typeof newValue.end == "object") {
-            if (!newValue.start || newValue.end.isBefore(newValue.start)) {
+            if (!options.hideStart && (!newValue.start || newValue.end.isBefore(newValue.start))) {
                 // If setting end date and there's no start date OR if new end date is before the start date,
                 // we auto-fill start date to be same as end date.
                 newValue.start = newValue.end;
@@ -115,6 +128,9 @@ const DateRangeFilter = ({ value, options, onValueChange }) => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
+        if (!canChangeValue) {
+            return;
+        }
         const value = toSubmitValue(localValue);
         onValueChange(value);
     };
@@ -125,8 +141,9 @@ const DateRangeFilter = ({ value, options, onValueChange }) => {
 
     return (
         <Form className="date-range-filter" onSubmit={handleSubmit}>
+            {options.hideStart ? null :
                 <Form.Group className="date-range-filter__field">
-                    <Form.Label htmlFor={startFieldId}>Start date</Form.Label>
+                    <Form.Label htmlFor={startFieldId} srOnly={options.hideLabels}>Start</Form.Label>
                     <Datetime
                         value={localValue.start}
                         onChange={handleValueChange.bind(this, "start")}
@@ -136,8 +153,10 @@ const DateRangeFilter = ({ value, options, onValueChange }) => {
                         timeFormat={false}
                     />
                 </Form.Group>
+            }
+            {options.hideEnd ? null : 
                 <Form.Group className="date-range-filter__field">
-                    <Form.Label htmlFor={endFieldId}>End date</Form.Label>
+                    <Form.Label htmlFor={endFieldId} srOnly={options.hideLabels}>End</Form.Label>
                     <Datetime
                         value={localValue.end}
                         onChange={handleValueChange.bind(this, "end")}
@@ -147,12 +166,12 @@ const DateRangeFilter = ({ value, options, onValueChange }) => {
                         timeFormat={false}
                     />
                 </Form.Group>
+            }
             <Button
                 type="submit"
                 className="date-range-filter__button"
                 aria-label="Filter results"
                 variant={canChangeValue ? "secondary" : "outline-secondary"}
-                disabled={!canChangeValue}
             >
                 Filter
             </Button>

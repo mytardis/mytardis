@@ -2,7 +2,7 @@
 Settings for search
 '''
 
-SINGLE_SEARCH_ENABLED = False
+SINGLE_SEARCH_ENABLED = True
 '''
 To enable search:
 
@@ -18,7 +18,7 @@ ELASTICSEARCH_DSL_INDEX_SETTINGS = {
 }
 '''
 
-MAX_SEARCH_RESULTS = 100
+MAX_SEARCH_RESULTS = 1000
 '''
 Limits the maximum number of search results for each model (Experiment, Dataset and DataFile).
 The default value of 100 means that a query could potentially return 300 results in total,

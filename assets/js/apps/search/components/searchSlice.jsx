@@ -1,5 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit';
 import Cookies from 'js-cookie';
+import { initialiseFilters, buildFilterQuery, updateFiltersByQuery } from "./filters/filterSlice";
 
 const getResultFromHit = (hit,hitType,urlPrefix) => {
     const source = hit._source;
@@ -62,14 +63,14 @@ const search = createSlice({
         updateSearchTerm: (state, {payload}) => {
             state.searchTerm = payload;
         },
-        getResultsStart: (state, {payload}) => {
+        getResultsStart: (state) => {
             state.isLoading = true;
             state.error = null;
             state.selectedResult = null;
         },
-        getResultsFailure: (state, action) => {
+        getResultsFailure: (state, {payload:error}) => {
             state.isLoading = false;
-            state.error = action.payload.toString();
+            state.error = error.toString();
             state.results = null;
         },
         updateSelectedType: (state,{payload: selectedType}) => {
@@ -82,14 +83,7 @@ const search = createSlice({
     }
 })
 
-const fetchSearchResults = (searchTerm,filters) => {
-    const bodyJson = {};
-    if (searchTerm !== null) {
-        bodyJson.query = searchTerm;
-    }
-    if (filters !== null) {
-        bodyJson.filters = filters;
-    }
+const fetchSearchResults = (queryBody) => {
     return fetch(`/api/v1/search_simple-search/`,{
         method: 'post',
         headers: {
@@ -97,7 +91,7 @@ const fetchSearchResults = (searchTerm,filters) => {
         'Content-Type': 'application/json',
         'X-CSRFToken': Cookies.get('csrftoken'),
         },
-        body: JSON.stringify(bodyJson)
+        body: JSON.stringify(queryBody)
     }).then(response => {
         if (!response.ok) {
             throw new Error("An error on the server occurred.")
@@ -106,53 +100,105 @@ const fetchSearchResults = (searchTerm,filters) => {
     })
 };
 
-const buildFilterQuery = (filters) => {
-    const allFilters = filters.activeFilters.map(filterFieldInfo => {
-        const { kind, target } = filterFieldInfo;
-        switch (kind) {
-            case "typeAttribute":
-                //TODO Implement type attribute
-                return [];
-            case "schemaParameter":
-                const [schemaId, paramId] = target;
-                let filterValue = filters.schemas
-                    .byId[schemaId]
-                    .parameters[paramId]
-                    .value;
-                if (!Array.isArray(filterValue)) {
-                    filterValue = [filterValue];
-                }
-                return filterValue.map(value => (
-                    Object.assign({},filterFieldInfo,value)
-                ));
-            default:
-                return [];
-        }
-    // "Flatten" the array so filters with multiple values are in same array.
-    }).reduce((acc, val) => acc.concat(val), []);
-    if (allFilters.length === 0) {
-        return null;
+const buildQueryBody = (state) => {
+    const term = state.search.searchTerm,
+        filters = buildFilterQuery(state.filters),
+        queryBody = {};
+    if (term !== null && term !== "") {
+        queryBody.query = term;
     }
-    return {
-        content: allFilters,
-        op: "and"
-    };
+    if (filters !== null) {
+        queryBody.filters = filters;
+    }
+    return queryBody;
 }
 
-export const runSearch = () => {
-    return (dispatch, getState) => {
-        const state = getState();
-        const term = state.search.searchTerm,
-            filters = buildFilterQuery(state.filters);
-        console.log(filters);
-        dispatch(getResultsStart(state.searchTerm));
-        fetchSearchResults(term,filters)
+const runSearchWithQuery = (queryBody) => {
+    return (dispatch) => {
+        dispatch(getResultsStart());
+        return fetchSearchResults(queryBody)
             .then((results) => {
                 dispatch(getResultsSuccess(results));
             }).catch((e) => {
                 dispatch(getResultsFailure(e));
             });
+    }
+}
 
+const getDisplayQueryString = (queryBody) => {
+    // Determine how to show the query in the URL, depending on what's in the query body.
+    const queryPrefix = "?q=";
+    if (queryBody.filters) {
+        // If the query contains filters, then use the stringified JSON format.
+        return queryPrefix + JSON.stringify(queryBody);
+    } else if (queryBody.query) {
+        // If the query only has a search term, then just use the search term.
+        return queryPrefix + queryBody.query;
+    } else {
+        // when there aren't any filters or search terms don't show a query at all.
+        return location.pathname;
+    }
+}
+
+const parseQuery = (searchString) => {
+    // Find and return the query string or JSON body.
+    if (searchString[0] === "?") {
+        searchString = searchString.substring(1);
+    }
+    searchString = decodeURI(searchString);
+    const parts = searchString.split('&');
+    let queryPart = null;
+    for (const partIdx in parts) {
+        if (parts[partIdx].indexOf('q=') === 0) {
+            queryPart = parts[partIdx].substring(2);
+            break;
+        }
+    }
+    if (!queryPart) { return {}; }
+    try {
+        return JSON.parse(queryPart);
+    } catch (e) {
+        // When we fail to parse, we assume it's a search term string.
+        return { query: queryPart };
+    }
+}
+
+
+const updateWithQuery = (queryBody) => {
+    return (dispatch) => {
+        dispatch(updateSearchTerm(queryBody.query));
+        dispatch(updateFiltersByQuery(queryBody.filters));
+    }
+}
+
+export const runSearch = () => {
+    return (dispatch, getState) => {
+        const state = getState();
+        const queryBody = buildQueryBody(state);
+        dispatch(runSearchWithQuery(queryBody));
+        window.history.pushState(queryBody,"",getDisplayQueryString(queryBody));
+    }
+}
+
+
+export const restoreSearchFromHistory = (restoredState) => {
+    return (dispatch) => {
+        dispatch(runSearchWithQuery(restoredState));
+        dispatch(updateWithQuery(restoredState));
+    }
+}
+
+
+export const initialiseSearch = () => {
+    return (dispatch, getState) => {
+        const queryBody = parseQuery(window.location.search);
+        window.history.replaceState(queryBody,"",getDisplayQueryString(queryBody));
+        dispatch(runSearchWithQuery(queryBody));
+        dispatch(initialiseFilters()).then(() => {
+            if (!!queryBody) {
+                dispatch(updateWithQuery(queryBody));
+            }
+        });
     }
 }
 

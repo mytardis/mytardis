@@ -232,12 +232,14 @@ class DataFile(models.Model):
         """
         from .parameters import DatafileParameter, ParameterName
         paramsets = list(self.getParameterSets())
-        parameter_groups = {"string": [], "numerical" : [], "datetime" : []}
+        parameter_groups = {"string": [], "numerical" : [], "datetime" : [],
+                            "schemas": []}
         for paramset in paramsets:
             param_type = {1 : 'datetime', 2 : 'string', 3 : 'numerical'}
             param_glob = DatafileParameter.objects.filter(
                 parameterset=paramset).all().values_list('name','datetime_value',
                 'string_value','numerical_value','sensitive_metadata')
+            parameter_groups['schemas'].append({'schema_id' : paramset.schema_id})
             for sublist in param_glob:
                 PN_id = ParameterName.objects.get(id=sublist[0]).id
                 param_dict = {}
@@ -257,7 +259,6 @@ class DataFile(models.Model):
                         elif type_idx == 2:
                             param_dict['value'] = str(value)
                         elif type_idx == 3:
-                            #temporary
                             param_dict['value'] = float(value)
                 parameter_groups[param_type[type_idx]].append(param_dict)
         return parameter_groups
@@ -478,7 +479,7 @@ class DataFile(models.Model):
                     if reverify or not obj.verified])
 
     def get_ct(self):
-        return 'datafile'#ContentType.objects.get_for_model(self)
+        return ContentType.objects.get_for_model(self)
 
     def get_owners(self):
         acls = ObjectACL.objects.filter(pluginId='django_user',
@@ -502,11 +503,30 @@ class DataFile(models.Model):
         return [acl.get_related_object() for acl in acls]
 
     def get_admins(self):
+        logger.error(self.id)
+        logger.error(self.get_ct())
         acls = ObjectACL.objects.filter(pluginId='django_group',
                                         content_type=self.get_ct(),
                                         object_id=self.id,
                                         isOwner=True)
+        logger.error(acls)
         return [acl.get_related_object() for acl in acls]
+
+
+
+    def to_search(self):
+        from tardis.apps.search.documents import DataFileDocument as DatafileDoc
+        metadata = {"id":self.id,
+                    "filename":self.filename,
+                    "created_time":self.created_time,
+                    "modification_time":self.modification_time,
+                    "dataset":self.dataset,
+                    "objectacls":self.objectacls,
+                    "parameters":self.getParametersforIndexing()
+                    }
+        return DatafileDoc(meta=metadata)
+
+
 
 @python_2_unicode_compatible
 class DataFileObject(models.Model):

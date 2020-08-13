@@ -37,8 +37,8 @@ from django.db.models import Q
 from django.conf import settings
 
 from ..models import Project, Experiment, Dataset, DataFile, GroupAdmin, \
-                     ProjectParameter, ExperimentParameter, DatasetParameter, \
-                     DatafileParameter
+    ProjectParameter, ExperimentParameter, DatasetParameter, \
+    DatafileParameter
 from ..shortcuts import return_response_error
 
 
@@ -76,11 +76,14 @@ def get_accessible_datafiles_for_user(request):
 
 def get_nested_size(request, obj_id, ct_type):
     if ct_type == "project":
-        size = Project.objects.get(id=obj_id).get_size(request.user, downloadable=True)
+        size = Project.objects.get(id=obj_id).get_size(
+            request.user, downloadable=True)
     if ct_type == "experiment":
-        size = Experiment.objects.get(id=obj_id).get_size(request.user, downloadable=True)
+        size = Experiment.objects.get(id=obj_id).get_size(
+            request.user, downloadable=True)
     if ct_type == "dataset":
-        size = Dataset.objects.get(id=obj_id).get_size(request.user, downloadable=True)
+        size = Dataset.objects.get(id=obj_id).get_size(
+            request.user, downloadable=True)
     if ct_type == "datafile":
         if has_download_access(request, obj_id, "datafile"):
             size = DataFile.objects.get(id=obj_id).get_size()
@@ -90,33 +93,68 @@ def get_nested_size(request, obj_id, ct_type):
 
 
 def get_nested_count(request, obj_id, ct_type):
+
     if ct_type == "project":
-        count = {
-                 "experiments" : Experiment.safe.all(request.user).filter(
-                                                project__id=obj_id).count(),
-                 "datasets" : Dataset.safe.all(request.user).filter(
-                                      experiments__project__id=obj_id).count(),
-                 "datafiles" : DataFile.safe.all(request.user).filter(
-                             dataset__experiments__project__id=obj_id).count()
-                 }
+        obj = Project.objects.get(id=obj_id)
+
+        experiments = [id for id in obj.experiment_set.all().values_list('id', flat=True)]
+
+        for idx, df in enumerate(experiments):
+            if not has_access(request, df, "experiment"):
+                experiments.pop(idx)
+
+        datasets = [id for exp in experiments for id in Experiment.objects.get(
+                     id=exp).datasets.all().values_list('id', flat=True)]
+
+        for idx, df in enumerate(datasets):
+            if not has_access(request, df, "dataset"):
+                datasets.pop(idx)
+
+        datafiles = [id for set in datasets for id in Dataset.objects.get(
+                     id=set).datafile_set.all().values_list('id', flat=True)]
+
+        for idx, df in enumerate(datafiles):
+            if not has_access(request, df, "datafile"):
+                datafiles.pop(idx)
+
+        count = {"experiments" :experiments, "datasets" :datasets, "datafiles" : datafiles}
+
     if ct_type == "experiment":
-        count = {
-                 "datasets" : Dataset.safe.all(request.user).filter(
-                                      experiments__id=obj_id).count(),
-                 "datafiles" : DataFile.safe.all(request.user).filter(
-                                    dataset__experiments__id=obj_id).count()
-                 }
+        obj = Experiment.objects.get(id=obj_id)
+
+        datasets = [id for id in obj.datasets.all().values_list('id', flat=True)]
+
+        for idx, df in enumerate(datasets):
+            if not has_access(request, df, "dataset"):
+                datasets.pop(idx)
+
+        datafiles = [id for set in datasets for id in Dataset.objects.get(
+                     id=set).datafile_set.all().values_list('id', flat=True)]
+
+        for idx, df in enumerate(datafiles):
+            if not has_access(request, df, "datafile"):
+                datafiles.pop(idx)
+
+        count = {"datasets" : len(datasets), "datafiles" :len(datafiles)}
+
     if ct_type == "dataset":
-        count = {
-                 "datafiles" : DataFile.safe.all(request.user).filter(
-                                            dataset__id=obj_id).count()
-                 }
+        obj = Dataset.objects.get(id=obj_id)
+
+        datafiles = [id for id in obj.datafile_set.all().values_list('id', flat=True)]
+
+        for idx, df in enumerate(datafiles):
+            if not has_access(request, df, "datafile"):
+                datafiles.pop(idx)
+
+        count = {"datafiles" : len(datafiles)}
+
     return count
 
 
 def get_nested_has_download(request, obj_id, ct_type):
     if ct_type == "project":
-        dfs = DataFile.safe.all(request.user).filter(dataset__experiments__project__id=obj_id)
+        dfs = DataFile.safe.all(request.user).filter(
+            dataset__experiments__project__id=obj_id)
     if ct_type == "experiment":
         dfs = DataFile.safe.all(request.user).filter(dataset__experiments__id=obj_id)
     if ct_type == "dataset":
@@ -195,40 +233,26 @@ def has_write(request, obj_id, ct_type):
 
 def has_download_access(request, obj_id, ct_type):
     if ct_type == 'project':
-        return Project.safe.owned_and_shared(request.user, downloadable=True
-                                             ).filter(id=obj_id).exists()
-    if ct_type == 'experiment': # Retain public functionality for now
-        if Experiment.safe.owned_and_shared(request.user, downloadable=True
-                                                ).filter(id=obj_id).exists():
-            return True
-        else:
-            exp = Experiment.objects.get(id=obj_id)
-            return Experiment.public_access_implies_distribution(exp.public_access)
+        obj = Project.objects.get(id=obj_id)
+    if ct_type == 'experiment':
+        obj = Experiment.objects.get(id=obj_id)
     if ct_type == 'dataset':
-        return Dataset.safe.owned_and_shared(request.user, downloadable=True
-                                             ).filter(id=obj_id).exists()
+        obj = Dataset.objects.get(id=obj_id)
     if ct_type == 'datafile':
-        return DataFile.safe.owned_and_shared(request.user, downloadable=True
-                                              ).filter(id=obj_id).exists()
+        obj = DataFile.objects.get(id=obj_id)
+    return request.user.has_perm('tardis_acls.download_'+ct_type, obj)
 
 
 def has_sensitive_access(request, obj_id, ct_type):
     if ct_type == 'project':
-        return Project.safe.owned_and_shared(request.user, viewsensitive=True
-                                             ).filter(id=obj_id).exists()
-    if ct_type == 'experiment': # Retain public functionality for now
-        if Experiment.safe.owned_and_shared(request.user, viewsensitive=True
-                                             ).filter(id=obj_id).exists():
-            return True
-        else:
-            exp = Experiment.objects.get(id=obj_id)
-            return Experiment.public_access_implies_distribution(exp.public_access)
+        obj = Project.objects.get(id=obj_id)
+    if ct_type == 'experiment':
+        obj = Experiment.objects.get(id=obj_id)
     if ct_type == 'dataset':
-        return Dataset.safe.owned_and_shared(request.user, viewsensitive=True
-                                             ).filter(id=obj_id).exists()
+        obj = Dataset.objects.get(id=obj_id)
     if ct_type == 'datafile':
-        return DataFile.safe.owned_and_shared(request.user, viewsensitive=True
-                                             ).filter(id=obj_id).exists()
+        obj = DataFile.objects.get(id=obj_id)
+    return request.user.has_perm('tardis_acls.sensitive_'+ct_type, obj)
 
 
 def has_read_or_owner_ACL(request, obj_id, ct_type):
@@ -301,13 +325,13 @@ def has_delete_permissions(request, experiment_id):
 
 @login_required
 def is_group_admin(request, group_id):
-
-    user_check = GroupAdmin.objects.filter(user=request.user, group__id=group_id).exists()
-
-    group_check = any([GroupAdmin.objects.filter(admin_groups__id=group.id,
+    user_check = GroupAdmin.objects.filter(user=request.user,
+                                           group__id=group_id).exists()
+    admin_user_check = GroupAdmin.objects.filter(admin_users__id=request.user.id,
+                                                group__id=group_id).exists()
+    admin_group_check = any([GroupAdmin.objects.filter(admin_groups__id=group.id,
             group__id=group_id).exists() for group in request.user.groups.all()])
-
-    return any([user_check, group_check])
+    return any([user_check, admin_user_check, admin_group_check])
 
 def group_ownership_required(f):
     """

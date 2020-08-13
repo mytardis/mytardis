@@ -76,7 +76,8 @@ class Experiment(models.Model):
     description = models.TextField(blank=True)
     raid = models.CharField(max_length=400, null=False, blank=False,
                             unique=True, default=experiment_internal_id_default)
-    project = models.ForeignKey(Project, on_delete=models.CASCADE, null=True)
+    project = models.ForeignKey(Project, on_delete=models.CASCADE,
+                                null=True)
     start_time = models.DateTimeField(null=True, blank=True)
     end_time = models.DateTimeField(null=True, blank=True)
     created_time = models.DateTimeField(auto_now_add=True)
@@ -139,12 +140,14 @@ class Experiment(models.Model):
         """
         from .parameters import ExperimentParameter, ParameterName
         paramsets = list(self.getParameterSets())
-        parameter_groups = {"string": [], "numerical" : [], "datetime" : []}
+        parameter_groups = {"string": [], "numerical" : [], "datetime" : [],
+                            "schemas": []}
         for paramset in paramsets:
-            param_type = {1 : 'datetime', 2 : 'string', 3 : 'numerical'}
+            param_type = {1: 'datetime', 2: 'string', 3: 'numerical'}
             param_glob = ExperimentParameter.objects.filter(
                 parameterset=paramset).all().values_list('name','datetime_value',
                 'string_value','numerical_value','sensitive_metadata')
+            parameter_groups['schemas'].append({'schema_id' : paramset.schema_id})
             for sublist in param_glob:
                 PN_id = ParameterName.objects.get(id=sublist[0]).id
                 param_dict = {}
@@ -164,7 +167,6 @@ class Experiment(models.Model):
                         elif type_idx == 2:
                             param_dict['value'] = str(value)
                         elif type_idx == 3:
-                            #temporary
                             param_dict['value'] = float(value)
                 parameter_groups[param_type[type_idx]].append(param_dict)
         return parameter_groups
@@ -359,6 +361,22 @@ class Experiment(models.Model):
             return False
 
         return None
+
+    def to_search(self):
+        from tardis.apps.search.documents import ExperimentDocument as ExpDoc
+        metadata = {"id":self.id,
+                    "title":self.title,
+                    "description":self.description,
+                    "created_time":self.created_time,
+                    "start_date":self.start_time,
+                    "end_time":self.end_time,
+                    "update_time":self.update_time,
+                    "created_by":self.created_by,
+                    "project":self.project,
+                    "objectacls":self.objectacls,
+                    "parameters":self.getParametersforIndexing()
+                    }
+        return ExpDoc(meta=metadata)
 
 
 @python_2_unicode_compatible

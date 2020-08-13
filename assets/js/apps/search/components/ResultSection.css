@@ -19,6 +19,7 @@
     border-bottom: 1px solid #dee2e6;
     padding: 1em;
     padding-bottom: 2em;
+    background-color: white;
 }
 
 .tabpanel__container--horizontal {
@@ -41,4 +42,9 @@
 
 .result-section__result-list {
     display: flex;
+}
+
+.result-section--row:focus {
+    color: #212529;
+    background-color: rgba(0, 0, 0, 0.075);
 }

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
 import PropTypes from 'prop-types';
@@ -37,8 +37,12 @@ const toSubmitValue = localValue => {
 
 const toLocalValue = submitValue => {
     // Replace null value with empty string to represent null parameter value.
-    if (!submitValue || !Array.isArray(submitValue)) {
+    if (!submitValue) {
         return {};
+    }
+    if (!Array.isArray(submitValue)) {
+        // Wrap value in array if not already in array.
+        submitValue = [submitValue];
     }
     const localValue = {};
     // Iterate over the filter values to get the min and max values.
@@ -57,9 +61,8 @@ const toLocalValue = submitValue => {
 }
 
 const NumberRangeFilter = ({value,options,onValueChange}) => {
-    if (!options) {
-        options = {};
-    } 
+    // Make a copy of the options first.
+    options = Object.assign({},options);
     if (!options.name){
         options.name = "Missing filter name";
     }
@@ -67,7 +70,9 @@ const NumberRangeFilter = ({value,options,onValueChange}) => {
         options.hint = "";
     }
     const [localValue, setLocalValue] = useState(toLocalValue(value));
- 
+    useEffect(() => {
+        setLocalValue(toLocalValue(value));
+    }, [value]);
     const handleValueChange = (type,e) => {
         // Copy the value object, then assign new value into either "min" or "max".
         const valueFromForm = e.target.value;
@@ -83,6 +88,9 @@ const NumberRangeFilter = ({value,options,onValueChange}) => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
+        if (!canChangeValue) {
+            return;
+        }
         onValueChange(toSubmitValue(localValue));
     };
     return (
@@ -112,7 +120,6 @@ const NumberRangeFilter = ({value,options,onValueChange}) => {
                 className="num-range-filter__button" 
                 aria-label="Filter results" 
                 variant={canChangeValue ? "secondary" :"outline-secondary"} 
-                disabled={!canChangeValue}
             >
                 Filter
             </Button>

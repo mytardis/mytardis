@@ -14,10 +14,9 @@ from django.utils.timezone import now as django_time_now
 from .institution import Institution
 # from ..models import DataManagementPlan # Hook in place for future proofing
 from ..managers import OracleSafeManager, SafeManager
-
 from .access_control import ObjectACL
-
 from .license import License
+
 
 logger = logging.getLogger(__name__)
 
@@ -94,12 +93,14 @@ class Project(models.Model):
         """
         from .parameters import ProjectParameter, ParameterName
         paramsets = list(self.getParameterSets())
-        parameter_groups = {"string": [], "numerical" : [], "datetime" : []}
+        parameter_groups = {"string": [], "numerical" : [], "datetime" : [],
+                            "schemas": []}
         for paramset in paramsets:
             param_type = {1 : 'datetime', 2 : 'string', 3 : 'numerical'}
             param_glob = ProjectParameter.objects.filter(
                 parameterset=paramset).all().values_list('name','datetime_value',
                 'string_value','numerical_value','sensitive_metadata')
+            parameter_groups['schemas'].append({'schema_id' : paramset.schema_id})
             for sublist in param_glob:
                 PN_id = ParameterName.objects.get(id=sublist[0]).id
                 param_dict = {}
@@ -119,7 +120,6 @@ class Project(models.Model):
                         elif type_idx == 2:
                             param_dict['value'] = str(value)
                         elif type_idx == 3:
-                            #temporary
                             param_dict['value'] = float(value)
                 parameter_groups[param_type[type_idx]].append(param_dict)
         return parameter_groups
@@ -129,6 +129,9 @@ class Project(models.Model):
             if datetime.now() < self.embargo_until:
                 return True
         return False
+
+    def __str__(self):
+        return self.name
 
     def get_ct(self):
         return ContentType.objects.get_for_model(self)
@@ -245,3 +248,17 @@ class Project(models.Model):
     def get_size(self, user, downloadable=False):
         from .datafile import DataFile
         return DataFile.sum_sizes(self.get_datafiles(user, downloadable=downloadable))
+
+    def to_search(self):
+        from tardis.apps.search.documents import ProjectDocument as ProjectDoc
+        metadata = {"id":self.id,
+                    "name":self.name,
+                    "description":self.description,
+                    "start_date":self.start_date,
+                    "end_date":self.end_date,
+                    "institution":self.institution,
+                    "lead_researcher":self.lead_researcher,
+                    "objectacls":self.objectacls,
+                    "parameters":self.getParametersforIndexing()
+                    }
+        return ProjectDoc(meta=metadata)
