@@ -42,19 +42,20 @@ class ProjectDocument(Document):
     #public_access = fields.IntegerField()
     start_date = fields.DateField()
     end_date = fields.DateField()
-    institution = fields.ObjectField(properties={
+    institution = fields.NestedField(properties={
         'name': fields.StringField(
             fields={'raw': fields.KeywordField()},
         )
     })
-    lead_researcher = fields.ObjectField(properties={
+    lead_researcher = fields.NestedField(properties={
         'username': fields.StringField(
-            fields={'raw': fields.KeywordField()},
-        )
+            fields={'raw': fields.KeywordField()}),
+        'fullname': fields.StringField(
+            fields={'raw': fields.KeywordField()})
     })
     objectacls = fields.ObjectField(properties={
-        'pluginId': fields.StringField(),
-        'entityId': fields.StringField()
+        'pluginId': fields.KeywordField(),
+        'entityId': fields.KeywordField()
     })
     parameters = fields.NestedField(attr='getParametersforIndexing', properties={
         'string' : fields.NestedField(properties = {
@@ -79,6 +80,12 @@ class ProjectDocument(Document):
 
     def prepare_parameters(self, instance):
         return dict(instance.getParametersforIndexing())
+
+    def prepare_lead_researcher(self, instance):
+        username = instance.lead_researcher.username
+        fullname = " ".join([instance.lead_researcher.first_name,
+                             instance.lead_researcher.last_name])
+        return dict({"username":username, "fullname":fullname})
 
     class Django:
         model = Project
@@ -128,11 +135,13 @@ class ExperimentDocument(Document):
         )
     })
     project = fields.NestedField(properties={
-        'id': fields.KeywordField()
-    })
+        'id': fields.KeywordField(),
+        'name' : fields.TextField(fields={'raw': fields.KeywordField()},
+                                  analyzer=analyzer)
+        })
     objectacls = fields.ObjectField(properties={
-        'pluginId': fields.StringField(),
-        'entityId': fields.StringField()
+        'pluginId': fields.KeywordField(),
+        'entityId': fields.KeywordField()
     })
     parameters = fields.NestedField(attr='getParametersforIndexing', properties={
         'string' : fields.NestedField(properties = {
@@ -194,17 +203,20 @@ class DatasetDocument(Document):
         analyzer=analyzer)
     experiments = fields.NestedField(properties={
         'id': fields.KeywordField(),
+        'title': fields.StringField(
+            fields={'raw': fields.KeywordField()}
+        ),
         'project': fields.NestedField(properties={
             'id': fields.KeywordField()
         })
     })
     objectacls = fields.ObjectField(properties={
-            'pluginId': fields.StringField(),
-            'entityId': fields.StringField()
+            'pluginId': fields.KeywordField(),
+            'entityId': fields.KeywordField()
         })
-    instrument = fields.ObjectField(properties={
+    instrument = fields.NestedField(properties={
         'id': fields.KeywordField(),
-        'name': fields.TextField(
+        'name': fields.StringField(
             fields={'raw': fields.KeywordField()},
         )}
     )
@@ -277,6 +289,9 @@ class DataFileDocument(Document):
     modification_time = fields.DateField()
     dataset = fields.NestedField(properties={
         'id': fields.KeywordField(),
+        'description': fields.StringField(
+            fields={'raw': fields.KeywordField()}
+        ),
         'experiments': fields.NestedField(properties={
             'id': fields.KeywordField(),
             'project':fields.NestedField(properties={
@@ -285,8 +300,8 @@ class DataFileDocument(Document):
         }),
     })
     objectacls = fields.ObjectField(properties={
-            'pluginId': fields.StringField(),
-            'entityId': fields.StringField()
+            'pluginId': fields.KeywordField(),
+            'entityId': fields.KeywordField()
         })
 
     parameters = fields.NestedField(attr='getParametersforIndexing', properties={

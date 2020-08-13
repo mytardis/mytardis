@@ -3,59 +3,209 @@
         "projects": {
             "attributes": {
                 "byId": {
-                    "name": { "data_type": "STRING", "id": "name", "full_name": "Name"},
-                    "description": {"data_type": "STRING", "id": "description", "full_name": "Description"},
-                    "start_date": {"data_type": "DATETIME", "id": "start_date", "full_name": "Start date"},
-                    "end_date": {"data_type": "DATETIME", "id": "end_date", "full_name": "End date"},
-                    "institution": {"data_type": "STRING", "id": "institution", "full_name": "Institution"},
-                    "lead_researcher": {"data_type": "STRING", "id": "lead_researcher", "full_name": "Lead researcher"},
-                    "schema": {"data_type": "STRING", "id": "schema", "full_name": "Schema"}
+                    "name": {
+                        "data_type": "STRING",
+                        "id": "name",
+                        "full_name": "Name"
+                    },
+                    "description": {
+                        "data_type": "STRING",
+                        "id": "description",
+                        "full_name": "Description"
+                    },
+                    "start_date": {
+                        "data_type": "DATETIME",
+                        "id": "start_date",
+                        "full_name": "Start date",
+                        "options": {
+                            "hideEnd": true,
+                            "hideLabels": true
+                        }
+                    },
+                    "institution": {
+                        "data_type": "STRING",
+                        "id": "institution",
+                        "full_name": "Institution",
+                        "nested_target": ["name"]
+                    },
+                    "end_date": {
+                        "data_type": "DATETIME",
+                        "id": "end_date",
+                        "full_name": "End date",
+                        "options": {
+                            "hideStart": true,
+                            "hideLabels": true
+                        }
+                    },
+                    "lead_researcher": {
+                        "data_type": "STRING",
+                        "id": "lead_researcher",
+                        "full_name": "Lead researcher",
+                        "nested_target": ["fullname"]
+                    },
+                    "schema": {
+                        "data_type": "STRING",
+                        "id": "schema",
+                        "full_name": "Schema"
+                    }
                 },
-                "allIds": ["name","description","start_date","end_date","institution","lead_researcher","schema"]
+                "allIds": [
+                    "name",
+                    "description",
+                    "institution",
+                    "start_date",
+                    "end_date",
+                    "lead_researcher",
+                    "schema"
+                ]
             }
         },
         "experiments": {
             "attributes": {
                 "byId": {
-                    "title": { "data_type": "STRING", "id": "title", "full_name": "Title"},
-                    "description": {"data_type": "STRING", "id": "description", "full_name": "Description"},
-                    "created_date": {"data_type": "DATETIME", "id": "created_date", "full_name": "Created date"},
-                    "start_date": {"data_type": "DATETIME", "id": "start_date", "full_name": "Start date"},
-                    "end_date": {"data_type": "DATETIME", "id": "end_date", "full_name": "End date"},
-                    "updated_date": {"data_type": "DATETIME", "id": "updated_date", "full_name": "Updated date"},
-                    "created_by": {"data_type": "STRING", "id": "created_by", "full_name": "Created by"},
-                    "project": {"data_type": "STRING", "id": "project", "full_name":"Part of project"},
-                    "schema": {"data_type": "STRING", "id": "schema", "full_name": "Schema"}
+                    "title": {
+                        "data_type": "STRING",
+                        "id": "title",
+                        "full_name": "Title"
+                    },
+                    "description": {
+                        "data_type": "STRING",
+                        "id": "description",
+                        "full_name": "Description"
+                    },
+                    "start_date": {
+                        "data_type": "DATETIME",
+                        "id": "start_date",
+                        "full_name": "Start date",
+                        "options": {
+                            "hideEnd": true,
+                            "hideLabels": true
+                        }
+                    },
+                    "end_date": {
+                        "data_type": "DATETIME",
+                        "id": "end_date",
+                        "full_name": "End date",
+                        "options": {
+                            "hideStart": true,
+                            "hideLabels": true
+                        }
+                    },
+                    "project": {
+                        "data_type": "STRING",
+                        "id": "project",
+                        "full_name": "Part of project",
+                        "nested_target": ["name"]
+                    },
+                    "schema": {
+                        "data_type": "STRING",
+                        "id": "schema",
+                        "full_name": "Schema"
+                    }
                 },
-                "allIds": ["title","description","created_date","start_date","end_date","updated_date","created_by","project","schema"]
+                "allIds": [
+                    "title",
+                    "description",
+                    "start_date",
+                    "end_date",
+                    "project",
+                    "schema"
+                ]
             }
         },
         "datasets": {
             "attributes": {
                 "byId": {
-                    "description": {"data_type": "STRING", "id": "description", "full_name": "Description"},
-                    "experiments": {"data_type": "STRING", "id": "experiments", "full_name":"Part of experiment"},
-                    "instrument": {"data_type": "STRING", "id": "instrument", "full_name": "Instrument"},
-                    "created_date": {"data_type": "DATETIME", "id": "created_date", "full_name": "Created date"},
-                    "modified_time": {"data_type": "DATETIME", "id": "modified_date", "full_name": "Modified date"},
-                    "tags": {"data_type": "STRING", "id": "tags", "full_name":"Has tag"},
-                    "schema": {"data_type": "STRING", "id": "schema", "full_name": "Schema"}
+                    "description": {
+                        "data_type": "STRING",
+                        "id": "description",
+                        "full_name": "Description"
+                    },
+                    "instrument": {
+                        "data_type": "STRING",
+                        "id": "instrument",
+                        "full_name": "Instrument",
+                        "nested_target": ["name"]
+                    },
+                    "created_time": {
+                        "data_type": "DATETIME",
+                        "id": "created_time",
+                        "full_name": "Ingestion date"
+                    },
+                    "tags": {
+                        "data_type": "STRING",
+                        "id": "tags",
+                        "full_name": "Has tag"
+                    },
+                    "experiments": {
+                        "data_type": "STRING",
+                        "id": "experiments",
+                        "full_name": "Part of experiment",
+                        "nested_target": ["title"]
+                    },
+                    "schema": {
+                        "data_type": "STRING",
+                        "id": "schema",
+                        "full_name": "Schema"
+                    }
                 },
-                "allIds": ["description","experiments","instrument","created_date","modified_time","tags","schema"]
+                "allIds": [
+                    "description",
+                    "instrument",
+                    "created_time",
+                    "tags",
+                    "experiments",
+                    "schema"
+                ]
             }
         },
         "datafiles": {
             "attributes": {
                 "byId": {
-                    "filename": {"data_type": "STRING", "id": "filename", "full_name": "File name"},
-                    "created_time": {"data_type": "DATETIME", "id": "created_date", "full_name": "Created date"},
-                    "modification_time": {"data_type": "DATETIME", "id": "modification_date", "full_name": "Modification date"},
-                    "dataset": {"data_type": "STRING", "id": "dataset", "full_name":"Part of dataset"},
-                    "schema": {"data_type": "STRING", "id": "schema", "full_name": "Schema"}
+                    "filename": {
+                        "data_type": "STRING",
+                        "id": "filename",
+                        "full_name": "File name"
+                    },
+                    "file_extension": {
+                        "data_type": "STRING",
+                        "id": "file_extension",
+                        "full_name": "File extension",
+                        "options": {
+                            "isExact": true
+                        }
+                    },
+                    "created_time": {
+                        "data_type": "DATETIME",
+                        "id": "created_date",
+                        "full_name": "Ingestion date"
+                    },
+                    "dataset": {
+                        "data_type": "STRING",
+                        "id": "dataset",
+                        "full_name": "Part of dataset",
+                        "nested_target": ["description"]
+                    },
+                    "schema": {
+                        "data_type": "STRING",
+                        "id": "schema",
+                        "full_name": "Schema"
+                    }
                 },
-                "allIds": ["filename","created_time","modification_time","dataset","schema"]
+                "allIds": [
+                    "filename",
+                    "file_extension",
+                    "created_time",
+                    "dataset",
+                    "schema"
+                ]
             }
         }
     },
-    "allIds": ["projects", "experiments", "datasets", "datafiles"]
+    "allIds": [
+        "projects",
+        "experiments",
+        "datasets",
+        "datafiles"
+    ]
 }

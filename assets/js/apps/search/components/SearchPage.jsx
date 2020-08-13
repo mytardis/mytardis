@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react'
 import './SearchPage.css'
-import { runSearch } from "./searchSlice";
+import { initialiseSearch, restoreSearchFromHistory } from "./searchSlice";
 import { useDispatch } from "react-redux";
 import FilterSidebar from './FilterSidebar'
 import ResultSection from './ResultSection'
@@ -9,7 +9,17 @@ export const SearchPage = () => {
     const dispatch = useDispatch();
     useEffect(() => {
         // Run a search to get initial results.
-        dispatch(runSearch());
+        dispatch(initialiseSearch());
+    },[dispatch]);
+    useEffect(() => {
+        // Listen to navigation changes and redo searches.
+        const redoSearch = (event) => {   
+            dispatch(restoreSearchFromHistory(event.state));
+        };
+        window.addEventListener('popstate', redoSearch);
+        return () => {
+            window.removeEventListener('popstate',redoSearch)
+        }
     },[dispatch]);
     return (
             <div className="search-page">

@@ -34,7 +34,7 @@ export function ResultTabs({counts, selectedType, onChange}) {
                 <Nav.Link onSelect={handleNavClicked.bind(this, key)} eventKey={key}>
                     {label} {counts[key] !== null &&
                         <Badge variant={badgeVariant}>
-                            {counts[key]}
+                            {counts[key]} <span className="sr-only">{counts[key] > 1 ? "results" : "result"}</span>
                         </Badge>}</Nav.Link>
             </Nav.Item>
         );
@@ -73,24 +73,24 @@ export function ResultRow({ result, onSelect, isSelected }) {
     const type = result.type,
         resultName = result[NameColumn[type]];
     return (
-        <tr onClick={onSelect}>
+        <tr className="result-section--row" onClick={onSelect} onKeyUp={onSelect} tabindex="0" role="button">
             <td className="result-row--download-col">
                 {result.userDownloadRights == "none" &&
                     <OverlayTrigger overlay={
                         <Tooltip id="tooltip-no-download">
                             You can't download this item.
-                        </Tooltip>
+                            </Tooltip>
                     }>
-                        <span aria-label="This item cannot be downloaded."><FiLock /></span>
+                        <span><FiLock title="This item cannot be downloaded." /></span>
                     </OverlayTrigger>
                 }
                 {result.userDownloadRights == "partial" &&
                     <OverlayTrigger overlay={
                         <Tooltip id="tooltip-partial-download">
                             You can't download some files in this item.
-                        </Tooltip>
+                            </Tooltip>
                     }>
-                        <span aria-label="Some files in this item cannot be downloaded."><FiPieChart /></span>
+                        <span><FiPieChart title="Some files cannot be downloaded." /></span>
                     </OverlayTrigger>
                 }
             </td>
@@ -123,7 +123,7 @@ export function PureResultList({ results, selectedItem, onItemSelect, error, isL
         return (
             // If there was an error during the search
             <div className="result-section--msg result-section--error-msg">
-                <p>An error occurred. Please refresh the page and try searching again.</p>
+                <p>An error occurred. Please try another query, or refresh the page and try searching again.</p>
             </div>
         );
     }

@@ -1,10 +1,10 @@
-import React, { useEffect, useCallback } from 'react';
+import React, { useCallback } from 'react';
 import Tabs from "react-bootstrap/Tabs";
 import Tab from 'react-bootstrap/Tab';
 import { OBJECT_TYPE_STICKERS } from '../../TabStickers/TabSticker'
 import TypeSchemaList from '../type-schema-list/TypeSchemaList';
 import { runSearch } from '../../searchSlice';
-import { initialiseFilters, typeAttrSelector, allTypeAttrIdsSelector, updateActiveSchemas, updateTypeAttribute } from '../filterSlice';
+import { typeAttrSelector, allTypeAttrIdsSelector, updateActiveSchemas, updateTypeAttribute } from '../filterSlice';
 import { useSelector, useDispatch, batch } from "react-redux";
 import PropTypes from "prop-types";
 import { mapTypeToFilter } from "../index";
@@ -26,8 +26,8 @@ function TypeAttributeFilter({typeId, attributeId}) {
   const ApplicableFilter = mapTypeToFilter(attribute.data_type);
   return (
     <section>
-      <h5>{attribute.full_name}</h5>
-      <ApplicableFilter value={attribute.value} onValueChange={setFilterValue} />
+      <h3 className="h5">{attribute.full_name}</h3>
+      <ApplicableFilter value={attribute.value} onValueChange={setFilterValue} options={attribute.options} />
     </section>
   )
 }
@@ -57,7 +57,7 @@ export function PureFiltersSection({ types, schemas, typeSchemas, isLoading, err
 
   return (
     <section>
-      <h3>Filters</h3>
+      <h2 className="h3">Filters</h2>
       <Tabs defaultActiveKey="projects" id="filters-section">
         {
           types.allIds.map(type => {
@@ -124,9 +124,5 @@ PureFiltersSection.propTypes = {
 export default function FiltersSection() {
   const dispatch = useDispatch();
   const filters = useSelector((state) => (state.filters));
-  useEffect(() => {
-    //Load schema filters
-    dispatch(initialiseFilters());
-  }, [dispatch]);
   return (<PureFiltersSection {...filters} />);
 }

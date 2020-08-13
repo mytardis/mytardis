@@ -1,14 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Form from 'react-bootstrap/Form';
 import InputGroup from 'react-bootstrap/InputGroup';
 import FormControl from 'react-bootstrap/FormControl';
 import Button from 'react-bootstrap/Button';
 import PropTypes from 'prop-types';
 
-const TextFilter = ({value,options,onValueChange}) => {
-    if (!options) {
-        options = {};
-    } 
+const TextFilter = ({value,options,onValueChange}) => { 
+    // Make a copy of the options first.
+    options = Object.assign({},options);
     if (!options.name){
         options.name = "Missing filter name";
     }
@@ -17,6 +16,9 @@ const TextFilter = ({value,options,onValueChange}) => {
     }
     const initialState = value ? value.content : null;
     const [localValue, setLocalValue] = useState( initialState );
+    useEffect(() => {
+        setLocalValue(value ? value.content : "");
+    },[value])
     const handleValueChange = (e) => {
         setLocalValue(e.target.value);
     };
@@ -28,10 +30,17 @@ const TextFilter = ({value,options,onValueChange}) => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
+        if (!canChangeValue) {
+            return;
+        }
         if (localValue === "") {
             onValueChange(null);
         } else {
-            onValueChange({op:"contains",content:localValue});
+            if (options.isExact) {
+                onValueChange({op: "is", content: [localValue]});
+            } else {
+                onValueChange({op:"contains",content:localValue});
+            }
         }
     };
     return (
@@ -39,7 +48,7 @@ const TextFilter = ({value,options,onValueChange}) => {
             <InputGroup>
                 <FormControl onChange={handleValueChange} value={localValue} aria-label="Filter input" placeholder={options.hint}></FormControl>
                 <InputGroup.Append>
-                    <Button type="submit" aria-label="Filter results" variant={canChangeValue ? "secondary" :"outline-secondary"} disabled={!canChangeValue}>Filter</Button>
+                    <Button type="submit" aria-label="Filter results" variant={canChangeValue ? "secondary" :"outline-secondary"}>Filter</Button>
                 </InputGroup.Append>
             </InputGroup>
         </Form>
