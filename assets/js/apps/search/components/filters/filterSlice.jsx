@@ -1,38 +1,9 @@
 import { createSlice } from '@reduxjs/toolkit';
 import Cookies from "js-cookie";
-
-const initialTypeAttributes = {
-    projects: {
-        attributes: {
-            schema: {
-                
-            }
-        }
-    },
-    experiments: {
-        attributes: {
-            schema: {}
-        }
-    },
-    datasets: {
-        attributes: {
-            schema: {}
-        }
-    },
-    datafiles: {
-        attributes: {
-            schema: {}
-        }
-    }
-};
-
-
+import TYPE_ATTRIBUTES from "./typeAttributes.json";
 
 const initialState = {
-    types: {
-        byId: initialTypeAttributes,
-        allIds: ['projects', 'experiments', 'datasets', 'datafiles']
-    },
+    types: TYPE_ATTRIBUTES,
     typeSchemas: null,
     schemas: {
         byId: null,
@@ -105,7 +76,15 @@ const removeFromActiveFilters = (state, fieldInfo) => {
 export const typeAttrSelector = (filterSlice, typeId, attributeId) => {
     return filterSlice.types
         .byId[typeId]
-        .attributes[attributeId];
+        .attributes
+        .byId[attributeId];
+}
+
+export const allTypeAttrIdsSelector = (filterSlice, typeId) => {
+    return filterSlice.types
+        .byId[typeId]
+        .attributes
+        .allIds;
 }
 
 export const schemaParamSelector = (filterSlice, schemaId, paramId) => {
