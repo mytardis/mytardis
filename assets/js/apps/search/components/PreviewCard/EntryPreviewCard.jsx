@@ -25,7 +25,7 @@ export default function EntryPreviewCard(props) {
     const formatDate = (date) => {
         date = date.split('T')[0];
         let readableDate = moment(date).format("Do MMMM YYYY");
-        return `${readableDate}.${date}`;
+        return `${readableDate}.`;
     }
 
     /**
