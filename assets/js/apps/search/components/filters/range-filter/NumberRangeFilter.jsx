@@ -84,7 +84,6 @@ const NumberRangeFilter = ({value,options,onValueChange}) => {
     // We should disable the filter button if there's nothing in the filter box.
     // But we should be able to clear a field if there's a value on the filter.
     const canChangeValue =  !isValueEmpty(localValue) || !isValueEmpty(toLocalValue(value));
-    console.log(localValue, value, canChangeValue);
 
     const handleSubmit = (e) => {
         e.preventDefault();

@@ -182,15 +182,12 @@ const mockStoreState = {
     activeFilters: [{
         kind: 'typeAttribute',
         target: ['datasets', 'createdDate'],
-        type: 'STRING'
     }, {
         kind: 'schemaParameter',
         target: ['2', '4'],
-        type: 'STRING'
     }, {
         kind: 'typeAttribute',
         target: ['experiments','schema'],
-        type: 'STRING'
     }],
     isLoading: false,
     error: null
@@ -205,8 +202,7 @@ describe('Type attribute reducer', () => {
             expectedNewState = createNextState(mockStoreState, draft => {
                 draft.activeFilters.push({
                     kind: 'typeAttribute',
-                    target: [type, attribute],
-                    type: "DATETIME"
+                    target: [type, attribute]
                 });
                 draft.types.byId[type].attributes.byId.createdDate.value = newValue
             });
@@ -259,8 +255,7 @@ describe('Schema parameter reducer', () => {
             expectedNewState = createNextState(mockStoreState, draft => {
                 draft.activeFilters.push({
                     kind: "schemaParameter",
-                    target: [schema, parameter],
-                    type: "STRING"
+                    target: [schema, parameter]
                 });
                 draft.schemas.byId[schema].parameters[parameter].value = newValue;
             });
@@ -314,8 +309,7 @@ describe('Active schema reducer', () => {
                 draft.types.byId[typeId].attributes.byId.schema.value = value;
                 draft.activeFilters.push({
                     kind: "typeAttribute",
-                    target: [typeId, "schema"],
-                    type: "STRING"
+                    target: [typeId, "schema"]
                 });
         });
         expect(reducer(mockStoreState, updateActiveSchemas({
@@ -350,8 +344,7 @@ describe('Active schema reducer', () => {
                 draft.types.byId[typeId].attributes.byId.schema.value = value;
                 draft.activeFilters.push({
                     kind: "typeAttribute",
-                    target: [typeId, "schema"],
-                    type: "STRING"
+                    target: [typeId, "schema"]
                 });
                 // The parameter associated with the schema ID "2" should now be removed
                 // Because schema ID "2" is also a dataset schema.

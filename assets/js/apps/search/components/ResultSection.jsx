@@ -73,7 +73,7 @@ export function ResultRow({ result, onSelect, isSelected }) {
     const type = result.type,
         resultName = result[NameColumn[type]];
     return (
-        <tr className="result-section--row" onClick={onSelect} onKeyUp={onSelect} tabindex="0" role="button">
+        <tr className="result-section--row" onClick={onSelect} onKeyUp={onSelect} tabIndex="0" role="button">
             <td className="result-row--download-col">
                 {result.userDownloadRights == "none" &&
                     <OverlayTrigger overlay={
@@ -132,7 +132,7 @@ export function PureResultList({ results, selectedItem, onItemSelect, error, isL
         body = (
             // If the search is in progress.
             <tr>
-                <td colspan="3">
+                <td colSpan="3">
                     <div className="result-section--msg">
                         <p>Searching...</p>
                     </div>
@@ -146,7 +146,7 @@ export function PureResultList({ results, selectedItem, onItemSelect, error, isL
         // If the results are empty...
         body = (
             <tr>
-                <td colspan="3">
+                <td colSpan="3">
                     <div className="result-section--msg">
                         <p>No results. Please adjust your search and try again.</p>
                     </div>
@@ -184,7 +184,7 @@ export function PureResultList({ results, selectedItem, onItemSelect, error, isL
 
 PureResultList.propTypes = {
     results: PropTypes.arrayOf(Object),
-    error: PropTypes.object,
+    error: PropTypes.string,
     isLoading: PropTypes.bool,
     selectedItem: PropTypes.string,
     onItemSelect: PropTypes.func
