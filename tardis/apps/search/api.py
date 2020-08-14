@@ -390,14 +390,19 @@ class SearchAppResource(Resource):
 
                                 query_obj = query_obj & query_obj_filt
 
+            excluded_fields_list = ["end_date", "institution", "lead_researcher", "created by",
+                                    "end_time", "update_time", "instrument", "file_extension",
+                                    "modification_time", "parameters.string.pn_id", "parameters.string.sensitive",
+                                    "parameters.numerical.pn_id", "parameters.numerical.sensitive",
+                                    "parameters.datetime.pn_id", "parameters.datetime.sensitive",
+                                    "experiments", 'dataset', 'project']
 
-
-
-
+            if obj != 'dataset':
+                excluded_fields_list.append('description')
 
             ms = ms.add(Search(index=obj)
                         .extra(size=MAX_SEARCH_RESULTS, min_score=MIN_CUTOFF_SCORE)
-                        .query(query_obj))
+                        .query(query_obj).source(excludes=excluded_fields_list) )
 
 
         results = ms.execute()
@@ -425,10 +430,16 @@ class SearchAppResource(Resource):
                     # Remove ACLs and add size to repsonse
                     hit["_source"].pop("objectacls")
                     #hit["_source"].pop("parameters")
-                    hit["_source"]["parameters"]["string"].extend(hit["_source"]["parameters"]["numerical"])
-                    hit["_source"]["parameters"]["string"].extend(hit["_source"]["parameters"]["datetime"])
-                    hit["_source"]["parameters"] = hit["_source"]["parameters"]["string"]
+                    param_list = []
+                    if "string" in hit["_source"]["parameters"]:
+                        param_list.extend(hit["_source"]["parameters"]["string"])
+                    if "numerical" in hit["_source"]["parameters"]:
+                        param_list.extend(hit["_source"]["parameters"]["numerical"])
+                    if "datetime" in hit["_source"]["parameters"]:
+                        param_list.extend(hit["_source"]["parameters"]["datetime"])
+                    hit["_source"]["parameters"] = param_list
                     hit.pop("_score")
+                    hit.pop("_id")
 
                     hit["_source"]["size"] = filesizeformat(size)
 
