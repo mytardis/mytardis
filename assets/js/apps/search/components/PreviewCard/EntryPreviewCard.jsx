@@ -190,7 +190,7 @@ export default function EntryPreviewCard(props) {
                 {getDataSize(data, type)}
             </div>
             <div className="preview-card__date-added">
-                Added on {getDateAdded(data, type)}
+                Added on the {getDateAdded(data, type)}
             </div>
             <ParameterTable parameters={data.parameters} />
             <div className="preview-card__button-wrapper--right">
