@@ -12,6 +12,7 @@ import {
 
 export default function EntryPreviewCard(props) {
     let { data, onClick } = props;
+    console.log(data);
     let type;
     if (data) {
         type = data.type;
@@ -22,7 +23,9 @@ export default function EntryPreviewCard(props) {
      * @param {*} date
      */
     const formatDate = (date) => {
-        return `${moment(date).format("do MMMM YYYY")}.`;
+        date = date.split('T')[0];
+        let readableDate = moment(date).format("Do MMMM YYYY");
+        return `${readableDate}.`;
     }
 
     /**
@@ -139,49 +142,6 @@ export default function EntryPreviewCard(props) {
         }
     }
 
-    /**
-     *
-     * @param {*} data project/exp/datafile/dataset json response data
-     * @param {*} type project/exp/datafile/dataset
-     */
-    const FileCountSummary = (props) => {
-        let { data, type } = props;
-        let summary;
-        let datafilePlural;
-        let datasetPlural;
-        if (data.counts) {
-            if (data.counts.datafiles) {
-                datafilePlural = data.counts.datafiles == 1 ? 'datafile' : 'datafiles';
-            }
-            if (data.counts.datasets) {
-                datasetPlural = data.counts.datasets == 1 ? 'dataset' : 'dataset';
-            }
-        }
-        switch (type) {
-            case 'project':
-                if (data.counts.datafiles == 1)
-                    summary = `Contains ${data.counts.datafiles} ${datafilePlural} from ${data.counts.datasets} ${datasetPlural}.`;
-                break;
-            case 'experiment':
-                summary = `Contains ${data.counts.datafiles} ${datafilePlural} from ${data.counts.datasets} ${datasetPlural}.`;
-                break;
-            case 'dataset':
-                summary = `Contains ${data.counts.datafiles} ${datafilePlural}.`;
-                break;
-            default:
-                summary = null;
-                break;
-        }
-        if (summary) {
-            return (
-                <div className="preview-card__count-detail">
-                    {summary}
-                </div>
-            )
-        }
-        return null;
-    }
-
     const ParameterTable = (props) => {
         let { parameters } = props;
         if (parameters.length > 0) {
@@ -229,9 +189,8 @@ export default function EntryPreviewCard(props) {
             <div className="preview-card__count-detail">
                 {getDataSize(data, type)}
             </div>
-            <FileCountSummary data={data} type={type}></FileCountSummary>
             <div className="preview-card__date-added">
-                Added on {getDateAdded(data, type)}
+                Added on the {getDateAdded(data, type)}
             </div>
             <ParameterTable parameters={data.parameters} />
             <div className="preview-card__button-wrapper--right">

@@ -27,6 +27,10 @@
     flex-direction: row;
 }
 
+.tabpanel__container--horizontal > * {
+    flex: 1;
+}
+
 .result-section--count-summary {
     padding: 1em 0;
 }
