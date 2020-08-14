@@ -19,7 +19,7 @@ export default function EntryPreviewCard(props) {
 
     /**
      * Simply cuts of the time portion of the date
-     * @param {*} date 
+     * @param {*} date
      */
     const formatDate = (date) => {
         return `${moment(date).format("do MMMM YYYY")}.`;
@@ -27,7 +27,7 @@ export default function EntryPreviewCard(props) {
 
     /**
      * Gets the 'name' for the result type. fields differ depending on type.
-     * @param {*} data 
+     * @param {*} data
      * @param {*} type project, dataset or datafile
      */
     const getName = (data, type) => {
@@ -44,7 +44,7 @@ export default function EntryPreviewCard(props) {
     }
 
     /**
-     * 
+     *
      * @param {*} data the json reponse data.
      * @param {*} type project/exp/df/ds
      */
@@ -75,7 +75,7 @@ export default function EntryPreviewCard(props) {
         return parameters.map((param, idx) => {
             return (
                 <tr key={`preview-card__param-entry-${idx}`} className="parameter-table__row">
-                    <td>{param.pn_id}</td>
+                    <td>{param.pn_name}</td>
                     <td>{param.value}</td>
                 </tr>
             );
@@ -140,7 +140,7 @@ export default function EntryPreviewCard(props) {
     }
 
     /**
-     * 
+     *
      * @param {*} data project/exp/datafile/dataset json response data
      * @param {*} type project/exp/datafile/dataset
      */

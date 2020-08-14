@@ -419,28 +419,31 @@ class SearchAppResource(Resource):
                     # Get total/nested size of object, respecting ACL access to child objects
                     ### size = authz.get_nested_size(request, hit["_source"]["id"], hit["_index"])
 
-                    # Must work on copy of current iterable
-                    safe_hit = hit.copy()
+                    # Must work on copy of current iterable <- only if iterable length changes
+                    #safe_hit = hit.copy()
 
                     # Remove ACLs and add size to repsonse
-                    safe_hit["_source"].pop("objectacls")
-                    #safe_hit["_source"].pop("parameters")
-                    safe_hit.pop("_score")
+                    hit["_source"].pop("objectacls")
+                    #hit["_source"].pop("parameters")
+                    hit["_source"]["parameters"]["string"].extend(hit["_source"]["parameters"]["numerical"])
+                    hit["_source"]["parameters"]["string"].extend(hit["_source"]["parameters"]["datetime"])
+                    hit["_source"]["parameters"] = hit["_source"]["parameters"]["string"]
+                    hit.pop("_score")
 
-                    safe_hit["_source"]["size"] = filesizeformat(size)
+                    hit["_source"]["size"] = filesizeformat(size)
 
                     # Get count of all nested objects and download status
                     if hit["_index"] != 'datafile':
-                        safe_hit["_source"]["counts"] = 0# authz.get_nested_count(request,
+                        hit["_source"]["counts"] = 0# authz.get_nested_count(request,
                     ###                                       hit["_source"]["id"], hit["_index"])
 
-                        safe_hit["_source"]["userDownloadRights"] = 'none'#authz.get_nested_has_download(request,
+                        hit["_source"]["userDownloadRights"] = 'none'#authz.get_nested_has_download(request,
                                                             #hit["_source"]["id"], hit["_index"])
 
                     else:
                         #if authz.has_download_access(request, hit["_source"]["id"],
                                                      #hit["_index"]):
-                        safe_hit["_source"]["userDownloadRights"] = "none"
+                        hit["_source"]["userDownloadRights"] = "none"
                         #else:
                         #    safe_hit["_source"]["userDownloadRights"] = "none"
 
@@ -457,8 +460,8 @@ class SearchAppResource(Resource):
                     # Append hit to final results if not already in results.
                     # Due to non-identical scores in hits for non-sensitive vs sensitive search,
                     # we require a more complex comparison than just 'is in' as hits are not identical
-                    if safe_hit["_source"]['id'] not in [objj["_source"]['id'] for objj in result_dict[hit["_index"]+"s"]]:
-                        result_dict[hit["_index"]+"s"].append(safe_hit)
+                    if hit["_source"]['id'] not in [objj["_source"]['id'] for objj in result_dict[hit["_index"]+"s"]]:
+                        result_dict[hit["_index"]+"s"].append(hit)
 
 
         def filter_parent_child(result_dict, filter_level):
