@@ -296,7 +296,7 @@ def create_user_api_key(sender, **kwargs):
     from tastypie.models import create_api_key
     create_api_key(User, **kwargs)
 
-
+@receiver(post_save, sender=ObjectACL)
 def delete_if_all_false(instance, **kwargs):
     if not any([instance.canRead, instance.canDownload, instance.canWrite,
                 instance.canDelete, instance.canSensitive, instance.isOwner]):
@@ -304,6 +304,3 @@ def delete_if_all_false(instance, **kwargs):
 
 if getattr(settings, 'AUTOGENERATE_API_KEY', False):
     post_save.connect(create_user_api_key, sender=User, weak=False)
-
-
-post_save.connect(delete_if_all_false, sender=ObjectACL)
