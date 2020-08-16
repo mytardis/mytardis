@@ -395,7 +395,7 @@ class SearchAppResource(Resource):
                                     "modification_time", "parameters.string.pn_id", "parameters.string.sensitive",
                                     "parameters.numerical.pn_id", "parameters.numerical.sensitive",
                                     "parameters.datetime.pn_id", "parameters.datetime.sensitive",
-                                    "experiments", 'dataset', 'project']
+                                    "experiments", 'dataset', 'project', 'objectacls']
 
             if obj != 'dataset':
                 excluded_fields_list.append('description')
@@ -428,7 +428,7 @@ class SearchAppResource(Resource):
                     #safe_hit = hit.copy()
 
                     # Remove ACLs and add size to repsonse
-                    hit["_source"].pop("objectacls")
+                    #hit["_source"].pop("objectacls")
                     #hit["_source"].pop("parameters")
                     param_list = []
                     if "string" in hit["_source"]["parameters"]:
