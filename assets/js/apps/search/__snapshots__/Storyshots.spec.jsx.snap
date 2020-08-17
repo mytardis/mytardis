@@ -83,7 +83,7 @@ exports[`Storyshots EntryPreviewCard Data File 1`] = `
     <div
       className="preview-card__date-added"
     >
-      Added on 
+      Added on the 
       Unknown
     </div>
     <table
@@ -123,6 +123,7 @@ exports[`Storyshots EntryPreviewCard Data File 1`] = `
           href="idk/"
           onClick={[Function]}
           onKeyDown={[Function]}
+          target="_blank"
         >
           View details
         </a>
@@ -208,15 +209,10 @@ exports[`Storyshots EntryPreviewCard Data Set 1`] = `
       460.3 KB.
     </div>
     <div
-      className="preview-card__count-detail"
-    >
-      Contains 2 datafiles.
-    </div>
-    <div
       className="preview-card__date-added"
     >
-      Added on 
-      5th May 2020.
+      Added on the 
+      7th May 2020.
     </div>
     <table
       className="preview-card__parameter-table table table-sm table-striped table-bordered table-hover"
@@ -265,6 +261,7 @@ exports[`Storyshots EntryPreviewCard Data Set 1`] = `
           href="idk/"
           onClick={[Function]}
           onKeyDown={[Function]}
+          target="_blank"
         >
           View details
         </a>
@@ -350,15 +347,10 @@ exports[`Storyshots EntryPreviewCard Experiment 1`] = `
       460.3 KB.
     </div>
     <div
-      className="preview-card__count-detail"
-    >
-      Contains 2 datafiles from 1 dataset.
-    </div>
-    <div
       className="preview-card__date-added"
     >
-      Added on 
-      5th May 2020.
+      Added on the 
+      7th May 2020.
     </div>
     <table
       className="preview-card__parameter-table table table-sm table-striped table-bordered table-hover"
@@ -407,6 +399,7 @@ exports[`Storyshots EntryPreviewCard Experiment 1`] = `
           href="idk/"
           onClick={[Function]}
           onKeyDown={[Function]}
+          target="_blank"
         >
           View details
         </a>
@@ -510,8 +503,8 @@ exports[`Storyshots EntryPreviewCard Project 1`] = `
     <div
       className="preview-card__date-added"
     >
-      Added on 
-      5th May 2020.
+      Added on the 
+      7th May 2020.
     </div>
     <table
       className="preview-card__parameter-table table table-sm table-striped table-bordered table-hover"
@@ -580,6 +573,7 @@ exports[`Storyshots EntryPreviewCard Project 1`] = `
           href="idk/"
           onClick={[Function]}
           onKeyDown={[Function]}
+          target="_blank"
         >
           View details
         </a>
@@ -4187,7 +4181,7 @@ exports[`Storyshots Result list All Access 1`] = `
     className="table-responsive"
   >
     <table
-      className="table table-hover"
+      className="result-section__container table table-hover"
     >
       <thead>
         <tr>
@@ -4243,7 +4237,7 @@ exports[`Storyshots Result list Default 1`] = `
     className="table-responsive"
   >
     <table
-      className="table table-hover"
+      className="result-section__container table table-hover"
     >
       <thead>
         <tr>
@@ -4422,7 +4416,7 @@ exports[`Storyshots Result list Empty 1`] = `
     className="table-responsive"
   >
     <table
-      className="table table-hover"
+      className="result-section__container table table-hover"
     >
       <thead>
         <tr>
@@ -4485,7 +4479,7 @@ exports[`Storyshots Result list Loading 1`] = `
     className="table-responsive"
   >
     <table
-      className="table table-hover"
+      className="result-section__container table table-hover"
     >
       <thead>
         <tr>
@@ -4507,7 +4501,7 @@ exports[`Storyshots Result list Loading 1`] = `
               className="result-section--msg"
             >
               <p>
-                Searching...
+                Loading...
               </p>
             </div>
           </td>
@@ -4530,7 +4524,7 @@ exports[`Storyshots Result list Some Access 1`] = `
     className="table-responsive"
   >
     <table
-      className="table table-hover"
+      className="result-section__container table table-hover"
     >
       <thead>
         <tr>
@@ -4620,7 +4614,7 @@ exports[`Storyshots Result list View Only Access 1`] = `
     className="table-responsive"
   >
     <table
-      className="table table-hover"
+      className="result-section__container table table-hover"
     >
       <thead>
         <tr>
@@ -6144,172 +6138,181 @@ exports[`Storyshots Search page Default 1`] = `
           </span>
         </p>
         <div
-          className="table-responsive"
+          className="tabpanel__container--horizontal"
         >
-          <table
-            className="table table-hover"
+          <div
+            className="table-responsive"
           >
-            <thead>
-              <tr>
-                <th />
-                <th>
-                  Name
-                </th>
-                <th>
-                  Size
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr
-                className="result-section--row"
-                onClick={[Function]}
-                onKeyUp={[Function]}
-                role="button"
-                tabIndex="0"
-              >
-                <td
-                  className="result-row--download-col"
-                />
-                <td>
-                  <a
-                    href=""
-                    target="_blank"
-                  >
-                    siNET
-                  </a>
-                </td>
-                <td>
-                  <span>
-                    35MB
-                  </span>
-                </td>
-              </tr>
-              <tr
-                className="result-section--row"
-                onClick={[Function]}
-                onKeyUp={[Function]}
-                role="button"
-                tabIndex="0"
-              >
-                <td
-                  className="result-row--download-col"
+            <table
+              className="result-section__container table table-hover"
+            >
+              <thead>
+                <tr>
+                  <th />
+                  <th>
+                    Name
+                  </th>
+                  <th>
+                    Size
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr
+                  className="result-section--row"
+                  onClick={[Function]}
+                  onKeyUp={[Function]}
+                  role="button"
+                  tabIndex="0"
                 >
-                  <span
-                    onBlur={[Function]}
-                    onFocus={[Function]}
-                    onMouseOut={[Function]}
-                    onMouseOver={[Function]}
-                  >
-                    <svg
-                      fill="none"
-                      height="1em"
-                      stroke="currentColor"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      style={
-                        Object {
-                          "color": undefined,
-                        }
-                      }
-                      viewBox="0 0 24 24"
-                      width="1em"
-                      xmlns="http://www.w3.org/2000/svg"
+                  <td
+                    className="result-row--download-col"
+                  />
+                  <td>
+                    <a
+                      href=""
+                      target="_blank"
                     >
-                      <title>
-                        Some files cannot be downloaded.
-                      </title>
-                      <path
-                        d="M21.21 15.89A10 10 0 1 1 8 2.83"
-                      />
-                      <path
-                        d="M22 12A10 10 0 0 0 12 2v10z"
-                      />
-                    </svg>
-                  </span>
-                </td>
-                <td>
-                  <a
-                    href=""
-                    target="_blank"
-                  >
-                    Gastroblastoma
-                  </a>
-                </td>
-                <td>
-                  <span>
-                    4GB
-                  </span>
-                </td>
-              </tr>
-              <tr
-                className="result-section--row"
-                onClick={[Function]}
-                onKeyUp={[Function]}
-                role="button"
-                tabIndex="0"
-              >
-                <td
-                  className="result-row--download-col"
+                      siNET
+                    </a>
+                  </td>
+                  <td>
+                    <span>
+                      35MB
+                    </span>
+                  </td>
+                </tr>
+                <tr
+                  className="result-section--row"
+                  onClick={[Function]}
+                  onKeyUp={[Function]}
+                  role="button"
+                  tabIndex="0"
                 >
-                  <span
-                    onBlur={[Function]}
-                    onFocus={[Function]}
-                    onMouseOut={[Function]}
-                    onMouseOver={[Function]}
+                  <td
+                    className="result-row--download-col"
                   >
-                    <svg
-                      fill="none"
-                      height="1em"
-                      stroke="currentColor"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      style={
-                        Object {
-                          "color": undefined,
-                        }
-                      }
-                      viewBox="0 0 24 24"
-                      width="1em"
-                      xmlns="http://www.w3.org/2000/svg"
+                    <span
+                      onBlur={[Function]}
+                      onFocus={[Function]}
+                      onMouseOut={[Function]}
+                      onMouseOver={[Function]}
                     >
-                      <title>
-                        This item cannot be downloaded.
-                      </title>
-                      <rect
-                        height="11"
-                        rx="2"
-                        ry="2"
-                        width="18"
-                        x="3"
-                        y="11"
-                      />
-                      <path
-                        d="M7 11V7a5 5 0 0 1 10 0v4"
-                      />
-                    </svg>
-                  </span>
-                </td>
-                <td>
-                  <a
-                    href=""
-                    target="_blank"
+                      <svg
+                        fill="none"
+                        height="1em"
+                        stroke="currentColor"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        style={
+                          Object {
+                            "color": undefined,
+                          }
+                        }
+                        viewBox="0 0 24 24"
+                        width="1em"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <title>
+                          Some files cannot be downloaded.
+                        </title>
+                        <path
+                          d="M21.21 15.89A10 10 0 1 1 8 2.83"
+                        />
+                        <path
+                          d="M22 12A10 10 0 0 0 12 2v10z"
+                        />
+                      </svg>
+                    </span>
+                  </td>
+                  <td>
+                    <a
+                      href=""
+                      target="_blank"
+                    >
+                      Gastroblastoma
+                    </a>
+                  </td>
+                  <td>
+                    <span>
+                      4GB
+                    </span>
+                  </td>
+                </tr>
+                <tr
+                  className="result-section--row"
+                  onClick={[Function]}
+                  onKeyUp={[Function]}
+                  role="button"
+                  tabIndex="0"
+                >
+                  <td
+                    className="result-row--download-col"
                   >
-                    Lung
-                  </a>
-                </td>
-                <td>
-                  <span
-                    aria-label="Not applicable"
-                  >
-                    —
-                  </span>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+                    <span
+                      onBlur={[Function]}
+                      onFocus={[Function]}
+                      onMouseOut={[Function]}
+                      onMouseOver={[Function]}
+                    >
+                      <svg
+                        fill="none"
+                        height="1em"
+                        stroke="currentColor"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        style={
+                          Object {
+                            "color": undefined,
+                          }
+                        }
+                        viewBox="0 0 24 24"
+                        width="1em"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <title>
+                          This item cannot be downloaded.
+                        </title>
+                        <rect
+                          height="11"
+                          rx="2"
+                          ry="2"
+                          width="18"
+                          x="3"
+                          y="11"
+                        />
+                        <path
+                          d="M7 11V7a5 5 0 0 1 10 0v4"
+                        />
+                      </svg>
+                    </span>
+                  </td>
+                  <td>
+                    <a
+                      href=""
+                      target="_blank"
+                    >
+                      Lung
+                    </a>
+                  </td>
+                  <td>
+                    <span
+                      aria-label="Not applicable"
+                    >
+                      —
+                    </span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div
+            className="preview-card__body"
+          >
+            Please select a row to view the details.
+          </div>
         </div>
       </div>
     </main>
@@ -7497,11 +7500,15 @@ exports[`Storyshots Search page Error 1`] = `
         role="tabpanel"
       >
         <div
-          className="result-section--msg result-section--error-msg"
+          className="tabpanel__container--horizontal"
         >
-          <p>
-            An error occurred. Please try another query, or refresh the page and try searching again.
-          </p>
+          <div
+            className="result-section--msg result-section--error-msg"
+          >
+            <p>
+              An error occurred. Please try another query, or refresh the page and try searching again.
+            </p>
+          </div>
         </div>
       </div>
     </main>
@@ -8689,38 +8696,42 @@ exports[`Storyshots Search page Loading 1`] = `
         role="tabpanel"
       >
         <div
-          className="table-responsive"
+          className="tabpanel__container--horizontal"
         >
-          <table
-            className="table table-hover"
+          <div
+            className="table-responsive"
           >
-            <thead>
-              <tr>
-                <th />
-                <th>
-                  Name
-                </th>
-                <th>
-                  Size
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td
-                  colSpan="3"
-                >
-                  <div
-                    className="result-section--msg"
+            <table
+              className="result-section__container table table-hover"
+            >
+              <thead>
+                <tr>
+                  <th />
+                  <th>
+                    Name
+                  </th>
+                  <th>
+                    Size
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td
+                    colSpan="3"
                   >
-                    <p>
-                      Searching...
-                    </p>
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+                    <div
+                      className="result-section--msg"
+                    >
+                      <p>
+                        Loading...
+                      </p>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </main>

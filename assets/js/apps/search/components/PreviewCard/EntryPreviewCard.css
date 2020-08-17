@@ -16,15 +16,11 @@
 }
 
 .preview-card__body {
-    /* background-color: #fafafa; */
     padding: 1.5rem;
     border-style: solid;
     border-width: 1px;
     border-color: #dee2e6;
-    /* border-radius: 3px; */
-    /* width: 500px; */
-
-    max-height: 400px;
+    flex: 0 1 450px;
     overflow-y: auto;
 }
 

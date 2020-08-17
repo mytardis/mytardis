@@ -6,7 +6,6 @@ export default {
   component: EntryPreviewCard,
   title: 'EntryPreviewCard',
   decorators: [story => <div style={{ 
-    // padding: '3rem',
     border: '2px solid black'
   }}>{story()}</div>],
 };
@@ -34,25 +33,25 @@ const project = {
   "parameters": [
     {
       "data_type": "STRING",
-      "pn_id": "18",
+      "pn_name": "18",
       "sensitive": "False",
       "value": ""
     },
     {
       "data_type": "NUMERIC",
-      "pn_id": "19",
+      "pn_name": "19",
       "sensitive": "False",
       "value": "7.0"
     },
     {
       "data_type": "STRING",
-      "pn_id": "15",
+      "pn_name": "15",
       "sensitive": "False",
       "value": "Kiwi"
     },
     {
       "data_type": "STRING",
-      "pn_id": "16",
+      "pn_name": "16",
       "sensitive": "False",
       "value": "Orange"
     }
@@ -78,13 +77,13 @@ const experiment = {
   "parameters": [
     {
       "data_type": "STRING",
-      "pn_id": "1",
+      "pn_name": "1",
       "sensitive": "False",
       "value": "kiwi"
     },
     {
       "data_type": "STRING",
-      "pn_id": "3",
+      "pn_name": "3",
       "sensitive": "True",
       "value": "forbidden fruit"
     }
@@ -125,13 +124,13 @@ const dataSet = {
   "parameters":[
      {
         "data_type":"STRING",
-        "pn_id":"4",
+        "pn_name":"4",
         "sensitive":"False",
         "value":"My Name"
      },
      {
         "data_type":"STRING",
-        "pn_id":"5",
+        "pn_name":"5",
         "sensitive":"False",
         "value":"is"
      }
@@ -163,7 +162,7 @@ const dataFile = {
   "parameters":[
      {
         "data_type":"STRING",
-        "pn_id":"12",
+        "pn_name":"12",
         "sensitive":"False",
         "value":"My name is"
      }

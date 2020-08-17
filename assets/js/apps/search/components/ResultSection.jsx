@@ -73,9 +73,16 @@ const NameColumn = {
 
 export function ResultRow({ result, onSelect, isSelected }) {
     const type = result.type,
-        resultName = result[NameColumn[type]];
+        resultName = result[NameColumn[type]],
+        onKeyboardSelect = (e) => {
+            // Only respond to Enter key selects.
+            if (e.key !== "Enter") {
+                return;
+            }
+            onSelect(e);
+        };
     return (
-        <tr className="result-section--row" onClick={onSelect} onKeyUp={onSelect} tabIndex="0" role="button">
+        <tr className={isSelected ? "result-section--row table-active" : "result-section--row" } onClick={onSelect} onKeyUp={onKeyboardSelect} tabIndex="0" role="button">
             <td className="result-row--download-col">
                 {result.userDownloadRights == "none" &&
                     <OverlayTrigger overlay={
@@ -136,7 +143,7 @@ export function PureResultList({ results, selectedItem, onItemSelect, error, isL
             <tr>
                 <td colSpan="3">
                     <div className="result-section--msg">
-                        <p>Searching...</p>
+                        <p>Loading...</p>
                     </div>
                 </td>
             </tr>
@@ -169,7 +176,7 @@ export function PureResultList({ results, selectedItem, onItemSelect, error, isL
     }
 
     return (
-        <Table responsive hover>
+        <Table className="result-section__container" responsive hover>
             <thead>
                 <tr>
                     <th></th>
@@ -188,18 +195,8 @@ PureResultList.propTypes = {
     results: PropTypes.arrayOf(Object),
     error: PropTypes.string,
     isLoading: PropTypes.bool,
-    selectedItem: PropTypes.string,
+    selectedItem: PropTypes.number,
     onItemSelect: PropTypes.func
-}
-
-export function ResultList(props) {
-    return (
-        <div className="result-section__container">
-            <PureResultList
-                {...props}
-            />
-        </div >
-    )
 }
 
 export function PureResultSection({ resultSets, selectedType,
@@ -234,10 +231,12 @@ export function PureResultSection({ resultSets, selectedType,
                         </p>
                     }
                     <div className="tabpanel__container--horizontal">
-                        <ResultList results={currentResultSet} selectedItem={selectedResult} onItemSelect={onSelectResult} isLoading={isLoading} error={error} />
-                        <EntryPreviewCard
-                            data={selectedEntry}
-                        />
+                        <PureResultList results={currentResultSet} selectedItem={selectedResult} onItemSelect={onSelectResult} isLoading={isLoading} error={error} />
+                        {(!isLoading && !error && currentCount > 0) &&
+                            <EntryPreviewCard
+                                data={selectedEntry}
+                            />
+                        }
                     </div>
                 </div>
             </>

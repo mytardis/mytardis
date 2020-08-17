@@ -7,6 +7,9 @@
     align-items: center;
     justify-content: center;
     height: 300px;
+    flex: 1;
+    height: 100%;
+    padding: 2em;
 }
 
 .result-section--error-msg {
@@ -18,34 +21,30 @@
     border-right: 1px solid #dee2e6;
     border-bottom: 1px solid #dee2e6;
     padding: 1em;
-    padding-bottom: 2em;
     background-color: white;
+    /* Make result list and entry card take up available space */
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    overflow: hidden;
+
 }
 
 .tabpanel__container--horizontal {
     display: flex;
     flex-direction: row;
+    overflow: hidden;
+    /* Make result list and entry card take up available space */
+    flex: 1;
 }
 
-.tabpanel__container--horizontal > * {
+.result-section__container {
     flex: 1;
+    overflow-y: auto;
 }
 
 .result-section--count-summary {
     padding: 1em 0;
-}
-
-.result-section__container {
-    display: flex;
-    flex-direction: row;
-}
-
-.result-section__preview-card {
-    display: flex;
-}
-
-.result-section__result-list {
-    display: flex;
 }
 
 .result-section--row:focus {
