@@ -12,7 +12,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.utils.encoding import python_2_unicode_compatible
 
-from tardis.tardis_portal.models.hooks import suspendingreceiver
+from ..models.hooks import suspendingreceiver
 
 
 @python_2_unicode_compatible
