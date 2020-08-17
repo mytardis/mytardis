@@ -22,8 +22,30 @@
     background-color: white;
 }
 
+.tabpanel__container--horizontal {
+    display: flex;
+    flex-direction: row;
+}
+
+.tabpanel__container--horizontal > * {
+    flex: 1;
+}
+
 .result-section--count-summary {
-    padding: 1em 0; 
+    padding: 1em 0;
+}
+
+.result-section__container {
+    display: flex;
+    flex-direction: row;
+}
+
+.result-section__preview-card {
+    display: flex;
+}
+
+.result-section__result-list {
+    display: flex;
 }
 
 .result-section--row:focus {

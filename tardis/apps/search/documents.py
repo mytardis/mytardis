@@ -62,16 +62,19 @@ class ProjectDocument(Document):
     parameters = fields.NestedField(attr='getParametersforIndexing', properties={
         'string' : fields.NestedField(properties = {
             'pn_id': fields.KeywordField(),
+            'pn_name': fields.KeywordField(),
             'value': fields.StringField(),
             'sensitive': fields.BooleanField()
         }),
         'numerical' : fields.NestedField(properties = {
             'pn_id': fields.KeywordField(),
+            'pn_name': fields.KeywordField(),
             'value': fields.FloatField(),
             'sensitive': fields.BooleanField()
         }),
         'datetime' : fields.NestedField(properties = {
             'pn_id': fields.KeywordField(),
+            'pn_name': fields.KeywordField(),
             'value': fields.DateField(),
             'sensitive': fields.BooleanField()
         }),
@@ -148,16 +151,19 @@ class ExperimentDocument(Document):
     parameters = fields.NestedField(attr='getParametersforIndexing', properties={
         'string' : fields.NestedField(properties = {
             'pn_id': fields.KeywordField(),
+            'pn_name': fields.KeywordField(),
             'value': fields.StringField(),
             'sensitive': fields.BooleanField()
         }),
         'numerical' : fields.NestedField(properties = {
             'pn_id': fields.KeywordField(),
+            'pn_name': fields.KeywordField(),
             'value': fields.FloatField(),
             'sensitive': fields.BooleanField()
         }),
         'datetime' : fields.NestedField(properties = {
             'pn_id': fields.KeywordField(),
+            'pn_name': fields.KeywordField(),
             'value': fields.DateField(),
             'sensitive': fields.BooleanField()
         }),
@@ -229,16 +235,19 @@ class DatasetDocument(Document):
     parameters = fields.NestedField(attr='getParametersforIndexing', properties={
         'string' : fields.NestedField(properties = {
             'pn_id': fields.KeywordField(),
+            'pn_name': fields.KeywordField(),
             'value': fields.StringField(),
             'sensitive': fields.BooleanField()
         }),
         'numerical' : fields.NestedField(properties = {
             'pn_id': fields.KeywordField(),
+            'pn_name': fields.KeywordField(),
             'value': fields.FloatField(),
             'sensitive': fields.BooleanField()
         }),
         'datetime' : fields.NestedField(properties = {
             'pn_id': fields.KeywordField(),
+            'pn_name': fields.KeywordField(),
             'value': fields.DateField(),
             'sensitive': fields.BooleanField()
         }),
@@ -309,16 +318,19 @@ class DataFileDocument(Document):
     parameters = fields.NestedField(attr='getParametersforIndexing', properties={
         'string' : fields.NestedField(properties = {
             'pn_id': fields.KeywordField(),
+            'pn_name': fields.KeywordField(),
             'value': fields.StringField(),
             'sensitive': fields.BooleanField()
         }),
         'numerical' : fields.NestedField(properties = {
             'pn_id': fields.KeywordField(),
+            'pn_name': fields.KeywordField(),
             'value': fields.FloatField(),
             'sensitive': fields.BooleanField()
         }),
         'datetime' : fields.NestedField(properties = {
             'pn_id': fields.KeywordField(),
+            'pn_name': fields.KeywordField(),
             'value': fields.DateField(),
             'sensitive': fields.BooleanField()
         }),
