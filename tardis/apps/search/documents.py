@@ -13,7 +13,7 @@ from tardis.tardis_portal.models import Project, Dataset, Experiment, \
     ProjectParameterSet, ExperimentParameterSet, DatasetParameterSet, \
     DatafileParameterSet
 
-from tardis.tardis_portal.models.hooks import suspendingreceiver
+from tardis.tardis_portal.tests import suspendingreceiver
 
 logger = logging.getLogger(__name__)
 
