@@ -370,10 +370,10 @@ class DataFileDocument(Document):
             return DataFile.objects.filter(datafileparameterset__schema__parametername=related_instance)
         return None
 
-@receiver(post_save, sender=Project)
-@receiver(post_save, sender=Experiment)
-@receiver(post_save, sender=Dataset)
-@receiver(post_save, sender=DataFile)
+@suspendingreceiver(post_save, sender=Project)
+@suspendingreceiver(post_save, sender=Experiment)
+@suspendingreceiver(post_save, sender=Dataset)
+@suspendingreceiver(post_save, sender=DataFile)
 def update_search(instance, **kwargs):
     if isinstance(instance, Project):
         instance.to_search().save()

@@ -27,6 +27,8 @@ DATABASES = {
     }
 }
 
+SUSPEND_SIGNALS=True
+
 # During testing it's always eager
 CELERY_ALWAYS_EAGER = True
 BROKER_URL = 'memory://'
