@@ -1,5 +1,0 @@
-git+https://github.com/mytardis/django-storages@ff9f50827339675e7ff8ca329cae86ea35c6a8b5#egg=django_storages
-boto==2.40.0
-boto3==1.4.6
-botocore==1.7.42
-s3transfer==0.1.10
