@@ -2101,10 +2101,10 @@ class DataFileResource(MyTardisModelResource):
                             add_flg = False
                         if add_flg:
                             create_acl(datafile.get_ct(),
-                                datafile.id,
-                                django_user,
-                                user.id,
-                                admin=True)
+                                       datafile.id,
+                                       django_user,
+                                       user.id,
+                                       admin=True)
                 # No need to check traverse since they have admin rights in parent
         elif admins != []:
             for admin in admins:
@@ -2213,7 +2213,7 @@ class DataFileResource(MyTardisModelResource):
         for group in datafile_groups:
             logger.error(f'Creating group admin for {group}')
             group_admin, _ = GroupAdmin.objects.get_or_create(user=bundle.request.user,
-                                                            group=group)
+                                                              group=group)
             for admin in datafile_admin_groups:
                 group_admin.admin_groups.add(admin.id)
             for admin in datafile_admin_users:

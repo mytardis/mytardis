@@ -336,8 +336,71 @@ class SearchAppResource(Resource):
                                 elif filter["type"] == "DATETIME":
                                         query_obj_filt = Q({"range": {target_fieldtype: {oper:filter["content"]}}})
 
+
                                 query_obj = query_obj & query_obj_filt
 
+
+                            # Fields that are intrinsic to related objects (instruments, users, etc)
+                            if target_fieldtype in ['lead_researcher', 'project', 'instrument',
+                                                    'institution', 'experiments', 'dataset']:
+                                nested_fieldtype = filter["target"][2]
+
+                                if isinstance(filter["content"], list):
+                                    Qdict = {"should" : []}
+                                    for option in filter["content"]:
+                                        qry = Q(
+                                            {"nested" : {
+                                                "path":target_fieldtype, "query": Q(
+                                                        {oper: {".".join([target_fieldtype,nested_fieldtype]):option}}
+                                                )
+                                            }})
+                                        Qdict["should"].append(qry)
+                                    query_obj_filt = Q({"bool" : Qdict})
+                                else:
+                                    query_obj_filt = Q(
+                                        {"nested" : {
+                                            "path":target_fieldtype, "query": Q(
+                                                    {oper: {".".join([target_fieldtype,nested_fieldtype]):filter["content"]}}
+                                            )
+                                        }})
+
+                                if target_fieldtype == 'lead_researcher':
+                                    Qdict_lr = {"should" : [query_obj_filt]}
+
+                                    if isinstance(filter["content"], list):
+                                        Qdict = {"should" : []}
+                                        for option in filter["content"]:
+                                            qry = Q(
+                                                {"nested" : {
+                                                    "path":target_fieldtype, "query": Q(
+                                                            {'term': {".".join([target_fieldtype,'username']):option}}
+                                                    )
+                                                }})
+                                            Qdict["should"].append(qry)
+                                        query_obj_filt = Q({"bool" : Qdict})
+                                    else:
+                                        query_obj_filt = Q(
+                                            {"nested" : {
+                                                "path":target_fieldtype, "query": Q(
+                                                        {'term': {".".join([target_fieldtype,'username']):filter["content"]}}
+                                                )
+                                            }})
+                                    Qdict_lr["should"].append(query_obj_filt)
+                                    query_obj_filt = Q({"bool" : Qdict_lr})
+
+
+                                query_obj = query_obj & query_obj_filt
+
+            excluded_fields_list = ["end_date", "institution", "lead_researcher", "created by",
+                                    "end_time", "update_time", "instrument", "file_extension",
+                                    "modification_time", "parameters.string.pn_id",
+                                    "parameters.numerical.pn_id", "parameters.datetime.pn_id",
+                                    "experiments", 'dataset', 'project', 'objectacls']
+
+                                    #
+                                    #"parameters.string.sensitive","parameters.numerical.sensitive","parameters.datetime.sensitive",
+            if obj != 'dataset':
+                excluded_fields_list.append('description')
 
                             # Fields that are intrinsic to related objects (instruments, users, etc)
                             if target_fieldtype in ['lead_researcher', 'project', 'instrument',
@@ -397,10 +460,76 @@ class SearchAppResource(Resource):
 
             ms = ms.add(Search(index=obj)
                         .extra(size=MAX_SEARCH_RESULTS, min_score=MIN_CUTOFF_SCORE)
-                        .query(query_obj))
+                        .query(query_obj).source(excludes=excluded_fields_list) )
 
 
         results = ms.execute()
+
+        # load in sensitive IDs
+        projects_sens = Project.safe.all(user, viewsensitive=True).values_list("id", flat=True)
+        experiments_sens = Experiment.safe.all(user, viewsensitive=True).values_list("id", flat=True)
+        datasets_sens = Dataset.safe.all(user, viewsensitive=True).values_list("id", flat=True)
+        datafiles_sens = DataFile.safe.all(user, viewsensitive=True).values_list("id", flat=True)
+
+        # load in downloadable datafile IDs
+        datafiles_dl = DataFile.safe.all(user, downloadable=True).values_list("id", flat=True)
+
+        # convenient list
+        preloaded = {
+                     "project": {"sens_list" : projects_sens,
+                                 "objects" : {}},
+                     "experiment": {"sens_list" : experiments_sens,
+                                 "objects" : {}},
+                     "dataset": {"sens_list" : datasets_sens,
+                                 "objects" : {}},
+                     "datafile": {"sens_list" : datafiles_sens,
+                                  "objects" : {}},
+        }
+
+        # load in accessable IDs and all related child IDs
+        projects = list(Project.safe.all(user).values("id", "experiment__id", "experiment__datasets__id",
+                                                 "experiment__datasets__datafile__id"))
+        experiments = list(Experiment.safe.all(user).values("id", "datasets__id", "datasets__datafile__id"))
+        datasets = list(Dataset.safe.all(user).values("id", "datafile__id"))
+        datafiles = list(DataFile.safe.all(user).values("id", "size"))
+
+        # add data to preloaded["objects"] dictionary with ID as key and nested items as value - key/values.
+        for key, value in {'project': projects, 'experiment':experiments, "dataset":datasets, "datafile":datafiles}.items():
+            for item in value:
+                name = item.pop('id')
+                if name in preloaded[key]["objects"]:
+
+                    if key == "project":
+                        preloaded[key]["objects"][name]["exps"].append(item.pop("experiment__id"))
+                        preloaded[key]["objects"][name]["sets"].append(item.pop("experiment__datasets__id"))
+                        preloaded[key]["objects"][name]["dfs"].append(item.pop("experiment__datasets__datafile__id"))
+
+                    if key == "experiment":
+                        preloaded[key]["objects"][name]["sets"].append(item.pop("datasets__id"))
+                        preloaded[key]["objects"][name]["dfs"].append(item.pop("datasets__datafile__id"))
+
+                    if key == "dataset":
+                        preloaded[key]["objects"][name]["dfs"].append(item.pop("datafile__id"))
+
+                else:
+                    new_dict = {}
+                    if key == "project":
+                        new_dict["exps"] = [item.pop("experiment__id")]
+                        new_dict["sets"] = [item.pop("experiment__datasets__id")]
+                        new_dict["dfs"] = [item.pop("experiment__datasets__datafile__id")]
+
+                    if key == "experiment":
+                        new_dict["sets"] = [item.pop("datasets__id")]
+                        new_dict["dfs"] = [item.pop("datasets__datafile__id")]
+
+                    if key == "dataset":
+                        new_dict["dfs"] = [item.pop("datafile__id")]
+
+                    if key == "datafile":
+                        new_dict["size"] = item.pop("size")
+
+                    preloaded[key]["objects"][name] = new_dict
+
 
         result_dict = {k: [] for k in ["projects", "experiments", "datasets", "datafiles"]}
 
@@ -409,56 +538,102 @@ class SearchAppResource(Resource):
                 for hit in item.hits.hits:
 
                     # Default sensitive permission and size of object
-                    #sensitive_bool = False
+                    sensitive_bool = False
                     size = 0
 
                     # If user/group has sensitive permission, update flag
-                    #if authz.has_sensitive_access(request, hit["_source"]["id"], hit["_index"]):
-                    #    sensitive_bool = True
+                    if hit["_source"]["id"] in preloaded[hit["_index"]]['sens_list']:
+                        sensitive_bool = True
 
                     # Get total/nested size of object, respecting ACL access to child objects
-                    ### size = authz.get_nested_size(request, hit["_source"]["id"], hit["_index"])
+                    #size = #authz.get_nested_size(request, hit["_source"]["id"], hit["_index"])
 
-                    # Must work on copy of current iterable
-                    safe_hit = hit.copy()
+                    # Must work on copy of current iterable <- only if iterable length changes
+                    #safe_hit = hit.copy()
 
                     # Remove ACLs and add size to repsonse
-                    safe_hit["_source"].pop("objectacls")
-                    #safe_hit["_source"].pop("parameters")
-                    safe_hit.pop("_score")
 
-                    safe_hit["_source"]["size"] = filesizeformat(size)
+                    #hit["_source"].pop("objectacls")
+                    #hit["_source"].pop("parameters")
+                    param_list = []
+                    if "string" in hit["_source"]["parameters"]:
+                        param_list.extend(hit["_source"]["parameters"]["string"])
+                    if "numerical" in hit["_source"]["parameters"]:
+                        param_list.extend(hit["_source"]["parameters"]["numerical"])
+                    if "datetime" in hit["_source"]["parameters"]:
+                        param_list.extend(hit["_source"]["parameters"]["datetime"])
+                    hit["_source"]["parameters"] = param_list
+                    hit.pop("_score")
+                    hit.pop("_id")
+                    hit.pop("_type")
+
 
                     # Get count of all nested objects and download status
                     if hit["_index"] != 'datafile':
-                        safe_hit["_source"]["counts"] = 0# authz.get_nested_count(request,
-                    ###                                       hit["_source"]["id"], hit["_index"])
 
-                        safe_hit["_source"]["userDownloadRights"] = 'none'#authz.get_nested_has_download(request,
-                                                            #hit["_source"]["id"], hit["_index"])
+                        safe_nested_dfs = list(set(preloaded["datafile"]["objects"].keys()).intersection(list(
+                                                preloaded[hit["_index"]]["objects"][hit["_source"]["id"]]['dfs'])))
+                        if hit["_index"] in ["project", "experiment"]:
+                            safe_nested_set= len(set(preloaded["dataset"]["objects"].keys()).intersection(list(
+                                                    preloaded[hit["_index"]]["objects"][hit["_source"]["id"]]['sets'])))
+
+                        # Ugly hack, should do a nicer, less verbose loop+type detection
+                        if hit["_index"] == 'project':
+                            safe_nested_exp = len(set(preloaded["experiment"]["objects"].keys()).intersection(list(
+                                                    preloaded[hit["_index"]]["objects"][hit["_source"]["id"]]['exps'])))
+                            hit["_source"]["counts"] = {"experiments" :safe_nested_exp,
+                                                        "datasets" : safe_nested_set,
+                                                        "datafiles": len(safe_nested_dfs)}
+
+                        if hit["_index"] == 'experiment':
+                            hit["_source"]["counts"] = {"datasets" : safe_nested_set,
+                                                        "datafiles": len(safe_nested_dfs)}
+
+                        if hit["_index"] == 'dataset':
+                            hit["_source"]["counts"] = {"datafiles": len(safe_nested_dfs)}
+
+                        safe_nested_dfs_dl = list(set(safe_nested_dfs).intersection(datafiles_dl))
+
+                        #for id in safe_nested_dfs_dl:
+                        #    size = preloaded[hit["_index"]]["objects"]["size"]
+
+                        size = sum([preloaded["datafile"]["objects"][id]["size"] for id in safe_nested_dfs_dl])
+
+                        safe_nested_dfs_dl_bool = [id in datafiles_dl for id in safe_nested_dfs]
+
+                        if all(safe_nested_dfs_dl_bool):
+                            hit["_source"]["userDownloadRights"] = 'full'
+                        elif any(safe_nested_dfs_dl_bool):
+                            hit["_source"]["userDownloadRights"] = 'some'
+                        else:
+                            hit["_source"]["userDownloadRights"] = 'none'
 
                     else:
-                        #if authz.has_download_access(request, hit["_source"]["id"],
-                                                     #hit["_index"]):
-                        safe_hit["_source"]["userDownloadRights"] = "none"
-                        #else:
-                        #    safe_hit["_source"]["userDownloadRights"] = "none"
+                        if hit["_source"]["id"] in datafiles_dl:
+                            hit["_source"]["userDownloadRights"] = "full"
+                            size = hit["_source"]["size"]
+                        else:
+                            hit["_source"]["userDownloadRights"] = "none"
+
+                    hit["_source"]["size"] = filesizeformat(size)
+
 
                     # if no sensitive access, remove sensitive metadata from response
-                    #if not sensitive_bool:
-                    #    for par_type in ["string", "numerical", "datetime"]:
-                    #        for idxx, parameter in enumerate(hit["_source"]["parameters"][par_type]):
-                    #            is_sensitive = authz.get_obj_parameter(parameter["pn_id"],
-                    #                              hit["_source"]["id"], hit["_index"])
-                    #
-                    #            if is_sensitive.sensitive_metadata:
-                    #                safe_hit["_source"]["parameters"][par_type].pop(idxx)
+                    for idxx, parameter in enumerate(hit["_source"]["parameters"]):
+                        if not sensitive_bool:
+                            if parameter['sensitive']:
+                                hit["_source"]["parameters"].pop(idxx)
+                            else:
+                                hit["_source"]["parameters"][idxx].pop("sensitive")
+
+                        else:
+                            hit["_source"]["parameters"][idxx].pop("sensitive")
 
                     # Append hit to final results if not already in results.
                     # Due to non-identical scores in hits for non-sensitive vs sensitive search,
                     # we require a more complex comparison than just 'is in' as hits are not identical
-                    if safe_hit["_source"]['id'] not in [objj["_source"]['id'] for objj in result_dict[hit["_index"]+"s"]]:
-                        result_dict[hit["_index"]+"s"].append(safe_hit)
+                    if hit["_source"]['id'] not in [objj["_source"]['id'] for objj in result_dict[hit["_index"]+"s"]]:
+                        result_dict[hit["_index"]+"s"].append(hit)
 
 
         def filter_parent_child(result_dict, filter_level):
@@ -516,8 +691,8 @@ def simple_search_public_data(query_text):
     results = ms.execute()
     for item in results:
         for hit in item.hits.hits:
-            safe_hit = hit.copy()
-            safe_hit["_source"].pop("objectacls")
-            result_dict[hit["_index"]+'s'].append(safe_hit)
+            #safe_hit = hit.copy()
+            hit["_source"].pop("objectacls")
+            result_dict[hit["_index"]+'s'].append(hit)
 
     return result_dict

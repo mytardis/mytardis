@@ -38,7 +38,9 @@ const initialState = {
     isLoading: false,
     error:null,
     results:null,
-    activeFilters: []
+    activeFilters: [],
+    selectedType: "experiment",
+    selectedResult: null
 };
 
 const search = createSlice({
@@ -64,11 +66,19 @@ const search = createSlice({
         getResultsStart: (state) => {
             state.isLoading = true;
             state.error = null;
+            state.selectedResult = null;
         },
         getResultsFailure: (state, {payload:error}) => {
             state.isLoading = false;
             state.error = error.toString();
             state.results = null;
+        },
+        updateSelectedType: (state,{payload: selectedType}) => {
+            state.selectedType = selectedType;
+            state.selectedResult = null;
+        },
+        updateSelectedResult: (state, {payload: selectedResult}) => {
+            state.selectedResult = selectedResult;
         }
     }
 })
@@ -197,7 +207,9 @@ export const {
     getResultsStart,
     getResultsSuccess,
     getResultsFailure,
-    updateSearchTerm
+    updateSearchTerm,
+    updateSelectedType,
+    updateSelectedResult
 } = search.actions;
 
 export default search.reducer;
