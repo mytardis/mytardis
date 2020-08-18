@@ -391,16 +391,6 @@ class SearchAppResource(Resource):
 
                                 query_obj = query_obj & query_obj_filt
 
-            excluded_fields_list = ["end_date", "institution", "lead_researcher", "created by",
-                                    "end_time", "update_time", "instrument", "file_extension",
-                                    "modification_time", "parameters.string.pn_id",
-                                    "parameters.numerical.pn_id", "parameters.datetime.pn_id",
-                                    "experiments", 'dataset', 'project', 'objectacls']
-
-                                    #
-                                    #"parameters.string.sensitive","parameters.numerical.sensitive","parameters.datetime.sensitive",
-            if obj != 'dataset':
-                excluded_fields_list.append('description')
 
                             # Fields that are intrinsic to related objects (instruments, users, etc)
                             if target_fieldtype in ['lead_researcher', 'project', 'instrument',
@@ -453,9 +443,16 @@ class SearchAppResource(Resource):
 
                                 query_obj = query_obj & query_obj_filt
 
+            excluded_fields_list = ["end_date", "institution", "lead_researcher", "created by",
+                                    "end_time", "update_time", "instrument", "file_extension",
+                                    "modification_time", "parameters.string.pn_id",
+                                    "parameters.numerical.pn_id", "parameters.datetime.pn_id",
+                                    "experiments", 'dataset', 'project', 'objectacls']
 
-
-
+                                    #
+                                    #"parameters.string.sensitive","parameters.numerical.sensitive","parameters.datetime.sensitive",
+            if obj != 'dataset':
+                excluded_fields_list.append('description')
 
 
             ms = ms.add(Search(index=obj)
@@ -604,7 +601,7 @@ class SearchAppResource(Resource):
                         if all(safe_nested_dfs_dl_bool):
                             hit["_source"]["userDownloadRights"] = 'full'
                         elif any(safe_nested_dfs_dl_bool):
-                            hit["_source"]["userDownloadRights"] = 'some'
+                            hit["_source"]["userDownloadRights"] = 'partial'
                         else:
                             hit["_source"]["userDownloadRights"] = 'none'
 
