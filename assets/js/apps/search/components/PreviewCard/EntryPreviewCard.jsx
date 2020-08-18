@@ -140,6 +140,51 @@ export default function EntryPreviewCard(props) {
                 )
         }
     }
+    /**
+         *
+         * @param {*} data project/exp/datafile/dataset json response data
+         * @param {*} type project/exp/datafile/dataset
+         */
+        const FileCountSummary = (props) => {
+            let { data, type } = props;
+            let summary;
+            let datafilePlural;
+            let datasetPlural;
+            let experimentPlural;
+            if (data.counts) {
+                if (data.counts.datafiles) {
+                    datafilePlural = data.counts.datafiles == 1 ? 'datafile' : 'datafiles';
+                }
+                if (data.counts.datasets) {
+                    datasetPlural = data.counts.datasets == 1 ? 'dataset' : 'datasets';
+                }
+                if (data.counts.experiments) {
+                    experimentPlural = data.counts.experiments == 1 ? 'experiment' : 'experiments';
+                }
+            }
+            switch (type) {
+                case 'project':
+                    summary = `Contains ${data.counts.datafiles} ${datafilePlural} from ${data.counts.datasets} ${datasetPlural}, across ${data.counts.experiments} ${experimentPlural}.`;
+                    break;
+                case 'experiment':
+                    summary = `Contains ${data.counts.datafiles} ${datafilePlural} from ${data.counts.datasets} ${datasetPlural}.`;
+                    break;
+                case 'dataset':
+                    summary = `Contains ${data.counts.datafiles} ${datafilePlural}.`;
+                    break;
+                default:
+                    summary = null;
+                    break;
+            }
+            if (summary) {
+                return (
+                    <div className="preview-card__count-detail">
+                        {summary}
+                    </div>
+                )
+            }
+            return null;
+        }
 
     const ParameterTable = (props) => {
         let { parameters } = props;
@@ -188,6 +233,7 @@ export default function EntryPreviewCard(props) {
             <div className="preview-card__count-detail">
                 {getDataSize(data, type)}
             </div>
+            <FileCountSummary data={data} type={type}></FileCountSummary>
             <div className="preview-card__date-added">
                 Added on the {getDateAdded(data, type)}
             </div>
