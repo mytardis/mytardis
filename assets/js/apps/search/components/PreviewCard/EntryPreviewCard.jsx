@@ -12,7 +12,6 @@ import {
 
 export default function EntryPreviewCard(props) {
     let { data, onClick } = props;
-    console.log(data);
     let type;
     if (data) {
         type = data.type;
@@ -195,7 +194,7 @@ export default function EntryPreviewCard(props) {
             <ParameterTable parameters={data.parameters} />
             <div className="preview-card__button-wrapper--right">
                 <div className="preview-card__inline-block-wrapper">
-                    <Button variant="primary" className="preview-card__button--right" href={data.url}>View details</Button>
+                    <Button variant="primary" className="preview-card__button--right" target="_blank" href={data.url}>View details</Button>
                 </div>
             </div>
         </div>

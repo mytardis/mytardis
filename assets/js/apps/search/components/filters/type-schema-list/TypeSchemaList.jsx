@@ -2,8 +2,8 @@ import React, { useMemo } from 'react';
 import PropTypes from "prop-types";
 import Accordion from 'react-bootstrap/Accordion';
 import Card from 'react-bootstrap/Card';
-import { updateSchemaParameter } from "../filterSlice";
-import { useDispatch } from "react-redux";
+import { updateSchemaParameter, typeAttrSelector } from "../filterSlice";
+import { useDispatch, useSelector } from "react-redux";
 import CategoryFilter from '../category-filter/CategoryFilter';
 import { runSearch } from '../../searchSlice';
 import { mapTypeToFilter } from "../index";
@@ -38,6 +38,7 @@ const SchemaFilterList = ({ schema }) => {
                             <section key={parameterId} className="single-schema-list__filter">
                                 <h5 className="single-schema-list__filter-label">{full_name}</h5>
                                 <ApplicableFilter 
+                                    id={schemaId+"."+parameterId}
                                     value={value}
                                     onValueChange={setParamValue} />
                                 <hr />
@@ -53,7 +54,7 @@ SchemaFilterList.propTypes = {
     schema: PropTypes.object.isRequired 
 }
 
-const TypeSchemaList = ({ value: schemaValue, options, onValueChange }) => {
+export const PureTypeSchemaList = ({ value: schemaValue, onValueChange, options }) => {
     const {allIds : schemasAsList, byId : schemas } = options.schemas || {byId: {}, allIds: []};
     let activeSchemas;
     if (!schemaValue) {
@@ -115,15 +116,31 @@ const TypeSchemaList = ({ value: schemaValue, options, onValueChange }) => {
     );
 };
 
+const TypeSchemaList = ({ typeId }) => {
+    const allIds = useSelector(state => {return state.filters.typeSchemas[typeId]});
+    const { byId } = useSelector(state => (state.filters.schemas)) || { byId: {}};
+    const schemaValue = useSelector((state) => (
+        typeAttrSelector(state.filters, typeId, "schema").value
+    ));
+    const onValueChange =
+        (value) => {
+            batch(() => {
+                dispatch(updateActiveSchemas({ typeId, value }));
+                dispatch(runSearch());
+            });
+        };
+
+    const options = {
+        schemas: {
+            allIds,
+            byId
+        }
+    }
+    return (<PureTypeSchemaList value={schemaValue} onValueChange={onValueChange} options={options} />)
+}
+
 TypeSchemaList.propTypes = {
-    value: PropTypes.object,
-    options: PropTypes.shape({
-        schemas: PropTypes.shape({
-            allIds: PropTypes.array,
-            byId: PropTypes.object
-        })
-    }),
-    onValueChange: PropTypes.func.isRequired
+    typeId: PropTypes.string.isRequired
 };
 
 export default TypeSchemaList;

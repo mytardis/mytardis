@@ -1,5 +1,5 @@
 import React from 'react'
-import TypeSchemaList from './TypeSchemaList';
+import { PureTypeSchemaList } from './TypeSchemaList';
 import { action } from '@storybook/addon-actions';
 import makeMockStore from "../../../util/makeMockStore";
 import { Provider } from "react-redux";
@@ -7,7 +7,7 @@ import { Provider } from "react-redux";
 const mockStore = makeMockStore();
 
 export default {
-  component: TypeSchemaList,
+  component: PureTypeSchemaList,
   title: 'Filters/Type schema list',
   decorators: [story =>   
     <Provider store={mockStore}>
@@ -104,17 +104,17 @@ const noValueProps = Object.assign({}, defaultProps, {
 })
 
 export const Default = () => (
-    <TypeSchemaList {...defaultProps} />
+  <PureTypeSchemaList {...defaultProps} />
 );
 
 export const OnlyOneSelected = () => (
-    <TypeSchemaList {...onlyOneSchemaSelectedProps} />
+  <PureTypeSchemaList {...onlyOneSchemaSelectedProps} />
 );
 
 export const NoSchemaSelected = () => (
-  <TypeSchemaList {...noSchemaSelectedProps} />
+  <PureTypeSchemaList {...noSchemaSelectedProps} />
 );
 
 export const NoSchemas = () => (
-    <TypeSchemaList {...noValueProps} />
+  <PureTypeSchemaList {...noValueProps} />
 )

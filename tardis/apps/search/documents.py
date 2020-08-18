@@ -2,6 +2,7 @@ import logging
 
 from django.contrib.auth.models import User
 from django.db.models.signals import post_save
+from django.dispatch import receiver
 from elasticsearch_dsl import analysis, analyzer
 from django_elasticsearch_dsl import Document, fields
 from django_elasticsearch_dsl.registries import registry
@@ -12,6 +13,7 @@ from tardis.tardis_portal.models import Project, Dataset, Experiment, \
     ProjectParameterSet, ExperimentParameterSet, DatasetParameterSet, \
     DatafileParameterSet
 
+from tardis.tardis_portal.tests import suspendingreceiver
 
 logger = logging.getLogger(__name__)
 
@@ -382,7 +384,10 @@ class DataFileDocument(Document):
             return DataFile.objects.filter(datafileparameterset__schema__parametername=related_instance)
         return None
 
-
+@suspendingreceiver(post_save, sender=Project)
+@suspendingreceiver(post_save, sender=Experiment)
+@suspendingreceiver(post_save, sender=Dataset)
+@suspendingreceiver(post_save, sender=DataFile)
 def update_search(instance, **kwargs):
     if isinstance(instance, Project):
         instance.to_search().save()
@@ -392,8 +397,3 @@ def update_search(instance, **kwargs):
         instance.to_search().save()
     if isinstance(instance, DataFile):
         instance.to_search().save()
-
-post_save.connect(update_search, sender=Project)
-post_save.connect(update_search, sender=Experiment)
-post_save.connect(update_search, sender=Dataset)
-post_save.connect(update_search, sender=DataFile)

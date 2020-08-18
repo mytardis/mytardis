@@ -26,8 +26,8 @@ export const dateRangeFilterData = {
         }
     ],
     onValueChange: action("Value changed"),
+    id: "cidEnergy",
     options: {
-        name: "cidEnergy",
         hintStart: "Start date",
         hintEnd: "End date"
     },

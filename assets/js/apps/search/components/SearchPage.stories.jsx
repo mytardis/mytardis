@@ -61,6 +61,7 @@ export const searchInfoData = {
     isLoading: false,
     error:null,
     results: searchResultsData,
+    selectedType: "experiment"
 }
 
 export const errorData = Object.assign({},searchInfoData,{

@@ -11,8 +11,7 @@
 }
 
 .filter-column, .result-column {
-    max-height: 1000px;
-    max-height: 70vh;
+    height: 70vh;
     overflow-y: auto;
     justify-items: space-between;
 }
@@ -27,4 +26,13 @@
 .result-column {
     flex: 1 0 600px;
     margin-left: 20px;
+    /*
+        In order to show search result list and entry preview card take up
+        all of available space, we use the column-direction flexbox. 
+    */
+    display: flex;
+    flex-direction: column;
+    /* Make overflow hidden here so result list and entry preview card scrollable
+       independently. */
+    overflow: hidden
 }

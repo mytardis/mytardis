@@ -70,11 +70,11 @@ const toLocalValue = submitValue => {
     return localValue;
 }
 
-const DateRangeFilter = ({ value, options, onValueChange }) => {
+const DateRangeFilter = ({ id, value, options, onValueChange }) => {
     // Make a copy of the options first.
     options = Object.assign({},options);
-    if (!options.name) {
-        options.name = "missingFilterName";
+    if (!id) {
+        id = "missingFilterName";
     }
     if (!options.hintStart) {
         options.hintStart = "MM/DD/YYYY";
@@ -136,8 +136,8 @@ const DateRangeFilter = ({ value, options, onValueChange }) => {
     };
 
     // Give the input boxes ids so labels can be tied back to the field.
-    const startFieldId = "start-"+options.name,
-        endFieldId = "end-"+options.name;
+    const startFieldId = "start-"+id,
+        endFieldId = "end-"+id;
 
     return (
         <Form className="date-range-filter" onSubmit={handleSubmit}>
@@ -180,10 +180,14 @@ const DateRangeFilter = ({ value, options, onValueChange }) => {
 }
 
 DateRangeFilter.propTypes = {
+    id: PropTypes.string.isRequired,
     value: PropTypes.array,
     options: PropTypes.shape({
-        name: PropTypes.string.isRequired
-    }).isRequired,
+        hideStart: PropTypes.bool,
+        hideEnd: PropTypes.bool,
+        hintStart: PropTypes.string,
+        hintEnd: PropTypes.string
+    }),
     onValueChange: PropTypes.func.isRequired
 }
 

@@ -12,6 +12,8 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.utils.encoding import python_2_unicode_compatible
 
+from ..tests import suspendingreceiver
+
 
 @python_2_unicode_compatible
 class UserProfile(models.Model):
@@ -296,7 +298,7 @@ def create_user_api_key(sender, **kwargs):
     from tastypie.models import create_api_key
     create_api_key(User, **kwargs)
 
-
+@suspendingreceiver(post_save, sender=ObjectACL)
 def delete_if_all_false(instance, **kwargs):
     if not any([instance.canRead, instance.canDownload, instance.canWrite,
                 instance.canDelete, instance.canSensitive, instance.isOwner]):
@@ -304,6 +306,3 @@ def delete_if_all_false(instance, **kwargs):
 
 if getattr(settings, 'AUTOGENERATE_API_KEY', False):
     post_save.connect(create_user_api_key, sender=User, weak=False)
-
-
-post_save.connect(delete_if_all_false, sender=ObjectACL)

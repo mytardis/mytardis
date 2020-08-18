@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { Fragment } from 'react';
 import Tabs from "react-bootstrap/Tabs";
 import Tab from 'react-bootstrap/Tab';
 import { OBJECT_TYPE_STICKERS } from '../../TabStickers/TabSticker'
@@ -27,7 +27,7 @@ function TypeAttributeFilter({typeId, attributeId}) {
   return (
     <section>
       <h3 className="h5">{attribute.full_name}</h3>
-      <ApplicableFilter value={attribute.value} onValueChange={setFilterValue} options={attribute.options} />
+      <ApplicableFilter id={typeId+"."+attributeId} value={attribute.value} onValueChange={setFilterValue} options={attribute.options} />
     </section>
   )
 }
@@ -41,8 +41,29 @@ TypeAttributeFilter.propTypes = {
 
 }
 
+export function TypeAttributesList({ typeId }) {
+  const attributeIds = useSelector(state => (
+    // Get all type attributes IDs except for schema.
+    allTypeAttrIdsSelector(state.filters, typeId).filter(filterId => (filterId !== "schema"))
+  ));
+
+  return (
+    <>
+      {
+        attributeIds.map(
+          id => (
+            <Fragment key={id}>
+              <TypeAttributeFilter typeId={typeId} attributeId={id} />
+              <hr />
+            </Fragment>
+          )
+        )
+      }
+    </>
+  );
+}
+
 export function PureFiltersSection({ types, schemas, typeSchemas, isLoading, error }) {
-  const dispatch = useDispatch();
 
   if (isLoading) {
     return <p>Loading filters...</p>
@@ -61,43 +82,12 @@ export function PureFiltersSection({ types, schemas, typeSchemas, isLoading, err
       <Tabs defaultActiveKey="projects" id="filters-section">
         {
           types.allIds.map(type => {
-            const Sticker = OBJECT_TYPE_STICKERS[type],
-              schemaFiltersOptions = {
-                schemas:
-                {
-                  allIds: typeSchemas[type],
-                  byId: schemas.byId
-                }
-              },
-              onActiveSchemaChange = useCallback(
-                (value) => {
-                  batch(() => {
-                    dispatch(updateActiveSchemas({typeId: type ,value}));
-                    dispatch(runSearch());
-                  });
-                }, [dispatch]),
-              activeSchemas = useSelector((state) => (
-                typeAttrSelector(state.filters, type, "schema").value
-              )),
-              attributeIds = useSelector(state => (
-                // Get all type attributes IDs except for schema.
-                allTypeAttrIdsSelector(state.filters,type).filter(filterId => (filterId !== "schema"))
-              ));
+            const Sticker = OBJECT_TYPE_STICKERS[type];
+
             return (
-              <Tab eventKey={type} title={<Sticker />}>
-                {attributeIds.map(
-                  id => (
-                    <>
-                    <TypeAttributeFilter typeId={type} attributeId={id} />
-                    <hr />
-                    </>
-                  )
-                )}
-                <TypeSchemaList
-                  value={activeSchemas}
-                  options={schemaFiltersOptions}
-                  onValueChange={onActiveSchemaChange}
-                />
+              <Tab key={type} eventKey={type} title={<Sticker />}>
+                <TypeAttributesList typeId={type} />
+                <TypeSchemaList typeId={type} />
               </Tab>
             );
           })
@@ -118,7 +108,7 @@ PureFiltersSection.propTypes = {
   }),
   typeSchemas: PropTypes.object,
   isLoading: PropTypes.bool.isRequired,
-  error: PropTypes.object
+  error: PropTypes.string
 }
 
 export default function FiltersSection() {

@@ -3,8 +3,8 @@ import { render, fireEvent, waitFor, screen } from '@testing-library/react';
 
 const getDateFields = (screen) => (
     [
-        screen.getByLabelText("Start date"), 
-        screen.getByLabelText("End date"),
+        screen.getByLabelText("Start"), 
+        screen.getByLabelText("End"),
         screen.getByText("Filter")
     ]
 )

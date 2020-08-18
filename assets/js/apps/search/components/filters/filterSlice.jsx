@@ -6,7 +6,7 @@ const initialState = {
     types: TYPE_ATTRIBUTES,
     typeSchemas: null,
     schemas: {
-        byId: null,
+        byId: {},
         allIds: []
     },
     activeFilters: [],
