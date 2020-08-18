@@ -336,6 +336,7 @@ class SearchAppResource(Resource):
                                 elif filter["type"] == "DATETIME":
                                         query_obj_filt = Q({"range": {target_fieldtype: {oper:filter["content"]}}})
 
+
                                 query_obj = query_obj & query_obj_filt
 
 
@@ -400,6 +401,62 @@ class SearchAppResource(Resource):
                                     #"parameters.string.sensitive","parameters.numerical.sensitive","parameters.datetime.sensitive",
             if obj != 'dataset':
                 excluded_fields_list.append('description')
+
+                            # Fields that are intrinsic to related objects (instruments, users, etc)
+                            if target_fieldtype in ['lead_researcher', 'project', 'instrument',
+                                                    'institution', 'experiments', 'dataset']:
+                                nested_fieldtype = filter["target"][2]
+
+                                if isinstance(filter["content"], list):
+                                    Qdict = {"should" : []}
+                                    for option in filter["content"]:
+                                        qry = Q(
+                                            {"nested" : {
+                                                "path":target_fieldtype, "query": Q(
+                                                        {oper: {".".join([target_fieldtype,nested_fieldtype]):option}}
+                                                )
+                                            }})
+                                        Qdict["should"].append(qry)
+                                    query_obj_filt = Q({"bool" : Qdict})
+                                else:
+                                    query_obj_filt = Q(
+                                        {"nested" : {
+                                            "path":target_fieldtype, "query": Q(
+                                                    {oper: {".".join([target_fieldtype,nested_fieldtype]):filter["content"]}}
+                                            )
+                                        }})
+
+                                if target_fieldtype == 'lead_researcher':
+                                    Qdict_lr = {"should" : [query_obj_filt]}
+
+                                    if isinstance(filter["content"], list):
+                                        Qdict = {"should" : []}
+                                        for option in filter["content"]:
+                                            qry = Q(
+                                                {"nested" : {
+                                                    "path":target_fieldtype, "query": Q(
+                                                            {'term': {".".join([target_fieldtype,'username']):option}}
+                                                    )
+                                                }})
+                                            Qdict["should"].append(qry)
+                                        query_obj_filt = Q({"bool" : Qdict})
+                                    else:
+                                        query_obj_filt = Q(
+                                            {"nested" : {
+                                                "path":target_fieldtype, "query": Q(
+                                                        {'term': {".".join([target_fieldtype,'username']):filter["content"]}}
+                                                )
+                                            }})
+                                    Qdict_lr["should"].append(query_obj_filt)
+                                    query_obj_filt = Q({"bool" : Qdict_lr})
+
+
+                                query_obj = query_obj & query_obj_filt
+
+
+
+
+
 
             ms = ms.add(Search(index=obj)
                         .extra(size=MAX_SEARCH_RESULTS, min_score=MIN_CUTOFF_SCORE)
@@ -495,6 +552,7 @@ class SearchAppResource(Resource):
                     #safe_hit = hit.copy()
 
                     # Remove ACLs and add size to repsonse
+
                     #hit["_source"].pop("objectacls")
                     #hit["_source"].pop("parameters")
                     param_list = []

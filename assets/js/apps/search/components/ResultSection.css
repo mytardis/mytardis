@@ -20,6 +20,7 @@
     padding: 1em;
     padding-bottom: 2em;
     background-color: white;
+
 }
 
 .tabpanel__container--horizontal {
@@ -52,3 +53,4 @@
     color: #212529;
     background-color: rgba(0, 0, 0, 0.075);
 }
+
