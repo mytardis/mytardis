@@ -131,7 +131,7 @@ member_perms = [view_project_perm,
 
 def get_user_from_upi(upi):
     server = ldap3.Server(settings.LDAP_URL)
-    search_filter = f'({settings.LDAP_USER_LOGIN_ATTR}={upi})'
+    search_filter = "({}={})".format(settings.LDAP_USER_LOGIN_ATTR, upi)
     with ldap3.Connection(server,
                           auto_bind=True,
                           user=settings.LDAP_ADMIN_USER,
@@ -140,12 +140,12 @@ def get_user_from_upi(upi):
                           search_filter,
                           attributes=['*'])
         if len(connection.entries) > 1:
-            error_message = f'More than one person with {settings.LDAP_USER_LOGIN_ATTR}: {upi} has been found in the LDAP'
+            error_message = "More than one person with {}: {} has been found in the LDAP".format(settings.LDAP_USER_LOGIN_ATTR, upi)
             if logger:
                 logger.error(error_message)
             raise Exception(error_message)
         elif len(connection.entries) == 0:
-            error_message = f'No one with {settings.LDAP_USER_LOGIN_ATTR}: {upi} has been found in the LDAP'
+            error_message = "No one with {}: {} has been found in the LDAP".format(settings.LDAP_USER_LOGIN_ATTR, upi)
             if logger:
                 logger.warning(error_message)
             return None
@@ -1221,7 +1221,7 @@ class ExperimentResource(MyTardisModelResource):
                 # Each member group is defined by a tuple
                 # (group_name, sensitive[T/F], download[T/F])
                 # unpack for ACLs
-                logger.error(f'Groups to append: {member_groups}')
+                logger.error("Groups to append: {}".format(member_groups))
             if member_groups != []:
                 for grp in member_groups:
                     grp_name = grp[0]
@@ -1310,7 +1310,7 @@ class ExperimentResource(MyTardisModelResource):
                             new_user = get_user_from_upi(member_name)
                             if not new_user:
                                 logger.error(
-                                    f'No one found for upi: {member_name}')
+                                    "No one found for upi: {}".format(member_name))
                             user = User.objects.create(username=new_user['username'],
                                                        first_name=new_user['first_name'],
                                                        last_name=new_user['last_name'],
@@ -1354,7 +1354,7 @@ class ExperimentResource(MyTardisModelResource):
                                sensitive=sensitive,
                                admin=False)
         for group in experiment_groups:
-            logger.error(f'Creating group admin for {group}')
+            logger.error("Creating group admin for {}".format(group))
             group_admin, _ = GroupAdmin.objects.get_or_create(user=bundle.request.user,
                                                               group=group)
             for admin in experiment_admin_groups:
