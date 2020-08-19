@@ -1,4 +1,5 @@
 {% extends "tardis_portal/portal_template.html" %}
+{% load render_bundle from webpack_loader %}
 {% load experiment_tags %}
 {% load experimentstats %}
 {% load humanize %}
@@ -48,12 +49,7 @@
                     </a>
                   </div>
                   <div class="col">
-                    <ul class="list-inline float-right list-unstyled">
-                      <li class="list-inline-item m-0">{{ exp|experiment_last_updated_badge }}</li>
-                      <li class="list-inline-item m-0">{{ exp|experiment_datasets_badge }}</li>
-                      <li class="list-inline-item m-0">{{ exp|experiment_datafiles_badge }}</li>
-                      <li class="list-inline-item m-0">{{ exp|experiment_public_access_badge }}</li>
-                    </ul>
+                    <div class="badges" id="badge-{{exp.id}}"></div>
                   </div>
                 </div> {% comment %} class="row" {% endcomment %}
                 <div class="row">
@@ -150,4 +146,5 @@ $(function() {
     });
 });
 </script>
+{% render_bundle 'index_page_badges' %}
 {% endblock %}
