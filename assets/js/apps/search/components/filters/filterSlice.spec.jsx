@@ -11,39 +11,51 @@ const mockStoreState = {
         byId: {
             projects: {
                 attributes: {
-                    schema: {},
+                    byId: {
+                        schema: {},
+                    },
+                    allIds: ["schema"]
                 }
             },
             experiments: {
                 attributes: {
-                    schema: {
-                        value: {
-                            op: "is",
-                            content: ["1"]
+                    byId: {
+                        schema: {
+                            value: {
+                                op: "is",
+                                content: ["1"]
+                            }
+                        },
+                        createdDate: {
+                            data_type: "DATETIME",
+                            id: "createdDate",
+                            full_name: "Created Date",
+                            value: null
                         }
                     },
-                    createdDate: {
-                        data_type: "DATETIME",
-                        id: "createdDate",
-                        full_name: "Created Date",
-                        value: null
-                    }
+                    allIds: ["schema","createdDate"]
                 }
             },
             datasets: {
                 attributes: {
-                    schema: {},
-                    createdDate: {
-                        data_type: "DATETIME",
-                        id: "createdDate",
-                        full_name: "Created Date",
-                        value: { op: ">=", content: "2020-01-01" }
-                    }
+                    byId: {
+                        schema: {},
+                        createdDate: {
+                            data_type: "DATETIME",
+                            id: "createdDate",
+                            full_name: "Created Date",
+                            value: { op: ">=", content: "2020-01-01" }
+                        }
+                    },
+                    allIds: ["schema","createdDate"]
                 }
             },
             datafiles: {
                 attributes: {
-                    schema: {}
+                    byId: {
+                        schema: {}
+                    },
+                    allIds: ["schema"]
                 }
             }
         },
@@ -170,15 +182,12 @@ const mockStoreState = {
     activeFilters: [{
         kind: 'typeAttribute',
         target: ['datasets', 'createdDate'],
-        type: 'STRING'
     }, {
         kind: 'schemaParameter',
         target: ['2', '4'],
-        type: 'STRING'
     }, {
         kind: 'typeAttribute',
         target: ['experiments','schema'],
-        type: 'STRING'
     }],
     isLoading: false,
     error: null
@@ -193,10 +202,9 @@ describe('Type attribute reducer', () => {
             expectedNewState = createNextState(mockStoreState, draft => {
                 draft.activeFilters.push({
                     kind: 'typeAttribute',
-                    target: [type, attribute],
-                    type: "DATETIME"
+                    target: [type, attribute]
                 });
-                draft.types.byId[type].attributes.createdDate.value = newValue
+                draft.types.byId[type].attributes.byId.createdDate.value = newValue
             });
         expect(reducer(mockStoreState, updateTypeAttribute({
             typeId: type,
@@ -215,7 +223,7 @@ describe('Type attribute reducer', () => {
                         f.target[0] != "datasets" && f.target[1] != "createdDate"
                     )
                 );
-                draft.types.byId[type].attributes.createdDate.value = newValue;
+                draft.types.byId[type].attributes.byId.createdDate.value = newValue;
             });
         expect(reducer(mockStoreState, updateTypeAttribute({
             typeId: type,
@@ -229,7 +237,7 @@ describe('Type attribute reducer', () => {
             attribute = "createdDate",
             newValue = { op: ">=", content: "2020-03-03" },
             expectedNewState = createNextState(mockStoreState, draft => {
-                draft.types.byId[type].attributes.createdDate.value = newValue;
+                draft.types.byId[type].attributes.byId.createdDate.value = newValue;
             });
         expect(reducer(mockStoreState, updateTypeAttribute({
             typeId: type,
@@ -247,8 +255,7 @@ describe('Schema parameter reducer', () => {
             expectedNewState = createNextState(mockStoreState, draft => {
                 draft.activeFilters.push({
                     kind: "schemaParameter",
-                    target: [schema, parameter],
-                    type: "STRING"
+                    target: [schema, parameter]
                 });
                 draft.schemas.byId[schema].parameters[parameter].value = newValue;
             });
@@ -299,11 +306,10 @@ describe('Active schema reducer', () => {
         const typeId = "datasets",
             value = {op: "is",content:["2"]},
             expectedNewState = createNextState(mockStoreState, draft => {
-                draft.types.byId[typeId].attributes.schema.value = value;
+                draft.types.byId[typeId].attributes.byId.schema.value = value;
                 draft.activeFilters.push({
                     kind: "typeAttribute",
-                    target: [typeId, "schema"],
-                    type: "STRING"
+                    target: [typeId, "schema"]
                 });
         });
         expect(reducer(mockStoreState, updateActiveSchemas({
@@ -316,7 +322,7 @@ describe('Active schema reducer', () => {
         const typeId = "experiments",
             value = null,
             expectedNewState = createNextState(mockStoreState, draft => {
-                draft.types.byId[typeId].attributes.schema.value = value;
+                draft.types.byId[typeId].attributes.byId.schema.value = value;
                 draft.activeFilters = draft.activeFilters.filter( filter => (
                     !(
                         filter.kind === "typeAttribute" &&
@@ -335,11 +341,10 @@ describe('Active schema reducer', () => {
         const typeId = "datasets",
             value = {op: "is",content:["14"]},
             expectedNewState = createNextState(mockStoreState, draft => {
-                draft.types.byId[typeId].attributes.schema.value = value;
+                draft.types.byId[typeId].attributes.byId.schema.value = value;
                 draft.activeFilters.push({
                     kind: "typeAttribute",
-                    target: [typeId, "schema"],
-                    type: "STRING"
+                    target: [typeId, "schema"]
                 });
                 // The parameter associated with the schema ID "2" should now be removed
                 // Because schema ID "2" is also a dataset schema.

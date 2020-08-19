@@ -62,8 +62,6 @@ const loadingProps = Object.assign({},errorProps,{
 
 export const experimentListData = [allAccessResultData, someAccessResultData, viewOnlyResultData];
 
-console.log(experimentListData);
-
 export const Default = () => (
     <PureResultList {...getResultsProps(experimentListData)} />
 )

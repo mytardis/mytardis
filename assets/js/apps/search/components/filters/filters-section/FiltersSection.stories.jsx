@@ -17,30 +17,38 @@ export const filtersData = {
     byId: {
         projects: {
           attributes: {
-          schema: {
-            value:{op:"is",content:["1"]}
-          }
+            byId: {
+              schema: {
+                value:{op:"is",content:["1"]}
+            }
+          }, allIds: ['schema']
         }
       },
       experiments: {
         attributes: {
-          schema: {
-            value:{op:"is",content:["2"]}
-          }
+          byId: {
+            schema: {
+              value:{op:"is",content:["2"]}
+            }
+          }, allIds: ['schema']
         }
       },
       datasets: {
         attributes: {
-          schema: {
-            value: {op:"is",content:["1"]}
-          }
+          byId: {
+            schema: {
+              value: {op:"is",content:["1"]}
+            }
+          }, allIds: ['schema']
         }
       },
       datafiles: {
         attributes: {
-          schema: {
-            value:{op:"is",content:["1","2"]}
-          }
+          byId: {
+            schema: {
+              value:{op:"is",content:["1","2"]}
+            }
+          }, allIds: ['schema']
         }
       }
     },

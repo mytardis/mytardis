@@ -1,5 +1,588 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`Storyshots EntryPreviewCard Data File 1`] = `
+<div
+  style={
+    Object {
+      "border": "2px solid black",
+    }
+  }
+>
+  <div
+    className="preview-card__body"
+  >
+    <span
+      aria-label="Close preview panel"
+      className="preview-card__close"
+    />
+    <div
+      className="preview-card__header"
+    >
+      <div>
+        <div
+          className="tab-sticker"
+          style={
+            Object {
+              "backgroundColor": "#70ffae",
+            }
+          }
+        >
+          <div
+            className="tab-stick--content"
+          >
+            DF
+          </div>
+        </div>
+      </div>
+      <h5>
+        Mikes_test_datafile_1
+      </h5>
+    </div>
+    <div
+      className="preview-card__access-status"
+    >
+      <span
+        aria-label="This item can be downloaded."
+      >
+        <svg
+          fill="none"
+          height="1em"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="2"
+          style={
+            Object {
+              "color": undefined,
+            }
+          }
+          viewBox="0 0 24 24"
+          width="1em"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <rect
+            height="11"
+            rx="2"
+            ry="2"
+            width="18"
+            x="3"
+            y="11"
+          />
+          <path
+            d="M7 11V7a5 5 0 0 1 9.9-1"
+          />
+        </svg>
+      </span>
+      Full access
+    </div>
+    <div
+      className="preview-card__count-detail"
+    >
+      460.3 KB.
+    </div>
+    <div
+      className="preview-card__date-added"
+    >
+      Added on the 
+      Unknown
+    </div>
+    <table
+      className="preview-card__parameter-table table table-sm table-striped table-bordered table-hover"
+    >
+      <thead>
+        <tr>
+          <th>
+            Parameter
+          </th>
+          <th>
+            Value
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr
+          className="parameter-table__row"
+        >
+          <td>
+            12
+          </td>
+          <td>
+            My name is
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <div
+      className="preview-card__button-wrapper--right"
+    >
+      <div
+        className="preview-card__inline-block-wrapper"
+      >
+        <a
+          className="preview-card__button--right btn btn-primary"
+          href="idk/"
+          onClick={[Function]}
+          onKeyDown={[Function]}
+          target="_blank"
+        >
+          View details
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`Storyshots EntryPreviewCard Data Set 1`] = `
+<div
+  style={
+    Object {
+      "border": "2px solid black",
+    }
+  }
+>
+  <div
+    className="preview-card__body"
+  >
+    <span
+      aria-label="Close preview panel"
+      className="preview-card__close"
+    />
+    <div
+      className="preview-card__header"
+    >
+      <div>
+        <div
+          className="tab-sticker"
+          style={
+            Object {
+              "backgroundColor": "#ffcce8",
+            }
+          }
+        >
+          <div
+            className="tab-stick--content"
+          >
+            DS
+          </div>
+        </div>
+      </div>
+      <h5>
+        Some ACL-testing dataset #1
+      </h5>
+    </div>
+    <div
+      className="preview-card__access-status"
+    >
+      <span
+        aria-label="This item can be downloaded."
+      >
+        <svg
+          fill="none"
+          height="1em"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="2"
+          style={
+            Object {
+              "color": undefined,
+            }
+          }
+          viewBox="0 0 24 24"
+          width="1em"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M21.21 15.89A10 10 0 1 1 8 2.83"
+          />
+          <path
+            d="M22 12A10 10 0 0 0 12 2v10z"
+          />
+        </svg>
+      </span>
+      Partial access
+    </div>
+    <div
+      className="preview-card__count-detail"
+    >
+      460.3 KB.
+    </div>
+    <div
+      className="preview-card__date-added"
+    >
+      Added on the 
+      7th May 2020.
+    </div>
+    <table
+      className="preview-card__parameter-table table table-sm table-striped table-bordered table-hover"
+    >
+      <thead>
+        <tr>
+          <th>
+            Parameter
+          </th>
+          <th>
+            Value
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr
+          className="parameter-table__row"
+        >
+          <td>
+            4
+          </td>
+          <td>
+            My Name
+          </td>
+        </tr>
+        <tr
+          className="parameter-table__row"
+        >
+          <td>
+            5
+          </td>
+          <td>
+            is
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <div
+      className="preview-card__button-wrapper--right"
+    >
+      <div
+        className="preview-card__inline-block-wrapper"
+      >
+        <a
+          className="preview-card__button--right btn btn-primary"
+          href="idk/"
+          onClick={[Function]}
+          onKeyDown={[Function]}
+          target="_blank"
+        >
+          View details
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`Storyshots EntryPreviewCard Experiment 1`] = `
+<div
+  style={
+    Object {
+      "border": "2px solid black",
+    }
+  }
+>
+  <div
+    className="preview-card__body"
+  >
+    <span
+      aria-label="Close preview panel"
+      className="preview-card__close"
+    />
+    <div
+      className="preview-card__header"
+    >
+      <div>
+        <div
+          className="tab-sticker"
+          style={
+            Object {
+              "backgroundColor": "#abe2ff",
+            }
+          }
+        >
+          <div
+            className="tab-stick--content"
+          >
+            E
+          </div>
+        </div>
+      </div>
+      <h5>
+        Test_ACLs
+      </h5>
+    </div>
+    <div
+      className="preview-card__access-status"
+    >
+      <span
+        aria-label="This item can be downloaded."
+      >
+        <svg
+          fill="none"
+          height="1em"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="2"
+          style={
+            Object {
+              "color": undefined,
+            }
+          }
+          viewBox="0 0 24 24"
+          width="1em"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M21.21 15.89A10 10 0 1 1 8 2.83"
+          />
+          <path
+            d="M22 12A10 10 0 0 0 12 2v10z"
+          />
+        </svg>
+      </span>
+      Partial access
+    </div>
+    <div
+      className="preview-card__count-detail"
+    >
+      460.3 KB.
+    </div>
+    <div
+      className="preview-card__date-added"
+    >
+      Added on the 
+      7th May 2020.
+    </div>
+    <table
+      className="preview-card__parameter-table table table-sm table-striped table-bordered table-hover"
+    >
+      <thead>
+        <tr>
+          <th>
+            Parameter
+          </th>
+          <th>
+            Value
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr
+          className="parameter-table__row"
+        >
+          <td>
+            1
+          </td>
+          <td>
+            kiwi
+          </td>
+        </tr>
+        <tr
+          className="parameter-table__row"
+        >
+          <td>
+            3
+          </td>
+          <td>
+            forbidden fruit
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <div
+      className="preview-card__button-wrapper--right"
+    >
+      <div
+        className="preview-card__inline-block-wrapper"
+      >
+        <a
+          className="preview-card__button--right btn btn-primary"
+          href="idk/"
+          onClick={[Function]}
+          onKeyDown={[Function]}
+          target="_blank"
+        >
+          View details
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`Storyshots EntryPreviewCard No Preview Data 1`] = `
+<div
+  style={
+    Object {
+      "border": "2px solid black",
+    }
+  }
+>
+  <div
+    className="preview-card__body"
+  >
+    Please select a row to view the details.
+  </div>
+</div>
+`;
+
+exports[`Storyshots EntryPreviewCard Project 1`] = `
+<div
+  style={
+    Object {
+      "border": "2px solid black",
+    }
+  }
+>
+  <div
+    className="preview-card__body"
+  >
+    <span
+      aria-label="Close preview panel"
+      className="preview-card__close"
+    />
+    <div
+      className="preview-card__header"
+    >
+      <div>
+        <div
+          className="tab-sticker"
+          style={
+            Object {
+              "backgroundColor": "#f7db8d",
+            }
+          }
+        >
+          <div
+            className="tab-stick--content"
+          >
+            P
+          </div>
+        </div>
+      </div>
+      <h5>
+        Mikes_ACL_Project
+      </h5>
+    </div>
+    <div
+      className="preview-card__access-status"
+    >
+      <span
+        aria-label="This item can be downloaded."
+      >
+        <svg
+          fill="none"
+          height="1em"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="2"
+          style={
+            Object {
+              "color": undefined,
+            }
+          }
+          viewBox="0 0 24 24"
+          width="1em"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M21.21 15.89A10 10 0 1 1 8 2.83"
+          />
+          <path
+            d="M22 12A10 10 0 0 0 12 2v10z"
+          />
+        </svg>
+      </span>
+      Partial access
+    </div>
+    <div
+      className="preview-card__count-detail"
+    >
+      460.3 KB.
+    </div>
+    <div
+      className="preview-card__date-added"
+    >
+      Added on the 
+      7th May 2020.
+    </div>
+    <table
+      className="preview-card__parameter-table table table-sm table-striped table-bordered table-hover"
+    >
+      <thead>
+        <tr>
+          <th>
+            Parameter
+          </th>
+          <th>
+            Value
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr
+          className="parameter-table__row"
+        >
+          <td>
+            18
+          </td>
+          <td>
+            
+          </td>
+        </tr>
+        <tr
+          className="parameter-table__row"
+        >
+          <td>
+            19
+          </td>
+          <td>
+            7.0
+          </td>
+        </tr>
+        <tr
+          className="parameter-table__row"
+        >
+          <td>
+            15
+          </td>
+          <td>
+            Kiwi
+          </td>
+        </tr>
+        <tr
+          className="parameter-table__row"
+        >
+          <td>
+            16
+          </td>
+          <td>
+            Orange
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <div
+      className="preview-card__button-wrapper--right"
+    >
+      <div
+        className="preview-card__inline-block-wrapper"
+      >
+        <a
+          className="preview-card__button--right btn btn-primary"
+          href="idk/"
+          onClick={[Function]}
+          onKeyDown={[Function]}
+          target="_blank"
+        >
+          View details
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
 exports[`Storyshots Filter sidebar Default 1`] = `
 <div
   style={
@@ -32,9 +615,11 @@ exports[`Storyshots Filter sidebar Default 1`] = `
       </button>
     </form>
     <section>
-      <h3>
+      <h2
+        className="h3"
+      >
         Filters
-      </h3>
+      </h2>
       <nav
         className="nav nav-tabs"
         onKeyDown={[Function]}
@@ -158,12 +743,12 @@ exports[`Storyshots Filter sidebar Default 1`] = `
           id="filters-section-tabpane-projects"
           role="tabpanel"
         >
-          <div>
-            <h4
-              className="type-schema-list__title"
+          <section>
+            <h3
+              className="h5"
             >
-              Show me
-            </h4>
+              Schemas
+            </h3>
             <div
               className="form-group"
             >
@@ -214,9 +799,15 @@ exports[`Storyshots Filter sidebar Default 1`] = `
               >
                 <div
                   className="card-header"
-                  onClick={[Function]}
                 >
-                  Raw data
+                  <button
+                    className="btn btn-link"
+                    onClick={[Function]}
+                    type="button"
+                  >
+                    Raw data
+                     filters
+                  </button>
                 </div>
                 <div
                   aria-expanded={null}
@@ -225,7 +816,7 @@ exports[`Storyshots Filter sidebar Default 1`] = `
                   <div
                     className="card-body"
                   >
-                    <div
+                    <section
                       className="single-schema-list__filter"
                     >
                       <h5
@@ -245,6 +836,7 @@ exports[`Storyshots Filter sidebar Default 1`] = `
                             className="form-control"
                             onChange={[Function]}
                             placeholder=""
+                            value=""
                           />
                           <div
                             className="input-group-append"
@@ -252,7 +844,7 @@ exports[`Storyshots Filter sidebar Default 1`] = `
                             <button
                               aria-label="Filter results"
                               className="btn btn-outline-secondary"
-                              disabled={true}
+                              disabled={false}
                               type="submit"
                             >
                               Filter
@@ -261,8 +853,8 @@ exports[`Storyshots Filter sidebar Default 1`] = `
                         </div>
                       </form>
                       <hr />
-                    </div>
-                    <div
+                    </section>
+                    <section
                       className="single-schema-list__filter"
                     >
                       <h5
@@ -282,6 +874,7 @@ exports[`Storyshots Filter sidebar Default 1`] = `
                             className="form-control"
                             onChange={[Function]}
                             placeholder=""
+                            value=""
                           />
                           <div
                             className="input-group-append"
@@ -289,7 +882,7 @@ exports[`Storyshots Filter sidebar Default 1`] = `
                             <button
                               aria-label="Filter results"
                               className="btn btn-outline-secondary"
-                              disabled={true}
+                              disabled={false}
                               type="submit"
                             >
                               Filter
@@ -298,8 +891,8 @@ exports[`Storyshots Filter sidebar Default 1`] = `
                         </div>
                       </form>
                       <hr />
-                    </div>
-                    <div
+                    </section>
+                    <section
                       className="single-schema-list__filter"
                     >
                       <h5
@@ -319,6 +912,7 @@ exports[`Storyshots Filter sidebar Default 1`] = `
                             className="form-control"
                             onChange={[Function]}
                             placeholder=""
+                            value=""
                           />
                           <div
                             className="input-group-append"
@@ -326,7 +920,7 @@ exports[`Storyshots Filter sidebar Default 1`] = `
                             <button
                               aria-label="Filter results"
                               className="btn btn-outline-secondary"
-                              disabled={true}
+                              disabled={false}
                               type="submit"
                             >
                               Filter
@@ -335,12 +929,12 @@ exports[`Storyshots Filter sidebar Default 1`] = `
                         </div>
                       </form>
                       <hr />
-                    </div>
+                    </section>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
+          </section>
         </div>
         <div
           aria-hidden={true}
@@ -349,12 +943,12 @@ exports[`Storyshots Filter sidebar Default 1`] = `
           id="filters-section-tabpane-experiments"
           role="tabpanel"
         >
-          <div>
-            <h4
-              className="type-schema-list__title"
+          <section>
+            <h3
+              className="h5"
             >
-              Show me
-            </h4>
+              Schemas
+            </h3>
             <div
               className="form-group"
             >
@@ -405,9 +999,15 @@ exports[`Storyshots Filter sidebar Default 1`] = `
               >
                 <div
                   className="card-header"
-                  onClick={[Function]}
                 >
-                  Biopipeline Output
+                  <button
+                    className="btn btn-link"
+                    onClick={[Function]}
+                    type="button"
+                  >
+                    Biopipeline Output
+                     filters
+                  </button>
                 </div>
                 <div
                   aria-expanded={null}
@@ -416,7 +1016,7 @@ exports[`Storyshots Filter sidebar Default 1`] = `
                   <div
                     className="card-body"
                   >
-                    <div
+                    <section
                       className="single-schema-list__filter"
                     >
                       <h5
@@ -436,6 +1036,7 @@ exports[`Storyshots Filter sidebar Default 1`] = `
                             className="form-control"
                             onChange={[Function]}
                             placeholder=""
+                            value=""
                           />
                           <div
                             className="input-group-append"
@@ -443,7 +1044,7 @@ exports[`Storyshots Filter sidebar Default 1`] = `
                             <button
                               aria-label="Filter results"
                               className="btn btn-outline-secondary"
-                              disabled={true}
+                              disabled={false}
                               type="submit"
                             >
                               Filter
@@ -452,8 +1053,8 @@ exports[`Storyshots Filter sidebar Default 1`] = `
                         </div>
                       </form>
                       <hr />
-                    </div>
-                    <div
+                    </section>
+                    <section
                       className="single-schema-list__filter"
                     >
                       <h5
@@ -473,6 +1074,7 @@ exports[`Storyshots Filter sidebar Default 1`] = `
                             className="form-control"
                             onChange={[Function]}
                             placeholder=""
+                            value=""
                           />
                           <div
                             className="input-group-append"
@@ -480,7 +1082,7 @@ exports[`Storyshots Filter sidebar Default 1`] = `
                             <button
                               aria-label="Filter results"
                               className="btn btn-outline-secondary"
-                              disabled={true}
+                              disabled={false}
                               type="submit"
                             >
                               Filter
@@ -489,8 +1091,8 @@ exports[`Storyshots Filter sidebar Default 1`] = `
                         </div>
                       </form>
                       <hr />
-                    </div>
-                    <div
+                    </section>
+                    <section
                       className="single-schema-list__filter"
                     >
                       <h5
@@ -510,6 +1112,7 @@ exports[`Storyshots Filter sidebar Default 1`] = `
                             className="form-control"
                             onChange={[Function]}
                             placeholder=""
+                            value=""
                           />
                           <div
                             className="input-group-append"
@@ -517,7 +1120,7 @@ exports[`Storyshots Filter sidebar Default 1`] = `
                             <button
                               aria-label="Filter results"
                               className="btn btn-outline-secondary"
-                              disabled={true}
+                              disabled={false}
                               type="submit"
                             >
                               Filter
@@ -526,12 +1129,12 @@ exports[`Storyshots Filter sidebar Default 1`] = `
                         </div>
                       </form>
                       <hr />
-                    </div>
+                    </section>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
+          </section>
         </div>
         <div
           aria-hidden={true}
@@ -540,12 +1143,12 @@ exports[`Storyshots Filter sidebar Default 1`] = `
           id="filters-section-tabpane-datasets"
           role="tabpanel"
         >
-          <div>
-            <h4
-              className="type-schema-list__title"
+          <section>
+            <h3
+              className="h5"
             >
-              Show me
-            </h4>
+              Schemas
+            </h3>
             <div
               className="form-group"
             >
@@ -596,9 +1199,15 @@ exports[`Storyshots Filter sidebar Default 1`] = `
               >
                 <div
                   className="card-header"
-                  onClick={[Function]}
                 >
-                  Raw data
+                  <button
+                    className="btn btn-link"
+                    onClick={[Function]}
+                    type="button"
+                  >
+                    Raw data
+                     filters
+                  </button>
                 </div>
                 <div
                   aria-expanded={null}
@@ -607,7 +1216,7 @@ exports[`Storyshots Filter sidebar Default 1`] = `
                   <div
                     className="card-body"
                   >
-                    <div
+                    <section
                       className="single-schema-list__filter"
                     >
                       <h5
@@ -627,6 +1236,7 @@ exports[`Storyshots Filter sidebar Default 1`] = `
                             className="form-control"
                             onChange={[Function]}
                             placeholder=""
+                            value=""
                           />
                           <div
                             className="input-group-append"
@@ -634,7 +1244,7 @@ exports[`Storyshots Filter sidebar Default 1`] = `
                             <button
                               aria-label="Filter results"
                               className="btn btn-outline-secondary"
-                              disabled={true}
+                              disabled={false}
                               type="submit"
                             >
                               Filter
@@ -643,8 +1253,8 @@ exports[`Storyshots Filter sidebar Default 1`] = `
                         </div>
                       </form>
                       <hr />
-                    </div>
-                    <div
+                    </section>
+                    <section
                       className="single-schema-list__filter"
                     >
                       <h5
@@ -664,6 +1274,7 @@ exports[`Storyshots Filter sidebar Default 1`] = `
                             className="form-control"
                             onChange={[Function]}
                             placeholder=""
+                            value=""
                           />
                           <div
                             className="input-group-append"
@@ -671,7 +1282,7 @@ exports[`Storyshots Filter sidebar Default 1`] = `
                             <button
                               aria-label="Filter results"
                               className="btn btn-outline-secondary"
-                              disabled={true}
+                              disabled={false}
                               type="submit"
                             >
                               Filter
@@ -680,8 +1291,8 @@ exports[`Storyshots Filter sidebar Default 1`] = `
                         </div>
                       </form>
                       <hr />
-                    </div>
-                    <div
+                    </section>
+                    <section
                       className="single-schema-list__filter"
                     >
                       <h5
@@ -701,6 +1312,7 @@ exports[`Storyshots Filter sidebar Default 1`] = `
                             className="form-control"
                             onChange={[Function]}
                             placeholder=""
+                            value=""
                           />
                           <div
                             className="input-group-append"
@@ -708,7 +1320,7 @@ exports[`Storyshots Filter sidebar Default 1`] = `
                             <button
                               aria-label="Filter results"
                               className="btn btn-outline-secondary"
-                              disabled={true}
+                              disabled={false}
                               type="submit"
                             >
                               Filter
@@ -717,12 +1329,12 @@ exports[`Storyshots Filter sidebar Default 1`] = `
                         </div>
                       </form>
                       <hr />
-                    </div>
+                    </section>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
+          </section>
         </div>
         <div
           aria-hidden={true}
@@ -731,12 +1343,12 @@ exports[`Storyshots Filter sidebar Default 1`] = `
           id="filters-section-tabpane-datafiles"
           role="tabpanel"
         >
-          <div>
-            <h4
-              className="type-schema-list__title"
+          <section>
+            <h3
+              className="h5"
             >
-              Show me
-            </h4>
+              Schemas
+            </h3>
             <div
               className="form-group"
             >
@@ -787,9 +1399,15 @@ exports[`Storyshots Filter sidebar Default 1`] = `
               >
                 <div
                   className="card-header"
-                  onClick={[Function]}
                 >
-                  Raw data
+                  <button
+                    className="btn btn-link"
+                    onClick={[Function]}
+                    type="button"
+                  >
+                    Raw data
+                     filters
+                  </button>
                 </div>
                 <div
                   aria-expanded={null}
@@ -798,7 +1416,7 @@ exports[`Storyshots Filter sidebar Default 1`] = `
                   <div
                     className="card-body"
                   >
-                    <div
+                    <section
                       className="single-schema-list__filter"
                     >
                       <h5
@@ -818,6 +1436,7 @@ exports[`Storyshots Filter sidebar Default 1`] = `
                             className="form-control"
                             onChange={[Function]}
                             placeholder=""
+                            value=""
                           />
                           <div
                             className="input-group-append"
@@ -825,7 +1444,7 @@ exports[`Storyshots Filter sidebar Default 1`] = `
                             <button
                               aria-label="Filter results"
                               className="btn btn-outline-secondary"
-                              disabled={true}
+                              disabled={false}
                               type="submit"
                             >
                               Filter
@@ -834,8 +1453,8 @@ exports[`Storyshots Filter sidebar Default 1`] = `
                         </div>
                       </form>
                       <hr />
-                    </div>
-                    <div
+                    </section>
+                    <section
                       className="single-schema-list__filter"
                     >
                       <h5
@@ -855,6 +1474,7 @@ exports[`Storyshots Filter sidebar Default 1`] = `
                             className="form-control"
                             onChange={[Function]}
                             placeholder=""
+                            value=""
                           />
                           <div
                             className="input-group-append"
@@ -862,7 +1482,7 @@ exports[`Storyshots Filter sidebar Default 1`] = `
                             <button
                               aria-label="Filter results"
                               className="btn btn-outline-secondary"
-                              disabled={true}
+                              disabled={false}
                               type="submit"
                             >
                               Filter
@@ -871,8 +1491,8 @@ exports[`Storyshots Filter sidebar Default 1`] = `
                         </div>
                       </form>
                       <hr />
-                    </div>
-                    <div
+                    </section>
+                    <section
                       className="single-schema-list__filter"
                     >
                       <h5
@@ -892,6 +1512,7 @@ exports[`Storyshots Filter sidebar Default 1`] = `
                             className="form-control"
                             onChange={[Function]}
                             placeholder=""
+                            value=""
                           />
                           <div
                             className="input-group-append"
@@ -899,7 +1520,7 @@ exports[`Storyshots Filter sidebar Default 1`] = `
                             <button
                               aria-label="Filter results"
                               className="btn btn-outline-secondary"
-                              disabled={true}
+                              disabled={false}
                               type="submit"
                             >
                               Filter
@@ -908,7 +1529,7 @@ exports[`Storyshots Filter sidebar Default 1`] = `
                         </div>
                       </form>
                       <hr />
-                    </div>
+                    </section>
                   </div>
                 </div>
               </div>
@@ -917,9 +1538,15 @@ exports[`Storyshots Filter sidebar Default 1`] = `
               >
                 <div
                   className="card-header"
-                  onClick={[Function]}
                 >
-                  Biopipeline Output
+                  <button
+                    className="btn btn-link"
+                    onClick={[Function]}
+                    type="button"
+                  >
+                    Biopipeline Output
+                     filters
+                  </button>
                 </div>
                 <div
                   aria-expanded={null}
@@ -928,7 +1555,7 @@ exports[`Storyshots Filter sidebar Default 1`] = `
                   <div
                     className="card-body"
                   >
-                    <div
+                    <section
                       className="single-schema-list__filter"
                     >
                       <h5
@@ -948,6 +1575,7 @@ exports[`Storyshots Filter sidebar Default 1`] = `
                             className="form-control"
                             onChange={[Function]}
                             placeholder=""
+                            value=""
                           />
                           <div
                             className="input-group-append"
@@ -955,7 +1583,7 @@ exports[`Storyshots Filter sidebar Default 1`] = `
                             <button
                               aria-label="Filter results"
                               className="btn btn-outline-secondary"
-                              disabled={true}
+                              disabled={false}
                               type="submit"
                             >
                               Filter
@@ -964,8 +1592,8 @@ exports[`Storyshots Filter sidebar Default 1`] = `
                         </div>
                       </form>
                       <hr />
-                    </div>
-                    <div
+                    </section>
+                    <section
                       className="single-schema-list__filter"
                     >
                       <h5
@@ -985,6 +1613,7 @@ exports[`Storyshots Filter sidebar Default 1`] = `
                             className="form-control"
                             onChange={[Function]}
                             placeholder=""
+                            value=""
                           />
                           <div
                             className="input-group-append"
@@ -992,7 +1621,7 @@ exports[`Storyshots Filter sidebar Default 1`] = `
                             <button
                               aria-label="Filter results"
                               className="btn btn-outline-secondary"
-                              disabled={true}
+                              disabled={false}
                               type="submit"
                             >
                               Filter
@@ -1001,8 +1630,8 @@ exports[`Storyshots Filter sidebar Default 1`] = `
                         </div>
                       </form>
                       <hr />
-                    </div>
-                    <div
+                    </section>
+                    <section
                       className="single-schema-list__filter"
                     >
                       <h5
@@ -1022,6 +1651,7 @@ exports[`Storyshots Filter sidebar Default 1`] = `
                             className="form-control"
                             onChange={[Function]}
                             placeholder=""
+                            value=""
                           />
                           <div
                             className="input-group-append"
@@ -1029,7 +1659,7 @@ exports[`Storyshots Filter sidebar Default 1`] = `
                             <button
                               aria-label="Filter results"
                               className="btn btn-outline-secondary"
-                              disabled={true}
+                              disabled={false}
                               type="submit"
                             >
                               Filter
@@ -1038,12 +1668,12 @@ exports[`Storyshots Filter sidebar Default 1`] = `
                         </div>
                       </form>
                       <hr />
-                    </div>
+                    </section>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
+          </section>
         </div>
       </div>
     </section>
@@ -1280,9 +1910,11 @@ exports[`Storyshots Filters/Filters section Default 1`] = `
   }
 >
   <section>
-    <h3>
+    <h2
+      className="h3"
+    >
       Filters
-    </h3>
+    </h2>
     <nav
       className="nav nav-tabs"
       onKeyDown={[Function]}
@@ -1406,12 +2038,12 @@ exports[`Storyshots Filters/Filters section Default 1`] = `
         id="filters-section-tabpane-projects"
         role="tabpanel"
       >
-        <div>
-          <h4
-            className="type-schema-list__title"
+        <section>
+          <h3
+            className="h5"
           >
-            Show me
-          </h4>
+            Schemas
+          </h3>
           <div
             className="form-group"
           >
@@ -1462,9 +2094,15 @@ exports[`Storyshots Filters/Filters section Default 1`] = `
             >
               <div
                 className="card-header"
-                onClick={[Function]}
               >
-                Raw data
+                <button
+                  className="btn btn-link"
+                  onClick={[Function]}
+                  type="button"
+                >
+                  Raw data
+                   filters
+                </button>
               </div>
               <div
                 aria-expanded={null}
@@ -1473,7 +2111,7 @@ exports[`Storyshots Filters/Filters section Default 1`] = `
                 <div
                   className="card-body"
                 >
-                  <div
+                  <section
                     className="single-schema-list__filter"
                   >
                     <h5
@@ -1493,6 +2131,7 @@ exports[`Storyshots Filters/Filters section Default 1`] = `
                           className="form-control"
                           onChange={[Function]}
                           placeholder=""
+                          value=""
                         />
                         <div
                           className="input-group-append"
@@ -1500,7 +2139,7 @@ exports[`Storyshots Filters/Filters section Default 1`] = `
                           <button
                             aria-label="Filter results"
                             className="btn btn-outline-secondary"
-                            disabled={true}
+                            disabled={false}
                             type="submit"
                           >
                             Filter
@@ -1509,8 +2148,8 @@ exports[`Storyshots Filters/Filters section Default 1`] = `
                       </div>
                     </form>
                     <hr />
-                  </div>
-                  <div
+                  </section>
+                  <section
                     className="single-schema-list__filter"
                   >
                     <h5
@@ -1530,6 +2169,7 @@ exports[`Storyshots Filters/Filters section Default 1`] = `
                           className="form-control"
                           onChange={[Function]}
                           placeholder=""
+                          value=""
                         />
                         <div
                           className="input-group-append"
@@ -1537,7 +2177,7 @@ exports[`Storyshots Filters/Filters section Default 1`] = `
                           <button
                             aria-label="Filter results"
                             className="btn btn-outline-secondary"
-                            disabled={true}
+                            disabled={false}
                             type="submit"
                           >
                             Filter
@@ -1546,8 +2186,8 @@ exports[`Storyshots Filters/Filters section Default 1`] = `
                       </div>
                     </form>
                     <hr />
-                  </div>
-                  <div
+                  </section>
+                  <section
                     className="single-schema-list__filter"
                   >
                     <h5
@@ -1567,6 +2207,7 @@ exports[`Storyshots Filters/Filters section Default 1`] = `
                           className="form-control"
                           onChange={[Function]}
                           placeholder=""
+                          value=""
                         />
                         <div
                           className="input-group-append"
@@ -1574,7 +2215,7 @@ exports[`Storyshots Filters/Filters section Default 1`] = `
                           <button
                             aria-label="Filter results"
                             className="btn btn-outline-secondary"
-                            disabled={true}
+                            disabled={false}
                             type="submit"
                           >
                             Filter
@@ -1583,12 +2224,12 @@ exports[`Storyshots Filters/Filters section Default 1`] = `
                       </div>
                     </form>
                     <hr />
-                  </div>
+                  </section>
                 </div>
               </div>
             </div>
           </div>
-        </div>
+        </section>
       </div>
       <div
         aria-hidden={true}
@@ -1597,12 +2238,12 @@ exports[`Storyshots Filters/Filters section Default 1`] = `
         id="filters-section-tabpane-experiments"
         role="tabpanel"
       >
-        <div>
-          <h4
-            className="type-schema-list__title"
+        <section>
+          <h3
+            className="h5"
           >
-            Show me
-          </h4>
+            Schemas
+          </h3>
           <div
             className="form-group"
           >
@@ -1653,9 +2294,15 @@ exports[`Storyshots Filters/Filters section Default 1`] = `
             >
               <div
                 className="card-header"
-                onClick={[Function]}
               >
-                Biopipeline Output
+                <button
+                  className="btn btn-link"
+                  onClick={[Function]}
+                  type="button"
+                >
+                  Biopipeline Output
+                   filters
+                </button>
               </div>
               <div
                 aria-expanded={null}
@@ -1664,7 +2311,7 @@ exports[`Storyshots Filters/Filters section Default 1`] = `
                 <div
                   className="card-body"
                 >
-                  <div
+                  <section
                     className="single-schema-list__filter"
                   >
                     <h5
@@ -1684,6 +2331,7 @@ exports[`Storyshots Filters/Filters section Default 1`] = `
                           className="form-control"
                           onChange={[Function]}
                           placeholder=""
+                          value=""
                         />
                         <div
                           className="input-group-append"
@@ -1691,7 +2339,7 @@ exports[`Storyshots Filters/Filters section Default 1`] = `
                           <button
                             aria-label="Filter results"
                             className="btn btn-outline-secondary"
-                            disabled={true}
+                            disabled={false}
                             type="submit"
                           >
                             Filter
@@ -1700,8 +2348,8 @@ exports[`Storyshots Filters/Filters section Default 1`] = `
                       </div>
                     </form>
                     <hr />
-                  </div>
-                  <div
+                  </section>
+                  <section
                     className="single-schema-list__filter"
                   >
                     <h5
@@ -1721,6 +2369,7 @@ exports[`Storyshots Filters/Filters section Default 1`] = `
                           className="form-control"
                           onChange={[Function]}
                           placeholder=""
+                          value=""
                         />
                         <div
                           className="input-group-append"
@@ -1728,7 +2377,7 @@ exports[`Storyshots Filters/Filters section Default 1`] = `
                           <button
                             aria-label="Filter results"
                             className="btn btn-outline-secondary"
-                            disabled={true}
+                            disabled={false}
                             type="submit"
                           >
                             Filter
@@ -1737,8 +2386,8 @@ exports[`Storyshots Filters/Filters section Default 1`] = `
                       </div>
                     </form>
                     <hr />
-                  </div>
-                  <div
+                  </section>
+                  <section
                     className="single-schema-list__filter"
                   >
                     <h5
@@ -1758,6 +2407,7 @@ exports[`Storyshots Filters/Filters section Default 1`] = `
                           className="form-control"
                           onChange={[Function]}
                           placeholder=""
+                          value=""
                         />
                         <div
                           className="input-group-append"
@@ -1765,7 +2415,7 @@ exports[`Storyshots Filters/Filters section Default 1`] = `
                           <button
                             aria-label="Filter results"
                             className="btn btn-outline-secondary"
-                            disabled={true}
+                            disabled={false}
                             type="submit"
                           >
                             Filter
@@ -1774,12 +2424,12 @@ exports[`Storyshots Filters/Filters section Default 1`] = `
                       </div>
                     </form>
                     <hr />
-                  </div>
+                  </section>
                 </div>
               </div>
             </div>
           </div>
-        </div>
+        </section>
       </div>
       <div
         aria-hidden={true}
@@ -1788,12 +2438,12 @@ exports[`Storyshots Filters/Filters section Default 1`] = `
         id="filters-section-tabpane-datasets"
         role="tabpanel"
       >
-        <div>
-          <h4
-            className="type-schema-list__title"
+        <section>
+          <h3
+            className="h5"
           >
-            Show me
-          </h4>
+            Schemas
+          </h3>
           <div
             className="form-group"
           >
@@ -1844,9 +2494,15 @@ exports[`Storyshots Filters/Filters section Default 1`] = `
             >
               <div
                 className="card-header"
-                onClick={[Function]}
               >
-                Raw data
+                <button
+                  className="btn btn-link"
+                  onClick={[Function]}
+                  type="button"
+                >
+                  Raw data
+                   filters
+                </button>
               </div>
               <div
                 aria-expanded={null}
@@ -1855,7 +2511,7 @@ exports[`Storyshots Filters/Filters section Default 1`] = `
                 <div
                   className="card-body"
                 >
-                  <div
+                  <section
                     className="single-schema-list__filter"
                   >
                     <h5
@@ -1875,6 +2531,7 @@ exports[`Storyshots Filters/Filters section Default 1`] = `
                           className="form-control"
                           onChange={[Function]}
                           placeholder=""
+                          value=""
                         />
                         <div
                           className="input-group-append"
@@ -1882,7 +2539,7 @@ exports[`Storyshots Filters/Filters section Default 1`] = `
                           <button
                             aria-label="Filter results"
                             className="btn btn-outline-secondary"
-                            disabled={true}
+                            disabled={false}
                             type="submit"
                           >
                             Filter
@@ -1891,8 +2548,8 @@ exports[`Storyshots Filters/Filters section Default 1`] = `
                       </div>
                     </form>
                     <hr />
-                  </div>
-                  <div
+                  </section>
+                  <section
                     className="single-schema-list__filter"
                   >
                     <h5
@@ -1912,6 +2569,7 @@ exports[`Storyshots Filters/Filters section Default 1`] = `
                           className="form-control"
                           onChange={[Function]}
                           placeholder=""
+                          value=""
                         />
                         <div
                           className="input-group-append"
@@ -1919,7 +2577,7 @@ exports[`Storyshots Filters/Filters section Default 1`] = `
                           <button
                             aria-label="Filter results"
                             className="btn btn-outline-secondary"
-                            disabled={true}
+                            disabled={false}
                             type="submit"
                           >
                             Filter
@@ -1928,8 +2586,8 @@ exports[`Storyshots Filters/Filters section Default 1`] = `
                       </div>
                     </form>
                     <hr />
-                  </div>
-                  <div
+                  </section>
+                  <section
                     className="single-schema-list__filter"
                   >
                     <h5
@@ -1949,6 +2607,7 @@ exports[`Storyshots Filters/Filters section Default 1`] = `
                           className="form-control"
                           onChange={[Function]}
                           placeholder=""
+                          value=""
                         />
                         <div
                           className="input-group-append"
@@ -1956,7 +2615,7 @@ exports[`Storyshots Filters/Filters section Default 1`] = `
                           <button
                             aria-label="Filter results"
                             className="btn btn-outline-secondary"
-                            disabled={true}
+                            disabled={false}
                             type="submit"
                           >
                             Filter
@@ -1965,12 +2624,12 @@ exports[`Storyshots Filters/Filters section Default 1`] = `
                       </div>
                     </form>
                     <hr />
-                  </div>
+                  </section>
                 </div>
               </div>
             </div>
           </div>
-        </div>
+        </section>
       </div>
       <div
         aria-hidden={true}
@@ -1979,12 +2638,12 @@ exports[`Storyshots Filters/Filters section Default 1`] = `
         id="filters-section-tabpane-datafiles"
         role="tabpanel"
       >
-        <div>
-          <h4
-            className="type-schema-list__title"
+        <section>
+          <h3
+            className="h5"
           >
-            Show me
-          </h4>
+            Schemas
+          </h3>
           <div
             className="form-group"
           >
@@ -2035,9 +2694,15 @@ exports[`Storyshots Filters/Filters section Default 1`] = `
             >
               <div
                 className="card-header"
-                onClick={[Function]}
               >
-                Raw data
+                <button
+                  className="btn btn-link"
+                  onClick={[Function]}
+                  type="button"
+                >
+                  Raw data
+                   filters
+                </button>
               </div>
               <div
                 aria-expanded={null}
@@ -2046,7 +2711,7 @@ exports[`Storyshots Filters/Filters section Default 1`] = `
                 <div
                   className="card-body"
                 >
-                  <div
+                  <section
                     className="single-schema-list__filter"
                   >
                     <h5
@@ -2066,6 +2731,7 @@ exports[`Storyshots Filters/Filters section Default 1`] = `
                           className="form-control"
                           onChange={[Function]}
                           placeholder=""
+                          value=""
                         />
                         <div
                           className="input-group-append"
@@ -2073,7 +2739,7 @@ exports[`Storyshots Filters/Filters section Default 1`] = `
                           <button
                             aria-label="Filter results"
                             className="btn btn-outline-secondary"
-                            disabled={true}
+                            disabled={false}
                             type="submit"
                           >
                             Filter
@@ -2082,8 +2748,8 @@ exports[`Storyshots Filters/Filters section Default 1`] = `
                       </div>
                     </form>
                     <hr />
-                  </div>
-                  <div
+                  </section>
+                  <section
                     className="single-schema-list__filter"
                   >
                     <h5
@@ -2103,6 +2769,7 @@ exports[`Storyshots Filters/Filters section Default 1`] = `
                           className="form-control"
                           onChange={[Function]}
                           placeholder=""
+                          value=""
                         />
                         <div
                           className="input-group-append"
@@ -2110,7 +2777,7 @@ exports[`Storyshots Filters/Filters section Default 1`] = `
                           <button
                             aria-label="Filter results"
                             className="btn btn-outline-secondary"
-                            disabled={true}
+                            disabled={false}
                             type="submit"
                           >
                             Filter
@@ -2119,8 +2786,8 @@ exports[`Storyshots Filters/Filters section Default 1`] = `
                       </div>
                     </form>
                     <hr />
-                  </div>
-                  <div
+                  </section>
+                  <section
                     className="single-schema-list__filter"
                   >
                     <h5
@@ -2140,6 +2807,7 @@ exports[`Storyshots Filters/Filters section Default 1`] = `
                           className="form-control"
                           onChange={[Function]}
                           placeholder=""
+                          value=""
                         />
                         <div
                           className="input-group-append"
@@ -2147,7 +2815,7 @@ exports[`Storyshots Filters/Filters section Default 1`] = `
                           <button
                             aria-label="Filter results"
                             className="btn btn-outline-secondary"
-                            disabled={true}
+                            disabled={false}
                             type="submit"
                           >
                             Filter
@@ -2156,7 +2824,7 @@ exports[`Storyshots Filters/Filters section Default 1`] = `
                       </div>
                     </form>
                     <hr />
-                  </div>
+                  </section>
                 </div>
               </div>
             </div>
@@ -2165,9 +2833,15 @@ exports[`Storyshots Filters/Filters section Default 1`] = `
             >
               <div
                 className="card-header"
-                onClick={[Function]}
               >
-                Biopipeline Output
+                <button
+                  className="btn btn-link"
+                  onClick={[Function]}
+                  type="button"
+                >
+                  Biopipeline Output
+                   filters
+                </button>
               </div>
               <div
                 aria-expanded={null}
@@ -2176,7 +2850,7 @@ exports[`Storyshots Filters/Filters section Default 1`] = `
                 <div
                   className="card-body"
                 >
-                  <div
+                  <section
                     className="single-schema-list__filter"
                   >
                     <h5
@@ -2196,6 +2870,7 @@ exports[`Storyshots Filters/Filters section Default 1`] = `
                           className="form-control"
                           onChange={[Function]}
                           placeholder=""
+                          value=""
                         />
                         <div
                           className="input-group-append"
@@ -2203,7 +2878,7 @@ exports[`Storyshots Filters/Filters section Default 1`] = `
                           <button
                             aria-label="Filter results"
                             className="btn btn-outline-secondary"
-                            disabled={true}
+                            disabled={false}
                             type="submit"
                           >
                             Filter
@@ -2212,8 +2887,8 @@ exports[`Storyshots Filters/Filters section Default 1`] = `
                       </div>
                     </form>
                     <hr />
-                  </div>
-                  <div
+                  </section>
+                  <section
                     className="single-schema-list__filter"
                   >
                     <h5
@@ -2233,6 +2908,7 @@ exports[`Storyshots Filters/Filters section Default 1`] = `
                           className="form-control"
                           onChange={[Function]}
                           placeholder=""
+                          value=""
                         />
                         <div
                           className="input-group-append"
@@ -2240,7 +2916,7 @@ exports[`Storyshots Filters/Filters section Default 1`] = `
                           <button
                             aria-label="Filter results"
                             className="btn btn-outline-secondary"
-                            disabled={true}
+                            disabled={false}
                             type="submit"
                           >
                             Filter
@@ -2249,8 +2925,8 @@ exports[`Storyshots Filters/Filters section Default 1`] = `
                       </div>
                     </form>
                     <hr />
-                  </div>
-                  <div
+                  </section>
+                  <section
                     className="single-schema-list__filter"
                   >
                     <h5
@@ -2270,6 +2946,7 @@ exports[`Storyshots Filters/Filters section Default 1`] = `
                           className="form-control"
                           onChange={[Function]}
                           placeholder=""
+                          value=""
                         />
                         <div
                           className="input-group-append"
@@ -2277,7 +2954,7 @@ exports[`Storyshots Filters/Filters section Default 1`] = `
                           <button
                             aria-label="Filter results"
                             className="btn btn-outline-secondary"
-                            disabled={true}
+                            disabled={false}
                             type="submit"
                           >
                             Filter
@@ -2286,12 +2963,12 @@ exports[`Storyshots Filters/Filters section Default 1`] = `
                       </div>
                     </form>
                     <hr />
-                  </div>
+                  </section>
                 </div>
               </div>
             </div>
           </div>
-        </div>
+        </section>
       </div>
     </div>
   </section>
@@ -2442,7 +3119,7 @@ exports[`Storyshots Filters/Number range filter Empty 1`] = `
     <button
       aria-label="Filter results"
       className="num-range-filter__button btn btn-outline-secondary"
-      disabled={true}
+      disabled={false}
       type="submit"
     >
       Filter
@@ -2518,7 +3195,7 @@ exports[`Storyshots Filters/Text filter Empty 1`] = `
         <button
           aria-label="Filter results"
           className="btn btn-outline-secondary"
-          disabled={true}
+          disabled={false}
           type="submit"
         >
           Filter
@@ -2538,12 +3215,12 @@ exports[`Storyshots Filters/Type schema list Default 1`] = `
     }
   }
 >
-  <div>
-    <h4
-      className="type-schema-list__title"
+  <section>
+    <h3
+      className="h5"
     >
-      Show me
-    </h4>
+      Schemas
+    </h3>
     <div
       className="form-group"
     >
@@ -2594,9 +3271,15 @@ exports[`Storyshots Filters/Type schema list Default 1`] = `
       >
         <div
           className="card-header"
-          onClick={[Function]}
         >
-          Raw data
+          <button
+            className="btn btn-link"
+            onClick={[Function]}
+            type="button"
+          >
+            Raw data
+             filters
+          </button>
         </div>
         <div
           aria-expanded={null}
@@ -2605,7 +3288,7 @@ exports[`Storyshots Filters/Type schema list Default 1`] = `
           <div
             className="card-body"
           >
-            <div
+            <section
               className="single-schema-list__filter"
             >
               <h5
@@ -2625,6 +3308,7 @@ exports[`Storyshots Filters/Type schema list Default 1`] = `
                     className="form-control"
                     onChange={[Function]}
                     placeholder=""
+                    value=""
                   />
                   <div
                     className="input-group-append"
@@ -2632,7 +3316,7 @@ exports[`Storyshots Filters/Type schema list Default 1`] = `
                     <button
                       aria-label="Filter results"
                       className="btn btn-outline-secondary"
-                      disabled={true}
+                      disabled={false}
                       type="submit"
                     >
                       Filter
@@ -2641,8 +3325,8 @@ exports[`Storyshots Filters/Type schema list Default 1`] = `
                 </div>
               </form>
               <hr />
-            </div>
-            <div
+            </section>
+            <section
               className="single-schema-list__filter"
             >
               <h5
@@ -2662,6 +3346,7 @@ exports[`Storyshots Filters/Type schema list Default 1`] = `
                     className="form-control"
                     onChange={[Function]}
                     placeholder=""
+                    value=""
                   />
                   <div
                     className="input-group-append"
@@ -2669,7 +3354,7 @@ exports[`Storyshots Filters/Type schema list Default 1`] = `
                     <button
                       aria-label="Filter results"
                       className="btn btn-outline-secondary"
-                      disabled={true}
+                      disabled={false}
                       type="submit"
                     >
                       Filter
@@ -2678,8 +3363,8 @@ exports[`Storyshots Filters/Type schema list Default 1`] = `
                 </div>
               </form>
               <hr />
-            </div>
-            <div
+            </section>
+            <section
               className="single-schema-list__filter"
             >
               <h5
@@ -2699,6 +3384,7 @@ exports[`Storyshots Filters/Type schema list Default 1`] = `
                     className="form-control"
                     onChange={[Function]}
                     placeholder=""
+                    value=""
                   />
                   <div
                     className="input-group-append"
@@ -2706,7 +3392,7 @@ exports[`Storyshots Filters/Type schema list Default 1`] = `
                     <button
                       aria-label="Filter results"
                       className="btn btn-outline-secondary"
-                      disabled={true}
+                      disabled={false}
                       type="submit"
                     >
                       Filter
@@ -2715,7 +3401,7 @@ exports[`Storyshots Filters/Type schema list Default 1`] = `
                 </div>
               </form>
               <hr />
-            </div>
+            </section>
           </div>
         </div>
       </div>
@@ -2724,9 +3410,15 @@ exports[`Storyshots Filters/Type schema list Default 1`] = `
       >
         <div
           className="card-header"
-          onClick={[Function]}
         >
-          Biopipeline Output
+          <button
+            className="btn btn-link"
+            onClick={[Function]}
+            type="button"
+          >
+            Biopipeline Output
+             filters
+          </button>
         </div>
         <div
           aria-expanded={null}
@@ -2735,7 +3427,7 @@ exports[`Storyshots Filters/Type schema list Default 1`] = `
           <div
             className="card-body"
           >
-            <div
+            <section
               className="single-schema-list__filter"
             >
               <h5
@@ -2755,6 +3447,7 @@ exports[`Storyshots Filters/Type schema list Default 1`] = `
                     className="form-control"
                     onChange={[Function]}
                     placeholder=""
+                    value=""
                   />
                   <div
                     className="input-group-append"
@@ -2762,7 +3455,7 @@ exports[`Storyshots Filters/Type schema list Default 1`] = `
                     <button
                       aria-label="Filter results"
                       className="btn btn-outline-secondary"
-                      disabled={true}
+                      disabled={false}
                       type="submit"
                     >
                       Filter
@@ -2771,8 +3464,8 @@ exports[`Storyshots Filters/Type schema list Default 1`] = `
                 </div>
               </form>
               <hr />
-            </div>
-            <div
+            </section>
+            <section
               className="single-schema-list__filter"
             >
               <h5
@@ -2792,6 +3485,7 @@ exports[`Storyshots Filters/Type schema list Default 1`] = `
                     className="form-control"
                     onChange={[Function]}
                     placeholder=""
+                    value=""
                   />
                   <div
                     className="input-group-append"
@@ -2799,7 +3493,7 @@ exports[`Storyshots Filters/Type schema list Default 1`] = `
                     <button
                       aria-label="Filter results"
                       className="btn btn-outline-secondary"
-                      disabled={true}
+                      disabled={false}
                       type="submit"
                     >
                       Filter
@@ -2808,8 +3502,8 @@ exports[`Storyshots Filters/Type schema list Default 1`] = `
                 </div>
               </form>
               <hr />
-            </div>
-            <div
+            </section>
+            <section
               className="single-schema-list__filter"
             >
               <h5
@@ -2829,6 +3523,7 @@ exports[`Storyshots Filters/Type schema list Default 1`] = `
                     className="form-control"
                     onChange={[Function]}
                     placeholder=""
+                    value=""
                   />
                   <div
                     className="input-group-append"
@@ -2836,7 +3531,7 @@ exports[`Storyshots Filters/Type schema list Default 1`] = `
                     <button
                       aria-label="Filter results"
                       className="btn btn-outline-secondary"
-                      disabled={true}
+                      disabled={false}
                       type="submit"
                     >
                       Filter
@@ -2845,12 +3540,12 @@ exports[`Storyshots Filters/Type schema list Default 1`] = `
                 </div>
               </form>
               <hr />
-            </div>
+            </section>
           </div>
         </div>
       </div>
     </div>
-  </div>
+  </section>
 </div>
 `;
 
@@ -2863,12 +3558,12 @@ exports[`Storyshots Filters/Type schema list No Schema Selected 1`] = `
     }
   }
 >
-  <div>
-    <h4
-      className="type-schema-list__title"
+  <section>
+    <h3
+      className="h5"
     >
-      Show me
-    </h4>
+      Schemas
+    </h3>
     <div
       className="form-group"
     >
@@ -2919,9 +3614,15 @@ exports[`Storyshots Filters/Type schema list No Schema Selected 1`] = `
       >
         <div
           className="card-header"
-          onClick={[Function]}
         >
-          Raw data
+          <button
+            className="btn btn-link"
+            onClick={[Function]}
+            type="button"
+          >
+            Raw data
+             filters
+          </button>
         </div>
         <div
           aria-expanded={null}
@@ -2930,7 +3631,7 @@ exports[`Storyshots Filters/Type schema list No Schema Selected 1`] = `
           <div
             className="card-body"
           >
-            <div
+            <section
               className="single-schema-list__filter"
             >
               <h5
@@ -2950,6 +3651,7 @@ exports[`Storyshots Filters/Type schema list No Schema Selected 1`] = `
                     className="form-control"
                     onChange={[Function]}
                     placeholder=""
+                    value=""
                   />
                   <div
                     className="input-group-append"
@@ -2957,7 +3659,7 @@ exports[`Storyshots Filters/Type schema list No Schema Selected 1`] = `
                     <button
                       aria-label="Filter results"
                       className="btn btn-outline-secondary"
-                      disabled={true}
+                      disabled={false}
                       type="submit"
                     >
                       Filter
@@ -2966,8 +3668,8 @@ exports[`Storyshots Filters/Type schema list No Schema Selected 1`] = `
                 </div>
               </form>
               <hr />
-            </div>
-            <div
+            </section>
+            <section
               className="single-schema-list__filter"
             >
               <h5
@@ -2987,6 +3689,7 @@ exports[`Storyshots Filters/Type schema list No Schema Selected 1`] = `
                     className="form-control"
                     onChange={[Function]}
                     placeholder=""
+                    value=""
                   />
                   <div
                     className="input-group-append"
@@ -2994,7 +3697,7 @@ exports[`Storyshots Filters/Type schema list No Schema Selected 1`] = `
                     <button
                       aria-label="Filter results"
                       className="btn btn-outline-secondary"
-                      disabled={true}
+                      disabled={false}
                       type="submit"
                     >
                       Filter
@@ -3003,8 +3706,8 @@ exports[`Storyshots Filters/Type schema list No Schema Selected 1`] = `
                 </div>
               </form>
               <hr />
-            </div>
-            <div
+            </section>
+            <section
               className="single-schema-list__filter"
             >
               <h5
@@ -3024,6 +3727,7 @@ exports[`Storyshots Filters/Type schema list No Schema Selected 1`] = `
                     className="form-control"
                     onChange={[Function]}
                     placeholder=""
+                    value=""
                   />
                   <div
                     className="input-group-append"
@@ -3031,7 +3735,7 @@ exports[`Storyshots Filters/Type schema list No Schema Selected 1`] = `
                     <button
                       aria-label="Filter results"
                       className="btn btn-outline-secondary"
-                      disabled={true}
+                      disabled={false}
                       type="submit"
                     >
                       Filter
@@ -3040,7 +3744,7 @@ exports[`Storyshots Filters/Type schema list No Schema Selected 1`] = `
                 </div>
               </form>
               <hr />
-            </div>
+            </section>
           </div>
         </div>
       </div>
@@ -3049,9 +3753,15 @@ exports[`Storyshots Filters/Type schema list No Schema Selected 1`] = `
       >
         <div
           className="card-header"
-          onClick={[Function]}
         >
-          Biopipeline Output
+          <button
+            className="btn btn-link"
+            onClick={[Function]}
+            type="button"
+          >
+            Biopipeline Output
+             filters
+          </button>
         </div>
         <div
           aria-expanded={null}
@@ -3060,7 +3770,7 @@ exports[`Storyshots Filters/Type schema list No Schema Selected 1`] = `
           <div
             className="card-body"
           >
-            <div
+            <section
               className="single-schema-list__filter"
             >
               <h5
@@ -3080,6 +3790,7 @@ exports[`Storyshots Filters/Type schema list No Schema Selected 1`] = `
                     className="form-control"
                     onChange={[Function]}
                     placeholder=""
+                    value=""
                   />
                   <div
                     className="input-group-append"
@@ -3087,7 +3798,7 @@ exports[`Storyshots Filters/Type schema list No Schema Selected 1`] = `
                     <button
                       aria-label="Filter results"
                       className="btn btn-outline-secondary"
-                      disabled={true}
+                      disabled={false}
                       type="submit"
                     >
                       Filter
@@ -3096,8 +3807,8 @@ exports[`Storyshots Filters/Type schema list No Schema Selected 1`] = `
                 </div>
               </form>
               <hr />
-            </div>
-            <div
+            </section>
+            <section
               className="single-schema-list__filter"
             >
               <h5
@@ -3117,6 +3828,7 @@ exports[`Storyshots Filters/Type schema list No Schema Selected 1`] = `
                     className="form-control"
                     onChange={[Function]}
                     placeholder=""
+                    value=""
                   />
                   <div
                     className="input-group-append"
@@ -3124,7 +3836,7 @@ exports[`Storyshots Filters/Type schema list No Schema Selected 1`] = `
                     <button
                       aria-label="Filter results"
                       className="btn btn-outline-secondary"
-                      disabled={true}
+                      disabled={false}
                       type="submit"
                     >
                       Filter
@@ -3133,8 +3845,8 @@ exports[`Storyshots Filters/Type schema list No Schema Selected 1`] = `
                 </div>
               </form>
               <hr />
-            </div>
-            <div
+            </section>
+            <section
               className="single-schema-list__filter"
             >
               <h5
@@ -3154,6 +3866,7 @@ exports[`Storyshots Filters/Type schema list No Schema Selected 1`] = `
                     className="form-control"
                     onChange={[Function]}
                     placeholder=""
+                    value=""
                   />
                   <div
                     className="input-group-append"
@@ -3161,7 +3874,7 @@ exports[`Storyshots Filters/Type schema list No Schema Selected 1`] = `
                     <button
                       aria-label="Filter results"
                       className="btn btn-outline-secondary"
-                      disabled={true}
+                      disabled={false}
                       type="submit"
                     >
                       Filter
@@ -3170,12 +3883,12 @@ exports[`Storyshots Filters/Type schema list No Schema Selected 1`] = `
                 </div>
               </form>
               <hr />
-            </div>
+            </section>
           </div>
         </div>
       </div>
     </div>
-  </div>
+  </section>
 </div>
 `;
 
@@ -3187,16 +3900,7 @@ exports[`Storyshots Filters/Type schema list No Schemas 1`] = `
       "width": "400px",
     }
   }
->
-  <div>
-    <div
-      className="form-group"
-    />
-    <div
-      className="accordion"
-    />
-  </div>
-</div>
+/>
 `;
 
 exports[`Storyshots Filters/Type schema list Only One Selected 1`] = `
@@ -3208,12 +3912,12 @@ exports[`Storyshots Filters/Type schema list Only One Selected 1`] = `
     }
   }
 >
-  <div>
-    <h4
-      className="type-schema-list__title"
+  <section>
+    <h3
+      className="h5"
     >
-      Show me
-    </h4>
+      Schemas
+    </h3>
     <div
       className="form-group"
     >
@@ -3264,9 +3968,15 @@ exports[`Storyshots Filters/Type schema list Only One Selected 1`] = `
       >
         <div
           className="card-header"
-          onClick={[Function]}
         >
-          Raw data
+          <button
+            className="btn btn-link"
+            onClick={[Function]}
+            type="button"
+          >
+            Raw data
+             filters
+          </button>
         </div>
         <div
           aria-expanded={null}
@@ -3275,7 +3985,7 @@ exports[`Storyshots Filters/Type schema list Only One Selected 1`] = `
           <div
             className="card-body"
           >
-            <div
+            <section
               className="single-schema-list__filter"
             >
               <h5
@@ -3295,6 +4005,7 @@ exports[`Storyshots Filters/Type schema list Only One Selected 1`] = `
                     className="form-control"
                     onChange={[Function]}
                     placeholder=""
+                    value=""
                   />
                   <div
                     className="input-group-append"
@@ -3302,7 +4013,7 @@ exports[`Storyshots Filters/Type schema list Only One Selected 1`] = `
                     <button
                       aria-label="Filter results"
                       className="btn btn-outline-secondary"
-                      disabled={true}
+                      disabled={false}
                       type="submit"
                     >
                       Filter
@@ -3311,8 +4022,8 @@ exports[`Storyshots Filters/Type schema list Only One Selected 1`] = `
                 </div>
               </form>
               <hr />
-            </div>
-            <div
+            </section>
+            <section
               className="single-schema-list__filter"
             >
               <h5
@@ -3332,6 +4043,7 @@ exports[`Storyshots Filters/Type schema list Only One Selected 1`] = `
                     className="form-control"
                     onChange={[Function]}
                     placeholder=""
+                    value=""
                   />
                   <div
                     className="input-group-append"
@@ -3339,7 +4051,7 @@ exports[`Storyshots Filters/Type schema list Only One Selected 1`] = `
                     <button
                       aria-label="Filter results"
                       className="btn btn-outline-secondary"
-                      disabled={true}
+                      disabled={false}
                       type="submit"
                     >
                       Filter
@@ -3348,8 +4060,8 @@ exports[`Storyshots Filters/Type schema list Only One Selected 1`] = `
                 </div>
               </form>
               <hr />
-            </div>
-            <div
+            </section>
+            <section
               className="single-schema-list__filter"
             >
               <h5
@@ -3369,6 +4081,7 @@ exports[`Storyshots Filters/Type schema list Only One Selected 1`] = `
                     className="form-control"
                     onChange={[Function]}
                     placeholder=""
+                    value=""
                   />
                   <div
                     className="input-group-append"
@@ -3376,7 +4089,7 @@ exports[`Storyshots Filters/Type schema list Only One Selected 1`] = `
                     <button
                       aria-label="Filter results"
                       className="btn btn-outline-secondary"
-                      disabled={true}
+                      disabled={false}
                       type="submit"
                     >
                       Filter
@@ -3385,12 +4098,12 @@ exports[`Storyshots Filters/Type schema list Only One Selected 1`] = `
                 </div>
               </form>
               <hr />
-            </div>
+            </section>
           </div>
         </div>
       </div>
     </div>
-  </div>
+  </section>
 </div>
 `;
 
@@ -3468,7 +4181,7 @@ exports[`Storyshots Result list All Access 1`] = `
     className="table-responsive"
   >
     <table
-      className="table table-hover"
+      className="result-section__container table table-hover"
     >
       <thead>
         <tr>
@@ -3483,9 +4196,15 @@ exports[`Storyshots Result list All Access 1`] = `
       </thead>
       <tbody>
         <tr
+          className="result-section--row"
           onClick={[Function]}
+          onKeyUp={[Function]}
+          role="button"
+          tabIndex="0"
         >
-          <td />
+          <td
+            className="result-row--download-col"
+          />
           <td>
             <a
               href=""
@@ -3495,13 +4214,7 @@ exports[`Storyshots Result list All Access 1`] = `
             </a>
           </td>
           <td>
-            <span
-              style={
-                Object {
-                  "paddingRight": "1em",
-                }
-              }
-            >
+            <span>
               35MB
             </span>
           </td>
@@ -3524,7 +4237,7 @@ exports[`Storyshots Result list Default 1`] = `
     className="table-responsive"
   >
     <table
-      className="table table-hover"
+      className="result-section__container table table-hover"
     >
       <thead>
         <tr>
@@ -3539,9 +4252,15 @@ exports[`Storyshots Result list Default 1`] = `
       </thead>
       <tbody>
         <tr
+          className="result-section--row"
           onClick={[Function]}
+          onKeyUp={[Function]}
+          role="button"
+          tabIndex="0"
         >
-          <td />
+          <td
+            className="result-row--download-col"
+          />
           <td>
             <a
               href=""
@@ -3551,41 +4270,26 @@ exports[`Storyshots Result list Default 1`] = `
             </a>
           </td>
           <td>
-            <span
-              style={
-                Object {
-                  "paddingRight": "1em",
-                }
-              }
-            >
+            <span>
               35MB
             </span>
           </td>
         </tr>
         <tr
+          className="result-section--row"
           onClick={[Function]}
+          onKeyUp={[Function]}
+          role="button"
+          tabIndex="0"
         >
-          <td />
-          <td>
-            <a
-              href=""
-              target="_blank"
-            >
-              Gastroblastoma
-            </a>
-          </td>
-          <td>
+          <td
+            className="result-row--download-col"
+          >
             <span
-              style={
-                Object {
-                  "paddingRight": "1em",
-                }
-              }
-            >
-              4GB
-            </span>
-            <span
-              aria-label="Some files in this item cannot be downloaded."
+              onBlur={[Function]}
+              onFocus={[Function]}
+              onMouseOut={[Function]}
+              onMouseOver={[Function]}
             >
               <svg
                 fill="none"
@@ -3603,6 +4307,9 @@ exports[`Storyshots Result list Default 1`] = `
                 width="1em"
                 xmlns="http://www.w3.org/2000/svg"
               >
+                <title>
+                  Some files cannot be downloaded.
+                </title>
                 <path
                   d="M21.21 15.89A10 10 0 1 1 8 2.83"
                 />
@@ -3612,13 +4319,35 @@ exports[`Storyshots Result list Default 1`] = `
               </svg>
             </span>
           </td>
+          <td>
+            <a
+              href=""
+              target="_blank"
+            >
+              Gastroblastoma
+            </a>
+          </td>
+          <td>
+            <span>
+              4GB
+            </span>
+          </td>
         </tr>
         <tr
+          className="result-section--row"
           onClick={[Function]}
+          onKeyUp={[Function]}
+          role="button"
+          tabIndex="0"
         >
-          <td>
+          <td
+            className="result-row--download-col"
+          >
             <span
-              aria-label="This item cannot be downloaded."
+              onBlur={[Function]}
+              onFocus={[Function]}
+              onMouseOut={[Function]}
+              onMouseOver={[Function]}
             >
               <svg
                 fill="none"
@@ -3636,6 +4365,9 @@ exports[`Storyshots Result list Default 1`] = `
                 width="1em"
                 xmlns="http://www.w3.org/2000/svg"
               >
+                <title>
+                  This item cannot be downloaded.
+                </title>
                 <rect
                   height="11"
                   rx="2"
@@ -3680,8 +4412,39 @@ exports[`Storyshots Result list Empty 1`] = `
     }
   }
 >
-  <div>
-    No results.
+  <div
+    className="table-responsive"
+  >
+    <table
+      className="result-section__container table table-hover"
+    >
+      <thead>
+        <tr>
+          <th />
+          <th>
+            Name
+          </th>
+          <th>
+            Size
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td
+            colSpan="3"
+          >
+            <div
+              className="result-section--msg"
+            >
+              <p>
+                No results. Please adjust your search and try again.
+              </p>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
   </div>
 </div>
 `;
@@ -3694,8 +4457,12 @@ exports[`Storyshots Result list Error 1`] = `
     }
   }
 >
-  <div>
-    An error occurred. Please try searching again.
+  <div
+    className="result-section--msg result-section--error-msg"
+  >
+    <p>
+      An error occurred. Please try another query, or refresh the page and try searching again.
+    </p>
   </div>
 </div>
 `;
@@ -3708,8 +4475,39 @@ exports[`Storyshots Result list Loading 1`] = `
     }
   }
 >
-  <div>
-    Searching...
+  <div
+    className="table-responsive"
+  >
+    <table
+      className="result-section__container table table-hover"
+    >
+      <thead>
+        <tr>
+          <th />
+          <th>
+            Name
+          </th>
+          <th>
+            Size
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td
+            colSpan="3"
+          >
+            <div
+              className="result-section--msg"
+            >
+              <p>
+                Loading...
+              </p>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
   </div>
 </div>
 `;
@@ -3726,7 +4524,7 @@ exports[`Storyshots Result list Some Access 1`] = `
     className="table-responsive"
   >
     <table
-      className="table table-hover"
+      className="result-section__container table table-hover"
     >
       <thead>
         <tr>
@@ -3741,29 +4539,20 @@ exports[`Storyshots Result list Some Access 1`] = `
       </thead>
       <tbody>
         <tr
+          className="result-section--row"
           onClick={[Function]}
+          onKeyUp={[Function]}
+          role="button"
+          tabIndex="0"
         >
-          <td />
-          <td>
-            <a
-              href=""
-              target="_blank"
-            >
-              Gastroblastoma
-            </a>
-          </td>
-          <td>
+          <td
+            className="result-row--download-col"
+          >
             <span
-              style={
-                Object {
-                  "paddingRight": "1em",
-                }
-              }
-            >
-              4GB
-            </span>
-            <span
-              aria-label="Some files in this item cannot be downloaded."
+              onBlur={[Function]}
+              onFocus={[Function]}
+              onMouseOut={[Function]}
+              onMouseOver={[Function]}
             >
               <svg
                 fill="none"
@@ -3781,6 +4570,9 @@ exports[`Storyshots Result list Some Access 1`] = `
                 width="1em"
                 xmlns="http://www.w3.org/2000/svg"
               >
+                <title>
+                  Some files cannot be downloaded.
+                </title>
                 <path
                   d="M21.21 15.89A10 10 0 1 1 8 2.83"
                 />
@@ -3788,6 +4580,19 @@ exports[`Storyshots Result list Some Access 1`] = `
                   d="M22 12A10 10 0 0 0 12 2v10z"
                 />
               </svg>
+            </span>
+          </td>
+          <td>
+            <a
+              href=""
+              target="_blank"
+            >
+              Gastroblastoma
+            </a>
+          </td>
+          <td>
+            <span>
+              4GB
             </span>
           </td>
         </tr>
@@ -3809,7 +4614,7 @@ exports[`Storyshots Result list View Only Access 1`] = `
     className="table-responsive"
   >
     <table
-      className="table table-hover"
+      className="result-section__container table table-hover"
     >
       <thead>
         <tr>
@@ -3824,11 +4629,20 @@ exports[`Storyshots Result list View Only Access 1`] = `
       </thead>
       <tbody>
         <tr
+          className="result-section--row"
           onClick={[Function]}
+          onKeyUp={[Function]}
+          role="button"
+          tabIndex="0"
         >
-          <td>
+          <td
+            className="result-row--download-col"
+          >
             <span
-              aria-label="This item cannot be downloaded."
+              onBlur={[Function]}
+              onFocus={[Function]}
+              onMouseOut={[Function]}
+              onMouseOver={[Function]}
             >
               <svg
                 fill="none"
@@ -3846,6 +4660,9 @@ exports[`Storyshots Result list View Only Access 1`] = `
                 width="1em"
                 xmlns="http://www.w3.org/2000/svg"
               >
+                <title>
+                  This item cannot be downloaded.
+                </title>
                 <rect
                   height="11"
                   rx="2"
@@ -3912,6 +4729,12 @@ exports[`Storyshots Result tabs Default 1`] = `
           className="badge badge-secondary"
         >
           4
+           
+          <span
+            className="sr-only"
+          >
+            results
+          </span>
         </span>
       </a>
     </div>
@@ -3933,6 +4756,12 @@ exports[`Storyshots Result tabs Default 1`] = `
           className="badge badge-secondary"
         >
           14
+           
+          <span
+            className="sr-only"
+          >
+            results
+          </span>
         </span>
       </a>
     </div>
@@ -3954,6 +4783,12 @@ exports[`Storyshots Result tabs Default 1`] = `
           className="badge badge-secondary"
         >
           5
+           
+          <span
+            className="sr-only"
+          >
+            results
+          </span>
         </span>
       </a>
     </div>
@@ -3975,6 +4810,12 @@ exports[`Storyshots Result tabs Default 1`] = `
           className="badge badge-secondary"
         >
           80
+           
+          <span
+            className="sr-only"
+          >
+            results
+          </span>
         </span>
       </a>
     </div>
@@ -4100,9 +4941,11 @@ exports[`Storyshots Search page Default 1`] = `
           </button>
         </form>
         <section>
-          <h3>
+          <h2
+            className="h3"
+          >
             Filters
-          </h3>
+          </h2>
           <nav
             className="nav nav-tabs"
             onKeyDown={[Function]}
@@ -4226,12 +5069,12 @@ exports[`Storyshots Search page Default 1`] = `
               id="filters-section-tabpane-projects"
               role="tabpanel"
             >
-              <div>
-                <h4
-                  className="type-schema-list__title"
+              <section>
+                <h3
+                  className="h5"
                 >
-                  Show me
-                </h4>
+                  Schemas
+                </h3>
                 <div
                   className="form-group"
                 >
@@ -4282,9 +5125,15 @@ exports[`Storyshots Search page Default 1`] = `
                   >
                     <div
                       className="card-header"
-                      onClick={[Function]}
                     >
-                      Raw data
+                      <button
+                        className="btn btn-link"
+                        onClick={[Function]}
+                        type="button"
+                      >
+                        Raw data
+                         filters
+                      </button>
                     </div>
                     <div
                       aria-expanded={null}
@@ -4293,7 +5142,7 @@ exports[`Storyshots Search page Default 1`] = `
                       <div
                         className="card-body"
                       >
-                        <div
+                        <section
                           className="single-schema-list__filter"
                         >
                           <h5
@@ -4313,6 +5162,7 @@ exports[`Storyshots Search page Default 1`] = `
                                 className="form-control"
                                 onChange={[Function]}
                                 placeholder=""
+                                value=""
                               />
                               <div
                                 className="input-group-append"
@@ -4320,7 +5170,7 @@ exports[`Storyshots Search page Default 1`] = `
                                 <button
                                   aria-label="Filter results"
                                   className="btn btn-outline-secondary"
-                                  disabled={true}
+                                  disabled={false}
                                   type="submit"
                                 >
                                   Filter
@@ -4329,8 +5179,8 @@ exports[`Storyshots Search page Default 1`] = `
                             </div>
                           </form>
                           <hr />
-                        </div>
-                        <div
+                        </section>
+                        <section
                           className="single-schema-list__filter"
                         >
                           <h5
@@ -4350,6 +5200,7 @@ exports[`Storyshots Search page Default 1`] = `
                                 className="form-control"
                                 onChange={[Function]}
                                 placeholder=""
+                                value=""
                               />
                               <div
                                 className="input-group-append"
@@ -4357,7 +5208,7 @@ exports[`Storyshots Search page Default 1`] = `
                                 <button
                                   aria-label="Filter results"
                                   className="btn btn-outline-secondary"
-                                  disabled={true}
+                                  disabled={false}
                                   type="submit"
                                 >
                                   Filter
@@ -4366,8 +5217,8 @@ exports[`Storyshots Search page Default 1`] = `
                             </div>
                           </form>
                           <hr />
-                        </div>
-                        <div
+                        </section>
+                        <section
                           className="single-schema-list__filter"
                         >
                           <h5
@@ -4387,6 +5238,7 @@ exports[`Storyshots Search page Default 1`] = `
                                 className="form-control"
                                 onChange={[Function]}
                                 placeholder=""
+                                value=""
                               />
                               <div
                                 className="input-group-append"
@@ -4394,7 +5246,7 @@ exports[`Storyshots Search page Default 1`] = `
                                 <button
                                   aria-label="Filter results"
                                   className="btn btn-outline-secondary"
-                                  disabled={true}
+                                  disabled={false}
                                   type="submit"
                                 >
                                   Filter
@@ -4403,12 +5255,12 @@ exports[`Storyshots Search page Default 1`] = `
                             </div>
                           </form>
                           <hr />
-                        </div>
+                        </section>
                       </div>
                     </div>
                   </div>
                 </div>
-              </div>
+              </section>
             </div>
             <div
               aria-hidden={true}
@@ -4417,12 +5269,12 @@ exports[`Storyshots Search page Default 1`] = `
               id="filters-section-tabpane-experiments"
               role="tabpanel"
             >
-              <div>
-                <h4
-                  className="type-schema-list__title"
+              <section>
+                <h3
+                  className="h5"
                 >
-                  Show me
-                </h4>
+                  Schemas
+                </h3>
                 <div
                   className="form-group"
                 >
@@ -4473,9 +5325,15 @@ exports[`Storyshots Search page Default 1`] = `
                   >
                     <div
                       className="card-header"
-                      onClick={[Function]}
                     >
-                      Biopipeline Output
+                      <button
+                        className="btn btn-link"
+                        onClick={[Function]}
+                        type="button"
+                      >
+                        Biopipeline Output
+                         filters
+                      </button>
                     </div>
                     <div
                       aria-expanded={null}
@@ -4484,7 +5342,7 @@ exports[`Storyshots Search page Default 1`] = `
                       <div
                         className="card-body"
                       >
-                        <div
+                        <section
                           className="single-schema-list__filter"
                         >
                           <h5
@@ -4504,6 +5362,7 @@ exports[`Storyshots Search page Default 1`] = `
                                 className="form-control"
                                 onChange={[Function]}
                                 placeholder=""
+                                value=""
                               />
                               <div
                                 className="input-group-append"
@@ -4511,7 +5370,7 @@ exports[`Storyshots Search page Default 1`] = `
                                 <button
                                   aria-label="Filter results"
                                   className="btn btn-outline-secondary"
-                                  disabled={true}
+                                  disabled={false}
                                   type="submit"
                                 >
                                   Filter
@@ -4520,8 +5379,8 @@ exports[`Storyshots Search page Default 1`] = `
                             </div>
                           </form>
                           <hr />
-                        </div>
-                        <div
+                        </section>
+                        <section
                           className="single-schema-list__filter"
                         >
                           <h5
@@ -4541,6 +5400,7 @@ exports[`Storyshots Search page Default 1`] = `
                                 className="form-control"
                                 onChange={[Function]}
                                 placeholder=""
+                                value=""
                               />
                               <div
                                 className="input-group-append"
@@ -4548,7 +5408,7 @@ exports[`Storyshots Search page Default 1`] = `
                                 <button
                                   aria-label="Filter results"
                                   className="btn btn-outline-secondary"
-                                  disabled={true}
+                                  disabled={false}
                                   type="submit"
                                 >
                                   Filter
@@ -4557,8 +5417,8 @@ exports[`Storyshots Search page Default 1`] = `
                             </div>
                           </form>
                           <hr />
-                        </div>
-                        <div
+                        </section>
+                        <section
                           className="single-schema-list__filter"
                         >
                           <h5
@@ -4578,6 +5438,7 @@ exports[`Storyshots Search page Default 1`] = `
                                 className="form-control"
                                 onChange={[Function]}
                                 placeholder=""
+                                value=""
                               />
                               <div
                                 className="input-group-append"
@@ -4585,7 +5446,7 @@ exports[`Storyshots Search page Default 1`] = `
                                 <button
                                   aria-label="Filter results"
                                   className="btn btn-outline-secondary"
-                                  disabled={true}
+                                  disabled={false}
                                   type="submit"
                                 >
                                   Filter
@@ -4594,12 +5455,12 @@ exports[`Storyshots Search page Default 1`] = `
                             </div>
                           </form>
                           <hr />
-                        </div>
+                        </section>
                       </div>
                     </div>
                   </div>
                 </div>
-              </div>
+              </section>
             </div>
             <div
               aria-hidden={true}
@@ -4608,12 +5469,12 @@ exports[`Storyshots Search page Default 1`] = `
               id="filters-section-tabpane-datasets"
               role="tabpanel"
             >
-              <div>
-                <h4
-                  className="type-schema-list__title"
+              <section>
+                <h3
+                  className="h5"
                 >
-                  Show me
-                </h4>
+                  Schemas
+                </h3>
                 <div
                   className="form-group"
                 >
@@ -4664,9 +5525,15 @@ exports[`Storyshots Search page Default 1`] = `
                   >
                     <div
                       className="card-header"
-                      onClick={[Function]}
                     >
-                      Raw data
+                      <button
+                        className="btn btn-link"
+                        onClick={[Function]}
+                        type="button"
+                      >
+                        Raw data
+                         filters
+                      </button>
                     </div>
                     <div
                       aria-expanded={null}
@@ -4675,7 +5542,7 @@ exports[`Storyshots Search page Default 1`] = `
                       <div
                         className="card-body"
                       >
-                        <div
+                        <section
                           className="single-schema-list__filter"
                         >
                           <h5
@@ -4695,6 +5562,7 @@ exports[`Storyshots Search page Default 1`] = `
                                 className="form-control"
                                 onChange={[Function]}
                                 placeholder=""
+                                value=""
                               />
                               <div
                                 className="input-group-append"
@@ -4702,7 +5570,7 @@ exports[`Storyshots Search page Default 1`] = `
                                 <button
                                   aria-label="Filter results"
                                   className="btn btn-outline-secondary"
-                                  disabled={true}
+                                  disabled={false}
                                   type="submit"
                                 >
                                   Filter
@@ -4711,8 +5579,8 @@ exports[`Storyshots Search page Default 1`] = `
                             </div>
                           </form>
                           <hr />
-                        </div>
-                        <div
+                        </section>
+                        <section
                           className="single-schema-list__filter"
                         >
                           <h5
@@ -4732,6 +5600,7 @@ exports[`Storyshots Search page Default 1`] = `
                                 className="form-control"
                                 onChange={[Function]}
                                 placeholder=""
+                                value=""
                               />
                               <div
                                 className="input-group-append"
@@ -4739,7 +5608,7 @@ exports[`Storyshots Search page Default 1`] = `
                                 <button
                                   aria-label="Filter results"
                                   className="btn btn-outline-secondary"
-                                  disabled={true}
+                                  disabled={false}
                                   type="submit"
                                 >
                                   Filter
@@ -4748,8 +5617,8 @@ exports[`Storyshots Search page Default 1`] = `
                             </div>
                           </form>
                           <hr />
-                        </div>
-                        <div
+                        </section>
+                        <section
                           className="single-schema-list__filter"
                         >
                           <h5
@@ -4769,6 +5638,7 @@ exports[`Storyshots Search page Default 1`] = `
                                 className="form-control"
                                 onChange={[Function]}
                                 placeholder=""
+                                value=""
                               />
                               <div
                                 className="input-group-append"
@@ -4776,7 +5646,7 @@ exports[`Storyshots Search page Default 1`] = `
                                 <button
                                   aria-label="Filter results"
                                   className="btn btn-outline-secondary"
-                                  disabled={true}
+                                  disabled={false}
                                   type="submit"
                                 >
                                   Filter
@@ -4785,12 +5655,12 @@ exports[`Storyshots Search page Default 1`] = `
                             </div>
                           </form>
                           <hr />
-                        </div>
+                        </section>
                       </div>
                     </div>
                   </div>
                 </div>
-              </div>
+              </section>
             </div>
             <div
               aria-hidden={true}
@@ -4799,12 +5669,12 @@ exports[`Storyshots Search page Default 1`] = `
               id="filters-section-tabpane-datafiles"
               role="tabpanel"
             >
-              <div>
-                <h4
-                  className="type-schema-list__title"
+              <section>
+                <h3
+                  className="h5"
                 >
-                  Show me
-                </h4>
+                  Schemas
+                </h3>
                 <div
                   className="form-group"
                 >
@@ -4855,9 +5725,15 @@ exports[`Storyshots Search page Default 1`] = `
                   >
                     <div
                       className="card-header"
-                      onClick={[Function]}
                     >
-                      Raw data
+                      <button
+                        className="btn btn-link"
+                        onClick={[Function]}
+                        type="button"
+                      >
+                        Raw data
+                         filters
+                      </button>
                     </div>
                     <div
                       aria-expanded={null}
@@ -4866,7 +5742,7 @@ exports[`Storyshots Search page Default 1`] = `
                       <div
                         className="card-body"
                       >
-                        <div
+                        <section
                           className="single-schema-list__filter"
                         >
                           <h5
@@ -4886,6 +5762,7 @@ exports[`Storyshots Search page Default 1`] = `
                                 className="form-control"
                                 onChange={[Function]}
                                 placeholder=""
+                                value=""
                               />
                               <div
                                 className="input-group-append"
@@ -4893,7 +5770,7 @@ exports[`Storyshots Search page Default 1`] = `
                                 <button
                                   aria-label="Filter results"
                                   className="btn btn-outline-secondary"
-                                  disabled={true}
+                                  disabled={false}
                                   type="submit"
                                 >
                                   Filter
@@ -4902,8 +5779,8 @@ exports[`Storyshots Search page Default 1`] = `
                             </div>
                           </form>
                           <hr />
-                        </div>
-                        <div
+                        </section>
+                        <section
                           className="single-schema-list__filter"
                         >
                           <h5
@@ -4923,6 +5800,7 @@ exports[`Storyshots Search page Default 1`] = `
                                 className="form-control"
                                 onChange={[Function]}
                                 placeholder=""
+                                value=""
                               />
                               <div
                                 className="input-group-append"
@@ -4930,7 +5808,7 @@ exports[`Storyshots Search page Default 1`] = `
                                 <button
                                   aria-label="Filter results"
                                   className="btn btn-outline-secondary"
-                                  disabled={true}
+                                  disabled={false}
                                   type="submit"
                                 >
                                   Filter
@@ -4939,8 +5817,8 @@ exports[`Storyshots Search page Default 1`] = `
                             </div>
                           </form>
                           <hr />
-                        </div>
-                        <div
+                        </section>
+                        <section
                           className="single-schema-list__filter"
                         >
                           <h5
@@ -4960,6 +5838,7 @@ exports[`Storyshots Search page Default 1`] = `
                                 className="form-control"
                                 onChange={[Function]}
                                 placeholder=""
+                                value=""
                               />
                               <div
                                 className="input-group-append"
@@ -4967,7 +5846,7 @@ exports[`Storyshots Search page Default 1`] = `
                                 <button
                                   aria-label="Filter results"
                                   className="btn btn-outline-secondary"
-                                  disabled={true}
+                                  disabled={false}
                                   type="submit"
                                 >
                                   Filter
@@ -4976,7 +5855,7 @@ exports[`Storyshots Search page Default 1`] = `
                             </div>
                           </form>
                           <hr />
-                        </div>
+                        </section>
                       </div>
                     </div>
                   </div>
@@ -4985,9 +5864,15 @@ exports[`Storyshots Search page Default 1`] = `
                   >
                     <div
                       className="card-header"
-                      onClick={[Function]}
                     >
-                      Biopipeline Output
+                      <button
+                        className="btn btn-link"
+                        onClick={[Function]}
+                        type="button"
+                      >
+                        Biopipeline Output
+                         filters
+                      </button>
                     </div>
                     <div
                       aria-expanded={null}
@@ -4996,7 +5881,7 @@ exports[`Storyshots Search page Default 1`] = `
                       <div
                         className="card-body"
                       >
-                        <div
+                        <section
                           className="single-schema-list__filter"
                         >
                           <h5
@@ -5016,6 +5901,7 @@ exports[`Storyshots Search page Default 1`] = `
                                 className="form-control"
                                 onChange={[Function]}
                                 placeholder=""
+                                value=""
                               />
                               <div
                                 className="input-group-append"
@@ -5023,7 +5909,7 @@ exports[`Storyshots Search page Default 1`] = `
                                 <button
                                   aria-label="Filter results"
                                   className="btn btn-outline-secondary"
-                                  disabled={true}
+                                  disabled={false}
                                   type="submit"
                                 >
                                   Filter
@@ -5032,8 +5918,8 @@ exports[`Storyshots Search page Default 1`] = `
                             </div>
                           </form>
                           <hr />
-                        </div>
-                        <div
+                        </section>
+                        <section
                           className="single-schema-list__filter"
                         >
                           <h5
@@ -5053,6 +5939,7 @@ exports[`Storyshots Search page Default 1`] = `
                                 className="form-control"
                                 onChange={[Function]}
                                 placeholder=""
+                                value=""
                               />
                               <div
                                 className="input-group-append"
@@ -5060,7 +5947,7 @@ exports[`Storyshots Search page Default 1`] = `
                                 <button
                                   aria-label="Filter results"
                                   className="btn btn-outline-secondary"
-                                  disabled={true}
+                                  disabled={false}
                                   type="submit"
                                 >
                                   Filter
@@ -5069,8 +5956,8 @@ exports[`Storyshots Search page Default 1`] = `
                             </div>
                           </form>
                           <hr />
-                        </div>
-                        <div
+                        </section>
+                        <section
                           className="single-schema-list__filter"
                         >
                           <h5
@@ -5090,6 +5977,7 @@ exports[`Storyshots Search page Default 1`] = `
                                 className="form-control"
                                 onChange={[Function]}
                                 placeholder=""
+                                value=""
                               />
                               <div
                                 className="input-group-append"
@@ -5097,7 +5985,7 @@ exports[`Storyshots Search page Default 1`] = `
                                 <button
                                   aria-label="Filter results"
                                   className="btn btn-outline-secondary"
-                                  disabled={true}
+                                  disabled={false}
                                   type="submit"
                                 >
                                   Filter
@@ -5106,12 +5994,12 @@ exports[`Storyshots Search page Default 1`] = `
                             </div>
                           </form>
                           <hr />
-                        </div>
+                        </section>
                       </div>
                     </div>
                   </div>
                 </div>
-              </div>
+              </section>
             </div>
           </div>
         </section>
@@ -5143,6 +6031,12 @@ exports[`Storyshots Search page Default 1`] = `
               className="badge badge-secondary"
             >
               1
+               
+              <span
+                className="sr-only"
+              >
+                result
+              </span>
             </span>
           </a>
         </div>
@@ -5164,6 +6058,12 @@ exports[`Storyshots Search page Default 1`] = `
               className="badge badge-secondary"
             >
               3
+               
+              <span
+                className="sr-only"
+              >
+                results
+              </span>
             </span>
           </a>
         </div>
@@ -5185,6 +6085,12 @@ exports[`Storyshots Search page Default 1`] = `
               className="badge badge-secondary"
             >
               1
+               
+              <span
+                className="sr-only"
+              >
+                result
+              </span>
             </span>
           </a>
         </div>
@@ -5206,166 +6112,207 @@ exports[`Storyshots Search page Default 1`] = `
               className="badge badge-secondary"
             >
               1
+               
+              <span
+                className="sr-only"
+              >
+                result
+              </span>
             </span>
           </a>
         </div>
       </div>
       <div
+        className="result-section--tabpanel"
         role="tabpanel"
       >
-        <p>
-          Showing 
-          3
-           results
+        <p
+          className="result-section--count-summary"
+        >
+          <span>
+            Showing 
+            3
+             
+            results
+            .
+          </span>
         </p>
         <div
-          className="table-responsive"
+          className="tabpanel__container--horizontal"
         >
-          <table
-            className="table table-hover"
+          <div
+            className="table-responsive"
           >
-            <thead>
-              <tr>
-                <th />
-                <th>
-                  Name
-                </th>
-                <th>
-                  Size
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr
-                onClick={[Function]}
-              >
-                <td />
-                <td>
-                  <a
-                    href=""
-                    target="_blank"
-                  >
-                    siNET
-                  </a>
-                </td>
-                <td>
-                  <span
-                    style={
-                      Object {
-                        "paddingRight": "1em",
-                      }
-                    }
-                  >
-                    35MB
-                  </span>
-                </td>
-              </tr>
-              <tr
-                onClick={[Function]}
-              >
-                <td />
-                <td>
-                  <a
-                    href=""
-                    target="_blank"
-                  >
-                    Gastroblastoma
-                  </a>
-                </td>
-                <td>
-                  <span
-                    style={
-                      Object {
-                        "paddingRight": "1em",
-                      }
-                    }
-                  >
-                    4GB
-                  </span>
-                  <span
-                    aria-label="Some files in this item cannot be downloaded."
-                  >
-                    <svg
-                      fill="none"
-                      height="1em"
-                      stroke="currentColor"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      style={
-                        Object {
-                          "color": undefined,
-                        }
-                      }
-                      viewBox="0 0 24 24"
-                      width="1em"
-                      xmlns="http://www.w3.org/2000/svg"
+            <table
+              className="result-section__container table table-hover"
+            >
+              <thead>
+                <tr>
+                  <th />
+                  <th>
+                    Name
+                  </th>
+                  <th>
+                    Size
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr
+                  className="result-section--row"
+                  onClick={[Function]}
+                  onKeyUp={[Function]}
+                  role="button"
+                  tabIndex="0"
+                >
+                  <td
+                    className="result-row--download-col"
+                  />
+                  <td>
+                    <a
+                      href=""
+                      target="_blank"
                     >
-                      <path
-                        d="M21.21 15.89A10 10 0 1 1 8 2.83"
-                      />
-                      <path
-                        d="M22 12A10 10 0 0 0 12 2v10z"
-                      />
-                    </svg>
-                  </span>
-                </td>
-              </tr>
-              <tr
-                onClick={[Function]}
-              >
-                <td>
-                  <span
-                    aria-label="This item cannot be downloaded."
+                      siNET
+                    </a>
+                  </td>
+                  <td>
+                    <span>
+                      35MB
+                    </span>
+                  </td>
+                </tr>
+                <tr
+                  className="result-section--row"
+                  onClick={[Function]}
+                  onKeyUp={[Function]}
+                  role="button"
+                  tabIndex="0"
+                >
+                  <td
+                    className="result-row--download-col"
                   >
-                    <svg
-                      fill="none"
-                      height="1em"
-                      stroke="currentColor"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      style={
-                        Object {
-                          "color": undefined,
-                        }
-                      }
-                      viewBox="0 0 24 24"
-                      width="1em"
-                      xmlns="http://www.w3.org/2000/svg"
+                    <span
+                      onBlur={[Function]}
+                      onFocus={[Function]}
+                      onMouseOut={[Function]}
+                      onMouseOver={[Function]}
                     >
-                      <rect
-                        height="11"
-                        rx="2"
-                        ry="2"
-                        width="18"
-                        x="3"
-                        y="11"
-                      />
-                      <path
-                        d="M7 11V7a5 5 0 0 1 10 0v4"
-                      />
-                    </svg>
-                  </span>
-                </td>
-                <td>
-                  <a
-                    href=""
-                    target="_blank"
+                      <svg
+                        fill="none"
+                        height="1em"
+                        stroke="currentColor"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        style={
+                          Object {
+                            "color": undefined,
+                          }
+                        }
+                        viewBox="0 0 24 24"
+                        width="1em"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <title>
+                          Some files cannot be downloaded.
+                        </title>
+                        <path
+                          d="M21.21 15.89A10 10 0 1 1 8 2.83"
+                        />
+                        <path
+                          d="M22 12A10 10 0 0 0 12 2v10z"
+                        />
+                      </svg>
+                    </span>
+                  </td>
+                  <td>
+                    <a
+                      href=""
+                      target="_blank"
+                    >
+                      Gastroblastoma
+                    </a>
+                  </td>
+                  <td>
+                    <span>
+                      4GB
+                    </span>
+                  </td>
+                </tr>
+                <tr
+                  className="result-section--row"
+                  onClick={[Function]}
+                  onKeyUp={[Function]}
+                  role="button"
+                  tabIndex="0"
+                >
+                  <td
+                    className="result-row--download-col"
                   >
-                    Lung
-                  </a>
-                </td>
-                <td>
-                  <span
-                    aria-label="Not applicable"
-                  >
-                    —
-                  </span>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+                    <span
+                      onBlur={[Function]}
+                      onFocus={[Function]}
+                      onMouseOut={[Function]}
+                      onMouseOver={[Function]}
+                    >
+                      <svg
+                        fill="none"
+                        height="1em"
+                        stroke="currentColor"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        style={
+                          Object {
+                            "color": undefined,
+                          }
+                        }
+                        viewBox="0 0 24 24"
+                        width="1em"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <title>
+                          This item cannot be downloaded.
+                        </title>
+                        <rect
+                          height="11"
+                          rx="2"
+                          ry="2"
+                          width="18"
+                          x="3"
+                          y="11"
+                        />
+                        <path
+                          d="M7 11V7a5 5 0 0 1 10 0v4"
+                        />
+                      </svg>
+                    </span>
+                  </td>
+                  <td>
+                    <a
+                      href=""
+                      target="_blank"
+                    >
+                      Lung
+                    </a>
+                  </td>
+                  <td>
+                    <span
+                      aria-label="Not applicable"
+                    >
+                      —
+                    </span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div
+            className="preview-card__body"
+          >
+            Please select a row to view the details.
+          </div>
         </div>
       </div>
     </main>
@@ -5411,9 +6358,11 @@ exports[`Storyshots Search page Error 1`] = `
           </button>
         </form>
         <section>
-          <h3>
+          <h2
+            className="h3"
+          >
             Filters
-          </h3>
+          </h2>
           <nav
             className="nav nav-tabs"
             onKeyDown={[Function]}
@@ -5537,12 +6486,12 @@ exports[`Storyshots Search page Error 1`] = `
               id="filters-section-tabpane-projects"
               role="tabpanel"
             >
-              <div>
-                <h4
-                  className="type-schema-list__title"
+              <section>
+                <h3
+                  className="h5"
                 >
-                  Show me
-                </h4>
+                  Schemas
+                </h3>
                 <div
                   className="form-group"
                 >
@@ -5593,9 +6542,15 @@ exports[`Storyshots Search page Error 1`] = `
                   >
                     <div
                       className="card-header"
-                      onClick={[Function]}
                     >
-                      Raw data
+                      <button
+                        className="btn btn-link"
+                        onClick={[Function]}
+                        type="button"
+                      >
+                        Raw data
+                         filters
+                      </button>
                     </div>
                     <div
                       aria-expanded={null}
@@ -5604,7 +6559,7 @@ exports[`Storyshots Search page Error 1`] = `
                       <div
                         className="card-body"
                       >
-                        <div
+                        <section
                           className="single-schema-list__filter"
                         >
                           <h5
@@ -5624,6 +6579,7 @@ exports[`Storyshots Search page Error 1`] = `
                                 className="form-control"
                                 onChange={[Function]}
                                 placeholder=""
+                                value=""
                               />
                               <div
                                 className="input-group-append"
@@ -5631,7 +6587,7 @@ exports[`Storyshots Search page Error 1`] = `
                                 <button
                                   aria-label="Filter results"
                                   className="btn btn-outline-secondary"
-                                  disabled={true}
+                                  disabled={false}
                                   type="submit"
                                 >
                                   Filter
@@ -5640,8 +6596,8 @@ exports[`Storyshots Search page Error 1`] = `
                             </div>
                           </form>
                           <hr />
-                        </div>
-                        <div
+                        </section>
+                        <section
                           className="single-schema-list__filter"
                         >
                           <h5
@@ -5661,6 +6617,7 @@ exports[`Storyshots Search page Error 1`] = `
                                 className="form-control"
                                 onChange={[Function]}
                                 placeholder=""
+                                value=""
                               />
                               <div
                                 className="input-group-append"
@@ -5668,7 +6625,7 @@ exports[`Storyshots Search page Error 1`] = `
                                 <button
                                   aria-label="Filter results"
                                   className="btn btn-outline-secondary"
-                                  disabled={true}
+                                  disabled={false}
                                   type="submit"
                                 >
                                   Filter
@@ -5677,8 +6634,8 @@ exports[`Storyshots Search page Error 1`] = `
                             </div>
                           </form>
                           <hr />
-                        </div>
-                        <div
+                        </section>
+                        <section
                           className="single-schema-list__filter"
                         >
                           <h5
@@ -5698,6 +6655,7 @@ exports[`Storyshots Search page Error 1`] = `
                                 className="form-control"
                                 onChange={[Function]}
                                 placeholder=""
+                                value=""
                               />
                               <div
                                 className="input-group-append"
@@ -5705,7 +6663,7 @@ exports[`Storyshots Search page Error 1`] = `
                                 <button
                                   aria-label="Filter results"
                                   className="btn btn-outline-secondary"
-                                  disabled={true}
+                                  disabled={false}
                                   type="submit"
                                 >
                                   Filter
@@ -5714,12 +6672,12 @@ exports[`Storyshots Search page Error 1`] = `
                             </div>
                           </form>
                           <hr />
-                        </div>
+                        </section>
                       </div>
                     </div>
                   </div>
                 </div>
-              </div>
+              </section>
             </div>
             <div
               aria-hidden={true}
@@ -5728,12 +6686,12 @@ exports[`Storyshots Search page Error 1`] = `
               id="filters-section-tabpane-experiments"
               role="tabpanel"
             >
-              <div>
-                <h4
-                  className="type-schema-list__title"
+              <section>
+                <h3
+                  className="h5"
                 >
-                  Show me
-                </h4>
+                  Schemas
+                </h3>
                 <div
                   className="form-group"
                 >
@@ -5784,9 +6742,15 @@ exports[`Storyshots Search page Error 1`] = `
                   >
                     <div
                       className="card-header"
-                      onClick={[Function]}
                     >
-                      Biopipeline Output
+                      <button
+                        className="btn btn-link"
+                        onClick={[Function]}
+                        type="button"
+                      >
+                        Biopipeline Output
+                         filters
+                      </button>
                     </div>
                     <div
                       aria-expanded={null}
@@ -5795,7 +6759,7 @@ exports[`Storyshots Search page Error 1`] = `
                       <div
                         className="card-body"
                       >
-                        <div
+                        <section
                           className="single-schema-list__filter"
                         >
                           <h5
@@ -5815,6 +6779,7 @@ exports[`Storyshots Search page Error 1`] = `
                                 className="form-control"
                                 onChange={[Function]}
                                 placeholder=""
+                                value=""
                               />
                               <div
                                 className="input-group-append"
@@ -5822,7 +6787,7 @@ exports[`Storyshots Search page Error 1`] = `
                                 <button
                                   aria-label="Filter results"
                                   className="btn btn-outline-secondary"
-                                  disabled={true}
+                                  disabled={false}
                                   type="submit"
                                 >
                                   Filter
@@ -5831,8 +6796,8 @@ exports[`Storyshots Search page Error 1`] = `
                             </div>
                           </form>
                           <hr />
-                        </div>
-                        <div
+                        </section>
+                        <section
                           className="single-schema-list__filter"
                         >
                           <h5
@@ -5852,6 +6817,7 @@ exports[`Storyshots Search page Error 1`] = `
                                 className="form-control"
                                 onChange={[Function]}
                                 placeholder=""
+                                value=""
                               />
                               <div
                                 className="input-group-append"
@@ -5859,7 +6825,7 @@ exports[`Storyshots Search page Error 1`] = `
                                 <button
                                   aria-label="Filter results"
                                   className="btn btn-outline-secondary"
-                                  disabled={true}
+                                  disabled={false}
                                   type="submit"
                                 >
                                   Filter
@@ -5868,8 +6834,8 @@ exports[`Storyshots Search page Error 1`] = `
                             </div>
                           </form>
                           <hr />
-                        </div>
-                        <div
+                        </section>
+                        <section
                           className="single-schema-list__filter"
                         >
                           <h5
@@ -5889,6 +6855,7 @@ exports[`Storyshots Search page Error 1`] = `
                                 className="form-control"
                                 onChange={[Function]}
                                 placeholder=""
+                                value=""
                               />
                               <div
                                 className="input-group-append"
@@ -5896,7 +6863,7 @@ exports[`Storyshots Search page Error 1`] = `
                                 <button
                                   aria-label="Filter results"
                                   className="btn btn-outline-secondary"
-                                  disabled={true}
+                                  disabled={false}
                                   type="submit"
                                 >
                                   Filter
@@ -5905,12 +6872,12 @@ exports[`Storyshots Search page Error 1`] = `
                             </div>
                           </form>
                           <hr />
-                        </div>
+                        </section>
                       </div>
                     </div>
                   </div>
                 </div>
-              </div>
+              </section>
             </div>
             <div
               aria-hidden={true}
@@ -5919,12 +6886,12 @@ exports[`Storyshots Search page Error 1`] = `
               id="filters-section-tabpane-datasets"
               role="tabpanel"
             >
-              <div>
-                <h4
-                  className="type-schema-list__title"
+              <section>
+                <h3
+                  className="h5"
                 >
-                  Show me
-                </h4>
+                  Schemas
+                </h3>
                 <div
                   className="form-group"
                 >
@@ -5975,9 +6942,15 @@ exports[`Storyshots Search page Error 1`] = `
                   >
                     <div
                       className="card-header"
-                      onClick={[Function]}
                     >
-                      Raw data
+                      <button
+                        className="btn btn-link"
+                        onClick={[Function]}
+                        type="button"
+                      >
+                        Raw data
+                         filters
+                      </button>
                     </div>
                     <div
                       aria-expanded={null}
@@ -5986,7 +6959,7 @@ exports[`Storyshots Search page Error 1`] = `
                       <div
                         className="card-body"
                       >
-                        <div
+                        <section
                           className="single-schema-list__filter"
                         >
                           <h5
@@ -6006,6 +6979,7 @@ exports[`Storyshots Search page Error 1`] = `
                                 className="form-control"
                                 onChange={[Function]}
                                 placeholder=""
+                                value=""
                               />
                               <div
                                 className="input-group-append"
@@ -6013,7 +6987,7 @@ exports[`Storyshots Search page Error 1`] = `
                                 <button
                                   aria-label="Filter results"
                                   className="btn btn-outline-secondary"
-                                  disabled={true}
+                                  disabled={false}
                                   type="submit"
                                 >
                                   Filter
@@ -6022,8 +6996,8 @@ exports[`Storyshots Search page Error 1`] = `
                             </div>
                           </form>
                           <hr />
-                        </div>
-                        <div
+                        </section>
+                        <section
                           className="single-schema-list__filter"
                         >
                           <h5
@@ -6043,6 +7017,7 @@ exports[`Storyshots Search page Error 1`] = `
                                 className="form-control"
                                 onChange={[Function]}
                                 placeholder=""
+                                value=""
                               />
                               <div
                                 className="input-group-append"
@@ -6050,7 +7025,7 @@ exports[`Storyshots Search page Error 1`] = `
                                 <button
                                   aria-label="Filter results"
                                   className="btn btn-outline-secondary"
-                                  disabled={true}
+                                  disabled={false}
                                   type="submit"
                                 >
                                   Filter
@@ -6059,8 +7034,8 @@ exports[`Storyshots Search page Error 1`] = `
                             </div>
                           </form>
                           <hr />
-                        </div>
-                        <div
+                        </section>
+                        <section
                           className="single-schema-list__filter"
                         >
                           <h5
@@ -6080,6 +7055,7 @@ exports[`Storyshots Search page Error 1`] = `
                                 className="form-control"
                                 onChange={[Function]}
                                 placeholder=""
+                                value=""
                               />
                               <div
                                 className="input-group-append"
@@ -6087,7 +7063,7 @@ exports[`Storyshots Search page Error 1`] = `
                                 <button
                                   aria-label="Filter results"
                                   className="btn btn-outline-secondary"
-                                  disabled={true}
+                                  disabled={false}
                                   type="submit"
                                 >
                                   Filter
@@ -6096,12 +7072,12 @@ exports[`Storyshots Search page Error 1`] = `
                             </div>
                           </form>
                           <hr />
-                        </div>
+                        </section>
                       </div>
                     </div>
                   </div>
                 </div>
-              </div>
+              </section>
             </div>
             <div
               aria-hidden={true}
@@ -6110,12 +7086,12 @@ exports[`Storyshots Search page Error 1`] = `
               id="filters-section-tabpane-datafiles"
               role="tabpanel"
             >
-              <div>
-                <h4
-                  className="type-schema-list__title"
+              <section>
+                <h3
+                  className="h5"
                 >
-                  Show me
-                </h4>
+                  Schemas
+                </h3>
                 <div
                   className="form-group"
                 >
@@ -6166,9 +7142,15 @@ exports[`Storyshots Search page Error 1`] = `
                   >
                     <div
                       className="card-header"
-                      onClick={[Function]}
                     >
-                      Raw data
+                      <button
+                        className="btn btn-link"
+                        onClick={[Function]}
+                        type="button"
+                      >
+                        Raw data
+                         filters
+                      </button>
                     </div>
                     <div
                       aria-expanded={null}
@@ -6177,7 +7159,7 @@ exports[`Storyshots Search page Error 1`] = `
                       <div
                         className="card-body"
                       >
-                        <div
+                        <section
                           className="single-schema-list__filter"
                         >
                           <h5
@@ -6197,6 +7179,7 @@ exports[`Storyshots Search page Error 1`] = `
                                 className="form-control"
                                 onChange={[Function]}
                                 placeholder=""
+                                value=""
                               />
                               <div
                                 className="input-group-append"
@@ -6204,7 +7187,7 @@ exports[`Storyshots Search page Error 1`] = `
                                 <button
                                   aria-label="Filter results"
                                   className="btn btn-outline-secondary"
-                                  disabled={true}
+                                  disabled={false}
                                   type="submit"
                                 >
                                   Filter
@@ -6213,8 +7196,8 @@ exports[`Storyshots Search page Error 1`] = `
                             </div>
                           </form>
                           <hr />
-                        </div>
-                        <div
+                        </section>
+                        <section
                           className="single-schema-list__filter"
                         >
                           <h5
@@ -6234,6 +7217,7 @@ exports[`Storyshots Search page Error 1`] = `
                                 className="form-control"
                                 onChange={[Function]}
                                 placeholder=""
+                                value=""
                               />
                               <div
                                 className="input-group-append"
@@ -6241,7 +7225,7 @@ exports[`Storyshots Search page Error 1`] = `
                                 <button
                                   aria-label="Filter results"
                                   className="btn btn-outline-secondary"
-                                  disabled={true}
+                                  disabled={false}
                                   type="submit"
                                 >
                                   Filter
@@ -6250,8 +7234,8 @@ exports[`Storyshots Search page Error 1`] = `
                             </div>
                           </form>
                           <hr />
-                        </div>
-                        <div
+                        </section>
+                        <section
                           className="single-schema-list__filter"
                         >
                           <h5
@@ -6271,6 +7255,7 @@ exports[`Storyshots Search page Error 1`] = `
                                 className="form-control"
                                 onChange={[Function]}
                                 placeholder=""
+                                value=""
                               />
                               <div
                                 className="input-group-append"
@@ -6278,7 +7263,7 @@ exports[`Storyshots Search page Error 1`] = `
                                 <button
                                   aria-label="Filter results"
                                   className="btn btn-outline-secondary"
-                                  disabled={true}
+                                  disabled={false}
                                   type="submit"
                                 >
                                   Filter
@@ -6287,7 +7272,7 @@ exports[`Storyshots Search page Error 1`] = `
                             </div>
                           </form>
                           <hr />
-                        </div>
+                        </section>
                       </div>
                     </div>
                   </div>
@@ -6296,9 +7281,15 @@ exports[`Storyshots Search page Error 1`] = `
                   >
                     <div
                       className="card-header"
-                      onClick={[Function]}
                     >
-                      Biopipeline Output
+                      <button
+                        className="btn btn-link"
+                        onClick={[Function]}
+                        type="button"
+                      >
+                        Biopipeline Output
+                         filters
+                      </button>
                     </div>
                     <div
                       aria-expanded={null}
@@ -6307,7 +7298,7 @@ exports[`Storyshots Search page Error 1`] = `
                       <div
                         className="card-body"
                       >
-                        <div
+                        <section
                           className="single-schema-list__filter"
                         >
                           <h5
@@ -6327,6 +7318,7 @@ exports[`Storyshots Search page Error 1`] = `
                                 className="form-control"
                                 onChange={[Function]}
                                 placeholder=""
+                                value=""
                               />
                               <div
                                 className="input-group-append"
@@ -6334,7 +7326,7 @@ exports[`Storyshots Search page Error 1`] = `
                                 <button
                                   aria-label="Filter results"
                                   className="btn btn-outline-secondary"
-                                  disabled={true}
+                                  disabled={false}
                                   type="submit"
                                 >
                                   Filter
@@ -6343,8 +7335,8 @@ exports[`Storyshots Search page Error 1`] = `
                             </div>
                           </form>
                           <hr />
-                        </div>
-                        <div
+                        </section>
+                        <section
                           className="single-schema-list__filter"
                         >
                           <h5
@@ -6364,6 +7356,7 @@ exports[`Storyshots Search page Error 1`] = `
                                 className="form-control"
                                 onChange={[Function]}
                                 placeholder=""
+                                value=""
                               />
                               <div
                                 className="input-group-append"
@@ -6371,7 +7364,7 @@ exports[`Storyshots Search page Error 1`] = `
                                 <button
                                   aria-label="Filter results"
                                   className="btn btn-outline-secondary"
-                                  disabled={true}
+                                  disabled={false}
                                   type="submit"
                                 >
                                   Filter
@@ -6380,8 +7373,8 @@ exports[`Storyshots Search page Error 1`] = `
                             </div>
                           </form>
                           <hr />
-                        </div>
-                        <div
+                        </section>
+                        <section
                           className="single-schema-list__filter"
                         >
                           <h5
@@ -6401,6 +7394,7 @@ exports[`Storyshots Search page Error 1`] = `
                                 className="form-control"
                                 onChange={[Function]}
                                 placeholder=""
+                                value=""
                               />
                               <div
                                 className="input-group-append"
@@ -6408,7 +7402,7 @@ exports[`Storyshots Search page Error 1`] = `
                                 <button
                                   aria-label="Filter results"
                                   className="btn btn-outline-secondary"
-                                  disabled={true}
+                                  disabled={false}
                                   type="submit"
                                 >
                                   Filter
@@ -6417,12 +7411,12 @@ exports[`Storyshots Search page Error 1`] = `
                             </div>
                           </form>
                           <hr />
-                        </div>
+                        </section>
                       </div>
                     </div>
                   </div>
                 </div>
-              </div>
+              </section>
             </div>
           </div>
         </section>
@@ -6502,10 +7496,19 @@ exports[`Storyshots Search page Error 1`] = `
         </div>
       </div>
       <div
+        className="result-section--tabpanel"
         role="tabpanel"
       >
-        <div>
-          An error occurred. Please try searching again.
+        <div
+          className="tabpanel__container--horizontal"
+        >
+          <div
+            className="result-section--msg result-section--error-msg"
+          >
+            <p>
+              An error occurred. Please try another query, or refresh the page and try searching again.
+            </p>
+          </div>
         </div>
       </div>
     </main>
@@ -6551,9 +7554,11 @@ exports[`Storyshots Search page Loading 1`] = `
           </button>
         </form>
         <section>
-          <h3>
+          <h2
+            className="h3"
+          >
             Filters
-          </h3>
+          </h2>
           <nav
             className="nav nav-tabs"
             onKeyDown={[Function]}
@@ -6677,12 +7682,12 @@ exports[`Storyshots Search page Loading 1`] = `
               id="filters-section-tabpane-projects"
               role="tabpanel"
             >
-              <div>
-                <h4
-                  className="type-schema-list__title"
+              <section>
+                <h3
+                  className="h5"
                 >
-                  Show me
-                </h4>
+                  Schemas
+                </h3>
                 <div
                   className="form-group"
                 >
@@ -6733,9 +7738,15 @@ exports[`Storyshots Search page Loading 1`] = `
                   >
                     <div
                       className="card-header"
-                      onClick={[Function]}
                     >
-                      Raw data
+                      <button
+                        className="btn btn-link"
+                        onClick={[Function]}
+                        type="button"
+                      >
+                        Raw data
+                         filters
+                      </button>
                     </div>
                     <div
                       aria-expanded={null}
@@ -6744,7 +7755,7 @@ exports[`Storyshots Search page Loading 1`] = `
                       <div
                         className="card-body"
                       >
-                        <div
+                        <section
                           className="single-schema-list__filter"
                         >
                           <h5
@@ -6764,6 +7775,7 @@ exports[`Storyshots Search page Loading 1`] = `
                                 className="form-control"
                                 onChange={[Function]}
                                 placeholder=""
+                                value=""
                               />
                               <div
                                 className="input-group-append"
@@ -6771,7 +7783,7 @@ exports[`Storyshots Search page Loading 1`] = `
                                 <button
                                   aria-label="Filter results"
                                   className="btn btn-outline-secondary"
-                                  disabled={true}
+                                  disabled={false}
                                   type="submit"
                                 >
                                   Filter
@@ -6780,8 +7792,8 @@ exports[`Storyshots Search page Loading 1`] = `
                             </div>
                           </form>
                           <hr />
-                        </div>
-                        <div
+                        </section>
+                        <section
                           className="single-schema-list__filter"
                         >
                           <h5
@@ -6801,6 +7813,7 @@ exports[`Storyshots Search page Loading 1`] = `
                                 className="form-control"
                                 onChange={[Function]}
                                 placeholder=""
+                                value=""
                               />
                               <div
                                 className="input-group-append"
@@ -6808,7 +7821,7 @@ exports[`Storyshots Search page Loading 1`] = `
                                 <button
                                   aria-label="Filter results"
                                   className="btn btn-outline-secondary"
-                                  disabled={true}
+                                  disabled={false}
                                   type="submit"
                                 >
                                   Filter
@@ -6817,8 +7830,8 @@ exports[`Storyshots Search page Loading 1`] = `
                             </div>
                           </form>
                           <hr />
-                        </div>
-                        <div
+                        </section>
+                        <section
                           className="single-schema-list__filter"
                         >
                           <h5
@@ -6838,6 +7851,7 @@ exports[`Storyshots Search page Loading 1`] = `
                                 className="form-control"
                                 onChange={[Function]}
                                 placeholder=""
+                                value=""
                               />
                               <div
                                 className="input-group-append"
@@ -6845,7 +7859,7 @@ exports[`Storyshots Search page Loading 1`] = `
                                 <button
                                   aria-label="Filter results"
                                   className="btn btn-outline-secondary"
-                                  disabled={true}
+                                  disabled={false}
                                   type="submit"
                                 >
                                   Filter
@@ -6854,12 +7868,12 @@ exports[`Storyshots Search page Loading 1`] = `
                             </div>
                           </form>
                           <hr />
-                        </div>
+                        </section>
                       </div>
                     </div>
                   </div>
                 </div>
-              </div>
+              </section>
             </div>
             <div
               aria-hidden={true}
@@ -6868,12 +7882,12 @@ exports[`Storyshots Search page Loading 1`] = `
               id="filters-section-tabpane-experiments"
               role="tabpanel"
             >
-              <div>
-                <h4
-                  className="type-schema-list__title"
+              <section>
+                <h3
+                  className="h5"
                 >
-                  Show me
-                </h4>
+                  Schemas
+                </h3>
                 <div
                   className="form-group"
                 >
@@ -6924,9 +7938,15 @@ exports[`Storyshots Search page Loading 1`] = `
                   >
                     <div
                       className="card-header"
-                      onClick={[Function]}
                     >
-                      Biopipeline Output
+                      <button
+                        className="btn btn-link"
+                        onClick={[Function]}
+                        type="button"
+                      >
+                        Biopipeline Output
+                         filters
+                      </button>
                     </div>
                     <div
                       aria-expanded={null}
@@ -6935,7 +7955,7 @@ exports[`Storyshots Search page Loading 1`] = `
                       <div
                         className="card-body"
                       >
-                        <div
+                        <section
                           className="single-schema-list__filter"
                         >
                           <h5
@@ -6955,6 +7975,7 @@ exports[`Storyshots Search page Loading 1`] = `
                                 className="form-control"
                                 onChange={[Function]}
                                 placeholder=""
+                                value=""
                               />
                               <div
                                 className="input-group-append"
@@ -6962,7 +7983,7 @@ exports[`Storyshots Search page Loading 1`] = `
                                 <button
                                   aria-label="Filter results"
                                   className="btn btn-outline-secondary"
-                                  disabled={true}
+                                  disabled={false}
                                   type="submit"
                                 >
                                   Filter
@@ -6971,8 +7992,8 @@ exports[`Storyshots Search page Loading 1`] = `
                             </div>
                           </form>
                           <hr />
-                        </div>
-                        <div
+                        </section>
+                        <section
                           className="single-schema-list__filter"
                         >
                           <h5
@@ -6992,6 +8013,7 @@ exports[`Storyshots Search page Loading 1`] = `
                                 className="form-control"
                                 onChange={[Function]}
                                 placeholder=""
+                                value=""
                               />
                               <div
                                 className="input-group-append"
@@ -6999,7 +8021,7 @@ exports[`Storyshots Search page Loading 1`] = `
                                 <button
                                   aria-label="Filter results"
                                   className="btn btn-outline-secondary"
-                                  disabled={true}
+                                  disabled={false}
                                   type="submit"
                                 >
                                   Filter
@@ -7008,8 +8030,8 @@ exports[`Storyshots Search page Loading 1`] = `
                             </div>
                           </form>
                           <hr />
-                        </div>
-                        <div
+                        </section>
+                        <section
                           className="single-schema-list__filter"
                         >
                           <h5
@@ -7029,6 +8051,7 @@ exports[`Storyshots Search page Loading 1`] = `
                                 className="form-control"
                                 onChange={[Function]}
                                 placeholder=""
+                                value=""
                               />
                               <div
                                 className="input-group-append"
@@ -7036,7 +8059,7 @@ exports[`Storyshots Search page Loading 1`] = `
                                 <button
                                   aria-label="Filter results"
                                   className="btn btn-outline-secondary"
-                                  disabled={true}
+                                  disabled={false}
                                   type="submit"
                                 >
                                   Filter
@@ -7045,12 +8068,12 @@ exports[`Storyshots Search page Loading 1`] = `
                             </div>
                           </form>
                           <hr />
-                        </div>
+                        </section>
                       </div>
                     </div>
                   </div>
                 </div>
-              </div>
+              </section>
             </div>
             <div
               aria-hidden={true}
@@ -7059,12 +8082,12 @@ exports[`Storyshots Search page Loading 1`] = `
               id="filters-section-tabpane-datasets"
               role="tabpanel"
             >
-              <div>
-                <h4
-                  className="type-schema-list__title"
+              <section>
+                <h3
+                  className="h5"
                 >
-                  Show me
-                </h4>
+                  Schemas
+                </h3>
                 <div
                   className="form-group"
                 >
@@ -7115,9 +8138,15 @@ exports[`Storyshots Search page Loading 1`] = `
                   >
                     <div
                       className="card-header"
-                      onClick={[Function]}
                     >
-                      Raw data
+                      <button
+                        className="btn btn-link"
+                        onClick={[Function]}
+                        type="button"
+                      >
+                        Raw data
+                         filters
+                      </button>
                     </div>
                     <div
                       aria-expanded={null}
@@ -7126,7 +8155,7 @@ exports[`Storyshots Search page Loading 1`] = `
                       <div
                         className="card-body"
                       >
-                        <div
+                        <section
                           className="single-schema-list__filter"
                         >
                           <h5
@@ -7146,6 +8175,7 @@ exports[`Storyshots Search page Loading 1`] = `
                                 className="form-control"
                                 onChange={[Function]}
                                 placeholder=""
+                                value=""
                               />
                               <div
                                 className="input-group-append"
@@ -7153,7 +8183,7 @@ exports[`Storyshots Search page Loading 1`] = `
                                 <button
                                   aria-label="Filter results"
                                   className="btn btn-outline-secondary"
-                                  disabled={true}
+                                  disabled={false}
                                   type="submit"
                                 >
                                   Filter
@@ -7162,8 +8192,8 @@ exports[`Storyshots Search page Loading 1`] = `
                             </div>
                           </form>
                           <hr />
-                        </div>
-                        <div
+                        </section>
+                        <section
                           className="single-schema-list__filter"
                         >
                           <h5
@@ -7183,6 +8213,7 @@ exports[`Storyshots Search page Loading 1`] = `
                                 className="form-control"
                                 onChange={[Function]}
                                 placeholder=""
+                                value=""
                               />
                               <div
                                 className="input-group-append"
@@ -7190,7 +8221,7 @@ exports[`Storyshots Search page Loading 1`] = `
                                 <button
                                   aria-label="Filter results"
                                   className="btn btn-outline-secondary"
-                                  disabled={true}
+                                  disabled={false}
                                   type="submit"
                                 >
                                   Filter
@@ -7199,8 +8230,8 @@ exports[`Storyshots Search page Loading 1`] = `
                             </div>
                           </form>
                           <hr />
-                        </div>
-                        <div
+                        </section>
+                        <section
                           className="single-schema-list__filter"
                         >
                           <h5
@@ -7220,6 +8251,7 @@ exports[`Storyshots Search page Loading 1`] = `
                                 className="form-control"
                                 onChange={[Function]}
                                 placeholder=""
+                                value=""
                               />
                               <div
                                 className="input-group-append"
@@ -7227,7 +8259,7 @@ exports[`Storyshots Search page Loading 1`] = `
                                 <button
                                   aria-label="Filter results"
                                   className="btn btn-outline-secondary"
-                                  disabled={true}
+                                  disabled={false}
                                   type="submit"
                                 >
                                   Filter
@@ -7236,12 +8268,12 @@ exports[`Storyshots Search page Loading 1`] = `
                             </div>
                           </form>
                           <hr />
-                        </div>
+                        </section>
                       </div>
                     </div>
                   </div>
                 </div>
-              </div>
+              </section>
             </div>
             <div
               aria-hidden={true}
@@ -7250,12 +8282,12 @@ exports[`Storyshots Search page Loading 1`] = `
               id="filters-section-tabpane-datafiles"
               role="tabpanel"
             >
-              <div>
-                <h4
-                  className="type-schema-list__title"
+              <section>
+                <h3
+                  className="h5"
                 >
-                  Show me
-                </h4>
+                  Schemas
+                </h3>
                 <div
                   className="form-group"
                 >
@@ -7306,9 +8338,15 @@ exports[`Storyshots Search page Loading 1`] = `
                   >
                     <div
                       className="card-header"
-                      onClick={[Function]}
                     >
-                      Raw data
+                      <button
+                        className="btn btn-link"
+                        onClick={[Function]}
+                        type="button"
+                      >
+                        Raw data
+                         filters
+                      </button>
                     </div>
                     <div
                       aria-expanded={null}
@@ -7317,7 +8355,7 @@ exports[`Storyshots Search page Loading 1`] = `
                       <div
                         className="card-body"
                       >
-                        <div
+                        <section
                           className="single-schema-list__filter"
                         >
                           <h5
@@ -7337,6 +8375,7 @@ exports[`Storyshots Search page Loading 1`] = `
                                 className="form-control"
                                 onChange={[Function]}
                                 placeholder=""
+                                value=""
                               />
                               <div
                                 className="input-group-append"
@@ -7344,7 +8383,7 @@ exports[`Storyshots Search page Loading 1`] = `
                                 <button
                                   aria-label="Filter results"
                                   className="btn btn-outline-secondary"
-                                  disabled={true}
+                                  disabled={false}
                                   type="submit"
                                 >
                                   Filter
@@ -7353,8 +8392,8 @@ exports[`Storyshots Search page Loading 1`] = `
                             </div>
                           </form>
                           <hr />
-                        </div>
-                        <div
+                        </section>
+                        <section
                           className="single-schema-list__filter"
                         >
                           <h5
@@ -7374,6 +8413,7 @@ exports[`Storyshots Search page Loading 1`] = `
                                 className="form-control"
                                 onChange={[Function]}
                                 placeholder=""
+                                value=""
                               />
                               <div
                                 className="input-group-append"
@@ -7381,7 +8421,7 @@ exports[`Storyshots Search page Loading 1`] = `
                                 <button
                                   aria-label="Filter results"
                                   className="btn btn-outline-secondary"
-                                  disabled={true}
+                                  disabled={false}
                                   type="submit"
                                 >
                                   Filter
@@ -7390,8 +8430,8 @@ exports[`Storyshots Search page Loading 1`] = `
                             </div>
                           </form>
                           <hr />
-                        </div>
-                        <div
+                        </section>
+                        <section
                           className="single-schema-list__filter"
                         >
                           <h5
@@ -7411,6 +8451,7 @@ exports[`Storyshots Search page Loading 1`] = `
                                 className="form-control"
                                 onChange={[Function]}
                                 placeholder=""
+                                value=""
                               />
                               <div
                                 className="input-group-append"
@@ -7418,7 +8459,7 @@ exports[`Storyshots Search page Loading 1`] = `
                                 <button
                                   aria-label="Filter results"
                                   className="btn btn-outline-secondary"
-                                  disabled={true}
+                                  disabled={false}
                                   type="submit"
                                 >
                                   Filter
@@ -7427,7 +8468,7 @@ exports[`Storyshots Search page Loading 1`] = `
                             </div>
                           </form>
                           <hr />
-                        </div>
+                        </section>
                       </div>
                     </div>
                   </div>
@@ -7436,9 +8477,15 @@ exports[`Storyshots Search page Loading 1`] = `
                   >
                     <div
                       className="card-header"
-                      onClick={[Function]}
                     >
-                      Biopipeline Output
+                      <button
+                        className="btn btn-link"
+                        onClick={[Function]}
+                        type="button"
+                      >
+                        Biopipeline Output
+                         filters
+                      </button>
                     </div>
                     <div
                       aria-expanded={null}
@@ -7447,7 +8494,7 @@ exports[`Storyshots Search page Loading 1`] = `
                       <div
                         className="card-body"
                       >
-                        <div
+                        <section
                           className="single-schema-list__filter"
                         >
                           <h5
@@ -7467,6 +8514,7 @@ exports[`Storyshots Search page Loading 1`] = `
                                 className="form-control"
                                 onChange={[Function]}
                                 placeholder=""
+                                value=""
                               />
                               <div
                                 className="input-group-append"
@@ -7474,7 +8522,7 @@ exports[`Storyshots Search page Loading 1`] = `
                                 <button
                                   aria-label="Filter results"
                                   className="btn btn-outline-secondary"
-                                  disabled={true}
+                                  disabled={false}
                                   type="submit"
                                 >
                                   Filter
@@ -7483,8 +8531,8 @@ exports[`Storyshots Search page Loading 1`] = `
                             </div>
                           </form>
                           <hr />
-                        </div>
-                        <div
+                        </section>
+                        <section
                           className="single-schema-list__filter"
                         >
                           <h5
@@ -7504,6 +8552,7 @@ exports[`Storyshots Search page Loading 1`] = `
                                 className="form-control"
                                 onChange={[Function]}
                                 placeholder=""
+                                value=""
                               />
                               <div
                                 className="input-group-append"
@@ -7511,7 +8560,7 @@ exports[`Storyshots Search page Loading 1`] = `
                                 <button
                                   aria-label="Filter results"
                                   className="btn btn-outline-secondary"
-                                  disabled={true}
+                                  disabled={false}
                                   type="submit"
                                 >
                                   Filter
@@ -7520,8 +8569,8 @@ exports[`Storyshots Search page Loading 1`] = `
                             </div>
                           </form>
                           <hr />
-                        </div>
-                        <div
+                        </section>
+                        <section
                           className="single-schema-list__filter"
                         >
                           <h5
@@ -7541,6 +8590,7 @@ exports[`Storyshots Search page Loading 1`] = `
                                 className="form-control"
                                 onChange={[Function]}
                                 placeholder=""
+                                value=""
                               />
                               <div
                                 className="input-group-append"
@@ -7548,7 +8598,7 @@ exports[`Storyshots Search page Loading 1`] = `
                                 <button
                                   aria-label="Filter results"
                                   className="btn btn-outline-secondary"
-                                  disabled={true}
+                                  disabled={false}
                                   type="submit"
                                 >
                                   Filter
@@ -7557,12 +8607,12 @@ exports[`Storyshots Search page Loading 1`] = `
                             </div>
                           </form>
                           <hr />
-                        </div>
+                        </section>
                       </div>
                     </div>
                   </div>
                 </div>
-              </div>
+              </section>
             </div>
           </div>
         </section>
@@ -7642,10 +8692,46 @@ exports[`Storyshots Search page Loading 1`] = `
         </div>
       </div>
       <div
+        className="result-section--tabpanel"
         role="tabpanel"
       >
-        <div>
-          Searching...
+        <div
+          className="tabpanel__container--horizontal"
+        >
+          <div
+            className="table-responsive"
+          >
+            <table
+              className="result-section__container table table-hover"
+            >
+              <thead>
+                <tr>
+                  <th />
+                  <th>
+                    Name
+                  </th>
+                  <th>
+                    Size
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td
+                    colSpan="3"
+                  >
+                    <div
+                      className="result-section--msg"
+                    >
+                      <p>
+                        Loading...
+                      </p>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </main>

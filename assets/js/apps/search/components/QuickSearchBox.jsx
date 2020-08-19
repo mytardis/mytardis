@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Button from 'react-bootstrap/Button';
 import InputGroup from 'react-bootstrap/InputGroup';
 import FormControl from 'react-bootstrap/FormControl';
 import Form from 'react-bootstrap/Form';
 import PropTypes from 'prop-types';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { runSearch, updateSearchTerm } from './searchSlice';
 import "./QuickSearchBox.css";
 
@@ -33,14 +33,25 @@ PureQuickSearchBox.propTypes = {
 }
 
 const QuickSearchBox = () => {
-    const [searchTerm, onTermChange] = useState("");
+    const [localSearchTerm, onTermChange] = useState("");
     const dispatch = useDispatch();
+    const searchTerm = useSelector(state => (state.search.searchTerm));
+    useEffect(() => {
+        // Update the search term in the quick search box
+        // when the term is externally updated (e.g. when 
+        // the address contains a search term.)
+        if (!searchTerm) {
+            onTermChange("");
+        } else {
+            onTermChange(searchTerm);
+        }
+    }, [searchTerm])
     return (
         <PureQuickSearchBox
-            searchTerm={searchTerm}
+            searchTerm={localSearchTerm}
             onChange={onTermChange}
             onSubmit={() => {
-                dispatch(updateSearchTerm(searchTerm));
+                dispatch(updateSearchTerm(localSearchTerm));
                 dispatch(runSearch());
             }}
         />

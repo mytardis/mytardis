@@ -2,6 +2,7 @@ import logging
 
 from django.contrib.auth.models import User
 from django.db.models.signals import post_save
+from django.dispatch import receiver
 from elasticsearch_dsl import analysis, analyzer
 from django_elasticsearch_dsl import Document, fields
 from django_elasticsearch_dsl.registries import registry
@@ -12,6 +13,7 @@ from tardis.tardis_portal.models import Project, Dataset, Experiment, \
     ProjectParameterSet, ExperimentParameterSet, DatasetParameterSet, \
     DatafileParameterSet
 
+from tardis.tardis_portal.tests import suspendingreceiver
 
 logger = logging.getLogger(__name__)
 
@@ -23,7 +25,6 @@ analyzer = analyzer(
     tokenizer=trigram,
     filter='lowercase',
 )
-
 
 
 @registry.register_document
@@ -43,40 +44,53 @@ class ProjectDocument(Document):
     #public_access = fields.IntegerField()
     start_date = fields.DateField()
     end_date = fields.DateField()
-    institution = fields.ObjectField(properties={
+    institution = fields.NestedField(properties={
         'name': fields.StringField(
             fields={'raw': fields.KeywordField()},
         )
     })
-    lead_researcher = fields.ObjectField(properties={
+    lead_researcher = fields.NestedField(properties={
         'username': fields.StringField(
-            fields={'raw': fields.KeywordField()},
-        )
+            fields={'raw': fields.KeywordField()}),
+        'fullname': fields.StringField(
+            fields={'raw': fields.KeywordField()})
     })
     objectacls = fields.ObjectField(properties={
-        'pluginId': fields.StringField(),
-        'entityId': fields.StringField()
+        'pluginId': fields.KeywordField(),
+        'entityId': fields.KeywordField()
     })
     parameters = fields.NestedField(attr='getParametersforIndexing', properties={
         'string' : fields.NestedField(properties = {
             'pn_id': fields.KeywordField(),
+            'pn_name': fields.KeywordField(),
             'value': fields.StringField(),
             'sensitive': fields.BooleanField()
         }),
         'numerical' : fields.NestedField(properties = {
             'pn_id': fields.KeywordField(),
+            'pn_name': fields.KeywordField(),
             'value': fields.FloatField(),
             'sensitive': fields.BooleanField()
         }),
         'datetime' : fields.NestedField(properties = {
             'pn_id': fields.KeywordField(),
+            'pn_name': fields.KeywordField(),
             'value': fields.DateField(),
             'sensitive': fields.BooleanField()
+        }),
+        'schemas' : fields.NestedField(properties = {
+            'schema_id': fields.KeywordField()
         })
     })
 
     def prepare_parameters(self, instance):
         return dict(instance.getParametersforIndexing())
+
+    def prepare_lead_researcher(self, instance):
+        username = instance.lead_researcher.username
+        fullname = " ".join([instance.lead_researcher.first_name,
+                             instance.lead_researcher.last_name])
+        return dict({"username":username, "fullname":fullname})
 
     class Django:
         model = Project
@@ -126,27 +140,35 @@ class ExperimentDocument(Document):
         )
     })
     project = fields.NestedField(properties={
-        'id': fields.KeywordField()
-    })
+        'id': fields.KeywordField(),
+        'name' : fields.TextField(fields={'raw': fields.KeywordField()},
+                                  analyzer=analyzer)
+        })
     objectacls = fields.ObjectField(properties={
-        'pluginId': fields.StringField(),
-        'entityId': fields.StringField()
+        'pluginId': fields.KeywordField(),
+        'entityId': fields.KeywordField()
     })
     parameters = fields.NestedField(attr='getParametersforIndexing', properties={
         'string' : fields.NestedField(properties = {
             'pn_id': fields.KeywordField(),
+            'pn_name': fields.KeywordField(),
             'value': fields.StringField(),
             'sensitive': fields.BooleanField()
         }),
         'numerical' : fields.NestedField(properties = {
             'pn_id': fields.KeywordField(),
+            'pn_name': fields.KeywordField(),
             'value': fields.FloatField(),
             'sensitive': fields.BooleanField()
         }),
         'datetime' : fields.NestedField(properties = {
             'pn_id': fields.KeywordField(),
+            'pn_name': fields.KeywordField(),
             'value': fields.DateField(),
             'sensitive': fields.BooleanField()
+        }),
+        'schemas' : fields.NestedField(properties = {
+            'schema_id': fields.KeywordField()
         })
     })
 
@@ -189,17 +211,20 @@ class DatasetDocument(Document):
         analyzer=analyzer)
     experiments = fields.NestedField(properties={
         'id': fields.KeywordField(),
+        'title': fields.StringField(
+            fields={'raw': fields.KeywordField()}
+        ),
         'project': fields.NestedField(properties={
             'id': fields.KeywordField()
         })
     })
     objectacls = fields.ObjectField(properties={
-            'pluginId': fields.StringField(),
-            'entityId': fields.StringField()
+            'pluginId': fields.KeywordField(),
+            'entityId': fields.KeywordField()
         })
-    instrument = fields.ObjectField(properties={
+    instrument = fields.NestedField(properties={
         'id': fields.KeywordField(),
-        'name': fields.TextField(
+        'name': fields.StringField(
             fields={'raw': fields.KeywordField()},
         )}
     )
@@ -210,18 +235,24 @@ class DatasetDocument(Document):
     parameters = fields.NestedField(attr='getParametersforIndexing', properties={
         'string' : fields.NestedField(properties = {
             'pn_id': fields.KeywordField(),
+            'pn_name': fields.KeywordField(),
             'value': fields.StringField(),
             'sensitive': fields.BooleanField()
         }),
         'numerical' : fields.NestedField(properties = {
             'pn_id': fields.KeywordField(),
+            'pn_name': fields.KeywordField(),
             'value': fields.FloatField(),
             'sensitive': fields.BooleanField()
         }),
         'datetime' : fields.NestedField(properties = {
             'pn_id': fields.KeywordField(),
+            'pn_name': fields.KeywordField(),
             'value': fields.DateField(),
             'sensitive': fields.BooleanField()
+        }),
+        'schemas' : fields.NestedField(properties = {
+            'schema_id': fields.KeywordField()
         })
     })
 
@@ -264,10 +295,15 @@ class DataFileDocument(Document):
     filename = fields.TextField(
         fields={'raw': fields.KeywordField()},
         analyzer=analyzer)
+    file_extension = fields.KeywordField(attr='filename')
     created_time = fields.DateField()
     modification_time = fields.DateField()
+    size = fields.IntegerField()
     dataset = fields.NestedField(properties={
         'id': fields.KeywordField(),
+        'description': fields.StringField(
+            fields={'raw': fields.KeywordField()}
+        ),
         'experiments': fields.NestedField(properties={
             'id': fields.KeywordField(),
             'project':fields.NestedField(properties={
@@ -276,27 +312,47 @@ class DataFileDocument(Document):
         }),
     })
     objectacls = fields.ObjectField(properties={
-            'pluginId': fields.StringField(),
-            'entityId': fields.StringField()
+            'pluginId': fields.KeywordField(),
+            'entityId': fields.KeywordField()
         })
 
     parameters = fields.NestedField(attr='getParametersforIndexing', properties={
         'string' : fields.NestedField(properties = {
             'pn_id': fields.KeywordField(),
+            'pn_name': fields.KeywordField(),
             'value': fields.StringField(),
             'sensitive': fields.BooleanField()
         }),
         'numerical' : fields.NestedField(properties = {
             'pn_id': fields.KeywordField(),
+            'pn_name': fields.KeywordField(),
             'value': fields.FloatField(),
             'sensitive': fields.BooleanField()
         }),
         'datetime' : fields.NestedField(properties = {
             'pn_id': fields.KeywordField(),
+            'pn_name': fields.KeywordField(),
             'value': fields.DateField(),
             'sensitive': fields.BooleanField()
+        }),
+        'schemas' : fields.NestedField(properties = {
+            'schema_id': fields.KeywordField()
         })
     })
+
+
+    def prepare_file_extension(self, instance):
+        """
+        Retrieve file extensions from filename - File extension taken as entire
+        string after first full stop.
+
+        i.e. 'filename.tar.gz' has an extension of 'tar.gz'
+        """
+        try:
+            extension = instance.filename.split('.',1)[1]
+        except(IndexError):
+            extension = ''
+        return extension
 
     def prepare_parameters(self, instance):
         return dict(instance.getParametersforIndexing())
@@ -328,7 +384,10 @@ class DataFileDocument(Document):
             return DataFile.objects.filter(datafileparameterset__schema__parametername=related_instance)
         return None
 
-
+@suspendingreceiver(post_save, sender=Project)
+@suspendingreceiver(post_save, sender=Experiment)
+@suspendingreceiver(post_save, sender=Dataset)
+@suspendingreceiver(post_save, sender=DataFile)
 def update_search(instance, **kwargs):
     if isinstance(instance, Project):
         instance.to_search().save()
@@ -338,8 +397,3 @@ def update_search(instance, **kwargs):
         instance.to_search().save()
     if isinstance(instance, DataFile):
         instance.to_search().save()
-
-post_save.connect(update_search, sender=Project)
-post_save.connect(update_search, sender=Experiment)
-post_save.connect(update_search, sender=Dataset)
-post_save.connect(update_search, sender=DataFile)

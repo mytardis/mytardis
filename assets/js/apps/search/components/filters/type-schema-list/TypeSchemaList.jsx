@@ -2,14 +2,11 @@ import React, { useMemo } from 'react';
 import PropTypes from "prop-types";
 import Accordion from 'react-bootstrap/Accordion';
 import Card from 'react-bootstrap/Card';
-import TextFilter from "../text-filter/TextFilter";
-import NumberRangeFilter from '../range-filter/NumberRangeFilter';
-import DateRangeFilter from '../date-filter/DateRangeFilter';
-import { updateSchemaParameter } from "../filterSlice";
-import { useDispatch } from "react-redux";
+import { updateSchemaParameter, typeAttrSelector } from "../filterSlice";
+import { useDispatch, useSelector } from "react-redux";
 import CategoryFilter from '../category-filter/CategoryFilter';
-import './TypeSchemaList.css';
 import { runSearch } from '../../searchSlice';
+import { mapTypeToFilter } from "../index";
 
 // A hook for converting a hashmap of values into a list.
 const useAsList = (jsObject = {}) => (
@@ -18,19 +15,6 @@ const useAsList = (jsObject = {}) => (
                 .map(key => jsObject[key]))
     ,[jsObject])
 );
-
-const mapTypeToFilter = (type) => {
-    switch (type) {
-        case "STRING":
-            return TextFilter;
-        case "NUMERIC":
-            return NumberRangeFilter;
-        case "DATETIME":
-            return DateRangeFilter;
-        default:
-            return TextFilter;
-    }
-}
 
 const SchemaFilterList = ({ schema }) => {
     const { id: schemaId, type: schemaType, parameters } = schema,
@@ -51,13 +35,14 @@ const SchemaFilterList = ({ schema }) => {
                             },
                             ApplicableFilter = mapTypeToFilter(param.data_type);
                     return (
-                            <div key={parameterId} className="single-schema-list__filter">
+                            <section key={parameterId} className="single-schema-list__filter">
                                 <h5 className="single-schema-list__filter-label">{full_name}</h5>
                                 <ApplicableFilter 
+                                    id={schemaId+"."+parameterId}
                                     value={value}
                                     onValueChange={setParamValue} />
                                 <hr />
-                            </div>
+                            </section>
                     );
                 }
         )}
@@ -69,7 +54,7 @@ SchemaFilterList.propTypes = {
     schema: PropTypes.object.isRequired 
 }
 
-const TypeSchemaList = ({ value: schemaValue, options, onValueChange }) => {
+export const PureTypeSchemaList = ({ value: schemaValue, onValueChange, options }) => {
     const {allIds : schemasAsList, byId : schemas } = options.schemas || {byId: {}, allIds: []};
     let activeSchemas;
     if (!schemaValue) {
@@ -92,18 +77,17 @@ const TypeSchemaList = ({ value: schemaValue, options, onValueChange }) => {
         }
     ),[schemasAsList, schemas]);
 
-    return (
-        <div>
-                {
-                    schemasAsList.length !== 0 ?
-                        <h4 className="type-schema-list__title">Show me</h4> :
-                        null
-                }
+    if (schemasAsList.length === 0) {
+        return null;
+    }
 
-                <CategoryFilter value={schemaValue} onValueChange={onValueChange} options={{
-                    checkAllByDefault: true,
-                    categories: schemaList
-                }} />
+    return (
+        <section>
+            <h3 className="h5">Schemas</h3>
+            <CategoryFilter value={schemaValue} onValueChange={onValueChange} options={{
+                checkAllByDefault: true,
+                categories: schemaList
+            }} />
             <Accordion>
                 {schemasAsList.map((id) => {
                     const schema = schemas[id],
@@ -114,9 +98,11 @@ const TypeSchemaList = ({ value: schemaValue, options, onValueChange }) => {
                     }
                     return (
                         <Card key={name}>
-                            <Accordion.Toggle as={Card.Header} eventKey={id}>
-                                {name}
-                            </Accordion.Toggle>
+                            <Card.Header>
+                                <Accordion.Toggle as="button" className="btn btn-link" eventKey={id}>
+                                    {name} filters
+                                </Accordion.Toggle>
+                            </Card.Header>
                             <Accordion.Collapse eventKey={id}>
                                 <Card.Body>
                                     <SchemaFilterList schema={schema} />
@@ -126,19 +112,35 @@ const TypeSchemaList = ({ value: schemaValue, options, onValueChange }) => {
                     );
                 })}
             </Accordion>
-        </div>
+        </section>
     );
 };
 
+const TypeSchemaList = ({ typeId }) => {
+    const allIds = useSelector(state => {return state.filters.typeSchemas[typeId]});
+    const { byId } = useSelector(state => (state.filters.schemas)) || { byId: {}};
+    const schemaValue = useSelector((state) => (
+        typeAttrSelector(state.filters, typeId, "schema").value
+    ));
+    const onValueChange =
+        (value) => {
+            batch(() => {
+                dispatch(updateActiveSchemas({ typeId, value }));
+                dispatch(runSearch());
+            });
+        };
+
+    const options = {
+        schemas: {
+            allIds,
+            byId
+        }
+    }
+    return (<PureTypeSchemaList value={schemaValue} onValueChange={onValueChange} options={options} />)
+}
+
 TypeSchemaList.propTypes = {
-    value: PropTypes.object,
-    options: PropTypes.shape({
-        schemas: PropTypes.shape({
-            allIds: PropTypes.array,
-            byId: PropTypes.object
-        })
-    }),
-    onValueChange: PropTypes.func.isRequired
+    typeId: PropTypes.string.isRequired
 };
 
 export default TypeSchemaList;
