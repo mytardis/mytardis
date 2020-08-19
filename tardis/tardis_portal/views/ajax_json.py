@@ -7,10 +7,11 @@ import json
 import logging
 
 from django.conf import settings
+from django.contrib.auth.decorators import login_required
 from django.core.serializers.json import DjangoJSONEncoder
 from django.forms import model_to_dict
 from django.http import HttpResponseNotFound, HttpResponseForbidden, \
-    HttpResponse
+    HttpResponse, JsonResponse
 from django.views.decorators.cache import never_cache
 
 from ..auth import decorators as authz
@@ -41,6 +42,7 @@ def dataset_json(request, experiment_id=None, dataset_id=None):
     # Convenience methods for permissions
     def can_update():
         return authz.has_dataset_ownership(request, dataset_id)
+
     can_delete = can_update
 
     def add_experiments(updated_experiments):
@@ -80,7 +82,7 @@ def dataset_json(request, experiment_id=None, dataset_id=None):
         # Cannot remove if this is the last experiment or if it is being
         # removed from a publication
         if (not can_delete() or dataset.experiments.count() < 2 or
-           experiment.is_publication()):
+                experiment.is_publication()):
             return HttpResponseForbidden()
         dataset.experiments.remove(experiment)
         dataset.save()
@@ -92,6 +94,7 @@ def dataset_json(request, experiment_id=None, dataset_id=None):
     return HttpResponse(
         json.dumps(dataset_dict, cls=DjangoJSONEncoder, default=str),
         content_type='application/json')
+
 
 @never_cache
 @authz.experiment_access_required
@@ -114,6 +117,7 @@ def experiment_datasets_json(request, experiment_id):
         json.dumps(objects, cls=DjangoJSONEncoder, default=str),
         content_type='application/json')
 
+
 def retrieve_licenses(request):
     try:
         type_ = int(request.GET['public_access'])
@@ -121,3 +125,29 @@ def retrieve_licenses(request):
     except KeyError:
         licenses = License.get_suitable_licenses()
     return HttpResponse(json.dumps([model_to_dict(x) for x in licenses]))
+
+
+@never_cache
+@login_required
+def get_experiment_list(request):
+    experiments = Experiment.safe.owned(request.user)
+    objects = [{'id': experiment[0], 'title': experiment[1]} for experiment in experiments.values_list('id', 'title')]
+    return JsonResponse(objects, safe=False)
+
+
+@never_cache
+@authz.experiment_access_required
+def get_experiment_permissions(request, experiment_id):
+    try:
+        experiment = Experiment.safe.get(request.user, experiment_id)
+    except Experiment.DoesNotExist:
+        return return_response_not_found(request)
+    has_download_permissions = \
+        authz.has_experiment_download_access(request, experiment_id)
+    has_write_permissions = \
+        authz.has_write_permissions(request, experiment_id)
+    experiment_is_publication = \
+        experiment.is_publication()
+    objects = {'download_permissions': has_download_permissions, 'write_permissions': has_write_permissions,
+               'is_publication': experiment_is_publication}
+    return JsonResponse(objects, safe=False)
