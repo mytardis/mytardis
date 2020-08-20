@@ -1,5 +1,6 @@
-/* eslint no-underscore-dangle: 0 */
-/* global _, Backbone, Mustache */
+/*
+/!* eslint no-underscore-dangle: 0 *!/
+/!* global _, Backbone, Mustache *!/
 
 // Remove buttons from templates
 _.each(["publication", "website"], function(v) {
@@ -35,3 +36,4 @@ relatedInfo.on("change", refreshItemDisplay);
 relatedInfo.on("destroy", refreshItemDisplay);
 
 relatedInfo.fetch({ success: refreshItemDisplay });
+*/
