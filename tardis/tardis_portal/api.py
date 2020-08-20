@@ -1496,7 +1496,7 @@ class DatasetResource(MyTardisModelResource):
                     ExperimentResource(), experiment_uri, bundle.request)
             except NotFound:
                 logger.error(
-                    f'Unable to locate parent experiment for {bundle.data["description"]}')
+                    "Unable to locate parent experiment for {}".format(bundle.data["description"]))
                 raise
             project = experiment.project
             project_lead = project.lead_researcher
@@ -1550,7 +1550,7 @@ class DatasetResource(MyTardisModelResource):
                 # Each member group is defined by a tuple
                 # (group_name, sensitive[T/F], download[T/F])
                 # unpack for ACLs
-                logger.error(f'Groups to append: {member_groups}')
+                logger.error("Groups to append: {}".format(member_groups))
             if member_groups != []:
                 for grp in member_groups:
                     grp_name = grp[0]
@@ -1649,7 +1649,7 @@ class DatasetResource(MyTardisModelResource):
                             new_user = get_user_from_upi(member_name)
                             if not new_user:
                                 logger.error(
-                                    f'No one found for upi: {member_name}')
+                                    "No one found for upi: {}".format(member_name))
                             user = User.objects.create(username=new_user['username'],
                                                        first_name=new_user['first_name'],
                                                        last_name=new_user['last_name'],
@@ -1698,7 +1698,7 @@ class DatasetResource(MyTardisModelResource):
                                sensitive=sensitive,
                                admin=False)
         for group in dataset_groups:
-            logger.error(f'Creating group admin for {group}')
+            logger.error("Creating group admin for {}".format(group))
             group_admin, _ = GroupAdmin.objects.get_or_create(user=bundle.request.user,
                                                               group=group)
             for admin in dataset_admin_groups:
@@ -1987,7 +1987,7 @@ class DataFileResource(MyTardisModelResource):
                 DatasetResource(), dataset_uri, bundle.request)
         except NotFound:
             logger.error(
-                f'Unable to locate parent dataset for {retval.data["filename"]}')
+                "Unable to locate parent dataset for {}".format(retval.data["filename"]))
             raise
         logger.error(dataset)
         experiment = dataset.experiments.all()[0]
@@ -2052,7 +2052,7 @@ class DataFileResource(MyTardisModelResource):
             # Each member group is defined by a tuple
             # (group_name, sensitive[T/F], download[T/F])
             # unpack for ACLs
-            logger.error(f'Groups to append: {member_groups}')
+            logger.error("Groups to append: {}".format(member_groups))
         if member_groups != []:
             for grp in member_groups:
                 grp_name = grp[0]
@@ -2172,7 +2172,7 @@ class DataFileResource(MyTardisModelResource):
                     new_user = get_user_from_upi(member_name)
                     if not new_user:
                         logger.error(
-                            f'No one found for upi: {member_name}')
+                            "No one found for upi: {}".format(member_name))
                     user = User.objects.create(username=new_user['username'],
                                                first_name=new_user['first_name'],
                                                last_name=new_user['last_name'],
@@ -2211,7 +2211,7 @@ class DataFileResource(MyTardisModelResource):
                                user.id)
 
         for group in datafile_groups:
-            logger.error(f'Creating group admin for {group}')
+            logger.error("Creating group admin for {}".format(group))
             group_admin, _ = GroupAdmin.objects.get_or_create(user=bundle.request.user,
                                                               group=group)
             for admin in datafile_admin_groups:
