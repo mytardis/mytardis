@@ -301,11 +301,14 @@ def create_user_api_key(sender, **kwargs):
     create_api_key(User, **kwargs)
 
 
-@suspendingreceiver(post_save, sender=ObjectACL)
+# @suspendingreceiver(post_save, sender=ObjectACL)
 def delete_if_all_false(instance, **kwargs):
     if not any([instance.canRead, instance.canDownload, instance.canWrite,
                 instance.canDelete, instance.canSensitive, instance.isOwner]):
         instance.delete()
+
+
+post_save.connect(delete_if_all_false, sender=ObjectACL)
 
 
 if getattr(settings, 'AUTOGENERATE_API_KEY', False):
