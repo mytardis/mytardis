@@ -302,7 +302,7 @@ class SafeManager(models.Manager):
 
         return ObjectACL.objects.filter(
             pluginId=django_user,
-            content_type=self.model.get_ct(self.model).model.replace(' ',''),
+            content_type=self.model.get_ct(self.model),
             object_id=obj_id,
             aclOwnershipType=ObjectACL.OWNER_OWNED)
 
