@@ -55,7 +55,7 @@ class ProjectDocument(Document):
         'fullname': fields.StringField(
             fields={'raw': fields.KeywordField()})
     })
-    objectacls = fields.ObjectField(properties={
+    objectacls = fields.NestedField(properties={
         'pluginId': fields.KeywordField(),
         'entityId': fields.KeywordField()
     })
@@ -144,7 +144,7 @@ class ExperimentDocument(Document):
         'name': fields.TextField(fields={'raw': fields.KeywordField()},
                                  analyzer=analyzer)
     })
-    objectacls = fields.ObjectField(properties={
+    objectacls = fields.NestedField(properties={
         'pluginId': fields.KeywordField(),
         'entityId': fields.KeywordField()
     })
@@ -219,7 +219,7 @@ class DatasetDocument(Document):
             'id': fields.KeywordField()
         })
     })
-    objectacls = fields.ObjectField(properties={
+    objectacls = fields.NestedField(properties={
         'pluginId': fields.KeywordField(),
         'entityId': fields.KeywordField()
     })
@@ -313,7 +313,7 @@ class DataFileDocument(Document):
             }),
         }),
     })
-    objectacls = fields.ObjectField(properties={
+    objectacls = fields.NestedField(properties={
         'pluginId': fields.KeywordField(),
         'entityId': fields.KeywordField()
     })
