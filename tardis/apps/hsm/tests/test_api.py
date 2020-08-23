@@ -64,7 +64,7 @@ class HsmAppApiTestCase(MyTardisResourceTestCase):
             "online_files": 1,
             "total_files": 1
         }
-        returned_data = json.loads(response.content)
+        returned_data = json.loads(response.content.decode())
         for key, value in six.iteritems(expected_output):
             self.assertIn(key, returned_data)
             self.assertEqual(returned_data[key], value)

@@ -85,7 +85,7 @@ class DataFileTestCase(ModelTestCase):
                              'path/file.txt')
             self.assertEqual(df_file.dataset, dataset)
             self.assertEqual(df_file.size, None)
-            self.assertEqual(df_file.download_url(),
+            self.assertEqual(df_file.download_url,
                              '/api/v1/dataset_file/%d/download%s' %
                              (first_id, trailing_slash()))
 
@@ -110,7 +110,7 @@ class DataFileTestCase(ModelTestCase):
             with df_file.get_as_temporary_file() as temp_file_obj:
                 self.assertEqual(temp_file_obj.read().decode(), u'bla')
 
-            self.assertFalse(df_file.has_image())
+            self.assertFalse(df_file.has_image)
             # Test checking online status, i.e. whether the DataFile
             # has at least one verified DataFileObject in a non-tape
             # storage box:
@@ -136,19 +136,23 @@ class DataFileTestCase(ModelTestCase):
             # Test method for getting view URL for file types which can
             # be displayed in the browser.
             # First test a file of unknown MIME type:
-            self.assertIsNone(df_file.get_view_url())
+            self.assertIsNone(df_file.view_url)
             # Now test for a text/plain file:
             df_file.filename = "file.txt"
             df_file.save()
+            # Clear cache for view_url @cached_property by creating new instance:
+            df_file = DataFile.objects.get(id=df_file.id)
             self.assertEqual(df_file.mimetype, "text/plain")
             self.assertEqual(
-                df_file.get_view_url(), "/datafile/view/%s/" % df_file.id)
+                df_file.view_url, "/datafile/view/%s/" % df_file.id)
             # This setting will prevent files larger than 2 bytes
             # from being rendered in the browser:
             settings.RENDER_IMAGE_SIZE_LIMIT = 2
             df_file.size = 3
             df_file.save()
-            self.assertIsNone(df_file.get_view_url())
+            # Clear cache for view_url @cached_property by creating new instance:
+            df_file = DataFile.objects.get(id=df_file.id)
+            self.assertIsNone(df_file.view_url)
 
             df_file = _build(dataset, 'file1.txt', 'path/file1.txt')
             self.assertEqual(df_file.filename, 'file1.txt')
@@ -156,7 +160,7 @@ class DataFileTestCase(ModelTestCase):
                              'path/file1.txt')
             self.assertEqual(df_file.dataset, dataset)
             self.assertEqual(df_file.size, None)
-            self.assertEqual(df_file.download_url(),
+            self.assertEqual(df_file.download_url,
                              '/api/v1/dataset_file/%d/download%s' %
                              (first_id + 1, trailing_slash()))
 
@@ -164,7 +168,7 @@ class DataFileTestCase(ModelTestCase):
             self.assertEqual(df_file.filename, 'file2.txt')
             self.assertEqual(df_file.dataset, dataset)
             self.assertEqual(df_file.size, None)
-            self.assertEqual(df_file.download_url(),
+            self.assertEqual(df_file.download_url,
                              '/api/v1/dataset_file/%d/download%s' %
                              (first_id + 2, trailing_slash()))
 
@@ -173,7 +177,7 @@ class DataFileTestCase(ModelTestCase):
             self.assertEqual(df_file.filename, 'f.txt')
             self.assertEqual(df_file.dataset, dataset)
             self.assertEqual(df_file.size, None)
-            self.assertEqual(df_file.download_url(),
+            self.assertEqual(df_file.download_url,
                              '/api/v1/dataset_file/%d/download%s' %
                              (first_id + 3, trailing_slash()))
 
@@ -181,7 +185,7 @@ class DataFileTestCase(ModelTestCase):
             self.assertEqual(df_file.filename, 'f-bad-ds.txt')
             self.assertEqual(df_file.dataset, dataset)
             self.assertEqual(df_file.size, None)
-            self.assertEqual(df_file.download_url(),
+            self.assertEqual(df_file.download_url,
                              '/api/v1/dataset_file/%d/download%s' %
                              (first_id + 4, trailing_slash()))
             pattern = re.compile( '\n|;')
