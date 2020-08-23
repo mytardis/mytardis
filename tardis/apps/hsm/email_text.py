@@ -35,8 +35,6 @@ def email_dfo_recall_failed(dfo, user):
     else:
         file_path = dfo.datafile.filename
     download_url = dfo.datafile.download_url
-    protocol = 'https' if settings.SECURE_PROXY_SSL_HEADER else 'http'
-    site = Site.objects.get_current().domain
     return interpolate_template(
         'dfo_recall_failed',
         first_name=user.first_name, last_name=user.last_name,

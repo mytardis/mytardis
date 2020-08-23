@@ -22,7 +22,6 @@ class HsmAppEmailTemplateTestCase(TestCase):
         self.storage_box = StorageBox.get_default_storage()
         self.dfo = DataFileObject.objects.create(
             datafile=self.datafile, storage_box=self.storage_box)
-        location = self.storage_box.options.get(key='location').value
         self.dfo.uri = "test.txt"
         self.dfo.save()
 

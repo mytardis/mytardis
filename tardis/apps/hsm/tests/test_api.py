@@ -142,7 +142,7 @@ class HsmAppApiTestCase(MyTardisResourceTestCase):
 
         location = self.dfo.storage_box.options.get(key='location').value
         file_path = os.path.join(location, self.dfo.uri)
-        size, blocks = _stat_subprocess(file_path)
+        size = _stat_subprocess(file_path)[0]
         self.assertEqual(size, self.dfo.datafile.size)
 
     def test_recall(self):
@@ -194,7 +194,6 @@ class HsmAppApiTestCase(MyTardisResourceTestCase):
 
         # Now try simulating not having RECALL_URI_TEMPLATES
         # setting by setting it to its default value:
-        saved_recall_uri_templates = settings.RECALL_URI_TEMPLATES
         settings.RECALL_URI_TEMPLATES = {}
         # Get fresh DataFile instance to avoid getting cached recall_url:
         datafile = DataFile.objects.get(id=self.dfo.datafile.id)
