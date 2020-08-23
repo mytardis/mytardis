@@ -85,7 +85,7 @@ class DataFileTestCase(ModelTestCase):
                              'path/file.txt')
             self.assertEqual(df_file.dataset, dataset)
             self.assertEqual(df_file.size, None)
-            self.assertEqual(df_file.get_download_url(),
+            self.assertEqual(df_file.download_url(),
                              '/api/v1/dataset_file/%d/download%s' %
                              (first_id, trailing_slash()))
 
