@@ -209,6 +209,11 @@ exports[`Storyshots EntryPreviewCard Data Set 1`] = `
       460.3 KB.
     </div>
     <div
+      className="preview-card__count-detail"
+    >
+      Contains 2 datafiles.
+    </div>
+    <div
       className="preview-card__date-added"
     >
       Added on the 
@@ -347,6 +352,11 @@ exports[`Storyshots EntryPreviewCard Experiment 1`] = `
       460.3 KB.
     </div>
     <div
+      className="preview-card__count-detail"
+    >
+      Contains 2 datafiles from 1 dataset.
+    </div>
+    <div
       className="preview-card__date-added"
     >
       Added on the 
@@ -384,6 +394,169 @@ exports[`Storyshots EntryPreviewCard Experiment 1`] = `
           </td>
           <td>
             forbidden fruit
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <div
+      className="preview-card__button-wrapper--right"
+    >
+      <div
+        className="preview-card__inline-block-wrapper"
+      >
+        <a
+          className="preview-card__button--right btn btn-primary"
+          href="idk/"
+          onClick={[Function]}
+          onKeyDown={[Function]}
+          target="_blank"
+        >
+          View details
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`Storyshots EntryPreviewCard No Children 1`] = `
+<div
+  style={
+    Object {
+      "border": "2px solid black",
+    }
+  }
+>
+  <div
+    className="preview-card__body"
+  >
+    <span
+      aria-label="Close preview panel"
+      className="preview-card__close"
+    />
+    <div
+      className="preview-card__header"
+    >
+      <div>
+        <div
+          className="tab-sticker"
+          style={
+            Object {
+              "backgroundColor": "#f7db8d",
+            }
+          }
+        >
+          <div
+            className="tab-stick--content"
+          >
+            P
+          </div>
+        </div>
+      </div>
+      <h5>
+        Mikes_ACL_Project
+      </h5>
+    </div>
+    <div
+      className="preview-card__access-status"
+    >
+      <span
+        aria-label="This item can be downloaded."
+      >
+        <svg
+          fill="none"
+          height="1em"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="2"
+          style={
+            Object {
+              "color": undefined,
+            }
+          }
+          viewBox="0 0 24 24"
+          width="1em"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M21.21 15.89A10 10 0 1 1 8 2.83"
+          />
+          <path
+            d="M22 12A10 10 0 0 0 12 2v10z"
+          />
+        </svg>
+      </span>
+      Partial access
+    </div>
+    <div
+      className="preview-card__count-detail"
+    >
+      460.3 KB.
+    </div>
+    <div
+      className="preview-card__count-detail"
+    >
+      Contains 0 datafile from 0 dataset, across 0 experiment.
+    </div>
+    <div
+      className="preview-card__date-added"
+    >
+      Added on the 
+      7th May 2020.
+    </div>
+    <table
+      className="preview-card__parameter-table table table-sm table-striped table-bordered table-hover"
+    >
+      <thead>
+        <tr>
+          <th>
+            Parameter
+          </th>
+          <th>
+            Value
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr
+          className="parameter-table__row"
+        >
+          <td>
+            18
+          </td>
+          <td>
+            
+          </td>
+        </tr>
+        <tr
+          className="parameter-table__row"
+        >
+          <td>
+            19
+          </td>
+          <td>
+            7.0
+          </td>
+        </tr>
+        <tr
+          className="parameter-table__row"
+        >
+          <td>
+            15
+          </td>
+          <td>
+            Kiwi
+          </td>
+        </tr>
+        <tr
+          className="parameter-table__row"
+        >
+          <td>
+            16
+          </td>
+          <td>
+            Orange
           </td>
         </tr>
       </tbody>
@@ -499,6 +672,11 @@ exports[`Storyshots EntryPreviewCard Project 1`] = `
       className="preview-card__count-detail"
     >
       460.3 KB.
+    </div>
+    <div
+      className="preview-card__count-detail"
+    >
+      Contains 2 datafiles from 1 dataset, across 1 experiment.
     </div>
     <div
       className="preview-card__date-added"

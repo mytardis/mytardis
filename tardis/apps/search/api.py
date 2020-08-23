@@ -199,9 +199,27 @@ class SearchAppResource(Resource):
         for idx, obj in enumerate(index_list):
 
             # add user/group criteria to searchers
-            query_obj = Q("term", objectacls__entityId=user.id) #| \Q("term", public_access=100)
+            query_obj =  Q({"nested" : {
+                "path":"objectacls", "query": Q(
+                    {"bool": {"must":[
+                        Q({"match": {"objectacls.entityId":user.id}}),
+                        Q({"term": {"objectacls.pluginId":"django_user"}})
+                    ]}}
+                )
+            }})
+
             for group in groups:
-                query_obj = query_obj | Q("term", objectacls__entityId=group.id)
+
+                query_obj_group =  Q({"nested" : {
+                    "path":"objectacls", "query": Q(
+                        {"bool": {"must":[
+                            Q({"match": {"objectacls.entityId":group.id}}),
+                            Q({"term": {"objectacls.pluginId":"django_group"}})
+                        ]}}
+                    )
+                }})
+
+                query_obj = query_obj | query_obj_group
 
 
             if query_text is not None:

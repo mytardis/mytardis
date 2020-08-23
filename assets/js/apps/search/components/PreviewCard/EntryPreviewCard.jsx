@@ -152,15 +152,9 @@ export default function EntryPreviewCard(props) {
             let datasetPlural;
             let experimentPlural;
             if (data.counts) {
-                if (data.counts.datafiles) {
-                    datafilePlural = data.counts.datafiles == 1 ? 'datafile' : 'datafiles';
-                }
-                if (data.counts.datasets) {
-                    datasetPlural = data.counts.datasets == 1 ? 'dataset' : 'datasets';
-                }
-                if (data.counts.experiments) {
-                    experimentPlural = data.counts.experiments == 1 ? 'experiment' : 'experiments';
-                }
+                datafilePlural = data.counts.datafiles <= 1 ? 'datafile' : 'datafiles';
+                datasetPlural = data.counts.datasets <= 1 ? 'dataset' : 'datasets';
+                experimentPlural = data.counts.experiments <= 1 ? 'experiment' : 'experiments';
             }
             switch (type) {
                 case 'project':
