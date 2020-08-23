@@ -1,12 +1,12 @@
 import hashlib
 import logging
 import re
+import mimetypes
+from os import path
 from contextlib import contextmanager
 from tempfile import NamedTemporaryFile
 from urllib.parse import quote
-
-from os import path
-import mimetypes
+from uritemplate import URITemplate
 
 
 from django.conf import settings

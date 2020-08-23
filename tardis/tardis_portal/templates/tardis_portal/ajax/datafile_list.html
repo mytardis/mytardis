@@ -1,6 +1,5 @@
 {% load pagination %}
-
-<input type="hidden" id="datafile-count" value="{{datafile_count}}"/>
+{% load static from staticfiles %}
 
 {% if datafiles.paginator.num_pages > 1 %}
   {% block top-pagination %}{% pagination datafiles paginator page_num query_string %}{% endblock %}

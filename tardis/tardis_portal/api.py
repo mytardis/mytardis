@@ -980,8 +980,7 @@ class DataFileResource(MyTardisModelResource):
 
         if settings.PROXY_DOWNLOADS:
             full_path = preferred_dfo.get_full_path()
-            for dir_prefix, url_prefix in six.iteritems(
-                    settings.PROXY_DOWNLOAD_PREFIXES):
+            for dir_prefix, url_prefix in settings.PROXY_DOWNLOAD_PREFIXES:
                 if full_path.startswith(dir_prefix):
                     response = HttpResponse()
                     response["Content-Disposition"] = \
