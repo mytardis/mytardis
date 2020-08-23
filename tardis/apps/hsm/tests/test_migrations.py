@@ -1,7 +1,7 @@
 '''
 Tests for HSM app's migrations
 '''
-from unittest import skip
+from unittest import skipIf
 
 from django.db.migrations.executor import MigrationExecutor
 from django.db import connections, DEFAULT_DB_ALIAS
@@ -9,16 +9,17 @@ from django.test import TestCase
 
 
 class HsmAppMigrationTestCase(TestCase):
-    @skip
+    connection = connections[DEFAULT_DB_ALIAS]
+
+    @skipIf(connection.vendor == 'sqlite', 'skipping in sqlite test')
     def test_migration(self):
         '''
         Test unapplying and reapplying the migration which creates
         the metadata for the HSM app
         '''
         from tardis.tardis_portal.models.parameters import Schema
-
         connection = connections[DEFAULT_DB_ALIAS]
-        executor = MigrationExecutor(connection.constraint_checks_disabled())
+        executor = MigrationExecutor(connection)
 
         executor.migrate([("hsm", None)])
         executor.loader.build_graph()
