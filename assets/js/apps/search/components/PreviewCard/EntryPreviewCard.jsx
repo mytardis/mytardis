@@ -66,7 +66,7 @@ export default function EntryPreviewCard(props) {
                 date = data.created_time;
                 break;
         }
-        return (!!date ? formatDate(date) : 'Unknown');
+        return (!!date ? formatDate(date) : null);
     }
 
     /**
@@ -228,9 +228,11 @@ export default function EntryPreviewCard(props) {
                 {getDataSize(data, type)}
             </div>
             <FileCountSummary data={data} type={type}></FileCountSummary>
-            <div className="preview-card__date-added">
-                Added on the {getDateAdded(data, type)}
-            </div>
+            { !getDateAdded(data,type) ? null :
+                <div className="preview-card__date-added">
+                    Added on the {getDateAdded(data, type)}
+                </div>
+            }
             <ParameterTable parameters={data.parameters} />
             <div className="preview-card__button-wrapper--right">
                 <div className="preview-card__inline-block-wrapper">

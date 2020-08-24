@@ -179,6 +179,10 @@ const projectWithNoChildren = Object.assign({},project,{
   }
 })
 
+const projectWithNoDate = Object.assign({}, project, {
+  start_date: null
+})
+
 export const Project = () => (
   <EntryPreviewCard type="project" data={project} />
 );
@@ -201,4 +205,8 @@ export const NoPreviewData = () => (
 
 export const NoChildren = () => (
   <EntryPreviewCard type="project" data={projectWithNoChildren} />
+)
+
+export const NoDate = () => (
+  <EntryPreviewCard type="project" data={projectWithNoDate} />
 )
