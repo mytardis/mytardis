@@ -2,7 +2,8 @@ import reducer, {
     updateTypeAttribute,
     updateSchemaParameter,
     schemaParamSelector,
-    updateActiveSchemas
+    updateActiveSchemas,
+    updateFiltersByQuery
 } from "./filterSlice";
 import { createNextState } from "@reduxjs/toolkit";
 
@@ -372,5 +373,50 @@ describe('Schema parameter selector', () => {
         const parameter = schemaParamSelector(mockStoreState, "1", "2");
         expect(parameter.full_name).toEqual('Parameter 2');
         expect(parameter.data_type).toEqual('STRING');
+    })
+})
+
+describe('Reset and update filter state by query body', () => {
+    const twoValueQuery = {
+        content: [
+            {
+                kind: 'schemaParameter',
+                target: [
+                    '1',
+                    '11'
+                ],
+                type: 'NUMERIC',
+                op: '>=',
+                content: '5'
+            },
+            {
+                kind: 'schemaParameter',
+                target: [
+                    '1',
+                    '11'
+                ],
+                type: 'NUMERIC',
+                op: '<=',
+                content: '15'
+            }
+        ],
+        op: 'and'
+    };
+    it('can reset and update filters with two values', () => {
+        const expectedNewState = createNextState(mockStoreState, draft => {
+            // The current values should be now null.
+            draft.types.byId['datasets'].attributes.byId['createdDate'].value = null;
+            draft.types.byId['experiments'].attributes.byId['schema'].value = null;
+            draft.schemas.byId['2'].parameters['4'].value = null;
+            draft.schemas.byId['1'].parameters['11'].value = [
+                {
+                    op: '>=', content: '5'
+                },{
+                    op: '<=', content: '15'
+                }
+            ];
+            draft.activeFilters = [{kind: 'schemaParameter', target: ['1','11']}];
+        });
+        expect(reducer(mockStoreState,updateFiltersByQuery(twoValueQuery))).toEqual(expectedNewState);
     })
 })

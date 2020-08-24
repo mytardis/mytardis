@@ -241,34 +241,43 @@ const filters = createSlice({
             filterList.forEach(filter => {
                 const {kind ,target, content, op} = filter,
                     value = {op, content};
-                let currValue;
+                let currValue, newValue;
                 switch (kind) {
+                    // TODO Refactor this function so that logic for 
+                    // adding filter values to existing can be reused
+                    // by both typeAttribute and schemaParameter.
                     case "typeAttribute":
                         // We may have added value for this field earlier in the iteration.
                         currValue = typeAttrSelector(state,target[0],target[1]).value;
-                        if (currValue) {
-                            if (!Array.isArray(currValue)) {
-                                currValue = [currValue];
-                            }
-                            currValue.push(value);
+                        if (!currValue) {
+                            newValue = value;
                         } else {
-                            if (target[1] === "schema") {
-                                updateActiveSchemasReducer(state,{payload: {typeId: target[0], value}});
+                            if (Array.isArray(currValue)){
+                                currValue.push(value);
+                                newValue = currValue;
                             } else {
-                                updateTypeAttributeReducer(state,{payload: {typeId: target[0], attributeId: target[1], value}})
+                                newValue = [currValue, value];
                             }
+                        }
+                        if (target[1] === "schema") {
+                            updateActiveSchemasReducer(state, { payload: { typeId: target[0], newValue } });
+                        } else {
+                            updateTypeAttributeReducer(state, { payload: { typeId: target[0], attributeId: target[1], value: newValue } })
                         }
                         break;
                     case "schemaParameter":
                         currValue = schemaParamSelector(state,target[0],target[1]).value;
-                        if (currValue) {
-                            if (!Array.isArray(currValue)) {
-                                currValue = [currValue];
-                            }
-                            currValue.push(value);
+                        if (!currValue) {
+                            newValue = value;
                         } else {
-                            updateSchemaParameterReducer(state, {payload: {schemaId: target[0], parameterId: target[1], value}});
+                            if (Array.isArray(currValue)){
+                                currValue.push(value);
+                                newValue = currValue;
+                            } else {
+                                newValue = [currValue, value];
+                            }
                         }
+                        updateSchemaParameterReducer(state, { payload: { schemaId: target[0], parameterId: target[1], value: newValue } });
                         break;
                     default:
                         console.error("Unhandled filter kind while updating filters by filter query.");
