@@ -66,17 +66,23 @@
   {% endif %}
   <h1>
     <span property="dc:title">{{ experiment.title }}</span>
-    <br/>
-    <span property="dc:title">Project: {{ experiment.project_model.name }}</span>
-    <br/>
-    <small>
-        {% for author in experiment.experimentauthor_set.all %}{% capture as creator_span %}<span
-                property="dc:creator"
-                style="white-space: nowrap;">{{ author.author }}</span>{% endcapture %}{% if not forloop.first %}, {% endif %}{% if author.email %}<a
-                href="mailto:{{ author.email }}">{{ creator_span }}</a>{% endif %}{% if author.url %}<a
-                href="{{ author.url }}">{{ creator_span }}</a>{% endif %}{% if not author.email and not author.url %}{{ creator_span }}{% endif %}{% endfor %}
-    </small>
   </h1>
+  <small>
+  From the project:
+  <a
+     class="project-link"
+     href="{{ experiment.project.get_absolute_url }}">
+  {{ experiment.project.name }}
+  </a>
+  </small>
+  <br/>
+  <small>
+      {% for author in experiment.experimentauthor_set.all %}{% capture as creator_span %}<span
+              property="dc:creator"
+              style="white-space: nowrap;">{{ author.author }}</span>{% endcapture %}{% if not forloop.first %}, {% endif %}{% if author.email %}<a
+              href="mailto:{{ author.email }}">{{ creator_span }}</a>{% endif %}{% if author.url %}<a
+              href="{{ author.url }}">{{ creator_span }}</a>{% endif %}{% if not author.email and not author.url %}{{ creator_span }}{% endif %}{% endfor %}
+  </small>
   <p style="text-align: right">
     {% experiment_datasets_badge experiment.id request.user %}&nbsp;
     {% experiment_datafiles_badge experiment request.user %}&nbsp;

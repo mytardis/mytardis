@@ -134,6 +134,20 @@ class Project(models.Model):
     def __str__(self):
         return self.name
 
+    def get_absolute_url(self):
+        """Return the absolute url to the current ``Project``"""
+        return reverse(
+            'tardis_portal.view_project',
+            kwargs={'project_id': self.id})
+
+    def get_edit_url(self):
+        """Return the absolute url to the edit view of the current
+        ``Project``
+        """
+        return reverse(
+            'tardis.tardis_portal.views.edit_project',
+            kwargs={'project_id': self.id})
+
     def get_ct(self):
         return ContentType.objects.get_for_model(self)
 

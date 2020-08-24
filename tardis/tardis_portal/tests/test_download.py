@@ -296,7 +296,8 @@ class DownloadTestCase(TestCase):
     @patch('webpack_loader.loader.WebpackLoader.get_bundle')
     def testDownload(self, mock_webpack_get_bundle):
         client = Client()
-
+        login = client.login(username="DownloadTestUser", password="secret")
+        self.assertTrue(login)
         # check download for experiment1 as tar
         response = client.get('/download/experiment/%i/tar/' %
                               self.experiment1.id)

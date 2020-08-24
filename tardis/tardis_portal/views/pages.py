@@ -342,14 +342,14 @@ class DatasetView(TemplateView):
         return render_response_index(request, template_name, c)
 
 
-class ProjectDetails(TemplateView):
-    template_name = 'tardis_portal/project_details.html'
+#class ProjectDetails(TemplateView):
+#    template_name = 'tardis_portal/project_details.html'
 
 #=================================
 #Project View
 #=================================
 class ProjectView(TemplateView):
-    template_name = 'tardis_portal/create_project.html'
+    template_name = 'tardis_portal/project_details.html'
 
     # TODO: Can me make this a generic function like site_routed_view
     #       that will take an Experiment, Dataset or DataFile and
