@@ -345,10 +345,16 @@ class SearchAppResource(Resource):
                                     if isinstance(filter["content"], list):
                                         Qdict = {"should" : []}
                                         for option in filter["content"]:
+                                            if target_fieldtype == "file_extension":
+                                                if option[0] == ".":
+                                                    option = option[1:]
                                             qry = Q({oper: {target_fieldtype:option}})
                                             Qdict["should"].append(qry)
                                         query_obj_filt = Q({"bool" : Qdict})
                                     else:
+                                        if target_fieldtype == "file_extension":
+                                            if filter["content"][0] == ".":
+                                                filter["content"] = filter["content"][1:]
                                         query_obj_filt = Q({oper: {target_fieldtype:filter["content"]}})
 
                                 elif filter["type"] == "DATETIME":
@@ -406,66 +412,13 @@ class SearchAppResource(Resource):
                                     Qdict_lr["should"].append(query_obj_filt)
                                     query_obj_filt = Q({"bool" : Qdict_lr})
 
-
-                                query_obj = query_obj & query_obj_filt
-
-
-                            # Fields that are intrinsic to related objects (instruments, users, etc)
-                            if target_fieldtype in ['lead_researcher', 'project', 'instrument',
-                                                    'institution', 'experiments', 'dataset']:
-                                nested_fieldtype = filter["target"][2]
-
-                                if isinstance(filter["content"], list):
-                                    Qdict = {"should" : []}
-                                    for option in filter["content"]:
-                                        qry = Q(
-                                            {"nested" : {
-                                                "path":target_fieldtype, "query": Q(
-                                                        {oper: {".".join([target_fieldtype,nested_fieldtype]):option}}
-                                                )
-                                            }})
-                                        Qdict["should"].append(qry)
-                                    query_obj_filt = Q({"bool" : Qdict})
-                                else:
-                                    query_obj_filt = Q(
-                                        {"nested" : {
-                                            "path":target_fieldtype, "query": Q(
-                                                    {oper: {".".join([target_fieldtype,nested_fieldtype]):filter["content"]}}
-                                            )
-                                        }})
-
-                                if target_fieldtype == 'lead_researcher':
-                                    Qdict_lr = {"should" : [query_obj_filt]}
-
-                                    if isinstance(filter["content"], list):
-                                        Qdict = {"should" : []}
-                                        for option in filter["content"]:
-                                            qry = Q(
-                                                {"nested" : {
-                                                    "path":target_fieldtype, "query": Q(
-                                                            {'term': {".".join([target_fieldtype,'username']):option}}
-                                                    )
-                                                }})
-                                            Qdict["should"].append(qry)
-                                        query_obj_filt = Q({"bool" : Qdict})
-                                    else:
-                                        query_obj_filt = Q(
-                                            {"nested" : {
-                                                "path":target_fieldtype, "query": Q(
-                                                        {'term': {".".join([target_fieldtype,'username']):filter["content"]}}
-                                                )
-                                            }})
-                                    Qdict_lr["should"].append(query_obj_filt)
-                                    query_obj_filt = Q({"bool" : Qdict_lr})
-
-
                                 query_obj = query_obj & query_obj_filt
 
             excluded_fields_list = ["end_date", "institution", "lead_researcher", "created by",
                                     "end_time", "update_time", "instrument", "file_extension",
                                     "modification_time", "parameters.string.pn_id",
                                     "parameters.numerical.pn_id", "parameters.datetime.pn_id",
-                                    "experiments", 'dataset', 'project', 'objectacls']
+                                    'objectacls'] #"experiments", 'dataset', 'project',
 
                                     #
                                     #"parameters.string.sensitive","parameters.numerical.sensitive","parameters.datetime.sensitive",
@@ -671,10 +624,20 @@ class SearchAppResource(Resource):
                                 result_dict[objs].pop(obj_idx)
 
 
+        def final_clean(result_dict):
+            # Define parent_type for experiment/datafile (N/A for project)
+            parent_child = {"experiment":"project", "dataset":"experiments", "datafile":"dataset"}
+            for objs in ["experiments", "datasets", "datafiles"]:
+                for obj_idx, obj in reversed(list(enumerate(result_dict[objs]))):
+                    del result_dict[objs][obj_idx]["_source"][parent_child[obj["_index"]]]
+
+
         clean_response(bundle.request, results, result_dict)
 
         if filter_level:
             filter_parent_child(result_dict, filter_level)
+
+        final_clean(result_dict)
 
         # add search results to bundle, and return bundle
         bundle.obj = SearchObject(id=1, hits=result_dict)
