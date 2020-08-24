@@ -664,6 +664,11 @@ def create_parameterset_edit_form(parameterset, request, post=False, view_sensit
             fields[form_id].label = \
                 fields[form_id].label + " (read only)"
 
+        if dfp.sensitive_metadata:
+            fields[form_id].widget.attrs['readonly'] = True
+            fields[form_id].label = \
+                fields[form_id].label + " (Sensitive: cannot be edited)"
+
     return type('DynamicForm', (forms.BaseForm, ),
                 {'base_fields': fields})
 
