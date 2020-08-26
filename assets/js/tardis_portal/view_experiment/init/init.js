@@ -7,7 +7,7 @@ jQuery(document).on("click", ".dataset_selector_none", function() {
 });
 
 import { loadExpTabPane } from "../experiment-tabs.js";
-import { getDatasetsForExperiment} from "../dataset-tiles";
+// import { getDatasetsForExperiment} from "../dataset-tiles";
 
 function getNewParameterName(name)
 {
@@ -165,10 +165,10 @@ $("#modal-metadata .submit-button").click(function() {
     $("#modal-metadata .modal-body form").submit();
 });
 
-$(document).on("change", "select[name='experiment_id']", function(evt) {
+/*$(document).on("change", "select[name='experiment_id']", function(evt) {
     evt.preventDefault();
     var experimentId = $(this).val();
     // eslint-disable-next-line no-unused-vars
     var otherDatasetTiles = getDatasetsForExperiment(experimentId);
-});
+});*/
 
