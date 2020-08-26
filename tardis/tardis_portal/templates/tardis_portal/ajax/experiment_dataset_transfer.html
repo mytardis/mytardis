@@ -1,4 +1,6 @@
+<input type="hidden" id="experiment-id" value="{{ experiment.id }}">
 {% if experiments %}
+
 <form id="other-experiment-selection" class="form-horizontal">{% csrf_token %}
   <fieldset>
     <div class="form-group">
