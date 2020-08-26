@@ -10,6 +10,7 @@ from django.core.serializers.json import DjangoJSONEncoder
 if "sqlite" in settings.DATABASES["default"]["ENGINE"]:
     from .fields import JSONField
 elif "mysql" in settings.DATABASES["default"]["ENGINE"]:
+    # pylint: disable=E0401
     from django_mysql.models import JSONField
 else:
     from django.contrib.postgres.fields import JSONField
