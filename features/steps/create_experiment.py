@@ -115,11 +115,11 @@ def exp_sharing_tab_content_is_shown(context):
 
 
 @when("they click the Change Public Access link")
-def they_click_the_change_public_access_link(context):
+def they_click_the_change_public_access_button(context):
     """
     :type context: behave.runner.Context
     """
-    public_access_link = context.browser.find_element_by_css_selector("a.public_access_link")
+    public_access_link = context.browser.find_element_by_class_name("public_access_button")
     public_access_link.click()
 
 
@@ -132,7 +132,7 @@ def they_see_the_change_public_access_form(context):
     exp_id = Experiment.objects.get(title="test exp1").id
     form = context.browser.find_element_by_css_selector("form.experiment-rights")
     context.test.assertIn(
-        "/ajax/experiment/%s/rights" % exp_id, form.get_attribute("action"))
+        "post", form.get_attribute("method"))
     close_link = context.browser.\
         find_element_by_css_selector("#modal-public-access > div > div > div.modal-header > button > span")
     close_link.click()

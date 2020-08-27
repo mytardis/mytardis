@@ -3,24 +3,18 @@
 {% load basiccomparisonfilters %}
 {% load capture %}
 {% load static from staticfiles %}
-{% load experiment_tags %}
 {% load dynurl %}
 {% load jstemplate %}
 {% load bleach_tag %}
 
 {% block script %}
 
-{% mustachejs "tardis_portal/dataset_filter" %}
-{% mustachejs "tardis_portal/dataset_tiles" %}
-{% mustachejs "tardis_portal/dataset_tile" %}
-{% mustachejs "tardis_portal/badges/experiment_count" %}
-{% mustachejs "tardis_portal/badges/datafile_count" %}
-{% mustachejs "tardis_portal/badges/size" %}
 
 <input type="hidden" id="experiment-id" value="{{ experiment.id }}">
 <input type="hidden" id="csrf-token" value="{{ csrf_token }}">
 {% render_bundle 'tardis_portal_view_experiment_init' %}
 {% render_bundle 'tardis_portal_view_experiment_share' %}
+
 {% endblock %}
 
 {% block content %}
@@ -73,13 +67,7 @@
             href="mailto:{{ author.email }}">{{ creator_span }}</a>{% endif %}{% if author.url %}<a
             href="{{ author.url }}">{{ creator_span }}</a>{% endif %}{% if not author.email and not author.url %}{{ creator_span }}{% endif %}{% endfor %}
   </span>
-  <p style="text-align: right">
-    {{ experiment|experiment_datasets_badge}}&nbsp;
-    {{ experiment|experiment_datafiles_badge }}&nbsp;
-    {{ experiment|experiment_size_badge }}&nbsp;
-    {{ experiment|experiment_last_updated_badge }}&nbsp;
-    <span id="experiment-public-access-badge">{{ experiment|experiment_public_access_badge }}</span>&nbsp;
-  </p>
+  <div class="badges" id="badge-{{experiment.id}}" style="text-align: right"></div>
 </div>
 
 <div class="row" >
@@ -105,11 +93,14 @@
       <div id="experiment-tab-description">
         {% include "tardis_portal/ajax/experiment_description.html" %}
       </div>
+      <div id="experiment-tab-transfer-datasets">
+      </div>
     </div>
   </div>
   <div id="datasets-pane" class="col-md-6">
-    {% include "tardis_portal/ajax/experiment_datasets.html" %}
   </div>
 </div>
     {% render_bundle 'tardis_portal_view_experiment' %}
+    {% render_bundle 'experiment_view_badges' %}
+        {% render_bundle 'dataset_tiles' %}
 {% endblock %}

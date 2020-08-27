@@ -1,0 +1,47 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`renders badges on experiment view page should render all badges 1`] = `
+<div
+  class="badges"
+  id="experiment-1234"
+>
+  <span
+    class="mr-2"
+  >
+    <span
+      class="badge badge-info"
+      title="In 3 experiments"
+    >
+      <i
+        class="fa fa-cogs"
+      />
+       
+      3
+    </span>
+  </span>
+  <span
+    class="mr-2"
+  >
+    <span
+      class="badge badge-info"
+      title="5 files"
+    >
+      <i
+        class="fa fa-file"
+      />
+       
+      5
+    </span>
+  </span>
+  <span
+    class="mr-2"
+  >
+    <span
+      class="badge badge-info"
+      title="Dataset size is"
+    >
+      13.56 MB
+    </span>
+  </span>
+</div>
+`;
