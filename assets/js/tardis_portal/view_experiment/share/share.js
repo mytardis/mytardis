@@ -3,41 +3,7 @@
 import { userAutocompleteHandler } from "../../main";
 
 import { loadExpTabPane } from "../experiment-tabs.js";
-
-import { addPublicAccessEvents } from "./public_access_events.js";
-
 var loadingHTML = "<img src=\"/static/images/ajax-loader.gif\"/><br />";
-
-export function addChangePublicAccessEventHandlers() {
-    $(".public_access_link").unbind("click");
-    $(".public_access_link").bind("click", function(evt) {
-        var modal = $("#modal-public-access");
-
-        modal.find(".modal-body").html("");
-        modal.find(".loading-placeholder").show();
-        modal.modal("show");
-
-        modal.find(".modal-body")
-            .load("/ajax/experiment/" + $("#experiment-id").val() + "/rights", function(response, status, xhr) {
-                modal.find(".loading-placeholder").hide();
-
-                if (status === "error") {
-                    $(this).html(response);
-                    return;
-                }
-
-                $("#legal-section").hide();
-                $("#confirm-license-btn-group").hide();
-
-                addPublicAccessEvents();
-            });
-
-    });
-
-    $("#modal-public-access").bind("hidden.bs.modal", function() {
-        loadExpTabPane("sharing");
-    });
-}
 
 // beginswith, endswith
 String.prototype.beginsWith = function(t, i) {
@@ -503,7 +469,6 @@ export function expSharingAjaxReady() {
             $targetToken.load(href);
         }); // TODO error-handling
     });
-    addChangePublicAccessEventHandlers();
     addUserSharingEventHandlers();
     addGroupSharingEventHandlers();
 }

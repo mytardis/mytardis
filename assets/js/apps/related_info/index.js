@@ -1,5 +1,6 @@
-/* eslint no-underscore-dangle: 0 */
-/* global _, Backbone, Mustache */
+/*
+/!* eslint no-underscore-dangle: 0 *!/
+/!* global _, Backbone, Mustache *!/
 Backbone.$ = window.$;
 require("mustache");
 
@@ -185,3 +186,4 @@ $("button.save-related-info").click(function() {
         dialog.modal("hide");
     }
 });
+*/
