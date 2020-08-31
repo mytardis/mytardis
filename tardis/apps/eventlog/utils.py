@@ -7,8 +7,12 @@ from .signals import event_logged
 
 def log(action, user=None, obj=None, extra=None, request=None):
 
-    if action not in getattr(settings, "EVENTLOG_ACTIONS", []):
+    enabled_actions = getattr(settings, "EVENTLOG_ACTIONS", [])
+    if len(enabled_actions) != 0 and action not in enabled_actions:
         return None
+
+    if user is None and request is not None:
+        user = request.user
 
     if user is not None and not user.is_authenticated:
         user = None
@@ -48,6 +52,7 @@ def get_request_data(request):
         user_ip = request.META.get("REMOTE_ADDR")
     data["ip"] = user_ip
 
+    # This might not be useful as can be easily spoofed
     user_agent = request.META.get("HTTP_USER_AGENT")
     if user_agent:
         data["ua"] = user_agent
