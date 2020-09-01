@@ -142,7 +142,8 @@ class DatasetResourceTest(MyTardisResourceTestCase):
             {
                 'name': 'filename1',
                 'id': df1.id,
-                'verified': False
+                'verified': False,
+                'is_online': True
 
             },
             {
