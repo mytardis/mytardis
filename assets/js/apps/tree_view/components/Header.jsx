@@ -8,6 +8,12 @@ const Header = ({
   onSelect, node, style, iconClass,
 }) => {
   const iconStyle = { marginRight: '5px', opacity: '0.6' };
+  const dotStyleOnline = {
+    height: '10px', width: '10px', backgroundColor: '#28a745', borderRadius: '50%', display: 'inline-block',
+  };
+  const dotStyleOffline = {
+    height: '10px', width: '10px', backgroundColor: '#bbb', borderRadius: '50%', display: 'inline-block',
+  };
   let isDisabled = false;
   const [isDownloading, setIsDownloading] = useState(false);
   if (!node.children && !node.verified) {

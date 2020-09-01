@@ -95,6 +95,9 @@ exports[`should match snapshot should render folder tree correctly 1`] = `
               />
               parent_1
               
+              <span
+                style="height: 10px; width: 10px; background-color: rgb(187, 187, 187); border-radius: 50%; display: inline-block;"
+              />
             </div>
           </div>
         </div>
@@ -122,6 +125,9 @@ exports[`should match snapshot should render folder tree correctly 1`] = `
               />
               parent_2
               
+              <span
+                style="height: 10px; width: 10px; background-color: rgb(187, 187, 187); border-radius: 50%; display: inline-block;"
+              />
             </div>
           </div>
         </div>
@@ -159,6 +165,9 @@ exports[`should match snapshot should render folder tree correctly 1`] = `
                 />
                 
               </a>
+              <span
+                style="height: 10px; width: 10px; background-color: rgb(187, 187, 187); border-radius: 50%; display: inline-block;"
+              />
             </div>
           </div>
         </div>
@@ -202,6 +211,9 @@ exports[`should match snapshot should render folder tree correctly 1`] = `
                 />
                 
               </a>
+              <span
+                style="height: 10px; width: 10px; background-color: rgb(187, 187, 187); border-radius: 50%; display: inline-block;"
+              />
             </div>
           </div>
         </div>

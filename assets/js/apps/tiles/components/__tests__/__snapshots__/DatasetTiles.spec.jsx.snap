@@ -287,13 +287,13 @@ exports[`render dataset tiles on page load should match snapshot 1`] = `
                 <p>
                   <span
                     class="badge badge-info"
-                    title="1 file"
+                    title="4 of 4 Files online"
                   >
                     <i
                       class="fa fa-file"
                     />
                      
-                    1
+                    4
                   </span>
                 </p>
                 <p>
@@ -391,13 +391,13 @@ exports[`render dataset tiles on page load should match snapshot 1`] = `
                 <p>
                   <span
                     class="badge badge-info"
-                    title="1 file"
+                    title="4 of 4 Files online"
                   >
                     <i
                       class="fa fa-file"
                     />
                      
-                    1
+                    4
                   </span>
                 </p>
                 <p>
@@ -537,13 +537,13 @@ exports[`render dataset tiles on page load should match snapshot 1`] = `
                 <p>
                   <span
                     class="badge badge-info"
-                    title="1 file"
+                    title="4 of 4 Files online"
                   >
                     <i
                       class="fa fa-file"
                     />
                      
-                    1
+                    4
                   </span>
                 </p>
                 <p>
@@ -625,13 +625,13 @@ exports[`render dataset tiles on page load should match snapshot 1`] = `
                 <p>
                   <span
                     class="badge badge-info"
-                    title="1 file"
+                    title="4 of 4 Files online"
                   >
                     <i
                       class="fa fa-file"
                     />
                      
-                    1
+                    4
                   </span>
                 </p>
                 <p>

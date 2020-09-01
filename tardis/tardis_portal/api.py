@@ -817,6 +817,7 @@ class DatasetResource(MyTardisModelResource):
                 children['name'] = df.filename
                 children['verified'] = df.verified
                 children['id'] = df.id
+                children['is_online'] = df.is_online
                 child_list.append(children)
         if paginator.num_pages - 1 > page_num:
             # append a marker element
