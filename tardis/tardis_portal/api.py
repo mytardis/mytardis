@@ -868,7 +868,7 @@ class DatasetResource(MyTardisModelResource):
         # if there are files append this
         if dfs:
             for df in dfs:
-                child = {'name': df.filename, 'id': df.id, 'verified': df.verified}
+                child = {'name': df.filename, 'id': df.id, 'verified': df.verified, 'is_online': df.is_online}
                 child_list.append(child)
 
         return JsonResponse(child_list, status=200, safe=False)
