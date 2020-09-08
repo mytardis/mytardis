@@ -14,7 +14,7 @@ import { DownloadArchive, FetchFilesInDir, FetchChildDirs } from './Utils';
 import Spinner from '../../badges/components/utils/Spinner';
 
 
-const TreeView = ({ datasetId, modified }) => {
+const TreeView = ({ datasetId, modified, hsmEnabled }) => {
   const [cursor, setCursor] = useState(false);
   const [data, setData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -264,7 +264,7 @@ const TreeView = ({ datasetId, modified }) => {
               onToggle={onToggle}
               onSelect={onSelect}
               decorators={{
-                ...decorators, Header, Container, Loading,
+                ...decorators, Header, Container, Loading, hsmEnabled,
               }}
             />
           )
@@ -278,10 +278,12 @@ const TreeView = ({ datasetId, modified }) => {
 TreeView.propTypes = {
   datasetId: PropTypes.string.isRequired,
   modified: PropTypes.string,
+  hsmEnabled: PropTypes.bool,
 };
 
 TreeView.defaultProps = {
   modified: '',
+  hsmEnabled: false,
 };
 
 export default TreeView;

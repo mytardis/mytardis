@@ -1,11 +1,11 @@
 import React, { Fragment, useState } from 'react';
 import PropTypes from 'prop-types';
 import { saveAs } from 'file-saver';
-import { FileDownloadButton } from './Download';
 import { DownloadFile } from './Utils';
+import { FileDownloadButton, FileRecallButton } from './Download';
 
 const Header = ({
-  onSelect, node, style, iconClass,
+  onSelect, node, style, iconClass, hsmEnabled,
 }) => {
   const iconStyle = { marginRight: '5px', opacity: '0.6' };
   const dotStyleOnline = {
@@ -17,6 +17,7 @@ const Header = ({
   let isDisabled = false;
   const [isDownloading, setIsDownloading] = useState(false);
   if (!node.children && !node.verified) {
+  if ((!node.children && !node.verified) || (!node.children && !node.is_online)) {
     isDisabled = true;
   }
   const onClick = () => {
@@ -67,6 +68,7 @@ const Header = ({
             disabled={isDisabled}
           />
           <i className={`fa fa-${iconClass}`} style={iconStyle} />
+          {/* eslint-disable-next-line no-nested-ternary */}
           {isDisabled ? (
             <span style={{ color: 'red' }}>
               {node.name}
@@ -75,12 +77,22 @@ const Header = ({
           ) : node.name}
           {iconClass === 'file-text'
             ? (
-              <FileDownloadButton
+                <Fragment>
+                  {node.is_online
+                  ? <FileDownloadButton
                 isDisabled={isDisabled}
                 dataFileId={node.id}
                 onClick={onClick}
                 isDownloading={isDownloading}
-              />
+              /> : <FileRecallButton recallUrl={node.recall_url} />}
+              {hsmEnabled ? (
+                <Fragment>
+                  {node.is_online ? <span style={dotStyleOnline} title="online" />
+                    : <span style={dotStyleOffline} title="offline" />}
+                </Fragment>
+              ) : ''}
+                </Fragment>
+
             ) : ''}
         </div>
       </div>
@@ -94,6 +106,9 @@ Header.propTypes = {
   node: PropTypes.object.isRequired,
   style: PropTypes.object.isRequired,
   iconClass: PropTypes.string.isRequired,
+  hsmEnabled: PropTypes.bool,
 };
-
+Header.defaultProps = {
+  hsmEnabled: false,
+};
 export default Header;

@@ -1,6 +1,9 @@
 import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
 import Spinner from '../../badges/components/utils/Spinner';
+import { Button, OverlayTrigger, Tooltip } from 'react-bootstrap';
+/** @jsx jsx */
+import { jsx } from '@emotion/core';
 
 const FileDownloadButton = ({ isDisabled, onClick, isDownloading }) => {
   const notActive = {
@@ -26,7 +29,35 @@ const FileDownloadButton = ({ isDisabled, onClick, isDownloading }) => {
     </Fragment>
   );
 };
-
+const renderTooltip = props => (
+  <Tooltip id="button-tooltip" {...props}>
+    Request for Recall
+  </Tooltip>
+);
+const handleRecallRequest = (event) => {
+  event.preventDefault();
+};
+const FileRecallButton = ({ recallUrl }) => (
+  <Fragment>
+    <OverlayTrigger
+      placement="top"
+      delay={{ show: 250, hide: 400 }}
+      overlay={renderTooltip}
+    >
+      <Button
+        variant="outline-secondary"
+        onClick={handleRecallRequest}
+        css={{
+          fontSize: '0.75rem', lineHeight: '0.25', padding: '0rem 0rem', margin: '0 10px 0 10px',
+        }}
+        type="button"
+        data-recall-url={recallUrl}
+      >
+        <i className="fa fa-undo" css={{ marginLeft: '10px', marginRight: '10px' }} />
+      </Button>
+    </OverlayTrigger>
+  </Fragment>
+);
 const TreeDownloadButton = ({ count, onClick }) => (
   <Fragment>
     <form onSubmit={onClick}>
@@ -90,5 +121,13 @@ TreeDownloadButton.propTypes = {
   count: PropTypes.number.isRequired,
   onClick: PropTypes.func.isRequired,
 };
+FileRecallButton.propTypes = {
+  recallUrl: PropTypes.string,
+};
+FileRecallButton.defaultProps = {
+  recallUrl: '',
+};
 
-export { FileDownloadButton, TreeDownloadButton, TreeSelectButton };
+export {
+  FileDownloadButton, TreeDownloadButton, TreeSelectButton, FileRecallButton,
+};

@@ -24,11 +24,15 @@ const fakeTreeData = [{
   name: 'Parent.txt',
   id: 11985776,
   verified: true,
+  is_online: true,
+  recall_url: null,
 },
 {
   name: 'STORM-6.jpg',
   id: 11985840,
   verified: false,
+  is_online: false,
+  recall_url: '/api/v1/hsm_replica/1234/recall/',
 },
 {
   next_page: false,
@@ -49,11 +53,15 @@ const fakeChildData = [
     name: 'Child_1.txt',
     id: 11985763,
     verified: true,
+    is_online: true,
+    recall_url: null,
   },
   {
     name: 'Child_2.txt',
     id: 11985764,
     verified: true,
+    is_online: true,
+    recall_url: null,
   }];
 
 

@@ -818,6 +818,7 @@ class DatasetResource(MyTardisModelResource):
                 children['verified'] = df.verified
                 children['id'] = df.id
                 children['is_online'] = df.is_online
+                children['recall_url'] = df.recall_url
                 child_list.append(children)
         if paginator.num_pages - 1 > page_num:
             # append a marker element
@@ -868,7 +869,8 @@ class DatasetResource(MyTardisModelResource):
         # if there are files append this
         if dfs:
             for df in dfs:
-                child = {'name': df.filename, 'id': df.id, 'verified': df.verified, 'is_online': df.is_online}
+                child = {'name': df.filename, 'id': df.id, 'verified': df.verified, 'is_online': df.is_online,
+                         'recall_url': df.recall_url}
                 child_list.append(child)
 
         return JsonResponse(child_list, status=200, safe=False)
