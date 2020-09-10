@@ -46,6 +46,14 @@ exports[`should match snapshot should render folder tree correctly 1`] = `
       >
         Select All
       </button>
+      <button
+        class="btn btn-outline-secondary"
+        style="margin-bottom: 12px; font-weight: bold; margin-left: 2px; pointer-events: all;"
+        type="submit"
+        value="submit"
+      >
+        Request Dataset Recall
+      </button>
     </div>
   </div>
   <div>
@@ -202,6 +210,7 @@ exports[`should match snapshot should render folder tree correctly 1`] = `
                 style="pointer-events: none; cursor: default; text-decoration: none; color: grey;"
                 title="Download"
               >
+                Request Recall
                 <i
                   class="fa fa-undo css-bv71sw-FileRecallButton"
                 />

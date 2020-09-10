@@ -2,6 +2,8 @@
 Additions to MyTardis's REST API
 """
 from django.conf.urls import url
+from django.core import mail
+from django.core.mail import get_connection
 from django.http import (HttpResponseForbidden,
                          HttpResponseServerError,
                          JsonResponse)
@@ -9,11 +11,12 @@ from django.http import (HttpResponseForbidden,
 from tastypie.utils import trailing_slash
 
 import tardis.tardis_portal.api
-from tardis.tardis_portal.auth.decorators import has_datafile_download_access
+from tardis.tardis_portal.auth.decorators import has_datafile_download_access, has_dataset_download_access
 from tardis.tardis_portal.models.dataset import Dataset
 from tardis.tardis_portal.models.datafile import DataFileObject
 
 from .check import dfo_online
+from .email_text import email_dataset_recall_requested
 from .tasks import dfo_recall
 
 
@@ -101,6 +104,7 @@ class ReplicaAppResource(tardis.tardis_portal.api.ReplicaResource):
             "message": "Recall requested for DFO %s" % dfo.id
         })
 
+
 class DatasetAppResource(tardis.tardis_portal.api.DatasetResource):
     '''Extends MyTardis's API for Datasets, adding in a method to count
     online files in a Hierarchical Storage Management (HSM) system
@@ -117,6 +121,9 @@ class DatasetAppResource(tardis.tardis_portal.api.DatasetResource):
                 (self._meta.resource_name, trailing_slash()),
                 self.wrap_view('online_count'),
                 name="hsm_api_count_online_files"),
+            url(r"^(?P<resource_name>%s)/(?P<pk>\w[\w/-]*)/recall%s$" %
+                (self._meta.resource_name, trailing_slash()),
+                self.wrap_view('dataset_recall'), name="hsm_api_dataset_recall"),
         ]
 
     def online_count(self, request, **kwargs):
@@ -145,3 +152,33 @@ class DatasetAppResource(tardis.tardis_portal.api.DatasetResource):
                 status=HttpResponseServerError.status_code)
 
         return HttpResponseServerError()
+
+    def dataset_recall(self, request, **kwargs):
+        """
+        Send and email to Site admin to recall Dataset from HSM system
+        """
+        from .exceptions import HsmException
+
+        self.method_check(request, allowed=['get'])
+        self.is_authenticated(request)
+        self.throttle_check(request)
+
+        ds = Dataset.objects.get(id=kwargs['pk'])
+        if not has_dataset_download_access(
+                request=request, dataset_id=ds.id):
+            return HttpResponseForbidden()
+
+        """
+        send an email to MyTardis admin
+        """
+        try:
+            subject, content = email_dataset_recall_requested(ds, request.user)
+            mail.mail_managers(subject, content, connection=get_connection(fail_silently=True))
+        except HsmException as err:
+            return JsonResponse(
+                {'error_message': "%s: %s" % (type(err), str(err))},
+                status=HttpResponseServerError.status_code)
+
+        return JsonResponse({
+            "message": "Recall requested for Dataset %s" % ds.id
+        })

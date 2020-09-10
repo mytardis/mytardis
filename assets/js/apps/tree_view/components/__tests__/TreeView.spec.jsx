@@ -119,7 +119,7 @@ describe(' should render tree correctly', () => {
     expect(container.querySelector('ul').children[0].textContent).toEqual('parent_1');
     expect(container.querySelector('ul').children[1].textContent).toEqual('parent_2');
     expect(container.querySelector('ul').children[2].textContent).toEqual('Parent.txt');
-    expect(container.querySelector('ul').children[3].textContent).toEqual('STORM-6.jpg(unverified)');
+    expect(container.querySelector('ul').children[3].textContent).toEqual('STORM-6.jpg(unverified)Request Recall');
   });
 });
 describe('test filter, select and toggle node', () => {

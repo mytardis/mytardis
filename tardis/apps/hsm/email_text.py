@@ -41,3 +41,12 @@ def email_dfo_recall_failed(dfo, user):
         file_path=file_path,
         download_url=download_url,
         support_email=settings.SUPPORT_EMAIL, site_title=settings.SITE_TITLE)
+
+
+def email_dataset_recall_requested(dataset, user):
+    return interpolate_template(
+        'dataset_recall_requested',
+        user=user,
+        dataset=dataset.id,
+        site_title=settings.SITE_TITLE
+    )

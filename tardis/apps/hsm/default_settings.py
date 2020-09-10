@@ -42,4 +42,14 @@ Please try again later, or contact {support_email} for assistance.
 Regards,
 {site_title} Team.
 '''),
+    'dataset_recall_requested': ('[{site_title}] Dataset recall requested',
+                           '''\
+Dear {site_title} admin,
+
+User {user} has requested to recall dataset with id {dataset} from HSM vault.
+
+
+Regards,
+{site_title} Team.
+''')
 }

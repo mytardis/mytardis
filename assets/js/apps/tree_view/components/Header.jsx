@@ -84,7 +84,12 @@ const Header = ({
                 dataFileId={node.id}
                 onClick={onClick}
                 isDownloading={isDownloading}
-              /> : <FileRecallButton recallUrl={node.recall_url} />}
+              /> : (
+                  <FileRecallButton 
+                      recallUrl={node.recall_url} 
+                  />
+                  )
+                  }
               {hsmEnabled ? (
                 <Fragment>
                   {node.is_online ? <span style={dotStyleOnline} title="online" />
