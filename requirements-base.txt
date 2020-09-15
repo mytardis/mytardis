@@ -1,5 +1,5 @@
 Django==2.2.16 # pyup: >=2.2,<3
-Wand==0.6.2
+Wand==0.6.3
 amqp==2.6.1
 bleach==3.1.5
 celery==4.4.7
