@@ -1,6 +1,6 @@
 FROM mytardis/mytardis-run
 
-RUN CHROME_DRIVER_VERSION=`curl -sS https://chromedriver.storage.googleapis.com/LATEST_RELEASE`
+ENV CHROME_DRIVER_VERSION=`curl -sS https://chromedriver.storage.googleapis.com/LATEST_RELEASE`
 
 USER root
 RUN apt-get update && apt-get install \
