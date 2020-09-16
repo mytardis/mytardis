@@ -2,7 +2,6 @@
 {% load static from staticfiles %}
 {% load render_bundle from webpack_loader %}
 {% load capture %}
-{% load dataset_tags %}
 {% load basiccomparisonfilters %}
 
 {% block script %}
@@ -191,11 +190,7 @@
     </div>
   {% endif %}
 
-    <p class="float-right mb-1">
-    {{ dataset|dataset_experiments_badge}}&nbsp;
-    {{ dataset|dataset_datafiles_badge }}&nbsp;
-    {{ dataset|dataset_size_badge }}
-    </p>
+    <div class="badges" id="badge-{{dataset.id}}" style="text-align: right"></div>
     <p style="text-align:left; margin-top:10px;">
   </p>
 </div>
@@ -395,4 +390,5 @@
 <input type="hidden" id="csrf-token" value="{{ csrf_token }}">
 {% endblock finalscript %}
 {% render_bundle 'tree_view' %}
+  {% render_bundle 'dataset_view_badges' %}
 {% endblock %}

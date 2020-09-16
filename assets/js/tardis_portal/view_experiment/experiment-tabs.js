@@ -1,7 +1,7 @@
 /* global s */
 
 import { expSharingAjaxReady } from "./share/share.js";
-import { getDatasetsForExperiment} from "./dataset-tiles";
+
 
 var tabIdPrefix = "experiment-tab-";
 
@@ -33,12 +33,6 @@ export function loadExpTabPane(tabName) {
             const tab = url.substring(url.lastIndexOf("/") + 1);
             if (tab === "share") {
                 expSharingAjaxReady();
-            }
-            if (tab === "dataset-transfer") {
-                var experimentId = $("select[name='experiment_id']").val();
-                if (typeof(experimentId) !== "undefined") {
-                    getDatasetsForExperiment(experimentId);
-                }
             }
         }
     });
