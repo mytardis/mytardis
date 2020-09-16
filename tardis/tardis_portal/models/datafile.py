@@ -510,7 +510,6 @@ class DataFileObject(models.Model):
 
     # pylint: disable=W0222
     def save(self, *args, **kwargs):
-        from amqp.exceptions import AMQPError
 
         reverify = kwargs.pop('reverify', False)
         super().save(*args, **kwargs)
@@ -526,9 +525,9 @@ class DataFileObject(models.Model):
                 countdown=5,
                 priority=self.priority,
                 shadow=shadow)
-        except AMQPError:
+        except Exception as e:
             logger.exception(
-                "Failed to submit verification task for DFO ID %s", self.id)
+                "Failed to submit verification task for DFO ID %s due to %s", self.id, str(e))
 
     @property
     def storage_type(self):
