@@ -483,7 +483,8 @@ class MyTSFTPRequestHandler(socketserver.BaseRequestHandler):
             logger.error("SSH error: %s" % str(e))
             self.transport.close()
         except EOFError as e:
-            logger.error("Socket error: %s" % str(e))
+            # Don't throw an error
+            logger.warning("Socket error: %s" % str(e))
         except Exception as e:
             logger.error("Error: %s" % str(e))
 
@@ -523,8 +524,11 @@ def start_server(host=None, port=None, keyfile=None):
         current_site = Site.objects.get_current()
         host = current_site.domain
     port = port or getattr(settings, 'SFTP_PORT', 2200)
-    host_key = RSAKey.from_private_key(
-        keyfile or StringIO(settings.SFTP_HOST_KEY))
+    try:
+        host_key = RSAKey.from_private_key(
+            keyfile or StringIO(settings.SFTP_HOST_KEY))
+    except:
+        raise SSHException("SSH error: failed loading SFTP host key")
     server = MyTSFTPTCPServer((host, port), host_key=host_key)
     try:
         server.serve_forever()

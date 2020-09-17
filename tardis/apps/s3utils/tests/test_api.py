@@ -3,7 +3,7 @@ Testing the s3util app's extensions to the tastypie-based mytardis api
 
 .. moduleauthor:: James Wettenhall <james.wettenhall@monash.edu>
 '''
-from mock import patch
+from unittest.mock import patch
 
 import botocore.signers
 

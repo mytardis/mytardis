@@ -1,13 +1,12 @@
-import datetime
 import json
 import logging
+
+from unittest.mock import patch
 
 from django.test import TestCase
 from django.test.client import Client
 
 from django.contrib.auth.models import User, Group, Permission, AnonymousUser
-
-from mock import patch
 
 from ..auth.localdb_auth import django_user
 from ..auth.localdb_auth import auth_key as localdb_auth_key
@@ -169,11 +168,6 @@ class ObjectACLTestCase(TestCase):
                                     % (self.experiment1.id, 'group1'))
         self.assertEqual(response.status_code, 200)
 
-        # ok, now do some tricky stuff
-        today = datetime.datetime.today()
-        yesterday = today - datetime.timedelta(days=1)
-        tomorrow = today + datetime.timedelta(days=1)
-
         # add user3 to experiment1
         response = self.client1.get('/experiment/control_panel/%i/access_list'
                                     '/add/user/%s/?authMethod=%s'
@@ -187,7 +181,7 @@ class ObjectACLTestCase(TestCase):
         response = self.client3.get('/experiment/view/%i/'
                                    % (self.experiment1.id))
         self.assertEqual(response.status_code, 403)
-        mock_webpack_get_bundle.assert_called()
+        self.assertNotEqual(mock_webpack_get_bundle.call_count, 0)
 
     @patch('webpack_loader.loader.WebpackLoader.get_bundle')
     def testReadAccess(self, mock_webpack_get_bundle):
@@ -199,7 +193,7 @@ class ObjectACLTestCase(TestCase):
         response = self.client1.get('/experiment/view/%i/'
                                    % (self.experiment1.id))
         self.assertEqual(response.status_code, 200)
-        mock_webpack_get_bundle.assert_called()
+        self.assertNotEqual(mock_webpack_get_bundle.call_count, 0)
 
         # user1 should not be allowed to see experiment2
         response = self.client1.get('/experiment/view/%i/'
@@ -511,7 +505,7 @@ class ObjectACLTestCase(TestCase):
         self.assertTrue(login)
         response = self.client1.get('/experiment/edit/%i/' % (self.experiment1.id))
         self.assertEqual(response.status_code, 200)
-        mock_webpack_get_bundle.assert_called()
+        self.assertNotEqual(mock_webpack_get_bundle.call_count, 0)
 
         # write access has not been granted for experiment2
         response = self.client1.get('/experiment/edit/%i/' % (self.experiment2.id))
@@ -614,7 +608,7 @@ class ObjectACLTestCase(TestCase):
 
         acl.delete()
         self.client3.logout()
-        mock_webpack_get_bundle.assert_called()
+        self.assertNotEqual(mock_webpack_get_bundle.call_count, 0)
 
 
     def testOwnedExperiments(self):

@@ -2,7 +2,7 @@
  Command for loading soft schema definitions
 """
 from django.core.management.base import BaseCommand
-from django.db import connections, DEFAULT_DB_ALIAS
+from django.db import DEFAULT_DB_ALIAS
 from django.core import serializers
 
 
@@ -38,8 +38,6 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         using = options.get('database', DEFAULT_DB_ALIAS)
-
-        connection = connections[using]
 
         def humanize(dirname):
             return "'%s'" % dirname if dirname else 'absolute path'

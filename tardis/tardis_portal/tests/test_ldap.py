@@ -40,7 +40,7 @@ class LDAPTest(TestCase):
         server.set_dn_suffix("dc=example, dc=com")
         server.start()
         settings.LDAP_URL = server.get_url()
-        base = server.get_dn_suffix()
+        dummy_base = server.get_dn_suffix()
 
         server.ldapadd("\n".join(test_ldif) + "\n")
 
@@ -117,7 +117,7 @@ class LDAPTest(TestCase):
 
         # Check that there is an entry in the user authentication table
         from ..models import UserAuthentication
-        userAuth = UserAuthentication.objects.get(
+        UserAuthentication.objects.get(
             userProfile__user=user,
             authenticationMethod=l.name)
 

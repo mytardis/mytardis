@@ -40,11 +40,11 @@ http://docs.djangoproject.com/en/dev/topics/testing/
 
 import unittest
 
+from unittest.mock import patch
+
 from django.test import TestCase
 from django.test.client import Client
 from django.contrib.auth.models import User
-
-from mock import patch
 
 from ..models import Experiment, ObjectACL, Dataset
 from ..auth.localdb_auth import django_user
@@ -56,7 +56,7 @@ class UserInterfaceTestCase(TestCase):
     @patch('webpack_loader.loader.WebpackLoader.get_bundle')
     def test_root(self, mock_webpack_get_bundle):
         self.assertEqual(Client().get('/').status_code, 200)
-        mock_webpack_get_bundle.assert_called()
+        self.assertNotEqual(mock_webpack_get_bundle.call_count, 0)
 
     @patch('webpack_loader.loader.WebpackLoader.get_bundle')
     def test_urls(self, mock_webpack_get_bundle):
@@ -69,7 +69,7 @@ class UserInterfaceTestCase(TestCase):
         for u in urls:
             response = c.get(u)
             self.assertEqual(response.status_code, 200)
-            mock_webpack_get_bundle.assert_called()
+            self.assertNotEqual(mock_webpack_get_bundle.call_count, 0)
 
     @patch('webpack_loader.loader.WebpackLoader.get_bundle')
     def test_urls_with_some_content(self, mock_webpack_get_bundle):
@@ -130,7 +130,7 @@ class UserInterfaceTestCase(TestCase):
         self.assertEqual(response.status_code, 200,
                          "%s should have returned 200 but returned %d"
                          % ('/stats/', response.status_code))
-        mock_webpack_get_bundle.assert_called()
+        self.assertNotEqual(mock_webpack_get_bundle.call_count, 0)
 
     def test_login(self):
         from django.contrib.auth.models import User

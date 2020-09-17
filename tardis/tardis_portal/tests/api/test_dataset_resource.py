@@ -20,6 +20,9 @@ from . import MyTardisResourceTestCase
 class DatasetResourceTest(MyTardisResourceTestCase):
     def setUp(self):
         super().setUp()
+        self.exp = Experiment(
+            title='test exp', institution_name='monash', created_by=self.user)
+        self.exp.save()
         self.extra_instrument = Instrument()
         self.extra_instrument = Instrument(name="Extra Instrument",
                                            facility=self.testfacility)
@@ -113,7 +116,9 @@ class DatasetResourceTest(MyTardisResourceTestCase):
         self.assertEqual(returned_data['meta']['total_count'], 0)
 
     def test_get_root_dir_nodes(self):
-        dataset = Dataset.objects.create(description='test dataset')
+        dataset = Dataset.objects.create(description='test dataset', )
+        dataset.experiments.add(self.testexp)
+        dataset.save()
         uri = '/api/v1/dataset/%d/root-dir-nodes/' % dataset.id
         response = self.api_client.get(
             uri, authentication=self.get_credentials())
@@ -123,7 +128,7 @@ class DatasetResourceTest(MyTardisResourceTestCase):
         DataFile.objects.create(
             dataset=dataset, filename='filename2', size=0, md5sum='bogus',
             directory='subdir')
-        DataFile.objects.create(
+        df1 = DataFile.objects.create(
             dataset=dataset, filename='filename1', size=0, md5sum='bogus')
 
         response = self.api_client.get(
@@ -135,7 +140,9 @@ class DatasetResourceTest(MyTardisResourceTestCase):
         # top-level directory:
         expected_data = [
             {
-                'name': 'filename1'
+                'name': 'filename1',
+                'id': df1.id,
+                'verified': False
 
             },
             {
@@ -153,13 +160,15 @@ class DatasetResourceTest(MyTardisResourceTestCase):
 
     def test_get_child_dir_nodes(self):
         dataset = Dataset.objects.create(description='test dataset')
+        dataset.experiments.add(self.testexp)
+        dataset.save()
         uri = '/api/v1/dataset/%d/child-dir-nodes/?dir_path=subdir' % dataset.id
         response = self.api_client.get(
             uri, authentication=self.get_credentials())
         returned_data = json.loads(response.content.decode())
         self.assertEqual(returned_data, [])
 
-        DataFile.objects.create(
+        df1 = DataFile.objects.create(
             dataset=dataset, filename='filename1', size=0, md5sum='bogus',
             directory='subdir')
         response = self.api_client.get(
@@ -167,11 +176,13 @@ class DatasetResourceTest(MyTardisResourceTestCase):
         returned_data = json.loads(response.content.decode())
         self.assertEqual(returned_data, [
             {
-                'name': 'filename1'
+                'name': 'filename1',
+                'id': df1.id,
+                'verified': False
             }
         ])
 
-        DataFile.objects.create(
+        df2 = DataFile.objects.create(
             dataset=dataset, filename='filename2', size=0, md5sum='bogus',
             directory='subdir')
         response = self.api_client.get(
@@ -179,11 +190,15 @@ class DatasetResourceTest(MyTardisResourceTestCase):
         returned_data = json.loads(response.content.decode())
         expected_data = [
             {
-                'name': 'filename1'
+                'name': 'filename1',
+                'id': df1.id,
+                'verified': False
 
             },
             {
-                'name': 'filename2'
+                'name': 'filename2',
+                'id': df2.id,
+                'verified': False
             }
         ]
         self.assertEqual(
@@ -201,11 +216,15 @@ class DatasetResourceTest(MyTardisResourceTestCase):
         # so it shouldn't appear in the results:
         expected_data = [
             {
-                'name': 'filename1'
+                'name': 'filename1',
+                'id': df1.id,
+                'verified': False
 
             },
             {
-                'name': 'filename2'
+                'name': 'filename2',
+                'id': df2.id,
+                'verified': False
             }
         ]
         self.assertEqual(
@@ -213,7 +232,7 @@ class DatasetResourceTest(MyTardisResourceTestCase):
             sorted(expected_data, key=lambda x: x['name'])
         )
 
-        DataFile.objects.create(
+        df4 = DataFile.objects.create(
             dataset=dataset, filename='filename4', size=0, md5sum='bogus',
             directory='subdir/subdir3')
         response = self.api_client.get(
@@ -221,11 +240,15 @@ class DatasetResourceTest(MyTardisResourceTestCase):
         returned_data = json.loads(response.content.decode())
         expected_data = [
             {
-                'name': 'filename1'
+                'name': 'filename1',
+                'id': df1.id,
+                'verified': False
 
             },
             {
-                'name': 'filename2'
+                'name': 'filename2',
+                'id': df2.id,
+                'verified': False
             },
             {
                 'name': 'subdir3',
@@ -244,7 +267,9 @@ class DatasetResourceTest(MyTardisResourceTestCase):
         returned_data = json.loads(response.content.decode())
         expected_data = [
             {
-                'name': 'filename4'
+                'name': 'filename4',
+                'id': df4.id,
+                'verified': False
 
             },
         ]
@@ -257,10 +282,12 @@ class DatasetResourceTest(MyTardisResourceTestCase):
 
     def test_get_child_dir_nodes_no_files_in_root_dir(self):
         dataset = Dataset.objects.create(description='test dataset')
+        dataset.experiments.add(self.testexp)
+        dataset.save()
         encoded_subdir1 = quote("subdir#1")
         uri = '/api/v1/dataset/%d/child-dir-nodes/?dir_path=%s' % (dataset.id, encoded_subdir1)
 
-        DataFile.objects.create(
+        df1 = DataFile.objects.create(
             dataset=dataset, filename='filename1', size=0, md5sum='bogus',
             directory='subdir#1')
         response = self.api_client.get(
@@ -268,7 +295,9 @@ class DatasetResourceTest(MyTardisResourceTestCase):
         returned_data = json.loads(response.content.decode())
         self.assertEqual(returned_data, [
             {
-                'name': 'filename1'
+                'name': 'filename1',
+                'id': df1.id,
+                'verified': False
             }
         ])
 
@@ -282,6 +311,8 @@ class DatasetResourceTest(MyTardisResourceTestCase):
         expected_data = [
             {
                 'name': 'filename1',
+                'id': df1.id,
+                'verified': False
             },
             {
                 'name': 'subdir#2',

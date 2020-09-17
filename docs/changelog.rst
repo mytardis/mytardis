@@ -1,6 +1,15 @@
 Releases
 ========
 
+4.3.0
+-----
+* Updated various Python and JS libraries
+* Removed Mustache and Backbone JS libraries (replaced with React)
+* No new session will be created on API call or health check
+* Check DataFile permissions in API differently (performance gain)
+* Check for dataset permissions during API calls (security bug)
+* New uploader registration email to be send to managers group not admins
+
 4.2.0
 -----
 * Upgraded Django from 1.11.26 to 2.2.6

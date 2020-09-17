@@ -52,7 +52,7 @@ def fpupload(request, dataset_id):
 
     if request.method == 'POST':
         logger.debug('got POST')
-        for key, val in request.POST.items():
+        for _, val in request.POST.items():
             splits = val.split(",")
             for url in splits:
                 try:
