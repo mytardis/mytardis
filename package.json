@@ -11,7 +11,7 @@
     "@babel/plugin-proposal-class-properties": "^7.10.4",
     "@babel/preset-env": "^7.10.3",
     "@babel/preset-react": "^7.10.4",
-    "@emotion/core": "^10.0.27",
+    "@emotion/core": "^10.0.35",
     "@testing-library/react": "10.4.9",
     "angular": "1.8.0",
     "angular-resource": "1.8.0",
