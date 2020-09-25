@@ -367,6 +367,7 @@ def healthz(request):
     '''
     returns that the server is alive
     '''
+    del request.session
     return HttpResponse("OK")
 
 
