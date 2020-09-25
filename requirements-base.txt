@@ -2,7 +2,7 @@ Django==2.2.16 # pyup: >=2.2,<3
 Wand==0.6.3
 bleach==3.2.0
 celery==4.4.7
-boto3==1.15.3
+boto3==1.15.5
 django-extensions==3.0.8
 django-elasticsearch-dsl==7.1.1
 git+https://github.com/mytardis/django-form-utils.git@django-1.11-upgrade#egg=django-form-utils
