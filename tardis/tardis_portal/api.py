@@ -601,6 +601,12 @@ class ExperimentResource(MyTardisModelResource):
             }
         owners = exp.get_owners()
         bundle.data['owner_ids'] = [o.id for o in owners]
+        dataset_count = exp.datasets.all().count()
+        bundle.data['dataset_count'] = dataset_count
+        datafile_count = exp.get_datafiles().count()
+        bundle.data['datafile_count'] = datafile_count
+        experiment_size = exp.get_size()
+        bundle.data['experiment_size'] = experiment_size
         return bundle
 
     def hydrate_m2m(self, bundle):
@@ -694,6 +700,16 @@ class DatasetResource(MyTardisModelResource):
         ]
         always_return_data = True
 
+    def dehydrate(self, bundle):
+        dataset = bundle.obj
+        size = dataset.get_size()
+        bundle.data['dataset_size'] = size
+        dataset_experiment_count = dataset.experiments.count()
+        bundle.data['dataset_experiment_count'] = dataset_experiment_count
+        dataset_datafile_count = dataset.datafile_set.count()
+        bundle.data['dataset_datafile_count'] = dataset_datafile_count
+        return bundle
+
     def prepend_urls(self):
         return [
             url(r'^(?P<resource_name>%s)/(?P<pk>\w[\w/-]*)/files/'
@@ -756,6 +772,10 @@ class DatasetResource(MyTardisModelResource):
 
         dataset_id = kwargs['pk']
         dataset = Dataset.objects.get(id=dataset_id)
+        if not has_dataset_access(
+                request=request, dataset_id=dataset_id):
+            return HttpResponseForbidden()
+
         # get dirs at root level
         dir_tuples = dataset.get_dir_tuples("")
         # get files at root level
@@ -789,6 +809,10 @@ class DatasetResource(MyTardisModelResource):
         self.is_authenticated(request)
 
         dataset_id = kwargs['pk']
+        if not has_dataset_access(
+                request=request, dataset_id=dataset_id):
+            return HttpResponseForbidden()
+
         base_dir = request.GET.get('dir_path', None)
         dataset = Dataset.objects.get(id=dataset_id)
         if not base_dir:
@@ -828,6 +852,10 @@ class DatasetResource(MyTardisModelResource):
         self.method_check(request, allowed=['get'])
         self.is_authenticated(request)
         dataset_id = kwargs['pk']
+        if not has_dataset_access(
+                request=request, dataset_id=dataset_id):
+            return HttpResponseForbidden()
+
         dir_path = request.GET.get('dir_path', None)
         if not dir_path:
             return HttpResponse('Please specify folder path')

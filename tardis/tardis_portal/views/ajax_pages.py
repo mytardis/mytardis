@@ -2,14 +2,16 @@
 views that return HTML that is injected into pages
 """
 import logging
+import json
 
 from urllib.parse import urlencode
 
 from django.conf import settings
 from django.core.exceptions import PermissionDenied
 from django.core.paginator import Paginator, EmptyPage, InvalidPage
+from django.forms import model_to_dict
+from django.http import JsonResponse
 from django.urls import reverse
-from django.http import HttpResponse
 from django.views.decorators.cache import never_cache
 from django.contrib.auth.decorators import login_required
 from ..auth import decorators as authz
@@ -18,7 +20,6 @@ from ..models import Experiment, DataFile, Dataset, Schema, \
     DatafileParameterSet, UserProfile
 from ..shortcuts import return_response_error, \
     return_response_not_found, render_response_index
-from ..util import render_public_access_badge
 from ..views.pages import ExperimentView
 from ..views.utils import _add_protocols_and_organizations
 
@@ -270,6 +271,8 @@ def retrieve_datafile_list(
     immutable = Dataset.objects.get(id=dataset_id).immutable
 
     query_string = '/ajax/datafile_list/%s/?page={page}' % dataset_id
+    if params:
+        query_string += '&' + urlencode(params)
 
     c = {
         'datafiles': dataset,
@@ -287,17 +290,6 @@ def retrieve_datafile_list(
     }
     _add_protocols_and_organizations(request, None, c)
     return render_response_index(request, template_name, c)
-
-
-def experiment_public_access_badge(request, experiment_id):
-    try:
-        experiment = Experiment.objects.get(id=experiment_id)
-    except Experiment.DoesNotExist:
-        return HttpResponse('')
-
-    if authz.has_experiment_access(request, experiment_id):
-        return HttpResponse(render_public_access_badge(experiment))
-    return HttpResponse('')
 
 
 @authz.experiment_ownership_required
@@ -326,7 +318,8 @@ def choose_rights(request, experiment_id):
 
     # Process form or prepopulate it
     if request.method == 'POST':
-        form = RightsForm(request.POST)
+        data = json.loads(request.body)
+        form = RightsForm(data)
         if form.is_valid():
             experiment.public_access = form.cleaned_data['public_access']
             experiment.license = form.cleaned_data['license']
@@ -337,9 +330,10 @@ def choose_rights(request, experiment_id):
                            'legal_text': getattr(settings, 'LEGAL_TEXT',
                                                  'No Legal Agreement Specified')})
 
-    c = {'form': form, 'experiment': experiment}
-    return render_response_index(
-        request, 'tardis_portal/ajax/choose_rights.html', c)
+    c = {'form': form.data, 'experiment': model_to_dict(experiment)}
+    return JsonResponse(form.data, safe=False)
+    #return render_response_index(
+    #    request, 'tardis_portal/ajax/choose_rights.html', c)
 
 
 @never_cache

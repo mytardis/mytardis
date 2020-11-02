@@ -22,7 +22,6 @@ from tardis.tardis_portal.views import (
     retrieve_access_list_tokens,
     create_token,
     view_rifcs,
-    experiment_public_access_badge,
     add_dataset
 )
 
@@ -74,9 +73,6 @@ experiment_urls = [
         name='tardis.tardis_portal.views.create_token'),
     url(r'^view/(?P<experiment_id>\d+)/rifcs/$', view_rifcs,
         name='tardis.tardis_portal.views.control_panel.view_rifcs'),
-    url(r'^view/(?P<experiment_id>\d+)/public_access_badge/$',
-        experiment_public_access_badge,
-        name='tardis.tardis_portal.views.control_panel.experiment_public_access_badge'),
     url(r'^(?P<experiment_id>\d+)/add-dataset$', add_dataset,
         name='tardis.tardis_portal.views.add_dataset'),
 ]

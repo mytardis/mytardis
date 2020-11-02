@@ -1,4 +1,5 @@
 {% load static from staticfiles %}
+{% load render_bundle from webpack_loader %}
 {% load experiment_tags %}
 {% load experimentstats %}
 {% load humanize %}
@@ -23,7 +24,7 @@
              href="{% url 'tardis_portal.view_experiment' exp.id %}">{{ exp.title }}</a>
         </div>
         <div class="col">
-          {% experiment_badges exp %}
+          <div class="badges" id="badge-{{exp.id}}"></div>
         </div>
       </div>
       <div class="row">
@@ -58,3 +59,4 @@
 {% if experiments.paginator.num_pages > 1 %}
   {% block bottom-pagination %}{% pagination experiments paginator page_num query_string %}{% endblock %}
 {% endif %}
+{% render_bundle 'index_page_badges' %}

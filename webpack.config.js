@@ -31,7 +31,13 @@ module.exports = {
         related_info_index_ro: "./assets/js/apps/related_info/index_ro.js",
         lib: glob.sync("./assets/js/lib/**/*.js"),
         search_app : "./assets/js/apps/search/index.jsx",
-        tree_view : "./assets/js/apps/tree_view/index.jsx"
+        tree_view : "./assets/js/apps/tree_view/index.jsx",
+        index_page_badges: "./assets/js/apps/badges/components/IndexPageBadges.jsx",
+        public_access_badge: "./assets/js/apps/badges/components/ShareTabBadge.jsx",
+        experiment_view_badges: "./assets/js/apps/badges/components/ExperimentViewPageBadges.jsx",
+        dataset_view_badges: "./assets/js/apps/badges/components/DatasetViewPageBadges.jsx",
+        dataset_tiles: "./assets/js/apps/tiles/index.jsx",
+        choose_rights: "./assets/js/apps/choose_rights/index.jsx"
     },
     output: {
         path: path.resolve("./assets/bundles/"),
@@ -41,12 +47,7 @@ module.exports = {
     optimization: {
         minimizer: [
             new TerserPlugin({
-                chunkFilter: (chunk) => {
-                    if (chunk.name === "tardis_portal_facility_view") {
-                        return false;
-                    }
-                    return true;
-                }
+                exclude: "tardis_portal_facility_view"
             })],
         splitChunks: {
             chunks: "async",
@@ -114,8 +115,7 @@ module.exports = {
                     publicPath: "/bundles/"
                 }
             },
-            {test: /backbone.js/, loader: "imports-loader?define=>false"},
-            {
+          {
                 test: /\.(gif|png|jpe?g)$/i,
                 loader: "url-loader",
                 options: {
@@ -139,7 +139,6 @@ module.exports = {
         alias: {
             "jquery": __dirname + "/node_modules/jquery",
             "main": __dirname + "/assets/js/tardis_portal/main",
-            "backbonemodels": __dirname + "/assets/js/tardis_portal/backbone-models",
         },
     }
 };
