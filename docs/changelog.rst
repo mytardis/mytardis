@@ -1,6 +1,14 @@
 Releases
 ========
 
+4.4.0
+-----
+* User activity logging app
+* Updated various Python and JS libraries
+* Fix to Google Chrome installation
+* Bugfixes
+  - add SSH key
+
 4.3.0
 -----
 * Updated various Python and JS libraries

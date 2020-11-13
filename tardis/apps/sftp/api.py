@@ -55,7 +55,7 @@ class SFTPPublicKeyAppResource(ModelResource):
     def dehydrate(self, bundle):
         if bundle.obj.key_type == "ssh-rsa":
             key = RSAKey(data=base64.b64decode(bundle.obj.public_key))
-        elif bundle.obj.key_type == "ssh-rsa":
+        elif bundle.obj.key_type == "ssh-dss":
             key = DSSKey(data=base64.b64decode(bundle.obj.public_key))
         elif bundle.obj.key_type.startswith("ecdsa"):
             key = ECDSAKey(data=base64.b64decode(bundle.obj.public_key))
