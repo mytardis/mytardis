@@ -6,15 +6,18 @@ import PropTypes from 'prop-types';
 import styles from './custom-theme';
 import Header from './Header';
 import Container from './Container';
+import Loading from './Loading';
 import * as filters from './Filter';
 import 'regenerator-runtime/runtime';
 import { TreeDownloadButton, TreeSelectButton } from './Download';
-import { DownloadArchive, FetchFilesInDir } from './Utils';
+import { DownloadArchive, FetchFilesInDir, FetchChildDirs } from './Utils';
+import Spinner from '../../badges/components/utils/Spinner';
 
 
 const TreeView = ({ datasetId, modified }) => {
   const [cursor, setCursor] = useState(false);
   const [data, setData] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [selectedCount, setSelectedCount] = useState(0);
   const [isAllSelected, setIsAllSelected] = useState(false);
   const onSelect = (node) => {
@@ -64,18 +67,22 @@ const TreeView = ({ datasetId, modified }) => {
         'Content-Type': 'application/json',
       },
     }).then(responseJson => (responseJson.json()))
-      .then((response) => { setData(response); });
+      .then((response) => {
+        setIsLoading(false);
+        setData(response);
+      });
   };
-  const fetchChildDirs = (node, dirPath) => {
-    const encodedDir = encodeURIComponent(dirPath);
-    fetch(`/api/v1/dataset/${datasetId}/child-dir-nodes/?dir_path=${encodedDir}`, {
-      method: 'get',
-      headers: {
-        'Accept': 'application/json', // eslint-disable-line quote-props
-        'Content-Type': 'application/json',
-      },
-    }).then(response => (response.json()))
-      .then((childNodes) => {
+  useEffect(() => {
+    fetchBaseDirs('');
+  }, [datasetId, modified]);
+  const onToggle = (node, toggled) => {
+    // toggled = !toggled;
+    // fetch children:
+    // console.log(`on toggle ${node.name}`);
+    if (toggled && node.children && node.children.length === 0) {
+      // show loading
+      node.loading = true;
+      FetchChildDirs(datasetId, node.path).then((childNodes) => {
         node.children = childNodes;
         node.toggled = true;
         if (node.selected) {
@@ -88,18 +95,7 @@ const TreeView = ({ datasetId, modified }) => {
           setSelectedCount(selectedCount + childCount);
         }
         setData(Object.assign([], data));
-      });
-    //
-  };
-  useEffect(() => {
-    fetchBaseDirs('');
-  }, [datasetId, modified]);
-  const onToggle = (node, toggled) => {
-    // fetch children:
-    // console.log(`on toggle ${node.name}`);
-    if (toggled && node.children && node.children.length === 0) {
-      fetchChildDirs(node, node.path);
-      return;
+      }).then(() => { node.loading = false; setData(Object.assign([], data)); });
     }
     if (cursor) {
       cursor.active = false;
@@ -226,14 +222,27 @@ const TreeView = ({ datasetId, modified }) => {
         </div>
       </div>
       <div className="p-1" style={styles}>
-        <Treebeard
-          data={data}
-          style={styles}
-          onToggle={onToggle}
-          onSelect={onSelect}
-          decorators={{ ...decorators, Header, Container }}
-          animation={false}
-        />
+        { isLoading ? (
+          <Fragment>
+            <span style={{ opacity: 0.5 }}>
+              Rendering Tree View..
+              <Spinner />
+            </span>
+          </Fragment>
+        )
+          : (
+            <Treebeard
+              data={data}
+              style={styles}
+              onToggle={onToggle}
+              onSelect={onSelect}
+              decorators={{
+                ...decorators, Header, Container, Loading,
+              }}
+            />
+          )
+        }
+
       </div>
     </Fragment>
   );
