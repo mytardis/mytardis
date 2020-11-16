@@ -119,7 +119,9 @@ const TreeView = ({ datasetId, modified }) => {
     data.forEach((item) => {
       let filtered = filters.filterTree(item, filter);
       filtered = filters.expandFilteredNodes(filtered, filter);
-      filteredData.push(filtered);
+      if (!(Object.keys(filtered).length === 0 && filtered.constructor === Object)) {
+        filteredData.push(filtered);
+      }
     });
 
     setData(filteredData);

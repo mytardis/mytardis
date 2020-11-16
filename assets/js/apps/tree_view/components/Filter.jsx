@@ -9,20 +9,26 @@ export const findNode = (node, filter, matcher) => matcher(filter, node) // i ma
 
 export const filterTree = (node, filter, matcher = defaultMatcher) => {
   // If im an exact match then all my children get to stay
-  if (matcher(filter, node) || !node.children) {
+  if (matcher(filter, node) || (!node.children && typeof node.children !== 'undefined')) {
     return node;
+  }
+  if (typeof node.children === 'undefined') {
+    return {};
   }
   // If not then only keep the ones that match or have matching descendants
   const filtered = node.children
     .filter(child => findNode(child, filter, matcher))
     .map(child => filterTree(child, filter, matcher));
+  if (filtered.length === 0) {
+    return {};
+  }
   return Object.assign({}, node, { children: filtered });
 };
 
 export const expandFilteredNodes = (node, filter, matcher = defaultMatcher) => {
   let { children } = node;
   if (!children || children.length === 0) {
-    return Object.assign({}, node, { toggled: false });
+    return Object.assign({}, node, {});
   }
   const childrenWithMatches = node.children.filter(child => findNode(child, filter, matcher));
   const shouldExpand = childrenWithMatches.length > 0;
