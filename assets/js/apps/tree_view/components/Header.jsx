@@ -1,15 +1,38 @@
-import React from 'react';
+import React, { useState } from 'react';
 import PropTypes from 'prop-types';
+import { saveAs } from 'file-saver';
 import { FileDownloadButton } from './Download';
+import { DownloadFile } from './Utils';
 
 const Header = ({
   onSelect, node, style, iconClass,
 }) => {
   const iconStyle = { marginRight: '5px', opacity: '0.6' };
   let isDisabled = false;
+  const [isDownloading, setIsDownloading] = useState(false);
   if (!node.children && !node.verified) {
     isDisabled = true;
   }
+  const onClick = () => {
+    isDisabled = true;
+    setIsDownloading(true);
+    DownloadFile(node.id).then((resp) => {
+      setIsDownloading(true);
+      let fileName = '';
+      const disposition = resp.headers.get('Content-Disposition');
+      if (disposition && disposition.indexOf('attachment') !== -1) {
+        const filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
+        const matches = filenameRegex.exec(disposition);
+        if (matches != null && matches[1]) {
+          fileName = matches[1].replace(/['"]/g, '');
+        }
+      }
+      resp.blob().then((fileContent) => {
+        saveAs(fileContent, fileName);
+        setIsDownloading(false);
+      });
+    });
+  };
   return (
     <div style={style.base}>
       <div style={{ ...style.title }}>
@@ -30,7 +53,14 @@ const Header = ({
           </span>
         ) : node.name}
         {iconClass === 'file-text'
-          ? <FileDownloadButton href={`/api/v1/dataset_file/${node.id}/download/`} isDisabled={isDisabled} /> : ''}
+          ? (
+            <FileDownloadButton
+              isDisabled={isDisabled}
+              dataFileId={node.id}
+              onClick={onClick}
+              isDownloading={isDownloading}
+            />
+          ) : ''}
       </div>
     </div>
   );
