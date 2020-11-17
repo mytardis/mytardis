@@ -72,6 +72,16 @@ const DatasetTilesLists = ({ shareContainer, experimentId }) => {
       setSelectedDatasetIds(selectedDatasetIds.filter(item => item !== id));
     }
   };
+  const onFilter = ({ target: { value } }) => {
+    const filter = value.trim().toLowerCase();
+    if (!filter) {
+      fetchDatasetsForExperiment(experimentId).then(result => setMainListData(result))
+        .then(() => setMainListDataLoading(false));
+    }
+    const filteredData = mainListData
+      .filter(({ description }) => description.toLowerCase().includes(filter));
+    setMainListData(filteredData);
+  };
   const onChange = (event) => {
     event.preventDefault();
     setExpListValue(event.target.value);
@@ -101,6 +111,7 @@ const DatasetTilesLists = ({ shareContainer, experimentId }) => {
               selectedDatasets={selectedDatasetIds}
               csrfToken={csrfToken}
               experimentPermissions={experimentPermissions}
+              onFilter={onFilter}
             />
             <DragDropContext onDragEnd={onDragEnd}>
               <Droppable droppableId="main-list">

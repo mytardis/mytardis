@@ -6,7 +6,7 @@ import DownloadButton from './DownloadButton';
 import DatasetFilter from './DatasetFilter';
 
 const DatasetPaneTopPanel = ({
-  count, experimentID, selectedDatasets, csrfToken, experimentPermissions,
+  count, experimentID, selectedDatasets, csrfToken, experimentPermissions, onFilter,
 }) => (
   <Fragment>
     <DatasetCountHeader count={count} />
@@ -16,7 +16,7 @@ const DatasetPaneTopPanel = ({
     {experimentPermissions.download_permissions ? (
       <DownloadButton selectedDatasets={selectedDatasets} csrfToken={csrfToken} />
     ) : ''}
-    <DatasetFilter />
+    <DatasetFilter onFilter={onFilter} />
   </Fragment>
 );
 
@@ -29,5 +29,6 @@ DatasetPaneTopPanel.propTypes = {
   selectedDatasets: PropTypes.array.isRequired,
   csrfToken: PropTypes.string,
   experimentPermissions: PropTypes.object.isRequired,
+  onFilter: PropTypes.func.isRequired,
 };
 export default DatasetPaneTopPanel;

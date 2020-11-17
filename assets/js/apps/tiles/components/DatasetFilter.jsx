@@ -1,6 +1,7 @@
 import React, { Fragment } from 'react';
+import PropTypes from 'prop-types';
 
-const DatasetFilter = () => (
+const DatasetFilter = ({ onFilter }) => (
   <Fragment>
     <p>
       <div className="form-horizontal">
@@ -13,6 +14,7 @@ const DatasetFilter = () => (
               style={{ width: '95%' }}
               placeholder="Just start typing to filter datasets based on descriptions"
               autoComplete="off"
+              onKeyUp={onFilter}
             />
           </div>
         </div>
@@ -20,4 +22,9 @@ const DatasetFilter = () => (
     </p>
   </Fragment>
 );
+
+DatasetFilter.propTypes = {
+  onFilter: PropTypes.func.isRequired,
+};
+
 export default DatasetFilter;
