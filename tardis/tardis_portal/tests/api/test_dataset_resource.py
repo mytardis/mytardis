@@ -149,6 +149,9 @@ class DatasetResourceTest(MyTardisResourceTestCase):
                 'name': 'subdir',
                 'path': 'subdir',
                 'children' : []
+            },
+            {
+                'next_page': False
             }
         ]
         self.assertEqual(
