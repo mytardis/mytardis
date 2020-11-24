@@ -20,7 +20,37 @@ const TreeView = ({ datasetId, modified }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [selectedCount, setSelectedCount] = useState(0);
   const [isAllSelected, setIsAllSelected] = useState(false);
+  const fetchBaseDirs = (pageNum, resetData) => {
+    fetch(`/api/v1/dataset/${datasetId}/root-dir-nodes/?page=${pageNum}`, {
+      method: 'get',
+      headers: {
+        'Accept': 'application/json', // eslint-disable-line quote-props
+        'Content-Type': 'application/json',
+      },
+    }).then(responseJson => (responseJson.json()))
+      .then((response) => {
+        setIsLoading(false);
+        if (resetData) {
+          const lastElem = [...response].pop();
+          if (!lastElem.next_page) {
+            setData(response.pop());
+          }
+          setData(response);
+        } else {
+          // remove load more button
+          data.pop();
+          const lastElem = [...response].pop();
+          if (!lastElem.next_page) {
+            setData([...data, response.pop()]);
+          }
+          setData([...data, ...response]);
+        }
+      });
+  };
   const onSelect = (node) => {
+    if (node.next_page) {
+      fetchBaseDirs(node.next_page_num);
+    }
     node.toggled = !node.toggled;
     if (node.selected) {
       // deselect all child nodes
@@ -59,21 +89,8 @@ const TreeView = ({ datasetId, modified }) => {
     });
     setSelectedCount(count);
   };
-  const fetchBaseDirs = () => {
-    fetch(`/api/v1/dataset/${datasetId}/root-dir-nodes/`, {
-      method: 'get',
-      headers: {
-        'Accept': 'application/json', // eslint-disable-line quote-props
-        'Content-Type': 'application/json',
-      },
-    }).then(responseJson => (responseJson.json()))
-      .then((response) => {
-        setIsLoading(false);
-        setData(response);
-      });
-  };
   useEffect(() => {
-    fetchBaseDirs('');
+    fetchBaseDirs(0);
   }, [datasetId, modified]);
   const onToggle = (node, toggled) => {
     // toggled = !toggled;
@@ -111,20 +128,25 @@ const TreeView = ({ datasetId, modified }) => {
     const filter = value.trim();
     if (!filter) {
       // set initial tree state:
-      fetchBaseDirs('');
+      fetchBaseDirs(0, true);
       // set count to 0
       setSelectedCount(0);
-    }
-    const filteredData = [];
-    data.forEach((item) => {
-      let filtered = filters.filterTree(item, filter);
-      filtered = filters.expandFilteredNodes(filtered, filter);
-      if (!(Object.keys(filtered).length === 0 && filtered.constructor === Object)) {
-        filteredData.push(filtered);
+    } else {
+      const filteredData = [];
+      // if last elem id load more button remove this
+      const lastElem = [...data].pop();
+      if (lastElem.next_page) {
+        data.pop();
       }
-    });
-
-    setData(filteredData);
+      data.forEach((item) => {
+        let filtered = filters.filterTree(item, filter);
+        filtered = filters.expandFilteredNodes(filtered, filter);
+        if (!(Object.keys(filtered).length === 0 && filtered.constructor === Object)) {
+          filteredData.push(filtered);
+        }
+      });
+      setData(filteredData);
+    }
   };
 
   const downloadSelected = (event) => {

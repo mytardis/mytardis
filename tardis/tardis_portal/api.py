@@ -15,6 +15,7 @@ from django.conf.urls import url
 from django.contrib.auth.models import AnonymousUser
 from django.contrib.auth.models import User
 from django.contrib.auth.models import Group
+from django.core.paginator import EmptyPage, InvalidPage, Paginator
 from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseForbidden, \
     StreamingHttpResponse, HttpResponseNotFound, JsonResponse
@@ -781,6 +782,22 @@ class DatasetResource(MyTardisModelResource):
         # get files at root level
         dfs = (DataFile.objects.filter(dataset=dataset, directory='') |
                DataFile.objects.filter(dataset=dataset, directory__isnull=True)).distinct()
+
+        pgresults = 100
+
+        paginator = Paginator(dfs, pgresults)
+
+        try:
+            page_num = int(request.GET.get('page', '0'))
+        except ValueError:
+            page_num = 0
+
+        # If page request (9999) is out of range, deliver last page of results.
+
+        try:
+            dfs = paginator.page(page_num + 1)
+        except (EmptyPage, InvalidPage):
+            dfs = paginator.page(paginator.num_pages)
         child_list = []
         # append directories list
         if dir_tuples:
@@ -799,6 +816,19 @@ class DatasetResource(MyTardisModelResource):
                 children['verified'] = df.verified
                 children['id'] = df.id
                 child_list.append(children)
+        if paginator.num_pages - 1 > page_num:
+            # append a marker element
+            children = {}
+            children['next_page'] = True
+            children['next_page_num'] = page_num + 1
+            children['display_text'] = "Displaying {current} of {total} "\
+                .format(current=(dfs.number * pgresults), total=paginator.count)
+            child_list.append(children)
+        if paginator.num_pages - 1 == page_num:
+            # append a marker element
+            children = {}
+            children['next_page'] = False
+            child_list.append(children)
 
         return JsonResponse(child_list, status=200, safe=False)
 

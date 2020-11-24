@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { Fragment, useState } from 'react';
 import PropTypes from 'prop-types';
 import { saveAs } from 'file-saver';
 import { FileDownloadButton } from './Download';
@@ -33,36 +33,52 @@ const Header = ({
       });
     });
   };
+  if (node.next_page) {
+    return (
+      <button
+        type="button"
+        className="btn btn-outline-secondary btn-sm"
+        onClick={onSelect}
+        data-toggle="tooltip"
+        data-placement="right"
+        title={node.display_text}
+      >
+        Load more
+      </button>
+    );
+  }
   return (
-    <div style={style.base}>
-      <div style={{ ...style.title }}>
-        <input
-          type="checkbox"
-          className="datafile_checkbox"
-          style={{ marginRight: '5px' }}
-          onClick={onSelect}
-          checked={node.selected}
-          readOnly
-          disabled={isDisabled}
-        />
-        <i className={`fa fa-${iconClass}`} style={iconStyle} />
-        {isDisabled ? (
-          <span style={{ color: 'red' }}>
-            {node.name}
-            (unverified)
-          </span>
-        ) : node.name}
-        {iconClass === 'file-text'
-          ? (
-            <FileDownloadButton
-              isDisabled={isDisabled}
-              dataFileId={node.id}
-              onClick={onClick}
-              isDownloading={isDownloading}
-            />
-          ) : ''}
+    <Fragment>
+      <div style={style.base}>
+        <div style={{ ...style.title }}>
+          <input
+            type="checkbox"
+            className="datafile_checkbox"
+            style={{ marginRight: '5px' }}
+            onClick={onSelect}
+            checked={node.selected}
+            readOnly
+            disabled={isDisabled}
+          />
+          <i className={`fa fa-${iconClass}`} style={iconStyle} />
+          {isDisabled ? (
+            <span style={{ color: 'red' }}>
+              {node.name}
+              (unverified)
+            </span>
+          ) : node.name}
+          {iconClass === 'file-text'
+            ? (
+              <FileDownloadButton
+                isDisabled={isDisabled}
+                dataFileId={node.id}
+                onClick={onClick}
+                isDownloading={isDownloading}
+              />
+            ) : ''}
+        </div>
       </div>
-    </div>
+    </Fragment>
   );
 };
 
