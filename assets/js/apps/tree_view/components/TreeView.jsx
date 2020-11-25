@@ -40,10 +40,13 @@ const TreeView = ({ datasetId, modified }) => {
           // remove load more button
           data.pop();
           const lastElem = [...response].pop();
+          // if no more pages to load
           if (!lastElem.next_page) {
-            setData([...data, response.pop()]);
+            response.pop();
+            setData([...data, ...response]);
+          } else {
+            setData([...data, ...response]);
           }
-          setData([...data, ...response]);
         }
       });
   };
