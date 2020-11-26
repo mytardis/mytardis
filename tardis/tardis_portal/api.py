@@ -783,7 +783,7 @@ class DatasetResource(MyTardisModelResource):
         dfs = (DataFile.objects.filter(dataset=dataset, directory='') |
                DataFile.objects.filter(dataset=dataset, directory__isnull=True)).distinct()
 
-        pgresults = 100
+        pgresults = 1000
 
         paginator = Paginator(dfs, pgresults)
 
@@ -800,7 +800,7 @@ class DatasetResource(MyTardisModelResource):
             dfs = paginator.page(paginator.num_pages)
         child_list = []
         # append directories list
-        if dir_tuples:
+        if dir_tuples and page_num == 0:
             for dir_tuple in dir_tuples:
                 child_dict = {
                     'name': dir_tuple[0],
