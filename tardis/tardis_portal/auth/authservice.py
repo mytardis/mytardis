@@ -174,7 +174,24 @@ class AuthService():
             user = self.get_or_create_user(authenticate_retval,
                                            auth_method)
             if user is not None:
+                if getattr(settings, "ENABLE_EVENTLOG", False):
+                    from tardis.apps.eventlog.utils import log
+                    log(
+                        action="USER_LOGIN_SUCCESS",
+                        user=user,
+                        extra={
+                            "auth_method": auth_method
+                        }
+                    )
                 return user
+
+        if getattr(settings, "ENABLE_EVENTLOG", False):
+            from tardis.apps.eventlog.utils import log
+            log(
+                action="USER_LOGIN_FAILURE",
+                request=credentials.get("request")
+            )
+
         return None
 
     def getUser(self, authMethod, user_id, force_user_create=False):
