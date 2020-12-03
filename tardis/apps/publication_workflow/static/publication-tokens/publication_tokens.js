@@ -4,7 +4,7 @@
  */
 /*eslint no-unused-vars: ["error", { "argsIgnorePattern": "^_" }]*/
 angular
-.module('MyTardis')
+.module('publicationWorkflow')
 .controller('PublicationTokensController', function (ngDialog, $scope, $log, $http, $resource) {
     var vm = this;
     vm.tokensListRes = $resource('/apps/publication-workflow/tokens_json/:publication_id/', {}, {

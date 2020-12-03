@@ -50,7 +50,6 @@ class PublicationFormTestCase(TestCase):
         self.test_dataset1.experiments.set([self.test_exp1])
         self.test_dataset1.save()
 
-
     def test_open_blank_publication_form(self):
         '''
         Test opening publication form
@@ -62,10 +61,10 @@ class PublicationFormTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn(
             'PublicationFormController as pubFormCtrl',
-            response.content)
+            response.content.decode())
         self.assertIn(
             'pubFormCtrl.currentPage.title',
-            response.content)
+            response.content.decode())
 
     def test_create_draft_publication(self):
         '''
@@ -314,7 +313,7 @@ class PublicationFormTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn(
             'You must confirm that you are authorised to submit this publication',
-            response.content)
+            response.content.decode())
         form_state['acknowledge'] = True
         form_state_parameter.string_value = json.dumps(form_state)
         form_state_parameter.save()

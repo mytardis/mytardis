@@ -3,52 +3,51 @@
  *
  */
 angular
-.module('MyTardis')
-.controller('MyPublicationsController', function ($log, $resource, $timeout) {
+  .module('publicationWorkflow')
+  .controller('MyPublicationsController', function ($log, $resource, $timeout) {
+    const vm = this;
 
-    var vm = this;
-
-    var draftPubsListRes = $resource('/apps/publication-workflow/draft_pubs_list/', {}, {
-                    'get': {method: 'GET', isArray: true}
-                        });
-    var scheduledPubsListRes = $resource('/apps/publication-workflow/scheduled_pubs_list/', {}, {
-                    'get': {method: 'GET', isArray: true}
-                        });
-    var releasedPubsListRes = $resource('/apps/publication-workflow/released_pubs_list/', {}, {
-                    'get': {method: 'GET', isArray: true}
-                        });
-    var retractedPubsListRes = $resource('/apps/publication-workflow/retracted_pubs_list/', {}, {
-                    'get': {method: 'GET', isArray: true}
-                        });
+    const draftPubsListRes = $resource('/apps/publication-workflow/draft_pubs_list/', {}, {
+      get: { method: 'GET', isArray: true },
+    });
+    const scheduledPubsListRes = $resource('/apps/publication-workflow/scheduled_pubs_list/', {}, {
+      get: { method: 'GET', isArray: true },
+    });
+    const releasedPubsListRes = $resource('/apps/publication-workflow/released_pubs_list/', {}, {
+      get: { method: 'GET', isArray: true },
+    });
+    const retractedPubsListRes = $resource('/apps/publication-workflow/retracted_pubs_list/', {}, {
+      get: { method: 'GET', isArray: true },
+    });
 
     /**
      * loadDraftPubsData
      *
      * Fetch the list of draft pubs available to the user
      */
-    vm.loadDraftPubsData = function() {
-        draftPubsListRes.get().$promise.then(function (data) {
-                $log.debug("MyPublicationsController: Draft pubs list fetched successfully!");
-                vm.draftPubs = data;
-            },
-            function () {
-                $log.error("Could not load draft pubs list");
-            });
-    }
+    vm.loadDraftPubsData = function () {
+      draftPubsListRes.get().$promise.then((data) => {
+        $log.debug('MyPublicationsController: Draft pubs list fetched successfully!');
+        vm.draftPubs = data;
+      },
+      () => {
+        $log.error('Could not load draft pubs list');
+      });
+    };
 
     /**
      * loadScheduledPubsData
      *
      * Fetch the list of scheduled pubs available to the user
      */
-    vm.loadScheduledPubsData = function() {
-        scheduledPubsListRes.get().$promise.then(function (data) {
-                $log.debug("MyPublicationsController: Scheduled pubs list fetched successfully!");
-                vm.scheduledPubs = data;
-            },
-            function () {
-                $log.error("Could not load scheduled pubs list");
-            });
+    vm.loadScheduledPubsData = function () {
+      scheduledPubsListRes.get().$promise.then((data) => {
+        $log.debug('MyPublicationsController: Scheduled pubs list fetched successfully!');
+        vm.scheduledPubs = data;
+      },
+      () => {
+        $log.error('Could not load scheduled pubs list');
+      });
     };
 
     /**
@@ -56,14 +55,14 @@ angular
      *
      * Fetch the list of released pubs available to the user
      */
-    vm.loadReleasedPubsData = function() {
-        releasedPubsListRes.get().$promise.then(function (data) {
-                $log.debug("MyPublicationsController: Released pubs list fetched successfully!");
-                vm.releasedPubs = data;
-            },
-            function () {
-                $log.error("Could not load released pubs list");
-            });
+    vm.loadReleasedPubsData = function () {
+      releasedPubsListRes.get().$promise.then((data) => {
+        $log.debug('MyPublicationsController: Released pubs list fetched successfully!');
+        vm.releasedPubs = data;
+      },
+      () => {
+        $log.error('Could not load released pubs list');
+      });
     };
 
     /**
@@ -71,14 +70,14 @@ angular
      *
      * Fetch the list of retracted pubs available to the user
      */
-    vm.loadRetractedPubsData = function() {
-        retractedPubsListRes.get().$promise.then(function (data) {
-                $log.debug("MyPublicationsController: Retracted pubs list fetched successfully!");
-                vm.retractedPubs = data;
-            },
-            function () {
-                $log.error("Could not load retracted pubs list");
-            });
+    vm.loadRetractedPubsData = function () {
+      retractedPubsListRes.get().$promise.then((data) => {
+        $log.debug('MyPublicationsController: Retracted pubs list fetched successfully!');
+        vm.retractedPubs = data;
+      },
+      () => {
+        $log.error('Could not load retracted pubs list');
+      });
     };
 
     // Do initial data fetch
@@ -98,13 +97,13 @@ angular
       largeEditDialog: false,
       boundaryLinks: false,
       limitSelect: true,
-      pageSelect: true
+      pageSelect: true,
     };
 
     vm.query = {
       order: '-id',
       limit: 5,
-      page: 1
+      page: 1,
     };
 
     vm.toggleLimitOptions = function () {
@@ -112,22 +111,21 @@ angular
     };
 
     vm.loadStuff = function () {
-      vm.promise = $timeout(function () {
+      vm.promise = $timeout(() => {
         // loading
       }, 2000);
-    }
- 
+    };
+
     vm.logItem = function (item) {
-      $log.debug(item.name + ' was selected');
+      $log.debug(`${item.name} was selected`);
     };
 
     vm.logOrder = function (order) {
-      $log.debug('order: ' + order);
+      $log.debug(`order: ${order}`);
     };
 
     vm.logPagination = function (page, limit) {
-      $log.debug('page: ' + page);
-      $log.debug('limit: ' + limit);
-    }
-});
-
+      $log.debug(`page: ${page}`);
+      $log.debug(`limit: ${limit}`);
+    };
+  });

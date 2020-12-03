@@ -5,36 +5,14 @@
 {% load humanize %}
 {% load bleach_tag %}
 {% load capture %}
+{% load render_bundle from webpack_loader %}
 
 {% block content %}
 
-<script type="text/javascript" src="{% static 'js/lib/angular-animate-1.6.10/angular-animate.min.js' %}"></script>
-<script type="text/javascript" src="{% static 'js/lib/angular-aria-1.6.10/angular-aria.min.js' %}"></script>
-<script type="text/javascript" src="{% static 'js/lib/angular-messages-1.6.10/angular-messages.min.js' %}"></script>
-<script type="text/javascript" src="{% static 'js/lib/angular-material-1.1.10/angular-material.min.js' %}"></script>
-
-<script type="text/javascript" src="{% static 'js/lib/angular-material-data-table-0.10.10/dist/md-data-table.min.js' %}"></script>
-<script type="text/javascript" src="{% static 'js/lib/default-passive-events-1.0.10/dist/index.js'%}"></script>
-<link type="text/css" href="{% static 'js/lib/angular-material-1.1.10/angular-material.min.css' %}" rel="stylesheet" />
-<link type="text/css" href="{% static 'js/lib/angular-material-data-table-0.10.10/dist/md-data-table.min.css' %}" rel="stylesheet" />
-
-<script id="my-publications" type="text/javascript" src="{% static 'my-publications/my_publications.js'%}"></script>
-<script type="text/javascript" src="{% static 'publication-actions/publication_actions.js'%}"></script>
-<script type="text/javascript" src="{% static 'publication-tokens/publication_tokens.js'%}"></script>
-<script type="text/javascript" src="{% static 'publication-form/publication_form.js'%}"></script>
-<link type="text/css" href="{% static 'my-publications/my_publications.css'%}" rel="stylesheet"/>
-<link type="text/css" href="{% static 'publication-form/publication_form.css' %}" rel="stylesheet" />
+{% render_bundle 'publication_workflow' %}
 
 <script>
-var app = angular.module('MyTardis');
-app.requires.push('ngMaterial');
-app.requires.push('md.data.table');
-var myPublications= document.getElementById("my-publications");
-myPublications.onload = function() {
-    angular.element(document).ready(function() {
-                  angular.bootstrap(document, ['MyTardis']);
-                 });
-};
+
 </script>
 
 {% comment %}
@@ -42,8 +20,8 @@ Verbatim tells Django to stop interpreting {{ }} as Django template variables,
 and leave them to be interpreted by AngularJS instead.
 {% endcomment %}
 {% verbatim %}
-
-<div id="content" ng-controller="MyPublicationsController as myPubsCtrl">
+<div ng-app="publicationWorkflow">
+  <div id="content" ng-controller="MyPublicationsController as myPubsCtrl">
   <div class="row-fluid">
     <h2 class="visible-phone">My Publications</h2>
       <div class="pull-left">
@@ -304,6 +282,6 @@ and leave them to be interpreted by AngularJS instead.
   </md-content>
 
 </div>  <!-- id="content" -->
-
+</div>
 {% endverbatim %}
 {% endblock %}

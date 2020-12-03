@@ -4,7 +4,7 @@
 // when added to the list of datasets to include in the publication
 /*eslint no-unused-vars: ["error", { "argsIgnorePattern": "^_" }]*/
 angular
-.module('MyTardis')
+.module('publicationWorkflow')
 .filter('removeMatchingDatasets', function () {
     return function (input, compareTo) {
         if (angular.isUndefined(input)) {
@@ -30,7 +30,7 @@ angular
 // attributes to form fields
 // This code was adapted from http://stackoverflow.com/questions/21943242/child-input-directive-needs-to-compile-in-the-scope-of-its-parent-for-ng-model-t
 angular
-.module('MyTardis')
+.module('publicationWorkflow')
 .directive('tardisForm', function () {
     return {
         replace: true,
@@ -54,7 +54,7 @@ angular
 });
 
 angular
-.module('MyTardis')
+.module('publicationWorkflow')
 .directive('tardisFormField', function ($compile) {
     return {
         require: '^tardisForm',
@@ -74,7 +74,7 @@ angular
 
 // Publication form controller
 angular
-.module('MyTardis')
+.module('publicationWorkflow')
 .controller('PublicationFormController', function ($scope, $log, $http, $document, ngDialog) {
     var vm = this;  // view model
 

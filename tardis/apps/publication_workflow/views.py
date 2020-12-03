@@ -4,7 +4,7 @@ import logging
 
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ObjectDoesNotExist
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.db import transaction
 from django.views.decorators.cache import never_cache
 from django.views.decorators.http import require_POST
@@ -251,14 +251,14 @@ def submit_form(request, form_state, publication):
 
 
 def map_form_to_schemas(extraInfo, publication):
-    for form_id, form in extraInfo.iteritems():
+    for form_id, form in extraInfo.items():
         try:  # Ignore form if no schema exists with this name
             schema = Schema.objects.get(namespace=form['schema'])
         except Schema.DoesNotExist:
             continue
         parameter_set = ExperimentParameterSet.objects.get_or_create(
             schema=schema, experiment=publication)[0]
-        for key, value in form.iteritems():
+        for key, value in form.items():
             if key != 'schema':
                 try:  # Ignore field if parameter name (key) doesn't match
                     parameter_name = ParameterName.objects.get(

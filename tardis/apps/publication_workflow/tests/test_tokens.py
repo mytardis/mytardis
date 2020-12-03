@@ -106,4 +106,4 @@ class PublicationTokensTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn(
             'PublicationTokensController as pubTokensCtrl',
-            response.content)
+            response.content.decode())
