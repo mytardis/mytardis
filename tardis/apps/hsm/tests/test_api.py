@@ -104,13 +104,8 @@ class HsmAppApiTestCase(MyTardisResourceTestCase):
             '/api/v1/hsm_replica/%s/online/' % self.dfo.id,
             authentication=self.get_credentials())
         self.assertHttpOK(response)
-        expected_output = {
-            "online": True,
-        }
         returned_data = json.loads(response.content.decode())
-        for key, value in six.iteritems(expected_output):
-            self.assertIn(key, returned_data)
-            self.assertEqual(returned_data[key], value)
+        self.assertEqual(returned_data['online'], None)
 
     def test_online_check_without_acl_access_to_dfo(self):
         '''
