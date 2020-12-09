@@ -5,7 +5,9 @@ Hierarchical Storage Management are online or offline (on tape).
 from __future__ import unicode_literals
 import errno
 import os
+import logging
 
+logger = logging.getLogger(__name__)
 
 FILE_ATTRIBUTE_OFFLINE = 0x00001000
 
@@ -91,4 +93,4 @@ def file_is_online(path):
         return False
     except OSError as e:
         if e.errno not in (errno.EPERM, errno.ENOTSUP, errno.ENODATA):
-            raise
+            logger.error('cannot get status for file: %s' % (path,))
