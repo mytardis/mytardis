@@ -3,10 +3,14 @@
 Hierarchical Storage Management are online or offline (on tape).
 """
 from __future__ import unicode_literals
+import errno
+import os
 
 from django.conf import settings
 
 from . import default_settings
+
+FILE_ATTRIBUTE_OFFLINE = 0x00001000
 
 
 def _stat_os(path):
@@ -83,14 +87,12 @@ def file_is_online(path):
         specifies whether the file in online i.e., not on tape.
     """
     try:
-        size, blocks = _stat_os(path)
-    except AttributeError:
-        size, blocks = _stat_subprocess(path)
-
-    max_inode_file_size = getattr(
-        settings, 'HSM_MAX_INODE_FILE_SIZE',
-        default_settings.HSM_MAX_INODE_FILE_SIZE)
-
-    if size > max_inode_file_size and blocks == 0:
-        return False
-    return True
+        d_raw = os.getxattr(path, "user.cifs.dosattrib")
+        d_int = int.from_bytes(d_raw, byteorder="little")
+        if d_int & FILE_ATTRIBUTE_OFFLINE == FILE_ATTRIBUTE_OFFLINE:
+            return True
+        else:
+            return False
+    except OSError as e:
+        if e.errno not in (errno.EPERM, errno.ENOTSUP, errno.ENODATA):
+            raise
