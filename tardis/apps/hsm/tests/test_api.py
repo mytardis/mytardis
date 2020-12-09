@@ -18,7 +18,7 @@ from tardis.tardis_portal.tests.api import MyTardisResourceTestCase
 
 class HsmAppApiTestCase(MyTardisResourceTestCase):
     def setUp(self):
-        super(HsmAppApiTestCase, self).setUp()
+        super().setUp()
         self.dataset = Dataset.objects.create(description='Test Dataset')
         # self.testexp is defined in MyTardisResourceTestCase
         # and is accessible using self.get_credentials()
