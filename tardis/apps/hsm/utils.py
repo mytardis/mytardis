@@ -6,9 +6,6 @@ from __future__ import unicode_literals
 import errno
 import os
 
-from django.conf import settings
-
-from . import default_settings
 
 FILE_ATTRIBUTE_OFFLINE = 0x00001000
 
@@ -91,8 +88,7 @@ def file_is_online(path):
         d_int = int.from_bytes(d_raw, byteorder="little")
         if d_int & FILE_ATTRIBUTE_OFFLINE == FILE_ATTRIBUTE_OFFLINE:
             return True
-        else:
-            return False
+        return False
     except OSError as e:
         if e.errno not in (errno.EPERM, errno.ENOTSUP, errno.ENODATA):
             raise
