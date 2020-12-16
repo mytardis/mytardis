@@ -89,8 +89,8 @@ def file_is_online(path):
         d_raw = os.getxattr(path, "user.cifs.dosattrib")
         d_int = int.from_bytes(d_raw, byteorder="little")
         if d_int & FILE_ATTRIBUTE_OFFLINE == FILE_ATTRIBUTE_OFFLINE:
-            return True
-        return False
+            return False
+        return True
     except OSError as e:
         if e.errno not in (errno.EPERM, errno.ENOTSUP, errno.ENODATA):
             logger.error('cannot get status for file: %s' % (path,))
