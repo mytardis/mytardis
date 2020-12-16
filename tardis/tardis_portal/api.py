@@ -946,6 +946,18 @@ class DataFileResource(MyTardisModelResource):
             template = URITemplate(download_uri_templates[storage_class_name])
             return redirect(template.expand(dfo_id=preferred_dfo.id))
 
+        # Log file download event
+        if getattr(settings, "ENABLE_EVENTLOG", False):
+            from tardis.apps.eventlog.utils import log
+            log(
+                action="DOWNLOAD_DATAFILE",
+                extra={
+                    "id": kwargs["pk"],
+                    "type": "api"
+                },
+                request=request
+            )
+
         file_object = file_record.get_file()
         wrapper = FileWrapper(file_object)
         tracker_data = dict(
@@ -1013,6 +1025,7 @@ class DataFileResource(MyTardisModelResource):
                 bundle.data['replicas'] = [{'file_object': newfile}]
 
             del(bundle.data['attached_file'])
+
         return bundle
 
     def obj_create(self, bundle, **kwargs):
@@ -1027,6 +1040,7 @@ class DataFileResource(MyTardisModelResource):
             if "duplicate key" in str(err):
                 raise ImmediateHttpResponse(HttpResponse(status=409))
             raise
+
         if 'replicas' not in bundle.data or not bundle.data['replicas']:
             # no replica specified: return upload path and create dfo for
             # new path
@@ -1039,6 +1053,19 @@ class DataFileResource(MyTardisModelResource):
             dfo.create_set_uri()
             dfo.save()
             self.temp_url = dfo.get_full_path()
+        else:
+            # Log file upload event
+            if getattr(settings, "ENABLE_EVENTLOG", False):
+                from tardis.apps.eventlog.utils import log
+                log(
+                    action="UPLOAD_DATAFILE",
+                    extra={
+                        "id": bundle.obj.id,
+                        "type": "post"
+                    },
+                    request=bundle.request
+                )
+
         return retval
 
     def post_list(self, request, **kwargs):

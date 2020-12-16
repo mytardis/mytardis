@@ -68,11 +68,27 @@ class SearchAppResource(Resource):
 
         return kwargs
 
+    def log_search_event(self, request, query_text, result_dict):
+        # Log search event
+        if getattr(settings, "ENABLE_EVENTLOG", False):
+            from tardis.apps.eventlog.utils import log
+            log(
+                action="SEARCH",
+                extra={
+                    "query": query_text,
+                    "experiments": len(result_dict["experiments"]),
+                    "datasets": len(result_dict["datasets"]),
+                    "datafiles": len(result_dict["datafiles"])
+                },
+                request=request
+            )
+
     def get_object_list(self, request):
         user = request.user
         query_text = request.GET.get('query', None)
         if not user.is_authenticated:
             result_dict = simple_search_public_data(query_text)
+            self.log_search_event(request, query_text, result_dict)
             return [SearchObject(id=1, hits=result_dict)]
         groups = user.groups.all()
         index_list = ['experiments', 'dataset', 'datafile']
@@ -120,7 +136,7 @@ class SearchAppResource(Resource):
 
                 elif hit["_index"] == "datafile":
                     result_dict["datafiles"].append(hit.to_dict())
-
+        self.log_search_event(request, query_text, result_dict)
         return [SearchObject(id=1, hits=result_dict)]
 
     def obj_get_list(self, bundle, **kwargs):

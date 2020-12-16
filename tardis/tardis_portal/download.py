@@ -63,6 +63,19 @@ def _create_download_response(request, datafile_id, disposition='attachment'):  
     if not has_datafile_download_access(request=request,
                                         datafile_id=datafile.id):
         return return_response_error(request)
+
+    # Log file download event
+    if getattr(settings, "ENABLE_EVENTLOG", False):
+        from tardis.apps.eventlog.utils import log
+        log(
+            action="DOWNLOAD_DATAFILE",
+            extra={
+                "id": datafile.id,
+                "type": "single"
+            },
+            request=request
+        )
+
     # Send an image that can be seen in the browser
     if disposition == 'inline' and datafile.is_image():
         from .iiif import download_image
@@ -395,6 +408,19 @@ def _streaming_downloader(request, datafiles, rootdir, filename,
         return render_error_message(
             request, 'Unknown download organization: %s' % organization,
             status=400)
+
+    if getattr(settings, "ENABLE_EVENTLOG", False):
+        from tardis.apps.eventlog.utils import log
+        for df in datafiles:
+            log(
+                action="DOWNLOAD_DATAFILE",
+                extra={
+                    "id": df.id,
+                    "type": "tar"
+                },
+                request=request
+            )
+
     try:
         files = _get_datafile_details_for_archive(mapper, datafiles)
         tfs = UncachedTarStream(
