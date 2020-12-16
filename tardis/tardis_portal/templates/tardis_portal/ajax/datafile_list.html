@@ -39,34 +39,16 @@
         {% endif %}
         <tbody>
         {% for datafile in datafiles.object_list %}
-            <tr class="datafile search_match_file">
-                <td>
-                    {% if has_download_permissions and datafile.verified %}
-                        <input type="checkbox" style="" class="datafile_checkbox" name="datafile" value="{{datafile.id}}"
-                               {% if not datafile.is_online %}disabled{% endif %}/>
-                    {% endif %}
+            <tr data-datafile-id="{{datafile.id}}" class="datafile search_match_file">
+                <td id="datafile-checkbox-{{datafile.id}}">
+                    <i class="fa fa-spinner fa-spin fa-lg"></i>
                 </td>
-                <td>
-                    {% if has_download_permissions and datafile.get_view_url and datafile.verified and datafile.is_online %}
-                        <a class="filelink datafile_name"
-                           href="{{ datafile.get_view_url }}"
-                           title="View"
-                           target="_blank">{{ datafile.filename }}</a>
-                    {% else %}
-                        {% if datafile.verified %}
-                            <span class="datafile_name{% if not datafile.is_online %} archived-file{% endif %}">{{ datafile.filename }}</span>
-                        {% else %}
-                            <span class="datafile_name" style="color:red;">{{ datafile.filename }}</span>
-                        {% endif %}
-                    {% endif %}
-                    {% if datafile.verified and datafile.is_online %}
-                        {% if datafile.size %}<span style="margin-right: 5px">({{ datafile.size|filesizeformat }})</span>{% endif %}
-                    {% elif not datafile.is_online %}
-                        <span class="archived-file" style="margin-right: 5px;">
-                          ({{ datafile.size|filesizeformat }}) (archived)
-                        </span>
-                    {% else %}
-                        <span style="margin-right: 5px; color:red;">(unverified)</span>
+                <td id="datafile-name-{{datafile.id}}">
+                    <span class="datafile_name">{{ datafile.filename }}</span>
+                    {% if datafile.size %}
+                      <span style="margin-right: 5px">
+                        ({{ datafile.size|filesizeformat }})
+                      </span>
                     {% endif %}
                 </td>
                 <td style="width: 130px;">
@@ -80,11 +62,6 @@
                         </a>
                     {% endif %}
 
-                        <a id="datafile_metadata_toggle_{{datafile.id}}" title="Show/Hide Metadata"
-                           class="btn btn-outline-secondary btn-wm py-1 datafile-info-toggle metadata_hidden" href="/ajax/datafile_details/{{datafile.id}}/">
-                            <i class="fa fa-list fa-lg"></i>
-                        </a>
-                    </div>
                     <a id="datafile_metadata_toggle_{{datafile.id}}" title="Show/Hide Metadata"
                        class="btn btn-default btn-sm datafile-info-toggle metadata_hidden"
                        href="/ajax/datafile_details/{{datafile.id}}/">

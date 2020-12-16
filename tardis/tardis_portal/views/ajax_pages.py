@@ -225,6 +225,8 @@ def retrieve_datafile_list(
         request, dataset_id,
         template_name='tardis_portal/ajax/datafile_list.html'):
 
+    from django.template.defaultfilters import filesizeformat
+
     params = {}
 
     dataset_results = \
@@ -269,10 +271,35 @@ def retrieve_datafile_list(
         has_write_permissions = authz.has_dataset_write(request, dataset_id)
 
     immutable = Dataset.objects.get(id=dataset_id).immutable
-
-    query_string = '/ajax/datafile_list/%s/?page={page}' % dataset_id
-    if params:
-        query_string += '&' + urlencode(params)
+    ajax_format = request.GET.get('format', 'html')
+    if ajax_format == 'json':
+        try:
+            offset = int(request.GET.get('offset', 0))
+        except ValueError:
+            offset = 0
+        try:
+            limit = int(request.GET.get('limit', pgresults))
+        except ValueError:
+            limit = pgresults
+        datafile_properties_list = []
+        for datafile in dataset[offset:offset + limit]:
+            datafile_properties_list.append({
+                'id': datafile.id,
+                'filename': datafile.filename,
+                'verified': datafile.verified,
+                'is_online': datafile.is_online,
+                'view_url': datafile.view_url,
+                'has_image': datafile.has_image,
+                'download_url': datafile.download_url,
+                'recall_url': datafile.recall_url,
+                'formatted_size': filesizeformat(datafile.size)
+            })
+        return JsonResponse({
+            'datafiles': datafile_properties_list,
+            'immutable': immutable,
+            'has_download_permissions': has_download_permissions,
+            'has_write_permissions': has_write_permissions
+        })
 
     c = {
         'datafiles': dataset,
@@ -285,7 +312,6 @@ def retrieve_datafile_list(
         'has_download_permissions': has_download_permissions,
         'has_write_permissions': has_write_permissions,
         'params': urlencode(params),
-        'query_string': query_string,
     }
     _add_protocols_and_organizations(request, None, c)
     return render_response_index(request, template_name, c)
