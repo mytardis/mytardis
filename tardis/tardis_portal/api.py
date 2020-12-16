@@ -732,6 +732,9 @@ class DatasetResource(MyTardisModelResource):
         ]
 
     def get_datafiles(self, request, **kwargs):
+        self.method_check(request, allowed=["get"])
+        self.is_authenticated(request)
+
         dataset_id = kwargs["pk"]
         del kwargs["pk"]
 
