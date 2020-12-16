@@ -732,22 +732,21 @@ class DatasetResource(MyTardisModelResource):
         ]
 
     def get_datafiles(self, request, **kwargs):
-        file_path = kwargs.get('file_path', None)
-        dataset_id = kwargs['pk']
+        dataset_id = kwargs["pk"]
+        del kwargs["pk"]
 
-        datafiles = DataFile.objects.filter(dataset__id=dataset_id)
-        auth_bundle = self.build_bundle(request=request)
-        auth_bundle.obj = DataFile()
-        self.authorized_read_list(
-            datafiles, auth_bundle
-            )
-        del kwargs['pk']
-        del kwargs['file_path']
-        kwargs['dataset__id'] = dataset_id
+        file_path = kwargs.get("file_path", None)
+        del kwargs["file_path"]
+
+        if not has_dataset_access(request=request, dataset_id=dataset_id):
+            return HttpResponseForbidden()
+
+        kwargs["dataset__id"] = dataset_id
+
         if file_path is not None:
-            kwargs['directory__startswith'] = file_path
-        df_res = DataFileResource()
-        return df_res.dispatch('list', request, **kwargs)
+            kwargs["directory__startswith"] = file_path
+
+        return DataFileResource().dispatch("list", request, **kwargs)
 
     def hydrate_m2m(self, bundle):
         '''
