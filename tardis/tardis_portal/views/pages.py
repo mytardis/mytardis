@@ -338,6 +338,16 @@ class DatasetView(TemplateView):
         if template_name is None:
             template_name = self.template_name
 
+        if getattr(settings, "ENABLE_EVENTLOG", False):
+            from tardis.apps.eventlog.utils import log
+            log(
+                action="PAGEVIEW_DATASET",
+                extra={
+                    "id": dataset_id
+                },
+                request=request
+            )
+
         return render_response_index(request, template_name, c)
 
 
@@ -357,6 +367,7 @@ def healthz(request):
     '''
     returns that the server is alive
     '''
+    del request.session
     return HttpResponse("OK")
 
 
