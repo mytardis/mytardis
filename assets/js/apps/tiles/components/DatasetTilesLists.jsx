@@ -72,14 +72,75 @@ const DatasetTilesLists = ({ shareContainer, experimentId }) => {
       setSelectedDatasetIds(selectedDatasetIds.filter(item => item !== id));
     }
   };
+  const onFilter = ({ target: { value } }) => {
+    const filter = value.trim().toLowerCase();
+    if (!filter) {
+      fetchDatasetsForExperiment(experimentId).then(result => setMainListData(result))
+        .then(() => setMainListDataLoading(false));
+    }
+    const filteredData = mainListData
+      .filter(({ description }) => description.toLowerCase().includes(filter));
+    setMainListData(filteredData);
+  };
+  const onSort = (sortType, order) => {
+    if (sortType === 'description') {
+      if (order === 'asc') {
+        const sortedData = [...mainListData]
+          .sort((a, b) => a.description.localeCompare(b.description));
+        setMainListData(sortedData);
+      } else {
+        const sortedData = [...mainListData]
+          .sort((a, b) => b.description.localeCompare(a.description));
+        setMainListData(sortedData);
+      }
+    }
+    if (sortType === 'datafileCount') {
+      if (order === 'asc') {
+        const sortedData = [...mainListData]
+          .sort((a, b) => a.file_count - b.file_count);
+        setMainListData(sortedData);
+      } else {
+        const sortedData = [...mainListData]
+          .sort((a, b) => b.file_count - a.file_count);
+        setMainListData(sortedData);
+      }
+    }
+    if (sortType === 'datasetSize') {
+      if (order === 'asc') {
+        const sortedData = [...mainListData]
+          .sort((a, b) => a.size - b.size);
+        setMainListData(sortedData);
+      } else {
+        const sortedData = [...mainListData]
+          .sort((a, b) => b.size - a.size);
+        setMainListData(sortedData);
+      }
+    }
+    // datasetTime
+    if (sortType === 'datasetTime') {
+      if (order === 'asc') {
+        const sortedData = [...mainListData]
+          .sort((a, b) => new Date(a.modified_time).getTime()
+            - new Date(b.modified_time).getTime());
+        setMainListData(sortedData);
+      } else {
+        const sortedData = [...mainListData]
+          .sort((a, b) => new Date(b.modified_time).getTime()
+            - new Date(a.modified_time).getTime());
+        setMainListData(sortedData);
+      }
+    }
+  };
   const onChange = (event) => {
     event.preventDefault();
     setExpListValue(event.target.value);
     fetchDatasetsForExperiment(event.target.value).then(result => setShareListData(result));
   };
   useEffect(() => {
-    fetchDatasetsForExperiment(experimentId).then(result => setMainListData(result))
-      .then(() => setMainListDataLoading(false));
+    fetchDatasetsForExperiment(experimentId).then((listData) => {
+      listData.sort((a, b) => a.description.localeCompare(b.description));
+      setMainListData(listData);
+    }).then(() => setMainListDataLoading(false));
     // load initial list
     fetchExperimentList().then((expList) => {
       // TODO
@@ -101,6 +162,8 @@ const DatasetTilesLists = ({ shareContainer, experimentId }) => {
               selectedDatasets={selectedDatasetIds}
               csrfToken={csrfToken}
               experimentPermissions={experimentPermissions}
+              onFilter={onFilter}
+              onSort={onSort}
             />
             <DragDropContext onDragEnd={onDragEnd}>
               <Droppable droppableId="main-list">
