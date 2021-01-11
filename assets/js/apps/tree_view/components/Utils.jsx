@@ -7,7 +7,17 @@ async function FetchFilesInDir(datasetId, encodedDir) {
   const response = await fetch(`/api/v1/dataset/${datasetId}/child-dir-files/?dir_path=${encodedDir}`);
   return response.json();
 }
-
+async function FetchChildDirs(datasetId, dirPath) {
+  const encodedDir = encodeURIComponent(dirPath);
+  const response = await fetch(`/api/v1/dataset/${datasetId}/child-dir-nodes/?dir_path=${encodedDir}`, {
+    method: 'get',
+    headers: {
+      'Accept': 'application/json', // eslint-disable-line quote-props
+      'Content-Type': 'application/json',
+    },
+  });
+  return response.json();
+}
 async function DownloadArchive(formData) {
   fetch('/download/datafiles/', {
     method: 'POST',
@@ -30,4 +40,11 @@ async function DownloadArchive(formData) {
     });
   });
 }
-export { FetchFilesInDir, DownloadArchive };
+
+async function DownloadFile(dataFileId) {
+  const response = await fetch(`/api/v1/dataset_file/${dataFileId}/download/`, {});
+  return response;
+}
+export {
+  FetchFilesInDir, DownloadArchive, FetchChildDirs, DownloadFile,
+};
