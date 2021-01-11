@@ -8,11 +8,11 @@ const DatafileCountBadge = ({ experimentData }) => {
   const [datafileCount, setDataFileCount] = useState('');
   const [title, setTitle] = useState('');
 
-  React.useState(() => {
+  React.useEffect(() => {
     const count = experimentData.datafile_count;
     setDataFileCount(count);
     setTitle(`${count} ${pluralize('file', count)}`);
-  }, []);
+  }, [experimentData]);
 
   return (
     <Fragment>
