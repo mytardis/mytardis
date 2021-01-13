@@ -70,8 +70,10 @@ def dfo_recall(dfo_id, user_id):
     if user_id:
         user = User.objects.get(id=user_id)
         if recalled:
+            logger.info("sending recall complete email to %s", user.email)
             subject, content = email_dfo_recall_complete(dfo, user)
         else:
+            logger.info("sending recall failed email to %s", user.email)
             subject, content = email_dfo_recall_failed(dfo, user)
 
         user.email_user(subject, content,
