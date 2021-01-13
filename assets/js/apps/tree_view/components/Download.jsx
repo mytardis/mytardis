@@ -1,7 +1,8 @@
 import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
+import Spinner from '../../badges/components/utils/Spinner';
 
-const FileDownloadButton = ({ href, isDisabled }) => {
+const FileDownloadButton = ({ isDisabled, onClick, isDownloading }) => {
   const notActive = {
     pointerEvents: 'none',
     cursor: 'default',
@@ -10,8 +11,17 @@ const FileDownloadButton = ({ href, isDisabled }) => {
   };
   return (
     <Fragment>
-      <a className="btn-sm" style={isDisabled ? notActive : { color: 'black' }} title="Download" href={href}>
+      {/* eslint-disable-next-line jsx-a11y/anchor-is-valid,jsx-a11y/interactive-supports-focus */}
+      <a
+        className="btn-sm"
+        style={isDisabled ? notActive : { color: 'black' }}
+        onClick={onClick}
+        title="Download"
+        role="button"
+        onKeyPress={onClick}
+      >
         <i className="fa fa-download fa-sm" />
+        {isDownloading ? <Spinner /> : ''}
       </a>
     </Fragment>
   );
@@ -72,8 +82,9 @@ TreeSelectButton.propTypes = {
 };
 
 FileDownloadButton.propTypes = {
-  href: PropTypes.string.isRequired,
   isDisabled: PropTypes.bool.isRequired,
+  onClick: PropTypes.func.isRequired,
+  isDownloading: PropTypes.bool.isRequired,
 };
 TreeDownloadButton.propTypes = {
   count: PropTypes.number.isRequired,
