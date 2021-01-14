@@ -123,7 +123,7 @@ class DatasetResourceTest(MyTardisResourceTestCase):
         response = self.api_client.get(
             uri, authentication=self.get_credentials())
         returned_data = json.loads(response.content.decode())
-        self.assertEqual(returned_data, [])
+        self.assertEqual(returned_data, [{'next_page': False}])
 
         DataFile.objects.create(
             dataset=dataset, filename='filename2', size=0, md5sum='bogus',
@@ -149,11 +149,14 @@ class DatasetResourceTest(MyTardisResourceTestCase):
                 'name': 'subdir',
                 'path': 'subdir',
                 'children' : []
+            },
+            {
+                'next_page': False
             }
         ]
         self.assertEqual(
-            sorted(returned_data, key=lambda x: x['name']),
-            sorted(expected_data, key=lambda x: x['name'])
+            sorted(returned_data, key=lambda x: ("name" not in x, x.get("name", None))),
+            sorted(expected_data, key=lambda x: ("name" not in x, x.get("name", None)))
         )
 
         dataset.delete()
