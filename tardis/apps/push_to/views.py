@@ -338,6 +338,18 @@ def _initiate_push(
                 destination],
             priority=push_to_priority)
 
+    # Log PushTo event
+    if getattr(settings, "ENABLE_EVENTLOG", False):
+        from tardis.apps.eventlog.utils import log
+        log(
+            action="PUSH_TO",
+            extra={
+                "id": push_obj_id,
+                "type": obj_type
+            },
+            request=request
+        )
+
     success_message = ('The requested item will be pushed to %s. <strong>You '
                        'will be notified by email once this has been '
                        'completed.</strong>'

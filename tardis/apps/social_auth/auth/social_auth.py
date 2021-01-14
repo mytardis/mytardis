@@ -35,16 +35,26 @@ def configure_social_auth_user(**kwargs):
 
 def add_authentication_method(**kwargs):
     """Creates an authentication record for OpenID authenticated user"""
-    # add authentication method only if is a new user
-    isNewUser = kwargs.get('is_new')
-    if not isNewUser:
-        return None
 
+    user = kwargs.get('user')
     backend = kwargs.get('backend')
     authenticatedBackendName = type(backend).__name__
-    user = kwargs.get('user')
-    # get auth method from backend
     authMethod = get_auth_method(authenticatedBackendName)
+
+    # Create event log entry if required
+    if getattr(settings, "ENABLE_EVENTLOG", False):
+        from tardis.apps.eventlog.utils import log
+        log(
+            action="USER_LOGIN_SUCCESS",
+            user=user,
+            extra={
+                "auth_method": authMethod
+            }
+        )
+
+    # add authentication method only if is a new user
+    if not kwargs.get('is_new'):
+        return None
 
     try:
         authentication = UserAuthentication(userProfile=user.userprofile,
