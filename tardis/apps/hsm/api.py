@@ -5,7 +5,7 @@ import logging
 from django.conf import settings
 from django.conf.urls import url
 from django.core import mail
-from django.core.mail import get_connection
+from django.core.mail import get_connection, EmailMessage
 from django.http import (HttpResponseForbidden,
                          HttpResponseServerError,
                          JsonResponse)
@@ -23,10 +23,12 @@ from .tasks import dfo_recall
 
 logger = logging.getLogger(__name__)
 
+
 class ReplicaAppResource(tardis.tardis_portal.api.ReplicaResource):
     '''Extends MyTardis's API for DFOs, adding in a recall method and an online
     check method for files in a Hierarchical Storage Management (HSM) system
     '''
+
     class Meta(tardis.tardis_portal.api.ReplicaResource.Meta):
         # This will be mapped to hsm_replica by MyTardis's urls.py:
         resource_name = 'replica'
@@ -112,6 +114,7 @@ class DatasetAppResource(tardis.tardis_portal.api.DatasetResource):
     '''Extends MyTardis's API for Datasets, adding in a method to count
     online files in a Hierarchical Storage Management (HSM) system
     '''
+
     class Meta(tardis.tardis_portal.api.DatasetResource.Meta):
         # This will be mapped to hsm_dataset by MyTardis's urls.py:
         resource_name = 'dataset'
@@ -177,8 +180,9 @@ class DatasetAppResource(tardis.tardis_portal.api.DatasetResource):
         try:
             subject, content = email_dataset_recall_requested(ds, request.user)
             logger.info("sending email to %s", settings.RDSM_SUPPORT_EMAIL)
-            mail.send_mail(subject, content, recipient_list=[settings.RDSM_SUPPORT_EMAIL, request.user.email],
-                           from_email=settings.SUPPORT_EMAIL, connection=get_connection(fail_silently=True))
+            email = EmailMessage(subject, content, to=[settings.RDSM_SUPPORT_EMAIL], cc=[request.user.email],
+                                 from_email=settings.SUPPORT_EMAIL, connection=get_connection(fail_silently=True))
+            email.send(fail_silently=True)
         except HsmException as err:
             return JsonResponse(
                 {'error_message': "%s: %s" % (type(err), str(err))},

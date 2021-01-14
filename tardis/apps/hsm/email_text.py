@@ -1,7 +1,9 @@
+from urllib.parse import quote
 from django.conf import settings
 from django.contrib.sites.models import Site
 
 from . import default_settings
+from ...tardis_portal.models import StorageBoxOption
 
 
 def interpolate_template(template_name, **kwargs):
@@ -44,9 +46,28 @@ def email_dfo_recall_failed(dfo, user):
 
 
 def email_dataset_recall_requested(dataset, user):
+    from os import path
+    dataset_boxes = dataset.get_all_storage_boxes_used()
+    sb = None
+    if dataset_boxes.count() == 1:
+        sb = dataset_boxes[0]
+    sb_path = StorageBoxOption.objects.get(storage_box=sb, key='location').value
+    # get remote path
+    sb_remote_path = StorageBoxOption.objects.get(storage_box=sb, key='remote_path').value
+    # get mount point
+    sb_mount_point = StorageBoxOption.objects.get(storage_box=sb, key='mount').value
+    path_parts = [
+        sb_path,
+        "%s-%s" % (
+            quote(dataset.description, safe='') or 'untitled',
+            dataset.id)
+    ]
+    dataset_path = path.join(*path_parts)
+    remote_dataset_path = dataset_path.replace(sb_mount_point, sb_remote_path)
     return interpolate_template(
         'dataset_recall_requested',
         user=user,
-        dataset=dataset.id,
-        site_title=settings.SITE_TITLE
+        dataset=dataset.description,
+        site_title=settings.SITE_TITLE,
+        path=remote_dataset_path
     )

@@ -44,9 +44,11 @@ Regards,
 '''),
     'dataset_recall_requested': ('[{site_title}] Dataset recall requested',
                            '''\
-Dear {site_title} admin,
+Dear RDSM support team,
 
-User {user} has requested to recall dataset with id {dataset} from HSM vault.
+User {user} has requested to recall dataset {dataset} from HSM vault.
+
+The path to the dataset is {path}
 
 
 Regards,
