@@ -19,7 +19,7 @@ gevent==21.1.0
 html2text==2020.1.16
 html5lib==1.1
 isodate==0.6.0
-pyjwt==2.0.0
+pyjwt==2.0.1
 kombu==4.6.11
 lxml==4.6.2
 paramiko==2.7.2
