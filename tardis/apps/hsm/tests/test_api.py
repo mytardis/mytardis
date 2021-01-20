@@ -53,6 +53,8 @@ class HsmAppApiTestCase(MyTardisResourceTestCase):
         This method (designed to be fast) looks directly at
         the files on disk without checking if each file is
         verified in the database
+        Since the underlying method checks for hidden external attribute on mount.cifs mounted filesystem,
+        it may return offline status for a file in test environment
         '''
         self.dfo.storage_box = self.hsm_storage_box
         self.dfo.save()
@@ -61,7 +63,7 @@ class HsmAppApiTestCase(MyTardisResourceTestCase):
             authentication=self.get_credentials())
         self.assertHttpOK(response)
         expected_output = {
-            "online_files": 1,
+            "online_files": 0,
             "total_files": 1
         }
         returned_data = json.loads(response.content.decode())
