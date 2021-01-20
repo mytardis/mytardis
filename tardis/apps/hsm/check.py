@@ -88,11 +88,7 @@ def dataset_online_count(dataset):
     """
     online_count =  DataFile.objects.filter(dataset=dataset).count()
 
-    max_inode_file_size = getattr(
-        settings, 'HSM_MAX_INODE_FILE_SIZE',
-        default_settings.HSM_MAX_INODE_FILE_SIZE)
-
-    dirs_to_scan = []
+    files_to_scan = []
 
     sb_ids = [box['storage_box'] for box in DataFileObject.objects.filter(
               datafile__dataset=dataset,
@@ -104,33 +100,16 @@ def dataset_online_count(dataset):
             continue
         location = StorageBox.objects.get(
             id=sb_id).options.get(key='location').value
-        uri_prefixes = set(
-            dfo.uri.split('/')[0] for dfo in DataFileObject.objects.filter(
-            datafile__dataset=dataset, storage_box__id=sb_id, verified=True))
-        for uri_prefix in uri_prefixes:
-            dirs_to_scan.append(os.path.join(location, uri_prefix))
+        datafiles_path = DataFileObject.objects.filter(
+            datafile__dataset=dataset, storage_box__id=sb_id, verified=True).values_list('uri', flat=True)
+        for uri_prefix in datafiles_path:
+            files_to_scan.append(os.path.join(location, uri_prefix))
 
     # Absolute paths to executables are used for increased security.
     # See Bandit's B607: start_process_with_partial_path
-    for subdir in dirs_to_scan:
-        format_option = '-f' if sys.platform == 'darwin' else '-c'
-        format_string = '%b,%z' if sys.platform == 'darwin' else '%b,%s'
-        p1 = subprocess.Popen(  # nosec - Bandit B602: subprocess_without_shell_equals_true
-            ['/usr/bin/find', subdir, '-type', 'f', '-exec',
-             '/usr/bin/stat', format_option, format_string, '{}', ';'],
-            stdout=subprocess.PIPE, universal_newlines=True)
-        grep = '/usr/bin/grep' if sys.platform == 'darwin' else '/bin/grep'
-        p2 = subprocess.Popen(  # nosec - Bandit B603: subprocess_without_shell_equals_true
-            [grep, '^0,'], stdin=p1.stdout, stdout=subprocess.PIPE,
-            universal_newlines=True)
-        p3 = subprocess.Popen(  # nosec - Bandit B603: subprocess_without_shell_equals_true
-            [grep, '-v', '^0,0'], stdin=p2.stdout,
-            stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-            universal_newlines=True)
-        stdout, _ = p3.communicate()
-        for line in stdout.splitlines():
-            _, size = line.split(',')
-            if int(size) > max_inode_file_size:
-                online_count -= 1
+    for file_path in files_to_scan:
+        is_online = file_is_online(file_path)
+        if not is_online:
+            online_count -= 1
 
     return online_count
