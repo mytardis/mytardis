@@ -33,4 +33,4 @@ jobs:
         python test.py
     - name: run pylint
       run: |
-        pylint --rcfile .pylintrc tardis
+        pylint --rcfile .pylintrc --django-settings-module=tardis.test_settings tardis
