@@ -102,7 +102,7 @@ exports[`should match snapshot should render folder tree correctly 1`] = `
                 style="margin-right: 5px; opacity: 0.6;"
               />
               parent_1
-
+              
             </div>
           </div>
         </div>
@@ -129,7 +129,7 @@ exports[`should match snapshot should render folder tree correctly 1`] = `
                 style="margin-right: 5px; opacity: 0.6;"
               />
               parent_2
-
+              
             </div>
           </div>
         </div>
@@ -165,9 +165,9 @@ exports[`should match snapshot should render folder tree correctly 1`] = `
                 <i
                   class="fa fa-download fa-sm"
                 />
-
+                
               </a>
-
+              
             </div>
           </div>
         </div>
@@ -200,27 +200,8 @@ exports[`should match snapshot should render folder tree correctly 1`] = `
                 STORM-6.jpg
                 (unverified)
               </span>
-              <button
-                class="css-rebfn9-FileRecallButton btn btn-outline-secondary"
-                data-recall-url="/api/v1/hsm_replica/1234/recall/"
-                type="button"
-              <a
-                class="btn-sm"
-                role="button"
-                style="pointer-events: none; cursor: default; text-decoration: none; color: grey;"
-                title="Download"
-              >
-                Request Recall
-                <i
-                  class="fa fa-undo css-bv71sw-FileRecallButton"
-                />
-              </button>
-
-
-              </a>
-              <span
-                style="height: 10px; width: 10px; background-color: rgb(187, 187, 187); border-radius: 50%; display: inline-block;"
-              />
+              
+              
             </div>
           </div>
         </div>
