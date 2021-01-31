@@ -16,7 +16,6 @@ const Header = ({
   };
   let isDisabled = false;
   const [isDownloading, setIsDownloading] = useState(false);
-  if (!node.children && !node.verified) {
   if ((!node.children && !node.verified) || (!node.children && !node.is_online)) {
     isDisabled = true;
   }
@@ -69,34 +68,41 @@ const Header = ({
           />
           <i className={`fa fa-${iconClass}`} style={iconStyle} />
           {/* eslint-disable-next-line no-nested-ternary */}
-          {isDisabled ? (
+          {!node.verified && !node.children ? (
             <span style={{ color: 'red' }}>
               {node.name}
               (unverified)
             </span>
+          ) : !node.is_online && !node.children ? (
+            <span className="text-muted">
+              {node.name}
+              (archived)
+            </span>
           ) : node.name}
           {iconClass === 'file-text'
             ? (
-                <Fragment>
-                  {node.is_online
-                  ? <FileDownloadButton
-                isDisabled={isDisabled}
-                dataFileId={node.id}
-                onClick={onClick}
-                isDownloading={isDownloading}
-              /> : (
-                  <FileRecallButton 
-                      recallUrl={node.recall_url} 
-                  />
-                  )
+              <Fragment>
+                {node.is_online
+                  ? (
+                    <FileDownloadButton
+                      isDisabled={isDisabled}
+                      dataFileId={node.id}
+                      onClick={onClick}
+                      isDownloading={isDownloading}
+                    />
+                  ) : ''
                   }
-              {hsmEnabled ? (
-                <Fragment>
-                  {node.is_online ? <span style={dotStyleOnline} title="online" />
-                    : <span style={dotStyleOffline} title="offline" />}
-                </Fragment>
-              ) : ''}
-                </Fragment>
+                {/* eslint-disable-next-line no-nested-ternary */}
+                {hsmEnabled ? (
+                  node.is_online ? (<span style={dotStyleOnline} title="online" />)
+                    : (
+                      <Fragment>
+                        <FileRecallButton recallUrl={node.recall_url} />
+                        <span style={dotStyleOffline} title="offline" />
+                      </Fragment>
+                    )
+                ) : ''}
+              </Fragment>
 
             ) : ''}
         </div>

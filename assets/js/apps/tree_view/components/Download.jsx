@@ -1,9 +1,9 @@
 import { Fragment, useState } from 'react';
 import PropTypes from 'prop-types';
-import Spinner from '../../badges/components/utils/Spinner';
 import { Button, OverlayTrigger, Tooltip } from 'react-bootstrap';
 /** @jsx jsx */
 import { jsx } from '@emotion/core';
+import Spinner from '../../badges/components/utils/Spinner';
 
 const FileDownloadButton = ({ isDisabled, onClick, isDownloading }) => {
   const notActive = {
@@ -47,31 +47,31 @@ const FileRecallButton = ({ recallUrl }) => {
       .then((response) => { setToolTipMessage('Recall requested'); });
   };
   return (
-  <Fragment>
-    <OverlayTrigger
-      placement="top"
-      delay={{ show: 250, hide: 400 }}
-      overlay={(
+    <Fragment>
+      <OverlayTrigger
+        placement="top"
+        delay={{ show: 250, hide: 400 }}
+        overlay={(
           <Tooltip id="button-tooltip">
             {tooltipMessage}
           </Tooltip>
 )}
-    >
-      <Button
-        variant="outline-secondary"
-        onClick={handleClick}
-        disabled={isDisabled}
-        css={{
-          fontSize: '0.75rem', lineHeight: '0.25', padding: '0rem 0rem', margin: '0 10px 0 10px',
-        }}
-        type="button"
-        data-recall-url={recallUrl}
       >
-        {tooltipMessage}
-        <i className="fa fa-undo" css={{ marginLeft: '10px', marginRight: '10px' }} />
-      </Button>
-    </OverlayTrigger>
-  </Fragment>
+        <Button
+          variant="outline-secondary"
+          onClick={handleClick}
+          disabled={isDisabled}
+          css={{
+            fontSize: '0.75rem', lineHeight: '0.25', padding: '0rem 0rem', margin: '0 10px 0 10px',
+          }}
+          type="button"
+          data-recall-url={recallUrl}
+        >
+          {tooltipMessage}
+          <i className="fa fa-undo" css={{ marginLeft: '10px', marginRight: '10px' }} />
+        </Button>
+      </OverlayTrigger>
+    </Fragment>
   );
 };
 
