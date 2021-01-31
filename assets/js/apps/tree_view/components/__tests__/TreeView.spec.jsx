@@ -119,7 +119,7 @@ describe(' should render tree correctly', () => {
     expect(container.querySelector('ul').children[0].textContent).toEqual('parent_1');
     expect(container.querySelector('ul').children[1].textContent).toEqual('parent_2');
     expect(container.querySelector('ul').children[2].textContent).toEqual('Parent.txt');
-    expect(container.querySelector('ul').children[3].textContent).toEqual('STORM-6.jpg(unverified)Request Recall');
+    expect(container.querySelector('ul').children[3].textContent).toEqual('STORM-6.jpg(unverified)');
   });
 });
 describe('test filter, select and toggle node', () => {
@@ -361,9 +361,9 @@ describe('test download selected files', () => {
     component.update();
     expect(fetch.mock.calls.length).toEqual(3);
     // expect download datafile endpoint is called
-    expect(fetch.mock.calls["2"][0]).toEqual('/download/datafiles/');
+    expect(fetch.mock.calls['2'][0]).toEqual('/download/datafiles/');
     // expect methos to be POST
-    expect(fetch.mock.calls["2"][1].method).toEqual('POST');
+    expect(fetch.mock.calls['2'][1].method).toEqual('POST');
     // expect form data to include 3 datafile
     expect(fetch.mock.calls['2']['1'].body.getAll('datafile')).toEqual(['11985763', '11985764']);
   });
