@@ -12,6 +12,7 @@ import 'regenerator-runtime/runtime';
 import { TreeDownloadButton, TreeRecallButton, TreeSelectButton } from './Download';
 import { DownloadArchive, FetchFilesInDir, FetchChildDirs } from './Utils';
 import Spinner from '../../badges/components/utils/Spinner';
+import { fetchHSMDatasetData } from '../../badges/components/utils/FetchData';
 
 
 const TreeView = ({ datasetId, modified, hsmEnabled }) => {
@@ -24,6 +25,7 @@ const TreeView = ({ datasetId, modified, hsmEnabled }) => {
   const [recallToolTip, setRecallToolTip] = useState('An email will be sent to admin, and you will be '
       + 'notified when dataset is available to download');
   const [recallButtonStatus, setRecallButtonStatus] = useState('all');
+  const [showRecallDatasetButton, setShowRecallDatasetButton] = useState(false);
   const fetchBaseDirs = (pageNum, resetData) => {
     fetch(`/api/v1/dataset/${datasetId}/root-dir-nodes/?page=${pageNum}`, {
       method: 'get',
@@ -98,6 +100,13 @@ const TreeView = ({ datasetId, modified, hsmEnabled }) => {
   };
   useEffect(() => {
     fetchBaseDirs(0);
+    if (hsmEnabled) {
+      fetchHSMDatasetData(datasetId).then((value) => {
+        if (value.online_files < value.total_files) {
+          setShowRecallDatasetButton(true);
+        }
+      });
+    }
   }, [datasetId, modified]);
   const onToggle = (node, toggled) => {
     // toggled = !toggled;
@@ -255,12 +264,16 @@ const TreeView = ({ datasetId, modified, hsmEnabled }) => {
             onClick={toggleSelection}
             buttonText={isAllSelected ? 'Select None' : 'Select All'}
           />
-          <TreeRecallButton
-            buttonText={recallButtonText}
-            onClick={recallDataset}
-            disabled={recallButtonStatus}
-            recallTooltip={recallToolTip}
-          />
+          {hsmEnabled && showRecallDatasetButton
+            ? (
+              <TreeRecallButton
+                buttonText={recallButtonText}
+                onClick={recallDataset}
+                disabled={recallButtonStatus}
+                recallTooltip={recallToolTip}
+              />
+            ) : ''
+          }
         </div>
       </div>
       <div style={styles}>
