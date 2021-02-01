@@ -6,10 +6,7 @@ offline (on tape).
 """
 import logging
 import os
-import subprocess  # nosec - Bandit B404: import_subprocess
-import sys
 
-from django.conf import settings
 from django.core.files.storage import get_storage_class
 
 from tardis.tardis_portal.models import DataFile
@@ -17,7 +14,6 @@ from tardis.tardis_portal.models import DataFileObject
 from tardis.tardis_portal.models import StorageBox
 from tardis.tardis_portal.models import StorageBoxOption
 
-from . import default_settings
 from .exceptions import (DataFileObjectNotVerified,
                          StorageClassNotSupportedError)
 from .storage import HsmFileSystemStorage
