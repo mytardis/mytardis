@@ -33,7 +33,11 @@ const FileDownloadButton = ({ isDisabled, onClick, isDownloading }) => {
 const FileRecallButton = ({ recallUrl }) => {
   const [isDisabled] = useState(false);
   const [tooltipMessage, setToolTipMessage] = useState('Request Recall');
+  const [buttonText, setButtonText] = useState('Request Recall');
+  const [isLoading, setIsloading] = useState(false);
   const handleClick = () => {
+    setIsloading(true);
+    setButtonText('Requesting Recall');
     // console.log('clicked');
     // make a request for recall
     fetch(recallUrl, {
@@ -44,7 +48,12 @@ const FileRecallButton = ({ recallUrl }) => {
       },
     }).then(responseJson => (responseJson.json()))
     // eslint-disable-next-line no-unused-vars
-      .then((response) => { setToolTipMessage('Recall requested'); });
+      .then((response) => {
+        setToolTipMessage('Recall requested: You will be notified via '
+          + 'email when recall is complete');
+        setButtonText('Recall Requested');
+        setIsloading(false);
+      });
   };
   return (
     <Fragment>
@@ -67,8 +76,10 @@ const FileRecallButton = ({ recallUrl }) => {
           type="button"
           data-recall-url={recallUrl}
         >
-          {tooltipMessage}
-          <i className="fa fa-undo" css={{ marginLeft: '10px', marginRight: '10px' }} />
+          {buttonText}
+          {isLoading ? <i className="fa fa-spinner fa-spin" css={{ marginLeft: '10px', marginRight: '10px' }} />
+            : <i className="fa fa-undo" css={{ marginLeft: '10px', marginRight: '10px' }} />
+            }
         </Button>
       </OverlayTrigger>
     </Fragment>
