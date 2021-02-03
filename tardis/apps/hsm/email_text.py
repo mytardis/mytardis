@@ -3,7 +3,7 @@ from django.conf import settings
 from django.contrib.sites.models import Site
 
 from . import default_settings
-from ...tardis_portal.models import StorageBoxOption
+from ...tardis_portal.models import StorageBoxOption, StorageBoxAttribute
 
 
 def interpolate_template(template_name, **kwargs):
@@ -53,9 +53,9 @@ def email_dataset_recall_requested(dataset, user):
         sb = dataset_boxes[0]
     sb_path = StorageBoxOption.objects.get(storage_box=sb, key='location').value
     # get remote path
-    sb_remote_path = StorageBoxOption.objects.get(storage_box=sb, key='remote_path').value
+    sb_remote_path = StorageBoxAttribute.objects.get(storage_box=sb, key='remote_path').value
     # get mount point
-    sb_mount_point = StorageBoxOption.objects.get(storage_box=sb, key='mount').value
+    sb_mount_point = StorageBoxAttribute.objects.get(storage_box=sb, key='mount').value
     path_parts = [
         sb_path,
         "%s-%s" % (
