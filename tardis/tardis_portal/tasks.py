@@ -36,7 +36,7 @@ def cleanup_dfos(**kwargs):
     from django.conf import settings
     from .models import DataFile, DataFileObject
     tz = pytz.timezone(settings.TIME_ZONE)
-    wait_until = datetime.now(tz) - timedelta(hours=24)
+    wait_until = datetime.now(tz) - timedelta(hours=24*7)
     dfos = DataFileObject.objects.filter(created_time__lte=wait_until,
                                          verified=False)
     for dfo in dfos:
