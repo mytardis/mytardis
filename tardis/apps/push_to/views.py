@@ -158,8 +158,11 @@ def validate_remote_path(request, remote_host_id):
 
         response['default'] = {}
         response['default']['path'] = get_default_push_location(sftp_client)
-        response['default']['free_space'] = bytes_available(ssh, response[
-            'default']['path'])
+        try:
+            free = bytes_available(ssh, response['default']['path'])
+        except:
+            free = -1
+        response['default']['free_space'] = free
         response['default']['valid_children'] = list_subdirectories(
             sftp_client, response['default']['path'])
         if 'object_size' in response:
@@ -217,9 +220,8 @@ def initiate_push_experiment(request, experiment_id, remote_host_id=None):
     :return: redirect or status message
     :rtype: HttpResponse
     """
-    return _initiate_push(
-        request, initiate_push_experiment, remote_host_id, 'experiment',
-        experiment_id)
+    return _initiate_push(request, initiate_push_experiment, remote_host_id,
+                          'experiment', experiment_id)
 
 
 @login_required
@@ -233,8 +235,8 @@ def initiate_push_dataset(request, dataset_id, remote_host_id=None):
     :return: redirect or status message
     :rtype: HttpResponse
     """
-    return _initiate_push(
-        request, initiate_push_dataset, remote_host_id, 'dataset', dataset_id)
+    return _initiate_push(request, initiate_push_dataset, remote_host_id,
+                          'dataset', dataset_id)
 
 
 @login_required
@@ -248,14 +250,11 @@ def initiate_push_datafile(request, datafile_id, remote_host_id=None):
     :return: redirect or status message
     :rtype: HttpResponse
     """
-    return _initiate_push(
-        request, initiate_push_datafile, remote_host_id, 'datafile',
-        datafile_id)
+    return _initiate_push(request, initiate_push_datafile, remote_host_id,
+                          'datafile', datafile_id)
 
 
-def _initiate_push(
-        request, callback_view, remote_host_id, obj_type, push_obj_id
-):
+def _initiate_push(request, callback_view, remote_host_id, obj_type, push_obj_id):
     """
     Kicks off data push
     :param Request request: request object
@@ -299,8 +298,12 @@ def _initiate_push(
             }
             return render(request, 'destination_selector.html', c)
 
-        destination_ok, message = can_copy(ssh_client, obj_type, push_obj_id,
-                                           destination)
+        try:
+            destination_ok, message = can_copy(ssh_client, obj_type, push_obj_id,
+                                               destination)
+        except:
+            destination_ok = True
+
         if not destination_ok:
             return render_error_message(request,
                                         'Invalid destination: %s' % message)
