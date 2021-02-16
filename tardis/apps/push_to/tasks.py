@@ -6,7 +6,6 @@ from django.utils import timezone
 
 from tardis.tardis_portal.models import Experiment, Dataset, DataFile
 from tardis.celery import tardis_app
-from tardis.tardis_portal.util import split_path
 from tardis.tardis_portal.util import get_filesystem_safe_experiment_name
 from tardis.tardis_portal.util import get_filesystem_safe_dataset_name
 
@@ -121,10 +120,10 @@ def process_request(request_id, idle=0):
                 "Server connection dropped" in file.message):
             break
 
-    try:
+    if sftp:
         sftp.close()
-    except:
-        pass
+    if transport:
+        transport.close()
 
     if no_errors:
         complete_request(req.id)
