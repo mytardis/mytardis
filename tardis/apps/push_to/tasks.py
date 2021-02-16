@@ -13,14 +13,6 @@ from tardis.tardis_portal.util import get_filesystem_safe_dataset_name
 from .models import Credential, RemoteHost, Request, Progress
 
 
-class FastTransport(paramiko.Transport):
-    def __init__(self, sock):
-        super(FastTransport, self).__init__(sock)
-        self.window_size = 2147483647
-        self.packetizer.REKEY_BYTES = pow(2, 40)
-        self.packetizer.REKEY_PACKETS = pow(2, 40)
-
-
 @tardis_app.task
 def push_experiment_to_host(user_id, credential_id, remote_host_id,
                             experiment_id, base_dir=None):
