@@ -9,21 +9,21 @@ def shell_escape(s):
     return "'" + s.replace("'", "'\\''") + "'"
 
 
-def bytes_available(ssh_client, path):
-    _, stdout, _ = ssh_client.exec_command(
-        'df -k %s | tail -n 1' % shell_escape(path))
-    cmd_output = stdout.read().split()
+def bytes_available(ssh, path):
+    try:
+        _, stdout, _ = ssh.exec_command("df -k %s | tail -n 1" % shell_escape(path))
+        cmd_output = stdout.read().split()
+    except Exception as e:
+        cmd_output = str(e)
 
     # df can output the size in a couple of ways; try to detect which
     # and return the bytes available
-    try:
-        if len(cmd_output) == 5:
-            return int(cmd_output[2]) * 1024
-        assert len(cmd_output) == 6
+    if len(cmd_output) == 5:
+        return int(cmd_output[2]) * 1024
+    if len(cmd_output) == 6:
         return int(cmd_output[3]) * 1024
-    except ValueError:
-        pass
-    return "unknown"
+
+    return -1
 
 
 def is_directory(sftp_client, path):
@@ -69,12 +69,13 @@ def can_copy(ssh_client, object_type, object_id, path):
         "touch {destination}/{test_file_name} && "
         "rm {destination}/{test_file_name}".format(
             destination=path, test_file_name=test_file_name))
-    if chan.recv_exit_status() != 0:
+    status = chan.recv_exit_status()
+    chan.close()
+    if status != 0:
         return False, "Destination is not writable"
 
     try:
-        if bytes_available(ssh_client, path) > get_object_size(object_type,
-                                                               object_id):
+        if bytes_available(ssh_client, path) > get_object_size(object_type, object_id):
             return True, ''
         return False, 'Insufficient disk space'
     except (Experiment.DoesNotExist, Dataset.DoesNotExist, TypeError):

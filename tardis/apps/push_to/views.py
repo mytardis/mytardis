@@ -158,10 +158,7 @@ def validate_remote_path(request, remote_host_id):
 
         response['default'] = {}
         response['default']['path'] = get_default_push_location(sftp_client)
-        try:
-            free = bytes_available(ssh, response['default']['path'])
-        except:
-            free = -1
+        free = bytes_available(ssh, response['default']['path'])
         response['default']['free_space'] = free
         response['default']['valid_children'] = list_subdirectories(
             sftp_client, response['default']['path'])
@@ -198,13 +195,17 @@ def validate_remote_path(request, remote_host_id):
                     response[path]['free_space'] > response['object_size']
 
     except NoSuitableCredential:
+        ssh.close()
         response['message'] = "You don't have access to this host."
         return HttpResponseForbidden(json.dumps(response),
                                      content_type='application/json')
     except RemoteHost.DoesNotExist:
+        ssh.close()
         response['message'] = "Remote host does not exist."
         return HttpResponseNotFound(json.dumps(response),
                                     content_type='application/json')
+
+    ssh.close()
 
     return HttpResponse(json.dumps(response), content_type='application/json')
 
@@ -282,9 +283,7 @@ def _initiate_push(request, callback_view, remote_host_id, obj_type, push_obj_id
 
     try:
         remote_host = RemoteHost.objects.get(pk=remote_host_id)
-        credential = get_credential(request, remote_host)
 
-        ssh_client = credential.get_client_for_host(remote_host)
         if request.GET.get('path', None) is not None:
             destination = request.GET.get('path')
         else:
@@ -298,17 +297,16 @@ def _initiate_push(request, callback_view, remote_host_id, obj_type, push_obj_id
             }
             return render(request, 'destination_selector.html', c)
 
-        try:
-            destination_ok, message = can_copy(ssh_client, obj_type, push_obj_id,
-                                               destination)
-        except:
-            destination_ok = True
+        credential = get_credential(request, remote_host)
+        ssh_client = credential.get_client_for_host(remote_host)
+        destination_ok, message = can_copy(ssh_client, obj_type, push_obj_id, destination)
+        ssh_client.close()
 
         if not destination_ok:
-            return render_error_message(request,
-                                        'Invalid destination: %s' % message)
+            return render_error_message(request, 'Invalid destination: %s' % message)
 
     except NoSuitableCredential:
+        ssh_client.close()
         callback_args = {
             'remote_host_id': remote_host_id,
             obj_type + '_id': push_obj_id
