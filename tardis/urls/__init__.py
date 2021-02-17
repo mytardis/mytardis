@@ -56,10 +56,13 @@ overridable_urls = [
 
 app_urls = []
 for app_name, app in get_tardis_apps():
-    app_urls += [
-        url(r'^%s/' % format_app_name_for_url(app_name),
-            include('%s.urls' % app))
-    ]
+    try:
+        app_urls += [
+            url(r'^%s/' % format_app_name_for_url(app_name),
+                include('%s.urls' % app))
+        ]
+    except:
+        pass
 
 urlpatterns = [
     url(r'', include(core_urls)),
