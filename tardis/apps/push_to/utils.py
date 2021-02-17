@@ -3,8 +3,6 @@ from io import BytesIO
 
 from paramiko import SFTPError
 
-from tardis.tardis_portal.models import Experiment, Dataset, DataFile
-
 
 def shell_escape(s):
     return "'" + s.replace("'", "'\\''") + "'"
