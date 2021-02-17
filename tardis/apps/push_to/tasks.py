@@ -120,10 +120,8 @@ def process_request(request_id, idle=0):
                 "Server connection dropped" in file.message):
             break
 
-    if sftp:
-        sftp.close()
-    if transport:
-        transport.close()
+    sftp.close()
+    ssh.close()
 
     if no_errors:
         complete_request(req.id)
