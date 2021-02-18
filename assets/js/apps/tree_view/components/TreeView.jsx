@@ -74,7 +74,7 @@ const TreeView = ({ datasetId, modified, hsmEnabled }) => {
         setSelectedCount(selectedCount - 1);
       }
     } else {
-      node.selected = true;
+      // node.selected = true;
       // if this is a folder with no child
       if (node.children && !node.children.length) {
         // add this node to selecteNode list
@@ -82,11 +82,18 @@ const TreeView = ({ datasetId, modified, hsmEnabled }) => {
       }
       // if this is a folder with child
       if (node.children && node.children.length) {
-        node.children.forEach((childNode) => {
-          childNode.selected = true;
-        });
-      } else {
         node.selected = true;
+        node.children.forEach((childNode) => {
+          if (childNode.is_online) {
+            childNode.selected = true;
+          }
+        });
+      }
+      // if this is a leaf node
+      if (!node.children && node.is_online) {
+        node.selected = true;
+      } else {
+        // node.selected = true;
       }
     }
     // set selected count
@@ -121,9 +128,12 @@ const TreeView = ({ datasetId, modified, hsmEnabled }) => {
         if (node.selected) {
           let childCount = 0;
           node.children.forEach((childNode) => {
-            childNode.toggled = true;
-            onSelect(childNode);
-            childCount += 1;
+            // do not select offline nodes
+            if (node.is_online || node.children.length > 0) {
+              childNode.toggled = true;
+              onSelect(childNode);
+              childCount += 1;
+            }
           });
           setSelectedCount(selectedCount + childCount);
         }
