@@ -115,7 +115,7 @@ def process_request(request_id, idle=0):
             file.retry += 1
             file.message = "Can't find source file."
         file.save()
-        if not no_errors and (
+        if not no_errors and file.message is not None and (
                 "Socket is closed" in file.message or
                 "Server connection dropped" in file.message):
             break
