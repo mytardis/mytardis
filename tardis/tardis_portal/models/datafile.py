@@ -432,10 +432,8 @@ class DataFile(models.Model):
         return any(dfos)
 
     def verify(self, reverify=False):
-        dfos = []
-        if reverify or not obj.verified:
-            dfos = [dfo.verify() for dfo in self.file_objects.all()]
-        return all(dfos)
+        return all(dfo.verify() for dfo in self.file_objects.all()
+                   if reverify or not obj.verified)
 
 
 @python_2_unicode_compatible
