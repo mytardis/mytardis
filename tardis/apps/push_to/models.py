@@ -15,10 +15,10 @@ from paramiko import RSAKey, SSHClient, MissingHostKeyPolicy, \
     AutoAddPolicy, PKey, DSSKey, ECDSAKey, PublicBlob
 from paramiko.config import SSH_PORT
 
+from tardis.tardis_portal.models import DataFile
+
 from .apps import PushToConfig
 from .exceptions import NoSuitableCredential
-
-from tardis.tardis_portal.models import DataFile
 
 
 class KeyPair(models.Model):
