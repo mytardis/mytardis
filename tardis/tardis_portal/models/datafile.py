@@ -433,7 +433,7 @@ class DataFile(models.Model):
 
     def verify(self, reverify=False):
         dfos = [dfo.verify() for dfo in self.file_objects.all()
-                if reverify or not obj.verified]
+                if reverify or not dfo.verified]
         return all(dfos)
 
 
