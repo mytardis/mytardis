@@ -43,13 +43,13 @@ rapidconnect_urls = [
 ]
 
 overridable_urls = [
-    url(r'^$', site_routed_view, {'_default_view': IndexView.as_view(),
-                                  '_site_mappings':
+    url(r'^$', site_routed_view, {'default_view': IndexView.as_view(),
+                                  'site_mappings':
                                       getattr(settings, 'INDEX_VIEWS', {})},
         name='tardis.tardis_portal.views.index'),
 
-    url(r'^login/$', site_routed_view, {'_default_view': login,
-                                        '_site_mappings':
+    url(r'^login/$', site_routed_view, {'default_view': login,
+                                        'site_mappings':
                                             getattr(settings, 'LOGIN_VIEWS', {})},
         name='tardis.tardis_portal.views.login')
 ]
