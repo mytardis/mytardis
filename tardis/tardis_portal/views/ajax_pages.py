@@ -309,7 +309,8 @@ def choose_rights(request, experiment_id):
         return userProfile.isValidPublicContact()
 
     # Forbid access if no valid owner is available (and show error message)
-    if not any(is_valid_owner(owner) for owner in experiment.get_owners()):
+    perms = [is_valid_owner(owner) for owner in experiment.get_owners()]
+    if not any(perms):
         c = {'no_valid_owner': True, 'experiment': experiment}
         return render_response_index(
             request,
