@@ -1,4 +1,5 @@
 import os
+from datetime import datetime, timedelta
 
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -10,6 +11,29 @@ from tardis.tardis_portal.util import get_filesystem_safe_experiment_name
 from tardis.tardis_portal.util import get_filesystem_safe_dataset_name
 
 from .models import Credential, RemoteHost, Request, Progress
+
+
+@tardis_app.task
+def requests_maintenance():
+    """
+    Maintenance actions to cleanup data
+    """
+    requests = Request.objects.all()
+    for req in requests:
+        total_files = Progress.objects.filter(request=req).count()
+        completed_files = Progress.objects.filter(request=req, status=1).count()
+        if completed_files == total_files:
+            # Successfully completed request
+            req.delete()
+        else:
+            files = Progress.objects.filter(request=req, status=0, retry__lt=10).count()
+            if files != 0:
+                # Try process again if there are files with re-try attempts left
+                process_request.apply_async(args=[req.id], countdown=60)
+            elif req.timestamp < datetime.now() - timedelta(7):
+                # Delete any requests after one week
+                # This time should be sufficient to do any debugging
+                req.delete()
 
 
 @tardis_app.task
@@ -146,7 +170,7 @@ def complete_request(request_id):
     else:
         files = Progress.objects.filter(request=req, status=0, retry__lt=10).count()
         if files != 0:
-            process_request.apply_async(args=[req.id], countdown=3600)
+            process_request.apply_async(args=[req.id], countdown=600)
         else:
             send_email = True
             subject = "Data push failed"
