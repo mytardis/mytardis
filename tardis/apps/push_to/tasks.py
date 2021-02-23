@@ -14,7 +14,7 @@ from .models import Credential, RemoteHost, Request, Progress
 
 
 @tardis_app.task
-def requests_maintenance():
+def requests_maintenance(**kwargs):
     """
     Maintenance actions to cleanup data
     """
