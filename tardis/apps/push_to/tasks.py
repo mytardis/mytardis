@@ -1,4 +1,5 @@
 import os
+import pytz
 from datetime import datetime, timedelta
 
 from django.conf import settings
@@ -30,10 +31,13 @@ def requests_maintenance(**kwargs):
             if files != 0:
                 # Try process again if there are files with re-try attempts left
                 process_request.apply_async(args=[req.id], countdown=60)
-            elif req.timestamp < datetime.now() - timedelta(7):
-                # Delete any requests after one week
-                # This time should be sufficient to do any debugging
-                req.delete()
+            else:
+                tz = pytz.timezone(settings.TIME_ZONE)
+                wait_until = datetime.now(tz) - timedelta(hours=24*7)
+                if req.timestamp < wait_until:
+                    # Delete any requests after one week
+                    # This time should be sufficient to do any debugging
+                    req.delete()
 
 
 @tardis_app.task
