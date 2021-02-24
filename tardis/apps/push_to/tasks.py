@@ -108,7 +108,7 @@ def process_request(request_id, idle=0):
         transport.packetizer.REKEY_PACKETS = pow(2, 40)
         sftp = ssh.open_sftp()
     except Exception as err:
-        # Authentication failed (expired)
+        # Authentication failed (expired?)
         return render_error_message(request, "Can't connect: %s" % str(err))
 
     remote_base_dir = []
