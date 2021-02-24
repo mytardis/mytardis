@@ -328,6 +328,7 @@ class Request(models.Model):
     credential = models.ForeignKey(Credential, on_delete=models.CASCADE)
     host = models.ForeignKey(RemoteHost, on_delete=models.CASCADE)
     base_dir = models.CharField(max_length=100, null=True)
+    message = models.CharField(max_length=100, null=True)
 
 
 class Progress(models.Model):

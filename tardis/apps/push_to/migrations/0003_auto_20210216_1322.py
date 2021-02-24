@@ -22,6 +22,7 @@ class Migration(migrations.Migration):
                 ('object_type', models.CharField(max_length=10)),
                 ('object_id', models.PositiveIntegerField()),
                 ('base_dir', models.CharField(max_length=100, null=True)),
+                ('message', models.CharField(max_length=100, null=True)),
                 ('credential', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='push_to.Credential')),
                 ('host', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='push_to.RemoteHost')),
                 ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),

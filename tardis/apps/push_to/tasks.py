@@ -27,17 +27,17 @@ def requests_maintenance(**kwargs):
             # Successfully completed request
             req.delete()
         else:
-            files = Progress.objects.filter(request=req, status=0, retry__lt=10).count()
-            if files != 0:
-                # Try process again if there are files with re-try attempts left
-                process_request.apply_async(args=[req.id], countdown=60)
-            else:
-                tz = pytz.timezone(settings.TIME_ZONE)
-                wait_until = datetime.now(tz) - timedelta(hours=24*7)
-                if req.timestamp < wait_until:
-                    # Delete any requests after one week
-                    # This time should be sufficient to do any debugging
-                    req.delete()
+            tz = pytz.timezone(settings.TIME_ZONE)
+            wait_until = datetime.now(tz) - timedelta(hours=24*7)
+            if req.timestamp < wait_until:
+                # Delete any requests after one week
+                # This time should be sufficient to do any debugging
+                req.delete()
+            elif req.message is None:
+                files = Progress.objects.filter(request=req, status=0, retry__lt=10).count()
+                if files != 0:
+                    # Try process again if there are files with re-try attempts left
+                    process_request.apply_async(args=[req.id], countdown=60)
 
 
 @tardis_app.task
@@ -93,7 +93,7 @@ def push_datafile_to_host(user_id, credential_id, remote_host_id,
     process_request.apply_async(args=[req.id])
 
 
-@tardis_app.task
+@tardis_app.task(ignore_result=True)
 def process_request(request_id, idle=0):
     req = Request.objects.get(pk=request_id)
     files = Progress.objects.filter(request=req, status=0, retry__lt=10)
@@ -109,7 +109,9 @@ def process_request(request_id, idle=0):
         sftp = ssh.open_sftp()
     except Exception as err:
         # Authentication failed (expired?)
-        return render_error_message(request, "Can't connect: %s" % str(err))
+        req.message = "Can't connect: %s" % str(err)
+        req.save()
+        return
 
     remote_base_dir = []
     if req.base_dir is not None:
