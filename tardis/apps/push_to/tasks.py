@@ -99,15 +99,17 @@ def process_request(request_id, idle=0):
     files = Progress.objects.filter(request=req, status=0, retry__lt=10)
     no_errors = True
 
-    ssh = req.credential.get_client_for_host(req.host)
-
-    # https://github.com/paramiko/paramiko/issues/175#issuecomment-24125451
-    transport = ssh.get_transport()
-    transport.default_window_size = 2147483647
-    transport.packetizer.REKEY_BYTES = pow(2, 40)
-    transport.packetizer.REKEY_PACKETS = pow(2, 40)
-
-    sftp = ssh.open_sftp()
+    try:
+        ssh = req.credential.get_client_for_host(req.host)
+        # https://github.com/paramiko/paramiko/issues/175#issuecomment-24125451
+        transport = ssh.get_transport()
+        transport.default_window_size = 2147483647
+        transport.packetizer.REKEY_BYTES = pow(2, 40)
+        transport.packetizer.REKEY_PACKETS = pow(2, 40)
+        sftp = ssh.open_sftp()
+    except Exception as err:
+        # Authentication failed (expired)
+        return render_error_message(request, "Can't connect: %s" % str(err))
 
     remote_base_dir = []
     if req.base_dir is not None:
