@@ -1,8 +1,12 @@
-from wait import wait_ajax_loaded
+import time
 
 from behave import when, then
 
 from selenium.common.exceptions import NoSuchElementException
+
+from tardis.tardis_portal.models.experiment import Experiment
+
+from wait import wait_for_jquery
 
 
 @when("they click the Create Experiment button")
@@ -19,6 +23,7 @@ def they_see_exp_form(context):
     """
     :type context: behave.runner.Context
     """
+    wait_for_jquery(context)
     try:
         create_exp_form = \
             context.browser.find_element_by_id("create_experiment_form")
@@ -46,7 +51,7 @@ def a_new_exp_is_created(context):
     """
     :type context: behave.runner.Context
     """
-    wait_ajax_loaded(context)
+    wait_for_jquery(context)
     created_alert = context.browser.find_element_by_css_selector(
         "span[class='message']")
     context.test.assertEqual(
@@ -107,3 +112,28 @@ def exp_sharing_tab_content_is_shown(context):
     """
     context.browser.find_element_by_css_selector("div.sharing-sections")
     context.browser.find_element_by_css_selector("div.access_list_user")
+
+
+@when("they click the Change Public Access link")
+def they_click_the_change_public_access_button(context):
+    """
+    :type context: behave.runner.Context
+    """
+    public_access_link = context.browser.find_element_by_class_name("public_access_button")
+    public_access_link.click()
+
+
+@then("they see the Change Public Access form")
+def they_see_the_change_public_access_form(context):
+    """
+    :type context: behave.runner.Context
+    """
+    wait_for_jquery(context)
+    exp_id = Experiment.objects.get(title="test exp1").id
+    form = context.browser.find_element_by_css_selector("form.experiment-rights")
+    context.test.assertIn(
+        "post", form.get_attribute("method"))
+    close_link = context.browser.\
+        find_element_by_css_selector("#modal-public-access > div > div > div.modal-header > button > span")
+    close_link.click()
+    time.sleep(0.5)

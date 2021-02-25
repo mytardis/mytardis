@@ -1,15 +1,17 @@
 """
 views that return HTML that is injected into pages
 """
-
 import logging
-from six.moves import urllib
+import json
+
+from urllib.parse import urlencode
 
 from django.conf import settings
 from django.core.exceptions import PermissionDenied
 from django.core.paginator import Paginator, EmptyPage, InvalidPage
+from django.forms import model_to_dict
+from django.http import JsonResponse
 from django.urls import reverse
-from django.http import HttpResponse
 from django.views.decorators.cache import never_cache
 from django.contrib.auth.decorators import login_required
 from ..auth import decorators as authz
@@ -18,7 +20,6 @@ from ..models import Experiment, DataFile, Dataset, Schema, \
     DatafileParameterSet, UserProfile
 from ..shortcuts import return_response_error, \
     return_response_not_found, render_response_index
-from ..util import render_public_access_badge
 from ..views.pages import ExperimentView
 from ..views.utils import _add_protocols_and_organizations
 
@@ -247,14 +248,14 @@ def retrieve_datafile_list(
     paginator = Paginator(dataset_results, pgresults)
 
     try:
-        page = int(request.GET.get('page', '1'))
+        page_num = int(request.GET.get('page', '0'))
     except ValueError:
-        page = 1
+        page_num = 0
 
     # If page request (9999) is out of range, deliver last page of results.
 
     try:
-        dataset = paginator.page(page)
+        dataset = paginator.page(page_num + 1)
     except (EmptyPage, InvalidPage):
         dataset = paginator.page(paginator.num_pages)
 
@@ -269,31 +270,26 @@ def retrieve_datafile_list(
 
     immutable = Dataset.objects.get(id=dataset_id).immutable
 
+    query_string = '/ajax/datafile_list/%s/?page={page}' % dataset_id
+    if params:
+        query_string += '&' + urlencode(params)
+
     c = {
         'datafiles': dataset,
         'datafile_count': dataset_results.count(),
         'paginator': paginator,
+        'page_num': page_num,
         'immutable': immutable,
         'dataset': Dataset.objects.get(id=dataset_id),
         'filename_search': filename_search,
         'is_owner': is_owner,
         'has_download_permissions': has_download_permissions,
         'has_write_permissions': has_write_permissions,
-        'params': urllib.parse.urlencode(params),
+        'params': urlencode(params),
+        'query_string': query_string,
     }
     _add_protocols_and_organizations(request, None, c)
     return render_response_index(request, template_name, c)
-
-
-def experiment_public_access_badge(request, experiment_id):
-    try:
-        experiment = Experiment.objects.get(id=experiment_id)
-    except Experiment.DoesNotExist:
-        return HttpResponse('')
-
-    if authz.has_experiment_access(request, experiment_id):
-        return HttpResponse(render_public_access_badge(experiment))
-    return HttpResponse('')
 
 
 @authz.experiment_ownership_required
@@ -307,13 +303,14 @@ def choose_rights(request, experiment_id):
         if not settings.REQUIRE_VALID_PUBLIC_CONTACTS:
             return True
 
-        userProfile, created = UserProfile.objects.get_or_create(
+        userProfile, _ = UserProfile.objects.get_or_create(
             user=owner)
 
         return userProfile.isValidPublicContact()
 
     # Forbid access if no valid owner is available (and show error message)
-    if not any([is_valid_owner(owner) for owner in experiment.get_owners()]):
+    perms = [is_valid_owner(owner) for owner in experiment.get_owners()]
+    if not any(perms):
         c = {'no_valid_owner': True, 'experiment': experiment}
         return render_response_index(
             request,
@@ -322,7 +319,8 @@ def choose_rights(request, experiment_id):
 
     # Process form or prepopulate it
     if request.method == 'POST':
-        form = RightsForm(request.POST)
+        data = json.loads(request.body)
+        form = RightsForm(data)
         if form.is_valid():
             experiment.public_access = form.cleaned_data['public_access']
             experiment.license = form.cleaned_data['license']
@@ -333,15 +331,16 @@ def choose_rights(request, experiment_id):
                            'legal_text': getattr(settings, 'LEGAL_TEXT',
                                                  'No Legal Agreement Specified')})
 
-    c = {'form': form, 'experiment': experiment}
-    return render_response_index(
-        request, 'tardis_portal/ajax/choose_rights.html', c)
+    c = {'form': form.data, 'experiment': model_to_dict(experiment)}
+    return JsonResponse(form.data, safe=False)
+    #return render_response_index(
+    #    request, 'tardis_portal/ajax/choose_rights.html', c)
 
 
 @never_cache
 @login_required
 def retrieve_owned_exps_list(
-        request, template_name='tardis_portal/ajax/owned_exps_list.html'):
+        request, template_name='tardis_portal/ajax/exps_list.html'):
 
     experiments = Experiment.safe.owned(request.user).order_by('-update_time')
 
@@ -356,7 +355,7 @@ def retrieve_owned_exps_list(
     query_string = '/ajax/owned_exps_list/?page={page}'
 
     c = {
-        'owned_experiments': exps_page,
+        'experiments': exps_page,
         'paginator': paginator,
         'page_num': page_num,
         'query_string': query_string
@@ -367,7 +366,7 @@ def retrieve_owned_exps_list(
 @never_cache
 @login_required
 def retrieve_shared_exps_list(
-        request, template_name='tardis_portal/ajax/shared_exps_list.html'):
+        request, template_name='tardis_portal/ajax/exps_list.html'):
 
     experiments = Experiment.safe.shared(request.user).order_by('-update_time')
 
@@ -381,7 +380,7 @@ def retrieve_shared_exps_list(
 
     query_string = '/ajax/shared_exps_list/?page={page}'
     c = {
-        'shared_experiments': exps_page,
+        'experiments': exps_page,
         'paginator': paginator,
         'page_num': page_num,
         'query_string': query_string

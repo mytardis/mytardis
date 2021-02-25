@@ -31,7 +31,7 @@ steps are needed:
   configuration must subclass ``AbstractTardisAppConfig`` thereby enabling
   autodetection. ``AbstractTardisAppConfig`` replaces ``AppConfig`` as
   described in these
-  `django docs <https://docs.djangoproject.com/en/1.11/ref/applications/>`_.
+  `django docs <https://docs.djangoproject.com/en/2.2/ref/applications/>`_.
 
 * ``DataFile`` s need to be manually or automatically tagged with a
   schema that identifies them as viewable with a particular
@@ -125,7 +125,7 @@ Example:
 
 A custom view override is defined in settings as dictionary mapping a
 class-based view (or view function) to a Django
-`Site <https://docs.djangoproject.com/en/1.11/ref/contrib/sites/>`_. A ``Site`` is
+`Site <https://docs.djangoproject.com/en/2.2/ref/contrib/sites/>`_. A ``Site`` is
 specified by SITE_ID (an integer) or the domain name of the incoming request.
 
 Developers creating custom contextual index views are encouraged to subclass
@@ -155,8 +155,11 @@ Example:
 
 A custom view override is defined in settings as dictionary mapping a
 class-based view (or view function) to a Django
-`Site <https://docs.djangoproject.com/en/1.11/ref/contrib/sites/>`_. A ``Site`` is
+`Site <https://docs.djangoproject.com/en/2.2/ref/contrib/sites/>`_. A ``Site`` is
 specified by SITE_ID (an integer) or the domain name of the incoming request.
+
+For an example MyTardis app which provides a login view, see
+https://github.com/mytardis/mytardis-aaf-google-login
 
 Good practice for app developers
 ================================

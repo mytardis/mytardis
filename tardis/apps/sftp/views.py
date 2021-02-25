@@ -169,7 +169,7 @@ def sftp_keys(request):
                 )
             else:
                 # Create SFTPPublicKey record
-                key_rec = SFTPPublicKey.objects.create(
+                SFTPPublicKey.objects.create(
                     user=user,
                     name=key_name,
                     key_type=key.get_name(),

@@ -1,16 +1,18 @@
 # -*- coding: utf-8 -*-
 
+import hashlib
 import re
+
+from functools import reduce
 from os import makedirs
 from os.path import abspath, basename, join, exists, getsize
 from shutil import rmtree
 from zipfile import is_zipfile, ZipFile
 from tarfile import is_tarfile, TarFile
 from tempfile import NamedTemporaryFile
+from urllib.parse import quote
 
-from mock import patch
-from six.moves import urllib
-from six.moves import reduce
+from unittest.mock import patch
 
 from django.test import TestCase
 from django.test.client import Client
@@ -31,7 +33,6 @@ except (AttributeError, ImportError):
 
 
 def get_size_and_sha512sum(testfile):
-    import hashlib
     with open(testfile, 'rb') as f:
         contents = f.read()
         return (len(contents), hashlib.sha512(contents).hexdigest())
@@ -161,7 +162,7 @@ class DownloadTestCase(TestCase):
         response = client.get('/datafile/view/%i/' % self.datafile2.id)
         self.assertEqual(response.status_code, 200)
 
-        mock_webpack_get_bundle.assert_called()
+        self.assertNotEqual(mock_webpack_get_bundle.call_count, 0)
 
         # The following behaviour relies on ImageMagick
         if IMAGEMAGICK_AVAILABLE:
@@ -235,7 +236,7 @@ class DownloadTestCase(TestCase):
             exp1_title = self.experiment1.title.replace(' ', '_')
         else:
             exp1_title = self.experiment1.title
-        exp1_title = urllib.parse.quote(exp1_title,
+        exp1_title = quote(exp1_title,
                            safe=settings.SAFE_FILESYSTEM_CHARACTERS)
         self.assertEqual(response['Content-Disposition'],
                          'attachment; filename="%s-complete.tar"'
@@ -337,12 +338,12 @@ class DownloadTestCase(TestCase):
             exp2_title = self.experiment2.title.replace(' ', '_')
         else:
             exp2_title = self.experiment2.title
-        exp2_title = urllib.parse.quote(exp2_title,
+        exp2_title = quote(exp2_title,
                            safe=settings.SAFE_FILESYSTEM_CHARACTERS)
         response = client.get('/download/experiment/%i/tar/' %
                               self.experiment2.id)
         self.assertEqual(response.status_code, 200)
-        mock_webpack_get_bundle.assert_called()
+        self.assertNotEqual(mock_webpack_get_bundle.call_count, 0)
         self.assertEqual(response['Content-Disposition'],
                          'attachment; filename="%s-complete.tar"'
                          % exp2_title)

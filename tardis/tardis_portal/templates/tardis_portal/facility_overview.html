@@ -14,25 +14,29 @@
 </div>
 <div ng-app="facilityOverview">
 {% with request|check_if_facility_manager as facility_manager %}
-<div id="content" ng-controller="FacilityController as facilityCtrl">
+<div id="content" class="container-fluid" ng-controller="FacilityController as facilityCtrl">
   {% verbatim %}
-  <h2 class="pull-left" style="color:#999999" ng-cloak>{{facilityCtrl.selectedFacilityName}}</h2>
-  <div class="btn-group pull-right" ng-show="facilityCtrl.showFacilitySelector()" ng-cloak>
-    <a class="btn btn-primary dropdown-toggle"
-       data-toggle="dropdown">Facility: {{facilityCtrl.selectedFacilityName}}
-      <span class="caret"></span>
-    </a>
-    <ul class="dropdown-menu">
-        <li style="text-align:center"><strong>Select a
-            facility</strong></li>
-        <li ng-repeat="facility in facilityCtrl.facilities">
-            <a href="#"
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="float-left" style="color:#999999" ng-cloak>{{facilityCtrl.selectedFacilityName}}</h2>
+    </div>
+    <div class="col-md-6">
+      <div class="dropdown show float-right" ng-show="facilityCtrl.showFacilitySelector()" ng-cloak>
+        <button class="btn btn-outline-secondary dropdown-toggle"
+           data-toggle="dropdown">Facility: {{facilityCtrl.selectedFacilityName}}
+          <span class="caret"></span>
+        </button>
+        <div class="dropdown-menu dropdown-menu-right">
+            <h6 class="dropdown-header"><strong>Select a facility</strong></h6>
+            <a class="dropdown-item" ng-repeat="facility in facilityCtrl.facilities"
+               href="#"
                ng-click="facilityCtrl.selectFacility(facility.id,facility.name)">
-              {{facility.name}}
+               {{facility.name}}
             </a>
-        </li>
-    </ul>
-  </div>  <!-- div class="btn-group pull-right" -->
+        </div>
+      </div>  <!-- div class="btn-group pull-right" -->
+    </div>
+  </div>
   {% endverbatim %}
   {% if not facility_manager %}
     <div class="alert alert-block alert-danger">
@@ -42,57 +46,63 @@
     {% verbatim %}
     <div class="row">
         <div class="col-md-12">
-          <div class="well">
-            <div class="row">
+          <div class="card">
+            <div class="card-body">
+              <div class="row">
                 <div class="col-md-8" style="text-align: center" ng-cloak>
                   <!-- Data sorting options -->
-                  <ul class="nav nav-pills">
-                    <li ng-click="facilityCtrl.selectDataView(1); unsetFileListVisibility();"
-                        ng-class="{ active:facilityCtrl.isDataViewSelected(1) }">
-                        <a href="#">Latest data</a>
+                  <ul class="nav nav-tabs">
+                    <li class="nav-item" ng-click="facilityCtrl.selectDataView(1); unsetFileListVisibility();">
+                        <a class="nav-link"
+                           ng-class="{ active:facilityCtrl.isDataViewSelected(1) }"
+                           href="#">Latest data
+                        </a>
                     </li>
-                    <li ng-click="facilityCtrl.selectDataView(2); facilityCtrl.unsetFileListVisibility();"
-                        ng-class="{ active:facilityCtrl.isDataViewSelected(2) }">
-                        <a href="#">Data by instrument</a>
+                    <li class="nav-item" ng-click="facilityCtrl.selectDataView(2); facilityCtrl.unsetFileListVisibility();">
+                        <a class="nav-link"
+                           ng-class="{ active:facilityCtrl.isDataViewSelected(2) }"
+                           href="#">Data by instrument
+                        </a>
                     </li>
-                    <li ng-click="facilityCtrl.selectDataView(3); facilityCtrl.unsetFileListVisibility();"
-                        ng-class="{ active:facilityCtrl.isDataViewSelected(3) }">
-                        <a href="#">Data by user</a>
+                    <li class="nav-item" ng-click="facilityCtrl.selectDataView(3); facilityCtrl.unsetFileListVisibility();">
+                        <a class="nav-link"
+                           ng-class="{ active:facilityCtrl.isDataViewSelected(3) }"
+                           href="#">Data by user
+                        </a>
                     </li>
                   </ul>
                 </div>
                 <div class="col-md-4">
                   <!-- Auto-refresh button -->
                   <div class="btn-group pull-right" ng-cloak>
-                    <button type="button" class="btn btn-default"
+                    <button type="button" class="btn btn-outline-secondary btn-sm"
                             ng-click="facilityCtrl.fetchFacilityData(0,facilityCtrl.defaultFetchLimit); facilityCtrl.refreshCountdown = facilityCtrl.refreshInterval">
                       <i class="fa fa-refresh"></i>
                       Refresh
                     </button>
-                    <button type="button" class="btn btn-default dropdown-toggle"
+                    <button type="button" class="btn btn-outline-secondary btn-sm dropdown-toggle"
                             data-toggle="dropdown">
                       Auto refresh
                       <span ng-show="facilityCtrl.refreshInterval === 0">(never)</span>
                       <span ng-hide="facilityCtrl.refreshInterval === 0">({{facilityCtrl.refreshCountdownFmt()}})</span>
                       <span class="caret"></span>
                     </button>
-                    <ul class="dropdown-menu">
-                      <li><a href="#"
-                             ng-click="facilityCtrl.setRefreshInterval(0)">Never</a>
-                      </li>
-                      <li><a href="#"
-                             ng-click="facilityCtrl.setRefreshInterval(10)">Every
-                          10 seconds</a></li>
-                      <li><a href="#"
-                             ng-click="facilityCtrl.setRefreshInterval(30)">Every
-                          30 seconds</a></li>
-                      <li><a href="#"
-                             ng-click="facilityCtrl.setRefreshInterval(60)">Every
-                          minute</a></li>
-                      <li><a href="#"
-                             ng-click="facilityCtrl.setRefreshInterval(300)">Every
-                          5 minutes</a></li>
-                    </ul>  <!-- dropdown-menu -->
+                    <div class="dropdown-menu">
+                      <a href="#" class="dropdown-item"
+                         ng-click="facilityCtrl.setRefreshInterval(0)">Never</a>
+                      <a href="#" class="dropdown-item"
+                         ng-click="facilityCtrl.setRefreshInterval(10)">Every
+                          10 seconds</a>
+                      <a href="#" class="dropdown-item"
+                         ng-click="facilityCtrl.setRefreshInterval(30)">Every
+                          30 seconds</a>
+                      <a href="#" class="dropdown-item"
+                         ng-click="facilityCtrl.setRefreshInterval(60)">Every
+                          minute</a>
+                      <a href="#" class="dropdown-item"
+                         ng-click="facilityCtrl.setRefreshInterval(300)">Every
+                          5 minutes</a>
+                    </div>  <!-- dropdown-menu -->
                   </div>  <!-- btn-group pull-right Auto-refresh button -->
                 </div>  <!-- col-md-4 -->
             </div>  <!-- row -->
@@ -118,31 +128,35 @@
                 <div class="row" ng-show="facilityCtrl.datasets.length" ng-cloak>
                   <!-- Data filters -->
                   <div class="col-md-12">
-                    <form class="well form-inline">
-                      <div class="form-group">
-                        <label>Filter by:</label>
+                    <div class="card mb-2" style="border-top: 0">
+                      <div class="card-body">
+                        <form class="form-inline">
+                      <div class="form-group mr-2">
+                        <label class="mr-2">Filter by:</label>
                         <input type="text" class="input-small form-control"
                                placeholder="user name"
                                ng-model="facilityCtrl.search_owner.owner">
                       </div>
-                      <div class="form-group">
+                      <div class="form-group mr-2">
                         <label class="sr-only">Experiment:</label>
                         <input type="text" class="input-small form-control"
                                placeholder="experiment"
                                ng-model="facilityCtrl.search_experiment.parent_experiment.title">
                       </div>
-                      <div class="form-group">
+                      <div class="form-group mr-2">
                         <label class="sr-only">Instrument:</label>
                         <input type="text" class="input-small form-control"
                                placeholder="instrument"
                                ng-model="facilityCtrl.search_instrument.instrument.name">
                       </div>
-                      <button type="button" class="btn btn-default"
+                      <button type="button" class="btn btn-outline-secondary"
                               ng-click="facilityCtrl.filterFormReset()">
                           <i class="fa fa-remove"></i>
                           Clear filters
                       </button>
                     </form>
+                      </div>
+                    </div>
                   </div>  <!-- col-md-12 -->
                 </div>  <!-- row -->
                 <div class="row">
@@ -151,7 +165,7 @@
                        ng-show="facilityCtrl.isDataViewSelected(1) && !facilityCtrl.loading"
                        ng-cloak>
                     <h2>Latest {{facilityCtrl.selectedFacilityName}} datasets</h2>
-                    <table class="table table-striped table-bordered table-condensed">
+                    <table class="facility-datasets table table-striped table-bordered table-sm">
                       <tr>
                         <th>Owner</th>
                         <th>Group</th>
@@ -164,39 +178,13 @@
                       <tr ng-repeat-start="dataset in facilityCtrl.datasets | filter:facilityCtrl.search_owner:strict | filter:facilityCtrl.search_experiment:strict | filter:facilityCtrl.search_instrument:strict">
                         <td>{{dataset.owner}}</td>
                         <td>{{dataset.group}}</td>
-                        <td>
-                            <a href="/experiment/view/{{dataset.parent_experiment.id}}/"
-                               target="_blank">{{dataset.parent_experiment.title}}</a>
-                        </td>
-                        <td>
-                            <a href="/dataset/{{dataset.id}}"
-                               target="_blank">{{dataset.description}}</a>
-                        </td>
+                        <td><a href="/experiment/view/{{dataset.parent_experiment.id}}/" target="_blank">{{dataset.parent_experiment.title}}</a></td>
+                        <td><a href="/dataset/{{dataset.id}}" target="_blank">{{dataset.description}}</a></td>
                         <td>{{dataset.instrument.name}}</td>
+                        <td>{{dataset.created_time | date:'yyyy-MM-dd h:mma'}}</td>
                         <td>
-                            {{dataset.parent_experiment.created_time
-                            | date:'yyyy-MM-dd h:mma'}}
-                        </td>
-                        <td>
-                          <button type="button" class="btn btn-xs btn-info"
-                             ng-click="facilityCtrl.toggleFileList(dataset)">
-                              <i class="fa fa-list-alt"></i>
-                              <span ng-hide="facilityCtrl.isFileListVisible(dataset.id)">Show</span><span
-                                  ng-show="facilityCtrl.isFileListVisible(dataset.id)">Hide</span>
-                              file list
-                          </button>
-                          <span class="label label-default"
-                                ng-class="(dataset.verified_datafiles_count<dataset.datafile_count||!dataset.datafile_count)?'label-danger':''">
-                            <ng-pluralize count="dataset.verified_datafiles_count"
-                                          when="{'0': 'no verified files', 'one': '1 verified file', 'other': '{} verified files'}">
-                            </ng-pluralize>
-                            ({{dataset.verified_datafiles_size | filesize}})
-                            /
-                            <ng-pluralize count="dataset.datafile_count"
-                                          when="{'0': 'no files', 'one': '1 file', 'other': '{} files'}">
-                            </ng-pluralize>
-                            ({{dataset.size | filesize}})
-                          </span>
+                          <span ng-include="'showHideFileListButton'"></span>
+                          <span ng-include="'datafileCount'"></span>
                         </td>
                       </tr>
                       <tr ng-repeat-end
@@ -215,7 +203,7 @@
                        ng-cloak>
                     <h2>Latest {{facilityCtrl.selectedFacilityName}} datasets by
                         instrument</h2>
-                    <table class="table table-striped table-bordered table-condensed">
+                    <table class="facility-datasets table table-striped table-bordered table-sm">
                       <tr>
                         <th>Owner</th>
                         <th>Group</th>
@@ -234,38 +222,12 @@
                       <tr ng-repeat-start="dataset in datasetByInstrument.datasets | filter:facilityCtrl.search_owner:strict | filter:facilityCtrl.search_experiment:strict">
                         <td>{{dataset.owner}}</td>
                         <td>{{dataset.group}}</td>
+                        <td><a href="/experiment/view/{{dataset.parent_experiment.id}}/" target="_blank">{{dataset.parent_experiment.title}}</a></td>
+                        <td><a href="/dataset/{{dataset.id}}" target="_blank">{{dataset.description}}</a></td>
+                        <td>{{dataset.created_time | date:'yyyy-MM-dd h:mma'}}</td>
                         <td>
-                            <a href="/experiment/view/{{dataset.parent_experiment.id}}/"
-                               target="_blank">{{dataset.parent_experiment.title}}</a>
-                        </td>
-                        <td>
-                            <a href="/dataset/{{dataset.id}}"
-                               target="_blank">{{dataset.description}}</a>
-                        </td>
-                        <td>
-                            {{dataset.parent_experiment.created_time
-                            | date:'yyyy-MM-dd h:mma'}}
-                        </td>
-                        <td>
-                          <button type="button" class="btn btn-xs btn-info"
-                                  ng-click="facilityCtrl.toggleFileList(dataset)">
-                            <i class="fa fa-list-alt"></i>
-                            <span ng-hide="facilityCtrl.isFileListVisible(dataset.id)">Show</span>
-                            <span ng-show="facilityCtrl.isFileListVisible(dataset.id)">Hide</span>
-                            file list
-                          </button>
-                          <span class="label label-default"
-                                ng-class="(dataset.verified_datafiles_count<dataset.datafile_count||!dataset.datafile_count)?'label-danger':''">
-                            <ng-pluralize count="dataset.verified_datafiles_count"
-                                          when="{'0': 'no verified files', 'one': '1 verified file', 'other': '{} verified files'}">
-                            </ng-pluralize>
-                            ({{dataset.verified_datafiles_size | filesize}})
-                            /
-                            <ng-pluralize count="dataset.datafile_count"
-                                          when="{'0': 'no files', 'one': '1 file', 'other': '{} files'}">
-                            </ng-pluralize>
-                            ({{dataset.size | filesize}})
-                          </span>
+                          <span ng-include="'showHideFileListButton'"></span>
+                          <span ng-include="'datafileCount'"></span>
                         </td>
                       </tr>
                       <tr ng-repeat-end
@@ -274,6 +236,7 @@
                             <div ng-include="'fileList'"></div>
                         </td>
                       </tr>
+                      </tbody>
                     </table>
                   </div>  <!-- col-md-12 Data sorted by instrument view -->
                 </div>  <!-- row -->
@@ -283,7 +246,7 @@
                        ng-show="facilityCtrl.isDataViewSelected(3) && !facilityCtrl.loading"
                        ng-cloak>
                     <h2>Latest {{facilityCtrl.selectedFacilityName}} datasets by user</h2>
-                    <table class="table table-striped table-bordered table-condensed">
+                    <table class="facility-datasets table table-striped table-bordered table-sm">
                       <tr>
                         <th>Experiment</th>
                         <th>Dataset description</th>
@@ -299,36 +262,13 @@
                         </th>
                       </tr>
                       <tr ng-repeat-start="dataset in datasetByUser.datasets | filter:facilityCtrl.search_experiment:strict | filter:facilityCtrl.search_instrument:strict">
-                        <td>
-                            <a href="/experiment/view/{{dataset.parent_experiment.id}}/"
-                               target="_blank">{{dataset.parent_experiment.title}}</a>
-                        </td>
-                        <td>
-                            <a href="/dataset/{{dataset.id}}"
-                               target="_blank">{{dataset.description}}</a>
-                        </td>
+                        <td><a href="/experiment/view/{{dataset.parent_experiment.id}}/" target="_blank">{{dataset.parent_experiment.title}}</a></td>
+                        <td><a href="/dataset/{{dataset.id}}" target="_blank">{{dataset.description}}</a></td>
                         <td>{{dataset.instrument.name}}</td>
+                        <td>{{dataset.created_time | date:'yyyy-MM-dd h:mma'}}</td>
                         <td>
-                            {{dataset.parent_experiment.created_time | date:'yyyy-MM-dd h:mma'}}
-                        </td>
-                        <td>
-                          <button type="button" class="btn btn-xs btn-info"
-                                  ng-click="facilityCtrl.toggleFileList(dataset)">
-                            <i class="fa fa-list-alt"></i>
-                            <span ng-hide="facilityCtrl.isFileListVisible(dataset.id)">Show</span><span
-                                  ng-show="facilityCtrl.isFileListVisible(dataset.id)">Hide</span>
-                            file list
-                          </button>
-                          <span class="label label-default"
-                                ng-class="(dataset.verified_datafiles_count<dataset.datafile_count||!dataset.datafile_count)?'label-danger':''">
-                            <ng-pluralize count="dataset.verified_datafiles_count"
-                                          when="{'0': 'no verified files', 'one': '1 verified file', 'other': '{} verified files'}"></ng-pluralize>
-                            ({{dataset.verified_datafiles_size | filesize}})
-                            /
-                            <ng-pluralize count="dataset.datafile_count"
-                                          when="{'0': 'no files', 'one': '1 file', 'other': '{} files'}"></ng-pluralize>
-                            ({{dataset.size | filesize}})
-                          </span>
+                          <span ng-include="'showHideFileListButton'"></span>
+                          <span ng-include="'datafileCount'"></span>
                         </td>
                       </tr>
                       <tr ng-repeat-end
@@ -337,12 +277,13 @@
                           <div ng-include="'fileList'"></div>
                         </td>
                       </tr>
+                      </tbody>
                     </table>
                   </div>  <!-- col-md-12 Data sorted by user view -->
                   </div>  <!-- row -->
                   <div class="row">
                     <div class="col-md-12" style="text-align:center">
-                      <button type="button" class="btn btn-default btn-lg"
+                      <button type="button" class="btn btn-outline-secondary"
                               ng-click="facilityCtrl.loadMoreEntries(50)"
                               ng-class="(facilityCtrl.currentFetchLimit >= facilityCtrl.totalDatasets)?'disabled':''"
                               ng-hide="facilityCtrl.loading"
@@ -359,14 +300,38 @@
                 </div>
               </div>  <!-- col-md-12 -->
             </div>  <!-- row -->
+            </div>
           </div>  <!-- well -->
         </div>  <!-- col-md-12 -->
     </div>  <!-- row  -->
 </div>  <!-- id="content" -->
+<script type="text/ng-template" id="showHideFileListButton">
+  <button type="button" class="btn btn-sm btn-outline-secondary px-1 py-0"
+          ng-click="facilityCtrl.toggleFileList(dataset)">
+      <i class="fa fa-list-alt"></i>
+      <span ng-hide="facilityCtrl.isFileListVisible(dataset.id)">Show</span>
+      <span ng-show="facilityCtrl.isFileListVisible(dataset.id)">Hide</span>
+      file list
+  </button>
+</script>
+<script type="text/ng-template" id="datafileCount">
+  <span class="badge"
+        ng-class="(dataset.verified_datafiles_count<dataset.datafile_count||!dataset.datafile_count)?'badge-danger':'badge-info'">
+    <ng-pluralize count="dataset.verified_datafiles_count"
+                  when="{'0': 'no verified files', 'one': '1 verified file', 'other': '{} verified files'}">
+    </ng-pluralize>
+    ({{dataset.verified_datafiles_size | filesize}})
+    /
+    <ng-pluralize count="dataset.datafile_count"
+                  when="{'0': 'no files', 'one': '1 file', 'other': '{} files'}">
+    </ng-pluralize>
+    ({{dataset.size | filesize}})
+  </span>
+</script>
 <script type="text/ng-template" id="fileList">
     <div style="max-height: 200px; overflow-y: scroll;">
         <div ng-hide="dataset.datafiles">Loading datafiles...</div>
-        <table class="table table-bordered table-condensed table-striped"
+        <table class="table table-bordered table-sm table-striped"
                ng-show="dataset.datafiles">
             <tr>
                 <th>File name</th>

@@ -87,8 +87,9 @@ class Experiment(models.Model):
     class Meta:
         app_label = 'tardis_portal'
 
+    # pylint: disable=W0222
     def save(self, *args, **kwargs):
-        super(Experiment, self).save(*args, **kwargs)
+        super().save(*args, **kwargs)
         from .hooks import publish_public_expt_rifcs
         publish_public_expt_rifcs(self)
 
@@ -129,28 +130,27 @@ class Experiment(models.Model):
                 dirname = None
         return dirname
 
-    @models.permalink
     def get_absolute_url(self):
         """Return the absolute url to the current ``Experiment``"""
-        return ('tardis_portal.view_experiment', (),
-                {'experiment_id': self.id})
+        return reverse(
+            'tardis_portal.view_experiment',
+            kwargs={'experiment_id': self.id})
 
-    @models.permalink
     def get_edit_url(self):
         """Return the absolute url to the edit view of the current
         ``Experiment``
-
         """
-        return ('tardis.tardis_portal.views.edit_experiment', (),
-                {'experiment_id': self.id})
+        return reverse(
+            'tardis.tardis_portal.views.edit_experiment',
+            kwargs={'experiment_id': self.id})
 
-    @models.permalink
     def get_create_token_url(self):
         """Return the absolute url to the create token view of the current
         ``Experiment``
         """
-        return ('tardis.tardis_portal.views.create_token', (),
-                {'experiment_id': self.id})
+        return reverse(
+            'tardis.tardis_portal.views.create_token',
+            kwargs={'experiment_id': self.id})
 
     def get_datafiles(self):
         from .datafile import DataFile
@@ -275,8 +275,9 @@ class ExperimentAuthor(models.Model):
         blank=True, null=True,
         help_text="URL identifier for the author")
 
+    # pylint: disable=W0222
     def save(self, *args, **kwargs):
-        super(ExperimentAuthor, self).save(*args, **kwargs)
+        super().save(*args, **kwargs)
         try:
             from .hooks import publish_public_expt_rifcs
             publish_public_expt_rifcs(self.experiment)

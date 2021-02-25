@@ -2,7 +2,10 @@
 
 .. moduleauthor:: James Wettenhall <james.wettenhall@monash.edu>
 """
-from io import BytesIO, StringIO
+from io import BytesIO
+
+from unittest.mock import patch
+from flexmock import flexmock
 
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -10,11 +13,10 @@ from django.core.management import call_command
 from django.test import RequestFactory
 from django.test import TestCase
 
-from flexmock import flexmock
-from mock import patch
 from paramiko.common import AUTH_SUCCESSFUL, AUTH_FAILED
 from paramiko.ssh_exception import SSHException
 from paramiko.rsakey import RSAKey
+from paramiko.py3compat import StringIO
 
 from tardis.tardis_portal.download import make_mapper
 
@@ -76,7 +78,7 @@ class SFTPTest(TestCase):
         saved_setting = settings.REQUIRE_DATAFILE_CHECKSUMS
         try:
             settings.REQUIRE_DATAFILE_CHECKSUMS = False
-            df_file = _build(self.dataset, 'file.txt', 'path/file.txt')
+            _build(self.dataset, 'file.txt', 'path/file.txt')
         finally:
             settings.REQUIRE_DATAFILE_CHECKSUMS = saved_setting
 
@@ -131,13 +133,13 @@ class SFTPTest(TestCase):
     def test_sftp_key_connect(self):
         server_interface = MyTServerInterface()
         pub_key_str = (
-            b"AAAAB3NzaC1yc2EAAAADAQABAAAAgQCzvWE391K1pyBvePGpwDWMboSLIp"
-            b"5L5sMq+bXPPeJPSLOm9dnm8XexZOpeg14UpsYcmrkzVPeooaqz5PqtaHO46CdK11dS"
-            b"cs2a8PLnavGkJRf25/PDXxlHkiZXXbAfW+6t5aVJxSJ4Jt4FV0aDqMaaYxy4ikw6da"
-            b"BCkvug2OZQqQ=="
+            "AAAAB3NzaC1yc2EAAAADAQABAAAAgQCzvWE391K1pyBvePGpwDWMboSLIp"
+            "5L5sMq+bXPPeJPSLOm9dnm8XexZOpeg14UpsYcmrkzVPeooaqz5PqtaHO46CdK11dS"
+            "cs2a8PLnavGkJRf25/PDXxlHkiZXXbAfW+6t5aVJxSJ4Jt4FV0aDqMaaYxy4ikw6da"
+            "BCkvug2OZQqQ=="
         )
 
-        priv_key_str = u"""-----BEGIN RSA PRIVATE KEY-----
+        priv_key_str = """-----BEGIN RSA PRIVATE KEY-----
 MIICXgIBAAKBgQCzvWE391K1pyBvePGpwDWMboSLIp5L5sMq+bXPPeJPSLOm9dnm
 8XexZOpeg14UpsYcmrkzVPeooaqz5PqtaHO46CdK11dScs2a8PLnavGkJRf25/PD
 XxlHkiZXXbAfW+6t5aVJxSJ4Jt4FV0aDqMaaYxy4ikw6daBCkvug2OZQqQIDAQAB
@@ -160,7 +162,7 @@ QKHf8Ha+rOx3B7Dbljc+Xdpcn9VyRmDlSqzX9aCkr18mNg==
             AUTH_FAILED
         )
 
-        pub_key_rec = SFTPPublicKey.objects.create(
+        SFTPPublicKey.objects.create(
             user = self.user,
             name = "TestKey",
             key_type = "ssh-rsa",
@@ -198,7 +200,7 @@ QKHf8Ha+rOx3B7Dbljc+Xdpcn9VyRmDlSqzX9aCkr18mNg==
             b"/home/tardis_user1/experiments/%s"
             % path_mapper(self.exp).encode(),
             response.content)
-        mock_webpack_get_bundle.assert_called()
+        self.assertNotEqual(mock_webpack_get_bundle.call_count, 0)
 
     @patch('webpack_loader.loader.WebpackLoader.get_bundle')
     def test_sftp_dynamic_docs_dataset(self, mock_webpack_get_bundle):
@@ -215,7 +217,7 @@ QKHf8Ha+rOx3B7Dbljc+Xdpcn9VyRmDlSqzX9aCkr18mNg==
             % (path_mapper(self.exp).encode(),
                path_mapper(self.dataset).encode()),
             response.content)
-        mock_webpack_get_bundle.assert_called()
+        self.assertNotEqual(mock_webpack_get_bundle.call_count, 0)
 
     def test_cybderduck_connection_window(self):
         factory = RequestFactory()
@@ -233,7 +235,7 @@ class SFTPDManagementTestCase(TestCase):
         should raise an SSHException
         '''
         saved_setting = settings.SFTP_HOST_KEY
-        settings.SFTP_HOST_KEY = b''
+        settings.SFTP_HOST_KEY = ''
         with self.assertRaises(SSHException):
             call_command('sftpd')
         settings.SFTP_HOST_KEY = saved_setting

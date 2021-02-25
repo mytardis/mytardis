@@ -7,11 +7,13 @@
   {% endwith %}
 {% endfor %}
 </div> <!-- users -->
+<div id="user-sharing-messages">
+</div>
 <p>
-	<h3>Add new user</h3>
+  <h3>Add new user</h3>
   <br/>
   {% for field in addUserPermissionsForm %}
-	  {% if field.label == "Authentication Method" %}
+      {% if field.label == "Authentication Method" %}
           <br/>
           <br/>Permissions: 
           <br/>
@@ -22,16 +24,16 @@
           </select><br/>
           <br/>
           <p><em>Owners have the ability to change access controls and share experiments with others.</em></p>
-	  {% endif %}
-	  
-	  {% if field.label == "User" %}
-		Username:<br/>
-	    {{ field }}
-     {% else %}
-        {% if not field.label == "Read access" and not field.label == "Edit access" and not field.label == "Authentication Method" %}
-         {{ field }} {{ field.label }}
-        {% endif %}
-      {% endif %}	      
+      {% endif %}
+
+      {% if field.label == "User" %}
+          Username:<br/>
+          {{ field }}
+      {% else %}
+          {% if not field.label == "Read access" and not field.label == "Edit access" and not field.label == "Authentication Method" %}
+              {{ field }} {{ field.label }}
+          {% endif %}
+      {% endif %}     
   {% endfor %}
   <br/>
   <a class="form_submit btn btn-primary" id="user" href="">

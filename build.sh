@@ -4,7 +4,7 @@ echo This is a guide only, please either edit or run appropriate commands manual
 exit
 
 # for Ubuntu 16.04 or 18.04
-# sudo bash install-ubuntu-requirements.sh
+# sudo bash install-ubuntu-py3-requirements.sh
 # # optionally:
 # # sudo apt-get install memcached python-memcache
 

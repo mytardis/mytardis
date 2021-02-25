@@ -29,15 +29,13 @@ from .templates import *
 from .uploads import *
 from .urls import *
 
-# Default enabled app settings
-from ..apps.sftp.default_settings import *
-
 
 # Get version from git to be displayed on About page.
 def get_git_version():
     repo_dir = path.dirname(path.dirname(path.abspath(__file__)))
 
     def run_git(args):
+        # pylint: disable=import-outside-toplevel
         import subprocess  # nosec - Bandit B404: import_subprocess
         process = subprocess.Popen(  # nosec - Bandit B603: subprocess_without_shell_equals_true
             args,

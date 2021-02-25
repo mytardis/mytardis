@@ -8,8 +8,10 @@ Tests for view methods supplying context data to templates
 .. moduleauthor::  James Wettenhall <james.wettenhall@monash.edu>
 
 """
+import sys
+
+from unittest.mock import patch
 from flexmock import flexmock
-from mock import patch
 
 from django.conf import settings
 from django.test import TestCase
@@ -66,7 +68,6 @@ class ViewTemplateContextsTest(TestCase):
         """
         from ...views.pages import ExperimentView
         from django.http import HttpRequest
-        import sys
 
         # Default behavior
         views_module = flexmock(sys.modules['tardis.tardis_portal.views'])
@@ -85,7 +86,7 @@ class ViewTemplateContextsTest(TestCase):
         view_fn = ExperimentView.as_view()
         response = view_fn(request, experiment_id=self.exp.id)
         self.assertEqual(response.status_code, 200)
-        mock_webpack_get_bundle.assert_called()
+        self.assertNotEqual(mock_webpack_get_bundle.call_count, 0)
 
         # Behavior with USER_AGENT_SENSING enabled and a request.user_agent
         saved_setting = getattr(settings, "USER_AGENT_SENSING", None)
@@ -120,7 +121,6 @@ class ViewTemplateContextsTest(TestCase):
         """
         from ...views.pages import DatasetView
         from django.http import HttpRequest
-        import sys
 
         views_module = flexmock(sys.modules['tardis.tardis_portal.views'])
         request = HttpRequest()
@@ -135,7 +135,7 @@ class ViewTemplateContextsTest(TestCase):
         view_fn = DatasetView.as_view()
         response = view_fn(request, dataset_id=self.dataset.id)
         self.assertEqual(response.status_code, 200)
-        mock_webpack_get_bundle.assert_called()
+        self.assertNotEqual(mock_webpack_get_bundle.call_count, 0)
 
         # Behavior with USER_AGENT_SENSING enabled and a request.user_agent
         saved_setting = getattr(settings, "USER_AGENT_SENSING", None)
@@ -210,10 +210,11 @@ class ExperimentListsTest(TestCase):
         request.user = self.user
         response = my_data(request)
         self.assertEqual(response.status_code, 200)
-        mock_webpack_get_bundle.assert_called()
+        self.assertNotEqual(mock_webpack_get_bundle.call_count, 0)
         # jQuery hasn't populated the div yet:
         self.assertIn(
-            b'<div id="myowned" class="mydata accordion experiments"></div>',
+
+            b'<div id="myowned" class="mydata panel-group experiments"></div>',
             response.content)
 
         # Owned experiments:
@@ -223,7 +224,7 @@ class ExperimentListsTest(TestCase):
         request.GET = QueryDict('')
         response = retrieve_owned_exps_list(request)
         self.assertEqual(response.status_code, 200)
-        self.assertIn(b'<ul class="pagination"', response.content)
+        self.assertIn(b'<ul class="pagination justify-content-center"', response.content)
         self.assertIn(b'Page 1 of 5', response.content)
 
         # Now let's reduce the number of owned experiments from
@@ -256,7 +257,7 @@ class ExperimentListsTest(TestCase):
         request.user = self.user
         response = shared(request)
         self.assertEqual(response.status_code, 200)
-        mock_webpack_get_bundle.assert_called()
+        self.assertNotEqual(mock_webpack_get_bundle.call_count, 0)
 
         # jQuery hasn't populated the div yet:
         self.assertIn(
@@ -270,7 +271,7 @@ class ExperimentListsTest(TestCase):
         request.GET = QueryDict('')
         response = retrieve_shared_exps_list(request)
         self.assertEqual(response.status_code, 200)
-        self.assertIn(b'<ul class="pagination"', response.content)
+        self.assertIn(b'<ul class="pagination justify-content-center"', response.content)
         self.assertIn(b'Page 1 of 10', response.content)
 
         # Now let's reduce the number of shared experiments from

@@ -63,6 +63,19 @@ def _create_download_response(request, datafile_id, disposition='attachment'):  
     if not has_datafile_download_access(request=request,
                                         datafile_id=datafile.id):
         return return_response_error(request)
+
+    # Log file download event
+    if getattr(settings, "ENABLE_EVENTLOG", False):
+        from tardis.apps.eventlog.utils import log
+        log(
+            action="DOWNLOAD_DATAFILE",
+            extra={
+                "id": datafile.id,
+                "type": "single"
+            },
+            request=request
+        )
+
     # Send an image that can be seen in the browser
     if disposition == 'inline' and datafile.is_image():
         from .iiif import download_image
@@ -306,7 +319,7 @@ class UncachedTarStream(TarFile):
         '''
         remainder_buf = None
         for num, fobj in enumerate(self.mapped_file_objs):
-            df, name = fobj
+            df, dummy_name = fobj
             fileobj = df.file_object
             self._check('aw')
             tarinfo = self.tarinfos[num]
@@ -322,7 +335,7 @@ class UncachedTarStream(TarFile):
                     continue
                 # split into file read buffer sized chunks
                 blocks, remainder = divmod(tarinfo.size, self.buffersize)
-                for b in range(blocks):
+                for dummy_b in range(blocks):
                     buf = fileobj.read(self.buffersize)
                     if len(buf) < self.buffersize:
                         raise IOError("end of file reached")
@@ -395,6 +408,19 @@ def _streaming_downloader(request, datafiles, rootdir, filename,
         return render_error_message(
             request, 'Unknown download organization: %s' % organization,
             status=400)
+
+    if getattr(settings, "ENABLE_EVENTLOG", False):
+        from tardis.apps.eventlog.utils import log
+        for df in datafiles:
+            log(
+                action="DOWNLOAD_DATAFILE",
+                extra={
+                    "id": df.id,
+                    "type": "tar"
+                },
+                request=request
+            )
+
     try:
         files = _get_datafile_details_for_archive(mapper, datafiles)
         tfs = UncachedTarStream(
@@ -462,7 +488,6 @@ def streaming_download_datafiles(request):  # too complex # noqa
     # Create the HttpResponse object with the appropriate headers.
     # TODO: handle no datafile, invalid filename, all http links
     # TODO: intelligent selection of temp file versus in-memory buffering.
-    logger.error('In download_datafiles !!')
     comptype = getattr(settings, 'DEFAULT_ARCHIVE_FORMATS', ['tar'])[0]
     organization = getattr(settings, 'DEFAULT_PATH_MAPPER', 'classic')
     if 'comptype' in request.POST:
@@ -533,7 +558,7 @@ def streaming_download_datafiles(request):  # too complex # noqa
         expid = request.POST['expid']
         experiment = Experiment.objects.get(id=expid)
     except (KeyError, Experiment.DoesNotExist):
-        experiment = iter(df_set).next().dataset.get_first_experiment()
+        experiment = next(iter(df_set)).dataset.get_first_experiment()
 
     exp_title = get_filesystem_safe_experiment_name(experiment)
     filename = '%s-selection.tar' % exp_title

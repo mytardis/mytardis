@@ -59,7 +59,7 @@ class UserProfile(models.Model):
     @property
     def ext_groups(self):
 
-        import tardis.tardis_portal.auth.fix_circular as fix_circular
+        from ..auth import fix_circular
 
         if not hasattr(self, '_cached_groups'):
             self._cached_groups = fix_circular.getGroups(self.user)
@@ -113,7 +113,7 @@ class UserAuthentication(models.Model):
             self.CHOICES += ((authMethods[0], authMethods[1]),)
         self._comparisonChoicesDict = dict(self.CHOICES)
 
-        super(UserAuthentication, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.__original_approved = self.approved
 
     def getAuthMethodDescription(self):
@@ -122,15 +122,16 @@ class UserAuthentication(models.Model):
     def __str__(self):
         return self.username + ' - ' + self.getAuthMethodDescription()
 
+    # pylint: disable=W0222
     def save(self, *args, **kwargs):
         # check if social auth is enabled
         if 'tardis.apps.social_auth' not in settings.INSTALLED_APPS:
-            super(UserAuthentication, self).save(*args, **kwargs)
+            super().save(*args, **kwargs)
             return
         # check if authentication method requires admin approval
         from tardis.apps.social_auth.auth.social_auth import requires_admin_approval
         if not requires_admin_approval(self.authenticationMethod):
-            super(UserAuthentication, self).save(*args, **kwargs)
+            super().save(*args, **kwargs)
             return
         # check if social_auth is enabled
         is_social_auth_enabled = 'tardis.apps.social_auth' in settings.INSTALLED_APPS
@@ -153,7 +154,7 @@ class UserAuthentication(models.Model):
             from tardis.apps.social_auth.auth.social_auth import send_account_approved_email
             send_account_approved_email(user.id, self.authenticationMethod)
 
-        super(UserAuthentication, self).save(*args, **kwargs)
+        super().save(*args, **kwargs)
 
 
 

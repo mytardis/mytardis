@@ -63,18 +63,14 @@ def get_owned_experiments(request):
 
 
 def get_accessible_datafiles_for_user(request):
-
     experiments = get_accessible_experiments(request)
-    if experiments.count() == 0:
+    experiment_ids = list(experiments.values_list('id', flat=True))
+
+    if len(experiment_ids) == 0:
         return DataFile.objects.none()
 
-    queries = [Q(dataset__experiments__id=e.id) for e in experiments]
-
-    query = queries.pop()
-    for item in queries:
-        query |= item
-
-    return DataFile.objects.filter(query)
+    return DataFile.objects.filter(
+        Q(dataset__experiments__id__in=experiment_ids))
 
 
 def has_experiment_ownership(request, experiment_id):

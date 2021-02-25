@@ -8,8 +8,6 @@ from os import path
 import inspect
 import types
 
-from six import string_types
-
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required, permission_required
@@ -41,10 +39,10 @@ from ..util import get_filesystem_safe_dataset_name
 logger = logging.getLogger(__name__)
 
 
-def site_routed_view(request, _default_view, _site_mappings, *args, **kwargs):
+def site_routed_view(request, default_view, site_mappings, *args, **kwargs):
     """
     Allows a view to be overriden based on the Site (eg domain) for the current
-    request. Takes a default fallback view (_default_view) and a dictionary
+    request. Takes a default fallback view (default_view) and a dictionary
     mapping Django Sites (domain name or int SITE_ID) to views. If the current
     request matches a Site in the dictionary, that view is used instead of the
     default.
@@ -55,13 +53,13 @@ def site_routed_view(request, _default_view, _site_mappings, *args, **kwargs):
 
     :param request: a HTTP request object
     :type request: :class:`django.http.HttpRequest`
-    :param _default_view: The default view if no Site in _site_mappings matches
-                          the current Site.
-    :type _default_view: types.FunctionType | str
-    :param _site_mappings: A dictionary mapping Django sites to views \
-                          (sites are specified as either a domain name str or \
-                           int SITE_ID).
-    :type _site_mappings: dict
+    :param default_view: The default view if no Site in site_mappings matches
+                         the current Site.
+    :type default_view: types.FunctionType | str
+    :param site_mappings: A dictionary mapping Django sites to views \
+                         (sites are specified as either a domain name str or \
+                          int SITE_ID).
+    :type site_mappings: dict
     :param args:
     :type args:
     :param kwargs:
@@ -71,12 +69,12 @@ def site_routed_view(request, _default_view, _site_mappings, *args, **kwargs):
     :rtype: types.FunctionType
     """
     view = None
-    if _site_mappings:
+    if site_mappings:
         site = get_current_site(request)
         # try to find an overriding view based on domain name or SITE_ID
         # (int)
-        view = _site_mappings.get(site.domain, None) or \
-            _site_mappings.get(site.id, None)
+        view = site_mappings.get(site.domain, None) or \
+            site_mappings.get(site.id, None)
     if view:
         try:
             view_fn = _resolve_view(view)
@@ -87,7 +85,7 @@ def site_routed_view(request, _default_view, _site_mappings, *args, **kwargs):
                          % (repr(view), e))
             if settings.DEBUG:
                 raise e
-    view_fn = _resolve_view(_default_view)
+    view_fn = _resolve_view(default_view)
     return view_fn(request, *args, **kwargs)
 
 
@@ -139,7 +137,7 @@ class IndexView(TemplateView):
         :return: A dictionary of values for the view/template.
         :rtype: dict
         """
-        c = super(IndexView, self).get_context_data(**kwargs)
+        c = super().get_context_data(**kwargs)
         status = ''
         limit = 8
         c['status'] = status
@@ -254,7 +252,7 @@ class DatasetView(TemplateView):
             except (EmptyPage, InvalidPage):
                 return paginator.page(paginator.num_pages)
 
-        c = super(DatasetView, self).get_context_data(**kwargs)
+        c = super().get_context_data(**kwargs)
 
         dataset_id = dataset.id
         dataset_instrument = dataset.instrument
@@ -340,6 +338,16 @@ class DatasetView(TemplateView):
         if template_name is None:
             template_name = self.template_name
 
+        if getattr(settings, "ENABLE_EVENTLOG", False):
+            from tardis.apps.eventlog.utils import log
+            log(
+                action="PAGEVIEW_DATASET",
+                extra={
+                    "id": dataset_id
+                },
+                request=request
+            )
+
         return render_response_index(request, template_name, c)
 
 
@@ -353,6 +361,14 @@ def about(request):
              'tardis_portal/about_include.html'),
          }
     return render_response_index(request, 'tardis_portal/about.html', c)
+
+
+def healthz(request):
+    '''
+    returns that the server is alive
+    '''
+    del request.session
+    return HttpResponse("OK")
 
 
 @login_required
@@ -408,7 +424,7 @@ def _resolve_view(view_function_or_string):
     :rtype: types.FunctionType
     :raises TypeError:
     """
-    if isinstance(view_function_or_string, string_types):
+    if isinstance(view_function_or_string, str):
         x = view_function_or_string.split('.')
         obj_path, obj_name = ('.'.join(x[:-1]), x[-1])
         module = __import__(obj_path, fromlist=[obj_name])
@@ -467,7 +483,7 @@ class ExperimentView(TemplateView):
         :rtype: dict
         """
 
-        c = super(ExperimentView, self).get_context_data(**kwargs)
+        c = super().get_context_data(**kwargs)
 
         c['experiment'] = experiment
         c['has_write_permissions'] = \

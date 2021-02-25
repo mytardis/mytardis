@@ -39,8 +39,6 @@ LDAP Authentication module.
 import logging
 import ldap
 
-import six
-
 from django.conf import settings
 
 from ..models import UserAuthentication
@@ -109,7 +107,7 @@ class LDAPBackend(AuthProvider, UserProvider, GroupProvider):
         try:
             ldap_result_id = l.search(base, searchScope,
                                       filterstr, attrlist)
-            result_type, result_data = l.result(ldap_result_id, 1)
+            _, result_data = l.result(ldap_result_id, 1)
             return result_data
         except ldap.LDAPError as e:
             logger.error(str(e))
@@ -166,8 +164,8 @@ class LDAPBackend(AuthProvider, UserProvider, GroupProvider):
                 # check if the given username in combination with the LDAP
                 # auth method is already in the UserAuthentication table
                 user = ldap_result[0][1]
-                return {tardis_key: user[ldap_key][0] for ldap_key, tardis_key
-                        in six.iteritems(self._user_attr_map)}
+                return {tardis_key: user[ldap_key][0].decode()
+                        for ldap_key, tardis_key in self._user_attr_map.items()}
             return None
 
         except ldap.LDAPError:
@@ -205,8 +203,8 @@ class LDAPBackend(AuthProvider, UserProvider, GroupProvider):
         if not result:
             return None
 
-        for k, v in result[0][1].items():
-            user[self._user_attr_map[k]] = v[0]
+        for key, val in result[0][1].items():
+            user[self._user_attr_map[key]] = val[0].decode()
         return user
 
 
@@ -261,8 +259,8 @@ class LDAPBackend(AuthProvider, UserProvider, GroupProvider):
         if not result:
             return
 
-        for g, a in result:
-            yield a[self._group_id][0]
+        for _, attr in result:
+            yield attr[self._group_id][0].decode()
 
     def getGroupById(self, id):
         """return the group associated with the id::
@@ -279,30 +277,30 @@ class LDAPBackend(AuthProvider, UserProvider, GroupProvider):
             return None
 
         group = {}
-        for k, v in result[0][1].items():
-            group[self._group_attr_map[k]] = v[0]
+        for key, val in result[0][1].items():
+            group[self._group_attr_map[key]] = val[0].decode()
         return group
 
     def searchGroups(self, **filter):
         reverse_attr = {}
-        for k, v in self._group_attr_map.items():
-            reverse_attr[v] = k
+        for key, val in self._group_attr_map.items():
+            reverse_attr[val] = key
 
         qstr = ""
-        for k, v in filter.items():
-            qstr += "(%s=%s)" % (reverse_attr[k], v)
+        for key, val in filter.items():
+            qstr += "(%s=%s)" % (reverse_attr[key], val)
         result = self._query(self._group_base,
                              "(&(objectClass=posixGroup)%s)" % qstr,
                              list(self._group_attr_map.keys()) + ["memberUid"])
         if not result:
             return
 
-        for g, a in result:
+        for _, attr in result:
             group = {}
-            for k, v in a.items():
-                if k in self._group_attr_map:
-                    group[self._group_attr_map[k]] = v[0]
-            group["members"] = a["memberUid"]
+            for key, val in attr.items():
+                if key in self._group_attr_map:
+                    group[self._group_attr_map[key]] = val[0].decode()
+            group["members"] = [member.decode() for member in attr["memberUid"]]
             yield group
 
     def getGroupsForEntity(self, id):
@@ -315,10 +313,10 @@ class LDAPBackend(AuthProvider, UserProvider, GroupProvider):
         if not result:
             return
 
-        for g, a in result:
+        for _, attr in result:
             group = {}
-            for k, v in a.items():
-                group[self._group_attr_map[k]] = v[0]
+            for key, val in attr.items():
+                group[self._group_attr_map[key]] = val[0].decode()
             yield group
 
 _ldap_auth = None

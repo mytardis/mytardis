@@ -5,6 +5,7 @@ views.py.
 
 .. moduleauthor:: Gerson Galang <gerson.galang@versi.edu.au>
 '''
+import json
 import logging
 
 from django.conf import settings
@@ -215,7 +216,7 @@ def merge_auth_method(request):
         # "request.user" to them
 
         # check if the "request.user" has a userProfile
-        userProfile, created = UserProfile.objects.get_or_create(
+        userProfile, _ = UserProfile.objects.get_or_create(
             user=request.user)
 
         # if he has, link 'user's UserAuthentication to it
@@ -314,7 +315,7 @@ def _getSupportedAuthMethods():
     # the list of supported non-local DB authentication methods
     supportedAuthMethods = {}
 
-    for authKey, authDisplayName, authBackend in settings.AUTH_PROVIDERS:
+    for authKey, authDisplayName, _ in settings.AUTH_PROVIDERS:
         # we will only add non-localDB authentication methods to the
         # supportedAuthMethods list.
         if authKey != localdb_auth.auth_key:
@@ -325,7 +326,6 @@ def _getSupportedAuthMethods():
 
 def _getJsonFailedResponse(errorMessage):
     '''Return a failed JSON HttpResponse.'''
-    import json
     response = {"status": "fail", "errorMessage": errorMessage}
     return HttpResponse(json.dumps(response),
         content_type="application/json")
@@ -333,7 +333,6 @@ def _getJsonFailedResponse(errorMessage):
 
 def _getJsonSuccessResponse(data={}):
     '''Return a successful JSON HttpResponse.'''
-    import json
     response = {"status": "success", "data": data}
     return HttpResponse(json.dumps(response),
         content_type="application/json")
@@ -341,7 +340,6 @@ def _getJsonSuccessResponse(data={}):
 
 def _getJsonConfirmResponse(data={}):
     '''Return a JSON HttpResponse asking the user for confirmation'''
-    import json
     response = {"status": "confirm", "data": data}
     return HttpResponse(json.dumps(response),
         content_type="application/json")

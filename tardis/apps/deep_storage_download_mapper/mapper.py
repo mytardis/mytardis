@@ -1,10 +1,11 @@
+# -*- coding: utf-8 -*-
 '''
 File mapper that works for files stored in deep directory structures.
 It recreates the structure as stored in the datafile directory
 '''
 import os
 
-from six.moves import urllib
+from urllib.parse import quote
 
 from django.conf import settings
 
@@ -33,19 +34,19 @@ def deep_storage_mapper(obj, rootdir=None):
     safe = settings.SAFE_FILESYSTEM_CHARACTERS
     if not rootdir:
         if isinstance(obj, DataFile):
-            return urllib.parse.quote(obj.filename.encode('utf-8'), safe=safe)
+            return quote(obj.filename, safe=safe)
         if isinstance(obj, Dataset):
             if settings.DATASET_SPACES_TO_UNDERSCORES:
                 desc = obj.description.replace(' ', '_')
             else:
                 desc = obj.description
-            return urllib.parse.quote("%s_%d" % (desc.encode('utf-8'), obj.id), safe=safe)
+            return quote("%s_%d" % (desc, obj.id), safe=safe)
         if isinstance(obj, Experiment):
             if settings.EXP_SPACES_TO_UNDERSCORES:
                 title = obj.title.replace(' ', '_')
             else:
                 title = obj.title
-            return urllib.parse.quote("%s_%d" % (title.encode('utf-8'), obj.id), safe=safe)
+            return quote("%s_%d" % (title, obj.id), safe=safe)
         raise NotImplementedError(type(obj))
 
     if not isinstance(obj, DataFile):
@@ -55,8 +56,7 @@ def deep_storage_mapper(obj, rootdir=None):
     dataset = datafile.dataset
     exp = dataset.get_first_experiment()
     filepath = os.path.join(dataset.directory or '',
-                            urllib.parse.quote(dataset.description.encode('utf-8'),
-                                  safe=safe),
+                            quote(dataset.description, safe=safe),
                             datafile.directory or '', datafile.filename)
     if rootdir != 'datasets':
         return os.path.join(rootdir, filepath)

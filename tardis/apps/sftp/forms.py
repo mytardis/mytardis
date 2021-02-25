@@ -15,7 +15,7 @@ class KeyAddForm(forms.Form):
     public_key = forms.CharField(required=True, widget=forms.Textarea)
 
     def clean(self):
-        data = super(KeyAddForm, self).clean()
+        data = super().clean()
         key_type = data.get('key_type')
         public_key = data.get('public_key')
 
@@ -34,7 +34,8 @@ class KeyAddForm(forms.Form):
                 )
 
             data['key_type'] = k.get_name()
-            data['public_key'] = base64.b64encode(k.get_base64())
+            data['public_key'] = k.get_base64()
+
         except (TypeError, SSHException, UnicodeDecodeError) as err:
             if len(public_key) > 30:
                 body = public_key[0:30]

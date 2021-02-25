@@ -21,9 +21,10 @@ class Instrument(models.Model):
         unique_together = ['name', 'facility']
         ordering = ('name', )
 
+    # pylint: disable=W0222
     def save(self, *args, **kwargs):
         self.modified_time = timezone.now()
-        super(Instrument, self).save(*args, **kwargs)
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.name

@@ -8,7 +8,7 @@ Tests for view methods relating to uploads
 .. moduleauthor::  James Wettenhall <james.wettenhall@monash.edu>
 
 """
-from six.moves import urllib
+from urllib.parse import quote
 
 from django.conf import settings
 from django.test import TestCase
@@ -57,7 +57,7 @@ class UploadTestCase(TestCase):
         path_parts = [
             settings.FILE_STORE_PATH,
             "%s-%s" % (
-                urllib.parse.quote(self.dataset.description, safe='') or 'untitled',
+                quote(self.dataset.description, safe='') or 'untitled',
                 self.dataset.id)
             ]
         self.dataset_path = path.join(*path_parts)
@@ -114,6 +114,7 @@ class UploadTestCase(TestCase):
         post = QueryDict(
             '&'.join(['%s=%s' % (k, v) for (k, v) in data]))
         request = HttpRequest()
+        request.user = self.user
         request.POST = post
         response = upload_complete(request)
         self.assertTrue(b'<p>Number: 1</p>' in response.content)

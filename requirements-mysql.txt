@@ -1,1 +1,2 @@
-mysqlclient==1.4.2.post1
+mysqlclient==2.0.3
+django-mysql==3.11.1

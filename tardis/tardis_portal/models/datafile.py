@@ -1,16 +1,13 @@
-# pylint: disable=R0916
-# remove when file sizes are integers
 import hashlib
 import logging
+import re
 from contextlib import contextmanager
 from tempfile import NamedTemporaryFile
+from urllib.parse import quote
 
 from os import path
 import mimetypes
 
-import six
-from six.moves import urllib
-from six import string_types
 
 from django.conf import settings
 from django.core.files import File
@@ -135,19 +132,12 @@ class DataFile(models.Model):
 
     def get_default_storage_box(self):
         '''
-        try to guess appropriate box from files, dataset or experiment
+        try to guess appropriate box from dataset or use global default
         '''
-        boxes_used = StorageBox.objects.filter(file_objects__datafile=self)
-        if boxes_used:
-            return boxes_used[0]
-        dataset_boxes = self.dataset.get_all_storage_boxes_used()
-        if dataset_boxes:
-            return dataset_boxes[0]
-        experiment_boxes = StorageBox.objects.filter(
-            file_objects__datafile__dataset__experiments__in=self
-            .dataset.experiments.all())
-        if experiment_boxes:
-            return experiment_boxes[0]
+        if settings.REUSE_DATASET_STORAGE_BOX:
+            dataset_boxes = self.dataset.get_all_storage_boxes_used()
+            if dataset_boxes.count() == 1:
+                return dataset_boxes[0]
         # TODO: select one accessible to the owner of the file
         return StorageBox.get_default_storage()
 
@@ -193,6 +183,7 @@ class DataFile(models.Model):
         """
         return datafiles.aggregate(size=Sum('size'))['size'] or 0
 
+    # pylint: disable=W0222
     def save(self, *args, **kwargs):
         if self.size is not None:
             self.size = int(self.size)
@@ -209,7 +200,7 @@ class DataFile(models.Model):
                                 self.size)
         self.update_mimetype(save=False)
 
-        super(DataFile, self).save(*args, **kwargs)
+        super().save(*args, **kwargs)
 
     def get_size(self):
         return self.size
@@ -234,7 +225,6 @@ class DataFile(models.Model):
             return self.mimetype
         suffix = path.splitext(self.filename)[-1]
         try:
-            import mimetypes
             return mimetypes.types_map[suffix.lower()]
         except KeyError:
             return 'application/octet-stream'
@@ -246,7 +236,6 @@ class DataFile(models.Model):
             if self.size > render_image_size_limit:
                 return None
 
-        import re
         viewable_mimetype_patterns = ('image/.*', 'text/.*', 'application/pdf')
         if not any(re.match(p, self.get_mimetype())
                    for p in viewable_mimetype_patterns):
@@ -382,7 +371,7 @@ class DataFile(models.Model):
                                                preview_image_par.string_value))
 
             if path.exists(file_path):
-                preview_image_file = open(file_path)
+                preview_image_file = open(file_path, 'rb')
                 return preview_image_file
 
         render_image_size_limit = getattr(settings, 'RENDER_IMAGE_SIZE_LIMIT',
@@ -436,15 +425,16 @@ class DataFile(models.Model):
         return mimetype
 
     @property
-    def verified(self, all_dfos=False):
+    def verified(self):
+        """Return True if at least one DataFileObject is verified
+        """
         dfos = [dfo.verified for dfo in self.file_objects.all()]
-        if all_dfos:
-            return all(dfos)
         return any(dfos)
 
     def verify(self, reverify=False):
-        return all([obj.verify() for obj in self.file_objects.all()
-                    if reverify or not obj.verified])
+        dfos = [dfo.verify() for dfo in self.file_objects.all()
+                if reverify or not dfo.verified]
+        return all(dfos)
 
 
 @python_2_unicode_compatible
@@ -499,7 +489,7 @@ class DataFileObject(models.Model):
         """Stores values prior to changes for change detection in
         self._initial_values
         """
-        super(DataFileObject, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self._initial_values = self._current_values
 
     @property
@@ -512,18 +502,18 @@ class DataFileObject(models.Model):
     def _changed(self):
         """return True if anything has changed since last save"""
         new_values = self._current_values
-        for k, v in six.iteritems(new_values):
+        for k, v in new_values.items():
             if k not in self._initial_values:
                 return True
             if self._initial_values[k] != v:
                 return True
         return False
 
+    # pylint: disable=W0222
     def save(self, *args, **kwargs):
-        from amqp.exceptions import AMQPError
 
         reverify = kwargs.pop('reverify', False)
-        super(DataFileObject, self).save(*args, **kwargs)
+        super().save(*args, **kwargs)
         if self._changed:
             self._initial_values = self._current_values
         elif not reverify:
@@ -536,9 +526,9 @@ class DataFileObject(models.Model):
                 countdown=5,
                 priority=self.priority,
                 shadow=shadow)
-        except AMQPError:
+        except Exception as e:
             logger.exception(
-                "Failed to submit verification task for DFO ID %s", self.id)
+                "Failed to submit verification task for DFO ID %s due to %s", self.id, str(e))
 
     @property
     def storage_type(self):
@@ -556,10 +546,10 @@ class DataFileObject(models.Model):
 
         def default_identifier(dfo):
             path_parts = ["%s-%s" % (
-                urllib.parse.quote(dfo.datafile.dataset.description, safe='') or 'untitled',
+                quote(dfo.datafile.dataset.description, safe='') or 'untitled',
                 dfo.datafile.dataset.id)]
             if dfo.datafile.directory is not None:
-                path_parts += [urllib.parse.quote(dfo.datafile.directory)]
+                path_parts += [quote(dfo.datafile.directory)]
             path_parts += [dfo.datafile.filename.strip()]
             uri = path.join(*path_parts)
             return uri
@@ -739,7 +729,7 @@ class DataFileObject(models.Model):
                     for comp_type in comparisons}
         database_update = {}
         empty_value = {db_key: db_val is None or (
-            isinstance(db_val, string_types) and db_val.strip() == '')
+            isinstance(db_val, str) and db_val.strip() == '')
             for db_key, db_val in database.items()}
         same_values = {key: False for key, empty in empty_value.items()
                        if not empty}
@@ -822,7 +812,7 @@ class DataFileObject(models.Model):
             tardis_app.send_task(
                 'mytardis.apply_filters',
                 args = [
-                    self.id,
+                    self.datafile.id,
                     self.verified,
                     self.get_full_path(),
                     self.uri

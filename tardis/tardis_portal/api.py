@@ -15,9 +15,10 @@ from django.conf.urls import url
 from django.contrib.auth.models import AnonymousUser
 from django.contrib.auth.models import User
 from django.contrib.auth.models import Group
+from django.core.paginator import EmptyPage, InvalidPage, Paginator
 from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseForbidden, \
-    StreamingHttpResponse, HttpResponseNotFound
+    StreamingHttpResponse, HttpResponseNotFound, JsonResponse
 from django.shortcuts import redirect
 
 from tastypie import fields
@@ -52,7 +53,7 @@ from .auth.localdb_auth import django_user
 from .models.access_control import ObjectACL
 from .models.datafile import DataFile, DataFileObject, compute_checksums
 from .models.dataset import Dataset
-from .models.experiment import Experiment
+from .models.experiment import Experiment, ExperimentAuthor
 from .models.parameters import (
     DatafileParameter,
     DatafileParameterSet,
@@ -150,6 +151,10 @@ class ACLAuthorization(Authorization):
         if isinstance(bundle.obj, Experiment):
             experiments = Experiment.safe.all(bundle.request.user)
             return experiments.filter(id__in=obj_ids)
+        if isinstance(bundle.obj, ExperimentAuthor):
+            experiments = Experiment.safe.all(bundle.request.user)
+            return ExperimentAuthor.objects.filter(
+                experiment__in=experiments, id__in=obj_ids)
         if isinstance(bundle.obj, ExperimentParameterSet):
             experiments = Experiment.safe.all(bundle.request.user)
             return ExperimentParameterSet.objects.filter(
@@ -212,17 +217,20 @@ class ACLAuthorization(Authorization):
             return [facility for facility in object_list
                     if facility in facilities]
         if isinstance(bundle.obj, Instrument):
-            facilities = facilities_managed_by(bundle.request.user)
-            instruments = Instrument.objects.filter(facility__in=facilities)
-            return [instrument for instrument in object_list
-                    if instrument in instruments]
+            if bundle.request.user.is_authenticated:
+                return object_list
         if isinstance(bundle.obj, StorageBox):
-            return object_list
+            if bundle.request.user.is_authenticated:
+                return object_list
         if isinstance(bundle.obj, StorageBoxOption):
-            return [option for option in object_list
-                    if option.key in StorageBoxOptionResource.accessible_keys]
+            if bundle.request.user.is_authenticated:
+                return [
+                    option for option in object_list
+                    if option.key in StorageBoxOptionResource.accessible_keys
+                ]
         if isinstance(bundle.obj, StorageBoxAttribute):
-            return object_list
+            if bundle.request.user.is_authenticated:
+                return object_list
         return []
 
     def read_detail(self, object_list, bundle):  # noqa # too complex
@@ -233,6 +241,9 @@ class ACLAuthorization(Authorization):
             return True
         if isinstance(bundle.obj, Experiment):
             return has_experiment_access(bundle.request, bundle.obj.id)
+        if isinstance(bundle.obj, ExperimentAuthor):
+            return has_experiment_access(
+                bundle.request, bundle.obj.experiment.id)
         if isinstance(bundle.obj, ExperimentParameterSet):
             return has_experiment_access(
                 bundle.request, bundle.obj.experiment.id)
@@ -291,6 +302,8 @@ class ACLAuthorization(Authorization):
            bundle.request.user.is_superuser:
             return True
         if isinstance(bundle.obj, Experiment):
+            return bundle.request.user.has_perm('tardis_portal.add_experiment')
+        if isinstance(bundle.obj, ExperimentAuthor):
             return bundle.request.user.has_perm('tardis_portal.add_experiment')
         if isinstance(bundle.obj, ExperimentParameterSet):
             if not bundle.request.user.has_perm(
@@ -422,6 +435,7 @@ class ACLAuthorization(Authorization):
 
 class GroupResource(ModelResource):
     class Meta:
+        object_class = Group
         queryset = Group.objects.all()
         authentication = default_authentication
         authorization = ACLAuthorization()
@@ -436,6 +450,7 @@ class UserResource(ModelResource):
                                     null=True, full=True)
 
     class Meta:
+        object_class = User
         authentication = default_authentication
         authorization = ACLAuthorization()
         queryset = User.objects.all()
@@ -509,6 +524,7 @@ class FacilityResource(MyTardisModelResource):
                                       null=True, full=True)
 
     class Meta(MyTardisModelResource.Meta):
+        object_class = Facility
         queryset = Facility.objects.all()
         filtering = {
             'id': ('exact', ),
@@ -527,6 +543,7 @@ class InstrumentResource(MyTardisModelResource):
                                  null=True, full=True)
 
     class Meta(MyTardisModelResource.Meta):
+        object_class = Instrument
         queryset = Instrument.objects.all()
         filtering = {
             'id': ('exact', ),
@@ -555,6 +572,7 @@ class ExperimentResource(MyTardisModelResource):
         full=True, null=True)
 
     class Meta(MyTardisModelResource.Meta):
+        object_class = Experiment
         queryset = Experiment.objects.all()
         filtering = {
             'id': ('exact', ),
@@ -584,6 +602,12 @@ class ExperimentResource(MyTardisModelResource):
             }
         owners = exp.get_owners()
         bundle.data['owner_ids'] = [o.id for o in owners]
+        dataset_count = exp.datasets.all().count()
+        bundle.data['dataset_count'] = dataset_count
+        datafile_count = exp.get_datafiles().count()
+        bundle.data['datafile_count'] = datafile_count
+        experiment_size = exp.get_size()
+        bundle.data['experiment_size'] = experiment_size
         return bundle
 
     def hydrate_m2m(self, bundle):
@@ -606,7 +630,7 @@ class ExperimentResource(MyTardisModelResource):
                             aclOwnershipType=ObjectACL.OWNER_OWNED)
             acl.save()
 
-        return super(ExperimentResource, self).hydrate_m2m(bundle)
+        return super().hydrate_m2m(bundle)
 
     def obj_create(self, bundle, **kwargs):
         '''experiments need at least one ACL to be available through the
@@ -616,8 +640,35 @@ class ExperimentResource(MyTardisModelResource):
         '''
         user = bundle.request.user
         bundle.data['created_by'] = user
-        bundle = super(ExperimentResource, self).obj_create(bundle, **kwargs)
+        bundle = super().obj_create(bundle, **kwargs)
         return bundle
+
+
+class ExperimentAuthorResource(MyTardisModelResource):
+    '''API for ExperimentAuthors
+    '''
+    experiment = fields.ForeignKey(
+        ExperimentResource, 'experiment', full=True, null=True)
+
+    class Meta(MyTardisModelResource.Meta):
+        object_class = ExperimentAuthor
+        queryset = ExperimentAuthor.objects.all()
+        filtering = {
+            'id': ('exact', ),
+            'experiment': ALL_WITH_RELATIONS,
+            'author': ('exact', 'iexact'),
+            'institution': ('exact', 'iexact'),
+            'email': ('exact', 'iexact'),
+            'order': ('exact',),
+            'url': ('exact', 'iexact'),
+        }
+        ordering = [
+            'id',
+            'author',
+            'email',
+            'order'
+        ]
+        always_return_data = True
 
 
 class DatasetResource(MyTardisModelResource):
@@ -635,6 +686,7 @@ class DatasetResource(MyTardisModelResource):
         full=True)
 
     class Meta(MyTardisModelResource.Meta):
+        object_class = Dataset
         queryset = Dataset.objects.all()
         filtering = {
             'id': ('exact', ),
@@ -649,31 +701,222 @@ class DatasetResource(MyTardisModelResource):
         ]
         always_return_data = True
 
+    def dehydrate(self, bundle):
+        dataset = bundle.obj
+        size = dataset.get_size()
+        bundle.data['dataset_size'] = size
+        dataset_experiment_count = dataset.experiments.count()
+        bundle.data['dataset_experiment_count'] = dataset_experiment_count
+        dataset_datafile_count = dataset.datafile_set.count()
+        bundle.data['dataset_datafile_count'] = dataset_datafile_count
+        return bundle
+
     def prepend_urls(self):
         return [
             url(r'^(?P<resource_name>%s)/(?P<pk>\w[\w/-]*)/files/'
                 r'(?:(?P<file_path>.+))?$' % self._meta.resource_name,
                 self.wrap_view('get_datafiles'),
                 name='api_get_datafiles_for_dataset'),
+
+            url(r'^(?P<resource_name>%s)/(?P<pk>\w[\w/-]*)/root-dir-nodes%s$' %
+                (self._meta.resource_name, trailing_slash()),
+                self.wrap_view('get_root_dir_nodes'),
+                name='api_get_root_dir_nodes'),
+            url(r'^(?P<resource_name>%s)/(?P<pk>\w[\w/-]*)/child-dir-nodes%s$' %
+                (self._meta.resource_name, trailing_slash()),
+                self.wrap_view('get_child_dir_nodes'),
+                name='api_get_child_dir_nodes'),
+            url(r'^(?P<resource_name>%s)/(?P<pk>\w[\w/-]*)/child-dir-files%s$' %
+                (self._meta.resource_name, trailing_slash()),
+                self.wrap_view('get_child_dir_files'),
+                name='api_get_child_dir_files'),
         ]
 
     def get_datafiles(self, request, **kwargs):
-        file_path = kwargs.get('file_path', None)
-        dataset_id = kwargs['pk']
+        self.method_check(request, allowed=["get"])
+        self.is_authenticated(request)
 
-        datafiles = DataFile.objects.filter(dataset__id=dataset_id)
-        auth_bundle = self.build_bundle(request=request)
-        auth_bundle.obj = DataFile()
-        self.authorized_read_list(
-            datafiles, auth_bundle
-            )
-        del kwargs['pk']
-        del kwargs['file_path']
-        kwargs['dataset__id'] = dataset_id
+        dataset_id = kwargs["pk"]
+        del kwargs["pk"]
+
+        file_path = kwargs.get("file_path", None)
+        del kwargs["file_path"]
+
+        if not has_dataset_access(request=request, dataset_id=dataset_id):
+            return HttpResponseForbidden()
+
+        kwargs["dataset__id"] = dataset_id
+
         if file_path is not None:
-            kwargs['directory__startswith'] = file_path
-        df_res = DataFileResource()
-        return df_res.dispatch('list', request, **kwargs)
+            kwargs["directory__startswith"] = file_path
+
+        return DataFileResource().dispatch("list", request, **kwargs)
+
+    def hydrate_m2m(self, bundle):
+        '''
+        Create experiment-dataset associations first, because they affect
+        authorization for adding other related resources, e.g. metadata
+        '''
+        if getattr(bundle.obj, 'id', False):
+            for exp_uri in bundle.data.get('experiments', []):
+                try:
+                    exp = ExperimentResource.get_via_uri(
+                        ExperimentResource(), exp_uri, bundle.request)
+                    bundle.obj.experiments.add(exp)
+                except NotFound:
+                    pass
+        return super().hydrate_m2m(bundle)
+
+    def get_root_dir_nodes(self, request, **kwargs):
+        '''Return JSON-serialized list of filenames/folders in the dataset's root directory
+        '''
+        self.method_check(request, allowed=['get'])
+        self.is_authenticated(request)
+
+        dataset_id = kwargs['pk']
+        dataset = Dataset.objects.get(id=dataset_id)
+        if not has_dataset_access(
+                request=request, dataset_id=dataset_id):
+            return HttpResponseForbidden()
+
+        # get dirs at root level
+        dir_tuples = dataset.get_dir_tuples("")
+        # get files at root level
+        dfs = (DataFile.objects.filter(dataset=dataset, directory='') |
+               DataFile.objects.filter(dataset=dataset, directory__isnull=True)).distinct()
+
+        pgresults = 1000
+
+        paginator = Paginator(dfs, pgresults)
+
+        try:
+            page_num = int(request.GET.get('page', '0'))
+        except ValueError:
+            page_num = 0
+
+        # If page request (9999) is out of range, deliver last page of results.
+
+        try:
+            dfs = paginator.page(page_num + 1)
+        except (EmptyPage, InvalidPage):
+            dfs = paginator.page(paginator.num_pages)
+        child_list = []
+        # append directories list
+        if dir_tuples and page_num == 0:
+            for dir_tuple in dir_tuples:
+                child_dict = {
+                    'name': dir_tuple[0],
+                    'path': dir_tuple[1],
+                    'children': []
+                }
+                child_list.append(child_dict)
+                # append files to list
+        if dfs:
+            for df in dfs:
+                children = {}
+                children['name'] = df.filename
+                children['verified'] = df.verified
+                children['id'] = df.id
+                child_list.append(children)
+        if paginator.num_pages - 1 > page_num:
+            # append a marker element
+            children = {}
+            children['next_page'] = True
+            children['next_page_num'] = page_num + 1
+            children['display_text'] = "Displaying {current} of {total} "\
+                .format(current=(dfs.number * pgresults), total=paginator.count)
+            child_list.append(children)
+        if paginator.num_pages - 1 == page_num:
+            # append a marker element
+            children = {}
+            children['next_page'] = False
+            child_list.append(children)
+
+        return JsonResponse(child_list, status=200, safe=False)
+
+    def get_child_dir_nodes(self, request, **kwargs):
+        '''Return JSON-serialized list of filenames/folders within a child subdirectory
+        '''
+        self.method_check(request, allowed=['get'])
+        self.is_authenticated(request)
+
+        dataset_id = kwargs['pk']
+        if not has_dataset_access(
+                request=request, dataset_id=dataset_id):
+            return HttpResponseForbidden()
+
+        base_dir = request.GET.get('dir_path', None)
+        dataset = Dataset.objects.get(id=dataset_id)
+        if not base_dir:
+            return HttpResponse('Please specify base directory', status=400)
+
+        # Previously this method checked the tree nodes data passed
+        # in to determine whether children has already been loaded,
+        # but now that logic will be moved to the front-end component.
+
+        # list dir under base_dir
+        child_dir_tuples = dataset.get_dir_tuples(base_dir)
+        # list files under base_dir
+        dfs = DataFile.objects.filter(dataset=dataset, directory=base_dir)
+        # walk the directory tree and append files and dirs
+        # if there are directories append this to data
+        child_list = []
+        if child_dir_tuples:
+            child_list = dataset.get_dir_nodes(child_dir_tuples)
+
+        # if there are files append this
+        if dfs:
+            for df in dfs:
+                child = {'name': df.filename, 'id': df.id, 'verified': df.verified}
+                child_list.append(child)
+
+        return JsonResponse(child_list, status=200, safe=False)
+
+    def get_child_dir_files(self, request, **kwargs):
+        """
+        Return a list of datafile Ids within a child subdirectory
+        :param request: a HTTP Request instance
+        :type request: :class:`django.http.HttpRequest`
+        :param kwargs:
+        :return: a list of datafile IDs
+        :rtype: JsonResponse: :class: `django.http.JsonResponse`
+        """
+        self.method_check(request, allowed=['get'])
+        self.is_authenticated(request)
+        dataset_id = kwargs['pk']
+        if not has_dataset_access(
+                request=request, dataset_id=dataset_id):
+            return HttpResponseForbidden()
+
+        dir_path = request.GET.get('dir_path', None)
+        if not dir_path:
+            return HttpResponse('Please specify folder path')
+
+        df_list = DataFile.objects.filter(dataset__id=dataset_id, directory=dir_path) | \
+            DataFile.objects.filter(dataset__id=dataset_id, directory__startswith=dir_path+"/")
+        ids = [df.id for df in df_list]
+        return JsonResponse(ids, status=200, safe=False)
+
+    def _populate_children(self, sub_child_dirs, dir_node, dataset):
+        '''Populate the children list in a directory node
+
+        Example dir_node: {'name': u'child_1', 'children': []}
+        '''
+        for dir in sub_child_dirs:
+            part1, part2 = dir
+            # get files for this dir
+            dfs = DataFile.objects.filter(dataset=dataset, directory=part2)
+            filenames = [df.filename for df in dfs]
+            if part1 == '..':
+                for file_name in filenames:
+                    child = {'name': file_name}
+                    dir_node['children'].append(child)
+            else:
+                children = []
+                for file_name in filenames:
+                    child = {'name': file_name}
+                    children.append(child)
+                dir_node['children'].append({'name': part2.rpartition('/')[2], 'children': children})
 
 
 class DataFileResource(MyTardisModelResource):
@@ -691,6 +934,7 @@ class DataFileResource(MyTardisModelResource):
     temp_url = None
 
     class Meta(MyTardisModelResource.Meta):
+        object_class = DataFile
         queryset = DataFile.objects.all()
         filtering = {
             'directory': ('exact', 'startswith'),
@@ -733,6 +977,18 @@ class DataFileResource(MyTardisModelResource):
         if storage_class_name in download_uri_templates:
             template = URITemplate(download_uri_templates[storage_class_name])
             return redirect(template.expand(dfo_id=preferred_dfo.id))
+
+        # Log file download event
+        if getattr(settings, "ENABLE_EVENTLOG", False):
+            from tardis.apps.eventlog.utils import log
+            log(
+                action="DOWNLOAD_DATAFILE",
+                extra={
+                    "id": kwargs["pk"],
+                    "type": "api"
+                },
+                request=request
+            )
 
         file_object = file_record.get_file()
         wrapper = FileWrapper(file_object)
@@ -801,6 +1057,7 @@ class DataFileResource(MyTardisModelResource):
                 bundle.data['replicas'] = [{'file_object': newfile}]
 
             del(bundle.data['attached_file'])
+
         return bundle
 
     def obj_create(self, bundle, **kwargs):
@@ -810,11 +1067,12 @@ class DataFileResource(MyTardisModelResource):
         If a duplicate key error occurs, responds with HTTP Error 409: CONFLICT
         '''
         try:
-            retval = super(DataFileResource, self).obj_create(bundle, **kwargs)
+            retval = super().obj_create(bundle, **kwargs)
         except IntegrityError as err:
             if "duplicate key" in str(err):
                 raise ImmediateHttpResponse(HttpResponse(status=409))
             raise
+
         if 'replicas' not in bundle.data or not bundle.data['replicas']:
             # no replica specified: return upload path and create dfo for
             # new path
@@ -827,11 +1085,23 @@ class DataFileResource(MyTardisModelResource):
             dfo.create_set_uri()
             dfo.save()
             self.temp_url = dfo.get_full_path()
+        else:
+            # Log file upload event
+            if getattr(settings, "ENABLE_EVENTLOG", False):
+                from tardis.apps.eventlog.utils import log
+                log(
+                    action="UPLOAD_DATAFILE",
+                    extra={
+                        "id": bundle.obj.id,
+                        "type": "post"
+                    },
+                    request=bundle.request
+                )
+
         return retval
 
     def post_list(self, request, **kwargs):
-        response = super(DataFileResource, self).post_list(request,
-                                                           **kwargs)
+        response = super().post_list(request, **kwargs)
         if self.temp_url is not None:
             response.content = self.temp_url
             self.temp_url = None
@@ -860,12 +1130,10 @@ class DataFileResource(MyTardisModelResource):
             return request.POST
         if format.startswith('multipart'):
             jsondata = request.POST['json_data']
-            data = super(DataFileResource, self).deserialize(
-                request, jsondata, format='application/json')
+            data = json.loads(jsondata)
             data.update(request.FILES)
             return data
-        return super(DataFileResource, self).deserialize(request,
-                                                         data, format)
+        return super().deserialize(request, data, format)
 
     def put_detail(self, request, **kwargs):
         '''
@@ -875,12 +1143,13 @@ class DataFileResource(MyTardisModelResource):
                 not hasattr(request, '_body'):
             request._body = ''
 
-        return super(DataFileResource, self).put_detail(request, **kwargs)
+        return super().put_detail(request, **kwargs)
 
 
 class SchemaResource(MyTardisModelResource):
 
     class Meta(MyTardisModelResource.Meta):
+        object_class = Schema
         queryset = Schema.objects.all()
         filtering = {
             'id': ('exact', ),
@@ -895,6 +1164,7 @@ class ParameterNameResource(MyTardisModelResource):
     schema = fields.ForeignKey(SchemaResource, 'schema')
 
     class Meta(MyTardisModelResource.Meta):
+        object_class = ParameterName
         queryset = ParameterName.objects.all()
         filtering = {
             'schema': ALL_WITH_RELATIONS,
@@ -950,6 +1220,7 @@ class DatafileParameterSetResource(ParameterSetResource):
         related_name='parameterset', full=True, null=True)
 
     class Meta(ParameterSetResource.Meta):
+        object_class = DatafileParameterSet
         queryset = DatafileParameterSet.objects.all()
 
 
@@ -958,6 +1229,7 @@ class DatafileParameterResource(ParameterResource):
                                      'parameterset')
 
     class Meta(ParameterResource.Meta):
+        object_class = DatafileParameter
         queryset = DatafileParameter.objects.all()
 
 
@@ -970,6 +1242,7 @@ class ReplicaResource(MyTardisModelResource):
     datafile = fields.ForeignKey(DataFileResource, 'datafile')
 
     class Meta(MyTardisModelResource.Meta):
+        object_class = DataFileObject
         queryset = DataFileObject.objects.all()
         filtering = {
             'verified': ('exact',),
@@ -1018,6 +1291,7 @@ class ObjectACLResource(MyTardisModelResource):
     }, 'content_object')
 
     class Meta:
+        object_class = ObjectACL
         authentication = default_authentication
         authorization = ACLAuthorization()
         queryset = ObjectACL.objects.all()
@@ -1049,6 +1323,7 @@ class ExperimentParameterSetResource(ParameterSetResource):
         related_name='parameterset', full=True, null=True)
 
     class Meta(ParameterSetResource.Meta):
+        object_class = ExperimentParameterSet
         queryset = ExperimentParameterSet.objects.all()
 
 
@@ -1057,6 +1332,7 @@ class ExperimentParameterResource(ParameterResource):
                                      'parameterset')
 
     class Meta(ParameterResource.Meta):
+        object_class = ExperimentParameter
         queryset = ExperimentParameter.objects.all()
 
 
@@ -1068,6 +1344,7 @@ class DatasetParameterSetResource(ParameterSetResource):
         related_name='parameterset', full=True, null=True)
 
     class Meta(ParameterSetResource.Meta):
+        object_class = DatasetParameterSet
         queryset = DatasetParameterSet.objects.all()
 
 
@@ -1076,6 +1353,7 @@ class DatasetParameterResource(ParameterResource):
                                      'parameterset')
 
     class Meta(ParameterResource.Meta):
+        object_class = DatasetParameter
         queryset = DatasetParameter.objects.all()
 
 
@@ -1094,6 +1372,7 @@ class StorageBoxResource(MyTardisModelResource):
         full=True, null=True)
 
     class Meta(MyTardisModelResource.Meta):
+        object_class = StorageBox
         queryset = StorageBox.objects.all()
         ordering = [
             'id'
@@ -1109,6 +1388,7 @@ class StorageBoxOptionResource(MyTardisModelResource):
         full=False)
 
     class Meta(MyTardisModelResource.Meta):
+        object_class = StorageBoxOption
         queryset = StorageBoxOption.objects.all()
         ordering = [
             'id'
@@ -1123,6 +1403,7 @@ class StorageBoxAttributeResource(MyTardisModelResource):
         full=False)
 
     class Meta(MyTardisModelResource.Meta):
+        object_class = StorageBoxAttribute
         queryset = StorageBoxAttribute.objects.all()
         ordering = [
             'id'

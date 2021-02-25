@@ -1,0 +1,679 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`render dataset tiles on page load should match snapshot 1`] = `
+<div
+  id="root"
+>
+  <div
+    id="datasets-pane"
+  >
+    <h3
+      style="display: inline;"
+    >
+      2
+       
+      Datasets
+    </h3>
+    <a
+      class="add-dataset btn btn-primary btn-sm pull-right"
+      href="/experiment/1234/add-dataset"
+      id="add-dataset"
+    >
+      <i
+        class="fa fa-plus"
+      />
+      Add New
+    </a>
+    <br />
+    <form
+      action="/download/datafiles/"
+      method="POST"
+    >
+      <input
+        name="csrfmiddlewaretoken"
+        type="hidden"
+        value=""
+      />
+      <input
+        name="expid"
+        type="hidden"
+        value="82"
+      />
+      <input
+        name="comptype"
+        type="hidden"
+        value="tar"
+      />
+      <input
+        name="organization"
+        type="hidden"
+        value="deep-storage"
+      />
+      <button
+        class="btn btn-outline-secondary btn-sm download-selected"
+        type="submit"
+        value="submit"
+      >
+        <i
+          class="fa fa-download"
+        />
+        Download Selected
+      </button>
+    </form>
+    <p>
+      <div
+        class="row"
+      >
+        <div
+          class="form-horizontal col-md-8"
+        >
+          <div
+            class="form-group has-search"
+          >
+            <input
+              class="form-control"
+              placeholder="Just start typing to filter datasets based on description"
+              type="text"
+            />
+          </div>
+        </div>
+        <div
+          class="form-horizontal col-md-4"
+        >
+          <div
+            class="btn-group"
+          >
+            <button
+              class="btn btn-outline-secondary float-right"
+              type="button"
+            >
+              Sort by
+            </button>
+            <button
+              aria-expanded="false"
+              aria-haspopup="true"
+              class="btn btn-outline-secondary dropdown-toggle dropdown-toggle-split"
+              data-toggle="dropdown"
+              type="button"
+            >
+              <span
+                class="sr-only"
+              >
+                Toggle Dropdown
+              </span>
+            </button>
+            <div
+              class="dropdown-menu"
+              style="min-width: max-content; transform: translate3d(0px 38px 0px);"
+            >
+              <div
+                class="row"
+              >
+                <div
+                  class="col col-md-8"
+                >
+                  <span
+                    class="dropdown-item"
+                    href="#"
+                  >
+                    Description
+                  </span>
+                </div>
+                <div
+                  class="col col-md-4"
+                >
+                  <button
+                    class="fa fa-sort-alpha-asc mr-2 mt-2"
+                    style="background-color: transparent; cursor: pointer; text-decoration: underline; display: inline; margin: 0px; padding: 0px; color: blue;"
+                    type="button"
+                  />
+                  <button
+                    class="fa fa-sort-alpha-desc mt-2"
+                    style="background-color: transparent; cursor: pointer; text-decoration: underline; display: inline; margin: 0px; padding: 0px; color: blue;"
+                    type="button"
+                  />
+                </div>
+              </div>
+              <div
+                class="row"
+              >
+                <div
+                  class="col col-md-8"
+                >
+                  <span
+                    class="dropdown-item"
+                    href="#"
+                  >
+                    DataFile count
+                  </span>
+                </div>
+                <div
+                  class="col col-md-4"
+                >
+                  <button
+                    class="fa fa-sort-numeric-asc mr-2 mt-2"
+                    style="background-color: transparent; cursor: pointer; text-decoration: underline; display: inline; margin: 0px; padding: 0px; color: blue;"
+                    type="button"
+                  />
+                  <button
+                    class="fa fa-sort-numeric-desc mt-2"
+                    style="background-color: transparent; cursor: pointer; text-decoration: underline; display: inline; margin: 0px; padding: 0px; color: blue;"
+                    type="button"
+                  />
+                </div>
+              </div>
+              <div
+                class="row"
+              >
+                <div
+                  class="col col-md-8"
+                >
+                  <span
+                    class="dropdown-item"
+                    href="#"
+                  >
+                    Dataset size
+                  </span>
+                </div>
+                <div
+                  class="col col-md-4"
+                >
+                  <button
+                    class="fa fa-sort-numeric-asc mr-2 mt-2"
+                    style="background-color: transparent; cursor: pointer; text-decoration: underline; display: inline; margin: 0px; padding: 0px; color: blue;"
+                    type="button"
+                  />
+                  <button
+                    class="fa fa-sort-numeric-desc mt-2"
+                    style="background-color: transparent; cursor: pointer; text-decoration: underline; display: inline; margin: 0px; padding: 0px; color: blue;"
+                    type="button"
+                  />
+                </div>
+              </div>
+              <div
+                class="row"
+              >
+                <div
+                  class="col col-md-8"
+                >
+                  <span
+                    class="dropdown-item"
+                    href="#"
+                  >
+                    Dataset modified time
+                  </span>
+                </div>
+                <div
+                  class="col col-md-4"
+                >
+                  <button
+                    class="fa fa-sort-numeric-asc mr-2 mt-2"
+                    style="background-color: transparent; cursor: pointer; text-decoration: underline; display: inline; margin: 0px; padding: 0px; color: blue;"
+                    type="button"
+                  />
+                  <button
+                    class="fa fa-sort-numeric-desc mt-2"
+                    style="background-color: transparent; cursor: pointer; text-decoration: underline; display: inline; margin: 0px; padding: 0px; color: blue;"
+                    type="button"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </p>
+    <div
+      data-rbd-droppable-context-id="0"
+      data-rbd-droppable-id="main-list"
+    >
+      <ul
+        class="datasets thumbnails"
+      >
+        <div
+          aria-describedby="rbd-hidden-text-0-hidden-text-0"
+          data-rbd-drag-handle-context-id="0"
+          data-rbd-drag-handle-draggable-id="main-list_26"
+          data-rbd-draggable-context-id="0"
+          data-rbd-draggable-id="main-list_26"
+          draggable="false"
+          role="button"
+          tabindex="0"
+        >
+          <li
+            class="dataset card mb-2"
+          >
+            <div
+              class="card-body"
+            >
+              <div
+                class="float-left"
+                style="margin-right: 10px;"
+              >
+                <div
+                  style="display: flex; text-align: center; font-size: 32px;"
+                >
+                  <i
+                    class="fa fa-folder-open o-6"
+                  />
+                </div>
+                <br />
+                <label
+                  class="label label-info"
+                  for="dataset-checkbox-26"
+                  title="Mark dataset for download"
+                >
+                  <i
+                    class="fa fa-download"
+                  />
+                  <input
+                    class="dataset_checkbox ml-2"
+                    id="dataset-checkbox-26"
+                    name="dataset"
+                    style="display: inline;"
+                    type="checkbox"
+                    value="26"
+                  />
+                </label>
+              </div>
+              <div
+                class="float-left"
+                style="margin-right: 10px;"
+              />
+              <div
+                class="float-right"
+                style="text-align: right;"
+              >
+                <p>
+                  <span
+                    class="badge badge-info"
+                    title="1 file"
+                  >
+                    <i
+                      class="fa fa-file"
+                    />
+                     
+                    1
+                  </span>
+                </p>
+                <p>
+                  <span
+                    class="badge badge-info"
+                    title="Dataset size is"
+                  >
+                    160.64 KB
+                  </span>
+                </p>
+              </div>
+              <div
+                class="float-left ds-thumb"
+                style="margin-right: 10px;"
+              >
+                <canvas
+                  style="width: 100px;"
+                />
+              </div>
+              <div
+                class="float-left"
+              >
+                <p
+                  class="mb-2"
+                >
+                  <a
+                    class="dataset-link"
+                    href="/dataset/26"
+                  >
+                    My demo dataset 25062019
+                  </a>
+                </p>
+                
+                <div
+                  style="clear: both;"
+                />
+              </div>
+            </div>
+          </li>
+        </div>
+        <div
+          aria-describedby="rbd-hidden-text-0-hidden-text-0"
+          data-rbd-drag-handle-context-id="0"
+          data-rbd-drag-handle-draggable-id="main-list_30"
+          data-rbd-draggable-context-id="0"
+          data-rbd-draggable-id="main-list_30"
+          draggable="false"
+          role="button"
+          tabindex="0"
+        >
+          <li
+            class="dataset card mb-2"
+          >
+            <div
+              class="card-body"
+            >
+              <div
+                class="float-left"
+                style="margin-right: 10px;"
+              >
+                <div
+                  style="display: flex; text-align: center; font-size: 32px;"
+                >
+                  <i
+                    class="fa fa-folder-open o-6"
+                  />
+                </div>
+                <br />
+                <label
+                  class="label label-info"
+                  for="dataset-checkbox-30"
+                  title="Mark dataset for download"
+                >
+                  <i
+                    class="fa fa-download"
+                  />
+                  <input
+                    class="dataset_checkbox ml-2"
+                    id="dataset-checkbox-30"
+                    name="dataset"
+                    style="display: inline;"
+                    type="checkbox"
+                    value="30"
+                  />
+                </label>
+              </div>
+              <div
+                class="float-left"
+                style="margin-right: 10px;"
+              />
+              <div
+                class="float-right"
+                style="text-align: right;"
+              >
+                <p>
+                  <span
+                    class="badge badge-info"
+                    title="1 file"
+                  >
+                    <i
+                      class="fa fa-file"
+                    />
+                     
+                    1
+                  </span>
+                </p>
+                <p>
+                  <span
+                    class="badge badge-info"
+                    title="Dataset size is"
+                  >
+                    342.35 KB
+                  </span>
+                </p>
+              </div>
+              <div
+                class="float-left ds-thumb"
+                style="margin-right: 10px;"
+              >
+                <canvas
+                  style="width: 100px;"
+                />
+              </div>
+              <div
+                class="float-left"
+              >
+                <p
+                  class="mb-2"
+                >
+                  <a
+                    class="dataset-link"
+                    href="/dataset/30"
+                  >
+                    New Dataset
+                  </a>
+                </p>
+                
+                <div
+                  style="clear: both;"
+                />
+              </div>
+            </div>
+          </li>
+        </div>
+      </ul>
+    </div>
+  </div>
+  <div
+    id="experiment-tab-transfer-datasets"
+  >
+    <div
+      data-rbd-droppable-context-id="0"
+      data-rbd-droppable-id="share-list"
+    >
+      <form
+        class="form-horizontal"
+        id="other-experiment-selection"
+      >
+        <fieldset>
+          <div
+            class="form-group"
+          >
+            <label
+              class="col-md-2 col-form-label"
+              for="input01"
+            >
+              Experiment
+            </label>
+            <div
+              class="col-md-10"
+            >
+              <select
+                class="form-control"
+                name="experiment_id"
+              >
+                <option
+                  value="34"
+                >
+                  My Test Exp
+                </option>
+                <option
+                  value="38"
+                >
+                  My Test Exp 2
+                </option>
+              </select>
+            </div>
+          </div>
+        </fieldset>
+      </form>
+      <p
+        class="help-text"
+      >
+        <strong>
+          Instructons:
+        </strong>
+         
+        Using the above list, select an experiment to copy from, then drag datasets to the right to associate them with the current experiment.
+      </p>
+      <ul
+        class="datasets thumbnails"
+      >
+        <div
+          aria-describedby="rbd-hidden-text-0-hidden-text-0"
+          data-rbd-drag-handle-context-id="0"
+          data-rbd-drag-handle-draggable-id="share-list_26"
+          data-rbd-draggable-context-id="0"
+          data-rbd-draggable-id="share-list_26"
+          draggable="false"
+          role="button"
+          tabindex="0"
+        >
+          <li
+            class="dataset card mb-2"
+          >
+            <div
+              class="card-body"
+            >
+              <div
+                class="float-left"
+                style="margin-right: 10px;"
+              >
+                <div
+                  style="display: flex; text-align: center; font-size: 32px;"
+                >
+                  <i
+                    class="fa fa-folder-open o-6"
+                  />
+                </div>
+                <br />
+                
+              </div>
+              <div
+                class="float-left"
+                style="margin-right: 10px;"
+              />
+              <div
+                class="float-right"
+                style="text-align: right;"
+              >
+                <p>
+                  <span
+                    class="badge badge-info"
+                    title="1 file"
+                  >
+                    <i
+                      class="fa fa-file"
+                    />
+                     
+                    1
+                  </span>
+                </p>
+                <p>
+                  <span
+                    class="badge badge-info"
+                    title="Dataset size is"
+                  >
+                    160.64 KB
+                  </span>
+                </p>
+              </div>
+              <div
+                class="float-left ds-thumb"
+                style="margin-right: 10px;"
+              >
+                <canvas
+                  style="width: 100px;"
+                />
+              </div>
+              <div
+                class="float-left"
+              >
+                <p
+                  class="mb-2"
+                >
+                  <a
+                    class="dataset-link"
+                    href="/dataset/26"
+                  >
+                    My demo dataset 25062019
+                  </a>
+                </p>
+                
+                <div
+                  style="clear: both;"
+                />
+              </div>
+            </div>
+          </li>
+        </div>
+        <div
+          aria-describedby="rbd-hidden-text-0-hidden-text-0"
+          data-rbd-drag-handle-context-id="0"
+          data-rbd-drag-handle-draggable-id="share-list_30"
+          data-rbd-draggable-context-id="0"
+          data-rbd-draggable-id="share-list_30"
+          draggable="false"
+          role="button"
+          tabindex="0"
+        >
+          <li
+            class="dataset card mb-2"
+          >
+            <div
+              class="card-body"
+            >
+              <div
+                class="float-left"
+                style="margin-right: 10px;"
+              >
+                <div
+                  style="display: flex; text-align: center; font-size: 32px;"
+                >
+                  <i
+                    class="fa fa-folder-open o-6"
+                  />
+                </div>
+                <br />
+                
+              </div>
+              <div
+                class="float-left"
+                style="margin-right: 10px;"
+              />
+              <div
+                class="float-right"
+                style="text-align: right;"
+              >
+                <p>
+                  <span
+                    class="badge badge-info"
+                    title="1 file"
+                  >
+                    <i
+                      class="fa fa-file"
+                    />
+                     
+                    1
+                  </span>
+                </p>
+                <p>
+                  <span
+                    class="badge badge-info"
+                    title="Dataset size is"
+                  >
+                    342.35 KB
+                  </span>
+                </p>
+              </div>
+              <div
+                class="float-left ds-thumb"
+                style="margin-right: 10px;"
+              >
+                <canvas
+                  style="width: 100px;"
+                />
+              </div>
+              <div
+                class="float-left"
+              >
+                <p
+                  class="mb-2"
+                >
+                  <a
+                    class="dataset-link"
+                    href="/dataset/30"
+                  >
+                    New Dataset
+                  </a>
+                </p>
+                
+                <div
+                  style="clear: both;"
+                />
+              </div>
+            </div>
+          </li>
+        </div>
+      </ul>
+    </div>
+  </div>
+</div>
+`;

@@ -1,6 +1,5 @@
 var loadingHTML = "<img src=\"/static/images/ajax-loader.gif\"/><br />";
 
-var prevFileSelect = null;
 
 // file selectors
 jQuery(document).on("click", ".dataset_selector_all", function() {
@@ -129,18 +128,23 @@ $(document).on("click", "#datafiles-pane .datafile-info-toggle", function(evt) {
 
     $datafileMetadataContainer.toggle();
 
-    if(prevFileSelect)
-    {
-        prevFileSelect.removeClass("file-select");
-    }
-
     var fileSelect = $this.parents("tr.datafile");
     fileSelect.addClass("file-select");
-    prevFileSelect = fileSelect;
 
     var href = $this.attr("href");
     $datafileMetadataContainer.html(loadingHTML);
-    $datafileMetadataContainer.load(href);
+    $datafileMetadataContainer.load(href, function() {
+        $(".df-view-button").on("click", function(e) {
+            e.preventDefault();
+            $("#df-view-h1").text(this.innerText);
+            $("#datafile-app").load(this.href);
+            $(this).siblings().each(function() {
+                $(this).removeClass("active");
+            });
+            $(this).addClass("active");
+        });
+        $("#datafile-app").load($("#df-view-0-url").val());
+    });
     $datafileMetadataContainer.show();
 
 });
@@ -191,7 +195,7 @@ $(document).on("click", "#request-fast-access", function(evt) {
     });
 });
 
-$(document).on("click", ".pagelink", function(event) {
+$(document).on("click", ".page-link", function(event) {
     var href = $(this).attr("href");
     $(this).html(loadingHTML);
     $("#datafiles-pane").load(href, function() {
@@ -211,7 +215,6 @@ $(document).on("click", ".pagelink", function(event) {
     return false;
 });
 
-// eslint-disable-next-line no-unused-vars
 function filenameSearchHandler(e) {
     // Only care about "Enter" key
     if (e.keyCode !== 13) {
@@ -232,6 +235,7 @@ function filenameSearchHandler(e) {
     // Show loading indicator
     $("#datafiles-pane").html(loadingHTML);
 }
+window.filenameSearchHandler = filenameSearchHandler;
 
 $(document).on("click", "input[name$='show_search']", function() {
     var showSearch = $(this).val();

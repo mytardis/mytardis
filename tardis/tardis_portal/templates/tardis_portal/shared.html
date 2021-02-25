@@ -8,13 +8,13 @@
 {% load capture %}
 
 {% block content %}
-<div id="content">
+<div id="content" class="container-fluid">
   <div class="row">
-    <div class="col-md-9">
-      <h2 class="visible-xs">Experiments</h2>
-      <div class="pull-right">
+    <div class="col-md-12">
+      <h3 class="d-block d-sm-none">Experiments</h3>
+      <div class="pull-right pb-1">
         {% if perms.tardis_portal.add_experiment %}
-        <a class="btn btn-warning"
+        <a class="btn btn-primary"
            href="{% url 'tardis.tardis_portal.views.create_experiment' %}">
           <i class="fa fa-plus"></i>
           Create
@@ -22,13 +22,13 @@
         {% endif %}
       </div>  <!-- class="pull-right" -->
       <div class="pull-left">
-        <h2 class="hidden-xm" style="text-align: center">Experiments</h2>
+        <h3 class="d-none d-sm-block" style="text-align: center">Experiments</h3>
       </div>
-    </div>  <!-- class="col-md-9" -->
+    </div>  <!-- class="col-md-12" -->
   </div>  <!-- class="row" -->
 
   <div class="row">
-    <div class="col-md-9">
+    <div class="col-md-12">
       {% if not shared_experiments %}
       <p class="alert alert-info">
         You do not have access to any shared experiments.
@@ -37,21 +37,21 @@
 
       {% if shared_experiments %}
       <div class="pull-left">
-        <h3><strong>{{ shared_experiments.count }}</strong>
-        Shared Experiment{{ shared_experiments.count|pluralize }}</h3>
+        <h4><strong>{{ shared_experiments.count }}</strong>
+        Shared Experiment{{ shared_experiments.count|pluralize }}</h4>
       </div>
-      <div class="pull-right">
-        <button type="button" class="btn btn-success btn-xs"
-                onclick="$('#myshared .panel-collapse').collapse('hide');" >
+      <div class="pull-right mb-1">
+        <button type="button" class="btn btn-outline-secondary btn-sm"
+                onclick="$('#myshared .collapse').collapse('hide');" >
         Collapse all</button>
-        <button type="button" class="btn btn-success btn-xs"
-                onclick="$('#myshared .panel-collapse').collapse('show');" >
+        <button type="button" class="btn btn-outline-secondary btn-sm"
+                onclick="$('#myshared .collapse').collapse('show');" >
         Expand all</button>
       </div>
       <div class="clearfix"></div>
       <div id="myshared" class="mydata accordion experiments"></div>
       {% endif %}
-    </div>  <!-- class="col-md-9" -->
+    </div>  <!-- class="col-md-12" -->
   </div>  <!-- class="row" -->
 </div>  <!-- id="content" -->
 

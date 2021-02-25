@@ -1,8 +1,10 @@
-from wait import wait_ajax_loaded
+from wait import wait_for_jquery
 
 from behave import when, then
 
 from selenium.common.exceptions import NoSuchElementException
+
+from tardis.tardis_portal.models.dataset import Dataset
 
 
 @when("they click the Add New dataset button")
@@ -45,7 +47,7 @@ def a_new_dataset_is_created(context):
     """
     :type context: behave.runner.Context
     """
-    wait_ajax_loaded(context)
+    wait_for_jquery(context)
     title_span = context.browser.find_element_by_css_selector(
         "span[property='dc:title']")
     context.test.assertEqual(
@@ -65,7 +67,9 @@ def they_open_the_exp_url(context):
     """
     :type context: behave.runner.Context
     """
-    context.browser.get(context.base_url + "/experiment/view/1/")
+    dataset = Dataset.objects.filter(description="new dataset1").first()
+    exp_id = dataset.experiments.first().id
+    context.browser.get(context.base_url + "/experiment/view/%s/" % exp_id)
 
 
 @then("they see the newly created dataset")
@@ -73,6 +77,6 @@ def they_see_newly_created_dataset(context):
     """
     :type context: behave.runner.Context
     """
-    wait_ajax_loaded(context)
+    wait_for_jquery(context)
     dataset_link = context.browser.find_element_by_css_selector("a.dataset-link")
     context.test.assertIn("new dataset", dataset_link.get_attribute("innerHTML"))

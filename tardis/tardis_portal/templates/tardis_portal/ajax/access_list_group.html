@@ -11,16 +11,18 @@
   {% endwith %}
 {% endfor %}
 </div> <!-- groups -->
+<div id="group-sharing-messages">
+</div>
 <form>
   <div class="form-group">
-    <label class="control-label" for="id_group">Add group to experiment:</label>
+    <label class="col-form-label" for="id_group">Add group to experiment:</label>
     <input type="text" name="group" autocomplete="group"
            class="form-control groupsuggest" id="id_group" required
            placeholder="group" style="max-width: 200px;">
   </div>
 
   <div class="form-group">
-    <label class="control-label" for="id_permissions">Permissions</label>
+    <label class="col-form-label" for="id_permissions">Permissions</label>
     <select id="id_permission_group" class="form-control" style="max-width: 200px;">
       <option value="read">View Only</option>
       <option value="edit">View and Edit</option>
@@ -29,7 +31,7 @@
   </div>
 
   <div class="form-group">
-    <p class="control-label"><em>Owner Groups have the ability to change access controls and share experiments with others.</em></p>
+    <p class="col-form-label"><em>Owner Groups have the ability to change access controls and share experiments with others.</em></p>
   </div>
 
   <button type="button" class="form_submit btn btn-primary" id="group" href="">
@@ -44,3 +46,4 @@
   <i class="fa fa-user" style="text-shadow: 2px -2px #666666"></i>
   Group Management
 </a></p>
+</div>

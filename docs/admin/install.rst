@@ -14,14 +14,15 @@ Prerequisites
 Ubuntu (18.04 LTS is recommended)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Run the script::
+Run this script for Python 3::
 
-   sudo bash install-ubuntu-requirements.sh
+   sudo bash install-ubuntu-py3-requirements.sh
 
-It will install required packages with this command:
+It will install required packages with these commands:
 
-.. literalinclude:: ../../install-ubuntu-requirements.sh
+.. literalinclude:: ../../install-ubuntu-py3-requirements.sh
    :language: bash
+
 
 Download
 --------
@@ -42,17 +43,18 @@ Or, to get the current development branch::
 Quick configuration
 -------------------
 
-It is recommended that you use a virtualenv. The list of packages above
-includes the ``virtualenvwrapper`` toolkit. Set up your environment with these
-commands:
+If you want to use ``virtualenvwrapper``, you can install it with
+``sudo pip3 install virtualenvwrapper`` and set the
+``export VIRTUALENV_PYTHON=/usr/bin/python3`` in your ``~/.bashrc`` or
+``~/.profile`` to ensure that ``mkvirtualenv`` will make a Python 3
+virtual environment.  For more information on configuring
+``virtualenvwrapper``, see https://virtualenvwrapper.readthedocs.io/en/latest/install.html#shell-startup-file
 
-Ubuntu 18.04::
+To activate ``virtualenvwrapper``:
 
-  source /etc/bash_completion.d/virtualenvwrapper
+For Ubuntu 18.04 with Python 3 (using pip3 installed virtualenvwrapper)::
 
-For Ubuntu 16.04::
-
-  source /usr/share/virtualenvwrapper/virtualenvwrapper.sh
+  source /usr/local/bin/virtualenvwrapper.sh
 
 Then create the ``mytardis`` virtual environment ::
 
@@ -513,7 +515,7 @@ need the following in your ``settings.py``::
   SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 For more information, including warnings on the risks of misconfiguring this setting,
-see: https://docs.djangoproject.com/en/1.11/ref/settings/#secure-proxy-ssl-header
+see: https://docs.djangoproject.com/en/2.2/ref/settings/#secure-proxy-ssl-header
 
 Don't forget to create the static files directory and give it appropriate
 permissions. The location is set in the ``settings.py`` file.

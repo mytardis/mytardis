@@ -4,11 +4,14 @@ Testing the DataFile resource in MyTardis's Tastypie-based REST API
 .. moduleauthor:: Grischa Meyer <grischa@gmail.com>
 .. moduleauthor:: James Wettenhall <james.wettenhall@monash.edu>
 '''
+import hashlib
 import json
 import os
 import tempfile
 
 from django.test.client import Client
+
+import magic
 
 from ...models.datafile import DataFile, DataFileObject
 from ...models.dataset import Dataset
@@ -20,7 +23,7 @@ from . import MyTardisResourceTestCase
 
 class DataFileResourceTest(MyTardisResourceTestCase):
     def setUp(self):
-        super(DataFileResourceTest, self).setUp()
+        super().setUp()
         self.django_client = Client()
         self.django_client.login(username=self.username,
                                  password=self.password)
@@ -137,7 +140,6 @@ class DataFileResourceTest(MyTardisResourceTestCase):
             return '/api/v1/%s/%d/' % (res_type, dataset.id)
 
         def md5sum(filename):
-            import hashlib
             md5 = hashlib.md5()  # nosec
             with open(filename, 'rb') as file_obj:
                 for chunk in iter(
@@ -146,7 +148,6 @@ class DataFileResourceTest(MyTardisResourceTestCase):
             return md5.hexdigest()
 
         def guess_mime(filename):
-            import magic
             mime = magic.Magic(mime=True)
             return mime.from_file(filename)
 

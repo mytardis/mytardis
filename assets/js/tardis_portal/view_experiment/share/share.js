@@ -1,38 +1,9 @@
 /* jQuery code for experiment view's Sharing tab */
-/* global $ */
 
-import {userAutocompleteHandler} from "../../main";
+import { userAutocompleteHandler } from "../../main";
 
 import { loadExpTabPane } from "../experiment-tabs.js";
-
 var loadingHTML = "<img src=\"/static/images/ajax-loader.gif\"/><br />";
-
-export function addChangePublicAccessEventHandlers() {
-    $(".public_access_link").unbind("click");
-    $(".public_access_link").bind("click", function(evt) {
-        var modal = $("#modal-public-access");
-
-        modal.find(".modal-body").html("");
-        modal.find(".loading-placeholder").show();
-        modal.modal("show");
-
-        modal.find(".modal-body")
-            .load("/ajax/experiment/" + $("#experiment-id").val() + "/rights", function(response, status, xhr) {
-                modal.find(".loading-placeholder").hide();
-
-                if (status === "error") {
-                    $(this).html(response);
-                }
-
-                $("#legal-section").hide();
-            });
-
-    });
-
-    $("#modal-public-access").bind("hidden.bs.modal", function() {
-        loadExpTabPane("sharing");
-    });
-}
 
 // beginswith, endswith
 String.prototype.beginsWith = function(t, i) {
@@ -69,9 +40,9 @@ const userSharingModalLoaded = function() {
     });
     // Load user list and activate field autocompletion
     $.ajax({
-        "dataType": "json",
-        "url": "/ajax/user_list/",
-        "success": function(users) {
+        dataType: "json",
+        url: "/ajax/user_list/",
+        success: function(users) {
             if($("select#id_authMethod option").length === 1) {
                 $("#id_authMethod_label").hide();
                 $("#id_authMethod").hide();
@@ -111,7 +82,7 @@ const userSharingModalLoaded = function() {
             authMethod = $(this).siblings("#id_authMethod").val();
         }
         var usersDiv = $(this).parents(".access_list1").children(".users");
-
+        var userMessagesDiv = $("#user-sharing-messages");
         var permissions = $(this).siblings("#id_permission").val();
 
         var canRead = false;
@@ -139,31 +110,42 @@ const userSharingModalLoaded = function() {
             "/access_list/add/user/" + username + permissions;
 
         $.ajax({
-            "global": true,
             type: "GET",
             url: action,
             success: function(data) {
                 usersDiv.hide().append(data).fadeIn();
+                userMessagesDiv.hide().html("");
                 // todo this is a duplicate function..
                 $(".remove_user").unbind("click");
                 $(".remove_user").click(function() {
                     var href = $(this).attr("href");
                     var removeUser = $(this);
                     $.ajax({
-                        "global": false,
-                        "url": href,
-                        "success": function(data2) {
-                            var val = data2;
-                            if(val === "OK") {
-                                removeUser.fadeOut(300, function() { removeUser.parents(".access_list_user").remove(); });
-                            }
-                            else { alert(val); }
+                        global: false,
+                        url: href,
+                        success: function() {
+                            removeUser.fadeOut(300, function() {
+                                removeUser.parents(".access_list_user").remove();
+                            });
+                        },
+                        error: function(jqXHR, textStatus, errorThrown) {
+                            alert(jqXHR.responseText);
+                        },
+                        complete: function() {
+                            userMessagesDiv.hide().html("");
                         }
                     }); // end ajax
                     return false;
                 }); // end remove user
             },
-            error: function(data) { alert("Error adding user"); }
+            error: function(jqXHR, textStatus, errorThrown) {
+                if (jqXHR.status === 400) {
+                    userMessagesDiv.hide().html(jqXHR.responseText).fadeIn();
+                    return;
+                }
+                userMessagesDiv.hide().html("");
+                alert("Error adding user");
+            }
         });
         return false;
     });
@@ -173,14 +155,18 @@ const userSharingModalLoaded = function() {
         var href = $(this).attr("href");
         var removeUser = $(this);
         $.ajax({
-            "global": false,
-            "url": href,
-            "success": function(data) {
-                var val = data;
-                if(val === "OK") {
-                    removeUser.fadeOut(300, function() { removeUser.parents(".access_list_user").remove(); });
-                }
-                else { alert(val); }
+            global: false,
+            url: href,
+            success: function() {
+                removeUser.fadeOut(300, function() {
+                    removeUser.parents(".access_list_user").remove();
+                });
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                alert(jqXHR.responseText);
+            },
+            complete: function() {
+                $("#user-sharing-messages").hide().html("");
             }
         }); // end ajax
         return false;
@@ -214,27 +200,22 @@ const groupSharingModalLoaded = function() {
     var modal = $("#modal-share-group");
     modal.find(".loading-placeholder").hide();
 
-    var users = null; // eslint-disable-line no-unused-vars
-
-    var groups = (function() {
-        var val = null;
-        $.ajax({
-            "global": false,
-            "url": "/ajax/group_list/",
-            "success": function(data) { val = data; }
-        });
-        return val;
-    }());
+    $.ajax({
+        global: false,
+        url: "/ajax/group_list/",
+        success: function(data) {
+            var groups = data;
+            $(".groupsuggest").typeahead({
+                "source": groups.split(" ~ ")
+            });
+        }
+    });
 
     $("#id_addgroup").keypress(function(e) {
         if (e.keyCode === 13)
         {
             $("#group.form_submit").click();
         }
-    });
-
-    $(".groupsuggest").typeahead({
-        "source": groups.split(" ~ ")
     });
 
 
@@ -259,9 +240,9 @@ const groupSharingModalLoaded = function() {
         userList.load(this.href, function() {
             // Load user list and activate field autocompletion
             $.ajax({
-                "dataType": "json",
-                "url": "/ajax/user_list/",
-                "success": function(users2) {
+                dataType: "json",
+                url: "/ajax/user_list/",
+                success: function(users2) {
                     var autocompleteHandler = function(usersForHandler, query, callback) {
                         return callback(userAutocompleteHandler(query, usersForHandler));
                     };
@@ -285,6 +266,7 @@ const groupSharingModalLoaded = function() {
 
         var groupsuggest = $(this).parents(".access_list2").find(".groupsuggest").val();
         var groupsDiv = $(this).parents(".access_list2").children(".groups");
+        var groupMessagesDiv = $("#group-sharing-messages");
 
         var action = "/experiment/control_panel/" + $("#experiment-id").val() + "/access_list/add/group/" + groupsuggest;
 
@@ -318,6 +300,7 @@ const groupSharingModalLoaded = function() {
             url: action,
             success: function(data) {
                 groupsDiv.hide().append(data).fadeIn();
+                groupMessagesDiv.hide().html("");
 
                 // view group members
                 $(".member_list_user_toggle").unbind("click");
@@ -340,9 +323,9 @@ const groupSharingModalLoaded = function() {
                     userList.load(this.href, function() {
                         // Load user list and activate field autocompletion
                         $.ajax({
-                            "dataType": "json",
-                            "url": "/ajax/user_list/",
-                            "success": function(users2) {
+                            dataType: "json",
+                            url: "/ajax/user_list/",
+                            success: function(users2) {
                                 var autocompleteHandler = function(usersForHandler, query, callback) {
                                     return callback(userAutocompleteHandler(query, usersForHandler));
                                 };
@@ -367,22 +350,31 @@ const groupSharingModalLoaded = function() {
                     var removeGroup = $(this);
 
                     $.ajax({
-                        "global": false,
-                        "url": href,
-                        "success": function(data2) {
-                            var val = data2;
-                            if(val === "OK") {
-                                removeGroup.fadeOut(300, function() {
-                                    removeGroup.parents(".access_list_group").remove();
-                                });
-                            }
-                            else { alert(val); }
+                        global: false,
+                        url: href,
+                        success: function() {
+                            removeGroup.fadeOut(300, function() {
+                                removeGroup.parents(".access_list_group").remove();
+                            });
+                        },
+                        error: function(jqXHR, textStatus, errorThrown) {
+                            alert(jqXHR.responseText);
+                        },
+                        complete: function() {
+                            groupMessagesDiv.hide().html("");
                         }
                     }); // end ajax
                     return false;
                 }); // end remove group
             },
-            error: function(data) { alert("Error adding group!"); }
+            error: function(jqXHR, textStatus, errorThrown) {
+                if (jqXHR.status === 400) {
+                    groupMessagesDiv.hide().html(jqXHR.responseText).fadeIn();
+                    return;
+                }
+                groupMessagesDiv.hide().html("");
+                alert("Error adding group!");
+            }
         });
         return false;
     });
@@ -395,16 +387,18 @@ const groupSharingModalLoaded = function() {
         var removeGroup = $(this);
 
         $.ajax({
-            "global": false,
-            "url": href,
-            "success": function(data) {
-                var val = data;
-                if(val === "OK") {
-                    removeGroup.fadeOut(300, function() {
-                        removeGroup.parents(".access_list_group").remove();
-                    });
-                }
-                else { alert("val"); }
+            global: false,
+            url: href,
+            success: function() {
+                removeGroup.fadeOut(300, function() {
+                    removeGroup.parents(".access_list_group").remove();
+                });
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                alert(jqXHR.responseText);
+            },
+            complete: function() {
+                $("#group-sharing-messages").hide().html("");
             }
         }); // end ajax
 
@@ -475,7 +469,6 @@ export function expSharingAjaxReady() {
             $targetToken.load(href);
         }); // TODO error-handling
     });
-    addChangePublicAccessEventHandlers();
     addUserSharingEventHandlers();
     addGroupSharingEventHandlers();
 }

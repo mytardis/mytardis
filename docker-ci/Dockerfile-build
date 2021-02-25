@@ -4,7 +4,6 @@ RUN apt-get update && apt-get install \
     -qy \
     build-essential \
     git \
-    ipython \
     libfreetype6-dev \
     libjpeg-dev \
     libldap2-dev \
@@ -12,7 +11,7 @@ RUN apt-get update && apt-get install \
     libssl-dev \
     libxml2-dev \
     libxslt1-dev \
-    python-dev \
+    python3-dev \
     zlib1g-dev \
     libmysqlclient-dev
 

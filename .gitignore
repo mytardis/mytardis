@@ -16,6 +16,7 @@ __pycache__/
 /static/
 bin/
 celerybeat-schedule
+coverage/
 develop-eggs/
 docs/Makefile
 docs/doctrees/
@@ -48,4 +49,4 @@ tardis/apps/*
 !tardis/apps/sftp
 !tardis/apps/social_auth
 !tardis/apps/search
-
+!tardis/apps/eventlog

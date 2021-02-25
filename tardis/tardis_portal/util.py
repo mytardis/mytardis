@@ -1,8 +1,7 @@
 import os
 
-from six.moves import urllib
+from urllib.parse import quote
 
-import pystache
 import pytz
 
 from django.conf import settings
@@ -60,58 +59,6 @@ def _load_template(template_name):
         return f.read()
 
 
-def _mustache_render(tmpl, data):
-    from django.utils.safestring import mark_safe
-    return mark_safe(pystache.render(tmpl, data))
-
-
-def render_mustache(template_name, data):
-    return _mustache_render(_load_template(template_name), data)
-
-
-def render_public_access_badge(experiment):
-    if experiment.public_access == experiment.PUBLIC_ACCESS_NONE and \
-            not experiment.is_publication():
-        return render_mustache('tardis_portal/badges/public_access', {
-            'title': 'No public access',
-            'label': 'Private',
-            'private': True,
-        })
-    if experiment.public_access == experiment.PUBLIC_ACCESS_NONE and \
-            experiment.is_publication() and \
-            not experiment.is_publication_draft():
-        return render_mustache('tardis_portal/badges/public_access', {
-            'title': 'No public access, awaiting approval',
-            'label': '[PUBLICATION] Awaiting approval',
-            'private': True,
-        })
-    if experiment.public_access == experiment.PUBLIC_ACCESS_NONE and \
-            experiment.is_publication_draft():
-        return render_mustache('tardis_portal/badges/public_access', {
-            'title': 'No public access',
-            'label': '[PUBLICATION] Draft',
-            'private': True,
-        })
-
-    if experiment.public_access == experiment.PUBLIC_ACCESS_EMBARGO:
-        return render_mustache('tardis_portal/badges/public_access', {
-            'title': 'Under embargo and awaiting release',
-            'label': '[PUBLICATION] Awaiting release',
-        })
-    if experiment.public_access == experiment.PUBLIC_ACCESS_METADATA:
-        return render_mustache('tardis_portal/badges/public_access', {
-            'title': 'Only descriptions are public, not data',
-            'label': 'Metadata',
-        })
-    if experiment.public_access == experiment.PUBLIC_ACCESS_FULL:
-        return render_mustache('tardis_portal/badges/public_access', {
-            'title': 'All data is public',
-            'label': 'Public',
-            'public': True,
-        })
-    return None
-
-
 def split_path(p):
     base, top = os.path.split(os.path.normpath(p))
     return (split_path(base) if base and top else []) + [top]
@@ -131,7 +78,7 @@ def get_filesystem_safe_dataset_name(dataset):
     if settings.DATASET_SPACES_TO_UNDERSCORES:
         dataset_filename = dataset_filename.replace(' ', '_')
 
-    dataset_filename = urllib.parse.quote(
+    dataset_filename = quote(
         dataset_filename,
         safe=settings.SAFE_FILESYSTEM_CHARACTERS)
 
@@ -152,7 +99,7 @@ def get_filesystem_safe_experiment_name(experiment):
     if settings.EXP_SPACES_TO_UNDERSCORES:
         exp_title = exp_title.replace(' ', '_')
 
-    expt_filename = urllib.parse.quote(
+    expt_filename = quote(
         exp_title, safe=settings.SAFE_FILESYSTEM_CHARACTERS)
 
     return expt_filename

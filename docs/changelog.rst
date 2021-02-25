@@ -1,49 +1,139 @@
 Releases
 ========
 
+4.4.0
+-----
+* User activity logging app
+* Updated various Python and JS libraries
+* Fix to Google Chrome installation
+* Bugfixes
+  - add SSH key
+
+4.3.0
+-----
+* Updated various Python and JS libraries
+* Removed Mustache and Backbone JS libraries (replaced with React)
+* No new session will be created on API call or health check
+* Check DataFile permissions in API differently (performance gain)
+* Check for dataset permissions during API calls (security bug)
+* New uploader registration email to be send to managers group not admins
+
+4.2.0
+-----
+* Upgraded Django from 1.11.26 to 2.2.6
+* Upgraded Bootstrap from 3.4.1 to 4.1.3
+* Continuous Integration testing implemented for Python 3.5, 3.6, 3.7 and 3.8
+* Dropped support for Python 2
+* Dataset view now has a tree-based file browser
+* Added a task which can be scheduled to clean up unverified files
+* Added a task which can be scheduled to clean up DataFiles without DataFileObjects
+* Bug fixes
+  - Ensured thumbnail image files are opened in binary format, required for Python 3
+  - Fixed bug with downloads on Python 3 by removing use of .__next__()
+  - Fixed bugs in Push To's encoding/decoding of SSH certificates in Python 3
+  - Fixed bug in MyTardis SFTP service relating to use of gevent with Django 2.2
+* Dependency updates
+  - Python and JS dependencies have been updated to address vulnerabilities.
+
+4.1.5
+-----
+* Update AngularJS to address the SNYK-JS-ANGULAR-534884 vulnerability.
+* Update the handlebars version in package-lock.json to avoid having
+  "npm install" report high severity vulnerabilities.
+* Fix the dataset metadata API test which was failing on Python 3.5.
+
+4.1.4
+-----
+* Fixed duplicate form submission bugs for create experiment/dataset
+* Fixed search bug which restricted instrument drop-down to 20 records
+* Fixed some byte string encoding issues with LDAP auth in Python 3
+* Fixed Python 3.5 unit tests
+* Fixed pickled StorageBoxOption values for Python 3
+
+4.1.3
+-----
+* Update the https-proxy-agent version in package-lock.json to avoid having
+  "npm install" display "found 1 high severity vulnerability".
+
+4.1.2
+-----
+* Allow .jsx files to be included in assets/js/tardis_portal/ and ensure that
+  they won't be linted using the jQuery ESLint configuration
+* Switch back to the official version of the pyoai dependency
+
+4.1.1
+-----
+* Fix Python 3 bug with string encoding in deep download mapper
+  which affected directory names in SFTP interface.
+
 4.1
 ---
-* Bootstrap upgraded to v3.4.0
-* Celery upgraded to v4.2.1
-* RabbitMQ task priorities support, dropping support for Redis
-* Storage box related tasks are annotated with the storage box name, visible in "celery inspect active".
-* New Travis CI webhook to run Pylint and unit tests with Python 3
-* New task for clearing Django sessions
-* New timestamps (created and modified) in facility and instrument models
-* Fixed truncated TAR download issue with unverified files
-* Fixed sharing with AAF/Google issue
-* Fixed some broken Font Awesome icons
-* Made autocache task more efficient.
-* Some dependency updates:
-    - Update amqp from 2.3.2 to 2.4.1
-    - Update billiard from 3.5.0.4 to 3.5.0.5
-    - Update Boostrap from 2.3.2 to 3.4.0
-    - Update bleach from 2.1.4 to 3.1.0
-    - Update celery from 3.1.26.post2 to 4.2.1
-    - Update coverage from 4.5.1 to 4.5.2
-    - Update django from 1.11.16 to 1.11.20
-    - Update django-extensions from 1.8.1 to 2.5
-    - Update flexmock from 0.10.2 to 0.10.3
-    - Update gevent from 1.3.6 to 1.4.0
-    - Update gunicorn from 19.7.1 to 19.9.0
-    - Update kombu from 4.2.1 to 4.3.0
-    - Update lxml from 4.2.5 to 4.3.1
-    - Update mysqlclient from 1.3.13 to 1.4.2
-    - Update pillow from 5.2.0 to 5.4.1
-    - Update psycopg2-binary from 2.7.5 to 2.7.7
-    - Update pyjwt from 1.6.4 to 1.7.1
-    - Update pylint from 1.9.3 to 1.9.4
-    - Update python-dateutil from 2.7.5 to 2.8.0
-    - Update python-ldap from 2.4.27 to 3.1.0
-    - Update pytz from 2018.5 to 2018.9
-    - Update requests from 2.19.1 to 2.21.0
-    - Update selenium from 3.14.1 to 3.141.0
-    - Update six from 1.11.0 to 1.12.0
-    - Update social-auth-app-django from 3.0.0 to 3.1.0
-    - Update sphinx from 1.8.1 to 1.8.4
-    - Update sphinx-rtd-theme from 0.4.1 to 0.4.3
-    - Update urllib3 from 1.23 to 1.24.1
-    - Update wand from 0.4.4 to 0.5.0
+* Added React search components and django-elasticsearch-dsl backend
+* Removed post-save filters middleware, replaced with microservice architecture
+* Added RabbitMQ task priorities support, dropped support for Redis as a broker
+* Upgraded Bootstrap CSS framework from v2.3.2 to v3.4.1
+* Added Python 3 support
+* Added webpack to collect static assets (JS / CSS), supporting ES6, JSX etc.
+* Annotated storage box related tasks with their storage box name, visible
+  in "celery inspect active"
+* Added task for clearing Django sessions
+* Added timestamps (created and modified) in facility and instrument models
+* Updated built-in Creative Commons licenses to v4
+* Added django-storages and boto3 to requirements to support S3 storage boxes
+  and storing static assets in S3
+* Improved efficiency of checksums and downloads for files in S3 storage
+* COMPUTE_SHA512 now defaults to False. COMPUTE_MD5 still defaults to True.
+* Legal text for publishing can now be specified in settings
+* Now using Dataset created_time in facility overview instead of experiment
+  created time
+* Added a new setting to prevent large datasets (many files) from being scanned
+  for image files at page load time
+* API v1's instrument resource now allows any authenticated user to list the
+  instrument names, which is used in the new search interface
+* The ExperimentAuthor model now exposed in API v1
+* MyTardis no longer tries to guess an appropriate storage box for new
+  DataFileObjects unless REUSE_DATASET_STORAGE_BOX is True
+* Improved BDD test coverage, now measuring template coverage with
+  django-coverage-plugin
+* Bug fixes (GitHub Issue numbers below)
+  - Fixed #1503
+  - Fixed #1568
+  - Removed bob@bobmail.com from default ADMINS, fixing #1613
+  - Fixed #1664
+  - Fixed #1708
+  - Fixed #1857
+  - Fixed #1853
+  - Fixed concatenated messages issue in user sharing and group sharing dialogs
+  - Fixed #1790
+  - Fixed truncated TAR download issue with unverified files
+  - Fixed sharing with AAF/Google issue
+  - Fixed some broken Font Awesome icons
+
+4.0.2
+-----
+* Upgraded Django to 1.11.23
+* Upgraded vulnerable dependencies of JS dev dependencies
+* Fixed #1844 (remove a hard-coded LDAP attribute)
+
+4.0.1
+-----
+* Removed anzsrc_codes tardis app which contained a potentially insecure dependency (rdflib)
+* Added created_time and modified_time fiels in the Instrument and Facility models
+* Updated Python and Javascript dependencies which had vulnerabilities reported since the v4.0 release.
+* Fixed token authentication (#1531, 615d9df)
+* Fixed some Font Awesome icons (1ac549d)
+* Fixed an incomplete database migration for the Dataset created_time field. This fix is included in the tardis/tardis_portal/migrations/0016_add_timestamps.py migration which also adds the created_time and modified_time fields to the Instrument and Facility models (ec238b4)
+* Removed hard-coded LDAP attributes (#1664, 96a0fbf)
+* Fixed issue with get_accessible_datafiles_for_user potentially returning an empty list instead of an empty QuerySet (a13cefc)
+* Fixed issue with Add/Save Experiment Metadata - added a form attribute to the Save button. (fd2393a)
+* In S3 storage documentation, removed reference to old fork of django-storages. (f0c62d5)
+* Fixed issue where MyTardis could try to verify SHA512 sums even when COMPUTE_SHA512 was set to False (#1419, 1da1b3b)
+* In S3 storage documentation, removed reference to old fork of django-storages. (f0c62d5)
+* Fixed issue where MyTardis could try to verify SHA512 sums even when COMPUTE_SHA512 was set to False (#1419, 1da1b3b)
+* Fixed issue where downloading a TAR of a dataset including unverified files could result in a "Truncated tar archive" error (#1425, b4fa17c)
+* Fixed issue where MyTardis tried to retrieve thumbnail images for non-image files, resulting in 404 errors (e261065)
+* Fixed issue where failing to set ADMINS in tardis/settings.py could cause MyTardis to attempt to send emails to bob@bobmail.com (#1613, f8ed6dd)
+* Fixed issue where Facility Overview's "Load more" button was enabled while content was still loading. (a28a253)
 
 4.0
 ---

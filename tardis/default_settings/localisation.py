@@ -18,3 +18,10 @@ LANGUAGE_CODE = 'en-us'
 
 DATE_FORMAT = "jS F Y"
 DATETIME_FORMAT = "jS F Y H:i"
+
+# Setting IS_DST to True or False will avoid AmbiguousTimeError exception
+# by moving the hour backwards or forwards by 1 respectively.
+# For example, IS_DST=True would change a non-existent time of 2:30 to 1:30
+# and IS_DST=False would change the time to 3:30.
+# https://stackoverflow.com/questions/42399438/django-make-aware-usage
+IS_DST = True

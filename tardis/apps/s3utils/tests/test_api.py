@@ -3,7 +3,7 @@ Testing the s3util app's extensions to the tastypie-based mytardis api
 
 .. moduleauthor:: James Wettenhall <james.wettenhall@monash.edu>
 '''
-from mock import patch
+from unittest.mock import patch
 
 import botocore.signers
 
@@ -16,7 +16,7 @@ from tardis.tardis_portal.models.storage import StorageBox, StorageBoxOption
 
 class S3UtilsAppApiTestCase(MyTardisResourceTestCase):
     def setUp(self):
-        super(S3UtilsAppApiTestCase, self).setUp()
+        super().setUp()
         self.dataset = Dataset.objects.create(description='Test Dataset')
         # self.testexp is defined in MyTardisResourceTestCase
         # and is accessible using self.get_credentials()

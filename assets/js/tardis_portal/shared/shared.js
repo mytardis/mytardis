@@ -9,6 +9,13 @@ $(document).ready(function() {
         function() {
             attachExpAccordionClickHandlers("accordion-toggle", "toggle-", "collapse-", "latest-dataset-", loadLatestDatasetSummary);
             expandFirstExperiments();
+
+            $(".explink").on("click", function(evt) {
+                evt.stopPropagation();
+            });
+            $(".dllink").on("click", function(evt) {
+                evt.stopPropagation();
+            });
         });
 
     // Create a reload event handler
@@ -19,6 +26,13 @@ $(document).ready(function() {
             function() {
                 attachExpAccordionClickHandlers("accordion-toggle", "toggle-", "collapse-", "latest-dataset-", loadLatestDatasetSummary);
                 expandFirstExperiments();
+
+                $(".explink").on("click", function(evt) {
+                    evt.stopPropagation();
+                });
+                $(".dllink").on("click", function(evt) {
+                    evt.stopPropagation();
+                });
             });
     });
 
@@ -27,7 +41,7 @@ $(document).ready(function() {
     expandFirstExperiments();
 });
 
-$(document).on("click", ".pagelink", function() {
+$(document).on("click", ".page-link", function() {
     var loadingHTML = "<img src=\"/static/images/ajax-loader.gif\"/><br />";
     var href = $(this).attr("href");
     $(this).html(loadingHTML);

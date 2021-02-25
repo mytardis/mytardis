@@ -1,3 +1,5 @@
+import os
+
 from django.test import TestCase
 from django.conf import settings
 
@@ -7,6 +9,7 @@ from ..publish.publishservice import PublishService
 
 BEAMLINE_VALUE = "myBeamline"
 LICENSE_URL_VALUE = "http://some.uri.com"
+
 
 class MockRifCsProvider(RifCsProvider):
 
@@ -20,7 +23,11 @@ class MockRifCsProvider(RifCsProvider):
         return LICENSE_URL_VALUE
 
     def get_template(self, experiment):
-        return "tardis/tardis_portal/tests/rifcs/default.xml"
+        '''
+        tardis.test_settings adds this to the template dirs:
+        tardis/tardis_portal/tests/rifcs/
+        '''
+        return "default.xml"
 
     def get_rifcs_context(self, experiment):
         c = dict()
@@ -65,7 +72,6 @@ class PublishServiceTestCase(TestCase):
     def testManageRifCsCreateAndRemove(self):
         service = PublishService(self.settings, self.e1)
         self.assertFalse(service.provider.can_publish(self.e1))
-        import os
         service.manage_rifcs(settings.OAI_DOCS_PATH)
         rifcs_output_dir = os.path.join(settings.OAI_DOCS_PATH)
         rifcs_file = os.path.join(rifcs_output_dir, "MyTARDIS-1.xml")
@@ -84,7 +90,6 @@ class PublishServiceTestCase(TestCase):
         service = PublishService(self.settings, self.e1)
         self.e1.public_access = Experiment.PUBLIC_ACCESS_FULL
         service.manage_rifcs(settings.OAI_DOCS_PATH)
-        import os
         rifcs_output_dir = os.path.join(settings.OAI_DOCS_PATH)
         rifcs_file = os.path.join(rifcs_output_dir, "MyTARDIS-1.xml")
         self.assertTrue(os.path.exists(rifcs_file))
