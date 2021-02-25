@@ -219,7 +219,7 @@ def login(request):
     if request.user.is_authenticated:
         # redirect the user to the home page if he is trying to go to the
         # login page
-        return HttpResponseRedirect(request.POST.get('next_page', '/'))
+        return HttpResponseRedirect(request.POST.get('next', '/'))
 
     # TODO: put me in SETTINGS
     if 'username' in request.POST and \
@@ -231,7 +231,7 @@ def login(request):
 
         if user:
             next_page = request.POST.get(
-                'next_page', request.GET.get('next_page', '/'))
+                'next', request.GET.get('next', '/'))
             user.backend = 'django.contrib.auth.backends.ModelBackend'
             djauth.login(request, user)
             return HttpResponseRedirect(next_page)
@@ -248,7 +248,7 @@ def login(request):
         next_page = u.path
     else:
         next_page = '/'
-    c = {'next_page': next_page}
+    c = {'next': next_page}
 
     c['RAPID_CONNECT_ENABLED'] = settings.RAPID_CONNECT_ENABLED
     c['RAPID_CONNECT_LOGIN_URL'] = settings.RAPID_CONNECT_CONFIG[
