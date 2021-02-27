@@ -703,6 +703,7 @@ class DataFileObject(models.Model):
             logger.error(
                 'file copy failed for dfo id: %s, with error: %s' %
                 (self.id, str(e)))
+            copy.delete()
             return False
         if verify:
             shadow = 'dfo_verify location:%s' % copy.storage_box.name
