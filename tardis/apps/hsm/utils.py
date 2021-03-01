@@ -60,25 +60,10 @@ def _stat_subprocess(path):
 def file_is_online(path):
     """Detects whether a file is online or offline (on tape).
 
-    Basically this function checks the size and block number.
-    If size > 0 and block number == 0, this is typically a sign that
-    files are on tape.
-
-    We attempt to os.stat to determine file size and block number;
-    however, this doesn't work on all unix-like systems, so if it fails
-    we attempt to determine them using a subprocess proc call to stat
-    which we aim to match using a regexp.
-
-    Notes
-    -----
-    We set a minimum size since very small files can be stored
-    in the inode and hence have a 0 blksize.
-
     Parameters
     ----------
     path : str
-        Path to the file for which we want to determine size and and block
-        number.
+        Path to the file for which we want to determine online/offline status.
 
     Returns
     -------
