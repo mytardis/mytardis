@@ -122,4 +122,6 @@ class CopyMoveTestCase(TestCase):
 
         self.assertFalse(self.datafile.is_online)
         self.datafile.cache_file()
+        # Clear cache for is_online @cached_property by creating new instance:
+        self.datafile = DataFile.objects.get(id=self.datafile.id)
         self.assertTrue(self.datafile.is_online)

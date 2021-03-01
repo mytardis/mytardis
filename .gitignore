@@ -39,6 +39,7 @@ tardis/apps/*
 !tardis/apps/dl_mapper_df_dir_only
 !tardis/apps/equipment
 !tardis/apps/filepicker
+!tardis/apps/hsm
 !tardis/apps/mx_views
 !tardis/apps/oaipmh
 !tardis/apps/openid_migration

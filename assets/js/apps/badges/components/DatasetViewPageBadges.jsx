@@ -6,7 +6,7 @@ import { fetchDatasetData } from './utils/FetchData';
 import Spinner from './utils/Spinner';
 import DatasetSizeBadge from './DatasetSizeBadge';
 import DatasetExperimentCountBadge from './DatasetExperimentCountBadge';
-import DatasetDatafileCountBadge from './DatasetDatafileCountBadge';
+import HSMDataFileCountBadge from './HSMDataFileCountBadge';
 
 
 const DatasetViewPageBadges = ({ datasetID }) => {
@@ -33,7 +33,9 @@ const DatasetViewPageBadges = ({ datasetID }) => {
             <DatasetExperimentCountBadge datasetData={datasetData} />
           </span>
           <span className="mr-2">
-            <DatasetDatafileCountBadge datasetData={datasetData} />
+            {/* if HSM enabled */}
+            <HSMDataFileCountBadge datasetId={datasetID} />
+            {/* else DataFileCountBadge */}
           </span>
           <span className="mr-2">
             <DatasetSizeBadge datasetData={datasetData} />

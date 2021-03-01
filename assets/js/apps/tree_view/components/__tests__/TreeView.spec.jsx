@@ -24,11 +24,15 @@ const fakeTreeData = [{
   name: 'Parent.txt',
   id: 11985776,
   verified: true,
+  is_online: true,
+  recall_url: null,
 },
 {
   name: 'STORM-6.jpg',
   id: 11985840,
   verified: false,
+  is_online: false,
+  recall_url: '/api/v1/hsm_replica/1234/recall/',
 },
 {
   next_page: false,
@@ -49,11 +53,15 @@ const fakeChildData = [
     name: 'Child_1.txt',
     id: 11985763,
     verified: true,
+    is_online: true,
+    recall_url: null,
   },
   {
     name: 'Child_2.txt',
     id: 11985764,
     verified: true,
+    is_online: true,
+    recall_url: null,
   }];
 
 
@@ -353,9 +361,9 @@ describe('test download selected files', () => {
     component.update();
     expect(fetch.mock.calls.length).toEqual(3);
     // expect download datafile endpoint is called
-    expect(fetch.mock.calls["2"][0]).toEqual('/download/datafiles/');
+    expect(fetch.mock.calls['2'][0]).toEqual('/download/datafiles/');
     // expect methos to be POST
-    expect(fetch.mock.calls["2"][1].method).toEqual('POST');
+    expect(fetch.mock.calls['2'][1].method).toEqual('POST');
     // expect form data to include 3 datafile
     expect(fetch.mock.calls['2']['1'].body.getAll('datafile')).toEqual(['11985763', '11985764']);
   });
