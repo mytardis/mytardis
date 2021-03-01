@@ -23,7 +23,7 @@ from .utils import file_is_online
 logger = logging.getLogger(__name__)
 
 
-def dfo_online(dfo):
+def dfo_online(dfo):  # pylint: disable=R1710
     """Checks whether the underlying file of a DataFileObject is online
 
     Parameters

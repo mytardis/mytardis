@@ -57,7 +57,7 @@ def _stat_subprocess(path):
     return tuple(int(stat) for stat in stdout.split(b','))
 
 
-def file_is_online(path):
+def file_is_online(path):  # pylint: disable=R1710
     """Detects whether a file is online or offline (on tape).
 
     Parameters
