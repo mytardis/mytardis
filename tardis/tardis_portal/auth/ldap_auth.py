@@ -141,6 +141,9 @@ class LDAPBackend(AuthProvider, UserProvider, GroupProvider):
                 # a comma.
                 userDN = userRDN + ',' + self._user_base
                 l.simple_bind_s(userDN, password)
+            except ldap.INVALID_CREDENTIALS:
+                logger.error("Invalid credentials for user %s" % username)
+                return None
             except ldap.LDAPError:
                 # We failed to bind using the simple method of constructing
                 # the userDN, so let's query the directory for the userDN.
