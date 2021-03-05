@@ -528,7 +528,7 @@ def start_server(host=None, port=None, keyfile=None):
         host_key = RSAKey.from_private_key(
             keyfile or StringIO(settings.SFTP_HOST_KEY))
     except:
-        raise SSHException("SSH error: failed loading SFTP host key")
+        raise SSHException("failed loading SFTP host key")
     server = MyTSFTPTCPServer((host, port), host_key=host_key)
     try:
         server.serve_forever()

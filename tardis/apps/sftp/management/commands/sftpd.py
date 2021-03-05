@@ -35,4 +35,4 @@ class Command(BaseCommand):
                 port=options.get("port", 2200)
             )
         except Exception as err:
-            logger.error("Can't start SFTP server due to %s" % err)
+            logger.error("Can't start SFTP server: %s" % err)

@@ -235,7 +235,10 @@ class SFTPDManagementTestCase(TestCase):
         should raise an SSHException
         '''
         saved_setting = settings.SFTP_HOST_KEY
-        settings.SFTP_HOST_KEY = ''
-        with self.assertRaises(SSHException):
-            call_command('sftpd')
+        settings.SFTP_HOST_KEY = ""
+        with self.assertLogs("sftpd", level="ERROR") as cm:
+            call_command("sftpd")
+            self.assertEqual(cm.output, [
+                "ERROR:sftpd:" +
+                "Can't start SFTP server: failed loading SFTP host key"])
         settings.SFTP_HOST_KEY = saved_setting
