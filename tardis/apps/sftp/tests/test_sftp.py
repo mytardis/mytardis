@@ -14,7 +14,6 @@ from django.test import RequestFactory
 from django.test import TestCase
 
 from paramiko.common import AUTH_SUCCESSFUL, AUTH_FAILED
-from paramiko.ssh_exception import SSHException
 from paramiko.rsakey import RSAKey
 from paramiko.py3compat import StringIO
 
