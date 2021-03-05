@@ -171,11 +171,11 @@ class LDAPBackend(AuthProvider, UserProvider, GroupProvider):
                         for ldap_key, tardis_key in self._user_attr_map.items()}
             return None
 
-        except ldap.LDAPError:
-            logger.exception("ldap error")
+        except ldap.LDAPError as err:
+            logger.error("LDAP error %s" % err)
             return None
         except IndexError:
-            logger.exception("index error")
+            logger.error("LDAP has no results")
             return None
         finally:
             if l:
