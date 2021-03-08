@@ -43,23 +43,26 @@ rapidconnect_urls = [
 ]
 
 overridable_urls = [
-    url(r'^$', site_routed_view, {'_default_view': IndexView.as_view(),
-                                  '_site_mappings':
+    url(r'^$', site_routed_view, {'default_view': IndexView.as_view(),
+                                  'site_mappings':
                                       getattr(settings, 'INDEX_VIEWS', {})},
         name='tardis.tardis_portal.views.index'),
 
-    url(r'^login/$', site_routed_view, {'_default_view': login,
-                                        '_site_mappings':
+    url(r'^login/$', site_routed_view, {'default_view': login,
+                                        'site_mappings':
                                             getattr(settings, 'LOGIN_VIEWS', {})},
         name='tardis.tardis_portal.views.login')
 ]
 
 app_urls = []
 for app_name, app in get_tardis_apps():
-    app_urls += [
-        url(r'^%s/' % format_app_name_for_url(app_name),
-            include('%s.urls' % app))
-    ]
+    try:
+        app_urls += [
+            url(r'^%s/' % format_app_name_for_url(app_name),
+                include('%s.urls' % app))
+        ]
+    except:
+        pass
 
 urlpatterns = [
     url(r'', include(core_urls)),

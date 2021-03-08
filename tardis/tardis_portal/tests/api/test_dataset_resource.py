@@ -142,7 +142,9 @@ class DatasetResourceTest(MyTardisResourceTestCase):
             {
                 'name': 'filename1',
                 'id': df1.id,
-                'verified': False
+                'verified': False,
+                'is_online': True,
+                'recall_url': None,
 
             },
             {
@@ -181,7 +183,9 @@ class DatasetResourceTest(MyTardisResourceTestCase):
             {
                 'name': 'filename1',
                 'id': df1.id,
-                'verified': False
+                'verified': False,
+                'is_online': True,
+                'recall_url': None,
             }
         ])
 
@@ -195,13 +199,17 @@ class DatasetResourceTest(MyTardisResourceTestCase):
             {
                 'name': 'filename1',
                 'id': df1.id,
-                'verified': False
+                'verified': False,
+                'is_online': True,
+                'recall_url': None,
 
             },
             {
                 'name': 'filename2',
                 'id': df2.id,
-                'verified': False
+                'verified': False,
+                'is_online': True,
+                'recall_url': None,
             }
         ]
         self.assertEqual(
@@ -221,13 +229,17 @@ class DatasetResourceTest(MyTardisResourceTestCase):
             {
                 'name': 'filename1',
                 'id': df1.id,
-                'verified': False
+                'verified': False,
+                'is_online': True,
+                'recall_url': None,
 
             },
             {
                 'name': 'filename2',
                 'id': df2.id,
-                'verified': False
+                'verified': False,
+                'is_online': True,
+                'recall_url': None,
             }
         ]
         self.assertEqual(
@@ -245,13 +257,17 @@ class DatasetResourceTest(MyTardisResourceTestCase):
             {
                 'name': 'filename1',
                 'id': df1.id,
-                'verified': False
+                'verified': False,
+                'is_online': True,
+                'recall_url': None,
 
             },
             {
                 'name': 'filename2',
                 'id': df2.id,
-                'verified': False
+                'verified': False,
+                'is_online': True,
+                'recall_url': None,
             },
             {
                 'name': 'subdir3',
@@ -272,7 +288,9 @@ class DatasetResourceTest(MyTardisResourceTestCase):
             {
                 'name': 'filename4',
                 'id': df4.id,
-                'verified': False
+                'verified': False,
+                'is_online': True,
+                'recall_url': None,
 
             },
         ]
@@ -300,7 +318,9 @@ class DatasetResourceTest(MyTardisResourceTestCase):
             {
                 'name': 'filename1',
                 'id': df1.id,
-                'verified': False
+                'verified': False,
+                'is_online': True,
+                'recall_url': None,
             }
         ])
 
@@ -315,7 +335,9 @@ class DatasetResourceTest(MyTardisResourceTestCase):
             {
                 'name': 'filename1',
                 'id': df1.id,
-                'verified': False
+                'verified': False,
+                'is_online': True,
+                'recall_url': None,
             },
             {
                 'name': 'subdir#2',
