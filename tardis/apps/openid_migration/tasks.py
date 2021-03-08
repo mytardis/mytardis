@@ -3,7 +3,7 @@ import logging
 from django.conf import settings
 from django.contrib.auth.models import User
 
-from celery.task import shared_task
+from celery import shared_task
 
 from tardis import default_settings
 

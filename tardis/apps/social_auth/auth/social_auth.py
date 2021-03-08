@@ -8,7 +8,7 @@ from django.contrib.auth.models import User, Permission
 from django.contrib import messages
 from django.urls import reverse
 
-from celery.task import shared_task
+from celery import shared_task
 
 from tardis.tardis_portal.models import UserAuthentication
 from tardis.tardis_portal.auth.utils import configure_user
