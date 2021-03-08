@@ -43,9 +43,12 @@ export const expandFilteredNodes = (node, filter, matcher = defaultMatcher) => {
 };
 
 export const toggleSelection = (node, toggleType) => {
+  if (!node.children && !node.is_online) {
+    toggleType = false;
+  }
   let { children } = node;
-  // toggle  node selection only if verified = true
-  if (!children && !node.verified) {
+  // toggle  node selection only if verified = true and node is online
+  if (!children && !node.verified && !node.is_online) {
     return Object.assign({}, node, { selected: false });
   }
   // toggle  all descendents

@@ -46,6 +46,7 @@ exports[`should match snapshot should render folder tree correctly 1`] = `
       >
         Select All
       </button>
+      
     </div>
   </div>
   <div>
@@ -159,6 +160,7 @@ exports[`should match snapshot should render folder tree correctly 1`] = `
                 />
                 
               </a>
+              
             </div>
           </div>
         </div>
@@ -191,17 +193,8 @@ exports[`should match snapshot should render folder tree correctly 1`] = `
                 STORM-6.jpg
                 (unverified)
               </span>
-              <a
-                class="btn-sm"
-                role="button"
-                style="pointer-events: none; cursor: default; text-decoration: none; color: grey;"
-                title="Download"
-              >
-                <i
-                  class="fa fa-download fa-sm"
-                />
-                
-              </a>
+              
+              
             </div>
           </div>
         </div>

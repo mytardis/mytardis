@@ -14,8 +14,8 @@
 
     <div class="btn-group pull-right">
       {% if has_download_permissions and datafile.is_online %}
-      <a  class="btn btn-outline-secondary"
-          href="{{ datafile.get_download_url }}"
+      <a  class="btn"
+          href="{{ datafile.download_url }}"
           title="Download">
           <i class="fa fa-download fa-lg"></i>
       </a>

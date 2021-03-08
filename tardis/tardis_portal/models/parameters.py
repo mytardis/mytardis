@@ -270,7 +270,11 @@ def _get_parameter(parameter):
         return mark_safe(value)
 
     if parameter.name.isDateTime():
-        value = str(parameter.datetime_value)
+        try:
+            value = parameter.datetime_value.astimezone(
+                tz=LOCAL_TZ).strftime("%c")
+        except ValueError:
+            value = parameter.datetime_value.strftime("%c")
         return value
 
     if parameter.name.is_json():
