@@ -8,7 +8,6 @@ from django.contrib import admin
 from django.contrib.auth.models import User, Group
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.utils.encoding import python_2_unicode_compatible
 
 from paramiko import RSAKey, SSHClient, MissingHostKeyPolicy, \
     AutoAddPolicy, PKey, DSSKey, ECDSAKey, PublicBlob
@@ -111,7 +110,6 @@ class KeyPair(models.Model):
             self.private_key = key_data.getvalue()
 
 
-@python_2_unicode_compatible
 class RemoteHost(KeyPair):
     """
     A remote host that may be connected to via SSH
@@ -134,7 +132,6 @@ class RemoteHost(KeyPair):
         return self.nickname + ' | ' + self.host_name + ':' + str(self.port)
 
 
-@python_2_unicode_compatible
 class OAuthSSHCertSigningService(models.Model):
     """
     Connection parameters for an OAuth2 SSH certificate signing service.
@@ -207,7 +204,6 @@ class DBHostKeyPolicy(MissingHostKeyPolicy):
                 'Host key for host %s not accepted' % hostname)
 
 
-@python_2_unicode_compatible
 class Credential(KeyPair):
     """
     A credential that may contain a password and/or key. The auth method chosen
